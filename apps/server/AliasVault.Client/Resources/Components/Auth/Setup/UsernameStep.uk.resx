@@ -21,46 +21,46 @@
   </xsd:schema>
   <!-- Assistant messages -->
   <data name="GreatNowLetsSetupUsername">
-    <value>Great! Now, let's set up your username for AliasVault.</value>
+    <value>Чудово! Тепер налаштуймо ваше ім’я користувача для AliasVault.</value>
     <comment>Assistant message about setting up username</comment>
   </data>
   <data name="EnterUsernameInstructions">
-    <value>Please enter a username you'd like to use. This can be your email address or any unique name you prefer.</value>
+    <value>Будь ласка, введіть ім'я користувача, яке ви хочете використовувати. Це може бути ваша адреса електронної пошти або будь-яке унікальне ім'я.</value>
     <comment>Instructions for entering username</comment>
   </data>
   <data name="RememberUsernameNote">
-    <value>Remember: This is what you'll use to log in later, so make sure it's something you'll remember!</value>
+    <value>Пам’ятайте: це те, що ви використовуватимете для входу пізніше, тому переконайтеся, що ви це запам’ятаєте!</value>
     <comment>Important note about remembering username</comment>
   </data>
   <!-- Form labels -->
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>Ім'я користувача</value>
     <comment>Label for username input field</comment>
   </data>
   <data name="UsernamePlaceholder">
-    <value>Enter your desired username or email</value>
+    <value>Введіть бажане ім'я користувача або електронну адресу</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <!-- Validation messages -->
   <data name="ValidatingUsernameMessage">
-    <value>Validating username...</value>
+    <value>Перевірка імені користувача...</value>
     <comment>Message shown while validating username</comment>
   </data>
   <data name="UsernameAvailableMessage">
-    <value>Username is available!</value>
+    <value>Ім'я користувача доступне!</value>
     <comment>Message shown when username is available</comment>
   </data>
   <data name="UsernameRequiredError">
-    <value>Username is required.</value>
+    <value>Ім'я користувача обов'язкове.</value>
     <comment>Error message when username is empty</comment>
   </data>
   <data name="ServerCommunicationError">
-    <value>An error occurred during communication with the AliasVault server.</value>
+    <value>Під час обміну інформацією з сервером AliasVault сталася помилка.</value>
     <comment>Error message for server communication issues</comment>
   </data>
   <!-- Alt text -->
   <data name="AssistantAvatarAlt">
-    <value>AliasVault Assistant</value>
+    <value>Помічник AliasVault</value>
     <comment>Alt text for assistant avatar image</comment>
   </data>
 </root>
