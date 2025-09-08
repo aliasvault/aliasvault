@@ -718,6 +718,7 @@
 				de,
 				en,
 				fi,
+				he,
 				it,
 				nl,
 				uk,

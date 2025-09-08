@@ -5,6 +5,7 @@ import { initReactI18next } from 'react-i18next';
 import de from './locales/de.json';
 import en from './locales/en.json';
 import fi from './locales/fi.json';
+import he from './locales/he.json';
 import it from './locales/it.json';
 import nl from './locales/nl.json';
 import uk from './locales/uk.json';
@@ -14,6 +15,7 @@ const resources = {
   de: { translation: de },
   en: { translation: en },
   fi: { translation: fi },
+  he: { translation: he },
   nl: { translation: nl },
   it: { translation: it },
   uk: { translation: uk },

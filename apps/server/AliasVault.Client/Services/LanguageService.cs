@@ -33,6 +33,7 @@ public class LanguageService(
         new LanguageConfig("de", "Deutsch", "🇩🇪"),
         new LanguageConfig("en", "English", "🇺🇸"),
         new LanguageConfig("fi", "Suomi", "🇫🇮"),
+        new LanguageConfig("he", "עברית", "🇮🇱"),
         new LanguageConfig("it", "Italiano", "🇮🇹"),
         new LanguageConfig("nl", "Nederlands", "🇳🇱"),
         new LanguageConfig("uk", "Українська", "🇺🇦"),

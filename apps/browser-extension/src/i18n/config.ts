@@ -6,6 +6,7 @@
 import deTranslations from './locales/de.json';
 import enTranslations from './locales/en.json';
 import fiTranslations from './locales/fi.json';
+import heTranslations from './locales/he.json';
 import itTranslations from './locales/it.json';
 import nlTranslations from './locales/nl.json';
 import ukTranslations from './locales/uk.json';
@@ -24,6 +25,9 @@ export const LANGUAGE_RESOURCES = {
   },
   fi: {
     translation: fiTranslations
+  },
+  he: {
+    translation: heTranslations
   },
   it: {
     translation: itTranslations
@@ -63,6 +67,12 @@ export const AVAILABLE_LANGUAGES: ILanguageConfig[] = [
     flag: '🇫🇮'
   },
   {
+    code: 'he',
+    name: 'Hebrew',
+    nativeName: 'עברית',
+    flag: '🇮🇱'
+  },
+  {
     code: 'it',
     name: 'Italian',
     nativeName: 'Italiano',
@@ -87,12 +97,6 @@ export const AVAILABLE_LANGUAGES: ILanguageConfig[] = [
     flag: '🇨🇳'
   },
   /*
-   * {
-   * code: 'de',
-   * name: 'German',
-   * nativeName: 'Deutsch',
-   * flag: '🇩🇪'
-   * },
    * {
    *   code: 'es',
    *   name: 'Spanish',
