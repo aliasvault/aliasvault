@@ -9,8 +9,8 @@
   <string name="autofill_open_app">Ouvrir l’application</string>
   <string name="autofill_vault_locked">Coffre-fort verrouillé</string>
   <!-- Biometric prompts -->
-  <string name="biometric_store_key_title">Store Encryption Key</string>
-  <string name="biometric_store_key_subtitle">Authenticate to securely store your encryption key in the Android Keystore. This enables secure access to your vault.</string>
-  <string name="biometric_unlock_vault_title">Unlock Vault</string>
-  <string name="biometric_unlock_vault_subtitle">Authenticate to access your vault</string>
+  <string name="biometric_store_key_title">Stocker la clé de chiffrement</string>
+  <string name="biometric_store_key_subtitle">Authentifiez-vous pour stocker votre clé de chiffrement en toute sécurité dans le Keystore Android. Cela permet un accès sécurisé à votre coffre.</string>
+  <string name="biometric_unlock_vault_title">Déverrouiller le coffre</string>
+  <string name="biometric_unlock_vault_subtitle">Authentifiez-vous pour accéder à votre coffre</string>
 </resources>
