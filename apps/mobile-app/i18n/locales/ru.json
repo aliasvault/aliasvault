@@ -11,7 +11,7 @@
     "error": "Ошибка",
     "success": "Успешно",
     "never": "Никогда",
-    "copied": "Copied to clipboard",
+    "copied": "Скопировано в буфер обмена",
     "loadMore": "Загрузить ещё",
     "use": "Использовать"
   },
@@ -44,13 +44,13 @@
       "incorrectPassword": "Неверный пароль. Пожалуйста, повторите попытку.",
       "enterPassword": "Пожалуйста, введите ваш пароль",
       "serverError": "Не удалось подключиться к серверу AliasVault. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
-      "serverErrorSelfHosted": "Could not reach the API. For self-hosted instances, please verify the API endpoint is reachable by navigating to it in a browser: it should display 'OK'.",
-      "networkError": "Network request failed. Please check your internet connection and try again.",
-      "networkErrorSelfHosted": "Network request failed. Check your network connection and server availability. For self-hosted instances, please ensure you have a valid SSL certificate installed. Self-signed certificates are not supported on mobile devices for security reasons.",
-      "incorrectPasswordFallback": "Incorrect password. Please try again.",
-      "sessionExpired": "Your session has expired. Please login again.",
-      "tokenRefreshFailed": "Failed to refresh authentication token",
-      "httpError": "HTTP error: {{status}}"
+      "serverErrorSelfHosted": "Не удалось связаться с API. Для автономных экземпляров, пожалуйста, убедитесь, что конечная точка API доступна, перейдя к ней в браузере: на экране должно отображаться \"ОК\".",
+      "networkError": "Не удалось выполнить сетевой запрос. Пожалуйста, проверьте подключение к Интернету и повторите попытку.",
+      "networkErrorSelfHosted": "Не удалось выполнить сетевой запрос. Проверьте сетевое подключение и доступность сервера. Для автономных экземпляров убедитесь, что у вас установлен действующий SSL сертификат. Самозаверяющие сертификаты не поддерживаются на мобильных устройствах по соображениям безопасности.",
+      "incorrectPasswordFallback": "Неверный пароль. Пожалуйста, повторите попытку.",
+      "sessionExpired": "Срок действия вашего сеанса истек. Пожалуйста, войдите в систему еще раз.",
+      "tokenRefreshFailed": "Не удалось обновить токен аутентификации",
+      "httpError": "Ошибка HTTP: {{status}}"
     },
     "confirmLogout": "Вы уверены, что хотите выйти? Вам необходимо повторно войти в систему, используя свой мастер-пароль, чтобы получить доступ к своему хранилищу.",
     "noAccountYet": "Нет аккаунта?",
@@ -81,7 +81,7 @@
       "serverNeedsUpdate": "Для использования этого мобильного приложения необходимо обновить сервер AliasVault до более новой версии. Пожалуйста, обратитесь в службу поддержки, если вам нужна помощь.",
       "vaultDecryptFailed": "Хранилище не удалось расшифровать, если проблема не устраняется, пожалуйста, выйдите и войдите в систему еще раз.",
       "unknownErrorDuringSync": "Неизвестная ошибка во время синхронизации хранилища",
-      "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons."
+      "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности."
     }
   },
   "credentials": {
@@ -109,16 +109,16 @@
     "randomAlias": "Случайный псевдоним",
     "manual": "Инструкция",
     "generateRandomAlias": "Сгенерировать случайный псевдоним",
-    "enterFullEmail": "Enter full email address",
-    "enterEmailPrefix": "Enter email prefix",
-    "useDomainChooser": "Use domain chooser",
-    "enterCustomDomain": "Enter custom domain",
-    "selectEmailDomain": "Select Email Domain",
-    "privateEmailTitle": "Private Email",
-    "privateEmailAliasVaultServer": "AliasVault server",
-    "privateEmailDescription": "E2E encrypted, fully private.",
-    "publicEmailTitle": "Public Temp Email Providers",
-    "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
+    "enterFullEmail": "Введите полный адрес электронной почты",
+    "enterEmailPrefix": "Введите префикс электронной почты",
+    "useDomainChooser": "Использовать выбор домена",
+    "enterCustomDomain": "Ввести пользовательский домен",
+    "selectEmailDomain": "Выберите домен электронной почты",
+    "privateEmailTitle": "Личная электронная почта",
+    "privateEmailAliasVaultServer": "Сервер AliasVault",
+    "privateEmailDescription": "Шифрование E2E, полностью приватный.",
+    "publicEmailTitle": "Общедоступные временные поставщики электронной почты",
+    "publicEmailDescription": "Анонимность, но ограниченная конфиденциальность. Содержимое письма может прочитать любой, кому известен адрес.",
     "searchPlaceholder": "Поиск учетных данных...",
     "noMatchingCredentials": "Соответствующие учетные данные не найдены",
     "noCredentialsFound": "Учетные данные не найдены. Для начала создайте их. Совет: вы также можете войти в веб-приложение AliasVault, чтобы импортировать учетные данные из других менеджеров паролей.",
@@ -156,22 +156,22 @@
     "toasts": {
       "credentialUpdated": "Учетные данные успешно обновлены",
       "credentialCreated": "Учетные данные успешно созданы",
-      "credentialDeleted": "Credential deleted successfully"
+      "credentialDeleted": "Учетные данные успешно удалены"
     },
-    "createNewAliasFor": "Create new alias for",
+    "createNewAliasFor": "Создайте новый псевдоним для",
     "errors": {
       "loadFailed": "Не удалось загрузить учетные данные",
       "generateUsernameFailed": "Не удалось сгенерировать имя пользователя",
       "generatePasswordFailed": "Не удалось сгенерировать пароль",
-      "generic": "Error"
+      "generic": "Ошибка"
     },
     "contextMenu": {
-      "title": "Credential Options",
-      "edit": "Edit",
-      "delete": "Delete",
-      "copyUsername": "Copy Username",
-      "copyEmail": "Copy Email",
-      "copyPassword": "Copy Password"
+      "title": "Параметры учетных данных",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "copyUsername": "Скопировать имя пользователя",
+      "copyEmail": "Скопировать письмо",
+      "copyPassword": "Скопировать пароль"
     }
   },
   "settings": {
@@ -191,34 +191,34 @@
     },
     "androidAutofill": "Автозаполнение Android",
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Experimental Feature",
-      "warningDescription": "Autofill support for Android is currently in an experimental state.",
-      "warningLink": "Read more about it here",
-      "headerText": "You can configure AliasVault to provide native password autofill functionality in Android. Follow the instructions below to enable it.",
-      "howToEnable": "How to enable:",
-      "step1": "1. Open Android Settings via the button below, and change the \"autofill preferred service\" to \"AliasVault\"",
-      "openAutofillSettings": "Open Autofill Settings",
-      "buttonTip": "If the button above doesn't work it might be blocked because of security settings. You can manually go to Android Settings → General Management → Passwords and autofill.",
-      "step2": "2. Some apps, e.g. Google Chrome, may require manual configuration in their settings to allow third-party autofill apps. However, most apps should work with autofill by default.",
-      "alreadyConfigured": "I already configured it"
+      "warningTitle": "⚠️ Экспериментальная функция",
+      "warningDescription": "Поддержка автозаполнения для Android в настоящее время находится в экспериментальном состоянии.",
+      "warningLink": "Подробнее об этом читайте здесь",
+      "headerText": "Вы можете настроить AliasVault для обеспечения встроенной функции автозаполнения пароля в Android. Следуйте приведенным ниже инструкциям, чтобы включить ее.",
+      "howToEnable": "Как включить:",
+      "step1": "1. Откройте настройки Android с помощью кнопки ниже и измените \"предпочтительный сервис автозаполнения\" на \"Alias Vault\".",
+      "openAutofillSettings": "Открыть настройки автозаполнения",
+      "buttonTip": "Если кнопка выше не работает, возможно, она заблокирована из-за настроек безопасности. Вы можете вручную перейти в Настройки Android → Общее управление → Пароли и автозаполнение.",
+      "step2": "2. Для некоторых приложений, например Google Chrome, может потребоваться ручная настройка в настройках, чтобы разрешить сторонним приложениям автозаполнение. Однако большинство приложений должны работать с автозаполнением по умолчанию.",
+      "alreadyConfigured": "Я уже настроил его"
     },
     "vaultUnlock": "Способ разблокировки хранилища",
     "autoLock": "Тайм-аут автоматической блокировки",
-    "clipboardClear": "Clear Clipboard",
-    "clipboardClearDescription": "Automatically clear copied passwords and sensitive information from your clipboard after a specified time period.",
-    "clipboardClearAndroidWarning": "Note: some Android devices have clipboard history enabled, which may keep track of previously copied items, even after AliasVault clears the clipboard. AliasVault can only overwrite the most recent item, but older entries may remain visible in history. For security reasons, we recommend disabling any clipboard history features in your device settings.",
+    "clipboardClear": "Очистить буфер обмена",
+    "clipboardClearDescription": "Автоматически удаляйте скопированные пароли и конфиденциальную информацию из буфера обмена по истечении заданного периода времени.",
+    "clipboardClearAndroidWarning": "Примечание: на некоторых устройствах Android включена функция \"История буфера обмена\", которая позволяет отслеживать ранее скопированные элементы даже после того, как AliasVault очистит буфер обмена. AliasVault может перезаписать только самый последний элемент, но более старые записи могут оставаться видимыми в истории. По соображениям безопасности мы рекомендуем отключить все функции истории буфера обмена в настройках вашего устройства.",
     "clipboardClearOptions": {
-      "never": "Never",
-      "5seconds": "5 seconds",
-      "10seconds": "10 seconds",
-      "15seconds": "15 seconds",
-      "30seconds": "30 seconds"
+      "never": "Никогда",
+      "5seconds": "5 секунд",
+      "10seconds": "10 секунд",
+      "15seconds": "15 секунд",
+      "30seconds": "30 секунд"
     },
-    "batteryOptimizationHelpTitle": "Enable Background Clipboard Clearing",
-    "batteryOptimizationActive": "Battery optimization is blocking background tasks",
-    "batteryOptimizationDisabled": "Background clipboard clearing enabled",
-    "batteryOptimizationHelpDescription": "Android's battery optimization prevents reliable clipboard clearing when the app is in the background. Disabling battery optimization for AliasVault allows precise background clipboard clearing and automatically grants necessary alarm permissions.",
-    "disableBatteryOptimization": "Disable battery optimization",
+    "batteryOptimizationHelpTitle": "Включить очистку фонового буфера обмена",
+    "batteryOptimizationActive": "Оптимизация заряда батареи блокирует фоновые задачи",
+    "batteryOptimizationDisabled": "Включена фоновая очистка буфера обмена",
+    "batteryOptimizationHelpDescription": "Оптимизация заряда батареи в Android предотвращает надежную очистку буфера обмена, когда приложение работает в фоновом режиме. Отключение оптимизации заряда батареи для AliasVault обеспечивает точную очистку буфера обмена в фоновом режиме и автоматически предоставляет необходимые разрешения для оповещения.",
+    "disableBatteryOptimization": "Отключить оптимизацию заряда батареи",
     "identityGenerator": "Генератор личности",
     "security": "Безопасность",
     "appVersion": "Версия приложения {{version}} ({{url}})",
@@ -238,7 +238,7 @@
     "openSettings": "Открыть настройки",
     "vaultUnlockSettings": {
       "description": "Выберите способ, которым вы хотите разблокировать свое хранилище.",
-      "biometrics": "Biometrics",
+      "biometrics": "Биометрические данные",
       "faceId": "Face ID",
       "touchId": "Touch ID",
       "faceIdTouchId": "Face ID / Touch ID",
@@ -437,9 +437,9 @@
       "notFound": "Не найдено"
     },
     "notFound": {
-      "title": "Page not found",
-      "message": "This page has been moved or deleted.",
-      "goHome": "Go back to the start"
+      "title": "Страница не найдена",
+      "message": "Эта страница была перемещена или удалена.",
+      "goHome": "Вернуться к началу"
     },
     "appName": "AliasVault",
     "reinitialize": {
