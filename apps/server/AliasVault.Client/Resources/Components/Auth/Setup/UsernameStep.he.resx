@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Assistant messages -->
+  <data name="GreatNowLetsSetupUsername">
+    <value>מעולה! עכשיו בוא נגדיר את שם המשתמש שלך ל־AliasVault.</value>
+    <comment>Assistant message about setting up username</comment>
+  </data>
+  <data name="EnterUsernameInstructions">
+    <value>נא למלא את שם המשתמש בו ברצונך להשתמש. זאת יכולה להיות כתובת הדוא״ל שלך או כל שם ייחודי אחר שמתחשק לך.</value>
+    <comment>Instructions for entering username</comment>
+  </data>
+  <data name="RememberUsernameNote">
+    <value>חשוב לשים לב: השם הזה ישמש אותך לכניסה בהמשך, לכן חשוב לוודא שקל לך לזכור את השם הזה!</value>
+    <comment>Important note about remembering username</comment>
+  </data>
+  <!-- Form labels -->
+  <data name="UsernameLabel">
+    <value>שם משתמש</value>
+    <comment>Label for username input field</comment>
+  </data>
+  <data name="UsernamePlaceholder">
+    <value>נא למלא את שם המשתמש או כתובת הדוא״ל שמתחשק לך</value>
+    <comment>Placeholder text for username input</comment>
+  </data>
+  <!-- Validation messages -->
+  <data name="ValidatingUsernameMessage">
+    <value>שם המשתמש נבדק…</value>
+    <comment>Message shown while validating username</comment>
+  </data>
+  <data name="UsernameAvailableMessage">
+    <value>שם המשתמש פנוי!</value>
+    <comment>Message shown when username is available</comment>
+  </data>
+  <data name="UsernameRequiredError">
+    <value>שם משתמש חובה.</value>
+    <comment>Error message when username is empty</comment>
+  </data>
+  <data name="ServerCommunicationError">
+    <value>אירעה שגיאה בתקשורת מול שרת ה־AliasVault.</value>
+    <comment>Error message for server communication issues</comment>
+  </data>
+  <!-- Alt text -->
+  <data name="AssistantAvatarAlt">
+    <value>מסייע AliasVault</value>
+    <comment>Alt text for assistant avatar image</comment>
+  </data>
+</root>
