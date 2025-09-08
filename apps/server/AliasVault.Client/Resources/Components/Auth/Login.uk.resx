@@ -115,11 +115,11 @@
     <comment>Link text for creating a new vault</comment>
   </data>
   <data name="LoginWithRecoveryCodeLink" xml:space="preserve">
-    <value>Log in with a recovery code instead.</value>
+    <value>Увійдіть за допомогою коду відновлення.</value>
     <comment>Link text for logging in with recovery code</comment>
   </data>
   <data name="LoginWithAuthenticatorLink" xml:space="preserve">
-    <value>Log in with an authenticator code instead.</value>
+    <value>Увійдіть за допомогою коду автентифікації.</value>
     <comment>Link text for logging in with authenticator</comment>
   </data>
   <!-- Descriptions and help text -->
@@ -136,11 +136,11 @@
     <comment>Text before registration link</comment>
   </data>
   <data name="DontHaveAuthenticatorText" xml:space="preserve">
-    <value>Don't have access to your authenticator device?</value>
+    <value>Немає доступу до свого пристрою автентифікації?</value>
     <comment>Question text about not having access to authenticator</comment>
   </data>
   <data name="RegainedAccessText" xml:space="preserve">
-    <value>Regained access to your authenticator device?</value>
+    <value>Відновили доступ до свого пристрою автентифікатора?</value>
     <comment>Question text about regaining access to authenticator</comment>
   </data>
   <!-- Loading and status messages -->
