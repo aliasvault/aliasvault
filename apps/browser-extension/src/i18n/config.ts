@@ -8,6 +8,7 @@ import enTranslations from './locales/en.json';
 import fiTranslations from './locales/fi.json';
 import itTranslations from './locales/it.json';
 import nlTranslations from './locales/nl.json';
+import ukTranslations from './locales/uk.json';
 import zhTranslations from './locales/zh.json';
 
 /**
@@ -29,6 +30,9 @@ export const LANGUAGE_RESOURCES = {
   },
   nl: {
     translation: nlTranslations
+  },
+  uk: {
+    translation: ukTranslations
   },
   zh: {
     translation: zhTranslations
@@ -71,6 +75,12 @@ export const AVAILABLE_LANGUAGES: ILanguageConfig[] = [
     flag: '🇳🇱'
   },
   {
+    code: 'uk',
+    name: 'Ukrainian',
+    nativeName: 'Українська',
+    flag: '🇺🇦'
+  },
+  {
     code: 'zh',
     name: 'Chinese',
     nativeName: '简体中文',
@@ -95,12 +105,6 @@ export const AVAILABLE_LANGUAGES: ILanguageConfig[] = [
    *   nativeName: 'Français',
    *   flag: '🇫🇷'
    * },
-   * {
-   *   code: 'uk',
-   *   name: 'Ukrainian',
-   *   nativeName: 'Українська',
-   *   flag: '🇺🇦'
-   * }
    */
 ];
 
