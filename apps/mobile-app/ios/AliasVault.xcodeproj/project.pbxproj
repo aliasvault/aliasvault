@@ -662,6 +662,7 @@
 				de,
 				en,
 				fi,
+				he,
 				it,
 				nl,
 				zh,
