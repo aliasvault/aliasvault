@@ -156,7 +156,7 @@
     "toasts": {
       "credentialUpdated": "Облікові дані успішно оновлено",
       "credentialCreated": "Облікові дані успішно створено",
-      "credentialDeleted": "Credential deleted successfully"
+      "credentialDeleted": "Облікові дані успішно видалено"
     },
     "createNewAliasFor": "Створити новий псевдонім для",
     "errors": {
@@ -214,11 +214,11 @@
       "15seconds": "15 секунд",
       "30seconds": "30 секунд"
     },
-    "batteryOptimizationHelpTitle": "Enable Background Clipboard Clearing",
-    "batteryOptimizationActive": "Battery optimization is blocking background tasks",
-    "batteryOptimizationDisabled": "Background clipboard clearing enabled",
-    "batteryOptimizationHelpDescription": "Android's battery optimization prevents reliable clipboard clearing when the app is in the background. Disabling battery optimization for AliasVault allows precise background clipboard clearing and automatically grants necessary alarm permissions.",
-    "disableBatteryOptimization": "Disable battery optimization",
+    "batteryOptimizationHelpTitle": "Увімкнути очищення буфера обміну у фоновому режимі",
+    "batteryOptimizationActive": "Оптимізація акумулятора блокує фонові завдання",
+    "batteryOptimizationDisabled": "Увімкнено очищення буфера обміну у фоновому режимі",
+    "batteryOptimizationHelpDescription": "Оптимізація батареї Android перешкоджає надійному очищенню буфера обміну, коли додаток працює у фоновому режимі. Вимкнення оптимізації батареї для AliasVault дозволяє точно очищати буфер обміну у фоновому режимі та автоматично надає необхідні дозволи на сигнали.",
+    "disableBatteryOptimization": "Вимкнути оптимізацію акумулятора",
     "identityGenerator": "Генератор ідентифікаційних даних",
     "security": "Безпека",
     "appVersion": "Версія додатку {{version}} ({{url}})",
