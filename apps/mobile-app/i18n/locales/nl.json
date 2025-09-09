@@ -281,7 +281,7 @@
       "changeMasterPassword": "Hoofdwachtwoord wijzigen",
       "activeSessionsTitle": "Actieve sessies",
       "recentAuthLogs": "Recente authenticatielogs",
-      "deleteAccountTitle": "Account Verwijderen",
+      "deleteAccountTitle": "Account verwijderen",
       "changePassword": {
         "headerText": "Het wijzigen van je hoofdwachtwoord wijzigt ook de encryptie sleutels. Het wordt aanbevolen om je hoofdwachtwoord periodiek te wijzigen om je vault veilig te houden.",
         "currentPassword": "Huidig wachtwoord",
