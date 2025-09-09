@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, Platform } from 'react-native';
 import 'react-native-reanimated';
 import 'react-native-get-random-values';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { install } from 'react-native-quick-crypto';
 
 import { useColors, useColorScheme } from '@/hooks/useColorScheme';
@@ -131,33 +132,35 @@ function RootLayoutNav() : React.ReactNode {
   };
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? customDarkTheme : customDefaultTheme}>
-      <Stack
-        screenOptions={{
-          headerShown: true,
-          animation: 'none',
-          headerTransparent: Platform.OS === 'ios',
-          headerStyle: {
-            backgroundColor: colors.accentBackground,
-          },
-          headerTintColor: colors.primary,
-          headerTitleStyle: {
-            color: colors.text,
-          },
-        }}
-      >
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="initialize" options={{ headerShown: false }} />
-        <Stack.Screen name="login" options={{ headerShown: false }} />
-        <Stack.Screen name="login-settings" />
-        <Stack.Screen name="reinitialize" options={{ headerShown: false }} />
-        <Stack.Screen name="unlock" options={{ headerShown: false }} />
-        <Stack.Screen name="upgrade" options={{ headerShown: false }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <AliasVaultToast />
-    </ThemeProvider>
+    <GestureHandlerRootView>
+      <ThemeProvider value={colorScheme === 'dark' ? customDarkTheme : customDefaultTheme}>
+        <Stack
+          screenOptions={{
+            headerShown: true,
+            animation: 'none',
+            headerTransparent: Platform.OS === 'ios',
+            headerStyle: {
+              backgroundColor: colors.accentBackground,
+            },
+            headerTintColor: colors.primary,
+            headerTitleStyle: {
+              color: colors.text,
+            },
+          }}
+        >
+          <Stack.Screen name="index" options={{ headerShown: false }} />
+          <Stack.Screen name="initialize" options={{ headerShown: false }} />
+          <Stack.Screen name="login" options={{ headerShown: false }} />
+          <Stack.Screen name="login-settings" />
+          <Stack.Screen name="reinitialize" options={{ headerShown: false }} />
+          <Stack.Screen name="unlock" options={{ headerShown: false }} />
+          <Stack.Screen name="upgrade" options={{ headerShown: false }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="+not-found" />
+        </Stack>
+        <AliasVaultToast />
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }
 

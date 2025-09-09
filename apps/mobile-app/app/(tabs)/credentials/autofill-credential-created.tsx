@@ -2,13 +2,14 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, TouchableOpacity, AppState, Platform, Pressable } from 'react-native';
+import { StyleSheet, View, AppState } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 
 import { ThemedSafeAreaView } from '@/components/themed/ThemedSafeAreaView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 
 /**
  * Autofill credential created screen.
@@ -80,25 +81,15 @@ export default function AutofillCredentialCreatedScreen() : React.ReactNode {
       /**
        * Header right button.
        */
-      headerRight: () => 
-        Platform.OS === 'android' ? (
-          <Pressable
-            onPressIn={handleStayInApp}
-            android_ripple={{ color: 'lightgray' }}
-            pressRetentionOffset={100}
-            hitSlop={100}
-            style={styles.headerRightButton}
-          >
-            <ThemedText style={{ color: colors.primary }}>{t('common.cancel')}</ThemedText>
-          </Pressable>
-        ) : (
-          <TouchableOpacity
-            onPress={handleStayInApp}
-            style={styles.headerRightButton}
-          >
-            <ThemedText style={{ color: colors.primary }}>{t('common.cancel')}</ThemedText>
-          </TouchableOpacity>
-        ),
+      headerRight: () =>
+        <RobustPressable
+          onPress={handleStayInApp}
+          style={styles.headerRightButton}
+          pressRetentionOffset={100}
+          hitSlop={100}
+        >
+          <ThemedText style={{ color: colors.primary }}>{t('common.cancel')}</ThemedText>
+        </RobustPressable>
     });
   }, [navigation, colors.primary, styles.headerRightButton, handleStayInApp, t]);
 

@@ -24,6 +24,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { AndroidHeader } from '@/components/ui/AndroidHeader';
 import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
 import { useAuth } from '@/context/AuthContext';
@@ -349,16 +350,15 @@ export default function CredentialsScreen() : React.ReactNode {
         showNavigationHeader={true}
         alwaysVisible={true}
       />
-      <TouchableOpacity
+      <RobustPressable
         style={styles.fab}
         onPress={() => {
           router.push('/(tabs)/credentials/add-edit');
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         }}
-        activeOpacity={0.8}
       >
         <MaterialIcons name="add" style={styles.fabIcon} />
-      </TouchableOpacity>
+      </RobustPressable>
       <ThemedView style={styles.stepContainer}>
         <Animated.FlatList
           ref={flatListRef}

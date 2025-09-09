@@ -1,7 +1,7 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, View, Text, StyleSheet, TouchableOpacity, Linking, Pressable, Platform } from 'react-native';
+import { ActivityIndicator, View, Text, StyleSheet, Linking, Platform } from 'react-native'
 import Toast from 'react-native-toast-message';
 
 import type { Credential } from '@/utils/dist/shared/models/vault';
@@ -20,6 +20,7 @@ import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
 
 /**
@@ -49,32 +50,16 @@ export default function CredentialDetailsScreen() : React.ReactNode {
        */
       headerRight: () => (
         <View style={styles.headerRightContainer}>
-          {Platform.OS === 'android' ? (
-            <Pressable
-              onPressIn={handleEdit}
-              android_ripple={{ color: 'lightgray' }}
-              pressRetentionOffset={100}
-              hitSlop={100}
-              style={styles.headerRightButton}
-            >
-              <MaterialIcons
-                name="edit"
-                size={24}
-                color={colors.primary}
-              />
-            </Pressable>
-          ) : (
-            <TouchableOpacity
-              onPress={handleEdit}
-              style={styles.headerRightButton}
-            >
-              <MaterialIcons
-                name="edit"
-                size={22}
-                color={colors.primary}
-              />
-            </TouchableOpacity>
-          )}
+          <RobustPressable
+            onPress={handleEdit}
+            style={styles.headerRightButton}
+          >
+            <MaterialIcons
+              name="edit"
+              size={Platform.OS === 'android' ? 24 : 22}
+              color={colors.primary}
+            />
+          </RobustPressable>
         </View>
       ),
     });
@@ -137,11 +122,13 @@ export default function CredentialDetailsScreen() : React.ReactNode {
             </ThemedText>
             {credential.ServiceUrl && (
               /^https?:\/\//i.test(credential.ServiceUrl) ? (
-                <TouchableOpacity onPress={() => Linking.openURL(credential.ServiceUrl!)}>
+                <RobustPressable
+                  onPress={() => Linking.openURL(credential.ServiceUrl!)}
+                >
                   <Text style={[styles.serviceUrl, { color: colors.primary }]}>
                     {credential.ServiceUrl}
                   </Text>
-                </TouchableOpacity>
+                </RobustPressable>
               ) : (
                 <Text style={styles.serviceUrl}>
                   {credential.ServiceUrl}
@@ -169,6 +156,10 @@ const styles = StyleSheet.create({
   },
   headerRightButton: {
     padding: 10,
+  },
+  headerRightButtonPressed: {
+    padding: 10,
+    opacity: 0.8,
   },
   headerRightContainer: {
     flexDirection: 'row',

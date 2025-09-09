@@ -3,7 +3,7 @@ import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, TouchableOpacity, ActivityIndicator, Alert, Share, useColorScheme, Linking, Text, TextInput, Platform, Pressable } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Alert, Share, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 import type { Credential } from '@/utils/dist/shared/models/vault';
@@ -17,6 +17,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { IconSymbolName } from '@/components/ui/IconSymbolName';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 
@@ -224,6 +225,9 @@ export default function EmailDetailsScreen() : React.ReactNode {
     },
     headerRightButton: {
       padding: 10,
+      paddingRight: 10,
+    },
+    headerRightButtonDelete: {
       paddingRight: 0,
     },
     headerRightContainer: {
@@ -324,49 +328,34 @@ export default function EmailDetailsScreen() : React.ReactNode {
        */
       headerRight: () => (
         <View style={styles.headerRightContainer}>
-          {Platform.OS === 'android' ? (
-            <>
-              <Pressable
-                onPressIn={() => setHtmlView(!isHtmlView)}
-                style={styles.headerRightButton}
-              >
-                <Ionicons
-                  name={isHtmlView ? 'text-outline' : 'document-outline'}
-                  size={24}
-                  color={colors.primary}
-                />
-              </Pressable>
-              <Pressable
-                onPressIn={handleDelete}
-                style={styles.headerRightButton}
-              >
-                <Ionicons name="trash-outline" size={24} color="#FF0000" />
-              </Pressable>
-            </>
-          ) : (
-            <>
-              <TouchableOpacity
-                onPress={() => setHtmlView(!isHtmlView)}
-                style={styles.headerRightButton}
-              >
-                <Ionicons
-                  name={isHtmlView ? 'text-outline' : 'document-outline'}
-                  size={22}
-                  color={colors.primary}
-                />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleDelete}
-                style={styles.headerRightButton}
-              >
-                <Ionicons name="trash-outline" size={22} color="#FF0000" />
-              </TouchableOpacity>
-            </>
-          )}
+          <RobustPressable
+            onPress={() => setHtmlView(!isHtmlView)}
+            style={styles.headerRightButton}
+            pressRetentionOffset={10}
+            hitSlop={10}
+          >
+            <Ionicons
+              name={isHtmlView ? 'text-outline' : 'document-outline'}
+              size={Platform.OS === 'android' ? 24 : 22}
+              color={colors.primary}
+            />
+          </RobustPressable>
+          <RobustPressable
+            onPress={handleDelete}
+            style={[styles.headerRightButton, styles.headerRightButtonDelete]}
+            pressRetentionOffset={10}
+            hitSlop={10}
+          >
+            <Ionicons
+              name="trash-outline"
+              size={Platform.OS === 'android' ? 24 : 22}
+              color="#FF0000"
+            />
+          </RobustPressable>
         </View>
       ),
     });
-  }, [isHtmlView, navigation, handleDelete, colors.primary, styles.headerRightButton, styles.headerRightContainer]);
+  }, [isHtmlView, navigation, handleDelete, colors.primary, styles.headerRightButton, styles.headerRightButtonDelete, styles.headerRightContainer]);
 
   if (isLoading) {
     return (
@@ -396,7 +385,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
   let metadataView = null;
   if (!isMetadataMaximized) {
     metadataView = (
-      <TouchableOpacity onPress={() => setMetadataMaximized(!isMetadataMaximized)}>
+      <RobustPressable onPress={() => setMetadataMaximized(!isMetadataMaximized)}>
         <View style={styles.topBox}>
           <View style={styles.subjectContainer}>
             <ThemedText style={styles.subject}>{email.subject}</ThemedText>
@@ -405,18 +394,18 @@ export default function EmailDetailsScreen() : React.ReactNode {
             <Ionicons name="reorder-four-outline" size={22} color={isDarkMode ? '#eee' : '#000'} />
           </View>
         </View>
-      </TouchableOpacity>
+      </RobustPressable>
     );
   } else {
     metadataView = (
-      <TouchableOpacity onPress={() => setMetadataMaximized(!isMetadataMaximized)}>
+      <RobustPressable onPress={() => setMetadataMaximized(!isMetadataMaximized)}>
         <View style={styles.metadataContainer}>
           <View style={styles.metadataRow}>
             <View style={styles.metadataValue}>
               <ThemedText style={[styles.metadataText, styles.metadataSubject]}>{email.subject}</ThemedText>
               {associatedCredential && (
                 <View>
-                  <TouchableOpacity
+                  <RobustPressable
                     onPress={handleOpenCredential}
                     style={styles.metadataCredential}
                   >
@@ -424,7 +413,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
                     <ThemedText style={[styles.metadataText, { color: colors.primary }]}>
                       {associatedCredential.ServiceName}
                     </ThemedText>
-                  </TouchableOpacity>
+                  </RobustPressable>
                 </View>
               )}
             </View>
@@ -470,7 +459,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
           </View>
           <View style={styles.divider} />
         </View>
-      </TouchableOpacity>
+      </RobustPressable>
     );
   }
 
@@ -517,7 +506,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
         <View style={styles.attachments}>
           <ThemedText style={styles.attachmentsTitle}>{t('emails.attachments')}</ThemedText>
           {email.attachments.map((attachment) => (
-            <TouchableOpacity
+            <RobustPressable
               key={attachment.id}
               style={styles.attachment}
               onPress={() => handleDownloadAttachment(attachment)}
@@ -526,7 +515,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
               <ThemedText style={styles.attachmentName}>
                 {attachment.filename} ({Math.ceil(attachment.filesize / 1024)} {t('emails.sizeKB')})
               </ThemedText>
-            </TouchableOpacity>
+            </RobustPressable>
           ))}
         </View>
       )}

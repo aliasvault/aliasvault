@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, TouchableOpacity, Alert, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
+import { StyleSheet, View, Alert, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
 
 import type { VaultVersion } from '@/utils/dist/shared/vault-sql';
 import { VaultSqlGenerator } from '@/utils/dist/shared/vault-sql';
@@ -16,6 +16,7 @@ import LoadingIndicator from '@/components/LoadingIndicator';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { Avatar } from '@/components/ui/Avatar';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
@@ -417,12 +418,12 @@ export default function UpgradeScreen() : React.ReactNode {
                   <View style={styles.versionContainer}>
                     <View style={styles.versionHeader}>
                       <ThemedText style={styles.versionTitle}>{t('upgrade.versionInformation')}</ThemedText>
-                      <TouchableOpacity
+                      <RobustPressable
                         style={styles.helpButton}
                         onPress={showVersionDialog}
                       >
                         <ThemedText style={styles.helpButtonText}>?</ThemedText>
-                      </TouchableOpacity>
+                      </RobustPressable>
                     </View>
                     <View style={styles.versionRow}>
                       <ThemedText style={styles.versionLabel}>{t('upgrade.yourVault')}</ThemedText>
@@ -438,7 +439,7 @@ export default function UpgradeScreen() : React.ReactNode {
                     </View>
                   </View>
 
-                  <TouchableOpacity
+                  <RobustPressable
                     style={styles.button}
                     onPress={handleUpgrade}
                     disabled={isLoading || isVaultMutationLoading}
@@ -446,14 +447,14 @@ export default function UpgradeScreen() : React.ReactNode {
                     <ThemedText style={styles.buttonText}>
                       {isLoading || isVaultMutationLoading ? (syncStatus || t('upgrade.upgrading')) : t('upgrade.upgrade')}
                     </ThemedText>
-                  </TouchableOpacity>
+                  </RobustPressable>
 
-                  <TouchableOpacity
+                  <RobustPressable
                     style={styles.logoutButton}
                     onPress={handleLogout}
                   >
                     <ThemedText style={styles.logoutButtonText}>{t('upgrade.logout')}</ThemedText>
-                  </TouchableOpacity>
+                  </RobustPressable>
                 </View>
               </View>
             </ScrollView>

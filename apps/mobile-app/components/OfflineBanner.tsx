@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -7,6 +7,7 @@ import { useVaultSync } from '@/hooks/useVaultSync';
 
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useAuth } from '@/context/AuthContext';
 
 /**
@@ -100,12 +101,12 @@ export function OfflineBanner(): React.ReactNode {
         <ThemedText style={styles.text}>
           Offline mode (read-only)
         </ThemedText>
-        <TouchableOpacity
+        <RobustPressable
           style={styles.retryButton}
           onPress={handleRetry}
         >
           <Ionicons name="refresh" size={20} color={colors.primarySurfaceText} />
-        </TouchableOpacity>
+        </RobustPressable>
       </View>
     </ThemedView>
   );

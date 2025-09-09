@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from 'expo-router';
 import { useState, useEffect, useCallback, useMemo, useLayoutEffect } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, Text, TextInput, ActivityIndicator } from 'react-native';
 
 import { AppInfo } from '@/utils/AppInfo';
 
@@ -11,6 +11,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedView } from '@/components/themed/ThemedView';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 
 type ApiOption = {
   label: string;
@@ -167,7 +168,7 @@ export default function SettingsScreen() : React.ReactNode {
 
             <View style={styles.formContainer}>
               {DEFAULT_OPTIONS.map(option => (
-                <TouchableOpacity
+                <RobustPressable
                   key={option.value}
                   style={[
                     styles.optionButton,
@@ -181,7 +182,7 @@ export default function SettingsScreen() : React.ReactNode {
                   ]}>
                     {option.label}
                   </Text>
-                </TouchableOpacity>
+                </RobustPressable>
               ))}
 
               {selectedOption === 'custom' && (

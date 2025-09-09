@@ -543,14 +543,12 @@ export default function AddEditCredentialScreen() : React.ReactNode {
        */
       ...(Platform.OS === 'ios' && {
         /**
-         *
+         * Header left button.
          */
-        headerLeft: () => (
+        headerLeft: () : React.ReactNode => (
           <RobustPressable
             onPress={() => router.back()}
             style={styles.headerLeftButton}
-            accessibilityRole="button"
-            accessibilityLabel="Cancel"
           >
             <ThemedText style={styles.headerLeftButtonText}>{t('common.cancel')}</ThemedText>
           </RobustPressable>
@@ -564,13 +562,11 @@ export default function AddEditCredentialScreen() : React.ReactNode {
           onPress={handleSubmit(onSubmit)}
           style={[styles.headerRightButton, isSaveDisabled && styles.headerRightButtonDisabled]}
           disabled={isSaveDisabled}
-          accessibilityRole="button"
-          accessibilityLabel="Save credential"
         >
-          <MaterialIcons 
-            name="save" 
-            size={Platform.OS === 'android' ? 24 : 22} 
-            color={colors.primary} 
+          <MaterialIcons
+            name="save"
+            size={Platform.OS === 'android' ? 24 : 22}
+            color={colors.primary}
           />
         </RobustPressable>
       ),
@@ -599,8 +595,6 @@ export default function AddEditCredentialScreen() : React.ReactNode {
                 <RobustPressable
                   style={[styles.modeButton, mode === 'random' && styles.modeButtonActive]}
                   onPress={() => setMode('random')}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: mode === 'random' }}
                 >
                   <MaterialIcons
                     name="auto-fix-high"
@@ -614,8 +608,6 @@ export default function AddEditCredentialScreen() : React.ReactNode {
                 <RobustPressable
                   style={[styles.modeButton, mode === 'manual' && styles.modeButtonActive]}
                   onPress={() => setMode('manual')}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: mode === 'manual' }}
                 >
                   <MaterialIcons
                     name="person"
@@ -700,11 +692,9 @@ export default function AddEditCredentialScreen() : React.ReactNode {
 
                 <View style={styles.section}>
                   <ThemedText style={styles.sectionTitle}>{t('credentials.alias')}</ThemedText>
-                  <RobustPressable 
-                    style={styles.generateButton} 
+                  <RobustPressable
+                    style={styles.generateButton}
                     onPress={handleGenerateRandomAlias}
-                    accessibilityRole="button"
-                    accessibilityLabel="Generate random alias"
                   >
                     <MaterialIcons name="auto-fix-high" size={20} color="#fff" />
                     <ThemedText style={styles.generateButtonText}>{t('credentials.generateRandomAlias')}</ThemedText>
@@ -764,8 +754,6 @@ export default function AddEditCredentialScreen() : React.ReactNode {
                   <RobustPressable
                     style={styles.deleteButton}
                     onPress={handleDelete}
-                    accessibilityRole="button"
-                    accessibilityLabel="Delete credential"
                   >
                     <ThemedText style={styles.deleteButtonText}>{t('credentials.deleteCredential')}</ThemedText>
                   </RobustPressable>

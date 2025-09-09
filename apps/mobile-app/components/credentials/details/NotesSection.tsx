@@ -7,6 +7,7 @@ import { useColors } from '@/hooks/useColorScheme';
 
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 
 type NotesSectionProps = {
   credential: Credential;
@@ -108,11 +109,11 @@ export const NotesSection: React.FC<NotesSectionProps> = ({ credential }) : Reac
         {parts.map((part, index) => {
           if (part.type === 'url') {
             return (
-              <Pressable key={index} onPress={() => handleLinkPress(part.url!)}>
+              <RobustPressable key={index} onPress={() => handleLinkPress(part.url!)}>
                 <Text style={styles.link} selectable={true}>
                   {part.content}
                 </Text>
-              </Pressable>
+              </RobustPressable>
             );
           }
           return (

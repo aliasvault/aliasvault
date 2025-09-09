@@ -1,9 +1,10 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
+import { StyleSheet, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 
 import { ThemedText } from '@/components/themed/ThemedText';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 
 type ThemedButtonProps = {
   title: string;
@@ -50,7 +51,7 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
   });
 
   return (
-    <TouchableOpacity
+    <RobustPressable
       style={[
         styles.button,
         disabled && styles.buttonDisabled,
@@ -68,6 +69,6 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
           color={colors.background}
         />
       )}
-    </TouchableOpacity>
+    </RobustPressable>
   );
 };

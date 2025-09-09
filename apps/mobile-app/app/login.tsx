@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, SafeAreaView, TextInput, TouchableOpacity, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions, Alert } from 'react-native';
+import { StyleSheet, View, Text, SafeAreaView, TextInput, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions, Alert } from 'react-native';
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import ConversionUtility from '@/utils/ConversionUtility';
@@ -24,6 +24,7 @@ import Logo from '@/assets/images/logo.svg';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { InAppBrowserView } from '@/components/ui/InAppBrowserView';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
@@ -583,7 +584,7 @@ export default function LoginScreen() : React.ReactNode {
                     />
                   </View>
                   <View style={styles.buttonContainer}>
-                    <TouchableOpacity
+                    <RobustPressable
                       style={[styles.button, styles.primaryButton]}
                       onPress={handleTwoFactorSubmit}
                       disabled={isLoading}
@@ -593,8 +594,8 @@ export default function LoginScreen() : React.ReactNode {
                       ) : (
                         <Text style={styles.buttonText}>{t('auth.verify')}</Text>
                       )}
-                    </TouchableOpacity>
-                    <TouchableOpacity
+                    </RobustPressable>
+                    <RobustPressable
                       style={[styles.button, styles.secondaryButton]}
                       onPress={() => {
                         setCredentials({ username: '', password: '' });
@@ -607,7 +608,7 @@ export default function LoginScreen() : React.ReactNode {
                       }}
                     >
                       <Text style={styles.buttonText}>{t('common.cancel')}</Text>
-                    </TouchableOpacity>
+                    </RobustPressable>
                   </View>
                   <Text style={styles.textMuted}>
                     {t('auth.authCodeNote')}
@@ -656,7 +657,7 @@ export default function LoginScreen() : React.ReactNode {
                       numberOfLines={1}
                     />
                   </View>
-                  <TouchableOpacity
+                  <RobustPressable
                     style={[styles.button, styles.primaryButton]}
                     onPress={handleSubmit}
                     disabled={isLoading}
@@ -666,7 +667,7 @@ export default function LoginScreen() : React.ReactNode {
                     ) : (
                       <Text style={styles.buttonText}>{t('auth.login')}</Text>
                     )}
-                  </TouchableOpacity>
+                  </RobustPressable>
                   <View style={styles.createNewVaultContainer}>
                     <Text style={styles.textMuted}>{t('auth.noAccountYet')} </Text>
                     <InAppBrowserView

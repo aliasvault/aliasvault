@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import type { Credential } from '@/utils/dist/shared/models/vault';
 import type { MailboxEmail } from '@/utils/dist/shared/models/webapi';
@@ -9,6 +9,7 @@ import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import { ThemedText } from '@/components/themed/ThemedText';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { IconSymbolName } from '@/components/ui/IconSymbolName';
 import { useDb } from '@/context/DbContext';
@@ -133,10 +134,9 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
   });
 
   return (
-    <TouchableOpacity
+    <RobustPressable
       style={styles.emailCard}
       onPress={() => router.push(`/(tabs)/emails/${email.id}`)}
-      activeOpacity={0.7}
     >
       <View style={styles.emailHeader}>
         <ThemedText style={styles.emailSubject} numberOfLines={1}>
@@ -157,6 +157,6 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
           </ThemedText>
         </View>
       )}
-    </TouchableOpacity>
+    </RobustPressable>
   );
 }
