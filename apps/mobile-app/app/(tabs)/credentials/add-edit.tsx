@@ -5,7 +5,7 @@ import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-rout
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Resolver, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, TouchableOpacity, Alert, Keyboard, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
+import { StyleSheet, View, Alert, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Toast from 'react-native-toast-message';
 
@@ -28,6 +28,7 @@ import LoadingOverlay from '@/components/LoadingOverlay';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { AliasVaultToast } from '@/components/Toast';
+import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
@@ -536,51 +537,44 @@ export default function AddEditCredentialScreen() : React.ReactNode {
 
   // Set header buttons
   useEffect(() => {
-    if (Platform.OS === 'ios') {
-      navigation.setOptions({
+    navigation.setOptions({
+      /**
+       * Header left button (iOS only).
+       */
+      ...(Platform.OS === 'ios' && {
         /**
-         * Header left button.
+         *
          */
         headerLeft: () => (
-          <TouchableOpacity
+          <RobustPressable
             onPress={() => router.back()}
             style={styles.headerLeftButton}
+            accessibilityRole="button"
+            accessibilityLabel="Cancel"
           >
             <ThemedText style={styles.headerLeftButtonText}>{t('common.cancel')}</ThemedText>
-          </TouchableOpacity>
+          </RobustPressable>
         ),
-        /**
-         * Header right button.
-         */
-        headerRight: () => (
-          <TouchableOpacity
-            onPress={handleSubmit(onSubmit)}
-            style={[styles.headerRightButton, isSaveDisabled && styles.headerRightButtonDisabled]}
-            disabled={isSaveDisabled}
-          >
-            <MaterialIcons name="save" size={22} color={colors.primary} />
-          </TouchableOpacity>
-        ),
-      });
-    } else {
-      navigation.setOptions({
-        /**
-         * Header right button.
-         */
-        headerRight: () => (
-          <Pressable
-            onPressIn={handleSubmit(onSubmit)}
-            android_ripple={{ color: 'lightgray' }}
-            pressRetentionOffset={100}
-            hitSlop={100}
-            style={[styles.headerRightButton, isSaveDisabled && styles.headerRightButtonDisabled]}
-            disabled={isSaveDisabled}
-          >
-            <MaterialIcons name="save" size={24} color={colors.primary} />
-          </Pressable>
-        ),
-      });
-    }
+      }),
+      /**
+       * Header right button.
+       */
+      headerRight: () => (
+        <RobustPressable
+          onPress={handleSubmit(onSubmit)}
+          style={[styles.headerRightButton, isSaveDisabled && styles.headerRightButtonDisabled]}
+          disabled={isSaveDisabled}
+          accessibilityRole="button"
+          accessibilityLabel="Save credential"
+        >
+          <MaterialIcons 
+            name="save" 
+            size={Platform.OS === 'android' ? 24 : 22} 
+            color={colors.primary} 
+          />
+        </RobustPressable>
+      ),
+    });
   }, [navigation, mode, handleSubmit, onSubmit, colors.primary, isEditMode, router, styles.headerLeftButton, styles.headerLeftButtonText, styles.headerRightButton, styles.headerRightButtonDisabled, isSaveDisabled, t]);
 
   return (
@@ -602,9 +596,11 @@ export default function AddEditCredentialScreen() : React.ReactNode {
           >
             {!isEditMode && (
               <View style={styles.modeSelector}>
-                <TouchableOpacity
+                <RobustPressable
                   style={[styles.modeButton, mode === 'random' && styles.modeButtonActive]}
                   onPress={() => setMode('random')}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: mode === 'random' }}
                 >
                   <MaterialIcons
                     name="auto-fix-high"
@@ -614,10 +610,12 @@ export default function AddEditCredentialScreen() : React.ReactNode {
                   <ThemedText style={[styles.modeButtonText, mode === 'random' && styles.modeButtonTextActive]}>
                     {t('credentials.randomAlias')}
                   </ThemedText>
-                </TouchableOpacity>
-                <TouchableOpacity
+                </RobustPressable>
+                <RobustPressable
                   style={[styles.modeButton, mode === 'manual' && styles.modeButtonActive]}
                   onPress={() => setMode('manual')}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: mode === 'manual' }}
                 >
                   <MaterialIcons
                     name="person"
@@ -627,7 +625,7 @@ export default function AddEditCredentialScreen() : React.ReactNode {
                   <ThemedText style={[styles.modeButtonText, mode === 'manual' && styles.modeButtonTextActive]}>
                     {t('credentials.manual')}
                   </ThemedText>
-                </TouchableOpacity>
+                </RobustPressable>
               </View>
             )}
 
@@ -702,10 +700,15 @@ export default function AddEditCredentialScreen() : React.ReactNode {
 
                 <View style={styles.section}>
                   <ThemedText style={styles.sectionTitle}>{t('credentials.alias')}</ThemedText>
-                  <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRandomAlias}>
+                  <RobustPressable 
+                    style={styles.generateButton} 
+                    onPress={handleGenerateRandomAlias}
+                    accessibilityRole="button"
+                    accessibilityLabel="Generate random alias"
+                  >
                     <MaterialIcons name="auto-fix-high" size={20} color="#fff" />
                     <ThemedText style={styles.generateButtonText}>{t('credentials.generateRandomAlias')}</ThemedText>
-                  </TouchableOpacity>
+                  </RobustPressable>
                   <ValidatedFormField
                     control={control}
                     name="Alias.FirstName"
@@ -758,12 +761,14 @@ export default function AddEditCredentialScreen() : React.ReactNode {
                 </View>
 
                 {isEditMode && (
-                  <TouchableOpacity
+                  <RobustPressable
                     style={styles.deleteButton}
                     onPress={handleDelete}
+                    accessibilityRole="button"
+                    accessibilityLabel="Delete credential"
                   >
                     <ThemedText style={styles.deleteButtonText}>{t('credentials.deleteCredential')}</ThemedText>
-                  </TouchableOpacity>
+                  </RobustPressable>
                 )}
               </>
             )}
