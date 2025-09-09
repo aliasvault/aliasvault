@@ -29,5 +29,35 @@ else
 EOF
 fi
 
-# Start nginx
-nginx -g "daemon off;"
+# Start nginx and check if it started successfully
+nginx
+if [ $? -ne 0 ]; then
+    echo "Failed to start nginx, exiting..."
+    exit 1
+fi
+
+# Start certificate watcher if Let's Encrypt is enabled
+if [ "${LETSENCRYPT_ENABLED}" = "true" ]; then
+    echo "Starting certificate watcher for automatic nginx reload..."
+
+    # Watch for changes and reload nginx
+    while true; do
+        # Watch the entire Let's Encrypt live directory for any certificate changes
+        inotifywait -e modify,create,delete,move -r /etc/nginx/ssl-letsencrypt 2>/dev/null
+
+        # Wait a moment for all certificate files to be written
+        sleep 2
+
+        echo "Certificate change detected, reloading nginx..."
+        nginx -s reload 2>&1
+    done &
+fi
+
+# Keep the container running and monitor nginx
+while true; do
+    if ! pgrep nginx > /dev/null; then
+        echo "Nginx is not running, exiting..."
+        exit 1
+    fi
+    sleep 10
+done

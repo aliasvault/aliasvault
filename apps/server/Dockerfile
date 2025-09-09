@@ -7,8 +7,8 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0"
 LABEL org.opencontainers.image.title="AliasVault Reverse Proxy"
 LABEL org.opencontainers.image.description="Nginx reverse proxy for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)"
 
-# Install OpenSSL
-RUN apk add --no-cache openssl
+# Install OpenSSL and inotify-tools for certificate watching
+RUN apk add --no-cache openssl inotify-tools
 
 # Copy configuration and entrypoint script
 COPY apps/server/nginx.conf /etc/nginx/nginx.conf
