@@ -1,7 +1,10 @@
 ---
 layout: default
 title: Update
-parent: Server Installation
+parent: Install Script
+redirect_from:
+  - /installation/update
+  - /installation/update.html
 nav_order: 3
 ---
 
@@ -56,5 +59,5 @@ To install a specific version and skip the automatic version checks, run the ins
 ./install.sh install <version>
 
 # Example:
-./install.sh install 0.7.0
+./install.sh install 0.22.0
 ```

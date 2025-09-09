@@ -9,11 +9,11 @@ permalink: /
 # AliasVault Documentation
 {: .fs-9 }
 
-A self-hostable, end-to-end encrypted password manager with a built-in alias generator and email server.
+A privacy-first password manager with built-in email aliasing. Fully encrypted and self-hostable.
 
 {: .fs-6 .fw-300 }
 
-[Server Installation](./installation/install){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
+[Self-host Install](./installation){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
 [View on GitHub](https://github.com/aliasvault/aliasvault){: .btn .fs-5 .mb-4 .mb-md-0 }
 
 ---
@@ -37,7 +37,7 @@ All data is end-to-end encrypted on the client. Your master password never leave
 Generate virtual email addresses for each identity. Emails sent to these addresses are instantly visible in the AliasVault app.
 
 ### Virtual Identities
-Create separate identities for different purposes, each with its own email aliases and credentials.
+Create separate identities for different purposes, each with its own email aliases.
 
 ---
 

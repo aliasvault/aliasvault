@@ -65,33 +65,31 @@ AliasVault is available on:
 [<img width="700" alt="Screenshot of AliasVault" src="docs/assets/img/screenshot.png">](https://app.aliasvault.net)
 
 ## Self-hosting
-For full control over your own data you can self-host and install AliasVault on your own servers.
+> [!NOTE]
+> **Requirements:** 1 vCPU, 1GB RAM, 16GB disk, Docker ≥ 20.10, 64-bit Linux
 
-### Install using install script
+AliasVault can be self-hosted on your own servers using two different installation methods. Both use Docker, but they differ in how much is automated versus how much you manage yourself.
 
-This method uses pre-built Docker images and works on minimal hardware specifications:
+- **Option 1: Install Script** - Managed solution with automatic SSL (recommended for VPS/cloud)
 
-- 64-bit Linux VM (Ubuntu/AlmaLinux) or Raspberry Pi, with root access
-- Minimum: 1 vCPU, 1GB RAM, 16GB disk
-- Docker ≥ 20.10 and Docker Compose ≥ 2.0
+- **Option 2: Docker Compose** - Single container with manual setup for use with existing SSL infrastructure (NAS, homelab)
 
+### Quick Start (Install Script)
 ```bash
-# Download install script from latest stable release
+# Download and run install script
 curl -L -o install.sh https://github.com/aliasvault/aliasvault/releases/latest/download/install.sh
 
 # Make install script executable and run it. This will create the .env file, pull the Docker images, and start the AliasVault containers.
 chmod +x install.sh
+
 ./install.sh install
 ```
 
-The install script will output the URL where the app is available. By default this is:
-- Client: https://localhost
-- Admin portal: https://localhost/admin
+For other installation methods and more detailed steps, please read the [full installation guide](https://docs.aliasvault.net/installation) in the official docs.
 
-> Note: If you want to change the default AliasVault ports you can do so in the `.env` file.
-
-## Technical documentation
+## Documentation
 For more information about the installation process, manual setup instructions and other topics, please see the official documentation website:
+
 - [Documentation website (docs.aliasvault.net) 📚](https://docs.aliasvault.net)
 
 ## Security Architecture
@@ -135,7 +133,7 @@ Core features that are being worked on:
 👉 [View the full AliasVault roadmap here](https://github.com/aliasvault/aliasvault/issues/731)
 
 ### Got feedback or ideas?
-Feel free to open an issue or join our [Discord](https://discord.gg/DsaXMTEtpF)! Contributions are warmly welcomed—whether in feature development, testing, or spreading the word. Get in touch on Discord if you're interested in contributing.
+Feel free to open an issue or discussion on GitHub. We warmly welcome all contributions: whether it’s translating, testing, helping to build features, sharing feedback - or helping spread the word about AliasVault. Every bit of support helps the project grow, so don’t hesitate to jump in and [say hi to us on Discord](https://discord.gg/DsaXMTEtpF)!
 
 ### Support the mission
 Your donation helps me dedicate more time and resources to improving AliasVault, making the internet safer for everyone!

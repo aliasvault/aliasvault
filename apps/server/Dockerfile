@@ -10,8 +10,8 @@ LABEL org.opencontainers.image.description="Nginx reverse proxy for AliasVault. 
 # Install OpenSSL and inotify-tools for certificate watching
 RUN apk add --no-cache openssl inotify-tools
 
-# Copy configuration and entrypoint script
-COPY apps/server/nginx.conf /etc/nginx/nginx.conf
+# Copy all nginx configurations and entrypoint script
+COPY apps/server/nginx*.conf /etc/nginx/
 COPY apps/server/status.html /usr/share/nginx/html/status.html
 COPY apps/server/entrypoint.sh /docker-entrypoint.sh
 

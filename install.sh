@@ -2727,9 +2727,10 @@ handle_db_export() {
         printf "Options:\n" >&2
         printf "  --dev    Export from development database\n" >&2
         printf "\n" >&2
-        printf "Example:\n" >&2
+        printf "Examples:\n" >&2
         printf "  ./install.sh db-export > my_backup_$(date +%Y%m%d).sql.gz\n" >&2
         printf "  ./install.sh db-export --dev > my_dev_backup_$(date +%Y%m%d).sql.gz\n" >&2
+        printf "\n" >&2
         exit 1
     fi
 
@@ -2791,7 +2792,15 @@ handle_db_import() {
 
     # Check if we're getting input from a pipe
     if [ -t 0 ]; then
-        printf "Usage: ./install.sh db-import [--dev] < backup.sql.gz\n"
+        printf "Usage: ./install.sh db-import [--dev] < backup_file\n"
+        printf "\n"
+        printf "Options:\n"
+        printf "  --dev    Import to development database\n"
+        printf "\n"
+        printf "Examples:\n"
+        printf "  ./install.sh db-import < backup.sql.gz    # Import gzipped backup\n"
+        printf "  ./install.sh db-import < backup.sql       # Import plain SQL backup\n"
+        printf "  ./install.sh db-import --dev < backup.sql # Import to dev database\n"
         exit 1
     fi
 
@@ -2840,15 +2849,25 @@ handle_db_import() {
     fi
     printf "database...${NC}\n"
 
-    # Create a temporary file to verify the gzip input
+    # Create a temporary file to store the input
     temp_file=$(mktemp)
     cat <&3 > "$temp_file"  # Read from fd 3 instead of stdin
     exec 3<&-  # Close fd 3
 
-    if ! gzip -t "$temp_file" 2>/dev/null; then
-        printf "${RED}Error: Input is not a valid gzip file${NC}\n"
-        rm "$temp_file"
-        exit 1
+    # Detect if the file is gzipped or plain SQL
+    is_gzipped=false
+    if gzip -t "$temp_file" 2>/dev/null; then
+        is_gzipped=true
+        printf "${CYAN}> Detected gzipped SQL backup${NC}\n"
+    else
+        # Check if it looks like SQL (basic validation)
+        if head -n 10 "$temp_file" | grep -qE '(^--|^CREATE |^INSERT |^ALTER |^DROP |^\\\\connect|^SET |^COMMENT |^GRANT |^REVOKE )'; then
+            printf "${CYAN}> Detected plain SQL backup${NC}\n"
+        else
+            printf "${RED}Error: Input is neither a valid gzip file nor a SQL file${NC}\n"
+            rm "$temp_file"
+            exit 1
+        fi
     fi
 
     if [ "$DEV_DB" = true ]; then
@@ -2856,24 +2875,40 @@ handle_db_import() {
             docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" && \
             docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" && \
             docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" && \
-            gunzip -c "$temp_file" | docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault aliasvault
+            if [ "$is_gzipped" = true ]; then
+                gunzip -c "$temp_file" | docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault aliasvault
+            else
+                cat "$temp_file" | docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault aliasvault
+            fi
         else
             docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" > /dev/null 2>&1 && \
             docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" > /dev/null 2>&1 && \
             docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" > /dev/null 2>&1 && \
-            gunzip -c "$temp_file" | docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault aliasvault > /dev/null 2>&1
+            if [ "$is_gzipped" = true ]; then
+                gunzip -c "$temp_file" | docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault aliasvault > /dev/null 2>&1
+            else
+                cat "$temp_file" | docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev psql -U aliasvault aliasvault > /dev/null 2>&1
+            fi
         fi
     else
         if [ "$VERBOSE" = true ]; then
             docker compose exec -T postgres psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" && \
             docker compose exec -T postgres psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" && \
             docker compose exec -T postgres psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" && \
-            gunzip -c "$temp_file" | docker compose exec -T postgres psql -U aliasvault aliasvault
+            if [ "$is_gzipped" = true ]; then
+                gunzip -c "$temp_file" | docker compose exec -T postgres psql -U aliasvault aliasvault
+            else
+                cat "$temp_file" | docker compose exec -T postgres psql -U aliasvault aliasvault
+            fi
         else
             docker compose exec -T postgres psql -U aliasvault postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname = 'aliasvault' AND pid <> pg_backend_pid();" > /dev/null 2>&1 && \
             docker compose exec -T postgres psql -U aliasvault postgres -c "DROP DATABASE IF EXISTS aliasvault;" > /dev/null 2>&1 && \
             docker compose exec -T postgres psql -U aliasvault postgres -c "CREATE DATABASE aliasvault OWNER aliasvault;" > /dev/null 2>&1 && \
-            gunzip -c "$temp_file" | docker compose exec -T postgres psql -U aliasvault aliasvault > /dev/null 2>&1
+            if [ "$is_gzipped" = true ]; then
+                gunzip -c "$temp_file" | docker compose exec -T postgres psql -U aliasvault aliasvault > /dev/null 2>&1
+            else
+                cat "$temp_file" | docker compose exec -T postgres psql -U aliasvault aliasvault > /dev/null 2>&1
+            fi
         fi
     fi
 

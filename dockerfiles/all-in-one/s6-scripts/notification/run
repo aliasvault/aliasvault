@@ -37,16 +37,16 @@ if [ "$VERBOSITY" -le 1 ]; then
             # Admin password hash exists - show the legacy warning
             echo "🔑 Admin Login:"
             echo "  • Username: admin"
-            echo "  • Password: (previously set - to reset the admin password, login to this container via \`docker exec -it [container-name] /bin/bash\` and run: reset-admin-password.sh)"
+            echo "  • Password: (previously set - to reset the admin password, login to this container via \`docker exec -it aliasvault /bin/bash\` and run: aliasvault reset-admin-password)"
             echo ""
         else
             # No admin password hash file - show setup instructions
             echo "🔑 Admin Setup:"
             echo "  • Admin user is not configured by default"
             echo "  • To configure admin access:"
-            echo "    1. docker exec -it [container-name] /bin/bash"
-            echo "    2. reset-admin-password.sh"
-            echo "    3. Restart the container"
+            echo "    1. $ docker exec -it aliasvault /bin/bash"
+            echo "    2. $ aliasvault reset-admin-password"
+            echo "    3. $ docker compose restart"
             echo ""
         fi
 

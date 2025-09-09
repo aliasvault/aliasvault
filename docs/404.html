@@ -1,0 +1,68 @@
+---
+layout: default
+title: 404 - Page not found
+permalink: /404.html
+nav_exclude: true
+search_exclude: true
+---
+
+<style>
+  .error-404 {
+    text-align: center;
+    padding: 4rem 2rem;
+  }
+  .error-404 h1 {
+    font-size: 6rem;
+    color: #f49541;
+    margin-bottom: 1rem;
+  }
+  .error-404 h2 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #f8f9fa;
+  }
+  .error-404 p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    color: #d1d5db;
+  }
+  .error-404 .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: #d68338;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+  }
+  .error-404 .btn:hover {
+    background-color: #f49541;
+  }
+  .error-404 .links {
+    margin-top: 2rem;
+  }
+  .error-404 .links a {
+    margin: 0 1rem;
+    color: #f49541;
+    text-decoration: underline;
+  }
+  .error-404 .links a:hover {
+    color: #ffd5a8;
+  }
+</style>
+
+<div class="error-404">
+  <h1>404</h1>
+  <h2>Page Not Found</h2>
+  <p>The page you're looking for doesn't exist or may have been moved.</p>
+  <p>This could happen if the documentation structure has been reorganized or the page has been renamed.</p>
+  
+  <a href="{{ '/' | relative_url }}" class="btn">Go to Home</a>
+  
+  <div class="links">
+    <p>Or try these helpful links:</p>
+    <a href="{{ '/installation/' | relative_url }}">Installation Guide</a>
+    <a href="{{ '/browser-extension/' | relative_url }}">Browser Extension</a>
+    <a href="{{ '/mobile-app/' | relative_url }}">Mobile App</a>
+  </div>
+</div>

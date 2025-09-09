@@ -284,6 +284,7 @@ PLATFORMS
 
 DEPENDENCIES
   github-pages
+  jekyll-sitemap
   just-the-docs
 
 BUNDLED WITH

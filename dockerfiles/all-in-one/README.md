@@ -18,9 +18,7 @@ docker build -f dockerfiles/all-in-one/Dockerfile -t aliasvault-allinone:local .
 docker run -d \
   --name aliasvault \
   -p 80:80 \
-  -p 443:443 \
   -v ./database:/database \
-  -v ./certificates:/certificates \
   -v ./logs:/logs \
   -v ./secrets:/secrets \
   aliasvault-allinone:local

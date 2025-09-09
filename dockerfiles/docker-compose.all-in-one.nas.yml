@@ -1,8 +1,10 @@
 # Docker Compose file for the AliasVault all-in-one container
 #
-# This is the general purpose template which uses local folder bind mounts for the database, logs and secrets.
-# - For NAS devices, its safer to use the docker-compose.all-in-one.nas.yml template instead.
+# Specific for NAS devices:
+# - Uses custom HTTP ports by default to avoid conflicts
+# - Uses named bind mounts for the database, logs and secrets to ensure they are persisted
 #
+version: "3"
 services:
   aliasvault:
     image: ghcr.io/aliasvault/aliasvault:latest
@@ -10,15 +12,15 @@ services:
     restart: unless-stopped
 
     ports:
-      - "80:80"
-      - "443:443"
+      - "1080:80"
+      - "1443:443"
       - "25:25"
       - "587:587"
 
     volumes:
-      - ./database:/database
-      - ./logs:/logs
-      - ./secrets:/secrets
+      - avdata:/database
+      - avlogs:/logs
+      - avsecrets:/secrets
 
     environment:
       PUBLIC_REGISTRATION_ENABLED: "true"
@@ -26,3 +28,8 @@ services:
       FORCE_HTTPS_REDIRECT: "false"
       SUPPORT_EMAIL: ""
       PRIVATE_EMAIL_DOMAINS: ""
+
+volumes:
+  avdata:
+  avlogs:
+  avsecrets:

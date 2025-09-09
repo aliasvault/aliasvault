@@ -8,7 +8,7 @@
     <div class="container mx-auto px-4 py-4">
         <div class="flex flex-col lg:flex-row justify-between items-center">
             <p class="text-sm text-center text-gray-500 mb-4 lg:mb-0">
-                © 2024 <span>@AppInfo.ApplicationName v@(AppInfo.GetFullVersion())</span>. @Localizer["CopyrightText"]
+                © @(DateTime.Now.Year) <span>@AppInfo.ApplicationName v@(AppInfo.GetFullVersion())</span>. @Localizer["CopyrightText"]
             </p>
             <div class="hidden lg:block text-center text-gray-400 text-sm">@_randomQuote</div>
             <ul class="flex flex-wrap items-center justify-center">

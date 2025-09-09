@@ -19,6 +19,16 @@ ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDS
 ssl_prefer_server_ciphers off;
 SSLEOF
 
+# Configure nginx based on FORCE_HTTPS_REDIRECT environment variable
+FORCE_HTTPS_REDIRECT=${FORCE_HTTPS_REDIRECT:-false}
+if [[ "${FORCE_HTTPS_REDIRECT}" == "true" ]]; then
+    echo "Configuring nginx with HTTPS-only (443) - redirects HTTP to HTTPS"
+    cp /etc/nginx/nginx-443.conf /etc/nginx/nginx.conf
+else
+    echo "Configuring nginx with HTTP and HTTPS support (80+443)"
+    cp /etc/nginx/nginx-80-443.conf /etc/nginx/nginx.conf
+fi
+
 echo "Starting Nginx reverse proxy..."
 
 # Set nginx error log level based on verbosity

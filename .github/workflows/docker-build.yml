@@ -109,8 +109,8 @@ jobs:
           echo "🔧 Testing admin password reset flow..."
 
           # Run the reset password script with auto-confirm
-          echo "Running reset-admin-password.sh script..."
-          password_output=$(docker exec aliasvault-test reset-admin-password.sh -y 2>&1)
+          echo "Running reset-admin-password command..."
+          password_output=$(docker exec aliasvault-test aliasvault reset-admin-password -y 2>&1)
           echo "Script output:"
           echo "$password_output"
 

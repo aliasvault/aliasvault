@@ -1,7 +1,10 @@
 ---
 layout: default
 title: Troubleshooting
-parent: Server Installation
+parent: Install Script
+redirect_from:
+  - /installation/troubleshooting
+  - /installation/troubleshooting.html
 nav_order: 5
 ---
 
@@ -42,10 +45,10 @@ docker compose restart [container-name-here]
 ---
 
 ## Check AliasVault Text Logs
-All AliasVault services log information and errors to text files. These files are located in the `logs` directory. You can check the logs of a specific container by running the following command:
+All AliasVault services log information and errors to text files. These files are located in the `logs` directory. You can check the logs of a specific service by running the following command:
 
 ```bash
-cat logs/[container-name-here].log
+cat logs/[service-name-here].txt
 ```
 
 ---
@@ -70,13 +73,13 @@ docker compose ps
 docker compose logs postgres
 ```
 
-### 2. SSL Certificate Issues
+### 2. TLS/SSL Certificate Issues
 
 **Symptoms:**
-- Browser shows SSL errors
+- Browser shows TLS/SSL errors
 
 **Steps:**
-1. Check the certbot container logs if SSL certificates are being correctly renewed:
+1. Check the certbot container logs if TLS/SSL certificates are being correctly renewed:
 ```bash
 docker compose logs certbot
 ```
@@ -86,7 +89,7 @@ docker compose logs certbot
 docker compose logs reverse-proxy
 ```
 
-3. In case the SSL certificates are being correctly renewed, but the browser still shows SSL errors, try to restart AliasVault manually in order to force the NGINX container to reload the SSL certificates:
+3. In case the SSL certificates are being correctly renewed, but the browser still shows TLS/SSL errors, try to restart AliasVault manually in order to force the NGINX container to reload the TLS/SSL certificates:
 ```bash
 ./install.sh restart
 ```
@@ -98,7 +101,7 @@ If you are not receiving emails on your aliases, check the following:
 - Check your server's firewall settings
 - Verify that your ISP/hosting provider allows SMTP traffic
 
-Refer to the [installation guide](./install.md) for more information on how to configure your DNS records and ports.
+Refer to the [installation guide](./#3-email-server-setup) for more information on how to configure your DNS records and ports.
 
 
 ### 4. Forgot AliasVault Admin Password
@@ -113,4 +116,4 @@ If you have lost your admin password, you can reset it by running the install sc
 ## Other Issues
 If you encounter any other issues not mentioned here and need help, please join our Discord server or create an issue on the GitHub repository and we will be happy to help you out.
 
-Find all contact information on the contact page of our website: [https://aliasvault.net/contact](https://aliasvault.net/contact)
+Find all contact information on the contact page of our website: [https://www.aliasvault.net/contact](https://www.aliasvault.net/contact)

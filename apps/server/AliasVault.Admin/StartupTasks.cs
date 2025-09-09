@@ -48,7 +48,7 @@ public static class StartupTasks
         if (string.IsNullOrEmpty(config.AdminPasswordHash))
         {
             Console.WriteLine("Admin password hash not configured - skipping admin user creation.");
-            Console.WriteLine("Run 'reset-admin-password.sh' to configure the admin password.");
+            Console.WriteLine("Run '$ aliasvault reset-admin-password' to configure the admin password.");
             return;
         }
 

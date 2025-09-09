@@ -1,9 +1,34 @@
 /**
+ * Custom error class for crypto availability issues
+ */
+class CryptoNotAvailableError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'CryptoNotAvailableError';
+        // Prevent stack trace from being captured
+        this.stack = '';
+    }
+}
+
+/**
+ * Check if crypto API is available and throw user-friendly error if not.
+ */
+function checkCryptoAvailable() {
+    if (!window.crypto || !window.crypto.subtle) {
+        const error = new CryptoNotAvailableError("Cryptographic operations are not available. Please ensure you are accessing AliasVault over HTTPS, as this is required for security features to work properly.");
+        console.error(error.message);
+        throw error;
+    }
+}
+
+/**
  * AES (symmetric) encryption and decryption functions.
  * @type {{encrypt: (function(*, *): Promise<string>), decrypt: (function(*, *): Promise<string>), decryptBytes: (function(*, *): Promise<Uint8Array>)}}
  */
 window.cryptoInterop = {
     encrypt: async function (plaintext, base64Key) {
+        checkCryptoAvailable();
+        
         const key = await window.crypto.subtle.importKey(
             "raw",
             Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
@@ -36,6 +61,8 @@ window.cryptoInterop = {
         );
     },
     decrypt: async function (base64Ciphertext, base64Key) {
+        checkCryptoAvailable();
+        
         const key = await window.crypto.subtle.importKey(
             "raw",
             Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
@@ -61,6 +88,8 @@ window.cryptoInterop = {
         return decoder.decode(decrypted);
     },
     decryptBytes: async function (base64Ciphertext, base64Key) {
+        checkCryptoAvailable();
+        
         const key = await window.crypto.subtle.importKey(
             "raw",
             Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
@@ -96,6 +125,8 @@ window.rsaInterop = {
      * @returns {Promise<{publicKey: string, privateKey: string}>} A promise that resolves to an object containing the public and private keys as JWK strings.
      */
     generateRsaKeyPair : async function() {
+        checkCryptoAvailable();
+        
         const keyPair = await window.crypto.subtle.generateKey(
             {
                 name: "RSA-OAEP",
@@ -122,6 +153,8 @@ window.rsaInterop = {
      * @returns {Promise<string>} A promise that resolves to the encrypted data as a base64-encoded string.
      */
     encryptWithPublicKey : async function(plaintext, publicKey) {
+        checkCryptoAvailable();
+        
         const publicKeyObj = await window.crypto.subtle.importKey(
             "jwk",
             JSON.parse(publicKey),
@@ -151,6 +184,8 @@ window.rsaInterop = {
      * @returns {Promise<Uint8Array>} A promise that resolves to the decrypted data as a Uint8Array.
      */
     decryptWithPrivateKey: async function(ciphertext, privateKey) {
+        checkCryptoAvailable();
+        
         try {
             // Parse the private key
             let parsedPrivateKey = JSON.parse(privateKey);

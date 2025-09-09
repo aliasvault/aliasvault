@@ -58,8 +58,7 @@ gunzip < aliasvault.sql.gz | docker compose exec -iT postgres psql -U aliasvault
 ```
 
 ### Change master password
-By default during initial installation the PostgreSQL master password is set to a random string that is
-stored in the `.env` file with the `POSTGRES_PASSWORD` variable.
+By default during initial installation the PostgreSQL master password is set to a random string that is stored in the `./secrets/postgres_password` secret file.
 
 If you wish to change the master password, you can do so by running the following command:
 
@@ -74,7 +73,7 @@ If you wish to change the master password, you can do so by running the followin
     ```
 4. Press Enter to confirm the changes.
 5. Exit the PostgreSQL shell by running `\q`.
-6. Manually update the `.env` file variable `POSTGRES_PASSWORD` with the new password.
+6. Manually update the `./secrets/postgres_password` secret file contents with the new password.
 7. Restart the AliasVault containers by running the following command:
     ```bash
     docker compose restart

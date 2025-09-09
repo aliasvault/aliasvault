@@ -18,24 +18,39 @@ COPY shared/ ./shared/
 
 # Install required .NET workloads and restore packages once for the entire solution
 WORKDIR /src/apps/server
+
+# Install workloads and restore packages once for the entire solution
 RUN dotnet workload install wasm-tools && \
     dotnet restore aliasvault.sln
 
-# Build all applications
+# Build each application in separate layers to avoid lock contention
+
+# Build API
 RUN dotnet publish AliasVault.Api/AliasVault.Api.csproj \
-        -c Release -o /app/api --no-restore && \
-    dotnet publish AliasVault.Client/AliasVault.Client.csproj \
-        -c Release -o /app/client --no-restore && \
-    dotnet publish AliasVault.Admin/AliasVault.Admin.csproj \
-        -c Release -o /app/admin --no-restore && \
-    dotnet publish Services/AliasVault.SmtpService/AliasVault.SmtpService.csproj \
-        -c Release -o /app/smtp --no-restore && \
-    dotnet publish Services/AliasVault.TaskRunner/AliasVault.TaskRunner.csproj \
-        -c Release -o /app/taskrunner --no-restore && \
-    dotnet publish Utilities/AliasVault.InstallCli/AliasVault.InstallCli.csproj \
-        -c Release -o /app/installcli --no-restore && \
-    # Clean up .NET debug files and unnecessary files
-    find /app -name "*.pdb" -delete && \
+        -c Release -o /app/api --no-restore
+
+# Build Client (contains WASM which can be slow)
+RUN dotnet publish AliasVault.Client/AliasVault.Client.csproj \
+        -c Release -o /app/client --no-restore
+
+# Build Admin
+RUN dotnet publish AliasVault.Admin/AliasVault.Admin.csproj \
+        -c Release -o /app/admin --no-restore
+
+# Build SMTP Service
+RUN dotnet publish Services/AliasVault.SmtpService/AliasVault.SmtpService.csproj \
+        -c Release -o /app/smtp --no-restore
+
+# Build Task Runner
+RUN dotnet publish Services/AliasVault.TaskRunner/AliasVault.TaskRunner.csproj \
+        -c Release -o /app/taskrunner --no-restore
+
+# Build Install CLI
+RUN dotnet publish Utilities/AliasVault.InstallCli/AliasVault.InstallCli.csproj \
+        -c Release -o /app/installcli --no-restore
+
+# Clean up .NET debug files and unnecessary files
+RUN find /app -name "*.pdb" -delete && \
     find /app -name "*.xml" -not -name "*.deps.json" -delete && \
     find /app -name "*.Development.json" -delete && \
     find /app -name "web.config" -delete
@@ -109,31 +124,33 @@ RUN apt-get update && \
         /app/taskrunner \
         /app/installcli \
         /database \
-        /certificates/ssl \
         /logs/postgres \
-        /etc/nginx/ssl \
         /var/run/postgresql \
-        /var/www/certbot \
         /etc/s6-overlay/s6-rc.d/user/contents.d
 
 # Copy built applications and all configuration files from builder stage
 COPY --from=dotnet-builder /app /app
 
-# Copy configuration files and scripts directly to their destinations
-COPY dockerfiles/all-in-one/reset-admin-password.sh /usr/local/bin/reset-admin-password.sh
+# Copy all scripts from scripts directory to /usr/local/bin
+COPY dockerfiles/all-in-one/scripts/ /usr/local/bin/
 COPY apps/server/AliasVault.Client/nginx.conf /app/client/nginx.conf
-COPY apps/server/nginx.conf /etc/nginx/nginx.conf
+COPY dockerfiles/all-in-one/config/nginx-80-443.conf /etc/nginx/nginx-80-443.conf
+COPY dockerfiles/all-in-one/config/nginx-443.conf /etc/nginx/nginx-443.conf
 COPY apps/server/status.html /usr/share/nginx/html/status.html
 COPY dockerfiles/all-in-one/s6-scripts /etc/s6-overlay/s6-rc.d/
 
 # Copy InstallCLI to /usr/local/bin and configure everything
 RUN cp -r /app/installcli /usr/local/bin/aliasvault-cli && \
-    chmod +x /usr/local/bin/aliasvault-cli/AliasVault.InstallCli \
-             /usr/local/bin/reset-admin-password.sh && \
+    chmod +x /usr/local/bin/aliasvault-cli/AliasVault.InstallCli && \
     ln -s /usr/local/bin/aliasvault-cli/AliasVault.InstallCli /usr/local/bin/aliasvault-cli.sh && \
-    sed -i 's/server client:3000/server localhost:3000/g; \
-            s/server api:3001/server localhost:3001/g; \
-            s/server admin:3002/server localhost:3002/g' /etc/nginx/nginx.conf && \
+    # Make all scripts executable and create symlinks without .sh extension
+    for script in /usr/local/bin/*.sh; do \
+        if [ -f "$script" ]; then \
+            chmod +x "$script" && \
+            basename="$(basename "$script" .sh)" && \
+            ln -sf "$script" "/usr/local/bin/$basename"; \
+        fi; \
+    done && \
     find /etc/s6-overlay/s6-rc.d -type f \( -name "run" -o -name "up" -o -name "script" \) -exec chmod +x {} \; && \
     cd /etc/s6-overlay/s6-rc.d/user/contents.d && \
     touch init postgres api client admin smtp taskrunner nginx notification && \
@@ -150,11 +167,12 @@ ENV ALIASVAULT_VERBOSITY=0 \
     POSTGRES_PORT=5432 \
     POSTGRES_USER=aliasvault \
     POSTGRES_DATABASE=aliasvault \
+    FORCE_HTTPS_REDIRECT=false \
     S6_CMD_WAIT_FOR_SERVICES_MAXTIME=0 \
     S6_VERBOSITY=0
 
 EXPOSE 80 443 25 587
-VOLUME ["/database", "/certificates", "/logs", "/secrets"]
+VOLUME ["/database", "/logs", "/secrets"]
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
-    CMD curl -f -k https://localhost/api || exit 1
+    CMD curl -f http://localhost/api || exit 1
 ENTRYPOINT ["/init"]

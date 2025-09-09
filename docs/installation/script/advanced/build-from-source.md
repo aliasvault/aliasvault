@@ -2,6 +2,7 @@
 layout: default
 title: Build from Source
 parent: Advanced
+grand_parent: Install Script
 nav_order: 3
 ---
 
@@ -18,13 +19,13 @@ Building from source requires more resources:
 ## Steps
 1. Clone the repository
 ```bash
-git clone https://github.com/aliasvault/aliasvault.git
-cd aliasvault
+$ git clone https://github.com/aliasvault/aliasvault.git
+$ cd aliasvault
 ```
 2. Make the build script executable and run it. This will create the .env file, build the Docker images locally from source, and start the AliasVault containers. Follow the on-screen prompts to configure AliasVault.
 ```bash
-chmod +x install.sh
-./install.sh build
+$ chmod +x install.sh
+$ ./install.sh build
 ```
 > **Note:** The complete build process can take a while depending on your hardware (5-15 minutes).
 

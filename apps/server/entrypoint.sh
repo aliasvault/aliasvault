@@ -3,6 +3,17 @@
 # Create SSL directory if it doesn't exist
 mkdir -p /etc/nginx/ssl
 
+# Select the appropriate nginx configuration based on FORCE_HTTPS_REDIRECT
+# Default to true (nginx-443.conf) for backward compatibility
+# Only disable redirect if explicitly set to "false"
+if [ "${FORCE_HTTPS_REDIRECT:-true}" = "false" ]; then
+    echo "Using nginx-80-443.conf (HTTP and HTTPS without redirect)"
+    cp /etc/nginx/nginx-80-443.conf /etc/nginx/nginx.conf
+else
+    echo "Using nginx-443.conf (HTTP to HTTPS redirect enabled - default)"
+    cp /etc/nginx/nginx-443.conf /etc/nginx/nginx.conf
+fi
+
 # Generate self-signed SSL certificate if not exists
 if [ ! -f /etc/nginx/ssl/cert.pem ] || [ ! -f /etc/nginx/ssl/key.pem ]; then
     echo "Generating new SSL certificate (10 years validity)..."
