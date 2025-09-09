@@ -3,15 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 60;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		0EF28D873AC559A33A3B178F /* libPods-VaultUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A795EF04BF70F714FA4B0E5 /* libPods-VaultUITests.a */; };
 		1381C2F6D317F2404928BA59 /* libPods-VaultUI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C32D89DCBA51D7C8CDE51DD2 /* libPods-VaultUI.a */; };
-		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
-		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		3D1B0279B0714C8FF732D2D3 /* libPods-AliasVault.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E23F2188770B15FCBFEBC57 /* libPods-AliasVault.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
 		9E8B9B9318C79E9CBB868429 /* libPods-VaultStoreKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D17078F549B652835E3A4AFA /* libPods-VaultStoreKit.a */; };
@@ -27,6 +25,7 @@
 		CE73B3A02DFC8A0C0081B6CB /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = CE73B39F2DFC8A0C0081B6CB /* AppIcon.icon */; };
 		CE9A58FC2DBA982100CB0A4C /* RCTNativeVaultManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = CE9A58FB2DBA982100CB0A4C /* RCTNativeVaultManager.mm */; };
 		CE9A5A022DBAAE5000CB0A4C /* RCTNativeVaultManager.h in Sources */ = {isa = PBXBuildFile; fileRef = CE9A58FA2DBA982100CB0A4C /* RCTNativeVaultManager.h */; };
+		CED3AB3C2E70CF8700F3FDEB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED3AB3B2E70CF8700F3FDEB /* AppDelegate.swift */; };
 		CEE480922DBE86DD00F4A367 /* VaultStoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE480872DBE86DC00F4A367 /* VaultStoreKit.framework */; };
 		CEE4809C2DBE86DD00F4A367 /* VaultStoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE480872DBE86DC00F4A367 /* VaultStoreKit.framework */; };
 		CEE4809D2DBE86DD00F4A367 /* VaultStoreKit.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CEE480872DBE86DC00F4A367 /* VaultStoreKit.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -152,11 +151,8 @@
 		09DFCC3CBA13D19073CBCC7F /* Pods-VaultStoreKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultStoreKit.debug.xcconfig"; path = "Target Support Files/Pods-VaultStoreKit/Pods-VaultStoreKit.debug.xcconfig"; sourceTree = "<group>"; };
 		0E23F2188770B15FCBFEBC57 /* libPods-AliasVault.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AliasVault.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* AliasVault.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AliasVault.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = AliasVault/AppDelegate.h; sourceTree = "<group>"; };
-		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = AliasVault/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = AliasVault/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AliasVault/Info.plist; sourceTree = "<group>"; };
-		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = AliasVault/main.m; sourceTree = "<group>"; };
 		1A927300CBD3BFE2B7A3CA37 /* Pods-VaultUI.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultUI.release.xcconfig"; path = "Target Support Files/Pods-VaultUI/Pods-VaultUI.release.xcconfig"; sourceTree = "<group>"; };
 		238920B861580FF8C96D6B5B /* libPods-PreviewHost.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PreviewHost.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		368EE3A71DE7308558E8E815 /* Pods-VaultStoreKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultStoreKit.release.xcconfig"; path = "Target Support Files/Pods-VaultStoreKit/Pods-VaultStoreKit.release.xcconfig"; sourceTree = "<group>"; };
@@ -187,6 +183,7 @@
 		CE9A58FA2DBA982100CB0A4C /* RCTNativeVaultManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTNativeVaultManager.h; sourceTree = "<group>"; };
 		CE9A58FB2DBA982100CB0A4C /* RCTNativeVaultManager.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTNativeVaultManager.mm; sourceTree = "<group>"; };
 		CE9A5B662DBAE42B00CB0A4C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		CED3AB3B2E70CF8700F3FDEB /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = AliasVault/AppDelegate.swift; sourceTree = "<group>"; };
 		CEE480872DBE86DC00F4A367 /* VaultStoreKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VaultStoreKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEE480912DBE86DD00F4A367 /* VaultStoreKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaultStoreKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEE4816A2DBE8AC800F4A367 /* VaultUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VaultUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -201,7 +198,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		CEE9098F2DA548C7008D568F /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		CEE9098F2DA548C7008D568F /* Exceptions for "Autofill" folder in "Autofill" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -211,12 +208,73 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		CE59C7602E4F47FD0024A246 /* VaultUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUITests; sourceTree = "<group>"; };
-		CEE480882DBE86DC00F4A367 /* VaultStoreKit */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultStoreKit; sourceTree = "<group>"; };
-		CEE480972DBE86DD00F4A367 /* VaultStoreKitTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultStoreKitTests; sourceTree = "<group>"; };
-		CEE4816B2DBE8AC800F4A367 /* VaultUI */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUI; sourceTree = "<group>"; };
-		CEE482AB2DBE8EFE00F4A367 /* VaultModels */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultModels; sourceTree = "<group>"; };
-		CEE909812DA548C7008D568F /* Autofill */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (CEE9098F2DA548C7008D568F /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Autofill; sourceTree = "<group>"; };
+		CE59C7602E4F47FD0024A246 /* VaultUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = VaultUITests;
+			sourceTree = "<group>";
+		};
+		CEE480882DBE86DC00F4A367 /* VaultStoreKit */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = VaultStoreKit;
+			sourceTree = "<group>";
+		};
+		CEE480972DBE86DD00F4A367 /* VaultStoreKitTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = VaultStoreKitTests;
+			sourceTree = "<group>";
+		};
+		CEE4816B2DBE8AC800F4A367 /* VaultUI */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = VaultUI;
+			sourceTree = "<group>";
+		};
+		CEE482AB2DBE8EFE00F4A367 /* VaultModels */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = VaultModels;
+			sourceTree = "<group>";
+		};
+		CEE909812DA548C7008D568F /* Autofill */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				CEE9098F2DA548C7008D568F /* Exceptions for "Autofill" folder in "Autofill" target */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Autofill;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -292,13 +350,11 @@
 		13B07FAE1A68108700A75B9A /* AliasVault */ = {
 			isa = PBXGroup;
 			children = (
+				CED3AB3B2E70CF8700F3FDEB /* AppDelegate.swift */,
 				962DE0FB93C9458BAFEEED60 /* AliasVault-Bridging-Header.h */,
-				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
-				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				CE73B39F2DFC8A0C0081B6CB /* AppIcon.icon */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
-				13B07FB71A68108700A75B9A /* main.m */,
 				76D5DBE3C1FA4900A7CD27FB /* noop-file.swift */,
 				BA88D6CB4FD656C7180FE9F7 /* PrivacyInfo.xcprivacy */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
@@ -665,6 +721,13 @@
 				it,
 				nl,
 				zh,
+				es,
+				sv,
+				tr,
+				ca,
+				fr,
+				ru,
+				uk,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
@@ -770,11 +833,10 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/ExpoSystemUI/ExpoSystemUI_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RCT-Folly/RCT-Folly_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/RNCAsyncStorage/RNCAsyncStorage_resources.bundle",
+				"${PODS_CONFIGURATION_BUILD_DIR}/RNSVG/RNSVGFilters.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/boost/boost_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/expo-dev-launcher/EXDevLauncher.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/expo-dev-menu/EXDevMenu.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/glog/glog_privacy.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
@@ -786,11 +848,10 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/ExpoSystemUI_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RCT-Folly_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNCAsyncStorage_resources.bundle",
+				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/RNSVGFilters.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/boost_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXDevLauncher.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXDevMenu.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/glog_privacy.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -987,13 +1048,11 @@
 			);
 			inputPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-AliasVault/Pods-AliasVault-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/ExpoSQLite/crsqlite.framework/crsqlite",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/OpenSSL-Universal/OpenSSL.framework/OpenSSL",
 				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
 			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/crsqlite.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/OpenSSL.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
@@ -1031,10 +1090,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				CED3AB3C2E70CF8700F3FDEB /* AppDelegate.swift in Sources */,
 				CE9A5A022DBAAE5000CB0A4C /* RCTNativeVaultManager.h in Sources */,
-				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				CE26D68F2DA7FCD2006DC04D /* VaultManager.swift in Sources */,
-				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				CE9A58FC2DBA982100CB0A4C /* RCTNativeVaultManager.mm in Sources */,
 				B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */,
 				E8FD7000523F4549908941A2 /* noop-file.swift in Sources */,
@@ -1263,7 +1321,10 @@
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -1317,7 +1378,10 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = "$(inherited)  ";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
