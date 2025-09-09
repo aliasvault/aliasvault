@@ -59,83 +59,83 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Сброс хранилища</value>
     <comment>Page title</comment>
   </data>
   <data name="BreadcrumbImportExport" xml:space="preserve">
-    <value>Import / Export</value>
+    <value>Импорт / экспорт</value>
     <comment>Breadcrumb for import export</comment>
   </data>
   <data name="BreadcrumbResetVault" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Сброс хранилища</value>
     <comment>Breadcrumb for reset vault</comment>
   </data>
   <data name="ResetVaultPleaseNote" xml:space="preserve">
-    <value>Please note:</value>
+    <value>Пожалуйста, обратите внимание:</value>
     <comment>Reset vault please note prefix</comment>
   </data>
   <data name="ResetVaultCredentialsDeletedNote" xml:space="preserve">
-    <value>All encrypted credentials in your vault will be permanently deleted</value>
+    <value>Все зашифрованные учетные данные из вашего хранилища будут безвозвратно удалены</value>
     <comment>Reset vault note about credentials being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
-    <value>Your email aliases will be preserved and can be re-used after resetting your vault</value>
+    <value>Ваши псевдонимы электронной почты будут сохранены и могут быть повторно использованы после сброса вашего хранилища</value>
     <comment>Reset vault note about email aliases being kept</comment>
   </data>
   <data name="ResetVaultSettingsKeptNote" xml:space="preserve">
-    <value>Your account settings and preferences will be preserved</value>
+    <value>Настройки и предпочтения вашей учетной записи будут сохранены</value>
     <comment>Reset vault note about settings being kept</comment>
   </data>
   <data name="ResetVaultIrreversibleNote" xml:space="preserve">
-    <value>This action cannot be undone</value>
+    <value>Это действие нельзя будет отменить</value>
     <comment>Reset vault note about action being irreversible</comment>
   </data>
   <data name="ResetVaultConfirmUsernameLabel" xml:space="preserve">
-    <value>To continue, please type your username to confirm</value>
+    <value>Чтобы продолжить, введите имя пользователя для подтверждения</value>
     <comment>Reset vault username confirmation label</comment>
   </data>
   <data name="ResetVaultContinueButton" xml:space="preserve">
-    <value>Continue with vault reset</value>
+    <value>Продолжить сброс хранилища</value>
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>Final warning: You are about to permanently delete all your credentials!</value>
+    <value>Последнее предупреждение: Вы собираетесь безвозвратно удалить все свои учетные данные!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
-    <value>This deletion is irreversible and cannot be undone</value>
+    <value>Это удаление является необратимым и не может быть отменено</value>
     <comment>Reset vault final step irreversible note</comment>
   </data>
   <data name="ResetVaultEnterPasswordLabel" xml:space="preserve">
-    <value>Enter your password to confirm</value>
+    <value>Введите свой пароль, чтобы продолжить</value>
     <comment>Reset vault password confirmation label</comment>
   </data>
   <data name="ResetVaultConfirmButton" xml:space="preserve">
-    <value>Reset my vault</value>
+    <value>Сбросить моё хранилище</value>
     <comment>Reset vault final confirmation button</comment>
   </data>
   <data name="ResetVaultUsernameRequired" xml:space="preserve">
-    <value>Username is required.</value>
+    <value>Требуется ввести имя пользователя.</value>
     <comment>Reset vault username required error</comment>
   </data>
   <data name="ResetVaultUsernameDoesNotMatch" xml:space="preserve">
-    <value>The username you entered does not match your account username.</value>
+    <value>Введенное вами имя пользователя не соответствует имени вашей учетной записи.</value>
     <comment>Reset vault username mismatch error</comment>
   </data>
   <data name="ResetVaultPasswordIncorrect" xml:space="preserve">
-    <value>The password you entered is incorrect.</value>
+    <value>Введенный вами пароль неверен.</value>
     <comment>Reset vault password incorrect error</comment>
   </data>
   <data name="ResetVaultProgressMessage" xml:space="preserve">
-    <value>Resetting vault...</value>
+    <value>Сброс хранилища...</value>
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>Your vault has been successfully reset. All credentials have been deleted and you can now start fresh.</value>
+    <value>Ваше хранилище было успешно сброшено. Все учетные данные были удалены, и теперь вы можете начать все заново.</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">
-    <value>An error occurred while resetting your vault. Please try again.</value>
+    <value>При сбросе настроек вашего хранилища произошла ошибка. Пожалуйста, попробуйте снова.</value>
     <comment>Reset vault error message</comment>
   </data>
 </root>
