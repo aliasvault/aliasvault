@@ -44,6 +44,9 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
   }, [animatedWidth]);
 
   useEffect(() => {
+    let animationRef: Animated.CompositeAnimation | null = null;
+    let isCancelled = false;
+
     /* Handle animation based on whether this field is active */
     if (isCountingDown) {
       // This field is now active - reset and start animation
@@ -52,15 +55,22 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
 
       // Get timeout and start animation
       getClipboardClearTimeout().then((timeoutSeconds) => {
-        if (timeoutSeconds > 0 && activeFieldId === fieldId) {
-          Animated.timing(animatedWidth, {
+        if (!isCancelled && timeoutSeconds > 0 && activeFieldId === fieldId) {
+          animationRef = Animated.timing(animatedWidth, {
             toValue: 0,
             duration: timeoutSeconds * 1000,
             useNativeDriver: false,
             easing: Easing.linear,
-          }).start((finished) => {
-            if (finished && activeFieldId === fieldId) {
-              setActiveField(null);
+          });
+          
+          animationRef.start((finished) => {
+            if (!isCancelled && finished && activeFieldId === fieldId) {
+              // Use requestAnimationFrame to defer state update
+              requestAnimationFrame(() => {
+                if (!isCancelled) {
+                  setActiveField(null);
+                }
+              });
             }
           });
         }
@@ -70,6 +80,15 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
       animatedWidth.stopAnimation();
       animatedWidth.setValue(0);
     }
+
+    // Cleanup function
+    return () => {
+      isCancelled = true;
+      if (animationRef) {
+        animationRef.stop();
+      }
+      animatedWidth.stopAnimation();
+    };
   }, [isCountingDown, activeFieldId, fieldId, animatedWidth, setActiveField, getClipboardClearTimeout]);
 
   /**
@@ -86,16 +105,12 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
 
         // Handle animation state
         if (timeoutSeconds > 0) {
-          // Clear any existing active field first (this will cancel its animation)
-          setActiveField(null);
-
-          /*
-           * Now set this field as active - animation will be handled by the effect
-           * Use setTimeout to ensure state update happens in next tick
-           */
-          setTimeout(() => {
-            setActiveField(fieldId);
-          }, 0);
+          // Clear any existing active field and set this one as active
+          // Use functional update to avoid closure issues
+          setActiveField(() => {
+            // If there was a previous field, its animation will be stopped by the effect
+            return fieldId;
+          });
         }
 
         if (Platform.OS !== 'android') {
