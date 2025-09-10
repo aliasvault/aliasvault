@@ -119,68 +119,68 @@
   </resheader>
   <!-- Common UI elements -->
   <data name="Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Сохранить</value>
     <comment>Button text for saving changes</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Отмена</value>
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>Удалить</value>
     <comment>Button text for deleting an item</comment>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>Edit</value>
+    <value>Редактировать</value>
     <comment>Button text for editing an item</comment>
   </data>
   <data name="Close" xml:space="preserve">
-    <value>Close</value>
+    <value>Закрыть</value>
     <comment>Button text for closing a dialog or modal</comment>
   </data>
   <data name="Back" xml:space="preserve">
-    <value>Back</value>
+    <value>Назад</value>
     <comment>Button text for going back</comment>
   </data>
   <data name="Next" xml:space="preserve">
-    <value>Next</value>
+    <value>Далее</value>
     <comment>Button text for proceeding to the next step</comment>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>Loading...</value>
+    <value>Загрузка...</value>
     <comment>Loading message displayed during async operations</comment>
   </data>
   <data name="Yes" xml:space="preserve">
-    <value>Yes</value>
+    <value>Да</value>
     <comment>Confirmation button text</comment>
   </data>
   <data name="No" xml:space="preserve">
-    <value>No</value>
+    <value>Нет</value>
     <comment>Rejection button text</comment>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>OK</value>
+    <value>ОК</value>
     <comment>OK button text</comment>
   </data>
   <data name="Continue" xml:space="preserve">
-    <value>Continue</value>
+    <value>Продолжить</value>
     <comment>Button text to continue with an action</comment>
   </data>
   <data name="Confirm" xml:space="preserve">
-    <value>Confirm</value>
+    <value>Подтвердить</value>
     <comment>Button text to confirm an action</comment>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Обновить</value>
     <comment>Button text to refresh content</comment>
   </data>
   <!-- Common form elements -->
   <data name="Email" xml:space="preserve">
-    <value>Email</value>
+    <value>Электронная почта</value>
     <comment>Label for email input field</comment>
   </data>
   <data name="Password" xml:space="preserve">
-    <value>Password</value>
+    <value>Пароль</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="Username" xml:space="preserve">
@@ -188,23 +188,23 @@
     <comment>Label for username input field</comment>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>Name</value>
+    <value>Имя</value>
     <comment>Label for name input field</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Description</value>
+    <value>Описание</value>
     <comment>Label for description input field</comment>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Title</value>
+    <value>Название</value>
     <comment>Label for title input field</comment>
   </data>
   <data name="Website" xml:space="preserve">
-    <value>Website</value>
+    <value>Сайт</value>
     <comment>Label for website input field</comment>
   </data>
   <data name="Search" xml:space="preserve">
-    <value>Search</value>
+    <value>Поиск</value>
     <comment>Label for search input field</comment>
   </data>
   <!-- Common error messages -->
@@ -238,7 +238,7 @@
     <comment>Warning status message</comment>
   </data>
   <data name="Error" xml:space="preserve">
-    <value>Error</value>
+    <value>Ошибка</value>
     <comment>Error status message</comment>
   </data>
   <data name="Info" xml:space="preserve">
