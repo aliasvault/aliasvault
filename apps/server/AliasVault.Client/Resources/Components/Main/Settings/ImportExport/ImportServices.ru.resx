@@ -60,11 +60,11 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Импорт паролей из хранилища 1Password</value>
+    <value>Импорт паролей из 1Password</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>Для импорта хранилища 1Password необходимо экспортировать его в CSV файл. Для этого войдите в учетную запись 1Password в приложении 1Password (Windows / MacOS / Linux), перейдите в меню 'Файл' и выберите 'Экспорт' (CSV).</value>
+    <value>Для импорта хранилища 1Password нужно экспортировать его в CSV-файл. Войдите в учетную запись 1Password в настольном приложении 1Password 8 (Windows / MacOS / Linux), зайдите в меню «Файл» и выберите «Экспорт» (CSV).</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
@@ -73,11 +73,11 @@
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">
-    <value>Импорт паролей из хранилища Bitwarden</value>
+    <value>Импорт паролей из Bitwarden</value>
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>Для импорта хранилища Bitwarden необходимо экспортировать его в CSV файл. Для этого войдите в учетную запись Bitwarden, перейдите в меню «Инструменты» и выберите «Экспорт хранилища» (CSV).</value>
+    <value>Для импорта хранилища Bitwarden нужно экспортировать его в CSV-файл. Войдите в учетную запись Bitwarden, перейдите в меню «Инструменты» и выберите «Экспорт хранилища» (CSV).</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
@@ -86,11 +86,11 @@
   </data>
   <!-- LastPass -->
   <data name="LastPassDescription" xml:space="preserve">
-    <value>Импорт паролей из хранилища LastPass</value>
+    <value>Импорт паролей из LastPass</value>
     <comment>Description for LastPass import service</comment>
   </data>
   <data name="LastPassInstructionsPart1" xml:space="preserve">
-    <value>Для импорта хранилища LastPass необходимо экспортировать его в CSV файл. Для этого войдите в учетную запись LastPass, перейдите в раздел «Расширенные настройки» в левой боковой панели и выберите «Экспорт» > «Файл CSV LastPass».</value>
+    <value>Для импорта хранилища LastPass нужно экспортировать его в CSV-файл. Войдите в учетную запись LastPass, перейдите в раздел «Расширенные настройки» в левой боковой панели и выберите «Экспорт» > «Файл CSV LastPass».</value>
     <comment>LastPass export instructions part 1</comment>
   </data>
   <data name="LastPassInstructionsPart2" xml:space="preserve">
@@ -99,11 +99,11 @@
   </data>
   <!-- Chrome -->
   <data name="ChromeDescription" xml:space="preserve">
-    <value>Импорт паролей из менеджера паролей Chrome</value>
+    <value>Импорт паролей из Chrome</value>
     <comment>Description for Chrome import service</comment>
   </data>
   <data name="ChromeInstructionsPart1" xml:space="preserve">
-    <value>Для импорта менеджера паролей Chrome необходимо экспортировать его в CSV файл. Для этого войдите в браузер Chrome, перейдите в меню «Настройки» > «Автозаполнение и пароли» > «Google менеджер паролей». Затем нажмите «Экспорт паролей».</value>
+    <value>Для импорта паролей из Chrome нужно экспортировать их в CSV-файл. Откройте браузер Chrome, перейдите в меню «Настройки» > «Пароль и автозаполнение» > «Google Password Manager». Затем нажмите на кнопку «Экспорт паролей».</value>
     <comment>Chrome export instructions part 1</comment>
   </data>
   <data name="ChromeInstructionsPart2" xml:space="preserve">
@@ -112,24 +112,24 @@
   </data>
   <!-- KeePass -->
   <data name="KeePassDescription" xml:space="preserve">
-    <value>Import passwords from KeePass</value>
+    <value>Импорт паролей из KeePass</value>
     <comment>Description for KeePass import service</comment>
   </data>
   <data name="KeePassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your KeePass vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export' (to CSV).</value>
+    <value>Для импорта хранилища KeePass нужно экспортировать его в CSV-файл. Перейдите в меню «Файл» и выберите «Экспорт» (CSV).</value>
     <comment>KeePass export instructions part 1</comment>
   </data>
   <data name="KeePassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
     <comment>KeePass export instructions part 2</comment>
   </data>
   <!-- Generic CSV -->
   <data name="GenericCsvDescription" xml:space="preserve">
-    <value>Import credentials using a template CSV format</value>
+    <value>Импорт учетных данных в формате CSV шаблона</value>
     <comment>Description for Generic CSV import service</comment>
   </data>
   <data name="GenericCsvInstructionsPart1" xml:space="preserve">
-    <value>Is the password manager you are using not supported? You can always import your credentials into AliasVault using a generic CSV template format instead.</value>
+    <value>Менеджер паролей, который вы используете, не поддерживается? Вы всегда можете импортировать ваши учетные данные в AliasVault с помощью общего формата шаблона CSV.</value>
     <comment>Generic CSV instructions part 1</comment>
   </data>
   <data name="GenericCsvStep1" xml:space="preserve">
@@ -137,37 +137,37 @@
     <comment>Generic CSV step 1</comment>
   </data>
   <data name="GenericCsvStep2" xml:space="preserve">
-    <value>Open it in a spreadsheet program (Microsoft Excel, Google Sheets, etc.)</value>
+    <value>Откройте его в программе для работы с таблицами (Microsoft Excel, Google Sheets и другие)</value>
     <comment>Generic CSV step 2</comment>
   </data>
   <data name="GenericCsvStep3" xml:space="preserve">
-    <value>Fill in your credentials (replace the example data)</value>
+    <value>Введите ваши учётные данные (замените пример данных)</value>
     <comment>Generic CSV step 3</comment>
   </data>
   <data name="GenericCsvStep4" xml:space="preserve">
-    <value>Save as CSV format and upload it below</value>
+    <value>Сохраните в формате CSV и загрузите ниже</value>
     <comment>Generic CSV step 4</comment>
   </data>
   <data name="GenericCsvTemplateDownloadError" xml:space="preserve">
-    <value>Failed to download CSV template. Please try again.</value>
+    <value>Не удалось загрузить шаблон CSV. Пожалуйста, повторите попытку.</value>
     <comment>Error message for template download failure</comment>
   </data>
   <!-- Firefox -->
   <data name="FirefoxDescription" xml:space="preserve">
-    <value>Import passwords from your Firefox Password Manager</value>
+    <value>Импорт паролей из Firefox</value>
     <comment>Description for Firefox import service</comment>
   </data>
   <data name="FirefoxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Firefox passwords, you need to export it as a CSV file. You can do this by opening your Firefox browser, going to menu > 'Passwords'. Then click on the menu icon in the top right corner and select 'Export passwords'.</value>
+    <value>Для импорта паролей из Firefox нужно экспортировать их в CSV-файл. Откройте браузер Firefox, перейдите в меню > «Пароли». Затем нажмите на значок меню в правом верхнем углу и выберите «Экспорт паролей».</value>
     <comment>Firefox export instructions part 1</comment>
   </data>
   <data name="FirefoxInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
     <comment>Firefox export instructions part 2</comment>
   </data>
   <!-- Dashlane -->
   <data name="DashlaneDescription" xml:space="preserve">
-    <value>Import passwords from your Dashlane account</value>
+    <value>Импорт паролей из учетной записи Dashlane</value>
     <comment>Description for Dashlane import service</comment>
   </data>
   <data name="DashlaneInstructionsPart1" xml:space="preserve">
@@ -180,7 +180,7 @@
   </data>
   <!-- KeePassXC -->
   <data name="KeePassXCDescription" xml:space="preserve">
-    <value>Import passwords from KeePassXC</value>
+    <value>Импорт паролей из KeePassXC</value>
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
@@ -188,12 +188,12 @@
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
     <comment>KeePassXC export instructions part 2</comment>
   </data>
   <!-- Proton Pass -->
   <data name="ProtonPassDescription" xml:space="preserve">
-    <value>Import passwords from Proton Pass</value>
+    <value>Импорт паролей из Proton Pass</value>
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
@@ -201,43 +201,43 @@
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
     <comment>Proton Pass export instructions part 2</comment>
   </data>
   <!-- Strongbox -->
   <data name="StrongboxDescription" xml:space="preserve">
-    <value>Import passwords from Strongbox</value>
+    <value>Импорт паролей из Strongbox</value>
     <comment>Description for Strongbox import service</comment>
   </data>
   <data name="StrongboxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Strongbox vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export Database' (to CSV).</value>
+    <value>Для импорта хранилища Strongbox нужно экспортировать его в CSV-файл. Откройте меню «Файл» и выберите «Экспортировать базу данных» (CSV).</value>
     <comment>Strongbox export instructions part 1</comment>
   </data>
   <data name="StrongboxInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
   <!-- AliasVault -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Import passwords from another AliasVault server or manual back-up</value>
+    <value>Импорт паролей с другого сервера AliasVault или из ручной резервной копии</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>If you have a CSV file back-up of your AliasVault database (from a different AliasVault server), you can import it here.</value>
+    <value>Если у вас есть резервная копия CSV-файла с базой данных AliasVault (из другого сервера AliasVault), вы можете импортировать ее здесь.</value>
     <comment>AliasVault import instructions</comment>
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">
-    <value>Import passwords from Dropbox Passwords</value>
+    <value>Импорт паролей из Dropbox Passwords</value>
     <comment>Description for Dropbox import service</comment>
   </data>
   <data name="DropboxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Dropbox Passwords, you need to export them as a CSV file. You can do this by opening Dropbox Passwords, going to 'Account' > 'Export' (to .CSV).</value>
+    <value>Для импорта паролей из Dropbox Passwords нужно экспортировать их в CSV-файл. Откройте Dropbox Passwords, перейдите во вкладку «Аккаунт» > Экспортировать (CSV).</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
     <comment>Common instruction for file upload</comment>
   </data>
 </root>
