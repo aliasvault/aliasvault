@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Alert, TouchableOpacity } from 'react-native';
 
@@ -26,6 +26,10 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   const [language, setLanguage] = useState<string>('en');
   const [gender, setGender] = useState<string>('random');
 
+  // Store pending changes and initial values
+  const pendingChanges = useRef<{ language?: string; gender?: string }>({});
+  const initialValues = useRef<{ language: string; gender: string }>({ language: 'en', gender: 'random' });
+
   const LANGUAGE_OPTIONS = [
     { label: t('settings.identityGeneratorSettings.languageOptions.english'), value: 'en' },
     { label: t('settings.identityGeneratorSettings.languageOptions.dutch'), value: 'nl' }
@@ -40,7 +44,7 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   useFocusEffect(
     useCallback(() => {
       /**
-       * Load the identity generator settings.
+       * Load the identity generator settings on focus.
        */
       const loadSettings = async (): Promise<void> => {
         try {
@@ -51,46 +55,71 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
 
           setLanguage(currentLanguage);
           setGender(currentGender);
+          // Store initial values
+          initialValues.current = { language: currentLanguage, gender: currentGender };
+          // Clear pending changes when screen loads
+          pendingChanges.current = {};
         } catch (error) {
           console.error('Error loading identity generator settings:', error);
-          Alert.alert(t('common.error'), t('settings.identityGeneratorSettings.errors.loadFailed'));
+          Alert.alert(t('common.error'), t('common.unknownError'));
         }
       };
 
       loadSettings();
-    }, [dbContext.sqliteClient, t])
+
+      // Save changes when screen loses focus (navigating away)
+      return (): void => {
+        /**
+         * Save pending changes to the database.
+         */
+        const saveChanges = async (): Promise<void> => {
+          // Check if there are pending changes to save
+          const hasChanges = Object.keys(pendingChanges.current).length > 0;
+
+          if (!hasChanges) {
+            return;
+          }
+
+          try {
+            // Save all pending changes in a single vault mutation
+            await executeVaultMutation(async () => {
+              if (pendingChanges.current.language !== undefined) {
+                await dbContext.sqliteClient!.updateSetting('DefaultIdentityLanguage', pendingChanges.current.language);
+              }
+              if (pendingChanges.current.gender !== undefined) {
+                await dbContext.sqliteClient!.updateSetting('DefaultIdentityGender', pendingChanges.current.gender);
+              }
+            });
+
+            // Clear pending changes after successful save
+            pendingChanges.current = {};
+          } catch (error) {
+            console.error('Error saving identity generator settings:', error);
+            // Don't show alert when navigating away to avoid blocking navigation
+          }
+        };
+
+        // Execute save without blocking navigation
+        saveChanges();
+      };
+    }, [dbContext.sqliteClient, t, executeVaultMutation])
   );
 
   /**
-   * Handle language change.
+   * Handle language change - just update UI and store pending change.
    */
-  const handleLanguageChange = useCallback(async (newLanguage: string): Promise<void> => {
-    try {
-      executeVaultMutation(async () => {
-        // Update the default language setting
-        await dbContext.sqliteClient!.updateSetting('DefaultIdentityLanguage', newLanguage);
-      });
-      setLanguage(newLanguage);
-    } catch (error) {
-      console.error('Error updating language setting:', error);
-      Alert.alert(t('common.error'), t('settings.identityGeneratorSettings.errors.languageUpdateFailed'));
-    }
-  }, [executeVaultMutation, dbContext.sqliteClient, t]);
+  const handleLanguageChange = useCallback((newLanguage: string): void => {
+    setLanguage(newLanguage);
+    pendingChanges.current.language = newLanguage;
+  }, []);
 
   /**
-   * Handle gender change.
+   * Handle gender change - just update UI and store pending change.
    */
-  const handleGenderChange = useCallback(async (newGender: string): Promise<void> => {
-    try {
-      executeVaultMutation(async () => {
-        await dbContext.sqliteClient!.updateSetting('DefaultIdentityGender', newGender);
-      });
-      setGender(newGender);
-    } catch (error) {
-      console.error('Error updating gender setting:', error);
-      Alert.alert(t('common.error'), t('settings.identityGeneratorSettings.errors.genderUpdateFailed'));
-    }
-  }, [executeVaultMutation, dbContext.sqliteClient, t]);
+  const handleGenderChange = useCallback((newGender: string): void => {
+    setGender(newGender);
+    pendingChanges.current.gender = newGender;
+  }, []);
 
   const styles = StyleSheet.create({
     descriptionText: {
