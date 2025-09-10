@@ -40,6 +40,7 @@
     "expo-blur": "~14.1.5",
     "expo-clipboard": "~7.1.5",
     "expo-constants": "~17.1.7",
+    "expo-dev-client": "~5.1.8",
     "expo-document-picker": "~13.1.6",
     "expo-file-system": "~18.1.11",
     "expo-font": "~13.3.2",
