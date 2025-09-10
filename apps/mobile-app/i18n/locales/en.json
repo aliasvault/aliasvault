@@ -47,7 +47,6 @@
       "serverErrorSelfHosted": "Could not reach the API. For self-hosted instances, please verify the API endpoint is reachable by navigating to it in a browser: it should display 'OK'.",
       "networkError": "Network request failed. Please check your internet connection and try again.",
       "networkErrorSelfHosted": "Network request failed. Check your network connection and server availability. For self-hosted instances, please ensure you have a valid SSL certificate installed. Self-signed certificates are not supported on mobile devices for security reasons.",
-      "incorrectPasswordFallback": "Incorrect password. Please try again.",
       "sessionExpired": "Your session has expired. Please login again.",
       "tokenRefreshFailed": "Failed to refresh authentication token",
       "httpError": "HTTP error: {{status}}"

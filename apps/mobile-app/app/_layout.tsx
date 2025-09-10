@@ -19,6 +19,7 @@ import { ClipboardCountdownProvider } from '@/context/ClipboardCountdownContext'
 import { DbProvider } from '@/context/DbContext';
 import { WebApiProvider } from '@/context/WebApiContext';
 import { initI18n } from '@/i18n';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -187,7 +188,9 @@ export default function RootLayout() : React.ReactNode {
       <AuthProvider>
         <WebApiProvider>
           <ClipboardCountdownProvider>
-            <RootLayoutNav />
+            <KeyboardProvider>
+              <RootLayoutNav />
+            </KeyboardProvider>
           </ClipboardCountdownProvider>
         </WebApiProvider>
       </AuthProvider>

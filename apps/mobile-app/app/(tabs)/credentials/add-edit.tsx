@@ -7,8 +7,8 @@ import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-rout
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Resolver, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, Alert, Keyboard, KeyboardAvoidingView, Platform } from 'react-native';
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { StyleSheet, View, Alert, Keyboard, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import Toast from 'react-native-toast-message';
 
 import { CreateIdentityGenerator, IdentityGenerator, IdentityHelperUtils } from '@/utils/dist/shared/identity-generator';
@@ -585,16 +585,13 @@ export default function AddEditCredentialScreen() : React.ReactNode {
       {(isSyncing) && (
         <LoadingOverlay status={syncStatus} />
       )}
-      <KeyboardAvoidingView
-        style={styles.keyboardContainer}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
+
         <ThemedContainer style={styles.container}>
           <KeyboardAwareScrollView
-            enableOnAndroid={true}
+            enabled={true}
             contentContainerStyle={styles.contentContainer}
             keyboardShouldPersistTaps="handled"
-            extraScrollHeight={0}
+            extraKeyboardSpace={20}
           >
             {!isEditMode && (
               <View style={styles.modeSelector}>
@@ -769,7 +766,6 @@ export default function AddEditCredentialScreen() : React.ReactNode {
           </KeyboardAwareScrollView>
         </ThemedContainer>
         <AliasVaultToast />
-      </KeyboardAvoidingView>
     </>
   );
 }
