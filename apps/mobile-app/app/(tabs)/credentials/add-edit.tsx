@@ -572,7 +572,7 @@ export default function AddEditCredentialScreen() : React.ReactNode {
           enabled={true}
           contentContainerStyle={styles.contentContainer}
           keyboardShouldPersistTaps="handled"
-          extraKeyboardSpace={20}
+          bottomOffset={30}
         >
           {!isEditMode && (
             <View style={styles.modeSelector}>
