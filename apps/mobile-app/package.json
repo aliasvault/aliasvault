@@ -2,7 +2,6 @@
   "name": "aliasvault-mobile-app",
   "main": "expo-router/entry",
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -58,6 +57,8 @@
     "expo-web-browser": "~14.2.0",
     "fbemitter": "^3.0.0",
     "i18next": "^25.3.2",
+    "jest": "~29.7.0",
+    "jest-expo": "~53.0.10",
     "otpauth": "^9.4.0",
     "react": "19.0.0",
     "react-hook-form": "^7.56.1",
@@ -78,9 +79,7 @@
     "react-native-toast-message": "^2.2.1",
     "react-native-webview": "13.13.5",
     "secure-remote-password": "github:LinusU/secure-remote-password#73e5f732b6ca0cdbdc19da1a0c5f48cdbad2cbf0",
-    "yup": "^1.6.1",
-    "jest-expo": "~53.0.10",
-    "jest": "~29.7.0"
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
@@ -98,7 +97,7 @@
     "@types/yup": "^0.29.14",
     "eslint": "^9.35.0",
     "eslint-config-expo": "~9.2.0",
-    "eslint-plugin-jsdoc": "^55.0.5",
+    "eslint-plugin-jsdoc": "^55.2.0",
     "eslint-plugin-react-native": "^5.0.0",
     "globals": "^16.3.0",
     "jest": "^29.2.1",

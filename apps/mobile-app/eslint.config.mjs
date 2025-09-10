@@ -5,27 +5,22 @@ import reactPlugin from "eslint-plugin-react";
 import reactHooksPlugin from "eslint-plugin-react-hooks";
 import importPlugin from "eslint-plugin-import";
 import jsdocPlugin from "eslint-plugin-jsdoc";
-import stylistic from '@stylistic/eslint-plugin';
 import globals from 'globals';
 
 export default [
     {
         ignores: [
-            "metro.config.js",
+            "eslint.config.js",
+            "**/metro.config.js",
             "**/dist/**",
+            "**/ios/**",
+            "**/android/**",
+            "**/coverage/**",
             "node_modules/**",
             "src/utils/dist/**",
-            "coverage/**",
         ]
     },
-    {
-        files: ["app/**/*.js"],
-        ...js.configs.recommended,
-        languageOptions: {
-            ecmaVersion: "latest",
-            sourceType: "module",
-        },
-    },
+    js.configs.recommended,
     {
         files: ["app/**/*.{ts,tsx}"],
         languageOptions: {
@@ -44,7 +39,6 @@ export default [
             "react-hooks": reactHooksPlugin,
             "import": importPlugin,
             "jsdoc": jsdocPlugin,
-            "@stylistic": stylistic,
         },
         rules: {
             ...tsPlugin.configs.recommended.rules,
@@ -63,7 +57,20 @@ export default [
                 "varsIgnorePattern": "^_",
                 "argsIgnorePattern": "^_"
             }],
-            "@stylistic/indent": ["error", 2],
+            "indent": ["error", 2, {
+                "SwitchCase": 1,
+                "VariableDeclarator": 1,
+                "outerIIFEBody": 1,
+                "MemberExpression": 1,
+                "FunctionDeclaration": { "parameters": 1, "body": 1 },
+                "FunctionExpression": { "parameters": 1, "body": 1 },
+                "CallExpression": { "arguments": 1 },
+                "ArrayExpression": 1,
+                "ObjectExpression": 1,
+                "ImportDeclaration": 1,
+                "flatTernaryExpressions": false,
+                "ignoreComments": false
+            }],
             "no-multiple-empty-lines": ["error", { "max": 1, "maxEOF": 1, "maxBOF": 0 }],
             "no-console": ["error", { allow: ["warn", "error", "info", "debug"] }],
             "jsdoc/require-jsdoc": ["error", {
@@ -166,6 +173,7 @@ export default [
                 ...globals.node,
                 NodeJS: true,
                 chrome: 'readonly',
+                React: 'readonly',
             }
         }
     }
