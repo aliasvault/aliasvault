@@ -63,7 +63,7 @@
     <comment>Title for vault decryption progress</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Ваше хранилище почти готово. Идёт расшифровка.</value>
+    <value>Пожалуйста, подождите, пока ваше хранилище инициализируется. Это может занять немного времени.</value>
     <comment>Description for vault decryption progress</comment>
   </data>
 </root>
