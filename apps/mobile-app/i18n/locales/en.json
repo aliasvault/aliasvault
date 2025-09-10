@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Cancel",
+    "close": "Close",
     "delete": "Delete",
     "save": "Save",
     "yes": "Yes",
@@ -162,7 +163,6 @@
       "loadFailed": "Failed to load credential",
       "generateUsernameFailed": "Failed to generate username",
       "generatePasswordFailed": "Failed to generate password",
-      "generic": "Error"
     },
     "contextMenu": {
       "title": "Credential Options",
@@ -428,7 +428,6 @@
       "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault in read-only mode or retry the connection?",
       "openLocalVault": "Open Local Vault",
       "retrySync": "Retry Sync",
-      "error": "Error"
     },
     "navigation": {
       "login": "Login",
@@ -466,7 +465,6 @@
     "whatsNew": "What's New",
     "whatsNewDescription": "An upgrade is required to support the following changes:",
     "noDescriptionAvailable": "No description available for this version.",
-    "okay": "Ok",
     "status": {
       "preparingUpgrade": "Preparing upgrade...",
       "vaultAlreadyUpToDate": "Vault is already up to date",
@@ -476,11 +474,9 @@
       "committingChanges": "Committing changes..."
     },
     "alerts": {
-      "error": "Error",
       "unableToGetVersionInfo": "Unable to get version information. Please try again.",
       "selfHostedServer": "Self-Hosted Server",
       "selfHostedWarning": "If you're using a self-hosted server, make sure to also update your self-hosted instance as otherwise logging in to the web client will stop working.",
-      "cancel": "Cancel",
       "continueUpgrade": "Continue Upgrade",
       "upgradeFailed": "Upgrade Failed",
       "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})",

@@ -173,7 +173,7 @@ export default function CredentialsScreen() : React.ReactNode {
           setIsLoadingCredentials(false);
 
           // Show modal with error message
-          Alert.alert(t('credentials.errors.generic'), error);
+          Alert.alert(t('common.error'), error);
 
           // Logout user
           await webApi.logout(error);

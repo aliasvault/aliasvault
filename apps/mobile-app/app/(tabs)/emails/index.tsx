@@ -91,7 +91,7 @@ export default function EmailsScreen() : React.ReactNode {
         setIsLoading(false);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('emails.errors.generic'));
+      setError(err instanceof Error ? err.message : t('common.error'));
     }
   }, [dbContext?.sqliteClient, webApi, setIsLoading, authContext.isOffline, t]);
 

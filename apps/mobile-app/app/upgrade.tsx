@@ -68,7 +68,7 @@ export default function UpgradeScreen() : React.ReactNode {
    */
   const handleUpgrade = async (): Promise<void> => {
     if (!sqliteClient || !currentVersion || !latestVersion) {
-      Alert.alert(t('upgrade.alerts.error'), t('upgrade.alerts.unableToGetVersionInfo'));
+      Alert.alert(t('common.error'), t('upgrade.alerts.unableToGetVersionInfo'));
       return;
     }
 
@@ -78,7 +78,7 @@ export default function UpgradeScreen() : React.ReactNode {
         t('upgrade.alerts.selfHostedServer'),
         t('upgrade.alerts.selfHostedWarning'),
         [
-          { text: t('upgrade.alerts.cancel'), style: 'cancel' },
+          { text: t('common.cancel'), style: 'cancel' },
           {
             text: t('upgrade.alerts.continueUpgrade'),
             style: 'default',
@@ -101,7 +101,7 @@ export default function UpgradeScreen() : React.ReactNode {
    */
   const performUpgrade = async (): Promise<void> => {
     if (!sqliteClient || !currentVersion || !latestVersion) {
-      Alert.alert(t('upgrade.alerts.error'), t('upgrade.alerts.unableToGetVersionInfo'));
+      Alert.alert(t('common.error'), t('upgrade.alerts.unableToGetVersionInfo'));
       return;
     }
 
@@ -229,7 +229,7 @@ export default function UpgradeScreen() : React.ReactNode {
       t('upgrade.whatsNew'),
       `${t('upgrade.whatsNewDescription')}\n\n${latestVersion?.description ?? t('upgrade.noDescriptionAvailable')}`,
       [
-        { text: t('upgrade.okay'), style: 'default' }
+        { text: t('common.ok'), style: 'default' }
       ]
     );
   };

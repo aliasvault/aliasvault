@@ -75,7 +75,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
         setHtmlView(false);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t('emails.errors.generic'));
+      setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setIsLoading(false);
     }

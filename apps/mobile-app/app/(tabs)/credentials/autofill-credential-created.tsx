@@ -88,7 +88,7 @@ export default function AutofillCredentialCreatedScreen() : React.ReactNode {
           pressRetentionOffset={100}
           hitSlop={100}
         >
-          <ThemedText style={{ color: colors.primary }}>{t('common.cancel')}</ThemedText>
+          <ThemedText style={{ color: colors.primary }}>{t('common.close')}</ThemedText>
         </RobustPressable>
     });
   }, [navigation, colors.primary, styles.headerRightButton, handleStayInApp, t]);

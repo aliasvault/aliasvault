@@ -239,7 +239,7 @@ const Upgrade: React.FC = () => {
         title={t('upgrade.alerts.selfHostedServer')}
         message={t('upgrade.alerts.selfHostedWarning')}
         confirmText={t('upgrade.alerts.continueUpgrade')}
-        cancelText={t('upgrade.alerts.cancel')}
+        cancelText={t('common.cancel')}
       />
 
       {/* Version info modal */}

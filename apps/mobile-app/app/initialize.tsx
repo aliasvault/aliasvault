@@ -144,7 +144,7 @@ export default function Initialize() : React.ReactNode {
            */
           onError: async (error: string) => {
           // Show modal with error message
-            Alert.alert(t('app.alerts.error'), error);
+            Alert.alert(t('common.error'), error);
 
             // The logout user and navigate to the login screen.
             await webApi.logout(error);
