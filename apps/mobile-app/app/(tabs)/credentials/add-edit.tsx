@@ -332,7 +332,7 @@ export default function AddEditCredentialScreen() : React.ReactNode {
       // Then navigate after a short delay to ensure the modal has closed
       setTimeout(() => {
         if (isEditMode) {
-          router.replace(`/credentials/${credentialToSave.Id}`);
+          // Do nothing, as the original screen will update itself.
         } else {
           router.push(`/credentials/${credentialToSave.Id}`);
         }

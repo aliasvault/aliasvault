@@ -230,7 +230,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
       paddingRight: 10,
     },
     headerRightButtonDelete: {
-      paddingRight: 0,
+      paddingRight: Platform.OS === 'ios' ? 0 : 10,
     },
     headerRightContainer: {
       flexDirection: 'row',
@@ -333,8 +333,8 @@ export default function EmailDetailsScreen() : React.ReactNode {
           <RobustPressable
             onPress={() => setHtmlView(!isHtmlView)}
             style={styles.headerRightButton}
-            pressRetentionOffset={10}
-            hitSlop={10}
+            pressRetentionOffset={5}
+            hitSlop={5}
           >
             <Ionicons
               name={isHtmlView ? 'text-outline' : 'document-outline'}
@@ -345,8 +345,8 @@ export default function EmailDetailsScreen() : React.ReactNode {
           <RobustPressable
             onPress={handleDelete}
             style={[styles.headerRightButton, styles.headerRightButtonDelete]}
-            pressRetentionOffset={10}
-            hitSlop={10}
+            pressRetentionOffset={5}
+            hitSlop={5}
           >
             <Ionicons
               name="trash-outline"
