@@ -377,25 +377,6 @@ export default function AddEditCredentialScreen() : React.ReactNode {
   };
 
   /**
-   * Generate a random password.
-   */
-  const generateRandomPassword = async () : Promise<void> => {
-    try {
-      const { passwordGenerator } = await initializeGenerators();
-      const password = passwordGenerator.generateRandomPassword();
-      setValue('Password', password);
-      setIsPasswordVisible(true);
-    } catch (error) {
-      console.error('Error generating random password:', error);
-      Toast.show({
-        type: 'error',
-        text1: t('credentials.errors.generatePasswordFailed'),
-        text2: t('auth.errors.enterPassword')
-      });
-    }
-  };
-
-  /**
    * Handle the delete button press.
    */
   const handleDelete = async () : Promise<void> => {
@@ -660,37 +641,15 @@ export default function AddEditCredentialScreen() : React.ReactNode {
                     }
                   ]}
                 />
-                {passwordSettings ? (
-                  <AdvancedPasswordField
-                    control={control}
-                    name="Password"
-                    label={t('credentials.password')}
-                    initialSettings={passwordSettings}
-                    showPassword={isPasswordVisible}
-                    onShowPasswordChange={setIsPasswordVisible}
-                    isNewCredential={!isEditMode}
-                  />
-                ) : (
-                  <ValidatedFormField
-                    control={control}
-                    name="Password"
-                    label={t('credentials.password')}
-                    secureTextEntry={!isPasswordVisible}
-                    buttons={[
-                      {
-                        icon: isPasswordVisible ? "visibility-off" : "visibility",
-                        /**
-                         * Toggle the visibility of the password.
-                         */
-                        onPress: () => setIsPasswordVisible(!isPasswordVisible)
-                      },
-                      {
-                        icon: "refresh",
-                        onPress: generateRandomPassword
-                      }
-                    ]}
-                  />
-                )}
+                <AdvancedPasswordField
+                  control={control}
+                  name="Password"
+                  label={t('credentials.password')}
+                  initialSettings={passwordSettings}
+                  showPassword={isPasswordVisible}
+                  onShowPasswordChange={setIsPasswordVisible}
+                  isNewCredential={!isEditMode}
+                />
               </View>
 
               <View style={styles.section}>
