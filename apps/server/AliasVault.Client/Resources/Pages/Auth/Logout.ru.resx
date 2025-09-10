@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="LoggingOutTitle" xml:space="preserve">
-    <value>Logging out</value>
+    <value>Выход</value>
     <comment>Title shown during logout process</comment>
   </data>
   <data name="LoggingOutDescription" xml:space="preserve">
-    <value>Securely unloading your data and logging you out. Please wait.</value>
+    <value>Мы безопасно выгружаем ваши данные и выполняем выход. Пожалуйста, подождите.</value>
     <comment>Description shown during logout process</comment>
   </data>
 </root>
