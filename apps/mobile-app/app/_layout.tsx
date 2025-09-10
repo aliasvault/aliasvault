@@ -133,35 +133,33 @@ function RootLayoutNav() : React.ReactNode {
   };
 
   return (
-    <GestureHandlerRootView>
-      <ThemeProvider value={colorScheme === 'dark' ? customDarkTheme : customDefaultTheme}>
-        <Stack
-          screenOptions={{
-            headerShown: true,
-            animation: 'none',
-            headerTransparent: Platform.OS === 'ios',
-            headerStyle: {
-              backgroundColor: colors.accentBackground,
-            },
-            headerTintColor: colors.primary,
-            headerTitleStyle: {
-              color: colors.text,
-            },
-          }}
-        >
-          <Stack.Screen name="index" options={{ headerShown: false }} />
-          <Stack.Screen name="initialize" options={{ headerShown: false }} />
-          <Stack.Screen name="login" options={{ headerShown: false }} />
-          <Stack.Screen name="login-settings" />
-          <Stack.Screen name="reinitialize" options={{ headerShown: false }} />
-          <Stack.Screen name="unlock" options={{ headerShown: false }} />
-          <Stack.Screen name="upgrade" options={{ headerShown: false }} />
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <AliasVaultToast />
-      </ThemeProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider value={colorScheme === 'dark' ? customDarkTheme : customDefaultTheme}>
+      <Stack
+        screenOptions={{
+          headerShown: true,
+          animation: 'none',
+          headerTransparent: Platform.OS === 'ios',
+          headerStyle: {
+            backgroundColor: colors.accentBackground,
+          },
+          headerTintColor: colors.primary,
+          headerTitleStyle: {
+            color: colors.text,
+          },
+        }}
+      >
+        <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="initialize" options={{ headerShown: false }} />
+        <Stack.Screen name="login" options={{ headerShown: false }} />
+        <Stack.Screen name="login-settings" />
+        <Stack.Screen name="reinitialize" options={{ headerShown: false }} />
+        <Stack.Screen name="unlock" options={{ headerShown: false }} />
+        <Stack.Screen name="upgrade" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <AliasVaultToast />
+    </ThemeProvider>
   );
 }
 
@@ -189,7 +187,9 @@ export default function RootLayout() : React.ReactNode {
         <WebApiProvider>
           <ClipboardCountdownProvider>
             <KeyboardProvider>
-              <RootLayoutNav />
+              <GestureHandlerRootView>
+                <RootLayoutNav />
+              </GestureHandlerRootView>
             </KeyboardProvider>
           </ClipboardCountdownProvider>
         </WebApiProvider>

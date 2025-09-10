@@ -184,7 +184,7 @@ dependencies {
     implementation("androidx.biometric:biometric:1.1.0")
 
     // Add vector drawable support for SVG
-    implementation 'com.caverock:androidsvg:1.4'
+    implementation("com.caverock:androidsvg-aar:1.4")
 
     // Test dependencies
     testImplementation 'junit:junit:4.13.2'
