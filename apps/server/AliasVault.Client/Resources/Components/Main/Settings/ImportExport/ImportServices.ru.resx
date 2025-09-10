@@ -60,54 +60,54 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Import passwords from your 1Password vault</value>
+    <value>Импорт паролей из хранилища 1Password</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>In order to import your 1Password vault, you need to export it as a CSV file. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export' (to CSV).</value>
+    <value>Для импорта хранилища 1Password необходимо экспортировать его в CSV файл. Для этого войдите в учетную запись 1Password в приложении 1Password (Windows / MacOS / Linux), перейдите в меню 'Файл' и выберите 'Экспорт' (CSV).</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
     <comment>1Password export instructions part 2</comment>
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">
-    <value>Import passwords from your Bitwarden vault</value>
+    <value>Импорт паролей из хранилища Bitwarden</value>
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Bitwarden vault, you need to export it as a CSV file. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault' (to CSV).</value>
+    <value>Для импорта хранилища Bitwarden необходимо экспортировать его в CSV файл. Для этого войдите в учетную запись Bitwarden, перейдите в меню «Инструменты» и выберите «Экспорт хранилища» (CSV).</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
     <comment>Bitwarden export instructions part 2</comment>
   </data>
   <!-- LastPass -->
   <data name="LastPassDescription" xml:space="preserve">
-    <value>Import passwords from your LastPass vault</value>
+    <value>Импорт паролей из хранилища LastPass</value>
     <comment>Description for LastPass import service</comment>
   </data>
   <data name="LastPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your LastPass vault, you need to export it as a CSV file. You can do this by logging into your LastPass account, going to 'Advanced Options' in the left sidebar and selecting 'Export' > 'LastPass CSV File'.</value>
+    <value>Для импорта хранилища LastPass необходимо экспортировать его в CSV файл. Для этого войдите в учетную запись LastPass, перейдите в раздел «Расширенные настройки» в левой боковой панели и выберите «Экспорт» > «Файл CSV LastPass».</value>
     <comment>LastPass export instructions part 1</comment>
   </data>
   <data name="LastPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
     <comment>LastPass export instructions part 2</comment>
   </data>
   <!-- Chrome -->
   <data name="ChromeDescription" xml:space="preserve">
-    <value>Import passwords from your Chrome Password Manager</value>
+    <value>Импорт паролей из менеджера паролей Chrome</value>
     <comment>Description for Chrome import service</comment>
   </data>
   <data name="ChromeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Chrome Password Manager, you need to export it as a CSV file. You can do this by logging into your Chrome browser, going to the 'Settings' menu > 'Password and AutoFill' > 'Google Password Manager'. Then click on 'Export passwords'.</value>
+    <value>Для импорта менеджера паролей Chrome необходимо экспортировать его в CSV файл. Для этого войдите в браузер Chrome, перейдите в меню «Настройки» > «Автозаполнение и пароли» > «Google менеджер паролей». Затем нажмите «Экспорт паролей».</value>
     <comment>Chrome export instructions part 1</comment>
   </data>
   <data name="ChromeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
     <comment>Chrome export instructions part 2</comment>
   </data>
   <!-- KeePass -->
