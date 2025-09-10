@@ -7,6 +7,7 @@ import { Linking, StyleSheet, Platform } from 'react-native';
 import 'react-native-reanimated';
 import 'react-native-get-random-values';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 import { install } from 'react-native-quick-crypto';
 
 import { useColors, useColorScheme } from '@/hooks/useColorScheme';
@@ -19,7 +20,6 @@ import { ClipboardCountdownProvider } from '@/context/ClipboardCountdownContext'
 import { DbProvider } from '@/context/DbContext';
 import { WebApiProvider } from '@/context/WebApiContext';
 import { initI18n } from '@/i18n';
-import { KeyboardProvider } from 'react-native-keyboard-controller';
 
 SplashScreen.preventAutoHideAsync();
 
