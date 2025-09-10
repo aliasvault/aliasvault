@@ -59,19 +59,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="MainTitle" xml:space="preserve">
-    <value>Password &amp; (Email) Alias Manager</value>
+    <value>Менеджер паролей и (Email) псевдонимов</value>
     <comment>Main title of the application</comment>
   </data>
   <data name="TaglineText" xml:space="preserve">
-    <value>Your Privacy. Protected.</value>
+    <value>Ваша конфиденциальность. Под защитой.</value>
     <comment>Tagline emphasizing privacy protection</comment>
   </data>
   <data name="CreateNewVaultButton" xml:space="preserve">
-    <value>Create new vault</value>
+    <value>Создать новое хранилище</value>
     <comment>Button text for creating a new vault</comment>
   </data>
   <data name="LoginExistingAccountButton" xml:space="preserve">
-    <value>Log in with existing account</value>
+    <value>Войти в свой аккаунт</value>
     <comment>Button text for logging in with existing account</comment>
   </data>
 </root>
