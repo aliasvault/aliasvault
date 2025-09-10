@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/shared/models/metadata';
 import type { Attachment, Credential, EncryptionKey, PasswordSettings, TotpCode } from '@/utils/dist/shared/models/vault';
 import { VaultSqlGenerator, VaultVersion } from '@/utils/dist/shared/vault-sql';

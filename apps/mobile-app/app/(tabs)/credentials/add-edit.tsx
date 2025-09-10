@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Haptics from 'expo-haptics';

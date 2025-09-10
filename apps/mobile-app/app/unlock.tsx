@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -110,8 +112,9 @@ export default function UnlockScreen() : React.ReactNode {
       } else {
         Alert.alert(t('common.error'), t('auth.errors.incorrectPassword'));
       }
-    } catch {
-      Alert.alert(t('common.error'), t('auth.errors.incorrectPasswordFallback'));
+    } catch (error) {
+      console.error('Unlock error:', error);
+      Alert.alert(t('common.error'), t('auth.errors.incorrectPassword'));
     } finally {
       setIsLoading(false);
     }

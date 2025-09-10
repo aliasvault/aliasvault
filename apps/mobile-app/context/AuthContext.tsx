@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainerRef, ParamListBase } from '@react-navigation/native';
 import * as LocalAuthentication from 'expo-local-authentication';
