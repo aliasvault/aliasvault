@@ -64,7 +64,7 @@
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>Для импорта хранилища 1Password нужно экспортировать его в CSV-файл. Войдите в учетную запись 1Password в настольном приложении 1Password 8 (Windows / MacOS / Linux), зайдите в меню «Файл» и выберите «Экспорт» (CSV).</value>
+    <value>Чтобы импортировать хранилище 1Password, сначала экспортируйте его в CSV-файл. Для этого войдите в учетную запись 1Password в настольном приложении 1Password 8 (Windows / MacOS / Linux), откройте меню «Файл» и выберите «Экспорт» (CSV).</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
@@ -77,7 +77,7 @@
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>Для импорта хранилища Bitwarden нужно экспортировать его в CSV-файл. Войдите в учетную запись Bitwarden, перейдите в меню «Инструменты» и выберите «Экспорт хранилища» (CSV).</value>
+    <value>Чтобы импортировать хранилище Bitwarden, сначала экспортируйте его в CSV-файл. Для этого войдите в учетную запись Bitwarden, откройте меню «Инструменты» и выберите «Экспорт хранилища» (CSV).</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
@@ -90,7 +90,7 @@
     <comment>Description for LastPass import service</comment>
   </data>
   <data name="LastPassInstructionsPart1" xml:space="preserve">
-    <value>Для импорта хранилища LastPass нужно экспортировать его в CSV-файл. Войдите в учетную запись LastPass, перейдите в раздел «Расширенные настройки» в левой боковой панели и выберите «Экспорт» > «Файл CSV LastPass».</value>
+    <value>Чтобы импортировать хранилище LastPass, сначала экспортируйте его в CSV-файл. Для этого войдите в учетную запись LastPass, откройте раздел «Расширенные настройки» в левой боковой панели и выберите «Экспорт» > «Файл CSV LastPass».</value>
     <comment>LastPass export instructions part 1</comment>
   </data>
   <data name="LastPassInstructionsPart2" xml:space="preserve">
@@ -103,7 +103,7 @@
     <comment>Description for Chrome import service</comment>
   </data>
   <data name="ChromeInstructionsPart1" xml:space="preserve">
-    <value>Для импорта паролей из Chrome нужно экспортировать их в CSV-файл. Откройте браузер Chrome, перейдите в меню «Настройки» > «Пароль и автозаполнение» > «Google Password Manager». Затем нажмите на кнопку «Экспорт паролей».</value>
+    <value>Чтобы импортировать пароли из Chrome, сначала экспортируйте их в CSV-файл. Для этого откройте браузер Chrome, перейдите в меню «Настройки» > «Пароль и автозаполнение» > «Google Password Manager» и нажмите «Экспорт паролей».</value>
     <comment>Chrome export instructions part 1</comment>
   </data>
   <data name="ChromeInstructionsPart2" xml:space="preserve">
@@ -116,7 +116,7 @@
     <comment>Description for KeePass import service</comment>
   </data>
   <data name="KeePassInstructionsPart1" xml:space="preserve">
-    <value>Для импорта хранилища KeePass нужно экспортировать его в CSV-файл. Перейдите в меню «Файл» и выберите «Экспорт» (CSV).</value>
+    <value>Чтобы импортировать хранилище KeePass, сначала экспортируйте его в CSV-файл. Для этого откройте меню «Файл» и выберите «Экспорт» (CSV).</value>
     <comment>KeePass export instructions part 1</comment>
   </data>
   <data name="KeePassInstructionsPart2" xml:space="preserve">
@@ -133,7 +133,7 @@
     <comment>Generic CSV instructions part 1</comment>
   </data>
   <data name="GenericCsvStep1" xml:space="preserve">
-    <value>Download the AliasVault Import CSV</value>
+    <value>Скачать CSV для импорта AliasVault</value>
     <comment>Generic CSV step 1</comment>
   </data>
   <data name="GenericCsvStep2" xml:space="preserve">
@@ -171,11 +171,11 @@
     <comment>Description for Dashlane import service</comment>
   </data>
   <data name="DashlaneInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Dashlane passwords, you need to export it as a CSV file. You can do this by logging into your Dashlane account, going to the 'Account' > 'Settings' menu and selecting 'Export to CSV'.</value>
+    <value>Для импорта паролей из Dashlane нужно экспортировать их в CSV-файл. Войдите в свой аккаунт Dashlane, открыв меню «Account» > «Settings» и выбрав пункт «Export to CSV».</value>
     <comment>Dashlane export instructions part 1</comment>
   </data>
   <data name="DashlaneInstructionsPart2" xml:space="preserve">
-    <value>Note: the .zip file you download will contain a "credentials.csv" file. You need to unzip the archive first, and then upload the "credentials.csv" CSV file below.</value>
+    <value>Примечание: загружаемый вами файл .zip будет содержать файл "credentials.csv". Сначала необходимо распаковать архив, а затем загрузить ниже CSV-файл "credentials.csv".</value>
     <comment>Dashlane export instructions part 2</comment>
   </data>
   <!-- KeePassXC -->
@@ -184,7 +184,7 @@
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
-    <value>In order to import your KeePassXC vault, you need to export it as a CSV file. You can do this by going to the 'Database' menu and selecting 'Export' (CSV File).</value>
+    <value>Для импорта хранилища KeePassXC нужно экспортировать его в CSV-файл. Это можно сделать, открыв меню «База данных» и выбрав пункт «Экспорт» (CSV-файл).</value>
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
@@ -197,7 +197,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Proton Pass passwords, you need to export it as a CSV file. You can do this by logging into Proton Pass (web), clicking on the 'Settings' menu > 'Export' > 'File format: CSV'. Then click on 'Export'.</value>
+    <value>Для импорта паролей из Proton Pass нужно экспортировать их в CSV-файл. Это можно сделать, войдя в Proton Pass (веб-версия), нажав в меню «Настройки» > «Экспорт» > «Формат файла: CSV». Затем нажмите «Экспорт».</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
