@@ -4,7 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, TextInput, Alert, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
+import { StyleSheet, View, TextInput, Alert, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text, Pressable } from 'react-native';
 
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
@@ -34,6 +34,7 @@ export default function UnlockScreen() : React.ReactNode {
   const { t } = useTranslation();
   const webApi = useWebApi();
   const [biometricDisplayName, setBiometricDisplayName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   /**
    * Check if the key derivation parameters are stored in native storage.
@@ -301,7 +302,7 @@ export default function UnlockScreen() : React.ReactNode {
                   <View style={styles.inputContainer}>
                     <MaterialIcons
                       name="lock"
-                      size={24}
+                      size={20}
                       color={colors.textMuted}
                       style={styles.inputIcon}
                     />
@@ -309,7 +310,7 @@ export default function UnlockScreen() : React.ReactNode {
                       style={styles.input}
                       placeholder={t('auth.enterPasswordPlaceholder')}
                       placeholderTextColor={colors.textMuted}
-                      secureTextEntry
+                      secureTextEntry={!showPassword}
                       value={password}
                       onChangeText={setPassword}
                       autoCapitalize="none"
@@ -317,6 +318,16 @@ export default function UnlockScreen() : React.ReactNode {
                       multiline={false}
                       numberOfLines={1}
                     />
+                    <Pressable
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={styles.inputIcon}
+                    >
+                      <MaterialIcons
+                        name={showPassword ? "visibility" : "visibility-off"}
+                        size={20}
+                        color={colors.textMuted}
+                      />
+                    </Pressable>
                   </View>
 
                   <RobustPressable

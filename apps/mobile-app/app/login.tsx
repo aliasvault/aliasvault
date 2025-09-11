@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, SafeAreaView, TextInput, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions, Alert } from 'react-native';
+import { StyleSheet, View, Text, SafeAreaView, TextInput, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions, Alert, Pressable } from 'react-native';
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import ConversionUtility from '@/utils/ConversionUtility';
@@ -64,6 +64,7 @@ export default function LoginScreen() : React.ReactNode {
   const [passwordHashString, setPasswordHashString] = useState<string | null>(null);
   const [passwordHashBase64, setPasswordHashBase64] = useState<string | null>(null);
   const [loginStatus, setLoginStatus] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const authContext = useAuth();
   const dbContext = useDb();
@@ -620,7 +621,7 @@ export default function LoginScreen() : React.ReactNode {
                   <View style={styles.inputContainer}>
                     <MaterialIcons
                       name="person"
-                      size={24}
+                      size={20}
                       color={colors.textMuted}
                       style={styles.inputIcon}
                     />
@@ -640,7 +641,7 @@ export default function LoginScreen() : React.ReactNode {
                   <View style={styles.inputContainer}>
                     <MaterialIcons
                       name="lock"
-                      size={24}
+                      size={20}
                       color={colors.textMuted}
                       style={styles.inputIcon}
                     />
@@ -649,13 +650,23 @@ export default function LoginScreen() : React.ReactNode {
                       value={credentials.password}
                       onChangeText={(text) => setCredentials({ ...credentials, password: text })}
                       placeholder={t('auth.passwordPlaceholder')}
-                      secureTextEntry
+                      secureTextEntry={!showPassword}
                       placeholderTextColor={colors.textMuted}
                       autoCorrect={false}
                       autoCapitalize="none"
                       multiline={false}
                       numberOfLines={1}
                     />
+                    <RobustPressable
+                      onPress={() => setShowPassword(!showPassword)}
+                      style={styles.inputIcon}
+                    >
+                      <MaterialIcons
+                        name={showPassword ? "visibility" : "visibility-off"}
+                        size={24}
+                        color={colors.textMuted}
+                      />
+                    </RobustPressable>
                   </View>
                   <RobustPressable
                     style={[styles.button, styles.primaryButton]}
