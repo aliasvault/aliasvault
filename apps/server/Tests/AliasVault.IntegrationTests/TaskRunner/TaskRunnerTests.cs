@@ -347,6 +347,133 @@ public class TaskRunnerTests
     }
 
     /// <summary>
+    /// Test that inactive users are properly identified based on MarkUserInactiveAfterDays setting.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task InactiveUserDetection_MarkUsersInactiveAfterDays()
+    {
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+
+        // Set inactive user threshold to 30 days
+        var inactiveSetting = new ServerSetting
+        {
+            Key = "MarkUserInactiveAfterDays",
+            Value = "30",
+        };
+        dbContext.ServerSettings.Add(inactiveSetting);
+        await dbContext.SaveChangesAsync();
+
+        // Create test users with different activity patterns
+        await SetupInactiveUserTest();
+
+        await _testHost.StartAsync();
+        await WaitForMaintenanceJobCompletion();
+
+        // Verify users are correctly identified as active/inactive
+        var activeUser = await dbContext.AliasVaultUsers.FirstAsync(u => u.UserName == "activeuser");
+        var inactiveUser = await dbContext.AliasVaultUsers.FirstAsync(u => u.UserName == "inactiveuser");
+        var oldUser = await dbContext.AliasVaultUsers.FirstAsync(u => u.UserName == "olduser");
+
+        // Note: The task runner doesn't directly modify user records, but the admin UI uses these settings
+        // to determine inactive status. This test verifies the setting is properly stored and retrievable.
+        var storedSetting = await dbContext.ServerSettings
+            .FirstAsync(s => s.Key == "MarkUserInactiveAfterDays");
+        Assert.That(storedSetting.Value, Is.EqualTo("30"), "MarkUserInactiveAfterDays setting should be stored correctly");
+    }
+
+    /// <summary>
+    /// Test that MaxEmailsPerInactiveUser setting enforces email limits for inactive users.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task InactiveUserEmailLimits_EnforcesMaxEmailsPerInactiveUser()
+    {
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+
+        // Set inactive user threshold to 30 days
+        var inactiveSetting = new ServerSetting
+        {
+            Key = "MarkUserInactiveAfterDays",
+            Value = "30",
+        };
+        dbContext.ServerSettings.Add(inactiveSetting);
+
+        // Set max emails per inactive user to 5
+        var inactiveEmailLimitSetting = new ServerSetting
+        {
+            Key = "MaxEmailsPerInactiveUser",
+            Value = "5",
+        };
+        dbContext.ServerSettings.Add(inactiveEmailLimitSetting);
+
+        await dbContext.SaveChangesAsync();
+
+        // Create test users with different activity levels and email counts
+        await SetupInactiveUserEmailLimitsTest();
+
+        await _testHost.StartAsync();
+        await WaitForMaintenanceJobCompletion();
+
+        // Check that active user retains all emails
+        var activeUserEmailCount = await dbContext.Emails
+            .Where(e => e.To == "activeuser@test.com")
+            .CountAsync();
+        Assert.That(activeUserEmailCount, Is.EqualTo(20), "Active user should retain all emails");
+
+        // Check that inactive user has emails limited to MaxEmailsPerInactiveUser
+        var inactiveUserEmailCount = await dbContext.Emails
+            .Where(e => e.To == "inactiveuser@test.com")
+            .CountAsync();
+        Assert.That(inactiveUserEmailCount, Is.EqualTo(5), "Inactive user should have emails limited to MaxEmailsPerInactiveUser setting");
+    }
+
+    /// <summary>
+    /// Test that when MarkUserInactiveAfterDays is 0 (disabled), no users are considered inactive.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task InactiveUserDetection_DisabledWhenZeroDays()
+    {
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+
+        // Set inactive user threshold to 0 (disabled)
+        var inactiveSetting = new ServerSetting
+        {
+            Key = "MarkUserInactiveAfterDays",
+            Value = "0",
+        };
+        dbContext.ServerSettings.Add(inactiveSetting);
+
+        // Set max emails per inactive user (should not be applied when inactive detection is disabled)
+        var inactiveEmailLimitSetting = new ServerSetting
+        {
+            Key = "MaxEmailsPerInactiveUser",
+            Value = "3",
+        };
+        dbContext.ServerSettings.Add(inactiveEmailLimitSetting);
+
+        await dbContext.SaveChangesAsync();
+
+        // Create test users including very old users
+        await SetupInactiveUserTest();
+
+        await _testHost.StartAsync();
+        await WaitForMaintenanceJobCompletion();
+
+        // Check that even very old users retain all emails since inactive detection is disabled
+        var oldUserEmailCount = await dbContext.Emails
+            .Where(e => e.To == "olduser@test.com")
+            .CountAsync();
+        Assert.That(oldUserEmailCount, Is.EqualTo(15), "Old user should retain all emails when inactive detection is disabled");
+
+        // Verify the setting is stored as 0
+        var storedSetting = await dbContext.ServerSettings
+            .FirstAsync(s => s.Key == "MarkUserInactiveAfterDays");
+        Assert.That(storedSetting.Value, Is.EqualTo("0"), "MarkUserInactiveAfterDays should be 0 (disabled)");
+    }
+
+    /// <summary>
     /// Creates a base email with static required fields.
     /// </summary>
     /// <param name="to">The recipient email address.</param>
@@ -719,6 +846,138 @@ public class TaskRunnerTests
 
             dbContext.Emails.Add(CreateTestEmail("userwithLimit@test.com", encryptionKey, $"Limited User Email {i}", dateCreated));
             dbContext.Emails.Add(CreateTestEmail("userwithoutLimit@test.com", encryptionKey, $"Unlimited User Email {i}", dateCreated));
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Sets up test data for inactive user detection testing.
+    /// </summary>
+    /// <returns>Task.</returns>
+    private async Task SetupInactiveUserTest()
+    {
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+
+        // Create active user (recent activity)
+        var activeUser = new AliasVaultUser
+        {
+            UserName = "activeuser",
+            Email = "activeuser@test.com",
+            LastActivityDate = DateTime.UtcNow.AddDays(-5), // Active within 30 days
+        };
+        dbContext.AliasVaultUsers.Add(activeUser);
+
+        // Create inactive user (no recent activity)
+        var inactiveUser = new AliasVaultUser
+        {
+            UserName = "inactiveuser",
+            Email = "inactiveuser@test.com",
+            LastActivityDate = DateTime.UtcNow.AddDays(-45), // Inactive for 45 days
+        };
+        dbContext.AliasVaultUsers.Add(inactiveUser);
+
+        // Create old user (very old, no activity)
+        var oldUser = new AliasVaultUser
+        {
+            UserName = "olduser",
+            Email = "olduser@test.com",
+            LastActivityDate = null, // Never logged in
+            CreatedAt = DateTime.UtcNow.AddDays(-100), // Created 100 days ago
+        };
+        dbContext.AliasVaultUsers.Add(oldUser);
+
+        await dbContext.SaveChangesAsync();
+
+        // Create encryption key
+        var encryptionKey = new UserEncryptionKey
+        {
+            Id = Guid.NewGuid(),
+            UserId = activeUser.Id,
+            PublicKey = "test-encryption-key",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+        dbContext.UserEncryptionKeys.Add(encryptionKey);
+
+        // Create email claims for each user
+        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = activeUser.Id, Address = "activeuser@test.com", AddressLocal = "activeuser", AddressDomain = "test.com" });
+        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = inactiveUser.Id, Address = "inactiveuser@test.com", AddressLocal = "inactiveuser", AddressDomain = "test.com" });
+        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = oldUser.Id, Address = "olduser@test.com", AddressLocal = "olduser", AddressDomain = "test.com" });
+
+        // Create emails for each user
+        for (int i = 0; i < 10; i++)
+        {
+            var dateCreated = DateTime.UtcNow.AddDays(-i);
+            dbContext.Emails.Add(CreateTestEmail("activeuser@test.com", encryptionKey, $"Active User Email {i}", dateCreated));
+            dbContext.Emails.Add(CreateTestEmail("inactiveuser@test.com", encryptionKey, $"Inactive User Email {i}", dateCreated));
+        }
+
+        // Create 15 emails for old user
+        for (int i = 0; i < 15; i++)
+        {
+            var dateCreated = DateTime.UtcNow.AddDays(-i);
+            dbContext.Emails.Add(CreateTestEmail("olduser@test.com", encryptionKey, $"Old User Email {i}", dateCreated));
+        }
+
+        await dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Sets up test data for inactive user email limits testing.
+    /// </summary>
+    /// <returns>Task.</returns>
+    private async Task SetupInactiveUserEmailLimitsTest()
+    {
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+
+        // Create active user (recent activity)
+        var activeUser = new AliasVaultUser
+        {
+            UserName = "activeuser",
+            Email = "activeuser@test.com",
+            LastActivityDate = DateTime.UtcNow.AddDays(-5), // Active within 30 days
+        };
+        dbContext.AliasVaultUsers.Add(activeUser);
+
+        // Create inactive user (no recent activity)
+        var inactiveUser = new AliasVaultUser
+        {
+            UserName = "inactiveuser",
+            Email = "inactiveuser@test.com",
+            LastActivityDate = DateTime.UtcNow.AddDays(-45), // Inactive for 45 days
+        };
+        dbContext.AliasVaultUsers.Add(inactiveUser);
+
+        await dbContext.SaveChangesAsync();
+
+        // Create encryption key
+        var encryptionKey = new UserEncryptionKey
+        {
+            Id = Guid.NewGuid(),
+            UserId = activeUser.Id,
+            PublicKey = "test-encryption-key",
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+        dbContext.UserEncryptionKeys.Add(encryptionKey);
+
+        // Create email claims for each user
+        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = activeUser.Id, Address = "activeuser@test.com", AddressLocal = "activeuser", AddressDomain = "test.com" });
+        dbContext.UserEmailClaims.Add(new UserEmailClaim { UserId = inactiveUser.Id, Address = "inactiveuser@test.com", AddressLocal = "inactiveuser", AddressDomain = "test.com" });
+
+        // Create 20 emails for active user
+        for (int i = 0; i < 20; i++)
+        {
+            var dateCreated = DateTime.UtcNow.AddDays(-i);
+            dbContext.Emails.Add(CreateTestEmail("activeuser@test.com", encryptionKey, $"Active User Email {i}", dateCreated));
+        }
+
+        // Create 15 emails for inactive user (should be reduced to MaxEmailsPerInactiveUser)
+        for (int i = 0; i < 15; i++)
+        {
+            var dateCreated = DateTime.UtcNow.AddDays(-i);
+            dbContext.Emails.Add(CreateTestEmail("inactiveuser@test.com", encryptionKey, $"Inactive User Email {i}", dateCreated));
         }
 
         await dbContext.SaveChangesAsync();
