@@ -4,10 +4,6 @@
     <div class="hidden md:block">
         <nav aria-label="Page navigation" class="mt-4 flex justify-end mb-5">
             <ul class="flex space-x-2">
-                <!-- First page button -->
-                <li class="@(CurrentPage == 1 ? "opacity-50 cursor-not-allowed" : "")">
-                    <a class="px-3 py-2 bg-primary-100 text-primary-700 border border-primary-300 rounded hover:bg-primary-200 transition duration-300 shadow-sm" href="javascript:void(0)" @onclick="() => SetPage(1)">First</a>
-                </li>
                 <!-- Previous page button -->
                 <li class="@(CurrentPage == 1 ? "opacity-50 cursor-not-allowed" : "")">
                     <a class="px-3 py-2 bg-primary-100 text-primary-700 border border-primary-300 rounded hover:bg-primary-200 transition duration-300 shadow-sm" href="javascript:void(0)" @onclick="() => ChangePage(-1)">Previous</a>
@@ -15,7 +11,8 @@
                 @for (var i = 1; i <= PageCount; i++)
                 {
                     var pageNum = i;
-                    if (i > 2 && i < PageCount - 2 && Math.Abs(CurrentPage - i) > 3)
+                    // Show first page, last page, and pages around current page
+                    if (i != 1 && i != PageCount && Math.Abs(CurrentPage - i) > 2)
                     {
                         // Don't render intermediate pages when there are many pages
                         continue;
@@ -28,10 +25,6 @@
                 <!-- Next page button -->
                 <li class="@(CurrentPage == PageCount ? "opacity-50 cursor-not-allowed" : "")">
                     <a class="px-3 py-2 bg-primary-100 text-primary-700 border border-primary-300 rounded hover:bg-primary-200 transition duration-300 shadow-sm" href="javascript:void(0)" @onclick="() => ChangePage(1)">Next</a>
-                </li>
-                <!-- Last page button -->
-                <li class="@(CurrentPage == PageCount ? "opacity-50 cursor-not-allowed" : "")">
-                    <a class="px-3 py-2 bg-primary-100 text-primary-700 border border-primary-300 rounded hover:bg-primary-200 transition duration-300 shadow-sm" href="javascript:void(0)" @onclick="() => SetPage(PageCount)">Last</a>
                 </li>
             </ul>
         </nav>
