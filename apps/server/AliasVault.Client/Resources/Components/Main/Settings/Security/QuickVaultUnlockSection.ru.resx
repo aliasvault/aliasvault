@@ -79,23 +79,23 @@
     <comment>Warning about experimental nature of the feature</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Quick Vault Unlock</value>
+    <value>Включить быструю разблокировку</value>
     <comment>Button to enable quick vault unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Quick Vault Unlock is successfully enabled. The next time your vault is locked you can unlock it with your created passkey.</value>
+    <value>Быстрая разблокировка хранилища включена. В следующий раз хранилище можно будет открыть с помощью созданного passkey.</value>
     <comment>Success message when quick unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Quick Vault Unlock is successfully disabled.</value>
+    <value>Быстрая разблокировка хранилища отключена.</value>
     <comment>Success message when quick unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Your current browser does not support the WebAuthn PRF extension. Please try again with a different browser.</value>
+    <value>Этот браузер не поддерживает WebAuthn PRF. Попробуйте открыть в другом браузере.</value>
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
-    <value>An error occurred while trying to enable Quick Vault Unlock. Please try again (later).</value>
+    <value>Не удалось включить быструю разблокировку хранилища. Попробуйте ещё раз (чуть позже).</value>
     <comment>Generic error message when enabling fails</comment>
   </data>
 </root>
