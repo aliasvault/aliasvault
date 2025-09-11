@@ -5,7 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, SafeAreaView, TextInput, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions, Alert, Pressable } from 'react-native';
+import { StyleSheet, View, Text, SafeAreaView, TextInput, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions, Alert } from 'react-native';
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import ConversionUtility from '@/utils/ConversionUtility';
