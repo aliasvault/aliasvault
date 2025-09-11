@@ -39,11 +39,11 @@ public class ServerSettingsModel
     public int MaxEmailsPerUser { get; set; }
 
     /// <summary>
-    /// Gets or sets the number of days of inactivity before marking a user as inactive. Defaults to 90 days.
+    /// Gets or sets the number of days of inactivity before marking a user as inactive. Defaults to 0 (disabled).
     /// Users that have not logged in or had activity in the last number of days are marked as inactive.
-    /// Other retention rules can act on this status.
+    /// Other retention rules can act on this status. Set to 0 to disable inactive user marking.
     /// </summary>
-    public int MarkUserInactiveAfterDays { get; set; } = 90;
+    public int MarkUserInactiveAfterDays { get; set; }
 
     /// <summary>
     /// Gets or sets the max emails per inactive user. Defaults to 0 (unlimited).

@@ -59,6 +59,10 @@ else
                     <SortableTableColumn>@(user.LastActivityDate?.ToString("yyyy-MM-dd HH:mm") ?? "Never")</SortableTableColumn>
                     <SortableTableColumn>
                         <div class="flex flex-wrap gap-1">
+                            @if (user.IsInactive)
+                            {
+                                <StatusPill Enabled="false" TextFalse="Inactive" />
+                            }
                             @if (user.Blocked)
                             {
                                 <StatusPill Enabled="false" TextFalse="Blocked" />
@@ -66,10 +70,6 @@ else
                             @if (user.TwoFactorEnabled)
                             {
                                 <StatusPill Enabled="true" TextTrue="2FA enabled" />
-                            }
-                            @if (user.IsInactive)
-                            {
-                                <StatusPill Enabled="false" TextFalse="Inactive" />
                             }
                         </div>
                     </SortableTableColumn>
@@ -304,6 +304,11 @@ else
                     if (inactivityCutoffDate.HasValue)
                     {
                         query = query.Where(u => (u.LastActivityDate != null && u.LastActivityDate < inactivityCutoffDate.Value) || (u.LastActivityDate == null && u.CreatedAt < inactivityCutoffDate.Value));
+                    }
+                    else
+                    {
+                        // If MarkUserInactiveAfterDays is 0, no users are considered inactive
+                        query = query.Where(u => false);
                     }
                     break;
                 case "blocked":

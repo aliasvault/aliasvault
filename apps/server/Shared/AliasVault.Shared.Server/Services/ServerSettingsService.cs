@@ -128,6 +128,16 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
             model.MaxEmailsPerUser = maxEmails;
         }
 
+        if (int.TryParse(settings.GetValueOrDefault("MarkUserInactiveAfterDays"), out var inactiveDays))
+        {
+            model.MarkUserInactiveAfterDays = inactiveDays;
+        }
+
+        if (int.TryParse(settings.GetValueOrDefault("MaxEmailsPerInactiveUser"), out var maxInactiveEmails))
+        {
+            model.MaxEmailsPerInactiveUser = maxInactiveEmails;
+        }
+
         if (TimeOnly.TryParse(
             settings.GetValueOrDefault("MaintenanceTime") ?? "00:00",
             CultureInfo.InvariantCulture,
@@ -175,6 +185,8 @@ public class ServerSettingsService(IAliasServerDbContextFactory dbContextFactory
         await SetSettingAsync("EmailRetentionDays", model.EmailRetentionDays.ToString());
         await SetSettingAsync("DisabledEmailRetentionDays", model.DisabledEmailRetentionDays.ToString());
         await SetSettingAsync("MaxEmailsPerUser", model.MaxEmailsPerUser.ToString());
+        await SetSettingAsync("MarkUserInactiveAfterDays", model.MarkUserInactiveAfterDays.ToString());
+        await SetSettingAsync("MaxEmailsPerInactiveUser", model.MaxEmailsPerInactiveUser.ToString());
         await SetSettingAsync("MaintenanceTime", model.MaintenanceTime.ToString("HH:mm", CultureInfo.InvariantCulture));
         await SetSettingAsync("TaskRunnerDays", string.Join(",", model.TaskRunnerDays));
         await SetSettingAsync("RefreshTokenLifetimeShort", model.RefreshTokenLifetimeShort.ToString());

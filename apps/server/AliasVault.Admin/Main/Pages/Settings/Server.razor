@@ -36,7 +36,7 @@
 </div>
 
 <div class="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-    <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">Data Retention</h3>
+    <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">General Data Retention</h3>
     <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
         <div>
             <label for="generalLogRetention" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">General Log Retention (days)</label>
@@ -48,6 +48,23 @@
             <input type="number" @bind="Settings.AuthLogRetentionDays" id="authLogRetention" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Number of days to keep auth logs before deletion. Set to 0 to disable automatic cleanup.</p>
         </div>
+    </div>
+</div>
+
+<div class="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">Inactive User Settings</h3>
+    <div class="grid gap-4 mb-4 sm:grid-cols-1 sm:gap-6 sm:mb-5">
+        <div>
+            <label for="markInactiveDays" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mark User as Inactive After (days)</label>
+            <input type="number" @bind="Settings.MarkUserInactiveAfterDays" id="markInactiveDays" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Users that have not logged in or had activity in the last number of days are marked as inactive. Other retention rules can act on this. Set to 0 to disable.</p>
+        </div>
+    </div>
+</div>
+
+<div class="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">Email Settings</h3>
+    <div class="grid gap-4 mb-4 sm:grid-cols-2 sm:gap-6 sm:mb-5">
         <div>
             <label for="emailRetention" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">General Email Retention (days)</label>
             <input type="number" @bind="Settings.EmailRetentionDays" id="emailRetention" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
@@ -64,16 +81,10 @@
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Number of emails a user can have in total. Emails exceeding this limit will be deleted, oldest first. Set to 0 for unlimited emails</p>
         </div>
         <div>
-            <label for="markInactiveDays" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Mark User as Inactive After (days)</label>
-            <input type="number" @bind="Settings.MarkUserInactiveAfterDays" id="markInactiveDays" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Users that have not logged in or had activity in the last number of days are marked as inactive. Other retention rules can act on this. Set to 0 to disable.</p>
-        </div>
-        <div>
             <label for="maxEmailsInactive" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Max Emails per Inactive User</label>
             <input type="number" @bind="Settings.MaxEmailsPerInactiveUser" id="maxEmailsInactive" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">This limit only applies to users that are marked as inactive per the Mark User as Inactive After (days) setting. Set to 0 for unlimited emails.</p>
         </div>
-
     </div>
 </div>
 
