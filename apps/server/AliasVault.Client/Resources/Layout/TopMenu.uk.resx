@@ -21,51 +21,51 @@
   </xsd:schema>
   <!-- Main navigation links -->
   <data name="CredentialsNav">
-    <value>Credentials</value>
+    <value>Облікові дані</value>
     <comment>Main navigation link for credentials section</comment>
   </data>
   <data name="EmailsNav">
-    <value>Emails</value>
+    <value>Електронні листи</value>
     <comment>Main navigation link for emails section</comment>
   </data>
   <!-- Settings menu items -->
   <data name="GeneralSettingsNav">
-    <value>General settings</value>
+    <value>Загальні налаштування</value>
     <comment>Navigation link for general settings</comment>
   </data>
   <data name="SecuritySettingsNav">
-    <value>Security settings</value>
+    <value>Налаштування безпеки</value>
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="ImportExportNav">
-    <value>Import / Export</value>
+    <value>Імпорт / Експорт</value>
     <comment>Navigation link for import/export settings</comment>
   </data>
   <data name="ExtensionsAppsNav">
-    <value>Extensions &amp; Apps</value>
+    <value>Розширення та додатки</value>
     <comment>Navigation link for extensions and apps settings</comment>
   </data>
   <!-- Menu actions -->
   <data name="ToggleDarkMode">
-    <value>Toggle dark mode</value>
+    <value>Увімкнути темний режим</value>
     <comment>Button text for toggling dark/light theme</comment>
   </data>
   <data name="LogOut">
-    <value>Log out</value>
+    <value>Вийти</value>
     <comment>Button text for logging out</comment>
   </data>
   <!-- Accessibility labels -->
   <data name="OpenMenuLabel">
-    <value>Open menu</value>
+    <value>Відкрити меню</value>
     <comment>Screen reader label for mobile menu button</comment>
   </data>
   <!-- Status labels -->
   <data name="NewLabel">
-    <value>NEW</value>
+    <value>НОВЕ</value>
     <comment>Label for new features or menu items</comment>
   </data>
   <data name="BetaLabel">
-    <value>BETA</value>
+    <value>БЕТА</value>
     <comment>Label indicating beta version of the application</comment>
   </data>
 </root>
