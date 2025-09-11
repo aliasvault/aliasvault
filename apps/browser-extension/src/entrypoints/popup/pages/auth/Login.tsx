@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 import Button from '@/entrypoints/popup/components/Button';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
-import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoginServerInfo from '@/entrypoints/popup/components/LoginServerInfo';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
@@ -39,6 +39,7 @@ const Login: React.FC = () => {
   });
   const { showLoading, hideLoading, setIsInitialLoading } = useLoading();
   const [rememberMe, setRememberMe] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
   const [loginResponse, setLoginResponse] = useState<LoginResponse | null>(null);
   const [passwordHashString, setPasswordHashString] = useState<string | null>(null);
   const [passwordHashBase64, setPasswordHashBase64] = useState<string | null>(null);
@@ -379,16 +380,26 @@ const Login: React.FC = () => {
           <label className="block text-gray-700 dark:text-gray-200 font-bold mb-2" htmlFor="password">
             {t('auth.password')}
           </label>
-          <input
-            className="shadow text-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-            id="password"
-            type="password"
-            name="password"
-            placeholder={t('auth.passwordPlaceholder')}
-            value={credentials.password}
-            onChange={handleChange}
-            required
-          />
+          <div className="relative">
+            <input
+              className="shadow text-sm appearance-none border rounded w-full py-2 px-3 pr-10 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+              id="password"
+              type={showPassword ? "text" : "password"}
+              name="password"
+              placeholder={t('auth.passwordPlaceholder')}
+              value={credentials.password}
+              onChange={handleChange}
+              required
+            />
+            <button
+              type="button"
+              className="absolute right-2 top-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+              onClick={() => setShowPassword(!showPassword)}
+              tabIndex={-1}
+            >
+              <HeaderIcon type={showPassword ? HeaderIconType.EYE_OFF : HeaderIconType.EYE} className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+            </button>
+          </div>
         </div>
         <div className="mb-6">
           <label className="flex items-center">
