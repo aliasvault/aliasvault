@@ -1,5 +1,7 @@
 ﻿@page "/users"
 @using AliasVault.RazorComponents.Tables
+@using AliasVault.Shared.Server.Services
+@inject ServerSettingsService SettingsService
 @inherits MainBase
 
 <LayoutPageTitle>Users</LayoutPageTitle>
@@ -17,10 +19,21 @@
 {
     <div class="px-4">
         <ResponsivePaginator CurrentPage="CurrentPage" PageSize="PageSize" TotalRecords="TotalRecords" OnPageChanged="HandlePageChanged" />
-        <div class="mb-3">
-            <div class="relative">
-                <SearchIcon />
-                <input type="text" @bind-value="SearchTerm" @bind-value:event="oninput" id="search" placeholder="Search users..." class="w-full px-4 ps-10 py-2 border rounded text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+        <div class="mb-3 flex space-x-4">
+            <div class="w-3/4">
+                <div class="relative">
+                    <SearchIcon />
+                    <input type="text" @bind-value="SearchTerm" @bind-value:event="oninput" id="search" placeholder="Search users..." class="w-full px-4 ps-10 py-2 border rounded text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                </div>
+            </div>
+            <div class="w-1/4">
+                <select @bind="SelectedUserFilter" class="w-full px-4 py-2 border rounded text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                    <option value="">All Users</option>
+                    <option value="active">Active Users</option>
+                    <option value="inactive">Inactive Users</option>
+                    <option value="blocked">Blocked Users</option>
+                    <option value="2fa">2FA Enabled</option>
+                </select>
             </div>
         </div>
     </div>
@@ -44,16 +57,22 @@ else
                     <SortableTableColumn>@user.EmailClaimCount</SortableTableColumn>
                     <SortableTableColumn>@user.ReceivedEmailCount</SortableTableColumn>
                     <SortableTableColumn>@Math.Round((double)user.VaultStorageInKb / 1024, 1) MB</SortableTableColumn>
-                    <SortableTableColumn>@user.LastVaultUpdate.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
+                    <SortableTableColumn>@(user.LastActivityDate?.ToString("yyyy-MM-dd HH:mm") ?? "Never")</SortableTableColumn>
                     <SortableTableColumn>
-                        @if (user.Blocked)
-                        {
-                            <StatusPill Enabled="false" TextFalse="Blocked" />
-                        }
-                        @if (user.TwoFactorEnabled)
-                        {
-                            <StatusPill Enabled="true" TextTrue="2FA enabled" />
-                        }
+                        <div class="flex flex-wrap gap-1">
+                            @if (user.Blocked)
+                            {
+                                <StatusPill Enabled="false" TextFalse="Blocked" />
+                            }
+                            @if (user.TwoFactorEnabled)
+                            {
+                                <StatusPill Enabled="true" TextTrue="2FA enabled" />
+                            }
+                            @if (user.IsInactive)
+                            {
+                                <StatusPill Enabled="false" TextFalse="Inactive" />
+                            }
+                        </div>
                     </SortableTableColumn>
                     <SortableTableColumn>
                         <LinkButton Color="primary" Href="@($"users/{user.Id}")" Text="View" />
@@ -73,7 +92,7 @@ else
         new TableColumn { Title = "# Email claims", PropertyName = "EmailClaimCount" },
         new TableColumn { Title = "# Received emails", PropertyName = "ReceivedEmailCount" },
         new TableColumn { Title = "Storage", PropertyName = "VaultStorageInKb" },
-        new TableColumn { Title = "LastVaultUpdate", PropertyName = "LastVaultUpdate" },
+        new TableColumn { Title = "Last Activity", PropertyName = "LastActivityDate" },
         new TableColumn { Title = "Status", Sortable = false },
         new TableColumn { Title = "Actions", Sortable = false},
     ];
@@ -101,6 +120,23 @@ else
             if (_searchTerm != value)
             {
                 _searchTerm = value;
+                _searchCancellationTokenSource?.Cancel();
+                _searchCancellationTokenSource = new CancellationTokenSource();
+                _ = RefreshData(_searchCancellationTokenSource.Token);
+            }
+        }
+    }
+
+    private string _selectedUserFilter = string.Empty;
+    private string _lastSelectedUserFilter = string.Empty;
+    private string SelectedUserFilter
+    {
+        get => _selectedUserFilter;
+        set
+        {
+            if (_selectedUserFilter != value)
+            {
+                _selectedUserFilter = value;
                 _searchCancellationTokenSource?.Cancel();
                 _searchCancellationTokenSource = new CancellationTokenSource();
                 _ = RefreshData(_searchCancellationTokenSource.Token);
@@ -147,10 +183,16 @@ else
             IsLoading = true;
             StateHasChanged();
 
+            var settings = await SettingsService.GetAllSettingsAsync();
+            var inactivityCutoffDate = settings.MarkUserInactiveAfterDays > 0
+                ? DateTime.UtcNow.AddDays(-settings.MarkUserInactiveAfterDays)
+                : (DateTime?)null;
+
             await using var dbContext = await DbContextFactory.CreateDbContextAsync(cancellationToken);
             IQueryable<AliasVaultUser> query = dbContext.AliasVaultUsers;
 
             query = ApplySearchFilter(query);
+            query = ApplyUserFilter(query, inactivityCutoffDate);
             query = ApplySort(query, dbContext);
 
             TotalRecords = await query.CountAsync(cancellationToken);
@@ -164,6 +206,7 @@ else
                     u.CreatedAt,
                     u.TwoFactorEnabled,
                     u.Blocked,
+                    u.LastActivityDate,
                     Vaults = u.Vaults.Select(v => new
                     {
                         v.FileSize,
@@ -185,19 +228,27 @@ else
                 return;
             }
 
-            UserList = users.Select(user => new UserViewModel
+            UserList = users.Select(user =>
             {
-                Id = user.Id,
-                UserName = user.UserName?.ToLower() ?? "N/A",
-                TwoFactorEnabled = user.TwoFactorEnabled,
-                Blocked = user.Blocked,
-                CreatedAt = user.CreatedAt,
-                VaultCount = user.Vaults.Count(),
-                CredentialCount = user.Vaults.OrderByDescending(x => x.RevisionNumber).First().CredentialCount,
-                EmailClaimCount = user.EmailClaims.Count(),
-                ReceivedEmailCount = user.ReceivedEmails,
-                VaultStorageInKb = user.Vaults.Sum(x => x.FileSize),
-                LastVaultUpdate = user.Vaults.Any() ? user.Vaults.Max(x => x.CreatedAt) : user.CreatedAt,
+                var lastActivity = user.LastActivityDate ?? user.CreatedAt;
+                var isInactive = inactivityCutoffDate.HasValue && lastActivity < inactivityCutoffDate.Value;
+
+                return new UserViewModel
+                {
+                    Id = user.Id,
+                    UserName = user.UserName?.ToLower() ?? "N/A",
+                    TwoFactorEnabled = user.TwoFactorEnabled,
+                    Blocked = user.Blocked,
+                    CreatedAt = user.CreatedAt,
+                    LastActivityDate = user.LastActivityDate,
+                    IsInactive = isInactive,
+                    VaultCount = user.Vaults.Count(),
+                    CredentialCount = user.Vaults.OrderByDescending(x => x.RevisionNumber).First().CredentialCount,
+                    EmailClaimCount = user.EmailClaims.Count(),
+                    ReceivedEmailCount = user.ReceivedEmails,
+                    VaultStorageInKb = user.Vaults.Sum(x => x.FileSize),
+                    LastVaultUpdate = user.Vaults.Any() ? user.Vaults.Max(x => x.CreatedAt) : user.CreatedAt,
+                };
             }).ToList();
 
             IsLoading = false;
@@ -226,6 +277,47 @@ else
 
             var searchTerm = SearchTerm.Trim().ToLower();
             query = query.Where(x => EF.Functions.Like(x.UserName!.ToLower(), "%" + searchTerm + "%"));
+        }
+
+        return query;
+    }
+
+    /// <summary>
+    /// Apply user filter to the query.
+    /// </summary>
+    private IQueryable<AliasVaultUser> ApplyUserFilter(IQueryable<AliasVaultUser> query, DateTime? inactivityCutoffDate)
+    {
+        if (!string.IsNullOrEmpty(SelectedUserFilter))
+        {
+            // Reset page number back to 1 if the filter has changed.
+            if (SelectedUserFilter != _lastSelectedUserFilter && CurrentPage != 1)
+            {
+                CurrentPage = 1;
+            }
+            _lastSelectedUserFilter = SelectedUserFilter;
+
+            switch (SelectedUserFilter)
+            {
+                case "active":
+                    if (inactivityCutoffDate.HasValue)
+                    {
+                        query = query.Where(u => u.LastActivityDate >= inactivityCutoffDate.Value || (u.LastActivityDate == null && u.CreatedAt >= inactivityCutoffDate.Value));
+                    }
+                    query = query.Where(u => !u.Blocked);
+                    break;
+                case "inactive":
+                    if (inactivityCutoffDate.HasValue)
+                    {
+                        query = query.Where(u => (u.LastActivityDate != null && u.LastActivityDate < inactivityCutoffDate.Value) || (u.LastActivityDate == null && u.CreatedAt < inactivityCutoffDate.Value));
+                    }
+                    break;
+                case "blocked":
+                    query = query.Where(u => u.Blocked);
+                    break;
+                case "2fa":
+                    query = query.Where(u => u.TwoFactorEnabled);
+                    break;
+            }
         }
 
         return query;
@@ -279,10 +371,10 @@ else
                     ? query.OrderBy(x => x.Vaults.Sum(v => v.FileSize))
                     : query.OrderByDescending(x => x.Vaults.Sum(v => v.FileSize));
                 break;
-            case "LastVaultUpdate":
+            case "LastActivityDate":
                 query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.Vaults.Max(v => v.CreatedAt))
-                    : query.OrderByDescending(x => x.Vaults.Max(v => v.CreatedAt));
+                    ? query.OrderBy(x => x.LastActivityDate ?? x.CreatedAt)
+                    : query.OrderByDescending(x => x.LastActivityDate ?? x.CreatedAt);
                 break;
             default:
                 query = SortDirection == SortDirection.Ascending

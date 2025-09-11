@@ -33,6 +33,8 @@ public class ServerSettingsTests : AdminPlaywrightTest
         await Page.Locator("input[id='authLogRetention']").FillAsync("120");
         await Page.Locator("input[id='emailRetention']").FillAsync("60");
         await Page.Locator("input[id='maxEmails']").FillAsync("200");
+        await Page.Locator("input[id='markInactiveDays']").FillAsync("180");
+        await Page.Locator("input[id='maxEmailsInactive']").FillAsync("50");
 
         // Set maintenance time
         await Page.Locator("input[id='schedule']").FillAsync("03:30");
@@ -63,6 +65,12 @@ public class ServerSettingsTests : AdminPlaywrightTest
 
         var maxEmails = settings.Find(s => s.Key == "MaxEmailsPerUser");
         Assert.That(maxEmails?.Value, Is.EqualTo("200"), "Max emails per user not saved correctly");
+
+        var markInactiveDays = settings.Find(s => s.Key == "MarkUserInactiveAfterDays");
+        Assert.That(markInactiveDays?.Value, Is.EqualTo("180"), "Mark user inactive after days not saved correctly");
+
+        var maxEmailsInactive = settings.Find(s => s.Key == "MaxEmailsPerInactiveUser");
+        Assert.That(maxEmailsInactive?.Value, Is.EqualTo("50"), "Max emails per inactive user not saved correctly");
 
         // Check maintenance schedule
         var maintenanceTime = settings.Find(s => s.Key == "MaintenanceTime");

@@ -66,4 +66,14 @@ public class UserViewModel
     /// Gets or sets the last time the vault was updated.
     /// </summary>
     public DateTime LastVaultUpdate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the last activity date of the user.
+    /// </summary>
+    public DateTime? LastActivityDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the user is considered inactive.
+    /// </summary>
+    public bool IsInactive { get; set; }
 }

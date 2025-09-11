@@ -45,6 +45,12 @@ public class AliasVaultUser : IdentityUser
     public int MaxEmailAgeDays { get; set; } = 0;
 
     /// <summary>
+    /// Gets or sets the date of the user's last activity (login, API call, etc.).
+    /// Updated automatically on successful authentication events.
+    /// </summary>
+    public DateTime? LastActivityDate { get; set; }
+
+    /// <summary>
     /// Gets or sets the collection of vaults.
     /// </summary>
     public virtual ICollection<Vault> Vaults { get; set; } = [];

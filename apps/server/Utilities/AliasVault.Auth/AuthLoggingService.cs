@@ -11,6 +11,7 @@ using AliasServerDb;
 using AliasVault.Shared.Models.Configuration;
 using AliasVault.Shared.Models.Enums;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 /// <summary>
@@ -55,6 +56,14 @@ public class AuthLoggingService(IServiceProvider serviceProvider, IHttpContextAc
         };
 
         dbContext.AuthLogs.Add(authAttempt);
+
+        // Update user's last activity date.
+        var user = await dbContext.AliasVaultUsers.FirstOrDefaultAsync(u => u.UserName == username);
+        if (user != null)
+        {
+            user.LastActivityDate = DateTime.UtcNow;
+        }
+
         await dbContext.SaveChangesAsync();
     }
 
