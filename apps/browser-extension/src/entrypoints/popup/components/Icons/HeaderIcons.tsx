@@ -131,19 +131,7 @@ export const HeaderIcon: React.FC<HeaderIconProps> = ({ type, className = 'w-5 h
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M17 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V7l-4-4z"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M7 3v5h10"
-        />
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth={2}
-          d="M12 12a2 2 0 100 4 2 2 0 000-4z"
+          d="M5 13l4 4L19 7"
         />
       </svg>
     ),
