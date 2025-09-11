@@ -56,8 +56,10 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       for (let i = 0; i < segments.length; i++) {
         currentPath += '/' + segments[i];
         
-        // For settings subpages, include both /settings and the subpage
-        // For email details, include both /emails and the specific email
+        /*
+         * For settings subpages, include both /settings and the subpage
+         * For email details, include both /emails and the specific email
+         */
         historyEntries.push({
           pathname: currentPath,
           search: location.search,

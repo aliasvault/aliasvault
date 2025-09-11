@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface LogoProps {
+type LogoProps = {
   className?: string;
   width?: number;
   height?: number;
@@ -8,6 +8,9 @@ interface LogoProps {
   color?: string;
 }
 
+/**
+ * Logo component.
+ */
 const Logo: React.FC<LogoProps> = ({
   className = '',
   width = 200,
