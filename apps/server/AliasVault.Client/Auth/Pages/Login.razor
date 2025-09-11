@@ -98,7 +98,7 @@ else
         </div>
         <div>
             <label asp-for="Input.Password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["PasswordLabel"]</label>
-            <InputTextField id="password" @bind-Value="_loginModel.Password" type="password" placeholder="@Localizer["PasswordPlaceholder"]"/>
+            <PasswordInputField id="password" @bind-Value="_loginModel.Password" placeholder="@Localizer["PasswordPlaceholder"]"/>
             <ValidationMessage For="() => _loginModel.Password"/>
         </div>
 

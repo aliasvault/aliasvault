@@ -67,7 +67,7 @@ else
             <DataAnnotationsValidator/>
             <div>
                 <label asp-for="Input.Password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["YourPasswordLabel"]</label>
-                <InputTextField id="password" @bind-Value="_unlockModel.Password" type="password" placeholder="••••••••"/>
+                <PasswordInputField id="password" @bind-Value="_unlockModel.Password" placeholder="••••••••"/>
                 <ValidationMessage For="() => _unlockModel.Password"/>
             </div>
 
