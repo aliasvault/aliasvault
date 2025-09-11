@@ -109,19 +109,19 @@
                                 <tbody class="bg-white dark:bg-gray-800">
                                     @foreach (var mail in DisplayedEmails)
                                     {
-                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-600">
+                                        <tr class="hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer" @onclick="() => OpenEmail(mail.Id)">
                                             <td class="p-4 text-sm font-normal text-gray-900 whitespace-nowrap dark:text-white">
                                                 @if (mail.Subject.Length > 30)
                                                 {
-                                                    <span class="cursor-pointer" @onclick="() => OpenEmail(mail.Id)">@(mail.Subject.Substring(0, 30))...</span>
+                                                    <span>@(mail.Subject.Substring(0, 30))...</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="cursor-pointer" @onclick="() => OpenEmail(mail.Id)">@mail.Subject</span>
+                                                    <span>@mail.Subject</span>
                                                 }
                                             </td>
                                             <td class="p-4 text-sm font-normal text-gray-500 whitespace-nowrap dark:text-gray-400">
-                                                <span class="cursor-pointer" @onclick="() => OpenEmail(mail.Id)">@mail.DateSystem.ToString("yyyy-MM-dd")</span>
+                                                <span>@mail.DateSystem.ToString("yyyy-MM-dd")</span>
                                             </td>
                                         </tr>
                                     }
