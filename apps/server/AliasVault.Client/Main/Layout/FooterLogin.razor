@@ -1,0 +1,15 @@
+﻿@inject IStringLocalizerFactory LocalizerFactory
+@using AliasVault.Shared.Core
+@using Microsoft.Extensions.Localization
+
+<footer class="fixed -z-10 bottom-0 left-0 right-0 dark:bg-gray-900">
+    <div class="container mx-auto px-4 py-4">
+        <p class="text-sm text-center text-gray-400 dark:text-gray-500 mb-4 lg:mb-0">
+            © @(DateTime.Now.Year) <span>@AppInfo.ApplicationName v@(AppInfo.GetFullVersion())</span>. @Localizer["CopyrightText"]
+        </p>
+    </div>
+</footer>
+
+@code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Layout.Footer", "AliasVault.Client");
+}

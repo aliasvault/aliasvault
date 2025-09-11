@@ -3407,6 +3407,10 @@ video {
     height: 100vh;
   }
 
+  .md\:min-h-screen {
+    min-height: 100vh;
+  }
+
   .md\:w-64 {
     width: 16rem;
   }
