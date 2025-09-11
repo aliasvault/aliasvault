@@ -55,7 +55,6 @@ else
                     <SortableTableColumn>@user.VaultCount</SortableTableColumn>
                     <SortableTableColumn>@user.CredentialCount</SortableTableColumn>
                     <SortableTableColumn>@user.EmailClaimCount</SortableTableColumn>
-                    <SortableTableColumn>@user.ReceivedEmailCount</SortableTableColumn>
                     <SortableTableColumn>@Math.Round((double)user.VaultStorageInKb / 1024, 1) MB</SortableTableColumn>
                     <SortableTableColumn>@(user.LastActivityDate?.ToString("yyyy-MM-dd HH:mm") ?? "Never")</SortableTableColumn>
                     <SortableTableColumn>
@@ -90,7 +89,6 @@ else
         new TableColumn { Title = "# Vaults", PropertyName = "VaultCount" },
         new TableColumn { Title = "# Credentials", PropertyName = "CredentialCount" },
         new TableColumn { Title = "# Email claims", PropertyName = "EmailClaimCount" },
-        new TableColumn { Title = "# Received emails", PropertyName = "ReceivedEmailCount" },
         new TableColumn { Title = "Storage", PropertyName = "VaultStorageInKb" },
         new TableColumn { Title = "Last Activity", PropertyName = "LastActivityDate" },
         new TableColumn { Title = "Status", Sortable = false },
@@ -219,7 +217,6 @@ else
                         ec.CreatedAt,
                         ec.Address
                     }),
-                    ReceivedEmails = u.EmailClaims.SelectMany(ec => dbContext.Emails.Where(e => e.To == ec.Address)).Count(),
                 })
                 .ToListAsync(cancellationToken);
 
@@ -245,9 +242,7 @@ else
                     VaultCount = user.Vaults.Count(),
                     CredentialCount = user.Vaults.OrderByDescending(x => x.RevisionNumber).First().CredentialCount,
                     EmailClaimCount = user.EmailClaims.Count(),
-                    ReceivedEmailCount = user.ReceivedEmails,
                     VaultStorageInKb = user.Vaults.Sum(x => x.FileSize),
-                    LastVaultUpdate = user.Vaults.Any() ? user.Vaults.Max(x => x.CreatedAt) : user.CreatedAt,
                 };
             }).ToList();
 
@@ -360,11 +355,6 @@ else
                 query = SortDirection == SortDirection.Ascending
                     ? query.OrderBy(x => x.EmailClaims.Count)
                     : query.OrderByDescending(x => x.EmailClaims.Count);
-                break;
-            case "ReceivedEmailCount":
-                query = SortDirection == SortDirection.Ascending
-                    ? query.OrderBy(x => x.EmailClaims.SelectMany(ec => dbContext.Emails.Where(e => e.To == ec.Address)).Count())
-                    : query.OrderByDescending(x => x.EmailClaims.SelectMany(ec => dbContext.Emails.Where(e => e.To == ec.Address)).Count());
                 break;
             case "VaultStorageInKb":
                 query = SortDirection == SortDirection.Ascending

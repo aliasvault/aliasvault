@@ -63,11 +63,6 @@ public class UserViewModel
     public int VaultStorageInKb { get; set; }
 
     /// <summary>
-    /// Gets or sets the last time the vault was updated.
-    /// </summary>
-    public DateTime LastVaultUpdate { get; set; }
-
-    /// <summary>
     /// Gets or sets the last activity date of the user.
     /// </summary>
     public DateTime? LastActivityDate { get; set; }
