@@ -13,6 +13,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
+import ConversionUtility from '@/entrypoints/popup/utils/ConversionUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
@@ -20,8 +21,6 @@ import { AppInfo } from '@/utils/AppInfo';
 import type { VaultResponse, LoginResponse } from '@/utils/dist/shared/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
-
-import ConversionUtility from '../utils/ConversionUtility';
 
 import { storage } from '#imports';
 
