@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>+ New Alias</value>
+    <value>+ Новий псевдонім</value>
     <comment>Text for the new alias button</comment>
   </data>
   <data name="NewAliasButtonShort" xml:space="preserve">
@@ -67,39 +67,39 @@
     <comment>Short text for the new alias button on mobile</comment>
   </data>
   <data name="CreateNewAliasTitle" xml:space="preserve">
-    <value>Create New Alias</value>
+    <value>Створити новий псевдонім</value>
     <comment>Title of the create new alias popup</comment>
   </data>
   <data name="ServiceNameLabel" xml:space="preserve">
-    <value>Service Name</value>
+    <value>Назва сервісу</value>
     <comment>Label for service name field</comment>
   </data>
   <data name="ServiceNamePlaceholder" xml:space="preserve">
-    <value>E.g. Facebook</value>
+    <value>Наприклад, Facebook</value>
     <comment>Placeholder text for service name field</comment>
   </data>
   <data name="ServiceUrlLabel" xml:space="preserve">
-    <value>Service URL</value>
+    <value>URL-адреса сервісу</value>
     <comment>Label for service URL field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
-    <value>Create</value>
+    <value>Створити</value>
     <comment>Create button text</comment>
   </data>
   <data name="AdvancedModeLink" xml:space="preserve">
-    <value>Create via advanced mode</value>
+    <value>Створити за допомогою розширеного режиму</value>
     <comment>Link text to advanced creation mode</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
-    <value>Creating new alias...</value>
+    <value>Створення нового псевдоніму...</value>
     <comment>Loading message while creating alias</comment>
   </data>
   <data name="CreateCredentialErrorMessage" xml:space="preserve">
-    <value>Error creating a new credential. Please try again (later) or log-out and in again.</value>
+    <value>Помилка створення нових облікових даних. Повторіть спробу (пізніше) або вийдіть із системи та ввійдіть знову.</value>
     <comment>Error message when credential creation fails</comment>
   </data>
   <data name="CredentialCreatedSuccessMessage" xml:space="preserve">
-    <value>Credential created successfully.</value>
+    <value>Облікові дані успішно створено.</value>
     <comment>Success message when credential is created</comment>
   </data>
 </root>
