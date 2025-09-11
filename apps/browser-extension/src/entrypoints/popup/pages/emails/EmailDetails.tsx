@@ -32,6 +32,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
   const [email, setEmail] = useState<Email | null>(null);
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 150);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showMetadata, setShowMetadata] = useState(false);
   const { setIsInitialLoading } = useLoading();
   const { setHeaderButtons } = useHeaderButtons();
   const [headerButtonsConfigured, setHeaderButtonsConfigured] = useState(false);
@@ -207,21 +208,44 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         variant="danger"
       />
 
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md">
+      <div>
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex justify-between items-start mb-4">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{email.subject}</h1>
+        <div>
+          <div className="flex justify-between items-start">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold text-gray-900 dark:text-white">{email.subject}</h1>
+              <button
+                onClick={() => setShowMetadata(!showMetadata)}
+                className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title={showMetadata ? t('common.hideDetails') : t('common.showDetails')}
+              >
+                <svg
+                  className={`w-4 h-4 text-gray-500 dark:text-gray-400 transition-transform ${showMetadata ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
-          <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400">
-            <p>{t('emails.from')} {email.fromDisplay} ({email.fromLocal}@{email.fromDomain})</p>
-            <p>{t('emails.to')} {email.toLocal}@{email.toDomain}</p>
-            <p>{t('emails.date')} {new Date(email.dateSystem).toLocaleString()}</p>
-          </div>
+          {showMetadata && (
+            <div className="space-y-1 text-sm text-gray-600 dark:text-gray-400 mt-2">
+              <p><span className="font-bold">{t('emails.from')}</span> <span title={email.fromLocal + "@" + email.fromDomain}>{email.fromDisplay}</span></p>
+              <p><span className="font-bold">{t('emails.to')}</span> <span title={email.toLocal + "@" + email.toDomain}>{email.toLocal}@{email.toDomain}</span></p>
+              <p><span className="font-bold">{t('emails.date')}</span> {new Date(email.dateSystem).toLocaleString()}</p>
+            </div>
+          )}
         </div>
 
         {/* Email Body */}
-        <div className="bg-white">
+        <div className="bg-white mt-4">
           {email.messageHtml ? (
             <iframe
               srcDoc={ConversionUtility.convertAnchorTagsToOpenInNewTab(email.messageHtml)}
