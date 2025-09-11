@@ -109,7 +109,7 @@ export const FormInput = forwardRef<HTMLInputElement, FormInputProps>(({
     }
   };
 
-  const inputClasses = `mt-1 block w-full rounded-md ${
+  const inputClasses = `mt-1 block text-sm w-full rounded-md ${
     error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
   } text-gray-900 sm:text-sm rounded-lg shadow-sm border focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 py-2 px-3`;
 

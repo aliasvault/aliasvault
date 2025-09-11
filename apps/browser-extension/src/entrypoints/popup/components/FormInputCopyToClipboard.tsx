@@ -82,7 +82,7 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
     try {
       await navigator.clipboard.writeText(value);
       clipboardService.setCopied(id);
-      
+
       // Notify background script that clipboard was copied
       await sendMessage('CLIPBOARD_COPIED', { value }, 'background');
 
@@ -111,7 +111,7 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
           onClick={copyToClipboard}
           className={`w-full px-3 py-2.5 bg-white border ${
             copied ? 'border-green-500 border-2' : 'border-gray-300'
-          } text-gray-900 sm:text-sm rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400`}
+          } text-gray-900 text-sm rounded-lg shadow-sm focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400`}
         />
         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
           {copied ? (

@@ -27,7 +27,7 @@ const LoginServerInfo: React.FC = () => {
   };
 
   return (
-    <div className="text-xs text-gray-600 dark:text-gray-400 mb-4">
+    <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
       ({t('auth.connectingTo')}{' '}
       <button
         onClick={handleClick}

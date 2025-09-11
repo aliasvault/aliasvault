@@ -108,6 +108,4 @@ async function extendAutoLockTimer(): Promise<void> {
       console.error('[AUTO_LOCK] Error locking vault:', error);
     }
   }, timeout * 1000);
-
-  console.info(`[AUTO_LOCK] Timer extended (popup heartbeat)`);
 }

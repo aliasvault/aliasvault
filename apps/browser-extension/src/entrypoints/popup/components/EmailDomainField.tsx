@@ -167,7 +167,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
 
   return (
     <div className="space-y-2">
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+      <label htmlFor={id} className="block font-medium text-gray-700 dark:text-gray-300">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
       </label>
@@ -177,7 +177,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
           <input
             type="text"
             id={id}
-            className={`flex-1 min-w-0 px-3 py-2 border ${
+            className={`flex-1 min-w-0 px-3 py-2 border text-sm ${
               error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
             } ${
               !isCustomDomain ? 'rounded-l-md' : 'rounded-md'
@@ -209,9 +209,9 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
               {showPrivateDomains && (
                 <div className="mb-4">
                   <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    {t('credentials.privateEmailTitle')} <span className="text-xs text-gray-500 dark:text-gray-400">({t('credentials.privateEmailAliasVaultServer')})</span>
+                    {t('credentials.privateEmailTitle')} <span className="text-gray-500 dark:text-gray-400">({t('credentials.privateEmailAliasVaultServer')})</span>
                   </h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                  <p className="text-gray-500 dark:text-gray-400 mb-3">
                     {t('credentials.privateEmailDescription')}
                   </p>
                   <div className="flex flex-wrap gap-2">

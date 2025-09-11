@@ -167,10 +167,10 @@ const Settings: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+                  <p className="text font-medium text-gray-900 dark:text-white">
                     {authContext.username}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
                     {t('settings.loggedIn')}
                   </p>
                 </div>
@@ -224,7 +224,7 @@ const Settings: React.FC = () => {
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                   />
                 </svg>
-                <span className="text-sm text-gray-900 dark:text-white">{t('settings.autofillSettings')}</span>
+                <span className="text-gray-900 dark:text-white">{t('settings.autofillSettings')}</span>
               </div>
               <svg
                 className="w-4 h-4 text-gray-400"
@@ -256,7 +256,7 @@ const Settings: React.FC = () => {
                     d="M4 6h16M4 12h16m-7 6h7"
                   />
                 </svg>
-                <span className="text-sm text-gray-900 dark:text-white">{t('settings.contextMenuSettings')}</span>
+                <span className="text-gray-900 dark:text-white">{t('settings.contextMenuSettings')}</span>
               </div>
               <svg
                 className="w-4 h-4 text-gray-400"
@@ -288,7 +288,7 @@ const Settings: React.FC = () => {
                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                   />
                 </svg>
-                <span className="text-sm text-gray-900 dark:text-white">{t('settings.autoLockTimeout')}</span>
+                <span className="text-gray-900 dark:text-white">{t('settings.autoLockTimeout')}</span>
               </div>
               <svg
                 className="w-4 h-4 text-gray-400"
@@ -320,7 +320,7 @@ const Settings: React.FC = () => {
                     d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
                   />
                 </svg>
-                <span className="text-sm text-gray-900 dark:text-white">{t('settings.clipboardSettings')}</span>
+                <span className="text-gray-900 dark:text-white">{t('settings.clipboardSettings')}</span>
               </div>
               <svg
                 className="w-4 h-4 text-gray-400"
@@ -352,7 +352,7 @@ const Settings: React.FC = () => {
                     d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
                   />
                 </svg>
-                <span className="text-sm text-gray-900 dark:text-white">{t('settings.language')}</span>
+                <span className="text-gray-900 dark:text-white">{t('settings.language')}</span>
               </div>
               <svg
                 className="w-4 h-4 text-gray-400"
@@ -374,7 +374,7 @@ const Settings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-4">
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">{t('settings.theme')}</p>
+              <p className="font-medium text-gray-900 dark:text-white mb-2">{t('settings.theme')}</p>
               <div className="flex flex-col space-y-2">
                 <label className="flex items-center">
                   <input
@@ -385,7 +385,7 @@ const Settings: React.FC = () => {
                     onChange={() => setThemePreference('system')}
                     className="mr-2"
                   />
-                  <span className="text-xs text-gray-700 dark:text-gray-300">{t('settings.useDefault')}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('settings.useDefault')}</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -396,7 +396,7 @@ const Settings: React.FC = () => {
                     onChange={() => setThemePreference('light')}
                     className="mr-2"
                   />
-                  <span className="text-xs text-gray-700 dark:text-gray-300">{t('settings.light')}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('settings.light')}</span>
                 </label>
                 <label className="flex items-center">
                   <input
@@ -407,7 +407,7 @@ const Settings: React.FC = () => {
                     onChange={() => setThemePreference('dark')}
                     className="mr-2"
                   />
-                  <span className="text-xs text-gray-700 dark:text-gray-300">{t('settings.dark')}</span>
+                  <span className="text-sm text-gray-700 dark:text-gray-300">{t('settings.dark')}</span>
                 </label>
               </div>
             </div>
@@ -423,7 +423,7 @@ const Settings: React.FC = () => {
             <div className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{t('settings.configureKeyboardShortcuts')}</p>
+                  <p className="font-medium text-gray-900 dark:text-white">{t('settings.configureKeyboardShortcuts')}</p>
                 </div>
                 <button
                   onClick={openKeyboardShortcuts}

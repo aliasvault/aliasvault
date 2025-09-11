@@ -114,7 +114,7 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder={placeholder}
-            className="outline-0 shadow-sm border border-gray-300 bg-gray-50 text-gray-900 sm:text-sm rounded-l-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+            className="outline-0 text-sm shadow-sm border border-gray-300 bg-gray-50 text-gray-900 sm:text-sm rounded-l-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
           />
         </div>
         <div className="flex">

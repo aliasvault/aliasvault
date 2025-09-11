@@ -213,7 +213,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
   }
   if (emails.length === 0) {
     return (
-      <div className="text-gray-500 dark:text-gray-400 mb-4">
+      <div className="text-gray-500 dark:text-gray-400 mb-4 text-sm">
         <div className="flex items-center gap-2 mb-2">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('common.recentEmails')}</h2>
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />

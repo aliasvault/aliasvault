@@ -51,21 +51,16 @@ const Reinitialize: React.FC = () => {
     if (lastPage && lastVisitTime) {
       const timeSinceLastVisit = Date.now() - lastVisitTime;
       if (timeSinceLastVisit <= PAGE_MEMORY_DURATION) {
-        // Restore the navigation history
-        if (savedHistory?.length) {
-          // First navigate to credentials page as the base
-          navigate('/credentials', { replace: true });
-
-          // Then restore the history stack
-          for (const entry of savedHistory) {
-            navigate(entry.pathname + entry.search + entry.hash);
-          }
-          return;
+        // For nested routes, build up the navigation history properly
+        if (savedHistory?.length > 1) {
+          // Navigate to the base route first
+          navigate(savedHistory[0].pathname, { replace: true });
+          // Then navigate to the final destination
+          navigate(lastPage, { replace: false });
+        } else {
+          // Simple navigation for non-nested routes
+          navigate(lastPage, { replace: true });
         }
-
-        // Fallback to simple navigation if no history
-        navigate('/credentials', { replace: true });
-        navigate(lastPage, { replace: true });
         return;
       }
     }

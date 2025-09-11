@@ -188,10 +188,10 @@ const CredentialsList: React.FC = () => {
 
       {credentials.length === 0 ? (
         <div className="text-gray-500 dark:text-gray-400 space-y-2 mb-10">
-          <p className="text-sm">
+          <p>
             {t('credentials.welcomeTitle')}
           </p>
-          <p className="text-sm">
+          <p>
             {t('credentials.welcomeDescription')}
           </p>
         </div>

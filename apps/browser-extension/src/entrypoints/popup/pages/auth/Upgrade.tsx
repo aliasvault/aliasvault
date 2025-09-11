@@ -253,7 +253,7 @@ const Upgrade: React.FC = () => {
 
       <form className="w-full px-2 pt-2 pb-2 mb-4">
         {error && (
-          <div className="mb-4 text-red-500 dark:text-red-400 text-sm">
+          <div className="mb-4 text-red-500 dark:text-red-400">
             {error}
           </div>
         )}
@@ -268,7 +268,7 @@ const Upgrade: React.FC = () => {
             </div>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">
+            <p className="font-medium text-gray-900 dark:text-white">
               {username}
             </p>
           </div>
@@ -277,12 +277,12 @@ const Upgrade: React.FC = () => {
         <h2 className="text-xl font-bold dark:text-gray-200 mb-4">{t('upgrade.title')}</h2>
 
         <div className="mb-6">
-          <p className="text-gray-700 dark:text-gray-200 text-sm mb-4">
+          <p className="text-gray-700 dark:text-gray-200 mb-4">
             {t('upgrade.subtitle')}
           </p>
           <div className="bg-gray-50 dark:bg-gray-800 rounded p-4 mb-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{t('upgrade.versionInformation')}</span>
+              <span className="font-medium text-gray-700 dark:text-gray-200">{t('upgrade.versionInformation')}</span>
               <button
                 type="button"
                 onClick={showVersionDialog}

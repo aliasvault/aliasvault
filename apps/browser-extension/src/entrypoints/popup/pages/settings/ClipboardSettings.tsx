@@ -46,8 +46,8 @@ const ClipboardSettings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-4">
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">{t('settings.clipboardClearTimeout')}</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">{t('settings.clipboardClearTimeoutDescription')}</p>
+              <p className="font-medium text-gray-900 dark:text-white mb-2">{t('settings.clipboardClearTimeout')}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('settings.clipboardClearTimeoutDescription')}</p>
               <select
                 value={clipboardTimeout}
                 onChange={(e) => setClipboardClearTimeout(Number(e.target.value))}

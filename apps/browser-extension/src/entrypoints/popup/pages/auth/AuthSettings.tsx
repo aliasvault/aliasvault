@@ -176,13 +176,13 @@ const AuthSettings: React.FC = () => {
       {/* Language Settings Section */}
       <div className="mb-6">
         <div className="flex flex-col gap-2">
-          <p className="text-sm font-medium text-gray-900 dark:text-white">{t('common.language')}</p>
+          <p className="font-medium text-gray-900 dark:text-white">{t('common.language')}</p>
           <LanguageSwitcher variant="dropdown" size="sm" />
         </div>
       </div>
 
       <div className="mb-6">
-        <label htmlFor="api-connection" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+        <label htmlFor="api-connection" className="block font-medium text-gray-700 dark:text-gray-200 mb-2">
           {t('settings.serverUrl')}
         </label>
         <select
@@ -201,7 +201,7 @@ const AuthSettings: React.FC = () => {
       {selectedOption === 'custom' && (
         <>
           <div className="mb-6">
-            <label htmlFor="custom-client-url" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+            <label htmlFor="custom-client-url" className="block font-medium text-gray-700 dark:text-gray-200 mb-2">
               Custom client URL
             </label>
             <input
@@ -217,7 +217,7 @@ const AuthSettings: React.FC = () => {
             )}
           </div>
           <div className="mb-6">
-            <label htmlFor="custom-api-url" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+            <label htmlFor="custom-api-url" className="block font-medium text-gray-700 dark:text-gray-200 mb-2">
               Custom API URL
             </label>
             <input
@@ -238,7 +238,7 @@ const AuthSettings: React.FC = () => {
       {/* Autofill Popup Settings Section */}
       <div className="mb-6">
         <div className="flex flex-col gap-2">
-          <p className="text-sm font-medium text-gray-900 dark:text-white">{t('settings.autofillEnabled')}</p>
+          <p className="font-medium text-gray-900 dark:text-white">{t('settings.autofillEnabled')}</p>
           <button
             onClick={toggleGlobalPopup}
             className={`px-4 py-2 rounded-md transition-colors ${

@@ -48,14 +48,14 @@ const AutoLockSettings: React.FC = () => {
           <div className="p-4">
             <div>
               <div className="flex items-center mb-2">
-                <p className="text-sm font-medium text-gray-900 dark:text-white">{t('settings.autoLockTimeout')}</p>
+                <p className="font-medium text-gray-900 dark:text-white">{t('settings.autoLockTimeout')}</p>
                 <HelpModal
                   titleKey="settings.autoLockTimeout"
                   contentKey="settings.autoLockTimeoutHelp"
                   className="ml-2"
                 />
               </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">{t('settings.autoLockTimeoutDescription')}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('settings.autoLockTimeoutDescription')}</p>
               <select
                 value={autoLockTimeout}
                 onChange={(e) => setAutoLockTimeoutSetting(Number(e.target.value))}

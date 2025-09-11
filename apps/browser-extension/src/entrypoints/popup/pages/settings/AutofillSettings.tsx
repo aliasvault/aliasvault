@@ -167,8 +167,8 @@ const AutofillSettings: React.FC = () => {
           <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-900 dark:text-white">{t('settings.autofillPopup')}</p>
-                <p className={`text-xs mt-1 ${settings.isGloballyEnabled ? 'text-gray-600 dark:text-gray-400' : 'text-red-600 dark:text-red-400'}`}>
+                <p className="font-medium text-gray-900 dark:text-white">{t('settings.autofillPopup')}</p>
+                <p className={`text-sm mt-1 ${settings.isGloballyEnabled ? 'text-gray-600 dark:text-gray-400' : 'text-red-600 dark:text-red-400'}`}>
                   {settings.isGloballyEnabled ? t('settings.activeOnAllSites') : t('settings.disabledOnAllSites')}
                 </p>
               </div>
@@ -195,12 +195,12 @@ const AutofillSettings: React.FC = () => {
             <div className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">{t('settings.autofillPopupOn')}{settings.currentUrl}</p>
-                  <p className={`text-xs mt-1 ${settings.isEnabled ? 'text-gray-600 dark:text-gray-400' : 'text-red-600 dark:text-red-400'}`}>
+                  <p className="font-medium text-gray-900 dark:text-white">{t('settings.autofillPopupOn')}{settings.currentUrl}</p>
+                  <p className={`text-sm mt-1 ${settings.isEnabled ? 'text-gray-600 dark:text-gray-400' : 'text-red-600 dark:text-red-400'}`}>
                     {settings.isEnabled ? t('settings.enabledForThisSite') : t('settings.disabledForThisSite')}
                   </p>
                   {!settings.isEnabled && settings.temporaryDisabledUrls[settings.currentUrl] && (
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                       {t('settings.temporarilyDisabledUntil')}{new Date(settings.temporaryDisabledUrls[settings.currentUrl]).toLocaleTimeString()}
                     </p>
                   )}
@@ -238,8 +238,8 @@ const AutofillSettings: React.FC = () => {
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-4">
             <div>
-              <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">{t('settings.autofillMatchingMode')}</p>
-              <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">{t('settings.autofillMatchingModeDescription')}</p>
+              <p className="font-medium text-gray-900 dark:text-white mb-2">{t('settings.autofillMatchingMode')}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('settings.autofillMatchingModeDescription')}</p>
               <select
                 value={autofillMatchingMode}
                 onChange={(e) => setAutofillMatchingModeSetting(e.target.value as AutofillMatchingMode)}

@@ -2,6 +2,7 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+import Logo from '@/entrypoints/popup/components/Logo';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 
 /**
@@ -87,11 +88,15 @@ const Header: React.FC<HeaderProps> = ({
               onClick={() => logoClick()}
               className="flex items-center hover:opacity-80 transition-opacity"
             >
-              <img src="/assets/images/logo.svg" alt="AliasVault" className="h-8 w-8 mr-2" />
-              <h1 className="text-gray-900 dark:text-white text-xl font-bold">{t('common.appName')}</h1>
+              <Logo
+                width={125}
+                height={40}
+                showText={true}
+                className="text-gray-900 dark:text-white"
+              />
               {/* Hide beta badge on Safari as it's not allowed to show non-production badges */}
               {!import.meta.env.SAFARI && (
-                <span className="text-primary-500 text-[10px] ml-1 font-normal">BETA</span>
+                <span className="text-primary-500 text-[10px] font-normal">BETA</span>
               )}
             </button>
           </div>

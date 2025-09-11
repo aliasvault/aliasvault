@@ -361,11 +361,11 @@ const Login: React.FC = () => {
         <h2 className="text-xl font-bold dark:text-gray-200">{t('auth.loginTitle')}</h2>
         <LoginServerInfo />
         <div className="mb-4">
-          <label className="block text-gray-700 dark:text-gray-200 text-sm font-bold mb-2" htmlFor="username">
+          <label className="block text-gray-700 dark:text-gray-200 font-bold mb-2" htmlFor="username">
             {t('auth.username')}
           </label>
           <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 leading-tight focus:outline-none focus:shadow-outline"
+            className="shadow text-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 leading-tight focus:outline-none focus:shadow-outline"
             id="username"
             type="text"
             name="username"
@@ -376,11 +376,11 @@ const Login: React.FC = () => {
           />
         </div>
         <div className="mb-4">
-          <label className="block text-gray-700 dark:text-gray-200 text-sm font-bold mb-2" htmlFor="password">
+          <label className="block text-gray-700 dark:text-gray-200 font-bold mb-2" htmlFor="password">
             {t('auth.password')}
           </label>
           <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+            className="shadow text-sm appearance-none border rounded w-full py-2 px-3 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 mb-3 leading-tight focus:outline-none focus:shadow-outline"
             id="password"
             type="password"
             name="password"
@@ -407,7 +407,7 @@ const Login: React.FC = () => {
           </Button>
         </div>
       </form>
-      <div className="text-center text-sm text-gray-600 dark:text-gray-400">
+      <div className="text-center text-gray-600 dark:text-gray-400">
         {t('auth.noAccount')}{' '}
         <a
           href={clientUrl ?? ''}

@@ -536,8 +536,8 @@ const CredentialAddEdit: React.FC = () => {
           <button
             type="button"
             onClick={() => setMode('random')}
-            className={`flex-1 py-2 px-4 rounded flex items-center justify-center gap-2 ${
-              mode === 'random' ? 'bg-primary-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+            className={`flex-1 py-2 text-sm px-4 rounded flex items-center justify-center gap-2 ${
+              mode === 'random' ? 'bg-primary-500 text-white font-medium' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
             <svg className='w-5 h-5' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -553,8 +553,8 @@ const CredentialAddEdit: React.FC = () => {
           <button
             type="button"
             onClick={() => setMode('manual')}
-            className={`flex-1 py-2 px-4 rounded flex items-center justify-center gap-2 ${
-              mode === 'manual' ? 'bg-primary-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
+            className={`flex-1 py-2 text-sm px-4 rounded flex items-center justify-center gap-2 ${
+              mode === 'manual' ? 'bg-primary-500 text-white font-medium' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
             }`}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -630,7 +630,7 @@ const CredentialAddEdit: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleGenerateRandomAlias}
-                  className="w-full bg-primary-500 text-white py-2 px-4 rounded hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+                  className="w-full text-sm bg-primary-500 text-white py-2 px-4 rounded hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center gap-2"
                 >
                   <svg className='w-5 h-5 inline-block' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>

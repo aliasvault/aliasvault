@@ -144,10 +144,10 @@ const Unlock: React.FC = () => {
             </div>
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-900 dark:text-white">
+            <p className="font-medium text-gray-900 dark:text-white">
               {authContext.username}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-400">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               {t('auth.loggedIn')}
             </p>
           </div>
@@ -159,13 +159,13 @@ const Unlock: React.FC = () => {
         </h2>
 
         {error && (
-          <div className="mb-4 text-red-500 dark:text-red-400 text-sm">
+          <div className="mb-4 text-red-500 dark:text-red-400">
             {error}
           </div>
         )}
 
         <div className="mb-2">
-          <label className="block text-gray-700 dark:text-gray-200 text-sm font-bold mb-2" htmlFor="password">
+          <label className="block text-gray-700 dark:text-gray-200 font-bold mb-2" htmlFor="password">
             {t('auth.masterPassword')}
           </label>
           <input
@@ -184,7 +184,7 @@ const Unlock: React.FC = () => {
           {t('auth.unlockVault')}
         </Button>
 
-        <div className="text-sm font-medium text-gray-500 dark:text-gray-200 mt-6">
+        <div className="font-medium text-gray-500 dark:text-gray-200 mt-6">
           {t('auth.switchAccounts')} <button onClick={handleLogout} className="text-primary-700 hover:underline dark:text-primary-500">{t('auth.logout')}</button>
         </div>
       </form>

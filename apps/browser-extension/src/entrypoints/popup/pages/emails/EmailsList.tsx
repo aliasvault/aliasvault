@@ -177,14 +177,14 @@ const EmailsList: React.FC = () => {
             className="block p-4 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-md transition-shadow border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <div className="flex justify-between items-start mb-2">
-              <div className="text-sm text-gray-900 dark:text-white mb-1 font-bold">
+              <div className="text-gray-900 dark:text-white mb-1 font-bold">
                 {email.subject}
               </div>
               <div className="text-sm text-gray-500 dark:text-gray-400">
                 {formatEmailDate(email.dateSystem)}
               </div>
             </div>
-            <div className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+            <div className="text-gray-600 text-sm dark:text-gray-300 line-clamp-2">
               {email.messagePreview}
             </div>
           </Link>
