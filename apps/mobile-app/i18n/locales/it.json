@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Annulla",
+    "close": "Close",
     "delete": "Elimina",
     "save": "Salva",
     "yes": "Sì",
@@ -13,7 +14,8 @@
     "never": "Mai",
     "copied": "Copiato negli appunti",
     "loadMore": "Carica altro",
-    "use": "Usa"
+    "use": "Usa",
+    "confirm": "Confirm"
   },
   "auth": {
     "login": "Accedi",
@@ -47,7 +49,6 @@
       "serverErrorSelfHosted": "Impossibile raggiungere l'API. Per le istanze auto-ospitate, verifica che l'endpoint API sia raggiungibile navigando in un browser: dovrebbe mostrare 'OK'.",
       "networkError": "Errore di rete: Controlla la tua connessione e riprova.",
       "networkErrorSelfHosted": "Errore di rete. Verifica la tua connessione di rete e la disponibilità del server. Per le istanze auto-ospitate, assicurati di avere installato un certificato SSL valido. I certificati autofirmati non sono supportati sui dispositivi mobili per motivi di sicurezza.",
-      "incorrectPasswordFallback": "Password errata. Riprovare.",
       "sessionExpired": "La tua sessione è scaduta. Effettua nuovamente il login.",
       "tokenRefreshFailed": "Aggiornamento del token di autenticazione non riuscito",
       "httpError": "Errore HTTP: {{status}}"
@@ -162,8 +163,7 @@
     "errors": {
       "loadFailed": "Caricamento credenziali non riuscito",
       "generateUsernameFailed": "Generazione nome utente non riuscita",
-      "generatePasswordFailed": "Generazione password non riuscita",
-      "generic": "Errore"
+      "generatePasswordFailed": "Generazione password non riuscita"
     },
     "contextMenu": {
       "title": "Opzioni Credenziali",
@@ -220,6 +220,19 @@
     "batteryOptimizationHelpDescription": "L'ottimizzazione della batteria di Android impedisce la rimozione affidabile degli appunti quando l'applicazione è in background. La disattivazione dell'ottimizzazione della batteria per AliasVault consente una pulizia precisa degli appunti in background e garantisce automaticamente le necessarie autorizzazioni di allarme.",
     "disableBatteryOptimization": "Disabilita ottimizzazione batteria",
     "identityGenerator": "Generatore di identità",
+    "importExport": "Import / Export",
+    "importSectionTitle": "Import",
+    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
+    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
+    "exportSectionTitle": "Export",
+    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
+    "exportCsvButton": "Export vault to CSV file",
+    "exporting": "Exporting...",
+    "exportConfirmTitle": "Export Vault",
+    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "exportError": "Failed to export vault. Please try again.",
+    "exportSaved": "File saved to: {{filename}}",
+    "noVaultData": "No vault data to export",
     "security": "Sicurezza",
     "appVersion": "Versione app {{version}} ({{url}})",
     "autoLockOptions": {
@@ -424,12 +437,16 @@
       "openingVaultReadOnly": "Apertura cassaforte in modalità sola lettura",
       "retryingConnection": "Ritento connessione..."
     },
+    "offline": {
+      "banner": "Offline mode (read-only)",
+      "backOnline": "Back online",
+      "stillOffline": "Still offline"
+    },
     "alerts": {
       "syncIssue": "Problema di sincronizzazione",
       "syncIssueMessage": "Impossibile raggiungere il server AliasVault e sincronizzare la cassaforte. Vuoi aprire la cassaforte locale in sola lettura o ritentare la connessione?",
       "openLocalVault": "Apri cassaforte locale",
-      "retrySync": "Riprova sincronizzazione",
-      "error": "Errore"
+      "retrySync": "Riprova sincronizzazione"
     },
     "navigation": {
       "login": "Accesso",
@@ -467,7 +484,6 @@
     "whatsNew": "Novità",
     "whatsNewDescription": "È richiesto un aggiornamento per supportare i seguenti cambiamenti:",
     "noDescriptionAvailable": "Nessuna descrizione disponibile per questa versione.",
-    "okay": "Ok",
     "status": {
       "preparingUpgrade": "Preparazione aggiornamento...",
       "vaultAlreadyUpToDate": "La cassaforte è già aggiornata",
@@ -477,11 +493,9 @@
       "committingChanges": "Modifica in corso..."
     },
     "alerts": {
-      "error": "Errore",
       "unableToGetVersionInfo": "Impossibile ottenere informazioni sulla versione. Riprova.",
       "selfHostedServer": "Server self-hosted",
       "selfHostedWarning": "Se usi un server self-hosted, assicurati di aggiornare anche la tua istanza self-hosted altrimenti l'accesso al client web smetterà di funzionare.",
-      "cancel": "Annulla",
       "continueUpgrade": "Continua aggiornamento",
       "upgradeFailed": "Aggiornamento fallito",
       "failedToApplyMigration": "Impossibile applicare la migrazione ({{current}} di {{total}})",
