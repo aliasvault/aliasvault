@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Отмена",
+    "close": "Close",
     "delete": "Удалить",
     "save": "Сохранить",
     "yes": "Да",
@@ -13,7 +14,8 @@
     "never": "Никогда",
     "copied": "Скопировано в буфер обмена",
     "loadMore": "Загрузить ещё",
-    "use": "Использовать"
+    "use": "Использовать",
+    "confirm": "Confirm"
   },
   "auth": {
     "login": "Войти",
@@ -47,7 +49,6 @@
       "serverErrorSelfHosted": "Не удалось связаться с API. Для автономных экземпляров, пожалуйста, убедитесь, что конечная точка API доступна, перейдя к ней в браузере: на экране должно отображаться \"ОК\".",
       "networkError": "Не удалось выполнить сетевой запрос. Пожалуйста, проверьте подключение к Интернету и повторите попытку.",
       "networkErrorSelfHosted": "Не удалось выполнить сетевой запрос. Проверьте сетевое подключение и доступность сервера. Для автономных экземпляров убедитесь, что у вас установлен действующий SSL сертификат. Самозаверяющие сертификаты не поддерживаются на мобильных устройствах по соображениям безопасности.",
-      "incorrectPasswordFallback": "Неверный пароль. Пожалуйста, повторите попытку.",
       "sessionExpired": "Срок действия вашего сеанса истек. Пожалуйста, войдите в систему еще раз.",
       "tokenRefreshFailed": "Не удалось обновить токен аутентификации",
       "httpError": "Ошибка HTTP: {{status}}"
@@ -162,8 +163,7 @@
     "errors": {
       "loadFailed": "Не удалось загрузить учетные данные",
       "generateUsernameFailed": "Не удалось сгенерировать имя пользователя",
-      "generatePasswordFailed": "Не удалось сгенерировать пароль",
-      "generic": "Ошибка"
+      "generatePasswordFailed": "Не удалось сгенерировать пароль"
     },
     "contextMenu": {
       "title": "Параметры учетных данных",
@@ -220,6 +220,19 @@
     "batteryOptimizationHelpDescription": "Оптимизация заряда батареи в Android предотвращает надежную очистку буфера обмена, когда приложение работает в фоновом режиме. Отключение оптимизации заряда батареи для AliasVault обеспечивает точную очистку буфера обмена в фоновом режиме и автоматически предоставляет необходимые разрешения для оповещения.",
     "disableBatteryOptimization": "Отключить оптимизацию заряда батареи",
     "identityGenerator": "Генератор личности",
+    "importExport": "Import / Export",
+    "importSectionTitle": "Import",
+    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
+    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
+    "exportSectionTitle": "Export",
+    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
+    "exportCsvButton": "Export vault to CSV file",
+    "exporting": "Exporting...",
+    "exportConfirmTitle": "Export Vault",
+    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "exportError": "Failed to export vault. Please try again.",
+    "exportSaved": "File saved to: {{filename}}",
+    "noVaultData": "No vault data to export",
     "security": "Безопасность",
     "appVersion": "Версия приложения {{version}} ({{url}})",
     "autoLockOptions": {
@@ -424,12 +437,16 @@
       "openingVaultReadOnly": "Открытие хранилища в режиме только для чтения",
       "retryingConnection": "Повторная попытка подключения..."
     },
+    "offline": {
+      "banner": "Offline mode (read-only)",
+      "backOnline": "Back online",
+      "stillOffline": "Still offline"
+    },
     "alerts": {
       "syncIssue": "Проблема с синхронизацией",
       "syncIssueMessage": "Не удалось связаться с сервером AliasVault, и не удалось синхронизировать ваше хранилище. Хотите ли вы открыть свое локальное хранилище в режиме только для чтения или повторить попытку подключения?",
       "openLocalVault": "Откройте локальное хранилище",
-      "retrySync": "Повторить попытку синхронизации",
-      "error": "Ошибка"
+      "retrySync": "Повторить попытку синхронизации"
     },
     "navigation": {
       "login": "Логин",
@@ -467,7 +484,6 @@
     "whatsNew": "Что нового",
     "whatsNewDescription": "Для поддержки следующих изменений требуется обновление:",
     "noDescriptionAvailable": "Описание для этой версии недоступно.",
-    "okay": "ОК",
     "status": {
       "preparingUpgrade": "Подготовка обновления...",
       "vaultAlreadyUpToDate": "Хранилище уже обновлено",
@@ -477,11 +493,9 @@
       "committingChanges": "Фиксация изменений..."
     },
     "alerts": {
-      "error": "Ошибка",
       "unableToGetVersionInfo": "Не удалось получить информацию о версии. Пожалуйста, попробуйте снова.",
       "selfHostedServer": "Автономный сервер",
       "selfHostedWarning": "Если вы используете автономный сервер, обязательно обновите свой автономный экземпляр, так как в противном случае вход в веб-клиент перестанет работать.",
-      "cancel": "Отменить",
       "continueUpgrade": "Продолжить обновление",
       "upgradeFailed": "Ошибка обновления",
       "failedToApplyMigration": "Не удалось применить перенос ({{current}} из {{total}})",
