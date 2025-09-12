@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
 
 import type { Credential } from '@/utils/dist/shared/models/vault';
 
@@ -10,10 +10,9 @@ import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
+import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
-import NativeVaultManager from '@/specs/NativeVaultManager';
-import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 
 /**
  * CSV record for Credential objects (matching server format).
@@ -92,9 +91,11 @@ export default function ImportExportScreen(): React.ReactNode {
       const totpCodes = await dbContext.sqliteClient?.getTotpCodesForCredential(credential.Id) ?? [];
       const totpSecret = totpCodes.length > 0 ? totpCodes[0].SecretKey : '';
 
-      // For now, we'll use current date for CreatedAt/UpdatedAt since they're not available
-      // in the Credential type. In a production scenario, we'd want to extend the
-      // SqliteClient to fetch these fields.
+      /*
+       * For now, we'll use current date for CreatedAt/UpdatedAt since they're not available
+       * in the Credential type. In a production scenario, we'd want to extend the
+       * SqliteClient to fetch these fields.
+       */
       const currentDate = formatDate(new Date().toISOString());
 
       const record: ICredentialCsvRecord = {
@@ -137,7 +138,11 @@ export default function ImportExportScreen(): React.ReactNode {
       'TwoFactorSecret'
     ];
 
-    // Helper function to escape CSV values
+    /**
+     * Escape CSV value.
+     * @param {string} value - The value to escape.
+     * @returns {string} The escaped value.
+     */
     const escapeCsvValue = (value: string): string => {
       // If value contains comma, newline, or quote, wrap in quotes
       if (value.includes(',') || value.includes('\n') || value.includes('"') || value.includes('\r')) {
