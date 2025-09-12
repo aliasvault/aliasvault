@@ -1,0 +1,4 @@
+Version,Username,Notes,CreatedAt,UpdatedAt,AliasGender,AliasFirstName,AliasLastName,AliasNickName,AliasBirthDate,AliasEmail,ServiceName,ServiceUrl,CurrentPassword,TwoFactorSecret
+1.5.0,username3,without password,09/12/2025 17:28:39,09/12/2025 17:28:39,,,,,01/01/0001 00:00:00,,credential3,,,test
+1.5.0,username2,,09/12/2025 17:28:39,09/12/2025 17:28:39,gender2,firstname2,lastname2,nickname2,01/01/0001 00:00:00,service2@example.tld,service2,https://service2.com,password2,
+1.5.0,username1,notes1,09/12/2025 17:28:39,09/12/2025 17:28:39,gender1,firstname1,lastname1,nickname1,01/01/1970 00:00:00,email1@example.tld,service1,,password1,

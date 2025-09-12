@@ -684,6 +684,77 @@ public class ImportExportTests
     }
 
     /// <summary>
+    /// Test case for importing credentials from AliasVault Mobile App CSV export and ensuring all values are present.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task ImportCredentialsFromAliasVaultMobileAppCsv()
+    {
+        // Arrange
+        var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceStringAsync("AliasVault.UnitTests.TestData.Exports.aliasvault_mobile_app_export.csv");
+
+        // Act
+        var importedCredentials = await CredentialCsvService.ImportCredentialsFromCsv(fileContent);
+
+        // Assert
+        Assert.That(importedCredentials, Has.Count.EqualTo(3));
+
+        // Test credential3 (without password)
+        var credential3 = importedCredentials.First(c => c.ServiceName == "credential3");
+        Assert.Multiple(() =>
+        {
+            Assert.That(credential3.ServiceName, Is.EqualTo("credential3"));
+            Assert.That(credential3.ServiceUrl, Is.Empty);
+            Assert.That(credential3.Username, Is.EqualTo("username3"));
+            Assert.That(credential3.Password, Is.Empty);
+            Assert.That(credential3.Notes, Is.EqualTo("without password"));
+            Assert.That(credential3.TwoFactorSecret, Is.EqualTo("test"));
+            Assert.That(credential3.CreatedAt?.Date, Is.EqualTo(new DateTime(2025, 9, 12)));
+            Assert.That(credential3.UpdatedAt?.Date, Is.EqualTo(new DateTime(2025, 9, 12)));
+            Assert.That(credential3.Alias?.Gender, Is.Empty);
+            Assert.That(credential3.Alias?.FirstName, Is.Empty);
+            Assert.That(credential3.Alias?.LastName, Is.Empty);
+            Assert.That(credential3.Alias?.NickName, Is.Empty);
+            Assert.That(credential3.Email, Is.Empty);
+        });
+
+        // Test service2 (full credential with alias)
+        var service2Credential = importedCredentials.First(c => c.ServiceName == "service2");
+        Assert.Multiple(() =>
+        {
+            Assert.That(service2Credential.ServiceName, Is.EqualTo("service2"));
+            Assert.That(service2Credential.ServiceUrl, Is.EqualTo("https://service2.com"));
+            Assert.That(service2Credential.Username, Is.EqualTo("username2"));
+            Assert.That(service2Credential.Password, Is.EqualTo("password2"));
+            Assert.That(service2Credential.Notes, Is.Empty);
+            Assert.That(service2Credential.TwoFactorSecret, Is.Empty);
+            Assert.That(service2Credential.Email, Is.EqualTo("service2@example.tld"));
+            Assert.That(service2Credential.Alias?.Gender, Is.EqualTo("gender2"));
+            Assert.That(service2Credential.Alias?.FirstName, Is.EqualTo("firstname2"));
+            Assert.That(service2Credential.Alias?.LastName, Is.EqualTo("lastname2"));
+            Assert.That(service2Credential.Alias?.NickName, Is.EqualTo("nickname2"));
+        });
+
+        // Test service1 (with notes and birthdate)
+        var service1Credential = importedCredentials.First(c => c.ServiceName == "service1");
+        Assert.Multiple(() =>
+        {
+            Assert.That(service1Credential.ServiceName, Is.EqualTo("service1"));
+            Assert.That(service1Credential.ServiceUrl, Is.Empty);
+            Assert.That(service1Credential.Username, Is.EqualTo("username1"));
+            Assert.That(service1Credential.Password, Is.EqualTo("password1"));
+            Assert.That(service1Credential.Notes, Is.EqualTo("notes1"));
+            Assert.That(service1Credential.TwoFactorSecret, Is.Empty);
+            Assert.That(service1Credential.Email, Is.EqualTo("email1@example.tld"));
+            Assert.That(service1Credential.Alias?.Gender, Is.EqualTo("gender1"));
+            Assert.That(service1Credential.Alias?.FirstName, Is.EqualTo("firstname1"));
+            Assert.That(service1Credential.Alias?.LastName, Is.EqualTo("lastname1"));
+            Assert.That(service1Credential.Alias?.NickName, Is.EqualTo("nickname1"));
+            Assert.That(service1Credential.Alias?.BirthDate, Is.EqualTo(new DateTime(1970, 1, 1)));
+        });
+    }
+
+    /// <summary>
     /// Test case for getting the CSV template structure.
     /// </summary>
     [Test]
