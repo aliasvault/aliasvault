@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Annuleren",
+    "close": "Close",
     "delete": "Verwijderen",
     "save": "Opslaan",
     "yes": "Ja",
@@ -13,7 +14,8 @@
     "never": "Nooit",
     "copied": "Gekopieerd naar klembord",
     "loadMore": "Laad meer",
-    "use": "Gebruik"
+    "use": "Gebruik",
+    "confirm": "Confirm"
   },
   "auth": {
     "login": "Inloggen",
@@ -47,7 +49,6 @@
       "serverErrorSelfHosted": "Kan de API niet bereiken. Voor self-hosted instances, controleer of de API URL werkt door er via de browser handmatig naartoe te navigeren: de pagina moet \"OK\" weergeven.",
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
       "networkErrorSelfHosted": "Netwerkfout. Controleer de verbinding en probeer het opnieuw. Voor self-hosted instances, controleer dat er een geldig SSL-certificaat is geconfigureerd. Self-signed SSL-certificaten worden niet ondersteund door de app wegens veiligheidsredenen.",
-      "incorrectPasswordFallback": "Onjuist wachtwoord. Probeer het opnieuw.",
       "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
       "tokenRefreshFailed": "Authenticatietoken vernieuwen mislukt",
       "httpError": "HTTP fout: {{status}}"
@@ -162,8 +163,7 @@
     "errors": {
       "loadFailed": "Laden van credential mislukt",
       "generateUsernameFailed": "Genereren van gebruikersnaam mislukt",
-      "generatePasswordFailed": "Genereren van wachtwoord mislukt",
-      "generic": "Fout"
+      "generatePasswordFailed": "Genereren van wachtwoord mislukt"
     },
     "contextMenu": {
       "title": "Credential opties",
@@ -220,6 +220,19 @@
     "batteryOptimizationHelpDescription": "Batterij optimalisatie van Android voorkomt dat de app op de achtergrond taken uit kan voeren. Het uitschakelen van deze batterij optimalisatie voor AliasVault zorgt ervoor dat het wissen van het klembord zo nauwkeurig mogelijk werkt.",
     "disableBatteryOptimization": "Batterij optimalisatie uitschakelen",
     "identityGenerator": "Identiteit generator",
+    "importExport": "Import / Export",
+    "importSectionTitle": "Import",
+    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
+    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
+    "exportSectionTitle": "Export",
+    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
+    "exportCsvButton": "Export vault to CSV file",
+    "exporting": "Exporting...",
+    "exportConfirmTitle": "Export Vault",
+    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "exportError": "Failed to export vault. Please try again.",
+    "exportSaved": "File saved to: {{filename}}",
+    "noVaultData": "No vault data to export",
     "security": "Beveiliging",
     "appVersion": "App versie {{version}} ({{url}})",
     "autoLockOptions": {
@@ -424,12 +437,16 @@
       "openingVaultReadOnly": "Vault openen in alleen-lezen modus",
       "retryingConnection": "Opnieuw proberen..."
     },
+    "offline": {
+      "banner": "Offline mode (read-only)",
+      "backOnline": "Back online",
+      "stillOffline": "Still offline"
+    },
     "alerts": {
       "syncIssue": "Synchronisatieprobleem",
       "syncIssueMessage": "De AliasVault server kon niet worden bereikt en je vault kon niet worden gesynchroniseerd. Wil je je lokale vault openen in alleen-lezen modus of de verbinding opnieuw proberen?",
       "openLocalVault": "Open lokale vault",
-      "retrySync": "Opnieuw proberen",
-      "error": "Fout"
+      "retrySync": "Opnieuw proberen"
     },
     "navigation": {
       "login": "Login",
@@ -467,7 +484,6 @@
     "whatsNew": "Wat is er nieuw",
     "whatsNewDescription": "Een upgrade is vereist vanwege de volgende wijzigingen:",
     "noDescriptionAvailable": "Voor deze versie is geen beschrijving beschikbaar.",
-    "okay": "Ok",
     "status": {
       "preparingUpgrade": "Upgrade voorbereiden...",
       "vaultAlreadyUpToDate": "De vault is al bijgewerkt",
@@ -477,11 +493,9 @@
       "committingChanges": "Wijzigingen doorvoeren..."
     },
     "alerts": {
-      "error": "Fout",
       "unableToGetVersionInfo": "Kan versie-informatie niet ophalen. Probeer het opnieuw.",
       "selfHostedServer": "Self-hosted server",
       "selfHostedWarning": "Als je een self-hosted server gebruikt, zorg er dan voor dat je ook je eigen self-hosted instantie bijwerkt, omdat anders het inloggen via de web client niet meer zal werken.",
-      "cancel": "Annuleren",
       "continueUpgrade": "Verdergaan",
       "upgradeFailed": "Upgrade mislukt",
       "failedToApplyMigration": "Kon migratie niet toepassen ({{current}} van {{total}})",
