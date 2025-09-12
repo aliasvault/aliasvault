@@ -223,7 +223,7 @@ export default function SettingsScreen() : React.ReactNode {
 
   const styles = StyleSheet.create({
     scrollContent: {
-      paddingBottom: 40,
+      paddingBottom: 80,
       paddingTop: Platform.OS === 'ios' ? 42 : 16,
     },
     scrollView: {
@@ -444,6 +444,19 @@ export default function SettingsScreen() : React.ReactNode {
             </View>
             <View style={styles.settingItemContent}>
               <ThemedText style={styles.settingItemText}>{t('settings.identityGenerator')}</ThemedText>
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            </View>
+          </TouchableOpacity>
+          <View style={styles.separator} />
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => router.push('/(tabs)/settings/import-export')}
+          >
+            <View style={styles.settingItemIcon}>
+              <Ionicons name="swap-horizontal" size={20} color={colors.text} />
+            </View>
+            <View style={styles.settingItemContent}>
+              <ThemedText style={styles.settingItemText}>{t('settings.importExport')}</ThemedText>
               <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
             </View>
           </TouchableOpacity>
