@@ -154,13 +154,13 @@
     "addAttachments": "Aggiungi allegati",
     "deleteAttachment": "Elimina",
     "toasts": {
-      "credentialUpdated": "Credenziale aggiornata con successo",
+      "credentialUpdated": "Credenziali aggiornate con successo",
       "credentialCreated": "Credenziali create con successo",
       "credentialDeleted": "Credenziali eliminate con successo"
     },
     "createNewAliasFor": "Crea un nuovo alias per",
     "errors": {
-      "loadFailed": "Caricamento credenziale non riuscito",
+      "loadFailed": "Caricamento credenziali non riuscito",
       "generateUsernameFailed": "Generazione nome utente non riuscita",
       "generatePasswordFailed": "Generazione password non riuscita",
       "generic": "Errore"
