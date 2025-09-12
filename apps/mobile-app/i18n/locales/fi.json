@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Peruuta",
+    "close": "Close",
     "delete": "Poista",
     "save": "Tallenna",
     "yes": "Kyllä",
@@ -13,7 +14,8 @@
     "never": "Ei koskaan",
     "copied": "Kopioitu leikepöydälle",
     "loadMore": "Lataa lisää",
-    "use": "Käytä"
+    "use": "Käytä",
+    "confirm": "Confirm"
   },
   "auth": {
     "login": "Kirjaudu sisään",
@@ -47,7 +49,6 @@
       "serverErrorSelfHosted": "API-rajapintaa ei tavoitettu. Itsehallinnoiduissa järjestelmissä, ole hyvä ja tarkista API-päätepisteen tavoitettavuus selaimessa, sen pitäisi olla \"OK\".",
       "networkError": "Verkkopyyntö epäonnistui. Tarkista internet-yhteytesi ja yritä uudelleen.",
       "networkErrorSelfHosted": "Verkkoppyyntö epäonnistui. Tarkista internet-yhteytysei ja yritä uudelleen. Mikäli käytät itsehallinnoitua järjestelmää, varmista että voimassaoleva SSL-sertifikaatti on asennettuna. Itseallekirjoitettuja sertifikaatteja ei tueta mobiililaitteissa tietoturvasyistä. ",
-      "incorrectPasswordFallback": "Virheellinen salasana. Yritä uudelleen.",
       "sessionExpired": "Istuntosi on vanhentunut. Ole hyvä ja kirjaudu uudelleen.",
       "tokenRefreshFailed": "Todennustunnuksen päivittäminen epäonnistui",
       "httpError": "HTTP-virhe: {{status}}"
@@ -162,8 +163,7 @@
     "errors": {
       "loadFailed": "Käyttäjätunnuksen lataaminen epäonnistui",
       "generateUsernameFailed": "Käyttäjänimen muodostaminen epäonnistui",
-      "generatePasswordFailed": "Salasanan muodostaminen epäonnistui",
-      "generic": "Virhe"
+      "generatePasswordFailed": "Salasanan muodostaminen epäonnistui"
     },
     "contextMenu": {
       "title": "Käyttäjätunnuksen asetukset",
@@ -220,6 +220,19 @@
     "batteryOptimizationHelpDescription": "Androidin akun optimointi estää luotettavan leikepöydän tyhjennyksen, kun sovellus on taustalla. Akun optimoinnin poistaminen AliasVaultilta mahdollistaa tarkan taustaleikepöydältä ja antaa automaattisesti tarvittavat hälytysoikeudet.",
     "disableBatteryOptimization": "Poista akkuvirran optimointi käytöstä",
     "identityGenerator": "Henkilöllisyyden luonti",
+    "importExport": "Import / Export",
+    "importSectionTitle": "Import",
+    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
+    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
+    "exportSectionTitle": "Export",
+    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
+    "exportCsvButton": "Export vault to CSV file",
+    "exporting": "Exporting...",
+    "exportConfirmTitle": "Export Vault",
+    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "exportError": "Failed to export vault. Please try again.",
+    "exportSaved": "File saved to: {{filename}}",
+    "noVaultData": "No vault data to export",
     "security": "Turvallisuus",
     "appVersion": "Sovelluksen versio {{version}} ({{url}})",
     "autoLockOptions": {
@@ -424,12 +437,16 @@
       "openingVaultReadOnly": "Avataan holvi vain luku -tilassa",
       "retryingConnection": "Yritetään muodostaa yhteyttä..."
     },
+    "offline": {
+      "banner": "Offline mode (read-only)",
+      "backOnline": "Back online",
+      "stillOffline": "Still offline"
+    },
     "alerts": {
       "syncIssue": "Synkronointiongelma",
       "syncIssueMessage": "AliasVault-palvelimeen ei saada yhteyttä ja holviasi ei voida synkronoida. Haluatko avata paikallisen holvisi vain luku-tilassa vai haluatko kokeilla yhteyttä uudelleen?",
       "openLocalVault": "Avaa paikallinen holvi",
-      "retrySync": "Yritä synkronointia uudelleen",
-      "error": "Virhe"
+      "retrySync": "Yritä synkronointia uudelleen"
     },
     "navigation": {
       "login": "Kirjaudu sisään",
@@ -467,7 +484,6 @@
     "whatsNew": "Mitä uutta?",
     "whatsNewDescription": "Päivitys on tarpeen, jotta voidaan tukea seuraavia muutoksia:",
     "noDescriptionAvailable": "Kuvausta ei ole saatavilla tälle versiolle.",
-    "okay": "Ok",
     "status": {
       "preparingUpgrade": "Valmistellaan päivitystä...",
       "vaultAlreadyUpToDate": "Holvi on jo ajan tasalla",
@@ -477,11 +493,9 @@
       "committingChanges": "Suoritetaan muutoksia..."
     },
     "alerts": {
-      "error": "Virhe",
       "unableToGetVersionInfo": "Versiotietoja ei löytynyt. Yritä uudelleen.",
       "selfHostedServer": "Itse",
       "selfHostedWarning": "Jos käytät itseylläpidettyä  palvelinta (Self-hosted), varmista että päivität myös itseylläpidetyn yksikkösi, koska muuten kirjautuminen web-palveluun ja sovellukseen voivat lakata toimimasta.",
-      "cancel": "Peruuta",
       "continueUpgrade": "Jatka päivitystä",
       "upgradeFailed": "Päivitys epäonnistui",
       "failedToApplyMigration": "Tietokannan siirto {{current}} / {{total}} epäonnistui.",
