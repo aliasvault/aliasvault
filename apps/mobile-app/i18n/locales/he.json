@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "ביטול",
+    "close": "Close",
     "delete": "מחיקה",
     "save": "שמירה",
     "yes": "כן",
@@ -13,7 +14,8 @@
     "never": "אף פעם",
     "copied": "הועתק ללוח הגזירים",
     "loadMore": "לטעון עוד",
-    "use": "להשתמש"
+    "use": "להשתמש",
+    "confirm": "Confirm"
   },
   "auth": {
     "login": "כניסה",
@@ -47,7 +49,6 @@
       "serverErrorSelfHosted": "לא ניתן להגיע ל־API. למערכות באירוח עצמי, נא לאמת שנקודת ה־API נגישה על ידי ניווט אליה בדפדפן: היא אמורה להציג ‚OK’ (תקין).",
       "networkError": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט תקין ולנסות שוב.",
       "networkErrorSelfHosted": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט והשרת זמינים. למערכות באירוח עצמי, נא לוודא שמותקן אצלך אישור SSL תקף. אישורים בחתימה עצמית לא נתמכים במכשירים ניידים מטעמי אבטחת מידע.",
-      "incorrectPasswordFallback": "סיסמה שגויה. נא לנסות שוב.",
       "sessionExpired": "משך ההפעלה שלך פג. נא להיכנס שוב.",
       "tokenRefreshFailed": "ריענון אסימון האימות נכשל",
       "httpError": "שגיאת HTTP:‏ {{status}}"
@@ -162,8 +163,7 @@
     "errors": {
       "loadFailed": "טעינת פרטי הגישה נכשלה",
       "generateUsernameFailed": "יצירת שם משתמש נכשלה",
-      "generatePasswordFailed": "יצירת סיסמה נכשלה",
-      "generic": "שגיאה"
+      "generatePasswordFailed": "יצירת סיסמה נכשלה"
     },
     "contextMenu": {
       "title": "אפשרויות פרטי גישה",
@@ -220,6 +220,19 @@
     "batteryOptimizationHelpDescription": "מיטוב הסוללה של Android מונע פינוי אמין של לוח הגזירים כשהיישום פועל ברקע. השבתת מיטוב הסוללה ל־AliasVault מאפשרת פינוי מדויק של לוח הגזירים ברקע ומאשרת אוטומטית הרשאות התראות הכרחיות.",
     "disableBatteryOptimization": "השבתת מיטוב סוללה",
     "identityGenerator": "מייצר זהויות",
+    "importExport": "Import / Export",
+    "importSectionTitle": "Import",
+    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
+    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
+    "exportSectionTitle": "Export",
+    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
+    "exportCsvButton": "Export vault to CSV file",
+    "exporting": "Exporting...",
+    "exportConfirmTitle": "Export Vault",
+    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "exportError": "Failed to export vault. Please try again.",
+    "exportSaved": "File saved to: {{filename}}",
+    "noVaultData": "No vault data to export",
     "security": "אבטחה",
     "appVersion": "גרסת היישום היא {{version}} ({{url}})",
     "autoLockOptions": {
@@ -424,12 +437,16 @@
       "openingVaultReadOnly": "כספת נפתח במצב לקריאה בלבד",
       "retryingConnection": "מתבצע ניסיון להתחבר מחדש…"
     },
+    "offline": {
+      "banner": "Offline mode (read-only)",
+      "backOnline": "Back online",
+      "stillOffline": "Still offline"
+    },
     "alerts": {
       "syncIssue": "תקלת סנכרון",
       "syncIssueMessage": "לא ניתן לגשת לשרת ה־AliasVault ולא ניתן לסנכרן את הכספת שלך. לפתוח את הכספת המקומית במצב קריאה בלבד או לנסות להתחבר שוב?",
       "openLocalVault": "פתיחת כספת מקומית",
-      "retrySync": "לנסות לסנכרן מחדש",
-      "error": "שגיאה"
+      "retrySync": "לנסות לסנכרן מחדש"
     },
     "navigation": {
       "login": "כניסה",
@@ -467,7 +484,6 @@
     "whatsNew": "מה חדש",
     "whatsNewDescription": "יש לשדרג כדי שתהיה תמיכה בשינויים הבאים:",
     "noDescriptionAvailable": "אין תיאור זמין לגרסה הזאת.",
-    "okay": "אישור",
     "status": {
       "preparingUpgrade": "השדרוג בהכנה…",
       "vaultAlreadyUpToDate": "הכספת כבר עדכנית",
@@ -477,11 +493,9 @@
       "committingChanges": "השינויים מקובעים…"
     },
     "alerts": {
-      "error": "שגיאה",
       "unableToGetVersionInfo": "לא ניתן לקבל את פרטי הגרסה. נא לנסות שוב מאוחר יותר.",
       "selfHostedServer": "שרת באירוח עצמי",
       "selfHostedWarning": "אם מדובר בשרת שמתארח עצמאית, נא לוודא שהעותק שמתארח אצלך גם כן מתעדכן כי אחרת הכניסה לאתר תפסיק לעבוד.",
-      "cancel": "ביטול",
       "continueUpgrade": "להמשיך בשדרוג",
       "upgradeFailed": "השדרוג נכשל",
       "failedToApplyMigration": "החלת ההסבה נכשלה ({{current}} מתוך {{total}})",
