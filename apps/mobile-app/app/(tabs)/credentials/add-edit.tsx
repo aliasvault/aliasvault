@@ -12,7 +12,7 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import Toast from 'react-native-toast-message';
 
 import { CreateIdentityGenerator, IdentityGenerator, IdentityHelperUtils } from '@/utils/dist/shared/identity-generator';
-import type { Attachment, Credential, PasswordSettings } from '@/utils/dist/shared/models/vault';
+import type { Attachment, Credential } from '@/utils/dist/shared/models/vault';
 import type { FaviconExtractModel } from '@/utils/dist/shared/models/webapi';
 import { CreatePasswordGenerator, PasswordGenerator } from '@/utils/dist/shared/password-generator';
 import emitter from '@/utils/EventEmitter';
@@ -56,7 +56,6 @@ export default function AddEditCredentialScreen() : React.ReactNode {
   const [isSaveDisabled, setIsSaveDisabled] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [originalAttachmentIds, setOriginalAttachmentIds] = useState<string[]>([]);
-  const [passwordSettings, setPasswordSettings] = useState<PasswordSettings | null>(null);
   const { t } = useTranslation();
 
   const { control, handleSubmit, setValue, watch } = useForm<Credential>({
@@ -134,14 +133,6 @@ export default function AddEditCredentialScreen() : React.ReactNode {
         }, 100);
         router.dismiss();
         return;
-      }
-
-      // Load password settings
-      try {
-        const settings = await dbContext.sqliteClient!.getPasswordSettings();
-        setPasswordSettings(settings);
-      } catch (err) {
-        console.error('Error loading password settings:', err);
       }
 
       if (isEditMode) {
@@ -645,7 +636,6 @@ export default function AddEditCredentialScreen() : React.ReactNode {
                   control={control}
                   name="Password"
                   label={t('credentials.password')}
-                  initialSettings={passwordSettings}
                   showPassword={isPasswordVisible}
                   onShowPasswordChange={setIsPasswordVisible}
                   isNewCredential={!isEditMode}

@@ -1,6 +1,6 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import Slider from '@react-native-community/slider';
-import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState, useCallback } from 'react';
+import React, { forwardRef, useImperativeHandle, useMemo, useRef, useState, useCallback, useEffect } from 'react';
 import { Controller, Control, FieldValues, Path } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View, TextInput, TextInputProps, StyleSheet, TouchableOpacity, Platform, Modal, ScrollView, Switch } from 'react-native';
@@ -11,6 +11,7 @@ import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator'
 import { useColors } from '@/hooks/useColorScheme';
 
 import { ThemedText } from '@/components/themed/ThemedText';
+import { useDb } from '@/context/DbContext';
 
 export type AdvancedPasswordFieldRef = {
   focus: () => void;
@@ -22,27 +23,16 @@ type AdvancedPasswordFieldProps<T extends FieldValues> = Omit<TextInputProps, 'v
   name: Path<T>;
   control: Control<T>;
   required?: boolean;
-  initialSettings: PasswordSettings | null;
   showPassword?: boolean;
   onShowPasswordChange?: (show: boolean) => void;
   isNewCredential?: boolean;
 }
-
-const defaultSettings: PasswordSettings = {
-  Length: 16,
-  UseLowercase: true,
-  UseUppercase: true,
-  UseNumbers: true,
-  UseSpecialChars: true,
-  UseNonAmbiguousChars: false
-};
 
 const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, AdvancedPasswordFieldProps<FieldValues>>(({
   label,
   name,
   control,
   required,
-  initialSettings,
   showPassword: controlledShowPassword,
   onShowPasswordChange,
   isNewCredential = false,
@@ -53,13 +43,15 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
   const inputRef = useRef<TextInput>(null);
   const [internalShowPassword, setInternalShowPassword] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [currentSettings, setCurrentSettings] = useState<PasswordSettings>(() => initialSettings || defaultSettings);
+  const [currentSettings, setCurrentSettings] = useState<PasswordSettings | null>(null);
   const [previewPassword, setPreviewPassword] = useState<string>('');
-  const [sliderValue, setSliderValue] = useState<number>(() => (initialSettings || defaultSettings).Length);
+  const [sliderValue, setSliderValue] = useState<number>(16); // Default until loaded from DB
   const fieldOnChangeRef = useRef<((value: string) => void) | null>(null);
   const lastGeneratedLength = useRef<number>(0);
   const isSliding = useRef(false);
-
+  const hasSetInitialLength = useRef(false);
+  const currentPasswordRef = useRef<string>('');
+  const dbContext = useDb();
   const showPassword = controlledShowPassword ?? internalShowPassword;
 
   const setShowPasswordState = useCallback((show: boolean) => {
@@ -69,6 +61,26 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
       setInternalShowPassword(show);
     }
   }, [controlledShowPassword, onShowPasswordChange]);
+
+  // Load password settings from database
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        if (dbContext.sqliteClient) {
+          const settings = await dbContext.sqliteClient.getPasswordSettings();
+          setCurrentSettings(settings);
+          // Only set slider value from settings if we don't have a password value yet
+          if (!hasSetInitialLength.current && isNewCredential) {
+            setSliderValue(settings.Length);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading password settings:', error);
+      }
+    };
+    loadSettings();
+  }, [dbContext.sqliteClient, isNewCredential]);
+
 
   useImperativeHandle(ref, () => ({
     focus: () => inputRef.current?.focus(),
@@ -91,7 +103,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
   }, []);
 
   const handleGeneratePassword = useCallback(() => {
-    if (fieldOnChangeRef.current) {
+    if (fieldOnChangeRef.current && currentSettings) {
       const password = generatePassword(currentSettings);
       if (password) {
         fieldOnChangeRef.current(password);
@@ -103,18 +115,18 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
   const handleSliderChange = useCallback((value: number) => {
     const roundedLength = Math.round(value);
     setSliderValue(roundedLength);
-    
+
     // Only generate if value actually changed and we're actively sliding
     if (roundedLength !== lastGeneratedLength.current && isSliding.current) {
       lastGeneratedLength.current = roundedLength;
-      
+
       // Show password when sliding
       if (!showPassword) {
         setShowPasswordState(true);
       }
-      
-      const newSettings = { ...currentSettings, Length: roundedLength };
-      if (fieldOnChangeRef.current) {
+
+      const newSettings = { ...(currentSettings || {}), Length: roundedLength } as PasswordSettings;
+      if (fieldOnChangeRef.current && currentSettings) {
         const password = generatePassword(newSettings);
         if (password) {
           fieldOnChangeRef.current(password);
@@ -132,14 +144,18 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
   const handleSliderComplete = useCallback((value: number) => {
     isSliding.current = false;
     const roundedLength = Math.round(value);
-    const newSettings = { ...currentSettings, Length: roundedLength };
-    setCurrentSettings(newSettings);
+    if (currentSettings) {
+      const newSettings = { ...currentSettings, Length: roundedLength };
+      setCurrentSettings(newSettings);
+    }
     lastGeneratedLength.current = 0; // Reset for next sliding session
   }, [currentSettings]);
 
   const handleRefreshPreview = useCallback(() => {
-    const password = generatePassword(currentSettings);
-    setPreviewPassword(password);
+    if (currentSettings) {
+      const password = generatePassword(currentSettings);
+      setPreviewPassword(password);
+    }
   }, [currentSettings, generatePassword]);
 
   const handleUsePassword = useCallback(() => {
@@ -151,13 +167,16 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
   }, [previewPassword, setShowPasswordState]);
 
   const handleOpenSettings = useCallback(() => {
-    const password = generatePassword(currentSettings);
-    setPreviewPassword(password);
-    setShowSettingsModal(true);
+    if (currentSettings) {
+      const password = generatePassword(currentSettings);
+      setPreviewPassword(password);
+      setShowSettingsModal(true);
+    }
   }, [currentSettings, generatePassword]);
 
   const updateSetting = useCallback((key: keyof PasswordSettings, value: boolean) => {
     setCurrentSettings(prev => {
+      if (!prev) return prev;
       const newSettings = { ...prev, [key]: value };
       const password = generatePassword(newSettings);
       setPreviewPassword(password);
@@ -331,8 +350,22 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
       name={name}
       render={({ field: { onChange, value }, fieldState: { error } }) => {
         fieldOnChangeRef.current = onChange;
+        currentPasswordRef.current = value as string || '';
 
-        // Removed auto-generation on initial render to prevent Android crashes
+        // Use useEffect to update slider value when password value changes
+        // This avoids setState during render
+        useEffect(() => {
+          if (!hasSetInitialLength.current) {
+            if (!isNewCredential && value && typeof value === 'string' && value.length > 0) {
+              // Editing existing credential: use actual password length
+              setSliderValue(value.length);
+              hasSetInitialLength.current = true;
+            } else if (isNewCredential) {
+              // New credential: settings default is already set
+              hasSetInitialLength.current = true;
+            }
+          }
+        }, [value]);
 
         const showClearButton = Platform.OS === 'android' && value && value.length > 0;
 
@@ -461,7 +494,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
                       <View style={styles.settingItem}>
                         <ThemedText style={styles.settingLabel}>{t('credentials.includeLowercase')}</ThemedText>
                         <Switch
-                          value={currentSettings.UseLowercase}
+                          value={currentSettings?.UseLowercase ?? true}
                           onValueChange={(value) => updateSetting('UseLowercase', value)}
                           trackColor={{ false: colors.accentBorder, true: colors.primary }}
                           thumbColor={Platform.OS === 'android' ? colors.background : undefined}
@@ -471,7 +504,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
                       <View style={styles.settingItem}>
                         <ThemedText style={styles.settingLabel}>{t('credentials.includeUppercase')}</ThemedText>
                         <Switch
-                          value={currentSettings.UseUppercase}
+                          value={currentSettings?.UseUppercase ?? true}
                           onValueChange={(value) => updateSetting('UseUppercase', value)}
                           trackColor={{ false: colors.accentBorder, true: colors.primary }}
                           thumbColor={Platform.OS === 'android' ? colors.background : undefined}
@@ -481,7 +514,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
                       <View style={styles.settingItem}>
                         <ThemedText style={styles.settingLabel}>{t('credentials.includeNumbers')}</ThemedText>
                         <Switch
-                          value={currentSettings.UseNumbers}
+                          value={currentSettings?.UseNumbers ?? true}
                           onValueChange={(value) => updateSetting('UseNumbers', value)}
                           trackColor={{ false: colors.accentBorder, true: colors.primary }}
                           thumbColor={Platform.OS === 'android' ? colors.background : undefined}
@@ -491,7 +524,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
                       <View style={styles.settingItem}>
                         <ThemedText style={styles.settingLabel}>{t('credentials.includeSpecialChars')}</ThemedText>
                         <Switch
-                          value={currentSettings.UseSpecialChars}
+                          value={currentSettings?.UseSpecialChars ?? true}
                           onValueChange={(value) => updateSetting('UseSpecialChars', value)}
                           trackColor={{ false: colors.accentBorder, true: colors.primary }}
                           thumbColor={Platform.OS === 'android' ? colors.background : undefined}
@@ -501,7 +534,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
                       <View style={styles.settingItem}>
                         <ThemedText style={styles.settingLabel}>{t('credentials.avoidAmbiguousChars')}</ThemedText>
                         <Switch
-                          value={currentSettings.UseNonAmbiguousChars}
+                          value={currentSettings?.UseNonAmbiguousChars ?? false}
                           onValueChange={(value) => updateSetting('UseNonAmbiguousChars', value)}
                           trackColor={{ false: colors.accentBorder, true: colors.primary }}
                           thumbColor={Platform.OS === 'android' ? colors.background : undefined}
