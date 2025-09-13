@@ -25,29 +25,20 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
   const dbContext = useDb();
   const { executeVaultMutation } = useVaultMutate();
 
-  const [settings, setSettings] = useState<PasswordSettings>({
-    Length: 16,
-    UseLowercase: true,
-    UseUppercase: true,
-    UseNumbers: true,
-    UseSpecialChars: true,
-    UseNonAmbiguousChars: false
-  });
+  const [settings, setSettings] = useState<PasswordSettings | null>(null);
   const [previewPassword, setPreviewPassword] = useState<string>('');
-  const [sliderValue, setSliderValue] = useState<number>(16);
+  const [sliderValue, setSliderValue] = useState<number | null>(null);
 
   // Store pending changes and initial values
   const pendingChanges = useRef<Partial<PasswordSettings>>({});
-  const initialValues = useRef<PasswordSettings>({
-    Length: 16,
-    UseLowercase: true,
-    UseUppercase: true,
-    UseNumbers: true,
-    UseSpecialChars: true,
-    UseNonAmbiguousChars: false
-  });
+  const lastGeneratedLength = useRef<number>(0);
+  const isSliding = useRef(false);
+  const initialValues = useRef<PasswordSettings | null>(null);
 
   const handleRefreshPreview = useCallback(() => {
+    if (!settings) {
+      return;
+    }
     try {
       const passwordGenerator = CreatePasswordGenerator(settings);
       const password = passwordGenerator.generateRandomPassword();
@@ -93,32 +84,24 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
 
       // Save changes when screen loses focus (navigating away)
       return (): void => {
-        /**
-         * Save current settings to the database synchronously.
-         */
-        // Check if there are pending changes to save
         const hasChanges = Object.keys(pendingChanges.current).length > 0;
-        console.debug('Screen losing focus. Pending changes:', pendingChanges.current, 'Has changes:', hasChanges);
 
         if (!hasChanges) {
-          console.debug('No changes to save');
           return;
         }
 
         // Use the merged settings with all pending changes
-        const finalSettings = { ...initialValues.current, ...pendingChanges.current };
-        console.debug('Saving settings:', finalSettings);
+        if (!initialValues.current) {
+          return;
+        }
 
-        /*
-         * Save settings synchronously to ensure they persist before navigation
-         * We use a promise but don't await it to avoid blocking navigation
-         */
+        const finalSettings = { ...initialValues.current, ...pendingChanges.current };
+
         executeVaultMutation(async () => {
-          // Save as JSON serialized object to match how getPasswordSettings reads it
+          // Save as JSON serialized object
           const settingsJson = JSON.stringify(finalSettings);
           await dbContext.sqliteClient!.updateSetting('PasswordGenerationSettings', settingsJson);
         }).then(() => {
-          console.debug('Password generator settings saved successfully');
           // Update initial values after successful save
           initialValues.current = finalSettings;
           // Clear pending changes after successful save
@@ -137,15 +120,55 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
     const roundedLength = Math.round(value);
     setSliderValue(roundedLength);
 
-    // Update settings and regenerate password immediately
+    // Only generate if value actually changed and we're actively sliding
+    if (roundedLength !== lastGeneratedLength.current && isSliding.current && settings) {
+      lastGeneratedLength.current = roundedLength;
+
+      // Update settings and regenerate password
+      const newSettings = { ...settings, Length: roundedLength };
+      setSettings(newSettings);
+
+      // Track the change
+      pendingChanges.current = { ...pendingChanges.current, Length: roundedLength };
+
+      // Generate new preview password
+      try {
+        const passwordGenerator = CreatePasswordGenerator(newSettings);
+        const password = passwordGenerator.generateRandomPassword();
+        setPreviewPassword(password);
+      } catch (error) {
+        console.error('Error generating password:', error);
+      }
+    }
+  }, [settings]);
+
+  /**
+   * Handle slider drag start.
+   */
+  const handleSliderStart = useCallback((): void => {
+    isSliding.current = true;
+    lastGeneratedLength.current = sliderValue ?? 0;
+  }, [sliderValue]);
+
+  /**
+   * Handle slider drag complete.
+   */
+  const handleSliderComplete = useCallback((value: number): void => {
+    isSliding.current = false;
+    const roundedLength = Math.round(value);
+
+    if (!settings) {
+      return;
+    }
+
+    // Update settings with final value
     const newSettings = { ...settings, Length: roundedLength };
     setSettings(newSettings);
 
     // Track the change
     pendingChanges.current = { ...pendingChanges.current, Length: roundedLength };
-    console.debug('Slider changed, pending changes:', pendingChanges.current);
 
-    // Generate new preview password
+    // Generate password with final value
     try {
       const passwordGenerator = CreatePasswordGenerator(newSettings);
       const password = passwordGenerator.generateRandomPassword();
@@ -153,18 +176,22 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
     } catch (error) {
       console.error('Error generating password:', error);
     }
+
+    lastGeneratedLength.current = 0;
   }, [settings]);
 
   /**
    * Update a boolean setting.
    */
   const updateSetting = useCallback((key: keyof PasswordSettings, value: boolean): void => {
+    if (!settings) {
+      return;
+    }
     const newSettings = { ...settings, [key]: value };
     setSettings(newSettings);
 
     // Track the change
     pendingChanges.current = { ...pendingChanges.current, [key]: value };
-    console.debug(`Setting ${key} changed to ${value}, pending changes:`, pendingChanges.current);
 
     // Generate new preview password
     try {
@@ -275,6 +302,17 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
     },
   });
 
+  // Don't render until settings are loaded
+  if (!settings) {
+    return (
+      <ThemedContainer>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ThemedText>{t('common.loading')}</ThemedText>
+        </View>
+      </ThemedContainer>
+    );
+  }
+
   return (
     <ThemedContainer>
       <ThemedScrollView>
@@ -300,14 +338,16 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
               <ThemedText style={styles.sliderLabel}>{t('credentials.passwordLength')}</ThemedText>
-              <ThemedText style={styles.sliderValue}>{sliderValue}</ThemedText>
+              <ThemedText style={styles.sliderValue}>{sliderValue ?? 0}</ThemedText>
             </View>
             <Slider
               style={styles.slider}
               minimumValue={8}
               maximumValue={64}
-              value={sliderValue}
+              value={sliderValue ?? 0}
               onValueChange={handleSliderChange}
+              onSlidingStart={handleSliderStart}
+              onSlidingComplete={handleSliderComplete}
               step={1}
               minimumTrackTintColor={colors.primary}
               maximumTrackTintColor={colors.accentBorder}
