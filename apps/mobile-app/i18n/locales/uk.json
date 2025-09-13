@@ -15,7 +15,8 @@
     "copied": "Скопійовано до буфера обміну",
     "loadMore": "Завантажити більше",
     "use": "Використовувати",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "unknownError": "Unknown error"
   },
   "auth": {
     "login": "Увійти",
@@ -77,11 +78,9 @@
       "errorDuringPasswordChange": "Помилка під час зміни пароля. Будь ласка, увійдіть ще раз, щоб отримати доступ до останнього сховища.",
       "failedToSyncVault": "Не вдалося синхронізувати сховище",
       "operationFailed": "Помилка здійснення операції",
-      "unknownError": "Сталася невідома помилка",
       "versionNotSupported": "Ця версія мобільного застосунку AliasVault більше не підтримується сервером. Будь ласка, оновіть свій застосунок до останньої версії.",
       "serverNeedsUpdate": "Щоб користуватися цим мобільним додатком, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
       "vaultDecryptFailed": "Не вдалося розшифрувати сховище. Якщо проблема не зникає, вийдіть із системи та увійдіть знову.",
-      "unknownErrorDuringSync": "Невідома помилка під час синхронізації сховища",
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз."
     }
   },
@@ -220,6 +219,7 @@
     "batteryOptimizationHelpDescription": "Оптимізація батареї Android перешкоджає надійному очищенню буфера обміну, коли додаток працює у фоновому режимі. Вимкнення оптимізації батареї для AliasVault дозволяє точно очищати буфер обміну у фоновому режимі та автоматично надає необхідні дозволи на сигнали.",
     "disableBatteryOptimization": "Вимкнути оптимізацію акумулятора",
     "identityGenerator": "Генератор ідентифікаційних даних",
+    "passwordGenerator": "Password Generator",
     "importExport": "Import / Export",
     "importSectionTitle": "Import",
     "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
@@ -287,6 +287,10 @@
         "languageUpdateFailed": "Не вдалося оновити налаштування мови.",
         "genderUpdateFailed": "Не вдалося оновити налаштування статі."
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "Безпека",
