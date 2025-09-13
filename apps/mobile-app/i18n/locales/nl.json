@@ -16,7 +16,7 @@
     "loadMore": "Laad meer",
     "use": "Gebruik",
     "confirm": "Bevestigen",
-    "unknownError": "Unknown error"
+    "unknownError": "Onbekende fout"
   },
   "auth": {
     "login": "Inloggen",
@@ -219,7 +219,7 @@
     "batteryOptimizationHelpDescription": "Batterij optimalisatie van Android voorkomt dat de app op de achtergrond taken uit kan voeren. Het uitschakelen van deze batterij optimalisatie voor AliasVault zorgt ervoor dat het wissen van het klembord zo nauwkeurig mogelijk werkt.",
     "disableBatteryOptimization": "Batterij optimalisatie uitschakelen",
     "identityGenerator": "Identiteit generator",
-    "passwordGenerator": "Password Generator",
+    "passwordGenerator": "Wachtwoordgenerator",
     "importExport": "Import / Export",
     "importSectionTitle": "Importeren",
     "importSectionDescription": "Importeer je wachtwoorden van andere wachtwoordmanagers of van een eerdere AliasVault export.",
@@ -232,7 +232,7 @@
     "exportWarning": "Waarschuwing: Het exporteren van je vault naar een onversleuteld bestand zal al je wachtwoorden en gevoelige informatie in platte tekst beschikbaar maken. Doe dit alleen op vertrouwde computers en zorg ervoor dat je:\n\n• Het geëxporteerde bestand op een veilige locatie opslaat\n• Het bestand verwijdert wanneer je het niet meer nodig hebt\n• Het geëxporteerde bestand nooit met anderen deelt\n\nWeet je zeker dat je wilt doorgaan met de export?",
     "exportError": "Failed to export vault. Please try again.",
     "exportSaved": "File saved to: {{filename}}",
-    "noVaultData": "No vault data to export",
+    "noVaultData": "Geen vault gegevens om te exporteren",
     "security": "Beveiliging",
     "appVersion": "App versie {{version}} ({{url}})",
     "autoLockOptions": {
@@ -289,8 +289,8 @@
       }
     },
     "passwordGeneratorSettings": {
-      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
-      "preview": "Preview"
+      "description": "Configureer de standaardinstellingen die worden gebruikt bij het genereren van nieuwe wachtwoorden. Deze instellingen worden gebruikt voor alle nieuwe wachtwoorden, tenzij overschreven voor specifieke credentials.",
+      "preview": "Voorbeeld"
     },
     "securitySettings": {
       "title": "Beveiliging",
