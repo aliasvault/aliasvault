@@ -15,7 +15,8 @@
     "copied": "Copiato negli appunti",
     "loadMore": "Carica altro",
     "use": "Usa",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "unknownError": "Unknown error"
   },
   "auth": {
     "login": "Accedi",
@@ -77,11 +78,9 @@
       "errorDuringPasswordChange": "Errore durante l'operazione di cambio password. Effettua nuovamente il login per scaricare la cassaforte aggiornata.",
       "failedToSyncVault": "Sincronizzazione della cassaforte fallita",
       "operationFailed": "Operazione non riuscita",
-      "unknownError": "Errore sconosciuto",
       "versionNotSupported": "Questa versione dell'app AliasVault non è più supportata dal server. Aggiorna l'app all'ultima versione.",
       "serverNeedsUpdate": "Il server AliasVault necessita di un aggiornamento per usare questa app. Contatta il supporto se serve aiuto.",
       "vaultDecryptFailed": "Impossibile decriptare la cassaforte, se il problema persiste esci e accedi nuovamente.",
-      "unknownErrorDuringSync": "Errore sconosciuto durante la sincronizzazione cassaforte",
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza."
     }
   },
@@ -220,6 +219,7 @@
     "batteryOptimizationHelpDescription": "L'ottimizzazione della batteria di Android impedisce la rimozione affidabile degli appunti quando l'applicazione è in background. La disattivazione dell'ottimizzazione della batteria per AliasVault consente una pulizia precisa degli appunti in background e garantisce automaticamente le necessarie autorizzazioni di allarme.",
     "disableBatteryOptimization": "Disabilita ottimizzazione batteria",
     "identityGenerator": "Generatore di identità",
+    "passwordGenerator": "Password Generator",
     "importExport": "Import / Export",
     "importSectionTitle": "Import",
     "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
@@ -287,6 +287,10 @@
         "languageUpdateFailed": "Aggiornamento lingua non riuscito.",
         "genderUpdateFailed": "Aggiornamento genere non riuscito."
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "Sicurezza",
