@@ -290,7 +290,7 @@
     },
     "passwordGeneratorSettings": {
       "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
-      "preview": "Preview"
+      "preview": "Aperçu"
     },
     "securitySettings": {
       "title": "Sécurité",
