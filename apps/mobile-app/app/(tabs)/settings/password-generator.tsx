@@ -202,7 +202,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
     },
     previewInputContainer: {
       alignItems: 'center',
-      backgroundColor: colors.background,
+      backgroundColor: colors.accentBackground,
       borderColor: colors.accentBorder,
       borderRadius: 6,
       borderWidth: 1,
