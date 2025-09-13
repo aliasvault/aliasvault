@@ -15,7 +15,8 @@
     "copied": "In die Zwischenablage kopiert",
     "loadMore": "Mehr laden",
     "use": "Benutzen",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "unknownError": "Unknown error"
   },
   "auth": {
     "login": "Anmelden",
@@ -77,11 +78,9 @@
       "errorDuringPasswordChange": "Fehler beim Ändern des Passworts. Bitte melde Dich erneut an, um Deinen letzten Tresor abzurufen.",
       "failedToSyncVault": "Fehler beim Synchronisieren des Tresors",
       "operationFailed": "Vorgang fehlgeschlagen",
-      "unknownError": "Unbekannter Fehler",
       "versionNotSupported": "Diese Version der AliasVault-App wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine App auf die neueste Version.",
       "serverNeedsUpdate": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese mobile App nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
       "vaultDecryptFailed": "Tresor konnte nicht entschlüsselt werden. Wenn das Problem weiterhin besteht, melden Dich bitte erneut an.",
-      "unknownErrorDuringSync": "Unbekannter Fehler während der Synchronisation des Tresors",
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an."
     }
   },
@@ -220,6 +219,7 @@
     "batteryOptimizationHelpDescription": "Die Akkuoptimierung von Android verhindert, dass die Zwischenablage zuverlässig gelöscht wird, wenn die App im Hintergrund ist. Das Deaktivieren der Akkuoptimierung für AliasVault ermöglicht das zuverlässige Löschen der Zwischenablage und gewährt automatisch die notwendigen Alarmberechtigungen.",
     "disableBatteryOptimization": "Akkuoptimierung deaktivieren",
     "identityGenerator": "Identitätsgenerator",
+    "passwordGenerator": "Password Generator",
     "importExport": "Import / Export",
     "importSectionTitle": "Import",
     "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
@@ -287,6 +287,10 @@
         "languageUpdateFailed": "Die Spracheinstellung konnte nicht aktualisiert werden.",
         "genderUpdateFailed": "Die Geschlechtseinstellung konnte nicht aktualisiert werden."
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "Sicherheit",
