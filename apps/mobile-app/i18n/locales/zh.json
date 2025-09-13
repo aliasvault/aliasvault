@@ -15,7 +15,8 @@
     "copied": "已复制到剪贴板",
     "loadMore": "显示更多",
     "use": "启用",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "unknownError": "Unknown error"
   },
   "auth": {
     "login": "登录",
@@ -77,11 +78,9 @@
       "errorDuringPasswordChange": "密码修改操作出错，请重新登录以获取最新保险库数据。",
       "failedToSyncVault": "保险库同步失败",
       "operationFailed": "操作失败",
-      "unknownError": "未知错误",
       "versionNotSupported": "此版本的AliasVault移动应用已不再被服务器支持。请将应用更新至最新版本。",
       "serverNeedsUpdate": "AliasVault服务器需要更新至新版本才能使用此移动应用。如需帮助，请联系支持团队。",
       "vaultDecryptFailed": "保险库解密失败，若问题持续，请退出登录后重新登录。",
-      "unknownErrorDuringSync": "保险库同步时发生未知错误",
       "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。"
     }
   },
@@ -220,6 +219,7 @@
     "batteryOptimizationHelpDescription": "Android的电池优化阻止应用在后台时清理可靠的剪贴板。 禁用AliasVault 电池优化可以清理准确的背景剪贴板，并自动授予必要的提醒权限。",
     "disableBatteryOptimization": "禁用电池优化",
     "identityGenerator": "身份生成器",
+    "passwordGenerator": "Password Generator",
     "importExport": "Import / Export",
     "importSectionTitle": "Import",
     "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
@@ -287,6 +287,10 @@
         "languageUpdateFailed": "更新语言设置失败。",
         "genderUpdateFailed": "更新性别设置失败。"
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "安全",
