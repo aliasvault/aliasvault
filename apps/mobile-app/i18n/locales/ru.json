@@ -15,7 +15,8 @@
     "copied": "Скопировано в буфер обмена",
     "loadMore": "Загрузить ещё",
     "use": "Использовать",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "unknownError": "Unknown error"
   },
   "auth": {
     "login": "Войти",
@@ -77,11 +78,9 @@
       "errorDuringPasswordChange": "Ошибка при смене пароля. Пожалуйста, войдите в систему еще раз, чтобы получить доступ к вашему последнему хранилищу.",
       "failedToSyncVault": "Не удалось синхронизировать хранилище",
       "operationFailed": "Сбой операции",
-      "unknownError": "Неизвестная ошибка",
       "versionNotSupported": "Эта версия мобильного приложения AliasVault больше не поддерживается сервером. Пожалуйста, обновите ваше приложение до последней версии.",
       "serverNeedsUpdate": "Для использования этого мобильного приложения необходимо обновить сервер AliasVault до более новой версии. Пожалуйста, обратитесь в службу поддержки, если вам нужна помощь.",
       "vaultDecryptFailed": "Хранилище не удалось расшифровать, если проблема не устраняется, пожалуйста, выйдите и войдите в систему еще раз.",
-      "unknownErrorDuringSync": "Неизвестная ошибка во время синхронизации хранилища",
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности."
     }
   },
@@ -220,6 +219,7 @@
     "batteryOptimizationHelpDescription": "Оптимизация заряда батареи в Android предотвращает надежную очистку буфера обмена, когда приложение работает в фоновом режиме. Отключение оптимизации заряда батареи для AliasVault обеспечивает точную очистку буфера обмена в фоновом режиме и автоматически предоставляет необходимые разрешения для оповещения.",
     "disableBatteryOptimization": "Отключить оптимизацию заряда батареи",
     "identityGenerator": "Генератор личности",
+    "passwordGenerator": "Password Generator",
     "importExport": "Import / Export",
     "importSectionTitle": "Import",
     "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
@@ -287,6 +287,10 @@
         "languageUpdateFailed": "Не удалось обновить языковые настройки.",
         "genderUpdateFailed": "Не удалось обновить настройки пола."
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "Безопасность",
