@@ -135,7 +135,7 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
   };
 
   const displayValue = type === 'password' && !isPasswordVisible
-    ? '••••••••'
+    ? '•'.repeat(value?.length || 0)
     : value;
 
   const styles = StyleSheet.create({
