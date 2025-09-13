@@ -220,6 +220,7 @@
     "batteryOptimizationHelpDescription": "Android's battery optimization prevents reliable clipboard clearing when the app is in the background. Disabling battery optimization for AliasVault allows precise background clipboard clearing and automatically grants necessary alarm permissions.",
     "disableBatteryOptimization": "Disable battery optimization",
     "identityGenerator": "Identity Generator",
+    "passwordGenerator": "Password Generator",
     "importExport": "Import / Export",
     "importSectionTitle": "Import",
     "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
@@ -287,6 +288,10 @@
         "languageUpdateFailed": "Failed to update language setting.",
         "genderUpdateFailed": "Failed to update gender setting."
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "Security",

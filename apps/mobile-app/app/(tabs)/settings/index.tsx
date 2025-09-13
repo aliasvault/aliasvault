@@ -165,6 +165,13 @@ export default function SettingsScreen() : React.ReactNode {
   };
 
   /**
+   * Handle the password generator settings press.
+   */
+  const handlePasswordGeneratorPress = () : void => {
+    router.push('/(tabs)/settings/password-generator');
+  };
+
+  /**
    * Handle the clipboard clear settings press.
    */
   const handleClipboardClearPress = () : void => {
@@ -435,6 +442,19 @@ export default function SettingsScreen() : React.ReactNode {
         </View>
 
         <View style={styles.section}>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={handlePasswordGeneratorPress}
+          >
+            <View style={styles.settingItemIcon}>
+              <Ionicons name="key-sharp" size={20} color={colors.text} />
+            </View>
+            <View style={styles.settingItemContent}>
+              <ThemedText style={styles.settingItemText}>{t('settings.passwordGenerator')}</ThemedText>
+              <Ionicons name="chevron-forward" size={20} color={colors.textMuted} />
+            </View>
+          </TouchableOpacity>
+          <View style={styles.separator} />
           <TouchableOpacity
             style={styles.settingItem}
             onPress={handleIdentityGeneratorPress}
