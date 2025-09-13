@@ -1,7 +1,7 @@
 {
   "common": {
     "cancel": "Annuleren",
-    "close": "Close",
+    "close": "Sluiten",
     "delete": "Verwijderen",
     "save": "Opslaan",
     "yes": "Ja",
@@ -15,7 +15,8 @@
     "copied": "Gekopieerd naar klembord",
     "loadMore": "Laad meer",
     "use": "Gebruik",
-    "confirm": "Confirm"
+    "confirm": "Bevestigen",
+    "unknownError": "Unknown error"
   },
   "auth": {
     "login": "Inloggen",
@@ -77,11 +78,9 @@
       "errorDuringPasswordChange": "Fout tijdens het wijzigen van het wachtwoord. Log opnieuw in om de vault te synchroniseren en probeer het opnieuw.",
       "failedToSyncVault": "Vault ophalen mislukt",
       "operationFailed": "Bewerking mislukt",
-      "unknownError": "Onbekende fout",
       "versionNotSupported": "Deze versie van de mobiele app van AliasVault wordt niet meer ondersteund door de server. Update de app naar de nieuwste versie.",
       "serverNeedsUpdate": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze mobiele app te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
       "vaultDecryptFailed": "Vault kon niet worden gedecrypt, probeer uit- en opnieuw in te loggen.",
-      "unknownErrorDuringSync": "Onbekende fout tijdens synchroniseren van vault",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in."
     }
   },
@@ -220,16 +219,17 @@
     "batteryOptimizationHelpDescription": "Batterij optimalisatie van Android voorkomt dat de app op de achtergrond taken uit kan voeren. Het uitschakelen van deze batterij optimalisatie voor AliasVault zorgt ervoor dat het wissen van het klembord zo nauwkeurig mogelijk werkt.",
     "disableBatteryOptimization": "Batterij optimalisatie uitschakelen",
     "identityGenerator": "Identiteit generator",
+    "passwordGenerator": "Password Generator",
     "importExport": "Import / Export",
-    "importSectionTitle": "Import",
-    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
-    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
-    "exportSectionTitle": "Export",
-    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
-    "exportCsvButton": "Export vault to CSV file",
-    "exporting": "Exporting...",
-    "exportConfirmTitle": "Export Vault",
-    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "importSectionTitle": "Importeren",
+    "importSectionDescription": "Importeer je wachtwoorden van andere wachtwoordmanagers of van een eerdere AliasVault export.",
+    "importWebNote": "Om inloggegevens te importeren van bestaande wachtwoordmanagers, dien je in te loggen op de webapp. De import functie is momenteel alleen beschikbaar op de webversie.",
+    "exportSectionTitle": "Exporteren",
+    "exportSectionDescription": "Exporteer je vault inhoud naar een CSV-bestand. Dit bestand kan als back-up worden gebruikt en kan ook in andere wachtwoordmanagers worden geïmporteerd.",
+    "exportCsvButton": "Exporteer vault naar CSV-bestand",
+    "exporting": "Exporteren...",
+    "exportConfirmTitle": "Vault exporteren",
+    "exportWarning": "Waarschuwing: Het exporteren van je vault naar een onversleuteld bestand zal al je wachtwoorden en gevoelige informatie in platte tekst beschikbaar maken. Doe dit alleen op vertrouwde computers en zorg ervoor dat je:\n\n• Het geëxporteerde bestand op een veilige locatie opslaat\n• Het bestand verwijdert wanneer je het niet meer nodig hebt\n• Het geëxporteerde bestand nooit met anderen deelt\n\nWeet je zeker dat je wilt doorgaan met de export?",
     "exportError": "Failed to export vault. Please try again.",
     "exportSaved": "File saved to: {{filename}}",
     "noVaultData": "No vault data to export",
@@ -287,6 +287,10 @@
         "languageUpdateFailed": "Bijwerken van taalinstelling mislukt.",
         "genderUpdateFailed": "Bijwerken van geslacht voorkeur mislukt."
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "Beveiliging",
@@ -438,9 +442,9 @@
       "retryingConnection": "Opnieuw proberen..."
     },
     "offline": {
-      "banner": "Offline mode (read-only)",
-      "backOnline": "Back online",
-      "stillOffline": "Still offline"
+      "banner": "Offline modus (alleen lezen)",
+      "backOnline": "Terug online",
+      "stillOffline": "Nog steeds offline"
     },
     "alerts": {
       "syncIssue": "Synchronisatieprobleem",
