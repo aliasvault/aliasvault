@@ -15,7 +15,8 @@
     "copied": "Kopioitu leikepöydälle",
     "loadMore": "Lataa lisää",
     "use": "Käytä",
-    "confirm": "Vahvista"
+    "confirm": "Vahvista",
+    "unknownError": "Unknown error"
   },
   "auth": {
     "login": "Kirjaudu sisään",
@@ -77,11 +78,9 @@
       "errorDuringPasswordChange": "Virhe salasanan vaihdon aikana. Kirjaudu sisään uudelleen noutaaksesi viimeisimmän holvisi.",
       "failedToSyncVault": "Holvin synkronointi epäonnistui",
       "operationFailed": "Toiminto epäonnistui",
-      "unknownError": "Tuntematon virhe",
       "versionNotSupported": "Palvelin ei enää tue AliasVaultin mobiilisovelluksen tätä versiota. Ole hyvä ja päivitä sovellus uusimpaan versioon.",
       "serverNeedsUpdate": "AliasVaultin palvelin on päivitettävä uudempaan versioon, jotta voit käyttää tätä mobiilisovellusta. Ota yhteyttä tukeen, jos tarvitset apua.",
       "vaultDecryptFailed": "Holvin salausta ei purkuaa. Jos ongelma jatkuu, kirjaudu ulos ja kirjaudu sitten uudelleen sisään. ",
-      "unknownErrorDuringSync": "Tuntematon virhe holvin synkronoinnin aikana",
       "passwordChanged": "Salasanasi on muuttunut edellisen kirjautumisen jälkeen. Ole hyvä ja kirjaudu uudelleen turvallisuussyistä."
     }
   },
@@ -220,6 +219,7 @@
     "batteryOptimizationHelpDescription": "Androidin akun optimointi estää luotettavan leikepöydän tyhjennyksen, kun sovellus on taustalla. Akun optimoinnin poistaminen AliasVaultilta mahdollistaa tarkan taustaleikepöydältä ja antaa automaattisesti tarvittavat hälytysoikeudet.",
     "disableBatteryOptimization": "Poista akkuvirran optimointi käytöstä",
     "identityGenerator": "Henkilöllisyyden luonti",
+    "passwordGenerator": "Password Generator",
     "importExport": "Tuo / Vie",
     "importSectionTitle": "Tuo",
     "importSectionDescription": "Tuo salasanasi muista salasanojen hallinnoijista tai aiemmasta AliasVault-viennistä.",
@@ -287,6 +287,10 @@
         "languageUpdateFailed": "Kielen asetusten päivittäminen epäonnistui.",
         "genderUpdateFailed": "Sukupuolen asettamista ei voitu päivittää."
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "Turvallisuus",
