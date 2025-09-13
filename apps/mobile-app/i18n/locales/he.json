@@ -15,7 +15,8 @@
     "copied": "הועתק ללוח הגזירים",
     "loadMore": "לטעון עוד",
     "use": "להשתמש",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "unknownError": "Unknown error"
   },
   "auth": {
     "login": "כניסה",
@@ -77,11 +78,9 @@
       "errorDuringPasswordChange": "שגיאה במהלך פעולת החלפת סיסמה. נא להיכנס שוב כדי למשוך את הכספת העדכנית ביותר שלך.",
       "failedToSyncVault": "סנכרון הכספת נכשל",
       "operationFailed": "הפעולה נכשלה",
-      "unknownError": "שגיאה לא ידועה",
       "versionNotSupported": "הגרסה הזאת של היישומון של AliasVault לניידים לא נתמכת עוד על ידי השרת. נא לעדכן את היישומון שלך לגרסה העדכנית ביותר.",
       "serverNeedsUpdate": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש ביישומון הזה לנייד. נא ליצור קשר עם התמיכה לקבלת עזרה.",
       "vaultDecryptFailed": "לא ניתן לפענח את הכספת, אם הבעיה נמשכת נא לצאת מהמערכת ולהיכנס שוב.",
-      "unknownErrorDuringSync": "שגיאה לא ידועה במהלך סנכרון כספת",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע."
     }
   },
@@ -220,6 +219,7 @@
     "batteryOptimizationHelpDescription": "מיטוב הסוללה של Android מונע פינוי אמין של לוח הגזירים כשהיישום פועל ברקע. השבתת מיטוב הסוללה ל־AliasVault מאפשרת פינוי מדויק של לוח הגזירים ברקע ומאשרת אוטומטית הרשאות התראות הכרחיות.",
     "disableBatteryOptimization": "השבתת מיטוב סוללה",
     "identityGenerator": "מייצר זהויות",
+    "passwordGenerator": "Password Generator",
     "importExport": "Import / Export",
     "importSectionTitle": "Import",
     "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
@@ -287,6 +287,10 @@
         "languageUpdateFailed": "עדכון הגדרת השפה נכשל.",
         "genderUpdateFailed": "עדכון הגדרת המגדר נכשל."
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "אבטחה",
