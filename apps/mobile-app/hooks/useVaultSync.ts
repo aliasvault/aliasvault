@@ -154,7 +154,7 @@ export const useVaultSync = () : {
       await withMinimumDelay(() => Promise.resolve(onSuccess?.(false)), 300, enableDelay);
       return false;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : t('vault.errors.unknownErrorDuringSync');
+      const errorMessage = err instanceof Error ? err.message : t('common.unknownError');
       console.error('Vault sync error:', err);
 
       // Check if it's a network error

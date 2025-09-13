@@ -318,10 +318,10 @@ export function useVaultMutate() : {
       Toast.show({
         type: 'error',
         text1: t('vault.errors.operationFailed'),
-        text2: error instanceof Error ? error.message : t('vault.errors.unknownError'),
+        text2: error instanceof Error ? error.message : t('common.unknownError'),
         position: 'bottom'
       });
-      options.onError?.(error instanceof Error ? error : new Error(t('vault.errors.unknownError')));
+      options.onError?.(error instanceof Error ? error : new Error(t('common.unknownError')));
     } finally {
       setIsLoading(false);
       setSyncStatus('');
@@ -399,10 +399,10 @@ export function useVaultMutate() : {
       Toast.show({
         type: 'error',
         text1: t('vault.errors.operationFailed'),
-        text2: error instanceof Error ? error.message : t('vault.errors.unknownError'),
+        text2: error instanceof Error ? error.message : t('common.unknownError'),
         position: 'bottom'
       });
-      options.onError?.(error instanceof Error ? error : new Error(t('vault.errors.unknownError')));
+      options.onError?.(error instanceof Error ? error : new Error(t('common.unknownError')));
     } finally {
       setIsLoading(false);
       setSyncStatus('');

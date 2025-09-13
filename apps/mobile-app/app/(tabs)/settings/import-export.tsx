@@ -183,15 +183,10 @@ export default function ImportExportScreen(): React.ReactNode {
    * Show export confirmation dialog.
    */
   const showExportConfirmation = (): void => {
-    const warningMessage = t('settings.exportWarning') ??
-      'Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n' +
-      '• Store the exported file in a secure location\n' +
-      '• Delete the file when you no longer need it\n' +
-      '• Never share the exported file with others\n\n' +
-      'Are you sure you want to continue with the export?';
+    const warningMessage = t('settings.exportWarning');
 
     Alert.alert(
-      t('settings.exportConfirmTitle') ?? 'Export Vault',
+      t('settings.exportConfirmTitle'),
       warningMessage,
       [
         { text: t('common.cancel'), style: 'cancel' },
@@ -250,7 +245,7 @@ export default function ImportExportScreen(): React.ReactNode {
       const canShare = await Sharing.isAvailableAsync();
       if (canShare) {
         await Sharing.shareAsync(filePath, {
-          dialogTitle: `Save ${filename}`,
+          dialogTitle: filename,
           mimeType: 'text/csv',
         });
 
@@ -262,17 +257,12 @@ export default function ImportExportScreen(): React.ReactNode {
             console.error('Error cleaning up export file:', error);
           }
         }, 5000);
-      } else {
-        Alert.alert(
-          t('common.success') ?? 'Success',
-          t('settings.exportSaved') ?? `File saved to: ${filename}`
-        );
       }
     } catch (error) {
       console.error('Export error:', error);
       Alert.alert(
-        t('common.error') ?? 'Error',
-        t('settings.exportError') ?? 'Failed to export vault. Please try again.'
+        t('common.error'),
+        t('common.unknownError')
       );
     } finally {
       setIsExporting(false);
@@ -359,7 +349,7 @@ export default function ImportExportScreen(): React.ReactNode {
         {/* Export Section */}
         <View style={styles.section}>
           <ThemedText style={styles.sectionTitle}>
-            {t('settings.exportSectionTitle') ?? 'Export'}
+            {t('settings.exportSectionTitle')}
           </ThemedText>
           <ThemedText style={styles.sectionDescription}>
             {t('settings.exportSectionDescription')}
