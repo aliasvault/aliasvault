@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- 1Password -->
+  <data name="OnePasswordDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות מכספת ה־1Password שלך</value>
+    <comment>Description for 1Password import service</comment>
+  </data>
+  <data name="OnePasswordInstructionsPart1" xml:space="preserve">
+    <value>כדי לייבא את הכספת שלך מ־1Password, צריך לייצא אותה כקובץ CSV. אפשר לעשות זאת על ידי כניסה לחשבון ה־1Password שלך ביישום 1Password 8 לשולחן העבודה (Windows ‏/ macOS / לינוקס), מעבר אל תפריט ‚קובץ’ ובחירה ב‚ייצוא’ (ל־CSV).</value>
+    <comment>1Password export instructions part 1</comment>
+  </data>
+  <data name="OnePasswordInstructionsPart2" xml:space="preserve">
+    <value>לאחר ייצוא הקובץ, אפשר להעלות אותו להלן.</value>
+    <comment>1Password export instructions part 2</comment>
+  </data>
+  <!-- Bitwarden -->
+  <data name="BitwardenDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות מכספת ה־Bitwarden שלך</value>
+    <comment>Description for Bitwarden import service</comment>
+  </data>
+  <data name="BitwardenInstructionsPart1" xml:space="preserve">
+    <value>כדי לייבא את כספת ה־Bitwarden שלך, צריך לייצא אותה כקובץ CSV. אפשר לעשות זאת על ידי כניסה לחשבון ה־Bitwarden שלך, מעבר לתפריט ‚כלים’ ובחירה ב‚ייצוא כספת’ (ל־CSV).</value>
+    <comment>Bitwarden export instructions part 1</comment>
+  </data>
+  <data name="BitwardenInstructionsPart2" xml:space="preserve">
+    <value>לאחר ייצוא הקובץ, אפשר להעלות אותו להלן.</value>
+    <comment>Bitwarden export instructions part 2</comment>
+  </data>
+  <!-- LastPass -->
+  <data name="LastPassDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות מכספת ה־LastPass שלך</value>
+    <comment>Description for LastPass import service</comment>
+  </data>
+  <data name="LastPassInstructionsPart1" xml:space="preserve">
+    <value>כדי לייבא את כספת ה־LastPass שלך, צריך לייצא אותה כקובץ CSV. אפשר לעשות זאת על ידי כניסה לחשבון ה־LastPass שלך, מעבר ל‚אפשרויות מתקדמות’ בתפריט הצד ובחירה ב‚ייצוא’ > ‚קובץ CSV של LastPass’.</value>
+    <comment>LastPass export instructions part 1</comment>
+  </data>
+  <data name="LastPassInstructionsPart2" xml:space="preserve">
+    <value>לאחר ייצוא הקובץ, אפשר להעלות אותו להלן.</value>
+    <comment>LastPass export instructions part 2</comment>
+  </data>
+  <!-- Chrome -->
+  <data name="ChromeDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות ממנהל הסיסמאות שלך ב־Chrome</value>
+    <comment>Description for Chrome import service</comment>
+  </data>
+  <data name="ChromeInstructionsPart1" xml:space="preserve">
+    <value>כדי לייבא את הסיסמאות ממנהל הסיסמאות של Chrome, יש לייצר אותן לקובץ CSV. אפשר לעשות זאת על ידי כניסה לדפדפן ה־Chrome שלך, גישה לתפריט ה‚הגדרות’ > ‚סיסמאות והשלמה אוטומטית’ > ‚מנהל הסיסמאות של Google’. ואז ללחוץ על ‚ייצוא סיסמאות’.</value>
+    <comment>Chrome export instructions part 1</comment>
+  </data>
+  <data name="ChromeInstructionsPart2" xml:space="preserve">
+    <value>לאחר ייצוא הקובץ, אפשר להעלות אותו להלן.</value>
+    <comment>Chrome export instructions part 2</comment>
+  </data>
+  <!-- KeePass -->
+  <data name="KeePassDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות מ־KeePass</value>
+    <comment>Description for KeePass import service</comment>
+  </data>
+  <data name="KeePassInstructionsPart1" xml:space="preserve">
+    <value>כדי לייבא את כספת ה־KeePass שלך, יש לייצא אותה כקובץ CSV. אפשר לעשות זאת על ידי גישה לתפריט ‚מסד־נתונים’ ובחירה ב‚ייצוא’ > ‚קובץ CSV…’.</value>
+    <comment>KeePass export instructions part 1</comment>
+  </data>
+  <data name="KeePassInstructionsPart2" xml:space="preserve">
+    <value>לאחר ייצוא הקובץ, אפשר להעלות אותו להלן.</value>
+    <comment>KeePass export instructions part 2</comment>
+  </data>
+  <!-- Generic CSV -->
+  <data name="GenericCsvDescription" xml:space="preserve">
+    <value>אפשר לייבא פרטי גישה דרך תסדיר תבנית CSV</value>
+    <comment>Description for Generic CSV import service</comment>
+  </data>
+  <data name="GenericCsvInstructionsPart1" xml:space="preserve">
+    <value>אין תמיכה במנהל הסיסמאות שמשמש אותך? אפשר תמיד להעלות את פרטי הגישה שלך ל־AliasVault דרך תסדיר תבנית CSV כוללנית במקום.</value>
+    <comment>Generic CSV instructions part 1</comment>
+  </data>
+  <data name="GenericCsvStep1" xml:space="preserve">
+    <value>הורדת ה־CSV לייבוא ל־AliasVault</value>
+    <comment>Generic CSV step 1</comment>
+  </data>
+  <data name="GenericCsvStep2" xml:space="preserve">
+    <value>לפתוח אותו בתוכנית גיליונות אלקטרוניים (Microsoft Excel,‏ Google Sheets וכן הלאה)</value>
+    <comment>Generic CSV step 2</comment>
+  </data>
+  <data name="GenericCsvStep3" xml:space="preserve">
+    <value>למלא את פרטי הגישה שלך (להחליף את נתוני הדוגמה)</value>
+    <comment>Generic CSV step 3</comment>
+  </data>
+  <data name="GenericCsvStep4" xml:space="preserve">
+    <value>לשמור לתסדיר CSV ולעלות להלן</value>
+    <comment>Generic CSV step 4</comment>
+  </data>
+  <data name="GenericCsvTemplateDownloadError" xml:space="preserve">
+    <value>הורדת תבנית ה־CSV נכשלה. נא לנסות שוב.</value>
+    <comment>Error message for template download failure</comment>
+  </data>
+  <!-- Firefox -->
+  <data name="FirefoxDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות ממנהל הסיסמאות שלך ב־Firefox</value>
+    <comment>Description for Firefox import service</comment>
+  </data>
+  <data name="FirefoxInstructionsPart1" xml:space="preserve">
+    <value>כדי לייבא את הסיסמאות שלך ב־Firefox, צריך לייצר אותן כקובץ CSV. אפשר לעשות זאת על ידי פתיחת דפדפן ה־Firefox שלך וגישה לתפריט > ‚סיסמאות’. ואז ללחוץ על סמל התפריט בפינה השמאלית העליונה ולבחור ב‚ייצוא סיסמאות’.</value>
+    <comment>Firefox export instructions part 1</comment>
+  </data>
+  <data name="FirefoxInstructionsPart2" xml:space="preserve">
+    <value>לאחר ייצוא הקובץ, אפשר להעלות אותו להלן.</value>
+    <comment>Firefox export instructions part 2</comment>
+  </data>
+  <!-- Dashlane -->
+  <data name="DashlaneDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות מחשבון ה־Dashlane</value>
+    <comment>Description for Dashlane import service</comment>
+  </data>
+  <data name="DashlaneInstructionsPart1" xml:space="preserve">
+    <value>כדי לייבא את הסיסמאות שלך מ־Dashlane, צריך לייצא אותן כקובץ CSV. אפשר לעשות זאת על ידי כניסה לחשבון ה־Dashlane שלך, ואז לגשת לתפריט ‚Account’ ‏> ‚Settings’ ולבחור ב־‚Export to CSV’.</value>
+    <comment>Dashlane export instructions part 1</comment>
+  </data>
+  <data name="DashlaneInstructionsPart2" xml:space="preserve">
+    <value>נא לשים לב: קובץ ה־‎.zip להורדה יכיל קובץ „credentials.csv”. יש לחלץ אותו מהארכיון תחילה ואז להעלות את קובץ ה־CSV‏ „credentials.csv” להלן.</value>
+    <comment>Dashlane export instructions part 2</comment>
+  </data>
+  <!-- KeePassXC -->
+  <data name="KeePassXCDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות מ־KeePassXC</value>
+    <comment>Description for KeePassXC import service</comment>
+  </data>
+  <data name="KeePassXCInstructionsPart1" xml:space="preserve">
+    <value>כדי לייבא את כספת ה־KeePassXC שלך, יש לייצא אותה כקובץ CSV. אפשר לעשות זאת על ידי גישה לתפריט ‚מסד־נתונים’ ובחירה ב‚ייצוא’ > ‚קובץ CSV…’.</value>
+    <comment>KeePassXC export instructions part 1</comment>
+  </data>
+  <data name="KeePassXCInstructionsPart2" xml:space="preserve">
+    <value>לאחר ייצוא הקובץ, אפשר להעלות אותו להלן.</value>
+    <comment>KeePassXC export instructions part 2</comment>
+  </data>
+  <!-- Proton Pass -->
+  <data name="ProtonPassDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות מ־Proton Pass</value>
+    <comment>Description for Proton Pass import service</comment>
+  </data>
+  <data name="ProtonPassInstructionsPart1" xml:space="preserve">
+    <value>כדי לייבא את הסיסמאות שלך מ־Proton Pass, יש לייצא אותן כקובץ CSV. אפשר לעשות זאת על ידי כניסה ל־Proton Pass (דרך הדפדפן), ללחוץ על תפריט ‚הגדרות’ > ‚ייצוא’ > ‚תסדיר קובץ: CSV’. ואז ללחוץ על ‚ייצוא’.</value>
+    <comment>Proton Pass export instructions part 1</comment>
+  </data>
+  <data name="ProtonPassInstructionsPart2" xml:space="preserve">
+    <value>לאחר ייצוא הקובץ, אפשר להעלות אותו להלן.</value>
+    <comment>Proton Pass export instructions part 2</comment>
+  </data>
+  <!-- Strongbox -->
+  <data name="StrongboxDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות מ־Stronbox</value>
+    <comment>Description for Strongbox import service</comment>
+  </data>
+  <data name="StrongboxInstructionsPart1" xml:space="preserve">
+    <value>כדי לייבא את כספת ה־Strongbox שלך, יש לייצא אותה כקובץ CSV. אפשר לעשות זאת על ידי גישה לתפריט ‚קובץ’ ובחירה ב‚ייצוא מסד נתונים’ (ל־CSV).</value>
+    <comment>Strongbox export instructions part 1</comment>
+  </data>
+  <data name="StrongboxInstructionsPart2" xml:space="preserve">
+    <value>לאחר ייצוא הקובץ, אפשר להעלות אותו להלן.</value>
+    <comment>Strongbox export instructions part 2</comment>
+  </data>
+  <!-- AliasVault -->
+  <data name="AliasVaultDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות משרת AliasVault אחר או גיבוי ידני</value>
+    <comment>Description for AliasVault import service</comment>
+  </data>
+  <data name="AliasVaultInstructionsPart1" xml:space="preserve">
+    <value>אם יש לך גיבוי ב־CSV של מסד הנתונים שלך ב־AliasVault (משרת AliasVault אחר), אפשר לייבא אותו דרך כאן.</value>
+    <comment>AliasVault import instructions</comment>
+  </data>
+  <!-- Dropbox -->
+  <data name="DropboxDescription" xml:space="preserve">
+    <value>ייבוא סיסמאות מסיסמאות Dropbox</value>
+    <comment>Description for Dropbox import service</comment>
+  </data>
+  <data name="DropboxInstructionsPart1" xml:space="preserve">
+    <value>כדי לייבא את הסיסמאות שלך מסיסמאות Dropbox, יש לייצר אותן כקובץ CSV. אפשר לעשות זאת על ידי פתיחת סיסמאות Dropbox, לגשת ל־‚Account’ ‏> ‚Export’ (ל־‎.CSV).</value>
+    <comment>Dropbox export instructions part 1</comment>
+  </data>
+  <!-- Common text that can be reused -->
+  <data name="UploadFileInstructionCommon" xml:space="preserve">
+    <value>לאחר ייצוא הקובץ, אפשר להעלות אותו להלן.</value>
+    <comment>Common instruction for file upload</comment>
+  </data>
+</root>

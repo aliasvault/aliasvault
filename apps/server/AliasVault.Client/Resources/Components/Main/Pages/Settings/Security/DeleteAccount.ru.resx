@@ -60,80 +60,80 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Delete Account</value>
+    <value>Удалить аккаунт</value>
     <comment>Page title for the delete account page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
-    <value>Security settings</value>
+    <value>Настройки безопасности</value>
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbDeleteAccount" xml:space="preserve">
-    <value>Delete Account</value>
+    <value>Удалить аккаунт</value>
     <comment>Breadcrumb text for delete account</comment>
   </data>
   <!-- Warning messages -->
   <data name="PermanentActionWarning" xml:space="preserve">
-    <value>Warning: This action is permanent and cannot be undone. All your data will be permanently deleted.</value>
+    <value>Предупреждение: Это действие является постоянным и не может быть отменено. Все ваши данные будут удалены безвозвратно.</value>
     <comment>Warning message about permanent deletion</comment>
   </data>
   <data name="FinalWarning" xml:space="preserve">
-    <value>Final warning: Enter your password to permanently delete your account.</value>
+    <value>Последнее предупреждение: введите свой пароль, чтобы навсегда удалить свою учетную запись.</value>
     <comment>Final warning message before account deletion</comment>
   </data>
   <!-- Note sections -->
   <data name="PleaseNote" xml:space="preserve">
-    <value>Please note:</value>
+    <value>Пожалуйста, обратите внимание:</value>
     <comment>Header for note section</comment>
   </data>
   <data name="VaultsDeletedNote" xml:space="preserve">
-    <value>All encrypted vaults which includes all of your credentials will be permanently deleted</value>
+    <value>Все зашифрованные хранилища, включая все ваши учетные данные, будут безвозвратно удалены</value>
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">
-    <value>Your email aliases will be orphaned and cannot be claimed by other users</value>
+    <value>Ваши псевдонимы электронной почты будут потеряны и не смогут быть использованы другими пользователями</value>
     <comment>Note about email aliases being orphaned</comment>
   </data>
   <data name="AccountCannotBeRecoveredNote" xml:space="preserve">
-    <value>Your account cannot be recovered after deletion</value>
+    <value>Ваша учетная запись не может быть восстановлена после удаления</value>
     <comment>Note about account recovery</comment>
   </data>
   <data name="DeletionIrreversibleNote" xml:space="preserve">
-    <value>Account deletion is irreversible and cannot be undone. Pressing the button below will delete your account immmediately and permanently.</value>
+    <value>Удаление учетной записи является необратимым и не подлежит отмене. Нажатие кнопки ниже приведет к немедленному и необратимому удалению вашей учетной записи.</value>
     <comment>Note about deletion being irreversible</comment>
   </data>
   <!-- Form labels -->
   <data name="ConfirmUsernameLabel" xml:space="preserve">
-    <value>Confirm your username</value>
+    <value>Подтвердить имя пользователя</value>
     <comment>Label for username confirmation input field</comment>
   </data>
   <data name="EnterPasswordLabel" xml:space="preserve">
-    <value>Enter your password</value>
+    <value>Введите ваш пароль</value>
     <comment>Label for password input field</comment>
   </data>
   <!-- Button text -->
   <data name="ContinueWithAccountDeletion" xml:space="preserve">
-    <value>Continue with Account Deletion</value>
+    <value>Продолжить процедуру удаления аккаунта</value>
     <comment>Button text to continue with account deletion</comment>
   </data>
   <data name="DeleteMyAccount" xml:space="preserve">
-    <value>Delete My Account</value>
+    <value>Удалить мой аккаунт</value>
     <comment>Button text to delete account</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="DeletingAccountMessage" xml:space="preserve">
-    <value>Deleting account...</value>
+    <value>Удаление аккаунта...</value>
     <comment>Loading message displayed while deleting account</comment>
   </data>
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>Требуется ввести имя пользователя</value>
     <comment>Error message when username is not provided</comment>
   </data>
   <data name="UsernameDoesNotMatch" xml:space="preserve">
-    <value>The username you entered does not match your current username. Please try again.</value>
+    <value>Введенное вами имя пользователя не соответствует вашему текущему имени пользователя. Пожалуйста, попробуйте снова.</value>
     <comment>Error message when username doesn't match</comment>
   </data>
   <data name="ErrorProcessingRequest" xml:space="preserve">
-    <value>An error occurred while processing the request.</value>
+    <value>При обработке запроса произошла ошибка.</value>
     <comment>Generic error message for request processing</comment>
   </data>
 </root>

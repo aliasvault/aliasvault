@@ -9,8 +9,8 @@
   <string name="autofill_open_app">Открыть приложение</string>
   <string name="autofill_vault_locked">Хранилище заблокировано</string>
   <!-- Biometric prompts -->
-  <string name="biometric_store_key_title">Store Encryption Key</string>
-  <string name="biometric_store_key_subtitle">Authenticate to securely store your encryption key in the Android Keystore. This enables secure access to your vault.</string>
-  <string name="biometric_unlock_vault_title">Unlock Vault</string>
-  <string name="biometric_unlock_vault_subtitle">Authenticate to access your vault</string>
+  <string name="biometric_store_key_title">Храните ключ шифрования</string>
+  <string name="biometric_store_key_subtitle">Пройдите аутентификацию, чтобы надежно сохранить свой ключ шифрования в хранилище ключей Android. Это обеспечивает безопасный доступ к вашему хранилищу.</string>
+  <string name="biometric_unlock_vault_title">Разблокировать хранилище</string>
+  <string name="biometric_unlock_vault_subtitle">Пройдите проверку подлинности, чтобы получить доступ к вашему хранилищу</string>
 </resources>

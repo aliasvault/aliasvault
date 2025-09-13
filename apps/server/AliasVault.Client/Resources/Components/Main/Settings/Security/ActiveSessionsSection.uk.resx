@@ -59,47 +59,47 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Active Sessions</value>
+    <value>Активні сесії</value>
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Below is a list of devices where your account is currently logged in or has an active session. You can log out from any of these sessions here.</value>
+    <value>Нижче наведено список пристроїв, на яких ви зараз увійшли в обліковий запис або на яких триває активний сеанс. Ви можете вийти з будь-якого з цих сеансів тут.</value>
     <comment>Description of active sessions</comment>
   </data>
   <data name="NoSessionsMessage" xml:space="preserve">
-    <value>No active sessions found.</value>
+    <value>Активних сеансів не знайдено.</value>
     <comment>Message when no active sessions are available</comment>
   </data>
   <data name="DeviceColumn" xml:space="preserve">
-    <value>Device</value>
+    <value>Пристрій</value>
     <comment>Table column header</comment>
   </data>
   <data name="LastActiveColumn" xml:space="preserve">
-    <value>Last active</value>
+    <value>Остання активність</value>
     <comment>Table column header</comment>
   </data>
   <data name="ExpiresColumn" xml:space="preserve">
-    <value>Expires</value>
+    <value>Термін дії</value>
     <comment>Table column header</comment>
   </data>
   <data name="ActionColumn" xml:space="preserve">
-    <value>Action</value>
+    <value>Дія</value>
     <comment>Table column header</comment>
   </data>
   <data name="RevokeButton" xml:space="preserve">
-    <value>Revoke</value>
+    <value>Закінчити</value>
     <comment>Button to revoke session</comment>
   </data>
   <data name="RevokeSuccessMessage" xml:space="preserve">
-    <value>Session revoked successfully.</value>
+    <value>Сеанс успішно закінчено.</value>
     <comment>Success message when session is revoked</comment>
   </data>
   <data name="RevokeErrorMessage" xml:space="preserve">
-    <value>Failed to revoke session.</value>
+    <value>Не вдалося закінчити сеанс.</value>
     <comment>Error message when session revocation fails</comment>
   </data>
   <data name="RevokeExceptionMessage" xml:space="preserve">
-    <value>Failed to revoke session: {0}.</value>
+    <value>Не вдалося закінчити сеанс: {0}.</value>
     <comment>Exception message when session revocation fails. {0} is placeholder for error details</comment>
   </data>
 </root>

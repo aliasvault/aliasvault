@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Sync</value>
+    <value>Синхронизация</value>
     <comment>Page title for the sync page</comment>
   </data>
   <data name="SwitchAccountsText" xml:space="preserve">
-    <value>Switch accounts?</value>
+    <value>Сменить учетную запись?</value>
     <comment>Text before logout link</comment>
   </data>
   <data name="LogoutLink" xml:space="preserve">
-    <value>Logout</value>
+    <value>Выйти</value>
     <comment>Link text for logout</comment>
   </data>
 </root>

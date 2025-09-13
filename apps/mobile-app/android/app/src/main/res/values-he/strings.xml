@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">AliasVault</string>
+  <string name="autofill_service_description" translatable="true">השלמה אוטומטית עם AliasVault</string>
+  <string name="aliasvault_icon">סמל AliasVault</string>
+  <!-- AutofillService strings -->
+  <string name="autofill_failed_to_retrieve">המשיכה נכשלה, נא לפתוח את היישום</string>
+  <string name="autofill_no_match_found">לא נמצאו התאמות, ליצור חדש?</string>
+  <string name="autofill_open_app">פתיחת היישום</string>
+  <string name="autofill_vault_locked">הכספת נעולה</string>
+  <!-- Biometric prompts -->
+  <string name="biometric_store_key_title">אחסון מפתח הצפנה</string>
+  <string name="biometric_store_key_subtitle">יש לעבור אימות כדי לאחסן בבטחה את מפתח ההצפנה שלך ב־Android Keystore (אחסון מפתחות). כך מופעלת גישה מאובטחת לכספת שלך.</string>
+  <string name="biometric_unlock_vault_title">שחרור נעילת כספת</string>
+  <string name="biometric_unlock_vault_subtitle">יש לעבור אימות כדי לגשת לכספת שלך</string>
+</resources>

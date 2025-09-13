@@ -1,6 +1,6 @@
 {
   "loading": {
-    "title": "AliasVault is loading",
+    "title": "Chargement de AliasVault",
     "message": "Initializing secure environment. AliasVault prioritizes your privacy by running entirely in your browser. The first load might take a short while.",
     "refreshText": "Si le chargement semble bloqué, vous pouvez cliquer sur le bouton ci-dessous pour actualiser la page.",
     "refreshButtonText": "Actualiser la page"

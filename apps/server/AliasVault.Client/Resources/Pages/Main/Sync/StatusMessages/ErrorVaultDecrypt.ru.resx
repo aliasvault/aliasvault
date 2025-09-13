@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ErrorTitle" xml:space="preserve">
-    <value>Vault decryption error.</value>
+    <value>Ошибка расшифровки хранилища.</value>
     <comment>Title for vault decryption error</comment>
   </data>
   <data name="ErrorDescription" xml:space="preserve">
-    <value>An error occurred while locally decrypting your vault. Your data is not accessible at this moment. Please try again (later) or contact support.</value>
+    <value>Произошла ошибка при локальной расшифровке вашего хранилища. Ваши данные сейчас недоступны. Попробуйте снова (позже) или обратитесь в службу поддержки.</value>
     <comment>Description for vault decryption error</comment>
   </data>
 </root>

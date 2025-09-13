@@ -59,83 +59,83 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Скинути сховище</value>
     <comment>Page title</comment>
   </data>
   <data name="BreadcrumbImportExport" xml:space="preserve">
-    <value>Import / Export</value>
+    <value>Імпорт / Експорт</value>
     <comment>Breadcrumb for import export</comment>
   </data>
   <data name="BreadcrumbResetVault" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Скинути сховище</value>
     <comment>Breadcrumb for reset vault</comment>
   </data>
   <data name="ResetVaultPleaseNote" xml:space="preserve">
-    <value>Please note:</value>
+    <value>Будь ласка, зверніть увагу:</value>
     <comment>Reset vault please note prefix</comment>
   </data>
   <data name="ResetVaultCredentialsDeletedNote" xml:space="preserve">
-    <value>All encrypted credentials in your vault will be permanently deleted</value>
+    <value>Усі зашифровані облікові дані у вашому сховищі будуть видалені назавжди</value>
     <comment>Reset vault note about credentials being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
-    <value>Your email aliases will be preserved and can be re-used after resetting your vault</value>
+    <value>Ваші псевдоніми електронної пошти будуть збережені та можуть бути використані повторно після скидання налаштувань сховища</value>
     <comment>Reset vault note about email aliases being kept</comment>
   </data>
   <data name="ResetVaultSettingsKeptNote" xml:space="preserve">
-    <value>Your account settings and preferences will be preserved</value>
+    <value>Налаштування та параметри вашого облікового запису будуть збережені</value>
     <comment>Reset vault note about settings being kept</comment>
   </data>
   <data name="ResetVaultIrreversibleNote" xml:space="preserve">
-    <value>This action cannot be undone</value>
+    <value>Цю дію не можна скасувати</value>
     <comment>Reset vault note about action being irreversible</comment>
   </data>
   <data name="ResetVaultConfirmUsernameLabel" xml:space="preserve">
-    <value>To continue, please type your username to confirm</value>
+    <value>Щоб продовжити, будь ласка, введіть своє ім'я користувача для підтвердження</value>
     <comment>Reset vault username confirmation label</comment>
   </data>
   <data name="ResetVaultContinueButton" xml:space="preserve">
-    <value>Continue with vault reset</value>
+    <value>Продовжити скидання сховища</value>
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>Final warning: You are about to permanently delete all your credentials!</value>
+    <value>Останнє попередження: Ви збираєтеся назавжди видалити всі свої облікові дані!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
-    <value>This deletion is irreversible and cannot be undone</value>
+    <value>Це видалення незворотне і не може бути скасовано</value>
     <comment>Reset vault final step irreversible note</comment>
   </data>
   <data name="ResetVaultEnterPasswordLabel" xml:space="preserve">
-    <value>Enter your password to confirm</value>
+    <value>Введіть свій пароль для підтвердження</value>
     <comment>Reset vault password confirmation label</comment>
   </data>
   <data name="ResetVaultConfirmButton" xml:space="preserve">
-    <value>Reset my vault</value>
+    <value>Скинути моє сховище</value>
     <comment>Reset vault final confirmation button</comment>
   </data>
   <data name="ResetVaultUsernameRequired" xml:space="preserve">
-    <value>Username is required.</value>
+    <value>Ім'я користувача обов'язкове.</value>
     <comment>Reset vault username required error</comment>
   </data>
   <data name="ResetVaultUsernameDoesNotMatch" xml:space="preserve">
-    <value>The username you entered does not match your account username.</value>
+    <value>Введене вами ім'я користувача не відповідає імені користувача вашого облікового запису.</value>
     <comment>Reset vault username mismatch error</comment>
   </data>
   <data name="ResetVaultPasswordIncorrect" xml:space="preserve">
-    <value>The password you entered is incorrect.</value>
+    <value>Введений вами пароль неправильний.</value>
     <comment>Reset vault password incorrect error</comment>
   </data>
   <data name="ResetVaultProgressMessage" xml:space="preserve">
-    <value>Resetting vault...</value>
+    <value>Скидання сховища...</value>
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>Your vault has been successfully reset. All credentials have been deleted and you can now start fresh.</value>
+    <value>Ваше сховище успішно скинуто. Усі облікові дані видалено, і тепер ви можете почати все спочатку.</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">
-    <value>An error occurred while resetting your vault. Please try again.</value>
+    <value>Під час скидання налаштувань вашого сховища сталася помилка. Спробуйте ще раз.</value>
     <comment>Reset vault error message</comment>
   </data>
 </root>

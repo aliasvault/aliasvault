@@ -11,6 +11,12 @@ nav_order: 3
 AliasVault supports multiple languages across all applications. Currently supported languages:
 - English
 - Dutch
+- German
+- Finnish
+- Hebrew
+- Italian
+- Ukrainian
+- Chinese (Simplified)
 
 ---
 

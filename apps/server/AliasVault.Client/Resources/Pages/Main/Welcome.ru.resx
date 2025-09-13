@@ -21,23 +21,23 @@
   </xsd:schema>
   <!-- Step titles -->
   <data name="WelcomeStepTitle">
-    <value>Welcome to AliasVault</value>
+    <value>Добро пожаловать в AliasVault</value>
     <comment>Title for the welcome step</comment>
   </data>
   <data name="HowAliasVaultWorksStepTitle">
-    <value>How AliasVault Works</value>
+    <value>Как работает AliasVault</value>
     <comment>Title for the how it works step</comment>
   </data>
   <data name="TipsStepTitle">
-    <value>Tips</value>
+    <value>Советы</value>
     <comment>Title for the tips step</comment>
   </data>
   <data name="GetStartedStepTitle">
-    <value>Get Started</value>
+    <value>Начать</value>
     <comment>Title for the get started step</comment>
   </data>
   <data name="TutorialStepTitle">
-    <value>Tutorial</value>
+    <value>Обучение</value>
     <comment>Default tutorial step title</comment>
   </data>
   <!-- Welcome step content -->

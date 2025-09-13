@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Selecteer een service om van te importeren. Als u een service gebruikt die hier niet wordt vermeld en u wilt deze graag ondersteund zien, dien dan een issue in op &lt;a href="https://github.com/lanedirt/AliasVault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; of neem contact met ons op.</value>
+    <value>Selecteer een service om van te importeren. Als je een service gebruikt die hier niet wordt vermeld en je wilt deze graag ondersteund zien, dien dan een issue in op &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; of neem contact met ons op.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">

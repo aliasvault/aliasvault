@@ -184,7 +184,7 @@
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
-    <value>Om je KeePassXC kluis te importeren, moet je deze exporteren als CSV-bestand. Je kunt dit doen door naar het 'File' menu te gaan en 'Export' (naar CSV) te selecteren.</value>
+    <value>Om je KeePassXC kluis te importeren, moet je deze exporteren als CSV-bestand. Je kunt dit doen door naar het 'Database' menu te gaan en 'Export' (CSV file) te selecteren.</value>
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Instructions -->
+  <data name="PleaseReadAndAgree">
+    <value>נא לקרוא ולהסכים לתנאים וההגבלות הבאים בטרם בחירה להמשיך.</value>
+    <comment>Instructions to read and agree to terms</comment>
+  </data>
+  <!-- Terms and Conditions title -->
+  <data name="TermsAndConditionsTitle">
+    <value>תנאים והגבלות</value>
+    <comment>Title for the terms and conditions section</comment>
+  </data>
+  <!-- Terms content -->
+  <data name="TermsContent">
+    <value>AliasVault תוכנן לשפר את האבטחה שלך ברשת ולהגן על הפרטיות שלך. עם AliasVault, אפשר ליצור זהויות ייחודיות וכינויי כתובות דוא״ל למגוון החשבונות המקוונים שלך, מה שמסייע לך להישאר בשליטה בבנוגע לפרטים האישיים שלך ולצמצם סכנות לגניבת זהות.
+
+על ידי שימוש ב־AliasVault התנאים הבאים מקובלים עליך או עלייך:
+
+1. אין לעשות שימוש ב־AliasVault למטרות לא חוקיות, כולל אך לא מוגבל להונאה, גניבת זהות או התחזות לבני אדם אמיתיים.
+
+2. האחריות על סודיות החשבון שלך והכינויים שנוצרים דרך AliasVault הם באחריותך הבלעדית.
+
+3. חברת AliasVault שומרת לה את הזכות להשמיד את החשבון שלך במקרה של חשד לשימוש בלתי הולם או עקב הפרה של התנאים האלה.
+
+4. ברור לך שלמרות ש־AliasVault משפר את הפרטיות שלך, אין אף מערכת חסינה לחלוטית, והשימוש בשירות הוא על אחריותך בלבד.</value>
+    <comment>Full terms and conditions content</comment>
+  </data>
+  <!-- Agreement checkbox -->
+  <data name="AgreementCheckboxLabel">
+    <value>קראתי והתנאים וההגבלות מקובלים עליי</value>
+    <comment>Label for the agreement checkbox</comment>
+  </data>
+</root>

@@ -59,43 +59,43 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Quick vault unlock</value>
+    <value>Швидке розблокування сховища</value>
     <comment>Title for quick vault unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>The vault decryption key is saved via a passkey. This means that when you reload the AliasVault page or tab, you can login with your face, fingerprint or built-in browser security keys. If you with to disable the quick vault unlock, you can do so with the button below.</value>
+    <value>Ключ розшифрування сховища зберігається за допомогою ключа доступу. Це означає, що під час перезавантаження сторінки або вкладки AliasVault ви можете увійти за допомогою обличчя, відбитка пальця або вбудованих ключів безпеки браузера. Якщо ви хочете вимкнути швидке розблокування сховища, ви можете зробити це за допомогою кнопки нижче.</value>
     <comment>Description when quick unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Disable Quick Vault Unlock</value>
+    <value>Вимкнути швидке розблокування сховища</value>
     <comment>Button to disable quick vault unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>By default when you reload the AliasVault page or tab, you will be prompted to enter your master password again. Alternatively, you can choose to use a browser passkey (or hardware authenticator such as YubiKey) instead of your master password. This will allow you to unlock your vault with your face, fingerprint or built-in browser security keys. This only applies to the current device and browser.</value>
+    <value>За замовчуванням, під час перезавантаження сторінки або вкладки AliasVault, вам буде запропоновано ще раз ввести головний пароль. Або ж ви можете використовувати ключ доступу браузера (або апаратний автентифікатор, такий як YubiKey) замість головного пароля. Це дозволить вам розблокувати сховище за допомогою обличчя, відбитка пальця або вбудованих ключів безпеки браузера. Це стосується лише поточного пристрою та браузера.</value>
     <comment>Description when quick unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>Please note that this feature is experimental and may not work on all devices or browsers. Your browser must support WebAuthn and the PRF extension in order for this to work. If you experience any issues, you can disable this feature at any time.</value>
+    <value>Зверніть увагу, що ця функція є експериментальною та може працювати не на всіх пристроях або в усіх браузерах. Для її роботи ваш браузер має підтримувати WebAuthn та розширення PRF. Якщо у вас виникнуть проблеми, ви можете будь-коли вимкнути цю функцію.</value>
     <comment>Warning about experimental nature of the feature</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Quick Vault Unlock</value>
+    <value>Увімкнути швидке розблокування сховища</value>
     <comment>Button to enable quick vault unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Quick Vault Unlock is successfully enabled. The next time your vault is locked you can unlock it with your created passkey.</value>
+    <value>Швидке розблокування сховища успішно ввімкнено. Наступного разу, коли ваше сховище буде заблоковано, ви зможете розблокувати його за допомогою створеного ключа доступу.</value>
     <comment>Success message when quick unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Quick Vault Unlock is successfully disabled.</value>
+    <value>Швидке розблокування сховища успішно вимкнено.</value>
     <comment>Success message when quick unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Your current browser does not support the WebAuthn PRF extension. Please try again with a different browser.</value>
+    <value>Ваш поточний браузер не підтримує розширення WebAuthn PRF. Будь ласка, спробуйте ще раз в іншому браузері.</value>
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
-    <value>An error occurred while trying to enable Quick Vault Unlock. Please try again (later).</value>
+    <value>Сталася помилка під час спроби ввімкнути швидке розблокування сховища. Будь ласка, спробуйте ще раз (пізніше).</value>
     <comment>Generic error message when enabling fails</comment>
   </data>
 </root>

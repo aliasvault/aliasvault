@@ -60,80 +60,80 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Delete Account</value>
+    <value>Видалити обліковий запис</value>
     <comment>Page title for the delete account page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
-    <value>Security settings</value>
+    <value>Налаштування безпеки</value>
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbDeleteAccount" xml:space="preserve">
-    <value>Delete Account</value>
+    <value>Видалити обліковий запис</value>
     <comment>Breadcrumb text for delete account</comment>
   </data>
   <!-- Warning messages -->
   <data name="PermanentActionWarning" xml:space="preserve">
-    <value>Warning: This action is permanent and cannot be undone. All your data will be permanently deleted.</value>
+    <value>Увага: Ця дія є остаточною та не може бути скасована. Усі ваші дані будуть видалені назавжди.</value>
     <comment>Warning message about permanent deletion</comment>
   </data>
   <data name="FinalWarning" xml:space="preserve">
-    <value>Final warning: Enter your password to permanently delete your account.</value>
+    <value>Останнє попередження: введіть свій пароль, щоб остаточно видалити свій обліковий запис.</value>
     <comment>Final warning message before account deletion</comment>
   </data>
   <!-- Note sections -->
   <data name="PleaseNote" xml:space="preserve">
-    <value>Please note:</value>
+    <value>Будь ласка, зверніть увагу:</value>
     <comment>Header for note section</comment>
   </data>
   <data name="VaultsDeletedNote" xml:space="preserve">
-    <value>All encrypted vaults which includes all of your credentials will be permanently deleted</value>
+    <value>Усі зашифровані сховища, які містять усі ваші облікові дані, будуть видалені назавжди</value>
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">
-    <value>Your email aliases will be orphaned and cannot be claimed by other users</value>
+    <value>Ваші псевдоніми електронної пошти стануть неактивними й інші користувачі не зможуть їх використовувати</value>
     <comment>Note about email aliases being orphaned</comment>
   </data>
   <data name="AccountCannotBeRecoveredNote" xml:space="preserve">
-    <value>Your account cannot be recovered after deletion</value>
+    <value>Ваш обліковий запис не можна відновити після видалення</value>
     <comment>Note about account recovery</comment>
   </data>
   <data name="DeletionIrreversibleNote" xml:space="preserve">
-    <value>Account deletion is irreversible and cannot be undone. Pressing the button below will delete your account immmediately and permanently.</value>
+    <value>Видалення облікового запису є незворотним і не може бути скасовано. Натискання кнопки нижче видалить ваш обліковий запис негайно та назавжди.</value>
     <comment>Note about deletion being irreversible</comment>
   </data>
   <!-- Form labels -->
   <data name="ConfirmUsernameLabel" xml:space="preserve">
-    <value>Confirm your username</value>
+    <value>Підтвердьте своє ім'я користувача</value>
     <comment>Label for username confirmation input field</comment>
   </data>
   <data name="EnterPasswordLabel" xml:space="preserve">
-    <value>Enter your password</value>
+    <value>Введіть ваш пароль</value>
     <comment>Label for password input field</comment>
   </data>
   <!-- Button text -->
   <data name="ContinueWithAccountDeletion" xml:space="preserve">
-    <value>Continue with Account Deletion</value>
+    <value>Продовжити видалення облікового запису</value>
     <comment>Button text to continue with account deletion</comment>
   </data>
   <data name="DeleteMyAccount" xml:space="preserve">
-    <value>Delete My Account</value>
+    <value>Видалити мій обліковий запис</value>
     <comment>Button text to delete account</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="DeletingAccountMessage" xml:space="preserve">
-    <value>Deleting account...</value>
+    <value>Видалення облікового запису...</value>
     <comment>Loading message displayed while deleting account</comment>
   </data>
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>Ім'я користувача обов'язкове</value>
     <comment>Error message when username is not provided</comment>
   </data>
   <data name="UsernameDoesNotMatch" xml:space="preserve">
-    <value>The username you entered does not match your current username. Please try again.</value>
+    <value>Введене вами ім'я користувача не відповідає вашому поточному імені користувача. Спробуйте ще раз.</value>
     <comment>Error message when username doesn't match</comment>
   </data>
   <data name="ErrorProcessingRequest" xml:space="preserve">
-    <value>An error occurred while processing the request.</value>
+    <value>Під час обробки запиту сталася помилка.</value>
     <comment>Generic error message for request processing</comment>
   </data>
 </root>

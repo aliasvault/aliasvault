@@ -59,19 +59,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Recovery codes</value>
+    <value>Коди відновлення</value>
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>The recovery codes below are used to access your account in case you lose access to your authenticator device. Make a photo or write them down and store them in a secure location. Do not share them with anyone.</value>
+    <value>Коди відновлення, наведені нижче, використовуються для доступу до вашого облікового запису у разі втрати доступу до вашого пристрою автентифікації. Зробіть фотографію або запишіть їх і зберігайте в безпечному місці. Не діліться ними взагалі ні з ким.</value>
     <comment>Description of recovery codes</comment>
   </data>
   <data name="WarningTitle" xml:space="preserve">
-    <value>Store these recovery codes in a safe place.</value>
+    <value>Зберігайте ці коди відновлення в безпечному місці.</value>
     <comment>Warning title about storing codes</comment>
   </data>
   <data name="WarningDescription" xml:space="preserve">
-    <value>If you lose your device and don't have the recovery codes you will lose access to your account. These codes are only shown once!</value>
+    <value>Якщо ви втратите свій пристрій і не матимете кодів відновлення, ви втратите доступ до свого облікового запису. Ці коди показуються лише один раз!</value>
     <comment>Warning description about recovery codes</comment>
   </data>
 </root>
