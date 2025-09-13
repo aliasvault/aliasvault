@@ -137,7 +137,7 @@
     <comment>Generic CSV step 1</comment>
   </data>
   <data name="GenericCsvStep2" xml:space="preserve">
-    <value>Öffnen Sie es in einem Tabellenkalkulationsprogramm (Microsoft Excel, LibreOffice, usw.)</value>
+    <value>Öffne die Vorlage in einem Tabellenkalkulationsprogramm (Microsoft Excel, LibreOffice, usw.)</value>
     <comment>Generic CSV step 2</comment>
   </data>
   <data name="GenericCsvStep3" xml:space="preserve">
