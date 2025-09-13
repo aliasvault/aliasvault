@@ -1,7 +1,7 @@
 {
   "common": {
     "cancel": "Abbrechen",
-    "close": "Close",
+    "close": "Schließen",
     "delete": "Löschen",
     "save": "Speichern",
     "yes": "Ja",
@@ -15,8 +15,8 @@
     "copied": "In die Zwischenablage kopiert",
     "loadMore": "Mehr laden",
     "use": "Benutzen",
-    "confirm": "Confirm",
-    "unknownError": "Unknown error"
+    "confirm": "Bestätigen",
+    "unknownError": "Unbekannter Fehler"
   },
   "auth": {
     "login": "Anmelden",
@@ -219,20 +219,20 @@
     "batteryOptimizationHelpDescription": "Die Akkuoptimierung von Android verhindert, dass die Zwischenablage zuverlässig gelöscht wird, wenn die App im Hintergrund ist. Das Deaktivieren der Akkuoptimierung für AliasVault ermöglicht das zuverlässige Löschen der Zwischenablage und gewährt automatisch die notwendigen Alarmberechtigungen.",
     "disableBatteryOptimization": "Akkuoptimierung deaktivieren",
     "identityGenerator": "Identitätsgenerator",
-    "passwordGenerator": "Password Generator",
-    "importExport": "Import / Export",
-    "importSectionTitle": "Import",
-    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
-    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
-    "exportSectionTitle": "Export",
-    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
-    "exportCsvButton": "Export vault to CSV file",
-    "exporting": "Exporting...",
-    "exportConfirmTitle": "Export Vault",
-    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
-    "exportError": "Failed to export vault. Please try again.",
-    "exportSaved": "File saved to: {{filename}}",
-    "noVaultData": "No vault data to export",
+    "passwordGenerator": "Passwortgenerator",
+    "importExport": "Import und Export",
+    "importSectionTitle": "Importieren",
+    "importSectionDescription": "Importiere Deine Passwörter von anderen Passwort-Managern oder von einem früheren AliasVault-Export.",
+    "importWebNote": "Um Zugangsdaten von bestehenden Passwort-Managern zu importieren, melde Dich bitte in die Web-App an. Die Import-Funktion ist derzeit nur auf der Web-Version verfügbar.",
+    "exportSectionTitle": "Exportieren",
+    "exportSectionDescription": "Exportiere Deinen Tresor in eine CSV-Datei. Diese Datei kann als Sicherung verwendet werden und kann auch in andere Passwort-Manager importiert werden.",
+    "exportCsvButton": "Tresor als CSV-Datei exportieren",
+    "exporting": "Wird exportiert...",
+    "exportConfirmTitle": "Tresor exportieren",
+    "exportWarning": "Warnung: Beim Exportieren Deines Tresors in eine unverschlüsselte Datei werden alle Deine Passwörter und sensiblen Daten im Klartext sichtbar.\nFühre diesen Vorgang nur auf vertrauenswürdigen Geräten aus und stelle sicher, dass Du:\n\n• die exportierte Datei an einem sicheren Ort speicherst.\n• die Datei löschst, sobald Du sie nicht mehr brauchst.\n• die Datei niemals mit anderen teilst.\n\nBist Du sicher, dass Du mit dem Export fortfahren möchtest?",
+    "exportError": "Das Exportieren Deines Tresors ist fehlgeschlagen. Bitte versuche es erneut.",
+    "exportSaved": "Datei gespeichert unter: {{filename}}",
+    "noVaultData": "Es wurden keine Daten im Tresor gefunden, die exportiert werden können.",
     "security": "Sicherheit",
     "appVersion": "App-Version {{version}} ({{url}})",
     "autoLockOptions": {
@@ -289,8 +289,8 @@
       }
     },
     "passwordGeneratorSettings": {
-      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
-      "preview": "Preview"
+      "description": "Konfiguriere die Standardeinstellungen für die Generierung neuer Passwörter. Diese Einstellungen werden für alle neuen Passwörter verwendet, sofern sie nicht für einzelne Einträge überschrieben werden.",
+      "preview": "Vorschau"
     },
     "securitySettings": {
       "title": "Sicherheit",
@@ -442,9 +442,9 @@
       "retryingConnection": "Verbindungsversuch wird wiederholt..."
     },
     "offline": {
-      "banner": "Offline mode (read-only)",
-      "backOnline": "Back online",
-      "stillOffline": "Still offline"
+      "banner": "Offline-Modus (nur lesender Zugriff)",
+      "backOnline": "Wieder online",
+      "stillOffline": "Immer noch offline"
     },
     "alerts": {
       "syncIssue": "Synchronisierungsproblem",
