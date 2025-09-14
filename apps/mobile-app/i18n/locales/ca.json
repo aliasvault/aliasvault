@@ -230,9 +230,6 @@
     "exporting": "Exporting...",
     "exportConfirmTitle": "Export Vault",
     "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
-    "exportError": "Failed to export vault. Please try again.",
-    "exportSaved": "File saved to: {{filename}}",
-    "noVaultData": "No vault data to export",
     "security": "Security",
     "appVersion": "App version {{version}} ({{url}})",
     "autoLockOptions": {
