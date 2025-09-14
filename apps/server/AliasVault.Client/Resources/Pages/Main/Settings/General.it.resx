@@ -139,10 +139,6 @@
     <value>15 secondi</value>
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
-  <data name="NoteLabel">
-    <value>Nota</value>
-    <comment>Label for note/warning text</comment>
-  </data>
   <data name="ClipboardClearLimitationNote">
     <value>Nota: la cancellazione degli appunti è disponibile solo con la scheda attiva. Se la scheda viene disattivata, gli appunti verranno eliminati al suo ritorno in primo piano.</value>
     <comment>Note explaining limitations of clipboard clearing feature</comment>
