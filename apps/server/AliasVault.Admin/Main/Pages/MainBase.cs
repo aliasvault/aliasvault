@@ -99,7 +99,7 @@ public abstract class MainBase : OwningComponentBase
         await UserService.LoadCurrentUserAsync();
 
         // Add base breadcrumbs.
-        BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = "Home", Url = NavigationService.BaseUri });
+        BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = "Home", Url = NavigationService.BaseUri, ShowHomeIcon = true });
     }
 
     /// <inheritdoc />

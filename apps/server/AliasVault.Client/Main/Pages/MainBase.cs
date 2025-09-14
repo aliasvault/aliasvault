@@ -117,7 +117,7 @@ public abstract class MainBase : OwningComponentBase
         _parametersInitialSet = false;
 
         // Add base breadcrumbs
-        BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = SharedLocalizer["Home"], Url = NavigationManager.BaseUri });
+        BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = SharedLocalizer["Home"], Url = NavigationManager.BaseUri, ShowHomeIcon = true });
 
         bool willRedirect = await RedirectIfNoEncryptionKey();
         if (willRedirect)

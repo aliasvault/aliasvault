@@ -21,4 +21,10 @@ public sealed class BreadcrumbItem
     /// Gets or sets the URL for the breadcrumb item.
     /// </summary>
     public string? Url { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether to show the home icon for this item.
+    /// Typically used for the first item in the breadcrumb trail.
+    /// </summary>
+    public bool ShowHomeIcon { get; set; }
 }
