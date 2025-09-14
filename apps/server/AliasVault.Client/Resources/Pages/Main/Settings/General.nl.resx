@@ -139,10 +139,6 @@
     <value>15 seconden</value>
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
-  <data name="NoteLabel">
-    <value>Opmerking</value>
-    <comment>Label for note/warning text</comment>
-  </data>
   <data name="ClipboardClearLimitationNote">
     <value>Klembord wissen in de webapp is alleen mogelijk als het tabblad actief is. Wanneer het tabblad de focus verliest, zal het klembord gewist worden wanneer het tabblad weer actief wordt.</value>
     <comment>Note explaining limitations of clipboard clearing feature</comment>
