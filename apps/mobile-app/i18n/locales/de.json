@@ -230,9 +230,6 @@
     "exporting": "Wird exportiert...",
     "exportConfirmTitle": "Tresor exportieren",
     "exportWarning": "Warnung: Beim Exportieren Deines Tresors in eine unverschlüsselte Datei werden alle Deine Passwörter und sensiblen Daten im Klartext sichtbar.\nFühre diesen Vorgang nur auf vertrauenswürdigen Geräten aus und stelle sicher, dass Du:\n\n• die exportierte Datei an einem sicheren Ort speicherst.\n• die Datei löschst, sobald Du sie nicht mehr brauchst.\n• die Datei niemals mit anderen teilst.\n\nBist Du sicher, dass Du mit dem Export fortfahren möchtest?",
-    "exportError": "Das Exportieren Deines Tresors ist fehlgeschlagen. Bitte versuche es erneut.",
-    "exportSaved": "Datei gespeichert unter: {{filename}}",
-    "noVaultData": "Es wurden keine Daten im Tresor gefunden, die exportiert werden können.",
     "security": "Sicherheit",
     "appVersion": "App-Version {{version}} ({{url}})",
     "autoLockOptions": {
