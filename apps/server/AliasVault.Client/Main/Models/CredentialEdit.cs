@@ -123,7 +123,7 @@ public sealed class CredentialEdit
                 UpdatedAt = DateTime.UtcNow,
             },
             Alias = credentialCopy.Alias,
-            AliasBirthDate = credentialCopy.Alias.BirthDate == DateTime.MinValue ? string.Empty : credentialCopy.Alias.BirthDate.ToString("yyyy-MM-dd"),
+            AliasBirthDate = credentialCopy.Alias.BirthDate == DateTime.MinValue ? string.Empty : credentialCopy.Alias.BirthDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             Attachments = credentialCopy.Attachments.ToList(),
             TotpCodes = credentialCopy.TotpCodes.ToList(),
             CreateDate = credentialCopy.CreatedAt,

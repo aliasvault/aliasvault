@@ -106,11 +106,21 @@ public class AliasClientDbContext : DbContext
 
         // Create a value converter that maps DateTime.MinValue to an empty string and vice versa.
         // This prevents an empty string in the client DB from causing a fatal exception while loading
-        // Alias objects. TODO: when the birthdate field is made optional in data model, this can probably
+        // Alias objects. It also supports reading . and : as separators as pre 0.23.0 some clients were susceptible to use
+        // local culture settings which could cause the birthdate field to be either format.
+        // TODO: when the birthdate field is made optional in data model and all existing values have been converted from "yyyy-MM-dd HH.mm.ss" to "yyyy-MM-dd HH':'mm':'ss", this can probably
         // be removed. But test the usecase where the birthdate field is empty string (because of browser extension error).
         var emptyDateTimeConverter = new ValueConverter<DateTime, string>(
-            v => v == DateTime.MinValue ? string.Empty : v.ToString("yyyy-MM-dd HH:mm:ss"),
-            v => string.IsNullOrEmpty(v) ? DateTime.MinValue : DateTime.Parse(v, CultureInfo.InvariantCulture));
+            v => v == DateTime.MinValue
+                ? string.Empty
+                : v.ToString("yyyy-MM-dd HH':'mm':'ss", CultureInfo.InvariantCulture),
+            v => string.IsNullOrEmpty(v)
+                ? DateTime.MinValue
+                : DateTime.ParseExact(
+                    v,
+                    new[] { "yyyy-MM-dd HH':'mm':'ss", "yyyy-MM-dd HH.mm.ss" }, // Support reading . and : as separators.
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None));
 
         modelBuilder.Entity<Alias>()
             .Property(e => e.BirthDate)
