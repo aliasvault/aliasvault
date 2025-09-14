@@ -16,7 +16,7 @@
     "loadMore": "Lataa lisää",
     "use": "Käytä",
     "confirm": "Vahvista",
-    "unknownError": "Unknown error"
+    "unknownError": "Tuntematon virhe"
   },
   "auth": {
     "login": "Kirjaudu sisään",
@@ -219,7 +219,7 @@
     "batteryOptimizationHelpDescription": "Androidin akun optimointi estää luotettavan leikepöydän tyhjennyksen, kun sovellus on taustalla. Akun optimoinnin poistaminen AliasVaultilta mahdollistaa tarkan taustaleikepöydältä ja antaa automaattisesti tarvittavat hälytysoikeudet.",
     "disableBatteryOptimization": "Poista akkuvirran optimointi käytöstä",
     "identityGenerator": "Henkilöllisyyden luonti",
-    "passwordGenerator": "Password Generator",
+    "passwordGenerator": "Salasanageneraattori",
     "importExport": "Tuo / Vie",
     "importSectionTitle": "Tuo",
     "importSectionDescription": "Tuo salasanasi muista salasanojen hallinnoijista tai aiemmasta AliasVault-viennistä.",
@@ -289,8 +289,8 @@
       }
     },
     "passwordGeneratorSettings": {
-      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
-      "preview": "Preview"
+      "description": "Määritä oletusasetukset, joita käytetään uusia salasanoja luotaessa. Näitä asetuksia käytetään kaikissa uusissa salasanoissa, ellei niitä ylikirjoiteta tietyille merkinnöille.",
+      "preview": "Esikatsele"
     },
     "securitySettings": {
       "title": "Turvallisuus",
