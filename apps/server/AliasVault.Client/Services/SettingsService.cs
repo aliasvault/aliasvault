@@ -13,6 +13,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Threading.Tasks;
 using AliasClientDb;
+using AliasVault.Client.Main.Models;
 using Microsoft.EntityFrameworkCore;
 
 /// <summary>
@@ -66,8 +67,15 @@ public sealed class SettingsService
     /// <summary>
     /// Gets the CredentialsSortOrder setting.
     /// </summary>
-    /// <returns>Credentials sort order as string.</returns>
-    public string CredentialsSortOrder => GetSetting("CredentialsSortOrder", "asc")!;
+    /// <returns>Credentials sort order as enum.</returns>
+    public CredentialSortOrder CredentialsSortOrder
+    {
+        get
+        {
+            var value = GetSetting("CredentialsSortOrder", "OldestFirst")!;
+            return Enum.TryParse<CredentialSortOrder>(value, out var result) ? result : CredentialSortOrder.OldestFirst;
+        }
+    }
 
     /// <summary>
     /// Gets the AppLanguage setting.
@@ -154,7 +162,7 @@ public sealed class SettingsService
     /// </summary>
     /// <param name="value">The new value.</param>
     /// <returns>Task.</returns>
-    public Task SetCredentialsSortOrder(string value) => SetSettingAsync("CredentialsSortOrder", value);
+    public Task SetCredentialsSortOrder(CredentialSortOrder value) => SetSettingAsync("CredentialsSortOrder", value.ToString());
 
     /// <summary>
     /// Sets the AppLanguage setting.
