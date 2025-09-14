@@ -230,9 +230,6 @@
     "exporting": "Viedään...",
     "exportConfirmTitle": "Vie holvi",
     "exportWarning": "Varoitus: Holvisi vienti salaamattomaan tiedostoon paljastaa kaikki salasanasi ja arkaluonteiset tiedot pelkässä tekstissä. Tee tämä vain luotettavilla tietokoneilla ja varmista, että:\n\n• Tallenna viety tiedosto turvalliseen paikkaan\n• Poista tiedosto, kun et enää tarvitse sitä\n• Älä koskaan jaa vietyä tiedostoa muiden kanssa\n\nOletko varma, että haluat jatkaa vientiä?",
-    "exportError": "Holvin vienti epäonnistui. Yritä uudelleen.",
-    "exportSaved": "Tiedosto tallennettu: {{filename}}",
-    "noVaultData": "Ei vietäviä holvin tietoja",
     "security": "Turvallisuus",
     "appVersion": "Sovelluksen versio {{version}} ({{url}})",
     "autoLockOptions": {
