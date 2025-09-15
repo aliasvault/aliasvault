@@ -60,48 +60,48 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Disable two-factor authentication</value>
+    <value>Отключить двухфакторную аутентификацию</value>
     <comment>Page title for the disable 2FA page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
-    <value>Security settings</value>
+    <value>Настройки безопасности</value>
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbDisable2Fa" xml:space="preserve">
-    <value>Disable two-factor authentication</value>
+    <value>Отключить двухфакторную аутентификацию</value>
     <comment>Breadcrumb text for disable 2FA</comment>
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>Disabling two-factor authentication means you will be able to login with only your password.</value>
+    <value>Отключение двухфакторной аутентификации означает, что вы сможете войти в систему, используя только свой пароль.</value>
     <comment>Description text explaining what disabling 2FA means</comment>
   </data>
   <!-- Warning message -->
   <data name="WarningMessage" xml:space="preserve">
-    <value>Please note: after disabling two-factor authentication any configured authenticator app(s) will stop working. When you want to re-enable two-factor authentication you will have to configure the authenticator app(s) again.</value>
+    <value>Пожалуйста, обратите внимание: после отключения двухфакторной аутентификации все настроенные приложения-аутентификаторы перестанут работать. Если вы захотите снова включить двухфакторную аутентификацию, вам придется снова настроить приложения-аутентификаторы.</value>
     <comment>Warning message about the consequences of disabling 2FA</comment>
   </data>
   <!-- Status message -->
   <data name="StatusMessage" xml:space="preserve">
-    <value>Two factor authentication is currently enabled. Disable it in order to be able to access your vault with your password only.</value>
+    <value>В настоящее время включена двухфакторная аутентификация. Отключите ее, чтобы иметь возможность доступа к вашему хранилищу только с помощью вашего пароля.</value>
     <comment>Status message explaining current 2FA state</comment>
   </data>
   <!-- Button text -->
   <data name="ConfirmDisableButton" xml:space="preserve">
-    <value>Confirm Disable Two-Factor Authentication</value>
+    <value>Подтвердить отключение двухфакторной аутентификации</value>
     <comment>Button text to confirm disabling 2FA</comment>
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorDisabledSuccess" xml:space="preserve">
-    <value>Two-factor authentication is now successfully disabled.</value>
+    <value>Теперь двухфакторная аутентификация успешно отключена.</value>
     <comment>Success message when 2FA is disabled</comment>
   </data>
   <data name="FailedToDisable2Fa" xml:space="preserve">
-    <value>Failed to disable two-factor authentication.</value>
+    <value>Не удалось отключить двухфакторную аутентификацию.</value>
     <comment>Error message when 2FA disable fails</comment>
   </data>
   <data name="TwoFactorNotEnabled" xml:space="preserve">
-    <value>Two-factor authentication is not enabled.</value>
+    <value>Двухфакторная аутентификация не включена.</value>
     <comment>Error message when 2FA is not enabled</comment>
   </data>
 </root>
