@@ -184,7 +184,7 @@
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
-    <value>In order to import your KeePassXC vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export' (to CSV).</value>
+    <value>In order to import your KeePassXC vault, you need to export it as a CSV file. You can do this by going to the 'Database' menu and selecting 'Export' (CSV File).</value>
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
