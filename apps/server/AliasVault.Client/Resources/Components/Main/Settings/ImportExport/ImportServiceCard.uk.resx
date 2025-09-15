@@ -59,31 +59,31 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NoLogoText" xml:space="preserve">
-    <value>No logo</value>
+    <value>Без логотипа</value>
     <comment>Text shown when service logo is not available</comment>
   </data>
   <data name="ImportFromServiceTitle" xml:space="preserve">
-    <value>Import from {0}</value>
+    <value>Імпорт з {0}</value>
     <comment>Modal title for importing from a service. {0} is placeholder for service name</comment>
   </data>
   <data name="UploadExportFileText" xml:space="preserve">
-    <value>Upload your {0} export file:</value>
+    <value>Завантажте свій {0} експортний файл:</value>
     <comment>Text for file upload instruction. {0} is placeholder for service name</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Скасувати</value>
     <comment>Cancel button text</comment>
   </data>
   <data name="BackButton" xml:space="preserve">
-    <value>Back</value>
+    <value>Назад</value>
     <comment>Back button text</comment>
   </data>
   <data name="NextButton" xml:space="preserve">
-    <value>Next</value>
+    <value>Далі</value>
     <comment>Next button text</comment>
   </data>
   <data name="ImportButton" xml:space="preserve">
-    <value>Import</value>
+    <value>Імпорт</value>
     <comment>Import button text</comment>
   </data>
 </root>
