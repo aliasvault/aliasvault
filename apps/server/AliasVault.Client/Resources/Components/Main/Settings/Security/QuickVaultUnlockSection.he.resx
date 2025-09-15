@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>שחרור נעילת כספת מהיר</value>
+    <comment>Title for quick vault unlock section</comment>
+  </data>
+  <data name="EnabledDescription" xml:space="preserve">
+    <value>מפתח פענוח הכספת נשמר דרך מפתח גישה (passkey). משמעות הדבר היא שלאחר ריענון העמוד או הלשונית של AliasVault, אפשר להיכנס עם הפנים שלך, טביעת האצבע שלך או מפתחות אבטחה מובנים בדפדפן. כדי לבטל שחרור נעילת כספת מהיר, אפשר לעשות זאת בעזרת הכפתור שלהלן.</value>
+    <comment>Description when quick unlock is enabled</comment>
+  </data>
+  <data name="DisableButton" xml:space="preserve">
+    <value>כיבוי שחרור נעילת כספת מהיר</value>
+    <comment>Button to disable quick vault unlock</comment>
+  </data>
+  <data name="DisabledDescription" xml:space="preserve">
+    <value>כברירת מחדל, בעת ריענון העמוד או הלשונית של AliasVault, תופיע בקשה למלא את סיסמת העל שלך מחדש. לחלופין, אפשר לבחור להשתמש במפתח גישה (passkey - או מאמת חומרה כגון YubiKey) במקום סיסמת העל שלך. ההגדרה הזאת תאפשר לך לשחרר את נעילת הכספת שלך עם הפנים שלך, טביעת האצבע שלך או מפתחות אבטחה מובנים בדפדפן. חל רק על המכשיר והדפדפן הנוכחיים.</value>
+    <comment>Description when quick unlock is disabled</comment>
+  </data>
+  <data name="ExperimentalWarning" xml:space="preserve">
+    <value>נא לשים לב שהיכולת הזאת היא ניסיונית ועלולה לא לעבוד בכל המכשירים או הדפדפנים. הדפדפן שלך חייב לתמוך ב־WebAuthn ובהרחבת PRF (פונקציה אקראית מדומה) כדי שזה יעבוד. אם נתקלת בבעיות כלשהן, אפשר להשבית את היכולת הזאת בכל עת.</value>
+    <comment>Warning about experimental nature of the feature</comment>
+  </data>
+  <data name="EnableButton" xml:space="preserve">
+    <value>הפעלת שחרור נעילת כספת מהיר</value>
+    <comment>Button to enable quick vault unlock</comment>
+  </data>
+  <data name="SuccessEnabledMessage" xml:space="preserve">
+    <value>שחרור נעילת כספת מהיר הופעל בהצלחה. בפעם הבאה שהכספת שלך ננעלת אפשר לשחרר אותה עם מפתח הגישה שנוצר.</value>
+    <comment>Success message when quick unlock is enabled</comment>
+  </data>
+  <data name="SuccessDisabledMessage" xml:space="preserve">
+    <value>שחרור נעילת כספת מהיר הושבת בהצלחה.</value>
+    <comment>Success message when quick unlock is disabled</comment>
+  </data>
+  <data name="WebAuthnNotSupportedError" xml:space="preserve">
+    <value>הדפדפן הנוכחי שלך לא תומך בהרחבת PRF (פונקציה אקראית מדומה) של WebAuthn. נא לנסות שוב עם דפדפן אחר.</value>
+    <comment>Error when WebAuthn is not supported</comment>
+  </data>
+  <data name="EnableErrorMessage" xml:space="preserve">
+    <value>אירעה שגיאה בניסיון להפעיל שחרור נעילה מהיר של הכספת. נא לנסות שוב (בהמשך).</value>
+    <comment>Generic error message when enabling fails</comment>
+  </data>
+</root>
