@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Page title and description -->
+  <data name="PageTitle">
+    <value>הגדרות כלליות</value>
+    <comment>Page title for general settings</comment>
+  </data>
+  <data name="PageDescription">
+    <value>הגדרות כלליות של AliasVault.</value>
+    <comment>Page description for general settings</comment>
+  </data>
+  <data name="BreadcrumbTitle">
+    <value>הגדרות כלליות</value>
+    <comment>Breadcrumb title for general settings</comment>
+  </data>
+  <!-- Email Settings Section -->
+  <data name="EmailSettingsTitle">
+    <value>הגדרות דוא״ל</value>
+    <comment>Title for email settings section</comment>
+  </data>
+  <data name="DefaultEmailDomainLabel">
+    <value>שם תחום דוא״ל כברירת מחדל</value>
+    <comment>Label for default email domain setting</comment>
+  </data>
+  <data name="DefaultEmailDomainDescription">
+    <value>נא להגדיר את שם תחום דוא״ל ברירת המחדל לשימוש בעת יצירת פרטי גישה חדשים.</value>
+    <comment>Description for default email domain setting</comment>
+  </data>
+  <data name="DefaultEmailDomainDescriptionNote">
+    <value>לתשומת ליבך: הודעות דוא״ל שמגיעות לשמות תחום פרטיים מוצפנות מקצה לקצה ורק לך יש איך לקרוא אותן, בעוד שהודעות דוא״ל שמגיעות לשמות תחום ציבוריים פתוחים לקריאה באופן ציבורי לכל מי שיודע את כתובת הדוא״ל שאמורה לקבל את ההודעה.</value>
+    <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
+  </data>
+  <data name="DefaultEmailDomainLearnMore">
+    <value>מידע נוסף על ההבדל</value>
+    <comment>Link to documentation for default email domain setting</comment>
+  </data>
+  <data name="PrivateDomainsLabel">
+    <value>שמות תחום פרטיים</value>
+    <comment>Label for private domains group</comment>
+  </data>
+  <data name="PrivateDomainsDisabledLabel">
+    <value>לא הוגדרו שמות תחום דוא״ל פרטיים</value>
+    <comment>Label for private domains group when no private email domains are configured</comment>
+  </data>
+  <data name="PublicDomainsLabel">
+    <value>שמות תחום ציבוריים</value>
+    <comment>Label for public domains group</comment>
+  </data>
+  <data name="AutoEmailRefreshLabel">
+    <value>לרענן תוכן הודעות דוא״ל כשמגיעה הודעה חדשה</value>
+    <comment>Label for auto email refresh setting</comment>
+  </data>
+  <!-- Alias Settings Section -->
+  <data name="AliasSettingsTitle">
+    <value>הגדרות כינוי</value>
+    <comment>Title for alias settings section</comment>
+  </data>
+  <data name="AliasGenerationLanguageLabel">
+    <value>שפת יצירת הכינויים</value>
+    <comment>Label for alias generation language setting</comment>
+  </data>
+  <data name="AliasGenerationLanguageDescription">
+    <value>נא להגדיר את השפה שתשמש ליצירת זהויות חדשות כברירת מחדל.</value>
+    <comment>Description for alias generation language setting</comment>
+  </data>
+  <data name="EnglishOption">
+    <value>אנגלית</value>
+    <comment>English language option</comment>
+  </data>
+  <data name="DutchOption">
+    <value>הולנדית</value>
+    <comment>Dutch language option</comment>
+  </data>
+  <data name="AliasGenerationGenderLabel">
+    <value>מגדר יצירת כינוי</value>
+    <comment>Label for alias generation gender setting</comment>
+  </data>
+  <data name="AliasGenerationGenderDescription">
+    <value>להגדיר את אפשרויות המגדר ליצירת זהויות חדשות כברירת מחדל.</value>
+    <comment>Description for alias generation gender setting</comment>
+  </data>
+  <data name="RandomOption">
+    <value>אקראי</value>
+    <comment>Random gender option</comment>
+  </data>
+  <data name="MaleOption">
+    <value>זכר</value>
+    <comment>Male gender option</comment>
+  </data>
+  <data name="FemaleOption">
+    <value>נקבה</value>
+    <comment>Female gender option</comment>
+  </data>
+  <!-- Clipboard Settings Section -->
+  <data name="ClipboardSettingsTitle">
+    <value>הגדרות לוח הגזירים</value>
+    <comment>Title for clipboard settings section</comment>
+  </data>
+  <data name="ClipboardClearSecondsLabel">
+    <value>לפנות את לוח הגזירים אוטומטית לאחר העתקה</value>
+    <comment>Label for clipboard clear seconds setting</comment>
+  </data>
+  <data name="ClipboardClearSecondsDescription">
+    <value>לנקות את תוכן לוח הגזירים אוטומטית לאחר העתקת סיסמאות או נתונים רגישים אחרים.</value>
+    <comment>Description for clipboard clear seconds setting</comment>
+  </data>
+  <data name="ClipboardClearDisabledOption">
+    <value>כבוי</value>
+    <comment>Option to disable clipboard clearing</comment>
+  </data>
+  <data name="ClipboardClear5SecondsOption">
+    <value>5 שניות</value>
+    <comment>Option to clear clipboard after 5 seconds</comment>
+  </data>
+  <data name="ClipboardClear10SecondsOption">
+    <value>10 שניות</value>
+    <comment>Option to clear clipboard after 10 seconds</comment>
+  </data>
+  <data name="ClipboardClear15SecondsOption">
+    <value>15 שניות</value>
+    <comment>Option to clear clipboard after 15 seconds</comment>
+  </data>
+  <data name="ClipboardClearLimitationNote">
+    <value>לתשומת ליבך: פינוי לוח הגזירים ביישום האתר/דפדפן אפשרי רק כאשר הלשונית פעילה. אם הלשונית מאבדת מיקוד, לוח הגזירים יפונה רק כשמיקוד חוזר ללשונית.</value>
+    <comment>Note explaining limitations of clipboard clearing feature</comment>
+  </data>
+  <!-- Password Settings Section -->
+  <data name="PasswordSettingsTitle">
+    <value>הגדרות סיסמה</value>
+    <comment>Title for password settings section</comment>
+  </data>
+  <!-- App Language Settings Section -->
+  <data name="AppLanguageTitle">
+    <value>שפת היישום</value>
+    <comment>Title for app language settings section</comment>
+  </data>
+  <data name="AppLanguageLabel">
+    <value>שפה</value>
+    <comment>Label for app language setting</comment>
+  </data>
+  <data name="AppLanguageDescription">
+    <value>הגדרת שפת ממשק המשתמש.</value>
+    <comment>Description for app language setting</comment>
+  </data>
+</root>
