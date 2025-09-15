@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Step titles -->
+  <data name="WelcomeStepTitle">
+    <value>ברוך בואך ל־AliasVault</value>
+    <comment>Title for the welcome step</comment>
+  </data>
+  <data name="HowAliasVaultWorksStepTitle">
+    <value>איך AliasVault עובד</value>
+    <comment>Title for the how it works step</comment>
+  </data>
+  <data name="TipsStepTitle">
+    <value>עצות</value>
+    <comment>Title for the tips step</comment>
+  </data>
+  <data name="GetStartedStepTitle">
+    <value>מאיפה מתחילים</value>
+    <comment>Title for the get started step</comment>
+  </data>
+  <data name="TutorialStepTitle">
+    <value>מדריך</value>
+    <comment>Default tutorial step title</comment>
+  </data>
+  <!-- Welcome step content -->
+  <data name="WelcomeMessage">
+    <value>הכספת שלך נוצרה בהלחה! מוטב להגן על הפרטיות שלך ברשת על ידי יצירת כינויים ייחודיים לכל שירות שבחרת להירשם אליו. הנה הסבר על איך עובד AliasVault ולאחר מכן יתאפשר לך ליצור את הכינוי המאובטח הראשון שלך.</value>
+    <comment>Welcome message on the first tutorial step</comment>
+  </data>
+  <!-- How it works step content -->
+  <data name="HowItWorksIntro">
+    <value>כשצריך להירשם לשירות חדש:</value>
+    <comment>Introduction text for how it works step</comment>
+  </data>
+  <data name="HowItWorksStep1">
+    <value>AliasVault מייצר זהות אקראית עם כתובת דוא״ל פרטית מאובטחת</value>
+    <comment>First step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep2">
+    <value>יש להשתמש בפרטים האלה כדי להירשם לשירות</value>
+    <comment>Second step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep3">
+    <value>ההודעות שמתקבלות מופיעות ביישומון הזה ואפשר לפתוח אוטתן בדפדפן שלך</value>
+    <comment>Third step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep4">
+    <value>כתובת הדוא״ל האמיתית שלך ופרטים אישיים נוספים נשארים פרטיים</value>
+    <comment>Fourth step in how it works explanation</comment>
+  </data>
+  <!-- Tips step content -->
+  <data name="MasterPasswordTipTitle">
+    <value>יש לשמור על סיסמת העל שלך באופן בטוח</value>
+    <comment>Title for master password tip</comment>
+  </data>
+  <data name="MasterPasswordTipContent">
+    <value>סיסמת העל שלך נחוצה לפענוח הכספת שלך. לא לשתף אותה עם אף אחד ולאחסן אותה במקום מאובטח. אזהרה: איבוד סיסמת העל שלך, יוביל לכך שלא ניתן יהיה לשחזר את הנתונים שלך - אפילו לא על ידי הצוות שלך.</value>
+    <comment>Content for master password tip</comment>
+  </data>
+  <data name="TwoFactorTipTitle">
+    <value>יש להפעיל אימות דו־שלבי בהגדרות האבטחה</value>
+    <comment>Title for two-factor authentication tip</comment>
+  </data>
+  <data name="TwoFactorTipContent">
+    <value>אימות דו־שלבי מוסיף שכבה נוספת של אבטחה לחשבון שלך. הוא דורש ממך למלא קוד מיישומון המאמת שלך או לספק קוד שחזור לפני שיתאפשר לך לגשת לכספת המוצפנתשלך.</value>
+    <comment>Content for two-factor authentication tip</comment>
+  </data>
+  <data name="ExtensionsAppsTipTitle">
+    <value>הרחבות לדפדפן ויישומונים לניידים</value>
+    <comment>Title for browser extensions and mobile apps tip</comment>
+  </data>
+  <data name="ExtensionsAppsTipContent">
+    <value>יש להתקין את הרחבת הדפדפן AliasVault ואת היישומון לניידים כדי ליצור כינויים ולהשלים טפסים אוטומטית ישירות מהדפדפן ומהטלפון החכם שלך.</value>
+    <comment>Content for browser extensions and mobile apps tip</comment>
+  </data>
+  <!-- Create first identity step content -->
+  <data name="ReadyToStartTitle">
+    <value>שנתחיל?</value>
+    <comment>Title for ready to start section</comment>
+  </data>
+  <data name="ReadyToStartMessage">
+    <value>עכשיו כשברור לך איך AliasVault עובד, אפשר להתחיל ליצור את הזהות המאובטחת הראשונה שלך!</value>
+    <comment>Message encouraging user to create first identity</comment>
+  </data>
+  <data name="CreateFirstIdentityButton">
+    <value>יצירת הזהות הראשונה שלך</value>
+    <comment>Button text for creating first identity</comment>
+  </data>
+  <!-- Navigation buttons -->
+  <data name="ContinueButton">
+    <value>המשך</value>
+    <comment>Continue button text</comment>
+  </data>
+  <data name="GetStartedButton">
+    <value>מאיפה מתחילים</value>
+    <comment>Get started button text</comment>
+  </data>
+  <!-- Loading and status messages -->
+  <data name="FinishingTutorialMessage">
+    <value>ההדרכה מסתיימת…</value>
+    <comment>Loading message when finishing tutorial</comment>
+  </data>
+  <!-- Extension and app labels -->
+  <data name="ComingSoonLabel">
+    <value>בקרוב</value>
+    <comment>Label for features coming soon</comment>
+  </data>
+  <data name="SoonSuffix">
+    <value>(בקרוב)</value>
+    <comment>Suffix indicating feature coming soon</comment>
+  </data>
+</root>
