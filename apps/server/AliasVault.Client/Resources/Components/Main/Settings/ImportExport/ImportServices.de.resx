@@ -137,7 +137,7 @@
     <comment>Generic CSV step 1</comment>
   </data>
   <data name="GenericCsvStep2" xml:space="preserve">
-    <value>Öffnen Sie es in einem Tabellenkalkulationsprogramm (Microsoft Excel, LibreOffice, usw.)</value>
+    <value>Öffne die Vorlage in einem Tabellenkalkulationsprogramm (Microsoft Excel, LibreOffice, usw.)</value>
     <comment>Generic CSV step 2</comment>
   </data>
   <data name="GenericCsvStep3" xml:space="preserve">
@@ -186,7 +186,7 @@
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
-    <value>Um Deinen KeePassXC-Tresor zu importieren, musst Du ihn zuerst als CSV-Datei exportieren. Gehe dazu ins Menü "Datei" und wähle "Exportieren" (als CSV-Datei).</value>
+    <value>Um Deinen KeePassXC-Tresor zu importieren, musst Du ihn zuerst als CSV-Datei exportieren. Gehe dazu ins Menü "Datenbank" und wähle "Exportieren" (als CSV-Datei).</value>
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
