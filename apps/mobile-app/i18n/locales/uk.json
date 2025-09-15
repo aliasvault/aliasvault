@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Скасувати",
+    "close": "Close",
     "delete": "Видалити",
     "save": "Зберегти",
     "yes": "Так",
@@ -13,7 +14,9 @@
     "never": "Ніколи",
     "copied": "Скопійовано до буфера обміну",
     "loadMore": "Завантажити більше",
-    "use": "Використовувати"
+    "use": "Використовувати",
+    "confirm": "Confirm",
+    "unknownError": "Unknown error"
   },
   "auth": {
     "login": "Увійти",
@@ -47,7 +50,6 @@
       "serverErrorSelfHosted": "Не вдалося зв’язатися з API. Для самостійно розміщених екземплярів перевірте доступність кінцевої точки API, перейшовши до неї у браузері: має показуватися «OK».",
       "networkError": "Не вдалося виконати мережевий запит. Перевірте підключення до Інтернету та повторіть спробу.",
       "networkErrorSelfHosted": "Не вдалося виконати мережевий запит. Перевірте мережеве з’єднання та доступність сервера. Для самостійно розміщених екземплярів переконайтеся, що у вас встановлено дійсний SSL-сертифікат. Самопідписані сертифікати не підтримуються на мобільних пристроях з міркувань безпеки.",
-      "incorrectPasswordFallback": "Невірний пароль. Будь ласка, спробуйте ще раз.",
       "sessionExpired": "Термін дії вашого сеансу закінчився. Будь ласка, увійдіть знову.",
       "tokenRefreshFailed": "Не вдалося оновити токен автентифікації",
       "httpError": "Помилка HTTP: {{status}}"
@@ -76,11 +78,9 @@
       "errorDuringPasswordChange": "Помилка під час зміни пароля. Будь ласка, увійдіть ще раз, щоб отримати доступ до останнього сховища.",
       "failedToSyncVault": "Не вдалося синхронізувати сховище",
       "operationFailed": "Помилка здійснення операції",
-      "unknownError": "Сталася невідома помилка",
       "versionNotSupported": "Ця версія мобільного застосунку AliasVault більше не підтримується сервером. Будь ласка, оновіть свій застосунок до останньої версії.",
       "serverNeedsUpdate": "Щоб користуватися цим мобільним додатком, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
       "vaultDecryptFailed": "Не вдалося розшифрувати сховище. Якщо проблема не зникає, вийдіть із системи та увійдіть знову.",
-      "unknownErrorDuringSync": "Невідома помилка під час синхронізації сховища",
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз."
     }
   },
@@ -156,14 +156,13 @@
     "toasts": {
       "credentialUpdated": "Облікові дані успішно оновлено",
       "credentialCreated": "Облікові дані успішно створено",
-      "credentialDeleted": "Credential deleted successfully"
+      "credentialDeleted": "Облікові дані успішно видалено"
     },
     "createNewAliasFor": "Створити новий псевдонім для",
     "errors": {
       "loadFailed": "Не вдалося завантажити облікові дані",
       "generateUsernameFailed": "Не вдалося згенерувати ім'я користувача",
-      "generatePasswordFailed": "Не вдалося згенерувати пароль",
-      "generic": "Помилка"
+      "generatePasswordFailed": "Не вдалося згенерувати пароль"
     },
     "contextMenu": {
       "title": "Відомості про облікові дані",
@@ -214,12 +213,23 @@
       "15seconds": "15 секунд",
       "30seconds": "30 секунд"
     },
-    "batteryOptimizationHelpTitle": "Enable Background Clipboard Clearing",
-    "batteryOptimizationActive": "Battery optimization is blocking background tasks",
-    "batteryOptimizationDisabled": "Background clipboard clearing enabled",
-    "batteryOptimizationHelpDescription": "Android's battery optimization prevents reliable clipboard clearing when the app is in the background. Disabling battery optimization for AliasVault allows precise background clipboard clearing and automatically grants necessary alarm permissions.",
-    "disableBatteryOptimization": "Disable battery optimization",
+    "batteryOptimizationHelpTitle": "Увімкнути очищення буфера обміну у фоновому режимі",
+    "batteryOptimizationActive": "Оптимізація акумулятора блокує фонові завдання",
+    "batteryOptimizationDisabled": "Увімкнено очищення буфера обміну у фоновому режимі",
+    "batteryOptimizationHelpDescription": "Оптимізація батареї Android перешкоджає надійному очищенню буфера обміну, коли додаток працює у фоновому режимі. Вимкнення оптимізації батареї для AliasVault дозволяє точно очищати буфер обміну у фоновому режимі та автоматично надає необхідні дозволи на сигнали.",
+    "disableBatteryOptimization": "Вимкнути оптимізацію акумулятора",
     "identityGenerator": "Генератор ідентифікаційних даних",
+    "passwordGenerator": "Password Generator",
+    "importExport": "Import / Export",
+    "importSectionTitle": "Import",
+    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
+    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
+    "exportSectionTitle": "Export",
+    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
+    "exportCsvButton": "Export vault to CSV file",
+    "exporting": "Exporting...",
+    "exportConfirmTitle": "Export Vault",
+    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
     "security": "Безпека",
     "appVersion": "Версія додатку {{version}} ({{url}})",
     "autoLockOptions": {
@@ -274,6 +284,10 @@
         "languageUpdateFailed": "Не вдалося оновити налаштування мови.",
         "genderUpdateFailed": "Не вдалося оновити налаштування статі."
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "Безпека",
@@ -424,12 +438,16 @@
       "openingVaultReadOnly": "Відкриття сховища в режимі лише для читання",
       "retryingConnection": "Повторна спроба підключення..."
     },
+    "offline": {
+      "banner": "Offline mode (read-only)",
+      "backOnline": "Back online",
+      "stillOffline": "Still offline"
+    },
     "alerts": {
       "syncIssue": "Проблема синхронізації",
       "syncIssueMessage": "Не вдалося зв’язатися із сервером AliasVault і ваше сховище не вдалося синхронізувати. Бажаєте відкрити локальне сховище в режимі лише для читання чи повторити спробу підключення?",
       "openLocalVault": "Відкрити локальне сховище",
-      "retrySync": "Повторити синхронізацію",
-      "error": "Помилка"
+      "retrySync": "Повторити синхронізацію"
     },
     "navigation": {
       "login": "Увійти",
@@ -467,7 +485,6 @@
     "whatsNew": "Що нового",
     "whatsNewDescription": "Для підтримки таких змін потрібне оновлення:",
     "noDescriptionAvailable": "Для цієї версії немає опису.",
-    "okay": "Ок",
     "status": {
       "preparingUpgrade": "Підготовка оновлення...",
       "vaultAlreadyUpToDate": "Сховище вже оновлено",
@@ -477,11 +494,9 @@
       "committingChanges": "Внесення змін..."
     },
     "alerts": {
-      "error": "Помилка",
       "unableToGetVersionInfo": "Не вдалося отримати інформацію про версію. Спробуйте ще раз.",
       "selfHostedServer": "Сервер із самостійним розміщенням",
       "selfHostedWarning": "Якщо ви використовуєте власний сервер, обов’язково оновіть і свій власний екземпляр, інакше вхід до вебклієнта перестане працювати.",
-      "cancel": "Скасувати",
       "continueUpgrade": "Продовжити оновлення",
       "upgradeFailed": "Помилка оновлення",
       "failedToApplyMigration": "Не вдалося застосувати міграцію ({{current}} з {{total}})",
