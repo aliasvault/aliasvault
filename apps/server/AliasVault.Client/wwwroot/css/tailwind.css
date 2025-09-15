@@ -3467,10 +3467,6 @@ video {
 }
 
 @media (min-width: 1024px) {
-  .lg\:fixed {
-    position: fixed;
-  }
-
   .lg\:relative {
     position: relative;
   }
@@ -3529,10 +3525,6 @@ video {
 
   .lg\:hidden {
     display: none;
-  }
-
-  .lg\:min-h-screen {
-    min-height: 100vh;
   }
 
   .lg\:w-1\/2 {
