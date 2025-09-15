@@ -139,10 +139,6 @@
     <value>15 sekuntia</value>
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
-  <data name="NoteLabel">
-    <value>Muistiinpanot</value>
-    <comment>Label for note/warning text</comment>
-  </data>
   <data name="ClipboardClearLimitationNote">
     <value>Leikepöydän tyhjennys web-sovelluksessa on mahdollista vain, kun välilehti on aktiivinen. Kun välilehti menettää tarkennuksen, se tyhjentää leikepöydän, kun se tulee keskittyä uudelleen.</value>
     <comment>Note explaining limitations of clipboard clearing feature</comment>
