@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Abbrechen",
+    "close": "Schließen",
     "delete": "Löschen",
     "save": "Speichern",
     "yes": "Ja",
@@ -13,7 +14,9 @@
     "never": "Niemals",
     "copied": "In die Zwischenablage kopiert",
     "loadMore": "Mehr laden",
-    "use": "Benutzen"
+    "use": "Benutzen",
+    "confirm": "Bestätigen",
+    "unknownError": "Unbekannter Fehler"
   },
   "auth": {
     "login": "Anmelden",
@@ -47,7 +50,6 @@
       "serverErrorSelfHosted": "Die API konnte nicht erreicht werden. Für selbstgehostete Instanzen überprüfe bitte, ob der API-Endpunkt erreichbar ist, indem Du in einem Browser zu ihm navigieren: Er sollte 'OK' anzeigen.",
       "networkError": "Netzwerkanfrage fehlgeschlagen. Bitte überprüfe Deine Internetverbindung und versuche es erneut.",
       "networkErrorSelfHosted": "Netzwerkanfrage fehlgeschlagen. Überprüfe deine Netzwerkverbindung und die Server-Verfügbarkeit. Stelle bei selbstgehosteten Instanzen sicher, dass ein gültiges SSL-Zertifikat installiert ist. Aus Sicherheitsgründen werden selbstsignierte Zertifikate auf mobilen Geräten nicht unterstützt.",
-      "incorrectPasswordFallback": "Falsches Passwort. Bitte versuche es erneut.",
       "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde Dich erneut an.",
       "tokenRefreshFailed": "Aktualisieren des Authentifizierungstokens ist fehlgeschlagen",
       "httpError": "HTTP-Fehler: {{status}}"
@@ -76,11 +78,9 @@
       "errorDuringPasswordChange": "Fehler beim Ändern des Passworts. Bitte melde Dich erneut an, um Deinen letzten Tresor abzurufen.",
       "failedToSyncVault": "Fehler beim Synchronisieren des Tresors",
       "operationFailed": "Vorgang fehlgeschlagen",
-      "unknownError": "Unbekannter Fehler",
       "versionNotSupported": "Diese Version der AliasVault-App wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine App auf die neueste Version.",
       "serverNeedsUpdate": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese mobile App nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
       "vaultDecryptFailed": "Tresor konnte nicht entschlüsselt werden. Wenn das Problem weiterhin besteht, melden Dich bitte erneut an.",
-      "unknownErrorDuringSync": "Unbekannter Fehler während der Synchronisation des Tresors",
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an."
     }
   },
@@ -162,8 +162,7 @@
     "errors": {
       "loadFailed": "Laden des Zugangs fehlgeschlagen",
       "generateUsernameFailed": "Benutzername konnte nicht generiert werden",
-      "generatePasswordFailed": "Passwort konnte nicht generiert werden",
-      "generic": "Fehler"
+      "generatePasswordFailed": "Passwort konnte nicht generiert werden"
     },
     "contextMenu": {
       "title": "Zugangsoptionen",
@@ -220,6 +219,17 @@
     "batteryOptimizationHelpDescription": "Die Akkuoptimierung von Android verhindert, dass die Zwischenablage zuverlässig gelöscht wird, wenn die App im Hintergrund ist. Das Deaktivieren der Akkuoptimierung für AliasVault ermöglicht das zuverlässige Löschen der Zwischenablage und gewährt automatisch die notwendigen Alarmberechtigungen.",
     "disableBatteryOptimization": "Akkuoptimierung deaktivieren",
     "identityGenerator": "Identitätsgenerator",
+    "passwordGenerator": "Passwortgenerator",
+    "importExport": "Import und Export",
+    "importSectionTitle": "Importieren",
+    "importSectionDescription": "Importiere Deine Passwörter von anderen Passwort-Managern oder von einem früheren AliasVault-Export.",
+    "importWebNote": "Um Zugangsdaten von bestehenden Passwort-Managern zu importieren, melde Dich bitte in die Web-App an. Die Import-Funktion ist derzeit nur auf der Web-Version verfügbar.",
+    "exportSectionTitle": "Exportieren",
+    "exportSectionDescription": "Exportiere Deinen Tresor in eine CSV-Datei. Diese Datei kann als Sicherung verwendet werden und kann auch in andere Passwort-Manager importiert werden.",
+    "exportCsvButton": "Tresor als CSV-Datei exportieren",
+    "exporting": "Wird exportiert...",
+    "exportConfirmTitle": "Tresor exportieren",
+    "exportWarning": "Warnung: Beim Exportieren Deines Tresors in eine unverschlüsselte Datei werden alle Deine Passwörter und sensiblen Daten im Klartext sichtbar.\nFühre diesen Vorgang nur auf vertrauenswürdigen Geräten aus und stelle sicher, dass Du:\n\n• die exportierte Datei an einem sicheren Ort speicherst.\n• die Datei löschst, sobald Du sie nicht mehr brauchst.\n• die Datei niemals mit anderen teilst.\n\nBist Du sicher, dass Du mit dem Export fortfahren möchtest?",
     "security": "Sicherheit",
     "appVersion": "App-Version {{version}} ({{url}})",
     "autoLockOptions": {
@@ -274,6 +284,10 @@
         "languageUpdateFailed": "Die Spracheinstellung konnte nicht aktualisiert werden.",
         "genderUpdateFailed": "Die Geschlechtseinstellung konnte nicht aktualisiert werden."
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Konfiguriere die Standardeinstellungen für die Generierung neuer Passwörter. Diese Einstellungen werden für alle neuen Passwörter verwendet, sofern sie nicht für einzelne Einträge überschrieben werden.",
+      "preview": "Vorschau"
     },
     "securitySettings": {
       "title": "Sicherheit",
@@ -424,12 +438,16 @@
       "openingVaultReadOnly": "Tresor wird im Lese-Modus geöffnet",
       "retryingConnection": "Verbindungsversuch wird wiederholt..."
     },
+    "offline": {
+      "banner": "Offline-Modus (nur lesender Zugriff)",
+      "backOnline": "Wieder online",
+      "stillOffline": "Immer noch offline"
+    },
     "alerts": {
       "syncIssue": "Synchronisierungsproblem",
       "syncIssueMessage": "Der AliasVault-Server konnte nicht erreicht werden und Dein Tresor konnte nicht synchronisiert werden. Möchtest Du Deinen lokalen Tresor im Lese-Modus öffnen oder die Verbindung erneut versuchen",
       "openLocalVault": "Lokalen Tresor öffnen",
-      "retrySync": "Synchronisierung erneut versuchen",
-      "error": "Fehler"
+      "retrySync": "Synchronisierung erneut versuchen"
     },
     "navigation": {
       "login": "Anmelden",
@@ -467,7 +485,6 @@
     "whatsNew": "Neu in dieser Version",
     "whatsNewDescription": "Eine Aktualisierung ist erforderlich, um die folgenden Änderungen zu unterstützen:",
     "noDescriptionAvailable": "Für diese Version ist keine Beschreibung vorhanden.",
-    "okay": "OK",
     "status": {
       "preparingUpgrade": "Aktualisierung wird vorbereitet...",
       "vaultAlreadyUpToDate": "Tresor ist bereits aktualisiert",
@@ -477,11 +494,9 @@
       "committingChanges": "Änderungen werden übernommen..."
     },
     "alerts": {
-      "error": "Fehler",
       "unableToGetVersionInfo": "Versionsinformationen konnten nicht abgerufen werden. Bitte versuche es erneut.",
       "selfHostedServer": "Selbstgehosteter Server",
       "selfHostedWarning": "Nutzt Du einen selbst gehosteten Server, musst Du Deine Instanz ebenfalls updaten. Andernfalls kannst Du Dich im Web-Client nicht mehr anmelden.",
-      "cancel": "Abbrechen",
       "continueUpgrade": "Aktualisierung fortsetzen",
       "upgradeFailed": "Aktualisierung fehlgeschlagen",
       "failedToApplyMigration": "Migration fehlgeschlagen ({{current}} von {{total}})",
