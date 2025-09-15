@@ -1,0 +1,2 @@
+- Improved UI for email preview and use consistent font sizes
+- Add password field visibility toggle to login screen

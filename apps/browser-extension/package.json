@@ -2,7 +2,7 @@
   "name": "aliasvault-browser-extension",
   "description": "AliasVault Browser Extension",
   "private": true,
-  "version": "0.22.0",
+  "version": "0.23.0",
   "type": "module",
   "scripts": {
     "dev:chrome": "wxt -b chrome",

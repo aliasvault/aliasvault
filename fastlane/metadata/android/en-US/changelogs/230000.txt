@@ -1,0 +1,6 @@
+- Add password generator settings
+- Add vault export to CSV functionality (works in offline mode too)
+- Improve trackpad click behavior
+- Add password visibility toggle to login screen
+- Improve translations for errors and other messages
+- Improve support for new Android devices

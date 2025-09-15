@@ -1,0 +1,6 @@
+- Instellingen voor wachtwoordgenerator toegevoegd
+- Exporteren van vault naar CSV-bestand toegevoegd (werkt ook in offline modus)
+- Verbeterde trackpad ondersteuning
+- Wachtwoord zichtbaarheid toggle toegevoegd aan het inlogscherm
+- Verbeterde vertalingen voor fouten en andere berichten
+- Verbeterde ondersteuning voor nieuwe iOS versie
