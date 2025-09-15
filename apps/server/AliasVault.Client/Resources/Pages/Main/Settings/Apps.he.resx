@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Page title and description -->
+  <data name="PageTitle">
+    <value>הרחבות ויישומים</value>
+    <comment>Page title for extensions and apps</comment>
+  </data>
+  <data name="PageDescription">
+    <value>ניתן להתקין הרחבות דפדפן ויישומונים לניידים כדי לגשת לכספת שלך מכל המכשירים שלך ולהשלים פרטי גישה אוטומטית באתרים.</value>
+    <comment>Page description for extensions and apps</comment>
+  </data>
+  <data name="BreadcrumbTitle">
+    <value>הרחבות ויישומים</value>
+    <comment>Breadcrumb title for extensions and apps</comment>
+  </data>
+  <!-- Browser Extensions Section -->
+  <data name="BrowserExtensionsTitle">
+    <value>הרחבות לדפדפנים</value>
+    <comment>Title for browser extensions section</comment>
+  </data>
+  <data name="BrowserExtensionsDescription">
+    <value>הרחבת AliasVault לדפדפן מאפשר לך להשלים אוטומטית פרטי גישה קיימים בכל אתר שהוא. היא גם מאפשר לך לייצר כינויים חדשים במהלך הרישום, לגשת להודעות הדוא״ל שהתקבלו בכל הכינויים שלך ולצפות בכינויים ובזהויות שלך.</value>
+    <comment>Description for browser extensions</comment>
+  </data>
+  <data name="InstallButton">
+    <value>התקנה</value>
+    <comment>Install button text</comment>
+  </data>
+  <data name="ComingSoonText">
+    <value>בקרוב</value>
+    <comment>Coming soon text for unavailable extensions</comment>
+  </data>
+  <!-- Mobile Apps Section -->
+  <data name="MobileAppsTitle">
+    <value>יישומונים לניידים</value>
+    <comment>Title for mobile apps section</comment>
+  </data>
+  <data name="MobileAppsDescription">
+    <value>היישומון של AliasVault לניידים מאפשר לך לגשת לכינויים ולזהויות שלך בדרכים, אפשר לצפות ולנהל הודעות דוא״ל שהתקבלו ולייצר כינויים חדשים בכל זמן שמתחשק. הנתונים שלך מוגנים לחלוטין עם אימות ביומטרי במכשיר עצמו.</value>
+    <comment>Description for mobile apps</comment>
+  </data>
+  <data name="DownloadButton">
+    <value>הורדה</value>
+    <comment>Download button text</comment>
+  </data>
+</root>
