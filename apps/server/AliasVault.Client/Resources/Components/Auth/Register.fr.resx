@@ -60,57 +60,57 @@
   </resheader>
   <!-- Page title -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Create a new AliasVault account</value>
+    <value>Créer un nouveau compte AliasVault</value>
     <comment>Main registration page title</comment>
   </data>
   <!-- Form labels -->
   <data name="UsernameOrEmailLabel" xml:space="preserve">
-    <value>Your username or email</value>
+    <value>Votre nom d'utilisateur ou votre email</value>
     <comment>Label for username/email input field</comment>
   </data>
   <data name="PasswordLabel" xml:space="preserve">
-    <value>Your password</value>
+    <value>Votre mot de passe</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="ConfirmPasswordLabel" xml:space="preserve">
-    <value>Confirm password</value>
+    <value>Confirmez le mot de passe</value>
     <comment>Label for password confirmation input field</comment>
   </data>
   <!-- Terms and conditions -->
   <data name="AcceptTermsLabel" xml:space="preserve">
-    <value>I accept the</value>
+    <value>J'accepte les</value>
     <comment>Text before terms and conditions link</comment>
   </data>
   <data name="TermsAndConditionsLink" xml:space="preserve">
-    <value>Terms and Conditions</value>
+    <value>Conditions d'utilisations</value>
     <comment>Link text for terms and conditions</comment>
   </data>
   <!-- Buttons -->
   <data name="CreateAccountButton" xml:space="preserve">
-    <value>Create account</value>
+    <value>Créer un compte</value>
     <comment>Create account button text</comment>
   </data>
   <!-- Links -->
   <data name="AlreadyRegisteredText" xml:space="preserve">
-    <value>Already registered?</value>
+    <value>Déjà inscrit ?</value>
     <comment>Text before login link</comment>
   </data>
   <data name="LoginHereLink" xml:space="preserve">
-    <value>Login here</value>
+    <value>Connectez-vous ici</value>
     <comment>Link text for login page</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="CreatingAccountMessage" xml:space="preserve">
-    <value>Creating account...</value>
+    <value>Création du compte...</value>
     <comment>Loading message during account creation</comment>
   </data>
   <data name="RegistrationErrorMessage" xml:space="preserve">
-    <value>An error occurred during registration.</value>
+    <value>Une erreur s'est produite lors de l'enregistrement.</value>
     <comment>Generic registration error message</comment>
   </data>
   <!-- Placeholders -->
   <data name="UsernamePlaceholder" xml:space="preserve">
-    <value>name / name@company.com</value>
+    <value>nom / nom@entreprise.com</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
