@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="FromLabel" xml:space="preserve">
-    <value>From:</value>
+    <value>De:</value>
     <comment>Email sender field label</comment>
   </data>
   <data name="ToLabel" xml:space="preserve">
-    <value>To:</value>
+    <value>À:</value>
     <comment>Email recipient field label</comment>
   </data>
   <data name="DateLabel" xml:space="preserve">
@@ -71,11 +71,11 @@
     <comment>Email date field label</comment>
   </data>
   <data name="CredentialLabel" xml:space="preserve">
-    <value>Credential:</value>
+    <value>Identifiants:</value>
     <comment>Email credential field label</comment>
   </data>
   <data name="NoneValue" xml:space="preserve">
-    <value>None</value>
+    <value>Aucun</value>
     <comment>No credential assigned value</comment>
   </data>
   <data name="AttachmentsLabel" xml:space="preserve">
