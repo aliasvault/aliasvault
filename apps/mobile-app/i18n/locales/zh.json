@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "取消",
+    "close": "Close",
     "delete": "删除",
     "save": "保存",
     "yes": "是",
@@ -13,7 +14,9 @@
     "never": "从不",
     "copied": "已复制到剪贴板",
     "loadMore": "显示更多",
-    "use": "启用"
+    "use": "启用",
+    "confirm": "Confirm",
+    "unknownError": "Unknown error"
   },
   "auth": {
     "login": "登录",
@@ -47,7 +50,6 @@
       "serverErrorSelfHosted": "无法连接到API。对于自托管实例，请通过在浏览器中访问API端点来验证其可访问性：正常应显示“OK”。",
       "networkError": "网络请求失败。请检查互联网连接后重试。",
       "networkErrorSelfHosted": "网络请求失败。请检查网络连接及服务器可用性。对于自托管实例，请确保已安装有效的SSL证书。出于安全考虑，移动设备不支持自签名证书。",
-      "incorrectPasswordFallback": "密码错误，请重试。",
       "sessionExpired": "会话已过期，请重新登录。",
       "tokenRefreshFailed": "身份验证令牌刷新失败",
       "httpError": "HTTP 错误: {{status}}"
@@ -76,11 +78,9 @@
       "errorDuringPasswordChange": "密码修改操作出错，请重新登录以获取最新保险库数据。",
       "failedToSyncVault": "保险库同步失败",
       "operationFailed": "操作失败",
-      "unknownError": "未知错误",
       "versionNotSupported": "此版本的AliasVault移动应用已不再被服务器支持。请将应用更新至最新版本。",
       "serverNeedsUpdate": "AliasVault服务器需要更新至新版本才能使用此移动应用。如需帮助，请联系支持团队。",
       "vaultDecryptFailed": "保险库解密失败，若问题持续，请退出登录后重新登录。",
-      "unknownErrorDuringSync": "保险库同步时发生未知错误",
       "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。"
     }
   },
@@ -162,8 +162,7 @@
     "errors": {
       "loadFailed": "加载凭证失败",
       "generateUsernameFailed": "生成用户名失败",
-      "generatePasswordFailed": "生成密码失败",
-      "generic": "错误"
+      "generatePasswordFailed": "生成密码失败"
     },
     "contextMenu": {
       "title": "凭证选项",
@@ -220,6 +219,17 @@
     "batteryOptimizationHelpDescription": "Android的电池优化阻止应用在后台时清理可靠的剪贴板。 禁用AliasVault 电池优化可以清理准确的背景剪贴板，并自动授予必要的提醒权限。",
     "disableBatteryOptimization": "禁用电池优化",
     "identityGenerator": "身份生成器",
+    "passwordGenerator": "Password Generator",
+    "importExport": "Import / Export",
+    "importSectionTitle": "Import",
+    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
+    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
+    "exportSectionTitle": "Export",
+    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
+    "exportCsvButton": "Export vault to CSV file",
+    "exporting": "Exporting...",
+    "exportConfirmTitle": "Export Vault",
+    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
     "security": "安全",
     "appVersion": "应用版本 {{version}}（{{url}}）",
     "autoLockOptions": {
@@ -274,6 +284,10 @@
         "languageUpdateFailed": "更新语言设置失败。",
         "genderUpdateFailed": "更新性别设置失败。"
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "安全",
@@ -424,12 +438,16 @@
       "openingVaultReadOnly": "以只读模式打开保险库",
       "retryingConnection": "重试连接中……"
     },
+    "offline": {
+      "banner": "Offline mode (read-only)",
+      "backOnline": "Back online",
+      "stillOffline": "Still offline"
+    },
     "alerts": {
       "syncIssue": "同步问题",
       "syncIssueMessage": "无法连接到AliasVault服务器，你的保险库无法同步。你想以只读模式打开本地保险库还是重试连接？",
       "openLocalVault": "打开本地保险库",
-      "retrySync": "重试同步",
-      "error": "错误"
+      "retrySync": "重试同步"
     },
     "navigation": {
       "login": "登录",
@@ -467,7 +485,6 @@
     "whatsNew": "新功能",
     "whatsNewDescription": "需要升级以支持以下变更：",
     "noDescriptionAvailable": "此版本无可用说明。",
-    "okay": "好",
     "status": {
       "preparingUpgrade": "准备升级中……",
       "vaultAlreadyUpToDate": "当前保险库数据已是最新",
@@ -477,11 +494,9 @@
       "committingChanges": "提交更改中……"
     },
     "alerts": {
-      "error": "错误",
       "unableToGetVersionInfo": "无法获取版本信息。请重试。",
       "selfHostedServer": "自托管服务器",
       "selfHostedWarning": "如果你使用的是自托管服务器，请确保同时更新你的自托管实例，否则网页客户端将无法登录。",
-      "cancel": "取消",
       "continueUpgrade": "继续升级",
       "upgradeFailed": "升级失败",
       "failedToApplyMigration": "应用迁移失败（{{current}} / {{total}}）",
