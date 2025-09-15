@@ -75,11 +75,11 @@
     <comment>Button text for logging in with existing account</comment>
   </data>
   <data name="HttpsWarningTitle" xml:space="preserve">
-    <value>HTTPS Required</value>
+    <value>צריך HTTPS</value>
     <comment>Title for HTTPS warning banner</comment>
   </data>
   <data name="HttpsWarningMessage" xml:space="preserve">
-    <value>Browsers only allow secure crypto operations via HTTPS, except for localhost. Login/registration won't work over HTTP with the current hostname. Please switch to HTTPS.</value>
+    <value>דפדפנים מרשים פעולות קריפטו מאובטחות דרך HTTPS, למעט מול localhost. כניסה/רישום לא עובדים על גבי HTTP עם שם המארח הנוכחי. נא לעבור ל־HTTPS.</value>
     <comment>Message explaining why HTTPS is required</comment>
   </data>
 </root>
