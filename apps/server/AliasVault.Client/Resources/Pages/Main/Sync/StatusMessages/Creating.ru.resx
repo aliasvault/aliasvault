@@ -59,19 +59,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="WelcomeTitle" xml:space="preserve">
-    <value>Welcome to AliasVault</value>
+    <value>Добро пожаловать в AliasVault</value>
     <comment>Welcome title for new vault creation</comment>
   </data>
   <data name="CreatingDescription" xml:space="preserve">
-    <value>Your new encrypted vault is being initialized. This process may take a moment. Please wait.</value>
+    <value>Создаём ваше новое защищённое хранилище. Это может занять немного времени. Пожалуйста, подождите.</value>
     <comment>Description for vault creation process</comment>
   </data>
   <data name="SaveFailedError" xml:space="preserve">
-    <value>Vault creation successful but failed to save to server. Please refresh the page and try again or contact support.</value>
+    <value>Хранилище успешно создано, но не удалось сохранить его на сервере. Обновите страницу и попробуйте снова или свяжитесь с поддержкой.</value>
     <comment>Error message when vault creation succeeds but save fails</comment>
   </data>
   <data name="CreationFailedError" xml:space="preserve">
-    <value>Vault creation failed. Please try again or contact support.</value>
+    <value>Не удалось создать хранилище. Попробуйте снова или свяжитесь с поддержкой.</value>
     <comment>Error message when vault creation fails</comment>
   </data>
 </root>
