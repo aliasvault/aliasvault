@@ -21,32 +21,32 @@
   </xsd:schema>
   <!-- Instructions -->
   <data name="PleaseReadAndAgree">
-    <value>Please read and agree to the following terms and conditions before proceeding.</value>
+    <value>Пожалуйста, прочтите и согласитесь со следующими положениями и условиями, прежде чем продолжить.</value>
     <comment>Instructions to read and agree to terms</comment>
   </data>
   <!-- Terms and Conditions title -->
   <data name="TermsAndConditionsTitle">
-    <value>Terms and Conditions</value>
+    <value>Пользовательское соглашение</value>
     <comment>Title for the terms and conditions section</comment>
   </data>
   <!-- Terms content -->
   <data name="TermsContent">
-    <value>AliasVault is designed to enhance your online security and protect your privacy. With AliasVault, you can create unique identities and email aliases for your various online accounts, helping you maintain control over your personal information and reduce the risk of identity theft.
+    <value>AliasVault разработан для повышения вашей онлайн-безопасности и защиты вашей конфиденциальности. С помощью AliasVault вы можете создавать уникальные личности и псевдонимы электронной почты для своих различных онлайн-аккаунтов, что поможет вам сохранить контроль над вашей личной информацией и снизить риск кражи личных данных.
 
-By using AliasVault, you agree to the following terms:
+Используя AliasVault, вы соглашаетесь со следующими условиями:
 
-1. You will not use AliasVault for any illegal purposes, including but not limited to fraud, identity theft, or impersonating real individuals.
+1. Вы не будете использовать AliasVault в каких-либо незаконных целях, включая, помимо прочего, мошенничество, кражу личных данных или выдачу себя за реальных людей.
 
-2. You are responsible for maintaining the confidentiality of your account and any aliases created through AliasVault.
+2. Вы несете ответственность за сохранение конфиденциальности вашей учетной записи и любых псевдонимов, созданных с помощью AliasVault.
 
-3. AliasVault reserves the right to terminate your account if we suspect any misuse or violation of these terms.
+3. AliasVault оставляет за собой право закрыть вашу учетную запись, если мы заподозрим какое-либо неправильное использование или нарушение настоящих условий.
 
-4. You understand that while AliasVault enhances your privacy, no system is completely foolproof, and you use the service at your own risk.</value>
+4. Вы понимаете, что, хотя AliasVault повышает уровень вашей конфиденциальности, ни одна система не является полностью надежной, и вы используете сервис на свой страх и риск.</value>
     <comment>Full terms and conditions content</comment>
   </data>
   <!-- Agreement checkbox -->
   <data name="AgreementCheckboxLabel">
-    <value>I have read and agree to the Terms and Conditions</value>
+    <value>Я ознакомился с пользовательским соглашением и согласен с ним</value>
     <comment>Label for the agreement checkbox</comment>
   </data>
 </root>
