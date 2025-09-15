@@ -1,7 +1,7 @@
 {
   "common": {
     "cancel": "取消",
-    "close": "Close",
+    "close": "关闭",
     "delete": "删除",
     "save": "保存",
     "yes": "是",
@@ -15,8 +15,8 @@
     "copied": "已复制到剪贴板",
     "loadMore": "显示更多",
     "use": "启用",
-    "confirm": "Confirm",
-    "unknownError": "Unknown error"
+    "confirm": "确认",
+    "unknownError": "未知错误"
   },
   "auth": {
     "login": "登录",
@@ -219,17 +219,17 @@
     "batteryOptimizationHelpDescription": "Android的电池优化阻止应用在后台时清理可靠的剪贴板。 禁用AliasVault 电池优化可以清理准确的背景剪贴板，并自动授予必要的提醒权限。",
     "disableBatteryOptimization": "禁用电池优化",
     "identityGenerator": "身份生成器",
-    "passwordGenerator": "Password Generator",
-    "importExport": "Import / Export",
-    "importSectionTitle": "Import",
-    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
-    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
-    "exportSectionTitle": "Export",
-    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
-    "exportCsvButton": "Export vault to CSV file",
-    "exporting": "Exporting...",
-    "exportConfirmTitle": "Export Vault",
-    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "passwordGenerator": "密码生成器",
+    "importExport": "导入/导出",
+    "importSectionTitle": "导入",
+    "importSectionDescription": "从其他密码管理员或以前导出的 AliasVault 导入您的密码。",
+    "importWebNote": "要从现有密码管理器中导入凭据，请登录到 web 应用程序。导入功能目前只能在网页版本上提供。",
+    "exportSectionTitle": "导出",
+    "exportSectionDescription": "将您的密码库数据导出到一个 CSV 文件。此文件可以用作备份，也可以导入其他密码管理员。",
+    "exportCsvButton": "导出私密库到CSV文件",
+    "exporting": "正在导出...",
+    "exportConfirmTitle": "导出保险库",
+    "exportWarning": "警告：将你的保险库导出到未加密文件将以明文形式暴露你的所有密码和敏感信息。仅在受信任的计算机上执行此操作，并确保你：\n\n• 将导出的文件存储在安全的位置\n• 不再需要时删除该文件\n• 切勿与他人共享导出的文件\n\n你确定要继续导出吗？",
     "security": "安全",
     "appVersion": "应用版本 {{version}}（{{url}}）",
     "autoLockOptions": {
@@ -286,8 +286,8 @@
       }
     },
     "passwordGeneratorSettings": {
-      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
-      "preview": "Preview"
+      "description": "配置生成新密码时使用的默认设置。这些设置将用于所有新密码，除非为特定条目覆盖。",
+      "preview": "预览"
     },
     "securitySettings": {
       "title": "安全",
@@ -439,9 +439,9 @@
       "retryingConnection": "重试连接中……"
     },
     "offline": {
-      "banner": "Offline mode (read-only)",
-      "backOnline": "Back online",
-      "stillOffline": "Still offline"
+      "banner": "离线模式 (只读)",
+      "backOnline": "已在线",
+      "stillOffline": "依旧处于离线状态"
     },
     "alerts": {
       "syncIssue": "同步问题",
