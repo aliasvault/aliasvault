@@ -59,23 +59,23 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Two-factor authentication</value>
+    <value>Двухфакторная аутентификация</value>
     <comment>Section title</comment>
   </data>
   <data name="EnabledMessage" xml:space="preserve">
-    <value>Two factor authentication is currently enabled.</value>
+    <value>Двухфакторная аутентификация сейчас включена.</value>
     <comment>Status message when 2FA is enabled</comment>
   </data>
   <data name="DisabledMessage" xml:space="preserve">
-    <value>Two factor authentication is currently disabled. In order to improve your account security we advise you to enable it.</value>
+    <value>Двухфакторная аутентификация сейчас отключена. Чтобы повысить безопасность вашего аккаунта, мы рекомендуем включить её.</value>
     <comment>Status message when 2FA is disabled</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Two-Factor Authentication</value>
+    <value>Включить двухфакторную аутентификацию</value>
     <comment>Button to enable 2FA</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Disable Two-Factor Authentication</value>
+    <value>Отключить двухфакторную аутентификацию</value>
     <comment>Button to disable 2FA</comment>
   </data>
 </root>
