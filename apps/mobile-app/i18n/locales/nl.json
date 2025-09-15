@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Annuleren",
+    "close": "Sluiten",
     "delete": "Verwijderen",
     "save": "Opslaan",
     "yes": "Ja",
@@ -13,7 +14,9 @@
     "never": "Nooit",
     "copied": "Gekopieerd naar klembord",
     "loadMore": "Laad meer",
-    "use": "Gebruik"
+    "use": "Gebruik",
+    "confirm": "Bevestigen",
+    "unknownError": "Onbekende fout"
   },
   "auth": {
     "login": "Inloggen",
@@ -47,7 +50,6 @@
       "serverErrorSelfHosted": "Kan de API niet bereiken. Voor self-hosted instances, controleer of de API URL werkt door er via de browser handmatig naartoe te navigeren: de pagina moet \"OK\" weergeven.",
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
       "networkErrorSelfHosted": "Netwerkfout. Controleer de verbinding en probeer het opnieuw. Voor self-hosted instances, controleer dat er een geldig SSL-certificaat is geconfigureerd. Self-signed SSL-certificaten worden niet ondersteund door de app wegens veiligheidsredenen.",
-      "incorrectPasswordFallback": "Onjuist wachtwoord. Probeer het opnieuw.",
       "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
       "tokenRefreshFailed": "Authenticatietoken vernieuwen mislukt",
       "httpError": "HTTP fout: {{status}}"
@@ -76,11 +78,9 @@
       "errorDuringPasswordChange": "Fout tijdens het wijzigen van het wachtwoord. Log opnieuw in om de vault te synchroniseren en probeer het opnieuw.",
       "failedToSyncVault": "Vault ophalen mislukt",
       "operationFailed": "Bewerking mislukt",
-      "unknownError": "Onbekende fout",
       "versionNotSupported": "Deze versie van de mobiele app van AliasVault wordt niet meer ondersteund door de server. Update de app naar de nieuwste versie.",
       "serverNeedsUpdate": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze mobiele app te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
       "vaultDecryptFailed": "Vault kon niet worden gedecrypt, probeer uit- en opnieuw in te loggen.",
-      "unknownErrorDuringSync": "Onbekende fout tijdens synchroniseren van vault",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in."
     }
   },
@@ -162,8 +162,7 @@
     "errors": {
       "loadFailed": "Laden van credential mislukt",
       "generateUsernameFailed": "Genereren van gebruikersnaam mislukt",
-      "generatePasswordFailed": "Genereren van wachtwoord mislukt",
-      "generic": "Fout"
+      "generatePasswordFailed": "Genereren van wachtwoord mislukt"
     },
     "contextMenu": {
       "title": "Credential opties",
@@ -204,7 +203,7 @@
     },
     "vaultUnlock": "Vault ontgrendelmethode",
     "autoLock": "Automatisch vergrendelen",
-    "clipboardClear": "Klembord leegmaken",
+    "clipboardClear": "Klembord wissen",
     "clipboardClearDescription": "Automatisch gekopieerde wachtwoorden en gevoelige informatie van je klembord wissen na een bepaalde tijdsperiode.",
     "clipboardClearAndroidWarning": "Opmerking: sommige Android-apparaten hebben klembord geschiedenis ingeschakeld, waarmee eerder gekopieerde items kunnen worden bijgehouden, zelfs nadat AliasVault het klembord heeft gewist. AliasVault kan alleen het meest recente item overschrijven, maar oudere items kunnen zichtbaar blijven in de geschiedenis. Om veiligheidsredenen raden we aan om alle klembordgeschiedenis opties in je apparaatinstellingen uit te schakelen.",
     "clipboardClearOptions": {
@@ -220,6 +219,17 @@
     "batteryOptimizationHelpDescription": "Batterij optimalisatie van Android voorkomt dat de app op de achtergrond taken uit kan voeren. Het uitschakelen van deze batterij optimalisatie voor AliasVault zorgt ervoor dat het wissen van het klembord zo nauwkeurig mogelijk werkt.",
     "disableBatteryOptimization": "Batterij optimalisatie uitschakelen",
     "identityGenerator": "Identiteit generator",
+    "passwordGenerator": "Wachtwoordgenerator",
+    "importExport": "Import / Export",
+    "importSectionTitle": "Importeren",
+    "importSectionDescription": "Importeer je wachtwoorden van andere wachtwoordmanagers of van een eerdere AliasVault export.",
+    "importWebNote": "Om inloggegevens te importeren van bestaande wachtwoordmanagers, dien je in te loggen op de webapp. De import functie is momenteel alleen beschikbaar op de webversie.",
+    "exportSectionTitle": "Exporteren",
+    "exportSectionDescription": "Exporteer je vault inhoud naar een CSV-bestand. Dit bestand kan als back-up worden gebruikt en kan ook in andere wachtwoordmanagers worden geïmporteerd.",
+    "exportCsvButton": "Exporteer vault naar CSV-bestand",
+    "exporting": "Exporteren...",
+    "exportConfirmTitle": "Vault exporteren",
+    "exportWarning": "Waarschuwing: Het exporteren van je vault naar een onversleuteld bestand zal al je wachtwoorden en gevoelige informatie in platte tekst beschikbaar maken. Doe dit alleen op vertrouwde computers en zorg ervoor dat je:\n\n• Het geëxporteerde bestand op een veilige locatie opslaat\n• Het bestand verwijdert wanneer je het niet meer nodig hebt\n• Het geëxporteerde bestand nooit met anderen deelt\n\nWeet je zeker dat je wilt doorgaan met de export?",
     "security": "Beveiliging",
     "appVersion": "App versie {{version}} ({{url}})",
     "autoLockOptions": {
@@ -275,13 +285,17 @@
         "genderUpdateFailed": "Bijwerken van geslacht voorkeur mislukt."
       }
     },
+    "passwordGeneratorSettings": {
+      "description": "Configureer de standaardinstellingen die worden gebruikt bij het genereren van nieuwe wachtwoorden. Deze instellingen worden gebruikt voor alle nieuwe wachtwoorden, tenzij overschreven voor specifieke credentials.",
+      "preview": "Voorbeeld"
+    },
     "securitySettings": {
       "title": "Beveiliging",
       "description": "Beheer je account en vault beveiligingsinstellingen.",
       "changeMasterPassword": "Hoofdwachtwoord wijzigen",
       "activeSessionsTitle": "Actieve sessies",
       "recentAuthLogs": "Recente authenticatielogs",
-      "deleteAccountTitle": "Account Verwijderen",
+      "deleteAccountTitle": "Account verwijderen",
       "changePassword": {
         "headerText": "Het wijzigen van je hoofdwachtwoord wijzigt ook de encryptie sleutels. Het wordt aanbevolen om je hoofdwachtwoord periodiek te wijzigen om je vault veilig te houden.",
         "currentPassword": "Huidig wachtwoord",
@@ -424,12 +438,16 @@
       "openingVaultReadOnly": "Vault openen in alleen-lezen modus",
       "retryingConnection": "Opnieuw proberen..."
     },
+    "offline": {
+      "banner": "Offline modus (alleen lezen)",
+      "backOnline": "Terug online",
+      "stillOffline": "Nog steeds offline"
+    },
     "alerts": {
       "syncIssue": "Synchronisatieprobleem",
       "syncIssueMessage": "De AliasVault server kon niet worden bereikt en je vault kon niet worden gesynchroniseerd. Wil je je lokale vault openen in alleen-lezen modus of de verbinding opnieuw proberen?",
       "openLocalVault": "Open lokale vault",
-      "retrySync": "Opnieuw proberen",
-      "error": "Fout"
+      "retrySync": "Opnieuw proberen"
     },
     "navigation": {
       "login": "Login",
@@ -467,7 +485,6 @@
     "whatsNew": "Wat is er nieuw",
     "whatsNewDescription": "Een upgrade is vereist vanwege de volgende wijzigingen:",
     "noDescriptionAvailable": "Voor deze versie is geen beschrijving beschikbaar.",
-    "okay": "Ok",
     "status": {
       "preparingUpgrade": "Upgrade voorbereiden...",
       "vaultAlreadyUpToDate": "De vault is al bijgewerkt",
@@ -477,11 +494,9 @@
       "committingChanges": "Wijzigingen doorvoeren..."
     },
     "alerts": {
-      "error": "Fout",
       "unableToGetVersionInfo": "Kan versie-informatie niet ophalen. Probeer het opnieuw.",
       "selfHostedServer": "Self-hosted server",
       "selfHostedWarning": "Als je een self-hosted server gebruikt, zorg er dan voor dat je ook je eigen self-hosted instantie bijwerkt, omdat anders het inloggen via de web client niet meer zal werken.",
-      "cancel": "Annuleren",
       "continueUpgrade": "Verdergaan",
       "upgradeFailed": "Upgrade mislukt",
       "failedToApplyMigration": "Kon migratie niet toepassen ({{current}} van {{total}})",
