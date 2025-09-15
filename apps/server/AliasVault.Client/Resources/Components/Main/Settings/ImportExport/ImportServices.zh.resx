@@ -184,7 +184,7 @@
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
-    <value>要导入你的 KeePassXC 保险库，你需要将其导出为 CSV 文件。你可以通过进入“文件”菜单并选择“导出”（至 CSV）来完成此操作。</value>
+    <value>要导入 KeePassXC 保管库，您需要将其导出为 CSV 文件。您可以前往“数据库”菜单，选择“导出”（CSV 文件）。</value>
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
