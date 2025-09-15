@@ -79,7 +79,7 @@
     <comment>Title for HTTPS warning banner</comment>
   </data>
   <data name="HttpsWarningMessage" xml:space="preserve">
-    <value>Browsers only allow secure crypto operations via HTTPS, except for localhost. Login/registration won't work over HTTP with the current hostname. Please switch to HTTPS.</value>
+    <value>Les navigateurs ne permettent que des opérations sécurisées de crypto via HTTPS, à l'exception de localhost. La connexion/enregistrement ne fonctionnera pas via HTTP avec le nom d'hôte actuel. Veuillez passer à HTTPS.</value>
     <comment>Message explaining why HTTPS is required</comment>
   </data>
 </root>
