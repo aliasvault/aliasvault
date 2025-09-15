@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>ייבוא / ייצוא</value>
+    <comment>Page title</comment>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>בעמוד הזה אפשר לייבא ולייצר את הכספת שלך.</value>
+    <comment>Page description</comment>
+  </data>
+  <data name="ImportSectionTitle" xml:space="preserve">
+    <value>ייבוא סיסמאות</value>
+    <comment>Import section title</comment>
+  </data>
+  <data name="ImportSectionDescription" xml:space="preserve">
+    <value>נא לבחור שירות לייבא ממנו. אם השירות שמשמש אותך לא מופיע ברשימה וחשוב לך לראות שהוא נתמך, נא לפתוח תיעוד תקלה ב־&lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; או ליצור איתנו קשר.</value>
+    <comment>Import section description with HTML link</comment>
+  </data>
+  <data name="ExportSectionTitle" xml:space="preserve">
+    <value>ייצוא כספת</value>
+    <comment>Export section title</comment>
+  </data>
+  <data name="ExportSectionDescription" xml:space="preserve">
+    <value>כדי לייצא את פרטי הגישה שלך ב־AliasVault לשרת AliasVault אחר (למשל: מענן לשרת באירוח עצמי או להפך) או לשירות אחר באשר הוא, אפשר לייצר אותם מכאן. נא לשים לב שכל מה שמיוצא לא מוצפן, לכן חשוב לשמור את המידע במקום בטוח ולמחוק אותו כשאין בו יותר צורך.</value>
+    <comment>Export section description</comment>
+  </data>
+  <data name="ExportCsvButton" xml:space="preserve">
+    <value>ייצוא כספת לקובץ CSV לא מוצפן</value>
+    <comment>Button to export as CSV</comment>
+  </data>
+  <data name="ExportSqliteButton" xml:space="preserve">
+    <value>ייצוא כספת לקובץ SQLite לא מוצפן</value>
+    <comment>Button to export as SQLite</comment>
+  </data>
+  <data name="ExportConfirmTitle" xml:space="preserve">
+    <value>ייצוא כספת</value>
+    <comment>Export confirmation dialog title</comment>
+  </data>
+  <data name="ExportWarningMessage" xml:space="preserve">
+    <value>אזהרה: ייצוא הכספת שלך לקובץ לא מוצפן תחשוף את כל הסיסמאות והפרטים הרגישים שלך בטקסט גלוי. יש לעשות זאת על מחשבים מהימנים וגם לוודא:
+
+• שאחסנת את הקובץ המיוצר במקום בטוח
+• שמחקת את הקובץ אם אין בו צורך עוד
+ • לעולם לא לשתף את הקובץ המיוצא עם אחרים
+
+להמשיך בייצוא?</value>
+    <comment>Export warning confirmation message</comment>
+  </data>
+  <data name="ResetVaultSectionTitle" xml:space="preserve">
+    <value>איפוס כספת</value>
+    <comment>Reset vault section title</comment>
+  </data>
+  <data name="ResetVaultSectionDescription" xml:space="preserve">
+    <value>האפשרות הזאת מאפשרת לך לרוקן את הכספת שלך לחלוטין תוך שמירה על החשבון וכינויי הדוא״ל שלך. יש להשתמש בזה כדי להתחיל מחדש לאחר ייבוא נתונים ממנהל סיסמאות אחר או כדי לרוקן את כל פרטי הגישה הקיימים ולהתחיל מחדש.</value>
+    <comment>Reset vault section description</comment>
+  </data>
+</root>
