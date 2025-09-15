@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>选择要从中导入的服务。如果你使用的服务未在此处列出，并且希望看到它得到支持，请在&lt;a href="https://github.com/lanedirt/AliasVault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt;上提出问题或与我们联系。</value>
+    <value>选择要从中导入的服务。如果你使用的服务未在此处列出，并且希望看到它得到支持，请在&lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt;上提出问题或与我们联系。</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
