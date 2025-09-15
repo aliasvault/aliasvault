@@ -225,11 +225,11 @@
     "importSectionDescription": "אפשר לייבא את הסיסמאות שלך ממנהלי סיסמאות אחרים או מנתונים שיוצאו מ־AliasVault בעבר.",
     "importWebNote": "כדי לייבא פרטי גישה ממנהלי סיסמאות קיימים, נא להיכנס דרך יישום הדפדפן. יכולת הייבוא זמינה רק במהדורת הדפדפן.",
     "exportSectionTitle": "ייצוא",
-    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
-    "exportCsvButton": "Export vault to CSV file",
-    "exporting": "Exporting...",
-    "exportConfirmTitle": "Export Vault",
-    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "exportSectionDescription": "ייצוא נתוני הכספת שלך לקובץ CSV. אפשר להשתמש בקובץ הזה כגיבוי וגם לייבא אותו למנהלי סיסמאות אחרים.",
+    "exportCsvButton": "ייצוא כספת לקובץ CSV",
+    "exporting": "מתבצע ייצוא…",
+    "exportConfirmTitle": "ייצוא כספת",
+    "exportWarning": "אזהרה: ייצוא הכספת שלך לקובץ לא מוצפן תחשוף את כל הסיסמאות והפרטים הרגישים שלך בטקסט גלוי. יש לעשות זאת על מכשירים מהימנים וגם לוודא:\n\n• שאחסנת את הקובץ המיוצר במקום בטוח\n• שמחקת את הקובץ אם אין בו צורך עוד\n • לעולם לא לשתף את הקובץ המיוצא עם אחרים\n\nלהמשיך בייצוא?",
     "security": "אבטחה",
     "appVersion": "גרסת היישום היא {{version}} ({{url}})",
     "autoLockOptions": {
@@ -286,8 +286,8 @@
       }
     },
     "passwordGeneratorSettings": {
-      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
-      "preview": "Preview"
+      "description": "הגדרת תצורת ברירת המחדל לשימוש בעת יצירת סיסמאות חדשות. ההגדרות האלו תשמשנה לכל הסיסמאות החדשות אלא אם כן ההגדרות האלו נדרסו עבור רשומות מסוימות.",
+      "preview": "תצוגה מקדימה"
     },
     "securitySettings": {
       "title": "אבטחה",
@@ -439,9 +439,9 @@
       "retryingConnection": "מתבצע ניסיון להתחבר מחדש…"
     },
     "offline": {
-      "banner": "Offline mode (read-only)",
-      "backOnline": "Back online",
-      "stillOffline": "Still offline"
+      "banner": "מצב בלתי מקוון (קריאה בלבד)",
+      "backOnline": "להתחבר בחזרה",
+      "stillOffline": "עדיין בלתי מקוון"
     },
     "alerts": {
       "syncIssue": "תקלת סנכרון",
