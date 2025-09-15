@@ -1,6 +1,7 @@
 {
   "common": {
     "cancel": "Cancel",
+    "close": "Close",
     "delete": "Delete",
     "save": "Save",
     "yes": "Yes",
@@ -13,7 +14,9 @@
     "never": "Never",
     "copied": "Copied to clipboard",
     "loadMore": "Load more",
-    "use": "Use"
+    "use": "Use",
+    "confirm": "Confirm",
+    "unknownError": "Unknown error"
   },
   "auth": {
     "login": "Log in",
@@ -47,7 +50,6 @@
       "serverErrorSelfHosted": "Could not reach the API. For self-hosted instances, please verify the API endpoint is reachable by navigating to it in a browser: it should display 'OK'.",
       "networkError": "Network request failed. Please check your internet connection and try again.",
       "networkErrorSelfHosted": "Network request failed. Check your network connection and server availability. For self-hosted instances, please ensure you have a valid SSL certificate installed. Self-signed certificates are not supported on mobile devices for security reasons.",
-      "incorrectPasswordFallback": "Incorrect password. Please try again.",
       "sessionExpired": "Your session has expired. Please login again.",
       "tokenRefreshFailed": "Failed to refresh authentication token",
       "httpError": "HTTP error: {{status}}"
@@ -76,11 +78,9 @@
       "errorDuringPasswordChange": "Error during password change operation. Please log in again to retrieve your latest vault.",
       "failedToSyncVault": "Failed to sync vault",
       "operationFailed": "Operation failed",
-      "unknownError": "Unknown error",
       "versionNotSupported": "This version of the AliasVault mobile app is not supported by the server anymore. Please update your app to the latest version.",
       "serverNeedsUpdate": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
       "vaultDecryptFailed": "Vault could not be decrypted, if the problem persists please logout and login again.",
-      "unknownErrorDuringSync": "Unknown error during vault sync",
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons."
     }
   },
@@ -162,8 +162,7 @@
     "errors": {
       "loadFailed": "Failed to load credential",
       "generateUsernameFailed": "Failed to generate username",
-      "generatePasswordFailed": "Failed to generate password",
-      "generic": "Error"
+      "generatePasswordFailed": "Failed to generate password"
     },
     "contextMenu": {
       "title": "Credential Options",
@@ -220,6 +219,17 @@
     "batteryOptimizationHelpDescription": "Android's battery optimization prevents reliable clipboard clearing when the app is in the background. Disabling battery optimization for AliasVault allows precise background clipboard clearing and automatically grants necessary alarm permissions.",
     "disableBatteryOptimization": "Disable battery optimization",
     "identityGenerator": "Identity Generator",
+    "passwordGenerator": "Password Generator",
+    "importExport": "Import / Export",
+    "importSectionTitle": "Import",
+    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
+    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
+    "exportSectionTitle": "Export",
+    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
+    "exportCsvButton": "Export vault to CSV file",
+    "exporting": "Exporting...",
+    "exportConfirmTitle": "Export Vault",
+    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
     "security": "Security",
     "appVersion": "App version {{version}} ({{url}})",
     "autoLockOptions": {
@@ -274,6 +284,10 @@
         "languageUpdateFailed": "Failed to update language setting.",
         "genderUpdateFailed": "Failed to update gender setting."
       }
+    },
+    "passwordGeneratorSettings": {
+      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "preview": "Preview"
     },
     "securitySettings": {
       "title": "Security",
@@ -424,12 +438,16 @@
       "openingVaultReadOnly": "Opening vault in read-only mode",
       "retryingConnection": "Retrying connection..."
     },
+    "offline": {
+      "banner": "Offline mode (read-only)",
+      "backOnline": "Back online",
+      "stillOffline": "Still offline"
+    },
     "alerts": {
       "syncIssue": "Sync Issue",
       "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault in read-only mode or retry the connection?",
       "openLocalVault": "Open Local Vault",
-      "retrySync": "Retry Sync",
-      "error": "Error"
+      "retrySync": "Retry Sync"
     },
     "navigation": {
       "login": "Login",
@@ -467,7 +485,6 @@
     "whatsNew": "What's New",
     "whatsNewDescription": "An upgrade is required to support the following changes:",
     "noDescriptionAvailable": "No description available for this version.",
-    "okay": "Ok",
     "status": {
       "preparingUpgrade": "Preparing upgrade...",
       "vaultAlreadyUpToDate": "Vault is already up to date",
@@ -477,11 +494,9 @@
       "committingChanges": "Committing changes..."
     },
     "alerts": {
-      "error": "Error",
       "unableToGetVersionInfo": "Unable to get version information. Please try again.",
       "selfHostedServer": "Self-Hosted Server",
       "selfHostedWarning": "If you're using a self-hosted server, make sure to also update your self-hosted instance as otherwise logging in to the web client will stop working.",
-      "cancel": "Cancel",
       "continueUpgrade": "Continue Upgrade",
       "upgradeFailed": "Upgrade Failed",
       "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})",
