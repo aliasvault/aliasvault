@@ -26,27 +26,27 @@
   </data>
   <!-- Terms and Conditions title -->
   <data name="TermsAndConditionsTitle">
-    <value>Terms and Conditions</value>
+    <value>Правила та Умови</value>
     <comment>Title for the terms and conditions section</comment>
   </data>
   <!-- Terms content -->
   <data name="TermsContent">
-    <value>AliasVault is designed to enhance your online security and protect your privacy. With AliasVault, you can create unique identities and email aliases for your various online accounts, helping you maintain control over your personal information and reduce the risk of identity theft.
+    <value>AliasVault призначений для підвищення вашої онлайн-безпеки та захисту вашої конфіденційності. За допомогою AliasVault ви можете створювати унікальні ідентифікатори та псевдоніми електронної пошти для різних онлайн-акаунтів, що допоможе вам зберегти контроль над особистою інформацією та зменшити ризик викрадення особистих даних.
 
-By using AliasVault, you agree to the following terms:
+Використовуючи AliasVault, ви погоджуєтеся з такими умовами:
 
-1. You will not use AliasVault for any illegal purposes, including but not limited to fraud, identity theft, or impersonating real individuals.
+1. Ви не будете використовувати AliasVault для будь-яких незаконних цілей, зокрема для шахрайства, крадіжки особистих даних або видавання себе за реальних осіб.
 
-2. You are responsible for maintaining the confidentiality of your account and any aliases created through AliasVault.
+2. Ви несете відповідальність за збереження конфіденційності вашого облікового запису та будь-яких псевдонімів, створених за допомогою AliasVault.
 
-3. AliasVault reserves the right to terminate your account if we suspect any misuse or violation of these terms.
+3. AliasVault залишає за собою право припинити дію вашого облікового запису, якщо ми підозрюємо будь-яке зловживання або порушення цих умов.
 
-4. You understand that while AliasVault enhances your privacy, no system is completely foolproof, and you use the service at your own risk.</value>
+4. Ви розумієте, що, хоча AliasVault підвищує рівень вашої конфіденційності, жодна система не є повністю надійною, і ви використовуєте цю послугу на власний ризик.</value>
     <comment>Full terms and conditions content</comment>
   </data>
   <!-- Agreement checkbox -->
   <data name="AgreementCheckboxLabel">
-    <value>I have read and agree to the Terms and Conditions</value>
+    <value>Я прочитав і згоден з правилами та умовами</value>
     <comment>Label for the agreement checkbox</comment>
   </data>
 </root>
