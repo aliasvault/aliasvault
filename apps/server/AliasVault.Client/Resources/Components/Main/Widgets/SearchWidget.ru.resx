@@ -20,27 +20,27 @@
     </xsd:element>
   </xsd:schema>
   <data name="SearchVaultPlaceholder">
-    <value>Search vault...</value>
+    <value>Поиск хранилища...</value>
     <comment>Placeholder text for search input field</comment>
   </data>
   <data name="SearchHelpText">
-    <value>Type a term to search for, this can be the service name, description or email address.</value>
+    <value>Введите запрос для поиска. Это может быть название сервиса, описание или адрес электронной почты.</value>
     <comment>Help text explaining what can be searched</comment>
   </data>
   <data name="SearchTooShortMessage">
-    <value>Please type more chars</value>
+    <value>Пожалуйста, введите больше символов</value>
     <comment>Message when search term is too short</comment>
   </data>
   <data name="SearchingForMessage">
-    <value>Searching for "{0}"</value>
+    <value>Поиск</value>
     <comment>Message showing current search term</comment>
   </data>
   <data name="NoResultsFoundMessage">
-    <value>No results found</value>
+    <value>Ничего не найдено</value>
     <comment>Message when no search results are found</comment>
   </data>
   <data name="SearchingMessage">
-    <value>Searching...</value>
+    <value>Ищем...</value>
     <comment>Message when search is in progress</comment>
   </data>
 </root>
