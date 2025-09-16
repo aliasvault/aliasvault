@@ -9,7 +9,9 @@ namespace AliasVault.FaviconExtractor;
 
 using System;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using SkiaSharp;
@@ -40,63 +42,37 @@ public static class FaviconExtractor
 
         using HttpClient client = CreateHttpClient();
 
-        // First attempt
-        var result = await TryGetFaviconAsync(client, uri);
-        if (result != null)
+        // Attempt the operation up to two times to handle common cookiewall redirects or transient issues.
+        for (int attempt = 0; attempt < 2; attempt++)
         {
-            return result;
+            var result = await TryGetFaviconAsync(client, uri);
+            if (result != null)
+            {
+                return result;
+            }
         }
 
-        return await TryGetFaviconAsync(client, uri);
+        // Return null if the favicon extraction failed.
+        return null;
     }
 
     /// <summary>
-    /// Normalizes the URL by adding a scheme if it is missing.
+    /// Tries to get the favicon from the URL.
     /// </summary>
-    /// <param name="url">The URL to normalize.</param>
-    /// <returns>The normalized URL.</returns>
-    private static string NormalizeUrl(string url)
+    /// <param name="client">The HTTP client.</param>
+    /// <param name="uri">The URI to get the favicon from.</param>
+    /// <returns>The favicon bytes.</returns>
+    private static async Task<byte[]?> TryGetFaviconAsync(HttpClient client, Uri uri)
     {
-        if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        var response = await FollowRedirectsAsync(client, uri);
+
+        if (response == null || !response.IsSuccessStatusCode)
         {
-            return "https://" + url;
+            return null;
         }
 
-        return url;
-    }
-
-    /// <summary>
-    /// Checks if the URI is valid.
-    /// </summary>
-    /// <param name="uri">The URI to check.</param>
-    /// <returns>True if the URI is valid, false otherwise.</returns>
-    private static bool IsValidUri(Uri uri)
-    {
-        return _allowedSchemes.Contains(uri.Scheme) && uri.IsDefaultPort;
-    }
-
-    /// <summary>
-    /// Creates a new HTTP client with default headers.
-    /// </summary>
-    /// <returns>The HTTP client.</returns>
-    private static HttpClient CreateHttpClient()
-    {
-        var client = new HttpClient(new HttpClientHandler
-        {
-            AllowAutoRedirect = true,
-            MaxAutomaticRedirections = 10,
-        })
-        {
-            Timeout = TimeSpan.FromSeconds(5),
-        };
-
-        client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-        client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-        client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
-        client.DefaultRequestHeaders.Add("Connection", "keep-alive");
-        client.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
-
-        return client;
+        var faviconNodes = await GetFaviconNodesFromHtml(response, uri);
+        return await TryExtractFaviconFromNodes(faviconNodes, client, uri);
     }
 
     /// <summary>
@@ -114,6 +90,7 @@ public static class FaviconExtractor
         var defaultFavicon = new HtmlNode(HtmlNodeType.Element, htmlDoc, 0);
         defaultFavicon.Attributes.Add("href", $"{uri.GetLeftPart(UriPartial.Authority)}/favicon.ico");
 
+        // Get the favicon nodes from the HTML, in order of preference.
         HtmlNodeCollection?[] nodeArray =
         [
             htmlDoc.DocumentNode.SelectNodes("//link[@rel='icon' and @type='image/svg+xml']"),
@@ -131,18 +108,13 @@ public static class FaviconExtractor
         return nodeArray.Where(x => x != null).Cast<HtmlNodeCollection>().ToArray();
     }
 
-    private static async Task<byte[]?> TryGetFaviconAsync(HttpClient client, Uri uri)
-    {
-        HttpResponseMessage response = await client.GetAsync(uri);
-        if (!response.IsSuccessStatusCode)
-        {
-            return null;
-        }
-
-        var faviconNodes = await GetFaviconNodesFromHtml(response, uri);
-        return await TryExtractFaviconFromNodes(faviconNodes, client, uri);
-    }
-
+    /// <summary>
+    /// Tries to extract the favicon from the nodes.
+    /// </summary>
+    /// <param name="faviconNodes">The favicon nodes.</param>
+    /// <param name="client">The HTTP client.</param>
+    /// <param name="baseUri">The base URI.</param>
+    /// <returns>The favicon bytes.</returns>
     private static async Task<byte[]?> TryExtractFaviconFromNodes(HtmlNodeCollection[] faviconNodes, HttpClient client, Uri baseUri)
     {
         foreach (var nodeCollection in faviconNodes)
@@ -186,8 +158,16 @@ public static class FaviconExtractor
     {
         try
         {
-            var response = await client.GetAsync(url);
-            if (!response.IsSuccessStatusCode)
+            // Validate the favicon URL before fetching
+            if (!Uri.TryCreate(url, UriKind.Absolute, out var faviconUri) || !IsValidUri(faviconUri))
+            {
+                return null;
+            }
+
+            // Follow redirects with validation
+            var response = await FollowRedirectsAsync(client, faviconUri);
+
+            if (response == null || !response.IsSuccessStatusCode)
             {
                 return null;
             }
@@ -221,6 +201,128 @@ public static class FaviconExtractor
         {
             return null;
         }
+    }
+
+    /// <summary>
+    /// Creates a new HTTP client with basic configuration.
+    /// </summary>
+    /// <returns>The HTTP client.</returns>
+    private static HttpClient CreateHttpClient()
+    {
+        var handler = new HttpClientHandler
+        {
+            AllowAutoRedirect = false, // Handle redirects manually
+        };
+
+        var client = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromSeconds(5),
+        };
+
+        client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
+        client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+        client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
+        client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+        client.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
+
+        return client;
+    }
+
+    /// <summary>
+    /// Normalizes the URL by adding a scheme if it is missing.
+    /// </summary>
+    /// <param name="url">The URL to normalize.</param>
+    /// <returns>The normalized URL.</returns>
+    private static string NormalizeUrl(string url)
+    {
+        if (!url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return "https://" + url;
+        }
+
+        return url;
+    }
+
+    /// <summary>
+    /// Checks if the URI is valid and not pointing to internal/private IPs.
+    /// </summary>
+    /// <param name="uri">The URI to check.</param>
+    /// <returns>True if the URI is valid and safe, false otherwise.</returns>
+    private static bool IsValidUri(Uri uri)
+    {
+        // Check scheme and port
+        if (!_allowedSchemes.Contains(uri.Scheme) || !uri.IsDefaultPort)
+        {
+            return false;
+        }
+
+        // Resolve hostname to IP and validate
+        try
+        {
+            var addresses = Dns.GetHostAddresses(uri.Host);
+            foreach (var address in addresses)
+            {
+                if (!IPAddressValidator.IsPublicIPAddress(address))
+                {
+                    return false;
+                }
+            }
+        }
+        catch
+        {
+            // If DNS resolution fails, block the request
+            return false;
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Handles HTTP redirects with validation to prevent SSRF attacks.
+    /// </summary>
+    /// <param name="client">The HTTP client.</param>
+    /// <param name="uri">The initial URI to request.</param>
+    /// <returns>The final HTTP response after following redirects, or null if blocked/failed.</returns>
+    private static async Task<HttpResponseMessage?> FollowRedirectsAsync(HttpClient client, Uri uri)
+    {
+        var currentUri = uri;
+        int redirectCount = 0;
+        const int maxRedirects = 5;
+
+        while (redirectCount < maxRedirects)
+        {
+            var response = await client.GetAsync(currentUri);
+
+            if ((int)response.StatusCode >= 300 && (int)response.StatusCode < 400)
+            {
+                var location = response.Headers.Location;
+                if (location == null)
+                {
+                    return null;
+                }
+
+                // Resolve relative URLs
+                if (!location.IsAbsoluteUri)
+                {
+                    location = new Uri(currentUri, location);
+                }
+
+                // Validate the redirect target
+                if (!IsValidUri(location))
+                {
+                    return null; // Block redirect to internal IPs
+                }
+
+                currentUri = location;
+                redirectCount++;
+            }
+            else
+            {
+                return response;
+            }
+        }
+
+        return null; // Too many redirects
     }
 
     /// <summary>
