@@ -75,11 +75,11 @@
     <comment>Button text for logging in with existing account</comment>
   </data>
   <data name="HttpsWarningTitle" xml:space="preserve">
-    <value>HTTPS Required</value>
+    <value>HTTPS vaaditaan</value>
     <comment>Title for HTTPS warning banner</comment>
   </data>
   <data name="HttpsWarningMessage" xml:space="preserve">
-    <value>Browsers only allow secure crypto operations via HTTPS, except for localhost. Login/registration won't work over HTTP with the current hostname. Please switch to HTTPS.</value>
+    <value>Selaimet sallivat vain turvalliset salaustoiminnot HTTPS:n kautta, paitsi localhostin kautta. Kirjautuminen/rekisteröinti ei toimi HTTP:n kautta nykyisen isäntänimen kanssa. Vaihda HTTPS: ään.</value>
     <comment>Message explaining why HTTPS is required</comment>
   </data>
 </root>
