@@ -26,7 +26,7 @@ public static class FaviconExtractor
     private static readonly string[] _allowedSchemes = { "http", "https" };
 
     /// <summary>
-    /// Extracts the favicon from a URL.
+    /// Extracts the favicon from a URL with enhanced browser like behavior.
     /// </summary>
     /// <param name="url">The URL to extract the favicon for.</param>
     /// <returns>Byte array for favicon image.</returns>
@@ -204,7 +204,7 @@ public static class FaviconExtractor
     }
 
     /// <summary>
-    /// Creates a new HTTP client with basic configuration.
+    /// Creates a new HTTP client with enhanced browser-like configuration to handle bot protection.
     /// </summary>
     /// <returns>The HTTP client.</returns>
     private static HttpClient CreateHttpClient()
@@ -212,18 +212,56 @@ public static class FaviconExtractor
         var handler = new HttpClientHandler
         {
             AllowAutoRedirect = false, // Handle redirects manually
+            UseCookies = true,         // Enable cookie handling for session management
+            CookieContainer = new System.Net.CookieContainer(),
+            AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate | System.Net.DecompressionMethods.Brotli,
         };
 
         var client = new HttpClient(handler)
         {
-            Timeout = TimeSpan.FromSeconds(5),
+            Timeout = TimeSpan.FromSeconds(5), // Keep original timeout
         };
 
-        client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36");
-        client.DefaultRequestHeaders.Add("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
-        client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.5");
-        client.DefaultRequestHeaders.Add("Connection", "keep-alive");
+        var random = new Random();
+        var userAgents = new[]
+        {
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0",
+        };
+
+        // Use random User-Agent
+        client.DefaultRequestHeaders.Add("User-Agent", userAgents[random.Next(userAgents.Length)]);
+
+        // More comprehensive Accept header with image types prioritized
+        client.DefaultRequestHeaders.Add(
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
+
+        // Additional browser-like headers
+        client.DefaultRequestHeaders.Add("Accept-Language", "en-US,en;q=0.9");
+        client.DefaultRequestHeaders.Add("Accept-Encoding", "gzip, deflate, br");
+        client.DefaultRequestHeaders.Add("DNT", "1");
         client.DefaultRequestHeaders.Add("Upgrade-Insecure-Requests", "1");
+        client.DefaultRequestHeaders.Add("Cache-Control", "max-age=0");
+
+        // Add Sec-Fetch headers to mimic modern browsers
+        if (random.Next(2) == 0)
+        {
+            client.DefaultRequestHeaders.Add("Sec-Fetch-Dest", "document");
+            client.DefaultRequestHeaders.Add("Sec-Fetch-Mode", "navigate");
+            client.DefaultRequestHeaders.Add("Sec-Fetch-Site", "none");
+            client.DefaultRequestHeaders.Add("Sec-Fetch-User", "?1");
+        }
+
+        // Add Chrome-specific headers randomly
+        if (random.Next(3) == 0)
+        {
+            client.DefaultRequestHeaders.Add("Sec-CH-UA", "\"Not_A Brand\";v=\"8\", \"Chromium\";v=\"120\", \"Google Chrome\";v=\"120\"");
+            client.DefaultRequestHeaders.Add("Sec-CH-UA-Mobile", "?0");
+            client.DefaultRequestHeaders.Add("Sec-CH-UA-Platform", "\"Windows\"");
+        }
 
         return client;
     }
@@ -291,7 +329,20 @@ public static class FaviconExtractor
 
         while (redirectCount < maxRedirects)
         {
-            var response = await client.GetAsync(currentUri);
+            // Create request with referer header to appear more browser-like
+            var request = new HttpRequestMessage(HttpMethod.Get, currentUri);
+            if (redirectCount == 0)
+            {
+                // First request - add Google referer to appear like navigation
+                request.Headers.Add("Referer", "https://www.google.com/");
+            }
+            else
+            {
+                // Subsequent redirects - use original URL as referer
+                request.Headers.Add("Referer", uri.ToString());
+            }
+
+            var response = await client.SendAsync(request);
 
             if ((int)response.StatusCode >= 300 && (int)response.StatusCode < 400)
             {
