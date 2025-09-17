@@ -331,7 +331,10 @@ const CredentialAddEdit: React.FC = () => {
     const defaultEmailDomain = dbContext.sqliteClient!.getDefaultEmailDomain(privateEmailDomains, publicEmailDomains);
     const email = defaultEmailDomain ? `${identity.emailPrefix}@${defaultEmailDomain}` : identity.emailPrefix;
 
-    setValue('Alias.Email', email);
+    // Set email based on mode: always for new credentials, only if empty for existing ones
+    if (!isEditMode || !watch('Alias.Email')) {
+      setValue('Alias.Email', email);
+    }
     setValue('Alias.FirstName', identity.firstName);
     setValue('Alias.LastName', identity.lastName);
     setValue('Alias.NickName', identity.nickName);
@@ -355,11 +358,29 @@ const CredentialAddEdit: React.FC = () => {
   }, [isEditMode, watch, setValue, initializeGenerators, dbContext]);
 
   /**
+   * Clear all alias fields.
+   */
+  const clearAliasFields = useCallback(() => {
+    setValue('Alias.FirstName', '');
+    setValue('Alias.LastName', '');
+    setValue('Alias.NickName', '');
+    setValue('Alias.Gender', '');
+    setValue('Alias.BirthDate', '');
+  }, [setValue]);
+
+  //  Check if any alias fields have values.
+  const hasAliasValues = !!(watch('Alias.FirstName') || watch('Alias.LastName') || watch('Alias.NickName') || watch('Alias.Gender') || watch('Alias.BirthDate'));
+
+  /**
    * Handle the generate random alias button press.
    */
   const handleGenerateRandomAlias = useCallback(() => {
-    void generateRandomAlias();
-  }, [generateRandomAlias]);
+    if (hasAliasValues) {
+      clearAliasFields();
+    } else {
+      void generateRandomAlias();
+    }
+  }, [generateRandomAlias, clearAliasFields, hasAliasValues]);
 
   const generateRandomUsername = useCallback(async () => {
     try {
@@ -630,17 +651,33 @@ const CredentialAddEdit: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleGenerateRandomAlias}
-                  className="w-full text-sm bg-primary-500 text-white py-2 px-4 rounded hover:bg-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 flex items-center justify-center gap-2"
+                  className={`w-full text-sm py-2 px-4 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 flex items-center justify-center gap-2 ${
+                    hasAliasValues
+                      ? 'bg-gray-500 text-white hover:bg-gray-600 focus:ring-gray-500'
+                      : 'bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500'
+                  }`}
                 >
-                  <svg className='w-5 h-5 inline-block' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                    <circle cx="8" cy="8" r="1"/>
-                    <circle cx="16" cy="8" r="1"/>
-                    <circle cx="12" cy="12" r="1"/>
-                    <circle cx="8" cy="16" r="1"/>
-                    <circle cx="16" cy="16" r="1"/>
-                  </svg>
-                  <span>{t('credentials.generateRandomAlias')}</span>
+                  {hasAliasValues ? (
+                    <>
+                      <svg className='w-5 h-5 inline-block' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                      <span>{t('credentials.clearAliasFields')}</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className='w-5 h-5 inline-block' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <circle cx="8" cy="8" r="1"/>
+                        <circle cx="16" cy="8" r="1"/>
+                        <circle cx="12" cy="12" r="1"/>
+                        <circle cx="8" cy="16" r="1"/>
+                        <circle cx="16" cy="16" r="1"/>
+                      </svg>
+                      <span>{t('credentials.generateRandomAlias')}</span>
+                    </>
+                  )}
                 </button>
                 <FormInput
                   id="firstName"
