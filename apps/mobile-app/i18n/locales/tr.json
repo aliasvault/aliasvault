@@ -109,6 +109,7 @@
     "randomAlias": "Random Alias",
     "manual": "Manual",
     "generateRandomAlias": "Generate Random Alias",
+    "clearAliasFields": "Clear Alias Fields",
     "enterFullEmail": "E-posta adresinizi girin",
     "enterEmailPrefix": "E-posta önekini girin",
     "useDomainChooser": "Alan adı seçiciyi kullan",
