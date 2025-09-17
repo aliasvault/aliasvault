@@ -58,6 +58,13 @@ export default function AddEditCredentialScreen() : React.ReactNode {
   const [originalAttachmentIds, setOriginalAttachmentIds] = useState<string[]>([]);
   const { t } = useTranslation();
 
+  // Track last generated values to avoid overwriting manual entries
+  const [lastGeneratedValues, setLastGeneratedValues] = useState<{
+    username: string | null;
+    password: string | null;
+    email: string | null;
+  }>({ username: null, password: null, email: null });
+
   const { control, handleSubmit, setValue, watch } = useForm<Credential>({
     resolver: yupResolver(createCredentialSchema(t)) as Resolver<Credential>,
     defaultValues: {
@@ -189,8 +196,13 @@ export default function AddEditCredentialScreen() : React.ReactNode {
     const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
     const email = defaultEmailDomain ? `${identity.emailPrefix}@${defaultEmailDomain}` : identity.emailPrefix;
 
-    // Set email based on mode: always for new credentials, only if empty for existing ones
-    if (!isEditMode || !watch('Alias.Email')) {
+    // Check current values
+    const currentUsername = watch('Username') ?? '';
+    const currentPassword = watch('Password') ?? '';
+    const currentEmail = watch('Alias.Email') ?? '';
+
+    // Only overwrite email if it's empty or matches the last generated value
+    if (!currentEmail || currentEmail === lastGeneratedValues.email) {
       setValue('Alias.Email', email);
     }
     setValue('Alias.FirstName', identity.firstName);
@@ -199,23 +211,25 @@ export default function AddEditCredentialScreen() : React.ReactNode {
     setValue('Alias.Gender', identity.gender);
     setValue('Alias.BirthDate', IdentityHelperUtils.normalizeBirthDateForDisplay(identity.birthDate.toISOString()));
 
-    // In edit mode, preserve existing username and password if they exist
-    if (isEditMode && watch('Username')) {
-      // Keep the existing username in edit mode, so don't do anything here.
-    } else {
-      // Use the newly generated username
+    // Only overwrite username if it's empty or matches the last generated value
+    if (!currentUsername || currentUsername === lastGeneratedValues.username) {
       setValue('Username', identity.nickName);
     }
 
-    if (isEditMode && watch('Password')) {
-      // Keep the existing password in edit mode, so don't do anything here.
-    } else {
-      // Use the newly generated password
+    // Only overwrite password if it's empty or matches the last generated value
+    if (!currentPassword || currentPassword === lastGeneratedValues.password) {
       setValue('Password', password);
       // Make password visible when newly generated
       setIsPasswordVisible(true);
     }
-  }, [isEditMode, watch, setValue, setIsPasswordVisible, initializeGenerators, dbContext.sqliteClient]);
+
+    // Update tracking with new generated values
+    setLastGeneratedValues({
+      username: identity.nickName,
+      password: password,
+      email: email
+    });
+  }, [watch, setValue, setIsPasswordVisible, initializeGenerators, dbContext.sqliteClient, lastGeneratedValues, setLastGeneratedValues]);
 
   /**
    * Clear all alias fields.
@@ -379,8 +393,13 @@ export default function AddEditCredentialScreen() : React.ReactNode {
       // Generate identity with gender preference
       const identity = identityGenerator.generateRandomIdentity(genderPreference);
 
-      // Set the username to the identity's nickname
-      setValue('Username', identity.nickName);
+      // Only overwrite username if it's empty or matches the last generated value
+      const currentUsername = watch('Username') ?? '';
+      if (!currentUsername || currentUsername === lastGeneratedValues.username) {
+        setValue('Username', identity.nickName);
+        // Update the tracking for username
+        setLastGeneratedValues(prev => ({ ...prev, username: identity.nickName }));
+      }
     } catch (error) {
       console.error('Error generating random username:', error);
       Toast.show({

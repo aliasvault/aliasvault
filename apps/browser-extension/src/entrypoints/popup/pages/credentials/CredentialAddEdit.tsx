@@ -90,6 +90,13 @@ const CredentialAddEdit: React.FC = () => {
   const [originalAttachmentIds, setOriginalAttachmentIds] = useState<string[]>([]);
   const webApi = useWebApi();
 
+  // Track last generated values to avoid overwriting manual entries
+  const [lastGeneratedValues, setLastGeneratedValues] = useState<{
+    username: string | null;
+    password: string | null;
+    email: string | null;
+  }>({ username: null, password: null, email: null });
+
   const serviceNameRef = useRef<HTMLInputElement>(null);
 
   const { handleSubmit, setValue, watch, formState: { errors } } = useForm<Credential>({
@@ -331,8 +338,13 @@ const CredentialAddEdit: React.FC = () => {
     const defaultEmailDomain = dbContext.sqliteClient!.getDefaultEmailDomain(privateEmailDomains, publicEmailDomains);
     const email = defaultEmailDomain ? `${identity.emailPrefix}@${defaultEmailDomain}` : identity.emailPrefix;
 
-    // Set email based on mode: always for new credentials, only if empty for existing ones
-    if (!isEditMode || !watch('Alias.Email')) {
+    // Check current values
+    const currentUsername = watch('Username') ?? '';
+    const currentPassword = watch('Password') ?? '';
+    const currentEmail = watch('Alias.Email') ?? '';
+
+    // Only overwrite email if it's empty or matches the last generated value
+    if (!currentEmail || currentEmail === lastGeneratedValues.email) {
       setValue('Alias.Email', email);
     }
     setValue('Alias.FirstName', identity.firstName);
@@ -341,21 +353,23 @@ const CredentialAddEdit: React.FC = () => {
     setValue('Alias.Gender', identity.gender);
     setValue('Alias.BirthDate', IdentityHelperUtils.normalizeBirthDateForDisplay(identity.birthDate.toISOString()));
 
-    // In edit mode, preserve existing username and password if they exist
-    if (isEditMode && watch('Username')) {
-      // Keep the existing username in edit mode, so don't do anything here.
-    } else {
-      // Use the newly generated username
+    // Only overwrite username if it's empty or matches the last generated value
+    if (!currentUsername || currentUsername === lastGeneratedValues.username) {
       setValue('Username', identity.nickName);
     }
 
-    if (isEditMode && watch('Password')) {
-      // Keep the existing password in edit mode, so don't do anything here.
-    } else {
-      // Use the newly generated password
+    // Only overwrite password if it's empty or matches the last generated value
+    if (!currentPassword || currentPassword === lastGeneratedValues.password) {
       setValue('Password', password);
     }
-  }, [isEditMode, watch, setValue, initializeGenerators, dbContext]);
+
+    // Update tracking with new generated values
+    setLastGeneratedValues({
+      username: identity.nickName,
+      password: password,
+      email: email
+    });
+  }, [watch, setValue, initializeGenerators, dbContext, lastGeneratedValues, setLastGeneratedValues]);
 
   /**
    * Clear all alias fields.
@@ -403,12 +417,17 @@ const CredentialAddEdit: React.FC = () => {
       };
 
       const username = usernameEmailGenerator.generateUsername(identity);
-      setValue('Username', username);
+      const currentUsername = watch('Username') ?? '';
+      // Only overwrite username if it's empty or matches the last generated value
+      if (!currentUsername || currentUsername === lastGeneratedValues.username) {
+        setValue('Username', username);
+        // Update the tracking for username
+        setLastGeneratedValues(prev => ({ ...prev, username: username }));
+      }
     } catch (error) {
       console.error('Error generating random username:', error);
     }
-  }, [setValue, watch]);
-
+  }, [setValue, watch, lastGeneratedValues, setLastGeneratedValues]);
 
   /**
    * Handle form submission.
