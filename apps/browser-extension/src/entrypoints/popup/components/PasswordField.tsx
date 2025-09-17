@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useDb } from '@/entrypoints/popup/context/DbContext';
+
 import type { PasswordSettings } from '@/utils/dist/shared/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
 
@@ -15,7 +17,6 @@ interface IPasswordFieldProps {
   error?: string;
   showPassword?: boolean;
   onShowPasswordChange?: (show: boolean) => void;
-  initialSettings: PasswordSettings;
 }
 
 /**
@@ -29,13 +30,14 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
   placeholder,
   error,
   showPassword: controlledShowPassword,
-  onShowPasswordChange,
-  initialSettings
+  onShowPasswordChange
 }) => {
   const { t } = useTranslation();
+  const dbContext = useDb();
   const [internalShowPassword, setInternalShowPassword] = useState(false);
   const [showConfigDialog, setShowConfigDialog] = useState(false);
-  const [currentSettings, setCurrentSettings] = useState<PasswordSettings>(initialSettings);
+  const [currentSettings, setCurrentSettings] = useState<PasswordSettings | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
 
   // Use controlled or uncontrolled showPassword state
   const showPassword = controlledShowPassword !== undefined ? controlledShowPassword : internalShowPassword;
@@ -51,11 +53,24 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
     }
   }, [controlledShowPassword, onShowPasswordChange]);
 
-  // Initialize settings only once when component mounts
+  // Load password settings from database
   useEffect(() => {
-    setCurrentSettings({ ...initialSettings });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount to avoid resetting user changes
+    /**
+     * Load password settings from the database.
+     */
+    const loadSettings = async (): Promise<void> => {
+      try {
+        if (dbContext.sqliteClient) {
+          const settings = dbContext.sqliteClient.getPasswordSettings();
+          setCurrentSettings(settings);
+          setIsLoaded(true);
+        }
+      } catch (error) {
+        console.error('Error loading password settings:', error);
+      }
+    };
+    void loadSettings();
+  }, [dbContext.sqliteClient]);
 
   const generatePassword = useCallback((settings: PasswordSettings) => {
     try {
@@ -69,6 +84,9 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
   }, [onChange, setShowPassword]);
 
   const handleLengthChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!currentSettings) {
+      return;
+    }
     const length = parseInt(e.target.value, 10);
     const newSettings = { ...currentSettings, Length: length };
     setCurrentSettings(newSettings);
@@ -78,6 +96,9 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
   }, [currentSettings, generatePassword]);
 
   const handleRegeneratePassword = useCallback(() => {
+    if (!currentSettings) {
+      return;
+    }
     generatePassword(currentSettings);
   }, [generatePassword, currentSettings]);
 
@@ -97,6 +118,18 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
   const openConfigDialog = useCallback(() => {
     setShowConfigDialog(true);
   }, []);
+
+  // Don't render until settings are loaded
+  if (!currentSettings || !isLoaded) {
+    return (
+      <div className="space-y-2">
+        <label htmlFor={id} className="block text-sm font-medium text-gray-900 dark:text-white">
+          {label}
+        </label>
+        <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-10 rounded-lg"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-2">

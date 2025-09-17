@@ -409,9 +409,6 @@ const CredentialAddEdit: React.FC = () => {
     }
   }, [setValue, watch]);
 
-  const initialPasswordSettings = useMemo(() => {
-    return dbContext.sqliteClient?.getPasswordSettings();
-  }, [dbContext.sqliteClient]);
 
   /**
    * Handle form submission.
@@ -630,18 +627,15 @@ const CredentialAddEdit: React.FC = () => {
                   error={errors.Username?.message}
                   onRegenerate={generateRandomUsername}
                 />
-                {initialPasswordSettings && (
-                  <PasswordField
-                    id="password"
-                    label={t('common.password')}
-                    value={watch('Password') ?? ''}
-                    onChange={(value) => setValue('Password', value)}
-                    error={errors.Password?.message}
-                    showPassword={showPassword}
-                    onShowPasswordChange={setShowPassword}
-                    initialSettings={initialPasswordSettings}
-                  />
-                )}
+                <PasswordField
+                  id="password"
+                  label={t('common.password')}
+                  value={watch('Password') ?? ''}
+                  onChange={(value) => setValue('Password', value)}
+                  error={errors.Password?.message}
+                  showPassword={showPassword}
+                  onShowPasswordChange={setShowPassword}
+                />
               </div>
             </div>
 

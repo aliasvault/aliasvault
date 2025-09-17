@@ -69,17 +69,16 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
         if (dbContext.sqliteClient) {
           const settings = await dbContext.sqliteClient.getPasswordSettings();
           setCurrentSettings(settings);
-          // Only set slider value from settings if we don't have a password value yet
-          if (!hasSetInitialLength.current && isNewCredential) {
-            setSliderValue(settings.Length);
-          }
+          // Always set slider value from loaded settings
+          setSliderValue(settings.Length);
+          hasSetInitialLength.current = true;
         }
       } catch (error) {
         console.error('Error loading password settings:', error);
       }
     };
     loadSettings();
-  }, [dbContext.sqliteClient, isNewCredential]);
+  }, [dbContext.sqliteClient]);
 
 
   useImperativeHandle(ref, () => ({
