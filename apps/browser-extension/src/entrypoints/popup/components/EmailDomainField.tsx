@@ -90,7 +90,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       setIsCustomDomain(!isKnownDomain);
     } else {
       setLocalPart(value);
-      setIsCustomDomain(false);
+      // Don't reset isCustomDomain here - preserve the current mode
 
       // Set default domain if not already set
       if (!selectedDomain && !value.includes('@')) {
@@ -107,6 +107,13 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
   const handleLocalPartChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const newLocalPart = e.target.value;
 
+    // If in custom domain mode, always pass through the full value
+    if (isCustomDomain) {
+      onChange(newLocalPart);
+      // Stay in custom domain mode - don't auto-switch back
+      return;
+    }
+
     // Check if new value contains '@' symbol, if so, switch to custom domain mode
     if (newLocalPart.includes('@')) {
       setIsCustomDomain(true);
@@ -115,10 +122,11 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
     }
 
     setLocalPart(newLocalPart);
-    if (!isCustomDomain && selectedDomain) {
+    // If the local part is empty, treat the whole field as empty
+    if (!newLocalPart || newLocalPart.trim() === '') {
+      onChange('');
+    } else if (selectedDomain) {
       onChange(`${newLocalPart}@${selectedDomain}`);
-    } else {
-      onChange(newLocalPart);
     }
   }, [isCustomDomain, selectedDomain, onChange]);
 
@@ -126,7 +134,12 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
   const selectDomain = useCallback((domain: string) => {
     setSelectedDomain(domain);
     const cleanLocalPart = localPart.includes('@') ? localPart.split('@')[0] : localPart;
-    onChange(`${cleanLocalPart}@${domain}`);
+    // If the local part is empty, treat the whole field as empty
+    if (!cleanLocalPart || cleanLocalPart.trim() === '') {
+      onChange('');
+    } else {
+      onChange(`${cleanLocalPart}@${domain}`);
+    }
     setIsCustomDomain(false);
     setIsPopupVisible(false);
   }, [localPart, onChange]);
@@ -136,13 +149,30 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
     const newIsCustom = !isCustomDomain;
     setIsCustomDomain(newIsCustom);
 
-    if (!newIsCustom && !value.includes('@')) {
-      // Switching to domain chooser mode, add default domain
+    if (newIsCustom) {
+      /*
+       * Switching to custom domain mode
+       * If we have a domain-based value, extract just the local part
+       */
+      if (value && value.includes('@')) {
+        const [local] = value.split('@');
+        onChange(local);
+        setLocalPart(local);
+      }
+    } else {
+      // Switching to domain chooser mode
       const defaultDomain = showPrivateDomains && privateEmailDomains[0]
         ? privateEmailDomains[0]
         : PUBLIC_EMAIL_DOMAINS[0];
-      onChange(`${localPart}@${defaultDomain}`);
       setSelectedDomain(defaultDomain);
+
+      // Only add domain if we have a local part
+      if (localPart && localPart.trim()) {
+        onChange(`${localPart}@${defaultDomain}`);
+      } else if (value && !value.includes('@')) {
+        // If we have a value without @, add the domain
+        onChange(`${value}@${defaultDomain}`);
+      }
     }
   }, [isCustomDomain, value, localPart, showPrivateDomains, privateEmailDomains, onChange]);
 
