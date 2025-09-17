@@ -109,6 +109,7 @@
     "randomAlias": "כינוי אקראי",
     "manual": "ידני",
     "generateRandomAlias": "יצירת כינוי אקראי",
+    "clearAliasFields": "Clear Alias Fields",
     "enterFullEmail": "נא למלא כתובת דוא״ל מלאה",
     "enterEmailPrefix": "נא למלא קידומת דוא״ל",
     "useDomainChooser": "להשתמש בבורר שמות התחום",
