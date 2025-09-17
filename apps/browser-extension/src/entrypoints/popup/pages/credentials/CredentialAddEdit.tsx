@@ -237,15 +237,7 @@ const CredentialAddEdit: React.FC = () => {
       setIsInitialLoading(false);
 
       // Load persisted form values if they exist.
-      loadPersistedValues().then(() => {
-        // Generate default password if no persisted password exists
-        if (!watch('Password')) {
-          const passwordSettings = dbContext.sqliteClient!.getPasswordSettings();
-          const passwordGenerator = CreatePasswordGenerator(passwordSettings);
-          const defaultPassword = passwordGenerator.generateRandomPassword();
-          setValue('Password', defaultPassword);
-        }
-      });
+      loadPersistedValues();
       return;
     }
 
@@ -278,7 +270,7 @@ const CredentialAddEdit: React.FC = () => {
       console.error('Error loading credential:', err);
       setIsInitialLoading(false);
     }
-  }, [dbContext.sqliteClient, id, navigate, setIsInitialLoading, setValue, loadPersistedValues, watch]);
+  }, [dbContext.sqliteClient, id, navigate, setIsInitialLoading, setValue, loadPersistedValues]);
 
   /**
    * Handle the delete button click.
