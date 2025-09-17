@@ -109,6 +109,7 @@
     "randomAlias": "Alias",
     "manual": "Handmatig",
     "generateRandomAlias": "Genereer willekeurige alias",
+    "clearAliasFields": "Clear Alias Fields",
     "enterFullEmail": "Voer volledig e-mailadres in",
     "enterEmailPrefix": "Emailvoorvoegsel invoeren",
     "useDomainChooser": "Domein kiezen",
