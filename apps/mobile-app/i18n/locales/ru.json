@@ -109,6 +109,7 @@
     "randomAlias": "Случайный псевдоним",
     "manual": "Инструкция",
     "generateRandomAlias": "Сгенерировать случайный псевдоним",
+    "clearAliasFields": "Clear Alias Fields",
     "enterFullEmail": "Введите полный адрес электронной почты",
     "enterEmailPrefix": "Введите префикс электронной почты",
     "useDomainChooser": "Использовать выбор домена",
