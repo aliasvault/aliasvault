@@ -229,6 +229,7 @@
     "avoidAmbiguousChars": "Evita caratteri ambigui (o, 0, ecc.)",
     "generateNewPreview": "Genera nuova anteprima",
     "generateRandomAlias": "Genera alias casuale",
+    "clearAliasFields": "Clear Alias Fields",
     "alias": "Alias",
     "firstName": "Nome",
     "lastName": "Cognome",
