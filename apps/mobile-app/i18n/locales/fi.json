@@ -109,6 +109,7 @@
     "randomAlias": "Satunnainen Alias",
     "manual": "Käyttöopas",
     "generateRandomAlias": "Luo satunnainen alias",
+    "clearAliasFields": "Clear Alias Fields",
     "enterFullEmail": "Syötä täysi sähköpostiosoite",
     "enterEmailPrefix": "Syötä sähköpostin etuliite",
     "useDomainChooser": "Käytä verkkotunnuksen valintaa",
