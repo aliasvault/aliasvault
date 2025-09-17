@@ -109,6 +109,7 @@
     "randomAlias": "Випадковий псевдонім",
     "manual": "Посібник",
     "generateRandomAlias": "Генерувати випадковий псевдонім",
+    "clearAliasFields": "Clear Alias Fields",
     "enterFullEmail": "Введіть повну електронну адресу",
     "enterEmailPrefix": "Введіть префікс електронної адреси",
     "useDomainChooser": "Використовувати засіб вибору домену",
