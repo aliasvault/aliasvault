@@ -189,7 +189,10 @@ export default function AddEditCredentialScreen() : React.ReactNode {
     const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
     const email = defaultEmailDomain ? `${identity.emailPrefix}@${defaultEmailDomain}` : identity.emailPrefix;
 
-    setValue('Alias.Email', email);
+    // Set email based on mode: always for new credentials, only if empty for existing ones
+    if (!isEditMode || !watch('Alias.Email')) {
+      setValue('Alias.Email', email);
+    }
     setValue('Alias.FirstName', identity.firstName);
     setValue('Alias.LastName', identity.lastName);
     setValue('Alias.NickName', identity.nickName);
@@ -215,6 +218,22 @@ export default function AddEditCredentialScreen() : React.ReactNode {
   }, [isEditMode, watch, setValue, setIsPasswordVisible, initializeGenerators, dbContext.sqliteClient]);
 
   /**
+   * Clear all alias fields.
+   */
+  const clearAliasFields = useCallback(() => {
+    setValue('Alias.FirstName', '');
+    setValue('Alias.LastName', '');
+    setValue('Alias.NickName', '');
+    setValue('Alias.Gender', '');
+    setValue('Alias.BirthDate', '');
+  }, [setValue]);
+
+  /**
+   * Check if any alias fields have values.
+   */
+  const hasAliasValues = watch('Alias.FirstName') || watch('Alias.LastName') || watch('Alias.NickName') || watch('Alias.Gender') || watch('Alias.BirthDate');
+
+  /**
    * Handle the generate random alias button press.
    */
   const handleGenerateRandomAlias = useCallback(async (): Promise<void> => {
@@ -224,8 +243,13 @@ export default function AddEditCredentialScreen() : React.ReactNode {
     } else if (Platform.OS === 'android') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    await generateRandomAlias();
-  }, [generateRandomAlias]);
+
+    if (hasAliasValues) {
+      clearAliasFields();
+    } else {
+      await generateRandomAlias();
+    }
+  }, [generateRandomAlias, clearAliasFields, hasAliasValues]);
 
   /**
    * Submit the form for either creating or updating a credential.
@@ -445,12 +469,17 @@ export default function AddEditCredentialScreen() : React.ReactNode {
     },
     generateButton: {
       alignItems: 'center',
-      backgroundColor: colors.primary,
       borderRadius: 8,
       flexDirection: 'row',
       marginBottom: 8,
       paddingHorizontal: 12,
       paddingVertical: 8,
+    },
+    generateButtonPrimary: {
+      backgroundColor: colors.primary,
+    },
+    generateButtonSecondary: {
+      backgroundColor: colors.textMuted,
     },
     generateButtonText: {
       color: colors.primarySurfaceText,
@@ -645,11 +674,20 @@ export default function AddEditCredentialScreen() : React.ReactNode {
               <View style={styles.section}>
                 <ThemedText style={styles.sectionTitle}>{t('credentials.alias')}</ThemedText>
                 <RobustPressable
-                  style={styles.generateButton}
+                  style={[
+                    styles.generateButton,
+                    hasAliasValues ? styles.generateButtonSecondary : styles.generateButtonPrimary
+                  ]}
                   onPress={handleGenerateRandomAlias}
                 >
-                  <MaterialIcons name="auto-fix-high" size={20} color="#fff" />
-                  <ThemedText style={styles.generateButtonText}>{t('credentials.generateRandomAlias')}</ThemedText>
+                  <MaterialIcons
+                    name={hasAliasValues ? "clear" : "auto-fix-high"}
+                    size={20}
+                    color="#fff"
+                  />
+                  <ThemedText style={styles.generateButtonText}>
+                    {hasAliasValues ? t('credentials.clearAliasFields') : t('credentials.generateRandomAlias')}
+                  </ThemedText>
                 </RobustPressable>
                 <ValidatedFormField
                   control={control}
