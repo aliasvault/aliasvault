@@ -1488,6 +1488,84 @@ print_success_box() {
     printf "${MAGENTA}%s${NC}\n" "$footer"
 }
 
+# Function to clean up old Docker images
+cleanup_docker_images() {
+    printf "\n${YELLOW}+++ Cleaning up old Docker images +++${NC}\n"
+
+    # Only clean up AliasVault-related images and dangling images
+    local current_version="$1"
+    local removed_count=0
+    local total_count=0
+
+    if [ "$VERBOSE" = true ]; then
+        printf "${CYAN}ℹ Removing old AliasVault images...${NC}\n"
+
+        # Remove dangling images (untagged)
+        docker image prune -f
+
+        # Get all images containing "aliasvault" (case-insensitive) in the repository name
+        docker images --format "{{.Repository}}:{{.Tag}}" | grep -i "aliasvault" | \
+        while read -r image_full; do
+            # Extract just the tag from the full image name
+            local tag="${image_full##*:}"
+
+            # Skip if image is currently being used by a container
+            if ! docker ps -a --format "{{.Image}}" | grep -q "^${image_full}$"; then
+                # Skip if it's the current version or latest
+                if [ "$tag" != "$current_version" ] && [ "$tag" != "latest" ]; then
+                    ((total_count++))
+                    printf "  Removing old image: $image_full"
+                    # Remove by full repository:tag name, not by ID
+                    if docker rmi "$image_full" > /dev/null 2>&1; then
+                        printf " ${GREEN}✓${NC}\n"
+                        ((removed_count++))
+                    else
+                        printf " ${YELLOW}(skipped - may share layers)${NC}\n"
+                    fi
+                fi
+            fi
+        done
+
+        if [ $total_count -eq 0 ]; then
+            printf "  ${CYAN}No old images to remove${NC}\n"
+        elif [ $removed_count -eq $total_count ]; then
+            printf "  ${GREEN}Successfully removed all $removed_count old image(s)${NC}\n"
+        else
+            printf "  ${GREEN}Removed $removed_count of $total_count old image(s)${NC}\n"
+        fi
+
+        printf "${GREEN}✓ Docker image cleanup completed${NC}\n"
+    else
+        (
+            # Silent cleanup with spinner
+            {
+                # Remove dangling images
+                docker image prune -f > /dev/null 2>&1
+
+                # Remove old AliasVault images by full name
+                docker images --format "{{.Repository}}:{{.Tag}}" | grep -i "aliasvault" | \
+                while read -r image_full; do
+                    # Extract just the tag from the full image name
+                    local tag="${image_full##*:}"
+
+                    # Skip if image is currently being used by a container
+                    if ! docker ps -a --format "{{.Image}}" | grep -q "^${image_full}$"; then
+                        # Skip if it's the current version or latest
+                        if [ "$tag" != "$current_version" ] && [ "$tag" != "latest" ]; then
+                            # Remove by full repository:tag name
+                            docker rmi "$image_full" > /dev/null 2>&1 || true
+                        fi
+                    fi
+                done
+            } &
+            CLEANUP_PID=$!
+            show_spinner $CLEANUP_PID "Cleaning up old Docker images "
+            wait $CLEANUP_PID
+        )
+        printf "${GREEN}✓ Docker image cleanup completed${NC}\n"
+    fi
+}
+
 # Function to print success message
 print_install_success_message() {
     printf "\n"
@@ -1824,6 +1902,9 @@ handle_build() {
         printf "${YELLOW}Please check the troubleshooting steps above.${NC}\n"
         exit 1
     fi
+
+    # Clean up old Docker images
+    cleanup_docker_images "$target_version"
 
     # Only show success message if we made it here without errors and health check passed
     print_install_success_message
@@ -2593,6 +2674,9 @@ handle_install_version() {
         printf "${YELLOW}Please check the troubleshooting steps above.${NC}\n"
         exit 1
     fi
+
+    # Clean up old Docker images
+    cleanup_docker_images "$target_version"
 
     # Only show success message if we made it here without errors and health check passed
     print_install_success_message
