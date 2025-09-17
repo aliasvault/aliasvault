@@ -229,6 +229,7 @@
     "avoidAmbiguousChars": "Избегать двусмысленных символов (o, 0 и т.д.).",
     "generateNewPreview": "Создать новый предварительный просмотр",
     "generateRandomAlias": "Сгенерировать случайный псевдоним",
+    "clearAliasFields": "Clear Alias Fields",
     "alias": "Псевдоним",
     "firstName": "Имя",
     "lastName": "Фамилия",
