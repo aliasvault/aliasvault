@@ -7,8 +7,8 @@ import { DISABLED_SITES_KEY, TEMPORARY_DISABLED_SITES_KEY, GLOBAL_AUTOFILL_POPUP
 import { CreateIdentityGenerator } from '@/utils/dist/shared/identity-generator';
 import type { Credential } from '@/utils/dist/shared/models/vault';
 import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/shared/password-generator';
-import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { ClickValidator } from '@/utils/security/ClickValidator';
+import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { CredentialsResponse } from '@/utils/types/messaging/CredentialsResponse';
 import { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
@@ -227,8 +227,8 @@ export async function createAutofillPopup(input: HTMLInputElement, credentials: 
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    const suggestedNames = FormDetector.getSuggestedServiceName(document, window.location);
-    const result = await createAliasCreationPopup(suggestedNames, rootContainer);
+    const serviceInfo = ServiceDetectionUtility.getServiceInfo(document, window.location);
+    const result = await createAliasCreationPopup(serviceInfo.suggestedNames, rootContainer);
 
     if (!result) {
       // User cancelled
@@ -1057,8 +1057,11 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         e.preventDefault();
         e.stopPropagation();
         const serviceName = inputServiceName.value.trim();
-        const currentUrl = window.location.href;
-        sendMessage('OPEN_POPUP_CREATE_CREDENTIAL', { serviceName, currentUrl }, 'background');
+        const encodedServiceInfo = ServiceDetectionUtility.getEncodedServiceInfo(document, window.location);
+        sendMessage('OPEN_POPUP_CREATE_CREDENTIAL', {
+          serviceName: serviceName || encodedServiceInfo.serviceName,
+          currentUrl: encodedServiceInfo.currentUrl
+        }, 'background');
         closePopup(null);
       });
 

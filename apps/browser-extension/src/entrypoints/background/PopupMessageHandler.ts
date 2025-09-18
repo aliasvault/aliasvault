@@ -70,6 +70,9 @@ export function handleOpenPopupCreateCredential(message: any) : Promise<BoolResp
     if (serviceUrl) {
       urlParams.set('serviceUrl', serviceUrl);
     }
+    if (message.currentUrl) {
+      urlParams.set('currentUrl', message.currentUrl);
+    }
 
     browser.windows.create({
       url: browser.runtime.getURL(`/popup.html?${urlParams.toString()}#/credentials/add`),

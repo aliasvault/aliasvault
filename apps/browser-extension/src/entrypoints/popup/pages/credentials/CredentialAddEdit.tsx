@@ -27,6 +27,7 @@ import { SKIP_FORM_RESTORE_KEY } from '@/utils/Constants';
 import { IdentityHelperUtils, CreateIdentityGenerator, CreateUsernameEmailGenerator, Identity, Gender } from '@/utils/dist/shared/identity-generator';
 import type { Attachment, Credential } from '@/utils/dist/shared/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
+import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 
 import { browser } from '#imports';
 
@@ -233,17 +234,63 @@ const CredentialAddEdit: React.FC = () => {
     }
 
     if (!id) {
-      // On create mode, check for URL parameters and prefill if present
+      // On create mode, check for URL parameters first, then fallback to tab detection
       const urlParams = new URLSearchParams(window.location.search);
       const serviceName = urlParams.get('serviceName');
       const serviceUrl = urlParams.get('serviceUrl');
+      const currentUrl = urlParams.get('currentUrl');
 
-      if (serviceName) {
-        setValue('ServiceName', decodeURIComponent(serviceName));
-      }
-      if (serviceUrl) {
-        setValue('ServiceUrl', decodeURIComponent(serviceUrl));
-      }
+      /**
+       * Initialize service detection from URL parameters or current tab
+       */
+      const initializeServiceDetection = async (): Promise<void> => {
+        try {
+          // If URL parameters are present (e.g., from content script popout), use them
+          if (serviceName || serviceUrl || currentUrl) {
+            if (serviceName) {
+              setValue('ServiceName', decodeURIComponent(serviceName));
+            }
+            if (serviceUrl) {
+              setValue('ServiceUrl', decodeURIComponent(serviceUrl));
+            }
+
+            // If we have currentUrl but missing serviceName or serviceUrl, derive them
+            if (currentUrl && (!serviceName || !serviceUrl)) {
+              const decodedCurrentUrl = decodeURIComponent(currentUrl);
+              const serviceInfo = ServiceDetectionUtility.getServiceInfoFromTab(decodedCurrentUrl);
+
+              if (!serviceName && serviceInfo.suggestedNames.length > 0) {
+                setValue('ServiceName', serviceInfo.suggestedNames[0]);
+              }
+              if (!serviceUrl && serviceInfo.serviceUrl) {
+                setValue('ServiceUrl', serviceInfo.serviceUrl);
+              }
+            }
+            return;
+          }
+
+          // Otherwise, detect from current active tab (for dashboard case)
+          const [activeTab] = await browser.tabs.query({ active: true, currentWindow: true });
+
+          if (activeTab?.url) {
+            const serviceInfo = ServiceDetectionUtility.getServiceInfoFromTab(
+              activeTab.url,
+              activeTab.title
+            );
+
+            if (serviceInfo.suggestedNames.length > 0) {
+              setValue('ServiceName', serviceInfo.suggestedNames[0]);
+            }
+            if (serviceInfo.serviceUrl) {
+              setValue('ServiceUrl', serviceInfo.serviceUrl);
+            }
+          }
+        } catch (error) {
+          console.error('Error detecting service information:', error);
+        }
+      };
+
+      initializeServiceDetection();
 
       // Focus the service name field after a short delay to ensure the component is mounted.
       setTimeout(() => {
