@@ -229,7 +229,7 @@
     "avoidAmbiguousChars": "Vältä epäselviä merkkejä (o, 0 jne.)",
     "generateNewPreview": "Luo uusi esikatselu",
     "generateRandomAlias": "Luo sattumanvarainen alias",
-    "clearAliasFields": "Clear Alias Fields",
+    "clearAliasFields": "Tyhjennä aliaksen kentät",
     "alias": "Alias",
     "firstName": "Etunimi",
     "lastName": "Sukunimi",
