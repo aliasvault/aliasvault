@@ -9,7 +9,10 @@
     {
       "layers" : [
         {
-          "fill" : "automatic",
+          "blend-mode" : "overlay",
+          "fill" : {
+            "automatic-gradient" : "display-p3:0.90471,0.76358,0.48553,1.00000"
+          },
           "glass" : true,
           "hidden" : false,
           "image-name" : "icon-1024.png",
