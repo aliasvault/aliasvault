@@ -23,9 +23,12 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
+import { SKIP_FORM_RESTORE_KEY } from '@/utils/Constants';
 import { IdentityHelperUtils, CreateIdentityGenerator, CreateUsernameEmailGenerator, Identity, Gender } from '@/utils/dist/shared/identity-generator';
 import type { Attachment, Credential } from '@/utils/dist/shared/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
+
+import { browser } from '#imports';
 
 type CredentialMode = 'random' | 'manual';
 
@@ -230,14 +233,36 @@ const CredentialAddEdit: React.FC = () => {
     }
 
     if (!id) {
-      // On create mode, focus the service name field after a short delay to ensure the component is mounted.
+      // On create mode, check for URL parameters and prefill if present
+      const urlParams = new URLSearchParams(window.location.search);
+      const serviceName = urlParams.get('serviceName');
+      const serviceUrl = urlParams.get('serviceUrl');
+
+      if (serviceName) {
+        setValue('ServiceName', decodeURIComponent(serviceName));
+      }
+      if (serviceUrl) {
+        setValue('ServiceUrl', decodeURIComponent(serviceUrl));
+      }
+
+      // Focus the service name field after a short delay to ensure the component is mounted.
       setTimeout(() => {
         serviceNameRef.current?.focus();
       }, 100);
       setIsInitialLoading(false);
 
-      // Load persisted form values if they exist.
-      loadPersistedValues();
+      // Check if we should skip form restoration (e.g., when opened from popout button)
+      browser.storage.local.get([SKIP_FORM_RESTORE_KEY]).then((result) => {
+        if (result[SKIP_FORM_RESTORE_KEY]) {
+          // Clear the flag after using it
+          browser.storage.local.remove([SKIP_FORM_RESTORE_KEY]);
+          // Don't load persisted values, but set local loading to false
+          setLocalLoading(false);
+        } else {
+          // Load persisted form values normally
+          loadPersistedValues();
+        }
+      });
       return;
     }
 
@@ -270,7 +295,7 @@ const CredentialAddEdit: React.FC = () => {
       console.error('Error loading credential:', err);
       setIsInitialLoading(false);
     }
-  }, [dbContext.sqliteClient, id, navigate, setIsInitialLoading, setValue, loadPersistedValues]);
+  }, [dbContext.sqliteClient, id, navigate, setIsInitialLoading, setValue, loadPersistedValues, clearPersistedValues]);
 
   /**
    * Handle the delete button click.

@@ -784,21 +784,33 @@ body {
 .av-create-popup-title-container {
   display: flex;
   align-items: center;
-  gap: 8px;
   flex: 1;
-  justify-content: center;
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 4px;
   transition: background-color 0.2s;
+  position: relative;
 }
 
 .av-create-popup-title-wrapper {
+  position: absolute;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   color: #d68338;
+  pointer-events: none;
 }
+
+.av-create-popup-header-buttons {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
 
 .av-create-popup-title-wrapper .av-icon {
   width: 20px;
@@ -806,6 +818,7 @@ body {
   stroke-width: 1.5;
   stroke-linecap: round;
   stroke-linejoin: round;
+  pointer-events: auto;
 }
 
 .av-create-popup-title-wrapper .av-create-popup-title {
@@ -813,6 +826,7 @@ body {
   font-size: 18px;
   font-weight: 600;
   color: #f8f9fa;
+  pointer-events: auto;
 }
 
 .av-create-popup-title-container:hover {
@@ -839,6 +853,34 @@ body {
 .av-create-popup-mode-dropdown .av-icon {
   width: 16px;
   height: 16px;
+}
+
+.av-create-popup-popout {
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.av-create-popup-popout:hover {
+  background-color: #4b5563;
+  color: #d68338;
+}
+
+.av-create-popup-popout .av-icon {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .av-create-popup-mode-dropdown-menu {

@@ -1,4 +1,3 @@
-// TODO: store generic setting constants somewhere else.
 export const DISABLED_SITES_KEY = 'local:aliasvault_disabled_sites';
 export const GLOBAL_AUTOFILL_POPUP_ENABLED_KEY = 'local:aliasvault_global_autofill_popup_enabled';
 export const GLOBAL_CONTEXT_MENU_ENABLED_KEY = 'local:aliasvault_global_context_menu_enabled';
@@ -11,3 +10,4 @@ export const AUTOFILL_MATCHING_MODE_KEY = 'local:aliasvault_autofill_matching_mo
 // TODO: store these settings in the actual vault when updating the datamodel for roadmap v1.0.
 export const CUSTOM_EMAIL_HISTORY_KEY = 'local:aliasvault_custom_email_history';
 export const CUSTOM_USERNAME_HISTORY_KEY = 'local:aliasvault_custom_username_history';
+export const SKIP_FORM_RESTORE_KEY = 'local:aliasvault_skip_form_restore';

@@ -829,11 +829,20 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
             ${randomIdentityIcon}
             <h3 class="av-create-popup-title">${randomIdentityTitle}</h3>
           </div>
-          <button class="av-create-popup-mode-dropdown">
-            <svg class="av-icon" viewBox="0 0 24 24">
-              <path d="M6 9l6 6 6-6"/>
-            </svg>
-          </button>
+          <div class="av-create-popup-header-buttons">
+            <button class="av-create-popup-mode-dropdown">
+              <svg class="av-icon" viewBox="0 0 24 24">
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            <button class="av-create-popup-popout" title="Open in main popup">
+              <svg class="av-icon" viewBox="0 0 24 24">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -960,6 +969,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       const customMode = popup.querySelector('.av-create-popup-custom-mode') as HTMLElement;
       const dropdownMenu = popup.querySelector('.av-create-popup-mode-dropdown-menu') as HTMLElement;
       const titleContainer = popup.querySelector('.av-create-popup-title-container') as HTMLElement;
+      const popoutBtn = popup.querySelector('.av-create-popup-popout') as HTMLButtonElement;
       const cancelBtn = popup.querySelector('#cancel-btn') as HTMLButtonElement;
       const customCancelBtn = popup.querySelector('#custom-cancel-btn') as HTMLButtonElement;
       const saveBtn = popup.querySelector('#save-btn') as HTMLButtonElement;
@@ -1041,6 +1051,16 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       // Initial display of suggestions
       await updateSuggestions(customEmail, emailSuggestions, emailHistory);
       await updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
+
+      // Handle popout button click
+      popoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const serviceName = inputServiceName.value.trim();
+        const currentUrl = window.location.href;
+        sendMessage('OPEN_POPUP_CREATE_CREDENTIAL', { serviceName, currentUrl }, 'background');
+        closePopup(null);
+      });
 
       // Handle email input
       customEmail.addEventListener('input', async () => {
