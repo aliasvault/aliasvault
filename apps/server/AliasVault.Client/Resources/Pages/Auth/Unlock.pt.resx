@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="LoggingInWithWebAuthn" xml:space="preserve">
+    <value>Logging in with WebAuthn...</value>
+    <comment>Message shown while WebAuthn authentication is in progress</comment>
+  </data>
+  <data name="QuickUnlockDescription" xml:space="preserve">
+    <value>Quickly unlock your vault using your fingerprint, face ID, or security key. Or login with your password as a fallback.</value>
+    <comment>Description explaining WebAuthn unlock options</comment>
+  </data>
+  <data name="UnlockWithWebAuthn" xml:space="preserve">
+    <value>Unlock with WebAuthn</value>
+    <comment>Button text for WebAuthn unlock</comment>
+  </data>
+  <data name="UnlockWithPassword" xml:space="preserve">
+    <value>Unlock with password</value>
+    <comment>Button text for password unlock</comment>
+  </data>
+  <data name="EnterMasterPasswordDescription" xml:space="preserve">
+    <value>Enter your master password to unlock your vault.</value>
+    <comment>Description for password unlock form</comment>
+  </data>
+  <data name="YourPasswordLabel" xml:space="preserve">
+    <value>Your password</value>
+    <comment>Label for password input field</comment>
+  </data>
+  <data name="UnlockButton" xml:space="preserve">
+    <value>Unlock</value>
+    <comment>Button text for unlock submission</comment>
+  </data>
+  <data name="SwitchAccountsText" xml:space="preserve">
+    <value>Switch accounts?</value>
+    <comment>Text before logout link</comment>
+  </data>
+  <data name="LogOutLink" xml:space="preserve">
+    <value>Log out</value>
+    <comment>Link text for logout</comment>
+  </data>
+  <data name="UnlockingVaultMessage" xml:space="preserve">
+    <value>Unlocking vault...</value>
+    <comment>Loading message while unlocking vault</comment>
+  </data>
+  <data name="UnlockRequestError" xml:space="preserve">
+    <value>An error occurred while processing the unlock request.</value>
+    <comment>Error message for unlock request processing</comment>
+  </data>
+  <data name="IncorrectPasswordError" xml:space="preserve">
+    <value>The password is incorrect. Please try entering your password again, or log out and log in again.</value>
+    <comment>Error message for incorrect password</comment>
+  </data>
+  <data name="SessionTimedOutError" xml:space="preserve">
+    <value>Your session has timed out. Please log in again.</value>
+    <comment>Error message for session timeout</comment>
+  </data>
+  <data name="ConnectionFailedError" xml:space="preserve">
+    <value>Connection with the AliasVault servers failed. Please try again (later).</value>
+    <comment>Error message for server connection failure</comment>
+  </data>
+  <data name="WebAuthnNotSupportedError" xml:space="preserve">
+    <value>Your current browser does not support the WebAuthn PRF extension. Please login with your password instead.</value>
+    <comment>Error message when WebAuthn is not supported</comment>
+  </data>
+  <data name="GenericUnlockError" xml:space="preserve">
+    <value>An error occurred while processing the login request. Try again (later).</value>
+    <comment>Generic error message for unlock failures</comment>
+  </data>
+</root>
