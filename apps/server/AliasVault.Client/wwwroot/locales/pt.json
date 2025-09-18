@@ -1,25 +1,25 @@
 {
   "loading": {
-    "title": "AliasVault is loading",
-    "message": "Initializing secure environment. AliasVault prioritizes your privacy by running entirely in your browser. The first load might take a short while.",
-    "refreshText": "If loading seems stuck, you can click the button below to refresh the page.",
-    "refreshButtonText": "Refresh Page"
+    "title": "Carregando AliasVault",
+    "message": "Inicializando ambiente seguro. AliasVault prioriza sua segurança, rodando inteiramente no seu navegador. O carregamento inicial pode demorar um pouco.",
+    "refreshText": "Se o carregamento parecer travado, você pode clicar no botão abaixo para atualizar a página.",
+    "refreshButtonText": "Atualizar Página"
   },
   "errors": {
-    "unhandledError": "An unhandled error has occurred. Please try reloading the page. If the issue persists, please contact support.",
-    "webAssemblyError": "AliasVault requires WebAssembly, which this browser does not support. Try using a more modern browser that supports WebAssembly.",
-    "reloadPageText": "Reload Page"
+    "unhandledError": "Um erro imprevisto aconteceu. Por favor, tente atualizar a página. Se o erro persistir, por favor, entre em contato com o suporte.",
+    "webAssemblyError": "AliasVault requer WebAssembly, porém este navegador não suporta. Tente utilizar um navegador mais moderno que possua suporte ao WebAssembly.",
+    "reloadPageText": "Atualizar Página"
   },
   "quotes": {
     "security": [
-      "Your identity is your most valuable asset. Protect it like one.",
-      "In the digital world, a strong password is your first line of defense.",
-      "Security is not a product, but a process.",
-      "The weakest link in the security chain is the human element.",
-      "Security is always excessive until it's not enough.",
-      "Trust, but verify - especially online.",
-      "Your data is only as secure as your weakest password.",
-      "The most secure password is the one you can't remember."
+      "Sua identidade é seu patrimônio mais valioso. Proteja-o como deve.",
+      "No mundo digital, uma senha forte é sua primeira linha de defesa.",
+      "Segurança não é um produto, mas sim um processo.",
+      "O elo mais fraco numa cadeia de segurança é o elemento humano.",
+      "Segurança sempre é excessiva até não ser suficiente.",
+      "Confie, mas verifique - principalmente online.",
+      "Seus dados são apenas tão seguros quanto sua senha mais fraca.",
+      "A senha mais segura é àquela que você não consegue lembrar."
     ]
   }
 }
