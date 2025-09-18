@@ -539,6 +539,62 @@ body {
   box-shadow: 0 0 0 1px #ef4444 !important;
 }
 
+/* Field Suggestions - Pill Style */
+.av-field-suggestions {
+  margin-top: 8px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.av-suggestion-pill {
+  display: inline-flex;
+  align-items: center;
+  background: #4b5563;
+  border: 1px solid #6b7280;
+  border-radius: 16px;
+  padding: 4px 8px 4px 12px;
+  font-size: 13px;
+  color: #e5e7eb;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.av-suggestion-pill:hover {
+  background: #6b7280;
+  border-color: #9ca3af;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.av-suggestion-pill-text {
+  display: inline-block;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.av-suggestion-pill-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  padding: 0 2px;
+  color: #9ca3af;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: color 0.2s;
+  border-left: 1px solid #6b7280;
+  padding-left: 6px;
+}
+
+.av-suggestion-pill-delete:hover {
+  color: #ef4444;
+}
+
 .av-create-popup-error-text {
   color: #ef4444;
   font-size: 0.875rem;

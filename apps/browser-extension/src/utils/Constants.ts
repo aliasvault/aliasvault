@@ -9,5 +9,5 @@ export const AUTO_LOCK_TIMEOUT_KEY = 'local:aliasvault_auto_lock_timeout';
 export const AUTOFILL_MATCHING_MODE_KEY = 'local:aliasvault_autofill_matching_mode';
 
 // TODO: store these settings in the actual vault when updating the datamodel for roadmap v1.0.
-export const LAST_CUSTOM_EMAIL_KEY = 'local:aliasvault_last_custom_email';
-export const LAST_CUSTOM_USERNAME_KEY = 'local:aliasvault_last_custom_username';
+export const CUSTOM_EMAIL_HISTORY_KEY = 'local:aliasvault_custom_email_history';
+export const CUSTOM_USERNAME_HISTORY_KEY = 'local:aliasvault_custom_username_history';

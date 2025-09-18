@@ -3,7 +3,7 @@ import { sendMessage } from 'webext-bridge/content-script';
 import { filterCredentials, AutofillMatchingMode } from '@/entrypoints/contentScript/Filter';
 import { fillCredential } from '@/entrypoints/contentScript/Form';
 
-import { DISABLED_SITES_KEY, TEMPORARY_DISABLED_SITES_KEY, GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, VAULT_LOCKED_DISMISS_UNTIL_KEY, LAST_CUSTOM_EMAIL_KEY, LAST_CUSTOM_USERNAME_KEY, AUTOFILL_MATCHING_MODE_KEY } from '@/utils/Constants';
+import { DISABLED_SITES_KEY, TEMPORARY_DISABLED_SITES_KEY, GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, VAULT_LOCKED_DISMISS_UNTIL_KEY, AUTOFILL_MATCHING_MODE_KEY, CUSTOM_EMAIL_HISTORY_KEY, CUSTOM_USERNAME_HISTORY_KEY } from '@/utils/Constants';
 import { CreateIdentityGenerator } from '@/utils/dist/shared/identity-generator';
 import type { Credential } from '@/utils/dist/shared/models/vault';
 import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/shared/password-generator';
@@ -762,9 +762,9 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
   // Close existing popup
   removeExistingPopup(rootContainer);
 
-  // Load last used values
-  const lastEmail = await storage.getItem(LAST_CUSTOM_EMAIL_KEY) as string ?? '';
-  const lastUsername = await storage.getItem(LAST_CUSTOM_USERNAME_KEY) as string ?? '';
+  // Load history
+  const emailHistory = await storage.getItem(CUSTOM_EMAIL_HISTORY_KEY) as string[] ?? [];
+  const usernameHistory = await storage.getItem(CUSTOM_USERNAME_HISTORY_KEY) as string[] ?? [];
 
   return new Promise((resolve) => {
     (async (): Promise<void> => {
@@ -888,8 +888,8 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
             id="custom-email"
             class="av-create-popup-input"
             placeholder="${enterEmailAddressText}"
-            data-default-value="${lastEmail}"
           >
+          <div class="av-field-suggestions" id="email-suggestions"></div>
         </div>
         <div class="av-create-popup-field-group">
           <label for="custom-username">${usernameText}</label>
@@ -898,8 +898,8 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
             id="custom-username"
             class="av-create-popup-input"
             placeholder="${enterUsernameText}"
-            data-default-value="${lastUsername}"
           >
+          <div class="av-field-suggestions" id="username-suggestions"></div>
         </div>
         <div class="av-create-popup-field-group">
           <label>${passwordText}</label>
@@ -970,41 +970,141 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       const passwordPreview = popup.querySelector('#password-preview') as HTMLInputElement;
       const regenerateBtn = popup.querySelector('#regenerate-password') as HTMLButtonElement;
       const toggleVisibilityBtn = popup.querySelector('#toggle-password-visibility') as HTMLButtonElement;
+      const emailSuggestions = popup.querySelector('#email-suggestions') as HTMLElement;
+      const usernameSuggestions = popup.querySelector('#username-suggestions') as HTMLElement;
 
       /**
-       * Setup default value for input with placeholder styling.
+       * Update history with new value (max 2 unique entries)
        */
-      const setupDefaultValue = (input: HTMLInputElement) : void => {
-        const defaultValue = input.dataset.defaultValue;
-        if (defaultValue) {
-          input.value = defaultValue;
-          input.classList.add('av-create-popup-input-default');
+      const updateHistory = async (value: string, historyKey: typeof CUSTOM_EMAIL_HISTORY_KEY | typeof CUSTOM_USERNAME_HISTORY_KEY, maxItems: number = 2): Promise<string[]> => {
+        const history = await storage.getItem(historyKey) as string[] ?? [];
+
+        // Remove the value if it already exists
+        const filteredHistory = history.filter((item: string) => item !== value);
+
+        // Add the new value at the beginning
+        if (value.trim()) {
+          filteredHistory.unshift(value);
         }
+
+        // Keep only the first maxItems
+        const updatedHistory = filteredHistory.slice(0, maxItems);
+
+        // Save the updated history
+        await storage.setItem(historyKey, updatedHistory);
+
+        return updatedHistory;
       };
 
-      setupDefaultValue(customEmail);
-      setupDefaultValue(customUsername);
+      /**
+       * Remove item from history
+       */
+      const removeFromHistory = async (value: string, historyKey: typeof CUSTOM_EMAIL_HISTORY_KEY | typeof CUSTOM_USERNAME_HISTORY_KEY): Promise<string[]> => {
+        const history = await storage.getItem(historyKey) as string[] ?? [];
+        const updatedHistory = history.filter((item: string) => item !== value);
+        await storage.setItem(historyKey, updatedHistory);
+        return updatedHistory;
+      };
 
-      // Handle input changes
-      customEmail.addEventListener('input', () => {
-        const value = customEmail.value.trim();
-        if (value || value === '') {
-          customEmail.classList.remove('av-create-popup-input-default');
-          storage.setItem(LAST_CUSTOM_EMAIL_KEY, value);
+      /**
+       * Format suggestions HTML as pill-style buttons
+       */
+      const formatSuggestionsHtml = async (history: string[], currentValue: string): Promise<string> => {
+        // Filter out the current value from history and limit to 2 items
+        const filteredHistory = history
+          .filter(item => item.toLowerCase() !== currentValue.toLowerCase())
+          .slice(0, 2);
+
+        if (filteredHistory.length === 0) {
+          return '';
+        }
+
+        // Build HTML with pill-style buttons
+        return filteredHistory.map(item =>
+          `<span class="av-suggestion-pill">
+            <span class="av-suggestion-pill-text" data-value="${item}">${item}</span>
+            <span class="av-suggestion-pill-delete" data-value="${item}" title="Remove">×</span>
+          </span>`
+        ).join(' ');
+      };
+
+      /**
+       * Update suggestions display
+       */
+      const updateSuggestions = async (input: HTMLInputElement, suggestionsContainer: HTMLElement, history: string[]): Promise<void> => {
+        const currentValue = input.value.trim();
+        const html = await formatSuggestionsHtml(history, currentValue);
+        suggestionsContainer.innerHTML = html;
+        suggestionsContainer.style.display = html ? 'flex' : 'none';
+      };
+
+      // Initial display of suggestions
+      await updateSuggestions(customEmail, emailSuggestions, emailHistory);
+      await updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
+
+      // Handle email input
+      customEmail.addEventListener('input', async () => {
+        await updateSuggestions(customEmail, emailSuggestions, emailHistory);
+      });
+
+      // Handle username input
+      customUsername.addEventListener('input', async () => {
+        await updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
+      });
+
+      // Handle suggestion clicks for email
+      emailSuggestions.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const target = e.target as HTMLElement;
+
+        // Check if delete button was clicked
+        if (target.classList.contains('av-suggestion-pill-delete')) {
+          const value = target.dataset.value;
+          if (value) {
+            const updatedHistory = await removeFromHistory(value, CUSTOM_EMAIL_HISTORY_KEY);
+            emailHistory.splice(0, emailHistory.length, ...updatedHistory);
+            await updateSuggestions(customEmail, emailSuggestions, emailHistory);
+          }
         } else {
-          customEmail.classList.add('av-create-popup-input-default');
-          storage.setItem(LAST_CUSTOM_EMAIL_KEY, '');
+          // Check if pill or pill text was clicked
+          let pillElement = target.closest('.av-suggestion-pill') as HTMLElement;
+          if (pillElement) {
+            const textElement = pillElement.querySelector('.av-suggestion-pill-text') as HTMLElement;
+            const value = textElement?.dataset.value;
+            if (value) {
+              customEmail.value = value;
+              await updateSuggestions(customEmail, emailSuggestions, emailHistory);
+            }
+          }
         }
       });
 
-      customUsername.addEventListener('input', () => {
-        const value = customUsername.value.trim();
-        if (value || value === '') {
-          customUsername.classList.remove('av-create-popup-input-default');
-          storage.setItem(LAST_CUSTOM_USERNAME_KEY, value);
+      // Handle suggestion clicks for username
+      usernameSuggestions.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const target = e.target as HTMLElement;
+
+        // Check if delete button was clicked
+        if (target.classList.contains('av-suggestion-pill-delete')) {
+          const value = target.dataset.value;
+          if (value) {
+            const updatedHistory = await removeFromHistory(value, CUSTOM_USERNAME_HISTORY_KEY);
+            usernameHistory.splice(0, usernameHistory.length, ...updatedHistory);
+            await updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
+          }
         } else {
-          customUsername.classList.add('av-create-popup-input-default');
-          storage.setItem(LAST_CUSTOM_USERNAME_KEY, '');
+          // Check if pill or pill text was clicked
+          let pillElement = target.closest('.av-suggestion-pill') as HTMLElement;
+          if (pillElement) {
+            const textElement = pillElement.querySelector('.av-suggestion-pill-text') as HTMLElement;
+            const value = textElement?.dataset.value;
+            if (value) {
+              customUsername.value = value;
+              await updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
+            }
+          }
         }
       });
 
@@ -1372,12 +1472,8 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         if (serviceName) {
           const email = customEmail.value.trim();
           const username = customUsername.value.trim();
-          const hasDefaultEmail = customEmail.classList.contains('av-create-popup-input-default');
-          const hasDefaultUsername = customUsername.classList.contains('av-create-popup-input-default');
-
-          // If using default values, use the dataset values
-          const finalEmail = hasDefaultEmail ? customEmail.dataset.defaultValue : email;
-          const finalUsername = hasDefaultUsername ? customUsername.dataset.defaultValue : username;
+          const finalEmail = email;
+          const finalUsername = username;
 
           if (!finalEmail && !finalUsername) {
           // Add error styling to fields
@@ -1422,6 +1518,14 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
             customUsername.addEventListener('input', removeError, { once: true });
 
             return;
+          }
+
+          // Update history when saving
+          if (finalEmail) {
+            await updateHistory(finalEmail, CUSTOM_EMAIL_HISTORY_KEY);
+          }
+          if (finalUsername) {
+            await updateHistory(finalUsername, CUSTOM_USERNAME_HISTORY_KEY);
           }
 
           closePopup({
