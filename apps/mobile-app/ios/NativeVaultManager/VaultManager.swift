@@ -368,6 +368,25 @@ public class VaultManager: NSObject {
     }
 
     @objc
+    func deriveKeyFromPassword(_ password: String,
+                              salt: String,
+                              encryptionType: String,
+                              encryptionSettings: String,
+                              resolver resolve: @escaping RCTPromiseResolveBlock,
+                              rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            let derivedKey = try vaultStore.deriveKeyFromPassword(password,
+                                                                  salt: salt,
+                                                                  encryptionType: encryptionType,
+                                                                  encryptionSettings: encryptionSettings)
+            // Return the derived key as base64 encoded string
+            resolve(derivedKey.base64EncodedString())
+        } catch {
+            reject("ARGON2_ERROR", "Failed to derive key from password: \(error.localizedDescription)", error)
+        }
+    }
+
+    @objc
     func openAutofillSettingsPage(_ resolve: @escaping RCTPromiseResolveBlock,
                                  rejecter reject: @escaping RCTPromiseRejectBlock) {
         if let settingsUrl = URL(string: "App-Prefs:root") {

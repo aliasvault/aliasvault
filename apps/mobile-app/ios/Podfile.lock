@@ -1,6 +1,5 @@
 PODS:
   - boost (1.84.0)
-  - CatCrypto (0.3.2)
   - DoubleConversion (1.1.6)
   - EXConstants (17.1.7):
     - ExpoModulesCore
@@ -2217,9 +2216,6 @@ PODS:
     - React-logger (= 0.79.6)
     - React-perflogger (= 0.79.6)
     - React-utils (= 0.79.6)
-  - RNArgon2 (2.0.1):
-    - CatCrypto
-    - React-Core
   - RNCAsyncStorage (2.1.2):
     - DoubleConversion
     - glog
@@ -2492,6 +2488,7 @@ PODS:
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
     - Yoga
+  - SignalArgon2 (1.3.2)
   - SocketRocket (0.7.1)
   - SQLite.swift (0.14.1):
     - SQLite.swift/standard (= 0.14.1)
@@ -2609,21 +2606,21 @@ DEPENDENCIES:
   - ReactAppDependencyProvider (from `build/generated/ios`)
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
-  - RNArgon2 (from `../node_modules/react-native-argon2`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
+  - SignalArgon2 (~> 1.3.2)
   - SQLite.swift (~> 0.14.0)
   - SwiftLint
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
-    - CatCrypto
     - Macaw
     - OpenSSL-Universal
+    - SignalArgon2
     - SocketRocket
     - SQLite.swift
     - SwiftLint
@@ -2841,8 +2838,6 @@ EXTERNAL SOURCES:
     :path: build/generated/ios
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
-  RNArgon2:
-    :path: "../node_modules/react-native-argon2"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
   RNGestureHandler:
@@ -2858,7 +2853,6 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   boost: 1dca942403ed9342f98334bf4c3621f011aa7946
-  CatCrypto: a477899b6be4954e75be4897e732da098cc0a5a8
   DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
   EXConstants: 98bcf0f22b820f9b28f9fee55ff2daededadd2f8
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
@@ -2965,18 +2959,18 @@ SPEC CHECKSUMS:
   ReactAppDependencyProvider: ae0be24eb18014a031b4b220cb3973d07c3cbaf8
   ReactCodegen: a09f5c12174828282e5003f0d63b2871dd8b4b75
   ReactCommon: 44c86ec3ace664c0f33b7a2ac89aced8304ef25e
-  RNArgon2: 708e188b7a4d4ec8baf62463927c47abef453a94
   RNCAsyncStorage: 39c42c1e478e1f5166d1db52b5055e090e85ad66
   RNGestureHandler: 7d0931a61d7ba0259f32db0ba7d0963c3ed15d2b
   RNReanimated: 2313402fe27fecb7237619e9c6fcee3177f08a65
   RNScreens: f0678748c5310b49a3f920f1485f5ec477afd345
   RNSVG: 794f269526df9ddc1f79b3d1a202b619df0368e3
+  SignalArgon2: 1c24183835ca861e6af06631c18b1671cdf35571
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SQLite.swift: 2992550ebf3c5b268bf4352603e3df87d2a4ed72
   SwiftLint: 3d48e2fb2a3468fdaccf049e5e755df22fb40c2c
   SWXMLHash: dd733a457e9c4fe93b1538654057aefae4acb382
   Yoga: dc7c21200195acacb62fa920c588e7c2106de45e
 
-PODFILE CHECKSUM: 9254f97341788b3995b61300689a0fff1692f333
+PODFILE CHECKSUM: ac288e273086bafdd610cafff08ccca0d164f7c3
 
 COCOAPODS: 1.16.2

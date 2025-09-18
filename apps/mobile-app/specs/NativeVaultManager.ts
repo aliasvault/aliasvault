@@ -12,6 +12,9 @@ export interface Spec extends TurboModule {
   getVaultMetadata(): Promise<string>;
   unlockVault(): Promise<boolean>;
 
+  // Cryptography operations
+  deriveKeyFromPassword(password: string, salt: string, encryptionType: string, encryptionSettings: string): Promise<string>;
+
   // Database operations
   storeDatabase(base64EncryptedDb: string): Promise<void>;
   storeMetadata(metadata: string): Promise<void>;
@@ -37,15 +40,15 @@ export interface Spec extends TurboModule {
   getAutoLockTimeout(): Promise<number>;
   getAuthMethods(): Promise<string[]>;
   openAutofillSettingsPage(): Promise<void>;
-  
+
   // Clipboard management
   clearClipboardAfterDelay(delayInSeconds: number): Promise<void>;
   copyToClipboardWithExpiration(text: string, expirationSeconds: number): Promise<void>;
-  
+
   // Exact alarm permission management
   canScheduleExactAlarms(): Promise<boolean>;
   requestExactAlarmPermission(): Promise<string>;
-  
+
   // Battery optimization management
   isIgnoringBatteryOptimizations(): Promise<boolean>;
   requestIgnoreBatteryOptimizations(): Promise<string>;

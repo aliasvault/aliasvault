@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer';
 
 import AesGcmCrypto from 'react-native-aes-gcm-crypto';
-import argon2 from 'react-native-argon2';
 
+import NativeVaultManager from '@/specs/NativeVaultManager';
 import type { EncryptionKey } from '@/utils/dist/shared/models/vault';
 import type { Email, MailboxEmail } from '@/utils/dist/shared/models/webapi';
 
@@ -22,30 +22,22 @@ class EncryptionUtility {
     encryptionType: string = 'Argon2Id',
     encryptionSettings: string = '{"Iterations":2,"MemorySize":19456,"DegreeOfParallelism":1}'
   ): Promise<Uint8Array> {
-    const settings = JSON.parse(encryptionSettings);
-
     try {
-      if (encryptionType !== 'Argon2Id') {
-        throw new Error('Unsupported encryption type: ' + encryptionType);
-      }
-
-      const result = await argon2(
+      // Call the native method to derive the key via Argon2id
+      const base64Key = await NativeVaultManager.deriveKeyFromPassword(
         password,
         salt,
-        {
-          iterations: settings.Iterations,
-          memory: settings.MemorySize,
-          parallelism: settings.DegreeOfParallelism,
-          hashLength: 32,
-          mode: 'argon2id'
-        }
+        encryptionType,
+        encryptionSettings
       );
 
-      // Convert the hex string to Uint8Array
-      const bytes = new Uint8Array(32);
-      for (let i = 0; i < 32; i++) {
-        bytes[i] = parseInt(result.rawHash.substring(i * 2, i * 2 + 2), 16);
+      // Convert base64 string to Uint8Array
+      const binaryString = atob(base64Key);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
       }
+
       return bytes;
     } catch (error) {
       console.error('Argon2 hashing failed:', error);
