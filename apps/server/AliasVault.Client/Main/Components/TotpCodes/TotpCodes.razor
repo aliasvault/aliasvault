@@ -91,6 +91,8 @@
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Components.TotpCodes.TotpCodes", "AliasVault.Client");
 
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
+
     /// <summary>
     /// The list of TOTP codes.
     /// </summary>
@@ -177,7 +179,7 @@
     private async Task DeleteTotpCode(TotpCode totpCode)
     {
         // Show confirmation modal.
-        var result = await ConfirmModalService.ShowConfirmation(Localizer["DeleteTotpCodeTitle"], Localizer["DeleteTotpCodeConfirmation"]);
+        var result = await ConfirmModalService.ShowConfirmation(Localizer["DeleteTotpCodeTitle"], Localizer["DeleteTotpCodeConfirmation"], SharedLocalizer["Confirm"], SharedLocalizer["Cancel"]);
         if (!result)
         {
             return;

@@ -88,6 +88,8 @@
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Email.EmailModal", "AliasVault.Client");
 
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
+
     /// <summary>
     /// The email to show in the modal.
     /// </summary>
@@ -129,7 +131,9 @@
 
         var result = await ConfirmModalService.ShowConfirmation(
             Localizer["DeleteEmailTitle"],
-            Localizer["DeleteEmailConfirmation"]
+            Localizer["DeleteEmailConfirmation"],
+            SharedLocalizer["Confirm"],
+            SharedLocalizer["Cancel"]
         );
 
         if (result)
