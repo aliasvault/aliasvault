@@ -6,6 +6,9 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Base64
 import android.util.Log
+import com.lambdapioneer.argon2kt.Argon2Kt
+import com.lambdapioneer.argon2kt.Argon2Mode
+import com.lambdapioneer.argon2kt.Argon2Version
 import net.aliasvault.app.vaultstore.interfaces.CredentialOperationCallback
 import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreOperationCallback
@@ -238,6 +241,43 @@ class VaultStore(
      */
     fun getEncryptionKeyDerivationParams(): String {
         return this.storageProvider.getKeyDerivationParams()
+    }
+
+    /**
+     * Derive a key from a password using Argon2Id.
+     * @param password The password to derive from
+     * @param salt The salt to use
+     * @param encryptionType The type of encryption (should be "Argon2Id")
+     * @param encryptionSettings JSON string with encryption parameters
+     * @return The derived key as a ByteArray
+     */
+    fun deriveKeyFromPassword(password: String, salt: String, encryptionType: String, encryptionSettings: String): ByteArray {
+        if (encryptionType != "Argon2Id") {
+            throw IllegalArgumentException("Unsupported encryption type: $encryptionType")
+        }
+
+        // Parse encryption settings JSON
+        val settings = JSONObject(encryptionSettings)
+        val iterations = settings.getInt("Iterations")
+        val memorySize = settings.getInt("MemorySize")
+        val parallelism = settings.getInt("DegreeOfParallelism")
+
+        // Create Argon2 instance
+        val argon2 = Argon2Kt()
+
+        // Hash the password using Argon2Id
+        val hashResult = argon2.hash(
+            mode = Argon2Mode.ARGON2_ID,
+            password = password.toByteArray(Charsets.UTF_8),
+            salt = salt.toByteArray(Charsets.UTF_8),
+            tCostInIterations = iterations,
+            mCostInKibibyte = memorySize,
+            parallelism = parallelism,
+            hashLengthInBytes = 32,
+            version = Argon2Version.V13,
+        )
+
+        return hashResult.rawHashAsByteArray()
     }
 
     /**

@@ -779,6 +779,27 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Derive a key from a password using Argon2Id.
+     * @param password The password to derive from
+     * @param salt The salt to use
+     * @param encryptionType The type of encryption (should be "Argon2Id")
+     * @param encryptionSettings JSON string with encryption parameters
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun deriveKeyFromPassword(password: String, salt: String, encryptionType: String, encryptionSettings: String, promise: Promise) {
+        try {
+            val derivedKey = vaultStore.deriveKeyFromPassword(password, salt, encryptionType, encryptionSettings)
+            // Return as base64 string
+            val base64Key = android.util.Base64.encodeToString(derivedKey, android.util.Base64.NO_WRAP)
+            promise.resolve(base64Key)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error deriving key from password", e)
+            promise.reject("ERR_DERIVE_KEY", "Failed to derive key from password: ${e.message}", e)
+        }
+    }
+
+    /**
      * Open the autofill settings page.
      * @param promise The promise to resolve
      */
