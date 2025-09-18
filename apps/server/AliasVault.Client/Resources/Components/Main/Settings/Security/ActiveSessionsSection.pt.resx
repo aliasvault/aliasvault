@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Active Sessions</value>
+    <comment>Section title</comment>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Below is a list of devices where your account is currently logged in or has an active session. You can log out from any of these sessions here.</value>
+    <comment>Description of active sessions</comment>
+  </data>
+  <data name="NoSessionsMessage" xml:space="preserve">
+    <value>No active sessions found.</value>
+    <comment>Message when no active sessions are available</comment>
+  </data>
+  <data name="DeviceColumn" xml:space="preserve">
+    <value>Device</value>
+    <comment>Table column header</comment>
+  </data>
+  <data name="LastActiveColumn" xml:space="preserve">
+    <value>Last active</value>
+    <comment>Table column header</comment>
+  </data>
+  <data name="ExpiresColumn" xml:space="preserve">
+    <value>Expires</value>
+    <comment>Table column header</comment>
+  </data>
+  <data name="ActionColumn" xml:space="preserve">
+    <value>Action</value>
+    <comment>Table column header</comment>
+  </data>
+  <data name="RevokeButton" xml:space="preserve">
+    <value>Revoke</value>
+    <comment>Button to revoke session</comment>
+  </data>
+  <data name="RevokeSuccessMessage" xml:space="preserve">
+    <value>Session revoked successfully.</value>
+    <comment>Success message when session is revoked</comment>
+  </data>
+  <data name="RevokeErrorMessage" xml:space="preserve">
+    <value>Failed to revoke session.</value>
+    <comment>Error message when session revocation fails</comment>
+  </data>
+  <data name="RevokeExceptionMessage" xml:space="preserve">
+    <value>Failed to revoke session: {0}.</value>
+    <comment>Exception message when session revocation fails. {0} is placeholder for error details</comment>
+  </data>
+</root>
