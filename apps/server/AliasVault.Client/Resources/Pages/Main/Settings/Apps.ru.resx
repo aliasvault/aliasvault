@@ -21,45 +21,45 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>Extensions &amp; Apps</value>
+    <value>Расширения и приложения</value>
     <comment>Page title for extensions and apps</comment>
   </data>
   <data name="PageDescription">
-    <value>Install browser extensions and mobile apps to access your vault from all your devices and automatically fill credentials on websites.</value>
+    <value>Установите расширения для браузера и мобильные приложения, чтобы всегда иметь доступ к своему хранилищу и автоматически заполнять логины и пароли на сайтах.</value>
     <comment>Page description for extensions and apps</comment>
   </data>
   <data name="BreadcrumbTitle">
-    <value>Extensions &amp; Apps</value>
+    <value>Расширения и приложения</value>
     <comment>Breadcrumb title for extensions and apps</comment>
   </data>
   <!-- Browser Extensions Section -->
   <data name="BrowserExtensionsTitle">
-    <value>Browser Extensions</value>
+    <value>Расширение для браузеров</value>
     <comment>Title for browser extensions section</comment>
   </data>
   <data name="BrowserExtensionsDescription">
-    <value>The AliasVault browser extension allows you to autofill existing credentials on any website. It also allows you to generate new aliases during registration, access received emails on all of your aliases, and view your aliases and identities.</value>
+    <value>Расширение AliasVault для браузера помогает автоматически заполнять сохранённые данные входа на любом сайте. Оно также позволяет создавать новые псевдонимы при регистрации, получать письма на все ваши адреса и просматривать свои псевдонимы и личности.</value>
     <comment>Description for browser extensions</comment>
   </data>
   <data name="InstallButton">
-    <value>Install</value>
+    <value>Установить</value>
     <comment>Install button text</comment>
   </data>
   <data name="ComingSoonText">
-    <value>Coming soon</value>
+    <value>Скоро будет</value>
     <comment>Coming soon text for unavailable extensions</comment>
   </data>
   <!-- Mobile Apps Section -->
   <data name="MobileAppsTitle">
-    <value>Mobile Apps</value>
+    <value>Мобильные приложения</value>
     <comment>Title for mobile apps section</comment>
   </data>
   <data name="MobileAppsDescription">
-    <value>The AliasVault mobile app allows you to access your aliases and identities on the go, view and manage received emails, and generate new aliases anytime. Your data is fully protected with on-device biometric authentication.</value>
+    <value>Мобильное приложение AliasVault позволяет в любое время управлять псевдонимами и личностями, просматривать и управлять письмами, а также создавать новые псевдонимы. Все данные надежно защищены с помощью биометрической аутентификации на устройстве.</value>
     <comment>Description for mobile apps</comment>
   </data>
   <data name="DownloadButton">
-    <value>Download</value>
+    <value>Скачать</value>
     <comment>Download button text</comment>
   </data>
 </root>
