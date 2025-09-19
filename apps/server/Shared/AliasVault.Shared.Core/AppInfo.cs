@@ -30,7 +30,7 @@ public static class AppInfo
     /// <summary>
     /// Gets the patch version number.
     /// </summary>
-    public const int VersionPatch = 1;
+    public const int VersionPatch = 2;
 
     /// <summary>
     /// Gets the minimum supported AliasVault client version. Normally the minimum client version is the same
