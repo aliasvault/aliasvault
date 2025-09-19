@@ -109,7 +109,7 @@
     "randomAlias": "随机别名",
     "manual": "手动输入",
     "generateRandomAlias": "生成随机别名",
-    "clearAliasFields": "Clear Alias Fields",
+    "clearAliasFields": "清除别名字段",
     "enterFullEmail": "输入完整邮箱地址",
     "enterEmailPrefix": "输入邮箱前缀",
     "useDomainChooser": "使用域名选择器",
