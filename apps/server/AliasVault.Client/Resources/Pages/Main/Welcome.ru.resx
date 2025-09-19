@@ -88,7 +88,7 @@
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>Установите AliasVault в браузер и на смартфон, чтобы создавать псевдонимы и автоматически заполнять формы.</value>
+    <value>Установите AliasVault как расширение для браузера и приложение на смартфон, чтобы удобно создавать псевдонимы и автоматически заполнять формы.</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
