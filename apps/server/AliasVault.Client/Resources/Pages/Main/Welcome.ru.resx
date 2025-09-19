@@ -42,7 +42,7 @@
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>Your vault has been successfully created! Protect your online privacy by creating unique aliases for each service you sign up for. Let's learn how AliasVault works and then create your first secure alias.</value>
+    <value>Ваше хранилище готово! Защитите свою онлайн‑приватность — создавайте уникальные псевдонимы для каждого сервиса, где регистрируетесь. Давайте посмотрим, как работает AliasVault, и создадим ваш первый надёжный псевдоним.</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
