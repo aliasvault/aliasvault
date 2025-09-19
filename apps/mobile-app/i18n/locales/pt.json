@@ -234,73 +234,73 @@
     "security": "Segurança",
     "appVersion": "Versão do aplicativo {{version}} ({{url}})",
     "autoLockOptions": {
-      "never": "Never",
-      "5seconds": "5 seconds",
-      "30seconds": "30 seconds",
-      "1minute": "1 minute",
-      "15minutes": "15 minutes",
-      "30minutes": "30 minutes",
-      "1hour": "1 hour",
-      "4hours": "4 hours",
-      "8hours": "8 hours"
+      "never": "Nunca",
+      "5seconds": "5 segundos",
+      "30seconds": "30 segundos",
+      "1minute": "1 minuto",
+      "15minutes": "15 minutos",
+      "30minutes": "30 minutos",
+      "1hour": "1 hora",
+      "4hours": "4 horas",
+      "8hours": "8 horas"
     },
-    "language": "Language",
-    "languageSystemMessage": "To change the app language, configure the preferred language for AliasVault in your device settings.",
-    "openSettings": "Open Settings",
+    "language": "Idioma",
+    "languageSystemMessage": "Para mudar o idioma do aplicativo, configure o idioma preferido para o AliasVault nas configurações do seu dispositivo.",
+    "openSettings": "Abrir Configurações",
     "vaultUnlockSettings": {
-      "description": "Choose how you want to unlock your vault.",
-      "biometrics": "Biometrics",
+      "description": "Escolha como você quer desbloquear seu cofre.",
+      "biometrics": "Biometria",
       "faceId": "Face ID",
       "touchId": "Touch ID",
       "faceIdTouchId": "Face ID / Touch ID",
-      "biometricEnabled": "{{biometric}} is now successfully enabled",
-      "biometricNotAvailable": "{{biometric}} Not Available",
-      "biometricDisabledMessage": "{{biometric}} is disabled for AliasVault. In order to use it, please enable it in your device settings first.",
-      "biometricHelp": "Your vault decryption key will be securely stored on your local device in the {{keystore}} and can be accessed securely with {{biometric}}.",
-      "biometricUnavailableHelp": "{{biometric}} is not available. Tap to open settings and/or go to your device settings to enable and configure it.",
-      "passwordHelp": "Re-enter your full master password to unlock your vault. This is always enabled as fallback option.",
+      "biometricEnabled": "{{biometric}} foi ativado com sucesso",
+      "biometricNotAvailable": "{{biometric}} Não Disponível",
+      "biometricDisabledMessage": "{{biometric}} está desabitado para o AliasVault. Para utilizar, por favor primeiro habilite nas configurações do seu dispositivo.",
+      "biometricHelp": "A chave de descriptografia do seu cofre será salva seguramente no seu dispositivo local na {{keystore}} e pode ser acessada com {{biometric}}.",
+      "biometricUnavailableHelp": "{{biometric}} não está disponível. Clique para abrir as configurações e/ou vá às configurações do seu dispositivo para habilitar e configurar.",
+      "passwordHelp": "Re-digite sua senha mestre para desbloquear seu cofre. Isso sempre estará disponível como uma opção alternativa.",
       "keystoreIOS": "iOS Keychain",
       "keystoreAndroid": "Android Keystore"
     },
     "autoLockSettings": {
-      "description": "Choose how long the app can stay in the background before requiring re-authentication. You'll need to use Face ID or enter your password to unlock the vault again."
+      "description": "Escolha por quanto tempo o aplicativos pode ficar em background antes de solicitar re-autenticação. Você precisará usar o Face ID ou digitar sua senha para desbloquear seu cofre novamente."
     },
     "identityGeneratorSettings": {
-      "description": "Configure the default language and gender preference for generating new identities.",
-      "languageSection": "Language",
-      "languageDescription": "Set the language that will be used when generating new identities.",
-      "genderSection": "Gender",
-      "genderDescription": "Set the gender preference for generating new identities.",
+      "description": "Configure o idioma padrão e preferência de gênero para geração de novas identidades.",
+      "languageSection": "Idioma",
+      "languageDescription": "Defina o idioma que será utilizado ao gerar novas identidades.",
+      "genderSection": "Gênero",
+      "genderDescription": "Defina a preferência de gênero para geração de novas identidades.",
       "languageOptions": {
-        "english": "English",
-        "dutch": "Dutch"
+        "english": "Inglês",
+        "dutch": "Holandês"
       },
       "genderOptions": {
-        "random": "Random",
-        "male": "Male",
-        "female": "Female"
+        "random": "Aleatório",
+        "male": "Masculino",
+        "female": "Feminino"
       },
       "errors": {
-        "loadFailed": "Failed to load identity generator settings.",
-        "languageUpdateFailed": "Failed to update language setting.",
-        "genderUpdateFailed": "Failed to update gender setting."
+        "loadFailed": "Falha ao carregar configurações do gerador.",
+        "languageUpdateFailed": "Falha ao atualizar configurações de idioma.",
+        "genderUpdateFailed": "Falha ao atualizar configurações de gênero."
       }
     },
     "passwordGeneratorSettings": {
-      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
-      "preview": "Preview"
+      "description": "Configure as configurações padrão usadas para gerar novas senhas. Estas configurações serão usadas para todas as novas senhas a menos que seja sobrescrito para itens específicos.",
+      "preview": "Prévia"
     },
     "securitySettings": {
-      "title": "Security",
-      "description": "Manage your account and vault security settings.",
-      "changeMasterPassword": "Change Master Password",
-      "activeSessionsTitle": "Active Sessions",
-      "recentAuthLogs": "Recent Auth Logs",
-      "deleteAccountTitle": "Delete Account",
+      "title": "Segurança",
+      "description": "Gerencie as configurações de sua conta e de segurança do seu cofre.",
+      "changeMasterPassword": "Alterar Senha Mestre",
+      "activeSessionsTitle": "Sessões Ativas",
+      "recentAuthLogs": "Logs de Autenticação Recente",
+      "deleteAccountTitle": "Excluir Conta",
       "changePassword": {
-        "headerText": "Changing your master password also changes the vault encryption keys. It is advised to periodically change your master password to keep your vaults secure.",
-        "currentPassword": "Current Password",
-        "newPassword": "New Password",
+        "headerText": "Alterar sua senha mestre também irá alterar as chaves de criptografia do cofre. É aconselhável alterar sua senha mestre periodicamente para manter seu cofre seguro.",
+        "currentPassword": "Senha Atual",
+        "newPassword": "Nova Senha",
         "confirmNewPassword": "Confirmar Nova Senha",
         "enterCurrentPassword": "Digite a senha atual",
         "enterNewPassword": "Digite a nova senha",
