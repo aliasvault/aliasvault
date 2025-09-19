@@ -115,3 +115,4 @@ The following websites have been known to cause issues in the past (but should b
 | [GitHub Issues](https://github.com/aliasvault/aliasvault/issues) | The "New issue -> Blank Issue" title field causes the autofill to trigger because of a parent form (outside of the role=modal div) |
 | [Netim](https://www.netim.com/direct/) | Autofill popup not showing up |
 | [ChatGPT login](https://auth.openai.com/log-in) | Autofill popup not showing up |
+| TrueNAS (self-hosted login page) | Some characters in password field are inserted double. E.g. `abcde` in AliasVault becomes `abbccdee` in password field. |

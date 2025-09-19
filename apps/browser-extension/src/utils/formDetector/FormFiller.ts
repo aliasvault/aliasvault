@@ -33,7 +33,12 @@ export class FormFiller {
       return;
     }
 
-    this.fillBasicFields(credential);
+    // Fill basic fields and password fields in parallel
+    await Promise.all([
+      this.fillBasicFields(credential),
+      this.fillPasswordFields(credential)
+    ]);
+
     this.fillBirthdateFields(credential);
     this.fillGenderFields(credential);
   }
@@ -61,7 +66,7 @@ export class FormFiller {
         clientY: window.innerHeight / 2
       });
       // Note: isTrusted is read-only and set by the browser
-      
+
       if (!await this.clickValidator.validateClick(dummyEvent)) {
         console.warn('[AliasVault Security] Form autofill blocked: Page-wide attack detected');
         return false;
@@ -94,7 +99,7 @@ export class FormFiller {
    */
   private getAllFormFields(): HTMLElement[] {
     const fields: HTMLElement[] = [];
-    
+
     if (this.form.usernameField) {
       fields.push(this.form.usernameField);
     }
@@ -110,7 +115,7 @@ export class FormFiller {
     if (this.form.emailConfirmField) {
       fields.push(this.form.emailConfirmField);
     }
-    
+
     return fields;
   }
 
@@ -132,8 +137,8 @@ export class FormFiller {
     const centerY = rect.top + rect.height / 2;
 
     // Check if field is within viewport
-    if (rect.width === 0 || rect.height === 0 || 
-        centerX < 0 || centerY < 0 || 
+    if (rect.width === 0 || rect.height === 0 ||
+        centerX < 0 || centerY < 0 ||
         centerX > window.innerWidth || centerY > window.innerHeight) {
       console.warn('[AliasVault Security] Field outside viewport or zero-sized:', rect);
       return false;
@@ -142,16 +147,16 @@ export class FormFiller {
     // Use elementsFromPoint to check what's actually at the field center
     try {
       const elementsAtPoint = document.elementsFromPoint(centerX, centerY);
-      
+
       if (elementsAtPoint.length === 0) {
         console.warn('[AliasVault Security] No elements found at field center');
         return false;
       }
 
       // Check if our field is in the element stack (or its parents/children)
-      const fieldFound = elementsAtPoint.some(element => 
-        element === field || 
-        field.contains(element) || 
+      const fieldFound = elementsAtPoint.some(element =>
+        element === field ||
+        field.contains(element) ||
         element.contains(field)
       );
 
@@ -167,7 +172,7 @@ export class FormFiller {
         }
 
         const style = getComputedStyle(element);
-        
+
         // Check for nearly transparent overlays
         const opacity = parseFloat(style.opacity);
         if (opacity > 0 && opacity < 0.1) {
@@ -184,7 +189,7 @@ export class FormFiller {
 
         // Check for elements covering large areas (potential clickjacking overlays)
         const elementRect = element.getBoundingClientRect();
-        if (elementRect.width >= window.innerWidth * 0.8 && 
+        if (elementRect.width >= window.innerWidth * 0.8 &&
             elementRect.height >= window.innerHeight * 0.8) {
           console.warn('[AliasVault Security] Large covering element detected:', element);
           return true;
@@ -207,35 +212,35 @@ export class FormFiller {
     try {
       // Find all forms on the page
       const allForms = Array.from(document.querySelectorAll('form'));
-      
+
       if (allForms.length <= 1) {
         return false; // Only one form, no decoy risk
       }
 
       let suspiciousFormCount = 0;
-      
+
       for (const form of allForms) {
         const hasPasswordField = form.querySelector('input[type="password"]');
         const hasEmailField = form.querySelector('input[type="email"], input[name*="email" i], input[placeholder*="email" i]');
         const hasUsernameField = form.querySelector('input[type="text"], input[name*="user" i], input[placeholder*="user" i]');
-        
+
         // Count forms with login-like patterns
         if (hasPasswordField && (hasEmailField || hasUsernameField)) {
           const formRect = form.getBoundingClientRect();
           const isVisible = formRect.width > 0 && formRect.height > 0;
-          
+
           if (isVisible) {
             suspiciousFormCount++;
           }
         }
       }
-      
+
       // If more than 2 visible login forms, it's suspicious
       if (suspiciousFormCount > 2) {
         console.warn('[AliasVault Security] Multiple login forms detected:', suspiciousFormCount);
         return true;
       }
-      
+
       return false;
     } catch (error) {
       console.warn('[AliasVault Security] Decoy form detection error:', error);
@@ -251,7 +256,7 @@ export class FormFiller {
   private setElementValue(element: HTMLInputElement | HTMLSelectElement, value: string): void {
     // Try to set value directly on the element
     element.value = value;
-    
+
     // If it's a custom element with shadow DOM, try to find and fill the actual input
     if (element.shadowRoot) {
       const shadowInput = element.shadowRoot.querySelector('input, textarea') as HTMLInputElement;
@@ -261,7 +266,7 @@ export class FormFiller {
         this.triggerInputEvents(shadowInput, false);
       }
     }
-    
+
     // Also check if the element contains a regular child input (non-shadow DOM)
     const childInput = element.querySelector('input, textarea') as HTMLInputElement;
     if (childInput && childInput !== element) {
@@ -274,18 +279,9 @@ export class FormFiller {
    * Fill the basic fields of the form.
    * @param credential The credential to fill the form with.
    */
-  private fillBasicFields(credential: Credential): void {
+  private async fillBasicFields(credential: Credential): Promise<void> {
     if (this.form.usernameField && credential.Username) {
-      this.setElementValue(this.form.usernameField, credential.Username);
-      this.triggerInputEvents(this.form.usernameField);
-    }
-
-    if (this.form.passwordField && credential.Password) {
-      this.fillPasswordField(this.form.passwordField, credential.Password);
-    }
-
-    if (this.form.passwordConfirmField && credential.Password) {
-      this.fillPasswordField(this.form.passwordConfirmField, credential.Password);
+      await this.fillTextFieldWithTyping(this.form.usernameField, credential.Username);
     }
 
     if (this.form.emailField && (credential.Alias?.Email !== undefined || credential.Username !== undefined)) {
@@ -330,6 +326,70 @@ export class FormFiller {
   }
 
   /**
+   * Fill a text field with character-by-character typing to better simulate human input.
+   * This method is similar to fillPasswordField but optimized for regular text fields.
+   *
+   * @param field The text field to fill.
+   * @param text The text to fill the field with.
+   */
+  private async fillTextFieldWithTyping(field: HTMLInputElement, text: string): Promise<void> {
+    // Find the actual input element (could be in shadow DOM)
+    let actualInput = field;
+
+    // Check for shadow DOM input
+    if (field.shadowRoot) {
+      const shadowInput = field.shadowRoot.querySelector('input, textarea') as HTMLInputElement;
+      if (shadowInput) {
+        actualInput = shadowInput;
+      }
+    } else if (field.tagName.toLowerCase() !== 'input' && field.tagName.toLowerCase() !== 'textarea') {
+      // Check for child input (non-shadow DOM) only if field is not already an input
+      const childInput = field.querySelector('input, textarea') as HTMLInputElement;
+      if (childInput) {
+        actualInput = childInput;
+      }
+    }
+
+    // Clear the field first without triggering events
+    actualInput.value = '';
+
+    // Type each character with a small delay
+    for (let i = 0; i < text.length; i++) {
+      actualInput.value += text[i];
+
+      /*
+       * Small delay between characters to simulate human typing
+       * This helps with sites that have input event handlers
+       */
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 10 + 10));
+    }
+
+    // Trigger events once after all typing is complete
+    this.triggerInputEvents(actualInput, true);
+  }
+
+  /**
+   * Fill password fields sequentially to avoid visual conflicts.
+   * First fills the main password field, then the confirm field if present.
+   * @param credential The credential containing the password.
+   */
+  private async fillPasswordFields(credential: Credential): Promise<void> {
+    if (!credential.Password) {
+      return;
+    }
+
+    // Fill main password field first
+    if (this.form.passwordField) {
+      await this.fillPasswordField(this.form.passwordField, credential.Password);
+    }
+
+    // Then fill password confirm field after main field is complete
+    if (this.form.passwordConfirmField) {
+      await this.fillPasswordField(this.form.passwordConfirmField, credential.Password);
+    }
+  }
+
+  /**
    * Fill the password field with the given password. This uses a small delay between each character to simulate human typing.
    * Simulates actual keystroke behavior by appending characters one by one.
    * Supports both regular inputs and custom elements with shadow DOM.
@@ -340,48 +400,37 @@ export class FormFiller {
   private async fillPasswordField(field: HTMLInputElement, password: string): Promise<void> {
     // Find the actual input element (could be in shadow DOM)
     let actualInput = field;
-    let isCustomElement = false;
-    
+
     // Check for shadow DOM input
     if (field.shadowRoot) {
       const shadowInput = field.shadowRoot.querySelector('input[type="password"], input') as HTMLInputElement;
       if (shadowInput) {
         actualInput = shadowInput;
-        isCustomElement = true;
       }
     } else if (field.tagName.toLowerCase() !== 'input') {
       // Check for child input (non-shadow DOM) only if field is not already an input
       const childInput = field.querySelector('input[type="password"], input') as HTMLInputElement;
       if (childInput) {
         actualInput = childInput;
-        isCustomElement = true;
       }
     }
 
-    // Clear the field first
+    // Clear the field first without triggering events
     actualInput.value = '';
-    if (isCustomElement) {
-      field.value = '';
-    }
-    this.triggerInputEvents(actualInput, true);
 
     // Type each character with a small delay
-    for (const char of password) {
-      // Append the character to the actual input
-      actualInput.value += char;
-      if (isCustomElement) {
-        // Also update the custom element's value property for compatibility
-        field.value += char;
-      }
-      // Small random delay between 5-15ms to simulate human typing
-      this.triggerInputEvents(actualInput, false);
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 10 + 5));
+    for (let i = 0; i < password.length; i++) {
+      actualInput.value += password[i];
+
+      /*
+       * Small delay between characters to simulate human typing
+       * This helps with sites that have input event handlers
+       */
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 10 + 10));
     }
 
-    this.triggerInputEvents(actualInput, false);
-    if (isCustomElement) {
-      this.triggerInputEvents(field, false);
-    }
+    // Trigger events once after all typing is complete
+    this.triggerInputEvents(actualInput, true);
   }
 
   /**
