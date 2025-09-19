@@ -47,84 +47,84 @@
   </data>
   <!-- How it works step content -->
   <data name="HowItWorksIntro">
-    <value>When you need to sign up for a new service:</value>
+    <value>Когда нужно зарегистрироваться в новом сервисе:</value>
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
-    <value>AliasVault generates a random identity with a secure private email address</value>
+    <value>AliasVault генерирует случайную личность с приватным email‑адресом</value>
     <comment>First step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep2">
-    <value>Use this information to sign up for the service</value>
+    <value>Эти данные используются для регистрации</value>
     <comment>Second step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep3">
-    <value>Received emails show up in this app and can be opened in your browser</value>
+    <value>Все письма поступают в приложение и открываются в браузере</value>
     <comment>Third step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep4">
-    <value>Your real email address and other personal information stay private</value>
+    <value>Ваш настоящий email и личные данные никто не увидит — они всегда под защитой</value>
     <comment>Fourth step in how it works explanation</comment>
   </data>
   <!-- Tips step content -->
   <data name="MasterPasswordTipTitle">
-    <value>Keep Your Master Password Safe</value>
+    <value>Храните свой мастер‑пароль в безопасности</value>
     <comment>Title for master password tip</comment>
   </data>
   <data name="MasterPasswordTipContent">
-    <value>Your master password is required to decrypt your vault. Never share it with anyone and store it in a secure location. Warning: If you lose your master password, your data cannot be recovered - not even by our team.</value>
+    <value>Ваш мастер‑пароль открывает доступ ко всем вашим сохранённым паролям. Никому его не передавайте и храните в надежном месте. Важно: если вы потеряете мастер‑пароль, восстановить данные будет невозможно — даже наша команда не сможет помочь.</value>
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>Enable Two-Factor Authentication In Security Settings</value>
+    <value>Включите двухфакторную аутентификацию в настройках безопасности</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>Two-factor authentication adds an extra layer of security to your account. It requires you to enter a code from your authenticator app or provide a recovery code before your encrypted vault can be accessed.</value>
+    <value>Двухфакторная аутентификация добавляет вашему аккаунту дополнительный уровень защиты. Перед доступом к зашифрованному хранилищу вам потребуется ввести код из приложения‑аутентификатора или использовать резервный код.</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
-    <value>Browser Extensions and Mobile Apps</value>
+    <value>Расширение для браузера и мобильное приложение</value>
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>Install the AliasVault browser extension and mobile app to create aliases and autofill forms directly from your browser and smartphone.</value>
+    <value>Установите AliasVault в браузер и на смартфон, чтобы создавать псевдонимы и автоматически заполнять формы.</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
   <data name="ReadyToStartTitle">
-    <value>Ready to Start?</value>
+    <value>Готовы начать?</value>
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
-    <value>Now that you know how AliasVault works, let's create your first secure identity!</value>
+    <value>Теперь, когда вы узнали, как работает AliasVault, давайте создадим вашу первую безопасную личность!</value>
     <comment>Message encouraging user to create first identity</comment>
   </data>
   <data name="CreateFirstIdentityButton">
-    <value>Create Your First Identity</value>
+    <value>Создать первую личность</value>
     <comment>Button text for creating first identity</comment>
   </data>
   <!-- Navigation buttons -->
   <data name="ContinueButton">
-    <value>Continue</value>
+    <value>Продолжить</value>
     <comment>Continue button text</comment>
   </data>
   <data name="GetStartedButton">
-    <value>Get Started</value>
+    <value>Начать</value>
     <comment>Get started button text</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="FinishingTutorialMessage">
-    <value>Finishing tutorial...</value>
+    <value>Завершаем обучение...</value>
     <comment>Loading message when finishing tutorial</comment>
   </data>
   <!-- Extension and app labels -->
   <data name="ComingSoonLabel">
-    <value>Coming Soon</value>
+    <value>Совсем скоро</value>
     <comment>Label for features coming soon</comment>
   </data>
   <data name="SoonSuffix">
-    <value>(Soon)</value>
+    <value>(Скоро)</value>
     <comment>Suffix indicating feature coming soon</comment>
   </data>
 </root>
