@@ -479,14 +479,18 @@ export class FormDetector {
     excludeElements: HTMLInputElement[] = []
   ): HTMLInputElement | null {
     const all = this.findAllInputFields(form, patterns, types, excludeElements);
+
+    // Filter out parent-child duplicates
+    const filtered = this.filterOutNestedDuplicates(all);
+
     // if email type explicitly requested, prefer actual <input type="email">
     if (types.includes('email')) {
-      const emailMatch = all.find(i => (i.type || '').toLowerCase() === 'email');
+      const emailMatch = filtered.find(i => (i.type || '').toLowerCase() === 'email');
       if (emailMatch) {
         return emailMatch;
       }
     }
-    return all.length > 0 ? all[0] : null;
+    return filtered.length > 0 ? filtered[0] : null;
   }
 
   /**
@@ -496,25 +500,32 @@ export class FormDetector {
     primary: HTMLInputElement | null,
     confirm: HTMLInputElement | null
   } {
-    // Find primary email field
-    const primaryEmail = this.findInputField(
+    // Find all email fields first
+    const emailFields = this.findAllInputFields(
       form,
       CombinedFieldPatterns.email,
       ['text', 'email']
     );
 
+    // Filter out parent-child relationships
+    const filteredEmailFields = this.filterOutNestedDuplicates(emailFields);
+    const primaryEmail = filteredEmailFields[0] ?? null;
+
     /*
      * Find confirmation email field if primary exists
      * and ensure it's not the same as the primary email field.
      */
-    const confirmEmail = primaryEmail
-      ? this.findInputField(
+    const confirmEmailFields = primaryEmail
+      ? this.findAllInputFields(
         form,
         CombinedFieldPatterns.emailConfirm,
         ['text', 'email'],
         [primaryEmail]
       )
-      : null;
+      : [];
+
+    const filteredConfirmFields = this.filterOutNestedDuplicates(confirmEmailFields);
+    const confirmEmail = filteredConfirmFields[0] ?? null;
 
     return {
       primary: primaryEmail,
@@ -668,6 +679,56 @@ export class FormDetector {
   }
 
   /**
+   * Filter out nested duplicates where a parent element and its child are both detected.
+   * This happens with custom elements that contain actual input elements.
+   * We prefer the innermost actual input element over the parent custom element.
+   */
+  private filterOutNestedDuplicates(fields: HTMLInputElement[]): HTMLInputElement[] {
+    if (fields.length <= 1) {
+      return fields;
+    }
+
+    const filtered: HTMLInputElement[] = [];
+
+    for (const field of fields) {
+      let shouldInclude = true;
+
+      // Check if this field is a parent of any other field in the list
+      for (const otherField of fields) {
+        if (field !== otherField) {
+          // Check if field contains otherField (field is parent)
+          if (field.contains(otherField)) {
+            shouldInclude = false;
+            break;
+          }
+
+          // Check if field's shadow DOM contains otherField
+          const fieldWithShadow = field as HTMLElement & { shadowRoot?: ShadowRoot };
+          if (fieldWithShadow.shadowRoot && fieldWithShadow.shadowRoot.contains(otherField)) {
+            shouldInclude = false;
+            break;
+          }
+        }
+      }
+
+      if (shouldInclude) {
+        // Also check if this field is not already represented by its actual input
+        const actualInput = this.getActualInputElement(field);
+        if (actualInput !== field) {
+          // If the actual input is also in the list, skip the parent
+          if (fields.includes(actualInput as HTMLInputElement)) {
+            continue;
+          }
+        }
+
+        filtered.push(field);
+      }
+    }
+
+    return filtered;
+  }
+
+  /**
    * Find the password field in a form.
    */
   private findPasswordField(form: HTMLFormElement | null): {
@@ -676,9 +737,12 @@ export class FormDetector {
   } {
     const passwordFields = this.findAllInputFields(form, CombinedFieldPatterns.password, ['password']);
 
+    // Filter out parent-child relationships to avoid detecting the same field twice
+    const filteredFields = this.filterOutNestedDuplicates(passwordFields);
+
     return {
-      primary: passwordFields[0] ?? null,
-      confirm: passwordFields[1] ?? null
+      primary: filteredFields[0] ?? null,
+      confirm: filteredFields[1] ?? null
     };
   }
 

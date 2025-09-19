@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Registration Form - Nested Custom Elements with Confirm</title>
+</head>
+<body>
+  <form id="registration-form">
+    <div class="field-group">
+      <ix-input formcontrolname="username" type="text" ix-label="Username" name="username">
+        <input id="username-field" type="text" aria-label="Username" name="username" class="mat-input-element">
+      </ix-input>
+    </div>
+    <div class="field-group">
+      <ix-input formcontrolname="password" type="password" ix-label="Password" name="password">
+        <input id="password-field" type="password" aria-label="Password" name="password" class="mat-input-element">
+      </ix-input>
+    </div>
+    <div class="field-group">
+      <ix-input formcontrolname="passwordConfirm" type="password" ix-label="Confirm Password" name="passwordConfirm">
+        <input id="password-confirm-field" type="password" aria-label="Confirm Password" name="passwordConfirm" class="mat-input-element">
+      </ix-input>
+    </div>
+  </form>
+</body>
+</html>

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TrueNAS Login - Nested Custom Elements</title>
+</head>
+<body>
+  <form id="login-form">
+    <div class="field-group">
+      <ix-input id="username-wrapper" formcontrolname="username" type="text" ix-label="Username" name="username">
+        <ix-label><label><span>Username</span></label></ix-label>
+        <div class="input-container">
+          <input id="username-field" type="text" aria-label="Username" name="username" class="mat-input-element">
+        </div>
+      </ix-input>
+    </div>
+    <div class="field-group">
+      <ix-input id="password-wrapper" formcontrolname="password" type="password" ix-label="Password" name="password">
+        <ix-label><label><span>Password</span></label></ix-label>
+        <div class="input-container">
+          <input id="password-field" type="password" aria-label="Password" name="password" class="mat-input-element">
+        </div>
+      </ix-input>
+    </div>
+  </form>
+</body>
+</html>
