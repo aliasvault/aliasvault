@@ -16,7 +16,7 @@
     "loadMore": "Загрузить ещё",
     "use": "Использовать",
     "confirm": "Подтвердить",
-    "unknownError": "Unknown error"
+    "unknownError": "Неизвестная ошибка"
   },
   "auth": {
     "login": "Войти",
@@ -109,7 +109,7 @@
     "randomAlias": "Случайный псевдоним",
     "manual": "Инструкция",
     "generateRandomAlias": "Сгенерировать случайный псевдоним",
-    "clearAliasFields": "Clear Alias Fields",
+    "clearAliasFields": "Очистить поля псевдонимов",
     "enterFullEmail": "Введите полный адрес электронной почты",
     "enterEmailPrefix": "Введите префикс электронной почты",
     "useDomainChooser": "Использовать выбор домена",
@@ -220,17 +220,17 @@
     "batteryOptimizationHelpDescription": "Оптимизация заряда батареи в Android предотвращает надежную очистку буфера обмена, когда приложение работает в фоновом режиме. Отключение оптимизации заряда батареи для AliasVault обеспечивает точную очистку буфера обмена в фоновом режиме и автоматически предоставляет необходимые разрешения для оповещения.",
     "disableBatteryOptimization": "Отключить оптимизацию заряда батареи",
     "identityGenerator": "Генератор личности",
-    "passwordGenerator": "Password Generator",
-    "importExport": "Import / Export",
-    "importSectionTitle": "Import",
-    "importSectionDescription": "Import your passwords from other password managers or from a previous AliasVault export.",
-    "importWebNote": "To import credentials from existing password managers, please login to the web app. The import feature is currently only available on the web version.",
-    "exportSectionTitle": "Export",
-    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
-    "exportCsvButton": "Export vault to CSV file",
-    "exporting": "Exporting...",
-    "exportConfirmTitle": "Export Vault",
-    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "passwordGenerator": "Генератор паролей",
+    "importExport": "Импорт / экспорт",
+    "importSectionTitle": "Импорт",
+    "importSectionDescription": "Импортируйте свои пароли из других менеджеров паролей или из предыдущего экспорта AliasVault.",
+    "importWebNote": "Импорт из других менеджеров паролей доступен только в веб‑версии. Пожалуйста, войдите в веб‑приложение.",
+    "exportSectionTitle": "Экспорт",
+    "exportSectionDescription": "Экспортируйте данные вашего хранилища в CSV-файл. Этот файл можно использовать как резервную копию или импортировать в другие менеджеры паролей.",
+    "exportCsvButton": "Экспорт хранилища в CSV-файл",
+    "exporting": "Экспорт...",
+    "exportConfirmTitle": "Экспортировать хранилище",
+    "exportWarning": "Предупреждение: Экспорт хранилища в незашифрованный файл приведёт к тому, что все ваши пароли и конфиденциальная информация будут доступны в открытом виде. Делайте это только на доверенных устройствах и убедитесь, что вы:\n\n• Храните экспортированный файл в безопасном месте\n• Удаляете файл, когда он больше не нужен\n• Никогда не передаёте файл другим людям\n\nВы уверены, что хотите продолжить экспорт?",
     "security": "Безопасность",
     "appVersion": "Версия приложения {{version}} ({{url}})",
     "autoLockOptions": {
@@ -287,8 +287,8 @@
       }
     },
     "passwordGeneratorSettings": {
-      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
-      "preview": "Preview"
+      "description": "Настройте параметры по умолчанию, которые будут использоваться при генерации новых паролей. Эти настройки будут применяться ко всем новым паролям, если только они не будут изменены для конкретных записей.",
+      "preview": "Предпросмотр"
     },
     "securitySettings": {
       "title": "Безопасность",
@@ -440,9 +440,9 @@
       "retryingConnection": "Повторная попытка подключения..."
     },
     "offline": {
-      "banner": "Offline mode (read-only)",
-      "backOnline": "Back online",
-      "stillOffline": "Still offline"
+      "banner": "Офлайн режим (только для чтения)",
+      "backOnline": "Восстановить подключение",
+      "stillOffline": "Нет подключения"
     },
     "alerts": {
       "syncIssue": "Проблема с синхронизацией",
