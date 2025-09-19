@@ -229,7 +229,7 @@
     "avoidAmbiguousChars": "避免易混淆字符（o、0 等）",
     "generateNewPreview": "生成新预览",
     "generateRandomAlias": "生成随机别名",
-    "clearAliasFields": "Clear Alias Fields",
+    "clearAliasFields": "清除别名字段",
     "alias": "别名",
     "firstName": "名",
     "lastName": "姓",
