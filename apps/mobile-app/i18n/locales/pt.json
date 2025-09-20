@@ -497,11 +497,11 @@
     "alerts": {
       "unableToGetVersionInfo": "Não foi possível solicitar informações da versão. Por favor tente novamente.",
       "selfHostedServer": "Servidor Self-Hosted",
-      "selfHostedWarning": "If you're using a self-hosted server, make sure to also update your self-hosted instance as otherwise logging in to the web client will stop working.",
-      "continueUpgrade": "Continue Upgrade",
-      "upgradeFailed": "Upgrade Failed",
-      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})",
-      "unknownErrorDuringUpgrade": "An unknown error occurred during the upgrade. Please try again."
+      "selfHostedWarning": "Se você está utilizando um servidor self-hosted, faça também a atualização da instância self-hosted, caso contrário o login no cliente web vai parar de funcionar.",
+      "continueUpgrade": "Continuar Atualização",
+      "upgradeFailed": "Atualização Falhou",
+      "failedToApplyMigration": "Falha ao aplicar migração ({{current}} de {{total}})",
+      "unknownErrorDuringUpgrade": "Um erro desconhecido aconteceu durante a atualização. Por favor tente novamente."
     }
   }
 }
