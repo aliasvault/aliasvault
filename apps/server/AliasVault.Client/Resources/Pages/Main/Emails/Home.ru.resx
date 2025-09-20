@@ -99,7 +99,7 @@
     <comment>Error message when loading email fails. {0} is placeholder for error message</comment>
   </data>
   <data name="LoadMoreEmailsFailedMessage" xml:space="preserve">
-    <value>Не удалось загрузить больше писем:</value>
+    <value>Не удалось загрузить больше писем: {0}</value>
     <comment>Error message when loading more emails fails. {0} is placeholder for error message</comment>
   </data>
 </root>
