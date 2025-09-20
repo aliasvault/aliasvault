@@ -21,12 +21,12 @@
   </xsd:schema>
   <!-- Instructions -->
   <data name="PleaseReadAndAgree">
-    <value>Please read and agree to the following terms and conditions before proceeding.</value>
+    <value>Por favor, leia e aceite os seguintes termos e condições antes de continuar.</value>
     <comment>Instructions to read and agree to terms</comment>
   </data>
   <!-- Terms and Conditions title -->
   <data name="TermsAndConditionsTitle">
-    <value>Terms and Conditions</value>
+    <value>Termos e Condições</value>
     <comment>Title for the terms and conditions section</comment>
   </data>
   <!-- Terms content -->
