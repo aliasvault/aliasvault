@@ -422,33 +422,33 @@
     "USERNAME_AVAILABLE": "Usuário está disponível.",
     "USERNAME_MISMATCH": "Nome de Usuário não confere com o usuário atual.",
     "PASSWORD_MISMATCH": "A senha digitada não confere com sua senha atual.",
-    "ACCOUNT_SUCCESSFULLY_DELETED": "Account successfully deleted.",
-    "USERNAME_EMPTY_OR_WHITESPACE": "Username cannot be empty or whitespace.",
-    "USERNAME_TOO_SHORT": "Username too short: must be at least 3 characters long.",
-    "USERNAME_TOO_LONG": "Username too long: cannot be longer than 40 characters.",
-    "USERNAME_INVALID_EMAIL": "Invalid email address.",
-    "USERNAME_INVALID_CHARACTERS": "Username is invalid, can only contain letters or digits.",
-    "VAULT_NOT_UP_TO_DATE": "Your vault is not up-to-date. Please synchronize your vault and try again.",
-    "INTERNAL_SERVER_ERROR": "Internal server error.",
-    "VAULT_ERROR": "The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again."
+    "ACCOUNT_SUCCESSFULLY_DELETED": "Conta excluída com sucesso.",
+    "USERNAME_EMPTY_OR_WHITESPACE": "Usuário não pode estar em branco ou conter espaços.",
+    "USERNAME_TOO_SHORT": "Usuário muito curto: deve ter pelo menos 3 caracteres.",
+    "USERNAME_TOO_LONG": "Usuário muito longo: não pode ter mais de 40 caracteres.",
+    "USERNAME_INVALID_EMAIL": "Endereço de e-mail inválido.",
+    "USERNAME_INVALID_CHARACTERS": "Usuário é inválido, só pode conter letras ou números.",
+    "VAULT_NOT_UP_TO_DATE": "Seu cofre não está atualizado. Por favor sincronize seu cofre e tente novamente.",
+    "INTERNAL_SERVER_ERROR": "Erro interno do servidor.",
+    "VAULT_ERROR": "O cofre local não está atualizado. Por favor sincronize seu cofre recarregando a página e tente novamente."
   },
   "app": {
     "status": {
-      "unlockingVault": "Unlocking vault",
-      "decryptingVault": "Decrypting vault",
-      "openingVaultReadOnly": "Opening vault in read-only mode",
-      "retryingConnection": "Retrying connection..."
+      "unlockingVault": "Desbloqueando cofre",
+      "decryptingVault": "Descriptografando cofre",
+      "openingVaultReadOnly": "Abrindo cofre em modo de leitura",
+      "retryingConnection": "Reconectando..."
     },
     "offline": {
-      "banner": "Offline mode (read-only)",
-      "backOnline": "Back online",
-      "stillOffline": "Still offline"
+      "banner": "Modo offline (apenas leitura)",
+      "backOnline": "Online novamente",
+      "stillOffline": "Ainda está offline"
     },
     "alerts": {
-      "syncIssue": "Sync Issue",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault in read-only mode or retry the connection?",
-      "openLocalVault": "Open Local Vault",
-      "retrySync": "Retry Sync"
+      "syncIssue": "Erro de sincronização",
+      "syncIssueMessage": "Não foi possível conectar ao servidor do AliasVault e seu cofre não pôde ser sincronizado. Gostaria de abrir seu cofre local em modo de leitura ou tentar a conexão novamente?",
+      "openLocalVault": "Abrir Cofre Local",
+      "retrySync": "Tentar Sincronizar Novamente"
     },
     "navigation": {
       "login": "Login",
