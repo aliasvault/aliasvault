@@ -63,7 +63,7 @@
     <comment>Title for vault decryption error</comment>
   </data>
   <data name="ErrorDescription" xml:space="preserve">
-    <value>Произошла ошибка при локальной расшифровке вашего хранилища. Ваши данные сейчас недоступны. Попробуйте снова (позже) или обратитесь в службу поддержки.</value>
+    <value>Произошла ошибка при локальной расшифровке вашего хранилища. Ваши данные сейчас недоступны. Пожалуйста, попробуйте ещё раз или обратитесь в службу поддержки.</value>
     <comment>Description for vault decryption error</comment>
   </data>
 </root>
