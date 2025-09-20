@@ -95,7 +95,7 @@
     <comment>Loading message while creating alias</comment>
   </data>
   <data name="CreateCredentialErrorMessage" xml:space="preserve">
-    <value>Не удалось создать новые учётные данные. Пожалуйста, попробуйте ещё раз (позже) или выйдите из системы и войдите снова.</value>
+    <value>Не удалось создать новые учётные данные. Пожалуйста, попробуйте ещё раз или выйдите из системы и войдите снова.</value>
     <comment>Error message when credential creation fails</comment>
   </data>
   <data name="CredentialCreatedSuccessMessage" xml:space="preserve">
