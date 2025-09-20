@@ -99,7 +99,7 @@
     <comment>Error message when session revocation fails</comment>
   </data>
   <data name="RevokeExceptionMessage" xml:space="preserve">
-    <value>Не удалось завершить сессию.</value>
+    <value>Не удалось завершить сессию: {0}.</value>
     <comment>Exception message when session revocation fails. {0} is placeholder for error details</comment>
   </data>
 </root>

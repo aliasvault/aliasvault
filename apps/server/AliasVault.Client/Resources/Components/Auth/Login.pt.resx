@@ -60,114 +60,114 @@
   </resheader>
   <!-- Page titles -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Log in to AliasVault</value>
+    <value>Faça login no AliasVault</value>
     <comment>Main login page title</comment>
   </data>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
+    <value>Autenticação de Dois Fatores</value>
     <comment>Title for 2FA step</comment>
   </data>
   <data name="RecoveryCodeVerificationTitle" xml:space="preserve">
-    <value>Recovery code verification</value>
+    <value>Verificação de código de recuperação</value>
     <comment>Title for recovery code step</comment>
   </data>
   <!-- Form labels -->
   <data name="UsernameOrEmailLabel" xml:space="preserve">
-    <value>Your username or email</value>
+    <value>Seu nome de usuário ou e-mail</value>
     <comment>Label for username/email input field</comment>
   </data>
   <data name="PasswordLabel" xml:space="preserve">
-    <value>Your password</value>
+    <value>Sua senha</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="AuthenticatorCodeLabel" xml:space="preserve">
-    <value>Authenticator code</value>
+    <value>Código de Autenticação</value>
     <comment>Label for 2FA code input field</comment>
   </data>
   <data name="RecoveryCodeLabel" xml:space="preserve">
-    <value>Recovery Code</value>
+    <value>Código de Recuperação</value>
     <comment>Label for recovery code input field</comment>
   </data>
   <data name="RememberMeLabel" xml:space="preserve">
-    <value>Remember me</value>
+    <value>Lembrar-me</value>
     <comment>Label for remember me checkbox</comment>
   </data>
   <data name="RememberMachineLabel" xml:space="preserve">
-    <value>Remember this machine</value>
+    <value>Lembrar nesta máquina</value>
     <comment>Label for remember machine checkbox</comment>
   </data>
   <!-- Buttons -->
   <data name="LoginButton" xml:space="preserve">
-    <value>Log in</value>
+    <value>Entrar</value>
     <comment>Login button text</comment>
   </data>
   <data name="LoginToAccountButton" xml:space="preserve">
-    <value>Login to your account</value>
+    <value>Entrar na sua conta</value>
     <comment>Extended login button text</comment>
   </data>
   <!-- Links -->
   <data name="LostPasswordLink" xml:space="preserve">
-    <value>Lost Password?</value>
+    <value>Esqueceu a Senha?</value>
     <comment>Link text for password recovery</comment>
   </data>
   <data name="CreateNewVaultLink" xml:space="preserve">
-    <value>Create new vault</value>
+    <value>Criar novo cofre</value>
     <comment>Link text for creating a new vault</comment>
   </data>
   <data name="LoginWithRecoveryCodeLink" xml:space="preserve">
-    <value>Log in with a recovery code instead.</value>
+    <value>Faça login com um código de recuperação.</value>
     <comment>Link text for logging in with recovery code</comment>
   </data>
   <data name="LoginWithAuthenticatorLink" xml:space="preserve">
-    <value>Log in with an authenticator code instead.</value>
+    <value>Faça login com um código de autenticação.</value>
     <comment>Link text for logging in with authenticator</comment>
   </data>
   <!-- Descriptions and help text -->
   <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
-    <value>Your login is protected with an authenticator app. Enter your authenticator code below.</value>
+    <value>Seu login está protegido com um aplicativo de autenticação. Digite o código de autenticação abaixo.</value>
     <comment>Description for 2FA step</comment>
   </data>
   <data name="RecoveryCodeDescription" xml:space="preserve">
-    <value>You have requested to log in with a recovery code. A recovery code is a one-time code that can be used to log in to your account. Note that if you don't manually disable 2FA after login, you will be asked for an authenticator code again at the next login.</value>
+    <value>Você solicitou fazer login com um código de recuperação. Um código de recuperação é um código de uso único que pode ser utilizado para acessar sua conta. Note que se você não desabilitar o 2FA manualmente após o acesso, será solicitado um código de autenticação novamente no próximo login.</value>
     <comment>Description for recovery code step</comment>
   </data>
   <data name="NoAccountYetText" xml:space="preserve">
-    <value>No account yet?</value>
+    <value>Não possui conta?</value>
     <comment>Text before registration link</comment>
   </data>
   <data name="DontHaveAuthenticatorText" xml:space="preserve">
-    <value>Don't have access to your authenticator device?</value>
+    <value>Não tem acesso ao dispositivo de autenticação?</value>
     <comment>Question text about not having access to authenticator</comment>
   </data>
   <data name="RegainedAccessText" xml:space="preserve">
-    <value>Regained access to your authenticator device?</value>
+    <value>Recuperou acesso ao seu dispositivo de autenticação?</value>
     <comment>Question text about regaining access to authenticator</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="LoggingInMessage" xml:space="preserve">
-    <value>Logging in...</value>
+    <value>Fazendo login...</value>
     <comment>Loading message during login process</comment>
   </data>
   <data name="VerifyingTwoFactorCodeMessage" xml:space="preserve">
-    <value>Verifying 2FA code...</value>
+    <value>Verificando código 2FA...</value>
     <comment>Loading message during 2FA verification</comment>
   </data>
   <data name="VerifyingRecoveryCodeMessage" xml:space="preserve">
-    <value>Verifying recovery code...</value>
+    <value>Verificando código de recuperação...</value>
     <comment>Loading message during recovery code verification</comment>
   </data>
   <!-- Error messages -->
   <data name="LoginErrorMessage" xml:space="preserve">
-    <value>An error occurred while processing the login request. Try again (later).</value>
+    <value>Ocorreu um erro enquanto a tentativa de login era processada. Tente novamente (mais tarde).</value>
     <comment>Generic login error message</comment>
   </data>
   <data name="LoginRequestErrorMessage" xml:space="preserve">
-    <value>An error occurred while processing the login request.</value>
+    <value>Ocorreu um erro ao processar a solicitação de login.</value>
     <comment>Login request processing error message</comment>
   </data>
   <!-- Placeholders -->
   <data name="UsernamePlaceholder" xml:space="preserve">
-    <value>name / name@company.com</value>
+    <value>nome / nome@empresa.com</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
