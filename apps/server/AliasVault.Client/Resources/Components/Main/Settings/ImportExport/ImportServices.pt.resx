@@ -120,7 +120,7 @@
     <comment>KeePass export instructions part 1</comment>
   </data>
   <data name="KeePassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Depois de exportar o arquivo, você pode carregá-lo abaixo.</value>
     <comment>KeePass export instructions part 2</comment>
   </data>
   <!-- Generic CSV -->
