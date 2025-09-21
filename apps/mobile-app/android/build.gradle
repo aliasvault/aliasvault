@@ -9,7 +9,7 @@ buildscript {
         kotlinVersion = findProperty('android.kotlinVersion') ?: '2.0.21'
         detektVersion = '1.23.5'
 
-        ndkVersion = "27.1.12297006"
+        ndkVersion = "28.0.12433566"
     }
     repositories {
         gradlePluginPortal()
