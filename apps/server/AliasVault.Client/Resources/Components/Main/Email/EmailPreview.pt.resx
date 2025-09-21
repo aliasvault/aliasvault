@@ -75,7 +75,7 @@
     <comment>Email credential field label</comment>
   </data>
   <data name="NoneValue" xml:space="preserve">
-    <value>None</value>
+    <value>Nenhum</value>
     <comment>No credential assigned value</comment>
   </data>
   <data name="AttachmentsLabel" xml:space="preserve">
