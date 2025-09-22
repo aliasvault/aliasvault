@@ -60,43 +60,43 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Enable two-factor authentication</value>
+    <value>Habilitar autenticação de dois fatores</value>
     <comment>Page title for the enable 2FA page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
-    <value>Security settings</value>
+    <value>Configurações de segurança</value>
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbEnable2Fa" xml:space="preserve">
-    <value>Enable two-factor authentication</value>
+    <value>Habilitar autenticação de dois fatores</value>
     <comment>Breadcrumb text for enable 2FA</comment>
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>Enable two-factor authentication to increase the security of your vaults.</value>
+    <value>Habilitar autenticação de dois fatores para aumentar a segurança dos seus cofres.</value>
     <comment>Description text explaining 2FA setup</comment>
   </data>
   <!-- Setup instructions -->
   <data name="QrCodeInstructions" xml:space="preserve">
-    <value>Scan this QR code with your authenticator app or enter the following secret manually:</value>
+    <value>Leia este código QR com seu aplicativo autenticador ou digite o seguinte código secreto manualmente:</value>
     <comment>Instructions for scanning QR code or entering secret</comment>
   </data>
   <!-- Form elements -->
   <data name="VerificationCodePlaceholder" xml:space="preserve">
-    <value>Enter verification code</value>
+    <value>Digite o código de verificação</value>
     <comment>Placeholder text for verification code input</comment>
   </data>
   <data name="VerifyAndEnableButton" xml:space="preserve">
-    <value>Verify and Enable</value>
+    <value>Verificar e Habilitar</value>
     <comment>Button text to verify and enable 2FA</comment>
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorEnabledSuccess" xml:space="preserve">
-    <value>Two-factor authentication is now successfully enabled. On your next login you will need to enter your 2FA code.</value>
+    <value>Autenticação de dois fatores foi habilitada com sucesso. No seu próximo login, você precisará digitar seu código 2FA.</value>
     <comment>Success message when 2FA is enabled</comment>
   </data>
   <data name="FailedToEnable2Fa" xml:space="preserve">
-    <value>Failed to enable two-factor authentication.</value>
+    <value>Falha ao habilitar autenticação de dois fatores.</value>
     <comment>Error message when 2FA setup fails</comment>
   </data>
 </root>
