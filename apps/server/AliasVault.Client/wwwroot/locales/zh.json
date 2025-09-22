@@ -1,6 +1,6 @@
 {
   "loading": {
-    "title": "AliasVault 正在启动中",
+    "title": "AliasVault 加载中",
     "message": "正在初始化安全环境。为最大限度保护你的隐私，AliasVault只会在你的浏览器中运行。首次加载可能需要一点时间。",
     "refreshText": "如果加载卡住了，可以点击下方按钮刷新页面。",
     "refreshButtonText": "重新加载页面"
