@@ -2,7 +2,7 @@
   "auth": {
     "loginTitle": "登录AliasVault",
     "username": "用户名或电子邮箱",
-    "usernamePlaceholder": "name / name@company.com",
+    "usernamePlaceholder": "姓名 / name@company.com",
     "password": "密码",
     "passwordPlaceholder": "请输入密码",
     "rememberMe": "记住我",
@@ -19,7 +19,7 @@
     "unlockVault": "解锁保险库",
     "unlockTitle": "解锁你的保险库",
     "unlockDescription": "输入你的主密码以解锁保险库。",
-    "logout": "退出登录",
+    "logout": "登出",
     "logoutConfirm": "确定要退出登录吗？",
     "sessionExpired": "你的会话已过期。请重新登录。",
     "unlockSuccess": "保险库解锁成功！",
@@ -43,12 +43,12 @@
   },
   "menu": {
     "credentials": "凭证",
-    "emails": "邮件",
+    "emails": "电子邮件",
     "settings": "设置"
   },
   "common": {
     "appName": "AliasVault",
-    "loading": "加载中……",
+    "loading": "加载中...",
     "error": "错误",
     "success": "成功",
     "cancel": "取消",
@@ -58,8 +58,8 @@
     "copied": "已复制！",
     "openInNewWindow": "在新窗口中打开",
     "language": "语言",
-    "enabled": "已启用",
-    "disabled": "已禁用",
+    "enabled": "启用",
+    "disabled": "禁用",
     "showPassword": "显示密码",
     "hidePassword": "隐藏密码",
     "copyToClipboard": "复制到剪贴板",
