@@ -168,7 +168,6 @@ export default function AuthLogsScreen() : React.ReactNode {
           </View>
           <View>
             <ThemedText style={styles.detailText}>{t('settings.securitySettings.authLogs.time')}: {formatDate(item.timestamp)}</ThemedText>
-            <ThemedText style={styles.detailText}>{t('settings.securitySettings.authLogs.device')}: {item.userAgent}</ThemedText>
             <ThemedText style={styles.detailText}>{t('settings.securitySettings.authLogs.ipAddress')}: {item.ipAddress}</ThemedText>
             <ThemedText style={styles.detailText}>{t('settings.securitySettings.authLogs.client')}: {item.client}</ThemedText>
           </View>

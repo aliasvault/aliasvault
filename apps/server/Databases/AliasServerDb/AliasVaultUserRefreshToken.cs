@@ -36,7 +36,6 @@ public class AliasVaultUserRefreshToken
     /// <summary>
     /// Gets or sets the device identifier (one token per device).
     /// </summary>
-    [StringLength(255)]
     public string DeviceIdentifier { get; set; } = null!;
 
     /// <summary>

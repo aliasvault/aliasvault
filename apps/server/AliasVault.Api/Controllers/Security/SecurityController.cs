@@ -112,7 +112,6 @@ public class SecurityController(IAliasServerDbContextFactory dbContextFactory, U
                 EventType = x.EventType,
                 Username = x.Username,
                 IpAddress = x.IpAddress ?? string.Empty,
-                UserAgent = x.UserAgent ?? string.Empty,
                 Client = x.Client ?? string.Empty,
                 IsSuccess = x.IsSuccess,
             })

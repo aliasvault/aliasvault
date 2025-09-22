@@ -112,12 +112,6 @@ public class AuthLog
     public string? IpAddress { get; set; }
 
     /// <summary>
-    /// Gets or sets the user agent string of the client used for the authentication event.
-    /// </summary>
-    [MaxLength(255)]
-    public string? UserAgent { get; set; }
-
-    /// <summary>
     /// Gets or sets the type of device used for the authentication event (e.g., Mobile, Desktop, Tablet).
     /// </summary>
     [MaxLength(100)]

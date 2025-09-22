@@ -40,11 +40,6 @@ public class AuthLogModel
     public string IpAddress { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the user agent string of the device used for the authentication attempt.
-    /// </summary>
-    public string UserAgent { get; set; } = string.Empty;
-
-    /// <summary>
     /// Gets or sets the client application name and version.
     /// </summary>
     public string Client { get; set; } = string.Empty;

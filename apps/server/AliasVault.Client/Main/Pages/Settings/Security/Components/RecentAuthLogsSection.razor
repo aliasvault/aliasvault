@@ -28,7 +28,6 @@
                         <th scope="col" class="px-6 py-3">@Localizer["EventTypeColumn"]</th>
                         <th scope="col" class="px-6 py-3">@Localizer["ClientColumn"]</th>
                         <th scope="col" class="px-6 py-3">@Localizer["IpAddressColumn"]</th>
-                        <th scope="col" class="px-6 py-3">@Localizer["DeviceColumn"]</th>
                         <th scope="col" class="px-6 py-3">@Localizer["SuccessColumn"]</th>
                     </tr>
                 </thead>
@@ -40,7 +39,6 @@
                             <td class="px-6 py-4">@authLog.EventType</td>
                             <td class="px-6 py-4">@authLog.Client</td>
                             <td class="px-6 py-4">@authLog.IpAddress</td>
-                            <td class="px-6 py-4">@authLog.UserAgent</td>
                             <td class="px-4 py-4"><StatusPill Enabled="authLog.IsSuccess" TextTrue="@Localizer["SuccessStatus"]" TextFalse="@Localizer["FailedStatus"]" /></td>
                         </tr>
                     }
