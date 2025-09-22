@@ -386,8 +386,8 @@
       "minutesAgo_single": "há {{count}} minutos",
       "minutesAgo_plural": "há {{count}} minutos",
       "hoursAgo_single": "há {{count}} hora",
-      "hoursAgo_plural": "{{count}} hrs ago",
-      "yesterday": "yesterday"
+      "hoursAgo_plural": "há {{count}} horas",
+      "yesterday": "ontem"
     },
     "errors": {
       "generic": "Ocorreu um erro",
