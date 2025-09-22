@@ -176,7 +176,7 @@
   </data>
   <!-- Common form elements -->
   <data name="Email" xml:space="preserve">
-    <value>Электронная почта</value>
+    <value>Почта</value>
     <comment>Label for email input field</comment>
   </data>
   <data name="Password" xml:space="preserve">
