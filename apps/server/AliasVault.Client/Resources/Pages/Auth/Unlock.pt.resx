@@ -59,67 +59,67 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="LoggingInWithWebAuthn" xml:space="preserve">
-    <value>Logging in with WebAuthn...</value>
+    <value>Fazendo login com WebAuthn...</value>
     <comment>Message shown while WebAuthn authentication is in progress</comment>
   </data>
   <data name="QuickUnlockDescription" xml:space="preserve">
-    <value>Quickly unlock your vault using your fingerprint, face ID, or security key. Or login with your password as a fallback.</value>
+    <value>Desbloqueie seu cofre rapidamente utilizando sua impressão digital, Face ID, ou chave de segurança. Ou faça login com sua senha como alternativa.</value>
     <comment>Description explaining WebAuthn unlock options</comment>
   </data>
   <data name="UnlockWithWebAuthn" xml:space="preserve">
-    <value>Unlock with WebAuthn</value>
+    <value>Desbloquear com WebAuthn</value>
     <comment>Button text for WebAuthn unlock</comment>
   </data>
   <data name="UnlockWithPassword" xml:space="preserve">
-    <value>Unlock with password</value>
+    <value>Desbloquear com senha</value>
     <comment>Button text for password unlock</comment>
   </data>
   <data name="EnterMasterPasswordDescription" xml:space="preserve">
-    <value>Enter your master password to unlock your vault.</value>
+    <value>Digite sua senha mestre para desbloquear o cofre.</value>
     <comment>Description for password unlock form</comment>
   </data>
   <data name="YourPasswordLabel" xml:space="preserve">
-    <value>Your password</value>
+    <value>Sua senha</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="UnlockButton" xml:space="preserve">
-    <value>Unlock</value>
+    <value>Desbloquear</value>
     <comment>Button text for unlock submission</comment>
   </data>
   <data name="SwitchAccountsText" xml:space="preserve">
-    <value>Switch accounts?</value>
+    <value>Mudar de conta?</value>
     <comment>Text before logout link</comment>
   </data>
   <data name="LogOutLink" xml:space="preserve">
-    <value>Log out</value>
+    <value>Sair</value>
     <comment>Link text for logout</comment>
   </data>
   <data name="UnlockingVaultMessage" xml:space="preserve">
-    <value>Unlocking vault...</value>
+    <value>Desbloqueando cofre...</value>
     <comment>Loading message while unlocking vault</comment>
   </data>
   <data name="UnlockRequestError" xml:space="preserve">
-    <value>An error occurred while processing the unlock request.</value>
+    <value>Ocorreu um erro ao processar a requisição de desbloqueio.</value>
     <comment>Error message for unlock request processing</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
-    <value>The password is incorrect. Please try entering your password again, or log out and log in again.</value>
+    <value>A senha está incorreta. Por favor, tente digitar sua senha novamente, ou saia e faça login novamente.</value>
     <comment>Error message for incorrect password</comment>
   </data>
   <data name="SessionTimedOutError" xml:space="preserve">
-    <value>Your session has timed out. Please log in again.</value>
+    <value>Sua sessão expirou. Por favor, faça login novamente.</value>
     <comment>Error message for session timeout</comment>
   </data>
   <data name="ConnectionFailedError" xml:space="preserve">
-    <value>Connection with the AliasVault servers failed. Please try again (later).</value>
+    <value>A conexão com os servidores do AliasVault falhou. Por favor, tente novamente (mais tarde).</value>
     <comment>Error message for server connection failure</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Your current browser does not support the WebAuthn PRF extension. Please login with your password instead.</value>
+    <value>Seu navegador atual não tem suporte à extensão WebAuthn PRF. Por favor, faça login com sua senha.</value>
     <comment>Error message when WebAuthn is not supported</comment>
   </data>
   <data name="GenericUnlockError" xml:space="preserve">
-    <value>An error occurred while processing the login request. Try again (later).</value>
+    <value>Ocorreu um erro ao processar a requisição de login. Tente novamente (mais tarde).</value>
     <comment>Generic error message for unlock failures</comment>
   </data>
 </root>
