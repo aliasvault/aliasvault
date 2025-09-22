@@ -89,6 +89,12 @@ export const AVAILABLE_LANGUAGES: ILanguageConfig[] = [
     flag: '🇳🇱'
   },
   {
+    code: 'pt',
+    name: 'Portuguese Brazilian',
+    nativeName: 'Português Brasileiro',
+    flag: '🇧🇷'
+  },
+  {
     code: 'ru',
     name: 'Russian',
     nativeName: 'Русский',
