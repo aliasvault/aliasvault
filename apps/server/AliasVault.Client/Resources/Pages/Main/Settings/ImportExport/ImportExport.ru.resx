@@ -83,11 +83,11 @@
     <comment>Export section description</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Экспортировать хранилище в CSV-файл без шифрования</value>
+    <value>В CSV-файл (без шифрования)</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportSqliteButton" xml:space="preserve">
-    <value>Экспортировать хранилище в SQLite-файл без шифрования</value>
+    <value>В SQLite-файл (без шифрования)</value>
     <comment>Button to export as SQLite</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
