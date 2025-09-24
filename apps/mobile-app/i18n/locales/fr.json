@@ -433,7 +433,7 @@
     "VAULT_ERROR": "Le coffre-fort local n'est pas à jour. Veuillez synchroniser votre coffre-fort en rafraîchissant la page et réessayez."
   },
   "app": {
-    "openReadOnlyMode": "Open in read-only mode",
+    "openReadOnlyMode": "Ouvrir en mode lecture seule",
     "status": {
       "unlockingVault": "Unlocking vault",
       "decryptingVault": "Decrypting vault",
