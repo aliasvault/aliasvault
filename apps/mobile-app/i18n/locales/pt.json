@@ -433,7 +433,7 @@
     "VAULT_ERROR": "O cofre local não está atualizado. Por favor sincronize seu cofre recarregando a página e tente novamente."
   },
   "app": {
-    "openReadOnlyMode": "Open in read-only mode",
+    "openReadOnlyMode": "Abrir em modo de leitura",
     "status": {
       "unlockingVault": "Desbloqueando cofre",
       "decryptingVault": "Descriptografando cofre",
