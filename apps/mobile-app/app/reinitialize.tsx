@@ -147,7 +147,7 @@ export default function ReinitializeScreen() : React.ReactNode {
         }
       ]
     );
-  }, [authContext, dbContext, t, router]);
+  }, [authContext, dbContext, t]);
 
   useEffect(() => {
     if (hasInitialized.current) {
