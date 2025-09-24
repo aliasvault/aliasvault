@@ -22,7 +22,7 @@ export default function Initialize() : React.ReactNode {
   const hasInitialized = useRef(false);
   const offlineButtonTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { t } = useTranslation();
-  const { initializeAuth } = useAuth();
+  const { initializeAuth, setOfflineMode } = useAuth();
   const { syncVault } = useVaultSync();
   const dbContext = useDb();
   const webApi = useWebApi();
@@ -81,6 +81,9 @@ export default function Initialize() : React.ReactNode {
                 return;
               }
 
+              // Set offline mode
+              setOfflineMode(true);
+
               // Success - navigate to credentials
               router.replace('/(tabs)/credentials');
             } catch {
@@ -94,13 +97,26 @@ export default function Initialize() : React.ReactNode {
            * Handle retrying the connection.
            */
           onPress: () : void => {
-            // Re-trigger initialization
+            setStatus(t('app.status.retryingConnection'));
+            setShowOfflineButton(false);
+
+            // Clear any existing timeout
+            if (offlineButtonTimeoutRef.current) {
+              clearTimeout(offlineButtonTimeoutRef.current);
+              offlineButtonTimeoutRef.current = null;
+            }
+
+            /**
+             * Reset the hasInitialized flag and navigate to the same route
+             * to force a re-render and trigger the useEffect again
+             */
             hasInitialized.current = false;
+            router.replace('/initialize');
           }
         }
       ]
     );
-  }, [dbContext, router, initializeAuth, t]);
+  }, [dbContext, router, initializeAuth, t, setOfflineMode]);
 
   useEffect(() => {
     // Ensure this only runs once.
@@ -187,7 +203,7 @@ export default function Initialize() : React.ReactNode {
             if (message === t('vault.checkingVaultUpdates')) {
               offlineButtonTimeoutRef.current = setTimeout(() => {
                 setShowOfflineButton(true);
-              }, 2000) as NodeJS.Timeout;
+              }, 2000) as unknown as NodeJS.Timeout;
             } else {
               setShowOfflineButton(false);
             }

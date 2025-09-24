@@ -1,5 +1,5 @@
 import { Href, router } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Alert } from 'react-native';
 
@@ -31,7 +31,7 @@ export default function ReinitializeScreen() : React.ReactNode {
   /**
    * Handle offline scenario - show alert with options to open local vault or retry sync.
    */
-  const handleOfflineFlow = (): void => {
+  const handleOfflineFlow = useCallback((): void => {
     Alert.alert(
       t('app.alerts.syncIssue'),
       t('app.alerts.syncIssueMessage'),
@@ -125,13 +125,26 @@ export default function ReinitializeScreen() : React.ReactNode {
            * Handle retrying the connection.
            */
           onPress: () : void => {
-            // Re-trigger initialization
+            setStatus(t('app.status.retryingConnection'));
+            setShowOfflineButton(false);
+
+            // Clear any existing timeout
+            if (offlineButtonTimeoutRef.current) {
+              clearTimeout(offlineButtonTimeoutRef.current);
+              offlineButtonTimeoutRef.current = null;
+            }
+
+            /**
+             * Reset the hasInitialized flag and navigate to reinitialize route
+             * to force a re-render and trigger the useEffect again
+             */
             hasInitialized.current = false;
+            router.replace('/reinitialize');
           }
         }
       ]
     );
-  };
+  }, [authContext, dbContext, t, router]);
 
   useEffect(() => {
     if (hasInitialized.current) {
@@ -258,7 +271,7 @@ export default function ReinitializeScreen() : React.ReactNode {
           if (message === t('vault.checkingVaultUpdates')) {
             offlineButtonTimeoutRef.current = setTimeout(() => {
               setShowOfflineButton(true);
-            }, 2000) as NodeJS.Timeout;
+            }, 2000) as unknown as NodeJS.Timeout;
           } else {
             setShowOfflineButton(false);
           }
