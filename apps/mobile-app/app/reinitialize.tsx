@@ -48,13 +48,16 @@ export default function ReinitializeScreen() : React.ReactNode {
             try {
               const hasEncryptedDatabase = await NativeVaultManager.hasEncryptedDatabase();
 
-              // Guard clause: No encrypted database
+              // No encrypted database
               if (!hasEncryptedDatabase) {
                 router.replace('/unlock');
                 return;
               }
 
-              // Guard clause: FaceID not enabled
+              // Set offline mode
+              authContext.setOfflineMode(true);
+
+              // FaceID not enabled
               const isFaceIDEnabled = enabledAuthMethods.includes('faceid');
               if (!isFaceIDEnabled) {
                 router.replace('/unlock');
@@ -65,7 +68,7 @@ export default function ReinitializeScreen() : React.ReactNode {
               setStatus(t('app.status.unlockingVault'));
               const isUnlocked = await dbContext.unlockVault();
 
-              // Guard clause: Vault couldn't be unlocked
+              // Vault couldn't be unlocked
               if (!isUnlocked) {
                 router.replace('/unlock');
                 return;
@@ -76,7 +79,7 @@ export default function ReinitializeScreen() : React.ReactNode {
               setStatus(t('app.status.decryptingVault'));
               await new Promise(resolve => setTimeout(resolve, 1000));
 
-              // Guard clause: Migrations pending
+              // Migrations pending
               if (await dbContext.hasPendingMigrations()) {
                 router.replace('/upgrade');
                 return;

@@ -53,6 +53,9 @@ export default function Initialize() : React.ReactNode {
                 return;
               }
 
+              // Set offline mode
+              setOfflineMode(true);
+
               // FaceID not enabled
               const isFaceIDEnabled = enabledAuthMethods.includes('faceid');
               if (!isFaceIDEnabled) {
@@ -80,9 +83,6 @@ export default function Initialize() : React.ReactNode {
                 router.replace('/upgrade');
                 return;
               }
-
-              // Set offline mode
-              setOfflineMode(true);
 
               // Success - navigate to credentials
               router.replace('/(tabs)/credentials');
