@@ -433,11 +433,11 @@
     "VAULT_ERROR": "The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again."
   },
   "app": {
+    "openReadOnlyMode": "Open in read-only mode",
     "status": {
       "unlockingVault": "Unlocking vault",
       "decryptingVault": "Decrypting vault",
-      "openingVaultReadOnly": "Opening vault in read-only mode",
-      "retryingConnection": "Retrying connection..."
+      "openingVaultReadOnly": "Opening vault in read-only mode"
     },
     "offline": {
       "banner": "Offline mode (read-only)",
