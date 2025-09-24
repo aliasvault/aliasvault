@@ -433,11 +433,11 @@
     "VAULT_ERROR": "Локальне сховище не оновлене. Синхронізуйте своє сховище, оновивши сторінку, та повторіть спробу."
   },
   "app": {
+    "openReadOnlyMode": "Open in read-only mode",
     "status": {
       "unlockingVault": "Розблокування сховища",
       "decryptingVault": "Розшифрування сховища",
-      "openingVaultReadOnly": "Відкриття сховища в режимі лише для читання",
-      "retryingConnection": "Повторна спроба підключення..."
+      "openingVaultReadOnly": "Відкриття сховища в режимі лише для читання"
     },
     "offline": {
       "banner": "Offline mode (read-only)",
