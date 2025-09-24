@@ -433,7 +433,7 @@
     "VAULT_ERROR": "הכספת המקומית אינה עדכנית. נא לסנכרן את הכספת שלך על ידי ריענון העמוד ולנסות שוב."
   },
   "app": {
-    "openReadOnlyMode": "Open in read-only mode",
+    "openReadOnlyMode": "פתיחה במצב לקריאה בלבד",
     "status": {
       "unlockingVault": "שחרור נעילת כספת",
       "decryptingVault": "פענוח הצפנת כספת",
