@@ -2,6 +2,7 @@
 @page "/unlock/{SkipWebAuthn:bool}"
 @inherits AliasVault.Client.Auth.Pages.Base.LoginBase
 @inject ILogger<Unlock> Logger
+@inject IJSRuntime JSRuntime
 @layout Auth.Layout.MainLayout
 @using System.Text.Json
 @using AliasVault.Client.Auth.Components
@@ -49,7 +50,7 @@ else
                     <svg class="w-5 h-5 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg>
                     @Localizer["UnlockWithWebAuthn"]
                 </button>
-                <button type="button" @onclick="ShowPasswordLogin" class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-gray-900 rounded-lg border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
+                <button type="button" @onclick="async () => await ShowPasswordLogin()" class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-gray-900 rounded-lg border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
                     @Localizer["UnlockWithPassword"]
                 </button>
             </div>
@@ -67,7 +68,7 @@ else
             <DataAnnotationsValidator/>
             <div>
                 <label asp-for="Input.Password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["YourPasswordLabel"]</label>
-                <PasswordInputField id="password" @bind-Value="_unlockModel.Password" placeholder="••••••••"/>
+                <PasswordInputField @ref="passwordField" id="password" @bind-Value="_unlockModel.Password" placeholder="••••••••"/>
                 <ValidationMessage For="() => _unlockModel.Password"/>
             </div>
 
@@ -96,9 +97,11 @@ else
     private bool IsLoading { get; set; } = true;
     private bool IsWebAuthnLoading { get; set; }
     private bool ShowWebAuthnButton { get; set; }
+    private bool IsPasswordFocused { get; set; }
     private readonly UnlockModel _unlockModel = new();
     private FullScreenLoadingIndicator _loadingIndicator = new();
     private ServerValidationErrors _serverValidationErrors = new();
+    private PasswordInputField? passwordField;
     private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Auth.Unlock", "AliasVault.Client");
     private IStringLocalizer ApiErrorLocalizer => LocalizerFactory.Create("ApiErrors", "AliasVault.Client");
 
@@ -122,6 +125,12 @@ else
 
             IsLoading = false;
             StateHasChanged();
+        }
+
+        if (!IsLoading && !IsWebAuthnLoading && !ShowWebAuthnButton && !IsPasswordFocused)
+        {
+            IsPasswordFocused = true;
+            await FocusPasswordField();
         }
     }
 
@@ -314,9 +323,34 @@ else
     /// <summary>
     /// Show the password login form.
     /// </summary>
-    private void ShowPasswordLogin()
+    private async Task ShowPasswordLogin()
     {
         ShowWebAuthnButton = false;
         StateHasChanged();
+
+        // Focus the password field after the form is rendered
+        if (!IsPasswordFocused)
+        {
+            IsPasswordFocused = true;
+            await FocusPasswordField();
+        }
+    }
+
+    /// <summary>
+    /// Focus the password input field using component reference.
+    /// </summary>
+    private async Task FocusPasswordField()
+    {
+        try
+        {
+            if (passwordField != null)
+            {
+                await passwordField.FocusAsync();
+            }
+        }
+        catch
+        {
+            // Do nothing
+        }
     }
 }
