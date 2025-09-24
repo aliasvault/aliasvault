@@ -1,16 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
-import { StyleSheet, View, Text, Animated, useColorScheme } from 'react-native';
+import { StyleSheet, View, Text, Animated, useColorScheme, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { useColors } from '@/hooks/useColorScheme';
 
 type LoadingIndicatorProps = {
   status: string;
+  showOfflineButton?: boolean;
+  onOfflinePress?: () => void;
 };
 
 /**
  * Loading indicator component.
  */
-export default function LoadingIndicator({ status }: LoadingIndicatorProps): React.ReactNode {
+export default function LoadingIndicator({ status, showOfflineButton, onOfflinePress }: LoadingIndicatorProps): React.ReactNode {
   const colors = useColors();
   const dot1Anim = useRef(new Animated.Value(0)).current;
   const dot2Anim = useRef(new Animated.Value(0)).current;
@@ -100,6 +103,24 @@ export default function LoadingIndicator({ status }: LoadingIndicatorProps): Rea
       alignItems: 'center',
       justifyContent: 'center',
       padding: 20,
+      ...StyleSheet.absoluteFillObject,
+    },
+    closeIconContainer: {
+      position: 'absolute',
+      right: 20,
+      top: 60,
+      zIndex: 10,
+    },
+    closeIcon: {
+      padding: 12,
+      borderRadius: 32,
+      backgroundColor: colors.accentBackground,
+      borderWidth: 2,
+      borderColor: colors.accentBorder,
+    },
+    contentContainer: {
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     dot: {
       backgroundColor: colors.tertiary,
@@ -135,7 +156,15 @@ export default function LoadingIndicator({ status }: LoadingIndicatorProps): Rea
 
   return (
     <View style={styles.container}>
-      <View style={styles.dotsContainer}>
+      {showOfflineButton && (
+        <View style={styles.closeIconContainer}>
+          <TouchableOpacity style={styles.closeIcon} onPress={onOfflinePress}>
+            <Ionicons name="close" size={24} color={colors.text} />
+          </TouchableOpacity>
+        </View>
+      )}
+      <View style={styles.contentContainer}>
+        <View style={styles.dotsContainer}>
         <Animated.View
           style={[
             styles.dot,
@@ -181,10 +210,11 @@ export default function LoadingIndicator({ status }: LoadingIndicatorProps): Rea
           ]}
         />
       </View>
-      <Text style={styles.statusText}>
-        {statusTrimmed}
-        {shouldShowDots && dots}
-      </Text>
+        <Text style={styles.statusText}>
+          {statusTrimmed}
+          {shouldShowDots && dots}
+        </Text>
+      </View>
     </View>
   );
 }

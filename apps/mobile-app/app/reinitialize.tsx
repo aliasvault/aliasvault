@@ -22,9 +22,116 @@ export default function ReinitializeScreen() : React.ReactNode {
   const dbContext = useDb();
   const { syncVault } = useVaultSync();
   const [status, setStatus] = useState('');
+  const [showOfflineButton, setShowOfflineButton] = useState(false);
   const hasInitialized = useRef(false);
+  const offlineButtonTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const colors = useColors();
   const { t } = useTranslation();
+
+  /**
+   * Handle offline scenario - show alert with options to open local vault or retry sync.
+   */
+  const handleOfflineFlow = (): void => {
+    Alert.alert(
+      t('app.alerts.syncIssue'),
+      t('app.alerts.syncIssueMessage'),
+      [
+        {
+          text: t('app.alerts.openLocalVault'),
+          /**
+           * Handle opening vault in read-only mode.
+           */
+          onPress: async () : Promise<void> => {
+            setStatus(t('app.status.openingVaultReadOnly'));
+            const { enabledAuthMethods } = await authContext.initializeAuth();
+
+            try {
+              const hasEncryptedDatabase = await NativeVaultManager.hasEncryptedDatabase();
+
+              // Guard clause: No encrypted database
+              if (!hasEncryptedDatabase) {
+                router.replace('/unlock');
+                return;
+              }
+
+              // Guard clause: FaceID not enabled
+              const isFaceIDEnabled = enabledAuthMethods.includes('faceid');
+              if (!isFaceIDEnabled) {
+                router.replace('/unlock');
+                return;
+              }
+
+              // Attempt to unlock vault
+              setStatus(t('app.status.unlockingVault'));
+              const isUnlocked = await dbContext.unlockVault();
+
+              // Guard clause: Vault couldn't be unlocked
+              if (!isUnlocked) {
+                router.replace('/unlock');
+                return;
+              }
+
+              // Vault successfully unlocked - proceed with decryption
+              await new Promise(resolve => setTimeout(resolve, 1000));
+              setStatus(t('app.status.decryptingVault'));
+              await new Promise(resolve => setTimeout(resolve, 1000));
+
+              // Guard clause: Migrations pending
+              if (await dbContext.hasPendingMigrations()) {
+                router.replace('/upgrade');
+                return;
+              }
+
+              // Handle navigation based on return URL
+              if (!authContext.returnUrl?.path) {
+                router.replace('/(tabs)/credentials');
+                return;
+              }
+
+              // Navigate to return URL
+              const path = authContext.returnUrl.path as string;
+              const isDetailRoute = path.includes('credentials/');
+
+              if (!isDetailRoute) {
+                router.replace({
+                  pathname: path as '/',
+                  params: authContext.returnUrl.params as Record<string, string>
+                });
+                authContext.setReturnUrl(null);
+                return;
+              }
+
+              // Handle detail routes
+              const params = authContext.returnUrl.params as Record<string, string>;
+              router.replace('/(tabs)/credentials');
+              setTimeout(() => {
+                if (params.serviceUrl) {
+                  router.push(path + '?serviceUrl=' + params.serviceUrl);
+                } else if (params.id) {
+                  router.push(path + '?id=' + params.id);
+                } else {
+                  router.push(path);
+                }
+              }, 0);
+              authContext.setReturnUrl(null);
+            } catch {
+              router.replace('/unlock');
+            }
+          }
+        },
+        {
+          text: t('app.alerts.retrySync'),
+          /**
+           * Handle retrying the connection.
+           */
+          onPress: () : void => {
+            // Re-trigger initialization
+            hasInitialized.current = false;
+          }
+        }
+      ]
+    );
+  };
 
   useEffect(() => {
     if (hasInitialized.current) {
@@ -141,6 +248,20 @@ export default function ReinitializeScreen() : React.ReactNode {
          */
         onStatus: (message) => {
           setStatus(message);
+
+          // Clear any existing timeout
+          if (offlineButtonTimeoutRef.current) {
+            clearTimeout(offlineButtonTimeoutRef.current);
+          }
+
+          // Show offline button after 2 seconds if we're checking vault updates
+          if (message === t('vault.checkingVaultUpdates')) {
+            offlineButtonTimeoutRef.current = setTimeout(() => {
+              setShowOfflineButton(true);
+            }, 2000) as NodeJS.Timeout;
+          } else {
+            setShowOfflineButton(false);
+          }
         },
         /**
          * Handle successful vault sync and continue with vault unlock flow.
@@ -152,32 +273,7 @@ export default function ReinitializeScreen() : React.ReactNode {
          * Handle offline state and prompt user for action.
          */
         onOffline: () => {
-          Alert.alert(
-            t('app.alerts.syncIssue'),
-            t('app.alerts.syncIssueMessage'),
-            [
-              {
-                text: t('app.alerts.openLocalVault'),
-                /**
-                 * Handle opening vault in read-only mode.
-                 */
-                onPress: async () : Promise<void> => {
-                  setStatus(t('app.status.openingVaultReadOnly'));
-                  await handleVaultUnlock();
-                }
-              },
-              {
-                text: t('app.alerts.retrySync'),
-                /**
-                 * Handle retrying the connection.
-                 */
-                onPress: () : void => {
-                  setStatus(t('app.status.retryingConnection'));
-                  initialize();
-                }
-              }
-            ]
-          );
+          handleOfflineFlow();
         },
         /**
          * On upgrade required.
@@ -189,7 +285,28 @@ export default function ReinitializeScreen() : React.ReactNode {
     };
 
     initialize();
-  }, [syncVault, authContext, dbContext, t]);
+
+    // Cleanup timeout on unmount
+    return (): void => {
+      if (offlineButtonTimeoutRef.current) {
+        clearTimeout(offlineButtonTimeoutRef.current);
+      }
+    };
+  }, [syncVault, authContext, dbContext, t, handleOfflineFlow]);
+
+  /**
+   * Handle offline button press by calling the stored offline handler.
+   */
+  const handleOfflinePress = (): void => {
+    // Clear any existing timeout
+    if (offlineButtonTimeoutRef.current) {
+      clearTimeout(offlineButtonTimeoutRef.current);
+    }
+
+    setShowOfflineButton(false);
+
+    handleOfflineFlow();
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -216,7 +333,13 @@ export default function ReinitializeScreen() : React.ReactNode {
       <View style={styles.messageContainer}>
         <ThemedText style={styles.message1}>{t('app.reinitialize.vaultAutoLockedMessage')}</ThemedText>
         <ThemedText style={styles.message2}>{t('app.reinitialize.attemptingToUnlockMessage')}</ThemedText>
-        {status ? <LoadingIndicator status={status} /> : null}
+        {status ? (
+          <LoadingIndicator
+            status={status}
+            showOfflineButton={showOfflineButton}
+            onOfflinePress={handleOfflinePress}
+          />
+        ) : null}
       </View>
     </ThemedView>
   );

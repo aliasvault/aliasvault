@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, StyleSheet } from 'react-native';
 
@@ -18,12 +18,89 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
 export default function Initialize() : React.ReactNode {
   const router = useRouter();
   const [status, setStatus] = useState('');
+  const [showOfflineButton, setShowOfflineButton] = useState(false);
   const hasInitialized = useRef(false);
+  const offlineButtonTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { t } = useTranslation();
   const { initializeAuth } = useAuth();
   const { syncVault } = useVaultSync();
   const dbContext = useDb();
   const webApi = useWebApi();
+
+  /**
+   * Handle offline scenario - show alert with options to open local vault or retry sync.
+   */
+  const handleOfflineFlow = useCallback((): void => {
+    Alert.alert(
+      t('app.alerts.syncIssue'),
+      t('app.alerts.syncIssueMessage'),
+      [
+        {
+          text: t('app.alerts.openLocalVault'),
+          /**
+           * Handle opening vault in read-only mode.
+           */
+          onPress: async () : Promise<void> => {
+            setStatus(t('app.status.openingVaultReadOnly'));
+            const { enabledAuthMethods } = await initializeAuth();
+
+            try {
+              const hasEncryptedDatabase = await NativeVaultManager.hasEncryptedDatabase();
+
+              // No encrypted database
+              if (!hasEncryptedDatabase) {
+                router.replace('/unlock');
+                return;
+              }
+
+              // FaceID not enabled
+              const isFaceIDEnabled = enabledAuthMethods.includes('faceid');
+              if (!isFaceIDEnabled) {
+                router.replace('/unlock');
+                return;
+              }
+
+              // Attempt to unlock vault
+              setStatus(t('app.status.unlockingVault'));
+              const isUnlocked = await dbContext.unlockVault();
+
+              // Vault couldn't be unlocked
+              if (!isUnlocked) {
+                router.replace('/unlock');
+                return;
+              }
+
+              // Vault successfully unlocked - proceed with decryption
+              await new Promise(resolve => setTimeout(resolve, 750));
+              setStatus(t('app.status.decryptingVault'));
+              await new Promise(resolve => setTimeout(resolve, 750));
+
+              // Migrations pending
+              if (await dbContext.hasPendingMigrations()) {
+                router.replace('/upgrade');
+                return;
+              }
+
+              // Success - navigate to credentials
+              router.replace('/(tabs)/credentials');
+            } catch {
+              router.replace('/unlock');
+            }
+          }
+        },
+        {
+          text: t('app.alerts.retrySync'),
+          /**
+           * Handle retrying the connection.
+           */
+          onPress: () : void => {
+            // Re-trigger initialization
+            hasInitialized.current = false;
+          }
+        }
+      ]
+    );
+  }, [dbContext, router, initializeAuth, t]);
 
   useEffect(() => {
     // Ensure this only runs once.
@@ -100,6 +177,20 @@ export default function Initialize() : React.ReactNode {
            */
           onStatus: (message) => {
             setStatus(message);
+
+            // Clear any existing timeout
+            if (offlineButtonTimeoutRef.current) {
+              clearTimeout(offlineButtonTimeoutRef.current);
+            }
+
+            // Show offline button after 2 seconds if we're checking vault updates
+            if (message === t('vault.checkingVaultUpdates')) {
+              offlineButtonTimeoutRef.current = setTimeout(() => {
+                setShowOfflineButton(true);
+              }, 2000) as NodeJS.Timeout;
+            } else {
+              setShowOfflineButton(false);
+            }
           },
           /**
            * Handle successful vault sync and continue with vault unlock flow.
@@ -111,33 +202,8 @@ export default function Initialize() : React.ReactNode {
           /**
            * Handle offline state and prompt user for action.
            */
-          onOffline: async () => {
-            Alert.alert(
-              t('app.alerts.syncIssue'),
-              t('app.alerts.syncIssueMessage'),
-              [
-                {
-                  text: t('app.alerts.openLocalVault'),
-                  /**
-                   * Handle opening vault in read-only mode.
-                   */
-                  onPress: async () : Promise<void> => {
-                    setStatus(t('app.status.openingVaultReadOnly'));
-                    await handleVaultUnlock();
-                  }
-                },
-                {
-                  text: t('app.alerts.retrySync'),
-                  /**
-                   * Handle retrying the connection.
-                   */
-                  onPress: () : void => {
-                    setStatus(t('app.status.retryingConnection'));
-                    initialize();
-                  }
-                }
-              ]
-            );
+          onOffline: () => {
+            handleOfflineFlow();
           },
           /**
            * Handle error during vault sync.
@@ -163,7 +229,28 @@ export default function Initialize() : React.ReactNode {
     };
 
     initializeApp();
-  }, [dbContext, syncVault, initializeAuth, webApi, router, t]);
+
+    // Cleanup timeout on unmount
+    return (): void => {
+      if (offlineButtonTimeoutRef.current) {
+        clearTimeout(offlineButtonTimeoutRef.current);
+      }
+    };
+  }, [dbContext, syncVault, initializeAuth, webApi, router, t, handleOfflineFlow]);
+
+  /**
+   * Handle offline button press by calling the stored offline handler.
+   */
+  const handleOfflinePress = (): void => {
+    // Clear any existing timeout
+    if (offlineButtonTimeoutRef.current) {
+      clearTimeout(offlineButtonTimeoutRef.current);
+    }
+
+    setShowOfflineButton(false);
+
+    handleOfflineFlow();
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -175,7 +262,13 @@ export default function Initialize() : React.ReactNode {
 
   return (
     <ThemedView style={styles.container}>
-      {status ? <LoadingIndicator status={status} /> : null}
+      {status ? (
+        <LoadingIndicator
+          status={status}
+          showOfflineButton={showOfflineButton}
+          onOfflinePress={handleOfflinePress}
+        />
+      ) : null}
     </ThemedView>
   );
 }
