@@ -433,7 +433,7 @@
     "VAULT_ERROR": "La cassaforte locale non è aggiornata. Sincronizzala ricaricando la pagina e riprova."
   },
   "app": {
-    "openReadOnlyMode": "Open in read-only mode",
+    "openReadOnlyMode": "Apri in modalità di sola lettura",
     "status": {
       "unlockingVault": "Sblocco cassaforte in corso",
       "decryptingVault": "Decriptazione cassaforte in corso",
