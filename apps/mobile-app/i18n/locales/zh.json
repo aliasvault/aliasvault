@@ -433,11 +433,11 @@
     "VAULT_ERROR": "本地密码库不是最新版本。请刷新页面同步密码库后重试。"
   },
   "app": {
+    "openReadOnlyMode": "Open in read-only mode",
     "status": {
       "unlockingVault": "解锁密码库",
       "decryptingVault": "解密密码库",
-      "openingVaultReadOnly": "以只读模式打开密码库",
-      "retryingConnection": "正在重试连接…"
+      "openingVaultReadOnly": "以只读模式打开密码库"
     },
     "offline": {
       "banner": "离线模式 (只读)",
