@@ -433,11 +433,11 @@
     "VAULT_ERROR": "Der lokale Tresor ist nicht aktuell. Bitte synchronisiere Deinen Tresor, indem Du die Seite aktualisierst, und versuche es erneut."
   },
   "app": {
+    "openReadOnlyMode": "Open in read-only mode",
     "status": {
       "unlockingVault": "Tresor wird entsperrt",
       "decryptingVault": "Tresor wird entschlüsselt",
-      "openingVaultReadOnly": "Tresor wird im Lese-Modus geöffnet",
-      "retryingConnection": "Verbindungsversuch wird wiederholt..."
+      "openingVaultReadOnly": "Tresor wird im Lese-Modus geöffnet"
     },
     "offline": {
       "banner": "Offline-Modus (nur lesender Zugriff)",
