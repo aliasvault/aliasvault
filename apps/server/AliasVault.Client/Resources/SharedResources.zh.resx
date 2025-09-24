@@ -159,7 +159,7 @@
     <comment>Rejection button text</comment>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>好的</value>
+    <value>确定</value>
     <comment>OK button text</comment>
   </data>
   <data name="Continue" xml:space="preserve">
@@ -176,7 +176,7 @@
   </data>
   <!-- Common form elements -->
   <data name="Email" xml:space="preserve">
-    <value>电子邮件</value>
+    <value>电子邮箱</value>
     <comment>Label for email input field</comment>
   </data>
   <data name="Password" xml:space="preserve">
@@ -188,7 +188,7 @@
     <comment>Label for username input field</comment>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>名字</value>
+    <value>名称</value>
     <comment>Label for name input field</comment>
   </data>
   <data name="Description" xml:space="preserve">
@@ -200,7 +200,7 @@
     <comment>Label for title input field</comment>
   </data>
   <data name="Website" xml:space="preserve">
-    <value>网页</value>
+    <value>网站</value>
     <comment>Label for website input field</comment>
   </data>
   <data name="Search" xml:space="preserve">
