@@ -120,7 +120,7 @@
     <value>刷新令牌是必填项。</value>
   </data>
   <data name="ACCOUNT_BLOCKED" xml:space="preserve">
-    <value>你的账户已被停用。若认为此操作有误，请联系支持团队。</value>
+    <value>您的账户已被停用。若认为此操作有误，请联系支持团队。</value>
   </data>
   <data name="INVALID_REFRESH_TOKEN" xml:space="preserve">
     <value>刷新令牌无效</value>
@@ -138,7 +138,7 @@
     <value>用户名是必填项。</value>
   </data>
   <data name="USERNAME_ALREADY_IN_USE" xml:space="preserve">
-    <value>用户名已被占用。</value>
+    <value>用户名已被使用。</value>
   </data>
   <data name="USERNAME_AVAILABLE" xml:space="preserve">
     <value>用户名可用。</value>
@@ -171,13 +171,13 @@
     <value>存在待执行的数据库迁移，请运行'dotnet ef database update'以应用变更。</value>
   </data>
   <data name="SYSTEM_OK" xml:space="preserve">
-    <value>好的</value>
+    <value>确定</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
-    <value>服务器内部错误</value>
+    <value>内部服务器错误</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
-    <value>本地保险库未同步，请刷新页面同步后重试。</value>
+    <value>本地密码库未同步，请刷新页面同步后重试。</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
     <value>发生未知错误，请重试。</value>
@@ -189,7 +189,7 @@
     <value>恢复代码无效，请重试。</value>
   </data>
   <data name="VAULT_NOT_UP_TO_DATE" xml:space="preserve">
-    <value>你的保险库未同步，请先同步后重试。</value>
+    <value>您的密码库未同步，请先同步后重试。</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
     <value>密码错误次数过多，账户已被锁定。30分钟后可再次尝试。</value>
