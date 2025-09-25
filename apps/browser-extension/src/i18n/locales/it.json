@@ -92,6 +92,7 @@
       "VaultOutdated": "La tua cassaforte è obsoleta. Per favore accedi al sito di AliasVault e segui le istruzioni.",
       "serverNotAvailable": "Il server di AliasVault non è disponibile. Riprova più tardi o contatta il supporto se il problema persiste.",
       "clientVersionNotSupported": "Questa versione dell'estensione del browser AliasVault non è più supportata dal server. Aggiorna l'estensione alla versione più recente.",
+      "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
       "serverVersionNotSupported": "Il server di AliasVault necessita un aggiornamento a una versione più recente per poter usare questa estensione. Contatta il supporto se hai bisogno di assistenza.",
       "unknownError": "Si è verificato un errore sconosciuto",
       "failedToStoreVault": "Salvataggio cassaforte non riuscito",
