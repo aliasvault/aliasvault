@@ -63,7 +63,7 @@
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>以下是你的账户当前登录或存在活跃会话的设备列表。你可以在此处从这些会话中登出。</value>
+    <value>以下是您的账户当前登录或存在活跃会话的设备列表。您可以在此处从这些会话中登出。</value>
     <comment>Description of active sessions</comment>
   </data>
   <data name="NoSessionsMessage" xml:space="preserve">
@@ -87,15 +87,15 @@
     <comment>Table column header</comment>
   </data>
   <data name="RevokeButton" xml:space="preserve">
-    <value>注销</value>
+    <value>撤销</value>
     <comment>Button to revoke session</comment>
   </data>
   <data name="RevokeSuccessMessage" xml:space="preserve">
-    <value>会话已成功注销。</value>
+    <value>会话已成功撤销。</value>
     <comment>Success message when session is revoked</comment>
   </data>
   <data name="RevokeErrorMessage" xml:space="preserve">
-    <value>注销会话失败。</value>
+    <value>撤销会话失败。</value>
     <comment>Error message when session revocation fails</comment>
   </data>
   <data name="RevokeExceptionMessage" xml:space="preserve">
