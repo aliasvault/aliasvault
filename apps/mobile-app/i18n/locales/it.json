@@ -80,6 +80,7 @@
       "operationFailed": "Operazione non riuscita",
       "versionNotSupported": "Questa versione dell'app AliasVault non è più supportata dal server. Aggiorna l'app all'ultima versione.",
       "serverNeedsUpdate": "Il server AliasVault necessita di un aggiornamento per usare questa app. Contatta il supporto se serve aiuto.",
+      "appOutdated": "This app is outdated and cannot be used to access this vault. Please update this app to continue.",
       "vaultDecryptFailed": "Impossibile decriptare la cassaforte, se il problema persiste esci e accedi nuovamente.",
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza."
     }
