@@ -176,7 +176,7 @@
   },
   "settings": {
     "title": "设置",
-    "iosAutofill": "iOS自动填充",
+    "iosAutofill": "iOS 自动填充",
     "iosAutofillSettings": {
       "headerText": "您可以配置AliasVault，使其在iOS中提供原生密码自动填充功能。按照以下说明启用它。",
       "howToEnable": "启用方法：",
@@ -209,10 +209,10 @@
     "clipboardClearAndroidWarning": "注意：部分安卓设备已启用剪贴板历史记录功能，即使AliasVault清除了剪贴板内容，系统仍可能保留先前复制的项目。AliasVault仅能覆盖最近一项记录，但历史记录中的旧条目可能仍可见。出于安全考虑，建议您在设备设置中禁用所有剪贴板历史记录功能。",
     "clipboardClearOptions": {
       "never": "从不",
-      "5seconds": "5秒",
-      "10seconds": "10秒",
-      "15seconds": "15秒",
-      "30seconds": "30秒"
+      "5seconds": "5 秒",
+      "10seconds": "10 秒",
+      "15seconds": "15 秒",
+      "30seconds": "30 秒"
     },
     "batteryOptimizationHelpTitle": "启用背景剪贴板清除",
     "batteryOptimizationActive": "电池优化正在阻止后台任务",
@@ -235,14 +235,14 @@
     "appVersion": "应用版本 {{version}}（{{url}}）",
     "autoLockOptions": {
       "never": "从不",
-      "5seconds": "5秒",
-      "30seconds": "30秒",
-      "1minute": "1分钟",
-      "15minutes": "15分钟",
-      "30minutes": "30分钟",
-      "1hour": "1小时",
-      "4hours": "4小时",
-      "8hours": "8小时"
+      "5seconds": "5 秒",
+      "30seconds": "30 秒",
+      "1minute": "1 分钟",
+      "15minutes": "15 分钟",
+      "30minutes": "30 分钟",
+      "1hour": "1 小时",
+      "4hours": "4 小时",
+      "8hours": "8 小时"
     },
     "language": "语言",
     "languageSystemMessage": "要更改应用语言，请在设备设置中配置AliasVault的首选语言。",
@@ -250,17 +250,17 @@
     "vaultUnlockSettings": {
       "description": "选择您想要的密码库解锁方式。",
       "biometrics": "生物识别",
-      "faceId": "Face ID",
-      "touchId": "Touch ID",
-      "faceIdTouchId": "Face ID / Touch ID",
-      "biometricEnabled": "{{biometric}}已成功启用",
-      "biometricNotAvailable": "{{biometric}}不可用",
+      "faceId": "面容 ID",
+      "touchId": "触控 ID",
+      "faceIdTouchId": "面容 ID / 触控 ID",
+      "biometricEnabled": "{{biometric}} 现已成功启用",
+      "biometricNotAvailable": "{{biometric}} 不可用",
       "biometricDisabledMessage": "AliasVault的{{biometric}}已禁用。如需使用，请先在设备设置中启用它。",
       "biometricHelp": "您的密码库解密密钥将安全存储在本地设备的{{keystore}}中，可通过{{biometric}}安全访问。",
       "biometricUnavailableHelp": "{{biometric}}不可用。点击打开设置和/或前往设备设置启用并配置它。",
       "passwordHelp": "重新输入完整主密码以解锁密码库。这始终作为备用选项启用。",
-      "keystoreIOS": "iOS钥匙串",
-      "keystoreAndroid": "Android密钥库"
+      "keystoreIOS": "iOS 钥匙串",
+      "keystoreAndroid": "Android 密钥库"
     },
     "autoLockSettings": {
       "description": "选择应用在需要重新验证前可在后台停留的时间。您需要使用Face ID/Touch ID或输入密码再次解锁密码库。"
@@ -277,8 +277,8 @@
       },
       "genderOptions": {
         "random": "随机",
-        "male": "男性",
-        "female": "女性"
+        "male": "男",
+        "female": "女"
       },
       "errors": {
         "loadFailed": "加载身份生成器设置失败。",
@@ -293,8 +293,8 @@
     "securitySettings": {
       "title": "安全",
       "description": "管理您的账户和密码库安全设置。",
-      "changeMasterPassword": "修改主密码",
-      "activeSessionsTitle": "活跃会话",
+      "changeMasterPassword": "更改主密码",
+      "activeSessionsTitle": "活动会话",
       "recentAuthLogs": "最近认证日志",
       "deleteAccountTitle": "删除账户",
       "changePassword": {
@@ -304,7 +304,7 @@
         "confirmNewPassword": "确认新密码",
         "enterCurrentPassword": "输入当前密码",
         "enterNewPassword": "输入新密码",
-        "changePassword": "修改密码",
+        "changePassword": "更改密码",
         "fillAllFields": "请填写所有字段",
         "passwordsDoNotMatch": "新密码不匹配",
         "userNotAuthenticated": "用户未经认证",
@@ -316,11 +316,11 @@
       "activeSessions": {
         "headerText": "以下是您的账户当前登录或有活跃会话的设备列表。您可以在此处从任意会话中登出。",
         "noSessions": "无活跃会话",
-        "revoke": "注销",
-        "revokeSession": "注销会话",
+        "revoke": "撤销",
+        "revokeSession": "撤销会话",
         "revokeConfirmation": "确定要注销此会话吗？这将使您从所选设备中登出。",
-        "sessionRevoked": "会话已成功注销",
-        "failedToRevoke": "注销会话失败",
+        "sessionRevoked": "会话已成功撤销",
+        "failedToRevoke": "撤销会话失败",
         "failedToLoad": "加载活跃会话失败",
         "lastActive": "最后活跃时间",
         "expires": "过期时间"
@@ -383,10 +383,10 @@
     "emptyMessage": "您的私人邮箱地址尚未收到任何邮件。当您收到新邮件时，将显示在这里。",
     "time": {
       "justNow": "刚刚",
-      "minutesAgo_single": "{{count}}分钟前",
-      "minutesAgo_plural": "{{count}}分钟前",
-      "hoursAgo_single": "{{count}}小时前",
-      "hoursAgo_plural": "{{count}}小时前",
+      "minutesAgo_single": "{{count}} 分钟前",
+      "minutesAgo_plural": "{{count}} 分钟前",
+      "hoursAgo_single": "{{count}} 小时前",
+      "hoursAgo_plural": "{{count}} 小时前",
       "yesterday": "昨天"
     },
     "errors": {
@@ -401,7 +401,7 @@
   "validation": {
     "required": "此字段为必填项",
     "serviceNameRequired": "服务名称为必填项",
-    "invalidDateFormat": "日期必须为YYYY-MM-DD格式",
+    "invalidDateFormat": "日期必须为 YYYY-MM-DD 格式",
     "invalidEmailFormat": "电子邮箱格式无效"
   },
   "apiErrors": {
@@ -456,7 +456,7 @@
       "notFound": "未找到"
     },
     "notFound": {
-      "title": "页面未找到",
+      "title": "未找到页面",
       "message": "该页面已被移除或不存在。",
       "goHome": "返回首页"
     },
@@ -466,10 +466,10 @@
       "attemptingToUnlockMessage": "正在尝试解锁。"
     },
     "loginSettings": {
-      "title": "API连接",
+      "title": "API 连接",
       "aliasvaultNet": "Aliasvault.net",
       "selfHosted": "自托管",
-      "customApiUrl": "自定义API网址",
+      "customApiUrl": "自定义 API URL",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
       "version": "版本：{{version}}"
     }
