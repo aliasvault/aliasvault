@@ -80,7 +80,7 @@
       "operationFailed": "Vorgang fehlgeschlagen",
       "versionNotSupported": "Diese Version der AliasVault-App wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine App auf die neueste Version.",
       "serverNeedsUpdate": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese mobile App nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
-      "appOutdated": "This app is outdated and cannot be used to access this vault. Please update this app to continue.",
+      "appOutdated": "Diese App ist veraltet und kann nicht verwendet werden, um auf diesen Tresor zuzugreifen. Bitte aktualisiere die App, um fortzufahren.",
       "vaultDecryptFailed": "Tresor konnte nicht entschlüsselt werden. Wenn das Problem weiterhin besteht, melden Dich bitte erneut an.",
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an."
     }
@@ -434,7 +434,7 @@
     "VAULT_ERROR": "Der lokale Tresor ist nicht aktuell. Bitte synchronisiere Deinen Tresor, indem Du die Seite aktualisierst, und versuche es erneut."
   },
   "app": {
-    "openReadOnlyMode": "Open in read-only mode",
+    "openReadOnlyMode": "Im Lese-Modus öffnen",
     "status": {
       "unlockingVault": "Tresor wird entsperrt",
       "decryptingVault": "Tresor wird entschlüsselt",
@@ -479,8 +479,8 @@
     "title": "Tresor aktualisieren",
     "subtitle": "AliasVault wurde aktualisiert. Dadurch muss auch Dein Tresor aktualisiert werden. Dies sollte nur wenige Sekunden dauern.",
     "versionInformation": "Versionsinformationen",
-    "yourVault": "Your vault version:",
-    "newVersion": "New available version:",
+    "yourVault": "Version Deines Tresors:",
+    "newVersion": "Neue verfügbare Version:",
     "upgrade": "Aktualisieren",
     "upgrading": "Aktualisieren...",
     "logout": "Abmelden",
