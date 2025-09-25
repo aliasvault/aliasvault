@@ -73,11 +73,11 @@
   </data>
   <!-- Warning messages -->
   <data name="PermanentActionWarning" xml:space="preserve">
-    <value>警告：此操作不可撤销且为永久性操作。你所有的数据都将被永久删除。</value>
+    <value>警告：此操作不可撤销且为永久性操作。您所有的数据都将被永久删除。</value>
     <comment>Warning message about permanent deletion</comment>
   </data>
   <data name="FinalWarning" xml:space="preserve">
-    <value>最终警告：输入你的密码以永久删除账户。</value>
+    <value>最终警告：输入您的密码以永久删除账户。</value>
     <comment>Final warning message before account deletion</comment>
   </data>
   <!-- Note sections -->
@@ -86,11 +86,11 @@
     <comment>Header for note section</comment>
   </data>
   <data name="VaultsDeletedNote" xml:space="preserve">
-    <value>所有加密的保险库（包括你所有的凭据）都将被永久删除</value>
+    <value>所有加密的密码库（包括您所有的凭据）都将被永久删除</value>
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">
-    <value>你的电子邮件别名将成为无主状态，且不能被其他用户认领</value>
+    <value>您的电子邮件别名将成为无主状态，且不能被其他用户认领</value>
     <comment>Note about email aliases being orphaned</comment>
   </data>
   <data name="AccountCannotBeRecoveredNote" xml:space="preserve">
@@ -98,16 +98,16 @@
     <comment>Note about account recovery</comment>
   </data>
   <data name="DeletionIrreversibleNote" xml:space="preserve">
-    <value>账户删除操作不可撤销且无法恢复。点击下方按钮将立即永久删除你的账户。</value>
+    <value>账户删除操作不可撤销且无法恢复。点击下方按钮将立即永久删除您的账户。</value>
     <comment>Note about deletion being irreversible</comment>
   </data>
   <!-- Form labels -->
   <data name="ConfirmUsernameLabel" xml:space="preserve">
-    <value>确认你的用户名</value>
+    <value>确认您的用户名</value>
     <comment>Label for username confirmation input field</comment>
   </data>
   <data name="EnterPasswordLabel" xml:space="preserve">
-    <value>输入你的密码</value>
+    <value>输入您的密码</value>
     <comment>Label for password input field</comment>
   </data>
   <!-- Button text -->
@@ -121,15 +121,15 @@
   </data>
   <!-- Loading and status messages -->
   <data name="DeletingAccountMessage" xml:space="preserve">
-    <value>正在删除账户……</value>
+    <value>正在删除账户…</value>
     <comment>Loading message displayed while deleting account</comment>
   </data>
   <data name="UsernameRequired" xml:space="preserve">
-    <value>用户名是必填项</value>
+    <value>用户名为必填项</value>
     <comment>Error message when username is not provided</comment>
   </data>
   <data name="UsernameDoesNotMatch" xml:space="preserve">
-    <value>你输入的用户名与当前用户名不匹配。请重试。</value>
+    <value>您输入的用户名与当前用户名不匹配。请重试。</value>
     <comment>Error message when username doesn't match</comment>
   </data>
   <data name="ErrorProcessingRequest" xml:space="preserve">
