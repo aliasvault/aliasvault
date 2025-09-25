@@ -60,16 +60,16 @@
   </resheader>
   <!-- Page title -->
   <data name="PageTitle" xml:space="preserve">
-    <value>创建新的AliasVault账户</value>
+    <value>创建新的 AliasVault 账户</value>
     <comment>Main registration page title</comment>
   </data>
   <!-- Form labels -->
   <data name="UsernameOrEmailLabel" xml:space="preserve">
-    <value>你的用户名或邮箱</value>
+    <value>您的用户名或电子邮箱</value>
     <comment>Label for username/email input field</comment>
   </data>
   <data name="PasswordLabel" xml:space="preserve">
-    <value>你的密码</value>
+    <value>您的密码</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="ConfirmPasswordLabel" xml:space="preserve">
@@ -101,7 +101,7 @@
   </data>
   <!-- Loading and status messages -->
   <data name="CreatingAccountMessage" xml:space="preserve">
-    <value>创建账户中……</value>
+    <value>创建账户中…</value>
     <comment>Loading message during account creation</comment>
   </data>
   <data name="RegistrationErrorMessage" xml:space="preserve">
@@ -110,7 +110,7 @@
   </data>
   <!-- Placeholders -->
   <data name="UsernamePlaceholder" xml:space="preserve">
-    <value>name / name@company.com</value>
+    <value>姓名 / name@company.com</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
