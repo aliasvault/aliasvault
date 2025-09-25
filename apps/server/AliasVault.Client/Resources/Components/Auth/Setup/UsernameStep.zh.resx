@@ -60,7 +60,7 @@
   </data>
   <!-- Alt text -->
   <data name="AssistantAvatarAlt">
-    <value>AliasVault助手</value>
+    <value>AliasVault 助手</value>
     <comment>Alt text for assistant avatar image</comment>
   </data>
 </root>
