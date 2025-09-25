@@ -433,7 +433,7 @@
     "VAULT_ERROR": "Paikallinen holvi ei ole ajan tasalla. Synkronoi holvisi päivittämällä sivu ja yritä uudelleen."
   },
   "app": {
-    "openReadOnlyMode": "Open in read-only mode",
+    "openReadOnlyMode": "Avaa vain luku -tilassa",
     "status": {
       "unlockingVault": "Avataan holvia",
       "decryptingVault": "Pureraan holvin salausta",
