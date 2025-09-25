@@ -296,7 +296,7 @@ const Upgrade: React.FC = () => {
               <div className="flex justify-between items-center">
                 <span className="text-sm text-gray-600 dark:text-gray-400">{t('upgrade.yourVault')}</span>
                 <span className="text-sm font-bold text-orange-600 dark:text-orange-400">
-                  {currentVersion?.releaseVersion ?? '...'}
+                  {currentVersion?.compatibleUpToVersion ?? '...'}
                 </span>
               </div>
               <div className="flex justify-between items-center">

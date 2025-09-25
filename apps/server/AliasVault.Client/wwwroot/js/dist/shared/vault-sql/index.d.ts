@@ -22,6 +22,12 @@ type VaultVersion = {
      * this field is just for display purposes.
      */
     releaseVersion: string;
+    /**
+     * The last AliasVault release version that the vault was compatible with before requiring
+     * this migration. This indicates to users what version their vault was compatible up to
+     * before needing to upgrade to the new migration.
+     */
+    compatibleUpToVersion: string;
 };
 
 /**

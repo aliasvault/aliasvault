@@ -428,7 +428,7 @@ export default function UpgradeScreen() : React.ReactNode {
                     <View style={styles.versionRow}>
                       <ThemedText style={styles.versionLabel}>{t('upgrade.yourVault')}</ThemedText>
                       <ThemedText style={[styles.versionValue, styles.currentVersionValue]}>
-                        {currentVersion?.releaseVersion ?? '...'}
+                        {currentVersion?.compatibleUpToVersion ?? '...'}
                       </ThemedText>
                     </View>
                     <View style={styles.versionRow}>

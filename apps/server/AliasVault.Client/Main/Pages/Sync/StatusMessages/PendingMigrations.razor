@@ -1,18 +1,20 @@
 ﻿@using AliasVault.Client.Services.JsInterop.Models
 @inject DbService DbService
 @inject GlobalNotificationService GlobalNotificationService
+@inject LanguageService LanguageService
+@inject IStringLocalizerFactory LocalizerFactory
+@using Microsoft.Extensions.Localization
 
 <div class="relative p-6 sm:p-8 bg-white dark:bg-gray-700 rounded-lg sm:shadow-xl max-w-md w-full mx-auto">
     <div class="text-center">
         <div class="space-y-4">
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Upgrade Vault</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">@Localizer["UpgradeVaultTitle"]</h2>
             <p class="text-sm text-gray-500 dark:text-gray-400">
-                AliasVault has been updated and your vault needs to be upgraded.
-                This should only take a few seconds.
+                @Localizer["UpgradeDescription"]
             </p>
             <div class="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg shadow-sm">
                 <div class="flex items-center justify-center mb-3">
-                    <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">Version Information</h3>
+                    <h3 class="text-lg font-medium text-gray-700 dark:text-gray-300">@Localizer["VersionInformationTitle"]</h3>
                     <button @onclick="ToggleVersionDescription" class="ml-2 w-6 h-6 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center text-gray-600 dark:text-gray-400 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
                         <span class="text-sm font-bold">?</span>
                     </button>
@@ -22,18 +24,18 @@
                 {
                     <div class="mb-4 p-3 bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-700 rounded-lg">
                         <p class="text-sm text-orange-800 dark:text-orange-200">
-                            An upgrade is required to support the following changes: @(LatestVersion?.Description ?? "No description available for this version.")
+                            @string.Format(Localizer["UpgradeRequiredDescription"], LatestVersion?.Description ?? Localizer["NoDescriptionAvailable"])
                         </p>
                     </div>
                 }
 
                 <div class="space-y-2">
                     <p class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">Your vault:</span>
-                        <span class="text-base font-bold text-blue-600 dark:text-blue-400">@(CurrentVersion?.ReleaseVersion ?? "...")</span>
+                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">@Localizer["YourVaultLabel"]</span>
+                        <span class="text-base font-bold text-blue-600 dark:text-blue-400">@(CurrentVersion?.CompatibleUpToVersion ?? "...")</span>
                     </p>
                     <p class="flex justify-between items-center">
-                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">New version:</span>
+                        <span class="text-sm font-medium text-gray-600 dark:text-gray-400">@Localizer["NewVersionLabel"]</span>
                         <span class="text-base font-bold text-green-600 dark:text-green-400">@(LatestVersion?.ReleaseVersion ?? "...")</span>
                     </p>
                 </div>
@@ -52,7 +54,7 @@
                 else
                 {
                     <button @onclick="MigrateDatabase" type="button" class="px-4 py-2 text-white bg-primary-600 rounded-lg hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 dark:bg-primary-500 dark:hover:bg-primary-600 dark:focus:ring-primary-800">
-                        Start upgrade process
+                        @Localizer["StartUpgradeButton"]
                     </button>
                 }
             </div>
@@ -61,6 +63,7 @@
 </div>
 
 @code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Sync.StatusMessages.PendingMigrations", "AliasVault.Client");
     private bool IsPendingMigrations { get; set; }
     private string ErrorMessage { get; set; } = string.Empty;
     private SqlVaultVersion? CurrentVersion { get; set; }
@@ -101,18 +104,18 @@
             {
                 // Migration successful, update state which will trigger the status message UI to refresh and redirect user.
                 DbService.GetState().UpdateState(DbServiceState.DatabaseStatus.Ready);
-                GlobalNotificationService.AddSuccessMessage("Vault upgrade successful.", true);
+                GlobalNotificationService.AddSuccessMessage(Localizer["UpgradeSuccessMessage"], true);
             }
             else
             {
                 // Migration failed
-                ErrorMessage = "Database upgrade successful but failed to save to server. Please try again or contact support.";
+                ErrorMessage = Localizer["UpgradeSuccessButSaveFailedError"];
             }
         }
         else
         {
             // Migration failed
-            ErrorMessage = "Database upgrade failed. Please try again or contact support.";
+            ErrorMessage = Localizer["UpgradeFailedError"];
         }
 
         // Reset local state
