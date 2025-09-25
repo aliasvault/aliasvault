@@ -92,6 +92,7 @@
       "VaultOutdated": "Votre coffre est obsolète. Veuillez vous connecter sur le site AliasVault et suivre les étapes.",
       "serverNotAvailable": "Le serveur d'AliasVault n'est pas disponible. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "clientVersionNotSupported": "Cette version de l'extension de navigateur AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre extension de navigateur à la dernière version.",
+      "browserExtensionOutdated": "Cette extension de navigateur est obsolète et ne peut pas être utilisée pour accéder à ce coffre-fort. Veuillez la mettre à jour pour continuer.",
       "serverVersionNotSupported": "Le serveur d'AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette extension de navigateur. Veuillez contacter le support si vous avez besoin d'aide.",
       "unknownError": "Une erreur inconnue s'est produite",
       "failedToStoreVault": "Échec du stockage du coffre",
