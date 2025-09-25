@@ -63,7 +63,7 @@
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>永久删除你的账户及所有相关数据。此操作无法撤销。</value>
+    <value>永久删除您的账户及所有相关数据。此操作无法撤销。</value>
     <comment>Warning description for account deletion</comment>
   </data>
   <data name="DeleteButton" xml:space="preserve">
