@@ -79,7 +79,7 @@
     <comment>Button to close the add TOTP form</comment>
   </data>
   <data name="TotpInstructions" xml:space="preserve">
-    <value>如果网站为你的账户提供或要求双因素认证（2FA），请复制密钥或二维码URI并粘贴到下方。</value>
+    <value>如果网站为您的账户提供或要求双因素认证（2FA），请复制密钥或二维码URI并粘贴到下方。</value>
     <comment>Instructions for adding TOTP codes</comment>
   </data>
   <data name="NameOptionalLabel" xml:space="preserve">
@@ -103,7 +103,7 @@
     <comment>Message shown for unsaved TOTP codes</comment>
   </data>
   <data name="DeleteTotpCodeConfirmation" xml:space="preserve">
-    <value>你确定要删除此TOTP验证码吗？</value>
+    <value>您确定要删除此TOTP验证码吗？</value>
     <comment>Confirmation message for deleting TOTP code</comment>
   </data>
   <data name="DeleteTotpCodeTitle" xml:space="preserve">
