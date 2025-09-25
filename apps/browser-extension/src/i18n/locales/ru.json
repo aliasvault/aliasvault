@@ -92,6 +92,7 @@
       "VaultOutdated": "Ваше хранилище устарело. Пожалуйста, войдите на сайт AliasVault и следуйте инструкциям.",
       "serverNotAvailable": "Сервер AliasVault недоступен. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
       "clientVersionNotSupported": "Эта версия браузерного расширения AliasVault больше не поддерживается сервером. Пожалуйста, обновите расширение вашего браузера до последней версии.",
+      "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
       "serverVersionNotSupported": "Чтобы использовать это расширение для браузера, сервер AliasVault необходимо обновить до более новой версии. Пожалуйста, обратитесь в службу поддержки, если вам нужна помощь.",
       "unknownError": "Произошла неизвестная ошибка",
       "failedToStoreVault": "Не удалось сохранить хранилище",
