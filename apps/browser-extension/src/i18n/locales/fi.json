@@ -92,6 +92,7 @@
       "VaultOutdated": "Holvisi on vanhentunut. Kirjaudu AliasVaultin kotisivulle ja noudata ohjeita.",
       "serverNotAvailable": "AliasVault-palvelin ei ole käytettävissä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
       "clientVersionNotSupported": "Palvelin ei enää tue tätä AliasVault-selainlaajennuksen versiota. Ole hyvä ja päivitä selaimen laajennus uusimpaan versioon.",
+      "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
       "serverVersionNotSupported": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta voit käyttää tätä selainlaajennusta. Ota yhteyttä tukeen, jos tarvitset apua.",
       "unknownError": "Tapahtui tuntematon virhe",
       "failedToStoreVault": "Holvin tallentaminen epäonnistui",
