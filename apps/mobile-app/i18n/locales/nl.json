@@ -80,6 +80,7 @@
       "operationFailed": "Bewerking mislukt",
       "versionNotSupported": "Deze versie van de mobiele app van AliasVault wordt niet meer ondersteund door de server. Update de app naar de nieuwste versie.",
       "serverNeedsUpdate": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze mobiele app te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
+      "appOutdated": "Deze app is verouderd en kan niet worden gebruikt voor toegang tot deze vault. Update deze app om door te gaan.",
       "vaultDecryptFailed": "Vault kon niet worden gedecrypt, probeer uit- en opnieuw in te loggen.",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in."
     }
@@ -433,7 +434,7 @@
     "VAULT_ERROR": "De lokale vault is niet up-to-date. Synchroniseer je vault door de pagina te vernieuwen en probeer het opnieuw."
   },
   "app": {
-    "openReadOnlyMode": "Open in read-only mode",
+    "openReadOnlyMode": "Open in read-only modus",
     "status": {
       "unlockingVault": "Vault ontgrendelen",
       "decryptingVault": "Vault decrypten",
@@ -478,8 +479,8 @@
     "title": "Vault upgraden",
     "subtitle": "AliasVault is vernieuwd en je vault moet worden bijgewerkt. Dit kan enkele seconden duren.",
     "versionInformation": "Versie-informatie",
-    "yourVault": "Your vault version:",
-    "newVersion": "New available version:",
+    "yourVault": "Jouw vault versie:",
+    "newVersion": "Nieuwe beschikbare versie:",
     "upgrade": "Upgrade",
     "upgrading": "Aan het upgraden...",
     "logout": "Uitloggen",
