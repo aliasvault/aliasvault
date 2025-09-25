@@ -75,7 +75,7 @@
     <comment>Tip about keyboard shortcut for home</comment>
   </data>
   <data name="TipLockShortcut" xml:space="preserve">
-    <value>提示：使用 g+l（前往锁定）快捷键锁定保险库。</value>
+    <value>提示：使用 g+l（前往锁定）快捷键锁定密码库。</value>
     <comment>Tip about keyboard shortcut for locking vault</comment>
   </data>
 </root>
