@@ -59,47 +59,47 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="UpgradeVaultTitle" xml:space="preserve">
-    <value>Upgrade Vault</value>
+    <value>Tresor aktualisieren</value>
     <comment>Title for vault upgrade process</comment>
   </data>
   <data name="UpgradeDescription" xml:space="preserve">
-    <value>AliasVault has been updated and your vault needs to be upgraded. This should only take a few seconds.</value>
+    <value>AliasVault wurde aktualisiert. Dadurch muss auch Dein Tresor aktualisiert werden. Dies sollte nur wenige Sekunden dauern.</value>
     <comment>Description of vault upgrade process</comment>
   </data>
   <data name="VersionInformationTitle" xml:space="preserve">
-    <value>Version Information</value>
+    <value>Versionsinformationen</value>
     <comment>Title for version information section</comment>
   </data>
   <data name="UpgradeRequiredDescription" xml:space="preserve">
-    <value>An upgrade is required to support the following changes: {0}</value>
+    <value>Eine Aktualisierung ist erforderlich, um die folgenden Änderungen zu unterstützen: {0}</value>
     <comment>Description of upgrade requirements with changes placeholder</comment>
   </data>
   <data name="NoDescriptionAvailable" xml:space="preserve">
-    <value>No description available for this version.</value>
+    <value>Für diese Version ist keine Beschreibung vorhanden.</value>
     <comment>Fallback text when version description is not available</comment>
   </data>
   <data name="YourVaultLabel" xml:space="preserve">
-    <value>Your vault version:</value>
+    <value>Version Deines Tresors:</value>
     <comment>Label for current vault version</comment>
   </data>
   <data name="NewVersionLabel" xml:space="preserve">
-    <value>New available version:</value>
+    <value>Neue verfügbare Version:</value>
     <comment>Label for new vault version</comment>
   </data>
   <data name="StartUpgradeButton" xml:space="preserve">
-    <value>Start upgrade process</value>
+    <value>Aktualisierung starten</value>
     <comment>Button text to start the upgrade process</comment>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
-    <value>Vault upgrade successful.</value>
+    <value>Tresor erfolgreich aktualisiert.</value>
     <comment>Success message after successful vault upgrade</comment>
   </data>
   <data name="UpgradeSuccessButSaveFailedError" xml:space="preserve">
-    <value>Database upgrade successful but failed to save to server. Please try again or contact support.</value>
+    <value>Die Datenbank-Aktualisierung war erfolgreich erfolgreich aber konnte nicht auf dem Server gespeichert werden. Bitte versuche es erneut oder kontaktiere den Support.</value>
     <comment>Error message when upgrade succeeds but save fails</comment>
   </data>
   <data name="UpgradeFailedError" xml:space="preserve">
-    <value>Database upgrade failed. Please try again or contact support.</value>
+    <value>Die Datenbank-Aktualisierung ist fehlgeschlagen. Bitte versuchen es erneut oder kontaktiere den Support.</value>
     <comment>Error message when upgrade fails</comment>
   </data>
 </root>
