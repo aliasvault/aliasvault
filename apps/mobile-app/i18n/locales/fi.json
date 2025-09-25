@@ -80,6 +80,7 @@
       "operationFailed": "Toiminto epäonnistui",
       "versionNotSupported": "Palvelin ei enää tue AliasVaultin mobiilisovelluksen tätä versiota. Ole hyvä ja päivitä sovellus uusimpaan versioon.",
       "serverNeedsUpdate": "AliasVaultin palvelin on päivitettävä uudempaan versioon, jotta voit käyttää tätä mobiilisovellusta. Ota yhteyttä tukeen, jos tarvitset apua.",
+      "appOutdated": "This app is outdated and cannot be used to access this vault. Please update this app to continue.",
       "vaultDecryptFailed": "Holvin salausta ei purkuaa. Jos ongelma jatkuu, kirjaudu ulos ja kirjaudu sitten uudelleen sisään. ",
       "passwordChanged": "Salasanasi on muuttunut edellisen kirjautumisen jälkeen. Ole hyvä ja kirjaudu uudelleen turvallisuussyistä."
     }
