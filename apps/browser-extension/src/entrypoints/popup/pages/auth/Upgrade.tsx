@@ -65,7 +65,7 @@ const Upgrade: React.FC = () => {
   const loadVersionInfo = useCallback(async () => {
     try {
       if (sqliteClient) {
-        const current = sqliteClient.getDatabaseVersion();
+        const current = await sqliteClient.getDatabaseVersion();
         const latest = await sqliteClient.getLatestDatabaseVersion();
         setCurrentVersion(current);
         setLatestVersion(latest);

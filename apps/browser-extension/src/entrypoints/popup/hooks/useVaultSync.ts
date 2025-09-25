@@ -8,6 +8,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
+import { VaultVersionIncompatibleError } from '@/utils/errors/VaultVersionError';
 
 /**
  * Utility function to ensure a minimum time has elapsed for an operation
@@ -142,8 +143,9 @@ export const useVaultSync = () : {
           return true;
         } catch (error) {
           // Check if it's a version-related error (app needs to be updated)
-          if (error instanceof Error && error.message.includes('This browser extension is outdated')) {
+          if (error instanceof VaultVersionIncompatibleError) {
             await webApi.logout(error.message);
+            // Redirect to logout
             onError?.(error.message);
             return false;
           }
@@ -165,7 +167,7 @@ export const useVaultSync = () : {
       console.error('Vault sync error:', err);
 
       // Check if it's a version-related error (app needs to be updated)
-      if (errorMessage.includes('This browser extension is outdated')) {
+      if (err instanceof VaultVersionIncompatibleError) {
         await webApi.logout(errorMessage);
         onError?.(errorMessage);
         return false;

@@ -18,6 +18,7 @@ import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
+import { VaultVersionIncompatibleError } from '@/utils/errors/VaultVersionError';
 
 import { storage } from '#imports';
 
@@ -42,6 +43,7 @@ const Unlock: React.FC = () => {
   useEffect(() => {
     /**
      * Make status call to API which acts as health check.
+     * This runs only once during component mount.
      */
     const checkStatus = async () : Promise<void> => {
       const statusResponse = await webApi.getStatus();
@@ -54,7 +56,8 @@ const Unlock: React.FC = () => {
     };
 
     checkStatus();
-  }, [webApi, authContext, setIsInitialLoading, navigate, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   // Set header buttons on mount and clear on unmount
   useEffect((): (() => void) => {
@@ -110,7 +113,14 @@ const Unlock: React.FC = () => {
       await dbContext.storeEncryptionKey(passwordHashBase64);
 
       // Initialize the SQLite context with the new vault data.
-      await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
+      const sqliteClient = await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
+
+      // Check if there are pending migrations
+      if (await sqliteClient.hasPendingMigrations()) {
+        navigate('/upgrade', { replace: true });
+        hideLoading();
+        return;
+      }
 
       // Clear dismiss until (which can be enabled after user has dimissed vault is locked popup) to ensure popup is shown.
       await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
@@ -118,7 +128,13 @@ const Unlock: React.FC = () => {
       // Redirect to reinitialize page
       navigate('/reinitialize', { replace: true });
     } catch (err) {
-      setError(t('auth.errors.wrongPassword'));
+      // Check if it's a version incompatibility error
+      if (err instanceof VaultVersionIncompatibleError) {
+        await webApi.logout(err.message);
+        navigate('/logout');
+      } else {
+        setError(t('auth.errors.wrongPassword'));
+      }
       console.error('Unlock error:', err);
     } finally {
       hideLoading();

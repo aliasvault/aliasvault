@@ -4,6 +4,9 @@ import type { Credential, EncryptionKey, PasswordSettings, TotpCode } from '@/ut
 import type { Attachment } from '@/utils/dist/shared/models/vault';
 import type { VaultVersion } from '@/utils/dist/shared/vault-sql';
 import { VaultSqlGenerator } from '@/utils/dist/shared/vault-sql';
+import { VaultVersionIncompatibleError } from '@/utils/errors/VaultVersionError';
+
+import { t } from '@/i18n/StandaloneI18n';
 
 /**
  * Placeholder base64 image for credentials without a logo.
@@ -558,7 +561,7 @@ export class SqliteClient {
    * Returns the semantic version (e.g., "1.4.1") from the latest migration.
    * Returns null if no migrations are found.
    */
-  public getDatabaseVersion(): VaultVersion {
+  public async getDatabaseVersion(): Promise<VaultVersion> {
     if (!this.db) {
       throw new Error('Database not initialized');
     }
@@ -591,7 +594,8 @@ export class SqliteClient {
       const currentVersionRevision = allVersions.find(v => v.version === currentVersion);
 
       if (!currentVersionRevision) {
-        throw new Error('This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.');
+        const errorMessage = await t('common.errors.browserExtensionOutdated');
+        throw new VaultVersionIncompatibleError(errorMessage);
       }
 
       return currentVersionRevision;
@@ -617,7 +621,7 @@ export class SqliteClient {
    */
   public async hasPendingMigrations(): Promise<boolean> {
     try {
-      const currentVersion = this.getDatabaseVersion();
+      const currentVersion = await this.getDatabaseVersion();
       const latestVersion = await this.getLatestDatabaseVersion();
 
       return currentVersion.revision < latestVersion.revision;

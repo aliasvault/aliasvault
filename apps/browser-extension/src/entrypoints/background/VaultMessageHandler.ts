@@ -4,6 +4,7 @@ import { storage } from 'wxt/utils/storage';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/shared/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { VaultVersionIncompatibleError } from '@/utils/errors/VaultVersionError';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import { CredentialsResponse as messageCredentialsResponse } from '@/utils/types/messaging/CredentialsResponse';
@@ -57,6 +58,18 @@ export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, i
     };
   } catch (error) {
     console.error('Error checking pending migrations:', error);
+
+    // If it's a version incompatibility error, we need to handle it specially
+    if (error instanceof VaultVersionIncompatibleError) {
+      // Return the error so the UI can handle it appropriately (logout user)
+      return {
+        isLoggedIn,
+        isVaultLocked,
+        hasPendingMigrations: false,
+        error: error.message
+      };
+    }
+
     return {
       isLoggedIn,
       isVaultLocked,
@@ -489,7 +502,7 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
     client: '', // Empty on purpose, API will not use this for vault updates.
     updatedAt: new Date().toISOString(),
     username: username,
-    version: sqliteClient.getDatabaseVersion().version
+    version: (await sqliteClient.getDatabaseVersion()).version
   };
 
   const webApi = new WebApiService(() => {});
