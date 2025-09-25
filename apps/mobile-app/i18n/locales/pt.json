@@ -80,6 +80,7 @@
       "operationFailed": "Operação falhou",
       "versionNotSupported": "Esta versão do aplicativo AliasVault não é mais suportada pelo servidor. Por favor atualize seu aplicativo para a última versão.",
       "serverNeedsUpdate": "O servidor do AliasVault precisa ser atualizado para a última versão para poder utilizar este aplicativo. Por favor entre em contato com o suporte se precisar de ajuda.",
+      "appOutdated": "Este aplicativo está desatualizado e não pode ser utilizado para acessar este cofre. Por favor, atualize o aplicativo para continuar.",
       "vaultDecryptFailed": "Cofre não pôde ser descriptografado, se o problema persistir por favor saia e realize login novamente.",
       "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança."
     }
@@ -478,8 +479,8 @@
     "title": "Atualizar Cofre",
     "subtitle": "AliasVault foi atualizado e seu cofre precisa ser atualizado. Isso deve levar apenas alguns segundos.",
     "versionInformation": "Informação de Versão",
-    "yourVault": "Your vault version:",
-    "newVersion": "New available version:",
+    "yourVault": "Versão do seu cofre:",
+    "newVersion": "Nova versão disponível:",
     "upgrade": "Atualizar",
     "upgrading": "Atualizando...",
     "logout": "Sair",
