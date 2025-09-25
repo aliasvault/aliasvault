@@ -80,6 +80,7 @@
       "operationFailed": "Operation failed",
       "versionNotSupported": "This version of the AliasVault mobile app is not supported by the server anymore. Please update your app to the latest version.",
       "serverNeedsUpdate": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "appOutdated": "This app is outdated and cannot be used to access this vault. Please update this app to continue.",
       "vaultDecryptFailed": "Vault could not be decrypted, if the problem persists please logout and login again.",
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons."
     }
