@@ -51,7 +51,7 @@
     <comment>Message shown when username is available</comment>
   </data>
   <data name="UsernameRequiredError">
-    <value>用户名是必填项。</value>
+    <value>用户名为必填项。</value>
     <comment>Error message when username is empty</comment>
   </data>
   <data name="ServerCommunicationError">
