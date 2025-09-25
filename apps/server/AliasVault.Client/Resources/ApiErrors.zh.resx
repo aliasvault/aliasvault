@@ -126,7 +126,7 @@
     <value>刷新令牌无效</value>
   </data>
   <data name="REFRESH_TOKEN_REVOKED_SUCCESSFULLY" xml:space="preserve">
-    <value>刷新令牌已成功注销</value>
+    <value>刷新令牌已成功撤销</value>
   </data>
   <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
     <value>当前服务器已禁用新账户注册功能，请联系管理员。</value>
