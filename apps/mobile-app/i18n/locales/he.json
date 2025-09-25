@@ -80,6 +80,7 @@
       "operationFailed": "הפעולה נכשלה",
       "versionNotSupported": "הגרסה הזאת של היישומון של AliasVault לניידים לא נתמכת עוד על ידי השרת. נא לעדכן את היישומון שלך לגרסה העדכנית ביותר.",
       "serverNeedsUpdate": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש ביישומון הזה לנייד. נא ליצור קשר עם התמיכה לקבלת עזרה.",
+      "appOutdated": "This app is outdated and cannot be used to access this vault. Please update this app to continue.",
       "vaultDecryptFailed": "לא ניתן לפענח את הכספת, אם הבעיה נמשכת נא לצאת מהמערכת ולהיכנס שוב.",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע."
     }
