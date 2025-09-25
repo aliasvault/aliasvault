@@ -92,6 +92,7 @@
       "VaultOutdated": "Dein Tresor ist veraltet. Bitte melde Dich auf der AliasVault-Webseite an und folge den Anweisungen.",
       "serverNotAvailable": "Der AliasVault-Server konnte nicht erreicht werden. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "clientVersionNotSupported": "Diese Version der AliasVault-Browser-Erweiterung wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine Browser-Erweiterung auf die neueste Version.",
+      "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
       "serverVersionNotSupported": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese Browser-Erweiterung nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
       "unknownError": "Ein unbekannter Fehler ist aufgetreten",
       "failedToStoreVault": "Fehler beim Speichern des Tresors",
