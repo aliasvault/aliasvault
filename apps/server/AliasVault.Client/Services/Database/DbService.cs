@@ -412,6 +412,7 @@ public sealed class DbService : IDisposable
             Version = _UNKNOWN_VERSION,
             Description = _UNKNOWN_VERSION,
             ReleaseVersion = _UNKNOWN_VERSION,
+            CompatibleUpToVersion = _UNKNOWN_VERSION,
         };
     }
 
@@ -430,6 +431,7 @@ public sealed class DbService : IDisposable
             Version = _UNKNOWN_VERSION,
             Description = _UNKNOWN_VERSION,
             ReleaseVersion = _UNKNOWN_VERSION,
+            CompatibleUpToVersion = _UNKNOWN_VERSION,
         };
     }
 

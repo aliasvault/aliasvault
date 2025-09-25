@@ -31,4 +31,9 @@ public sealed class SqlVaultVersion
     /// Gets the AliasVault release version that this vault version was introduced in.
     /// </summary>
     public string ReleaseVersion { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets the compatible up to version.
+    /// </summary>
+    public string CompatibleUpToVersion { get; init; } = string.Empty;
 }

@@ -512,6 +512,7 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
             Version = x.GetProperty("version").GetString() ?? string.Empty,
             Description = x.GetProperty("description").GetString() ?? string.Empty,
             ReleaseVersion = x.GetProperty("releaseVersion").GetString() ?? string.Empty,
+            CompatibleUpToVersion = x.GetProperty("compatibleUpToVersion").GetString() ?? string.Empty,
         }).ToList();
     }
 
