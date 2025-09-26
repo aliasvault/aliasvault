@@ -248,7 +248,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
 
         // Clean up the temporary file after the test
         File.Delete(tempHtmlPath);
-    }*/
+    }
 
     /// <summary>
     /// Tests if the extension popup can be opened and displays available credentials.
@@ -302,5 +302,5 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
 
         // Clean up the temporary file after the test
         File.Delete(tempHtmlPath);
-    }
+    }*/
 }

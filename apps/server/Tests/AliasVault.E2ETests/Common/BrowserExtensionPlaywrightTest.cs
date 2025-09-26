@@ -191,13 +191,32 @@ public class BrowserExtensionPlaywrightTest : ClientPlaywrightTest
 
         // Construct absolute path to extension directory
         var extensionDir = Path.GetFullPath(Path.Combine(solutionDir, "apps/browser-extension"));
-        var distDir = Path.GetFullPath(Path.Combine(extensionDir, "dist", "chrome-mv3-dev"));
-        var manifestPath = Path.Combine(distDir, "manifest.json");
 
-        // Verify the dist directory exists and contains required files
-        if (!Directory.Exists(distDir) || !File.Exists(manifestPath))
+        // Prefer chrome-mv3-dev, fallback to chrome-mv3
+        string[] candidateDirs =
         {
-            throw new ArgumentException($"Chrome extension dist directory and/or manifest.json not found at {distDir}. Please run 'npm install && npm run build' in {extensionDir}.");
+            Path.Combine(extensionDir, "dist", "chrome-mv3-dev"),
+            Path.Combine(extensionDir, "dist", "chrome-mv3"),
+        };
+
+        string? distDir = null;
+        string? manifestPath = null;
+
+        foreach (var candidate in candidateDirs)
+        {
+            var absCandidate = Path.GetFullPath(candidate);
+            var absManifest = Path.Combine(absCandidate, "manifest.json");
+            if (Directory.Exists(absCandidate) && File.Exists(absManifest))
+            {
+                distDir = absCandidate;
+                manifestPath = absManifest;
+                break;
+            }
+        }
+
+        if (distDir == null || manifestPath == null)
+        {
+            throw new ArgumentException($"Chrome extension dist directory and/or manifest.json not found. Please run 'npm install && npm run dev:chrome or npm run build:chrome' in {extensionDir}.");
         }
 
         _extensionPath = distDir.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
