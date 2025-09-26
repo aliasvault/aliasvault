@@ -1,5 +1,7 @@
 import type { StatusResponse } from '@/utils/dist/shared/models/webapi';
 
+import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
+
 import { AppInfo } from "./AppInfo";
 
 import { storage } from '#imports';
@@ -74,7 +76,7 @@ export class WebApiService {
 
           return parseJson ? retryResponse.json() : retryResponse as unknown as T;
         } else {
-          this.logout('Your session has expired. Please login again.');
+          logoutEventEmitter.emit('auth.errors.sessionExpired');
           throw new Error('Session expired');
         }
       }
@@ -115,41 +117,6 @@ export class WebApiService {
     } catch (error) {
       console.error('API request failed:', error);
       throw error;
-    }
-  }
-
-  /**
-   * Refresh the access token.
-   */
-  private async refreshAccessToken(): Promise<string | null> {
-    const refreshToken = await this.getRefreshToken();
-    if (!refreshToken) {
-      return null;
-    }
-
-    try {
-      const response = await this.rawFetch('Auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Ignore-Failure': 'true',
-        },
-        body: JSON.stringify({
-          token: await this.getAccessToken(),
-          refreshToken: refreshToken,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to refresh token');
-      }
-
-      const tokenResponse: TokenResponse = await response.json();
-      this.updateTokens(tokenResponse.token, tokenResponse.refreshToken);
-      return tokenResponse.token;
-    } catch {
-      this.logout('Your session has expired. Please login again.');
-      return null;
     }
   }
 
@@ -269,6 +236,41 @@ export class WebApiService {
     }
 
     return null;
+  }
+
+  /**
+   * Refresh the access token.
+   */
+  private async refreshAccessToken(): Promise<string | null> {
+    const refreshToken = await this.getRefreshToken();
+    if (!refreshToken) {
+      return null;
+    }
+
+    try {
+      const response = await this.rawFetch('Auth/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Ignore-Failure': 'true',
+        },
+        body: JSON.stringify({
+          token: await this.getAccessToken(),
+          refreshToken: refreshToken,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to refresh token');
+      }
+
+      const tokenResponse: TokenResponse = await response.json();
+      this.updateTokens(tokenResponse.token, tokenResponse.refreshToken);
+      return tokenResponse.token;
+    } catch {
+      logoutEventEmitter.emit('auth.errors.sessionExpired');
+      return null;
+    }
   }
 
   /**

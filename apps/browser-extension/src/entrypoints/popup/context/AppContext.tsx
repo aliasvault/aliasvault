@@ -1,7 +1,10 @@
 import React, { createContext, useContext, useMemo, useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
+
+import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 
 type AppContextType = {
   isLoggedIn: boolean;
@@ -23,6 +26,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const auth = useAuth();
   const webApi = useWebApi();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { t } = useTranslation();
 
   /**
    * Logout the user by revoking tokens and clearing the auth tokens from storage.
@@ -38,12 +42,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
    * @returns boolean indicating whether the user is logged in.
    */
   const initializeAuth = useCallback(async () : Promise<boolean> => {
-    console.log('initializeAuth');
     const isLoggedIn = await auth.initializeAuth();
-    console.log('isLoggedIn', isLoggedIn);
     setIsLoggedIn(isLoggedIn);
     return isLoggedIn;
   }, [auth]);
+
+  /**
+   * Subscribe to logout events from WebApiService.
+   */
+  useEffect(() => {
+    const unsubscribe = logoutEventEmitter.subscribe(async (errorKey: string) => {
+      await logout(t(errorKey));
+    });
+
+    return unsubscribe;
+  }, [logout, t]);
 
   /**
    * Check for tokens in browser local storage on initial load when this context is mounted.

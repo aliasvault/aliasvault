@@ -37,8 +37,7 @@
       "migrationError": "检查待处理迁移时发生错误。",
       "wrongPassword": "密码不正确。请重试。",
       "accountLocked": "由于多次尝试失败，账户已暂时锁定。",
-      "networkError": "网络错误。请检查你的连接后重试。",
-      "loginDataMissing": "登录会话已过期。请重试。"
+      "networkError": "网络错误。请检查你的连接后重试。"
     }
   },
   "menu": {

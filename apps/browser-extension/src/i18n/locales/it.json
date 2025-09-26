@@ -37,8 +37,7 @@
       "migrationError": "Si è verificato un errore nel controllo delle migrazioni pendenti.",
       "wrongPassword": "Password non corretta. Riprova nuovamente.",
       "accountLocked": "Account temporaneamente bloccato a causa di troppi tentativi falliti.",
-      "networkError": "Errore di rete: Controlla la tua connessione e riprova.",
-      "loginDataMissing": "Sessione di accesso scaduta. Effettua nuovamente l'accesso."
+      "networkError": "Errore di rete: Controlla la tua connessione e riprova."
     }
   },
   "menu": {

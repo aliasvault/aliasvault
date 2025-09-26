@@ -37,8 +37,7 @@
       "migrationError": "Une erreur s'est produite lors de la vérification des migrations en attente.",
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
       "accountLocked": "Compte temporairement verrouillé en raison d'un trop grand nombre de tentatives échouées.",
-      "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez.",
-      "loginDataMissing": "La session a expiré. Veuillez réessayer."
+      "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez."
     }
   },
   "menu": {

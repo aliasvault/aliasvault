@@ -37,8 +37,7 @@
       "migrationError": "Er is een fout opgetreden bij het controleren op updates.",
       "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
       "accountLocked": "Account tijdelijk vergrendeld vanwege te veel mislukte pogingen.",
-      "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
-      "loginDataMissing": "Sessie verlopen. Probeer het opnieuw."
+      "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw."
     }
   },
   "menu": {

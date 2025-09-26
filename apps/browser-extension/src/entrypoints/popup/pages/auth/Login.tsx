@@ -223,7 +223,7 @@ const Login: React.FC = () => {
       showLoading();
 
       if (!passwordHashString || !passwordHashBase64 || !loginResponse) {
-        throw new Error(t('auth.errors.loginDataMissing'));
+        throw new Error(t('common.errors.unknownError'));
       }
 
       // Validate that 2FA code is a 6-digit number

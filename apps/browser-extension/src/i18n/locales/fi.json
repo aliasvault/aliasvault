@@ -37,8 +37,7 @@
       "migrationError": "Tapahtui virhe tarkistettaessa odottavia siirtoja.",
       "wrongPassword": "Virheellinen salasana. Yritä uudelleen.",
       "accountLocked": "Tili on tilapäisesti lukittu liian monen epäonnistuneen yrityksen vuoksi. Yritä myöhemmin uudelleen.",
-      "networkError": "Verkkovirhe: tarkista yhteytesi ja yritä uudelleen.",
-      "loginDataMissing": "Kirjautumisistunto on vanhentunut. Yritä uudelleen."
+      "networkError": "Verkkovirhe: tarkista yhteytesi ja yritä uudelleen."
     }
   },
   "menu": {

@@ -38,7 +38,7 @@
       "wrongPassword": "Incorrect password. Please try again.",
       "accountLocked": "Account temporarily locked due to too many failed attempts.",
       "networkError": "Network error. Please check your connection and try again.",
-      "loginDataMissing": "Login session expired. Please try again."
+      "sessionExpired": "Your session has expired. Please log in again."
     }
   },
   "menu": {

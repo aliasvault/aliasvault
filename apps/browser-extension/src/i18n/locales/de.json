@@ -37,8 +37,7 @@
       "migrationError": "Beim Prüfen auf ausstehende Migrationen ist ein Fehler aufgetreten.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut.",
       "accountLocked": "Das Konto wurde wegen zu vieler fehlgeschlagener Anmeldeversuche vorübergehend gesperrt.",
-      "networkError": "Netzwerkfehler. Bitte überprüfe Deine Verbindung und versuche es erneut.",
-      "loginDataMissing": "Deine Anmelde-Sitzung ist abgelaufen. Bitte versuche es erneut."
+      "networkError": "Netzwerkfehler. Bitte überprüfe Deine Verbindung und versuche es erneut."
     }
   },
   "menu": {

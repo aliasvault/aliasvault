@@ -85,10 +85,6 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
 
   // Listen on isloggedin state to redirect to login page if not logged in
   useEffect(() => {
-    console.log('authInitialized', authInitialized);
-    console.log('dbInitialized', dbInitialized);
-    console.log('isFullyInitialized', isFullyInitialized);
-    console.log('isLoggedIn', isLoggedIn);
     if (isFullyInitialized && !isLoggedIn) {
       navigate('/login', { replace: true });
     }
