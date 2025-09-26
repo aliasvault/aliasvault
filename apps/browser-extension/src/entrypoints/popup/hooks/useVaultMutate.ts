@@ -130,27 +130,11 @@ export function useVaultMutate() : {
          * Handle error during vault sync.
          */
         onError: (error) => {
-          /**
-           *Toast.show({
-           *type: 'error',
-           *text1: 'Failed to sync vault',
-           *text2: error,
-           *position: 'bottom'
-           *});
-           */
           options.onError?.(new Error(error));
         }
       });
     } catch (error) {
       console.error('Error during vault mutation:', error);
-      /*
-       * Toast.show({
-       *type: 'error',
-       *text1: 'Operation failed',
-       *text2: error instanceof Error ? error.message : 'Unknown error',
-       *position: 'bottom'
-       *});
-       */
       options.onError?.(error instanceof Error ? error : new Error('Unknown error'));
     } finally {
       setIsLoading(false);

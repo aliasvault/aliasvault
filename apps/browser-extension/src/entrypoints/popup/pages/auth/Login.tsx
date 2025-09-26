@@ -65,13 +65,6 @@ const Login: React.FC = () => {
       'Authorization': `Bearer ${token}`
     } });
 
-    const vaultError = webApi.validateVaultResponse(vaultResponseJson, t);
-    if (vaultError) {
-      setError(vaultError);
-      hideLoading();
-      return;
-    }
-
     // All is good. Store auth info which is required to make requests to the web API.
     await authContext.setAuthTokens(username, token, refreshToken);
 

@@ -274,26 +274,6 @@ export class WebApiService {
   }
 
   /**
-   * Validates the vault response and returns an error message if validation fails
-   */
-  public validateVaultResponse(vaultResponseJson: VaultResponse, t: TFunction): string | null {
-    /**
-     * Status 0 = OK, vault is ready.
-     * Status 1 = Merge required, which only the web client supports.
-     */
-    if (vaultResponseJson.status === 1) {
-      // Note: vault merge is no longer allowed by the API as of 0.20.0, updates with the same revision number are rejected. So this check can be removed later.
-      return t('errors.VaultOutdated');
-    }
-
-    if (vaultResponseJson.status === 2) {
-      return t('errors.VaultOutdated');
-    }
-
-    return null;
-  }
-
-  /**
    * Get the current access token from storage.
    */
   private async getAccessToken(): Promise<string | null> {

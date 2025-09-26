@@ -110,23 +110,6 @@ export const useVaultSync = () : {
         onStatus?.(t('common.syncingUpdatedVault'));
         const vaultResponseJson = await withMinimumDelay(() => webApi.get<VaultResponse>('Vault'), 1000, enableDelay);
 
-        const vaultError = webApi.validateVaultResponse(vaultResponseJson as VaultResponse, t);
-        if (vaultError) {
-          // Only logout if it's an authentication error, not a network error
-          if (vaultError.includes('authentication') || vaultError.includes('unauthorized')) {
-            await authContext.logout(vaultError);
-            return false;
-          }
-
-          /*
-           *  TODO: browser extension does not support offline mode yet.
-           *  For other errors, go into offline mode
-           * authContext.setOfflineMode(true);
-           */
-
-          return false;
-        }
-
         try {
           // Get encryption key from background worker
           const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY', {}, 'background') as string;
