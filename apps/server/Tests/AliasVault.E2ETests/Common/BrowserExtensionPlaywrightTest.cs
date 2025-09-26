@@ -51,48 +51,19 @@ public class BrowserExtensionPlaywrightTest : ClientPlaywrightTest
     /// <returns>Task.</returns>
     protected async Task<IPage> LoginToExtension(bool waitForLogin = true)
     {
-        // Use reflection to access the ServiceWorkers property
-        List<object> serviceWorkers;
-        try
-        {
-            var serviceWorkersProperty = Context.GetType().GetProperty("ServiceWorkers");
-            var serviceWorkersEnumerable = serviceWorkersProperty?.GetValue(Context) as IEnumerable<object>;
-
-            if (serviceWorkersEnumerable == null)
-            {
-                throw new InvalidOperationException("Could not find extension service workers");
-            }
-
-            serviceWorkers = serviceWorkersEnumerable.ToList();
-            if (serviceWorkers.Count == 0)
-            {
-                throw new InvalidOperationException("No extension service workers found");
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Failed to get service workers, check if the extension is loaded properly: {ex.Message}");
-            throw;
-        }
-
-        // Get the first service worker's URL using reflection
-        var firstWorker = serviceWorkers[0];
-        var urlProperty = firstWorker.GetType().GetProperty("Url");
-        var url = urlProperty?.GetValue(firstWorker) as string;
-
-        var extensionId = url?.Split('/')[2]
-            ?? throw new InvalidOperationException("Could not find extension service worker URL");
+        var extensionId = GetExtensionId();
 
         // Open popup in a new page
         var extensionPopup = await Context.NewPageAsync();
         await extensionPopup.GotoAsync($"chrome-extension://{extensionId}/popup.html");
 
+        // Wait for 100ms to wait for the extension to load.
+
         // Check if already logged in by looking for elements that only appear on the logged-in view
         try
         {
-            // Try to find an element that's only visible when logged in (like the settings button)
-            // with a short timeout
-            await extensionPopup.WaitForSelectorAsync("text=Credentials", new() { Timeout = 2000 });
+            // Try to find an element that's only visible when logged in
+            await extensionPopup.WaitForSelectorAsync("text=Credentials", new() { Timeout = 500 });
 
             // If we get here, we're already logged in
             return extensionPopup;
@@ -102,8 +73,11 @@ public class BrowserExtensionPlaywrightTest : ClientPlaywrightTest
             // If the selector wasn't found, proceed with login
         }
 
+        var settingsButton = await extensionPopup.WaitForSelectorAsync("button[id='settings']");
+        Assert.That(settingsButton, Is.Not.Null, "Settings button could not be found");
+
         // Configure API URL in settings first
-        await extensionPopup.ClickAsync("button[id='settings']");
+        await settingsButton.ClickAsync();
 
         // Select "Self-hosted" option first
         await extensionPopup.SelectOptionAsync("select", ["custom"]);
@@ -150,6 +124,48 @@ public class BrowserExtensionPlaywrightTest : ClientPlaywrightTest
         }
 
         return directory.FullName;
+    }
+
+    /// <summary>
+    /// Get extension ID via reflection.
+    /// </summary>
+    /// <returns>Extension ID.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if extension ID is not found.</exception>
+    private string GetExtensionId()
+    {
+        // Use reflection to access the ServiceWorkers property
+        List<object> serviceWorkers;
+        try
+        {
+            var serviceWorkersProperty = Context.GetType().GetProperty("ServiceWorkers");
+            var serviceWorkersEnumerable = serviceWorkersProperty?.GetValue(Context) as IEnumerable<object>;
+
+            if (serviceWorkersEnumerable == null)
+            {
+                throw new InvalidOperationException("Could not find extension service workers");
+            }
+
+            serviceWorkers = serviceWorkersEnumerable.ToList();
+            if (serviceWorkers.Count == 0)
+            {
+                throw new InvalidOperationException("No extension service workers found");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to get service workers, check if the extension is loaded properly: {ex.Message}");
+            throw;
+        }
+
+        // Get the first service worker's URL using reflection
+        var firstWorker = serviceWorkers[0];
+        var urlProperty = firstWorker.GetType().GetProperty("Url");
+        var url = urlProperty?.GetValue(firstWorker) as string;
+
+        var extensionId = url?.Split('/')[2]
+                          ?? throw new InvalidOperationException("Could not find extension service worker URL");
+
+        return extensionId;
     }
 
     /// <summary>
