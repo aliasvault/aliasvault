@@ -249,4 +249,58 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         // Clean up the temporary file after the test
         File.Delete(tempHtmlPath);
     }*/
+
+    /// <summary>
+    /// Tests if the extension popup can be opened and displays available credentials.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Order(3)]
+    [Test]
+    public async Task ExtensionPopupDisplaysCredentials()
+    {
+        // Create a credential to display
+        var serviceName = "Test Popup Display";
+        await CreateCredentialEntry(new Dictionary<string, string>
+        {
+            { "service-name", serviceName },
+        });
+
+        var extensionPopup = await LoginToExtension();
+
+        // Create a temporary HTML file with the test form
+        var tempHtmlPath = Path.Combine(Path.GetTempPath(), "test-popup-display.html");
+        var testFormHtml = @"
+            <html>
+            <head>
+                <title>Popup Display Test</title>
+            </head>
+            <body>
+                <h1>AliasVault extension popup display test</h1>
+                <form>
+                    <input type='text' id='username' placeholder='Username'>
+                    <input type='password' id='password' placeholder='Password'>
+                    <button type='submit'>Login</button>
+                </form>
+            </body>
+            </html>
+        ";
+
+        await File.WriteAllTextAsync(tempHtmlPath, testFormHtml);
+
+        // Navigate to the file using the file:// protocol
+        await extensionPopup.GotoAsync($"file://{tempHtmlPath}");
+
+        // Focus the username field which should trigger the AliasVault popup
+        await extensionPopup.FocusAsync("input#username");
+
+        // Wait for the AliasVault popup to appear
+        await extensionPopup.Locator("aliasvault-ui >> #aliasvault-credential-popup").WaitForAsync();
+
+        // Verify the credential appears in the popup
+        var popupContent = await extensionPopup.Locator("aliasvault-ui").TextContentAsync();
+        Assert.That(popupContent, Does.Contain(serviceName), "Created credential should appear in the extension popup");
+
+        // Clean up the temporary file after the test
+        File.Delete(tempHtmlPath);
+    }
 }
