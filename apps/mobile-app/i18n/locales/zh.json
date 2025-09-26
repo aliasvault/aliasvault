@@ -500,8 +500,7 @@
       "selfHostedWarning": "如果你使用的是自托管服务器，请确保同时更新你的自托管实例，否则网页客户端将无法登录。",
       "continueUpgrade": "继续升级",
       "upgradeFailed": "升级失败",
-      "failedToApplyMigration": "应用迁移失败（{{current}} / {{total}}）",
-      "unknownErrorDuringUpgrade": "升级过程中发生未知错误。请重试。"
+      "failedToApplyMigration": "应用迁移失败（{{current}} / {{total}}）"
     }
   }
 }

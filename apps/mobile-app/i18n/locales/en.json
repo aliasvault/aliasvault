@@ -16,7 +16,9 @@
     "loadMore": "Load more",
     "use": "Use",
     "confirm": "Confirm",
-    "unknownError": "Unknown error"
+    "errors": {
+      "unknownError": "An unknown error occurred. Please try again."
+    }
   },
   "auth": {
     "login": "Log in",
@@ -501,8 +503,7 @@
       "selfHostedWarning": "If you're using a self-hosted server, make sure to also update your self-hosted instance as otherwise logging in to the web client will stop working.",
       "continueUpgrade": "Continue Upgrade",
       "upgradeFailed": "Upgrade Failed",
-      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})",
-      "unknownErrorDuringUpgrade": "An unknown error occurred during the upgrade. Please try again."
+      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
     }
   }
 }

@@ -111,7 +111,7 @@ export async function handleStoreVault(
     return { success: true };
   } catch (error) {
     console.error('Failed to store vault:', error);
-    return { success: false, error: await t('common.errors.failedToStoreVault') };
+    return { success: false, error: await t('common.errors.unknownError') };
   }
 }
 

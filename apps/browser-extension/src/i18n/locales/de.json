@@ -89,12 +89,10 @@
     "executingOperation": "Vorgang wird ausgeführt...",
     "loadMore": "Mehr laden",
     "errors": {
-      "VaultOutdated": "Dein Tresor ist veraltet. Bitte melde Dich auf der AliasVault-Webseite an und folge den Anweisungen.",
       "serverNotAvailable": "Der AliasVault-Server konnte nicht erreicht werden. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "clientVersionNotSupported": "Diese Version der AliasVault-Browser-Erweiterung wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine Browser-Erweiterung auf die neueste Version.",
       "serverVersionNotSupported": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese Browser-Erweiterung nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
       "unknownError": "Ein unbekannter Fehler ist aufgetreten",
-      "failedToStoreVault": "Fehler beim Speichern des Tresors",
       "vaultNotAvailable": "Tresor nicht verfügbar",
       "failedToRetrieveData": "Abruf der Daten fehlgeschlagen",
       "vaultIsLocked": "Der Tresor ist gesperrt.",
@@ -386,8 +384,7 @@
       "cancel": "Abbrechen",
       "continueUpgrade": "Aktualisierung fortsetzen",
       "upgradeFailed": "Aktualisierung fehlgeschlagen",
-      "failedToApplyMigration": "Migration fehlgeschlagen ({{current}} von {{total}})",
-      "unknownErrorDuringUpgrade": "Bei der Aktualisierung ist ein unbekannter Fehler aufgetreten. Bitte versuche es erneut."
+      "failedToApplyMigration": "Migration fehlgeschlagen ({{current}} von {{total}})"
     }
   }
 }

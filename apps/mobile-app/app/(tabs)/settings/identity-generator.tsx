@@ -61,7 +61,7 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
           pendingChanges.current = {};
         } catch (error) {
           console.error('Error loading identity generator settings:', error);
-          Alert.alert(t('common.error'), t('common.unknownError'));
+          Alert.alert(t('common.error'), t('common.errors.unknownError'));
         }
       };
 

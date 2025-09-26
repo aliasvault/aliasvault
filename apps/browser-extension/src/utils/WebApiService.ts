@@ -1,8 +1,6 @@
-import type { StatusResponse, VaultResponse } from '@/utils/dist/shared/models/webapi';
+import type { StatusResponse } from '@/utils/dist/shared/models/webapi';
 
 import { AppInfo } from "./AppInfo";
-
-import type { TFunction } from 'i18next';
 
 import { storage } from '#imports';
 

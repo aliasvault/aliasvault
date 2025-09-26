@@ -89,13 +89,11 @@
     "executingOperation": "Executing operation...",
     "loadMore": "Load more",
     "errors": {
-      "VaultOutdated": "Your vault is outdated. Please login on the AliasVault website and follow the steps.",
       "serverNotAvailable": "The AliasVault server is not available. Please try again later or contact support if the problem persists.",
       "clientVersionNotSupported": "This version of the AliasVault browser extension is not supported by the server anymore. Please update your browser extension to the latest version.",
       "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
       "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this browser extension. Please contact support if you need help.",
       "unknownError": "An unknown error occurred",
-      "failedToStoreVault": "Failed to store vault",
       "vaultNotAvailable": "Vault not available",
       "failedToRetrieveData": "Failed to retrieve data",
       "vaultIsLocked": "Vault is locked",
@@ -387,8 +385,7 @@
       "cancel": "Cancel",
       "continueUpgrade": "Continue Upgrade",
       "upgradeFailed": "Upgrade Failed",
-      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})",
-      "unknownErrorDuringUpgrade": "An unknown error occurred during the upgrade. Please try again."
+      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
     }
   }
 }

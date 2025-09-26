@@ -89,12 +89,10 @@
     "executingOperation": "הפעולה רצה…",
     "loadMore": "לטעון עוד",
     "errors": {
-      "VaultOutdated": "הכספת שלך לא עדכנית. נא להיכנס לאתר AliasVault ולעקוב אחר ההנחיות.",
       "serverNotAvailable": "שרת ה־AliasVault לא זמין. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
       "clientVersionNotSupported": "הגרסה הזאת של הרחבת הדפדפן של AliasVault לא נתמכת עוד על ידי השרת. נא לעדכן את הרחבת הדפדפן שלך לגרסה העדכנית ביותר.",
       "serverVersionNotSupported": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש בהרחבת הדפדפן הזאת. נא ליצור קשר עם התמיכה לקבלת עזרה.",
       "unknownError": "אירעה שגיאה לא ידועה",
-      "failedToStoreVault": "אחסון הכספת נכשל",
       "vaultNotAvailable": "הכספת לא זמינה",
       "failedToRetrieveData": "משיכת הנתונים נכשלה",
       "vaultIsLocked": "הכספת נעולה",
@@ -386,8 +384,7 @@
       "cancel": "ביטול",
       "continueUpgrade": "להמשיך בשדרוג",
       "upgradeFailed": "השדרוג נכשל",
-      "failedToApplyMigration": "החלת ההסבה נכשלה ({{current}} מתוך {{total}})",
-      "unknownErrorDuringUpgrade": "אירעה שגיאה בלתי ידועה במהלך השדרוג. נא לנסות שוב."
+      "failedToApplyMigration": "החלת ההסבה נכשלה ({{current}} מתוך {{total}})"
     }
   }
 }

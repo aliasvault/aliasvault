@@ -165,7 +165,7 @@ const Upgrade: React.FC = () => {
       console.debug('executeVaultMutation done?');
     } catch (error) {
       console.error('Upgrade failed:', error);
-      setError(error instanceof Error ? error.message : t('upgrade.alerts.unknownErrorDuringUpgrade'));
+      setError(error instanceof Error ? error.message : t('common.errors.unknownError'));
     } finally {
       setIsLoading(false);
     }

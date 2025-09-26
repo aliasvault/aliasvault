@@ -89,12 +89,10 @@
     "executingOperation": "Suoritetaan toimintoa...",
     "loadMore": "Lataa lisää",
     "errors": {
-      "VaultOutdated": "Holvisi on vanhentunut. Kirjaudu AliasVaultin kotisivulle ja noudata ohjeita.",
       "serverNotAvailable": "AliasVault-palvelin ei ole käytettävissä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
       "clientVersionNotSupported": "Palvelin ei enää tue tätä AliasVault-selainlaajennuksen versiota. Ole hyvä ja päivitä selaimen laajennus uusimpaan versioon.",
       "serverVersionNotSupported": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta voit käyttää tätä selainlaajennusta. Ota yhteyttä tukeen, jos tarvitset apua.",
       "unknownError": "Tapahtui tuntematon virhe",
-      "failedToStoreVault": "Holvin tallentaminen epäonnistui",
       "vaultNotAvailable": "Holvi ei ole käytettävissä",
       "failedToRetrieveData": "Tietojen nouto epäonnistui",
       "vaultIsLocked": "Holvi on lukittu",
@@ -386,8 +384,7 @@
       "cancel": "Peruuta",
       "continueUpgrade": "Jatka päivitystä",
       "upgradeFailed": "Päivitys epäonnistui",
-      "failedToApplyMigration": "Tietojen siirto epäonnistui {{current}} / {{total}} ",
-      "unknownErrorDuringUpgrade": "Päivityksen aikana tapahtui tuntematon virhe. Yritä uudelleen."
+      "failedToApplyMigration": "Tietojen siirto epäonnistui {{current}} / {{total}} "
     }
   }
 }

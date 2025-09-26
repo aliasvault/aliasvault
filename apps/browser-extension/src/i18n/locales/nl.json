@@ -89,12 +89,10 @@
     "executingOperation": "Actie uitvoeren...",
     "loadMore": "Laad meer",
     "errors": {
-      "VaultOutdated": "Je vault is verouderd. Log in op de AliasVault website en volg de stappen.",
       "serverNotAvailable": "De AliasVault server is niet beschikbaar. Probeer het later opnieuw of neem contact op met de ondersteuning als het probleem aanhoudt.",
       "clientVersionNotSupported": "Deze versie van de AliasVault browserextensie wordt niet meer ondersteund door de server. Update je browserextensie naar de nieuwste versie.",
       "serverVersionNotSupported": "De AliasVault server moet worden bijgewerkt naar een nieuwere versie om deze browserextensie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
       "unknownError": "Er is een onbekende fout opgetreden",
-      "failedToStoreVault": "Vault opslaan mislukt",
       "vaultNotAvailable": "Vault niet beschikbaar",
       "failedToRetrieveData": "Gegevens ophalen mislukt",
       "vaultIsLocked": "Vault is vergrendeld",
@@ -386,8 +384,7 @@
       "cancel": "Annuleren",
       "continueUpgrade": "Verdergaan",
       "upgradeFailed": "Upgrade mislukt",
-      "failedToApplyMigration": "Kon migratie niet toepassen ({{current}} van {{total}})",
-      "unknownErrorDuringUpgrade": "Er is een onbekende fout opgetreden tijdens de upgrade. Probeer het opnieuw."
+      "failedToApplyMigration": "Kon migratie niet toepassen ({{current}} van {{total}})"
     }
   }
 }

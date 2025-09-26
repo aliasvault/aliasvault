@@ -89,12 +89,10 @@
     "executingOperation": "执行操作中……",
     "loadMore": "加载更多",
     "errors": {
-      "VaultOutdated": "你的保险库版本多低。请登录AliasVault网站并按照步骤操作。",
       "serverNotAvailable": "AliasVault服务器不可用。请稍后重试，若问题持续请联系支持人员。",
       "clientVersionNotSupported": "此版本的AliasVault浏览器扩展已不被服务器支持。请将浏览器扩展更新到最新版本。",
       "serverVersionNotSupported": "AliasVault服务器需要更新到新版本才能使用此浏览器扩展。如需帮助，请联系支持人员。",
       "unknownError": "发生未知错误",
-      "failedToStoreVault": "存储保险库失败",
       "vaultNotAvailable": "保险库不可用",
       "failedToRetrieveData": "无法检索数据",
       "vaultIsLocked": "保险库已锁定",
@@ -386,8 +384,7 @@
       "cancel": "取消",
       "continueUpgrade": "继续升级",
       "upgradeFailed": "升级失败",
-      "failedToApplyMigration": "应用迁移失败（{{current}} / {{total}}）",
-      "unknownErrorDuringUpgrade": "升级过程中发生未知错误。请重试。"
+      "failedToApplyMigration": "应用迁移失败（{{current}} / {{total}}）"
     }
   }
 }

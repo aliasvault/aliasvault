@@ -76,7 +76,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           console.debug('Settings loaded and initialized');
         } catch (error) {
           console.error('Error loading password generator settings:', error);
-          Alert.alert(t('common.error'), t('common.unknownError'));
+          Alert.alert(t('common.error'), t('common.errors.unknownError'));
         }
       };
 

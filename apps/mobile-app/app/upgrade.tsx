@@ -168,7 +168,7 @@ export default function UpgradeScreen() : React.ReactNode {
 
     } catch (error) {
       console.error('Upgrade failed:', error);
-      Alert.alert(t('upgrade.alerts.upgradeFailed'), error instanceof Error ? error.message : t('upgrade.alerts.unknownErrorDuringUpgrade'));
+      Alert.alert(t('upgrade.alerts.upgradeFailed'), error instanceof Error ? error.message : t('common.errors.unknownError'));
     } finally {
       setIsLoading(false);
       setUpgradeStatus(t('upgrade.status.preparingUpgrade'));

@@ -500,8 +500,7 @@
       "selfHostedWarning": "Als je een self-hosted server gebruikt, zorg er dan voor dat je ook je eigen self-hosted instantie bijwerkt, omdat anders het inloggen via de web client niet meer zal werken.",
       "continueUpgrade": "Verdergaan",
       "upgradeFailed": "Upgrade mislukt",
-      "failedToApplyMigration": "Kon migratie niet toepassen ({{current}} van {{total}})",
-      "unknownErrorDuringUpgrade": "Er is een onbekende fout opgetreden tijdens de upgrade. Probeer het opnieuw."
+      "failedToApplyMigration": "Kon migratie niet toepassen ({{current}} van {{total}})"
     }
   }
 }
