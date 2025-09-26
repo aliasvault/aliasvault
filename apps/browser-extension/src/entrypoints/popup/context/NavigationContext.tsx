@@ -88,7 +88,8 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     if (isFullyInitialized && !isLoggedIn) {
       navigate('/login', { replace: true });
     }
-  }, [isFullyInitialized, isLoggedIn, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFullyInitialized, isLoggedIn]);
 
   // Return the context value
   const contextValue = useMemo(() => ({
