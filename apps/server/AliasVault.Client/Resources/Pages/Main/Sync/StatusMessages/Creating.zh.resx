@@ -59,19 +59,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="WelcomeTitle" xml:space="preserve">
-    <value>欢迎使用AliasVault</value>
+    <value>欢迎使用 AliasVault</value>
     <comment>Welcome title for new vault creation</comment>
   </data>
   <data name="CreatingDescription" xml:space="preserve">
-    <value>你的新加密保险库正在初始化。此过程可能需要一点时间。请稍候。</value>
+    <value>您的新加密密码库正在初始化。此过程可能需要一点时间。请稍候。</value>
     <comment>Description for vault creation process</comment>
   </data>
   <data name="SaveFailedError" xml:space="preserve">
-    <value>保险库创建成功，但无法保存到服务器。请刷新页面并重试，或联系支持人员。</value>
+    <value>密码库创建成功，但无法保存到服务器。请刷新页面并重试，或联系支持人员。</value>
     <comment>Error message when vault creation succeeds but save fails</comment>
   </data>
   <data name="CreationFailedError" xml:space="preserve">
-    <value>保险库创建失败。请重试或联系支持人员。</value>
+    <value>密码库创建失败。请重试或联系支持人员。</value>
     <comment>Error message when vault creation fails</comment>
   </data>
 </root>

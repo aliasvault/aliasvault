@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Resetar Cofre</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>This option allows you to completely empty your vault while keeping your account and email aliases. Use this if you want to start fresh after importing data from another password manager or if you want to clear all existing credentials to start over.</value>
+    <value>Esta opção te permite limpar completamente o seu cofre enquanto mantém sua conta e seus aliases de e-mail. Utilize isto se você quer iniciar do zero após importar dados de um outro gerenciador de senha, ou se você quer limpar todas as credenciais existentes para iniciar novamente.</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ResetVaultButton" xml:space="preserve">
-    <value>Reset vault</value>
+    <value>Resetar cofre</value>
     <comment>Reset vault button</comment>
   </data>
 </root>

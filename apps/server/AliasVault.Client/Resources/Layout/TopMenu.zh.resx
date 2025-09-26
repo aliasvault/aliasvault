@@ -61,7 +61,7 @@
   </data>
   <!-- Status labels -->
   <data name="NewLabel">
-    <value>新功能</value>
+    <value>新</value>
     <comment>Label for new features or menu items</comment>
   </data>
   <data name="BetaLabel">

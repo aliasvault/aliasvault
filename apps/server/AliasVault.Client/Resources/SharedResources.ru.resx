@@ -176,7 +176,7 @@
   </data>
   <!-- Common form elements -->
   <data name="Email" xml:space="preserve">
-    <value>Электронная почта</value>
+    <value>Почта</value>
     <comment>Label for email input field</comment>
   </data>
   <data name="Password" xml:space="preserve">
@@ -217,7 +217,7 @@
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
-    <value>Нужно заполнить это поле.</value>
+    <value>Это поле является обязательным.</value>
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
@@ -276,11 +276,11 @@
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ErrorUsernameRequired" xml:space="preserve">
-    <value>Нужно ввести имя пользователя</value>
+    <value>Требуется имя пользователя</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="ErrorPasswordRequired" xml:space="preserve">
-    <value>Нужно ввести пароль</value>
+    <value>Требуется пароль</value>
     <comment>Error message when password is required</comment>
   </data>
   <!-- General UI text -->

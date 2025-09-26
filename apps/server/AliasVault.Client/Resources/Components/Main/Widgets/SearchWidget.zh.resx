@@ -20,7 +20,7 @@
     </xsd:element>
   </xsd:schema>
   <data name="SearchVaultPlaceholder">
-    <value>搜索保险库……</value>
+    <value>搜索密码库…</value>
     <comment>Placeholder text for search input field</comment>
   </data>
   <data name="SearchHelpText">
@@ -40,7 +40,7 @@
     <comment>Message when no search results are found</comment>
   </data>
   <data name="SearchingMessage">
-    <value>正在搜索……</value>
+    <value>搜索中…</value>
     <comment>Message when search is in progress</comment>
   </data>
 </root>

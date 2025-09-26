@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="LoggingInWithWebAuthn" xml:space="preserve">
-    <value>正在使用 WebAuthn 登录……</value>
+    <value>正在使用 WebAuthn 登录…</value>
     <comment>Message shown while WebAuthn authentication is in progress</comment>
   </data>
   <data name="QuickUnlockDescription" xml:space="preserve">
-    <value>使用指纹、Face ID 或安全密钥快速解锁你的保险库。或者使用密码作为备用方式登录。</value>
+    <value>使用指纹、Face ID 或安全密钥快速解锁您的密码库。或者使用密码作为备用方式登录。</value>
     <comment>Description explaining WebAuthn unlock options</comment>
   </data>
   <data name="UnlockWithWebAuthn" xml:space="preserve">
@@ -75,11 +75,11 @@
     <comment>Button text for password unlock</comment>
   </data>
   <data name="EnterMasterPasswordDescription" xml:space="preserve">
-    <value>输入你的主密码以解锁保险库。</value>
+    <value>输入您的主密码以解锁密码库。</value>
     <comment>Description for password unlock form</comment>
   </data>
   <data name="YourPasswordLabel" xml:space="preserve">
-    <value>你的密码</value>
+    <value>您的密码</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="UnlockButton" xml:space="preserve">
@@ -95,7 +95,7 @@
     <comment>Link text for logout</comment>
   </data>
   <data name="UnlockingVaultMessage" xml:space="preserve">
-    <value>正在解锁保险库……</value>
+    <value>正在解锁密码库…</value>
     <comment>Loading message while unlocking vault</comment>
   </data>
   <data name="UnlockRequestError" xml:space="preserve">
@@ -107,7 +107,7 @@
     <comment>Error message for incorrect password</comment>
   </data>
   <data name="SessionTimedOutError" xml:space="preserve">
-    <value>你的会话已超时。请重新登录。</value>
+    <value>您的会话已超时。请重新登录。</value>
     <comment>Error message for session timeout</comment>
   </data>
   <data name="ConnectionFailedError" xml:space="preserve">
@@ -115,7 +115,7 @@
     <comment>Error message for server connection failure</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>你当前的浏览器不支持 WebAuthn PRF 扩展。请改用密码登录。</value>
+    <value>您当前的浏览器不支持 WebAuthn PRF 扩展。请改用密码登录。</value>
     <comment>Error message when WebAuthn is not supported</comment>
   </data>
   <data name="GenericUnlockError" xml:space="preserve">

@@ -80,6 +80,7 @@
       "operationFailed": "Помилка здійснення операції",
       "versionNotSupported": "Ця версія мобільного застосунку AliasVault більше не підтримується сервером. Будь ласка, оновіть свій застосунок до останньої версії.",
       "serverNeedsUpdate": "Щоб користуватися цим мобільним додатком, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
+      "appOutdated": "This app is outdated and cannot be used to access this vault. Please update this app to continue.",
       "vaultDecryptFailed": "Не вдалося розшифрувати сховище. Якщо проблема не зникає, вийдіть із системи та увійдіть знову.",
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз."
     }
@@ -433,11 +434,11 @@
     "VAULT_ERROR": "Локальне сховище не оновлене. Синхронізуйте своє сховище, оновивши сторінку, та повторіть спробу."
   },
   "app": {
+    "openReadOnlyMode": "Open in read-only mode",
     "status": {
       "unlockingVault": "Розблокування сховища",
       "decryptingVault": "Розшифрування сховища",
-      "openingVaultReadOnly": "Відкриття сховища в режимі лише для читання",
-      "retryingConnection": "Повторна спроба підключення..."
+      "openingVaultReadOnly": "Відкриття сховища в режимі лише для читання"
     },
     "offline": {
       "banner": "Offline mode (read-only)",
@@ -478,8 +479,8 @@
     "title": "Оновлення сховища",
     "subtitle": "AliasVault оновлено, і ваше сховище потрібно оновити. Це займе лише кілька секунд.",
     "versionInformation": "Інформація про версію",
-    "yourVault": "Ваше сховище:",
-    "newVersion": "Нова версія:",
+    "yourVault": "Your vault version:",
+    "newVersion": "New available version:",
     "upgrade": "Оновити",
     "upgrading": "Оновлення...",
     "logout": "Вихід",

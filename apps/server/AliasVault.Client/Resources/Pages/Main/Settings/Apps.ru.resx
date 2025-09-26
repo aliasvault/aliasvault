@@ -25,7 +25,7 @@
     <comment>Page title for extensions and apps</comment>
   </data>
   <data name="PageDescription">
-    <value>Установите расширения для браузера и мобильные приложения, чтобы всегда иметь доступ к своему хранилищу и автоматически заполнять логины и пароли на сайтах.</value>
+    <value>Установите расширение для браузера и мобильные приложения, чтобы всегда иметь доступ к своему хранилищу и автоматически заполнять логины и пароли на сайтах.</value>
     <comment>Page description for extensions and apps</comment>
   </data>
   <data name="BreadcrumbTitle">

@@ -60,45 +60,45 @@
   </resheader>
   <!-- Password validation messages -->
   <data name="PasswordMinLength" xml:space="preserve">
-    <value>The new password must be at least 10 characters long.</value>
+    <value>A nova senha precisa ter ao menos 10 caracteres.</value>
     <comment>Error message for password minimum length validation</comment>
   </data>
   <data name="PasswordsDoNotMatch" xml:space="preserve">
-    <value>The new passwords do not match.</value>
+    <value>As novas senhas não coincidem.</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="PasswordMinLengthGeneric" xml:space="preserve">
-    <value>Password must be at least 10 characters long.</value>
+    <value>A senha deve ter pelo menos 10 caracteres.</value>
     <comment>Generic error message for password minimum length validation</comment>
   </data>
   <data name="PasswordsDoNotMatchGeneric" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>Senhas não coincidem.</value>
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <!-- Required field validation messages -->
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>Nome de Usuário é obrigatório</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="PasswordRequired" xml:space="preserve">
-    <value>Password is required</value>
+    <value>Senha é obrigatória</value>
     <comment>Error message when password is required</comment>
   </data>
   <data name="SecretKeyRequired" xml:space="preserve">
-    <value>Secret key is required</value>
+    <value>Chave de segurança é obrigatória</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ServiceNameRequired" xml:space="preserve">
-    <value>Service name is required</value>
+    <value>Nome do serviço é obrigatório</value>
     <comment>Error message when service name is required</comment>
   </data>
   <data name="FieldRequired" xml:space="preserve">
-    <value>This field is required</value>
+    <value>Este campo é obrigatório</value>
     <comment>Generic error message when a field is required</comment>
   </data>
   <!-- Terms and conditions -->
   <data name="MustAcceptTerms" xml:space="preserve">
-    <value>You must accept the terms and conditions.</value>
+    <value>Você deve aceitar os termos e condições.</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
 </root>

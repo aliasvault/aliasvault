@@ -1,25 +1,25 @@
 {
   "loading": {
-    "title": "AliasVault is loading",
-    "message": "Initializing secure environment. AliasVault prioritizes your privacy by running entirely in your browser. The first load might take a short while.",
-    "refreshText": "If loading seems stuck, you can click the button below to refresh the page.",
-    "refreshButtonText": "Refresh Page"
+    "title": "Загрузка AliasVault",
+    "message": "Подготовка защищённой среды. AliasVault защищает вашу конфиденциальность и работает прямо в вашем браузере. Первая загрузка может занять немного времени.",
+    "refreshText": "Если загрузка кажется зависшей, вы можете нажать кнопку ниже, чтобы обновить страницу.",
+    "refreshButtonText": "Обновить страницу"
   },
   "errors": {
-    "unhandledError": "An unhandled error has occurred. Please try reloading the page. If the issue persists, please contact support.",
-    "webAssemblyError": "AliasVault requires WebAssembly, which this browser does not support. Try using a more modern browser that supports WebAssembly.",
-    "reloadPageText": "Reload Page"
+    "unhandledError": "Произошла непредвиденная ошибка. Попробуйте перезагрузить страницу. Если проблема повторится, обратитесь в поддержку.",
+    "webAssemblyError": "AliasVault требует WebAssembly, который не поддерживается этим браузером. Попробуйте использовать более современный браузер с поддержкой WebAssembly.",
+    "reloadPageText": "Перезагрузить страницу"
   },
   "quotes": {
     "security": [
-      "Your identity is your most valuable asset. Protect it like one.",
-      "In the digital world, a strong password is your first line of defense.",
-      "Security is not a product, but a process.",
-      "The weakest link in the security chain is the human element.",
-      "Security is always excessive until it's not enough.",
-      "Trust, but verify - especially online.",
-      "Your data is only as secure as your weakest password.",
-      "The most secure password is the one you can't remember."
+      "Ваша личность — это важный ресурс. Позаботьтесь о её защите.",
+      "В цифровом мире надёжный пароль — это ваша первая линия защиты.",
+      "Безопасность — это не продукт, а процесс.",
+      "Самое слабое звено в цепочке безопасности — это человеческий фактор.",
+      "Безопасность всегда кажется избыточной — пока её не становится недостаточно.",
+      "Доверяй, но проверяй — особенно в Интернете.",
+      "Ваши данные защищены лишь настолько, насколько надёжен ваш самый слабый пароль.",
+      "Самый надёжный пароль — это тот, который вы не можете запомнить."
     ]
   }
 }

@@ -59,35 +59,35 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EmailSectionTitle" xml:space="preserve">
-    <value>Email</value>
+    <value>E-mail</value>
     <comment>Section title for email panel</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
-    <value>Auto-refresh enabled</value>
+    <value>Atualização automática habilitada</value>
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="SubjectColumn" xml:space="preserve">
-    <value>Subject</value>
+    <value>Assunto</value>
     <comment>Table column header for email subject</comment>
   </data>
   <data name="DateColumn" xml:space="preserve">
-    <value>Date</value>
+    <value>Data</value>
     <comment>Table column header for email date</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>No emails received (yet).</value>
+    <value>Nenhum e-mail recebido (ainda).</value>
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
-    <value>The current chosen email address is already in use. Please change the email address by editing this credential.</value>
+    <value>O e-mail escolhido já está em uso. Por favor, altere o endereço de e-mail editando esta credencial.</value>
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
-    <value>An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.</value>
+    <value>Ocorreu um erro ao tentar carregar os e-mails. Por favor, tente editar e salvar a credencial para sincronizar com o banco de dados, e tente novamente.</value>
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">
-    <value>Load more</value>
+    <value>Carregar mais</value>
     <comment>Button text to load more emails</comment>
   </data>
 </root>

@@ -46,7 +46,7 @@
     <comment>Description for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescriptionNote">
-    <value>提醒：通过私有域名接收的邮件采用端到端加密，仅你本人可阅读；而通过公共域名接收的邮件，任何知晓该收件邮箱地址的人均可查阅。</value>
+    <value>提醒：通过私有域名接收的邮件采用端到端加密，仅您本人可阅读；而通过公共域名接收的邮件，任何知晓该收件邮箱地址的人均可查阅。</value>
     <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
   </data>
   <data name="DefaultEmailDomainLearnMore">

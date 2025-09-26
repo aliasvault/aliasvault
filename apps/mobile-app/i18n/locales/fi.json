@@ -80,6 +80,7 @@
       "operationFailed": "Toiminto epäonnistui",
       "versionNotSupported": "Palvelin ei enää tue AliasVaultin mobiilisovelluksen tätä versiota. Ole hyvä ja päivitä sovellus uusimpaan versioon.",
       "serverNeedsUpdate": "AliasVaultin palvelin on päivitettävä uudempaan versioon, jotta voit käyttää tätä mobiilisovellusta. Ota yhteyttä tukeen, jos tarvitset apua.",
+      "appOutdated": "Tämä sovellus on vanhentunut eikä sitä voi käyttää tämän holvin käyttämiseen. Päivitä sovellus jatkaaksesi.",
       "vaultDecryptFailed": "Holvin salausta ei purkuaa. Jos ongelma jatkuu, kirjaudu ulos ja kirjaudu sitten uudelleen sisään. ",
       "passwordChanged": "Salasanasi on muuttunut edellisen kirjautumisen jälkeen. Ole hyvä ja kirjaudu uudelleen turvallisuussyistä."
     }
@@ -433,11 +434,11 @@
     "VAULT_ERROR": "Paikallinen holvi ei ole ajan tasalla. Synkronoi holvisi päivittämällä sivu ja yritä uudelleen."
   },
   "app": {
+    "openReadOnlyMode": "Avaa vain luku -tilassa",
     "status": {
       "unlockingVault": "Avataan holvia",
       "decryptingVault": "Pureraan holvin salausta",
-      "openingVaultReadOnly": "Avataan holvi vain luku -tilassa",
-      "retryingConnection": "Yritetään muodostaa yhteyttä..."
+      "openingVaultReadOnly": "Avataan holvi vain luku -tilassa"
     },
     "offline": {
       "banner": "Offline-tila (vain luku)",
@@ -478,8 +479,8 @@
     "title": "Päivitä Holvi",
     "subtitle": "AliasVault on päivitetty ja holvisi on päivitettävä. Tämän pitäisi kestää vain muutama sekunti.",
     "versionInformation": "Versiotiedot",
-    "yourVault": "Sinun holvisi:",
-    "newVersion": "Uusi versio:",
+    "yourVault": "Holvisi versio:",
+    "newVersion": "Uusi saatavilla oleva versio:",
     "upgrade": "Päivitä",
     "upgrading": "Päivitetään...",
     "logout": "Kirjaudu ulos",

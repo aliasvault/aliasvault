@@ -63,7 +63,7 @@
     <comment>Welcome title for new vault creation</comment>
   </data>
   <data name="CreatingDescription" xml:space="preserve">
-    <value>Создаём ваше новое защищённое хранилище. Это может занять немного времени. Пожалуйста, подождите.</value>
+    <value>Создаём ваше новое защищённое хранилище. Это может занять некоторое время. Пожалуйста, подождите.</value>
     <comment>Description for vault creation process</comment>
   </data>
   <data name="SaveFailedError" xml:space="preserve">

@@ -8,6 +8,8 @@ import fi from './locales/fi.json';
 import he from './locales/he.json';
 import it from './locales/it.json';
 import nl from './locales/nl.json';
+import pt from './locales/pt.json';
+import ru from './locales/ru.json';
 import uk from './locales/uk.json';
 import zh from './locales/zh.json';
 
@@ -18,6 +20,8 @@ const resources = {
   he: { translation: he },
   nl: { translation: nl },
   it: { translation: it },
+  pt: { translation: pt },
+  ru: { translation: ru },
   uk: { translation: uk },
   zh: { translation: zh },
 };

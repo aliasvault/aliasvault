@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
-  <string name="aliasvault_icon">AliasVault icon</string>
+  <string name="autofill_service_description" translatable="true">Preenchimento Automático do AliasVault</string>
+  <string name="aliasvault_icon">Ícone do AliasVault</string>
   <!-- AutofillService strings -->
-  <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
-  <string name="autofill_no_match_found">No match found, create new?</string>
-  <string name="autofill_open_app">Open app</string>
-  <string name="autofill_vault_locked">Vault locked</string>
+  <string name="autofill_failed_to_retrieve">Falha ao recuperar, abra o aplicativo</string>
+  <string name="autofill_no_match_found">Nenhum resultado encontrado, criar novo?</string>
+  <string name="autofill_open_app">Abrir aplicativo</string>
+  <string name="autofill_vault_locked">Cofre bloqueado</string>
   <!-- Biometric prompts -->
-  <string name="biometric_store_key_title">Store Encryption Key</string>
-  <string name="biometric_store_key_subtitle">Authenticate to securely store your encryption key in the Android Keystore. This enables secure access to your vault.</string>
-  <string name="biometric_unlock_vault_title">Unlock Vault</string>
-  <string name="biometric_unlock_vault_subtitle">Authenticate to access your vault</string>
+  <string name="biometric_store_key_title">Armazenar Chave de Criptografia</string>
+  <string name="biometric_store_key_subtitle">Autentique para armazenar sua chave de criptografia com segurança no Android Keystore. Isto habilita o acesso seguro ao seu cofre.</string>
+  <string name="biometric_unlock_vault_title">Desbloquear Cofre</string>
+  <string name="biometric_unlock_vault_subtitle">Autentique para acessar seu cofre</string>
 </resources>
