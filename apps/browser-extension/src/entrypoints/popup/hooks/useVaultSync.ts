@@ -92,7 +92,7 @@ export const useVaultSync = () : {
          * longer valid and the user needs to re-authenticate. We trigger a logout but do not revoke tokens
          * as these were already revoked by the server upon password change.
          */
-        await webApi.logout(t('common.errors.passwordChanged'));
+        await authContext.logout(t('common.errors.passwordChanged'));
         return false;
       }
 
@@ -114,8 +114,7 @@ export const useVaultSync = () : {
         if (vaultError) {
           // Only logout if it's an authentication error, not a network error
           if (vaultError.includes('authentication') || vaultError.includes('unauthorized')) {
-            await webApi.logout(vaultError);
-            onError?.(vaultError);
+            await authContext.logout(vaultError);
             return false;
           }
 
@@ -144,9 +143,7 @@ export const useVaultSync = () : {
         } catch (error) {
           // Check if it's a version-related error (app needs to be updated)
           if (error instanceof VaultVersionIncompatibleError) {
-            await webApi.logout(error.message);
-            // Redirect to logout
-            onError?.(error.message);
+            await authContext.logout(error.message);
             return false;
           }
           // Vault could not be decrypted, throw an error
@@ -168,8 +165,7 @@ export const useVaultSync = () : {
 
       // Check if it's a version-related error (app needs to be updated)
       if (err instanceof VaultVersionIncompatibleError) {
-        await webApi.logout(errorMessage);
-        onError?.(errorMessage);
+        await authContext.logout(errorMessage);
         return false;
       }
 

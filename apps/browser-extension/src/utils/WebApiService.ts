@@ -21,13 +21,6 @@ type TokenResponse = {
  */
 export class WebApiService {
   /**
-   * Constructor for the WebApiService class.
-   *
-   * @param {Function} authContextLogout - Function to handle logout.
-   */
-  public constructor(private readonly authContextLogout: (statusError: string | null) => void) { }
-
-  /**
    * Get the base URL for the API from settings.
    */
   private async getBaseUrl(): Promise<string> {
@@ -83,7 +76,7 @@ export class WebApiService {
 
           return parseJson ? retryResponse.json() : retryResponse as unknown as T;
         } else {
-          this.authContextLogout(null);
+          this.logout('Your session has expired. Please login again.');
           throw new Error('Session expired');
         }
       }
@@ -157,7 +150,7 @@ export class WebApiService {
       this.updateTokens(tokenResponse.token, tokenResponse.refreshToken);
       return tokenResponse.token;
     } catch {
-      this.authContextLogout('Your session has expired. Please login again.');
+      this.logout('Your session has expired. Please login again.');
       return null;
     }
   }
@@ -228,10 +221,10 @@ export class WebApiService {
   }
 
   /**
-   * Logout and revoke tokens via WebApi and remove local storage tokens via AuthContext.
+   * Revoke tokens via WebApi called when logging out.
    */
-  public async logout(statusError: string | null = null): Promise<void> {
-    // Logout and revoke tokens via WebApi.
+  public async revokeTokens(): Promise<void> {
+    // Revoke tokens via WebApi.
     try {
       const refreshToken = await this.getRefreshToken();
       if (refreshToken) {
@@ -241,11 +234,8 @@ export class WebApiService {
         }, false);
       }
     } catch (err) {
-      console.error('WebApi logout error:', err);
+      console.error('WebApi revoke tokens error:', err);
     }
-
-    // Logout and remove tokens from local storage via AuthContext.
-    this.authContextLogout(statusError);
   }
 
   /**
@@ -272,10 +262,6 @@ export class WebApiService {
    * Validates the status response and returns an error message (as translation key) if validation fails.
    */
   public validateStatusResponse(statusResponse: StatusResponse): string | null {
-    if (statusResponse.serverVersion === '0.0.0') {
-      return 'serverNotAvailable';
-    }
-
     if (!statusResponse.clientVersionSupported) {
       return 'clientVersionNotSupported';
     }

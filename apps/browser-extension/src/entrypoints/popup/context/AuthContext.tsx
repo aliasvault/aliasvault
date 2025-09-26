@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useMemo, useCall
 import { sendMessage } from 'webext-bridge/popup';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
+import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
 
@@ -33,6 +34,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [username, setUsername] = useState<string | null>(null);
   const [globalMessage, setGlobalMessage] = useState<string | null>(null);
   const dbContext = useDb();
+  const webApi = useWebApi();
 
   /**
    * Initialize the authentication state.
@@ -87,6 +89,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * Logout the user and clear the auth tokens from chrome storage.
    */
   const logout = useCallback(async (errorMessage?: string) : Promise<void> => {
+    // Logout and revoke tokens via WebApi.
+    await webApi.revokeTokens();
+
+    // Clear vault from background worker and remove local storage tokens.
     await sendMessage('CLEAR_VAULT', {}, 'background');
     await storage.removeItems(['local:username', 'local:accessToken', 'local:refreshToken']);
     dbContext?.clearDatabase();
@@ -98,7 +104,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     setUsername(null);
     setIsLoggedIn(false);
-  }, [dbContext]);
+  }, [dbContext, webApi]);
 
   /**
    * Clear global message (called after displaying the message).

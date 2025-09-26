@@ -49,7 +49,7 @@ const Unlock: React.FC = () => {
       const statusResponse = await webApi.getStatus();
       const statusError = webApi.validateStatusResponse(statusResponse);
       if (statusError !== null) {
-        await webApi.logout(t('common.errors.' + statusError));
+        await authContext.logout(t('common.errors.' + statusError));
         navigate('/logout');
       }
       setIsInitialLoading(false);
@@ -130,7 +130,7 @@ const Unlock: React.FC = () => {
     } catch (err) {
       // Check if it's a version incompatibility error
       if (err instanceof VaultVersionIncompatibleError) {
-        await webApi.logout(err.message);
+        await authContext.logout(err.message);
         navigate('/logout');
       } else {
         setError(t('auth.errors.wrongPassword'));

@@ -17,8 +17,8 @@ const renderApp = (): void => {
   const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
   root.render(
     <DbProvider>
-      <AuthProvider>
-        <WebApiProvider>
+      <WebApiProvider>
+        <AuthProvider>
           <LoadingProvider>
             <HeaderButtonsProvider>
               <ThemeProvider>
@@ -26,8 +26,8 @@ const renderApp = (): void => {
               </ThemeProvider>
             </HeaderButtonsProvider>
           </LoadingProvider>
-        </WebApiProvider>
-      </AuthProvider>
+        </AuthProvider>
+      </WebApiProvider>
     </DbProvider>
   );
 };
