@@ -8,6 +8,7 @@
 namespace AliasVault.E2ETests.Common;
 
 using AliasVault.E2ETests.Tests.Extensions;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Playwright;
 
 /// <summary>
@@ -23,6 +24,16 @@ public class BrowserExtensionPlaywrightTest : ClientPlaywrightTest
     /// <returns>Task.</returns>
     protected override async Task SetupPlaywrightBrowserAndContext()
     {
+        // Set Playwright headless mode based on appsettings.json value.
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.Development.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables()
+            .Build();
+
+        bool headless = configuration.GetValue("PlaywrightSettings:Headless", true);
+
         // Make sure the extension is built and ready to use.
         ExtensionSetup();
 
@@ -33,7 +44,8 @@ public class BrowserExtensionPlaywrightTest : ClientPlaywrightTest
             userDataDir: string.Empty, // Empty string means temporary directory
             new BrowserTypeLaunchPersistentContextOptions
             {
-                Headless = false,
+                Channel = "chromium",
+                Headless = headless,
                 Args = new[]
                 {
                     "--disable-extensions-except=" + _extensionPath,
