@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@/entrypoints/popup/components/Button';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
@@ -27,6 +28,7 @@ import { storage } from '#imports';
  */
 const Unlock: React.FC = () => {
   const { t } = useTranslation();
+  const app = useApp();
   const authContext = useAuth();
   const dbContext = useDb();
   const navigate = useNavigate();
@@ -49,7 +51,7 @@ const Unlock: React.FC = () => {
       const statusResponse = await webApi.getStatus();
       const statusError = webApi.validateStatusResponse(statusResponse);
       if (statusError !== null) {
-        await authContext.logout(t('common.errors.' + statusError));
+        await app.logout(t('common.errors.' + statusError));
         navigate('/logout');
       }
       setIsInitialLoading(false);
@@ -123,7 +125,7 @@ const Unlock: React.FC = () => {
     } catch (err) {
       // Check if it's a version incompatibility error
       if (err instanceof VaultVersionIncompatibleError) {
-        await authContext.logout(err.message);
+        await app.logout(err.message);
         navigate('/logout');
       } else {
         setError(t('auth.errors.wrongPassword'));

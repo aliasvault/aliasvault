@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sendMessage } from 'webext-bridge/popup';
 
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
@@ -50,7 +50,7 @@ export const useVaultSync = () : {
   syncVault: (options?: VaultSyncOptions) => Promise<boolean>;
 } => {
   const { t } = useTranslation();
-  const authContext = useAuth();
+  const app = useApp();
   const dbContext = useDb();
   const webApi = useWebApi();
 
@@ -61,7 +61,7 @@ export const useVaultSync = () : {
     const enableDelay = initialSync;
 
     try {
-      const { isLoggedIn } = await authContext.initializeAuth();
+      const isLoggedIn = await app.initializeAuth();
 
       if (!isLoggedIn) {
         // Not authenticated, return false immediately
@@ -92,7 +92,7 @@ export const useVaultSync = () : {
          * longer valid and the user needs to re-authenticate. We trigger a logout but do not revoke tokens
          * as these were already revoked by the server upon password change.
          */
-        await authContext.logout(t('common.errors.passwordChanged'));
+        await app.logout(t('common.errors.passwordChanged'));
         return false;
       }
 
@@ -126,7 +126,7 @@ export const useVaultSync = () : {
         } catch (error) {
           // Check if it's a version-related error (app needs to be updated)
           if (error instanceof VaultVersionIncompatibleError) {
-            await authContext.logout(error.message);
+            await app.logout(error.message);
             return false;
           }
           // Vault could not be decrypted, throw an error
@@ -148,7 +148,7 @@ export const useVaultSync = () : {
 
       // Check if it's a version-related error (app needs to be updated)
       if (err instanceof VaultVersionIncompatibleError) {
-        await authContext.logout(errorMessage);
+        await app.logout(errorMessage);
         return false;
       }
 
@@ -166,7 +166,7 @@ export const useVaultSync = () : {
       onError?.(errorMessage);
       return false;
     }
-  }, [authContext, dbContext, webApi, t]);
+  }, [app, dbContext, webApi, t]);
 
   return { syncVault };
 };

@@ -7,7 +7,7 @@ import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import ReloadButton from '@/entrypoints/popup/components/ReloadButton';
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
@@ -24,7 +24,7 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 const CredentialsList: React.FC = () => {
   const { t } = useTranslation();
   const dbContext = useDb();
-  const authContext = useAuth();
+  const app = useApp();
   const navigate = useNavigate();
   const { syncVault } = useVaultSync();
   const { setHeaderButtons } = useHeaderButtons();
@@ -72,14 +72,14 @@ const CredentialsList: React.FC = () => {
          */
         onError: async (error) => {
           console.error('Error syncing vault:', error);
-          await authContext.logout('Error while syncing vault, please re-authenticate.');
+          await app.logout('Error while syncing vault, please re-authenticate.');
         },
       });
     } catch (err) {
       console.error('Error refreshing credentials:', err);
-      await authContext.logout('Error while syncing vault, please re-authenticate.');
+      await app.logout('Error while syncing vault, please re-authenticate.');
     }
-  }, [dbContext, authContext, syncVault]);
+  }, [dbContext, app, syncVault]);
 
   /**
    * Get latest vault from server and refresh the credentials list.

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sendMessage } from 'webext-bridge/popup';
 
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
@@ -31,7 +31,7 @@ const Reinitialize: React.FC = () => {
   const hasInitialized = useRef(false);
 
   // Auth and DB state
-  const { isInitialized: authInitialized, isLoggedIn } = useAuth();
+  const { isInitialized: authInitialized, isLoggedIn } = useApp();
   const { dbInitialized, dbAvailable } = useDb();
 
   // Derived state

@@ -7,7 +7,7 @@ import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
 import Modal from '@/entrypoints/popup/components/Modal';
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
@@ -24,7 +24,7 @@ import { VaultSqlGenerator } from '@/utils/dist/shared/vault-sql';
  */
 const Upgrade: React.FC = () => {
   const { t } = useTranslation();
-  const { username } = useAuth();
+  const { username } = useApp();
   const dbContext = useDb();
   const { sqliteClient } = dbContext;
   const { setHeaderButtons } = useHeaderButtons();

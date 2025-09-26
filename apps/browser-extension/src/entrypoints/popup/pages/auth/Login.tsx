@@ -8,7 +8,7 @@ import Button from '@/entrypoints/popup/components/Button';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoginServerInfo from '@/entrypoints/popup/components/LoginServerInfo';
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
@@ -30,7 +30,7 @@ import { storage } from '#imports';
 const Login: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const authContext = useAuth();
+  const app = useApp();
   const dbContext = useDb();
   const { setHeaderButtons } = useHeaderButtons();
   const [credentials, setCredentials] = useState({
@@ -66,7 +66,7 @@ const Login: React.FC = () => {
     } });
 
     // All is good. Store auth info which is required to make requests to the web API.
-    await authContext.setAuthTokens(username, token, refreshToken);
+    await app.setAuthTokens(username, token, refreshToken);
 
     // Store the encryption key and derivation params separately
     await dbContext.storeEncryptionKey(passwordHashBase64);
@@ -79,9 +79,6 @@ const Login: React.FC = () => {
     // Initialize the SQLite context with the new vault data.
     const sqliteClient = await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
 
-    // Set logged in status to true which refreshes the app.
-    await authContext.login();
-
     // If there are pending migrations, redirect to the upgrade page.
     try {
       if (await sqliteClient.hasPendingMigrations()) {
@@ -90,7 +87,7 @@ const Login: React.FC = () => {
         return;
       }
     } catch (err) {
-      await authContext.logout();
+      await app.logout();
       setError(err instanceof Error ? err.message : t('auth.errors.migrationError'));
       hideLoading();
       return;
@@ -150,7 +147,7 @@ const Login: React.FC = () => {
       showLoading();
 
       // Clear global message if set with every login attempt.
-      authContext.clearGlobalMessage();
+      app.clearGlobalMessage();
 
       // Use the srpUtil instance instead of the imported singleton
       const loginResponse = await srpUtil.initiateLogin(ConversionUtility.normalizeUsername(credentials.username));
