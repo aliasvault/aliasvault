@@ -8,7 +8,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
-import { VaultVersionIncompatibleError } from '@/utils/errors/VaultVersionError';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 /**
  * Utility function to ensure a minimum time has elapsed for an operation

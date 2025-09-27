@@ -19,7 +19,7 @@ import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
-import { VaultVersionIncompatibleError } from '@/utils/errors/VaultVersionError';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { storage } from '#imports';
 

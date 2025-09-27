@@ -4,7 +4,7 @@ import { storage } from 'wxt/utils/storage';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/shared/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { VaultVersionIncompatibleError } from '@/utils/errors/VaultVersionError';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import { CredentialsResponse as messageCredentialsResponse } from '@/utils/types/messaging/CredentialsResponse';

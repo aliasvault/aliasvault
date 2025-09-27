@@ -4,7 +4,7 @@ import type { Credential, EncryptionKey, PasswordSettings, TotpCode } from '@/ut
 import type { Attachment } from '@/utils/dist/shared/models/vault';
 import type { VaultVersion } from '@/utils/dist/shared/vault-sql';
 import { VaultSqlGenerator } from '@/utils/dist/shared/vault-sql';
-import { VaultVersionIncompatibleError } from '@/utils/errors/VaultVersionError';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { t } from '@/i18n/StandaloneI18n';
 
