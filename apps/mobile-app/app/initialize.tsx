@@ -10,7 +10,6 @@ import { ThemedView } from '@/components/themed/ThemedView';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionError';
 
 /**
  * Initialize page that handles all boot logic.
@@ -86,10 +85,7 @@ export default function Initialize() : React.ReactNode {
               // Success - navigate to credentials
               router.replace('/(tabs)/credentials');
             } catch (err) {
-              if (err instanceof VaultVersionIncompatibleError) {
-                await app.logout(t(err.message));
-                return;
-              }
+              console.error('Error during offline vault unlock:', err);
               router.replace('/unlock');
             }
           }
@@ -172,11 +168,7 @@ export default function Initialize() : React.ReactNode {
             return;
           }
         } catch (err) {
-          if (err instanceof VaultVersionIncompatibleError) {
-            await app.logout(t(err.message));
-            return;
-          }
-
+          console.error('Error during vault unlock:', err);
           router.replace('/unlock');
           return;
         }
@@ -238,7 +230,6 @@ export default function Initialize() : React.ReactNode {
              * Show modal with error message for other errors
              */
             Alert.alert(t('common.error'), error);
-            router.replace('/login');
           },
           /**
            * On upgrade required.

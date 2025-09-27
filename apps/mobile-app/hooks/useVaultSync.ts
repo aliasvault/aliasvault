@@ -10,7 +10,7 @@ import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionError';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 /**
  * Utility function to ensure a minimum time has elapsed for an operation

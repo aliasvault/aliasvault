@@ -12,14 +12,13 @@ import { ThemedView } from '@/components/themed/ThemedView';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionError';
 
 /**
  * Reinitialize screen which is triggered when the app was still open but the database in memory
  * was cleared because of a time-out. When this happens, we need to re-initialize and unlock the vault.
  */
 export default function ReinitializeScreen() : React.ReactNode {
-  const authContext = useApp();
+  const app = useApp();
   const dbContext = useDb();
   const { syncVault } = useVaultSync();
   const [status, setStatus] = useState('');
@@ -28,7 +27,6 @@ export default function ReinitializeScreen() : React.ReactNode {
   const offlineButtonTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const colors = useColors();
   const { t } = useTranslation();
-  const app = useApp();
 
   /**
    * Handle offline scenario - show alert with options to open local vault or retry sync.
@@ -57,7 +55,7 @@ export default function ReinitializeScreen() : React.ReactNode {
               }
 
               // Set offline mode
-              authContext.setOfflineMode(true);
+              app.setOfflineMode(true);
 
               // FaceID not enabled
               const isFaceIDEnabled = enabledAuthMethods.includes('faceid');
@@ -88,26 +86,26 @@ export default function ReinitializeScreen() : React.ReactNode {
               }
 
               // Handle navigation based on return URL
-              if (!authContext.returnUrl?.path) {
+              if (!app.returnUrl?.path) {
                 router.replace('/(tabs)/credentials');
                 return;
               }
 
               // Navigate to return URL
-              const path = authContext.returnUrl.path as string;
+              const path = app.returnUrl.path as string;
               const isDetailRoute = path.includes('credentials/');
 
               if (!isDetailRoute) {
                 router.replace({
                   pathname: path as '/',
-                  params: authContext.returnUrl.params as Record<string, string>
+                  params: app.returnUrl.params as Record<string, string>
                 });
-                authContext.setReturnUrl(null);
+                app.setReturnUrl(null);
                 return;
               }
 
               // Handle detail routes
-              const params = authContext.returnUrl.params as Record<string, string>;
+              const params = app.returnUrl.params as Record<string, string>;
               router.replace('/(tabs)/credentials');
               setTimeout(() => {
                 if (params.serviceUrl) {
@@ -118,13 +116,9 @@ export default function ReinitializeScreen() : React.ReactNode {
                   router.push(path);
                 }
               }, 0);
-              authContext.setReturnUrl(null);
+              app.setReturnUrl(null);
             } catch (err) {
-              if (err instanceof VaultVersionIncompatibleError) {
-                await authContext.logout(t(err.message));
-                return;
-              }
-
+              console.error('Error during offline vault unlock:', err);
               router.replace('/unlock');
             }
           }
@@ -154,7 +148,7 @@ export default function ReinitializeScreen() : React.ReactNode {
         }
       ]
     );
-  }, [authContext, dbContext, t]);
+  }, [app, dbContext, t]);
 
   useEffect(() => {
     if (hasInitialized.current) {
@@ -177,13 +171,13 @@ export default function ReinitializeScreen() : React.ReactNode {
         }, 0);
       }
 
-      if (authContext.returnUrl?.path) {
+      if (app.returnUrl?.path) {
         // Type assertion needed due to router type limitations
-        const path = authContext.returnUrl.path as '/';
+        const path = app.returnUrl.path as '/';
         const isDetailRoute = path.includes('credentials/');
         if (isDetailRoute) {
           // If there is a "serviceUrl" or "id" param from the return URL, use it.
-          const params = authContext.returnUrl.params as Record<string, string>;
+          const params = app.returnUrl.params as Record<string, string>;
 
           if (params.serviceUrl) {
             simulateStackNavigation('/(tabs)/credentials', path + '?serviceUrl=' + params.serviceUrl);
@@ -195,11 +189,11 @@ export default function ReinitializeScreen() : React.ReactNode {
         } else {
           router.replace({
             pathname: path,
-            params: authContext.returnUrl.params as Record<string, string>
+            params: app.returnUrl.params as Record<string, string>
           });
         }
         // Clear the return URL after using it
-        authContext.setReturnUrl(null);
+        app.setReturnUrl(null);
       } else {
         // If there is no return URL, navigate to the credentials tab as default entry page.
         router.replace('/(tabs)/credentials');
@@ -241,11 +235,7 @@ export default function ReinitializeScreen() : React.ReactNode {
 
         router.replace('/unlock');
       } catch (err) {
-        if (err instanceof VaultVersionIncompatibleError) {
-          await authContext.logout(t(err.message));
-          return;
-        }
-
+        console.error('Error during vault unlock:', err);
         router.replace('/unlock');
       }
     }
@@ -329,7 +319,7 @@ export default function ReinitializeScreen() : React.ReactNode {
         clearTimeout(offlineButtonTimeoutRef.current);
       }
     };
-  }, [syncVault, authContext, dbContext, t, handleOfflineFlow]);
+  }, [syncVault, app, dbContext, t, handleOfflineFlow]);
 
   /**
    * Handle offline button press by calling the stored offline handler.

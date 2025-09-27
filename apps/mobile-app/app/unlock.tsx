@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, TextInput, Alert, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text, Pressable } from 'react-native';
 
 import EncryptionUtility from '@/utils/EncryptionUtility';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -19,7 +20,6 @@ import { Avatar } from '@/components/ui/Avatar';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
-import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionError';
 
 /**
  * Unlock screen.
@@ -27,7 +27,7 @@ import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersion
 export default function UnlockScreen() : React.ReactNode {
   const { isLoggedIn, username, isBiometricsEnabled, getBiometricDisplayNameKey, getEncryptionKeyDerivationParams, logout } = useApp();
   const dbContext = useDb();
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('asdasdasdasd1');
   const [isLoading, setIsLoading] = useState(false);
   const [isBiometricsAvailable, setIsBiometricsAvailable] = useState(false);
   const colors = useColors();

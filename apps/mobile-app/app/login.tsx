@@ -53,8 +53,8 @@ export default function LoginScreen() : React.ReactNode {
   });
 
   const [credentials, setCredentials] = useState({
-    username: '',
-    password: '',
+    username: 'imgshare',
+    password: 'asdasdasdasd1',
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

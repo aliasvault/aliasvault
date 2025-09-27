@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useMemo, useCallback, useEffect, useState } from 'react';
+import { router } from 'expo-router';
 
 import { useAuth } from '@/context/AuthContext';
 import { useWebApi } from '@/context/WebApiContext';
@@ -83,6 +84,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     return unsubscribe;
   }, [logout]);
+
+  /**
+   * Global authentication listener - redirect to login when user is logged out
+   * This ensures that logout triggers redirect regardless of which route the user is on
+   */
+  useEffect(() => {
+    if (auth.isInitialized && !auth.isLoggedIn) {
+      // Small delay to ensure logout process is complete
+      const timer = setTimeout(() => {
+        router.replace('/login');
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [auth.isInitialized, auth.isLoggedIn]);
 
   const contextValue = useMemo(() => ({
     // Pass through auth state
