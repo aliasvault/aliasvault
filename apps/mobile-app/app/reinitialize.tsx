@@ -9,16 +9,17 @@ import { useVaultSync } from '@/hooks/useVaultSync';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionError';
 
 /**
  * Reinitialize screen which is triggered when the app was still open but the database in memory
  * was cleared because of a time-out. When this happens, we need to re-initialize and unlock the vault.
  */
 export default function ReinitializeScreen() : React.ReactNode {
-  const authContext = useAuth();
+  const authContext = useApp();
   const dbContext = useDb();
   const { syncVault } = useVaultSync();
   const [status, setStatus] = useState('');
@@ -27,6 +28,7 @@ export default function ReinitializeScreen() : React.ReactNode {
   const offlineButtonTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const colors = useColors();
   const { t } = useTranslation();
+  const app = useApp();
 
   /**
    * Handle offline scenario - show alert with options to open local vault or retry sync.
@@ -43,7 +45,7 @@ export default function ReinitializeScreen() : React.ReactNode {
            */
           onPress: async () : Promise<void> => {
             setStatus(t('app.status.openingVaultReadOnly'));
-            const { enabledAuthMethods } = await authContext.initializeAuth();
+            const { enabledAuthMethods } = await app.initializeAuth();
 
             try {
               const hasEncryptedDatabase = await NativeVaultManager.hasEncryptedDatabase();
@@ -117,7 +119,12 @@ export default function ReinitializeScreen() : React.ReactNode {
                 }
               }, 0);
               authContext.setReturnUrl(null);
-            } catch {
+            } catch (err) {
+              if (err instanceof VaultVersionIncompatibleError) {
+                await authContext.logout(t(err.message));
+                return;
+              }
+
               router.replace('/unlock');
             }
           }
@@ -203,7 +210,7 @@ export default function ReinitializeScreen() : React.ReactNode {
      * Handle vault unlocking process.
      */
     async function handleVaultUnlock() : Promise<void> {
-      const { enabledAuthMethods } = await authContext.initializeAuth();
+      const { enabledAuthMethods } = await app.initializeAuth();
 
       try {
         const hasEncryptedDatabase = await NativeVaultManager.hasEncryptedDatabase();
@@ -233,7 +240,12 @@ export default function ReinitializeScreen() : React.ReactNode {
         }
 
         router.replace('/unlock');
-      } catch {
+      } catch (err) {
+        if (err instanceof VaultVersionIncompatibleError) {
+          await authContext.logout(t(err.message));
+          return;
+        }
+
         router.replace('/unlock');
       }
     }
@@ -242,7 +254,7 @@ export default function ReinitializeScreen() : React.ReactNode {
      * Initialize the app.
      */
     const initialize = async () : Promise<void> => {
-      const { isLoggedIn } = await authContext.initializeAuth();
+      const { isLoggedIn } = await app.initializeAuth();
 
       // If user is not logged in, navigate to login immediately
       if (!isLoggedIn) {
@@ -284,6 +296,15 @@ export default function ReinitializeScreen() : React.ReactNode {
          */
         onSuccess: async () => {
           await handleVaultUnlock();
+        },
+        /**
+         * Handle error during vault sync.
+         * Authentication errors are already handled in useVaultSync.
+         */
+        onError: (error: string) => {
+          console.error('Vault sync error during reinitialize:', error);
+          // Even if sync fails, try to continue with local vault if available
+          handleVaultUnlock();
         },
         /**
          * Handle offline state and prompt user for action.

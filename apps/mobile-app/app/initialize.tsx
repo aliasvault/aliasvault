@@ -7,10 +7,10 @@ import { useVaultSync } from '@/hooks/useVaultSync';
 
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { ThemedView } from '@/components/themed/ThemedView';
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
-import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionError';
 
 /**
  * Initialize page that handles all boot logic.
@@ -22,10 +22,9 @@ export default function Initialize() : React.ReactNode {
   const hasInitialized = useRef(false);
   const offlineButtonTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const { t } = useTranslation();
-  const { initializeAuth, setOfflineMode } = useAuth();
+  const app = useApp();
   const { syncVault } = useVaultSync();
   const dbContext = useDb();
-  const webApi = useWebApi();
 
   /**
    * Handle offline scenario - show alert with options to open local vault or retry sync.
@@ -42,7 +41,7 @@ export default function Initialize() : React.ReactNode {
            */
           onPress: async () : Promise<void> => {
             setStatus(t('app.status.openingVaultReadOnly'));
-            const { enabledAuthMethods } = await initializeAuth();
+            const { enabledAuthMethods } = await app.initializeAuth();
 
             try {
               const hasEncryptedDatabase = await NativeVaultManager.hasEncryptedDatabase();
@@ -54,7 +53,7 @@ export default function Initialize() : React.ReactNode {
               }
 
               // Set offline mode
-              setOfflineMode(true);
+              app.setOfflineMode(true);
 
               // FaceID not enabled
               const isFaceIDEnabled = enabledAuthMethods.includes('faceid');
@@ -86,7 +85,11 @@ export default function Initialize() : React.ReactNode {
 
               // Success - navigate to credentials
               router.replace('/(tabs)/credentials');
-            } catch {
+            } catch (err) {
+              if (err instanceof VaultVersionIncompatibleError) {
+                await app.logout(t(err.message));
+                return;
+              }
               router.replace('/unlock');
             }
           }
@@ -116,7 +119,7 @@ export default function Initialize() : React.ReactNode {
         }
       ]
     );
-  }, [dbContext, router, initializeAuth, t, setOfflineMode]);
+  }, [dbContext, router, app, t]);
 
   useEffect(() => {
     // Ensure this only runs once.
@@ -134,7 +137,7 @@ export default function Initialize() : React.ReactNode {
        * Handle vault unlocking process.
        */
       async function handleVaultUnlock() : Promise<void> {
-        const { enabledAuthMethods } = await initializeAuth();
+        const { enabledAuthMethods } = await app.initializeAuth();
 
         try {
           const hasEncryptedDatabase = await NativeVaultManager.hasEncryptedDatabase();
@@ -168,7 +171,12 @@ export default function Initialize() : React.ReactNode {
             router.replace('/unlock');
             return;
           }
-        } catch {
+        } catch (err) {
+          if (err instanceof VaultVersionIncompatibleError) {
+            await app.logout(t(err.message));
+            return;
+          }
+
           router.replace('/unlock');
           return;
         }
@@ -178,7 +186,7 @@ export default function Initialize() : React.ReactNode {
        * Initialize the app.
        */
       const initialize = async () : Promise<void> => {
-        const { isLoggedIn } = await initializeAuth();
+        const { isLoggedIn } = await app.initializeAuth();
 
         if (!isLoggedIn) {
           router.replace('/login');
@@ -225,11 +233,11 @@ export default function Initialize() : React.ReactNode {
            * Handle error during vault sync.
            */
           onError: async (error: string) => {
-          // Show modal with error message
+            /**
+             * Authentication errors are already handled in useVaultSync
+             * Show modal with error message for other errors
+             */
             Alert.alert(t('common.error'), error);
-
-            // The logout user and navigate to the login screen.
-            await webApi.logout(error);
             router.replace('/login');
           },
           /**
@@ -252,7 +260,7 @@ export default function Initialize() : React.ReactNode {
         clearTimeout(offlineButtonTimeoutRef.current);
       }
     };
-  }, [dbContext, syncVault, initializeAuth, webApi, router, t, handleOfflineFlow]);
+  }, [dbContext, syncVault, app, router, t, handleOfflineFlow]);
 
   /**
    * Handle offline button press by calling the stored offline handler.

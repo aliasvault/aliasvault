@@ -2,13 +2,15 @@ import { useCallback } from 'react';
 
 import { AppInfo } from '@/utils/AppInfo';
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
+import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useTranslation } from '@/hooks/useTranslation';
 
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionError';
 
 /**
  * Utility function to ensure a minimum time has elapsed for an operation
@@ -50,7 +52,7 @@ export const useVaultSync = () : {
   syncVault: (options?: VaultSyncOptions) => Promise<boolean>;
 } => {
   const { t } = useTranslation();
-  const authContext = useAuth();
+  const app = useApp();
   const dbContext = useDb();
   const webApi = useWebApi();
 
@@ -61,7 +63,7 @@ export const useVaultSync = () : {
     const enableDelay = initialSync;
 
     try {
-      const { isLoggedIn } = await authContext.initializeAuth();
+      const { isLoggedIn } = await app.initializeAuth();
 
       if (!isLoggedIn) {
         // Not authenticated, return false immediately
@@ -91,7 +93,7 @@ export const useVaultSync = () : {
       }
 
       // Check if the SRP salt has changed compared to locally stored encryption key derivation params
-      const keyDerivationParams = await authContext.getEncryptionKeyDerivationParams();
+      const keyDerivationParams = await app.getEncryptionKeyDerivationParams();
       if (keyDerivationParams && statusResponse.srpSalt && statusResponse.srpSalt !== keyDerivationParams.salt) {
         /**
          * Server SRP salt has changed compared to locally stored value, which means the user has changed
@@ -99,12 +101,12 @@ export const useVaultSync = () : {
          * longer valid and the user needs to re-authenticate. We trigger a logout but do not revoke tokens
          * as these were already revoked by the server upon password change.
          */
-        await webApi.logout(t('vault.errors.passwordChanged'), false);
+        await app.logout(t('vault.errors.passwordChanged'));
         return false;
       }
 
       // If we get here, it means we have a valid connection to the server.
-      authContext.setOfflineMode(false);
+      app.setOfflineMode(false);
 
       // Compare vault revisions
       const vaultMetadata = await dbContext.getVaultMetadata();
@@ -116,16 +118,8 @@ export const useVaultSync = () : {
 
         const vaultError = webApi.validateVaultResponse(vaultResponseJson as VaultResponse);
         if (vaultError) {
-          // Only logout if it's an authentication error, not a network error
-          if (vaultError.includes('authentication') || vaultError.includes('unauthorized')) {
-            await webApi.logout(vaultError);
-            onError?.(vaultError);
-            return false;
-          }
-
-          // For other errors, go into offline mode
-          authContext.setOfflineMode(true);
-          return true;
+          // Throw authentication error which will be caught and handled
+          throw new VaultAuthenticationError(vaultError);
         }
 
         try {
@@ -139,7 +133,12 @@ export const useVaultSync = () : {
 
           onSuccess?.(true);
           return true;
-        } catch {
+        } catch (err) {
+          if (err instanceof VaultVersionIncompatibleError) {
+            await app.logout(t(err.message));
+            return false;
+          }
+
           // Vault could not be decrypted, throw an error
           throw new Error(t('vault.errors.vaultDecryptFailed'));
         }
@@ -154,19 +153,31 @@ export const useVaultSync = () : {
       await withMinimumDelay(() => Promise.resolve(onSuccess?.(false)), 300, enableDelay);
       return false;
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : t('common.errors.unknownError');
       console.error('Vault sync error:', err);
+
+      // Handle authentication errors
+      if (err instanceof VaultAuthenticationError) {
+        await app.logout(err.message);
+        return false;
+      }
+
+      if (err instanceof VaultVersionIncompatibleError) {
+        await app.logout(t(err.message));
+        return false;
+      }
+
+      const errorMessage = err instanceof Error ? err.message : t('common.errors.unknownError');
 
       // Check if it's a network error
       if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
-        authContext.setOfflineMode(true);
+        app.setOfflineMode(true);
         return true;
       }
 
       onError?.(errorMessage);
       return false;
     }
-  }, [authContext, dbContext, webApi, t]);
+  }, [app, dbContext, webApi, t]);
 
   return { syncVault };
 };

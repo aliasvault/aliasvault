@@ -15,6 +15,7 @@ import { useColors, useColorScheme } from '@/hooks/useColorScheme';
 import SpaceMono from '@/assets/fonts/SpaceMono-Regular.ttf';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { AliasVaultToast } from '@/components/Toast';
+import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { ClipboardCountdownProvider } from '@/context/ClipboardCountdownContext';
 import { DbProvider } from '@/context/DbContext';
@@ -185,13 +186,15 @@ export default function RootLayout() : React.ReactNode {
     <DbProvider>
       <AuthProvider>
         <WebApiProvider>
-          <ClipboardCountdownProvider>
-            <KeyboardProvider>
-              <GestureHandlerRootView>
-                <RootLayoutNav />
-              </GestureHandlerRootView>
-            </KeyboardProvider>
-          </ClipboardCountdownProvider>
+          <AppProvider>
+            <ClipboardCountdownProvider>
+              <KeyboardProvider>
+                <GestureHandlerRootView>
+                  <RootLayoutNav />
+                </GestureHandlerRootView>
+              </KeyboardProvider>
+            </ClipboardCountdownProvider>
+          </AppProvider>
         </WebApiProvider>
       </AuthProvider>
     </DbProvider>

@@ -16,18 +16,16 @@ import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
 import { InlineSkeletonLoader } from '@/components/ui/InlineSkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
 import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
-import { useAuth } from '@/context/AuthContext';
-import { useWebApi } from '@/context/WebApiContext';
+import { useApp } from '@/context/AppContext';
 
 /**
  * Settings screen.
  */
 export default function SettingsScreen() : React.ReactNode {
-  const webApi = useWebApi();
   const colors = useColors();
   const { t } = useTranslation();
-  const { getAuthMethodDisplayKey, shouldShowAutofillReminder } = useAuth();
-  const { getAutoLockTimeout, getClipboardClearTimeout } = useAuth();
+  const { getAuthMethodDisplayKey, shouldShowAutofillReminder, logout } = useApp();
+  const { getAutoLockTimeout, getClipboardClearTimeout } = useApp();
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
@@ -121,7 +119,7 @@ export default function SettingsScreen() : React.ReactNode {
            * Handle the logout.
            */
           onPress: async () : Promise<void> => {
-            await webApi.logout();
+            await logout();
             router.replace('/login');
           }
         },

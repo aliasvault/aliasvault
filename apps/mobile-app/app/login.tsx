@@ -25,7 +25,7 @@ import LoadingIndicator from '@/components/LoadingIndicator';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { InAppBrowserView } from '@/components/ui/InAppBrowserView';
 import { RobustPressable } from '@/components/ui/RobustPressable';
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 
@@ -66,7 +66,7 @@ export default function LoginScreen() : React.ReactNode {
   const [loginStatus, setLoginStatus] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
 
-  const authContext = useAuth();
+  const authContext = useApp();
   const dbContext = useDb();
   const webApi = useWebApi();
   const { syncVault } = useVaultSync();
@@ -192,7 +192,7 @@ export default function LoginScreen() : React.ReactNode {
 
         // Show modal with error message
         Alert.alert(t('common.error'), message);
-        webApi.logout(message);
+        // Error will trigger logout through the sync process
         setIsLoading(false);
       },
       /**

@@ -17,7 +17,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { Avatar } from '@/components/ui/Avatar';
 import { RobustPressable } from '@/components/ui/RobustPressable';
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
@@ -26,7 +26,8 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
  * Upgrade screen.
  */
 export default function UpgradeScreen() : React.ReactNode {
-  const { username } = useAuth();
+  const { username, logout } = useApp();
+  const webApi = useWebApi();
   const { sqliteClient } = useDb();
   const [isLoading, setIsLoading] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<VaultVersion | null>(null);
@@ -34,7 +35,6 @@ export default function UpgradeScreen() : React.ReactNode {
   const [upgradeStatus, setUpgradeStatus] = useState('');
   const colors = useColors();
   const { t } = useTranslation();
-  const webApi = useWebApi();
   const { executeVaultMutation, isLoading: isVaultMutationLoading, syncStatus } = useVaultMutate();
   const { syncVault } = useVaultSync();
 
@@ -217,7 +217,7 @@ export default function UpgradeScreen() : React.ReactNode {
      * Clear any stored tokens or session data
      * This will be handled by the auth context
      */
-    await webApi.logout();
+    await logout();
     router.replace('/login');
   };
 

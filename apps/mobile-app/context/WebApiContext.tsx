@@ -2,32 +2,21 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 
 import { WebApiService } from '@/utils/WebApiService';
 
-import { useAuth } from '@/context/AuthContext';
-
 const WebApiContext = createContext<WebApiService | null>(null);
 
 /**
  * WebApiProvider to provide the WebApiService to the app that components can use.
  */
 export const WebApiProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { logout } = useAuth();
   const [webApiService, setWebApiService] = useState<WebApiService | null>(null);
 
   /**
    * Initialize WebApiService
    */
   useEffect(() : void => {
-    const service = new WebApiService(
-      (statusError: string | null) => {
-        if (statusError) {
-          logout(statusError);
-        } else {
-          logout();
-        }
-      }
-    );
+    const service = new WebApiService();
     setWebApiService(service);
-  }, [logout]);
+  }, []);
 
   if (!webApiService) {
     return null;

@@ -3,6 +3,7 @@ import { Buffer } from 'buffer';
 import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/shared/models/metadata';
 import type { Attachment, Credential, EncryptionKey, PasswordSettings, TotpCode } from '@/utils/dist/shared/models/vault';
 import { VaultSqlGenerator, VaultVersion } from '@/utils/dist/shared/vault-sql';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionError';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
@@ -625,43 +626,38 @@ class SqliteClient {
    * Returns null if no matching version is found.
    */
   public async getDatabaseVersion(): Promise<VaultVersion> {
-    try {
-      let currentVersion = '';
+    let currentVersion = '';
 
-      // Query the migrations history table for the latest migration
-      const results = await this.executeQuery<{ MigrationId: string }>(`
-        SELECT MigrationId
-        FROM __EFMigrationsHistory
-        ORDER BY MigrationId DESC
-        LIMIT 1`);
+    // Query the migrations history table for the latest migration
+    const results = await this.executeQuery<{ MigrationId: string }>(`
+      SELECT MigrationId
+      FROM __EFMigrationsHistory
+      ORDER BY MigrationId DESC
+      LIMIT 1`);
 
-      if (results.length === 0) {
-        throw new Error('No migrations found');
-      }
-
-      // Extract version using regex - matches patterns like "20240917191243_1.4.1-RenameAttachmentsPlural"
-      const migrationId = results[0].MigrationId;
-      const versionRegex = /_(\d+\.\d+\.\d+)-/;
-      const versionMatch = versionRegex.exec(migrationId);
-
-      if (versionMatch?.[1]) {
-        currentVersion = versionMatch[1];
-      }
-
-      // Get all available vault versions to get the revision number of the current version.
-      const vaultSqlGenerator = new VaultSqlGenerator();
-      const allVersions = vaultSqlGenerator.getAllVersions();
-      const currentVersionRevision = allVersions.find(v => v.version === currentVersion);
-
-      if (!currentVersionRevision) {
-        throw new Error(`This app is outdated and cannot be used to access this vault. Please update this app to continue.`);
-      }
-
-      return currentVersionRevision;
-    } catch (error) {
-      console.error('Error getting database version:', error);
-      throw error;
+    if (results.length === 0) {
+      throw new Error('No migrations found');
     }
+
+    // Extract version using regex - matches patterns like "20240917191243_1.4.1-RenameAttachmentsPlural"
+    const migrationId = results[0].MigrationId;
+    const versionRegex = /_(\d+\.\d+\.\d+)-/;
+    const versionMatch = versionRegex.exec(migrationId);
+
+    if (versionMatch?.[1]) {
+      currentVersion = versionMatch[1];
+    }
+
+    // Get all available vault versions to get the revision number of the current version.
+    const vaultSqlGenerator = new VaultSqlGenerator();
+    const allVersions = vaultSqlGenerator.getAllVersions();
+    const currentVersionRevision = allVersions.find(v => v.version === currentVersion);
+
+    if (!currentVersionRevision) {
+      throw new VaultVersionIncompatibleError('vault.errors.appOutdated');
+    }
+
+    return currentVersionRevision;
   }
 
   /**
