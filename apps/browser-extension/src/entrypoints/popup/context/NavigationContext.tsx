@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { storage } from '#imports';
@@ -29,14 +29,15 @@ const NavigationContext = createContext<NavigationContextType | undefined>(undef
  */
 export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Auth and DB state
-  const { isInitialized: authInitialized, isLoggedIn } = useAuth();
-  const { dbInitialized, dbAvailable, upgradeRequired } = useDb();
+  const { isInitialized: authInitialized, isLoggedIn } = useApp();
+  const { dbInitialized, dbAvailable } = useDb();
 
   // Derived state
   const isFullyInitialized = authInitialized && dbInitialized;
-  const requiresAuth = isFullyInitialized && (!isLoggedIn || (!dbAvailable && !upgradeRequired));
+  const requiresAuth = isFullyInitialized && (!isLoggedIn || !dbAvailable);
 
   /**
    * Store the current page path, timestamp, and navigation history in storage.
@@ -55,7 +56,7 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       let currentPath = '';
       for (let i = 0; i < segments.length; i++) {
         currentPath += '/' + segments[i];
-        
+
         /*
          * For settings subpages, include both /settings and the subpage
          * For email details, include both /emails and the specific email
@@ -82,6 +83,15 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, [location.pathname, location.search, location.hash, isFullyInitialized, storeCurrentPage]);
 
+  // Listen on isloggedin state to redirect to login page if not logged in
+  useEffect(() => {
+    if (isFullyInitialized && !isLoggedIn) {
+      navigate('/login', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isFullyInitialized, isLoggedIn]);
+
+  // Return the context value
   const contextValue = useMemo(() => ({
     storeCurrentPage,
     isFullyInitialized,

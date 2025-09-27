@@ -37,8 +37,7 @@
       "migrationError": "Si è verificato un errore nel controllo delle migrazioni pendenti.",
       "wrongPassword": "Password non corretta. Riprova nuovamente.",
       "accountLocked": "Account temporaneamente bloccato a causa di troppi tentativi falliti.",
-      "networkError": "Errore di rete: Controlla la tua connessione e riprova.",
-      "loginDataMissing": "Sessione di accesso scaduta. Effettua nuovamente l'accesso."
+      "networkError": "Errore di rete: Controlla la tua connessione e riprova."
     }
   },
   "menu": {
@@ -89,12 +88,10 @@
     "executingOperation": "Esecuzione operazione...",
     "loadMore": "Carica altro",
     "errors": {
-      "VaultOutdated": "La tua cassaforte è obsoleta. Per favore accedi al sito di AliasVault e segui le istruzioni.",
       "serverNotAvailable": "Il server di AliasVault non è disponibile. Riprova più tardi o contatta il supporto se il problema persiste.",
       "clientVersionNotSupported": "Questa versione dell'estensione del browser AliasVault non è più supportata dal server. Aggiorna l'estensione alla versione più recente.",
       "serverVersionNotSupported": "Il server di AliasVault necessita un aggiornamento a una versione più recente per poter usare questa estensione. Contatta il supporto se hai bisogno di assistenza.",
       "unknownError": "Si è verificato un errore sconosciuto",
-      "failedToStoreVault": "Salvataggio cassaforte non riuscito",
       "vaultNotAvailable": "Cassaforte non disponibile",
       "failedToRetrieveData": "Recupero dati non riuscito",
       "vaultIsLocked": "La cassaforte è bloccata",
@@ -386,8 +383,7 @@
       "cancel": "Annulla",
       "continueUpgrade": "Continua aggiornamento",
       "upgradeFailed": "Aggiornamento non riuscito",
-      "failedToApplyMigration": "Impossibile eseguire la migrazione ({{current}} di {{total}})",
-      "unknownErrorDuringUpgrade": "Si è verificato un errore sconosciuto durante l'aggiornamento. Riprova."
+      "failedToApplyMigration": "Impossibile eseguire la migrazione ({{current}} di {{total}})"
     }
   }
 }

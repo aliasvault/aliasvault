@@ -1,6 +1,7 @@
 import ReactDOM from 'react-dom/client';
 
 import App from '@/entrypoints/popup/App';
+import { AppProvider } from '@/entrypoints/popup/context/AppContext';
 import { AuthProvider } from '@/entrypoints/popup/context/AuthContext';
 import { DbProvider } from '@/entrypoints/popup/context/DbContext';
 import { HeaderButtonsProvider } from '@/entrypoints/popup/context/HeaderButtonsContext';
@@ -17,17 +18,19 @@ const renderApp = (): void => {
   const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
   root.render(
     <DbProvider>
-      <AuthProvider>
-        <WebApiProvider>
-          <LoadingProvider>
-            <HeaderButtonsProvider>
-              <ThemeProvider>
-                <App />
-              </ThemeProvider>
-            </HeaderButtonsProvider>
-          </LoadingProvider>
-        </WebApiProvider>
-      </AuthProvider>
+      <WebApiProvider>
+        <AuthProvider>
+          <AppProvider>
+            <LoadingProvider>
+              <HeaderButtonsProvider>
+                <ThemeProvider>
+                  <App />
+                </ThemeProvider>
+              </HeaderButtonsProvider>
+            </LoadingProvider>
+          </AppProvider>
+        </AuthProvider>
+      </WebApiProvider>
     </DbProvider>
   );
 };

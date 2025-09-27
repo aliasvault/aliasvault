@@ -11,7 +11,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { IconSymbolName } from '@/components/ui/IconSymbolName';
 import TabBarBackground from '@/components/ui/TabBarBackground';
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 
 /**
@@ -19,7 +19,7 @@ import { useDb } from '@/context/DbContext';
  */
 export default function TabLayout() : React.ReactNode {
   const colors = useColors();
-  const authContext = useAuth();
+  const authContext = useApp();
   const dbContext = useDb();
   const { t } = useTranslation();
 
@@ -29,12 +29,16 @@ export default function TabLayout() : React.ReactNode {
   const isDatabaseAvailable = dbContext.dbAvailable;
   const requireLoginOrUnlock = isFullyInitialized && (!isAuthenticated || !isDatabaseAvailable);
 
+  /**
+   * Authentication redirects are now handled globally in AppContext
+   * This effect is kept for legacy support but can be removed in the future
+   */
   useEffect(() => {
     if (requireLoginOrUnlock) {
-      // Use setTimeout to ensure navigation happens after the component is mounted
+      // Small delay to let global auth listener handle it first
       const timer = setTimeout(() => {
         router.replace('/login');
-      }, 0);
+      }, 200);
       return () : void => clearTimeout(timer);
     }
   }, [requireLoginOrUnlock]);

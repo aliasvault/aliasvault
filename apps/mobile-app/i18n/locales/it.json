@@ -500,8 +500,7 @@
       "selfHostedWarning": "Se usi un server self-hosted, assicurati di aggiornare anche la tua istanza self-hosted altrimenti l'accesso al client web smetterà di funzionare.",
       "continueUpgrade": "Continua aggiornamento",
       "upgradeFailed": "Aggiornamento fallito",
-      "failedToApplyMigration": "Impossibile applicare la migrazione ({{current}} di {{total}})",
-      "unknownErrorDuringUpgrade": "Si è verificato un errore sconosciuto durante l'aggiornamento. Riprova."
+      "failedToApplyMigration": "Impossibile applicare la migrazione ({{current}} di {{total}})"
     }
   }
 }

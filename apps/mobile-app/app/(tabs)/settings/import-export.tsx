@@ -262,7 +262,7 @@ export default function ImportExportScreen(): React.ReactNode {
       console.error('Export error:', error);
       Alert.alert(
         t('common.error'),
-        t('common.unknownError')
+        t('common.errors.unknownError')
       );
     } finally {
       setIsExporting(false);

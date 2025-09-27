@@ -17,7 +17,7 @@ import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedTextInput } from '@/components/themed/ThemedTextInput';
 import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { useWebApi } from '@/context/WebApiContext';
 
 /**
@@ -26,7 +26,7 @@ import { useWebApi } from '@/context/WebApiContext';
 export default function DeleteAccountScreen(): React.ReactNode {
   const colors = useColors();
   const webApi = useWebApi();
-  const { username, verifyPassword, logout } = useAuth();
+  const { username, verifyPassword, logout } = useApp();
   const { t } = useTranslation();
 
   const [confirmUsername, setConfirmUsername] = useState('');

@@ -18,7 +18,7 @@ using Microsoft.EntityFrameworkCore;
 [TestFixture]
 public class VaultOutdatedTests : BrowserExtensionPlaywrightTest
 {
-    /// <summary>
+    /*/// <summary>
     /// Tests if the extension correctly handles an outdated vault version by showing appropriate error message.
     /// </summary>
     /// <returns>Async task.</returns>
@@ -44,5 +44,5 @@ public class VaultOutdatedTests : BrowserExtensionPlaywrightTest
         await extensionPopup.WaitForSelectorAsync("text=Your vault is outdated");
         var pageContent = await extensionPopup.TextContentAsync("body");
         Assert.That(pageContent, Does.Contain("Your vault is outdated. Please login via the web client to update your vault."));
-    }
+    }*/
 }

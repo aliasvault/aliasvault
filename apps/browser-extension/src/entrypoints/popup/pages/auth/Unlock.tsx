@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@/entrypoints/popup/components/Button';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
@@ -18,6 +19,7 @@ import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { storage } from '#imports';
 
@@ -26,6 +28,7 @@ import { storage } from '#imports';
  */
 const Unlock: React.FC = () => {
   const { t } = useTranslation();
+  const app = useApp();
   const authContext = useAuth();
   const dbContext = useDb();
   const navigate = useNavigate();
@@ -42,19 +45,20 @@ const Unlock: React.FC = () => {
   useEffect(() => {
     /**
      * Make status call to API which acts as health check.
+     * This runs only once during component mount.
      */
     const checkStatus = async () : Promise<void> => {
       const statusResponse = await webApi.getStatus();
       const statusError = webApi.validateStatusResponse(statusResponse);
       if (statusError !== null) {
-        await webApi.logout(t('common.errors.' + statusError));
-        navigate('/logout');
+        await app.logout(t('common.errors.' + statusError));
       }
       setIsInitialLoading(false);
     };
 
     checkStatus();
-  }, [webApi, authContext, setIsInitialLoading, navigate, t]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   // Set header buttons on mount and clear on unmount
   useEffect((): (() => void) => {
@@ -96,13 +100,6 @@ const Unlock: React.FC = () => {
       // Make API call to get latest vault
       const vaultResponseJson = await webApi.get<VaultResponse>('Vault');
 
-      const vaultError = webApi.validateVaultResponse(vaultResponseJson, t);
-      if (vaultError) {
-        setError(t('common.apiErrors.' + vaultError));
-        hideLoading();
-        return;
-      }
-
       // Get the derived key as base64 string required for decryption.
       const passwordHashBase64 = Buffer.from(passwordHash).toString('base64');
 
@@ -110,7 +107,14 @@ const Unlock: React.FC = () => {
       await dbContext.storeEncryptionKey(passwordHashBase64);
 
       // Initialize the SQLite context with the new vault data.
-      await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
+      const sqliteClient = await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
+
+      // Check if there are pending migrations
+      if (await sqliteClient.hasPendingMigrations()) {
+        navigate('/upgrade', { replace: true });
+        hideLoading();
+        return;
+      }
 
       // Clear dismiss until (which can be enabled after user has dimissed vault is locked popup) to ensure popup is shown.
       await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
@@ -118,7 +122,12 @@ const Unlock: React.FC = () => {
       // Redirect to reinitialize page
       navigate('/reinitialize', { replace: true });
     } catch (err) {
-      setError(t('auth.errors.wrongPassword'));
+      // Check if it's a version incompatibility error
+      if (err instanceof VaultVersionIncompatibleError) {
+        await app.logout(err.message);
+      } else {
+        setError(t('auth.errors.wrongPassword'));
+      }
       console.error('Unlock error:', err);
     } finally {
       hideLoading();

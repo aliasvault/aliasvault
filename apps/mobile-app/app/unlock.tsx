@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, TextInput, Alert, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text, Pressable } from 'react-native';
 
 import EncryptionUtility from '@/utils/EncryptionUtility';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -17,22 +18,20 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { Avatar } from '@/components/ui/Avatar';
 import { RobustPressable } from '@/components/ui/RobustPressable';
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
-import { useWebApi } from '@/context/WebApiContext';
 
 /**
  * Unlock screen.
  */
 export default function UnlockScreen() : React.ReactNode {
-  const { isLoggedIn, username, isBiometricsEnabled, getBiometricDisplayNameKey, getEncryptionKeyDerivationParams } = useAuth();
+  const { isLoggedIn, username, isBiometricsEnabled, getBiometricDisplayNameKey, getEncryptionKeyDerivationParams, logout } = useApp();
   const dbContext = useDb();
-  const [password, setPassword] = useState('');
+  const [password, setPassword] = useState('asdasdasdasd1');
   const [isLoading, setIsLoading] = useState(false);
   const [isBiometricsAvailable, setIsBiometricsAvailable] = useState(false);
   const colors = useColors();
   const { t } = useTranslation();
-  const webApi = useWebApi();
   const [biometricDisplayName, setBiometricDisplayName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
@@ -43,12 +42,12 @@ export default function UnlockScreen() : React.ReactNode {
   const getKeyDerivationParams = useCallback(async () : Promise<{ salt: string; encryptionType: string; encryptionSettings: string } | null> => {
     const params = await getEncryptionKeyDerivationParams();
     if (!params) {
-      await webApi.logout();
+      await logout();
       router.replace('/login');
       return null;
     }
     return params;
-  }, [webApi, getEncryptionKeyDerivationParams]);
+  }, [logout, getEncryptionKeyDerivationParams]);
 
   useEffect(() => {
     getKeyDerivationParams();
@@ -114,6 +113,11 @@ export default function UnlockScreen() : React.ReactNode {
         Alert.alert(t('common.error'), t('auth.errors.incorrectPassword'));
       }
     } catch (error) {
+      if (error instanceof VaultVersionIncompatibleError) {
+        await logout(t(error.message));
+        return;
+      }
+
       console.error('Unlock error:', error);
       Alert.alert(t('common.error'), t('auth.errors.incorrectPassword'));
     } finally {
@@ -129,7 +133,7 @@ export default function UnlockScreen() : React.ReactNode {
      * Clear any stored tokens or session data
      * This will be handled by the auth context
      */
-    await webApi.logout();
+    await logout();
     router.replace('/login');
   };
 

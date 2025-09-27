@@ -11,7 +11,7 @@ import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useVaultSync } from '@/hooks/useVaultSync';
 
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
@@ -39,7 +39,7 @@ export function useVaultMutate() : {
   const [isLoading, setIsLoading] = useState(false);
   const { t } = useTranslation();
   const [syncStatus, setSyncStatus] = useState(t('vault.syncingVault'));
-  const authContext = useAuth();
+  const authContext = useApp();
   const dbContext = useDb();
   const webApi = useWebApi();
   const { syncVault } = useVaultSync();
@@ -201,7 +201,7 @@ export function useVaultMutate() : {
       await NativeVaultManager.unlockVault();
     } catch {
       // If any part of this fails, we need logout the user as the local vault and stored encryption key are now potentially corrupt.
-      authContext.logout(t('vault.errors.errorDuringPasswordChange'));
+      await authContext.logout(t('vault.errors.errorDuringPasswordChange'));
     }
 
     // Generate SRP password change data
@@ -318,10 +318,10 @@ export function useVaultMutate() : {
       Toast.show({
         type: 'error',
         text1: t('vault.errors.operationFailed'),
-        text2: error instanceof Error ? error.message : t('common.unknownError'),
+        text2: error instanceof Error ? error.message : t('common.errors.unknownError'),
         position: 'bottom'
       });
-      options.onError?.(error instanceof Error ? error : new Error(t('common.unknownError')));
+      options.onError?.(error instanceof Error ? error : new Error(t('common.errors.unknownError')));
     } finally {
       setIsLoading(false);
       setSyncStatus('');
@@ -399,10 +399,10 @@ export function useVaultMutate() : {
       Toast.show({
         type: 'error',
         text1: t('vault.errors.operationFailed'),
-        text2: error instanceof Error ? error.message : t('common.unknownError'),
+        text2: error instanceof Error ? error.message : t('common.errors.unknownError'),
         position: 'bottom'
       });
-      options.onError?.(error instanceof Error ? error : new Error(t('common.unknownError')));
+      options.onError?.(error instanceof Error ? error : new Error(t('common.errors.unknownError')));
     } finally {
       setIsLoading(false);
       setSyncStatus('');

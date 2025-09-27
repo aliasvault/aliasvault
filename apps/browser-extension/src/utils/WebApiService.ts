@@ -1,8 +1,8 @@
-import type { StatusResponse, VaultResponse } from '@/utils/dist/shared/models/webapi';
+import type { StatusResponse } from '@/utils/dist/shared/models/webapi';
+
+import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 
 import { AppInfo } from "./AppInfo";
-
-import type { TFunction } from 'i18next';
 
 import { storage } from '#imports';
 
@@ -20,13 +20,6 @@ type TokenResponse = {
  * Service class for interacting with the web API.
  */
 export class WebApiService {
-  /**
-   * Constructor for the WebApiService class.
-   *
-   * @param {Function} authContextLogout - Function to handle logout.
-   */
-  public constructor(private readonly authContextLogout: (statusError: string | null) => void) { }
-
   /**
    * Get the base URL for the API from settings.
    */
@@ -83,7 +76,7 @@ export class WebApiService {
 
           return parseJson ? retryResponse.json() : retryResponse as unknown as T;
         } else {
-          this.authContextLogout(null);
+          logoutEventEmitter.emit('auth.errors.sessionExpired');
           throw new Error('Session expired');
         }
       }
@@ -124,41 +117,6 @@ export class WebApiService {
     } catch (error) {
       console.error('API request failed:', error);
       throw error;
-    }
-  }
-
-  /**
-   * Refresh the access token.
-   */
-  private async refreshAccessToken(): Promise<string | null> {
-    const refreshToken = await this.getRefreshToken();
-    if (!refreshToken) {
-      return null;
-    }
-
-    try {
-      const response = await this.rawFetch('Auth/refresh', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Ignore-Failure': 'true',
-        },
-        body: JSON.stringify({
-          token: await this.getAccessToken(),
-          refreshToken: refreshToken,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to refresh token');
-      }
-
-      const tokenResponse: TokenResponse = await response.json();
-      this.updateTokens(tokenResponse.token, tokenResponse.refreshToken);
-      return tokenResponse.token;
-    } catch {
-      this.authContextLogout('Your session has expired. Please login again.');
-      return null;
     }
   }
 
@@ -228,10 +186,10 @@ export class WebApiService {
   }
 
   /**
-   * Logout and revoke tokens via WebApi and remove local storage tokens via AuthContext.
+   * Revoke tokens via WebApi called when logging out.
    */
-  public async logout(statusError: string | null = null): Promise<void> {
-    // Logout and revoke tokens via WebApi.
+  public async revokeTokens(): Promise<void> {
+    // Revoke tokens via WebApi.
     try {
       const refreshToken = await this.getRefreshToken();
       if (refreshToken) {
@@ -241,11 +199,8 @@ export class WebApiService {
         }, false);
       }
     } catch (err) {
-      console.error('WebApi logout error:', err);
+      console.error('WebApi revoke tokens error:', err);
     }
-
-    // Logout and remove tokens from local storage via AuthContext.
-    this.authContextLogout(statusError);
   }
 
   /**
@@ -272,10 +227,6 @@ export class WebApiService {
    * Validates the status response and returns an error message (as translation key) if validation fails.
    */
   public validateStatusResponse(statusResponse: StatusResponse): string | null {
-    if (statusResponse.serverVersion === '0.0.0') {
-      return 'serverNotAvailable';
-    }
-
     if (!statusResponse.clientVersionSupported) {
       return 'clientVersionNotSupported';
     }
@@ -288,23 +239,38 @@ export class WebApiService {
   }
 
   /**
-   * Validates the vault response and returns an error message if validation fails
+   * Refresh the access token.
    */
-  public validateVaultResponse(vaultResponseJson: VaultResponse, t: TFunction): string | null {
-    /**
-     * Status 0 = OK, vault is ready.
-     * Status 1 = Merge required, which only the web client supports.
-     */
-    if (vaultResponseJson.status === 1) {
-      // Note: vault merge is no longer allowed by the API as of 0.20.0, updates with the same revision number are rejected. So this check can be removed later.
-      return t('errors.VaultOutdated');
+  private async refreshAccessToken(): Promise<string | null> {
+    const refreshToken = await this.getRefreshToken();
+    if (!refreshToken) {
+      return null;
     }
 
-    if (vaultResponseJson.status === 2) {
-      return t('errors.VaultOutdated');
-    }
+    try {
+      const response = await this.rawFetch('Auth/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Ignore-Failure': 'true',
+        },
+        body: JSON.stringify({
+          token: await this.getAccessToken(),
+          refreshToken: refreshToken,
+        }),
+      });
 
-    return null;
+      if (!response.ok) {
+        throw new Error('Failed to refresh token');
+      }
+
+      const tokenResponse: TokenResponse = await response.json();
+      this.updateTokens(tokenResponse.token, tokenResponse.refreshToken);
+      return tokenResponse.token;
+    } catch {
+      logoutEventEmitter.emit('auth.errors.sessionExpired');
+      return null;
+    }
   }
 
   /**

@@ -500,8 +500,7 @@
       "selfHostedWarning": "Jos käytät itseylläpidettyä  palvelinta (Self-hosted), varmista että päivität myös itseylläpidetyn yksikkösi, koska muuten kirjautuminen web-palveluun ja sovellukseen voivat lakata toimimasta.",
       "continueUpgrade": "Jatka päivitystä",
       "upgradeFailed": "Päivitys epäonnistui",
-      "failedToApplyMigration": "Tietokannan siirto {{current}} / {{total}} epäonnistui.",
-      "unknownErrorDuringUpgrade": "Päivityksen aikana tapahtui tuntematon virhe. Yritä uudelleen."
+      "failedToApplyMigration": "Tietokannan siirto {{current}} / {{total}} epäonnistui."
     }
   }
 }

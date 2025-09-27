@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import Logo from '@/entrypoints/popup/components/Logo';
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 
 /**
  * Header props.
@@ -25,7 +25,7 @@ const Header: React.FC<HeaderProps> = ({
   rightButtons
 }) => {
   const { t } = useTranslation();
-  const authContext = useAuth();
+  const app = useApp();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -54,7 +54,7 @@ const Header: React.FC<HeaderProps> = ({
     }
 
     // If logged in, navigate to credentials.
-    if (authContext.isLoggedIn) {
+    if (app.isLoggedIn) {
       navigate('/credentials');
     } else {
       // If not logged in, navigate to index.
@@ -105,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({
         <div className="flex-grow" />
 
         <div className="flex items-center gap-2">
-          {!authContext.isLoggedIn ? (
+          {!app.isLoggedIn ? (
             <>
               {rightButtons}
               <button

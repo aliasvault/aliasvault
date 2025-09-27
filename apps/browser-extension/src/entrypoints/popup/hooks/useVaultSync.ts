@@ -2,12 +2,13 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sendMessage } from 'webext-bridge/popup';
 
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 /**
  * Utility function to ensure a minimum time has elapsed for an operation
@@ -49,7 +50,7 @@ export const useVaultSync = () : {
   syncVault: (options?: VaultSyncOptions) => Promise<boolean>;
 } => {
   const { t } = useTranslation();
-  const authContext = useAuth();
+  const app = useApp();
   const dbContext = useDb();
   const webApi = useWebApi();
 
@@ -60,7 +61,7 @@ export const useVaultSync = () : {
     const enableDelay = initialSync;
 
     try {
-      const { isLoggedIn } = await authContext.initializeAuth();
+      const isLoggedIn = await app.initializeAuth();
 
       if (!isLoggedIn) {
         // Not authenticated, return false immediately
@@ -91,7 +92,7 @@ export const useVaultSync = () : {
          * longer valid and the user needs to re-authenticate. We trigger a logout but do not revoke tokens
          * as these were already revoked by the server upon password change.
          */
-        await webApi.logout(t('common.errors.passwordChanged'));
+        await app.logout(t('common.errors.passwordChanged'));
         return false;
       }
 
@@ -109,24 +110,6 @@ export const useVaultSync = () : {
         onStatus?.(t('common.syncingUpdatedVault'));
         const vaultResponseJson = await withMinimumDelay(() => webApi.get<VaultResponse>('Vault'), 1000, enableDelay);
 
-        const vaultError = webApi.validateVaultResponse(vaultResponseJson as VaultResponse, t);
-        if (vaultError) {
-          // Only logout if it's an authentication error, not a network error
-          if (vaultError.includes('authentication') || vaultError.includes('unauthorized')) {
-            await webApi.logout(vaultError);
-            onError?.(vaultError);
-            return false;
-          }
-
-          /*
-           *  TODO: browser extension does not support offline mode yet.
-           *  For other errors, go into offline mode
-           * authContext.setOfflineMode(true);
-           */
-
-          return false;
-        }
-
         try {
           // Get encryption key from background worker
           const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY', {}, 'background') as string;
@@ -142,9 +125,8 @@ export const useVaultSync = () : {
           return true;
         } catch (error) {
           // Check if it's a version-related error (app needs to be updated)
-          if (error instanceof Error && error.message.includes('This browser extension is outdated')) {
-            await webApi.logout(error.message);
-            onError?.(error.message);
+          if (error instanceof VaultVersionIncompatibleError) {
+            await app.logout(error.message);
             return false;
           }
           // Vault could not be decrypted, throw an error
@@ -165,9 +147,8 @@ export const useVaultSync = () : {
       console.error('Vault sync error:', err);
 
       // Check if it's a version-related error (app needs to be updated)
-      if (errorMessage.includes('This browser extension is outdated')) {
-        await webApi.logout(errorMessage);
-        onError?.(errorMessage);
+      if (err instanceof VaultVersionIncompatibleError) {
+        await app.logout(errorMessage);
         return false;
       }
 
@@ -185,7 +166,7 @@ export const useVaultSync = () : {
       onError?.(errorMessage);
       return false;
     }
-  }, [authContext, dbContext, webApi, t]);
+  }, [app, dbContext, webApi, t]);
 
   return { syncVault };
 };

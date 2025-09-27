@@ -43,55 +43,52 @@ export function useVaultMutate() : {
 
     setSyncStatus(t('common.uploadingVaultToServer'));
 
-    try {
-      // Upload the updated vault to the server.
-      const base64Vault = dbContext.sqliteClient!.exportToBase64();
+    // Upload the updated vault to the server.
+    const base64Vault = dbContext.sqliteClient!.exportToBase64();
 
-      // Get encryption key from background worker
-      const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY', {}, 'background') as string;
+    // Get encryption key from background worker
+    const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY', {}, 'background') as string;
 
-      // Encrypt the vault.
-      const encryptedVaultBlob = await EncryptionUtility.symmetricEncrypt(
-        base64Vault,
-        encryptionKey
-      );
+    // Encrypt the vault.
+    const encryptedVaultBlob = await EncryptionUtility.symmetricEncrypt(
+      base64Vault,
+      encryptionKey
+    );
 
-      const request: UploadVaultRequest = {
-        vaultBlob: encryptedVaultBlob,
-      };
+    const request: UploadVaultRequest = {
+      vaultBlob: encryptedVaultBlob,
+    };
 
-      const response = await sendMessage('UPLOAD_VAULT', request, 'background') as messageVaultUploadResponse;
+    const response = await sendMessage('UPLOAD_VAULT', request, 'background') as messageVaultUploadResponse;
 
-      /*
-       * If we get here, it means we have a valid connection to the server.
-       * TODO: offline mode is not implemented for browser extension yet.
-       * authContext.setOfflineMode(false);
-       */
+    /*
+     * If we get here, it means we have a valid connection to the server.
+     * TODO: offline mode is not implemented for browser extension yet.
+     * authContext.setOfflineMode(false);
+     */
 
-      if (response.status === 0 && response.newRevisionNumber) {
-        await dbContext.setCurrentVaultRevisionNumber(response.newRevisionNumber);
-        options.onSuccess?.();
-      } else if (response.status === 1) {
-        // Note: vault merge is no longer allowed by the API as of 0.20.0, updates with the same revision number are rejected. So this check can be removed later.
-        throw new Error('Vault merge required. Please login via the web app to merge the multiple pending updates to your vault.');
-      } else if (response.status === 2) {
-        throw new Error('Your vault is outdated. Please login on the AliasVault website and follow the steps.');
-      } else {
-        throw new Error('Failed to upload vault to server. Please try again by re-opening the app.');
-      }
-    } catch (error) {
-      // Check if it's a network error
-      if (error instanceof Error && (error.message.includes('network') || error.message.includes('timeout'))) {
-        /*
-         * Network error, mark as offline and track pending changes
-         * TODO: offline mode is not implemented for browser extension yet.
-         * authContext.setOfflineMode(true);
-         */
-        options.onError?.(new Error('Network error'));
-        return;
-      }
-      throw error;
+    if (response.status === 0 && response.newRevisionNumber) {
+      await dbContext.setCurrentVaultRevisionNumber(response.newRevisionNumber);
+      options.onSuccess?.();
+    } else if (response.status === 1) {
+      // Note: vault merge is no longer allowed by the API as of 0.20.0, updates with the same revision number are rejected. So this check can be removed later.
+      throw new Error('Vault merge required. Please login via the web app to merge the multiple pending updates to your vault.');
+    } else if (response.status === 2) {
+      throw new Error(t('common.errors.failedToUploadVault'));
+    } else {
+      throw new Error(t('common.errors.failedToUploadVault'));
     }
+
+    // Check if it's a network error
+    /*
+     * if (error instanceof Error && (error.message.includes('network') || error.message.includes('timeout'))) {
+     *
+     * // Network error, mark as offline and track pending changes - TODO: offline mode is not implemented for browser extension yet.
+     * // authContext.setOfflineMode(true);
+     *options.onError?.(new Error('Network error'));
+     *return;
+     *}
+     */
   }, [dbContext, t]);
 
   /**
@@ -130,28 +127,12 @@ export function useVaultMutate() : {
          * Handle error during vault sync.
          */
         onError: (error) => {
-          /**
-           *Toast.show({
-           *type: 'error',
-           *text1: 'Failed to sync vault',
-           *text2: error,
-           *position: 'bottom'
-           *});
-           */
           options.onError?.(new Error(error));
         }
       });
     } catch (error) {
       console.error('Error during vault mutation:', error);
-      /*
-       * Toast.show({
-       *type: 'error',
-       *text1: 'Operation failed',
-       *text2: error instanceof Error ? error.message : 'Unknown error',
-       *position: 'bottom'
-       *});
-       */
-      options.onError?.(error instanceof Error ? error : new Error('Unknown error'));
+      options.onError?.(error instanceof Error ? error : new Error(t('common.errors.unknownError')));
     } finally {
       setIsLoading(false);
       setSyncStatus('');

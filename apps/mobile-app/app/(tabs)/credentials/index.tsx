@@ -10,6 +10,7 @@ import Toast from 'react-native-toast-message';
 
 import type { Credential } from '@/utils/dist/shared/models/vault';
 import emitter from '@/utils/EventEmitter';
+import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -27,9 +28,8 @@ import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
-import { useAuth } from '@/context/AuthContext';
+import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
-import { useWebApi } from '@/context/WebApiContext';
 
 /**
  * Credentials screen.
@@ -37,7 +37,6 @@ import { useWebApi } from '@/context/WebApiContext';
 export default function CredentialsScreen() : React.ReactNode {
   const [searchQuery, setSearchQuery] = useState('');
   const { syncVault } = useVaultSync();
-  const webApi = useWebApi();
   const colors = useColors();
   const { t } = useTranslation();
   const flatListRef = useRef<FlatList>(null);
@@ -54,7 +53,7 @@ export default function CredentialsScreen() : React.ReactNode {
   const { executeVaultMutation, isLoading, syncStatus } = useVaultMutate();
   const [isSyncing, setIsSyncing] = useState(false);
 
-  const authContext = useAuth();
+  const authContext = useApp();
   const dbContext = useDb();
 
   const isAuthenticated = authContext.isLoggedIn;
@@ -172,11 +171,11 @@ export default function CredentialsScreen() : React.ReactNode {
           setRefreshing(false);
           setIsLoadingCredentials(false);
 
-          // Show modal with error message
+          /**
+           * Authentication errors are handled in useVaultSync
+           * For other errors, show alert
+           */
           Alert.alert(t('common.error'), error);
-
-          // Logout user
-          await webApi.logout(error);
         },
         /**
          * On upgrade required.
@@ -189,13 +188,17 @@ export default function CredentialsScreen() : React.ReactNode {
       console.error('Error refreshing credentials:', err);
       setRefreshing(false);
       setIsLoadingCredentials(false);
-      Toast.show({
-        type: 'error',
-        text1: t('credentials.vaultSyncFailed'),
-        text2: err instanceof Error ? err.message : 'Unknown error',
-      });
+
+      // Authentication errors are already handled in useVaultSync
+      if (!(err instanceof VaultAuthenticationError)) {
+        Toast.show({
+          type: 'error',
+          text1: t('credentials.vaultSyncFailed'),
+          text2: err instanceof Error ? err.message : 'Unknown error',
+        });
+      }
     }
-  }, [syncVault, loadCredentials, setIsLoadingCredentials, setRefreshing, webApi, authContext, router, t]);
+  }, [syncVault, loadCredentials, setIsLoadingCredentials, setRefreshing, authContext, router, t]);
 
   useEffect(() => {
     if (!isAuthenticated || !isDatabaseAvailable) {

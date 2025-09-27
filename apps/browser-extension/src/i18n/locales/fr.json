@@ -37,8 +37,7 @@
       "migrationError": "Une erreur s'est produite lors de la vérification des migrations en attente.",
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
       "accountLocked": "Compte temporairement verrouillé en raison d'un trop grand nombre de tentatives échouées.",
-      "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez.",
-      "loginDataMissing": "La session a expiré. Veuillez réessayer."
+      "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez."
     }
   },
   "menu": {
@@ -89,12 +88,10 @@
     "executingOperation": "Exécution de l'opération...",
     "loadMore": "Voir plus",
     "errors": {
-      "VaultOutdated": "Votre coffre est obsolète. Veuillez vous connecter sur le site AliasVault et suivre les étapes.",
       "serverNotAvailable": "Le serveur d'AliasVault n'est pas disponible. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "clientVersionNotSupported": "Cette version de l'extension de navigateur AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre extension de navigateur à la dernière version.",
       "serverVersionNotSupported": "Le serveur d'AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette extension de navigateur. Veuillez contacter le support si vous avez besoin d'aide.",
       "unknownError": "Une erreur inconnue s'est produite",
-      "failedToStoreVault": "Échec du stockage du coffre",
       "vaultNotAvailable": "Coffre non disponible",
       "failedToRetrieveData": "Échec de la récupération des données",
       "vaultIsLocked": "Le coffre est verrouillé",
@@ -386,8 +383,7 @@
       "cancel": "Annuler",
       "continueUpgrade": "Continuer la mise à jour",
       "upgradeFailed": "Échec de la mise à niveau",
-      "failedToApplyMigration": "Impossible d'appliquer la migration ({{current}} sur {{total}})",
-      "unknownErrorDuringUpgrade": "Une erreur inconnue s'est produite pendant la mise à niveau. Veuillez réessayer."
+      "failedToApplyMigration": "Impossible d'appliquer la migration ({{current}} sur {{total}})"
     }
   }
 }

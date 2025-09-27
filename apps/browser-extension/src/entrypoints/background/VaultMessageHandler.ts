@@ -5,6 +5,7 @@ import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/m
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/shared/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
+import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import { CredentialsResponse as messageCredentialsResponse } from '@/utils/types/messaging/CredentialsResponse';
 import { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
@@ -57,6 +58,18 @@ export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, i
     };
   } catch (error) {
     console.error('Error checking pending migrations:', error);
+
+    // If it's a version incompatibility error, we need to handle it specially
+    if (error instanceof VaultVersionIncompatibleError) {
+      // Return the error so the UI can handle it appropriately (logout user)
+      return {
+        isLoggedIn,
+        isVaultLocked,
+        hasPendingMigrations: false,
+        error: error.message
+      };
+    }
+
     return {
       isLoggedIn,
       isVaultLocked,
@@ -98,7 +111,7 @@ export async function handleStoreVault(
     return { success: true };
   } catch (error) {
     console.error('Failed to store vault:', error);
-    return { success: false, error: await t('common.errors.failedToStoreVault') };
+    return { success: false, error: await t('common.errors.unknownError') };
   }
 }
 
@@ -489,7 +502,7 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
     client: '', // Empty on purpose, API will not use this for vault updates.
     updatedAt: new Date().toISOString(),
     username: username,
-    version: sqliteClient.getDatabaseVersion().version
+    version: (await sqliteClient.getDatabaseVersion()).version
   };
 
   const webApi = new WebApiService(() => {});

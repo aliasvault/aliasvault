@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useTheme } from '@/entrypoints/popup/context/ThemeContext';
@@ -21,7 +21,7 @@ import { browser } from "#imports";
 const Settings: React.FC = () => {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
-  const authContext = useAuth();
+  const app = useApp();
   const { setHeaderButtons } = useHeaderButtons();
   const { setIsInitialLoading } = useLoading();
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
@@ -162,13 +162,13 @@ const Settings: React.FC = () => {
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
                     <span className="text-primary-600 dark:text-primary-400 text-lg font-medium">
-                      {authContext.username?.[0]?.toUpperCase() || '?'}
+                      {app.username?.[0]?.toUpperCase() || '?'}
                     </span>
                   </div>
                 </div>
                 <div>
                   <p className="text font-medium text-gray-900 dark:text-white">
-                    {authContext.username}
+                    {app.username}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {t('settings.loggedIn')}

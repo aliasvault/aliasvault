@@ -500,8 +500,7 @@
       "selfHostedWarning": "אם מדובר בשרת שמתארח עצמאית, נא לוודא שהעותק שמתארח אצלך גם כן מתעדכן כי אחרת הכניסה לאתר תפסיק לעבוד.",
       "continueUpgrade": "להמשיך בשדרוג",
       "upgradeFailed": "השדרוג נכשל",
-      "failedToApplyMigration": "החלת ההסבה נכשלה ({{current}} מתוך {{total}})",
-      "unknownErrorDuringUpgrade": "אירעה שגיאה בלתי ידועה במהלך השדרוג. נא לנסות שוב."
+      "failedToApplyMigration": "החלת ההסבה נכשלה ({{current}} מתוך {{total}})"
     }
   }
 }

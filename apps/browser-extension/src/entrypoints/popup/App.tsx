@@ -7,7 +7,7 @@ import { ClipboardCountdownBar } from '@/entrypoints/popup/components/ClipboardC
 import BottomNav from '@/entrypoints/popup/components/Layout/BottomNav';
 import Header from '@/entrypoints/popup/components/Layout/Header';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
+import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { NavigationProvider } from '@/entrypoints/popup/context/NavigationContext';
@@ -50,7 +50,7 @@ type RouteConfig = {
  */
 const App: React.FC = () => {
   const { t } = useTranslation();
-  const authContext = useAuth();
+  const app = useApp();
   const { isInitialLoading } = useLoading();
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 150);
   const [message, setMessage] = useState<string | null>(null);
@@ -113,12 +113,12 @@ const App: React.FC = () => {
    * Print global message if it exists.
    */
   useEffect(() => {
-    if (authContext.globalMessage) {
-      setMessage(authContext.globalMessage);
+    if (app.globalMessage) {
+      setMessage(app.globalMessage);
     } else {
       setMessage(null);
     }
-  }, [authContext, authContext.globalMessage]);
+  }, [app, app.globalMessage]);
 
   return (
     <Router>

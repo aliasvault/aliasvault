@@ -500,8 +500,7 @@
       "selfHostedWarning": "Nutzt Du einen selbst gehosteten Server, musst Du Deine Instanz ebenfalls updaten. Andernfalls kannst Du Dich im Web-Client nicht mehr anmelden.",
       "continueUpgrade": "Aktualisierung fortsetzen",
       "upgradeFailed": "Aktualisierung fehlgeschlagen",
-      "failedToApplyMigration": "Migration fehlgeschlagen ({{current}} von {{total}})",
-      "unknownErrorDuringUpgrade": "Bei der Aktualisierung ist ein unbekannter Fehler aufgetreten. Bitte versuche es erneut."
+      "failedToApplyMigration": "Migration fehlgeschlagen ({{current}} von {{total}})"
     }
   }
 }

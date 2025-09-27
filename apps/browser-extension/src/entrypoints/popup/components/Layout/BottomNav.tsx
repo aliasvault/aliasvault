@@ -34,7 +34,7 @@ const BottomNav: React.FC = () => {
   };
 
   // Auth pages that don't show bottom navigation but still show header
-  const authPages = ['/login', '/auth-settings', '/unlock', '/unlock-success', '/upgrade'];
+  const authPages = ['/', '/login', '/auth-settings', '/unlock', '/unlock-success', '/upgrade'];
   const isAuthPage = authPages.includes(location.pathname);
 
   if (isAuthPage) {

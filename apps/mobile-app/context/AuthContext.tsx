@@ -11,6 +11,7 @@ import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useDb } from '@/context/DbContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
+import i18n from '@/i18n';
 
 // Create a navigation reference
 export const navigationRef = React.createRef<NavigationContainerRef<ParamListBase>>();
@@ -27,7 +28,7 @@ type AuthContextType = {
   setAuthTokens: (username: string, accessToken: string, refreshToken: string) => Promise<void>;
   initializeAuth: () => Promise<{ isLoggedIn: boolean; enabledAuthMethods: AuthMethod[] }>;
   login: () => Promise<void>;
-  logout: (errorMessage?: string) => Promise<void>;
+  clearAuth: (errorMessage?: string) => Promise<void>;
   setAuthMethods: (methods: AuthMethod[]) => Promise<void>;
   getAuthMethodDisplayKey: () => Promise<string>;
   getAutoLockTimeout: () => Promise<number>;
@@ -161,9 +162,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   /**
-   * Logout the user and clear the auth tokens from chrome storage.
+   * Clear authentication data and tokens from storage.
+   * This is called by AppContext after revoking tokens on the server.
    */
-  const logout = useCallback(async (errorMessage?: string): Promise<void> => {
+  const clearAuth = useCallback(async (errorMessage?: string): Promise<void> => {
     await AsyncStorage.removeItem('username');
     await AsyncStorage.removeItem('accessToken');
     await AsyncStorage.removeItem('refreshToken');
@@ -172,7 +174,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (errorMessage) {
       // Show alert
-      Alert.alert(errorMessage);
+      Alert.alert(i18n.t('common.error'), errorMessage);
     }
 
     setUsername(null);
@@ -429,7 +431,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthTokens,
     initializeAuth,
     login,
-    logout,
+    clearAuth,
     setAuthMethods,
     getAuthMethodDisplayKey,
     isBiometricsEnabledOnDevice,
@@ -455,7 +457,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAuthTokens,
     initializeAuth,
     login,
-    logout,
+    clearAuth,
     setAuthMethods,
     getAuthMethodDisplayKey,
     isBiometricsEnabledOnDevice,

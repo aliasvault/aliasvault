@@ -6,6 +6,7 @@ import type { StatusResponse, VaultResponse, AuthLogModel, RefreshToken } from '
 import i18n from '@/i18n';
 
 import { LocalAuthError } from './types/errors/LocalAuthError';
+import { logoutEventEmitter } from '@/events/LogoutEventEmitter';
 
 type RequestInit = globalThis.RequestInit;
 
@@ -23,10 +24,8 @@ type TokenResponse = {
 export class WebApiService {
   /**
    * Constructor for the WebApiService class.
-   *
-   * @param {Function} authContextLogout - Function to handle logout.
    */
-  public constructor(private readonly authContextLogout: (statusError: string | null) => void) { }
+  public constructor() { }
 
   /**
    * Get the base URL for the API from settings.
@@ -86,7 +85,7 @@ export class WebApiService {
 
           return parseJson ? retryResponse.json() : retryResponse as unknown as T;
         } else {
-          this.authContextLogout(null);
+          logoutEventEmitter.emit('auth.errors.sessionExpired');
           throw new Error(i18n.t('auth.errors.sessionExpired'));
         }
       }
@@ -188,7 +187,7 @@ export class WebApiService {
       this.updateTokens(tokenResponse.token, tokenResponse.refreshToken);
       return tokenResponse.token;
     } catch {
-      this.authContextLogout(i18n.t('auth.errors.sessionExpired'));
+      logoutEventEmitter.emit('auth.errors.sessionExpired');
       return null;
     }
   }
@@ -259,29 +258,21 @@ export class WebApiService {
   }
 
   /**
-   * Logout and revoke tokens via WebApi and remove local storage tokens via AuthContext.
+   * Revoke tokens via WebApi called when logging out.
    */
-  public async logout(statusError: string | null = null, revokeTokens: boolean = true): Promise<void> {
-    // Logout and revoke tokens via WebApi.
+  public async revokeTokens(): Promise<void> {
+    // Revoke tokens via WebApi.
     try {
-      if (revokeTokens) {
-        const refreshToken = await this.getRefreshToken();
-        if (!refreshToken) {
-          return;
-        }
-
-        // We do not await this as we want to continue with the logout even if the revoke fails or takes a long time.
-        this.post('Auth/revoke', {
+      const refreshToken = await this.getRefreshToken();
+      if (refreshToken) {
+        await this.post('Auth/revoke', {
           token: await this.getAccessToken(),
           refreshToken: refreshToken,
         }, false);
       }
     } catch (err) {
-      console.error('WebApi logout error:', err);
+      console.error('WebApi revoke tokens error:', err);
     }
-
-    // Logout and remove tokens from local storage via AuthContext.
-    this.authContextLogout(statusError);
   }
 
   /**
@@ -296,7 +287,7 @@ export class WebApiService {
          * If session expired, logout the user immediately as otherwise this would
          * trigger a server offline banner.
          */
-        this.authContextLogout(error.message);
+        logoutEventEmitter.emit('auth.errors.sessionExpired');
         throw error;
       }
 
@@ -307,7 +298,8 @@ export class WebApiService {
       return {
         clientVersionSupported: true,
         serverVersion: '0.0.0',
-        vaultRevision: 0
+        vaultRevision: 0,
+        srpSalt: ''
       };
     }
   }

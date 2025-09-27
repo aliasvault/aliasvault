@@ -30,8 +30,7 @@ using Microsoft.EntityFrameworkCore;
 /// - Static test account (username: testvault@example.local, password: aaaaaaaaaa (10 characters))
 /// - 5 predefined credentials with known values.
 /// </summary>
-[Category("ManualTests")]
-[Category("ExtensionTests")]
+[Category("ManualExtensionTests")]
 [TestFixture]
 public class TestVaultGeneratorTests : BrowserExtensionPlaywrightTest
 {
