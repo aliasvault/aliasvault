@@ -16,7 +16,9 @@
     "loadMore": "Завантажити більше",
     "use": "Використовувати",
     "confirm": "Confirm",
-    "unknownError": "Unknown error"
+    "errors": {
+      "unknownError": "An unknown error occurred. Please try again."
+    }
   },
   "auth": {
     "login": "Увійти",
@@ -80,7 +82,7 @@
       "operationFailed": "Помилка здійснення операції",
       "versionNotSupported": "Ця версія мобільного застосунку AliasVault більше не підтримується сервером. Будь ласка, оновіть свій застосунок до останньої версії.",
       "serverNeedsUpdate": "Щоб користуватися цим мобільним додатком, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
-      "appOutdated": "This app is outdated and cannot be used to access this vault. Please update this app to continue.",
+      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "vaultDecryptFailed": "Не вдалося розшифрувати сховище. Якщо проблема не зникає, вийдіть із системи та увійдіть знову.",
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз."
     }
@@ -501,8 +503,7 @@
       "selfHostedWarning": "Якщо ви використовуєте власний сервер, обов’язково оновіть і свій власний екземпляр, інакше вхід до вебклієнта перестане працювати.",
       "continueUpgrade": "Продовжити оновлення",
       "upgradeFailed": "Помилка оновлення",
-      "failedToApplyMigration": "Не вдалося застосувати міграцію ({{current}} з {{total}})",
-      "unknownErrorDuringUpgrade": "Під час оновлення сталася невідома помилка. Спробуйте ще раз."
+      "failedToApplyMigration": "Не вдалося застосувати міграцію ({{current}} з {{total}})"
     }
   }
 }
