@@ -80,6 +80,7 @@
       "operationFailed": "Operation failed",
       "versionNotSupported": "This version of the AliasVault mobile app is not supported by the server anymore. Please update your app to the latest version.",
       "serverNeedsUpdate": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "appOutdated": "This app is outdated and cannot be used to access this vault. Please update this app to continue.",
       "vaultDecryptFailed": "Vault could not be decrypted, if the problem persists please logout and login again.",
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons."
     }
@@ -433,11 +434,11 @@
     "VAULT_ERROR": "Le coffre-fort local n'est pas à jour. Veuillez synchroniser votre coffre-fort en rafraîchissant la page et réessayez."
   },
   "app": {
+    "openReadOnlyMode": "Ouvrir en mode lecture seule",
     "status": {
       "unlockingVault": "Unlocking vault",
       "decryptingVault": "Decrypting vault",
-      "openingVaultReadOnly": "Opening vault in read-only mode",
-      "retryingConnection": "Retrying connection..."
+      "openingVaultReadOnly": "Opening vault in read-only mode"
     },
     "offline": {
       "banner": "Offline mode (read-only)",
@@ -478,8 +479,8 @@
     "title": "Upgrade Vault",
     "subtitle": "AliasVault has updated and your vault needs to be upgraded. This should only take a few seconds.",
     "versionInformation": "Version Information",
-    "yourVault": "Your vault:",
-    "newVersion": "New version:",
+    "yourVault": "Your vault version:",
+    "newVersion": "New available version:",
     "upgrade": "Upgrade",
     "upgrading": "Upgrading...",
     "logout": "Logout",

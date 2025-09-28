@@ -59,63 +59,63 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="FromLabel" xml:space="preserve">
-    <value>From:</value>
+    <value>De:</value>
     <comment>Email sender field label</comment>
   </data>
   <data name="ToLabel" xml:space="preserve">
-    <value>To:</value>
+    <value>Para:</value>
     <comment>Email recipient field label</comment>
   </data>
   <data name="DateLabel" xml:space="preserve">
-    <value>Date:</value>
+    <value>Data:</value>
     <comment>Email date field label</comment>
   </data>
   <data name="ActionsLabel" xml:space="preserve">
-    <value>Actions:</value>
+    <value>Ações:</value>
     <comment>Email actions section label</comment>
   </data>
   <data name="DeleteButton" xml:space="preserve">
-    <value>Delete</value>
+    <value>Excluir</value>
     <comment>Delete email button text</comment>
   </data>
   <data name="AttachmentsLabel" xml:space="preserve">
-    <value>Attachments:</value>
+    <value>Anexos:</value>
     <comment>Email attachments section header</comment>
   </data>
   <data name="CloseButton" xml:space="preserve">
-    <value>Close</value>
+    <value>Fechar</value>
     <comment>Close modal button text</comment>
   </data>
   <data name="DeleteEmailTitle" xml:space="preserve">
-    <value>Delete Email</value>
+    <value>Excluir E-mail</value>
     <comment>Delete email confirmation dialog title</comment>
   </data>
   <data name="DeleteEmailConfirmation" xml:space="preserve">
-    <value>Are you sure you want to delete this email? This action cannot be undone.</value>
+    <value>Tem certeza que você quer excluir este e-mail? Esta ação não pode ser desfeita.</value>
     <comment>Delete email confirmation message</comment>
   </data>
   <data name="EmailDeletedSuccess" xml:space="preserve">
-    <value>Email deleted successfully</value>
+    <value>E-mail excluído com sucesso</value>
     <comment>Success message when email is deleted</comment>
   </data>
   <data name="EmailDeleteFailed" xml:space="preserve">
-    <value>Failed to delete email</value>
+    <value>Falha ao excluir e-mail</value>
     <comment>Error message when email deletion fails</comment>
   </data>
   <data name="GenericError" xml:space="preserve">
-    <value>An error occurred</value>
+    <value>Ocorreu um erro</value>
     <comment>Generic error message</comment>
   </data>
   <data name="NoEmailBody" xml:space="preserve">
-    <value>[This email has no body.]</value>
+    <value>[Este e-mail não tem conteúdo.]</value>
     <comment>Message shown when email has no content</comment>
   </data>
   <data name="AttachmentDownloadFailed" xml:space="preserve">
-    <value>Failed to download attachment</value>
+    <value>Falha ao baixar anexo</value>
     <comment>Error message when attachment download fails</comment>
   </data>
   <data name="AttachmentDownloadError" xml:space="preserve">
-    <value>Error downloading attachment</value>
+    <value>Erro ao baixar anexo</value>
     <comment>Error message for attachment download error</comment>
   </data>
 </root>

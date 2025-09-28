@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>恢复代码</value>
+    <value>恢复码</value>
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>以下恢复代码用于在你无法访问验证设备时登录账户。请拍照或写下这些代码，并将其存放在安全的地方。不要与任何人分享。</value>
+    <value>以下恢复代码用于在您无法访问验证设备时登录账户。请拍照或写下这些代码，并将其存放在安全的地方。不要与任何人分享。</value>
     <comment>Description of recovery codes</comment>
   </data>
   <data name="WarningTitle" xml:space="preserve">
@@ -71,7 +71,7 @@
     <comment>Warning title about storing codes</comment>
   </data>
   <data name="WarningDescription" xml:space="preserve">
-    <value>如果你丢失了设备且没有恢复代码，你将无法访问自己的账户。这些代码仅显示一次！</value>
+    <value>如果您丢失了设备且没有恢复代码，您将无法访问自己的账户。这些代码仅显示一次！</value>
     <comment>Warning description about recovery codes</comment>
   </data>
 </root>

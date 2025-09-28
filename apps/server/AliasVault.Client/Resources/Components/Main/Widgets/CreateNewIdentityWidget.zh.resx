@@ -75,11 +75,11 @@
     <comment>Label for service name field</comment>
   </data>
   <data name="ServiceNamePlaceholder" xml:space="preserve">
-    <value>例如：Facebook</value>
+    <value>例如 Facebook</value>
     <comment>Placeholder text for service name field</comment>
   </data>
   <data name="ServiceUrlLabel" xml:space="preserve">
-    <value>服务网址</value>
+    <value>服务 URL</value>
     <comment>Label for service URL field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
@@ -91,7 +91,7 @@
     <comment>Link text to advanced creation mode</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
-    <value>正在创建新别名……</value>
+    <value>正在创建新别名…</value>
     <comment>Loading message while creating alias</comment>
   </data>
   <data name="CreateCredentialErrorMessage" xml:space="preserve">

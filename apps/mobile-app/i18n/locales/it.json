@@ -80,6 +80,7 @@
       "operationFailed": "Operazione non riuscita",
       "versionNotSupported": "Questa versione dell'app AliasVault non è più supportata dal server. Aggiorna l'app all'ultima versione.",
       "serverNeedsUpdate": "Il server AliasVault necessita di un aggiornamento per usare questa app. Contatta il supporto se serve aiuto.",
+      "appOutdated": "Questa app è obsoleta e non può essere utilizzata per accedere a questa cassaforte. Si prega di aggiornare questa app per continuare.",
       "vaultDecryptFailed": "Impossibile decriptare la cassaforte, se il problema persiste esci e accedi nuovamente.",
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza."
     }
@@ -433,11 +434,11 @@
     "VAULT_ERROR": "La cassaforte locale non è aggiornata. Sincronizzala ricaricando la pagina e riprova."
   },
   "app": {
+    "openReadOnlyMode": "Apri in modalità di sola lettura",
     "status": {
       "unlockingVault": "Sblocco cassaforte in corso",
       "decryptingVault": "Decriptazione cassaforte in corso",
-      "openingVaultReadOnly": "Apertura cassaforte in modalità sola lettura",
-      "retryingConnection": "Ritento connessione..."
+      "openingVaultReadOnly": "Apertura cassaforte in modalità sola lettura"
     },
     "offline": {
       "banner": "Modalità offline (sola lettura)",
@@ -478,8 +479,8 @@
     "title": "Aggiorna Cassaforte",
     "subtitle": "AliasVault è stato aggiornato e la tua cassaforte deve essere aggiornata. Ci vorranno solo pochi secondi.",
     "versionInformation": "Informazioni sulla versione",
-    "yourVault": "La tua cassaforte:",
-    "newVersion": "Nuova versione:",
+    "yourVault": "Versione della tua cassaforte:",
+    "newVersion": "Nuova versione disponibile:",
     "upgrade": "Aggiorna",
     "upgrading": "Aggiornamento in corso...",
     "logout": "Esci",

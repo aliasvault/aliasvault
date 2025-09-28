@@ -80,6 +80,7 @@
       "operationFailed": "הפעולה נכשלה",
       "versionNotSupported": "הגרסה הזאת של היישומון של AliasVault לניידים לא נתמכת עוד על ידי השרת. נא לעדכן את היישומון שלך לגרסה העדכנית ביותר.",
       "serverNeedsUpdate": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש ביישומון הזה לנייד. נא ליצור קשר עם התמיכה לקבלת עזרה.",
+      "appOutdated": "This app is outdated and cannot be used to access this vault. Please update this app to continue.",
       "vaultDecryptFailed": "לא ניתן לפענח את הכספת, אם הבעיה נמשכת נא לצאת מהמערכת ולהיכנס שוב.",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע."
     }
@@ -109,7 +110,7 @@
     "randomAlias": "כינוי אקראי",
     "manual": "ידני",
     "generateRandomAlias": "יצירת כינוי אקראי",
-    "clearAliasFields": "Clear Alias Fields",
+    "clearAliasFields": "לפנות שדות כינויים",
     "enterFullEmail": "נא למלא כתובת דוא״ל מלאה",
     "enterEmailPrefix": "נא למלא קידומת דוא״ל",
     "useDomainChooser": "להשתמש בבורר שמות התחום",
@@ -433,11 +434,11 @@
     "VAULT_ERROR": "הכספת המקומית אינה עדכנית. נא לסנכרן את הכספת שלך על ידי ריענון העמוד ולנסות שוב."
   },
   "app": {
+    "openReadOnlyMode": "פתיחה במצב לקריאה בלבד",
     "status": {
       "unlockingVault": "שחרור נעילת כספת",
       "decryptingVault": "פענוח הצפנת כספת",
-      "openingVaultReadOnly": "כספת נפתח במצב לקריאה בלבד",
-      "retryingConnection": "מתבצע ניסיון להתחבר מחדש…"
+      "openingVaultReadOnly": "כספת נפתח במצב לקריאה בלבד"
     },
     "offline": {
       "banner": "מצב בלתי מקוון (קריאה בלבד)",
@@ -478,8 +479,8 @@
     "title": "שדרוג כספת",
     "subtitle": "AliasVault התעדכן וצריך לשדרג את הכספת שלך. הפעולה הזאת אמורה לארוך מספר שניות.",
     "versionInformation": "פרטי גרסה",
-    "yourVault": "הכספת שלך:",
-    "newVersion": "גרסה חדשה:",
+    "yourVault": "גרסת הכספת שלך:",
+    "newVersion": "הגרסה החדשה הזמינה:",
     "upgrade": "שדרוג",
     "upgrading": "משתדרגת…",
     "logout": "יציאה",

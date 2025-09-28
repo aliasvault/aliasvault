@@ -59,57 +59,57 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Import / Export</value>
+    <value>Importar / Exportar</value>
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>On this page you can import and export your vault.</value>
+    <value>Nesta páguna você pode importar e exportar seu cofre.</value>
     <comment>Page description</comment>
   </data>
   <data name="ImportSectionTitle" xml:space="preserve">
-    <value>Import passwords</value>
+    <value>Importar senhas</value>
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Select a service to import from. If you are using a service that is not listed here and would like to see it supported, please raise an issue on &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; or contact us.</value>
+    <value>Selecione um serviço para importar. Se você está utilizando um serviço que não está listado aqui, e quiser que ele seja suportado, por favor abra uma issue no &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; ou entre em contato conosco.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Exportar cofre</value>
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>If you want to export your AliasVault credentials to another AliasVault server (e.g. from cloud to self-hosted or vice-versa) or to another service altogether, you can export it here. Note that all exports are unencrypted so store it in a safe place and delete it when you no longer need it.</value>
+    <value>Se você quiser exportar suas credenciais AliasVault para outro servidor AliasVault (ex.: da nuvem para self-hosted ou vice-versa), ou para outro serviço, você pode exportá-las aqui. Note que todos os exportes são descriptografados, então armazene-os em um local seguro e exclua-o quando você não precisar mais dele.</value>
     <comment>Export section description</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Export vault to unencrypted CSV file</value>
+    <value>Exportar cofre para arquivo CSV descriptografado</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportSqliteButton" xml:space="preserve">
-    <value>Export vault to unencrypted SQLite file</value>
+    <value>Exportar cofre para arquivo SQLite descriptografado</value>
     <comment>Button to export as SQLite</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Exportar cofre</value>
     <comment>Export confirmation dialog title</comment>
   </data>
   <data name="ExportWarningMessage" xml:space="preserve">
-    <value>Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted computers and ensure you:
+    <value>Aviso: Exportar seu cofre para um arquivo descriptografado irá expor todas as suas senhas e informações sensíveis em texto. Faça isso apenas em computadores confiáveis e garanta que você:
 
-• Store the exported file in a secure location
-• Delete the file when you no longer need it
-• Never share the exported file with others
+• Armazene o arquivo exportado em um local seguro
+• Exclua o arquivo quando não precisar mais dele
+• Nunca compartilhe o arquivo exportado com outras pessoas
 
-Are you sure you want to continue with the export?</value>
+Tem certeza que deseja continuar com o exporte?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Resetar Cofre</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>This option allows you to completely empty your vault while keeping your account and email aliases. Use this if you want to start fresh after importing data from another password manager or if you want to clear all existing credentials to start over.</value>
+    <value>Esta opção permite que você limpe totalmente seu cofre, enquanto mantém sua conta e seus aliases de e-mail. Utilize isto se você quer iniciar do zero após importar dados de outros gerenciadores de senhas ou se você quiser limpar todas as credenciais existentes para começar novamente.</value>
     <comment>Reset vault section description</comment>
   </data>
 </root>

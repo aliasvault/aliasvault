@@ -63,7 +63,7 @@
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>在下方你可以查看账户近期的登录尝试概况。</value>
+    <value>在下方您可以查看账户近期的登录尝试概况。</value>
     <comment>Description of auth logs section</comment>
   </data>
   <data name="NoLogsMessage" xml:space="preserve">

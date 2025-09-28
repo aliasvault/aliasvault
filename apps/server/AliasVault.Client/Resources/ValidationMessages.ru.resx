@@ -77,23 +77,23 @@
   </data>
   <!-- Required field validation messages -->
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Нужно ввести имя пользователя</value>
+    <value>Требуется ввести имя пользователя</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="PasswordRequired" xml:space="preserve">
-    <value>Нужно ввести пароль</value>
+    <value>Требуется пароль</value>
     <comment>Error message when password is required</comment>
   </data>
   <data name="SecretKeyRequired" xml:space="preserve">
-    <value>Нужно ввести секретный ключ</value>
+    <value>Требуется секретный ключ</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ServiceNameRequired" xml:space="preserve">
-    <value>Нужно указать название сервиса</value>
+    <value>Требуется указать название сервиса</value>
     <comment>Error message when service name is required</comment>
   </data>
   <data name="FieldRequired" xml:space="preserve">
-    <value>Нужно заполнить это поле</value>
+    <value>Это поле является обязательным</value>
     <comment>Generic error message when a field is required</comment>
   </data>
   <!-- Terms and conditions -->
