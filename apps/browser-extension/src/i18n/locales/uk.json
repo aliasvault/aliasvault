@@ -38,7 +38,7 @@
       "wrongPassword": "Невірний пароль. Будь ласка, спробуйте ще раз.",
       "accountLocked": "Обліковий запис тимчасово заблоковано через занадто багато невдалих спроб.",
       "networkError": "Помилка мережі. Будь ласка, перевірте з’єднання та спробуйте ще раз.",
-      "loginDataMissing": "Термін дії сеансу закінчився. Будь ласка, спробуйте ще раз."
+      "sessionExpired": "Your session has expired. Please log in again."
     }
   },
   "menu": {
@@ -89,13 +89,11 @@
     "executingOperation": "Виконання операції...",
     "loadMore": "Завантажити ще",
     "errors": {
-      "VaultOutdated": "Ваше сховище застаріло. Будь ласка, увійдіть на вебсайт AliasVault та виконайте наведені нижче дії.",
       "serverNotAvailable": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "clientVersionNotSupported": "Ця версія розширення браузера AliasVault більше не підтримується сервером. Будь ласка, оновіть розширення браузера до останньої версії.",
       "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
       "serverVersionNotSupported": "Щоб використовувати це розширення браузера, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
       "unknownError": "Сталася невідома помилка",
-      "failedToStoreVault": "Не вдалося зберегти сховище",
       "vaultNotAvailable": "Сховище недоступне",
       "failedToRetrieveData": "Не вдалося отримати дані",
       "vaultIsLocked": "Сховище заблоковано",
@@ -387,8 +385,7 @@
       "cancel": "Скасувати",
       "continueUpgrade": "Продовжити оновлення",
       "upgradeFailed": "Помилка оновлення",
-      "failedToApplyMigration": "Не вдалося застосувати міграцію ({{current}} з {{total}})",
-      "unknownErrorDuringUpgrade": "Під час оновлення сталася невідома помилка. Спробуйте ще раз."
+      "failedToApplyMigration": "Не вдалося застосувати міграцію ({{current}} з {{total}})"
     }
   }
 }
