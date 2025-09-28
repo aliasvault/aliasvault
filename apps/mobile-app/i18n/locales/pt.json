@@ -16,7 +16,9 @@
     "loadMore": "Carregar mais",
     "use": "Utilizar",
     "confirm": "Confirmar",
-    "unknownError": "Erro desconhecido"
+    "errors": {
+      "unknownError": "An unknown error occurred. Please try again."
+    }
   },
   "auth": {
     "login": "Login",
@@ -80,7 +82,7 @@
       "operationFailed": "Operação falhou",
       "versionNotSupported": "Esta versão do aplicativo AliasVault não é mais suportada pelo servidor. Por favor atualize seu aplicativo para a última versão.",
       "serverNeedsUpdate": "O servidor do AliasVault precisa ser atualizado para a última versão para poder utilizar este aplicativo. Por favor entre em contato com o suporte se precisar de ajuda.",
-      "appOutdated": "Este aplicativo está desatualizado e não pode ser utilizado para acessar este cofre. Por favor, atualize o aplicativo para continuar.",
+      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "vaultDecryptFailed": "Cofre não pôde ser descriptografado, se o problema persistir por favor saia e realize login novamente.",
       "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança."
     }
@@ -501,8 +503,7 @@
       "selfHostedWarning": "Se você está utilizando um servidor self-hosted, faça também a atualização da instância self-hosted, caso contrário o login no cliente web vai parar de funcionar.",
       "continueUpgrade": "Continuar Atualização",
       "upgradeFailed": "Atualização Falhou",
-      "failedToApplyMigration": "Falha ao aplicar migração ({{current}} de {{total}})",
-      "unknownErrorDuringUpgrade": "Um erro desconhecido aconteceu durante a atualização. Por favor tente novamente."
+      "failedToApplyMigration": "Falha ao aplicar migração ({{current}} de {{total}})"
     }
   }
 }
