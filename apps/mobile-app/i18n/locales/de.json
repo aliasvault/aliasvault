@@ -16,7 +16,9 @@
     "loadMore": "Mehr laden",
     "use": "Benutzen",
     "confirm": "Bestätigen",
-    "unknownError": "Unbekannter Fehler"
+    "errors": {
+      "unknownError": "An unknown error occurred. Please try again."
+    }
   },
   "auth": {
     "login": "Anmelden",
@@ -80,7 +82,7 @@
       "operationFailed": "Vorgang fehlgeschlagen",
       "versionNotSupported": "Diese Version der AliasVault-App wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine App auf die neueste Version.",
       "serverNeedsUpdate": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese mobile App nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
-      "appOutdated": "Diese App ist veraltet und kann nicht verwendet werden, um auf diesen Tresor zuzugreifen. Bitte aktualisiere die App, um fortzufahren.",
+      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "vaultDecryptFailed": "Tresor konnte nicht entschlüsselt werden. Wenn das Problem weiterhin besteht, melden Dich bitte erneut an.",
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an."
     }
@@ -501,8 +503,7 @@
       "selfHostedWarning": "Nutzt Du einen selbst gehosteten Server, musst Du Deine Instanz ebenfalls updaten. Andernfalls kannst Du Dich im Web-Client nicht mehr anmelden.",
       "continueUpgrade": "Aktualisierung fortsetzen",
       "upgradeFailed": "Aktualisierung fehlgeschlagen",
-      "failedToApplyMigration": "Migration fehlgeschlagen ({{current}} von {{total}})",
-      "unknownErrorDuringUpgrade": "Bei der Aktualisierung ist ein unbekannter Fehler aufgetreten. Bitte versuche es erneut."
+      "failedToApplyMigration": "Migration fehlgeschlagen ({{current}} von {{total}})"
     }
   }
 }
