@@ -312,6 +312,7 @@ const Upgrade: React.FC = () => {
         <div className="flex flex-col w-full space-y-2">
           <Button
             type="button"
+            id="upgrade-button"
             onClick={handleUpgrade}
           >
             {isLoading || isVaultMutationLoading ? (syncStatus || t('upgrade.upgrading')) : t('upgrade.upgrade')}
