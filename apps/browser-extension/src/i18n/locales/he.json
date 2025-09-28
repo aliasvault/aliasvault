@@ -38,7 +38,7 @@
       "wrongPassword": "סיסמה שגויה. נא לנסות שוב.",
       "accountLocked": "החשבון נעול זמנית עקב ריבוי ניסיונות כושלים.",
       "networkError": "שגיאת רשת. נא לבדוק את החיבור ולנסות שוב.",
-      "sessionExpired": "Your session has expired. Please log in again."
+      "sessionExpired": "תוקף ההפעלה שלך פג. נא להיכנס מחדש."
     }
   },
   "menu": {
@@ -91,7 +91,7 @@
     "errors": {
       "serverNotAvailable": "שרת ה־AliasVault לא זמין. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
       "clientVersionNotSupported": "הגרסה הזאת של הרחבת הדפדפן של AliasVault לא נתמכת עוד על ידי השרת. נא לעדכן את הרחבת הדפדפן שלך לגרסה העדכנית ביותר.",
-      "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
+      "browserExtensionOutdated": "הרחבת הדפדפן הזאת לא עדכנית ואי אפשר להשתמש בה כדי לגשת לכספת הזאת. נא לעדכן את הרחבת הדפדפן הזאת כדי להמשיך.",
       "serverVersionNotSupported": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש בהרחבת הדפדפן הזאת. נא ליצור קשר עם התמיכה לקבלת עזרה.",
       "unknownError": "אירעה שגיאה לא ידועה",
       "vaultNotAvailable": "הכספת לא זמינה",
