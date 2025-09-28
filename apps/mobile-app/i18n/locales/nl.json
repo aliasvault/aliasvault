@@ -16,7 +16,9 @@
     "loadMore": "Laad meer",
     "use": "Gebruik",
     "confirm": "Bevestigen",
-    "unknownError": "Onbekende fout"
+    "errors": {
+      "unknownError": "An unknown error occurred. Please try again."
+    }
   },
   "auth": {
     "login": "Inloggen",
@@ -80,7 +82,7 @@
       "operationFailed": "Bewerking mislukt",
       "versionNotSupported": "Deze versie van de mobiele app van AliasVault wordt niet meer ondersteund door de server. Update de app naar de nieuwste versie.",
       "serverNeedsUpdate": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze mobiele app te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
-      "appOutdated": "Deze app is verouderd en kan niet worden gebruikt voor toegang tot deze vault. Update deze app om door te gaan.",
+      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "vaultDecryptFailed": "Vault kon niet worden gedecrypt, probeer uit- en opnieuw in te loggen.",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in."
     }
@@ -501,8 +503,7 @@
       "selfHostedWarning": "Als je een self-hosted server gebruikt, zorg er dan voor dat je ook je eigen self-hosted instantie bijwerkt, omdat anders het inloggen via de web client niet meer zal werken.",
       "continueUpgrade": "Verdergaan",
       "upgradeFailed": "Upgrade mislukt",
-      "failedToApplyMigration": "Kon migratie niet toepassen ({{current}} van {{total}})",
-      "unknownErrorDuringUpgrade": "Er is een onbekende fout opgetreden tijdens de upgrade. Probeer het opnieuw."
+      "failedToApplyMigration": "Kon migratie niet toepassen ({{current}} van {{total}})"
     }
   }
 }
