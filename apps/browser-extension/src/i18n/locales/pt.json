@@ -38,7 +38,7 @@
       "wrongPassword": "Senha incorreta. Por favor tente novamente.",
       "accountLocked": "Conta temporariamente bloqueada por muitas tentativas de login falhas. Por favor, tente novamente mais tarde.",
       "networkError": "Conexão falhou. Por favor verifique sua conexão com a internet e tente novamente.",
-      "loginDataMissing": "Sua sessão expirou. Por favor faça login novamente."
+      "sessionExpired": "Your session has expired. Please log in again."
     }
   },
   "menu": {
@@ -89,13 +89,11 @@
     "executingOperation": "Realizando operação...",
     "loadMore": "Carregar mais",
     "errors": {
-      "VaultOutdated": "Seu cofre está desatualizado. Por favor, realize login pelo site do AliasVault e siga as instruções.",
       "serverNotAvailable": "O servidor AliasVault não está disponível. Por favor, tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
       "clientVersionNotSupported": "Esta versão da extensão AliasVault para o navegador não é mais suportada pelo servidor. Por favor, atualize sua extensão para a última versão.",
       "browserExtensionOutdated": "Esta extensão do navegador está desatualizada e não pode ser utilizada para acessar este cofre. Por favor, atualize esta extensão para continuar.",
       "serverVersionNotSupported": "O servidor AliasVault precisa ser atualizado para uma nova versão para poder utilizar esta extensão de navegador. Por favor, entre em contato com o suporte caso precise de ajuda.",
       "unknownError": "Ocorreu um erro desconhecido",
-      "failedToStoreVault": "Falha ao armazenar cofre",
       "vaultNotAvailable": "Cofre não disponível",
       "failedToRetrieveData": "Falha ao recuperar dados",
       "vaultIsLocked": "O cofre está bloqueado",
@@ -387,8 +385,7 @@
       "cancel": "Cancelar",
       "continueUpgrade": "Continuar Atualização",
       "upgradeFailed": "Atualização Falhou",
-      "failedToApplyMigration": "Falha ao aplicar migração ({{current}} de {{total}})",
-      "unknownErrorDuringUpgrade": "Um erro desconhecido aconteceu durante a atualização. Por favor, tente novamente."
+      "failedToApplyMigration": "Falha ao aplicar migração ({{current}} de {{total}})"
     }
   }
 }
