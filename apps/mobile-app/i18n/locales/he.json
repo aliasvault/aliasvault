@@ -16,7 +16,9 @@
     "loadMore": "לטעון עוד",
     "use": "להשתמש",
     "confirm": "אישור",
-    "unknownError": "שגיאה לא ידועה"
+    "errors": {
+      "unknownError": "An unknown error occurred. Please try again."
+    }
   },
   "auth": {
     "login": "כניסה",
@@ -80,7 +82,7 @@
       "operationFailed": "הפעולה נכשלה",
       "versionNotSupported": "הגרסה הזאת של היישומון של AliasVault לניידים לא נתמכת עוד על ידי השרת. נא לעדכן את היישומון שלך לגרסה העדכנית ביותר.",
       "serverNeedsUpdate": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש ביישומון הזה לנייד. נא ליצור קשר עם התמיכה לקבלת עזרה.",
-      "appOutdated": "This app is outdated and cannot be used to access this vault. Please update this app to continue.",
+      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "vaultDecryptFailed": "לא ניתן לפענח את הכספת, אם הבעיה נמשכת נא לצאת מהמערכת ולהיכנס שוב.",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע."
     }
@@ -501,8 +503,7 @@
       "selfHostedWarning": "אם מדובר בשרת שמתארח עצמאית, נא לוודא שהעותק שמתארח אצלך גם כן מתעדכן כי אחרת הכניסה לאתר תפסיק לעבוד.",
       "continueUpgrade": "להמשיך בשדרוג",
       "upgradeFailed": "השדרוג נכשל",
-      "failedToApplyMigration": "החלת ההסבה נכשלה ({{current}} מתוך {{total}})",
-      "unknownErrorDuringUpgrade": "אירעה שגיאה בלתי ידועה במהלך השדרוג. נא לנסות שוב."
+      "failedToApplyMigration": "החלת ההסבה נכשלה ({{current}} מתוך {{total}})"
     }
   }
 }
