@@ -38,7 +38,7 @@
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
       "accountLocked": "Compte temporairement verrouillé en raison d'un trop grand nombre de tentatives échouées.",
       "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez.",
-      "sessionExpired": "Your session has expired. Please log in again."
+      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter."
     }
   },
   "menu": {
