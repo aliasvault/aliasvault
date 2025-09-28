@@ -16,7 +16,9 @@
     "loadMore": "Lataa lisää",
     "use": "Käytä",
     "confirm": "Vahvista",
-    "unknownError": "Tuntematon virhe"
+    "errors": {
+      "unknownError": "An unknown error occurred. Please try again."
+    }
   },
   "auth": {
     "login": "Kirjaudu sisään",
@@ -80,7 +82,7 @@
       "operationFailed": "Toiminto epäonnistui",
       "versionNotSupported": "Palvelin ei enää tue AliasVaultin mobiilisovelluksen tätä versiota. Ole hyvä ja päivitä sovellus uusimpaan versioon.",
       "serverNeedsUpdate": "AliasVaultin palvelin on päivitettävä uudempaan versioon, jotta voit käyttää tätä mobiilisovellusta. Ota yhteyttä tukeen, jos tarvitset apua.",
-      "appOutdated": "Tämä sovellus on vanhentunut eikä sitä voi käyttää tämän holvin käyttämiseen. Päivitä sovellus jatkaaksesi.",
+      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "vaultDecryptFailed": "Holvin salausta ei purkuaa. Jos ongelma jatkuu, kirjaudu ulos ja kirjaudu sitten uudelleen sisään. ",
       "passwordChanged": "Salasanasi on muuttunut edellisen kirjautumisen jälkeen. Ole hyvä ja kirjaudu uudelleen turvallisuussyistä."
     }
@@ -501,8 +503,7 @@
       "selfHostedWarning": "Jos käytät itseylläpidettyä  palvelinta (Self-hosted), varmista että päivität myös itseylläpidetyn yksikkösi, koska muuten kirjautuminen web-palveluun ja sovellukseen voivat lakata toimimasta.",
       "continueUpgrade": "Jatka päivitystä",
       "upgradeFailed": "Päivitys epäonnistui",
-      "failedToApplyMigration": "Tietokannan siirto {{current}} / {{total}} epäonnistui.",
-      "unknownErrorDuringUpgrade": "Päivityksen aikana tapahtui tuntematon virhe. Yritä uudelleen."
+      "failedToApplyMigration": "Tietokannan siirto {{current}} / {{total}} epäonnistui."
     }
   }
 }
