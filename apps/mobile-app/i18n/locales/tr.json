@@ -16,7 +16,9 @@
     "loadMore": "Daha fazla yükle",
     "use": "Kullan",
     "confirm": "Confirm",
-    "unknownError": "Unknown error"
+    "errors": {
+      "unknownError": "An unknown error occurred. Please try again."
+    }
   },
   "auth": {
     "login": "Giriş Yap",
@@ -80,7 +82,7 @@
       "operationFailed": "İşlem başarısız",
       "versionNotSupported": "AliasVault mobil uygulamasının bu sürümü artık sunucu tarafından desteklenmiyor. Lütfen uygulamanızı en son sürüme güncelleyin.",
       "serverNeedsUpdate": "Bu mobil uygulamayı kullanabilmek için AliasVault sunucusunun daha yeni bir sürüme güncellenmesi gerekiyor. Yardıma ihtiyacınız olursa lütfen destek ile iletişime geçin.",
-      "appOutdated": "This app is outdated and cannot be used to access this vault. Please update this app to continue.",
+      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "vaultDecryptFailed": "Kasa çözülemedi. Sorun devam ederse, lütfen çıkış yapın ve tekrar giriş yapın.",
       "passwordChanged": "Parolanız, en son giriş yaptığınızdan bu yana değişti. Güvenlik nedeniyle lütfen tekrar giriş yapın."
     }
@@ -501,8 +503,7 @@
       "selfHostedWarning": "If you're using a self-hosted server, make sure to also update your self-hosted instance as otherwise logging in to the web client will stop working.",
       "continueUpgrade": "Continue Upgrade",
       "upgradeFailed": "Upgrade Failed",
-      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})",
-      "unknownErrorDuringUpgrade": "An unknown error occurred during the upgrade. Please try again."
+      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
     }
   }
 }
