@@ -38,7 +38,7 @@
       "wrongPassword": "Senha incorreta. Por favor tente novamente.",
       "accountLocked": "Conta temporariamente bloqueada por muitas tentativas de login falhas. Por favor, tente novamente mais tarde.",
       "networkError": "Conexão falhou. Por favor verifique sua conexão com a internet e tente novamente.",
-      "sessionExpired": "Your session has expired. Please log in again."
+      "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente."
     }
   },
   "menu": {
