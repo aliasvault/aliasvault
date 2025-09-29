@@ -38,7 +38,7 @@
       "wrongPassword": "Virheellinen salasana. Yritä uudelleen.",
       "accountLocked": "Tili on tilapäisesti lukittu liian monen epäonnistuneen yrityksen vuoksi. Yritä myöhemmin uudelleen.",
       "networkError": "Verkkovirhe: tarkista yhteytesi ja yritä uudelleen.",
-      "sessionExpired": "Your session has expired. Please log in again."
+      "sessionExpired": "Istuntosi on vanhentunut. Ole hyvä ja kirjaudu uudelleen."
     }
   },
   "menu": {
