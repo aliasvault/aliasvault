@@ -17,7 +17,7 @@
     "use": "使用",
     "confirm": "确认",
     "errors": {
-      "unknownError": "An unknown error occurred. Please try again."
+      "unknownError": "发生未知错误，请重试。"
     }
   },
   "auth": {
@@ -82,7 +82,7 @@
       "operationFailed": "操作失败",
       "versionNotSupported": "此版本的AliasVault移动应用已不再被服务器支持。请将应用更新至最新版本。",
       "serverNeedsUpdate": "AliasVault服务器需要更新至新版本才能使用此移动应用。如需帮助，请联系支持团队。",
-      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
+      "appOutdated": "此应用已过时，无法用于访问新版本的密码库。请更新 AliasVault 应用以继续。",
       "vaultDecryptFailed": "密码库解密失败，若问题持续，请退出登录后重新登录。",
       "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。"
     }
