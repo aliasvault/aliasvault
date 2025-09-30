@@ -84,4 +84,12 @@ describe('FormDetector English tests', () => {
     testField(FormField.Email, 'account_name_text_field', htmlFile);
   });
 
+  describe('English registration form 8 detection (Roblox-style birthdate)', () => {
+    const htmlFile = 'en-registration-form8.html';
+
+    testField(FormField.BirthMonth, 'MonthDropdown', htmlFile);
+    testField(FormField.BirthDay, 'DayDropdown', htmlFile);
+    testField(FormField.BirthYear, 'YearDropdown', htmlFile);
+  });
+
 });

@@ -46,9 +46,9 @@ export const EnglishFieldPatterns: FieldPatterns = {
   password: ['password', 'pwd', 'pass'],
   birthdate: ['birthdate', 'birth-date', 'dob', 'date-of-birth'],
   gender: ['gender', 'sex'],
-  birthDateDay: ['birth-day', 'birthday', 'day', 'birthdate_d'],
-  birthDateMonth: ['birth-month', 'birthmonth', 'month', 'birthdate_m'],
-  birthDateYear: ['birth-year', 'birthyear', 'year', 'birthdate_y']
+  birthDateDay: ['-day', 'birthdate_d', 'birthdayday', '_day', 'day'],
+  birthDateMonth: ['-month', 'birthdate_m', 'birthdaymonth', '_month', 'month'],
+  birthDateYear: ['-year', 'birthdate_y', 'birthdayyear', '_year', 'year']
 };
 
 /**
