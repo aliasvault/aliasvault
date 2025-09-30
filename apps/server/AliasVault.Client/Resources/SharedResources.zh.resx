@@ -213,7 +213,7 @@
     <comment>Generic error message</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
-    <value>请修正以下错误。</value>
+    <value>请更正以下错误。</value>
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
@@ -247,28 +247,28 @@
   </data>
   <!-- Loading screen messages -->
   <data name="RefreshPageText" xml:space="preserve">
-    <value>如果加载卡住了，可以点击下方按钮刷新页面。</value>
+    <value>如果加载出现卡住的情况，可以点击下方按钮刷新页面。</value>
     <comment>Text shown above refresh button on loading screen</comment>
   </data>
   <!-- Validation error messages for forms -->
   <data name="ErrorPasswordMinLength" xml:space="preserve">
-    <value>新密码长度至少需要10个字符。</value>
+    <value>新密码必须至少包含 10 个字符。</value>
     <comment>Error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatch" xml:space="preserve">
-    <value>两次输入的新密码不一致。</value>
+    <value>新密码不匹配。</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="ErrorPasswordMinLengthGeneric" xml:space="preserve">
-    <value>密码长度至少需要10个字符。</value>
+    <value>密码必须至少包含 10 个字符。</value>
     <comment>Generic error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatchGeneric" xml:space="preserve">
-    <value>两次输入的新密码不一致。</value>
+    <value>密码不匹配。</value>
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
-    <value>请勾选同意条款和条件。</value>
+    <value>您必须接受条款和条件。</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
   <data name="ErrorSecretKeyRequired" xml:space="preserve">
@@ -293,7 +293,7 @@
     <comment>Home breadcrumb text</comment>
   </data>
   <data name="Notes" xml:space="preserve">
-    <value>记录</value>
+    <value>备注</value>
     <comment>Notes section heading</comment>
   </data>
   <data name="SyncVaultData" xml:space="preserve">
