@@ -63,7 +63,7 @@
     <comment>Title for vault decryption progress</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>请等待您的密码库初始化。此过程可能需要一点时间。</value>
+    <value>请等待您的密码库初始化，这可能需要一点时间。</value>
     <comment>Description for vault decryption progress</comment>
   </data>
 </root>
