@@ -38,7 +38,7 @@
       "wrongPassword": "密码不正确。请重试。",
       "accountLocked": "由于多次尝试失败，账户已暂时锁定。",
       "networkError": "网络错误。请检查您的连接后重试。",
-      "sessionExpired": "Your session has expired. Please log in again."
+      "sessionExpired": "您的会话已过期。请重新登录。"
     }
   },
   "menu": {
