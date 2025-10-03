@@ -5,6 +5,7 @@ import { sendMessage } from 'webext-bridge/popup';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
+import { consumePendingRedirectUrl } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
 import { storage } from '#imports';
@@ -78,11 +79,20 @@ const Reinitialize: React.FC = () => {
   }, [navigate]);
 
   useEffect(() => {
-    // Check for inline unlock mode
-    const urlParams = new URLSearchParams(window.location.search);
-    const inlineUnlock = urlParams.get('mode') === 'inline_unlock';
+    /**
+     * Handle initialization and redirect logic
+     */
+    const handleInitialization = async (): Promise<void> => {
+      // Check for inline unlock mode
+      const urlParams = new URLSearchParams(window.location.search);
+      const inlineUnlock = urlParams.get('mode') === 'inline_unlock';
 
-    if (isFullyInitialized) {
+      // Check for pending redirect URL in storage (set by useVaultLockRedirect hook)
+      const pendingRedirectUrl = await consumePendingRedirectUrl();
+
+      if (!isFullyInitialized) {
+        return;
+      }
       // Prevent multiple vault syncs (only run sync once)
       const shouldRunSync = !hasInitialized.current;
 
@@ -110,6 +120,10 @@ const Reinitialize: React.FC = () => {
             if (inlineUnlock) {
               setIsInitialLoading(false);
               navigate('/unlock-success', { replace: true });
+            } else if (pendingRedirectUrl) {
+              // If there's a pending redirect URL in storage, use it (most reliable)
+              setIsInitialLoading(false);
+              navigate(pendingRedirectUrl, { replace: true });
             } else {
               await restoreLastPage();
             }
@@ -138,7 +152,9 @@ const Reinitialize: React.FC = () => {
         setIsInitialLoading(false);
         restoreLastPage();
       }
-    }
+    };
+
+    handleInitialization();
   }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, navigate, setIsInitialLoading, syncVault, restoreLastPage]);
 
   // This component doesn't render anything visible - it just handles initialization
