@@ -75,9 +75,7 @@ and then in the prompt choose option 2.
 AliasVault includes a built-in email server that allows you to generate email aliases on-the-fly for every website you use, and receive + read the emails straight in AliasVault.
 
 {: .note }
-If you skip this step, AliasVault will default to use public email domains offered by SpamOK. While this still works for creating aliases, it has privacy limitations. For complete privacy and control, we recommend setting up your own domain. [Learn more about the differences between private and public email domains](../misc/private-vs-public-email.md).
-
----
+If you skip this step, AliasVault will default to use public email domains offered by SpamOK. While this still works for creating aliases, it has privacy limitations. For complete privacy and control, we recommend setting up your own domain. [Learn more about the differences between private and public email domains](../../misc/private-vs-public-email.md).
 
 ### Requirements
 - A **public IPv4 address** with ports 25 and 587 forwarded to your AliasVault server
@@ -97,9 +95,8 @@ telnet <your-server-public-ip> 587
 
 If successful, you'll see a connection establishment message. Press Ctrl+C to exit the telnet session.
 
-### Choose your configuration: primary domain vs subdomain
-
-AliasVault can be configured under:
+### DNS configuration
+Choose your configuration: primary domain vs subdomain. AliasVault can be configured under:
 
 - **A primary (top-level) domain**
   Example: `your-aliasvault.net`. This allows you to receive email on `%alias%@your-aliasvault.net`.
@@ -110,8 +107,6 @@ AliasVault can be configured under:
 ---
 
 #### a) Setup using a primary domain
-
-##### DNS Configuration
 
 Configure the following DNS records **on your primary domain** (e.g. `your-aliasvault.net`):
 
@@ -130,8 +125,6 @@ Configure the following DNS records **on your primary domain** (e.g. `your-alias
 ---
 
 #### b) Setup using a subdomain
-
-##### DNS Configuration
 
 Configure the following DNS records **on your subdomain setup** (for example, `aliasvault.example.com`):
 
@@ -155,7 +148,7 @@ This keeps the email configuration of your primary domain (`example.com`) comple
 
 ---
 
-### Configuring AliasVault
+### AliasVault server email domain configuration
 After setting up your DNS, continue with configuring AliasVault to let it know which email domains it should support.
 
 1. Run the email configuration script:

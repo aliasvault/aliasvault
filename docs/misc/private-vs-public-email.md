@@ -38,7 +38,7 @@ The following public email domains are currently available through SpamOK:
 ## Important Disclaimers
 Public email domains do have limitations, please be aware of them:
 
-1. **Public Nature**: These are fully public domains - anyone can access any email address as long as they know the name of the alias. The benefit is that this makes these domains fully anonymous because usage cannot be tied back to a specific user. But this also means that there is no privacy guarantee, as your emails can be read by anyone who knows the email address.
+1. **Public Nature**: These are fully public domains - anyone can access any email address as long as they know the name of the alias. The benefit is that this makes these domains fully anonymous because there is no ownership that could be traced back to a specific user. But this also means that there is no privacy guarantee, as your emails can be read by anyone who knows the email address.
 
 2. **No Service Level Agreement**: SpamOK is provided as a free service without any SLA or warranty. Email delivery and service availability are not guaranteed and can be interrupted at any time without notice.
 

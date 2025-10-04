@@ -75,6 +75,18 @@ To use AliasVault securely, HTTPS is required in the following situations:
 
 You must set up and configure your own TLS/SSL infrastructure (such as Traefik, Nginx, HAProxy, or Cloudflare Tunnel) to make the AliasVault container accessible over HTTPS with a valid SSL/TLS certificate. For example: `https://aliasvault.yourdomain.com`.
 
+### Troubleshooting
+#### Enabling WebSockets
+If you're accessing the Admin page through a reverse proxy and encounter errors after login, check that the Upgrade header is allowed and forwarded. This is required because the Admin app is built with .NET Blazor Server, which uses WebSockets for client-server communication. For example, when using nginx:
+
+```nginx
+  # Add WebSocket support for Blazor server
+  proxy_http_version 1.1;
+  proxy_set_header Upgrade $http_upgrade;
+  proxy_set_header Connection "upgrade";
+  proxy_read_timeout 86400;
+```
+
 ---
 
 ## 3. Email Server Setup
@@ -83,9 +95,7 @@ AliasVault includes a built-in email server that allows you to generate email al
 
 {: .note }
 If you skip this step, AliasVault will default to use public email domains offered by SpamOK. While this still works for creating aliases, it has privacy limitations. For complete privacy and control, we recommend setting up your own domain.
-[Learn more about the differences between private and public email domains](../misc/private-vs-public-email.md).
-
----
+[Learn more about the differences between private and public email domains](../../misc/private-vs-public-email.md).
 
 ### Requirements
 - A **public IPv4 address** with ports 25 and 587 forwarded to your AliasVault server
@@ -103,9 +113,8 @@ telnet <your-server-public-ip> 25
 telnet <your-server-public-ip> 587
 ```
 
-### Choose your configuration: primary domain vs subdomain
-
-AliasVault can be configured under:
+### DNS configuration
+Choose your configuration: primary domain vs subdomain. AliasVault can be configured under:
 
 - **A primary (top-level) domain**
   Example: `your-aliasvault.net`. This allows you to receive email on `%alias%@your-aliasvault.net`.
@@ -116,8 +125,6 @@ AliasVault can be configured under:
 ---
 
 #### a) Setup using a primary domain
-
-##### DNS Configuration
 
 Configure the following DNS records **on your primary domain** (e.g. `your-aliasvault.net`):
 
@@ -136,8 +143,6 @@ Configure the following DNS records **on your primary domain** (e.g. `your-alias
 ---
 
 #### b) Setup using a subdomain
-
-##### DNS Configuration
 
 Configure the following DNS records **on your subdomain setup** (for example, `aliasvault.example.com`):
 
@@ -161,7 +166,7 @@ This keeps the email configuration of your primary domain (`example.com`) comple
 
 ---
 
-### Configuring AliasVault
+### AliasVault server email domain configuration
 After setting up your DNS, you have to configure AliasVault to let it know which email domains it should support. Update the `docker-compose.yml` file:
 
 ```bash
