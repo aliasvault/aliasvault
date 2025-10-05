@@ -38,7 +38,7 @@
       "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
       "accountLocked": "Account tijdelijk vergrendeld vanwege te veel mislukte pogingen.",
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
-      "sessionExpired": "Your session has expired. Please log in again."
+      "sessionExpired": "Je sessie is verlopen. Log opnieuw in."
     }
   },
   "menu": {
