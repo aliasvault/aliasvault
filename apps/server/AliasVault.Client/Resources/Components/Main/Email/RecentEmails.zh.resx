@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EmailSectionTitle" xml:space="preserve">
-    <value>邮件</value>
+    <value>电子邮件</value>
     <comment>Section title for email panel</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
@@ -75,15 +75,15 @@
     <comment>Table column header for email date</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>未收到邮件（目前）。</value>
+    <value>尚未收到电子邮件。</value>
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
-    <value>当前选择的电子邮件地址已被使用。请通过编辑此凭证来更改电子邮件地址。</value>
+    <value>当前选择的电子邮件地址已被使用。请通过编辑此凭据来更改电子邮件地址。</value>
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
-    <value>尝试加载邮件时发生错误。请尝试编辑并保存凭证条目以同步数据库，然后重试。</value>
+    <value>尝试加载电子邮件时出错。请尝试编辑并保存凭据条目以同步数据库，然后重试。</value>
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">
