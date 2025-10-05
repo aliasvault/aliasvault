@@ -17,7 +17,7 @@
     "use": "Gebruik",
     "confirm": "Bevestigen",
     "errors": {
-      "unknownError": "An unknown error occurred. Please try again."
+      "unknownError": "Er is een onbekende fout opgetreden. Probeer het opnieuw."
     }
   },
   "auth": {
@@ -82,7 +82,7 @@
       "operationFailed": "Bewerking mislukt",
       "versionNotSupported": "Deze versie van de mobiele app van AliasVault wordt niet meer ondersteund door de server. Update de app naar de nieuwste versie.",
       "serverNeedsUpdate": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze mobiele app te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
-      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
+      "appOutdated": "Deze app is verouderd en kan niet worden gebruikt om deze (nieuwe) vault te openen. Update de AliasVault app om door te gaan.",
       "vaultDecryptFailed": "Vault kon niet worden gedecrypt, probeer uit- en opnieuw in te loggen.",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in."
     }
