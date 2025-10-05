@@ -33,7 +33,7 @@
     <comment>Title for the tips step</comment>
   </data>
   <data name="GetStartedStepTitle">
-    <value>开始使用</value>
+    <value>入门</value>
     <comment>Title for the get started step</comment>
   </data>
   <data name="TutorialStepTitle">
@@ -110,7 +110,7 @@
     <comment>Continue button text</comment>
   </data>
   <data name="GetStartedButton">
-    <value>开始使用</value>
+    <value>入门</value>
     <comment>Get started button text</comment>
   </data>
   <!-- Loading and status messages -->
