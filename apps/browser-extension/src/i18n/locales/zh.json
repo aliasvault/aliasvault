@@ -198,7 +198,7 @@
     "welcomeTitle": "欢迎使用AliasVault！",
     "welcomeDescription": "要使用AliasVault浏览器扩展：导航到某个网站，使用AliasVault自动填充弹窗创建新凭据。",
     "createdAt": "创建时间",
-    "updatedAt": "最后更新",
+    "updatedAt": "最后更新时间",
     "autofill": "自动填充",
     "fillForm": "填充表单",
     "deleteConfirm": "确定要删除此凭据吗？",
@@ -240,12 +240,12 @@
     "validation": {
       "required": "此字段为必填项",
       "serviceNameRequired": "服务名称为必填项",
-      "invalidEmail": "无效的邮箱格式",
-      "invalidDateFormat": "日期必须为 YYYY-MM-DD 格式"
+      "invalidEmail": "电子邮箱格式无效",
+      "invalidDateFormat": "日期必须采用 YYYY-MM-DD 格式"
     },
-    "privateEmailTitle": "私人邮箱",
+    "privateEmailTitle": "私人电子邮箱",
     "privateEmailAliasVaultServer": "AliasVault服务器",
-    "privateEmailDescription": "端对端加密，完全私密。",
+    "privateEmailDescription": "端到端加密，完全私密。",
     "publicEmailTitle": "公开临时邮箱供应商",
     "publicEmailDescription": "匿名但隐私有限。任何知晓该邮箱地址的人均可查看邮件内容。",
     "useDomainChooser": "使用域名选择器",
