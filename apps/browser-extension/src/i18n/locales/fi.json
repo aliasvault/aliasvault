@@ -213,7 +213,7 @@
     "deleteCredentialTitle": "Poista käyttäjätunnus",
     "deleteCredentialConfirm": "Oletko varma, että haluat poistaa tämän tunnuksen? Tätä toimintoa ei voi perua.",
     "randomAlias": "Sattumanvarainen Alias",
-    "manual": "Käyttöopas",
+    "manual": "Käyttäjätunnus ja salasana",
     "service": "Palvelu",
     "serviceUrl": "Palvelun URL-osoite",
     "loginCredentials": "Sisäänkirjautumistiedot",
