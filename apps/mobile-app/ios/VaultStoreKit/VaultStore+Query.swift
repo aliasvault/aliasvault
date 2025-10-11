@@ -314,6 +314,9 @@ extension VaultStore {
                 )
             }
 
+            // Load passkeys for this credential
+            let passkeys = try getPasskeys(forCredentialId: UUID(uuidString: idString)!)
+
             let credential = Credential(
                 id: UUID(uuidString: idString)!,
                 alias: alias,
@@ -321,6 +324,7 @@ extension VaultStore {
                 username: row[2] as? String,
                 notes: row[3] as? String,
                 password: password,
+                passkeys: passkeys,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 isDeleted: isDeleted

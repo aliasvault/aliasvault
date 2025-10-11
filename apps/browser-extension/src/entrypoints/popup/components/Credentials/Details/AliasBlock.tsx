@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { FormInputCopyToClipboard } from '@/entrypoints/popup/components/FormInputCopyToClipboard';
+import { FormInputCopyToClipboard } from '@/entrypoints/popup/components/Forms/FormInputCopyToClipboard';
 
 import { IdentityHelperUtils } from '@/utils/dist/shared/identity-generator';
 import type { Credential } from '@/utils/dist/shared/models/vault';

@@ -43,8 +43,19 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
    * Store the current page path, timestamp, and navigation history in storage.
    */
   const storeCurrentPage = useCallback(async (): Promise<void> => {
-    // Pages that are not allowed to be stored as these are auth conditional pages.
-    const notAllowedPaths = ['/', '/reinitialize', '/login', '/unlock', '/unlock-success', '/auth-settings', '/upgrade', '/logout'];
+    // Pages that are not allowed to be stored as these are auth conditional pages or dedicated popup pages.
+    const notAllowedPaths = [
+      '/',
+      '/reinitialize',
+      '/login',
+      '/unlock',
+      '/unlock-success',
+      '/auth-settings',
+      '/upgrade',
+      '/logout',
+      '/passkeys/create',
+      '/passkeys/authenticate'
+    ];
 
     // Only store the page if we're fully initialized and don't need auth
     if (isFullyInitialized && !requiresAuth && !notAllowedPaths.includes(location.pathname)) {

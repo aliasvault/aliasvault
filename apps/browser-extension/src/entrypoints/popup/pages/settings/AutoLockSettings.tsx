@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sendMessage } from 'webext-bridge/popup';
 
-import HelpModal from '@/entrypoints/popup/components/HelpModal';
+import HelpModal from '@/entrypoints/popup/components/Dialogs/HelpModal';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { AUTO_LOCK_TIMEOUT_KEY } from '@/utils/Constants';

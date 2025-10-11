@@ -260,18 +260,24 @@ public class CredentialProviderViewModel: ObservableObject {
             return
         }
 
-        // If we only have one option, use it directly
+        // For normal autofill, determine the best identifier and fill immediately
         let username = credential.username?.trimmingCharacters(in: .whitespacesAndNewlines)
         let email = credential.alias?.email?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let hasUsername = !(username?.isEmpty ?? true)
+        let hasEmail = !(email?.isEmpty ?? true)
 
-        if (username?.isEmpty ?? true) || (email?.isEmpty ?? true) {
-            let identifier = username?.isEmpty == false ? username! : (email ?? "")
-            selectionHandler(identifier, credential.password?.value ?? "")
-            return
+        // Prefer username over email if both exist, or use whichever is available
+        let identifier: String
+        if hasUsername {
+            identifier = username!
+        } else if hasEmail {
+            identifier = email!
+        } else {
+            identifier = ""
         }
 
-        // If we have both options, show selection sheet
-        showSelectionOptions = true
+        // Fill both username and password immediately for normal autofill
+        selectionHandler(identifier, credential.password?.value ?? "")
     }
 
     func selectUsername() {

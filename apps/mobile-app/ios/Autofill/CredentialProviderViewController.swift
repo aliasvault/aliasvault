@@ -5,22 +5,68 @@ import VaultStoreKit
 import VaultUI
 import VaultModels
 
+// MARK: - Protocols
+
+protocol CredentialProviderDelegate: AnyObject {
+    func setupCredentialView(vaultStore: VaultStore, serviceUrl: String?) throws -> UIViewController
+    func handleCredentialSelection(identifier: String, password: String)
+}
+
+protocol PasskeyProviderDelegate: AnyObject {
+    func setupPasskeyView(vaultStore: VaultStore, rpId: String, clientDataHash: Data) throws -> UIViewController
+    func handlePasskeySelection(credential: Credential, clientDataHash: Data, rpId: String)
+}
+
 /**
- * This class is the main entry point for the autofill extension.
- * It is responsible for displaying the credential provider view and handling user interactions.
- *
- * It also contains interface implementations for ASCredentialProviderViewController that allow
- * us to provide credentials to native system operations that request credentials (e.g. suggesting
- * logins in the keyboard).
+ * Base class for credential provider view controller.
+ * Contains shared functionality and delegates specific behavior to extensions.
  */
 public class CredentialProviderViewController: ASCredentialProviderViewController {
-    private var hostingController: UIHostingController<CredentialProviderView>?
-    private var viewModel: CredentialProviderViewModel?
-    private var isChoosingTextToInsert = false
+    // MARK: - Properties
+    internal var currentHostingController: UIViewController?
+    internal var isPasskeyRegistrationMode = false
+    internal var isPasskeyAuthenticationMode = false
+    internal var isChoosingTextToInsert = false
+    internal var currentPasskeyRequest: ASPasskeyCredentialRequestParameters?
+
+    // Credential-specific properties
     private var initialServiceUrl: String?
+
+    // Passkey-specific properties
+    private var initialRpId: String?
+    private var clientDataHash: Data?
+
+    // Delegates for specific credential types
+    weak var credentialDelegate: CredentialProviderDelegate?
+    weak var passkeyDelegate: PasskeyProviderDelegate?
+
+    // MARK: - Initialization
+
+    public override init(nibName nibNameOrNil: String?, bundle nibBundleOrNil: Bundle?) {
+        super.init(nibName: nibNameOrNil, bundle: nibBundleOrNil)
+        setupDelegates()
+    }
+
+    public required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupDelegates()
+    }
+
+    private func setupDelegates() {
+        // Set self as delegate for both credential types
+        self.credentialDelegate = self
+        self.passkeyDelegate = self
+    }
 
     override public func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
+
+        print("CredentialProviderViewController: viewWillAppear called - isPasskeyRegistrationMode=\(isPasskeyRegistrationMode), isPasskeyAuthenticationMode=\(isPasskeyAuthenticationMode), domain=\(initialServiceUrl ?? "nil")")
+
+        // Don't set up credential view if we're in passkey registration mode
+        if isPasskeyRegistrationMode {
+            return
+        }
 
         // Check if there is a stored vault. If not, it means the user has not logged in yet and we
         // should redirect to the main app login screen automatically.
@@ -46,7 +92,7 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
         }
 
         // Only set up the view if we haven't already
-        if hostingController == nil {
+        if currentHostingController == nil {
             do {
                 try setupView(vaultStore: vaultStore)
             } catch {
@@ -70,25 +116,21 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
     }
 
     private func setupView(vaultStore: VaultStore) throws {
-        // Create the ViewModel with injected behaviors
-        let viewModel = CredentialProviderViewModel(
-            loader: {
-                return try await self.loadCredentials(vaultStore: vaultStore)
-            },
-            selectionHandler: { identifier, password in
-                self.handleCredentialSelection(identifier: identifier, password: password)
-            },
-            cancelHandler: {
-                self.handleCancel()
-            },
-            serviceUrl: initialServiceUrl
-        )
+        let hostingController: UIViewController
 
-        self.viewModel = viewModel
-
-        let hostingController = UIHostingController(
-            rootView: CredentialProviderView(viewModel: viewModel)
-        )
+        if isPasskeyAuthenticationMode {
+            // Use passkey delegate to setup passkey view
+            guard let passkeyDelegate = passkeyDelegate else {
+                throw NSError(domain: "CredentialProviderViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Passkey delegate not set"])
+            }
+            hostingController = try passkeyDelegate.setupPasskeyView(vaultStore: vaultStore, rpId: initialRpId ?? "", clientDataHash: clientDataHash ?? Data())
+        } else {
+            // Use credential delegate to setup credential view
+            guard let credentialDelegate = credentialDelegate else {
+                throw NSError(domain: "CredentialProviderViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Credential delegate not set"])
+            }
+            hostingController = try credentialDelegate.setupCredentialView(vaultStore: vaultStore, serviceUrl: initialServiceUrl)
+        }
 
         addChild(hostingController)
         view.addSubview(hostingController.view)
@@ -102,81 +144,69 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
         ])
 
         hostingController.didMove(toParent: self)
-        self.hostingController = hostingController
+        self.currentHostingController = hostingController
+    }
+
+    override public func prepareCredentialList(for: [ASCredentialServiceIdentifier], requestParameters: ASPasskeyCredentialRequestParameters) {
+        print("CredentialProviderViewController: prepareCredentialList called for passkey")
+
+        self.isPasskeyAuthenticationMode = true
+        self.currentPasskeyRequest = requestParameters
+        self.initialRpId = requestParameters.relyingPartyIdentifier
+        self.clientDataHash = requestParameters.clientDataHash
     }
 
     override public func prepareCredentialList(for serviceIdentifiers: [ASCredentialServiceIdentifier]) {
+        print("CredentialProviderViewController: prepareCredentialList called with \(serviceIdentifiers.count) identifiers")
+
         let matchedDomains = serviceIdentifiers.map { $0.identifier.lowercased() }
         if let firstDomain = matchedDomains.first {
+            print("CredentialProviderViewController: First domain: \(firstDomain)")
+
             initialServiceUrl = firstDomain
-
-            // Set the search text to the first domain which will auto filter the credentials
-            // to show the most likely credentials first as suggestion.
-            viewModel?.setSearchFilter(firstDomain)
-
-            // Set the service URL to the first domain which will be used to pass onto the
-            // add credential view when the user taps the "+" button and prefill it with the
-            // domain name.
-            viewModel?.serviceUrl = firstDomain
+            // Delegate will handle the rest of the setup
         }
     }
 
-    override public func prepareInterfaceForUserChoosingTextToInsert() {
-        isChoosingTextToInsert = true
-        viewModel?.isChoosingTextToInsert = true
+    // MARK: - Shared Methods
+
+    /// Handle autofill view cancel action.
+    internal func handleCancel() {
+        self.extensionContext.cancelRequest(withError: NSError(
+            domain: ASExtensionErrorDomain,
+            code: ASExtensionError.userCanceled.rawValue
+        ))
     }
 
-    override public func provideCredentialWithoutUserInteraction(for credentialIdentity: ASPasswordCredentialIdentity) {
-        do {
-            let vaultStore = VaultStore()
-            let credentials = try vaultStore.getAllCredentials()
+    // MARK: - Passkey Support
 
-            if let matchingCredential = credentials.first(where: { credential in
-                return credential.id.uuidString == credentialIdentity.recordIdentifier
-            }) {
-                // Use the identifier that matches the credential identity
-                let identifier = credentialIdentity.user
-                let passwordCredential = ASPasswordCredential(
-                    user: identifier,
-                    password: matchingCredential.password?.value ?? ""
-                )
-                self.extensionContext.completeRequest(withSelectedCredential: passwordCredential, completionHandler: nil)
-            } else {
-                self.extensionContext.cancelRequest(
-                    withError: NSError(
-                        domain: ASExtensionErrorDomain,
-                        code: ASExtensionError.credentialIdentityNotFound.rawValue
-                    )
-                )
-            }
-        } catch {
-            self.extensionContext.cancelRequest(
-                withError: NSError(
-                    domain: ASExtensionErrorDomain,
-                    code: ASExtensionError.failed.rawValue,
-                    userInfo: [NSLocalizedDescriptionKey: error.localizedDescription]
-                )
-            )
+    override public func provideCredentialWithoutUserInteraction(for credentialRequest: ASCredentialRequest) {
+        // Check if this is a passkey request
+        if let passkeyRequest = credentialRequest as? ASPasskeyCredentialRequest {
+            providePasskeyCredentialWithoutUserInteraction(for: passkeyRequest)
+            return
         }
-    }
 
-    /// This registers all known AliasVault credentials into iOS native credential storage, which iOS can then use to
-    /// suggest autofill credentials when a user focuses an input field on a login form. These suggestions will then be s
-    /// hown above the iOS keyboard, which saves the user one step.
-    private func registerCredentialIdentities(credentials: [Credential]) async {
-       do {
-           try await CredentialIdentityStore.shared.saveCredentialIdentities(credentials)
-       } catch {
-           print("Failed to save credential identities: \(error)")
-       }
-   }
+        // For password credentials, delegate to credential extension
+        if let credentialIdentity = credentialRequest.credentialIdentity as? ASPasswordCredentialIdentity {
+            // This should call the credential extension's provideCredentialWithoutUserInteraction method
+            provideCredentialWithoutUserInteraction(for: credentialIdentity)
+            return
+        }
+
+        // Unknown credential type
+        self.extensionContext.cancelRequest(withError: NSError(
+            domain: ASExtensionErrorDomain,
+            code: ASExtensionError.userInteractionRequired.rawValue
+        ))
+    }
 
     /// Run sanity checks on the vault store before opening the autofill view to check things like if user is logged in,
     /// vault is available etc.
     /// - Returns
     ///  true if sanity checks succeeded and view can open
     ///  false if sanity checks failed and a notice windows has been shown.
-    private func sanityChecks(vaultStore: VaultStore) -> Bool {
+    func sanityChecks(vaultStore: VaultStore) -> Bool {
         if !vaultStore.hasEncryptedDatabase {
             let alert = UIAlertController(
                 title: NSLocalizedString("login_required", comment: ""),
@@ -249,42 +279,4 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
         return true
     }
 
-    /// Load credentials from the vault store and register them as credential identities
-    /// and then return them to the caller (view model).
-    private func loadCredentials(vaultStore: VaultStore) async throws -> [Credential] {
-        let credentials = try vaultStore.getAllCredentials()
-        await self.registerCredentialIdentities(credentials: credentials)
-        return credentials
-    }
-
-    /// Handle autofill view credential selection.
-    private func handleCredentialSelection(identifier: String, password: String) {
-        if isChoosingTextToInsert {
-            // For text insertion, insert only the selected text
-            if #available(iOS 18.0, *) {
-                self.extensionContext.completeRequest(
-                    withTextToInsert: identifier,
-                    completionHandler: nil
-                )
-            } else {
-                // Fallback on earlier versions: do nothing as this feature
-                // is not supported and we should not reach this point?
-            }
-        } else {
-            // For regular credential selection
-            let passwordCredential = ASPasswordCredential(
-                user: identifier,
-                password: password
-            )
-            self.extensionContext.completeRequest(withSelectedCredential: passwordCredential, completionHandler: nil)
-        }
-    }
-
-    /// Handle autofill view cancel action.
-    private func handleCancel() {
-        self.extensionContext.cancelRequest(withError: NSError(
-            domain: ASExtensionErrorDomain,
-            code: ASExtensionError.userCanceled.rawValue
-        ))
-    }
 }

@@ -45,23 +45,17 @@ export function useVaultMutate() : {
   const { syncVault } = useVaultSync();
 
   /**
-   * Prepare the vault for upload, returns the new vault object with the updated revision number and encrypted database.
+   * Prepare vault for password change operation.
+   * TODO: Move this to native layer as well when implementing native password change support.
    */
-  const prepareVault = useCallback(async () : Promise<Vault> => {
-    // Get the current vault revision number
+  const prepareVaultForPasswordChange = useCallback(async (): Promise<Vault> => {
     const currentRevision = await NativeVaultManager.getCurrentVaultRevisionNumber();
-
-    // Get the encrypted database
     const encryptedDb = await NativeVaultManager.getEncryptedDatabase();
     if (!encryptedDb) {
       throw new Error(t('vault.errors.failedToGetEncryptedDatabase'));
     }
 
-    setSyncStatus(t('vault.uploadingVaultToServer'));
-
-    // Get all private email domains from credentials in order to claim them on server
     const privateEmailDomains = await dbContext.sqliteClient!.getPrivateEmailDomains();
-
     const credentials = await dbContext.sqliteClient!.getAllCredentials();
     const privateEmailAddresses = credentials
       .filter(cred => cred.Alias?.Email != null)
@@ -71,23 +65,21 @@ export function useVaultMutate() : {
         return privateEmailDomains.some(domain => email.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
       });
 
-    // Get username from the auth context
     const username = authContext.username;
     if (!username) {
       throw new Error(t('vault.errors.usernameNotFound'));
     }
 
-    // Create vault object for upload
     return {
       blob: encryptedDb,
       createdAt: new Date().toISOString(),
       credentialsCount: credentials.length,
       currentRevisionNumber: currentRevision,
       emailAddressList: privateEmailAddresses,
-      privateEmailDomainList: [], // Empty on purpose, API will not use this for vault updates
-      publicEmailDomainList: [], // Empty on purpose, API will not use this for vault updates
-      encryptionPublicKey: '', // Empty on purpose, only required if new public/private key pair is generated
-      client: '', // Empty on purpose, API will not use this for vault updates
+      privateEmailDomainList: [],
+      publicEmailDomainList: [],
+      encryptionPublicKey: '',
+      client: '',
       updatedAt: new Date().toISOString(),
       username: username,
       version: (await dbContext.sqliteClient!.getDatabaseVersion())?.version ?? '0.0.0'
@@ -96,6 +88,7 @@ export function useVaultMutate() : {
 
   /**
    * Execute the provided operation (e.g. create/update/delete credential)
+   * Now delegates to native layer for vault upload.
    */
   const executeMutateOperation = useCallback(async (
     operation: () => Promise<void>,
@@ -104,40 +97,48 @@ export function useVaultMutate() : {
     setSyncStatus(t('vault.savingChangesToVault'));
 
     // Execute the provided operation (e.g. create/update/delete credential)
+    // The operation should wrap its changes in beginTransaction/commitTransaction
     await operation();
 
     setSyncStatus(t('vault.uploadingVaultToServer'));
-    const newVault = await prepareVault();
 
     try {
-      // Upload to server
-      const response = await webApi.post<typeof newVault, VaultPostResponse>('Vault', newVault);
+      // Call native mutateVault which handles:
+      // - Preparing vault metadata (credentials count, email addresses, etc.)
+      // - Uploading to server
+      // - Updating revision number
+      // - Clearing offline mode on success
+      const result = await NativeVaultManager.mutateVault();
 
-      // If we get here, it means we have a valid connection to the server.
-      authContext.setOfflineMode(false);
-
-      if (response.status === 0) {
-        await NativeVaultManager.setCurrentVaultRevisionNumber(response.newRevisionNumber);
-        options.onSuccess?.();
-      } else if (response.status === 1) {
-        // Note: vault merge is no longer allowed by the API as of 0.20.0, updates with the same revision number are rejected. So this check can be removed later.
-        throw new Error(t('vault.errors.vaultMergeRequired'));
-      } else if (response.status === 2) {
-        throw new Error(t('vault.errors.vaultOutdated'));
-      } else {
-        throw new Error(t('vault.errors.failedToUploadVault'));
+      // Verify success
+      if (result !== true) {
+        console.error('VaultMutate: Native mutateVault did not return true, result:', result);
+        throw new Error('Vault mutation did not complete successfully');
       }
+
+      // Success
+      options.onSuccess?.();
     } catch (error) {
+      console.error('VaultMutate: Error during vault mutation:', error);
+
       // Check if it's a network error
       if (error instanceof Error && (error.message.includes('network') || error.message.includes('timeout'))) {
         // Network error, mark as offline and track pending changes
-        authContext.setOfflineMode(true);
+        await NativeVaultManager.setOfflineMode(true);
         options.onSuccess?.();
         return;
       }
-      throw error;
+
+      // Check for vault outdated error
+      if (error instanceof Error && error.message.includes('Vault is outdated')) {
+        options.onError?.(new Error(t('vault.errors.vaultOutdated')));
+        return;
+      }
+
+      // Re-throw the error so it's handled by the caller
+      options.onError?.(new Error(t('common.errors.unknownError')));
     }
-  }, [authContext, webApi, prepareVault, t]);
+  }, [t]);
 
   /**
    * Execute the provided operation (e.g. create/update/delete credential)
@@ -208,8 +209,8 @@ export function useVaultMutate() : {
     const newPrivateKey = srp.derivePrivateKey(newSalt, username, newPasswordHashString);
     const newVerifier = srp.deriveVerifier(newPrivateKey);
 
-    // Get the current vault revision number
-    const vault = await prepareVault();
+    // Prepare vault for password change
+    const vault = await prepareVaultForPasswordChange();
     setSyncStatus(t('vault.uploadingVaultToServer'));
 
     // Convert default vault object to password change vault object
@@ -232,7 +233,7 @@ export function useVaultMutate() : {
       const newRevisionNumber = response.newRevisionNumber ?? passwordChangeVault.currentRevisionNumber + 1;
 
       // If we get here, it means we have a valid connection to the server.
-      authContext.setOfflineMode(false);
+      await NativeVaultManager.setOfflineMode(false);
 
       await NativeVaultManager.setCurrentVaultRevisionNumber(newRevisionNumber);
       options.onSuccess?.();
@@ -240,7 +241,7 @@ export function useVaultMutate() : {
       console.error('Error during password change operation:', error);
       throw error;
     }
-  }, [dbContext, authContext, webApi, prepareVault, t]);
+  }, [dbContext, authContext, webApi, prepareVaultForPasswordChange, t]);
 
   /**
    * Hook to execute a vault mutation which uploads a new encrypted vault to the server

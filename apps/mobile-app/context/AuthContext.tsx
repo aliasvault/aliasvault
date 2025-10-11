@@ -126,10 +126,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * Set auth tokens in storage as part of the login process. After db is initialized, the login method should be called as well.
    */
   const setAuthTokens = useCallback(async (username: string, accessToken: string, refreshToken: string): Promise<void> => {
-    await AsyncStorage.setItem('username', username);
-    await AsyncStorage.setItem('accessToken', accessToken);
-    await AsyncStorage.setItem('refreshToken', refreshToken);
+    await NativeVaultManager.setUsername(username);
+    await NativeVaultManager.setAuthTokens(accessToken, refreshToken);
 
+    // Update React state
     setUsername(username);
   }, []);
 
@@ -138,21 +138,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * @returns object containing whether the user is logged in and enabled auth methods
    */
   const initializeAuth = useCallback(async (): Promise<{ isLoggedIn: boolean; enabledAuthMethods: AuthMethod[] }> => {
-    const accessToken = await AsyncStorage.getItem('accessToken') as string;
-    const refreshToken = await AsyncStorage.getItem('refreshToken') as string;
-    const username = await AsyncStorage.getItem('username') as string;
+    // Sync legacy config to native layer (can be removed in future version 0.25.0+)
+    syncLegacyConfigToNative();
+
+    const accessToken = await NativeVaultManager.getAccessToken();
+    const username = await NativeVaultManager.getUsername();
+
+    // Update local React state
     let isAuthenticated = false;
     let methods: AuthMethod[] = ['password'];
 
-    if (accessToken && refreshToken && username) {
+    // Check if user is logged in (has both access token and username)
+    if (accessToken && username) {
       setUsername(username);
       setIsLoggedIn(true);
       isAuthenticated = true;
       methods = await getEnabledAuthMethods();
     }
+
+    const offline = await NativeVaultManager.getOfflineMode();
+
     setIsInitialized(true);
+    setIsOffline(offline);
     return { isLoggedIn: isAuthenticated, enabledAuthMethods: methods };
   }, [getEnabledAuthMethods]);
+
+  /**
+   * Sync legacy config to native layer
+   */
+  const syncLegacyConfigToNative = useCallback(async (): Promise<void> => {
+    // Migrate tokens from AsyncStorage to native on first launch, then remove to prevent repeated syncs
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
+
+    if (accessToken && refreshToken) {
+      await NativeVaultManager.setAuthTokens(accessToken, refreshToken);
+      await AsyncStorage.multiRemove(['accessToken', 'refreshToken']);
+    }
+
+    const username = await AsyncStorage.getItem('username');
+    if (username) {
+      await NativeVaultManager.setUsername(username);
+      await AsyncStorage.removeItem('username');
+    }
+  }, []);
 
   /**
    * Set logged in status to true which refreshes the app.
@@ -166,10 +195,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * This is called by AppContext after revoking tokens on the server.
    */
   const clearAuth = useCallback(async (errorMessage?: string): Promise<void> => {
+    // Clear from native layer
+    await NativeVaultManager.clearUsername();
+    await NativeVaultManager.clearAuthTokens();
+
+    // Clear from AsyncStorage (for backward compatibility)
+    // TODO: Remove AsyncStorage cleanup in future version 0.25.0+
     await AsyncStorage.removeItem('username');
     await AsyncStorage.removeItem('accessToken');
     await AsyncStorage.removeItem('refreshToken');
     await AsyncStorage.removeItem('authMethods');
+
     dbContext?.clearDatabase();
 
     if (errorMessage) {
@@ -419,6 +455,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     loadAutofillState();
   }, [loadAutofillState]);
 
+  /**
+   * Set offline mode and sync to native layer
+   */
+  const setOfflineMode = useCallback(async (offline: boolean) => {
+    setIsOffline(offline);
+    await NativeVaultManager.setOfflineMode(offline);
+  }, []);
+
   const contextValue = useMemo(() => ({
     isLoggedIn,
     isInitialized,
@@ -444,7 +488,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setReturnUrl,
     verifyPassword,
     getEncryptionKeyDerivationParams,
-    setOfflineMode: setIsOffline,
+    setOfflineMode,
   }), [
     isLoggedIn,
     isInitialized,
@@ -470,6 +514,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setReturnUrl,
     verifyPassword,
     getEncryptionKeyDerivationParams,
+    setOfflineMode,
   ]);
 
   return (

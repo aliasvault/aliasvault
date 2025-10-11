@@ -13,6 +13,8 @@ public struct VaultConstants {
     static let authMethodsKey = "aliasvault_auth_methods"
     static let autoLockTimeoutKey = "aliasvault_auto_lock_timeout"
     static let encryptionKeyDerivationParamsKey = "aliasvault_encryption_key_derivation_params"
+    static let usernameKey = "aliasvault_username"
+    static let offlineModeKey = "aliasvault_offline_mode"
 
     static let defaultAutoLockTimeout: Int = 3600 // 1 hour in seconds
 }

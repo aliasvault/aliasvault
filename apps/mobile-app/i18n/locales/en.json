@@ -165,6 +165,7 @@
     "createNewAliasFor": "Create new alias for",
     "errors": {
       "loadFailed": "Failed to load credential",
+      "saveFailed": "Failed to save credential",
       "generateUsernameFailed": "Failed to generate username",
       "generatePasswordFailed": "Failed to generate password"
     },

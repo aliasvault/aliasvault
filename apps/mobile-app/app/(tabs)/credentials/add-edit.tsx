@@ -349,35 +349,57 @@ export default function AddEditCredentialScreen() : React.ReactNode {
 
       // Emit an event to notify list and detail views to refresh
       emitter.emit('credentialChanged', credentialToSave.Id);
-    });
-
-    // If this was created from autofill (serviceUrl param), show confirmation screen
-    if (serviceUrl && !isEditMode) {
-      router.replace('/credentials/autofill-credential-created');
-    } else {
-      // First close the modal
-      router.dismiss();
-
-      // Then navigate after a short delay to ensure the modal has closed
-      setTimeout(() => {
-        if (isEditMode) {
-          // Do nothing, as the original screen will update itself.
+    },
+    {
+      /**
+       * Handle successful vault mutation.
+       */
+      onSuccess: () => {
+        // If this was created from autofill (serviceUrl param), show confirmation screen
+        if (serviceUrl && !isEditMode) {
+          router.replace('/credentials/autofill-credential-created');
         } else {
-          router.push(`/credentials/${credentialToSave.Id}`);
-        }
-      }, 100);
+          // First close the modal
+          router.dismiss();
 
-      // Show success toast
-      setTimeout(() => {
+          // Then navigate after a short delay to ensure the modal has closed
+          setTimeout(() => {
+            if (isEditMode) {
+              Toast.show({
+                type: 'success',
+                text1: t('credentials.toasts.credentialUpdated'),
+                position: 'bottom'
+              });
+
+              // Do not navigate away, the original screen will update itself after modal is closed.
+            } else {
+              Toast.show({
+                type: 'success',
+                text1: t('credentials.toasts.credentialSaved'),
+                position: 'bottom'
+              });
+
+              router.push(`/credentials/${credentialToSave.Id}`);
+            }
+          }, 100);
+        }
+      },
+      /**
+       * Handle error during vault mutation.
+       */
+      onError: (error) => {
         Toast.show({
-          type: 'success',
-          text1: isEditMode ? t('credentials.toasts.credentialUpdated') : t('credentials.toasts.credentialCreated'),
+          type: 'error',
+          text1: t('credentials.errors.saveFailed'),
+          text2: error.message,
           position: 'bottom'
         });
-      }, 200);
+        console.error('Error saving credential:', error.message);
+      }
+    });
 
-      setIsSyncing(false);
-    }
+    setIsSyncing(false);
+    setIsSaveDisabled(false);
   }, [isEditMode, id, serviceUrl, router, executeVaultMutation, dbContext.sqliteClient, mode, generateRandomAlias, webApi, watch, setIsSaveDisabled, setIsSyncing, isSaveDisabled, t, originalAttachmentIds, attachments]);
 
   /**

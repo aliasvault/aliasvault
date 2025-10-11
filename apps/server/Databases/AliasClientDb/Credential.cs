@@ -59,6 +59,11 @@ public class Credential : SyncableEntity
     public virtual ICollection<TotpCode> TotpCodes { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets the passkey objects.
+    /// </summary>
+    public virtual ICollection<Passkey> Passkeys { get; set; } = [];
+
+    /// <summary>
     /// Gets or sets the service ID foreign key.
     /// </summary>
     public Guid ServiceId { get; set; }

@@ -10,7 +10,7 @@ import {
   AliasBlock,
   NotesBlock,
   AttachmentBlock
-} from '@/entrypoints/popup/components/CredentialDetails';
+} from '@/entrypoints/popup/components/Credentials/Details';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import { useDb } from '@/entrypoints/popup/context/DbContext';

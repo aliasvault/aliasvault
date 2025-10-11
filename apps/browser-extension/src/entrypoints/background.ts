@@ -1,13 +1,18 @@
+/**
+ * Background script entry point - handles messages from the content script
+ */
+
 import { onMessage, sendMessage } from "webext-bridge/background";
 
 import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout } from '@/entrypoints/background/AutolockTimeoutHandler';
 import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardClearTimeout, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
+import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithCredential, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearVault, handleCreateIdentity, handleGetCredentials, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVault, handleSyncVault, handleUploadVault } from '@/entrypoints/background/VaultMessageHandler';
 
 import { GLOBAL_CONTEXT_MENU_ENABLED_KEY } from '@/utils/Constants';
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
+import { EncryptionKeyDerivationParams } from "@/utils/dist/shared/models/metadata";
 
 import { defineBackground, storage, browser } from '#imports';
 
@@ -61,6 +66,13 @@ export default defineBackground({
 
     // Handle clipboard copied from context menu
     onMessage('CLIPBOARD_COPIED_FROM_CONTEXT', () => handleClipboardCopied());
+
+    // Passkey/WebAuthn management messages
+    onMessage('GET_WEBAUTHN_SETTINGS', ({ data }) => handleGetWebAuthnSettings(data));
+    onMessage('WEBAUTHN_CREATE', ({ data }) => handleWebAuthnCreate(data));
+    onMessage('WEBAUTHN_GET', ({ data }) => handleWebAuthnGet(data));
+    onMessage('PASSKEY_POPUP_RESPONSE', ({ data }) => handlePasskeyPopupResponse(data));
+    onMessage('GET_REQUEST_DATA', ({ data }) => handleGetRequestData(data));
 
     // Setup context menus
     const isContextMenuEnabled = await storage.getItem(GLOBAL_CONTEXT_MENU_ENABLED_KEY) ?? true;

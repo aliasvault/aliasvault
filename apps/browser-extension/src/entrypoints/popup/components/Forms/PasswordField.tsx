@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import PasswordConfigDialog from '@/entrypoints/popup/components/Dialogs/PasswordConfigDialog';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import type { PasswordSettings } from '@/utils/dist/shared/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
-
-import PasswordConfigDialog from './PasswordConfigDialog';
 
 interface IPasswordFieldProps {
   id: string;

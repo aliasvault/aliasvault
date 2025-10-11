@@ -69,8 +69,24 @@ const CredentialCard: React.FC<CredentialCardProps> = ({ credential }) => {
             target.src = '/assets/images/service-placeholder.webp';
           }}
         />
-        <div className="text-left">
-          <p className="font-medium text-gray-900 dark:text-white">{getCredentialServiceName(credential)}</p>
+        <div className="text-left flex-1">
+          <div className="flex items-center gap-1.5">
+            <p className="font-medium text-gray-900 dark:text-white">{getCredentialServiceName(credential)}</p>
+            {credential.HasPasskey && (
+              <svg
+                className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-label="Has passkey"
+              >
+                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+              </svg>
+            )}
+          </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">{getDisplayText(credential)}</p>
         </div>
       </button>

@@ -19,8 +19,15 @@ import com.facebook.react.turbomodule.core.interfaces.TurboModule
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
+import net.aliasvault.app.webapi.WebApiService
 import net.aliasvault.nativevaultmanager.NativeVaultManagerSpec
 import org.json.JSONArray
+import org.json.JSONObject
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 
 /**
  * The native vault manager that manages the vault store and all input/output operations on it.
@@ -49,6 +56,8 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         AndroidKeystoreProvider(reactContext) { getFragmentActivity() },
         AndroidStorageProvider(reactContext),
     )
+
+    private val webApiService = WebApiService(reactContext)
 
     init {
         // Register for lifecycle callbacks
@@ -846,5 +855,328 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      */
     private fun getFragmentActivity(): FragmentActivity? {
         return currentActivity as? FragmentActivity
+    }
+
+    // MARK: - WebAPI Configuration
+
+    /**
+     * Set the API URL
+     * @param url The API URL to set
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun setApiUrl(url: String, promise: Promise) {
+        try {
+            // TODO: Implement when WebApiService is complete
+            webApiService.setApiUrl(url)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting API URL", e)
+            promise.reject("ERR_SET_API_URL", "Failed to set API URL: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Get the API URL
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun getApiUrl(promise: Promise) {
+        try {
+            // TODO: Implement when WebApiService is complete
+            val apiUrl = webApiService.getApiUrl()
+            promise.resolve(apiUrl)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting API URL", e)
+            promise.reject("ERR_GET_API_URL", "Failed to get API URL: ${e.message}", e)
+        }
+    }
+
+    // MARK: - WebAPI Token Management
+
+    /**
+     * Set both access and refresh tokens
+     * @param accessToken The access token
+     * @param refreshToken The refresh token
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun setAuthTokens(accessToken: String, refreshToken: String, promise: Promise) {
+        try {
+            // TODO: Implement when WebApiService is complete
+            webApiService.setAuthTokens(accessToken, refreshToken)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting auth tokens", e)
+            promise.reject("ERR_SET_AUTH_TOKENS", "Failed to set auth tokens: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Get the access token
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun getAccessToken(promise: Promise) {
+        try {
+            // TODO: Implement when WebApiService is complete
+            val accessToken = webApiService.getAccessToken()
+            promise.resolve(accessToken)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting access token", e)
+            promise.reject("ERR_GET_ACCESS_TOKEN", "Failed to get access token: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Clear both access and refresh tokens
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun clearAuthTokens(promise: Promise) {
+        try {
+            // TODO: Implement when WebApiService is complete
+            webApiService.clearAuthTokens()
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing auth tokens", e)
+            promise.reject("ERR_CLEAR_AUTH_TOKENS", "Failed to clear auth tokens: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Revoke tokens via WebAPI (called when logging out)
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun revokeTokens(promise: Promise) {
+        // TODO: Implement when WebApiService is complete
+        // This should call webApiService.revokeTokens() which is an async suspend function
+        // For now, we'll use a coroutine scope to handle it
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                webApiService.revokeTokens()
+                withContext(Dispatchers.Main) {
+                    promise.resolve(null)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Error revoking tokens", e)
+                    promise.reject("ERR_REVOKE_TOKENS", "Failed to revoke tokens: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    // MARK: - WebAPI Request Execution
+
+    /**
+     * Execute a WebAPI request
+     * @param method The HTTP method
+     * @param endpoint The API endpoint
+     * @param body The request body (nullable)
+     * @param headers The request headers as JSON string
+     * @param requiresAuth Whether authentication is required
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun executeWebApiRequest(
+        method: String,
+        endpoint: String,
+        body: String?,
+        headers: String,
+        requiresAuth: Boolean,
+        promise: Promise
+    ) {
+        try {
+            // TODO: Implement when WebApiService is complete
+            // Parse headers from JSON string
+            val headersMap = mutableMapOf<String, String>()
+            val headersJson = JSONObject(headers)
+            headersJson.keys().forEach { key ->
+                headersMap[key] = headersJson.getString(key)
+            }
+
+            // Execute request using coroutines
+            runBlocking {
+                val response = webApiService.executeRequest(
+                    method = method,
+                    endpoint = endpoint,
+                    body = body,
+                    headers = headersMap,
+                    requiresAuth = requiresAuth
+                )
+
+                // Build response JSON
+                val responseJson = JSONObject()
+                responseJson.put("statusCode", response.statusCode)
+                responseJson.put("body", response.body)
+                responseJson.put("headers", JSONObject(response.headers))
+
+                promise.resolve(responseJson.toString())
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error executing WebAPI request", e)
+            promise.reject("ERR_WEB_API_REQUEST", "Failed to execute WebAPI request: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Register credential identities (Android stub - not yet implemented)
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun registerCredentialIdentities(promise: Promise) {
+        // TODO: Implement Android credential identity registration
+        Log.d(TAG, "registerCredentialIdentities: Not yet implemented on Android")
+        promise.resolve(null)
+    }
+
+    // MARK: - Username Management
+
+    /**
+     * Set the username
+     * @param username The username to set
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun setUsername(username: String, promise: Promise) {
+        try {
+            // TODO: Implement username storage in VaultStore (similar to iOS)
+            // vaultStore.setUsername(username)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting username", e)
+            promise.reject("ERR_SET_USERNAME", "Failed to set username: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Get the username
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun getUsername(promise: Promise) {
+        try {
+            // TODO: Implement username retrieval from VaultStore (similar to iOS)
+            // val username = vaultStore.getUsername()
+            // promise.resolve(username)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting username", e)
+            promise.reject("ERR_GET_USERNAME", "Failed to get username: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Clear the username
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun clearUsername(promise: Promise) {
+        try {
+            // TODO: Implement username clearing in VaultStore (similar to iOS)
+            // vaultStore.clearUsername()
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error clearing username", e)
+            promise.reject("ERR_CLEAR_USERNAME", "Failed to clear username: ${e.message}", e)
+        }
+    }
+
+    // MARK: - Offline Mode Management
+
+    /**
+     * Set offline mode flag
+     * @param isOffline Whether app is offline
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun setOfflineMode(isOffline: Boolean, promise: Promise) {
+        try {
+            // TODO: Implement offline mode storage in VaultStore (similar to iOS)
+            // vaultStore.setOfflineMode(isOffline)
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting offline mode", e)
+            promise.reject("ERR_SET_OFFLINE_MODE", "Failed to set offline mode: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Get offline mode flag
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun getOfflineMode(promise: Promise) {
+        try {
+            // TODO: Implement offline mode retrieval from VaultStore (similar to iOS)
+            // val isOffline = vaultStore.getOfflineMode()
+            // promise.resolve(isOffline)
+            promise.resolve(false)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting offline mode", e)
+            promise.reject("ERR_GET_OFFLINE_MODE", "Failed to get offline mode: ${e.message}", e)
+        }
+    }
+
+    // MARK: - Vault Sync and Mutate
+
+    /**
+     * Sync vault with server
+     * Returns true if new vault was downloaded
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun syncVault(promise: Promise) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // TODO: Implement vault sync in VaultStore (similar to iOS)
+                // This should:
+                // 1. Call WebApiService to get Auth/status
+                // 2. Compare vault revisions
+                // 3. Download vault if server has newer version
+                // 4. Store encrypted vault and update revision
+                // 5. Return true if new vault downloaded, false otherwise
+                //
+                // val hasNewVault = vaultStore.syncVault(webApiService)
+                withContext(Dispatchers.Main) {
+                    promise.resolve(false)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Error syncing vault", e)
+                    promise.reject("ERR_SYNC_VAULT", "Failed to sync vault: ${e.message}", e)
+                }
+            }
+        }
+    }
+
+    /**
+     * Mutate vault (upload changes to server)
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun mutateVault(promise: Promise) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                // TODO: Implement vault mutate in VaultStore (similar to iOS)
+                // This should:
+                // 1. Prepare vault for upload (assemble metadata)
+                // 2. POST vault to server
+                // 3. Update local revision number
+                // 4. Clear offline mode on success
+                //
+                // vaultStore.mutateVault(webApiService)
+                withContext(Dispatchers.Main) {
+                    promise.resolve(null)
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Error mutating vault", e)
+                    promise.reject("ERR_MUTATE_VAULT", "Failed to mutate vault: ${e.message}", e)
+                }
+            }
+        }
     }
 }

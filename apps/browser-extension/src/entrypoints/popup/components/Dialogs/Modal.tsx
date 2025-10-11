@@ -37,7 +37,7 @@ const Modal: React.FC<IModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
-      <div className="fixed inset-0 bg-black bg-opacity-60 transition-opacity" onClick={onClose} />
+      <div className="fixed inset-0 bg-black bg-opacity-80 transition-opacity" onClick={onClose} />
 
       {/* Modal */}
       <div className="fixed inset-0 flex items-center justify-center p-4">

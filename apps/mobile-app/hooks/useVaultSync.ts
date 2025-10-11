@@ -47,6 +47,7 @@ type VaultSyncOptions = {
 
 /**
  * Hook to sync the vault with the server.
+ * Now delegates core sync logic to native layer while keeping UI orchestration in React Native.
  */
 export const useVaultSync = () : {
   syncVault: (options?: VaultSyncOptions) => Promise<boolean>;
@@ -54,7 +55,6 @@ export const useVaultSync = () : {
   const { t } = useTranslation();
   const app = useApp();
   const dbContext = useDb();
-  const webApi = useWebApi();
 
   const syncVault = useCallback(async (options: VaultSyncOptions = {}) => {
     const { initialSync = false, onSuccess, onError, onStatus, onOffline, onUpgradeRequired } = options;
@@ -70,88 +70,105 @@ export const useVaultSync = () : {
         return false;
       }
 
-      // Check app status and vault revision
+      // Update status
       onStatus?.(t('vault.checkingVaultUpdates'));
-      const statusResponse = await withMinimumDelay(() => webApi.getStatus(), 300, enableDelay);
 
-      if (statusResponse.serverVersion === '0.0.0') {
-        // Server is not available, go into offline mode
-        onOffline?.();
-        return false;
+      // Add artificial delay for initial sync UX
+      if (enableDelay) {
+        await new Promise(resolve => setTimeout(resolve, 300));
       }
 
-      if (!statusResponse.clientVersionSupported) {
-        const statusError = t('vault.errors.versionNotSupported');
-        onError?.(statusError);
-        return false;
-      }
+      // Call native syncVault which handles:
+      // - Calling Auth/status endpoint
+      // - Comparing vault revisions
+      // - Downloading vault if needed
+      // - Storing encrypted vault
+      // - Updating revision number
+      // - Setting offline mode
+      let hasNewVault = false;
 
-      if (!AppInfo.isServerVersionSupported(statusResponse.serverVersion)) {
-        const statusError = t('vault.errors.serverNeedsUpdate');
-        onError?.(statusError);
-        return false;
-      }
-
-      // Check if the SRP salt has changed compared to locally stored encryption key derivation params
-      const keyDerivationParams = await app.getEncryptionKeyDerivationParams();
-      if (keyDerivationParams && statusResponse.srpSalt && statusResponse.srpSalt !== keyDerivationParams.salt) {
-        /**
-         * Server SRP salt has changed compared to locally stored value, which means the user has changed
-         * their password since the last time they logged in. This means that the local encryption key is no
-         * longer valid and the user needs to re-authenticate. We trigger a logout but do not revoke tokens
-         * as these were already revoked by the server upon password change.
-         */
-        await app.logout(t('vault.errors.passwordChanged'));
-        return false;
-      }
-
-      // If we get here, it means we have a valid connection to the server.
-      app.setOfflineMode(false);
-
-      // Compare vault revisions
-      const vaultMetadata = await dbContext.getVaultMetadata();
-      const vaultRevisionNumber = vaultMetadata?.vaultRevisionNumber ?? 0;
-
-      if (statusResponse.vaultRevision > vaultRevisionNumber) {
+      try {
         onStatus?.(t('vault.syncingUpdatedVault'));
-        const vaultResponseJson = await withMinimumDelay(() => webApi.get<VaultResponse>('Vault'), 1000, enableDelay);
+        hasNewVault = await NativeVaultManager.syncVault();
 
-        const vaultError = webApi.validateVaultResponse(vaultResponseJson as VaultResponse);
-        if (vaultError) {
-          // Throw authentication error which will be caught and handled
-          throw new VaultAuthenticationError(vaultError);
+        console.log(`VaultSync: syncVault completed, hasNewVault=${hasNewVault}`);
+
+        // Add artificial delay for initial sync UX
+        if (enableDelay && hasNewVault) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : t('common.errors.unknownError');
+
+        // Check for authentication failure (401) - logout user
+        if (errorMessage.includes('Authentication failed') || errorMessage.includes('please login again')) {
+          await app.logout('Your session has expired. Please login again.');
+          return false;
         }
 
-        try {
-          await dbContext.initializeDatabase(vaultResponseJson as VaultResponse);
+        // Check for specific error conditions from native layer
+        if (errorMessage.includes('Server not available')) {
+          onOffline?.();
+          return false;
+        }
 
-          // Check if the current vault version is known and up to date, if not known trigger an exception, if not up to date redirect to the upgrade page.
-          if (await NativeVaultManager.isVaultUnlocked() && await dbContext.hasPendingMigrations()) {
-            onUpgradeRequired?.();
-            return false;
-          }
+        if (errorMessage.includes('Client version not supported')) {
+          onError?.(t('vault.errors.versionNotSupported'));
+          return false;
+        }
 
-          onSuccess?.(true);
+        if (errorMessage.includes('Password has changed')) {
+          await app.logout(t('vault.errors.passwordChanged'));
+          return false;
+        }
+
+        // Network error - go offline but don't fail
+        if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
+          await NativeVaultManager.setOfflineMode(true);
           return true;
-        } catch (err) {
-          if (err instanceof VaultVersionIncompatibleError) {
-            await app.logout(t(err.message));
-            return false;
-          }
-
-          // Vault could not be decrypted, throw an error
-          throw new Error(t('vault.errors.vaultDecryptFailed'));
         }
+
+        throw err;
       }
 
-      // Check if the vault is up to date, if not, redirect to the upgrade page.
-      if (await NativeVaultManager.isVaultUnlocked() && await dbContext.hasPendingMigrations()) {
-        onUpgradeRequired?.();
-        return false;
-      }
+      try {
+        // We always re-unlock the vault to force reload of database connection
+        // This ensures React Native's SQLite connection sees changes made by native layer
+        console.log('VaultSync: Re-unlocking vault to refresh database connection');
+        await NativeVaultManager.unlockVault();
 
-      await withMinimumDelay(() => Promise.resolve(onSuccess?.(false)), 300, enableDelay);
-      return false;
+        // Check if the vault needs migration
+        if (await dbContext.hasPendingMigrations()) {
+          onUpgradeRequired?.();
+          return false;
+        }
+
+        // Add artificial delay for initial sync UX
+        if (enableDelay) {
+          await new Promise(resolve => setTimeout(resolve, hasNewVault ? 1000 : 300));
+        }
+
+        onSuccess?.(hasNewVault);
+
+        // Register credential identities after sync
+        try {
+          await NativeVaultManager.registerCredentialIdentities();
+          console.log('Vault sync: Successfully registered credential identities');
+        } catch (error) {
+          console.warn('Vault sync: Failed to register credential identities:', error);
+          // Don't fail the sync if credential registration fails
+        }
+
+        return hasNewVault;
+      } catch (err) {
+        if (err instanceof VaultVersionIncompatibleError) {
+          await app.logout(t(err.message));
+          return false;
+        }
+
+        // Vault could not be unlocked
+        throw new Error(t('vault.errors.vaultDecryptFailed'));
+      }
     } catch (err) {
       console.error('Vault sync error:', err);
 
@@ -170,14 +187,14 @@ export const useVaultSync = () : {
 
       // Check if it's a network error
       if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
-        app.setOfflineMode(true);
+        await NativeVaultManager.setOfflineMode(true);
         return true;
       }
 
       onError?.(errorMessage);
       return false;
     }
-  }, [app, dbContext, webApi, t]);
+  }, [app, dbContext, t]);
 
   return { syncVault };
 };

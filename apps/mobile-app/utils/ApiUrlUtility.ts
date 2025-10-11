@@ -1,7 +1,7 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useState } from 'react';
 
 import { AppInfo } from '@/utils/AppInfo';
+import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
  * Hook to manage API URL state and display logic.
@@ -16,14 +16,18 @@ export const useApiUrl = (): {
   const [apiUrl, setApiUrl] = useState<string>(AppInfo.DEFAULT_API_URL);
 
   /**
-   * Load the API URL from storage.
+   * Load the API URL from native storage.
    */
   const loadApiUrl = async (): Promise<void> => {
-    const storedUrl = await AsyncStorage.getItem('apiUrl');
-    if (storedUrl && storedUrl.length > 0) {
-      setApiUrl(storedUrl);
-    } else {
-      setApiUrl(AppInfo.DEFAULT_API_URL);
+    try {
+      const storedUrl = await NativeVaultManager.getApiUrl();
+      if (storedUrl && storedUrl.length > 0) {
+        setApiUrl(storedUrl);
+      } else {
+        setApiUrl(AppInfo.DEFAULT_API_URL);
+      }
+    } catch (error) {
+      console.warn('Failed to get API URL from native layer:', error);
     }
   };
 

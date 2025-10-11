@@ -167,4 +167,76 @@
     resolve(@"Not applicable on iOS");
 }
 
+- (void)registerCredentialIdentities:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager registerCredentialIdentities:resolve rejecter:reject];
+}
+
+// MARK: - WebAPI Configuration
+
+- (void)setApiUrl:(NSString *)url resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager setApiUrl:url resolver:resolve rejecter:reject];
+}
+
+- (void)getApiUrl:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getApiUrl:resolve rejecter:reject];
+}
+
+// MARK: - WebAPI Token Management
+
+- (void)setAuthTokens:(NSString *)accessToken refreshToken:(NSString *)refreshToken resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager setAuthTokens:accessToken refreshToken:refreshToken resolver:resolve rejecter:reject];
+}
+
+- (void)getAccessToken:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getAccessToken:resolve rejecter:reject];
+}
+
+- (void)clearAuthTokens:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager clearAuthTokens:resolve rejecter:reject];
+}
+
+- (void)revokeTokens:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager revokeTokens:resolve rejecter:reject];
+}
+
+// MARK: - WebAPI Request Execution
+
+- (void)executeWebApiRequest:(NSString *)method endpoint:(NSString *)endpoint body:(NSString *)body headers:(NSString *)headers requiresAuth:(BOOL)requiresAuth resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager executeWebApiRequest:method endpoint:endpoint body:body headers:headers requiresAuth:requiresAuth resolver:resolve rejecter:reject];
+}
+
+// MARK: - Username Management
+
+- (void)setUsername:(NSString *)username resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager setUsername:username resolver:resolve rejecter:reject];
+}
+
+- (void)getUsername:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getUsername:resolve rejecter:reject];
+}
+
+- (void)clearUsername:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager clearUsername:resolve rejecter:reject];
+}
+
+// MARK: - Offline Mode Management
+
+- (void)setOfflineMode:(BOOL)isOffline resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager setOfflineMode:isOffline resolver:resolve rejecter:reject];
+}
+
+- (void)getOfflineMode:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getOfflineMode:resolve rejecter:reject];
+}
+
+// MARK: - Vault Sync and Mutate
+
+- (void)syncVault:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager syncVault:resolve rejecter:reject];
+}
+
+- (void)mutateVault:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager mutateVault:resolve rejecter:reject];
+}
+
 @end
