@@ -22,7 +22,7 @@
     "logout": "Se déconnecter",
     "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
     "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
-    "unlockSuccess": "Parcourir le contenu du coffre",
+    "unlockSuccess": "Parcourir le contenu du coffre !",
     "unlockSuccessTitle": "Votre coffre a été déverrouillé avec succès",
     "unlockSuccessDescription": "Vous pouvez maintenant utiliser le remplissage automatique des formulaires de connexion dans votre navigateur.",
     "closePopup": "Fermer cette popup",
