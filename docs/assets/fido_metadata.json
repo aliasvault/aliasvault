@@ -1,0 +1,135 @@
+{
+    "legalHeader": "Submission of this statement and retrieval and use of this statement indicates acceptance of the appropriate agreement located at https://fidoalliance.org/metadata/metadata-legal-terms/.",
+    "aaguid": "a11a5vau-9f32-4b8c-8c5d-2f7d13e8c942",
+    "description": "AliasVault Password Manager with Passkey Support",
+    "protocolFamily": "fido2",
+    "schema": 3,
+    "authenticatorVersion": 1,
+    "upv": [
+      {
+        "major": 1,
+        "minor": 0
+      }
+    ],
+    "authenticationAlgorithms": [
+      "secp256r1_ecdsa_sha256_raw",
+      "rsa_pss_sha256_raw"
+    ],
+    "publicKeyAlgAndEncodings": [
+      "cose"
+    ],
+    "attestationTypes": [
+      "basic_full"
+    ],
+    "userVerificationDetails": [
+      [
+        {
+          "userVerificationMethod": "passcode_internal",
+          "caDesc": {
+            "base": 62,
+            "minLength": 8,
+            "maxRetries": 10,
+            "blockSlowdown": 300
+          }
+        }
+      ],
+      [
+        {
+          "userVerificationMethod": "fingerprint_internal",
+          "baDesc": {
+            "selfAttestedFAR": 0.00002,
+            "maxTemplates": 10,
+            "maxRetries": 5,
+            "blockSlowdown": 30
+          }
+        }
+      ],
+      [
+        {
+          "userVerificationMethod": "faceprint_internal",
+          "baDesc": {
+            "selfAttestedFAR": 0.000002,
+            "maxTemplates": 5,
+            "maxRetries": 5,
+            "blockSlowdown": 30
+          }
+        }
+      ]
+    ],
+    "keyProtection": [
+      "software",
+      "secure_element"
+    ],
+    "matcherProtection": [
+      "software"
+    ],
+    "cryptoStrength": 256,
+    "attachmentHint": [
+      "internal"
+    ],
+    "tcDisplay": [
+      "any",
+      "privileged_software"
+    ],
+    "attestationRootCertificates": [
+      "TODO:YOUR_ATTESTATION_ROOT_CERTIFICATE_HERE"
+    ],
+    "icon": "data:image/png;base64,YOUR_BASE64_ENCODED_ICON_HERE",
+    "authenticatorGetInfo": {
+      "versions": [
+        "FIDO_2_0",
+        "FIDO_2_1"
+      ],
+      "extensions": [
+        "credProtect",
+        "hmac-secret",
+        "largeBlobKey",
+        "credBlob"
+      ],
+      "aaguid": "a11a5vau-9f32-4b8c-8c5d-2f7d13e8c942",
+      "options": {
+        "plat": true,
+        "rk": true,
+        "clientPin": true,
+        "up": true,
+        "uv": true,
+        "credMgmt": true,
+        "credentialMgmtPreview": true,
+        "bioEnroll": true,
+        "userVerificationMgmtPreview": true,
+        "pinUvAuthToken": true,
+        "noMcGaPermissionsWithClientPin": false,
+        "largeBlobs": true,
+        "ep": true,
+        "alwaysUv": false,
+        "makeCredUvNotRqd": false
+      },
+      "maxMsgSize": 1200,
+      "pinUvAuthProtocols": [
+        1,
+        2
+      ],
+      "maxCredentialCountInList": 100,
+      "maxCredentialIdLength": 256,
+      "transports": [
+        "internal"
+      ],
+      "algorithms": [
+        {
+          "type": "public-key",
+          "alg": -7
+        },
+        {
+          "type": "public-key",
+          "alg": -257
+        },
+        {
+          "type": "public-key",
+          "alg": -37
+        }
+      ],
+      "maxSerializedLargeBlobArray": 1024,
+      "firmwareVersion": 1,
+      "maxCredBlobLength": 32
+    }
+}

@@ -26,28 +26,27 @@ describe('IdentityHelperUtils', () => {
 
   describe('normalizeBirthDateForDb', () => {
     it('should return default date for undefined input', () => {
-      expect(IdentityHelperUtils.normalizeBirthDateForDb(undefined)).toBe('0001-01-01T00:00:00.000Z');
+      expect(IdentityHelperUtils.normalizeBirthDateForDb(undefined)).toBe('0001-01-01 00:00:00');
     });
 
     it('should return default date for empty string', () => {
-      expect(IdentityHelperUtils.normalizeBirthDateForDb('')).toBe('0001-01-01T00:00:00.000Z');
+      expect(IdentityHelperUtils.normalizeBirthDateForDb('')).toBe('0001-01-01 00:00:00');
     });
 
     it('should return default date for invalid date', () => {
-      expect(IdentityHelperUtils.normalizeBirthDateForDb('invalid-date')).toBe('0001-01-01T00:00:00.000Z');
+      expect(IdentityHelperUtils.normalizeBirthDateForDb('invalid-date')).toBe('0001-01-01 00:00:00');
     });
 
-    it('should preserve ISO format date with time', () => {
-      const input = '1976-05-18T08:24:15.000Z';
-      expect(IdentityHelperUtils.normalizeBirthDateForDb(input)).toBe(input);
+    it('should normalize ISO format date with time to space-separated format', () => {
+      expect(IdentityHelperUtils.normalizeBirthDateForDb('1976-05-18T08:24:15.000Z')).toBe('1976-05-18 08:24:15');
     });
 
-    it('should add default time to date with space separator', () => {
-      expect(IdentityHelperUtils.normalizeBirthDateForDb('1976-05-18 08:24:15')).toBe('1976-05-18T08:24:15.000Z');
+    it('should preserve date with space separator and time', () => {
+      expect(IdentityHelperUtils.normalizeBirthDateForDb('1976-05-18 08:24:15')).toBe('1976-05-18 08:24:15');
     });
 
     it('should add default time to date without time', () => {
-      expect(IdentityHelperUtils.normalizeBirthDateForDb('1976-05-18')).toBe('1976-05-18T00:00:00.000Z');
+      expect(IdentityHelperUtils.normalizeBirthDateForDb('1976-05-18')).toBe('1976-05-18 00:00:00');
     });
   });
 });

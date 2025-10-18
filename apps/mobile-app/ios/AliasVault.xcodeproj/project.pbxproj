@@ -23,6 +23,14 @@
 		CE48FD632DBEA3B800E5E3D6 /* VaultUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE4816A2DBE8AC800F4A367 /* VaultUI.framework */; };
 		CE59C7632E4F47FE0024A246 /* VaultUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE4816A2DBE8AC800F4A367 /* VaultUI.framework */; };
 		CE73B3A02DFC8A0C0081B6CB /* AliasVault.icon in Resources */ = {isa = PBXBuildFile; fileRef = CE73B39F2DFC8A0C0081B6CB /* AliasVault.icon */; };
+		CE7782632EA1822400A75E6F /* VaultUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE77825D2EA1822400A75E6F /* VaultUtils.framework */; };
+		CE7782642EA1822400A75E6F /* VaultUtils.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CE77825D2EA1822400A75E6F /* VaultUtils.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		CE77826E2EA18A2F00A75E6F /* VaultUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE77825D2EA1822400A75E6F /* VaultUtils.framework */; };
+		CE77826F2EA18A2F00A75E6F /* VaultUtils.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CE77825D2EA1822400A75E6F /* VaultUtils.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		CE7782732EA18A3500A75E6F /* VaultUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE77825D2EA1822400A75E6F /* VaultUtils.framework */; };
+		CE7782742EA18A3500A75E6F /* VaultUtils.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CE77825D2EA1822400A75E6F /* VaultUtils.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		CE7782782EA3E70B00A75E6F /* VaultModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE482AA2DBE8EFE00F4A367 /* VaultModels.framework */; };
+		CE7782792EA3E70B00A75E6F /* VaultModels.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CEE482AA2DBE8EFE00F4A367 /* VaultModels.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		CE9A58FC2DBA982100CB0A4C /* RCTNativeVaultManager.mm in Sources */ = {isa = PBXBuildFile; fileRef = CE9A58FB2DBA982100CB0A4C /* RCTNativeVaultManager.mm */; };
 		CE9A5A022DBAAE5000CB0A4C /* RCTNativeVaultManager.h in Sources */ = {isa = PBXBuildFile; fileRef = CE9A58FA2DBA982100CB0A4C /* RCTNativeVaultManager.h */; };
 		CED3AB3C2E70CF8700F3FDEB /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = CED3AB3B2E70CF8700F3FDEB /* AppDelegate.swift */; };
@@ -56,6 +64,34 @@
 			proxyType = 1;
 			remoteGlobalIDString = CEE481692DBE8AC800F4A367;
 			remoteInfo = VaultUI;
+		};
+		CE7782612EA1822400A75E6F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CE77825C2EA1822400A75E6F;
+			remoteInfo = VaultUtils;
+		};
+		CE7782702EA18A2F00A75E6F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CE77825C2EA1822400A75E6F;
+			remoteInfo = VaultUtils;
+		};
+		CE7782752EA18A3500A75E6F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CE77825C2EA1822400A75E6F;
+			remoteInfo = VaultUtils;
+		};
+		CE77827A2EA3E70B00A75E6F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CEE482A92DBE8EFE00F4A367;
+			remoteInfo = VaultModels;
 		};
 		CEE480932DBE86DD00F4A367 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -109,6 +145,39 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		CE7782722EA18A3000A75E6F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				CE77826F2EA18A2F00A75E6F /* VaultUtils.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CE7782772EA18A3500A75E6F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				CE7782742EA18A3500A75E6F /* VaultUtils.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CE77827C2EA3E70B00A75E6F /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				CE7782792EA3E70B00A75E6F /* VaultModels.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEE480A12DBE86DD00F4A367 /* Embed Frameworks */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -116,6 +185,7 @@
 			dstSubfolderSpec = 10;
 			files = (
 				CEE4809D2DBE86DD00F4A367 /* VaultStoreKit.framework in Embed Frameworks */,
+				CE7782642EA1822400A75E6F /* VaultUtils.framework in Embed Frameworks */,
 				CEE481802DBE8AC800F4A367 /* VaultUI.framework in Embed Frameworks */,
 				CEE482C02DBE8EFF00F4A367 /* VaultModels.framework in Embed Frameworks */,
 			);
@@ -180,6 +250,7 @@
 		CE3AE2B02DC7ACD700E7745E /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		CE59C75F2E4F47FD0024A246 /* VaultUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaultUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE73B39F2DFC8A0C0081B6CB /* AliasVault.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AliasVault.icon; sourceTree = "<group>"; };
+		CE77825D2EA1822400A75E6F /* VaultUtils.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VaultUtils.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE9A58FA2DBA982100CB0A4C /* RCTNativeVaultManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTNativeVaultManager.h; sourceTree = "<group>"; };
 		CE9A58FB2DBA982100CB0A4C /* RCTNativeVaultManager.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = RCTNativeVaultManager.mm; sourceTree = "<group>"; };
 		CE9A5B662DBAE42B00CB0A4C /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -209,6 +280,7 @@
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		CE59C7602E4F47FD0024A246 /* VaultUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUITests; sourceTree = "<group>"; };
+		CE77825E2EA1822400A75E6F /* VaultUtils */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUtils; sourceTree = "<group>"; };
 		CEE480882DBE86DC00F4A367 /* VaultStoreKit */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultStoreKit; sourceTree = "<group>"; };
 		CEE480972DBE86DD00F4A367 /* VaultStoreKitTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultStoreKitTests; sourceTree = "<group>"; };
 		CEE4816B2DBE8AC800F4A367 /* VaultUI */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUI; sourceTree = "<group>"; };
@@ -225,6 +297,7 @@
 				CEE482BF2DBE8EFF00F4A367 /* VaultModels.framework in Frameworks */,
 				CEE4809C2DBE86DD00F4A367 /* VaultStoreKit.framework in Frameworks */,
 				3D1B0279B0714C8FF732D2D3 /* libPods-AliasVault.a in Frameworks */,
+				CE7782632EA1822400A75E6F /* VaultUtils.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -237,11 +310,20 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CE77825A2EA1822400A75E6F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CE7782782EA3E70B00A75E6F /* VaultModels.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEE480842DBE86DC00F4A367 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				CE48FCEC2DBE939A00E5E3D6 /* VaultModels.framework in Frameworks */,
+				CE7782732EA18A3500A75E6F /* VaultUtils.framework in Frameworks */,
 				9E8B9B9318C79E9CBB868429 /* libPods-VaultStoreKit.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -260,6 +342,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				CEE482CB2DBE8F2B00F4A367 /* VaultModels.framework in Frameworks */,
+				CE77826E2EA18A2F00A75E6F /* VaultUtils.framework in Frameworks */,
 				1381C2F6D317F2404928BA59 /* libPods-VaultUI.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -335,11 +418,12 @@
 				13B07FAE1A68108700A75B9A /* AliasVault */,
 				CEE909812DA548C7008D568F /* Autofill */,
 				D7E4C46ADA2E9064B798F356 /* ExpoModulesProviders */,
+				CEE482AB2DBE8EFE00F4A367 /* VaultModels */,
 				CEE480882DBE86DC00F4A367 /* VaultStoreKit */,
 				CEE480972DBE86DD00F4A367 /* VaultStoreKitTests */,
 				CEE4816B2DBE8AC800F4A367 /* VaultUI */,
-				CEE482AB2DBE8EFE00F4A367 /* VaultModels */,
 				CE59C7602E4F47FD0024A246 /* VaultUITests */,
+				CE77825E2EA1822400A75E6F /* VaultUtils */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				D65327D7A22EEC0BE12398D9 /* Pods */,
@@ -360,6 +444,7 @@
 				CEE4816A2DBE8AC800F4A367 /* VaultUI.framework */,
 				CEE482AA2DBE8EFE00F4A367 /* VaultModels.framework */,
 				CE59C75F2E4F47FD0024A246 /* VaultUITests.xctest */,
+				CE77825D2EA1822400A75E6F /* VaultUtils.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -426,6 +511,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		CE7782582EA1822400A75E6F /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEE480822DBE86DC00F4A367 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -473,6 +565,7 @@
 				CEE4809B2DBE86DD00F4A367 /* PBXTargetDependency */,
 				CEE4817E2DBE8AC800F4A367 /* PBXTargetDependency */,
 				CEE482BE2DBE8EFF00F4A367 /* PBXTargetDependency */,
+				CE7782622EA1822400A75E6F /* PBXTargetDependency */,
 			);
 			name = AliasVault;
 			productName = AliasVault;
@@ -501,6 +594,31 @@
 			productReference = CE59C75F2E4F47FD0024A246 /* VaultUITests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		CE77825C2EA1822400A75E6F /* VaultUtils */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE7782652EA1822400A75E6F /* Build configuration list for PBXNativeTarget "VaultUtils" */;
+			buildPhases = (
+				CE7782582EA1822400A75E6F /* Headers */,
+				CE7782592EA1822400A75E6F /* Sources */,
+				CE77825A2EA1822400A75E6F /* Frameworks */,
+				CE77825B2EA1822400A75E6F /* Resources */,
+				CE77827C2EA3E70B00A75E6F /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CE77827B2EA3E70B00A75E6F /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				CE77825E2EA1822400A75E6F /* VaultUtils */,
+			);
+			name = VaultUtils;
+			packageProductDependencies = (
+			);
+			productName = VaultUtils;
+			productReference = CE77825D2EA1822400A75E6F /* VaultUtils.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 		CEE480862DBE86DC00F4A367 /* VaultStoreKit */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = CEE4809E2DBE86DD00F4A367 /* Build configuration list for PBXNativeTarget "VaultStoreKit" */;
@@ -510,10 +628,12 @@
 				CEE480832DBE86DC00F4A367 /* Sources */,
 				CEE480842DBE86DC00F4A367 /* Frameworks */,
 				CEE480852DBE86DC00F4A367 /* Resources */,
+				CE7782772EA18A3500A75E6F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				CE7782762EA18A3500A75E6F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				CEE480882DBE86DC00F4A367 /* VaultStoreKit */,
@@ -555,10 +675,12 @@
 				CEE481662DBE8AC800F4A367 /* Sources */,
 				CEE481672DBE8AC800F4A367 /* Frameworks */,
 				CEE481682DBE8AC800F4A367 /* Resources */,
+				CE7782722EA18A3000A75E6F /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				CE7782712EA18A2F00A75E6F /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				CEE4816B2DBE8AC800F4A367 /* VaultUI */,
@@ -620,7 +742,7 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 1640;
+				LastSwiftUpdateCheck = 2600;
 				LastUpgradeCheck = 1130;
 				TargetAttributes = {
 					13B07F861A680F5B00A75B9A = {
@@ -628,6 +750,9 @@
 					};
 					CE59C75E2E4F47FD0024A246 = {
 						CreatedOnToolsVersion = 16.4;
+					};
+					CE77825C2EA1822400A75E6F = {
+						CreatedOnToolsVersion = 26.0.1;
 					};
 					CEE480862DBE86DC00F4A367 = {
 						CreatedOnToolsVersion = 16.3;
@@ -670,6 +795,7 @@
 				ru,
 				uk,
 				he,
+				pt,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
@@ -683,6 +809,7 @@
 				CEE481692DBE8AC800F4A367 /* VaultUI */,
 				CE59C75E2E4F47FD0024A246 /* VaultUITests */,
 				CEE482A92DBE8EFE00F4A367 /* VaultModels */,
+				CE77825C2EA1822400A75E6F /* VaultUtils */,
 			);
 		};
 /* End PBXProject section */
@@ -701,6 +828,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		CE59C75D2E4F47FD0024A246 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CE77825B2EA1822400A75E6F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -1050,6 +1184,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		CE7782592EA1822400A75E6F /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEE480832DBE86DC00F4A367 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1097,6 +1238,26 @@
 			isa = PBXTargetDependency;
 			target = CEE481692DBE8AC800F4A367 /* VaultUI */;
 			targetProxy = CE59C7642E4F47FE0024A246 /* PBXContainerItemProxy */;
+		};
+		CE7782622EA1822400A75E6F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CE77825C2EA1822400A75E6F /* VaultUtils */;
+			targetProxy = CE7782612EA1822400A75E6F /* PBXContainerItemProxy */;
+		};
+		CE7782712EA18A2F00A75E6F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CE77825C2EA1822400A75E6F /* VaultUtils */;
+			targetProxy = CE7782702EA18A2F00A75E6F /* PBXContainerItemProxy */;
+		};
+		CE7782762EA18A3500A75E6F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CE77825C2EA1822400A75E6F /* VaultUtils */;
+			targetProxy = CE7782752EA18A3500A75E6F /* PBXContainerItemProxy */;
+		};
+		CE77827B2EA3E70B00A75E6F /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CEE482A92DBE8EFE00F4A367 /* VaultModels */;
+			targetProxy = CE77827A2EA3E70B00A75E6F /* PBXContainerItemProxy */;
 		};
 		CEE480942DBE86DD00F4A367 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1156,7 +1317,7 @@
 				INFOPLIST_FILE = AliasVault/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AliasVault;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1192,7 +1353,7 @@
 				INFOPLIST_FILE = AliasVault/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AliasVault;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1259,7 +1420,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -1314,7 +1475,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -1348,7 +1509,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -1384,7 +1545,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
@@ -1395,6 +1556,116 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		CE7782662EA1822400A75E6F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 8PHW4HN3F7;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app.VaultUtils;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INSTALL_MODULE = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
+		CE7782672EA1822400A75E6F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 8PHW4HN3F7;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				ENABLE_MODULE_VERIFIER = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MARKETING_VERSION = 1.0;
+				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
+				MODULE_VERIFIER_SUPPORTED_LANGUAGE_STANDARDS = "gnu17 gnu++20";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app.VaultUtils;
+				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_INSTALL_MODULE = YES;
+				SWIFT_INSTALL_OBJC_HEADER = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
 			};
 			name = Release;
 		};
@@ -1422,7 +1693,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1475,7 +1746,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1518,7 +1789,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -1553,7 +1824,7 @@
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
@@ -1592,7 +1863,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1645,7 +1916,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1694,7 +1965,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1746,7 +2017,7 @@
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1794,7 +2065,7 @@
 				INFOPLIST_FILE = autofill/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "AliasVault AutoFill";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1839,7 +2110,7 @@
 				INFOPLIST_FILE = autofill/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "AliasVault AutoFill";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.6;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1885,6 +2156,15 @@
 			buildConfigurations = (
 				CE59C7662E4F47FE0024A246 /* Debug */,
 				CE59C7672E4F47FE0024A246 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CE7782652EA1822400A75E6F /* Build configuration list for PBXNativeTarget "VaultUtils" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CE7782662EA1822400A75E6F /* Debug */,
+				CE7782672EA1822400A75E6F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

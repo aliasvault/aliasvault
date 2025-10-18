@@ -76,9 +76,7 @@ export default function ReinitializeScreen() : React.ReactNode {
               }
 
               // Vault successfully unlocked - proceed with decryption
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              setStatus(t('app.status.decryptingVault'));
-              await new Promise(resolve => setTimeout(resolve, 1000));
+              await new Promise(resolve => setTimeout(resolve, 500));
 
               // Migrations pending
               if (await dbContext.hasPendingMigrations()) {

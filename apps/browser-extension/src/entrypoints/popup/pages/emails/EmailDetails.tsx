@@ -2,8 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useNavigate } from 'react-router-dom';
 
+import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
-import Modal from '@/entrypoints/popup/components/Modal';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';

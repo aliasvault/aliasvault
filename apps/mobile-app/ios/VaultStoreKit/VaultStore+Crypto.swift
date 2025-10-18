@@ -65,11 +65,6 @@ extension VaultStore {
         print("Stored key in memory, will be persisted in keychain upon succesful decrypt operation")
     }
 
-    /// Check if a encryption key is stored in memory
-    public func hasEncryptionKeyInMemory() -> Bool {
-        return self.encryptionKey != nil
-    }
-
     /// Store the key derivation parameters used for deriving the encryption key from the plain text password
     public func storeEncryptionKeyDerivationParams(_ keyDerivationParams: String) throws {
         // Store the key derivation params in memory

@@ -1,8 +1,15 @@
 <div class="grid grid-cols-1 px-4 pt-6 xl:grid-cols-3 xl:gap-4 dark:bg-gray-900">
     <div class="mb-4 col-span-full xl:mb-2">
         <Breadcrumb BreadcrumbItems="BreadcrumbItems" />
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <H1>@Title</H1>
+        <div class="flex flex-row items-center justify-between gap-4">
+            @if (TitleActions != null)
+            {
+                @TitleActions
+            }
+            else
+            {
+                <H1>@Title</H1>
+            }
             @if (CustomActions != null)
             {
                 <div class="flex flex-wrap items-center gap-2">
@@ -38,4 +45,10 @@
     /// </summary>
     [Parameter]
     public RenderFragment? CustomActions { get; set; }
+
+    /// <summary>
+    /// The caller can provide additional content to be displayed next to the title.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? TitleActions { get; set; }
 }

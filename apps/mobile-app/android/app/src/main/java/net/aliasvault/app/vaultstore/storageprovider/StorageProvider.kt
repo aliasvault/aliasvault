@@ -71,4 +71,33 @@ interface StorageProvider {
      * Clear all data from the storage provider.
      */
     fun clearStorage()
+
+    /**
+     * Set the username.
+     * @param username The username to store
+     */
+    fun setUsername(username: String)
+
+    /**
+     * Get the username.
+     * @return The username or null if not set
+     */
+    fun getUsername(): String?
+
+    /**
+     * Clear the username.
+     */
+    fun clearUsername()
+
+    /**
+     * Set offline mode flag.
+     * @param isOffline Whether the app is in offline mode
+     */
+    fun setOfflineMode(isOffline: Boolean)
+
+    /**
+     * Get offline mode flag.
+     * @return True if app is in offline mode, false otherwise
+     */
+    fun getOfflineMode(): Boolean
 }

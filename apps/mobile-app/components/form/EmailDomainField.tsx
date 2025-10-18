@@ -263,10 +263,9 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       flexDirection: 'row',
     },
     label: {
-      color: colors.text,
-      fontSize: 14,
-      fontWeight: '500',
-      marginBottom: 6,
+      color: colors.textMuted,
+      fontSize: 12,
+      marginBottom: 4,
     },
     modalCloseButton: {
       padding: 8,

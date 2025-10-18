@@ -41,4 +41,19 @@ public sealed class CredentialListEntry
     /// Gets or sets the alias create date.
     /// </summary>
     public DateTime CreatedAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this credential has a passkey.
+    /// </summary>
+    public bool HasPasskey { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this credential has alias fields (identity information).
+    /// </summary>
+    public bool HasAlias { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this credential has a username or password.
+    /// </summary>
+    public bool HasUsernameOrPassword { get; set; }
 }

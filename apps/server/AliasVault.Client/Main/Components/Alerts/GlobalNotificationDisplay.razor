@@ -7,7 +7,7 @@
     return;
 }
 
-<div class="messages-container grid px-4 pt-6 lg:gap-4">
+<div class="messages-container grid px-4 @(MarginTop ? "pt-6" : "") lg:gap-4 @(MarginBottom ? "pb-6" : "")">
     @foreach (var message in Messages)
     {
         if (message.Key == "success")
@@ -31,6 +31,19 @@
 </style>
 
 @code {
+    /// <summary>
+    /// Whether to include top margin. Defaults to true.
+    /// </summary>
+    [Parameter]
+    public bool MarginTop { get; set; } = true;
+
+    /// <summary>
+    /// Whether to include bottom margin.
+    /// </summary>
+    [Parameter]
+    public bool MarginBottom { get; set; } = false;
+
+
     private List<KeyValuePair<string, string>> Messages { get; set; } = new();
 
     /// <inheritdoc />

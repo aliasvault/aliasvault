@@ -826,6 +826,11 @@ public sealed class DbService : IDisposable
             .Where(c => c.IsDeleted && c.UpdatedAt <= cutoffDate)
             .ExecuteDeleteAsync();
 
+        // Hard delete soft-deleted Passkeys older than 7 days
+        deleteCount += await _dbContext.Passkeys
+            .Where(p => p.IsDeleted && p.UpdatedAt <= cutoffDate)
+            .ExecuteDeleteAsync();
+
         // Hard delete soft-deleted Attachments older than 7 days
         deleteCount += await _dbContext.Attachments
             .Where(a => a.IsDeleted && a.UpdatedAt <= cutoffDate)

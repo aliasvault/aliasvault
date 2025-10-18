@@ -8,15 +8,15 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { sendMessage } from 'webext-bridge/popup';
 import * as Yup from 'yup';
 
-import AttachmentUploader from '@/entrypoints/popup/components/CredentialDetails/AttachmentUploader';
-import EmailDomainField from '@/entrypoints/popup/components/EmailDomainField';
-import { FormInput } from '@/entrypoints/popup/components/FormInput';
+import AttachmentUploader from '@/entrypoints/popup/components/Credentials/Details/AttachmentUploader';
+import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
+import EmailDomainField from '@/entrypoints/popup/components/Forms/EmailDomainField';
+import { FormInput } from '@/entrypoints/popup/components/Forms/FormInput';
+import PasswordField from '@/entrypoints/popup/components/Forms/PasswordField';
+import UsernameField from '@/entrypoints/popup/components/Forms/UsernameField';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
-import Modal from '@/entrypoints/popup/components/Modal';
-import PasswordField from '@/entrypoints/popup/components/PasswordField';
-import UsernameField from '@/entrypoints/popup/components/UsernameField';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
@@ -92,6 +92,7 @@ const CredentialAddEdit: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [originalAttachmentIds, setOriginalAttachmentIds] = useState<string[]>([]);
+  const [passkeyMarkedForDeletion, setPasskeyMarkedForDeletion] = useState(false);
   const webApi = useWebApi();
 
   // Track last generated values to avoid overwriting manual entries
@@ -550,6 +551,11 @@ const CredentialAddEdit: React.FC = () => {
 
       if (isEditMode) {
         await dbContext.sqliteClient!.updateCredentialById(data, originalAttachmentIds, attachments);
+
+        // Delete passkeys if marked for deletion
+        if (passkeyMarkedForDeletion) {
+          await dbContext.sqliteClient!.deletePasskeysByCredentialId(data.Id);
+        }
       } else {
         const credentialId = await dbContext.sqliteClient!.createCredential(data, attachments);
         data.Id = credentialId.toString();
@@ -570,7 +576,7 @@ const CredentialAddEdit: React.FC = () => {
         }
       },
     });
-  }, [isEditMode, dbContext.sqliteClient, executeVaultMutation, navigate, mode, watch, generateRandomAlias, webApi, clearPersistedValues, originalAttachmentIds, attachments]);
+  }, [isEditMode, dbContext.sqliteClient, executeVaultMutation, navigate, mode, watch, generateRandomAlias, webApi, clearPersistedValues, originalAttachmentIds, attachments, passkeyMarkedForDeletion]);
 
   // Set header buttons on mount and clear on unmount
   useEffect((): (() => void) => {
@@ -695,30 +701,167 @@ const CredentialAddEdit: React.FC = () => {
             <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
               <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{t('credentials.loginCredentials')}</h2>
               <div className="space-y-4">
-                <EmailDomainField
-                  id="email"
-                  label={t('common.email')}
-                  value={watch('Alias.Email') ?? ''}
-                  onChange={(value: string) => setValue('Alias.Email', value)}
-                  error={errors.Alias?.Email?.message}
-                />
-                <UsernameField
-                  id="username"
-                  label={t('common.username')}
-                  value={watch('Username') ?? ''}
-                  onChange={(value) => setValue('Username', value)}
-                  error={errors.Username?.message}
-                  onRegenerate={generateRandomUsername}
-                />
-                <PasswordField
-                  id="password"
-                  label={t('common.password')}
-                  value={watch('Password') ?? ''}
-                  onChange={(value) => setValue('Password', value)}
-                  error={errors.Password?.message}
-                  showPassword={showPassword}
-                  onShowPasswordChange={setShowPassword}
-                />
+                {watch('HasPasskey') ? (
+                  <>
+                    {/* When passkey exists: username, passkey, email, password */}
+                    <UsernameField
+                      id="username"
+                      label={t('common.username')}
+                      value={watch('Username') ?? ''}
+                      onChange={(value) => setValue('Username', value)}
+                      error={errors.Username?.message}
+                      onRegenerate={generateRandomUsername}
+                    />
+                    {!passkeyMarkedForDeletion && (
+                      <div className="p-3 rounded bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                        <div className="flex items-start gap-2">
+                          <svg
+                            className="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+                          </svg>
+                          <div className="flex-1">
+                            <div className="mb-1 flex items-center justify-between">
+                              <span className="text-sm font-medium text-gray-900 dark:text-white">{t('passkeys.passkey')}</span>
+                              <button
+                                type="button"
+                                onClick={() => setPasskeyMarkedForDeletion(true)}
+                                className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
+                                title="Delete passkey"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polyline points="3 6 5 6 21 6" />
+                                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                  <line x1="10" y1="11" x2="10" y2="17" />
+                                  <line x1="14" y1="11" x2="14" y2="17" />
+                                </svg>
+                              </button>
+                            </div>
+                            <div className="space-y-1 mb-2">
+                              {watch('PasskeyRpId') && (
+                                <div>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">{t('passkeys.site')}: </span>
+                                  <span className="text-sm text-gray-900 dark:text-white">{watch('PasskeyRpId')}</span>
+                                </div>
+                              )}
+                              {watch('PasskeyDisplayName') && (
+                                <div>
+                                  <span className="text-xs text-gray-500 dark:text-gray-400">{t('passkeys.displayName')}: </span>
+                                  <span className="text-sm text-gray-900 dark:text-white">{watch('PasskeyDisplayName')}</span>
+                                </div>
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-600 dark:text-gray-400">
+                              {t('passkeys.helpText')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {passkeyMarkedForDeletion && (
+                      <div className="p-3 rounded bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                        <div className="flex items-start gap-2">
+                          <svg
+                            className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+                          </svg>
+                          <div className="flex-1">
+                            <div className="mb-1 flex items-center justify-between">
+                              <span className="text-sm font-medium text-red-900 dark:text-red-100">{t('passkeys.passkeyMarkedForDeletion')}</span>
+                              <button
+                                type="button"
+                                onClick={() => setPasskeyMarkedForDeletion(false)}
+                                className="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+                                title="Undo"
+                              >
+                                <svg
+                                  className="w-4 h-4"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M3 7v6h6" />
+                                  <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13" />
+                                </svg>
+                              </button>
+                            </div>
+                            <p className="text-xs text-red-800 dark:text-red-200">
+                              {t('passkeys.passkeyWillBeDeleted')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <EmailDomainField
+                      id="email"
+                      label={t('common.email')}
+                      value={watch('Alias.Email') ?? ''}
+                      onChange={(value: string) => setValue('Alias.Email', value)}
+                      error={errors.Alias?.Email?.message}
+                    />
+                    <PasswordField
+                      id="password"
+                      label={t('common.password')}
+                      value={watch('Password') ?? ''}
+                      onChange={(value) => setValue('Password', value)}
+                      error={errors.Password?.message}
+                      showPassword={showPassword}
+                      onShowPasswordChange={setShowPassword}
+                    />
+                  </>
+                ) : (
+                  <>
+                    {/* When no passkey: email, username, password */}
+                    <EmailDomainField
+                      id="email"
+                      label={t('common.email')}
+                      value={watch('Alias.Email') ?? ''}
+                      onChange={(value: string) => setValue('Alias.Email', value)}
+                      error={errors.Alias?.Email?.message}
+                    />
+                    <UsernameField
+                      id="username"
+                      label={t('common.username')}
+                      value={watch('Username') ?? ''}
+                      onChange={(value) => setValue('Username', value)}
+                      error={errors.Username?.message}
+                      onRegenerate={generateRandomUsername}
+                    />
+                    <PasswordField
+                      id="password"
+                      label={t('common.password')}
+                      value={watch('Password') ?? ''}
+                      onChange={(value) => setValue('Password', value)}
+                      error={errors.Password?.message}
+                      showPassword={showPassword}
+                      onShowPasswordChange={setShowPassword}
+                    />
+                  </>
+                )}
               </div>
             </div>
 

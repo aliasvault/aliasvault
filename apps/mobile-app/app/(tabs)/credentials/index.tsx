@@ -17,6 +17,9 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
+type FilterType = 'all' | 'passkeys' | 'aliases' | 'userpass';
+
+import Logo from '@/assets/images/logo.svg';
 import { CredentialCard } from '@/components/credentials/CredentialCard';
 import { ServiceUrlNotice } from '@/components/credentials/ServiceUrlNotice';
 import LoadingOverlay from '@/components/LoadingOverlay';
@@ -27,7 +30,6 @@ import { AndroidHeader } from '@/components/ui/AndroidHeader';
 import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
-import { TitleContainer } from '@/components/ui/TitleContainer';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 
@@ -52,6 +54,8 @@ export default function CredentialsScreen() : React.ReactNode {
   const insets = useSafeAreaInsets();
   const { executeVaultMutation, isLoading, syncStatus } = useVaultMutate();
   const [isSyncing, setIsSyncing] = useState(false);
+  const [filterType, setFilterType] = useState<FilterType>('all');
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
 
   const authContext = useApp();
   const dbContext = useDb();
@@ -209,7 +213,58 @@ export default function CredentialsScreen() : React.ReactNode {
     loadCredentials();
   }, [isAuthenticated, isDatabaseAvailable, loadCredentials, setIsLoadingCredentials]);
 
+  /**
+   * Get the title based on the active filter
+   */
+  const getFilterTitle = useCallback(() : string => {
+    switch (filterType) {
+      case 'passkeys':
+        return t('credentials.filters.passkeys');
+      case 'aliases':
+        return t('credentials.filters.aliases');
+      case 'userpass':
+        return t('credentials.filters.userpass');
+      default:
+        return t('credentials.title');
+    }
+  }, [filterType, t]);
+
   const filteredCredentials = credentialsList.filter(credential => {
+    // First apply type filter
+    let passesTypeFilter = true;
+
+    if (filterType === 'passkeys') {
+      passesTypeFilter = credential.HasPasskey === true;
+    } else if (filterType === 'aliases') {
+      // Check for non-empty alias fields (excluding email which is used everywhere)
+      passesTypeFilter = !!(
+        (credential.Alias?.FirstName && credential.Alias.FirstName.trim()) ||
+        (credential.Alias?.LastName && credential.Alias.LastName.trim()) ||
+        (credential.Alias?.NickName && credential.Alias.NickName.trim()) ||
+        (credential.Alias?.Gender && credential.Alias.Gender.trim()) ||
+        (credential.Alias?.BirthDate && credential.Alias.BirthDate.trim() && credential.Alias.BirthDate.trim().startsWith('0001-01-01') !== true)
+      );
+    } else if (filterType === 'userpass') {
+      // Show only credentials that have username/password AND do NOT have alias fields AND do NOT have passkey
+      const hasAliasFields = !!(
+        (credential.Alias?.FirstName && credential.Alias.FirstName.trim()) ||
+        (credential.Alias?.LastName && credential.Alias.LastName.trim()) ||
+        (credential.Alias?.NickName && credential.Alias.NickName.trim()) ||
+        (credential.Alias?.Gender && credential.Alias.Gender.trim()) ||
+        (credential.Alias?.BirthDate && credential.Alias.BirthDate.trim() && credential.Alias.BirthDate.trim().startsWith('0001-01-01') !== true)
+      );
+      const hasUsernameOrPassword = !!(
+        (credential.Username && credential.Username.trim()) ||
+        (credential.Password && credential.Password.trim())
+      );
+      passesTypeFilter = hasUsernameOrPassword && !credential.HasPasskey && !hasAliasFields;
+    }
+
+    if (!passesTypeFilter) {
+      return false;
+    }
+
+    // Then apply search filter
     const searchLower = searchQuery.toLowerCase();
 
     /**
@@ -243,6 +298,46 @@ export default function CredentialsScreen() : React.ReactNode {
     },
     container: {
       paddingHorizontal: 0,
+    },
+    filterButton: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      marginBottom: 16,
+      gap: 8,
+    },
+    filterButtonText: {
+      color: colors.text,
+      fontSize: 28,
+      fontWeight: 'bold',
+      lineHeight: 34,
+    },
+    filterCount: {
+      color: colors.textMuted,
+      fontSize: 20,
+      lineHeight: 28,
+    },
+    filterMenu: {
+      backgroundColor: colors.accentBackground,
+      borderColor: colors.accentBorder,
+      borderRadius: 8,
+      borderWidth: 1,
+      marginBottom: 8,
+      overflow: 'hidden',
+    },
+    filterMenuItem: {
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    filterMenuItemActive: {
+      backgroundColor: colors.primary + '20',
+    },
+    filterMenuItemText: {
+      color: colors.text,
+      fontSize: 14,
+    },
+    filterMenuItemTextActive: {
+      color: colors.primary,
+      fontWeight: '600',
     },
     contentContainer: {
       paddingBottom: Platform.OS === 'ios' ? insets.bottom + 60 : 10,
@@ -313,9 +408,30 @@ export default function CredentialsScreen() : React.ReactNode {
        * Define custom header which is shown on Android. iOS displays the custom CollapsibleHeader component instead.
        * @returns
        */
-      headerTitle: (): React.ReactNode => Platform.OS === 'android' ? <AndroidHeader title={t('credentials.title')} /> : <Text>{t('credentials.title')}</Text>,
+      headerTitle: (): React.ReactNode => {
+        if (Platform.OS === 'android') {
+          return (
+            <AndroidHeader
+              title={`${getFilterTitle()} (${filteredCredentials.length})`}
+              headerButtons={[
+                {
+                  icon: showFilterMenu ? "keyboard-arrow-up" : "keyboard-arrow-down",
+                  /**
+                   * Toggle the filter menu.
+                   */
+                  onPress: () : void => {
+                    setShowFilterMenu(!showFilterMenu);
+                  },
+                  position: 'right'
+                }
+              ]}
+            />
+          );
+        }
+        return <Text>{t('credentials.title')}</Text>;
+      },
     });
-  }, [navigation, t]);
+  }, [navigation, t, filterType, showFilterMenu, getFilterTitle, filteredCredentials.length]);
 
   /**
    * Delete a credential.
@@ -381,12 +497,102 @@ export default function CredentialsScreen() : React.ReactNode {
           removeClippedSubviews={false}
           ListHeaderComponent={
             <ThemedView>
-              <TitleContainer title={t('credentials.title')} />
+              {Platform.OS === 'ios' && (
+                <TouchableOpacity
+                  style={styles.filterButton}
+                  onPress={() => setShowFilterMenu(!showFilterMenu)}
+                >
+                  <Logo width={40} height={40} />
+                  <ThemedText style={styles.filterButtonText}>
+                    {getFilterTitle()}
+                  </ThemedText>
+                  <ThemedText style={styles.filterCount}>
+                    ({filteredCredentials.length})
+                  </ThemedText>
+                  <MaterialIcons
+                    name={showFilterMenu ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+                    size={28}
+                    color={colors.text}
+                  />
+                </TouchableOpacity>
+              )}
               {serviceUrl && (
                 <ServiceUrlNotice
                   serviceUrl={serviceUrl}
                   onDismiss={() => setServiceUrl(null)}
                 />
+              )}
+              {showFilterMenu && (
+                <ThemedView style={styles.filterMenu}>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterMenuItem,
+                      filterType === 'all' && styles.filterMenuItemActive
+                    ]}
+                    onPress={() => {
+                      setFilterType('all');
+                      setShowFilterMenu(false);
+                    }}
+                  >
+                    <ThemedText style={[
+                      styles.filterMenuItemText,
+                      filterType === 'all' && styles.filterMenuItemTextActive
+                    ]}>
+                      {t('credentials.filters.all')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterMenuItem,
+                      filterType === 'passkeys' && styles.filterMenuItemActive
+                    ]}
+                    onPress={() => {
+                      setFilterType('passkeys');
+                      setShowFilterMenu(false);
+                    }}
+                  >
+                    <ThemedText style={[
+                      styles.filterMenuItemText,
+                      filterType === 'passkeys' && styles.filterMenuItemTextActive
+                    ]}>
+                      {t('credentials.filters.passkeys')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterMenuItem,
+                      filterType === 'aliases' && styles.filterMenuItemActive
+                    ]}
+                    onPress={() => {
+                      setFilterType('aliases');
+                      setShowFilterMenu(false);
+                    }}
+                  >
+                    <ThemedText style={[
+                      styles.filterMenuItemText,
+                      filterType === 'aliases' && styles.filterMenuItemTextActive
+                    ]}>
+                      {t('credentials.filters.aliases')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterMenuItem,
+                      filterType === 'userpass' && styles.filterMenuItemActive
+                    ]}
+                    onPress={() => {
+                      setFilterType('userpass');
+                      setShowFilterMenu(false);
+                    }}
+                  >
+                    <ThemedText style={[
+                      styles.filterMenuItemText,
+                      filterType === 'userpass' && styles.filterMenuItemTextActive
+                    ]}>
+                      {t('credentials.filters.userpass')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </ThemedView>
               )}
               <ThemedView style={styles.searchContainer}>
                 <MaterialIcons
@@ -436,7 +642,12 @@ export default function CredentialsScreen() : React.ReactNode {
           ListEmptyComponent={
             !isLoadingCredentials ? (
               <Text style={styles.emptyText}>
-                {searchQuery ? t('credentials.noMatchingCredentials') : t('credentials.noCredentialsFound')}
+                {searchQuery
+                  ? t('credentials.noMatchingCredentials')
+                  : filterType === 'passkeys'
+                    ? t('credentials.noPasskeysFound')
+                    : t('credentials.noCredentialsFound')
+                }
               </Text>
             ) : null
           }

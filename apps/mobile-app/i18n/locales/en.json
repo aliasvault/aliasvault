@@ -81,7 +81,7 @@
       "failedToSyncVault": "Failed to sync vault",
       "operationFailed": "Operation failed",
       "versionNotSupported": "This version of the AliasVault mobile app is not supported by the server anymore. Please update your app to the latest version.",
-      "serverNeedsUpdate": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
       "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "vaultDecryptFailed": "Vault could not be decrypted, if the problem persists please logout and login again.",
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons."
@@ -123,9 +123,10 @@
     "privateEmailDescription": "E2E encrypted, fully private.",
     "publicEmailTitle": "Public Temp Email Providers",
     "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
-    "searchPlaceholder": "Search credentials...",
+    "searchPlaceholder": "Search vault...",
     "noMatchingCredentials": "No matching credentials found",
     "noCredentialsFound": "No credentials found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
     "recentEmails": "Recent emails",
     "loadingEmails": "Loading emails...",
     "noEmailsYet": "No emails received yet.",
@@ -151,6 +152,12 @@
     "credentialDetails": "Credential Details",
     "emailPreview": "Email Preview",
     "switchBackToBrowser": "Switch back to your browser to continue.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "twoFactorAuth": "Two-factor authentication",
     "totpCode": "TOTP Code",
     "attachments": "Attachments",
@@ -160,11 +167,15 @@
     "toasts": {
       "credentialUpdated": "Credential updated successfully",
       "credentialCreated": "Credential created successfully",
-      "credentialDeleted": "Credential deleted successfully"
+      "credentialDeleted": "Credential deleted successfully",
+      "usernameCopied": "Username copied to clipboard",
+      "emailCopied": "Email copied to clipboard",
+      "passwordCopied": "Password copied to clipboard"
     },
     "createNewAliasFor": "Create new alias for",
     "errors": {
       "loadFailed": "Failed to load credential",
+      "saveFailed": "Failed to save credential",
       "generateUsernameFailed": "Failed to generate username",
       "generatePasswordFailed": "Failed to generate password"
     },
@@ -177,12 +188,21 @@
       "copyPassword": "Copy Password"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Display Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+  },
   "settings": {
     "title": "Settings",
-    "iosAutofill": "iOS Autofill",
+    "iosAutofill": "Autofill & Passkeys",
     "iosAutofillSettings": {
-      "headerText": "You can configure AliasVault to provide native password autofill functionality in iOS. Follow the instructions below to enable it.",
-      "howToEnable": "How to enable:",
+      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
+      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
+      "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "1. Open iOS Settings via the button below",
       "step2": "2. Go to \"General\"",
       "step3": "3. Tap \"AutoFill & Passwords\"",

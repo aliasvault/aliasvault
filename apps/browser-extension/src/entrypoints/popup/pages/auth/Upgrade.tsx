@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import Button from '@/entrypoints/popup/components/Button';
+import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
-import Modal from '@/entrypoints/popup/components/Modal';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';

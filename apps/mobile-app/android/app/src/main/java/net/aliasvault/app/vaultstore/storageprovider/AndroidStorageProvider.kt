@@ -78,4 +78,35 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
             encryptedDatabaseFile.delete()
         }
     }
+
+    override fun setUsername(username: String) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            putString("username", username)
+        }
+    }
+
+    override fun getUsername(): String? {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getString("username", null)
+    }
+
+    override fun clearUsername() {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            remove("username")
+        }
+    }
+
+    override fun setOfflineMode(isOffline: Boolean) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            putBoolean("offline_mode", isOffline)
+        }
+    }
+
+    override fun getOfflineMode(): Boolean {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean("offline_mode", false)
+    }
 }

@@ -49,8 +49,11 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     try {
       await NativeVaultManager.unlockVault();
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to unlock vault:', error);
+      if (error?.code === 'DATABASE_SETUP_ERROR') {
+        console.error('Database setup error:', error.message);
+      }
       return false;
     }
   }, []);

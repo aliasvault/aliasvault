@@ -11,6 +11,7 @@ public struct ColorConstants {
         static let accentBorder = SwiftUI.Color(hex: "#d1d5db")
         static let primary = SwiftUI.Color(hex: "#f49541")
         static let secondary = SwiftUI.Color(hex: "#6b7280")
+        static let tertiary = SwiftUI.Color(hex: "#eabf69")
         static let icon = SwiftUI.Color(hex: "#687076")
     }
 
@@ -23,6 +24,7 @@ public struct ColorConstants {
         static let accentBorder = SwiftUI.Color(hex: "#444444")
         static let primary = SwiftUI.Color(hex: "#f49541")
         static let secondary = SwiftUI.Color(hex: "#6b7280")
+        static let tertiary = SwiftUI.Color(hex: "#eabf69")
         static let icon = SwiftUI.Color(hex: "#9BA1A6")
     }
 }

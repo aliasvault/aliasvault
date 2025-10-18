@@ -64,6 +64,12 @@ type Credential = {
     Logo?: Uint8Array | number[];
     Notes?: string;
     Alias: Alias;
+    /** Indicates if this credential has an associated passkey */
+    HasPasskey?: boolean;
+    /** The relying party ID (domain) of the associated passkey */
+    PasskeyRpId?: string;
+    /** The display name of the associated passkey */
+    PasskeyDisplayName?: string;
 };
 /**
  * Alias SQLite database type.
@@ -90,4 +96,34 @@ type Attachment = {
     IsDeleted?: boolean;
 };
 
-export type { Alias, Attachment, Credential, EncryptionKey, PasswordSettings, TotpCode };
+/**
+ * Passkey SQLite database type.
+ */
+type Passkey = {
+    /** The ID of the passkey */
+    Id: string;
+    /** The credential ID foreign key */
+    CredentialId: string;
+    /** The relying party identifier */
+    RpId: string;
+    /** The user handle (user ID) provided by the relying party - stored as byte array (BLOB) */
+    UserHandle?: Uint8Array | number[] | null;
+    /** The public key */
+    PublicKey: string;
+    /** The private key */
+    PrivateKey: string;
+    /** The PRF encryption key associated with the passkey (optional, only set if PRF was requested by RP) */
+    PrfKey?: Uint8Array | number[];
+    /** The display name for the passkey */
+    DisplayName: string;
+    /** Additional data as JSON blob (Base64 encoded) */
+    AdditionalData?: string | null;
+    /** Created timestamp (epoch milliseconds) */
+    CreatedAt: number;
+    /** Updated timestamp (epoch milliseconds) */
+    UpdatedAt: number;
+    /** Soft delete flag (0/1) */
+    IsDeleted: number;
+};
+
+export type { Alias, Attachment, Credential, EncryptionKey, Passkey, PasswordSettings, TotpCode };

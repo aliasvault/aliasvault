@@ -7,6 +7,7 @@ public struct Credential: Codable, Hashable, Equatable {
     public let username: String?
     public let notes: String?
     public let password: Password?
+    public let passkeys: [Passkey]?  // Array of passkeys linked to this credential
     public let createdAt: Date
     public let updatedAt: Date
     public let isDeleted: Bool
@@ -18,6 +19,7 @@ public struct Credential: Codable, Hashable, Equatable {
         username: String?,
         notes: String?,
         password: Password?,
+        passkeys: [Passkey]? = nil,
         createdAt: Date,
         updatedAt: Date,
         isDeleted: Bool
@@ -28,6 +30,7 @@ public struct Credential: Codable, Hashable, Equatable {
         self.username = username
         self.notes = notes
         self.password = password
+        self.passkeys = passkeys
         self.createdAt = createdAt
         self.updatedAt = updatedAt
         self.isDeleted = isDeleted

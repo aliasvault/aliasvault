@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import CredentialCard from '@/entrypoints/popup/components/CredentialCard';
+import CredentialCard from '@/entrypoints/popup/components/Credentials/CredentialCard';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
@@ -18,6 +18,50 @@ import type { Credential } from '@/utils/dist/shared/models/vault';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
+type FilterType = 'all' | 'passkeys' | 'aliases' | 'userpass';
+
+const FILTER_STORAGE_KEY = 'credentials-filter';
+const FILTER_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Get stored filter from localStorage if not expired
+ */
+const getStoredFilter = (): FilterType => {
+  try {
+    const stored = localStorage.getItem(FILTER_STORAGE_KEY);
+    if (!stored) {
+      return 'all';
+    }
+
+    const { filter, timestamp } = JSON.parse(stored);
+    const now = Date.now();
+
+    // Check if expired (5 minutes)
+    if (now - timestamp > FILTER_EXPIRY_MS) {
+      localStorage.removeItem(FILTER_STORAGE_KEY);
+      return 'all';
+    }
+
+    return filter as FilterType;
+  } catch {
+    return 'all';
+  }
+};
+
+/**
+ * Store filter in localStorage with timestamp
+ */
+const storeFilter = (filter: FilterType): void => {
+  try {
+    localStorage.setItem(FILTER_STORAGE_KEY, JSON.stringify({
+      filter,
+      timestamp: Date.now()
+    }));
+  } catch {
+    // Ignore storage errors
+  }
+};
+
 /**
  * Credentials list page.
  */
@@ -30,6 +74,8 @@ const CredentialsList: React.FC = () => {
   const { setHeaderButtons } = useHeaderButtons();
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState<FilterType>(getStoredFilter());
+  const [showFilterMenu, setShowFilterMenu] = useState(false);
   const { setIsInitialLoading } = useLoading();
 
   /**
@@ -132,7 +178,58 @@ const CredentialsList: React.FC = () => {
     refreshCredentials();
   }, [dbContext?.sqliteClient, setIsLoading, setIsInitialLoading]);
 
-  const filteredCredentials = credentials.filter(credential => {
+  /**
+   * Get the title based on the active filter
+   */
+  const getFilterTitle = () : string => {
+    switch (filterType) {
+      case 'passkeys':
+        return t('credentials.filters.passkeys');
+      case 'aliases':
+        return t('credentials.filters.aliases');
+      case 'userpass':
+        return t('credentials.filters.userpass');
+      default:
+        return t('credentials.title');
+    }
+  };
+
+  const filteredCredentials = credentials.filter((credential: Credential) => {
+    // First apply type filter
+    let passesTypeFilter = true;
+
+    if (filterType === 'passkeys') {
+      passesTypeFilter = credential.HasPasskey === true;
+    } else if (filterType === 'aliases') {
+      // Check for non-empty alias fields (excluding email which is used everywhere)
+      passesTypeFilter = !!(
+        (credential.Alias?.FirstName && credential.Alias.FirstName.trim()) ||
+        (credential.Alias?.LastName && credential.Alias.LastName.trim()) ||
+        (credential.Alias?.NickName && credential.Alias.NickName.trim()) ||
+        (credential.Alias?.Gender && credential.Alias.Gender.trim()) ||
+        (credential.Alias?.BirthDate && credential.Alias.BirthDate.trim() && credential.Alias.BirthDate.trim().startsWith('0001-01-01') !== true)
+      );
+    } else if (filterType === 'userpass') {
+      // Show only credentials that have username/password AND do NOT have alias fields AND do NOT have passkey
+      const hasAliasFields = !!(
+        (credential.Alias?.FirstName && credential.Alias.FirstName.trim()) ||
+        (credential.Alias?.LastName && credential.Alias.LastName.trim()) ||
+        (credential.Alias?.NickName && credential.Alias.NickName.trim()) ||
+        (credential.Alias?.Gender && credential.Alias.Gender.trim()) ||
+        (credential.Alias?.BirthDate && credential.Alias.BirthDate.trim() && credential.Alias.BirthDate.trim().startsWith('0001-01-01') !== true)
+      );
+      const hasUsernameOrPassword = !!(
+        (credential.Username && credential.Username.trim()) ||
+        (credential.Password && credential.Password.trim())
+      );
+      passesTypeFilter = hasUsernameOrPassword && !credential.HasPasskey && !hasAliasFields;
+    }
+
+    if (!passesTypeFilter) {
+      return false;
+    }
+
+    // Then apply search filter
     const searchLower = searchTerm.toLowerCase();
 
     /**
@@ -164,7 +261,93 @@ const CredentialsList: React.FC = () => {
   return (
     <div>
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-gray-900 dark:text-white text-xl">{t('credentials.title')}</h2>
+        <div className="relative">
+          <button
+            onClick={() => setShowFilterMenu(!showFilterMenu)}
+            className="flex items-center gap-1 text-gray-900 dark:text-white text-xl hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none"
+          >
+            <h2 className="flex items-baseline gap-1.5">
+              {getFilterTitle()}
+              <span className="text-sm text-gray-500 dark:text-gray-400">({filteredCredentials.length})</span>
+            </h2>
+            <svg
+              className="w-4 h-4 mt-1"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+
+          {showFilterMenu && (
+            <>
+              <div
+                className="fixed inset-0 z-10"
+                onClick={() => setShowFilterMenu(false)}
+              />
+              <div className="absolute left-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-20">
+                <div className="py-1">
+                  <button
+                    onClick={() => {
+                      const newFilter = 'all';
+                      setFilterType(newFilter);
+                      storeFilter(newFilter);
+                      setShowFilterMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                      filterType === 'all' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {t('credentials.filters.all')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newFilter = 'passkeys';
+                      setFilterType(newFilter);
+                      storeFilter(newFilter);
+                      setShowFilterMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                      filterType === 'passkeys' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {t('credentials.filters.passkeys')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newFilter = 'aliases';
+                      setFilterType(newFilter);
+                      storeFilter(newFilter);
+                      setShowFilterMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                      filterType === 'aliases' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {t('credentials.filters.aliases')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const newFilter = 'userpass';
+                      setFilterType(newFilter);
+                      storeFilter(newFilter);
+                      setShowFilterMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                      filterType === 'userpass' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {t('credentials.filters.userpass')}
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
         <ReloadButton onClick={syncVaultAndRefresh} />
       </div>
 
@@ -190,6 +373,15 @@ const CredentialsList: React.FC = () => {
           </p>
           <p>
             {t('credentials.welcomeDescription')}
+          </p>
+        </div>
+      ) : filteredCredentials.length === 0 ? (
+        <div className="text-gray-500 dark:text-gray-400 space-y-2 mb-10">
+          <p>
+            {filterType === 'passkeys'
+              ? t('credentials.noPasskeysFound')
+              : t('credentials.noMatchingCredentials')
+            }
           </p>
         </div>
       ) : (

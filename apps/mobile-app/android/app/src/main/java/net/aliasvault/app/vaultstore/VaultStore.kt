@@ -1026,4 +1026,486 @@ class VaultStore(
         val invisible = "[\\uFEFF\\u200B\\u00A0\\u202A-\\u202E\\u2060\\u180E]"
         return this.replace(Regex("^($invisible)+|($invisible)+$"), "").trim()
     }
+
+    // MARK: - Username Management
+
+    /**
+     * Set the username.
+     * @param username The username to store
+     */
+    fun setUsername(username: String) {
+        storageProvider.setUsername(username)
+    }
+
+    /**
+     * Get the username.
+     * @return The username or null if not set
+     */
+    fun getUsername(): String? {
+        return storageProvider.getUsername()
+    }
+
+    /**
+     * Clear the username.
+     */
+    fun clearUsername() {
+        storageProvider.clearUsername()
+    }
+
+    // MARK: - Offline Mode Management
+
+    /**
+     * Set offline mode flag.
+     * @param isOffline Whether the app is in offline mode
+     */
+    fun setOfflineMode(isOffline: Boolean) {
+        storageProvider.setOfflineMode(isOffline)
+    }
+
+    /**
+     * Get offline mode flag.
+     * @return True if app is in offline mode, false otherwise
+     */
+    fun getOfflineMode(): Boolean {
+        return storageProvider.getOfflineMode()
+    }
+
+    // MARK: - Vault Sync Methods
+
+    /**
+     * Check if a new vault version is available on the server.
+     * Returns a map with isNewVersionAvailable and newRevision keys.
+     *
+     * @param webApiService The WebApiService to use for the request
+     * @return Map with "isNewVersionAvailable" (Boolean) and "newRevision" (Int?) keys
+     */
+    suspend fun isNewVaultVersionAvailable(webApiService: net.aliasvault.app.webapi.WebApiService): Map<String, Any?> {
+        val status = fetchAndValidateStatus(webApiService)
+        setOfflineMode(false)
+
+        val currentRevision = getVaultRevisionNumber()
+        return if (status.vaultRevision > currentRevision) {
+            mapOf(
+                "isNewVersionAvailable" to true,
+                "newRevision" to status.vaultRevision,
+            )
+        } else {
+            mapOf(
+                "isNewVersionAvailable" to false,
+                "newRevision" to null,
+            )
+        }
+    }
+
+    /**
+     * Download and store the vault from the server.
+     * This method assumes a version check has already been performed.
+     *
+     * @param webApiService The WebApiService to use for the request
+     * @param newRevision The new revision number to download
+     * @return True if successful
+     */
+    suspend fun downloadVault(webApiService: net.aliasvault.app.webapi.WebApiService, newRevision: Int): Boolean {
+        try {
+            downloadAndStoreVault(webApiService, newRevision)
+            setOfflineMode(false)
+            return true
+        } catch (e: Exception) {
+            Log.e(TAG, "Error downloading vault", e)
+            throw e
+        }
+    }
+
+    /**
+     * Fetch and validate server status.
+     */
+    private suspend fun fetchAndValidateStatus(webApiService: net.aliasvault.app.webapi.WebApiService): StatusResponse {
+        val statusResponse = try {
+            webApiService.executeRequest(
+                method = "GET",
+                endpoint = "Auth/status",
+                body = null,
+                headers = emptyMap(),
+                requiresAuth = true,
+            )
+        } catch (e: Exception) {
+            throw Exception("Network error: ${e.message}", e)
+        }
+
+        // Check response status
+        if (statusResponse.statusCode != 200) {
+            if (statusResponse.statusCode == 401) {
+                throw Exception("Session expired")
+            }
+            setOfflineMode(true)
+            throw Exception("Server unavailable: ${statusResponse.statusCode}")
+        }
+
+        val status = try {
+            val json = org.json.JSONObject(statusResponse.body)
+            StatusResponse(
+                clientVersionSupported = json.getBoolean("clientVersionSupported"),
+                serverVersion = json.getString("serverVersion"),
+                vaultRevision = json.getInt("vaultRevision"),
+                srpSalt = json.getString("srpSalt"),
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to decode status response", e)
+            throw Exception("Failed to decode status response: ${e.message}")
+        }
+
+        if (!status.clientVersionSupported) {
+            throw Exception("Client version not supported")
+        }
+
+        validateSrpSalt(status.srpSalt)
+        return status
+    }
+
+    /**
+     * Validate SRP salt hasn't changed (password change detection).
+     */
+    private fun validateSrpSalt(srpSalt: String) {
+        val keyDerivationParams = storageProvider.getKeyDerivationParams()
+        if (keyDerivationParams.isEmpty()) {
+            return
+        }
+
+        try {
+            val json = org.json.JSONObject(keyDerivationParams)
+            val salt = json.optString("salt", "")
+            if (srpSalt.isNotEmpty() && srpSalt != salt) {
+                throw Exception("Password changed")
+            }
+        } catch (e: Exception) {
+            if (e.message == "Password changed") throw e
+            // Ignore parsing errors
+        }
+    }
+
+    /**
+     * Download vault from server and store it locally.
+     */
+    private suspend fun downloadAndStoreVault(webApiService: net.aliasvault.app.webapi.WebApiService, newRevision: Int) {
+        val vaultResponse = try {
+            webApiService.executeRequest(
+                method = "GET",
+                endpoint = "Vault",
+                body = null,
+                headers = emptyMap(),
+                requiresAuth = true,
+            )
+        } catch (e: Exception) {
+            throw Exception("Network error: ${e.message}", e)
+        }
+
+        if (vaultResponse.statusCode != 200) {
+            if (vaultResponse.statusCode == 401) {
+                throw Exception("Session expired")
+            }
+            throw Exception("Server unavailable: ${vaultResponse.statusCode}")
+        }
+
+        val vault = parseVaultResponse(vaultResponse.body)
+        validateVaultStatus(vault.status)
+        storeEncryptedDatabase(vault.vault.blob)
+        setVaultRevisionNumber(newRevision)
+
+        if (isVaultUnlocked()) {
+            unlockVault()
+        }
+    }
+
+    /**
+     * Parse vault response from JSON.
+     */
+    private fun parseVaultResponse(body: String): VaultResponse {
+        return try {
+            val json = org.json.JSONObject(body)
+            val vaultJson = json.getJSONObject("vault")
+
+            val emailList = mutableListOf<String>()
+            val emailArray = vaultJson.getJSONArray("emailAddressList")
+            for (i in 0 until emailArray.length()) {
+                emailList.add(emailArray.getString(i))
+            }
+
+            val privateList = mutableListOf<String>()
+            val privateArray = vaultJson.getJSONArray("privateEmailDomainList")
+            for (i in 0 until privateArray.length()) {
+                privateList.add(privateArray.getString(i))
+            }
+
+            val publicList = mutableListOf<String>()
+            val publicArray = vaultJson.getJSONArray("publicEmailDomainList")
+            for (i in 0 until publicArray.length()) {
+                publicList.add(publicArray.getString(i))
+            }
+
+            VaultResponse(
+                status = json.getInt("status"),
+                vault = VaultData(
+                    username = vaultJson.getString("username"),
+                    blob = vaultJson.getString("blob"),
+                    version = vaultJson.getString("version"),
+                    currentRevisionNumber = vaultJson.getInt("currentRevisionNumber"),
+                    encryptionPublicKey = vaultJson.getString("encryptionPublicKey"),
+                    credentialsCount = vaultJson.getInt("credentialsCount"),
+                    emailAddressList = emailList,
+                    privateEmailDomainList = privateList,
+                    publicEmailDomainList = publicList,
+                    createdAt = vaultJson.getString("createdAt"),
+                    updatedAt = vaultJson.getString("updatedAt"),
+                ),
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to decode vault response", e)
+            throw Exception("Failed to decode vault response: ${e.message}")
+        }
+    }
+
+    /**
+     * Validate vault response status.
+     */
+    private fun validateVaultStatus(status: Int) {
+        when (status) {
+            0 -> return
+            1 -> throw Exception("Vault merge required")
+            2 -> throw Exception("Vault outdated")
+            else -> throw Exception("Unknown vault status: $status")
+        }
+    }
+
+    // MARK: - Vault Mutate Methods
+
+    /**
+     * Prepare the vault for upload by assembling all metadata.
+     * Returns a VaultUpload object ready to be sent to the server.
+     */
+    private fun prepareVault(): VaultUpload {
+        val currentRevision = getVaultRevisionNumber()
+
+        val encryptedDb = getEncryptedDatabase()
+
+        val username = getUsername()
+            ?: throw Exception("Username not found")
+
+        if (!isVaultUnlocked()) {
+            throw Exception("Vault must be unlocked to prepare for upload")
+        }
+
+        // Get all credentials
+        val credentials = getAllCredentials()
+
+        // Get private email domains from metadata
+        val metadata = getVaultMetadataObject()
+        val privateEmailDomains = metadata?.privateEmailDomains ?: emptyList()
+
+        // Extract private email addresses from credentials
+        val privateEmailAddresses = credentials
+            .mapNotNull { it.alias?.email }
+            .filter { email ->
+                privateEmailDomains.any { domain ->
+                    email.lowercase().endsWith("@${domain.lowercase()}")
+                }
+            }
+            .distinct()
+
+        // Get database version
+        val dbVersion = getDatabaseVersion()
+
+        // Get app version
+        val version = try {
+            val context = storageProvider as? net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
+            val pm = context?.javaClass?.getDeclaredField("context")?.get(context) as? android.content.Context
+            pm?.packageManager?.getPackageInfo(pm.packageName, 0)?.versionName ?: "0.0.0"
+        } catch (e: Exception) {
+            "0.0.0"
+        }
+        val baseVersion = version.split("-").firstOrNull() ?: "0.0.0"
+        val client = "android-$baseVersion"
+
+        // Format dates in ISO 8601 format
+        val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US)
+        dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
+        val now = dateFormat.format(java.util.Date())
+
+        return VaultUpload(
+            blob = encryptedDb,
+            createdAt = now,
+            credentialsCount = credentials.size,
+            currentRevisionNumber = currentRevision,
+            emailAddressList = privateEmailAddresses,
+            privateEmailDomainList = emptyList(), // Empty on purpose
+            publicEmailDomainList = emptyList(), // Empty on purpose
+            encryptionPublicKey = "", // Empty on purpose
+            updatedAt = now,
+            username = username,
+            version = dbVersion,
+            client = client,
+        )
+    }
+
+    /**
+     * Execute a vault mutation operation.
+     * This method uploads the vault to the server and updates the local revision number.
+     *
+     * @param webApiService The WebApiService to use for the request
+     * @return True if successful
+     */
+    suspend fun mutateVault(webApiService: net.aliasvault.app.webapi.WebApiService): Boolean {
+        try {
+            // Prepare vault for upload
+            val vault = prepareVault()
+
+            // Convert to JSON
+            val json = org.json.JSONObject()
+            json.put("blob", vault.blob)
+            json.put("createdAt", vault.createdAt)
+            json.put("credentialsCount", vault.credentialsCount)
+            json.put("currentRevisionNumber", vault.currentRevisionNumber)
+            json.put("emailAddressList", org.json.JSONArray(vault.emailAddressList))
+            json.put("privateEmailDomainList", org.json.JSONArray(vault.privateEmailDomainList))
+            json.put("publicEmailDomainList", org.json.JSONArray(vault.publicEmailDomainList))
+            json.put("encryptionPublicKey", vault.encryptionPublicKey)
+            json.put("updatedAt", vault.updatedAt)
+            json.put("username", vault.username)
+            json.put("version", vault.version)
+            json.put("client", vault.client)
+
+            // Upload to server
+            val response = webApiService.executeRequest(
+                method = "POST",
+                endpoint = "Vault",
+                body = json.toString(),
+                headers = mapOf("Content-Type" to "application/json"),
+                requiresAuth = true,
+            )
+
+            if (response.statusCode != 200) {
+                Log.e(TAG, "Server rejected vault upload with status ${response.statusCode}")
+                throw Exception("Server returned error: ${response.statusCode}")
+            }
+
+            // Parse response
+            val vaultResponse = try {
+                val responseJson = org.json.JSONObject(response.body)
+                VaultPostResponse(
+                    status = responseJson.getInt("status"),
+                    newRevisionNumber = responseJson.getInt("newRevisionNumber"),
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to parse vault upload response", e)
+                throw Exception("Failed to parse vault upload response: ${e.message}")
+            }
+
+            // Check vault response status
+            when (vaultResponse.status) {
+                0 -> {
+                    // Success - update local revision number
+                    setVaultRevisionNumber(vaultResponse.newRevisionNumber)
+                    setOfflineMode(false)
+                    return true
+                }
+                1 -> throw Exception("Vault merge required")
+                2 -> throw Exception("Vault is outdated, please sync first")
+                else -> throw Exception("Failed to upload vault")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error mutating vault", e)
+            throw e
+        }
+    }
+
+    /**
+     * Get the database version from the __EFMigrationsHistory table.
+     */
+    private fun getDatabaseVersion(): String {
+        val query = "SELECT MigrationId FROM __EFMigrationsHistory ORDER BY MigrationId DESC LIMIT 1"
+        val results = executeQuery(query, emptyArray())
+
+        if (results.isEmpty()) {
+            Log.d(TAG, "No migrations found in database, returning default version")
+            return "0.0.0"
+        }
+
+        val migrationId = results[0]["MigrationId"] as? String
+        if (migrationId == null) {
+            return "0.0.0"
+        }
+
+        // Extract version using regex - matches patterns like "_1.4.1-"
+        val versionRegex = Regex("_(\\d+\\.\\d+\\.\\d+)-")
+        val match = versionRegex.find(migrationId)
+
+        return if (match != null && match.groupValues.size > 1) {
+            match.groupValues[1]
+        } else {
+            Log.d(TAG, "Could not extract version from migration ID '$migrationId', returning default")
+            "0.0.0"
+        }
+    }
+
+    // MARK: - Data Models for Sync/Mutate
+
+    /**
+     * Status response from Auth/status endpoint.
+     */
+    private data class StatusResponse(
+        val clientVersionSupported: Boolean,
+        val serverVersion: String,
+        val vaultRevision: Int,
+        val srpSalt: String,
+    )
+
+    /**
+     * Vault data from API.
+     */
+    private data class VaultData(
+        val username: String,
+        val blob: String,
+        val version: String,
+        val currentRevisionNumber: Int,
+        val encryptionPublicKey: String,
+        val credentialsCount: Int,
+        val emailAddressList: List<String>,
+        val privateEmailDomainList: List<String>,
+        val publicEmailDomainList: List<String>,
+        val createdAt: String,
+        val updatedAt: String,
+    )
+
+    /**
+     * Vault response from Vault GET endpoint.
+     */
+    private data class VaultResponse(
+        val status: Int,
+        val vault: VaultData,
+    )
+
+    /**
+     * Vault upload model that matches the API contract.
+     */
+    private data class VaultUpload(
+        val blob: String,
+        val createdAt: String,
+        val credentialsCount: Int,
+        val currentRevisionNumber: Int,
+        val emailAddressList: List<String>,
+        val privateEmailDomainList: List<String>,
+        val publicEmailDomainList: List<String>,
+        val encryptionPublicKey: String,
+        val updatedAt: String,
+        val username: String,
+        val version: String,
+        val client: String,
+    )
+
+    /**
+     * Vault POST response from API.
+     */
+    private data class VaultPostResponse(
+        val status: Int,
+        val newRevisionNumber: Int,
+    )
 }

@@ -16,7 +16,7 @@ namespace AliasClientDb.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.2")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Proxies:ChangeTracking", false)
                 .HasAnnotation("Proxies:CheckEquality", false)
                 .HasAnnotation("Proxies:LazyLoading", true);
@@ -27,7 +27,8 @@ namespace AliasClientDb.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("BirthDate")
+                    b.Property<string>("BirthDate")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
@@ -165,6 +166,63 @@ namespace AliasClientDb.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("EncryptionKeys");
+                });
+
+            modelBuilder.Entity("AliasClientDb.Passkey", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("AdditionalData")
+                        .HasColumnType("BLOB");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("CredentialId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<byte[]>("PrfKey")
+                        .HasMaxLength(64)
+                        .HasColumnType("BLOB");
+
+                    b.Property<string>("PrivateKey")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PublicKey")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("RpId")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("TEXT")
+                        .UseCollation("NOCASE");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<byte[]>("UserHandle")
+                        .IsRequired()
+                        .HasColumnType("BLOB");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CredentialId");
+
+                    b.HasIndex("RpId");
+
+                    b.ToTable("Passkeys");
                 });
 
             modelBuilder.Entity("AliasClientDb.Password", b =>
@@ -315,6 +373,17 @@ namespace AliasClientDb.Migrations
                     b.Navigation("Service");
                 });
 
+            modelBuilder.Entity("AliasClientDb.Passkey", b =>
+                {
+                    b.HasOne("AliasClientDb.Credential", "Credential")
+                        .WithMany("Passkeys")
+                        .HasForeignKey("CredentialId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Credential");
+                });
+
             modelBuilder.Entity("AliasClientDb.Password", b =>
                 {
                     b.HasOne("AliasClientDb.Credential", "Credential")
@@ -345,6 +414,8 @@ namespace AliasClientDb.Migrations
             modelBuilder.Entity("AliasClientDb.Credential", b =>
                 {
                     b.Navigation("Attachments");
+
+                    b.Navigation("Passkeys");
 
                     b.Navigation("Passwords");
 

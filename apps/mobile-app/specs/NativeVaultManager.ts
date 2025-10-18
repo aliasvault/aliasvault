@@ -52,6 +52,40 @@ export interface Spec extends TurboModule {
   // Battery optimization management
   isIgnoringBatteryOptimizations(): Promise<boolean>;
   requestIgnoreBatteryOptimizations(): Promise<string>;
+
+  // Credential identity management
+  registerCredentialIdentities(): Promise<void>;
+
+  // WebAPI configuration and token management
+  setApiUrl(url: string): Promise<void>;
+  getApiUrl(): Promise<string>;
+  setAuthTokens(accessToken: string, refreshToken: string): Promise<void>;
+  getAccessToken(): Promise<string | null>;
+  clearAuthTokens(): Promise<void>;
+  revokeTokens(): Promise<void>;
+
+  // WebAPI request execution
+  executeWebApiRequest(
+    method: string,
+    endpoint: string,
+    body: string | null,
+    headers: string,
+    requiresAuth: boolean
+  ): Promise<string>;
+
+  // Username management
+  setUsername(username: string): Promise<void>;
+  getUsername(): Promise<string | null>;
+  clearUsername(): Promise<void>;
+
+  // Offline mode management
+  setOfflineMode(isOffline: boolean): Promise<void>;
+  getOfflineMode(): Promise<boolean>;
+
+  // Vault sync and mutate
+  isNewVaultVersionAvailable(): Promise<{ isNewVersionAvailable: boolean; newRevision: number | null }>;
+  downloadVault(newRevision: number): Promise<boolean>;
+  mutateVault(): Promise<boolean>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeVaultManager');

@@ -91,6 +91,11 @@ public sealed class CredentialEdit
     public List<TotpCode> TotpCodes { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets the Passkeys list.
+    /// </summary>
+    public List<Passkey> Passkeys { get; set; } = [];
+
+    /// <summary>
     /// Creates a CredentialEdit instance from a Credential entity.
     /// </summary>
     /// <param name="credential">The credential entity to convert.</param>
@@ -126,6 +131,7 @@ public sealed class CredentialEdit
             AliasBirthDate = credentialCopy.Alias.BirthDate == DateTime.MinValue ? string.Empty : credentialCopy.Alias.BirthDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
             Attachments = credentialCopy.Attachments.ToList(),
             TotpCodes = credentialCopy.TotpCodes.ToList(),
+            Passkeys = credentialCopy.Passkeys.Where(p => !p.IsDeleted).ToList(),
             CreateDate = credentialCopy.CreatedAt,
             LastUpdate = credentialCopy.UpdatedAt,
         };

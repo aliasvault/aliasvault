@@ -75,9 +75,7 @@ export default function Initialize() : React.ReactNode {
               }
 
               // Vault successfully unlocked - proceed with decryption
-              await new Promise(resolve => setTimeout(resolve, 750));
-              setStatus(t('app.status.decryptingVault'));
-              await new Promise(resolve => setTimeout(resolve, 750));
+              await new Promise(resolve => setTimeout(resolve, 500));
 
               // Migrations pending
               if (await dbContext.hasPendingMigrations()) {
@@ -150,9 +148,7 @@ export default function Initialize() : React.ReactNode {
             setStatus(t('app.status.unlockingVault'));
             const isUnlocked = await dbContext.unlockVault();
             if (isUnlocked) {
-              await new Promise(resolve => setTimeout(resolve, 750));
-              setStatus(t('app.status.decryptingVault'));
-              await new Promise(resolve => setTimeout(resolve, 750));
+              await new Promise(resolve => setTimeout(resolve, 500));
 
               // Check if the vault is up to date, if not, redirect to the upgrade page.
               if (await dbContext.hasPendingMigrations()) {
@@ -232,6 +228,8 @@ export default function Initialize() : React.ReactNode {
              * Show modal with error message for other errors
              */
             Alert.alert(t('common.error'), error);
+            router.replace('/unlock');
+            return;
           },
           /**
            * On upgrade required.

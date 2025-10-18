@@ -16,7 +16,7 @@ type CredentialWithPriority = Credential & {
  * @param url - URL or domain string
  * @returns Normalized domain without protocol or www
  */
-function extractDomain(url: string): string {
+export function extractDomain(url: string): string {
   if (!url) {
     return '';
   }
@@ -42,7 +42,7 @@ function extractDomain(url: string): string {
  * E.g., "sub.example.com.au" -> "example.com.au"
  * E.g., "sub.example.co.uk" -> "example.co.uk"
  */
-function extractRootDomain(domain: string): string {
+export function extractRootDomain(domain: string): string {
   const parts = domain.split('.');
   if (parts.length < 2) {
     return domain;

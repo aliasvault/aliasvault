@@ -1,8 +1,13 @@
+/**
+ * Content script entry point - handles autofill UI and WebAuthn passkey interception
+ */
+
 import '@/entrypoints/contentScript/style.css';
 import { onMessage } from "webext-bridge/content-script";
 
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { isAutoShowPopupEnabled, openAutofillPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
+import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
@@ -25,6 +30,9 @@ export default defineContentScript({
     if (ctx.isInvalid) {
       return;
     }
+
+    // Initialize WebAuthn interceptor for passkey support
+    await initializeWebAuthnInterceptor(ctx);
 
     // Wait for 750ms to give the host page time to load and to increase the chance that the body is available and ready.
     await new Promise(resolve => setTimeout(resolve, 750));

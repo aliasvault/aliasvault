@@ -41,16 +41,4 @@ extension VaultStore {
     public func getAuthMethods() -> AuthMethods {
         return self.enabledAuthMethods
     }
-
-    /// Get the enabled authentication methods for the vault as strings
-    public func getAuthMethodsAsStrings() -> [String] {
-        var methods: [String] = []
-        if self.enabledAuthMethods.contains(.faceID) {
-            methods.append("faceid")
-        }
-        if self.enabledAuthMethods.contains(.password) {
-            methods.append("password")
-        }
-        return methods
-    }
 }

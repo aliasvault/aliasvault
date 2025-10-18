@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 
 import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/shared/models/metadata';
-import type { Attachment, Credential, EncryptionKey, PasswordSettings, TotpCode } from '@/utils/dist/shared/models/vault';
+import type { Attachment, Credential, EncryptionKey, PasswordSettings, TotpCode, Passkey } from '@/utils/dist/shared/models/vault';
 import { VaultSqlGenerator, VaultVersion } from '@/utils/dist/shared/vault-sql';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
@@ -238,7 +238,16 @@ class SqliteClient {
             a.BirthDate,
             a.Gender,
             a.Email,
-            p.Value as Password
+            p.Value as Password,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1 FROM Passkeys pk
+                    WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0
+                ) THEN 1
+                ELSE 0
+            END as HasPasskey,
+            (SELECT pk.RpId FROM Passkeys pk WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyRpId,
+            (SELECT pk.DisplayName FROM Passkeys pk WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyDisplayName
         FROM Credentials c
         LEFT JOIN Services s ON c.ServiceId = s.Id
         LEFT JOIN Aliases a ON c.AliasId = a.Id
@@ -263,6 +272,9 @@ class SqliteClient {
       ServiceUrl: row.ServiceUrl,
       Logo: row.Logo,
       Notes: row.Notes,
+      HasPasskey: row.HasPasskey === 1,
+      PasskeyRpId: row.PasskeyRpId,
+      PasskeyDisplayName: row.PasskeyDisplayName,
       Alias: {
         FirstName: row.FirstName,
         LastName: row.LastName,
@@ -294,7 +306,16 @@ class SqliteClient {
                 a.BirthDate,
                 a.Gender,
                 a.Email,
-                p.Value as Password
+                p.Value as Password,
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM Passkeys pk
+                        WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0
+                    ) THEN 1
+                    ELSE 0
+                END as HasPasskey,
+                (SELECT pk.RpId FROM Passkeys pk WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyRpId,
+                (SELECT pk.DisplayName FROM Passkeys pk WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyDisplayName
             FROM Credentials c
             LEFT JOIN Services s ON c.ServiceId = s.Id
             LEFT JOIN Aliases a ON c.AliasId = a.Id
@@ -313,6 +334,9 @@ class SqliteClient {
       ServiceUrl: row.ServiceUrl,
       Logo: row.Logo,
       Notes: row.Notes,
+      HasPasskey: row.HasPasskey === 1,
+      PasskeyRpId: row.PasskeyRpId,
+      PasskeyDisplayName: row.PasskeyDisplayName,
       Alias: {
         FirstName: row.FirstName,
         LastName: row.LastName,
@@ -365,9 +389,16 @@ class SqliteClient {
           WHERE Id = ?
         )`;
 
+      const passkeyQuery = `
+        UPDATE Passkeys
+        SET IsDeleted = 1,
+            UpdatedAt = ?
+        WHERE CredentialId = ?`;
+
       const results = await this.executeUpdate(query, [currentDateTime, credentialId]);
       await this.executeUpdate(aliasQuery, [currentDateTime, credentialId]);
       await this.executeUpdate(serviceQuery, [currentDateTime, credentialId]);
+      await this.executeUpdate(passkeyQuery, [currentDateTime, credentialId]);
 
       await NativeVaultManager.commitTransaction();
       return results;
@@ -676,15 +707,6 @@ class SqliteClient {
    */
   public async getTotpCodesForCredential(credentialId: string): Promise<TotpCode[]> {
     try {
-      /*
-       * Check if TotpCodes table exists (for backward compatibility).
-       * TODO: whenever the mobile app has a minimum client DB version of 1.5.0+,
-       * we can remove this check as the TotpCodes table then is guaranteed to exist.
-       */
-      if (!await this.tableExists('TotpCodes')) {
-        return [];
-      }
-
       const query = `
         SELECT
           Id,
@@ -1001,6 +1023,301 @@ class SqliteClient {
     } catch (error) {
       await NativeVaultManager.rollbackTransaction();
       console.error('Error updating credential:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all passkeys for a specific relying party (rpId)
+   * @param rpId - The relying party identifier (domain)
+   * @returns Array of passkey objects with credential info
+   */
+  public async getPasskeysByRpId(rpId: string): Promise<Array<Passkey & { Username?: string | null; ServiceName?: string | null }>> {
+    const query = `
+      SELECT
+        p.Id,
+        p.CredentialId,
+        p.RpId,
+        p.UserId,
+        p.PublicKey,
+        p.PrivateKey,
+        p.DisplayName,
+        p.PrfKey,
+        p.AdditionalData,
+        p.CreatedAt,
+        p.UpdatedAt,
+        p.IsDeleted,
+        c.Username,
+        s.Name as ServiceName
+      FROM Passkeys p
+      LEFT JOIN Credentials c ON p.CredentialId = c.Id
+      LEFT JOIN Services s ON c.ServiceId = s.Id
+      WHERE p.RpId = ? AND p.IsDeleted = 0
+      ORDER BY p.CreatedAt DESC
+    `;
+
+    const results = await this.executeQuery(query, [rpId]);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return results.map((row: any) => ({
+      Id: row.Id,
+      CredentialId: row.CredentialId,
+      RpId: row.RpId,
+      UserId: row.UserId,
+      PublicKey: row.PublicKey,
+      PrivateKey: row.PrivateKey,
+      DisplayName: row.DisplayName,
+      PrfKey: row.PrfKey,
+      AdditionalData: row.AdditionalData,
+      CreatedAt: row.CreatedAt,
+      UpdatedAt: row.UpdatedAt,
+      IsDeleted: row.IsDeleted,
+      Username: row.Username,
+      ServiceName: row.ServiceName
+    }));
+  }
+
+  /**
+   * Get a passkey by its ID
+   * @param passkeyId - The passkey ID
+   * @returns The passkey object or null if not found
+   */
+  public async getPasskeyById(passkeyId: string): Promise<(Passkey & { Username?: string | null; ServiceName?: string | null }) | null> {
+    const query = `
+      SELECT
+        p.Id,
+        p.CredentialId,
+        p.RpId,
+        p.UserId,
+        p.PublicKey,
+        p.PrivateKey,
+        p.DisplayName,
+        p.PrfKey,
+        p.AdditionalData,
+        p.CreatedAt,
+        p.UpdatedAt,
+        p.IsDeleted,
+        c.Username,
+        s.Name as ServiceName
+      FROM Passkeys p
+      LEFT JOIN Credentials c ON p.CredentialId = c.Id
+      LEFT JOIN Services s ON c.ServiceId = s.Id
+      WHERE p.Id = ? AND p.IsDeleted = 0
+    `;
+
+    const results = await this.executeQuery(query, [passkeyId]);
+
+    if (results.length === 0) {
+      return null;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const row: any = results[0];
+    return {
+      Id: row.Id,
+      CredentialId: row.CredentialId,
+      RpId: row.RpId,
+      UserId: row.UserId,
+      PublicKey: row.PublicKey,
+      PrivateKey: row.PrivateKey,
+      DisplayName: row.DisplayName,
+      PrfKey: row.PrfKey,
+      AdditionalData: row.AdditionalData,
+      CreatedAt: row.CreatedAt,
+      UpdatedAt: row.UpdatedAt,
+      IsDeleted: row.IsDeleted,
+      Username: row.Username,
+      ServiceName: row.ServiceName
+    };
+  }
+
+  /**
+   * Get all passkeys for a specific credential
+   * @param credentialId - The credential ID
+   * @returns Array of passkey objects
+   */
+  public async getPasskeysByCredentialId(credentialId: string): Promise<Passkey[]> {
+    const query = `
+      SELECT
+        p.Id,
+        p.CredentialId,
+        p.RpId,
+        p.UserId,
+        p.PublicKey,
+        p.PrivateKey,
+        p.DisplayName,
+        p.PrfKey,
+        p.AdditionalData,
+        p.CreatedAt,
+        p.UpdatedAt,
+        p.IsDeleted
+      FROM Passkeys p
+      WHERE p.CredentialId = ? AND p.IsDeleted = 0
+      ORDER BY p.CreatedAt DESC
+    `;
+
+    const results = await this.executeQuery(query, [credentialId]);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return results.map((row: any) => ({
+      Id: row.Id,
+      CredentialId: row.CredentialId,
+      RpId: row.RpId,
+      UserId: row.UserId,
+      PublicKey: row.PublicKey,
+      PrivateKey: row.PrivateKey,
+      DisplayName: row.DisplayName,
+      PrfKey: row.PrfKey,
+      AdditionalData: row.AdditionalData,
+      CreatedAt: row.CreatedAt,
+      UpdatedAt: row.UpdatedAt,
+      IsDeleted: row.IsDeleted
+    }));
+  }
+
+  /**
+   * Create a new passkey linked to a credential
+   * @param passkey - The passkey object to create
+   */
+  public async createPasskey(passkey: Omit<Passkey, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted'>): Promise<void> {
+    try {
+      await NativeVaultManager.beginTransaction();
+
+      const currentDateTime = new Date().toISOString()
+        .replace('T', ' ')
+        .replace('Z', '')
+        .substring(0, 23);
+
+      const query = `
+        INSERT INTO Passkeys (
+          Id, CredentialId, RpId, UserId, PublicKey, PrivateKey,
+          PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `;
+
+      // Convert PrfKey to Uint8Array if it's a number array
+      let prfKeyData: Uint8Array | null = null;
+      if (passkey.PrfKey) {
+        prfKeyData = passkey.PrfKey instanceof Uint8Array ? passkey.PrfKey : new Uint8Array(passkey.PrfKey);
+      }
+
+      await this.executeUpdate(query, [
+        passkey.Id,
+        passkey.CredentialId,
+        passkey.RpId,
+        passkey.UserId ?? null,
+        passkey.PublicKey,
+        passkey.PrivateKey,
+        prfKeyData,
+        passkey.DisplayName,
+        passkey.AdditionalData ?? null,
+        currentDateTime,
+        currentDateTime,
+        0
+      ]);
+
+      await NativeVaultManager.commitTransaction();
+    } catch (error) {
+      await NativeVaultManager.rollbackTransaction();
+      console.error('Error creating passkey:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a passkey by its ID (soft delete)
+   * @param passkeyId - The ID of the passkey to delete
+   * @returns The number of rows updated
+   */
+  public async deletePasskeyById(passkeyId: string): Promise<number> {
+    try {
+      await NativeVaultManager.beginTransaction();
+
+      const currentDateTime = new Date().toISOString()
+        .replace('T', ' ')
+        .replace('Z', '')
+        .substring(0, 23);
+
+      const query = `
+        UPDATE Passkeys
+        SET IsDeleted = 1,
+            UpdatedAt = ?
+        WHERE Id = ?
+      `;
+
+      const result = await this.executeUpdate(query, [currentDateTime, passkeyId]);
+
+      await NativeVaultManager.commitTransaction();
+      return result;
+    } catch (error) {
+      await NativeVaultManager.rollbackTransaction();
+      console.error('Error deleting passkey:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete all passkeys for a specific credential (soft delete)
+   * @param credentialId - The ID of the credential
+   * @returns The number of rows updated
+   */
+  public async deletePasskeysByCredentialId(credentialId: string): Promise<number> {
+    try {
+      await NativeVaultManager.beginTransaction();
+
+      const currentDateTime = new Date().toISOString()
+        .replace('T', ' ')
+        .replace('Z', '')
+        .substring(0, 23);
+
+      const query = `
+        UPDATE Passkeys
+        SET IsDeleted = 1,
+            UpdatedAt = ?
+        WHERE CredentialId = ?
+      `;
+
+      const result = await this.executeUpdate(query, [currentDateTime, credentialId]);
+
+      await NativeVaultManager.commitTransaction();
+      return result;
+    } catch (error) {
+      await NativeVaultManager.rollbackTransaction();
+      console.error('Error deleting passkeys for credential:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a passkey's display name
+   * @param passkeyId - The ID of the passkey to update
+   * @param displayName - The new display name
+   * @returns The number of rows updated
+   */
+  public async updatePasskeyDisplayName(passkeyId: string, displayName: string): Promise<number> {
+    try {
+      await NativeVaultManager.beginTransaction();
+
+      const currentDateTime = new Date().toISOString()
+        .replace('T', ' ')
+        .replace('Z', '')
+        .substring(0, 23);
+
+      const query = `
+        UPDATE Passkeys
+        SET DisplayName = ?,
+            UpdatedAt = ?
+        WHERE Id = ?
+      `;
+
+      const result = await this.executeUpdate(query, [displayName, currentDateTime, passkeyId]);
+
+      await NativeVaultManager.commitTransaction();
+      return result;
+    } catch (error) {
+      await NativeVaultManager.rollbackTransaction();
+      console.error('Error updating passkey display name:', error);
       throw error;
     }
   }

@@ -15,7 +15,7 @@ extension VaultStore {
     }
 
     /// Get the metadata object - the metadata for the vault
-    private func getVaultMetadataObject() -> VaultMetadata? {
+    internal func getVaultMetadataObject() -> VaultMetadata? {
         guard let jsonString = getVaultMetadata(),
               let data = jsonString.data(using: .utf8),
               let metadata = try? JSONDecoder().decode(VaultMetadata.self, from: data) else {
@@ -52,5 +52,37 @@ extension VaultStore {
             userDefaults.set(jsonString, forKey: VaultConstants.vaultMetadataKey)
             userDefaults.synchronize()
         }
+    }
+
+    // MARK: - Username Storage
+
+    /// Store the username
+    public func setUsername(_ username: String) {
+        userDefaults.set(username, forKey: VaultConstants.usernameKey)
+        userDefaults.synchronize()
+    }
+
+    /// Get the username
+    public func getUsername() -> String? {
+        return userDefaults.string(forKey: VaultConstants.usernameKey)
+    }
+
+    /// Clear the username
+    public func clearUsername() {
+        userDefaults.removeObject(forKey: VaultConstants.usernameKey)
+        userDefaults.synchronize()
+    }
+
+    // MARK: - Offline Mode Storage
+
+    /// Set offline mode flag
+    public func setOfflineMode(_ isOffline: Bool) {
+        userDefaults.set(isOffline, forKey: VaultConstants.offlineModeKey)
+        userDefaults.synchronize()
+    }
+
+    /// Get offline mode flag
+    public func getOfflineMode() -> Bool {
+        return userDefaults.bool(forKey: VaultConstants.offlineModeKey)
     }
 }

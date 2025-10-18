@@ -19,25 +19,28 @@ export class IdentityHelperUtils {
    */
   public static normalizeBirthDateForDb(input: string | undefined): string {
     if (!input || input.trim() === '') {
-      return '0001-01-01T00:00:00.000Z';
+      return '0001-01-01 00:00:00';
     }
 
-    const trimmed = input.trim().replace(' ', 'T');
+    const trimmed = input.trim();
 
     // Check if the format is valid ISO-like string manually, to support pre-1970 dates
-    const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})[T ]?(\d{2}):?(\d{2}):?(\d{2})?$/);
+    const match = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})[T ]?(\d{2}):?(\d{2}):?(\d{2})?/);
     if (match) {
       const [_, y, m, d, h = '00', mi = '00', s = '00'] = match;
-      return `${y}-${m}-${d}T${h}:${mi}:${s}.000Z`;
+      return `${y}-${m}-${d} ${h}:${mi}:${s}`;
     }
 
     // Fall back to native Date parsing only if ISO conversion not needed
     const parsedDate = new Date(trimmed);
     if (!isNaN(parsedDate.getTime())) {
-      return parsedDate.toISOString();
+      const year = parsedDate.getFullYear().toString().padStart(4, '0');
+      const month = (parsedDate.getMonth() + 1).toString().padStart(2, '0');
+      const day = parsedDate.getDate().toString().padStart(2, '0');
+      return `${year}-${month}-${day} 00:00:00`;
     }
 
-    return '0001-01-01T00:00:00.000Z';
+    return '0001-01-01 00:00:00';
   }
 
   /**

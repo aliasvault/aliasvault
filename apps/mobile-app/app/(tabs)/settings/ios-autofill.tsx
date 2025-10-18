@@ -74,6 +74,20 @@ export default function IosAutofillScreen() : React.ReactNode {
       fontWeight: '600',
       marginBottom: 8,
     },
+    noticeBox: {
+      backgroundColor: colors.accentBackground,
+      borderColor: colors.accentBorder,
+      borderLeftWidth: 4,
+      borderRadius: 8,
+      marginBottom: 16,
+      marginTop: 8,
+      padding: 12,
+    },
+    noticeText: {
+      color: colors.text,
+      fontSize: 14,
+      lineHeight: 20,
+    },
     secondaryButton: {
       alignItems: 'center',
       backgroundColor: colors.accentBackground,
@@ -100,6 +114,12 @@ export default function IosAutofillScreen() : React.ReactNode {
         <ThemedText style={styles.headerText}>
           {t('settings.iosAutofillSettings.headerText')}
         </ThemedText>
+
+        <View style={styles.noticeBox}>
+          <ThemedText style={styles.noticeText}>
+            {t('settings.iosAutofillSettings.passkeyNotice')}
+          </ThemedText>
+        </View>
 
         <View style={styles.instructionContainer}>
           <ThemedText style={styles.instructionTitle}>{t('settings.iosAutofillSettings.howToEnable')}</ThemedText>

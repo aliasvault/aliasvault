@@ -13,6 +13,8 @@ class TestStorageProvider : StorageProvider {
     private var tempKeyDerivationParams = String()
     private var tempAuthMethods = "[]"
     private var tempAutoLockTimeout = defaultAutoLockTimeout
+    private var username: String? = null
+    private var offlineMode: Boolean = false
 
     override fun getEncryptedDatabaseFile(): File = tempFile
 
@@ -58,5 +60,25 @@ class TestStorageProvider : StorageProvider {
         tempKeyDerivationParams = ""
         tempAuthMethods = "[]"
         tempAutoLockTimeout = defaultAutoLockTimeout
+    }
+
+    override fun setUsername(username: String) {
+        this.username = username
+    }
+
+    override fun getUsername(): String? {
+        return username
+    }
+
+    override fun clearUsername() {
+        username = null
+    }
+
+    override fun setOfflineMode(isOffline: Boolean) {
+        offlineMode = isOffline
+    }
+
+    override fun getOfflineMode(): Boolean {
+        return offlineMode
     }
 }
