@@ -59,23 +59,23 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CopyrightText" xml:space="preserve">
-    <value>All rights reserved.</value>
+    <value>Tous droits réservés.</value>
     <comment>Copyright text in footer</comment>
   </data>
   <data name="TipCreateShortcut" xml:space="preserve">
-    <value>Tip: Use the g+c (go create) keyboard shortcut to quickly create a new alias.</value>
+    <value>Astuce : Utilisez le raccourci clavier g+c (go create) pour créer rapidement un nouvel alias.</value>
     <comment>Tip about keyboard shortcut for creating aliases</comment>
   </data>
   <data name="TipFindShortcut" xml:space="preserve">
-    <value>Tip: Use the g+f (go find) keyboard shortcut to focus the search field.</value>
+    <value>Astuce : Utilisez le raccourci clavier g+f (go find) pour centrer le champ de recherche.</value>
     <comment>Tip about keyboard shortcut for search</comment>
   </data>
   <data name="TipHomeShortcut" xml:space="preserve">
-    <value>Tip: Use the g+h (go home) keyboard shortcut to go to the homepage.</value>
+    <value>Astuce : Utilisez le raccourci clavier g+h (go home) pour accéder à la page d'accueil.</value>
     <comment>Tip about keyboard shortcut for home</comment>
   </data>
   <data name="TipLockShortcut" xml:space="preserve">
-    <value>Tip: Use the g+l (go lock) keyboard shortcut to lock the vault.</value>
+    <value>Astuce : Utilisez le raccourci clavier g+l (go lock) pour verrouiller le coffre.</value>
     <comment>Tip about keyboard shortcut for locking vault</comment>
   </data>
 </root>
