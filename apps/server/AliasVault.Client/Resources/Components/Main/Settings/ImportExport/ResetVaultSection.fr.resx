@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Réinitialiser le coffre-fort</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>This option allows you to completely empty your vault while keeping your account and email aliases. Use this if you want to start fresh after importing data from another password manager or if you want to clear all existing credentials to start over.</value>
+    <value>Cette option vous permet de vider complètement votre coffre-fort tout en conservant vos alias de compte et de courriel. Utilisez ceci si vous voulez commencer à nouveau après l'importation de données depuis un autre gestionnaire de mots de passe ou si vous voulez effacer tous les identifiants existants pour recommencer.</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ResetVaultButton" xml:space="preserve">
-    <value>Reset vault</value>
+    <value>Réinitialiser le coffre-fort</value>
     <comment>Reset vault button</comment>
   </data>
 </root>
