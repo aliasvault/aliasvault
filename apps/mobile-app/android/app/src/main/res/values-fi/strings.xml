@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
+  <string name="autofill_service_description" translatable="true">AliasVaultin automaattinen täyttö</string>
   <string name="aliasvault_icon">AliasVault-kuvake</string>
   <!-- AutofillService strings -->
-  <string name="autofill_failed_to_retrieve">Haku epäonnistui. Avaa sovellus.</string>
+  <string name="autofill_failed_to_retrieve">Nouto epäonnistui, avaa sovellus</string>
   <string name="autofill_no_match_found">Ei osumia löytynyt, luodaanko uusi?</string>
   <string name="autofill_open_app">Avaa sovellus</string>
   <string name="autofill_vault_locked">Holvi lukittu</string>
   <!-- Biometric prompts -->
   <string name="biometric_store_key_title">Tallenna salausavain</string>
-  <string name="biometric_store_key_subtitle">Varmenna tallentaaksesi salausavaimesi turvallisesti Android-avaimessa. Tämä mahdollistaa turvallisen pääsyn holviisi.</string>
-  <string name="biometric_unlock_vault_title">Avaa holvi</string>
-  <string name="biometric_unlock_vault_subtitle">Varmenna pääsysi holviisi</string>
+  <string name="biometric_store_key_subtitle">Todenna tallentaaksesi salausavaimesi turvallisesti Android Keystoreen. Tämä mahdollistaa turvallisen pääsyn holviisi.</string>
+  <string name="biometric_unlock_vault_title">Avaa holvin lukitus</string>
+  <string name="biometric_unlock_vault_subtitle">Todenna päästäksesi holviisi</string>
 </resources>
