@@ -21,11 +21,11 @@
   </xsd:schema>
   <!-- Step titles -->
   <data name="WelcomeStepTitle">
-    <value>欢迎使用AliasVault</value>
+    <value>欢迎使用 AliasVault</value>
     <comment>Title for the welcome step</comment>
   </data>
   <data name="HowAliasVaultWorksStepTitle">
-    <value>AliasVault如何工作</value>
+    <value>AliasVault 工作原理</value>
     <comment>Title for the how it works step</comment>
   </data>
   <data name="TipsStepTitle">
@@ -33,7 +33,7 @@
     <comment>Title for the tips step</comment>
   </data>
   <data name="GetStartedStepTitle">
-    <value>开始使用</value>
+    <value>入门</value>
     <comment>Title for the get started step</comment>
   </data>
   <data name="TutorialStepTitle">
@@ -42,12 +42,12 @@
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>你的保险库已成功创建！通过为每个注册的服务创建唯一别名来保护你的在线隐私。让我们了解AliasVault的工作原理，然后创建你的第一个安全别名。</value>
+    <value>您的密码库已成功创建！通过为每个注册的服务创建唯一别名来保护您的在线隐私。让我们了解AliasVault的工作原理，然后创建您的第一个安全别名。</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
   <data name="HowItWorksIntro">
-    <value>当你需要注册新服务时：</value>
+    <value>当您需要注册新服务时：</value>
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
@@ -63,16 +63,16 @@
     <comment>Third step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep4">
-    <value>你的真实电子邮件地址和其他个人信息将保持私密</value>
+    <value>您的真实电子邮件地址和其他个人信息将保持私密</value>
     <comment>Fourth step in how it works explanation</comment>
   </data>
   <!-- Tips step content -->
   <data name="MasterPasswordTipTitle">
-    <value>妥善保管你的主密码</value>
+    <value>妥善保管您的主密码</value>
     <comment>Title for master password tip</comment>
   </data>
   <data name="MasterPasswordTipContent">
-    <value>解密你的保险库需要主密码。切勿与任何人分享，并将其存储在安全的位置。警告：如果你丢失主密码，你的数据将无法恢复——即使我们的团队也无法恢复。</value>
+    <value>解密您的密码库需要主密码。切勿与任何人分享，并将其存储在安全的位置。警告：如果您丢失主密码，您的数据将无法恢复——即使我们的团队也无法恢复。</value>
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
@@ -80,7 +80,7 @@
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>双因素认证（2FA）为你的账户增加了额外的安全层。在访问加密的保险库之前，你需要输入认证器的验证码或提供恢复代码。</value>
+    <value>双因素认证（2FA）为您的账户增加了额外的安全层。在访问加密的密码库之前，您需要输入认证器的验证码或提供恢复代码。</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
@@ -97,11 +97,11 @@
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
-    <value>既然你已经了解AliasVault的工作原理，让我们创建你的第一个安全身份吧！</value>
+    <value>既然您已经了解AliasVault的工作原理，让我们创建您的第一个安全身份吧！</value>
     <comment>Message encouraging user to create first identity</comment>
   </data>
   <data name="CreateFirstIdentityButton">
-    <value>创建你的第一个身份</value>
+    <value>创建您的首个身份</value>
     <comment>Button text for creating first identity</comment>
   </data>
   <!-- Navigation buttons -->
@@ -110,12 +110,12 @@
     <comment>Continue button text</comment>
   </data>
   <data name="GetStartedButton">
-    <value>开始使用</value>
+    <value>入门</value>
     <comment>Get started button text</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="FinishingTutorialMessage">
-    <value>正在完成教程……</value>
+    <value>正在完成教程…</value>
     <comment>Loading message when finishing tutorial</comment>
   </data>
   <!-- Extension and app labels -->
