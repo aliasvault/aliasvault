@@ -59,19 +59,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>双因素认证（2FA）</value>
+    <value>两步验证</value>
     <comment>Section title for 2FA codes</comment>
   </data>
   <data name="AddTotpCodeButton" xml:space="preserve">
-    <value>添加TOTP验证码</value>
+    <value>添加 TOTP 验证码</value>
     <comment>Button text to add new TOTP code</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
-    <value>添加双因素（2FA）验证码</value>
+    <value>添加两步验证码</value>
     <comment>Description for adding TOTP codes</comment>
   </data>
   <data name="AddTotpCodeModalTitle" xml:space="preserve">
-    <value>添加双因素认证TOTP验证码</value>
+    <value>添加两步验证 TOTP 码</value>
     <comment>Modal title for adding TOTP code</comment>
   </data>
   <data name="CloseFormButton" xml:space="preserve">
@@ -79,7 +79,7 @@
     <comment>Button to close the add TOTP form</comment>
   </data>
   <data name="TotpInstructions" xml:space="preserve">
-    <value>如果网站为你的账户提供或要求双因素认证（2FA），请复制密钥或二维码URI并粘贴到下方。</value>
+    <value>如果网站为您的账户提供或要求两步验证（2FA），请复制密钥或二维码 URI 并将其粘贴到下方。</value>
     <comment>Instructions for adding TOTP codes</comment>
   </data>
   <data name="NameOptionalLabel" xml:space="preserve">
@@ -103,11 +103,11 @@
     <comment>Message shown for unsaved TOTP codes</comment>
   </data>
   <data name="DeleteTotpCodeConfirmation" xml:space="preserve">
-    <value>你确定要删除此TOTP验证码吗？</value>
+    <value>您确定要删除此 TOTP 验证码吗？</value>
     <comment>Confirmation message for deleting TOTP code</comment>
   </data>
   <data name="DeleteTotpCodeTitle" xml:space="preserve">
-    <value>删除TOTP验证码</value>
+    <value>删除 TOTP 验证码</value>
     <comment>Title for delete TOTP code action</comment>
   </data>
 </root>
