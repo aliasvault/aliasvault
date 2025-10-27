@@ -68,7 +68,7 @@
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
-    <value>Kun olet vienyt tiedoston, ladata sen ulospäin alta.</value>
+    <value>Kun olet vienyt tiedoston, voit ladata sen ulospäin alta.</value>
     <comment>1Password export instructions part 2</comment>
   </data>
   <!-- Bitwarden -->
