@@ -119,152 +119,152 @@
   </resheader>
   <!-- Common UI elements -->
   <data name="Save" xml:space="preserve">
-    <value>Save</value>
+    <value>Zapisz</value>
     <comment>Button text for saving changes</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Anuluj</value>
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Delete" xml:space="preserve">
-    <value>Delete</value>
+    <value>Usuń</value>
     <comment>Button text for deleting an item</comment>
   </data>
   <data name="Edit" xml:space="preserve">
-    <value>Edit</value>
+    <value>Edytuj</value>
     <comment>Button text for editing an item</comment>
   </data>
   <data name="Close" xml:space="preserve">
-    <value>Close</value>
+    <value>Zamknij</value>
     <comment>Button text for closing a dialog or modal</comment>
   </data>
   <data name="Back" xml:space="preserve">
-    <value>Back</value>
+    <value>Powrót</value>
     <comment>Button text for going back</comment>
   </data>
   <data name="Next" xml:space="preserve">
-    <value>Next</value>
+    <value>Dalej</value>
     <comment>Button text for proceeding to the next step</comment>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>Loading...</value>
+    <value>Wczytywanie...</value>
     <comment>Loading message displayed during async operations</comment>
   </data>
   <data name="Yes" xml:space="preserve">
-    <value>Yes</value>
+    <value>Tak</value>
     <comment>Confirmation button text</comment>
   </data>
   <data name="No" xml:space="preserve">
-    <value>No</value>
+    <value>Nie</value>
     <comment>Rejection button text</comment>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>OK</value>
+    <value>Ok</value>
     <comment>OK button text</comment>
   </data>
   <data name="Continue" xml:space="preserve">
-    <value>Continue</value>
+    <value>Dalej</value>
     <comment>Button text to continue with an action</comment>
   </data>
   <data name="Confirm" xml:space="preserve">
-    <value>Confirm</value>
+    <value>Potwierdź</value>
     <comment>Button text to confirm an action</comment>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Odśwież</value>
     <comment>Button text to refresh content</comment>
   </data>
   <!-- Common form elements -->
   <data name="Email" xml:space="preserve">
-    <value>Email</value>
+    <value>Adres e-mail</value>
     <comment>Label for email input field</comment>
   </data>
   <data name="Password" xml:space="preserve">
-    <value>Password</value>
+    <value>Hasło</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="Username" xml:space="preserve">
-    <value>Username</value>
+    <value>Nazwa użytkownika</value>
     <comment>Label for username input field</comment>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>Name</value>
+    <value>Nazwa</value>
     <comment>Label for name input field</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Description</value>
+    <value>Opis</value>
     <comment>Label for description input field</comment>
   </data>
   <data name="Title" xml:space="preserve">
-    <value>Title</value>
+    <value>Tytuł</value>
     <comment>Label for title input field</comment>
   </data>
   <data name="Website" xml:space="preserve">
-    <value>Website</value>
+    <value>Strona www</value>
     <comment>Label for website input field</comment>
   </data>
   <data name="Search" xml:space="preserve">
-    <value>Search</value>
+    <value>Wyszukaj</value>
     <comment>Label for search input field</comment>
   </data>
   <!-- Common error messages -->
   <data name="ErrorGeneric" xml:space="preserve">
-    <value>An error occurred. Please try again.</value>
+    <value>Wystąpił błąd. Spróbuj ponownie.</value>
     <comment>Generic error message</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
-    <value>Please correct the errors below.</value>
+    <value>Popraw poniższe błędy.</value>
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
-    <value>This field is required.</value>
+    <value>To pole jest wymagane</value>
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>Please enter a valid email address.</value>
+    <value>Podaj poprawny adres e-mail.</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>Hasła się nie zgadzają.</value>
     <comment>Password confirmation mismatch error</comment>
   </data>
   <!-- Common status messages -->
   <data name="Success" xml:space="preserve">
-    <value>Success</value>
+    <value>Gotowe</value>
     <comment>Success status message</comment>
   </data>
   <data name="Warning" xml:space="preserve">
-    <value>Warning</value>
+    <value>Ostrzeżenie</value>
     <comment>Warning status message</comment>
   </data>
   <data name="Error" xml:space="preserve">
-    <value>Error</value>
+    <value>Błąd</value>
     <comment>Error status message</comment>
   </data>
   <data name="Info" xml:space="preserve">
-    <value>Info</value>
+    <value>Informacje</value>
     <comment>Information status message</comment>
   </data>
   <!-- Loading screen messages -->
   <data name="RefreshPageText" xml:space="preserve">
-    <value>If loading seems stuck, you can click the button below to refresh the page.</value>
+    <value>Jeśli ładowanie zatrzymało się, możesz kliknąć poniższy przycisk, aby odświeżyć stronę.</value>
     <comment>Text shown above refresh button on loading screen</comment>
   </data>
   <!-- Validation error messages for forms -->
   <data name="ErrorPasswordMinLength" xml:space="preserve">
-    <value>The new password must be at least 10 characters long.</value>
+    <value>Hasło musi składać się z co najmniej 10 znaków.</value>
     <comment>Error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatch" xml:space="preserve">
-    <value>The new passwords do not match.</value>
+    <value>Nowe hasła nie są takie same.</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="ErrorPasswordMinLengthGeneric" xml:space="preserve">
-    <value>Password must be at least 10 characters long.</value>
+    <value>Hasło musi składać się z minimum 10 znaków.</value>
     <comment>Generic error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatchGeneric" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>Hasła nie pasują.</value>
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
