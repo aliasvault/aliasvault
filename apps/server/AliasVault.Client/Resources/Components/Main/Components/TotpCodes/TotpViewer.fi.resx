@@ -63,7 +63,7 @@
     <comment>Section title for 2FA codes</comment>
   </data>
   <data name="NoTotpCodesMessage" xml:space="preserve">
-    <value>Kaksivaiheisen todennuksen koodeja ei ole saatavilla</value>
+    <value>Kaksivaiheisia todennuskoodeja ei saatavilla</value>
     <comment>Message shown when no TOTP codes are configured</comment>
   </data>
   <data name="CopiedMessage" xml:space="preserve">
