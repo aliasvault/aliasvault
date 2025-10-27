@@ -59,47 +59,47 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Recent Auth Logs</value>
+    <value>Logs de Autenticação Recente</value>
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Below you can find an overview of recent login attempts to your account.</value>
+    <value>Abaixo você pode ter uma visão de tentativas de login recentes na sua conta.</value>
     <comment>Description of auth logs section</comment>
   </data>
   <data name="NoLogsMessage" xml:space="preserve">
-    <value>No authentication logs found.</value>
+    <value>Não foram encontrados logs de autenticação.</value>
     <comment>Message when no auth logs are available</comment>
   </data>
   <data name="TimestampColumn" xml:space="preserve">
-    <value>Timestamp</value>
+    <value>Horário</value>
     <comment>Table column header</comment>
   </data>
   <data name="EventTypeColumn" xml:space="preserve">
-    <value>Event Type</value>
+    <value>Tipo de Evento</value>
     <comment>Table column header</comment>
   </data>
   <data name="ClientColumn" xml:space="preserve">
-    <value>Client</value>
+    <value>Cliente</value>
     <comment>Table column header</comment>
   </data>
   <data name="IpAddressColumn" xml:space="preserve">
-    <value>IP Address</value>
+    <value>Endereço de IP</value>
     <comment>Table column header</comment>
   </data>
   <data name="DeviceColumn" xml:space="preserve">
-    <value>Device</value>
+    <value>Dispositivo</value>
     <comment>Table column header</comment>
   </data>
   <data name="SuccessColumn" xml:space="preserve">
-    <value>Success</value>
+    <value>Sucesso</value>
     <comment>Table column header</comment>
   </data>
   <data name="SuccessStatus" xml:space="preserve">
-    <value>Success</value>
+    <value>Sucesso</value>
     <comment>Status indicator for successful login</comment>
   </data>
   <data name="FailedStatus" xml:space="preserve">
-    <value>Failed</value>
+    <value>Falha</value>
     <comment>Status indicator for failed login</comment>
   </data>
 </root>
