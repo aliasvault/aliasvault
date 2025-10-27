@@ -37,7 +37,8 @@
       "migrationError": "Si è verificato un errore nel controllo delle migrazioni pendenti.",
       "wrongPassword": "Password non corretta. Riprova nuovamente.",
       "accountLocked": "Account temporaneamente bloccato a causa di troppi tentativi falliti.",
-      "networkError": "Errore di rete: Controlla la tua connessione e riprova."
+      "networkError": "Errore di rete: Controlla la tua connessione e riprova.",
+      "sessionExpired": "La tua sessione è scaduta. Effettua di nuovo il login."
     }
   },
   "menu": {
@@ -51,8 +52,10 @@
     "error": "Errore",
     "success": "Riuscito",
     "cancel": "Annulla",
+    "back": "Back",
     "use": "Usa",
     "delete": "Elimina",
+    "or": "Or",
     "close": "Chiudi",
     "copied": "Copiato!",
     "openInNewWindow": "Apri in una nuova finestra",
@@ -90,6 +93,7 @@
     "errors": {
       "serverNotAvailable": "Il server di AliasVault non è disponibile. Riprova più tardi o contatta il supporto se il problema persiste.",
       "clientVersionNotSupported": "Questa versione dell'estensione del browser AliasVault non è più supportata dal server. Aggiorna l'estensione alla versione più recente.",
+      "browserExtensionOutdated": "Questa estensione del browser è obsoleta e non può essere utilizzata per accedere a questa cassaforte. Si prega di aggiornare questa estensione per continuare.",
       "serverVersionNotSupported": "Il server di AliasVault necessita un aggiornamento a una versione più recente per poter usare questa estensione. Contatta il supporto se hai bisogno di assistenza.",
       "unknownError": "Si è verificato un errore sconosciuto",
       "vaultNotAvailable": "Cassaforte non disponibile",
@@ -195,6 +199,8 @@
     "searchPlaceholder": "Cerca credenziali...",
     "welcomeTitle": "Benvenuto in AliasVault!",
     "welcomeDescription": "Per usare l'estensione browser AliasVault: naviga su un sito e usa la finestra di compilazione automatica per creare una nuova credenziale.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noMatchingCredentials": "No matching credentials found",
     "createdAt": "Creato",
     "updatedAt": "Ultimo aggiornamento",
     "autofill": "Compilazione automatica",
@@ -210,6 +216,12 @@
     "saveCredential": "Salva credenziale",
     "deleteCredentialTitle": "Elimina credenziale",
     "deleteCredentialConfirm": "Sei sicuro di voler eliminare queste credenziali? Questa azione non può essere annullata.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "randomAlias": "Alias casuale",
     "manual": "Manuale",
     "service": "Servizio",
@@ -342,6 +354,7 @@
     "autofillSettings": "Impostazioni di riempimento automatico",
     "clipboardSettings": "Impostazioni appunti",
     "contextMenuSettings": "Preferenze menu contestuale",
+    "passkeySettings": "Passkey Settings",
     "contextMenu": "Menu contestuale",
     "contextMenuEnabled": "Il menu contestuale è attivato",
     "contextMenuDisabled": "Il menu contestuale è disabilitato",
@@ -354,12 +367,52 @@
       "clientUrlInvalid": "Inserisci un URL del client valido"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
+    "bypass": {
+      "title": "Use Browser Passkey",
+      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
+      "thisTimeOnly": "This time only",
+      "alwaysForSite": "Always for this site"
+    },
+    "authenticate": {
+      "title": "Sign in with Passkey",
+      "signInFor": "Sign in with passkey for",
+      "selectPasskey": "Select a passkey to sign in:",
+      "noPasskeysFound": "No passkeys found for this site",
+      "useBrowserPasskey": "Use Browser Passkey"
+    },
+    "create": {
+      "title": "Create Passkey",
+      "createFor": "Create a new passkey for",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Enter a name for this passkey",
+      "createButton": "Create Passkey",
+      "creatingButton": "Creating...",
+      "useBrowserPasskey": "Use Browser Passkey",
+      "selectPasskeyToReplace": "Select a passkey to replace:",
+      "createNewPasskey": "Create New Passkey",
+      "replacingPasskey": "Replacing passkey: {{displayName}}",
+      "confirmReplace": "Confirm Replace"
+    },
+    "settings": {
+      "passkeyProvider": "Passkey Provider",
+      "passkeyProviderOn": "Passkey Provider on ",
+      "enable": "Enable AliasVault as passkey provider",
+      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+    }
+  },
   "upgrade": {
     "title": "Aggiorna Cassaforte",
     "subtitle": "AliasVault è stato aggiornato e la tua cassaforte deve essere aggiornata. Dovrebbe richiedere solo pochi secondi.",
     "versionInformation": "Informazioni sulla versione",
-    "yourVault": "La tua cassaforte:",
-    "newVersion": "Nuova versione:",
+    "yourVault": "Versione della tua cassaforte:",
+    "newVersion": "Nuova versione disponibile:",
     "upgrade": "Aggiorna cassaforte",
     "upgrading": "Aggiornamento in corso...",
     "logout": "Disconnetti",
