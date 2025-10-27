@@ -21,110 +21,110 @@
   </xsd:schema>
   <!-- Step titles -->
   <data name="WelcomeStepTitle">
-    <value>Welcome to AliasVault</value>
+    <value>Bienvenue dans AliasVault !</value>
     <comment>Title for the welcome step</comment>
   </data>
   <data name="HowAliasVaultWorksStepTitle">
-    <value>How AliasVault Works</value>
+    <value>Comment fonctionne AliasVault</value>
     <comment>Title for the how it works step</comment>
   </data>
   <data name="TipsStepTitle">
-    <value>Tips</value>
+    <value>Astuces</value>
     <comment>Title for the tips step</comment>
   </data>
   <data name="GetStartedStepTitle">
-    <value>Get Started</value>
+    <value>Premiers Pas</value>
     <comment>Title for the get started step</comment>
   </data>
   <data name="TutorialStepTitle">
-    <value>Tutorial</value>
+    <value>Tutoriel</value>
     <comment>Default tutorial step title</comment>
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>Your vault has been successfully created! Protect your online privacy by creating unique aliases for each service you sign up for. Let's learn how AliasVault works and then create your first secure alias.</value>
+    <value>Votre coffre a été créé avec succès ! Protégez votre vie privée en ligne en créant des alias uniques pour chaque service auquel vous vous inscrivez. Apprenons comment AliasVault fonctionne, puis créons vos premiers alias sécurisés.</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
   <data name="HowItWorksIntro">
-    <value>When you need to sign up for a new service:</value>
+    <value>Quand vous devez vous inscrire à un nouveau service :</value>
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
-    <value>AliasVault generates a random identity with a secure private email address</value>
+    <value>AliasVault génère une identité aléatoire avec une adresse e-mail privée sécurisée</value>
     <comment>First step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep2">
-    <value>Use this information to sign up for the service</value>
+    <value>Utilisez ces informations pour vous inscrire au service</value>
     <comment>Second step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep3">
-    <value>Received emails show up in this app and can be opened in your browser</value>
+    <value>Les e-mails reçus apparaissent dans cette application et peuvent être ouverts dans votre navigateur</value>
     <comment>Third step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep4">
-    <value>Your real email address and other personal information stay private</value>
+    <value>Votre adresse e-mail réelle et les autres informations personnelles restent privées</value>
     <comment>Fourth step in how it works explanation</comment>
   </data>
   <!-- Tips step content -->
   <data name="MasterPasswordTipTitle">
-    <value>Keep Your Master Password Safe</value>
+    <value>Gardez votre mot de passe principal sécurisé</value>
     <comment>Title for master password tip</comment>
   </data>
   <data name="MasterPasswordTipContent">
-    <value>Your master password is required to decrypt your vault. Never share it with anyone and store it in a secure location. Warning: If you lose your master password, your data cannot be recovered - not even by our team.</value>
+    <value>Votre mot de passe principal est requis pour déchiffrer votre coffre. Ne le partagez jamais avec quelqu'un et stockez-le dans un endroit sécurisé. Attention : Si vous perdez votre mot de passe principal, vos données ne peuvent pas être récupérées - même pas par notre équipe.</value>
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>Enable Two-Factor Authentication In Security Settings</value>
+    <value>Activer l'authentification à deux facteurs dans les paramètres de sécurité</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>Two-factor authentication adds an extra layer of security to your account. It requires you to enter a code from your authenticator app or provide a recovery code before your encrypted vault can be accessed.</value>
+    <value>L'authentification à deux facteurs ajoute une couche supplémentaire de sécurité à votre compte. Il vous faut entrer un code depuis votre application d'authentification ou fournir un code de récupération avant que votre coffre chiffré ne soit accessible.</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
-    <value>Browser Extensions and Mobile Apps</value>
+    <value>Extensions de navigateur et applications mobiles</value>
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>Install the AliasVault browser extension and mobile app to create aliases and autofill forms directly from your browser and smartphone.</value>
+    <value>Installez l'extension de navigateur et l'application mobile AliasVault pour créer des alias et des formulaires de saisie automatique directement à partir de votre navigateur et de votre smartphone.</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
   <data name="ReadyToStartTitle">
-    <value>Ready to Start?</value>
+    <value>Prêt à commencer ?</value>
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
-    <value>Now that you know how AliasVault works, let's create your first secure identity!</value>
+    <value>Maintenant que vous savez comment fonctionne AliasVault, créons votre première identité sécurisée !</value>
     <comment>Message encouraging user to create first identity</comment>
   </data>
   <data name="CreateFirstIdentityButton">
-    <value>Create Your First Identity</value>
+    <value>Créez votre première identité</value>
     <comment>Button text for creating first identity</comment>
   </data>
   <!-- Navigation buttons -->
   <data name="ContinueButton">
-    <value>Continue</value>
+    <value>Continuer</value>
     <comment>Continue button text</comment>
   </data>
   <data name="GetStartedButton">
-    <value>Get Started</value>
+    <value>Commencer</value>
     <comment>Get started button text</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="FinishingTutorialMessage">
-    <value>Finishing tutorial...</value>
+    <value>Terminer le tutoriel...</value>
     <comment>Loading message when finishing tutorial</comment>
   </data>
   <!-- Extension and app labels -->
   <data name="ComingSoonLabel">
-    <value>Coming Soon</value>
+    <value>Bientôt disponible</value>
     <comment>Label for features coming soon</comment>
   </data>
   <data name="SoonSuffix">
-    <value>(Soon)</value>
+    <value>(Bientôt)</value>
     <comment>Suffix indicating feature coming soon</comment>
   </data>
 </root>
