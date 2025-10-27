@@ -55,12 +55,12 @@
       "sessionExpired": "La tua sessione è scaduta. Effettua nuovamente il login.",
       "tokenRefreshFailed": "Aggiornamento del token di autenticazione non riuscito",
       "httpError": "Errore HTTP: {{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "Failed to decrypt vault",
-      "vaultUnlockFailed": "Failed to unlock vault",
-      "biometricCancelled": "Biometric authentication cancelled",
-      "encryptionKeyFailed": "Failed to retrieve encryption key"
+      "biometricRequired": "Abilitare l'autenticazione biometrica nell'app principale di AliasVault per utilizzare le passkey",
+      "unlockVaultFirst": "Si prega di sbloccare prima la cassaforte nell'app AliasVault",
+      "vaultDecryptFailed": "Decifratura della cassaforte non riuscita",
+      "vaultUnlockFailed": "Sblocco della cassaforte non riuscito",
+      "biometricCancelled": "Autenticazione biometrica annullata",
+      "encryptionKeyFailed": "Recupero della chiave di crittografia non riuscito"
     },
     "confirmLogout": "Sei sicuro di voler uscire? Dovrai accedere nuovamente con la password principale per accedere alla cassaforte.",
     "noAccountYet": "Non hai ancora un account?",
@@ -87,7 +87,7 @@
       "failedToSyncVault": "Sincronizzazione della cassaforte fallita",
       "operationFailed": "Operazione non riuscita",
       "versionNotSupported": "Questa versione dell'app AliasVault non è più supportata dal server. Aggiorna l'app all'ultima versione.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "serverVersionNotSupported": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa app mobile. Se hai bisogno di aiuto, contatta il supporto.",
       "appOutdated": "Questa applicazione è obsoleta e non può essere utilizzata per accedere a questa (nuova) versione della cassaforte. Si prega di aggiornare l'app AliasVault per continuare.",
       "vaultDecryptFailed": "Impossibile decriptare la cassaforte, se il problema persiste esci e accedi nuovamente.",
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza."
@@ -129,10 +129,10 @@
     "privateEmailDescription": "E2E crittografato, completamente privato.",
     "publicEmailTitle": "Fornitori Pubblici di Email Temporanee",
     "publicEmailDescription": "Anonimi ma con privacy ridotta. Accessibile a chiunque conosca l'indirizzo.",
-    "searchPlaceholder": "Search vault...",
+    "searchPlaceholder": "Ricerca cassaforte ...",
     "noMatchingCredentials": "Nessuna credenziale corrispondente trovata",
     "noCredentialsFound": "Nessuna credenziale trovata. Creane una per iniziare. Consiglio: puoi anche accedere al sito AliasVault per importare credenziali da altri gestori password.",
-    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noPasskeysFound": "Non sono state ancora create passkey. Le passkey vengono create visitando un sito web che offre le passkey come metodo di autenticazione.",
     "recentEmails": "Email recenti",
     "loadingEmails": "Caricamento email...",
     "noEmailsYet": "Nessuna email ricevuta.",
@@ -159,10 +159,10 @@
     "emailPreview": "Anteprima email",
     "switchBackToBrowser": "Torna al browser per continuare.",
     "filters": {
-      "all": "(All) Credentials",
-      "passkeys": "Passkeys",
-      "aliases": "Aliases",
-      "userpass": "Passwords"
+      "all": "(Tutte) Credenziali",
+      "passkeys": "Passkey",
+      "aliases": "Alias",
+      "userpass": "Password"
     },
     "twoFactorAuth": "Autenticazione a due fattori",
     "totpCode": "Codice TOTP",
@@ -174,14 +174,14 @@
       "credentialUpdated": "Credenziali aggiornate con successo",
       "credentialCreated": "Credenziali create con successo",
       "credentialDeleted": "Credenziali eliminate con successo",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
+      "usernameCopied": "Nome utente copiato negli appunti",
+      "emailCopied": "Email copiata negli appunti",
+      "passwordCopied": "Password copiata negli appunti"
     },
     "createNewAliasFor": "Crea un nuovo alias per",
     "errors": {
       "loadFailed": "Caricamento credenziali non riuscito",
-      "saveFailed": "Failed to save credential",
+      "saveFailed": "Salvataggio credenziali non riuscito",
       "generateUsernameFailed": "Generazione nome utente non riuscita",
       "generatePasswordFailed": "Generazione password non riuscita"
     },
@@ -196,19 +196,19 @@
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "Site",
-    "displayName": "Display Name",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
-    "passkeyMarkedForDeletion": "Passkey marked for deletion",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+    "site": "Sito",
+    "displayName": "Mostra nome",
+    "helpText": "Le passkey vengono create sul sito web quando richiesto. Non possono essere modificate manualmente. Per rimuovere questa passkey , è possibile eliminarla da questa credenziale.",
+    "passkeyMarkedForDeletion": "Passkey contrassegnata per l'eliminazione",
+    "passkeyWillBeDeleted": "Questa passkey verrà eliminata quando si salva questa credenziale."
   },
   "settings": {
     "title": "Impostazioni",
-    "autofill": "Autofill & Passkeys",
+    "autofill": "Riempimento Automatico & Passkeys",
     "iosAutofillSettings": {
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "È possibile configurare AliasVault per fornire password nativa e funzionalità di riempimento automatico della password in iOS. Seguire le istruzioni qui sotto per abilitarlo.",
+      "passkeyNotice": "Le chiavi di accesso sono create tramite iOS. Per memorizzarle in AliasVault, assicurati che l'auto-riempimento qui sotto sia abilitato.",
+      "howToEnable": "Come abilitare l'auto-riempimento & Passkeys:",
       "step1": "1. Apri le Impostazioni iOS tramite il pulsante qui sotto",
       "step2": "2. Vai su \"Generali\"",
       "step3": "3. Tocca \"Compilazione automatica & Password\"",
@@ -220,11 +220,11 @@
     },
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Funzione Sperimentale",
-      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
+      "warningDescription": "Il supporto per l'auto-riempimento e passkey per Android è attualmente in stato sperimentale.",
       "warningLink": "Per saperne di più clicca qui",
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "È possibile configurare AliasVault per fornire password nativa e funzionalità di riempimento automatico della password in Android. Seguire le istruzioni qui sotto per abilitarla.",
+      "passkeyNotice": "Le passkey  vengono create tramite Android Credential Manager (Android 14+). Per memorizzarle in AliasVault, assicurati che Autofill qui sotto sia abilitato.",
+      "howToEnable": "Come abilitare l'auto-riempimento & Passkeys:",
       "step1": "1. Apri le impostazioni di Android tramite il pulsante qui sotto, e modifica il \"servizio preferito di riempimento automatico\" in \"AliasVault\"",
       "openAutofillSettings": "Apri Impostazioni Di Riempimento Automatico",
       "buttonTip": "Se il pulsante qui sopra non funziona, potrebbe essere bloccato a causa delle impostazioni di sicurezza. È possibile andare manualmente in Impostazioni Android → Gestione generale → Password e riempimento automatico.",
@@ -474,7 +474,7 @@
       "stillOffline": "Ancora offline"
     },
     "alerts": {
-      "syncIssue": "No Connection",
+      "syncIssue": "Nessuna Connessione",
       "syncIssueMessage": "Impossibile raggiungere il server AliasVault e sincronizzare la cassaforte. Vuoi aprire la cassaforte locale in sola lettura o ritentare la connessione?",
       "openLocalVault": "Apri cassaforte locale",
       "retrySync": "Riprova sincronizzazione"
