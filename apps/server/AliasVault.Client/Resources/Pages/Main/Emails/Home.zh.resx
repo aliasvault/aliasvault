@@ -63,7 +63,7 @@
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>你可以在下方查看你的私人邮箱地址收到的所有邮件。</value>
+    <value>您可以在下方查看您的私人邮箱地址收到的所有邮件。</value>
     <comment>Page description</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
@@ -75,7 +75,7 @@
     <comment>Refresh button text</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
-    <value>你尚未使用任何私人邮箱地址。创建一个新的别名并使用 AliasVault 支持的私人邮箱地址。这些私人邮箱地址收到的所有邮件都会显示在这里。</value>
+    <value>您尚未使用任何私人邮箱地址。创建一个新的别名并使用 AliasVault 支持的私人邮箱地址。这些私人邮箱地址收到的所有邮件都会显示在这里。</value>
     <comment>Message when no email addresses are configured</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
@@ -83,7 +83,7 @@
     <comment>Message when no emails are received</comment>
   </data>
   <data name="LoadingText" xml:space="preserve">
-    <value>加载中……</value>
+    <value>加载中…</value>
     <comment>Loading indicator text</comment>
   </data>
   <data name="LoadMoreButtonText" xml:space="preserve">
