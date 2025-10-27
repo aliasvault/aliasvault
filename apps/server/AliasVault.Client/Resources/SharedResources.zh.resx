@@ -147,7 +147,7 @@
     <comment>Button text for proceeding to the next step</comment>
   </data>
   <data name="Loading" xml:space="preserve">
-    <value>加载中……</value>
+    <value>加载中…</value>
     <comment>Loading message displayed during async operations</comment>
   </data>
   <data name="Yes" xml:space="preserve">
@@ -159,7 +159,7 @@
     <comment>Rejection button text</comment>
   </data>
   <data name="Ok" xml:space="preserve">
-    <value>好的</value>
+    <value>确定</value>
     <comment>OK button text</comment>
   </data>
   <data name="Continue" xml:space="preserve">
@@ -176,7 +176,7 @@
   </data>
   <!-- Common form elements -->
   <data name="Email" xml:space="preserve">
-    <value>电子邮件</value>
+    <value>电子邮箱</value>
     <comment>Label for email input field</comment>
   </data>
   <data name="Password" xml:space="preserve">
@@ -188,7 +188,7 @@
     <comment>Label for username input field</comment>
   </data>
   <data name="Name" xml:space="preserve">
-    <value>名字</value>
+    <value>名称</value>
     <comment>Label for name input field</comment>
   </data>
   <data name="Description" xml:space="preserve">
@@ -200,7 +200,7 @@
     <comment>Label for title input field</comment>
   </data>
   <data name="Website" xml:space="preserve">
-    <value>网页</value>
+    <value>网站</value>
     <comment>Label for website input field</comment>
   </data>
   <data name="Search" xml:space="preserve">
@@ -213,7 +213,7 @@
     <comment>Generic error message</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
-    <value>请修正以下错误。</value>
+    <value>请更正以下错误。</value>
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
@@ -247,28 +247,28 @@
   </data>
   <!-- Loading screen messages -->
   <data name="RefreshPageText" xml:space="preserve">
-    <value>如果加载卡住了，可以点击下方按钮刷新页面。</value>
+    <value>如果加载出现卡住的情况，可以点击下方按钮刷新页面。</value>
     <comment>Text shown above refresh button on loading screen</comment>
   </data>
   <!-- Validation error messages for forms -->
   <data name="ErrorPasswordMinLength" xml:space="preserve">
-    <value>新密码长度至少需要10个字符。</value>
+    <value>新密码必须至少包含 10 个字符。</value>
     <comment>Error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatch" xml:space="preserve">
-    <value>两次输入的新密码不一致。</value>
+    <value>新密码不匹配。</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="ErrorPasswordMinLengthGeneric" xml:space="preserve">
-    <value>密码长度至少需要10个字符。</value>
+    <value>密码必须至少包含 10 个字符。</value>
     <comment>Generic error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatchGeneric" xml:space="preserve">
-    <value>两次输入的新密码不一致。</value>
+    <value>密码不匹配。</value>
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
-    <value>请勾选同意条款和条件。</value>
+    <value>您必须接受条款和条件。</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
   <data name="ErrorSecretKeyRequired" xml:space="preserve">
@@ -293,7 +293,7 @@
     <comment>Home breadcrumb text</comment>
   </data>
   <data name="Notes" xml:space="preserve">
-    <value>记录</value>
+    <value>备注</value>
     <comment>Notes section heading</comment>
   </data>
   <data name="SyncVaultData" xml:space="preserve">
