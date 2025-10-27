@@ -117,16 +117,16 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="REFRESH_TOKEN_REQUIRED" xml:space="preserve">
-    <value>刷新令牌是必填项。</value>
+    <value>刷新令牌为必填项。</value>
   </data>
   <data name="ACCOUNT_BLOCKED" xml:space="preserve">
-    <value>你的账户已被停用。若认为此操作有误，请联系支持团队。</value>
+    <value>您的账户已被停用。若认为此操作有误，请联系支持团队。</value>
   </data>
   <data name="INVALID_REFRESH_TOKEN" xml:space="preserve">
     <value>刷新令牌无效</value>
   </data>
   <data name="REFRESH_TOKEN_REVOKED_SUCCESSFULLY" xml:space="preserve">
-    <value>刷新令牌已成功注销</value>
+    <value>刷新令牌已成功撤销</value>
   </data>
   <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
     <value>当前服务器已禁用新账户注册功能，请联系管理员。</value>
@@ -135,10 +135,10 @@
     <value>用户名或密码无效，请重试。</value>
   </data>
   <data name="USERNAME_REQUIRED" xml:space="preserve">
-    <value>用户名是必填项。</value>
+    <value>用户名为必填项。</value>
   </data>
   <data name="USERNAME_ALREADY_IN_USE" xml:space="preserve">
-    <value>用户名已被占用。</value>
+    <value>用户名已被使用。</value>
   </data>
   <data name="USERNAME_AVAILABLE" xml:space="preserve">
     <value>用户名可用。</value>
@@ -156,28 +156,28 @@
     <value>用户名不能为空或仅含空格。</value>
   </data>
   <data name="USERNAME_TOO_SHORT" xml:space="preserve">
-    <value>用户名过短：至少需要3个字符。</value>
+    <value>用户名过短：必须至少 3 个字符。</value>
   </data>
   <data name="USERNAME_TOO_LONG" xml:space="preserve">
-    <value>用户名过长：不得超过40个字符。</value>
+    <value>用户名过长：不能超过 40 个字符。</value>
   </data>
   <data name="USERNAME_INVALID_EMAIL" xml:space="preserve">
     <value>电子邮箱地址无效。</value>
   </data>
   <data name="USERNAME_INVALID_CHARACTERS" xml:space="preserve">
-    <value>用户名无效，仅允许字母或数字。</value>
+    <value>用户名无效，仅可包含字母或数字。</value>
   </data>
   <data name="PENDING_MIGRATIONS" xml:space="preserve">
     <value>存在待执行的数据库迁移，请运行'dotnet ef database update'以应用变更。</value>
   </data>
   <data name="SYSTEM_OK" xml:space="preserve">
-    <value>好的</value>
+    <value>确定</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
-    <value>服务器内部错误</value>
+    <value>内部服务器错误</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
-    <value>本地保险库未同步，请刷新页面同步后重试。</value>
+    <value>本地密码库未同步，请刷新页面同步后重试。</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
     <value>发生未知错误，请重试。</value>
@@ -189,7 +189,7 @@
     <value>恢复代码无效，请重试。</value>
   </data>
   <data name="VAULT_NOT_UP_TO_DATE" xml:space="preserve">
-    <value>你的保险库未同步，请先同步后重试。</value>
+    <value>您的密码库未同步，请先同步后重试。</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
     <value>密码错误次数过多，账户已被锁定。30分钟后可再次尝试。</value>
