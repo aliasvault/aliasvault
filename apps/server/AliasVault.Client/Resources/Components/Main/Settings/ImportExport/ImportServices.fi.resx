@@ -81,7 +81,7 @@
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Kun olet vienyt tiedoston, voit ladata sen ulospäin alta.</value>
     <comment>Bitwarden export instructions part 2</comment>
   </data>
   <!-- LastPass -->
