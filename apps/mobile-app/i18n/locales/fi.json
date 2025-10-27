@@ -55,12 +55,12 @@
       "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
       "tokenRefreshFailed": "Todennuspoletin virkistäminen epäonnistui",
       "httpError": "HTTP-virhe: {{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "Failed to decrypt vault",
-      "vaultUnlockFailed": "Failed to unlock vault",
-      "biometricCancelled": "Biometric authentication cancelled",
-      "encryptionKeyFailed": "Failed to retrieve encryption key"
+      "biometricRequired": "Ole hyvä ja ota biometrinen todennus käyttöön AliasVault-sovelluksessa, jotta voit käyttää todennusavaimia.",
+      "unlockVaultFirst": "Ole hyvä ja avaa holvi ensin AliasHolt-sovelluksessa",
+      "vaultDecryptFailed": "Holvin salauksen purku epäonnistui",
+      "vaultUnlockFailed": "Holvin lukituksen poisto epäonnistui",
+      "biometricCancelled": "Biometrinen tunnistus peruttu",
+      "encryptionKeyFailed": "Salausavaimen noutaminen epäonnistui"
     },
     "confirmLogout": "Oletko varma, että haluat kirjautua ulos? Sinun täytyy kirjautua sisään uudelleen pääsalasanallasi päästäksesi holviisi.",
     "noAccountYet": "Eikö vielä tiliä?",
@@ -87,7 +87,7 @@
       "failedToSyncVault": "Holvin synkronointi epäonnistui",
       "operationFailed": "Toiminto epäonnistui",
       "versionNotSupported": "Palvelin ei enää tue tätä AliasVault-mobiilisovelluksen versiota. Päivitä sovelluksesi uusimpaan versioon.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "serverVersionNotSupported": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta tätä mobiilisovellusta voi käyttää. Ota yhteyttä tukeen, jos tarvitset apua.",
       "appOutdated": "Tämä sovellus on vanhentunut, eikä sillä voi käyttää tätä (uudempaa) holviversiota. Päivitä AliasVault-sovellus jatkaaksesi.",
       "vaultDecryptFailed": "Holvin salausta ei voitu purkaa. Jos ongelma jatkuu, kirjaudu ulos ja kirjaudu sisään uudelleen.",
       "passwordChanged": "Salasanasi on muuttunut viimeisimmän sisäänkirjautumisesi jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä."
@@ -129,10 +129,10 @@
     "privateEmailDescription": "Päästä päähän (E2E) salattu, täysin yksityinen.",
     "publicEmailTitle": "Julkiset väliaikaisten sähköpostiosoitteiden tarjoajat (PTEP)",
     "publicEmailDescription": "Anonyymi, mutta rajoitettu yksityisyys. Sähköpostin sisällön voi lukea kuka tahansa, joka tietää osoitteen.",
-    "searchPlaceholder": "Search vault...",
+    "searchPlaceholder": "Etsitään holvia...",
     "noMatchingCredentials": "Vastaavia tunnistetietoja ei löytynyt",
     "noCredentialsFound": "Tunnistetietoja ei löytynyt. Luo sellainen päästäksesi alkuun. Vinkki: voit myös kirjautua AliasVault-verkkosovellukseen tuodaksesi tunnistetietoja muista salasanojen hallintaohjelmista.",
-    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
     "recentEmails": "Viimeaikaiset sähköpostit",
     "loadingEmails": "Ladataan sähköposteja...",
     "noEmailsYet": "Sähköposteja ei ole vielä vastaanotettu.",
@@ -159,10 +159,10 @@
     "emailPreview": "Sähköpostin esikatselu",
     "switchBackToBrowser": "Siirry takaisin selaimeen jatkaaksesi.",
     "filters": {
-      "all": "(All) Credentials",
-      "passkeys": "Passkeys",
-      "aliases": "Aliases",
-      "userpass": "Passwords"
+      "all": "(Näytä käyttäjätunnukset",
+      "passkeys": "Todennusavaimet",
+      "aliases": "Aliakset",
+      "userpass": "Salasanat"
     },
     "twoFactorAuth": "Kaksivaiheinen todennus",
     "totpCode": "TOTP-koodi",
@@ -174,14 +174,14 @@
       "credentialUpdated": "Tunnistetieto päivitetty",
       "credentialCreated": "Tunnistetieto luotu",
       "credentialDeleted": "Tunnistetieto poistettu",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
+      "usernameCopied": "Käyttäjänimi kopioitu leikepöydälle",
+      "emailCopied": "Sähköpostiosoite kopioitu leikepöydälle",
+      "passwordCopied": "Salasana kopioitu leikepöydälle"
     },
     "createNewAliasFor": "Luo uusi alias kohteelle",
     "errors": {
       "loadFailed": "Tunnistetiedon lataaminen epäonnistui",
-      "saveFailed": "Failed to save credential",
+      "saveFailed": "Käyttäjätunnuksen tallentaminen epäonnistui",
       "generateUsernameFailed": "Käyttäjänimen luominen epäonnistui",
       "generatePasswordFailed": "Salasanan luominen epäonnistui"
     },
@@ -195,20 +195,20 @@
     }
   },
   "passkeys": {
-    "passkey": "Passkey",
-    "site": "Site",
-    "displayName": "Display Name",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
-    "passkeyMarkedForDeletion": "Passkey marked for deletion",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+    "passkey": "Todennusavain",
+    "site": "Sivusto",
+    "displayName": "Näyttönimi",
+    "helpText": "Todennusavaimet, Passkey, luodaan sivustolle pyydettäessä. Niitä ei voi manuaalisesti muokata. Voit poistaa tämän todennusavaimen, voit poistaa sen tästä käyttäjätunnuksesta.",
+    "passkeyMarkedForDeletion": "Todennusavain merkitty poistettavaksi",
+    "passkeyWillBeDeleted": "Tämä todennusavain poistetaan, kun tallennat tämän käyttäjätiedon."
   },
   "settings": {
     "title": "Asetukset",
-    "autofill": "Autofill & Passkeys",
+    "autofill": "Automaattitäyttö & Todennusavaimet",
     "iosAutofillSettings": {
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "Voit määrittää AliasVaultin tarjoamaan natiivin salasanan automaattinen täyttö -toiminnon iOS-käyttöjärjestelmässä. Ota se käyttöön noudattamalla alla olevia ohjeita.",
+      "passkeyNotice": "Todennusavaimet luodaan iOS:n kautta. Tallentaaksesi ne AliasVaultiin, varmista, että alla oleva Automaattinen täyttö on käytössä.",
+      "howToEnable": "Kuinka otetana käyttään Automaattitäyttö ja Todennusvaimet",
       "step1": "1. Avaa iOS-asetukset alla olevasta painikkeesta.",
       "step2": "2. Mene kohtaan \"Yleinen\"",
       "step3": "3. Napauta \"Automaattinen Täyttö & Salasanat\"",
@@ -220,11 +220,11 @@
     },
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Kokeellinen ominaisuus",
-      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
+      "warningDescription": "Androidin automaattinen täyttö ja todennusavain -tuki on tällä hetkellä kokeellisessa tilassa.",
       "warningLink": "Lue lisää siitä täältä",
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "Voit määrittää AliasVaultin tarjoamaan natiivin salasanan automaattinen täyttö -toiminnon Androidissa. Ota se käyttöön noudattamalla alla olevia ohjeita.",
+      "passkeyNotice": "Todennusavaimet on luotu Androidin käyttöoikeustietojen hallinnan (Android 14+) kautta. Tallentaaksesi ne AliasVaultiin, varmista, että Alla oleva automaattinen täyttö on käytössä.",
+      "howToEnable": "Kuinka ottaa käyttöön automaattisen täytön ja salasanat:",
       "step1": "1. Avaa Android-asetukset alla olevan painikkeen kautta ja vaihda \"automaattisen täytön ensisijainen palvelu\" \"AliasVault\":ksi",
       "openAutofillSettings": "Avaa Automaattinen täyttö -asetukset",
       "buttonTip": "Jos yllä oleva painike ei toimi, se saattaa olla estetty turvallisuusasetusten vuoksi. Voit manuaalisesti mennä kohtaan Android-asetukset → Yleinen hallinta → Salasanat ja automaattinen täyttö.",
@@ -474,7 +474,7 @@
       "stillOffline": "Yhä offline-tilassa"
     },
     "alerts": {
-      "syncIssue": "No Connection",
+      "syncIssue": "Ei yhteyttä",
       "syncIssueMessage": "AliasVault-palvelimeen ei saada yhteyttä ja holviasi ei voida synkronoida. Haluatko avata paikallisen holvisi vain luku-tilassa vai haluatko kokeilla yhteyttä uudelleen?",
       "openLocalVault": "Avaa paikallinen holvi",
       "retrySync": "Yritä synkronointia uudelleen"
