@@ -60,20 +60,20 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Tuo salasanoja 1Password holvistasi</value>
+    <value>Tuo salasanat 1Password-holvistasi</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>Jotta voit tuoda 1Password holvin, sinun täytyy viedä se CSV tiedosto. Voit tehdä tämän kirjautumalla 1Password tilillesi 1Password 8 työpöytäsovelluksessa (Windows / MacOS / Linux), menossa 'Tiedosto' valikkoon ja valitse 'Vie' (CSV).</value>
+    <value>Jotta voit tuoda 1Password-holvin, sinun on vietävä se CSV-tiedostona. Voit tehdä tämän kirjautumalla 1Password-tilillesi 1Password-työpöytäsovelluksessa (Linux / MacOS / Windows), siirtymällä 'Tiedosto'-valikkoon ja valitsemalla 'Vie' (CSV-tiedostona).</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
-    <value>Kun olet tallentanut tiedoston, voit ladata sen alta.</value>
+    <value>Kun olet vienyt tiedoston, ladata sen ulospäin alta.</value>
     <comment>1Password export instructions part 2</comment>
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">
-    <value>Tuo salasanat Bitwarden holvistasi</value>
+    <value>Tuo salasanat Bitwarden-holvistasi</value>
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
@@ -81,7 +81,7 @@
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
-    <value>Kun olet tallentanut tiedoston, voit ladata sen alta.</value>
+    <value>Once you have exported the file, you can upload it below.</value>
     <comment>Bitwarden export instructions part 2</comment>
   </data>
   <!-- LastPass -->
