@@ -63,7 +63,7 @@
     <comment>Section title for email panel</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
-    <value>Automaattinen päivitys käytössä</value>
+    <value>Automaattinen virkistys otettu käyttöön</value>
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="SubjectColumn" xml:space="preserve">
@@ -71,19 +71,19 @@
     <comment>Table column header for email subject</comment>
   </data>
   <data name="DateColumn" xml:space="preserve">
-    <value>Päivämäärä</value>
+    <value>Päiväys</value>
     <comment>Table column header for email date</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>Sähköposteja ei ole vielä vastaanotettu).</value>
+    <value>Ei vielä vastaanotettu sähköposteja.</value>
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
-    <value>Nykyinen valittu sähköpostiosoite on jo käytössä. Ole hyvä ja vaihda sähköpostiosoite muokkaamalla tätä tunnusta.</value>
+    <value>Nykyinen valittu sähköpostiosoite on jo käytössä. Vaihda sähköpostiosoite muokkaamalla tätä tunnistetietoa.</value>
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
-    <value>Tapahtui virhe ladattaessa sähköposteja. Yritä muokata ja tallentaa tunnistetiedot synkronoidaksesi tietokannan, ja yritä sitten uudelleen.</value>
+    <value>Sähköpostien lataamisen yrittäessä tapahtui virhe. Yritä muokata ja tallentaa tunnistetietomerkintä synkronoidaksesi tietokannan ja yritä sitten uudelleen.</value>
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">
