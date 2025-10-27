@@ -60,54 +60,54 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>从你的1Password密码库导入密码</value>
+    <value>从您的1Password密码库导入密码</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>要导入你的 1Password 密码库，你需要将其导出为 CSV 文件。你可以通过在 1Password 8 桌面应用程序（Windows / MacOS / Linux）中登录你的 1Password 账户，进入“文件”菜单并选择“导出”（至 CSV）来完成此操作。</value>
+    <value>要导入您的 1Password 密码库，您需要将其导出为 CSV 文件。您可以通过在 1Password 8 桌面应用程序（Windows / MacOS / Linux）中登录您的 1Password 账户，进入“文件”菜单并选择“导出”（至 CSV）来完成此操作。</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，你可以在下方上传。</value>
+    <value>导出文件后，您可以在下方上传。</value>
     <comment>1Password export instructions part 2</comment>
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">
-    <value>从你的 Bitwarden 密码库导入密码</value>
+    <value>从您的 Bitwarden 密码库导入密码</value>
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>要导入你的 Bitwarden 密码库，你需要将其导出为 CSV 文件。你可以通过登录你的 Bitwarden 账户，进入“工具”菜单并选择“导出密码库”（至 CSV）来完成此操作。</value>
+    <value>要导入您的 Bitwarden 密码库，您需要将其导出为 CSV 文件。您可以通过登录您的 Bitwarden 账户，进入“工具”菜单并选择“导出密码库”（至 CSV）来完成此操作。</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，你可以在下方上传。</value>
+    <value>导出文件后，您可以在下方上传。</value>
     <comment>Bitwarden export instructions part 2</comment>
   </data>
   <!-- LastPass -->
   <data name="LastPassDescription" xml:space="preserve">
-    <value>从你的 LastPass 密码库导入密码</value>
+    <value>从您的 LastPass 密码库导入密码</value>
     <comment>Description for LastPass import service</comment>
   </data>
   <data name="LastPassInstructionsPart1" xml:space="preserve">
-    <value>要导入你的 LastPass 密码库，你需要将其导出为 CSV 文件。你可以通过登录你的 LastPass 账户，进入左侧边栏的“高级选项”并选择“导出”>“LastPass CSV 文件”来完成此操作。</value>
+    <value>要导入您的 LastPass 密码库，您需要将其导出为 CSV 文件。您可以通过登录您的 LastPass 账户，进入左侧边栏的“高级选项”并选择“导出”>“LastPass CSV 文件”来完成此操作。</value>
     <comment>LastPass export instructions part 1</comment>
   </data>
   <data name="LastPassInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，你可以在下方上传。</value>
+    <value>导出文件后，您可以在下方上传。</value>
     <comment>LastPass export instructions part 2</comment>
   </data>
   <!-- Chrome -->
   <data name="ChromeDescription" xml:space="preserve">
-    <value>从你的 Chrome 密码管理器导入密码</value>
+    <value>从您的 Chrome 密码管理器导入密码</value>
     <comment>Description for Chrome import service</comment>
   </data>
   <data name="ChromeInstructionsPart1" xml:space="preserve">
-    <value>要导入你的 Chrome 密码管理器中的密码，你需要将其导出为 CSV 文件。你可以通过登录你的 Chrome 浏览器，进入“设置”菜单>“密码和自动填充”>“谷歌密码管理器”。然后点击“导出密码”来完成此操作。</value>
+    <value>要导入您的 Chrome 密码管理器中的密码，您需要将其导出为 CSV 文件。您可以通过登录您的 Chrome 浏览器，进入“设置”菜单>“密码和自动填充”>“谷歌密码管理器”。然后点击“导出密码”来完成此操作。</value>
     <comment>Chrome export instructions part 1</comment>
   </data>
   <data name="ChromeInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，你可以在下方上传。</value>
+    <value>导出文件后，您可以在下方上传。</value>
     <comment>Chrome export instructions part 2</comment>
   </data>
   <!-- KeePass -->
@@ -116,11 +116,11 @@
     <comment>Description for KeePass import service</comment>
   </data>
   <data name="KeePassInstructionsPart1" xml:space="preserve">
-    <value>要导入你的 KeePass 保险库，你需要将其导出为 CSV 文件。你可以通过进入“文件”菜单并选择“导出”（至 CSV）来完成此操作。</value>
+    <value>要导入您的 KeePass 密码库，您需要将其导出为 CSV 文件。您可以通过进入“文件”菜单并选择“导出”（至 CSV）来完成此操作。</value>
     <comment>KeePass export instructions part 1</comment>
   </data>
   <data name="KeePassInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，你可以在下方上传。</value>
+    <value>导出文件后，您可以在下方上传。</value>
     <comment>KeePass export instructions part 2</comment>
   </data>
   <!-- Generic CSV -->
@@ -129,7 +129,7 @@
     <comment>Description for Generic CSV import service</comment>
   </data>
   <data name="GenericCsvInstructionsPart1" xml:space="preserve">
-    <value>你使用的密码管理器不被支持吗？你始终可以改用通用 CSV 模板格式将你的凭据导入 AliasVault。</value>
+    <value>您使用的密码管理器不被支持吗？您始终可以改用通用 CSV 模板格式将您的凭据导入 AliasVault。</value>
     <comment>Generic CSV instructions part 1</comment>
   </data>
   <data name="GenericCsvStep1" xml:space="preserve">
@@ -141,7 +141,7 @@
     <comment>Generic CSV step 2</comment>
   </data>
   <data name="GenericCsvStep3" xml:space="preserve">
-    <value>填写你的凭据（替换示例数据）</value>
+    <value>填写您的凭据（替换示例数据）</value>
     <comment>Generic CSV step 3</comment>
   </data>
   <data name="GenericCsvStep4" xml:space="preserve">
@@ -154,28 +154,28 @@
   </data>
   <!-- Firefox -->
   <data name="FirefoxDescription" xml:space="preserve">
-    <value>从你的 Firefox 密码管理器导入密码</value>
+    <value>从您的 Firefox 密码管理器导入密码</value>
     <comment>Description for Firefox import service</comment>
   </data>
   <data name="FirefoxInstructionsPart1" xml:space="preserve">
-    <value>要导入你的 Firefox 密码，你需要将其导出为 CSV 文件。你可以通过打开 Firefox 浏览器，进入菜单>“密码”。然后点击右上角的菜单图标并选择“导出密码”来完成此操作。</value>
+    <value>要导入您的 Firefox 密码，您需要将其导出为 CSV 文件。您可以通过打开 Firefox 浏览器，进入菜单>“密码”。然后点击右上角的菜单图标并选择“导出密码”来完成此操作。</value>
     <comment>Firefox export instructions part 1</comment>
   </data>
   <data name="FirefoxInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，你可以在下方上传。</value>
+    <value>导出文件后，您可以在下方上传。</value>
     <comment>Firefox export instructions part 2</comment>
   </data>
   <!-- Dashlane -->
   <data name="DashlaneDescription" xml:space="preserve">
-    <value>从你的 Dashlane 账户导入密码</value>
+    <value>从您的 Dashlane 账户导入密码</value>
     <comment>Description for Dashlane import service</comment>
   </data>
   <data name="DashlaneInstructionsPart1" xml:space="preserve">
-    <value>要导入你的 Dashlane 密码，你需要将其导出为 CSV 文件。你可以通过登录你的 Dashlane 账户，进入“账户”>“设置”菜单并选择“导出为 CSV”来完成此操作。</value>
+    <value>要导入您的 Dashlane 密码，您需要将其导出为 CSV 文件。您可以通过登录您的 Dashlane 账户，进入“账户”>“设置”菜单并选择“导出为 CSV”来完成此操作。</value>
     <comment>Dashlane export instructions part 1</comment>
   </data>
   <data name="DashlaneInstructionsPart2" xml:space="preserve">
-    <value>注意：你下载的 .zip 文件将包含一个“credentials.csv”文件。你需要先解压缩该档案，然后在下方上传“credentials.csv”CSV 文件。</value>
+    <value>注意：您下载的 .zip 文件将包含一个“credentials.csv”文件。您需要先解压缩该档案，然后在下方上传“credentials.csv”CSV 文件。</value>
     <comment>Dashlane export instructions part 2</comment>
   </data>
   <!-- KeePassXC -->
@@ -188,7 +188,7 @@
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，你可以在下方上传。</value>
+    <value>导出文件后，您可以在下方上传。</value>
     <comment>KeePassXC export instructions part 2</comment>
   </data>
   <!-- Proton Pass -->
@@ -197,11 +197,11 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>要导入你的 Proton Pass 密码，你需要将其导出为 CSV 文件。你可以通过登录 Proton Pass（网页版），点击“设置”菜单>“导出”>“文件格式：CSV”。然后点击“导出”来完成此操作。</value>
+    <value>要导入您的 Proton Pass 密码，您需要将其导出为 CSV 文件。您可以通过登录 Proton Pass（网页版），点击“设置”菜单>“导出”>“文件格式：CSV”。然后点击“导出”来完成此操作。</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，你可以在下方上传。</value>
+    <value>导出文件后，您可以在下方上传。</value>
     <comment>Proton Pass export instructions part 2</comment>
   </data>
   <!-- Strongbox -->
@@ -210,11 +210,11 @@
     <comment>Description for Strongbox import service</comment>
   </data>
   <data name="StrongboxInstructionsPart1" xml:space="preserve">
-    <value>要导入你的 Strongbox 保险库，你需要将其导出为 CSV 文件。你可以通过进入“文件”菜单并选择“导出数据库”（至 CSV）来完成此操作。</value>
+    <value>要导入您的 Strongbox 密码库，您需要将其导出为 CSV 文件。您可以通过进入“文件”菜单并选择“导出数据库”（至 CSV）来完成此操作。</value>
     <comment>Strongbox export instructions part 1</comment>
   </data>
   <data name="StrongboxInstructionsPart2" xml:space="preserve">
-    <value>导出文件后，你可以在下方上传。</value>
+    <value>导出文件后，您可以在下方上传。</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
   <!-- AliasVault -->
@@ -223,7 +223,7 @@
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>如果你有 AliasVault 数据库的 CSV 文件备份（来自不同的 AliasVault 服务器），你可以在此处导入。</value>
+    <value>如果您有 AliasVault 数据库的 CSV 文件备份（来自不同的 AliasVault 服务器），您可以在此处导入。</value>
     <comment>AliasVault import instructions</comment>
   </data>
   <!-- Dropbox -->
@@ -232,12 +232,12 @@
     <comment>Description for Dropbox import service</comment>
   </data>
   <data name="DropboxInstructionsPart1" xml:space="preserve">
-    <value>要将你的 Dropbox Passwords 导入，需先将其导出为 CSV 文件。操作步骤为：打开 Dropbox Passwords，进入「账户」>「导出（至 .CSV 文件）」。</value>
+    <value>要将您的 Dropbox Passwords 导入，需先将其导出为 CSV 文件。操作步骤为：打开 Dropbox Passwords，进入「账户」>「导出（至 .CSV 文件）」。</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
-    <value>导出文件后，你可以在下方上传。</value>
+    <value>导出文件后，您可以在下方上传。</value>
     <comment>Common instruction for file upload</comment>
   </data>
 </root>
