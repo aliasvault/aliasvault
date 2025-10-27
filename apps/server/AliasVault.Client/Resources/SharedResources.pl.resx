@@ -264,28 +264,28 @@
     <comment>Generic error message for password minimum length validation</comment>
   </data>
   <data name="ErrorPasswordsDoNotMatchGeneric" xml:space="preserve">
-    <value>Hasła nie pasują.</value>
+    <value>Hasła nie są takie same.</value>
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
-    <value>You must accept the terms and conditions.</value>
+    <value>Musisz zaakceptować warunki użytkowania.</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
   <data name="ErrorSecretKeyRequired" xml:space="preserve">
-    <value>Secret key is required</value>
+    <value>Wymagany jest tajny klucz</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ErrorUsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>Wymagana jest nazwa użytkownika</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="ErrorPasswordRequired" xml:space="preserve">
-    <value>Password is required</value>
+    <value>Wymagane jest podanie hasła</value>
     <comment>Error message when password is required</comment>
   </data>
   <!-- General UI text -->
   <data name="LockVault" xml:space="preserve">
-    <value>Lock vault</value>
+    <value>Zablokuj sejf</value>
     <comment>Tooltip text for lock vault button</comment>
   </data>
   <data name="Home" xml:space="preserve">
@@ -293,11 +293,11 @@
     <comment>Home breadcrumb text</comment>
   </data>
   <data name="Notes" xml:space="preserve">
-    <value>Notes</value>
+    <value>Notatki</value>
     <comment>Notes section heading</comment>
   </data>
   <data name="SyncVaultData" xml:space="preserve">
-    <value>Sync vault data</value>
+    <value>Synchronizacja danych z sejfu</value>
     <comment>Tooltip text for sync vault data button</comment>
   </data>
 </root>
