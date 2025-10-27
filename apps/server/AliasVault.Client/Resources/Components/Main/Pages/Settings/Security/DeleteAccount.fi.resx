@@ -73,7 +73,7 @@
   </data>
   <!-- Warning messages -->
   <data name="PermanentActionWarning" xml:space="preserve">
-    <value>Varoitus: Tätä toimintoa ei voi peruuttaa. Kaikki tietosi poistetaan pysyvästi.</value>
+    <value>Varoitus: Tämä toimi on pysyvä eikä sitä voi kumota. Kaikki tietosi poistetaan pysyvästi.</value>
     <comment>Warning message about permanent deletion</comment>
   </data>
   <data name="FinalWarning" xml:space="preserve">
@@ -82,7 +82,7 @@
   </data>
   <!-- Note sections -->
   <data name="PleaseNote" xml:space="preserve">
-    <value>Huomautus:</value>
+    <value>Huomaathan:</value>
     <comment>Header for note section</comment>
   </data>
   <data name="VaultsDeletedNote" xml:space="preserve">
@@ -90,7 +90,7 @@
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">
-    <value>Sähköpostiosoitteesi aliakset ovat orpoja, eivätkä muut käyttäjät voi vaatia niitä.</value>
+    <value>Sähköpostiosoitteesi aliakset muuttuvat orvoiksi, eivätkä muut käyttäjät voi vaatia niitä käyttöönsä</value>
     <comment>Note about email aliases being orphaned</comment>
   </data>
   <data name="AccountCannotBeRecoveredNote" xml:space="preserve">
@@ -98,7 +98,7 @@
     <comment>Note about account recovery</comment>
   </data>
   <data name="DeletionIrreversibleNote" xml:space="preserve">
-    <value>Tilin poisto on peruuttamatonta, eikä sitä voi peruuttaa. Alla olevan painikkeen painaminen poistaa tilisi välittömästi ja pysyvästi.</value>
+    <value>Account deletion is irreversible and cannot be undone. Pressing the button below will delete your account immmediately and permanently.</value>
     <comment>Note about deletion being irreversible</comment>
   </data>
   <!-- Form labels -->
@@ -107,7 +107,7 @@
     <comment>Label for username confirmation input field</comment>
   </data>
   <data name="EnterPasswordLabel" xml:space="preserve">
-    <value>Anna salasanasi</value>
+    <value>Syötä salasanasi</value>
     <comment>Label for password input field</comment>
   </data>
   <!-- Button text -->
@@ -121,7 +121,7 @@
   </data>
   <!-- Loading and status messages -->
   <data name="DeletingAccountMessage" xml:space="preserve">
-    <value>Tiliä poistetaan</value>
+    <value>Poistetaan tiliä...</value>
     <comment>Loading message displayed while deleting account</comment>
   </data>
   <data name="UsernameRequired" xml:space="preserve">
@@ -129,7 +129,7 @@
     <comment>Error message when username is not provided</comment>
   </data>
   <data name="UsernameDoesNotMatch" xml:space="preserve">
-    <value>Antamasi käyttäjänimi ei vastaa nykyistä käyttäjänimeäsi. Ole hyvä ja yritä uudelleen.</value>
+    <value>The username you entered does not match your current username. Please try again.</value>
     <comment>Error message when username doesn't match</comment>
   </data>
   <data name="ErrorProcessingRequest" xml:space="preserve">
