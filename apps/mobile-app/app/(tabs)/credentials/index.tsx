@@ -265,7 +265,11 @@ export default function CredentialsScreen() : React.ReactNode {
     }
 
     // Then apply search filter
-    const searchLower = searchQuery.toLowerCase();
+    const searchLower = searchQuery.toLowerCase().trim();
+
+    if (!searchLower) {
+      return true; // No search term, include all
+    }
 
     /**
      * We filter credentials by searching in the following fields:
@@ -276,13 +280,20 @@ export default function CredentialsScreen() : React.ReactNode {
      * - Notes
      */
     const searchableFields = [
-      credential.ServiceName?.toLowerCase(),
-      credential.Username?.toLowerCase(),
-      credential.Alias?.Email?.toLowerCase(),
-      credential.ServiceUrl?.toLowerCase(),
-      credential.Notes?.toLowerCase(),
+      credential.ServiceName?.toLowerCase() || '',
+      credential.Username?.toLowerCase() || '',
+      credential.Alias?.Email?.toLowerCase() || '',
+      credential.ServiceUrl?.toLowerCase() || '',
+      credential.Notes?.toLowerCase() || '',
     ];
-    return searchableFields.some(field => field?.includes(searchLower));
+
+    // Split search term into words for AND search
+    const searchWords = searchLower.split(/\s+/).filter(word => word.length > 0);
+
+    // All search words must be found (each in at least one field)
+    return searchWords.every(word =>
+      searchableFields.some(field => field.includes(word))
+    );
   });
 
   const styles = StyleSheet.create({
