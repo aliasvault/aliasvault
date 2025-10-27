@@ -32,7 +32,7 @@
     <comment>Message when search term is too short</comment>
   </data>
   <data name="SearchingForMessage">
-    <value>Поиск</value>
+    <value>Поиск "{0}"</value>
     <comment>Message showing current search term</comment>
   </data>
   <data name="NoResultsFoundMessage">
