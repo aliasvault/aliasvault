@@ -60,15 +60,15 @@
   </resheader>
   <!-- Password validation messages -->
   <data name="PasswordMinLength" xml:space="preserve">
-    <value>新密码长度至少为10个字符。</value>
+    <value>新密码必须至少包含 10 个字符。</value>
     <comment>Error message for password minimum length validation</comment>
   </data>
   <data name="PasswordsDoNotMatch" xml:space="preserve">
-    <value>两次输入的新密码不一致。</value>
+    <value>新密码不匹配。</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="PasswordMinLengthGeneric" xml:space="preserve">
-    <value>密码长度至少为10个字符。</value>
+    <value>密码必须至少包含 10 个字符。</value>
     <comment>Generic error message for password minimum length validation</comment>
   </data>
   <data name="PasswordsDoNotMatchGeneric" xml:space="preserve">
@@ -77,15 +77,15 @@
   </data>
   <!-- Required field validation messages -->
   <data name="UsernameRequired" xml:space="preserve">
-    <value>用户名不能为空</value>
+    <value>用户名为必填项</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="PasswordRequired" xml:space="preserve">
-    <value>密码不能为空</value>
+    <value>密码为必填项</value>
     <comment>Error message when password is required</comment>
   </data>
   <data name="SecretKeyRequired" xml:space="preserve">
-    <value>密钥不能为空</value>
+    <value>密钥为必填项</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ServiceNameRequired" xml:space="preserve">
@@ -98,7 +98,7 @@
   </data>
   <!-- Terms and conditions -->
   <data name="MustAcceptTerms" xml:space="preserve">
-    <value>必须接受条款和条件。</value>
+    <value>您必须接受条款和条件。</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
 </root>
