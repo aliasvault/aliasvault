@@ -22,7 +22,7 @@
     "logout": "Se déconnecter",
     "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
     "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
-    "unlockSuccess": "Parcourir le contenu du coffre",
+    "unlockSuccess": "Parcourir le contenu du coffre !",
     "unlockSuccessTitle": "Votre coffre a été déverrouillé avec succès",
     "unlockSuccessDescription": "Vous pouvez maintenant utiliser le remplissage automatique des formulaires de connexion dans votre navigateur.",
     "closePopup": "Fermer cette popup",
@@ -37,7 +37,8 @@
       "migrationError": "Une erreur s'est produite lors de la vérification des migrations en attente.",
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
       "accountLocked": "Compte temporairement verrouillé en raison d'un trop grand nombre de tentatives échouées.",
-      "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez."
+      "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez.",
+      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter."
     }
   },
   "menu": {
@@ -51,8 +52,10 @@
     "error": "Erreur",
     "success": "Succès",
     "cancel": "Annuler",
+    "back": "Back",
     "use": "Utiliser",
     "delete": "Supprimer",
+    "or": "Or",
     "close": "Fermer",
     "copied": "Copié !",
     "openInNewWindow": "Ouvrir dans une nouvelle fenêtre",
@@ -90,6 +93,7 @@
     "errors": {
       "serverNotAvailable": "Le serveur d'AliasVault n'est pas disponible. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "clientVersionNotSupported": "Cette version de l'extension de navigateur AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre extension de navigateur à la dernière version.",
+      "browserExtensionOutdated": "Cette extension de navigateur est obsolète et ne peut pas être utilisée pour accéder à ce coffre-fort. Veuillez la mettre à jour pour continuer.",
       "serverVersionNotSupported": "Le serveur d'AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette extension de navigateur. Veuillez contacter le support si vous avez besoin d'aide.",
       "unknownError": "Une erreur inconnue s'est produite",
       "vaultNotAvailable": "Coffre non disponible",
@@ -195,6 +199,8 @@
     "searchPlaceholder": "Rechercher des identifiants...",
     "welcomeTitle": "Bienvenue dans AliasVault !",
     "welcomeDescription": "Pour utiliser l'extension de navigateur AliasVault : accédez à un site web et utilisez la fenêtre de saisie automatique AliasVault pour créer un nouvel identifiant.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noMatchingCredentials": "No matching credentials found",
     "createdAt": "Créé",
     "updatedAt": "Dernière mise à jour",
     "autofill": "Remplissage automatique",
@@ -210,6 +216,12 @@
     "saveCredential": "Enregistrer les identifiants",
     "deleteCredentialTitle": "Supprimer les identifiants",
     "deleteCredentialConfirm": "Êtes-vous sûr de vouloir supprimer ces identifiants ? Cette action est irréversible.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "randomAlias": "Alias aléatoire",
     "manual": "Manuel",
     "service": "Service",
@@ -226,7 +238,7 @@
     "avoidAmbiguousChars": "Éviter les caractères ambigus (o, 0, etc.)",
     "generateNewPreview": "Générer un nouvel aperçu",
     "generateRandomAlias": "Créer un alias aléatoire",
-    "clearAliasFields": "Clear Alias Fields",
+    "clearAliasFields": "Effacer les champs d'alias",
     "alias": "Alias",
     "firstName": "Prénom",
     "lastName": "Nom",
@@ -342,6 +354,7 @@
     "autofillSettings": "Paramètres du remplissage automatique",
     "clipboardSettings": "Paramètres du presse-papiers",
     "contextMenuSettings": "Paramètres du menu contextuel",
+    "passkeySettings": "Passkey Settings",
     "contextMenu": "Menu contextuel",
     "contextMenuEnabled": "Le menu contextuel est activé",
     "contextMenuDisabled": "Le menu contextuel est désactivé",
@@ -354,12 +367,52 @@
       "clientUrlInvalid": "Veuillez entrer une URL de client valide"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
+    "bypass": {
+      "title": "Use Browser Passkey",
+      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
+      "thisTimeOnly": "This time only",
+      "alwaysForSite": "Always for this site"
+    },
+    "authenticate": {
+      "title": "Sign in with Passkey",
+      "signInFor": "Sign in with passkey for",
+      "selectPasskey": "Select a passkey to sign in:",
+      "noPasskeysFound": "No passkeys found for this site",
+      "useBrowserPasskey": "Use Browser Passkey"
+    },
+    "create": {
+      "title": "Create Passkey",
+      "createFor": "Create a new passkey for",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Enter a name for this passkey",
+      "createButton": "Create Passkey",
+      "creatingButton": "Creating...",
+      "useBrowserPasskey": "Use Browser Passkey",
+      "selectPasskeyToReplace": "Select a passkey to replace:",
+      "createNewPasskey": "Create New Passkey",
+      "replacingPasskey": "Replacing passkey: {{displayName}}",
+      "confirmReplace": "Confirm Replace"
+    },
+    "settings": {
+      "passkeyProvider": "Passkey Provider",
+      "passkeyProviderOn": "Passkey Provider on ",
+      "enable": "Enable AliasVault as passkey provider",
+      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+    }
+  },
   "upgrade": {
     "title": "Mettre à niveau le coffre",
     "subtitle": "AliasVault a mis à jour et votre coffre doit être mis à niveau. Cela ne devrait prendre que quelques secondes.",
     "versionInformation": "Informations de version",
-    "yourVault": "Votre coffre :",
-    "newVersion": "Nouvelle version :",
+    "yourVault": "Votre version de coffre-fort :",
+    "newVersion": "Nouvelle version valable :",
     "upgrade": "Mettre le coffre à niveau",
     "upgrading": "Mise à niveau...",
     "logout": "Se déconnecter",
