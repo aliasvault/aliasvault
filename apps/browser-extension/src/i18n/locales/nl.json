@@ -37,7 +37,8 @@
       "migrationError": "Er is een fout opgetreden bij het controleren op updates.",
       "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
       "accountLocked": "Account tijdelijk vergrendeld vanwege te veel mislukte pogingen.",
-      "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw."
+      "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
+      "sessionExpired": "Je sessie is verlopen. Log opnieuw in."
     }
   },
   "menu": {
@@ -51,8 +52,10 @@
     "error": "Fout",
     "success": "Succes",
     "cancel": "Annuleren",
+    "back": "Back",
     "use": "Gebruik",
     "delete": "Verwijderen",
+    "or": "Or",
     "close": "Sluiten",
     "copied": "Gekopieerd!",
     "openInNewWindow": "Openen in nieuw venster",
@@ -90,6 +93,7 @@
     "errors": {
       "serverNotAvailable": "De AliasVault server is niet beschikbaar. Probeer het later opnieuw of neem contact op met de ondersteuning als het probleem aanhoudt.",
       "clientVersionNotSupported": "Deze versie van de AliasVault browserextensie wordt niet meer ondersteund door de server. Update je browserextensie naar de nieuwste versie.",
+      "browserExtensionOutdated": "Deze browserextensie is verouderd en kan niet worden gebruikt om toegang te krijgen tot deze vault. Update deze browserextensie om door te gaan.",
       "serverVersionNotSupported": "De AliasVault server moet worden bijgewerkt naar een nieuwere versie om deze browserextensie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
       "unknownError": "Er is een onbekende fout opgetreden",
       "vaultNotAvailable": "Vault niet beschikbaar",
@@ -195,6 +199,8 @@
     "searchPlaceholder": "Credentials zoeken...",
     "welcomeTitle": "Welkom bij AliasVault!",
     "welcomeDescription": "Om de AliasVault browser extensie te gebruiken: navigeer naar een website en gebruik de AliasVault autofill popup om nieuwe credentials aan te maken.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noMatchingCredentials": "No matching credentials found",
     "createdAt": "Aangemaakt",
     "updatedAt": "Laatst bijgewerkt",
     "autofill": "Autofill",
@@ -210,6 +216,12 @@
     "saveCredential": "Credential opslaan",
     "deleteCredentialTitle": "Credential verwijderen",
     "deleteCredentialConfirm": "Weet je zeker dat je deze credential wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "randomAlias": "Alias",
     "manual": "Handmatig",
     "service": "Naam",
@@ -342,6 +354,7 @@
     "autofillSettings": "Autofill instellingen",
     "clipboardSettings": "Klembord instellingen",
     "contextMenuSettings": "Context menu instellingen",
+    "passkeySettings": "Passkey Settings",
     "contextMenu": "Context menu",
     "contextMenuEnabled": "Context menu is ingeschakeld",
     "contextMenuDisabled": "Context menu is uitgeschakeld",
@@ -354,12 +367,52 @@
       "clientUrlInvalid": "Voer een geldige client URL in"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
+    "bypass": {
+      "title": "Use Browser Passkey",
+      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
+      "thisTimeOnly": "This time only",
+      "alwaysForSite": "Always for this site"
+    },
+    "authenticate": {
+      "title": "Sign in with Passkey",
+      "signInFor": "Sign in with passkey for",
+      "selectPasskey": "Select a passkey to sign in:",
+      "noPasskeysFound": "No passkeys found for this site",
+      "useBrowserPasskey": "Use Browser Passkey"
+    },
+    "create": {
+      "title": "Create Passkey",
+      "createFor": "Create a new passkey for",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Enter a name for this passkey",
+      "createButton": "Create Passkey",
+      "creatingButton": "Creating...",
+      "useBrowserPasskey": "Use Browser Passkey",
+      "selectPasskeyToReplace": "Select a passkey to replace:",
+      "createNewPasskey": "Create New Passkey",
+      "replacingPasskey": "Replacing passkey: {{displayName}}",
+      "confirmReplace": "Confirm Replace"
+    },
+    "settings": {
+      "passkeyProvider": "Passkey Provider",
+      "passkeyProviderOn": "Passkey Provider on ",
+      "enable": "Enable AliasVault as passkey provider",
+      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+    }
+  },
   "upgrade": {
     "title": "Vault upgraden",
     "subtitle": "AliasVault is vernieuwd en je vault moet worden bijgewerkt. Dit kan enkele seconden duren.",
     "versionInformation": "Versie-informatie",
-    "yourVault": "Jouw vault:",
-    "newVersion": "Nieuwe versie:",
+    "yourVault": "Jouw vault versie:",
+    "newVersion": "Nieuwe beschikbare versie:",
     "upgrade": "Vault upgraden",
     "upgrading": "Aan het upgraden...",
     "logout": "Uitloggen",
