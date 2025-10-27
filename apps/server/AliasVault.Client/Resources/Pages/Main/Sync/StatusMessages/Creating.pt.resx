@@ -59,19 +59,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="WelcomeTitle" xml:space="preserve">
-    <value>Welcome to AliasVault</value>
+    <value>Boas-vindas ao AliasVault</value>
     <comment>Welcome title for new vault creation</comment>
   </data>
   <data name="CreatingDescription" xml:space="preserve">
-    <value>Your new encrypted vault is being initialized. This process may take a moment. Please wait.</value>
+    <value>Seu novo cofre criptografado está sendo inicializado. Este processo pode demorar um pouco. Por favor, aguarde.</value>
     <comment>Description for vault creation process</comment>
   </data>
   <data name="SaveFailedError" xml:space="preserve">
-    <value>Vault creation successful but failed to save to server. Please refresh the page and try again or contact support.</value>
+    <value>Criação de cofre bem sucedida, mas houve uma falha ao salvar no servidor. Por favor, atualize a página e tente novamente ou entre em contato com o suporte.</value>
     <comment>Error message when vault creation succeeds but save fails</comment>
   </data>
   <data name="CreationFailedError" xml:space="preserve">
-    <value>Vault creation failed. Please try again or contact support.</value>
+    <value>Criação de cofre falhou. Por favor, tente novamente ou entre em contato com o suporte.</value>
     <comment>Error message when vault creation fails</comment>
   </data>
 </root>
