@@ -33,7 +33,7 @@
     <comment>Title for the password creation step</comment>
   </data>
   <data name="CreatingStepTitle">
-    <value>创建保险库</value>
+    <value>创建密码库</value>
     <comment>Title for the vault creation step</comment>
   </data>
   <data name="SetupStepTitle">
