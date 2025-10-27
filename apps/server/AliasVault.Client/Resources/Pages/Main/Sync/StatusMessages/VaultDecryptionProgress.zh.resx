@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>保险库解密中</value>
+    <value>正在解密密码库</value>
     <comment>Title for vault decryption progress</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>请等待你的保险库初始化。此过程可能需要一点时间。</value>
+    <value>请等待您的密码库初始化，这可能需要一点时间。</value>
     <comment>Description for vault decryption progress</comment>
   </data>
 </root>
