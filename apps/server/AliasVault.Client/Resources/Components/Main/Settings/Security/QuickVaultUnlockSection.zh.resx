@@ -59,43 +59,43 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>快速解锁保险库</value>
+    <value>快速解锁密码库</value>
     <comment>Title for quick vault unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>保险库解密密钥通过密钥保存。这意味着当你重新加载AliasVault页面或标签时，你可以使用面部、指纹或内置浏览器安全密钥登录。如果你想禁用快速解锁保险库功能，可以通过下方按钮进行操作。</value>
+    <value>密码库解密密钥通过密钥保存。这意味着当您重新加载AliasVault页面或标签时，您可以使用面部、指纹或内置浏览器安全密钥登录。如果您想禁用快速解锁密码库功能，可以通过下方按钮进行操作。</value>
     <comment>Description when quick unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>禁用快速解锁保险库</value>
+    <value>禁用快速解锁密码库</value>
     <comment>Button to disable quick vault unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>默认情况下，当你重新加载AliasVault页面或标签时，系统会提示你再次输入主密码。或者，你可以选择使用浏览器密钥（或硬件验证器，如YubiKey）代替主密码。这将允许你使用面部、指纹或内置浏览器安全密钥解锁保险库。此功能仅适用于当前设备和浏览器。</value>
+    <value>默认情况下，当您重新加载AliasVault页面或标签时，系统会提示您再次输入主密码。或者，您可以选择使用浏览器密钥（或硬件验证器，如YubiKey）代替主密码。这将允许您使用面部、指纹或内置浏览器安全密钥解锁密码库。此功能仅适用于当前设备和浏览器。</value>
     <comment>Description when quick unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>请注意，此功能尚处于试验阶段，可能并非在所有设备或浏览器上都能正常工作。你的浏览器必须支持WebAuthn和PRF扩展才能使用此功能。如果遇到任何问题，你可以随时禁用此功能。</value>
+    <value>请注意，此功能尚处于试验阶段，可能并非在所有设备或浏览器上都能正常工作。您的浏览器必须支持WebAuthn和PRF扩展才能使用此功能。如果遇到任何问题，您可以随时禁用此功能。</value>
     <comment>Warning about experimental nature of the feature</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>启用快速解锁保险库</value>
+    <value>启用快速解锁密码库</value>
     <comment>Button to enable quick vault unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>快速解锁保险库已成功启用。下次你的保险库被锁定时，你可以使用创建的密钥解锁。</value>
+    <value>快速解锁密码库已成功启用。下次您的密码库被锁定时，您可以使用创建的密钥解锁。</value>
     <comment>Success message when quick unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>快速解锁保险库已成功禁用。</value>
+    <value>快速解锁密码库已成功禁用。</value>
     <comment>Success message when quick unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>你当前的浏览器不支持WebAuthn PRF扩展。请尝试使用其他浏览器。</value>
+    <value>您当前的浏览器不支持WebAuthn PRF扩展。请尝试使用其他浏览器。</value>
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
-    <value>尝试启用快速解锁保险库时发生错误。请（稍后）再试一次。</value>
+    <value>尝试启用快速解锁密码库时发生错误。请（稍后）再试一次。</value>
     <comment>Generic error message when enabling fails</comment>
   </data>
 </root>
