@@ -3,6 +3,8 @@
   <string name="app_name">AliasVault</string>
   <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
   <string name="aliasvault_icon">AliasVault icon</string>
+  <!-- Common strings -->
+  <string name="common_close">Close</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
   <string name="autofill_no_match_found">No match found, create new?</string>
@@ -13,4 +15,52 @@
   <string name="biometric_store_key_subtitle">Authenticate to securely store your encryption key in the Android Keystore. This enables secure access to your vault.</string>
   <string name="biometric_unlock_vault_title">Unlock Vault</string>
   <string name="biometric_unlock_vault_subtitle">Authenticate to access your vault</string>
+  <!-- Passkey registration -->
+  <string name="passkey_registration_title">Create Passkey</string>
+  <string name="create_passkey_title">Create New Passkey</string>
+  <string name="create_passkey_subtitle">Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.</string>
+  <string name="replace_passkey_title">Replace Passkey</string>
+  <string name="passkey_display_name_label">Passkey Name</string>
+  <string name="passkey_display_name_hint">Enter a name for this passkey</string>
+  <string name="passkey_website_label">Website</string>
+  <string name="passkey_username_label">Username</string>
+  <string name="passkey_create_button">Create Passkey</string>
+  <string name="passkey_cancel_button">Cancel</string>
+  <string name="passkey_creating">Creating passkey…</string>
+  <string name="passkey_saving">Saving to vault…</string>
+  <string name="passkey_syncing">Syncing with server…</string>
+  <string name="passkey_error_title">Error</string>
+  <string name="passkey_error_empty_name">Please enter a name for the passkey</string>
+  <string name="passkey_creation_failed">Failed to create passkey</string>
+  <string name="passkey_retry_button">Retry</string>
+  <string name="passkey_info_icon">Info icon</string>
+  <string name="passkey_create_explanation">This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.</string>
+  <string name="passkey_create_new_button">Create New Passkey</string>
+  <string name="passkey_select_to_replace">Or, replace an existing passkey:</string>
+  <string name="passkey_replace_button">Replace Passkey</string>
+  <string name="passkey_replace_explanation">This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.</string>
+  <string name="passkey_replacing">Replacing passkey…</string>
+  <string name="passkey_checking_connection">Checking connection…</string>
+  <!-- Vault sync error messages -->
+  <string name="connection_error_title">Connection Error</string>
+  <string name="connection_error_message">No connection to the server can be made. Please check your internet connection and try creating the passkey again.</string>
+  <string name="session_expired_title">Session Expired</string>
+  <string name="session_expired_message">Your session has expired. Please sign in again.</string>
+  <string name="password_changed_title">Password Changed</string>
+  <string name="password_changed_message">Your password has been changed. Please sign in again.</string>
+  <string name="version_not_supported_title">Update Required</string>
+  <string name="version_not_supported_message">Your app version is no longer supported. Please update to the latest version.</string>
+  <string name="server_unavailable_title">Server Unavailable</string>
+  <string name="server_unavailable_message">The server is currently unavailable. Please try again later.</string>
+  <string name="network_error_title">Network Error</string>
+  <string name="network_error_message">A network error occurred. Please check your connection and try again.</string>
+  <string name="server_version_not_supported_title">Server Update Required</string>
+  <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
+  <!-- Passkey authentication and unlock error messages -->
+  <string name="error_biometric_required">Please enable biometric authentication in the main AliasVault app in order to use passkeys</string>
+  <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
+  <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
+  <string name="error_vault_unlock_failed">Failed to unlock vault</string>
+  <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
+  <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
 </resources>
