@@ -64,7 +64,7 @@
     <comment>Main login page title</comment>
   </data>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Kaksivaiheinen tunnistautuminen</value>
+    <value>Kaksivaiheinen todennus</value>
     <comment>Title for 2FA step</comment>
   </data>
   <data name="RecoveryCodeVerificationTitle" xml:space="preserve">
@@ -107,7 +107,7 @@
   </data>
   <!-- Links -->
   <data name="LostPasswordLink" xml:space="preserve">
-    <value>Unohditko salasanasi?</value>
+    <value>Unohtuiko salasana?</value>
     <comment>Link text for password recovery</comment>
   </data>
   <data name="CreateNewVaultLink" xml:space="preserve">
@@ -115,16 +115,16 @@
     <comment>Link text for creating a new vault</comment>
   </data>
   <data name="LoginWithRecoveryCodeLink" xml:space="preserve">
-    <value>Kirjaudu käyttäen palautuskoodia.</value>
+    <value>Kirjaudu sisään käyttämällä sen sijaan palautuskoodia.</value>
     <comment>Link text for logging in with recovery code</comment>
   </data>
   <data name="LoginWithAuthenticatorLink" xml:space="preserve">
-    <value>Kirjaudu sisään tunnistautumiskoodilla.</value>
+    <value>Kirjaudu sisään sen sijaan todennuskoodilla.</value>
     <comment>Link text for logging in with authenticator</comment>
   </data>
   <!-- Descriptions and help text -->
   <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
-    <value>Kirjautumisesi on suojattu todennussovelluksella. Syötä todennuskoodisi alle.</value>
+    <value>Sisäänkirjautumisesi on suojattu todennussovelluksella. Syötä todennuskoodisi alle.</value>
     <comment>Description for 2FA step</comment>
   </data>
   <data name="RecoveryCodeDescription" xml:space="preserve">
@@ -132,7 +132,7 @@
     <comment>Description for recovery code step</comment>
   </data>
   <data name="NoAccountYetText" xml:space="preserve">
-    <value>Ei vielä tiliä?</value>
+    <value>Eikö vielä tiliä?</value>
     <comment>Text before registration link</comment>
   </data>
   <data name="DontHaveAuthenticatorText" xml:space="preserve">
