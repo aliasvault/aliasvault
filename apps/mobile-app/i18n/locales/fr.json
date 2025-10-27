@@ -16,7 +16,9 @@
     "loadMore": "Voir plus",
     "use": "Use",
     "confirm": "Confirm",
-    "unknownError": "Unknown error"
+    "errors": {
+      "unknownError": "An unknown error occurred. Please try again."
+    }
   },
   "auth": {
     "login": "Log in",
@@ -52,7 +54,13 @@
       "networkErrorSelfHosted": "Network request failed. Check your network connection and server availability. For self-hosted instances, please ensure you have a valid SSL certificate installed. Self-signed certificates are not supported on mobile devices for security reasons.",
       "sessionExpired": "Your session has expired. Please login again.",
       "tokenRefreshFailed": "Failed to refresh authentication token",
-      "httpError": "HTTP error: {{status}}"
+      "httpError": "HTTP error: {{status}}",
+      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
+      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
+      "vaultDecryptFailed": "Failed to decrypt vault",
+      "vaultUnlockFailed": "Failed to unlock vault",
+      "biometricCancelled": "Biometric authentication cancelled",
+      "encryptionKeyFailed": "Failed to retrieve encryption key"
     },
     "confirmLogout": "Are you sure you want to logout? You need to login again with your master password to access your vault.",
     "noAccountYet": "Pas encore de compte ?",
@@ -79,7 +87,8 @@
       "failedToSyncVault": "Failed to sync vault",
       "operationFailed": "Operation failed",
       "versionNotSupported": "This version of the AliasVault mobile app is not supported by the server anymore. Please update your app to the latest version.",
-      "serverNeedsUpdate": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "appOutdated": "Cette application est obsolète et ne peut pas être utilisée pour accéder à cette (nouvelle) version du coffre. Veuillez mettre à jour l'application AliasVault pour continuer.",
       "vaultDecryptFailed": "Vault could not be decrypted, if the problem persists please logout and login again.",
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons."
     }
@@ -120,9 +129,10 @@
     "privateEmailDescription": "E2E encrypted, fully private.",
     "publicEmailTitle": "Public Temp Email Providers",
     "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
-    "searchPlaceholder": "Search credentials...",
+    "searchPlaceholder": "Search vault...",
     "noMatchingCredentials": "No matching credentials found",
     "noCredentialsFound": "No credentials found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
     "recentEmails": "Recent emails",
     "loadingEmails": "Loading emails...",
     "noEmailsYet": "No emails received yet.",
@@ -148,6 +158,12 @@
     "credentialDetails": "Credential Details",
     "emailPreview": "Email Preview",
     "switchBackToBrowser": "Switch back to your browser to continue.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "twoFactorAuth": "Two-factor authentication",
     "totpCode": "TOTP Code",
     "attachments": "Attachments",
@@ -157,11 +173,15 @@
     "toasts": {
       "credentialUpdated": "Credential updated successfully",
       "credentialCreated": "Credential created successfully",
-      "credentialDeleted": "Credential deleted successfully"
+      "credentialDeleted": "Credential deleted successfully",
+      "usernameCopied": "Username copied to clipboard",
+      "emailCopied": "Email copied to clipboard",
+      "passwordCopied": "Password copied to clipboard"
     },
     "createNewAliasFor": "Create new alias for",
     "errors": {
       "loadFailed": "Failed to load credential",
+      "saveFailed": "Failed to save credential",
       "generateUsernameFailed": "Failed to generate username",
       "generatePasswordFailed": "Failed to generate password"
     },
@@ -174,12 +194,21 @@
       "copyPassword": "Copy Password"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Display Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+  },
   "settings": {
     "title": "Settings",
-    "iosAutofill": "iOS Autofill",
+    "autofill": "Autofill & Passkeys",
     "iosAutofillSettings": {
-      "headerText": "Vous pouvez configurer AliasVault pour utiliser la fonctionnalité de saisie automatique de mot de passe native d'iOS. Suivez les instructions ci-dessous pour l'activer.",
-      "howToEnable": "Comment l'activer :",
+      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
+      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
+      "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "1. Ouvrir les paramètres d'iOS via le bouton ci-dessous",
       "step2": "2. Aller dans « Général »",
       "step3": "3. Appuyer sur « Remplissage automatique et mots de passe »",
@@ -189,13 +218,13 @@
       "alreadyConfigured": "Je l'ai déjà configuré",
       "warningText": "Note : Vous devrez vous authentifier avec Face ID/Touch ID ou votre code d'accès lorsque vous utilisez le remplissage automatique."
     },
-    "androidAutofill": "Remplissage automatique Android",
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Experimental Feature",
-      "warningDescription": "Autofill support for Android is currently in an experimental state.",
+      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
       "warningLink": "Read more about it here",
-      "headerText": "You can configure AliasVault to provide native password autofill functionality in Android. Follow the instructions below to enable it.",
-      "howToEnable": "How to enable:",
+      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
+      "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
+      "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "1. Open Android Settings via the button below, and change the \"autofill preferred service\" to \"AliasVault\"",
       "openAutofillSettings": "Open Autofill Settings",
       "buttonTip": "If the button above doesn't work it might be blocked because of security settings. You can manually go to Android Settings → General Management → Passwords and autofill.",
@@ -433,11 +462,11 @@
     "VAULT_ERROR": "Le coffre-fort local n'est pas à jour. Veuillez synchroniser votre coffre-fort en rafraîchissant la page et réessayez."
   },
   "app": {
+    "openReadOnlyMode": "Ouvrir en mode lecture seule",
     "status": {
       "unlockingVault": "Unlocking vault",
       "decryptingVault": "Decrypting vault",
-      "openingVaultReadOnly": "Opening vault in read-only mode",
-      "retryingConnection": "Retrying connection..."
+      "openingVaultReadOnly": "Opening vault in read-only mode"
     },
     "offline": {
       "banner": "Offline mode (read-only)",
@@ -445,7 +474,7 @@
       "stillOffline": "Still offline"
     },
     "alerts": {
-      "syncIssue": "Sync Issue",
+      "syncIssue": "No Connection",
       "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault in read-only mode or retry the connection?",
       "openLocalVault": "Open Local Vault",
       "retrySync": "Retry Sync"
@@ -478,8 +507,8 @@
     "title": "Upgrade Vault",
     "subtitle": "AliasVault has updated and your vault needs to be upgraded. This should only take a few seconds.",
     "versionInformation": "Version Information",
-    "yourVault": "Your vault:",
-    "newVersion": "New version:",
+    "yourVault": "Your vault version:",
+    "newVersion": "New available version:",
     "upgrade": "Upgrade",
     "upgrading": "Upgrading...",
     "logout": "Logout",
