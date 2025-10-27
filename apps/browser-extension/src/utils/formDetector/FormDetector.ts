@@ -480,8 +480,8 @@ export class FormDetector {
   ): HTMLInputElement | null {
     const all = this.findAllInputFields(form, patterns, types, excludeElements);
 
-    // Filter out parent-child duplicates
-    const filtered = this.filterOutNestedDuplicates(all);
+    // Filter out parent-child duplicates and fields overlapping with excludeElements
+    const filtered = this.filterOutNestedDuplicates(all, excludeElements);
 
     // if email type explicitly requested, prefer actual <input type="email">
     if (types.includes('email')) {
@@ -682,9 +682,10 @@ export class FormDetector {
    * Filter out nested duplicates where a parent element and its child are both detected.
    * This happens with custom elements that contain actual input elements.
    * We prefer the innermost actual input element over the parent custom element.
+   * Also excludes fields that overlap with already-detected fields.
    */
-  private filterOutNestedDuplicates(fields: HTMLInputElement[]): HTMLInputElement[] {
-    if (fields.length <= 1) {
+  private filterOutNestedDuplicates(fields: HTMLInputElement[], excludeElements: HTMLInputElement[] = []): HTMLInputElement[] {
+    if (fields.length === 0) {
       return fields;
     }
 
@@ -692,6 +693,57 @@ export class FormDetector {
 
     for (const field of fields) {
       let shouldInclude = true;
+
+      // Check if this field overlaps with any excluded element
+      for (const excluded of excludeElements) {
+        // Skip if field is the same as excluded
+        if (field === excluded) {
+          shouldInclude = false;
+          break;
+        }
+
+        // Skip if field is a child of excluded element
+        if (excluded.contains(field)) {
+          shouldInclude = false;
+          break;
+        }
+
+        // Skip if field is a parent of excluded element
+        if (field.contains(excluded)) {
+          shouldInclude = false;
+          break;
+        }
+
+        // Check shadow DOM relationships
+        const fieldWithShadow = field as HTMLElement & { shadowRoot?: ShadowRoot };
+        const excludedWithShadow = excluded as HTMLElement & { shadowRoot?: ShadowRoot };
+
+        // Skip if excluded element's shadow DOM contains this field
+        if (excludedWithShadow.shadowRoot && excludedWithShadow.shadowRoot.contains(field)) {
+          shouldInclude = false;
+          break;
+        }
+
+        // Skip if this field's shadow DOM contains the excluded element
+        if (fieldWithShadow.shadowRoot && fieldWithShadow.shadowRoot.contains(excluded)) {
+          shouldInclude = false;
+          break;
+        }
+
+        // Get actual input elements and compare those
+        const actualField = this.getActualInputElement(field);
+        const actualExcluded = this.getActualInputElement(excluded);
+
+        // Skip if the actual inputs are the same
+        if (actualField === actualExcluded) {
+          shouldInclude = false;
+          break;
+        }
+      }
+
+      if (!shouldInclude) {
+        continue;
+      }
 
       // Check if this field is a parent of any other field in the list
       for (const otherField of fields) {
