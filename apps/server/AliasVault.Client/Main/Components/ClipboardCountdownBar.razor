@@ -1,5 +1,7 @@
 @inject ClipboardCopyService ClipboardCopyService
 @inject JsInteropService JsInteropService
+@inject IStringLocalizerFactory LocalizerFactory
+@using Microsoft.Extensions.Localization
 @implements IDisposable
 @using Microsoft.JSInterop
 
@@ -9,9 +11,19 @@
         <div class="h-full @GetBarColorClass() transition-all duration-100 ease-linear @GetAnimationClass()"
              style="width: @(Progress * 100)%">
         </div>
+
+        @if (CurrentStatus == "manual_clear_required")
+        {
+            <div class="fixed top-2 left-1/2 transform -translate-x-1/2 z-50 bg-blue-500 dark:bg-blue-600 text-white px-4 py-2 rounded-md shadow-lg flex items-center gap-3">
+                <button @onclick="HandleManualClear"
+                        class="px-3 py-1 bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 rounded text-sm font-medium hover:bg-gray-100 dark:hover:bg-gray-700">
+                    @Localizer["ClearClipboardButton"]
+                </button>
+            </div>
+        }
     </div>
 
-    @if (CurrentStatus == "pending")
+    @if (CurrentStatus == "pending" || CurrentStatus == "manual_clear_required")
     {
         <style>
             @@keyframes custom-pulse {
@@ -30,42 +42,9 @@
     private double Progress { get; set; }
     private string CurrentStatus { get; set; } = "active";
     private DotNetObjectReference<ClipboardCountdownBar>? _objRef;
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.ClipboardCountdownBar", "AliasVault.Client");
 
-    /// <inheritdoc />
-    protected override async void OnInitialized()
-    {
-        ClipboardCopyService.OnTimerProgress += HandleTimerProgress;
-
-        // Register for JavaScript status callbacks
-        _objRef = DotNetObjectReference.Create(this);
-        await JsInteropService.RegisterClipboardStatusCallback(_objRef);
-    }
-
-    private void HandleTimerProgress(double progress)
-    {
-        Progress = progress;
-
-        if (progress > 0)
-        {
-            // Normal countdown in progress
-            IsVisible = true;
-            CurrentStatus = "active";
-        }
-        else
-        {
-            // Countdown completed - only default to pending if not already cleared
-            if (CurrentStatus != "cleared")
-            {
-                IsVisible = true;
-                Progress = 1.0; // Show full bar when pending
-                CurrentStatus = "pending";
-            }
-        }
-
-        InvokeAsync(StateHasChanged);
-    }
-
-    /// <summary>
+ /// <summary>
     /// Called from JavaScript when clipboard status changes.
     /// </summary>
     [JSInvokable]
@@ -104,21 +83,6 @@
         });
     }
 
-    private string GetBarColorClass()
-    {
-        return CurrentStatus switch
-        {
-            "pending" => "bg-blue-500 dark:bg-blue-400", // Blue when pending (waiting for focus)
-            _ => "bg-orange-500 dark:bg-orange-400" // Orange when actively counting down or cleared
-        };
-    }
-
-    private string GetAnimationClass()
-    {
-        // Add pulse animation when pending to draw attention
-        return CurrentStatus == "pending" ? "custom-pulse-animation" : "";
-    }
-
     /// <inheritdoc />
     public async void Dispose()
     {
@@ -129,5 +93,67 @@
             await JsInteropService.UnregisterClipboardStatusCallback();
             _objRef.Dispose();
         }
+    }
+
+    /// <inheritdoc />
+    protected override async void OnInitialized()
+    {
+        ClipboardCopyService.OnTimerProgress += HandleTimerProgress;
+
+        // Register for JavaScript status callbacks
+        _objRef = DotNetObjectReference.Create(this);
+        await JsInteropService.RegisterClipboardStatusCallback(_objRef);
+    }
+
+    private void HandleTimerProgress(double progress)
+    {
+        Progress = progress;
+
+        if (progress > 0)
+        {
+            // Normal countdown in progress
+            IsVisible = true;
+            CurrentStatus = "active";
+        }
+        else
+        {
+            // Countdown completed - only default to pending if not already cleared
+            if (CurrentStatus != "cleared")
+            {
+                IsVisible = true;
+                Progress = 1.0; // Show full bar when pending
+                CurrentStatus = "pending";
+            }
+        }
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    /// <summary>
+    /// Handles the manual clear of the clipboard.
+    /// </summary>
+    private async Task HandleManualClear()
+    {
+        await JsInteropService.ClearClipboard();
+        CurrentStatus = "active";
+        IsVisible = true;
+        Progress = 0;
+        StateHasChanged();
+    }
+
+    private string GetBarColorClass()
+    {
+        return CurrentStatus switch
+        {
+            "pending" => "bg-blue-500 dark:bg-blue-400", // Blue when pending (waiting for focus)
+            "manual_clear_required" => "bg-blue-500 dark:bg-blue-400", // Blue when manual clear required
+            _ => "bg-orange-500 dark:bg-orange-400" // Orange when actively counting down or cleared
+        };
+    }
+
+    private string GetAnimationClass()
+    {
+        // Add pulse animation when pending to draw attention
+        return CurrentStatus == "pending" ? "custom-pulse-animation" : "";
     }
 }

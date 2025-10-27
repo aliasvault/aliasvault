@@ -47,6 +47,7 @@ window.clipboardManager = {
     copiedValue: null,
     clearPending: false,  // Track if clear is pending due to focus issues
     statusCallback: null,  // Callback to notify Blazor of status changes
+    failedAttempts: 0,  // Track consecutive failed clear attempts
 
     // Set up a new clipboard clear schedule
     scheduleClipboardClear: function(seconds) {
@@ -56,8 +57,9 @@ window.clipboardManager = {
             this.clearTimer = null;
         }
 
-        // Reset pending state
+        // Reset pending state and failed attempts counter
         this.clearPending = false;
+        this.failedAttempts = 0;
         this.notifyStatusChange('active');
 
         // Set the clear by time
@@ -101,6 +103,7 @@ window.clipboardManager = {
                 this.clearByTime = null;
                 this.copiedValue = null;
                 this.clearPending = false;
+                this.failedAttempts = 0;
                 if (this.clearTimer) {
                     clearTimeout(this.clearTimer);
                     this.clearTimer = null;
@@ -110,21 +113,30 @@ window.clipboardManager = {
             })
             .catch((error) => {
                 if (error.name === 'NotAllowedError' || error.message.includes('Document is not focused')) {
-                    // Don't clear the clearByTime, we'll retry when we get focus
-                    this.clearPending = true;
-                    this.notifyStatusChange('pending');
+                    // Browser blocked clipboard clear - increment failed attempts
+                    this.failedAttempts++;
+
+                    // Only show UI prompt after 2+ consecutive failures
+                    // First failure might be due to timing/focus, second failure indicates real restriction
+                    if (this.failedAttempts >= 2) {
+                        this.clearPending = true;
+                        this.notifyStatusChange('manual_clear_required');
+                    } else {
+                        // First failure - just set pending, will retry on focus
+                        this.notifyStatusChange('pending');
+                    }
+                } else {
+                    console.warn(`[Clipboard] ❌ ERROR - Failed to clear clipboard from: ${source}`, error);
                 }
-                console.warn(`[Clipboard] ❌ ERROR - Failed to clear clipboard from: ${source}`, error);
+                return false;
             });
     },
 
     // Check and clear if needed (called on focus events)
     checkAndClear: function(source) {
         if (this.clearByTime && Date.now() >= this.clearByTime) {
-            // Reset pending state when we're actively trying to clear
-            this.clearPending = false;
-            this.notifyStatusChange('active');
-            // Small delay to ensure browser is ready after focus
+            // Small delay to ensure browser is ready after focus, then attempt clear
+            // Don't reset pending state here - let attemptClipboardClear handle it based on success/failure
             setTimeout(() => {
                 this.attemptClipboardClear(source);
             }, 100);
