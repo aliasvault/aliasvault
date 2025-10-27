@@ -21,15 +21,15 @@
   </xsd:schema>
   <!-- Assistant messages -->
   <data name="GreatNowLetsSetupUsername">
-    <value>太好了！现在，让我们为AliasVault设置你的用户名。</value>
+    <value>太好了！现在，让我们为AliasVault设置您的用户名。</value>
     <comment>Assistant message about setting up username</comment>
   </data>
   <data name="EnterUsernameInstructions">
-    <value>请输入你想使用的用户名。可以是你的电子邮件地址或任何你喜欢的独特名称。</value>
+    <value>请输入您想使用的用户名。可以是您的电子邮件地址或任何您喜欢的独特名称。</value>
     <comment>Instructions for entering username</comment>
   </data>
   <data name="RememberUsernameNote">
-    <value>记住：这是你以后登录时要使用的，所以确保是你能记住的内容！</value>
+    <value>记住：这是您以后登录时要使用的，所以确保是您能记住的内容！</value>
     <comment>Important note about remembering username</comment>
   </data>
   <!-- Form labels -->
@@ -38,12 +38,12 @@
     <comment>Label for username input field</comment>
   </data>
   <data name="UsernamePlaceholder">
-    <value>输入你想要的用户名或电子邮件</value>
+    <value>输入您想要的用户名或电子邮件</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <!-- Validation messages -->
   <data name="ValidatingUsernameMessage">
-    <value>验证用户名中……</value>
+    <value>正在验证用户名…</value>
     <comment>Message shown while validating username</comment>
   </data>
   <data name="UsernameAvailableMessage">
@@ -51,7 +51,7 @@
     <comment>Message shown when username is available</comment>
   </data>
   <data name="UsernameRequiredError">
-    <value>用户名是必填项。</value>
+    <value>用户名为必填项。</value>
     <comment>Error message when username is empty</comment>
   </data>
   <data name="ServerCommunicationError">
@@ -60,7 +60,7 @@
   </data>
   <!-- Alt text -->
   <data name="AssistantAvatarAlt">
-    <value>AliasVault助手</value>
+    <value>AliasVault 助手</value>
     <comment>Alt text for assistant avatar image</comment>
   </data>
 </root>
