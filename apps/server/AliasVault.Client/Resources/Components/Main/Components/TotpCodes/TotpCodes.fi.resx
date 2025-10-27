@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Kaksivaiheinen vahvistus</value>
+    <value>Kaksivaiheinen todennus</value>
     <comment>Section title for 2FA codes</comment>
   </data>
   <data name="AddTotpCodeButton" xml:space="preserve">
@@ -67,7 +67,7 @@
     <comment>Button text to add new TOTP code</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
-    <value>Lisää kaksivaiheinen tunnistuskoodi</value>
+    <value>Lisää kaksivaiheinen todennuskoodi</value>
     <comment>Description for adding TOTP codes</comment>
   </data>
   <data name="AddTotpCodeModalTitle" xml:space="preserve">
@@ -79,7 +79,7 @@
     <comment>Button to close the add TOTP form</comment>
   </data>
   <data name="TotpInstructions" xml:space="preserve">
-    <value>Jos sivusto tarjoaa tai vaatii tilillesi 2FA, kopioi salainen avain tai QR-koodi URI ja liitä se alla.</value>
+    <value>Jos sivusto tarjoaa tai vaatii tilillesi 2FA, kopioi sala-avain tai QR-koodi URI ja liitä se alle.</value>
     <comment>Instructions for adding TOTP codes</comment>
   </data>
   <data name="NameOptionalLabel" xml:space="preserve">
@@ -87,11 +87,11 @@
     <comment>Label for optional name field</comment>
   </data>
   <data name="SecretKeyLabel" xml:space="preserve">
-    <value>Salainen avain</value>
+    <value>Sala-avain</value>
     <comment>Label for secret key field</comment>
   </data>
   <data name="SecretKeyPlaceholder" xml:space="preserve">
-    <value>Syötä salainen avain (manuaalinen syöttö)</value>
+    <value>Syötä sala-avain (manuaalinen syöttö)</value>
     <comment>Placeholder text for secret key input</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">
