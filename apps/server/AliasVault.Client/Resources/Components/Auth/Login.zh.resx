@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page titles -->
   <data name="PageTitle" xml:space="preserve">
-    <value>登录到AliasVault</value>
+    <value>登录到 AliasVault</value>
     <comment>Main login page title</comment>
   </data>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
@@ -73,11 +73,11 @@
   </data>
   <!-- Form labels -->
   <data name="UsernameOrEmailLabel" xml:space="preserve">
-    <value>你的用户名或邮箱</value>
+    <value>您的用户名或电子邮箱</value>
     <comment>Label for username/email input field</comment>
   </data>
   <data name="PasswordLabel" xml:space="preserve">
-    <value>你的密码</value>
+    <value>您的密码</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="AuthenticatorCodeLabel" xml:space="preserve">
@@ -102,7 +102,7 @@
     <comment>Login button text</comment>
   </data>
   <data name="LoginToAccountButton" xml:space="preserve">
-    <value>登录你的账户</value>
+    <value>登录您的账户</value>
     <comment>Extended login button text</comment>
   </data>
   <!-- Links -->
@@ -111,7 +111,7 @@
     <comment>Link text for password recovery</comment>
   </data>
   <data name="CreateNewVaultLink" xml:space="preserve">
-    <value>创建新保险库</value>
+    <value>创建新密码库</value>
     <comment>Link text for creating a new vault</comment>
   </data>
   <data name="LoginWithRecoveryCodeLink" xml:space="preserve">
@@ -124,11 +124,11 @@
   </data>
   <!-- Descriptions and help text -->
   <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
-    <value>你的登录受认证器应用保护。请在下方输入你的认证器代码。</value>
+    <value>您的登录受认证器应用保护。请在下方输入您的认证器代码。</value>
     <comment>Description for 2FA step</comment>
   </data>
   <data name="RecoveryCodeDescription" xml:space="preserve">
-    <value>你已请求使用恢复码登录。恢复码是一次性代码，可用于登录你的账户。请注意，如果你在登录后不手动禁用双因素认证（2FA），下次登录时仍会要求你输入双因素认证（2FA）动态验证码。</value>
+    <value>您已请求使用恢复码登录。恢复码是一次性代码，可用于登录您的账户。请注意，如果您在登录后不手动禁用双因素认证（2FA），下次登录时仍会要求您输入双因素认证（2FA）动态验证码。</value>
     <comment>Description for recovery code step</comment>
   </data>
   <data name="NoAccountYetText" xml:space="preserve">
@@ -145,15 +145,15 @@
   </data>
   <!-- Loading and status messages -->
   <data name="LoggingInMessage" xml:space="preserve">
-    <value>登录中……</value>
+    <value>登录中…</value>
     <comment>Loading message during login process</comment>
   </data>
   <data name="VerifyingTwoFactorCodeMessage" xml:space="preserve">
-    <value>正在验证双因素认证（2FA）……</value>
+    <value>正在验证双因素认证（2FA）…</value>
     <comment>Loading message during 2FA verification</comment>
   </data>
   <data name="VerifyingRecoveryCodeMessage" xml:space="preserve">
-    <value>验证恢复码中……</value>
+    <value>验证恢复码中…</value>
     <comment>Loading message during recovery code verification</comment>
   </data>
   <!-- Error messages -->
@@ -167,7 +167,7 @@
   </data>
   <!-- Placeholders -->
   <data name="UsernamePlaceholder" xml:space="preserve">
-    <value>name / name@company.com</value>
+    <value>姓名 / name@company.com</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
