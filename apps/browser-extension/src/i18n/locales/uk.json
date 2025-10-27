@@ -37,7 +37,8 @@
       "migrationError": "Під час перевірки незавершених перенесень сталася помилка.",
       "wrongPassword": "Невірний пароль. Будь ласка, спробуйте ще раз.",
       "accountLocked": "Обліковий запис тимчасово заблоковано через занадто багато невдалих спроб.",
-      "networkError": "Помилка мережі. Будь ласка, перевірте з’єднання та спробуйте ще раз."
+      "networkError": "Помилка мережі. Будь ласка, перевірте з’єднання та спробуйте ще раз.",
+      "sessionExpired": "Your session has expired. Please log in again."
     }
   },
   "menu": {
@@ -51,8 +52,10 @@
     "error": "Помилка",
     "success": "Успішно",
     "cancel": "Скасувати",
+    "back": "Back",
     "use": "Використовувати",
     "delete": "Видалити",
+    "or": "Or",
     "close": "Закрити",
     "copied": "Скопійовано!",
     "openInNewWindow": "Відкрити у новому вікні",
@@ -90,6 +93,7 @@
     "errors": {
       "serverNotAvailable": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "clientVersionNotSupported": "Ця версія розширення браузера AliasVault більше не підтримується сервером. Будь ласка, оновіть розширення браузера до останньої версії.",
+      "browserExtensionOutdated": "This browser extension is outdated and cannot be used to access this vault. Please update this browser extension to continue.",
       "serverVersionNotSupported": "Щоб використовувати це розширення браузера, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
       "unknownError": "Сталася невідома помилка",
       "vaultNotAvailable": "Сховище недоступне",
@@ -195,6 +199,8 @@
     "searchPlaceholder": "Пошук облікових даних...",
     "welcomeTitle": "Ласкаво просимо до AliasVult!",
     "welcomeDescription": "Щоб скористатися розширенням браузера AliasVault: перейдіть на вебсайт і скористайтеся спливаючим вікном автозаповнення AliasVault, щоб створити нові облікові дані.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noMatchingCredentials": "No matching credentials found",
     "createdAt": "Створено",
     "updatedAt": "Останнє оновлення",
     "autofill": "Автозаповнення",
@@ -210,6 +216,12 @@
     "saveCredential": "Зберегти облікові дані",
     "deleteCredentialTitle": "Видалити облікові дані",
     "deleteCredentialConfirm": "Ви впевнені, що хочете видалити ці облікові дані? Цю дію неможливо скасувати.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "randomAlias": "Випадковий псевдонім",
     "manual": "Посібник",
     "service": "Служба",
@@ -342,6 +354,7 @@
     "autofillSettings": "Налаштування автозаповнення",
     "clipboardSettings": "Параметри буфера обміну",
     "contextMenuSettings": "Налаштування контекстного меню",
+    "passkeySettings": "Passkey Settings",
     "contextMenu": "Контекстне меню",
     "contextMenuEnabled": "Контекстне меню увімкнено",
     "contextMenuDisabled": "Контекстне меню вимкнено",
@@ -354,12 +367,52 @@
       "clientUrlInvalid": "Будь ласка, введіть дійсну URL-адресу клієнта"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
+    "bypass": {
+      "title": "Use Browser Passkey",
+      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
+      "thisTimeOnly": "This time only",
+      "alwaysForSite": "Always for this site"
+    },
+    "authenticate": {
+      "title": "Sign in with Passkey",
+      "signInFor": "Sign in with passkey for",
+      "selectPasskey": "Select a passkey to sign in:",
+      "noPasskeysFound": "No passkeys found for this site",
+      "useBrowserPasskey": "Use Browser Passkey"
+    },
+    "create": {
+      "title": "Create Passkey",
+      "createFor": "Create a new passkey for",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Enter a name for this passkey",
+      "createButton": "Create Passkey",
+      "creatingButton": "Creating...",
+      "useBrowserPasskey": "Use Browser Passkey",
+      "selectPasskeyToReplace": "Select a passkey to replace:",
+      "createNewPasskey": "Create New Passkey",
+      "replacingPasskey": "Replacing passkey: {{displayName}}",
+      "confirmReplace": "Confirm Replace"
+    },
+    "settings": {
+      "passkeyProvider": "Passkey Provider",
+      "passkeyProviderOn": "Passkey Provider on ",
+      "enable": "Enable AliasVault as passkey provider",
+      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+    }
+  },
   "upgrade": {
     "title": "Оновлення сховища",
     "subtitle": "AliasVault оновлено, і ваше сховище потрібно оновити. Це займе лише кілька секунд.",
     "versionInformation": "Інформація про версію",
-    "yourVault": "Ваше сховище:",
-    "newVersion": "Нова версія:",
+    "yourVault": "Your vault version:",
+    "newVersion": "New available version:",
     "upgrade": "Оновлення сховища",
     "upgrading": "Оновлення...",
     "logout": "Вихід",
