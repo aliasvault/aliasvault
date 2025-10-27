@@ -86,6 +86,20 @@ const CredentialCard: React.FC<CredentialCardProps> = ({ credential }) => {
                 <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
               </svg>
             )}
+            {credential.HasAttachment && (
+              <svg
+                className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-label="Has attachments"
+              >
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+              </svg>
+            )}
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400">{getDisplayText(credential)}</p>
         </div>

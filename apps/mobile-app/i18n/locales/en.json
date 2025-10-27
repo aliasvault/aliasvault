@@ -126,6 +126,7 @@
     "noMatchingCredentials": "No matching credentials found",
     "noCredentialsFound": "No credentials found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "recentEmails": "Recent emails",
     "loadingEmails": "Loading emails...",
     "noEmailsYet": "No emails received yet.",
@@ -155,7 +156,8 @@
       "all": "(All) Credentials",
       "passkeys": "Passkeys",
       "aliases": "Aliases",
-      "userpass": "Passwords"
+      "userpass": "Passwords",
+      "attachments": "Attachments"
     },
     "twoFactorAuth": "Two-factor authentication",
     "totpCode": "TOTP Code",

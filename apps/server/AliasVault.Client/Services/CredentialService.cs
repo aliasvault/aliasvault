@@ -327,6 +327,7 @@ public sealed class CredentialService(HttpClient httpClient, DbService dbService
             .Include(x => x.Service)
             .Include(x => x.Passkeys.Where(p => !p.IsDeleted))
             .Include(x => x.Passwords.Where(p => !p.IsDeleted))
+            .Include(x => x.Attachments.Where(a => !a.IsDeleted))
             .AsSplitQuery()
             .Where(x => !x.IsDeleted)
             .ToListAsync();
@@ -348,6 +349,7 @@ public sealed class CredentialService(HttpClient httpClient, DbService dbService
                        x.Alias.BirthDate.Year > 1,
             HasUsernameOrPassword = !string.IsNullOrWhiteSpace(x.Username) ||
                                     (x.Passwords != null && x.Passwords.Any(p => !string.IsNullOrWhiteSpace(p.Value))),
+            HasAttachment = x.Attachments != null && x.Attachments.Any(),
         }).ToList();
     }
 

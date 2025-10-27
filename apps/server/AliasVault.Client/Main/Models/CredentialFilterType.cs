@@ -31,4 +31,9 @@ public enum CredentialFilterType
     /// Show only credentials with username/password (no aliases, no passkeys).
     /// </summary>
     Userpass,
+
+    /// <summary>
+    /// Show only credentials with attachments.
+    /// </summary>
+    Attachments,
 }

@@ -18,7 +18,7 @@ import type { Credential } from '@/utils/dist/shared/models/vault';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
-type FilterType = 'all' | 'passkeys' | 'aliases' | 'userpass';
+type FilterType = 'all' | 'passkeys' | 'aliases' | 'userpass' | 'attachments';
 
 const FILTER_STORAGE_KEY = 'credentials-filter';
 const FILTER_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
@@ -189,6 +189,8 @@ const CredentialsList: React.FC = () => {
         return t('credentials.filters.aliases');
       case 'userpass':
         return t('credentials.filters.userpass');
+      case 'attachments':
+        return t('credentials.filters.attachments');
       default:
         return t('credentials.title');
     }
@@ -223,6 +225,8 @@ const CredentialsList: React.FC = () => {
         (credential.Password && credential.Password.trim())
       );
       passesTypeFilter = hasUsernameOrPassword && !credential.HasPasskey && !hasAliasFields;
+    } else if (filterType === 'attachments') {
+      passesTypeFilter = credential.HasAttachment === true;
     }
 
     if (!passesTypeFilter) {
@@ -354,6 +358,19 @@ const CredentialsList: React.FC = () => {
                   >
                     {t('credentials.filters.userpass')}
                   </button>
+                  <button
+                    onClick={() => {
+                      const newFilter = 'attachments';
+                      setFilterType(newFilter);
+                      storeFilter(newFilter);
+                      setShowFilterMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                      filterType === 'attachments' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {t('credentials.filters.attachments')}
+                  </button>
                 </div>
               </div>
             </>
@@ -391,7 +408,9 @@ const CredentialsList: React.FC = () => {
           <p>
             {filterType === 'passkeys'
               ? t('credentials.noPasskeysFound')
-              : t('credentials.noMatchingCredentials')
+              : filterType === 'attachments'
+                ? t('credentials.noAttachmentsFound')
+                : t('credentials.noMatchingCredentials')
             }
           </p>
         </div>

@@ -56,4 +56,9 @@ public sealed class CredentialListEntry
     /// Gets or sets a value indicating whether this credential has a username or password.
     /// </summary>
     public bool HasUsernameOrPassword { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether this credential has one or more attachments.
+    /// </summary>
+    public bool HasAttachment { get; set; }
 }

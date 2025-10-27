@@ -289,6 +289,14 @@ export function CredentialCard({ credential, onCredentialDelete }: CredentialCar
                   style={styles.passkeyIcon}
                 />
               )}
+              {credential.HasAttachment && (
+                <MaterialIcons
+                  name="attach-file"
+                  size={14}
+                  color={colors.textMuted}
+                  style={styles.passkeyIcon}
+                />
+              )}
             </View>
             <Text style={styles.credentialText}>
               {getCredentialDisplayText(credential)}

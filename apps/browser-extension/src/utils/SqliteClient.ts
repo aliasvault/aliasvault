@@ -292,7 +292,14 @@ export class SqliteClient {
                         WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0
                     ) THEN 1
                     ELSE 0
-                END as HasPasskey
+                END as HasPasskey,
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM Attachments att
+                        WHERE att.CredentialId = c.Id AND att.IsDeleted = 0
+                    ) THEN 1
+                    ELSE 0
+                END as HasAttachment
             FROM Credentials c
             LEFT JOIN Services s ON c.ServiceId = s.Id
             LEFT JOIN Aliases a ON c.AliasId = a.Id
@@ -312,6 +319,7 @@ export class SqliteClient {
       Logo: row.Logo,
       Notes: row.Notes,
       HasPasskey: row.HasPasskey === 1,
+      HasAttachment: row.HasAttachment === 1,
       Alias: {
         FirstName: row.FirstName,
         LastName: row.LastName,

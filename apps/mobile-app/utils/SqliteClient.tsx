@@ -316,7 +316,14 @@ class SqliteClient {
                     ELSE 0
                 END as HasPasskey,
                 (SELECT pk.RpId FROM Passkeys pk WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyRpId,
-                (SELECT pk.DisplayName FROM Passkeys pk WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyDisplayName
+                (SELECT pk.DisplayName FROM Passkeys pk WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyDisplayName,
+                CASE
+                    WHEN EXISTS (
+                        SELECT 1 FROM Attachments att
+                        WHERE att.CredentialId = c.Id AND att.IsDeleted = 0
+                    ) THEN 1
+                    ELSE 0
+                END as HasAttachment
             FROM Credentials c
             LEFT JOIN Services s ON c.ServiceId = s.Id
             LEFT JOIN Aliases a ON c.AliasId = a.Id
@@ -338,6 +345,7 @@ class SqliteClient {
       HasPasskey: row.HasPasskey === 1,
       PasskeyRpId: row.PasskeyRpId,
       PasskeyDisplayName: row.PasskeyDisplayName,
+      HasAttachment: row.HasAttachment === 1,
       Alias: {
         FirstName: row.FirstName,
         LastName: row.LastName,

@@ -17,7 +17,7 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
-type FilterType = 'all' | 'passkeys' | 'aliases' | 'userpass';
+type FilterType = 'all' | 'passkeys' | 'aliases' | 'userpass' | 'attachments';
 
 import Logo from '@/assets/images/logo.svg';
 import { CredentialCard } from '@/components/credentials/CredentialCard';
@@ -224,6 +224,8 @@ export default function CredentialsScreen() : React.ReactNode {
         return t('credentials.filters.aliases');
       case 'userpass':
         return t('credentials.filters.userpass');
+      case 'attachments':
+        return t('credentials.filters.attachments');
       default:
         return t('credentials.title');
     }
@@ -258,6 +260,8 @@ export default function CredentialsScreen() : React.ReactNode {
         (credential.Password && credential.Password.trim())
       );
       passesTypeFilter = hasUsernameOrPassword && !credential.HasPasskey && !hasAliasFields;
+    } else if (filterType === 'attachments') {
+      passesTypeFilter = credential.HasAttachment === true;
     }
 
     if (!passesTypeFilter) {
@@ -603,6 +607,23 @@ export default function CredentialsScreen() : React.ReactNode {
                       {t('credentials.filters.userpass')}
                     </ThemedText>
                   </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.filterMenuItem,
+                      filterType === 'attachments' && styles.filterMenuItemActive
+                    ]}
+                    onPress={() => {
+                      setFilterType('attachments');
+                      setShowFilterMenu(false);
+                    }}
+                  >
+                    <ThemedText style={[
+                      styles.filterMenuItemText,
+                      filterType === 'attachments' && styles.filterMenuItemTextActive
+                    ]}>
+                      {t('credentials.filters.attachments')}
+                    </ThemedText>
+                  </TouchableOpacity>
                 </ThemedView>
               )}
               <ThemedView style={styles.searchContainer}>
@@ -657,7 +678,9 @@ export default function CredentialsScreen() : React.ReactNode {
                   ? t('credentials.noMatchingCredentials')
                   : filterType === 'passkeys'
                     ? t('credentials.noPasskeysFound')
-                    : t('credentials.noCredentialsFound')
+                    : filterType === 'attachments'
+                      ? t('credentials.noAttachmentsFound')
+                      : t('credentials.noCredentialsFound')
                 }
               </Text>
             ) : null

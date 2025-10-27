@@ -70,6 +70,8 @@ type Credential = {
     PasskeyRpId?: string;
     /** The display name of the associated passkey */
     PasskeyDisplayName?: string;
+    /** Indicates if this credential has one or more attachments */
+    HasAttachment?: boolean;
 };
 /**
  * Alias SQLite database type.
