@@ -16,7 +16,9 @@
     "loadMore": "Завантажити більше",
     "use": "Використовувати",
     "confirm": "Confirm",
-    "unknownError": "Unknown error"
+    "errors": {
+      "unknownError": "An unknown error occurred. Please try again."
+    }
   },
   "auth": {
     "login": "Увійти",
@@ -52,7 +54,13 @@
       "networkErrorSelfHosted": "Не вдалося виконати мережевий запит. Перевірте мережеве з’єднання та доступність сервера. Для самостійно розміщених екземплярів переконайтеся, що у вас встановлено дійсний SSL-сертифікат. Самопідписані сертифікати не підтримуються на мобільних пристроях з міркувань безпеки.",
       "sessionExpired": "Термін дії вашого сеансу закінчився. Будь ласка, увійдіть знову.",
       "tokenRefreshFailed": "Не вдалося оновити токен автентифікації",
-      "httpError": "Помилка HTTP: {{status}}"
+      "httpError": "Помилка HTTP: {{status}}",
+      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
+      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
+      "vaultDecryptFailed": "Failed to decrypt vault",
+      "vaultUnlockFailed": "Failed to unlock vault",
+      "biometricCancelled": "Biometric authentication cancelled",
+      "encryptionKeyFailed": "Failed to retrieve encryption key"
     },
     "confirmLogout": "Ви впевнені, що хочете вийти? Вам потрібно знову увійти, використовуючи свій головний пароль, щоб отримати доступ до свого сховища.",
     "noAccountYet": "Ще не маєте облікового запису?",
@@ -79,7 +87,8 @@
       "failedToSyncVault": "Не вдалося синхронізувати сховище",
       "operationFailed": "Помилка здійснення операції",
       "versionNotSupported": "Ця версія мобільного застосунку AliasVault більше не підтримується сервером. Будь ласка, оновіть свій застосунок до останньої версії.",
-      "serverNeedsUpdate": "Щоб користуватися цим мобільним додатком, потрібно оновити сервер AliasVault до новішої версії. Зверніться до служби підтримки, якщо вам потрібна допомога.",
+      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
       "vaultDecryptFailed": "Не вдалося розшифрувати сховище. Якщо проблема не зникає, вийдіть із системи та увійдіть знову.",
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз."
     }
@@ -120,9 +129,10 @@
     "privateEmailDescription": "Наскрізне шифрування, повністю конфіденційно.",
     "publicEmailTitle": "Публічні тимчасові постачальники електронної пошти",
     "publicEmailDescription": "Анонімно, але обмежена конфіденційність. Зміст електронного листа може прочитати будь-хто, хто знає адресу.",
-    "searchPlaceholder": "Пошук облікових даних...",
+    "searchPlaceholder": "Search vault...",
     "noMatchingCredentials": "Не знайдено відповідних облікових даних",
     "noCredentialsFound": "Облікові дані не знайдено. Створіть їх, щоб розпочати. Порада: ви також можете увійти у вебдодаток AliasVault, щоб імпортувати облікові дані з інших менеджерів паролів.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
     "recentEmails": "Недавні електронні листи",
     "loadingEmails": "Завантаження електронних листів...",
     "noEmailsYet": "Поки що не отримано жодних електронних листів.",
@@ -148,6 +158,12 @@
     "credentialDetails": "Відомості про облікові дані",
     "emailPreview": "Попередній перегляд електронного листа",
     "switchBackToBrowser": "Щоб продовжити, поверніться до браузера.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "twoFactorAuth": "Двофакторна автентифікація",
     "totpCode": "Код TOTP",
     "attachments": "Вкладення",
@@ -157,11 +173,15 @@
     "toasts": {
       "credentialUpdated": "Облікові дані успішно оновлено",
       "credentialCreated": "Облікові дані успішно створено",
-      "credentialDeleted": "Облікові дані успішно видалено"
+      "credentialDeleted": "Облікові дані успішно видалено",
+      "usernameCopied": "Username copied to clipboard",
+      "emailCopied": "Email copied to clipboard",
+      "passwordCopied": "Password copied to clipboard"
     },
     "createNewAliasFor": "Створити новий псевдонім для",
     "errors": {
       "loadFailed": "Не вдалося завантажити облікові дані",
+      "saveFailed": "Failed to save credential",
       "generateUsernameFailed": "Не вдалося згенерувати ім'я користувача",
       "generatePasswordFailed": "Не вдалося згенерувати пароль"
     },
@@ -174,12 +194,21 @@
       "copyPassword": "Копіювати пароль"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Display Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+  },
   "settings": {
     "title": "Налаштування",
-    "iosAutofill": "iOS автозаповнення",
+    "autofill": "Autofill & Passkeys",
     "iosAutofillSettings": {
-      "headerText": "Ви можете налаштувати AliasVault для забезпечення вбудованої функції автозаповнення паролів в iOS. Дотримуйтесь інструкцій нижче, щоб увімкнути її.",
-      "howToEnable": "Як увімкнути:",
+      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
+      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
+      "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "1. Відкрийте налаштування iOS за допомогою кнопки нижче",
       "step2": "2. Перейдіть до розділу «Загальні»",
       "step3": "3. Натисніть «Автозаповнення та паролі»",
@@ -189,13 +218,13 @@
       "alreadyConfigured": "Я вже це налаштував",
       "warningText": "Примітка: Під час використання автозаповнення вам потрібно буде пройти автентифікацію за допомогою Face ID/Touch ID або пароля вашого пристрою."
     },
-    "androidAutofill": "Автозаповнення Android",
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Експериментальна функція",
-      "warningDescription": "Підтримка автозаповнення для Android наразі перебуває в експериментальному стані.",
+      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
       "warningLink": "Детальніше про це читайте тут",
-      "headerText": "Ви можете налаштувати AliasVault для забезпечення вбудованої функції автозаповнення паролів в Android. Дотримуйтесь інструкцій нижче, щоб увімкнути її.",
-      "howToEnable": "Як увімкнути:",
+      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
+      "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
+      "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "1. Відкрийте налаштування Android за допомогою кнопки нижче та змініть «бажаний сервіс автозаповнення» на «AliasVault»",
       "openAutofillSettings": "Відкрити налаштування автозаповнення",
       "buttonTip": "Якщо кнопка вище не працює, можливо, вона заблокована через налаштування безпеки. Ви можете вручну перейти до Налаштувань Android → Загальне керування → Паролі та автозаповнення.",
@@ -433,11 +462,11 @@
     "VAULT_ERROR": "Локальне сховище не оновлене. Синхронізуйте своє сховище, оновивши сторінку, та повторіть спробу."
   },
   "app": {
+    "openReadOnlyMode": "Open in read-only mode",
     "status": {
       "unlockingVault": "Розблокування сховища",
       "decryptingVault": "Розшифрування сховища",
-      "openingVaultReadOnly": "Відкриття сховища в режимі лише для читання",
-      "retryingConnection": "Повторна спроба підключення..."
+      "openingVaultReadOnly": "Відкриття сховища в режимі лише для читання"
     },
     "offline": {
       "banner": "Offline mode (read-only)",
@@ -445,7 +474,7 @@
       "stillOffline": "Still offline"
     },
     "alerts": {
-      "syncIssue": "Проблема синхронізації",
+      "syncIssue": "No Connection",
       "syncIssueMessage": "Не вдалося зв’язатися із сервером AliasVault і ваше сховище не вдалося синхронізувати. Бажаєте відкрити локальне сховище в режимі лише для читання чи повторити спробу підключення?",
       "openLocalVault": "Відкрити локальне сховище",
       "retrySync": "Повторити синхронізацію"
@@ -478,8 +507,8 @@
     "title": "Оновлення сховища",
     "subtitle": "AliasVault оновлено, і ваше сховище потрібно оновити. Це займе лише кілька секунд.",
     "versionInformation": "Інформація про версію",
-    "yourVault": "Ваше сховище:",
-    "newVersion": "Нова версія:",
+    "yourVault": "Your vault version:",
+    "newVersion": "New available version:",
     "upgrade": "Оновити",
     "upgrading": "Оновлення...",
     "logout": "Вихід",
