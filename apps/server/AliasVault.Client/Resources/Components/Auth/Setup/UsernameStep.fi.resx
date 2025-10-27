@@ -21,15 +21,15 @@
   </xsd:schema>
   <!-- Assistant messages -->
   <data name="GreatNowLetsSetupUsername">
-    <value>Hienoa! Asetetaan nyt käyttäjänimesi AliasVaultia varten.</value>
+    <value>Hienoa! Asetetaan nyt käyttäjänimesi AliasVaultille.</value>
     <comment>Assistant message about setting up username</comment>
   </data>
   <data name="EnterUsernameInstructions">
-    <value>Anna käyttäjänimi, jota haluat käyttää. Tämä voi olla sähköpostiosoitteesi tai mikä tahansa yksilöllinen nimi, jota haluat käyttää.</value>
+    <value>Syötä käyttäjänimi, jota haluat käyttää. Tämä voi olla sähköpostiosoitteesi tai mikä tahansa yksilöllinen nimi, jota haluat käyttää.</value>
     <comment>Instructions for entering username</comment>
   </data>
   <data name="RememberUsernameNote">
-    <value>Muista: Tämä on mitä käytät kirjautua myöhemmin, joten varmista, että se on jotain, mitä muistat!</value>
+    <value>Muista: Tätä käytät ssisäänkirjautumiseen myöhemmin, joten varmista, että muistat sen!</value>
     <comment>Important note about remembering username</comment>
   </data>
   <!-- Form labels -->
@@ -43,7 +43,7 @@
   </data>
   <!-- Validation messages -->
   <data name="ValidatingUsernameMessage">
-    <value>Vahvistetaan käyttäjänimeä...</value>
+    <value>Varmistetaan käyttäjänimi...</value>
     <comment>Message shown while validating username</comment>
   </data>
   <data name="UsernameAvailableMessage">
@@ -51,7 +51,7 @@
     <comment>Message shown when username is available</comment>
   </data>
   <data name="UsernameRequiredError">
-    <value>Käyttäjänimi on pakollinen.</value>
+    <value>Käyttäjänimi vaaditaan.</value>
     <comment>Error message when username is empty</comment>
   </data>
   <data name="ServerCommunicationError">
