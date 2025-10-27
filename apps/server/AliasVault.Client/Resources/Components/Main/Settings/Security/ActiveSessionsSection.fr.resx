@@ -59,27 +59,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Active Sessions</value>
+    <value>Sessions actives</value>
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Below is a list of devices where your account is currently logged in or has an active session. You can log out from any of these sessions here.</value>
+    <value>Vous trouverez ci-dessous une liste des appareils où votre compte est actuellement connecté ou a une session active. Vous pouvez vous déconnecter de l'une de ces sessions ici.</value>
     <comment>Description of active sessions</comment>
   </data>
   <data name="NoSessionsMessage" xml:space="preserve">
-    <value>No active sessions found.</value>
+    <value>Aucune session active trouvée.</value>
     <comment>Message when no active sessions are available</comment>
   </data>
   <data name="DeviceColumn" xml:space="preserve">
-    <value>Device</value>
+    <value>Appareil</value>
     <comment>Table column header</comment>
   </data>
   <data name="LastActiveColumn" xml:space="preserve">
-    <value>Last active</value>
+    <value>Dernière activité</value>
     <comment>Table column header</comment>
   </data>
   <data name="ExpiresColumn" xml:space="preserve">
-    <value>Expires</value>
+    <value>Expire</value>
     <comment>Table column header</comment>
   </data>
   <data name="ActionColumn" xml:space="preserve">
@@ -87,19 +87,19 @@
     <comment>Table column header</comment>
   </data>
   <data name="RevokeButton" xml:space="preserve">
-    <value>Revoke</value>
+    <value>Révoquer</value>
     <comment>Button to revoke session</comment>
   </data>
   <data name="RevokeSuccessMessage" xml:space="preserve">
-    <value>Session revoked successfully.</value>
+    <value>Session révoquée avec succès.</value>
     <comment>Success message when session is revoked</comment>
   </data>
   <data name="RevokeErrorMessage" xml:space="preserve">
-    <value>Failed to revoke session.</value>
+    <value>Impossible de révoquer la session.</value>
     <comment>Error message when session revocation fails</comment>
   </data>
   <data name="RevokeExceptionMessage" xml:space="preserve">
-    <value>Failed to revoke session: {0}.</value>
+    <value>Impossible de révoquer la session : {0}.</value>
     <comment>Exception message when session revocation fails. {0} is placeholder for error details</comment>
   </data>
 </root>
