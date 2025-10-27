@@ -30,7 +30,7 @@ public sealed class EmailService(DbService dbService, JsInteropService jsInterop
     /// <returns>True if the email address is from a known SpamOK public domain, false otherwise.</returns>
     public bool IsSpamOkDomain(string email)
     {
-        return config.PublicEmailDomains.Exists(x => email.EndsWith(x));
+        return config.PublicEmailDomains.Exists(x => email.EndsWith("@" + x, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -40,7 +40,7 @@ public sealed class EmailService(DbService dbService, JsInteropService jsInterop
     /// <returns>True if the email address is from a known AliasVault private domain, false otherwise.</returns>
     public bool IsAliasVaultDomain(string email)
     {
-        return config.PrivateEmailDomains.Exists(x => email.EndsWith(x));
+        return config.PrivateEmailDomains.Exists(x => email.EndsWith("@" + x, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>

@@ -27,7 +27,7 @@ const EmailBlock: React.FC<EmailBlockProps> = ({ email }) => {
     const privateDomains = vaultMetadata?.privateEmailDomains ?? [];
 
     return [...publicDomains, ...privateDomains].some(supportedDomain =>
-      domain === supportedDomain || domain.endsWith(`.${supportedDomain}`)
+      domain === supportedDomain.toLowerCase()
     );
   };
 

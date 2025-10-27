@@ -57,7 +57,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
   const isPublicDomain = async (emailAddress: string): Promise<boolean> => {
     // Get metadata from storage
     const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[] ?? [];
-    return publicEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(domain));
+    return publicEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
   };
 
   /**
@@ -66,7 +66,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
   const isPrivateDomain = async (emailAddress: string): Promise<boolean> => {
     // Get metadata from storage
     const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[] ?? [];
-    return privateEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(domain));
+    return privateEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
   };
 
   useEffect(() => {
