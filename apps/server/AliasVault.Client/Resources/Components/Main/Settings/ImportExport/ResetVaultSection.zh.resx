@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>重置保险库</value>
+    <value>重置密码库</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>这个选项可以让你完全清空保险库，同时保留你的账户和电子邮件别名。如果你想从其他密码管理器导入数据后重新开始，或者想清除所有现有凭据重新来过，可以使用此功能。</value>
+    <value>这个选项可以让您完全清空密码库，同时保留您的账户和电子邮件别名。如果您想从其他密码管理器导入数据后重新开始，或者想清除所有现有凭据重新来过，可以使用此功能。</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ResetVaultButton" xml:space="preserve">
-    <value>重置保险库</value>
+    <value>重置密码库</value>
     <comment>Reset vault button</comment>
   </data>
 </root>
