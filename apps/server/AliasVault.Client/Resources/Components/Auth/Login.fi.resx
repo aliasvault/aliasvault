@@ -128,7 +128,7 @@
     <comment>Description for 2FA step</comment>
   </data>
   <data name="RecoveryCodeDescription" xml:space="preserve">
-    <value>Olet pyytänyt että kirjaudut sisään palautuskoodilla. Palautuskoodi on kertaluonteinen koodi, jota voidaan käyttää kirjautumaan tilillesi. Huomaa, että jos et manuaalisesti poista 2FA käytöstä kirjautumisen jälkeen, sinulta kysytään uudelleen tunnistautumiskoodi seuraavassa kirjautumisessa.</value>
+    <value>Olet pyytänyt kirjautumista sisään palautuskoodilla. Palautuskoodi on kertakäyttöinen koodi, jota voidaan käyttää tilillesi kirjautumiseen. Huomaa, että jos et poista kaksivaiheista todennusta manuaalisesti käytöstä kirjautumisen jälkeen, sinulta pyydetään todennuskoodia uudelleen seuraavan sisäänkirjautumisen yhteydessä.</value>
     <comment>Description for recovery code step</comment>
   </data>
   <data name="NoAccountYetText" xml:space="preserve">
@@ -140,12 +140,12 @@
     <comment>Question text about not having access to authenticator</comment>
   </data>
   <data name="RegainedAccessText" xml:space="preserve">
-    <value>Palautettu pääsy todennuslaitteeseesi??</value>
+    <value>Onko pääsy todennuslaitteeseesi saatu takaisin?</value>
     <comment>Question text about regaining access to authenticator</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="LoggingInMessage" xml:space="preserve">
-    <value>Kirjaudutaan...</value>
+    <value>Kirjaudutaan sisään...</value>
     <comment>Loading message during login process</comment>
   </data>
   <data name="VerifyingTwoFactorCodeMessage" xml:space="preserve">
@@ -158,11 +158,11 @@
   </data>
   <!-- Error messages -->
   <data name="LoginErrorMessage" xml:space="preserve">
-    <value>Tapahtui virhe kirjautumispyynnön käsittelyssä. Yritä uudelleen (myöhemmin).</value>
+    <value>Sisäänkirjautumispyynnön käsittelyn aikana tapahtui virhe. Yritä myöhemmin uudelleen.</value>
     <comment>Generic login error message</comment>
   </data>
   <data name="LoginRequestErrorMessage" xml:space="preserve">
-    <value>Tapahtui virhe käsiteltäessä kirjautumispyyntöä.</value>
+    <value>Sisäänkirjautumispyynnön käsittelyn aikana tapahtui virhe.</value>
     <comment>Login request processing error message</comment>
   </data>
   <!-- Placeholders -->
