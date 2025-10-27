@@ -86,7 +86,7 @@
     <comment>Header for note section</comment>
   </data>
   <data name="VaultsDeletedNote" xml:space="preserve">
-    <value>Kaikki salatut holvit, jotka sisältävät kaikki käyttäjätunnuksesi, poistetaan pysyvästi.</value>
+    <value>Kaikki salatut holvit, jotka sisältävät kaikki tunnistetietosi, poistetaan pysyvästi</value>
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">
@@ -98,7 +98,7 @@
     <comment>Note about account recovery</comment>
   </data>
   <data name="DeletionIrreversibleNote" xml:space="preserve">
-    <value>Account deletion is irreversible and cannot be undone. Pressing the button below will delete your account immmediately and permanently.</value>
+    <value>Tilin poisto on peruuttamatonta, eikä sitä voi kumota. Alla olevan painikkeen painaminen poistaa tilisi välittömästi ja pysyvästi.</value>
     <comment>Note about deletion being irreversible</comment>
   </data>
   <!-- Form labels -->
@@ -129,11 +129,11 @@
     <comment>Error message when username is not provided</comment>
   </data>
   <data name="UsernameDoesNotMatch" xml:space="preserve">
-    <value>The username you entered does not match your current username. Please try again.</value>
+    <value>Syöttämäsi käyttäjänimi ei vastaa nykyistä käyttäjänimeäsi. Yritä uudelleen.</value>
     <comment>Error message when username doesn't match</comment>
   </data>
   <data name="ErrorProcessingRequest" xml:space="preserve">
-    <value>Virhe käsiteltäessä pyyntöä.</value>
+    <value>Pyynnön käsittelyn aikana tapahtui virhe.</value>
     <comment>Generic error message for request processing</comment>
   </data>
 </root>
