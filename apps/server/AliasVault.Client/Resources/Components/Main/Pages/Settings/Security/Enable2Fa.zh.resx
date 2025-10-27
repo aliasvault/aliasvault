@@ -73,12 +73,12 @@
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>启用双因素认证（2FA）可提高你保险库的安全性。</value>
+    <value>启用双因素认证（2FA）可提高您密码库的安全性。</value>
     <comment>Description text explaining 2FA setup</comment>
   </data>
   <!-- Setup instructions -->
   <data name="QrCodeInstructions" xml:space="preserve">
-    <value>使用你的认证器应用扫描此二维码，或手动输入以下密钥：</value>
+    <value>使用您的认证器应用扫描此二维码，或手动输入以下密钥：</value>
     <comment>Instructions for scanning QR code or entering secret</comment>
   </data>
   <!-- Form elements -->
@@ -92,7 +92,7 @@
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorEnabledSuccess" xml:space="preserve">
-    <value>双因素认证（2FA）已成功启用。下次登录时，你需要输入双因素认证代码。</value>
+    <value>双因素认证（2FA）已成功启用。下次登录时，您需要输入双因素认证代码。</value>
     <comment>Success message when 2FA is enabled</comment>
   </data>
   <data name="FailedToEnable2Fa" xml:space="preserve">
