@@ -67,7 +67,7 @@
     <comment>Status message when 2FA is enabled</comment>
   </data>
   <data name="DisabledMessage" xml:space="preserve">
-    <value>双因素认证（2FA）当前已禁用。为提高你的账户安全性，建议你启用此功能。</value>
+    <value>双因素认证（2FA）当前已禁用。为提高您的账户安全性，建议您启用此功能。</value>
     <comment>Status message when 2FA is disabled</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
