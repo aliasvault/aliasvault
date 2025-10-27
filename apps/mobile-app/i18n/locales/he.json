@@ -16,7 +16,9 @@
     "loadMore": "לטעון עוד",
     "use": "להשתמש",
     "confirm": "אישור",
-    "unknownError": "שגיאה לא ידועה"
+    "errors": {
+      "unknownError": "אירעה שגיאה לא ידועה, נא לנסות שוב."
+    }
   },
   "auth": {
     "login": "כניסה",
@@ -52,7 +54,13 @@
       "networkErrorSelfHosted": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט והשרת זמינים. למערכות באירוח עצמי, נא לוודא שמותקן אצלך אישור SSL תקף. אישורים בחתימה עצמית לא נתמכים במכשירים ניידים מטעמי אבטחת מידע.",
       "sessionExpired": "משך ההפעלה שלך פג. נא להיכנס שוב.",
       "tokenRefreshFailed": "ריענון אסימון האימות נכשל",
-      "httpError": "שגיאת HTTP:‏ {{status}}"
+      "httpError": "שגיאת HTTP:‏ {{status}}",
+      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
+      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
+      "vaultDecryptFailed": "Failed to decrypt vault",
+      "vaultUnlockFailed": "Failed to unlock vault",
+      "biometricCancelled": "Biometric authentication cancelled",
+      "encryptionKeyFailed": "Failed to retrieve encryption key"
     },
     "confirmLogout": "לצאת? צריך להיכנס שוב עם סיסמת העל שלך כדי לגשת לכספת שלך.",
     "noAccountYet": "אין לך חשבון עדיין?",
@@ -79,7 +87,8 @@
       "failedToSyncVault": "סנכרון הכספת נכשל",
       "operationFailed": "הפעולה נכשלה",
       "versionNotSupported": "הגרסה הזאת של היישומון של AliasVault לניידים לא נתמכת עוד על ידי השרת. נא לעדכן את היישומון שלך לגרסה העדכנית ביותר.",
-      "serverNeedsUpdate": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש ביישומון הזה לנייד. נא ליצור קשר עם התמיכה לקבלת עזרה.",
+      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "appOutdated": "היישום הזה לא עדכני ואי אפשר להשתמש בו כדי לגשת לגרסת הכספת (החדשה יותר) הזאת. נא לעדכן את יישום AliasVault כדי להמשיך.",
       "vaultDecryptFailed": "לא ניתן לפענח את הכספת, אם הבעיה נמשכת נא לצאת מהמערכת ולהיכנס שוב.",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע."
     }
@@ -109,7 +118,7 @@
     "randomAlias": "כינוי אקראי",
     "manual": "ידני",
     "generateRandomAlias": "יצירת כינוי אקראי",
-    "clearAliasFields": "Clear Alias Fields",
+    "clearAliasFields": "לפנות שדות כינויים",
     "enterFullEmail": "נא למלא כתובת דוא״ל מלאה",
     "enterEmailPrefix": "נא למלא קידומת דוא״ל",
     "useDomainChooser": "להשתמש בבורר שמות התחום",
@@ -120,9 +129,10 @@
     "privateEmailDescription": "הצפנה מקצה לקצה, פרטיות מלאה.",
     "publicEmailTitle": "ספקי תיבת דוא״ל זמנית ציבוריים",
     "publicEmailDescription": "פרטיות אלמונית אך מוגבלת. תוכן הדוא״ל נגיש לכל מי שיודע את הכתובת.",
-    "searchPlaceholder": "חיפוש פרטי גישה…",
+    "searchPlaceholder": "Search vault...",
     "noMatchingCredentials": "לא נמצאו פרטי גישה מתאימים",
     "noCredentialsFound": "לא נמצאו פרטי גישה. נא ליצור כאלה כדי להתחיל. המלצה: אפשר גם להיכנס דרך האתר של AliasVault כדי לייבא פרטי גישה ממנהלי סיסמאות אחרים.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
     "recentEmails": "הודעות דוא״ל אחרונות",
     "loadingEmails": "הודעות הדוא״ל נטענות…",
     "noEmailsYet": "לא התקבלו הודעות דוא״ל עדיין.",
@@ -148,6 +158,12 @@
     "credentialDetails": "פירוט פרטי גישה",
     "emailPreview": "תצוגה מקדימה של הודעת דוא״ל",
     "switchBackToBrowser": "יש לחזור לדפדפן שלך כדי להמשיך.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "twoFactorAuth": "אימות דו־שלבי",
     "totpCode": "קוד חד־פעמי זמני",
     "attachments": "צרופות",
@@ -157,11 +173,15 @@
     "toasts": {
       "credentialUpdated": "פרטי הגישה עודכנו בהצלחה",
       "credentialCreated": "פרטי הגישה נוצרו בהצלחה",
-      "credentialDeleted": "פרטי הגישה נמחקו בהצלחה"
+      "credentialDeleted": "פרטי הגישה נמחקו בהצלחה",
+      "usernameCopied": "Username copied to clipboard",
+      "emailCopied": "Email copied to clipboard",
+      "passwordCopied": "Password copied to clipboard"
     },
     "createNewAliasFor": "יצירת כינוי חדש עבור",
     "errors": {
       "loadFailed": "טעינת פרטי הגישה נכשלה",
+      "saveFailed": "Failed to save credential",
       "generateUsernameFailed": "יצירת שם משתמש נכשלה",
       "generatePasswordFailed": "יצירת סיסמה נכשלה"
     },
@@ -174,12 +194,21 @@
       "copyPassword": "העתקת סיסמה"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Display Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+  },
   "settings": {
     "title": "הגדרות",
-    "iosAutofill": "השלמה אוטומטית ב־iOS",
+    "autofill": "Autofill & Passkeys",
     "iosAutofillSettings": {
-      "headerText": "אפשר להגדיר את AliasVault כדי שיספק את יכולת השלמת הסיסמאות האוטומטית ב־iOS. יש לעקוב אחר ההנחיות כדי להפעיל את זה.",
-      "howToEnable": "איך להפעיל:",
+      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
+      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
+      "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "1. לפתוח את הגדרות iOS דרך הכפתור שלהלן",
       "step2": "2. לעבור ל„כללי”",
       "step3": "3. לגעת ב„מילוי אוטומטי וסיסמאות”",
@@ -189,13 +218,13 @@
       "alreadyConfigured": "כבר הגדרתי את זה",
       "warningText": "לתשומת ליבך: יש לעבור אימות בעזרת Face ID/Touch ID (זיהוי פנים/טביעת אצבע) או באמצעות קוד הגישה שלך המכשיר שלך לטובת שימוש בהשלמה אוטומטית."
     },
-    "androidAutofill": "השלמה אוטומטית של Android",
     "androidAutofillSettings": {
       "warningTitle": "⚠️ יכולת ניסיונית",
-      "warningDescription": "התמיכה בהשלמה אוטומטית ב־Android היא כרגע במצב ניסיוני.",
+      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
       "warningLink": "אפשר לקרוא עליה עוד כאן",
-      "headerText": "אפשר להגדיר את AliasVault כדי שיספק את יכולת השלמת הסיסמאות האוטומטית ב־Android. יש לעקוב אחר ההנחיות כדי להפעיל את זה.",
-      "howToEnable": "איך להפעיל:",
+      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
+      "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
+      "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "1. לפתוח את הגדרות Android בעזרת הכפתור שלהלן ולשנות את „שירות השלמה אוטומטית מועדף” ל־„AliasVault”",
       "openAutofillSettings": "פתיחת הגדרות השלמה אוטומטית",
       "buttonTip": "אם הכפתור שלעיל לא עובד כנראה שהוא חסום עקב הגדרות אבטחת מידע. אפשר לגשת ידנית להגדרות Android ← ניהול כללי ← סיסמאות והשלמה אוטומטית.",
@@ -433,11 +462,11 @@
     "VAULT_ERROR": "הכספת המקומית אינה עדכנית. נא לסנכרן את הכספת שלך על ידי ריענון העמוד ולנסות שוב."
   },
   "app": {
+    "openReadOnlyMode": "פתיחה במצב לקריאה בלבד",
     "status": {
       "unlockingVault": "שחרור נעילת כספת",
       "decryptingVault": "פענוח הצפנת כספת",
-      "openingVaultReadOnly": "כספת נפתח במצב לקריאה בלבד",
-      "retryingConnection": "מתבצע ניסיון להתחבר מחדש…"
+      "openingVaultReadOnly": "כספת נפתח במצב לקריאה בלבד"
     },
     "offline": {
       "banner": "מצב בלתי מקוון (קריאה בלבד)",
@@ -445,7 +474,7 @@
       "stillOffline": "עדיין בלתי מקוון"
     },
     "alerts": {
-      "syncIssue": "תקלת סנכרון",
+      "syncIssue": "No Connection",
       "syncIssueMessage": "לא ניתן לגשת לשרת ה־AliasVault ולא ניתן לסנכרן את הכספת שלך. לפתוח את הכספת המקומית במצב קריאה בלבד או לנסות להתחבר שוב?",
       "openLocalVault": "פתיחת כספת מקומית",
       "retrySync": "לנסות לסנכרן מחדש"
@@ -478,8 +507,8 @@
     "title": "שדרוג כספת",
     "subtitle": "AliasVault התעדכן וצריך לשדרג את הכספת שלך. הפעולה הזאת אמורה לארוך מספר שניות.",
     "versionInformation": "פרטי גרסה",
-    "yourVault": "הכספת שלך:",
-    "newVersion": "גרסה חדשה:",
+    "yourVault": "גרסת הכספת שלך:",
+    "newVersion": "הגרסה החדשה הזמינה:",
     "upgrade": "שדרוג",
     "upgrading": "משתדרגת…",
     "logout": "יציאה",
