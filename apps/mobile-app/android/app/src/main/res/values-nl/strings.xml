@@ -61,6 +61,6 @@
   <string name="error_unlock_vault_first">Ontgrendel eerst de vault in de AliasVault app</string>
   <string name="error_vault_decrypt_failed">Ontsleutelen van vault mislukt</string>
   <string name="error_vault_unlock_failed">Ontgrendelen van vault mislukt</string>
-  <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
-  <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
+  <string name="error_biometric_cancelled">Biometrische verificatie geannuleerd</string>
+  <string name="error_encryption_key_failed">Fout bij ophalen van encryptiesleutel</string>
 </resources>
