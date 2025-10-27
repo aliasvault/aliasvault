@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>重置保险库</value>
+    <value>重置密码库</value>
     <comment>Page title</comment>
   </data>
   <data name="BreadcrumbImportExport" xml:space="preserve">
@@ -67,7 +67,7 @@
     <comment>Breadcrumb for import export</comment>
   </data>
   <data name="BreadcrumbResetVault" xml:space="preserve">
-    <value>重置保险库</value>
+    <value>重置密码库</value>
     <comment>Breadcrumb for reset vault</comment>
   </data>
   <data name="ResetVaultPleaseNote" xml:space="preserve">
@@ -75,15 +75,15 @@
     <comment>Reset vault please note prefix</comment>
   </data>
   <data name="ResetVaultCredentialsDeletedNote" xml:space="preserve">
-    <value>你保险库中所有加密的凭据都将被永久删除</value>
+    <value>您密码库中的所有加密凭据都将被永久删除</value>
     <comment>Reset vault note about credentials being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
-    <value>你的电子邮件别名将被保留，重置保险库后可重新使用</value>
+    <value>您的电子邮件别名将得到保留，并可在重置密码库后重新使用</value>
     <comment>Reset vault note about email aliases being kept</comment>
   </data>
   <data name="ResetVaultSettingsKeptNote" xml:space="preserve">
-    <value>你的账户设置和偏好将被保留</value>
+    <value>您的账户设置和偏好将得到保留</value>
     <comment>Reset vault note about settings being kept</comment>
   </data>
   <data name="ResetVaultIrreversibleNote" xml:space="preserve">
@@ -91,51 +91,51 @@
     <comment>Reset vault note about action being irreversible</comment>
   </data>
   <data name="ResetVaultConfirmUsernameLabel" xml:space="preserve">
-    <value>如需继续，请输入你的用户名进行确认</value>
+    <value>要继续，请输入您的用户名以确认</value>
     <comment>Reset vault username confirmation label</comment>
   </data>
   <data name="ResetVaultContinueButton" xml:space="preserve">
-    <value>继续重置保险库</value>
+    <value>继续重置密码库</value>
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>最终警告：你即将永久删除所有凭据！</value>
+    <value>最终警告：您即将永久删除您的所有凭据！</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
-    <value>此删除操作不可撤销且无法恢复</value>
+    <value>此删除不可逆，且无法撤销</value>
     <comment>Reset vault final step irreversible note</comment>
   </data>
   <data name="ResetVaultEnterPasswordLabel" xml:space="preserve">
-    <value>输入你的密码进行确认</value>
+    <value>输入您的密码以确认</value>
     <comment>Reset vault password confirmation label</comment>
   </data>
   <data name="ResetVaultConfirmButton" xml:space="preserve">
-    <value>重置我的保险库</value>
+    <value>重置我的密码库</value>
     <comment>Reset vault final confirmation button</comment>
   </data>
   <data name="ResetVaultUsernameRequired" xml:space="preserve">
-    <value>用户名是必填项。</value>
+    <value>用户名为必填项。</value>
     <comment>Reset vault username required error</comment>
   </data>
   <data name="ResetVaultUsernameDoesNotMatch" xml:space="preserve">
-    <value>你输入的用户名与账户用户名不匹配。</value>
+    <value>您输入的用户名与您的账户用户名不匹配。</value>
     <comment>Reset vault username mismatch error</comment>
   </data>
   <data name="ResetVaultPasswordIncorrect" xml:space="preserve">
-    <value>你输入的密码不正确。</value>
+    <value>您输入的密码不正确。</value>
     <comment>Reset vault password incorrect error</comment>
   </data>
   <data name="ResetVaultProgressMessage" xml:space="preserve">
-    <value>正在重置保险库……</value>
+    <value>正在重置密码库…</value>
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>你的保险库已成功重置。所有凭据已删除，你可以重新开始了。</value>
+    <value>您的密码库已成功重置。所有凭据均已删除，您现在可以重新开始了。</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">
-    <value>重置保险库时发生错误。请重试。</value>
+    <value>重置密码库时出错，请重试。</value>
     <comment>Reset vault error message</comment>
   </data>
 </root>
