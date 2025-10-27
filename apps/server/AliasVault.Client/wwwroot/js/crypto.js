@@ -28,7 +28,7 @@ function checkCryptoAvailable() {
 window.cryptoInterop = {
     encrypt: async function (plaintext, base64Key) {
         checkCryptoAvailable();
-        
+
         const key = await window.crypto.subtle.importKey(
             "raw",
             Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
@@ -62,7 +62,7 @@ window.cryptoInterop = {
     },
     decrypt: async function (base64Ciphertext, base64Key) {
         checkCryptoAvailable();
-        
+
         const key = await window.crypto.subtle.importKey(
             "raw",
             Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
@@ -89,7 +89,7 @@ window.cryptoInterop = {
     },
     decryptBytes: async function (base64Ciphertext, base64Key) {
         checkCryptoAvailable();
-        
+
         const key = await window.crypto.subtle.importKey(
             "raw",
             Uint8Array.from(atob(base64Key), c => c.charCodeAt(0)),
@@ -126,7 +126,7 @@ window.rsaInterop = {
      */
     generateRsaKeyPair : async function() {
         checkCryptoAvailable();
-        
+
         const keyPair = await window.crypto.subtle.generateKey(
             {
                 name: "RSA-OAEP",
@@ -154,7 +154,7 @@ window.rsaInterop = {
      */
     encryptWithPublicKey : async function(plaintext, publicKey) {
         checkCryptoAvailable();
-        
+
         const publicKeyObj = await window.crypto.subtle.importKey(
             "jwk",
             JSON.parse(publicKey),
@@ -181,11 +181,11 @@ window.rsaInterop = {
      * Decrypts a ciphertext string using an RSA private key.
      * @param {string} ciphertext - The base64-encoded ciphertext to decrypt.
      * @param {string} privateKey - The private key in JWK format.
-     * @returns {Promise<Uint8Array>} A promise that resolves to the decrypted data as a Uint8Array.
+     * @returns {Promise<string>} A promise that resolves to the decrypted data as a base64 string.
      */
     decryptWithPrivateKey: async function(ciphertext, privateKey) {
         checkCryptoAvailable();
-        
+
         try {
             // Parse the private key
             let parsedPrivateKey = JSON.parse(privateKey);
@@ -215,8 +215,9 @@ window.rsaInterop = {
                 cipherBuffer
             );
 
-            // Return the decrypted data as a Uint8Array
-            return new Uint8Array(plaintextBuffer);
+            // Convert to base64 string instead of returning Uint8Array to avoid Blazor serialization issues, see https://github.com/dotnet/aspnetcore/issues/59837
+            const decryptedBytes = new Uint8Array(plaintextBuffer);
+            return btoa(String.fromCharCode.apply(null, Array.from(decryptedBytes)));
         } catch (error) {
             throw new Error(`Failed to decrypt: ${error.message}`);
         }

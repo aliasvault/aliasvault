@@ -80,12 +80,12 @@ public sealed class EmailService(DbService dbService, JsInteropService jsInterop
 
             try
             {
-                var decryptedSymmetricKey = await jsInteropService.DecryptWithPrivateKey(email.EncryptedSymmetricKey, privateKey.PrivateKey);
-                email.Subject = await jsInteropService.SymmetricDecrypt(email.Subject, Convert.ToBase64String(decryptedSymmetricKey));
-                email.FromDisplay = await jsInteropService.SymmetricDecrypt(email.FromDisplay, Convert.ToBase64String(decryptedSymmetricKey));
-                email.FromLocal = await jsInteropService.SymmetricDecrypt(email.FromLocal, Convert.ToBase64String(decryptedSymmetricKey));
-                email.FromDomain = await jsInteropService.SymmetricDecrypt(email.FromDomain, Convert.ToBase64String(decryptedSymmetricKey));
-                email.MessagePreview = await jsInteropService.SymmetricDecrypt(email.MessagePreview, Convert.ToBase64String(decryptedSymmetricKey));
+                var decryptedSymmetricKeyBase64 = await jsInteropService.DecryptWithPrivateKey(email.EncryptedSymmetricKey, privateKey.PrivateKey);
+                email.Subject = await jsInteropService.SymmetricDecrypt(email.Subject, decryptedSymmetricKeyBase64);
+                email.FromDisplay = await jsInteropService.SymmetricDecrypt(email.FromDisplay, decryptedSymmetricKeyBase64);
+                email.FromLocal = await jsInteropService.SymmetricDecrypt(email.FromLocal, decryptedSymmetricKeyBase64);
+                email.FromDomain = await jsInteropService.SymmetricDecrypt(email.FromDomain, decryptedSymmetricKeyBase64);
+                email.MessagePreview = await jsInteropService.SymmetricDecrypt(email.MessagePreview, decryptedSymmetricKeyBase64);
             }
             catch (Exception ex)
             {
@@ -110,8 +110,8 @@ public sealed class EmailService(DbService dbService, JsInteropService jsInterop
 
         try
         {
-            var decryptedSymmetricKey = await jsInteropService.DecryptWithPrivateKey(email.EncryptedSymmetricKey, privateKey.PrivateKey);
-            var decryptedBase64 = await jsInteropService.SymmetricDecryptBytes(encryptedBytes, Convert.ToBase64String(decryptedSymmetricKey));
+            var decryptedSymmetricKeyBase64 = await jsInteropService.DecryptWithPrivateKey(email.EncryptedSymmetricKey, privateKey.PrivateKey);
+            var decryptedBase64 = await jsInteropService.SymmetricDecryptBytes(encryptedBytes, decryptedSymmetricKeyBase64);
             return decryptedBase64;
         }
         catch (Exception ex)
@@ -133,21 +133,21 @@ public sealed class EmailService(DbService dbService, JsInteropService jsInterop
 
         try
         {
-            var decryptedSymmetricKey = await jsInteropService.DecryptWithPrivateKey(email.EncryptedSymmetricKey, privateKey.PrivateKey);
-            email.Subject = await jsInteropService.SymmetricDecrypt(email.Subject, Convert.ToBase64String(decryptedSymmetricKey));
+            var decryptedSymmetricKeyBase64 = await jsInteropService.DecryptWithPrivateKey(email.EncryptedSymmetricKey, privateKey.PrivateKey);
+            email.Subject = await jsInteropService.SymmetricDecrypt(email.Subject, decryptedSymmetricKeyBase64);
             if (email.MessageHtml is not null)
             {
-                email.MessageHtml = await jsInteropService.SymmetricDecrypt(email.MessageHtml, Convert.ToBase64String(decryptedSymmetricKey));
+                email.MessageHtml = await jsInteropService.SymmetricDecrypt(email.MessageHtml, decryptedSymmetricKeyBase64);
             }
 
             if (email.MessagePlain is not null)
             {
-                email.MessagePlain = await jsInteropService.SymmetricDecrypt(email.MessagePlain, Convert.ToBase64String(decryptedSymmetricKey));
+                email.MessagePlain = await jsInteropService.SymmetricDecrypt(email.MessagePlain, decryptedSymmetricKeyBase64);
             }
 
-            email.FromDisplay = await jsInteropService.SymmetricDecrypt(email.FromDisplay, Convert.ToBase64String(decryptedSymmetricKey));
-            email.FromLocal = await jsInteropService.SymmetricDecrypt(email.FromLocal, Convert.ToBase64String(decryptedSymmetricKey));
-            email.FromDomain = await jsInteropService.SymmetricDecrypt(email.FromDomain, Convert.ToBase64String(decryptedSymmetricKey));
+            email.FromDisplay = await jsInteropService.SymmetricDecrypt(email.FromDisplay, decryptedSymmetricKeyBase64);
+            email.FromLocal = await jsInteropService.SymmetricDecrypt(email.FromLocal, decryptedSymmetricKeyBase64);
+            email.FromDomain = await jsInteropService.SymmetricDecrypt(email.FromDomain, decryptedSymmetricKeyBase64);
         }
         catch (Exception ex)
         {

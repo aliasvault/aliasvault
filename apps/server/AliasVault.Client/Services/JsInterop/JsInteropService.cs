@@ -199,13 +199,13 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     /// </summary>
     /// <param name="base64Ciphertext">Ciphertext to decrypt.</param>
     /// <param name="privateKey">Private key to use for decryption.</param>
-    /// <returns>Decrypted string.</returns>
-    public async Task<byte[]> DecryptWithPrivateKey(string base64Ciphertext, string privateKey)
+    /// <returns>Decrypted bytes as base64 string.</returns>
+    public async Task<string> DecryptWithPrivateKey(string base64Ciphertext, string privateKey)
     {
         try
         {
-            // Invoke the JavaScript function and get the result as a byte array
-            byte[] result = await jsRuntime.InvokeAsync<byte[]>("rsaInterop.decryptWithPrivateKey", base64Ciphertext, privateKey);
+            // Invoke the JavaScript function and get the result as a base64 string
+            string result = await jsRuntime.InvokeAsync<string>("rsaInterop.decryptWithPrivateKey", base64Ciphertext, privateKey);
             return result;
         }
         catch (JSException ex)
