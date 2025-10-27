@@ -68,9 +68,21 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
     }
 
     override fun clearStorage() {
-        // Clear all shared preferences
+        // Clear shared preferences, but preserve API URL settings for self-hosted instances
         val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+
+        // Save API URL before clearing
+        val apiUrl = sharedPreferences.getString("apiUrl", null)
+
+        // Clear all preferences
         sharedPreferences.edit { clear() }
+
+        // Restore API URL if it was set
+        if (apiUrl != null) {
+            sharedPreferences.edit {
+                putString("apiUrl", apiUrl)
+            }
+        }
 
         // Clear encrypted database file
         val encryptedDatabaseFile = File(context.filesDir, "encrypted_database.db")
