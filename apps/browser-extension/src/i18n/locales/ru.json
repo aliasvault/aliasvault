@@ -37,7 +37,8 @@
       "migrationError": "Возникла ошибка при проверке ожидающих перемещений.",
       "wrongPassword": "Неверный пароль. Пожалуйста, повторите попытку.",
       "accountLocked": "Аккаунт временно заблокирован из-за слишком большого числа неудачных попыток.",
-      "networkError": "Ошибка сети. Пожалуйста, проверьте соединение и повторите еще раз."
+      "networkError": "Ошибка сети. Пожалуйста, проверьте соединение и повторите еще раз.",
+      "sessionExpired": "Время сеанса истекло. Пожалуйста, войдите снова."
     }
   },
   "menu": {
@@ -51,8 +52,10 @@
     "error": "Ошибка",
     "success": "Успешно",
     "cancel": "Отмена",
+    "back": "Back",
     "use": "Использовать",
     "delete": "Удалить",
+    "or": "Or",
     "close": "Закрыть",
     "copied": "Скопировано!",
     "openInNewWindow": "Открыть в новом окне",
@@ -90,6 +93,7 @@
     "errors": {
       "serverNotAvailable": "Сервер AliasVault недоступен. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
       "clientVersionNotSupported": "Эта версия браузерного расширения AliasVault больше не поддерживается сервером. Пожалуйста, обновите расширение вашего браузера до последней версии.",
+      "browserExtensionOutdated": "Это расширение браузера устарело и не может быть использовано для доступа к этому хранилищу. Пожалуйста, обновите расширение, чтобы продолжить.",
       "serverVersionNotSupported": "Чтобы использовать это расширение для браузера, сервер AliasVault необходимо обновить до более новой версии. Пожалуйста, обратитесь в службу поддержки, если вам нужна помощь.",
       "unknownError": "Произошла неизвестная ошибка",
       "vaultNotAvailable": "Хранилище недоступно",
@@ -195,6 +199,8 @@
     "searchPlaceholder": "Поиск учетных данных...",
     "welcomeTitle": "Добро пожаловать в AliasVault!",
     "welcomeDescription": "Чтобы использовать браузерное расширение AliasVault: перейдите на сайт и используйте всплывающее окно автозаполнения AliasVault для создания новых учетных данных.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noMatchingCredentials": "No matching credentials found",
     "createdAt": "Создан",
     "updatedAt": "Последнее обновление",
     "autofill": "Автозаполнение",
@@ -210,6 +216,12 @@
     "saveCredential": "Сохранить учетные данные",
     "deleteCredentialTitle": "Удалить учетные данные",
     "deleteCredentialConfirm": "Вы уверены, что хотите удалить эти учетные данные? Это действие невозможно отменить.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "randomAlias": "Случайный псевдоним",
     "manual": "Инструкция",
     "service": "Сервис",
@@ -342,6 +354,7 @@
     "autofillSettings": "Настройки автозаполнения",
     "clipboardSettings": "Настройки буфера обмена",
     "contextMenuSettings": "Настройки контекстного меню",
+    "passkeySettings": "Passkey Settings",
     "contextMenu": "Контекстное меню",
     "contextMenuEnabled": "Контекстное меню включено",
     "contextMenuDisabled": "Контекстное меню отключено",
@@ -354,12 +367,52 @@
       "clientUrlInvalid": "Пожалуйста, введите корректный URL-адрес клиента"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
+    "bypass": {
+      "title": "Use Browser Passkey",
+      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
+      "thisTimeOnly": "This time only",
+      "alwaysForSite": "Always for this site"
+    },
+    "authenticate": {
+      "title": "Sign in with Passkey",
+      "signInFor": "Sign in with passkey for",
+      "selectPasskey": "Select a passkey to sign in:",
+      "noPasskeysFound": "No passkeys found for this site",
+      "useBrowserPasskey": "Use Browser Passkey"
+    },
+    "create": {
+      "title": "Create Passkey",
+      "createFor": "Create a new passkey for",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Enter a name for this passkey",
+      "createButton": "Create Passkey",
+      "creatingButton": "Creating...",
+      "useBrowserPasskey": "Use Browser Passkey",
+      "selectPasskeyToReplace": "Select a passkey to replace:",
+      "createNewPasskey": "Create New Passkey",
+      "replacingPasskey": "Replacing passkey: {{displayName}}",
+      "confirmReplace": "Confirm Replace"
+    },
+    "settings": {
+      "passkeyProvider": "Passkey Provider",
+      "passkeyProviderOn": "Passkey Provider on ",
+      "enable": "Enable AliasVault as passkey provider",
+      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+    }
+  },
   "upgrade": {
     "title": "Обновить хранилище",
     "subtitle": "AliasVault обновился, и ваше хранилище необходимо обновить. Это займет всего несколько секунд.",
     "versionInformation": "Информация о версии",
-    "yourVault": "Ваше хранилище:",
-    "newVersion": "Новая версия:",
+    "yourVault": "Версия вашего хранилища:",
+    "newVersion": "Доступна новая версия:",
     "upgrade": "Обновить хранилище",
     "upgrading": "Обновление...",
     "logout": "Выйти",
