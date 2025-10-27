@@ -47,7 +47,7 @@
   </data>
   <!-- How it works step content -->
   <data name="HowItWorksIntro">
-    <value>Когда нужно зарегистрироваться в новом сервисе:</value>
+    <value>Когда вам нужно зарегистрироваться в новом сервисе:</value>
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
