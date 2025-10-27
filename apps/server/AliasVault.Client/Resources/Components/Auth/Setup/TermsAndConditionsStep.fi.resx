@@ -26,22 +26,22 @@
   </data>
   <!-- Terms and Conditions title -->
   <data name="TermsAndConditionsTitle">
-    <value>Käyttöehdot ja säännöt</value>
+    <value>Käyttöehdot</value>
     <comment>Title for the terms and conditions section</comment>
   </data>
   <!-- Terms content -->
   <data name="TermsContent">
-    <value>AliasVault on suunniteltu parantamaan verkkoturvallisuutta ja suojaamaan yksityisyyttäsi. AliasVaultin avulla voit luoda ainutlaatuisia identiteettejä ja sähköpostia erilaisille verkkoliikkeillesi, auttaa sinua pitämään henkilökohtaiset tietosi hallinnassa ja vähentämään identiteettivarkauksien riskiä.
+    <value>AliasVault on suunniteltu parantamaan verkkoturvallisuuttasi ja suojaamaan yksityisyyttäsi. AliasVaultin avulla voit luoda yksilöllisiä identiteettejä ja sähköpostialiaksia eri verkkotileillesi, mikä auttaa sinua hallitsemaan henkilötietojasi ja vähentämään identiteettivarkauksien riskiä.
 
-Käyttämällä AliasVaultia, hyväksyt seuraavat ehdot:
+Käyttämällä AliasVaultia hyväksyt seuraavat ehdot:
 
-1. Et käytä AliasVaultia mihinkään laittomaan tarkoitukseen, mukaan lukien mutta ei rajoittuen petokseen, identiteettivarkauteen tai todellisten yksilöiden tekemiseen.
+1. Et käytä AliasVaultia mihinkään laittomiin tarkoituksiin, mukaan lukien, mutta ei rajoittuen, petoksiin, identiteettivarkauksiin tai oikeiden henkilöiden henkilöllisyyden anastamiseen.
 
-2. Olet vastuussa tilin luottamuksellisuuden säilyttämisestä ja kaikista AliasVaultin kautta luoduista peitenimistä.
+2. Olet vastuussa tilisi ja AliasVaultin kautta luotujen aliasten luottamuksellisuuden ylläpitämisestä.
 
-3. AliasVault pidättää oikeuden lakkauttaa tilisi, jos epäilemme näiden ehtojen väärinkäyttöä tai loukkausta.
+3. AliasVault pidättää oikeuden lopettaa tilisi, jos epäilemme näiden ehtojen väärinkäyttöä tai rikkomista.
 
-4. Ymmärrät, että vaikka AliasVault parantaa yksityisyyttäsi, mikään järjestelmä ei ole täysin typerä ja käytät palvelua omalla vastuulla.</value>
+4. Ymmärrät, että vaikka AliasVault parantaa yksityisyyttäsi, mikään järjestelmä ei ole täysin erehtymätön, ja käytät palvelua omalla vastuullasi.</value>
     <comment>Full terms and conditions content</comment>
   </data>
   <!-- Agreement checkbox -->
