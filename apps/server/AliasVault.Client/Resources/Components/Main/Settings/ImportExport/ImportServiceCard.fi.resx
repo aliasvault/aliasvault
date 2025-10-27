@@ -67,7 +67,7 @@
     <comment>Modal title for importing from a service. {0} is placeholder for service name</comment>
   </data>
   <data name="UploadExportFileText" xml:space="preserve">
-    <value>Lataa ulospäin {0} vientitiedostosi:</value>
+    <value>Lataa {0} vientitiedostosi ulospäin:</value>
     <comment>Text for file upload instruction. {0} is placeholder for service name</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
