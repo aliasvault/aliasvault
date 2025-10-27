@@ -37,7 +37,8 @@
       "migrationError": "Beim Prüfen auf ausstehende Migrationen ist ein Fehler aufgetreten.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut.",
       "accountLocked": "Das Konto wurde wegen zu vieler fehlgeschlagener Anmeldeversuche vorübergehend gesperrt.",
-      "networkError": "Netzwerkfehler. Bitte überprüfe Deine Verbindung und versuche es erneut."
+      "networkError": "Netzwerkfehler. Bitte überprüfe Deine Verbindung und versuche es erneut.",
+      "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde Dich erneut an."
     }
   },
   "menu": {
@@ -51,8 +52,10 @@
     "error": "Fehler",
     "success": "Aktion erfolgreich",
     "cancel": "Abbrechen",
+    "back": "Back",
     "use": "Benutzen",
     "delete": "Löschen",
+    "or": "Or",
     "close": "Schließen",
     "copied": "Kopiert!",
     "openInNewWindow": "In neuem Fenster öffnen",
@@ -90,6 +93,7 @@
     "errors": {
       "serverNotAvailable": "Der AliasVault-Server konnte nicht erreicht werden. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "clientVersionNotSupported": "Diese Version der AliasVault-Browser-Erweiterung wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine Browser-Erweiterung auf die neueste Version.",
+      "browserExtensionOutdated": "Diese Browser-Erweiterung ist veraltet und kann nicht verwendet werden, um auf diesen Tresor zuzugreifen. Bitte aktualisiere die Browser-Erweiterung, um fortzufahren.",
       "serverVersionNotSupported": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese Browser-Erweiterung nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
       "unknownError": "Ein unbekannter Fehler ist aufgetreten",
       "vaultNotAvailable": "Tresor nicht verfügbar",
@@ -195,6 +199,8 @@
     "searchPlaceholder": "Zugangsdaten suchen...",
     "welcomeTitle": "Willkommen bei AliasVault!",
     "welcomeDescription": "Du möchtest die AliasVault-Browser-Erweiterung verwenden? Navigiere zu einer Website und verwende das AliasVault-Popup-Fenster um einen neuen Zugang zu erstellen.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noMatchingCredentials": "No matching credentials found",
     "createdAt": "Erstellt",
     "updatedAt": "Zuletzt aktualisiert",
     "autofill": "Autofill",
@@ -210,6 +216,12 @@
     "saveCredential": "Zugang speichern",
     "deleteCredentialTitle": "Zugang löschen",
     "deleteCredentialConfirm": "Bist Du sicher, dass Du diesen Zugang löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "randomAlias": "Zufälliger Alias",
     "manual": "Manuell",
     "service": "Dienst",
@@ -342,6 +354,7 @@
     "autofillSettings": "Autofill-Einstellungen",
     "clipboardSettings": "Zwischenablage-Einstellungen",
     "contextMenuSettings": "Kontextmenü-Einstellungen",
+    "passkeySettings": "Passkey Settings",
     "contextMenu": "Kontextmenü",
     "contextMenuEnabled": "Kontextmenü ist aktiviert",
     "contextMenuDisabled": "Kontextmenü ist deaktiviert",
@@ -354,12 +367,52 @@
       "clientUrlInvalid": "Bitte gib eine gültige Client-URL ein"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
+    "bypass": {
+      "title": "Use Browser Passkey",
+      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
+      "thisTimeOnly": "This time only",
+      "alwaysForSite": "Always for this site"
+    },
+    "authenticate": {
+      "title": "Sign in with Passkey",
+      "signInFor": "Sign in with passkey for",
+      "selectPasskey": "Select a passkey to sign in:",
+      "noPasskeysFound": "No passkeys found for this site",
+      "useBrowserPasskey": "Use Browser Passkey"
+    },
+    "create": {
+      "title": "Create Passkey",
+      "createFor": "Create a new passkey for",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Enter a name for this passkey",
+      "createButton": "Create Passkey",
+      "creatingButton": "Creating...",
+      "useBrowserPasskey": "Use Browser Passkey",
+      "selectPasskeyToReplace": "Select a passkey to replace:",
+      "createNewPasskey": "Create New Passkey",
+      "replacingPasskey": "Replacing passkey: {{displayName}}",
+      "confirmReplace": "Confirm Replace"
+    },
+    "settings": {
+      "passkeyProvider": "Passkey Provider",
+      "passkeyProviderOn": "Passkey Provider on ",
+      "enable": "Enable AliasVault as passkey provider",
+      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+    }
+  },
   "upgrade": {
     "title": "Tresor aktualisieren",
     "subtitle": "AliasVault wurde aktualisiert. Dadurch muss auch Dein Tresor aktualisiert werden. Dies sollte nur wenige Sekunden dauern.",
     "versionInformation": "Versionsinformationen",
-    "yourVault": "Dein Tresor:",
-    "newVersion": "Neue Version:",
+    "yourVault": "Version Deines Tresors:",
+    "newVersion": "Neue verfügbare Version:",
     "upgrade": "Tresor aktualisieren",
     "upgrading": "Aktualisieren...",
     "logout": "Abmelden",
