@@ -60,48 +60,48 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Disable two-factor authentication</value>
+    <value>Desabilitar autenticação de dois fatores</value>
     <comment>Page title for the disable 2FA page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
-    <value>Security settings</value>
+    <value>Configurações de segurança</value>
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbDisable2Fa" xml:space="preserve">
-    <value>Disable two-factor authentication</value>
+    <value>Desabilitar autenticação de dois fatores</value>
     <comment>Breadcrumb text for disable 2FA</comment>
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>Disabling two-factor authentication means you will be able to login with only your password.</value>
+    <value>Desabilitar a autenticação de dois fatores significa que você poderá fazer login apenas com sua senha.</value>
     <comment>Description text explaining what disabling 2FA means</comment>
   </data>
   <!-- Warning message -->
   <data name="WarningMessage" xml:space="preserve">
-    <value>Please note: after disabling two-factor authentication any configured authenticator app(s) will stop working. When you want to re-enable two-factor authentication you will have to configure the authenticator app(s) again.</value>
+    <value>Por favor, note: após desabilitar a autenticação de dois fatores, qualquer aplicativo(s) configurado(s) irão parar de funcioar. Quando você desejar habilitar a autenticação de dois fatores novamente, você terá que configurar o aplicativo de autenticação novamente.</value>
     <comment>Warning message about the consequences of disabling 2FA</comment>
   </data>
   <!-- Status message -->
   <data name="StatusMessage" xml:space="preserve">
-    <value>Two factor authentication is currently enabled. Disable it in order to be able to access your vault with your password only.</value>
+    <value>Autenticação de dois fatores está habilitada. Desabilite-a para acessar seu cofre apenas com a senha.</value>
     <comment>Status message explaining current 2FA state</comment>
   </data>
   <!-- Button text -->
   <data name="ConfirmDisableButton" xml:space="preserve">
-    <value>Confirm Disable Two-Factor Authentication</value>
+    <value>Confirmar Desabilitar a Autenticação de Dois Fatores</value>
     <comment>Button text to confirm disabling 2FA</comment>
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorDisabledSuccess" xml:space="preserve">
-    <value>Two-factor authentication is now successfully disabled.</value>
+    <value>Autenticação de dois fatores foi desabilitada com sucesso.</value>
     <comment>Success message when 2FA is disabled</comment>
   </data>
   <data name="FailedToDisable2Fa" xml:space="preserve">
-    <value>Failed to disable two-factor authentication.</value>
+    <value>Falha ao desabilitar autenticação de dois fatores.</value>
     <comment>Error message when 2FA disable fails</comment>
   </data>
   <data name="TwoFactorNotEnabled" xml:space="preserve">
-    <value>Two-factor authentication is not enabled.</value>
+    <value>Autenticação de dois fatores não está habilitada.</value>
     <comment>Error message when 2FA is not enabled</comment>
   </data>
 </root>
