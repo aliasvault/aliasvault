@@ -1,25 +1,25 @@
 {
   "loading": {
-    "title": "AliasVault is loading",
-    "message": "Initializing secure environment. AliasVault prioritizes your privacy by running entirely in your browser. The first load might take a short while.",
-    "refreshText": "If loading seems stuck, you can click the button below to refresh the page.",
-    "refreshButtonText": "Refresh Page"
+    "title": "AliasVault wczytywany.",
+    "message": "Inicjowanie bezpiecznego środowiska. AliasVault stawia za priorytet Twoją prywatność, uruchamiając się całkowicie w przeglądarce. Pierwsze ładowanie może zająć chwilę.",
+    "refreshText": "Jeśli ładowanie zatrzyma się, możesz kliknąć poniższy przycisk, aby odświeżyć stronę.",
+    "refreshButtonText": "Odśwież stronę"
   },
   "errors": {
-    "unhandledError": "An unhandled error has occurred. Please try reloading the page. If the issue persists, please contact support.",
-    "webAssemblyError": "AliasVault requires WebAssembly, which this browser does not support. Try using a more modern browser that supports WebAssembly.",
-    "reloadPageText": "Reload Page"
+    "unhandledError": "Wystąpił nieoczekiwany błąd. Spróbuj odświeżyć stronę. Jeśli problem będzie się powtarzał, skontaktuj się z pomocą techniczną.",
+    "webAssemblyError": "AliasVault wymaga WebAssembly, której ta przeglądarka nie obsługuje. Spróbuj użyć bardziej nowoczesnej przeglądarki, która obsługuje WebAssembly.",
+    "reloadPageText": "Odśwież stronę"
   },
   "quotes": {
     "security": [
-      "Your identity is your most valuable asset. Protect it like one.",
-      "In the digital world, a strong password is your first line of defense.",
-      "Security is not a product, but a process.",
-      "The weakest link in the security chain is the human element.",
-      "Security is always excessive until it's not enough.",
-      "Trust, but verify - especially online.",
-      "Your data is only as secure as your weakest password.",
-      "The most secure password is the one you can't remember."
+      "Twoja tożsamość jest twoim najcenniejszym aktywem. Chroń ja.",
+      "W świecie cyfrowym silne hasło jest pierwszą linią obrony.",
+      "Bezpieczeństwo nie jest produktem, ale procesem.",
+      "Najsłabszym ogniwem w łańcuchu bezpieczeństwa jest czynnik ludzki.",
+      "Bezpieczeństwo zawsze jest nadmierne, dopóki nie będzie wystarczające.",
+      "Ufaj, ale sprawdzaj. Wtedy naprawdę ufasz.",
+      "Twoje dane są tak bezpieczne, jak najsłabsze hasło.",
+      "Najbardziej bezpiecznym hasłem jest to, którego nie możesz zapamiętać."
     ]
   }
 }
