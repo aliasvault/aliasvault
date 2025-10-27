@@ -231,30 +231,34 @@ public class CredentialFilter {
 
             return Array(matches)
         } else {
-            // Non-URL fallback: Extract words from search text for better matching
-            let searchWords = extractWords(from: searchText)
+            // Non-URL fallback: Multi-word AND search for better matching
+            let lowercasedSearch = searchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+
+            // Split search term into words for AND search
+            let searchWords = lowercasedSearch
+                .components(separatedBy: .whitespacesAndNewlines)
+                .filter { !$0.isEmpty }
 
             if searchWords.isEmpty {
-                // If no meaningful words after extraction, fall back to simple contains
-                let lowercasedSearch = searchText.lowercased()
-                return credentials.filter { credential in
-                    (credential.service.name?.lowercased().contains(lowercasedSearch) ?? false) ||
-                        (credential.username?.lowercased().contains(lowercasedSearch) ?? false) ||
-                        (credential.notes?.lowercased().contains(lowercasedSearch) ?? false)
-                }
+                return credentials
             }
 
-            // Match using extracted words
+            // Filter credentials where ALL search words match (each in at least one field)
             return credentials.filter { credential in
-                let serviceNameWords = credential.service.name.map { extractWords(from: $0) } ?? []
-                let usernameWords = credential.username.map { extractWords(from: $0) } ?? []
-                let notesWords = credential.notes.map { extractWords(from: $0) } ?? []
+                // Prepare searchable fields
+                let searchableFields = [
+                    credential.service.name?.lowercased() ?? "",
+                    credential.username?.lowercased() ?? "",
+                    credential.alias?.email?.lowercased() ?? "",
+                    credential.service.url?.lowercased() ?? "",
+                    credential.notes?.lowercased() ?? ""
+                ]
 
-                // Check if any search word matches any credential word exactly
-                return searchWords.contains { searchWord in
-                    serviceNameWords.contains(searchWord) ||
-                        usernameWords.contains(searchWord) ||
-                        notesWords.contains(searchWord)
+                // All search words must be found (each in at least one field)
+                return searchWords.allSatisfy { word in
+                    searchableFields.contains { field in
+                        field.contains(word)
+                    }
                 }
             }
         }

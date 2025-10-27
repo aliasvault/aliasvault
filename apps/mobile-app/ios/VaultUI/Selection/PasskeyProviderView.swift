@@ -227,38 +227,44 @@ public class PasskeyProviderViewModel: ObservableObject {
     }
 
     func filterCredentials() {
-        if searchText.isEmpty {
+        let lowercasedSearch = searchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+
+        if lowercasedSearch.isEmpty {
             filteredCredentials = credentials
-        } else {
-            let lowercasedSearch = searchText.lowercased()
-            filteredCredentials = credentials.filter { credential in
-                // Filter by service name
-                if let serviceName = credential.service.name?.lowercased(),
-                   serviceName.contains(lowercasedSearch) {
-                    return true
+            return
+        }
+
+        // Split search term into words for AND search
+        let searchWords = lowercasedSearch
+            .components(separatedBy: .whitespacesAndNewlines)
+            .filter { !$0.isEmpty }
+
+        if searchWords.isEmpty {
+            filteredCredentials = credentials
+            return
+        }
+
+        // Filter credentials where ALL search words match (each in at least one field)
+        filteredCredentials = credentials.filter { credential in
+            // Prepare searchable fields including passkey rpIds
+            var searchableFields = [
+                credential.service.name?.lowercased() ?? "",
+                credential.service.url?.lowercased() ?? "",
+                credential.username?.lowercased() ?? "",
+                credential.alias?.email?.lowercased() ?? "",
+                credential.notes?.lowercased() ?? ""
+            ]
+
+            // Add passkey rpIds to searchable fields
+            if let passkeys = credential.passkeys {
+                searchableFields.append(contentsOf: passkeys.map { $0.rpId.lowercased() })
+            }
+
+            // All search words must be found (each in at least one field)
+            return searchWords.allSatisfy { word in
+                searchableFields.contains { field in
+                    field.contains(word)
                 }
-                // Filter by service URL
-                if let serviceUrl = credential.service.url?.lowercased(),
-                   serviceUrl.contains(lowercasedSearch) {
-                    return true
-                }
-                // Filter by username
-                if let username = credential.username?.lowercased(),
-                   username.contains(lowercasedSearch) {
-                    return true
-                }
-                // Filter by email
-                if let email = credential.alias?.email?.lowercased(),
-                   email.contains(lowercasedSearch) {
-                    return true
-                }
-                // Filter by passkey rpId
-                if let passkeys = credential.passkeys {
-                    return passkeys.contains { passkey in
-                        passkey.rpId.lowercased().contains(lowercasedSearch)
-                    }
-                }
-                return false
             }
         }
     }
