@@ -37,7 +37,8 @@
       "migrationError": "אירעה שגיאה בעת בדיקה לאיתור הסבות ממתינות.",
       "wrongPassword": "סיסמה שגויה. נא לנסות שוב.",
       "accountLocked": "החשבון נעול זמנית עקב ריבוי ניסיונות כושלים.",
-      "networkError": "שגיאת רשת. נא לבדוק את החיבור ולנסות שוב."
+      "networkError": "שגיאת רשת. נא לבדוק את החיבור ולנסות שוב.",
+      "sessionExpired": "תוקף ההפעלה שלך פג. נא להיכנס מחדש."
     }
   },
   "menu": {
@@ -51,8 +52,10 @@
     "error": "שגיאה",
     "success": "הצליח",
     "cancel": "ביטול",
+    "back": "Back",
     "use": "להשתמש",
     "delete": "מחיקה",
+    "or": "Or",
     "close": "סגירה",
     "copied": "הועתק!",
     "openInNewWindow": "פתיחה בחלון חדש",
@@ -90,6 +93,7 @@
     "errors": {
       "serverNotAvailable": "שרת ה־AliasVault לא זמין. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
       "clientVersionNotSupported": "הגרסה הזאת של הרחבת הדפדפן של AliasVault לא נתמכת עוד על ידי השרת. נא לעדכן את הרחבת הדפדפן שלך לגרסה העדכנית ביותר.",
+      "browserExtensionOutdated": "הרחבת הדפדפן הזאת לא עדכנית ואי אפשר להשתמש בה כדי לגשת לכספת הזאת. נא לעדכן את הרחבת הדפדפן הזאת כדי להמשיך.",
       "serverVersionNotSupported": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש בהרחבת הדפדפן הזאת. נא ליצור קשר עם התמיכה לקבלת עזרה.",
       "unknownError": "אירעה שגיאה לא ידועה",
       "vaultNotAvailable": "הכספת לא זמינה",
@@ -195,6 +199,8 @@
     "searchPlaceholder": "חיפוש פרטי גישה…",
     "welcomeTitle": "ברוך בואך ל־AliasVault!",
     "welcomeDescription": "כדי להשתמש בהרחבת הדפדפן של AliasVault: יש לנווט לאתר ולהשתמש בחלונית ההשלמה האוטומטית של AliasVault כדי ליצור פרטי גישה חדשים.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noMatchingCredentials": "No matching credentials found",
     "createdAt": "יצירה",
     "updatedAt": "עדכון אחרון",
     "autofill": "השלמה אוטומטית",
@@ -210,6 +216,12 @@
     "saveCredential": "שמירת פרטי גישה",
     "deleteCredentialTitle": "מחיקת פרטי גישה",
     "deleteCredentialConfirm": "למחוק את פרטי הגישה? זאת פעולה בלתי הפיכה.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "randomAlias": "כינוי אקראי",
     "manual": "ידני",
     "service": "שירות",
@@ -226,7 +238,7 @@
     "avoidAmbiguousChars": "עדיף להימנע מאותיות וספרות שדומים זה לזה (o,‏ 0 וכו׳)",
     "generateNewPreview": "יצירת תצוגה מקדימה חדשה",
     "generateRandomAlias": "יצירת כינוי אקראי",
-    "clearAliasFields": "Clear Alias Fields",
+    "clearAliasFields": "לפנות שדות כינויים",
     "alias": "כינוי",
     "firstName": "שם פרטי",
     "lastName": "שם משפחה",
@@ -342,6 +354,7 @@
     "autofillSettings": "הגדרות השלמה אוטומטית",
     "clipboardSettings": "הגדרות לוח הגזירים",
     "contextMenuSettings": "הגדרות תפריט הקשר",
+    "passkeySettings": "Passkey Settings",
     "contextMenu": "תפריט הקשר",
     "contextMenuEnabled": "תפריט הקשר פעיל",
     "contextMenuDisabled": "תפריט הקשר כבוי",
@@ -354,12 +367,52 @@
       "clientUrlInvalid": "נא למלא כתובת לקוח תקפה"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
+    "bypass": {
+      "title": "Use Browser Passkey",
+      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
+      "thisTimeOnly": "This time only",
+      "alwaysForSite": "Always for this site"
+    },
+    "authenticate": {
+      "title": "Sign in with Passkey",
+      "signInFor": "Sign in with passkey for",
+      "selectPasskey": "Select a passkey to sign in:",
+      "noPasskeysFound": "No passkeys found for this site",
+      "useBrowserPasskey": "Use Browser Passkey"
+    },
+    "create": {
+      "title": "Create Passkey",
+      "createFor": "Create a new passkey for",
+      "titleLabel": "Title",
+      "titlePlaceholder": "Enter a name for this passkey",
+      "createButton": "Create Passkey",
+      "creatingButton": "Creating...",
+      "useBrowserPasskey": "Use Browser Passkey",
+      "selectPasskeyToReplace": "Select a passkey to replace:",
+      "createNewPasskey": "Create New Passkey",
+      "replacingPasskey": "Replacing passkey: {{displayName}}",
+      "confirmReplace": "Confirm Replace"
+    },
+    "settings": {
+      "passkeyProvider": "Passkey Provider",
+      "passkeyProviderOn": "Passkey Provider on ",
+      "enable": "Enable AliasVault as passkey provider",
+      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+    }
+  },
   "upgrade": {
     "title": "שדרוג כספת",
     "subtitle": "AliasVault התעדכן וצריך לשדרג את הכספת שלך. הפעולה הזאת אמורה לארוך מספר שניות.",
     "versionInformation": "פרטי גרסה",
-    "yourVault": "הכספת שלך:",
-    "newVersion": "גרסה חדשה:",
+    "yourVault": "גרסת הכספת שלך:",
+    "newVersion": "הגרסה החדשה הזמינה:",
     "upgrade": "שדרוג כספת",
     "upgrading": "משתדרגת…",
     "logout": "יציאה",
