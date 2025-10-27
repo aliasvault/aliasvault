@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Poista käytöstä kaksivaiheinen tunnistautuminen</value>
+    <value>Poista kaksivaiheinen todennus käytöstä</value>
     <comment>Page title for the disable 2FA page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
@@ -68,40 +68,40 @@
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbDisable2Fa" xml:space="preserve">
-    <value>Poista käytöstä kaksivaiheinen tunnistautuminen</value>
+    <value>Poista kaksivaiheinen todennus käytöstä</value>
     <comment>Breadcrumb text for disable 2FA</comment>
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>Kaksivaiheisen tunnistautumisen poistaminen käytöstä tarkoittaa, että voit kirjautua sisään vain salasanalla.</value>
+    <value>Kaksivaiheisen todennuksen poistaminen käytöstä tarkoittaa sitä, että voit kirjautua sisään vain salasanalla.</value>
     <comment>Description text explaining what disabling 2FA means</comment>
   </data>
   <!-- Warning message -->
   <data name="WarningMessage" xml:space="preserve">
-    <value>Huomaa: kaksivaiheisen tunnistautumisen poistamisen jälkeen mikä tahansa määritetty tunnistautumissovellus lakkaa toimimasta. Kun haluat ottaa kaksivaiheisen tunnistautumisen uudelleen käyttöön, sinun täytyy määrittää tunnistautumissovellus uudelleen.</value>
+    <value>Huomaathan: kaksivaiheisen todennuksen poistamisen jälkeen kaikki määritetyt todennussovellukset lakkaavat toimimasta. Kun haluat ottaa kaksivaiheisen todennuksen uudelleen käyttöön, sinun on määritettävä todennussovellukset uudelleen.</value>
     <comment>Warning message about the consequences of disabling 2FA</comment>
   </data>
   <!-- Status message -->
   <data name="StatusMessage" xml:space="preserve">
-    <value>Kahden tekijän tunnistautuminen on tällä hetkellä käytössä. Poista se käytöstä, jotta voit käyttää holviasi vain salasanallasi.</value>
+    <value>Kaksivaiheinen todennus on tällä hetkellä otettu käyttöön. Poista se käytöstä, voidaksesi saada pääsyn holviisi vain salasanalla.</value>
     <comment>Status message explaining current 2FA state</comment>
   </data>
   <!-- Button text -->
   <data name="ConfirmDisableButton" xml:space="preserve">
-    <value>Vahvista kaksivaiheisen tunnistaumisen käytöstä poistaminen.</value>
+    <value>Vahvista kaksivaiheisen todennuksen poisto käytöstä</value>
     <comment>Button text to confirm disabling 2FA</comment>
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorDisabledSuccess" xml:space="preserve">
-    <value>Kaksivaiheinen tunnistautuminen poistettu käytöstä onnistuneesti.</value>
+    <value>Kaksivaiheinen todennus on nyt poistettu käytöstä.</value>
     <comment>Success message when 2FA is disabled</comment>
   </data>
   <data name="FailedToDisable2Fa" xml:space="preserve">
-    <value>Kaksivaiheisen tunnistaumisen poisto käytöstä epäonnistui.</value>
+    <value>Kaksivaiheisen todennuksen poistaminen käytöstä epäonnistui.</value>
     <comment>Error message when 2FA disable fails</comment>
   </data>
   <data name="TwoFactorNotEnabled" xml:space="preserve">
-    <value>Kaksivaiheinen tunnistautuminen ei ole käytössä.</value>
+    <value>Kaksivaiheinen todennus ei ole otettu käyttöön.</value>
     <comment>Error message when 2FA is not enabled</comment>
   </data>
 </root>
