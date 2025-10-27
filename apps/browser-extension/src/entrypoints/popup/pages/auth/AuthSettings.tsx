@@ -172,76 +172,105 @@ const AuthSettings: React.FC = () => {
   };
 
   return (
-    <div className="p-4">
-      {/* Language Settings Section */}
-      <div className="mb-6">
-        <div className="flex flex-col gap-2">
-          <p className="font-medium text-gray-900 dark:text-white">{t('common.language')}</p>
-          <LanguageSwitcher variant="dropdown" size="sm" />
+    <div className="p-4 space-y-6">
+      {/* Server Configuration Section */}
+      <div className="space-y-4 pb-6 border-b border-gray-200 dark:border-gray-700">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+            {t('settings.serverConfiguration', 'Server Configuration')}
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t('settings.serverConfigurationDescription', 'Configure the AliasVault server URL for self-hosted instances')}
+          </p>
         </div>
+
+        <div>
+          <label htmlFor="api-connection" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+            {t('settings.serverUrl')}
+          </label>
+          <select
+            id="api-connection"
+            value={selectedOption}
+            onChange={handleOptionChange}
+            className="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+          >
+            {DEFAULT_OPTIONS.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {selectedOption === 'custom' && (
+          <div className="space-y-4 pl-4 border-l-2 border-primary-500">
+            <div>
+              <label htmlFor="custom-api-url" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                {t('settings.customApiUrl', 'API URL')}
+              </label>
+              <input
+                id="custom-api-url"
+                type="text"
+                value={customUrl}
+                onChange={handleCustomUrlChange}
+                placeholder="https://vault.example.com/api"
+                className={`w-full bg-gray-50 border ${errors.apiUrl ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white`}
+              />
+              {errors.apiUrl && (
+                <p className="mt-1 text-sm text-red-500">{errors.apiUrl}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {t('settings.apiUrlHint', 'The API endpoint URL (usually client URL + /api)')}
+              </p>
+            </div>
+
+            <div>
+              <label htmlFor="custom-client-url" className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                {t('settings.customClientUrl', 'Client URL')}
+              </label>
+              <input
+                id="custom-client-url"
+                type="text"
+                value={customClientUrl}
+                onChange={handleCustomClientUrlChange}
+                placeholder="https://vault.example.com"
+                className={`w-full bg-gray-50 border ${errors.clientUrl ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white`}
+              />
+              {errors.clientUrl && (
+                <p className="mt-1 text-sm text-red-500">{errors.clientUrl}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                {t('settings.clientUrlHint', 'The web interface URL of your self-hosted instance')}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="mb-6">
-        <label htmlFor="api-connection" className="block font-medium text-gray-700 dark:text-gray-200 mb-2">
-          {t('settings.serverUrl')}
-        </label>
-        <select
-          value={selectedOption}
-          onChange={handleOptionChange}
-          className="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
-        >
-          {DEFAULT_OPTIONS.map(option => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* Autofill Settings Section */}
+      <div className="space-y-4 pb-6 border-b border-gray-200 dark:border-gray-700">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+            {t('settings.autofillSettings', 'Autofill Settings')}
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {t('settings.autofillSettingsDescription', 'Enable or disable the autofill popup on web pages')}
+          </p>
+        </div>
 
-      {selectedOption === 'custom' && (
-        <>
-          <div className="mb-6">
-            <label htmlFor="custom-client-url" className="block font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Custom client URL
-            </label>
-            <input
-              id="custom-client-url"
-              type="text"
-              value={customClientUrl}
-              onChange={handleCustomClientUrlChange}
-              placeholder="https://my-aliasvault-instance.com"
-              className={`w-full bg-gray-50 border ${errors.clientUrl ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white`}
-            />
-            {errors.clientUrl && (
-              <p className="mt-1 text-sm text-red-500">{errors.clientUrl}</p>
-            )}
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-gray-900 dark:text-white">{t('settings.autofillEnabled')}</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {isGloballyEnabled
+                ? t('settings.autofillEnabledDescription', 'Autofill suggestions will appear on login forms')
+                : t('settings.autofillDisabledDescription', 'Autofill suggestions are disabled globally')
+              }
+            </p>
           </div>
-          <div className="mb-6">
-            <label htmlFor="custom-api-url" className="block font-medium text-gray-700 dark:text-gray-200 mb-2">
-              Custom API URL
-            </label>
-            <input
-              id="custom-api-url"
-              type="text"
-              value={customUrl}
-              onChange={handleCustomUrlChange}
-              placeholder="https://my-aliasvault-instance.com/api"
-              className={`w-full bg-gray-50 border ${errors.apiUrl ? 'border-red-500' : 'border-gray-300'} text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white`}
-            />
-            {errors.apiUrl && (
-              <p className="mt-1 text-sm text-red-500">{errors.apiUrl}</p>
-            )}
-          </div>
-        </>
-      )}
-
-      {/* Autofill Popup Settings Section */}
-      <div className="mb-6">
-        <div className="flex flex-col gap-2">
-          <p className="font-medium text-gray-900 dark:text-white">{t('settings.autofillEnabled')}</p>
           <button
             onClick={toggleGlobalPopup}
-            className={`px-4 py-2 rounded-md transition-colors ${
+            className={`px-4 py-2 rounded-md transition-colors font-medium text-sm ${
               isGloballyEnabled
                 ? 'bg-green-200 text-green-800 hover:bg-green-300 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50'
                 : 'bg-red-200 text-red-800 hover:bg-red-300 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50'
@@ -252,7 +281,21 @@ const AuthSettings: React.FC = () => {
         </div>
       </div>
 
-      <div className="text-center text-gray-400 dark:text-gray-600">
+      {/* Language Settings Section */}
+      <div className="space-y-4 pb-6">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
+            {t('settings.languageSettings', 'Language')}
+          </h2>
+        </div>
+
+        <div>
+          <LanguageSwitcher variant="dropdown" size="sm" />
+        </div>
+      </div>
+
+      {/* Version Info */}
+      <div className="text-center text-xs text-gray-400 dark:text-gray-600 pt-4 border-t border-gray-200 dark:border-gray-700">
         {t('settings.version')}: {AppInfo.VERSION}
       </div>
     </div>
