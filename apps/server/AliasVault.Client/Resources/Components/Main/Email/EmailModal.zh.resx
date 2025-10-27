@@ -87,19 +87,19 @@
     <comment>Close modal button text</comment>
   </data>
   <data name="DeleteEmailTitle" xml:space="preserve">
-    <value>删除邮件</value>
+    <value>删除电子邮件</value>
     <comment>Delete email confirmation dialog title</comment>
   </data>
   <data name="DeleteEmailConfirmation" xml:space="preserve">
-    <value>你确定要删除此邮件吗？此操作无法撤销。</value>
+    <value>您确定要删除这封电子邮件吗？此操作无法撤消。</value>
     <comment>Delete email confirmation message</comment>
   </data>
   <data name="EmailDeletedSuccess" xml:space="preserve">
-    <value>邮件删除成功</value>
+    <value>电子邮件删除成功</value>
     <comment>Success message when email is deleted</comment>
   </data>
   <data name="EmailDeleteFailed" xml:space="preserve">
-    <value>邮件删除失败</value>
+    <value>电子邮件删除失败</value>
     <comment>Error message when email deletion fails</comment>
   </data>
   <data name="GenericError" xml:space="preserve">
@@ -107,15 +107,15 @@
     <comment>Generic error message</comment>
   </data>
   <data name="NoEmailBody" xml:space="preserve">
-    <value>[此邮件无正文。]</value>
+    <value>[这封电子邮件无正文。]</value>
     <comment>Message shown when email has no content</comment>
   </data>
   <data name="AttachmentDownloadFailed" xml:space="preserve">
-    <value>附件下载失败</value>
+    <value>下载附件失败</value>
     <comment>Error message when attachment download fails</comment>
   </data>
   <data name="AttachmentDownloadError" xml:space="preserve">
-    <value>附件下载错误</value>
+    <value>下载附件时出错</value>
     <comment>Error message for attachment download error</comment>
   </data>
 </root>
