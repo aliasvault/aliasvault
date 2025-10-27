@@ -67,11 +67,11 @@
     <comment>Email recipient field label</comment>
   </data>
   <data name="DateLabel" xml:space="preserve">
-    <value>Päivämäärä:</value>
+    <value>Päiväys:</value>
     <comment>Email date field label</comment>
   </data>
   <data name="CredentialLabel" xml:space="preserve">
-    <value>Tunnukset</value>
+    <value>Tunnistetieto:</value>
     <comment>Email credential field label</comment>
   </data>
   <data name="NoneValue" xml:space="preserve">
@@ -91,11 +91,11 @@
     <comment>Delete email confirmation dialog title</comment>
   </data>
   <data name="DeleteEmailConfirmation" xml:space="preserve">
-    <value>Oletko varma, että haluat poistaa tämän tiedoston? Tätä toimintoa ei voi kumota.</value>
+    <value>Oletko varma, että haluat poistaa tämän sähköpostin? Tätä toimia ei voi kumota.</value>
     <comment>Delete email confirmation message</comment>
   </data>
   <data name="EmailDeletedSuccess" xml:space="preserve">
-    <value>Sähköposti poistettu onnistuneesti</value>
+    <value>Sähköposti poistettu</value>
     <comment>Success message when email is deleted</comment>
   </data>
   <data name="EmailDeleteFailed" xml:space="preserve">
@@ -111,11 +111,11 @@
     <comment>Message shown when email has no content</comment>
   </data>
   <data name="AttachmentDownloadFailed" xml:space="preserve">
-    <value>Liitetiedoston lataaminen epäonnistui</value>
+    <value>Liitteen lataaminen epäonnistui</value>
     <comment>Error message when attachment download fails</comment>
   </data>
   <data name="AttachmentDownloadError" xml:space="preserve">
-    <value>Virhe liitetiedoston lataamisessa</value>
+    <value>Virhe liitteen lataamisessa</value>
     <comment>Error message for attachment download error</comment>
   </data>
 </root>
