@@ -55,12 +55,12 @@
       "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
       "tokenRefreshFailed": "Authenticatietoken vernieuwen mislukt",
       "httpError": "HTTP fout: {{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "Failed to decrypt vault",
-      "vaultUnlockFailed": "Failed to unlock vault",
-      "biometricCancelled": "Biometric authentication cancelled",
-      "encryptionKeyFailed": "Failed to retrieve encryption key"
+      "biometricRequired": "Schakel biometrische authenticatie in om passkeys te gebruiken",
+      "unlockVaultFirst": "Ontgrendel eerst de vault in de AliasVault app",
+      "vaultDecryptFailed": "Ontsleutelen van vault mislukt",
+      "vaultUnlockFailed": "Ontgrendelen van vault mislukt",
+      "biometricCancelled": "Biometrische verificatie geannuleerd",
+      "encryptionKeyFailed": "Fout bij ophalen van encryptiesleutel"
     },
     "confirmLogout": "Weet je zeker dat je wilt uitloggen? Je moet opnieuw inloggen met je hoofdwachtwoord om toegang te krijgen tot je vault.",
     "noAccountYet": "Nog geen account?",
@@ -87,7 +87,7 @@
       "failedToSyncVault": "Vault ophalen mislukt",
       "operationFailed": "Bewerking mislukt",
       "versionNotSupported": "Deze versie van de mobiele app van AliasVault wordt niet meer ondersteund door de server. Update de app naar de nieuwste versie.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "serverVersionNotSupported": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze mobiele app te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
       "appOutdated": "Deze app is verouderd en kan niet worden gebruikt om deze (nieuwe) vault te openen. Update de AliasVault app om door te gaan.",
       "vaultDecryptFailed": "Vault kon niet worden gedecrypt, probeer uit- en opnieuw in te loggen.",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in."
@@ -129,10 +129,10 @@
     "privateEmailDescription": "E2E versleuteld, volledig privé.",
     "publicEmailTitle": "Publieke tijdelijke e-mailproviders",
     "publicEmailDescription": "Anoniem maar beperkte privacy. E-mail inhoud is leesbaar door iedereen die het adres kent.",
-    "searchPlaceholder": "Search vault...",
+    "searchPlaceholder": "Vault doorzoeken...",
     "noMatchingCredentials": "Geen credentials gevonden",
     "noCredentialsFound": "Geen credentials gevonden. Maak er een aan om te beginnen. Tip: je kunt ook inloggen op de AliasVault webapp om credentials te importeren uit andere wachtwoord-managers.",
-    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
     "recentEmails": "Recente e-mails",
     "loadingEmails": "E-mails laden...",
     "noEmailsYet": "Nog geen e-mails ontvangen.",
@@ -159,10 +159,10 @@
     "emailPreview": "E-mail voorbeeld",
     "switchBackToBrowser": "Schakel terug naar je browser om door te gaan.",
     "filters": {
-      "all": "(All) Credentials",
+      "all": "(Alle) Credentials",
       "passkeys": "Passkeys",
-      "aliases": "Aliases",
-      "userpass": "Passwords"
+      "aliases": "Aliassen",
+      "userpass": "Wachtwoorden"
     },
     "twoFactorAuth": "Tweestapsverificatie",
     "totpCode": "TOTP Code",
@@ -174,14 +174,14 @@
       "credentialUpdated": "Credential succesvol bijgewerkt",
       "credentialCreated": "Credential succesvol aangemaakt",
       "credentialDeleted": "Credential succesvol verwijderd",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
+      "usernameCopied": "Gebruikersnaam gekopieerd naar klembord",
+      "emailCopied": "E-mail gekopieerd naar klembord",
+      "passwordCopied": "Wachtwoord gekopieerd naar klembord"
     },
     "createNewAliasFor": "Nieuwe alias maken voor",
     "errors": {
       "loadFailed": "Laden van credential mislukt",
-      "saveFailed": "Failed to save credential",
+      "saveFailed": "Credential opslaan mislukt",
       "generateUsernameFailed": "Genereren van gebruikersnaam mislukt",
       "generatePasswordFailed": "Genereren van wachtwoord mislukt"
     },
@@ -196,19 +196,19 @@
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "Site",
-    "displayName": "Display Name",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
-    "passkeyMarkedForDeletion": "Passkey marked for deletion",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+    "site": "Website",
+    "displayName": "Weergavenaam",
+    "helpText": "Passkeys worden aangemaakt op de website wanneer er om wordt gevraagd. Ze kunnen niet handmatig worden bewerkt. Om deze passkey te verwijderen, kun je deze verwijderen uit deze credential.",
+    "passkeyMarkedForDeletion": "Passkey gemarkeerd om te verwijderen",
+    "passkeyWillBeDeleted": "Deze passkey zal worden verwijderd wanneer je deze credential opslaat."
   },
   "settings": {
     "title": "Instellingen",
-    "autofill": "Autofill & Passkeys",
+    "autofill": "Autofill & passkeys",
     "iosAutofillSettings": {
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "Je kunt AliasVault instellen als autofill en passkey provider in iOS. Volg de instructies hieronder om deze in te schakelen.",
+      "passkeyNotice": "Passkeys worden gemaakt via iOS. Om ze op te slaan in AliasVault, moet Autofill hieronder ingeschakeld zijn.",
+      "howToEnable": "Autofill & passkeys inschakelen:",
       "step1": "1. Open iOS instellingen via de knop hieronder",
       "step2": "2. Ga naar \"Algemeen\"",
       "step3": "3. Tik op \"AutoFill & Wachtwoorden\"",
@@ -220,11 +220,11 @@
     },
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Experimentele functie",
-      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
+      "warningDescription": "Autofill en passkey support voor Android is momenteel in een experimentele staat.",
       "warningLink": "Lees er hier meer over",
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "Je kunt AliasVault instellen als autofill en passkey provider in Android. Volg de instructies hieronder om deze in te schakelen.",
+      "passkeyNotice": "Passkeys worden gemaakt via Android Credential Manager (Android 14+). Om ze op te slaan in AliasVault, moet Autofill hieronder ingeschakeld zijn.",
+      "howToEnable": "Autofill & passkeys inschakelen:",
       "step1": "1. Open Android Instellingen via de onderstaande knop en verander de \"Autofill preferred service\" naar \"AliasVault\"",
       "openAutofillSettings": "Open Autofill Instellingen",
       "buttonTip": "Als bovenstaande knop niet werkt, dan zou deze geblokkeerd kunnen worden vanwege beveiligingsinstellingen. Open in dit geval handmatig Android Instellingen → Algemeen → Wachtwoorden en Automatisch invullen.",
@@ -474,7 +474,7 @@
       "stillOffline": "Nog steeds offline"
     },
     "alerts": {
-      "syncIssue": "No Connection",
+      "syncIssue": "Geen verbinding",
       "syncIssueMessage": "De AliasVault server kon niet worden bereikt en je vault kon niet worden gesynchroniseerd. Wil je je lokale vault openen in alleen-lezen modus of de verbinding opnieuw proberen?",
       "openLocalVault": "Open lokale vault",
       "retrySync": "Opnieuw proberen"
