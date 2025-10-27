@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ErrorTitle" xml:space="preserve">
-    <value>保险库解密错误。</value>
+    <value>密码库解密错误。</value>
     <comment>Title for vault decryption error</comment>
   </data>
   <data name="ErrorDescription" xml:space="preserve">
-    <value>本地解密你的保险库时发生错误。你的数据目前无法访问。请（稍后）重试或联系支持人员。</value>
+    <value>本地解密您的密码库时发生错误。您的数据目前无法访问。请（稍后）重试或联系支持人员。</value>
     <comment>Description for vault decryption error</comment>
   </data>
 </root>
