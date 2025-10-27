@@ -82,7 +82,7 @@
     <comment>Text before terms and conditions link</comment>
   </data>
   <data name="TermsAndConditionsLink" xml:space="preserve">
-    <value>Käyttöehdot ja säännöt</value>
+    <value>Käyttöehdot</value>
     <comment>Link text for terms and conditions</comment>
   </data>
   <!-- Buttons -->
@@ -92,7 +92,7 @@
   </data>
   <!-- Links -->
   <data name="AlreadyRegisteredText" xml:space="preserve">
-    <value>Oletko jo rekisteröitynyt?</value>
+    <value>Joko rekisteröitynyt?</value>
     <comment>Text before login link</comment>
   </data>
   <data name="LoginHereLink" xml:space="preserve">
