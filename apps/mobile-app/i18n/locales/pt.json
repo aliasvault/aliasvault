@@ -16,7 +16,9 @@
     "loadMore": "Carregar mais",
     "use": "Utilizar",
     "confirm": "Confirmar",
-    "unknownError": "Erro desconhecido"
+    "errors": {
+      "unknownError": "Ocorreu um erro desconhecido. Por favor, tente novamente."
+    }
   },
   "auth": {
     "login": "Login",
@@ -52,7 +54,13 @@
       "networkErrorSelfHosted": "Conexão falhou. Verifique sua conexão com a rede e a disponibilidade do servidor. Para instâncias self-hosted, por favor confirme que possue um certificado SSL válido instalado. Certificados self-signed não são suportados em celulares por questões de segurança.",
       "sessionExpired": "Sua sessão expirou. Por favor faça login novamente.",
       "tokenRefreshFailed": "Falha ao atualizar token de autenticação",
-      "httpError": "Erro HTTP: {{status}}"
+      "httpError": "Erro HTTP: {{status}}",
+      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
+      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
+      "vaultDecryptFailed": "Failed to decrypt vault",
+      "vaultUnlockFailed": "Failed to unlock vault",
+      "biometricCancelled": "Biometric authentication cancelled",
+      "encryptionKeyFailed": "Failed to retrieve encryption key"
     },
     "confirmLogout": "Tem certeza que deseja sair? Você precisará fazer login novamente com sua senha mestre para acessar o cofre.",
     "noAccountYet": "Não tem conta ainda?",
@@ -79,7 +87,8 @@
       "failedToSyncVault": "Falha ao sincronizar cofre",
       "operationFailed": "Operação falhou",
       "versionNotSupported": "Esta versão do aplicativo AliasVault não é mais suportada pelo servidor. Por favor atualize seu aplicativo para a última versão.",
-      "serverNeedsUpdate": "O servidor do AliasVault precisa ser atualizado para a última versão para poder utilizar este aplicativo. Por favor entre em contato com o suporte se precisar de ajuda.",
+      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "appOutdated": "Este aplicativo está desatualizado e não pode ser utilizado para acessar essa (nova) versão do cofre. Por favor, atualize seu aplicativo AliasVault para continuar.",
       "vaultDecryptFailed": "Cofre não pôde ser descriptografado, se o problema persistir por favor saia e realize login novamente.",
       "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança."
     }
@@ -120,9 +129,10 @@
     "privateEmailDescription": "Criptografia E2E, totalmente privado.",
     "publicEmailTitle": "Provedores Públicos de E-mail Temporário",
     "publicEmailDescription": "Anônimo mas com privacidade limitada. Conteúdo do e-mail pode ser lido por qualquer um que souber o endereço.",
-    "searchPlaceholder": "Pesquisar credenciais...",
+    "searchPlaceholder": "Search vault...",
     "noMatchingCredentials": "Nenhuma credencial foi encontrada",
     "noCredentialsFound": "Nenhuma credencial encontrada. Crie uma para iniciar. Dica: você também pode fazer login no site do AliasVault e importar credenciais de outros gerenciadores de senhas.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
     "recentEmails": "E-mails recentes",
     "loadingEmails": "Carregando emails...",
     "noEmailsYet": "Nenhum e-mail recebido ainda.",
@@ -148,6 +158,12 @@
     "credentialDetails": "Detalhes da Credencial",
     "emailPreview": "Prévia de E-mail",
     "switchBackToBrowser": "Volte ao navegador para continuar.",
+    "filters": {
+      "all": "(All) Credentials",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords"
+    },
     "twoFactorAuth": "Autenticação de dois fatores",
     "totpCode": "Código TOTP",
     "attachments": "Anexos",
@@ -157,11 +173,15 @@
     "toasts": {
       "credentialUpdated": "Credencial atualizada com sucesso",
       "credentialCreated": "Credencial criada com sucesso",
-      "credentialDeleted": "Credencial excluída com sucesso"
+      "credentialDeleted": "Credencial excluída com sucesso",
+      "usernameCopied": "Username copied to clipboard",
+      "emailCopied": "Email copied to clipboard",
+      "passwordCopied": "Password copied to clipboard"
     },
     "createNewAliasFor": "Criar novo alias para",
     "errors": {
       "loadFailed": "Falha ao carregar crerencial",
+      "saveFailed": "Failed to save credential",
       "generateUsernameFailed": "Falha ao gerar usuário",
       "generatePasswordFailed": "Falha ao gerar senha"
     },
@@ -174,12 +194,21 @@
       "copyPassword": "Copiar Senha"
     }
   },
+  "passkeys": {
+    "passkey": "Passkey",
+    "site": "Site",
+    "displayName": "Display Name",
+    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
+    "passkeyMarkedForDeletion": "Passkey marked for deletion",
+    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+  },
   "settings": {
     "title": "Configurações",
-    "iosAutofill": "Autopreenchimento no iOS",
+    "autofill": "Autofill & Passkeys",
     "iosAutofillSettings": {
-      "headerText": "Você pode configurar o AliasVault para preencher senhas nativamente pelo iOS. Siga as instruções abaixo para habilitar.",
-      "howToEnable": "Como habilitar:",
+      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
+      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
+      "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "1. Abra as Configurações do iOS através do botão abaixo",
       "step2": "2. Vá até \"Geral\"",
       "step3": "3. Clique \"Autopreenchimento & Senhas\"",
@@ -189,13 +218,13 @@
       "alreadyConfigured": "Já configurei",
       "warningText": "Nota: Você terá que autenticar com Face ID/Touch ID ou a senha do seu dispositivo quando utilizar o autopreenchimento."
     },
-    "androidAutofill": "Autopreenchimento no Android",
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Funcionalidade Experimental",
-      "warningDescription": "Autopreenchimento no Android está atualmente em fase experimental.",
+      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
       "warningLink": "Leia mais sobre isso aqui",
-      "headerText": "Você pode configurar o AliasVault para preencher senhas nativamente no Android. Siga as instruções abaixo para habilitar.",
-      "howToEnable": "Como habilitar:",
+      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
+      "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
+      "howToEnable": "How to enable Autofill & Passkeys:",
       "step1": "1. Abra as Configurações do Android através do botão abaixo, e troque o \"serviço de autopreenchimento preferido\" para \"AliasVault\"",
       "openAutofillSettings": "Abrir Configurações de Autopreenchimento",
       "buttonTip": "Se o botão acima não funcionar pode estar bloqueado pelas configurações de segurança. Você pode ir manualmente às Configurações do Android → Configurações Gerais → Senhas e autopreenchimento.",
@@ -327,180 +356,180 @@
       },
       "authLogs": {
         "headerText": "Abaixo você pode ter uma visão de tentativas de login recentes na sua conta.",
-        "noLogs": "No auth logs found",
-        "success": "Success",
-        "failed": "Failed",
-        "time": "Time",
-        "device": "Device",
-        "ipAddress": "IP Address",
-        "client": "Client",
-        "failedToLoad": "Failed to load auth logs"
+        "noLogs": "Nenhum registro de autenticação encontrado",
+        "success": "Sucesso",
+        "failed": "Falha",
+        "time": "Horário",
+        "device": "Dispositivo",
+        "ipAddress": "Endereço IP",
+        "client": "Cliente",
+        "failedToLoad": "Falha ao carregar registros de autenticação"
       },
       "deleteAccount": {
-        "headerText": "Deleting your account will immediately and permanently delete all of your data.",
-        "warningText": "Warning: This action cannot be undone. All your data will be permanently deleted.",
-        "finalWarning": "Final warning: Enter your password to permanently delete your account.",
-        "warningVaults": "All encrypted vaults which includes all of your credentials will be permanently deleted",
-        "warningAliases": "Your email aliases will be orphaned and cannot be claimed by other users",
-        "warningRecovery": "Your account cannot be recovered after deletion",
-        "irreversibleWarning": "Account deletion is irreversible and cannot be undone. Pressing the button below will delete your account immediately and permanently.",
-        "enterUsername": "Enter your username to continue",
-        "password": "Password",
-        "enterPassword": "Enter password",
-        "deleteAccount": "Delete Account",
-        "confirmationMessage": "Are you absolutely sure you want to delete your account? This action cannot be undone.",
-        "usernameDoesNotMatch": "Username does not match",
-        "verifyingPassword": "Verifying password...",
-        "currentPasswordIncorrect": "Current password is not correct",
-        "initiatingDeletion": "Initiating account deletion",
-        "verifyingWithServer": "Verifying with server",
-        "deletingAccount": "Deleting account",
-        "accountDeleted": "Account deleted successfully",
-        "failedToDelete": "Failed to delete account. Please try again.",
-        "usernameNotFound": "Username not found. Please login again."
+        "headerText": "Excluir sua conta excluirá imediatamente e permanentemente todos os seus dados.",
+        "warningText": "Aviso: Esta ação não pode ser desfeita. Todos os seus dados serão excluídos permanentemente.",
+        "finalWarning": "Aviso final: Digite sua senha para excluir sua conta permanentemente.",
+        "warningVaults": "Todos os cofres criptografados que incluem todas as suas credenciais serão permanentemente excluídos",
+        "warningAliases": "Seus alias de e-mail ficarão órfãos e não poderão ser utilizados por outros usuários",
+        "warningRecovery": "Sua conta não pode ser recuperada após excluída",
+        "irreversibleWarning": "Exclusão de conta é irreversível e não pode ser desfeita. Pressionado o botão abaixo excluirá sua conta imediatamente e permanentemente.",
+        "enterUsername": "Digite seu usuário para continuar",
+        "password": "Senha",
+        "enterPassword": "Digite a senha",
+        "deleteAccount": "Excluir Conta",
+        "confirmationMessage": "Tem certeza que deseja excluir sua conta? Esta operação não pode ser desfeita.",
+        "usernameDoesNotMatch": "Usuário não coincide",
+        "verifyingPassword": "Verificando senha...",
+        "currentPasswordIncorrect": "Senha atual incorreta",
+        "initiatingDeletion": "Inicializando exclusão de conta",
+        "verifyingWithServer": "Verificando com o servidor",
+        "deletingAccount": "Excluindo conta",
+        "accountDeleted": "Conta excluída com sucesso",
+        "failedToDelete": "Falha ao excluir conta. Por favor tente novamente.",
+        "usernameNotFound": "Usuário não encontrado. Por favor faça login novamente."
       }
     }
   },
   "navigation": {
-    "credentials": "Credentials",
-    "emails": "Emails",
-    "settings": "Settings"
+    "credentials": "Credenciais",
+    "emails": "E-mails",
+    "settings": "Configurações"
   },
   "emails": {
-    "title": "Emails",
-    "emailDetails": "Email Details",
-    "subject": "Subject:",
-    "date": "Date:",
-    "from": "From:",
-    "to": "To:",
-    "attachments": "Attachments",
-    "deleteEmail": "Delete Email",
-    "deleteEmailConfirm": "Are you sure you want to delete this email? This action is permanent and cannot be undone.",
-    "emailNotFound": "Email not found",
-    "noPlainText": "This email does not contain any plain-text.",
+    "title": "E-mails",
+    "emailDetails": "Detalhes do e-mail",
+    "subject": "Assunto:",
+    "date": "Data:",
+    "from": "De:",
+    "to": "Para:",
+    "attachments": "Anexos",
+    "deleteEmail": "Excluir E-mail",
+    "deleteEmailConfirm": "Tem certeza que deseja excluir este e-mail? Esta ação é permanente e não pode ser desfeita.",
+    "emailNotFound": "E-mail não encontrado",
+    "noPlainText": "Este e-mail não possuí nenhum texto.",
     "sizeKB": "KB",
-    "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
-    "emptyMessage": "You have not received any emails at your private email addresses yet. When you receive a new email, it will appear here.",
+    "offlineMessage": "Você está offline. Por favor conecte-se à internet para carregar seus e-mails.",
+    "emptyMessage": "Você ainda não recebeu nenhum e-mail em seus endereços de e-mail privados. Quando receber um novo e-mail, ele aparecerá aqui.",
     "time": {
-      "justNow": "just now",
-      "minutesAgo_single": "{{count}} min ago",
-      "minutesAgo_plural": "{{count}} mins ago",
-      "hoursAgo_single": "{{count}} hr ago",
-      "hoursAgo_plural": "{{count}} hrs ago",
-      "yesterday": "yesterday"
+      "justNow": "agora",
+      "minutesAgo_single": "há {{count}} minutos",
+      "minutesAgo_plural": "há {{count}} minutos",
+      "hoursAgo_single": "há {{count}} hora",
+      "hoursAgo_plural": "há {{count}} horas",
+      "yesterday": "ontem"
     },
     "errors": {
-      "generic": "An error occurred",
-      "loadFailed": "Failed to load emails",
-      "deleteFailed": "Failed to delete email",
-      "dbNotAvailable": "Database context or email not available",
-      "decryptFailed": "Failed to decrypt attachment",
-      "downloadFailed": "Failed to download attachment"
+      "generic": "Ocorreu um erro",
+      "loadFailed": "Falha ao carregar e-mails",
+      "deleteFailed": "Falha ao excluir e-mail",
+      "dbNotAvailable": "E-mail ou contexto do banco de dados não disponível",
+      "decryptFailed": "Falha ao descriptografar anexo",
+      "downloadFailed": "Falha ao baixar anexo"
     }
   },
   "validation": {
-    "required": "This field is required",
-    "serviceNameRequired": "Service name is required",
-    "invalidDateFormat": "Date must be in YYYY-MM-DD format",
-    "invalidEmailFormat": "Invalid email format"
+    "required": "Este campo é obrigatório",
+    "serviceNameRequired": "Nome do serviço é obrigatório",
+    "invalidDateFormat": "Data deve estar no formato AAAA-MM-DD",
+    "invalidEmailFormat": "Formato de e-mail inválido"
   },
   "apiErrors": {
-    "CLAIM_DOES_NOT_MATCH_USER": "The current chosen email address is already in use. Please change the email address by editing this credential.",
-    "CLAIM_DOES_NOT_EXIST": "An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.",
-    "UNKNOWN_ERROR": "An unknown error occurred. Please try again.",
-    "ACCOUNT_LOCKED": "Account temporarily locked due to too many failed attempts. Please try again later.",
-    "ACCOUNT_BLOCKED": "Your account has been disabled. If you believe this is a mistake, please contact support.",
-    "USER_NOT_FOUND": "Invalid username or password. Please try again.",
-    "INVALID_AUTHENTICATOR_CODE": "Invalid authenticator code. Please try again.",
-    "INVALID_RECOVERY_CODE": "Invalid recovery code. Please try again.",
-    "REFRESH_TOKEN_REQUIRED": "Refresh token is required.",
-    "INVALID_REFRESH_TOKEN": "Invalid refresh token.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Refresh token revoked successfully.",
-    "PUBLIC_REGISTRATION_DISABLED": "New account registration is currently disabled on this server. Please contact the administrator.",
-    "USERNAME_REQUIRED": "Username is required.",
-    "USERNAME_ALREADY_IN_USE": "Username is already in use.",
-    "USERNAME_AVAILABLE": "Username is available.",
-    "USERNAME_MISMATCH": "Username does not match the current user.",
-    "PASSWORD_MISMATCH": "The provided password does not match your current password.",
-    "ACCOUNT_SUCCESSFULLY_DELETED": "Account successfully deleted.",
-    "USERNAME_EMPTY_OR_WHITESPACE": "Username cannot be empty or whitespace.",
-    "USERNAME_TOO_SHORT": "Username too short: must be at least 3 characters long.",
-    "USERNAME_TOO_LONG": "Username too long: cannot be longer than 40 characters.",
-    "USERNAME_INVALID_EMAIL": "Invalid email address.",
-    "USERNAME_INVALID_CHARACTERS": "Username is invalid, can only contain letters or digits.",
-    "VAULT_NOT_UP_TO_DATE": "Your vault is not up-to-date. Please synchronize your vault and try again.",
-    "INTERNAL_SERVER_ERROR": "Internal server error.",
-    "VAULT_ERROR": "The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again."
+    "CLAIM_DOES_NOT_MATCH_USER": "O e-mail escolhido já está em uso. Por favor altere o endereço de e-mail editando esta credencial.",
+    "CLAIM_DOES_NOT_EXIST": "Ocorreu um erro ao tentar carregar os e-mails. Por favor tente editar e salvar a credencial para sincronizar com o banco de dados, e tente novamente.",
+    "UNKNOWN_ERROR": "Ocorreu um erro inesperado. Por favor tente movamente.",
+    "ACCOUNT_LOCKED": "Conta temporariamente bloqueada por muitas tentativas de login falhas. Por favor tente novamente mais tarde.",
+    "ACCOUNT_BLOCKED": "Sua conta foi desabilitada. Se você acredita que isto foi um erro, por favor, entre em contato com o suporte.",
+    "USER_NOT_FOUND": "Usuário ou senha incorretos. Por favor tente novamente.",
+    "INVALID_AUTHENTICATOR_CODE": "Código de autenticação incorreto. Por favor tente novamente.",
+    "INVALID_RECOVERY_CODE": "Código de recuperação inválido. Por favor tente novamente.",
+    "REFRESH_TOKEN_REQUIRED": "Token de atualização é obrigatório.",
+    "INVALID_REFRESH_TOKEN": "Token de atualização inválido.",
+    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Token de atualização revogado com sucesso.",
+    "PUBLIC_REGISTRATION_DISABLED": "Registro de novas contas está atualmente desabilitado neste servidor. Por favor entre em contato com o administrador.",
+    "USERNAME_REQUIRED": "Usuário é obrigatório.",
+    "USERNAME_ALREADY_IN_USE": "Usuário já está em uso.",
+    "USERNAME_AVAILABLE": "Usuário está disponível.",
+    "USERNAME_MISMATCH": "Nome de Usuário não confere com o usuário atual.",
+    "PASSWORD_MISMATCH": "A senha digitada não confere com sua senha atual.",
+    "ACCOUNT_SUCCESSFULLY_DELETED": "Conta excluída com sucesso.",
+    "USERNAME_EMPTY_OR_WHITESPACE": "Usuário não pode estar em branco ou conter espaços.",
+    "USERNAME_TOO_SHORT": "Usuário muito curto: deve ter pelo menos 3 caracteres.",
+    "USERNAME_TOO_LONG": "Usuário muito longo: não pode ter mais de 40 caracteres.",
+    "USERNAME_INVALID_EMAIL": "Endereço de e-mail inválido.",
+    "USERNAME_INVALID_CHARACTERS": "Usuário é inválido, só pode conter letras ou números.",
+    "VAULT_NOT_UP_TO_DATE": "Seu cofre não está atualizado. Por favor sincronize seu cofre e tente novamente.",
+    "INTERNAL_SERVER_ERROR": "Erro interno do servidor.",
+    "VAULT_ERROR": "O cofre local não está atualizado. Por favor sincronize seu cofre recarregando a página e tente novamente."
   },
   "app": {
+    "openReadOnlyMode": "Abrir em modo de leitura",
     "status": {
-      "unlockingVault": "Unlocking vault",
-      "decryptingVault": "Decrypting vault",
-      "openingVaultReadOnly": "Opening vault in read-only mode",
-      "retryingConnection": "Retrying connection..."
+      "unlockingVault": "Desbloqueando cofre",
+      "decryptingVault": "Descriptografando cofre",
+      "openingVaultReadOnly": "Abrindo cofre em modo de leitura"
     },
     "offline": {
-      "banner": "Offline mode (read-only)",
-      "backOnline": "Back online",
-      "stillOffline": "Still offline"
+      "banner": "Modo offline (apenas leitura)",
+      "backOnline": "Online novamente",
+      "stillOffline": "Ainda está offline"
     },
     "alerts": {
-      "syncIssue": "Sync Issue",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault in read-only mode or retry the connection?",
-      "openLocalVault": "Open Local Vault",
-      "retrySync": "Retry Sync"
+      "syncIssue": "No Connection",
+      "syncIssueMessage": "Não foi possível conectar ao servidor do AliasVault e seu cofre não pôde ser sincronizado. Gostaria de abrir seu cofre local em modo de leitura ou tentar a conexão novamente?",
+      "openLocalVault": "Abrir Cofre Local",
+      "retrySync": "Tentar Sincronizar Novamente"
     },
     "navigation": {
       "login": "Login",
-      "loginSettings": "Login Settings",
-      "notFound": "Not Found"
+      "loginSettings": "Configurações de Login",
+      "notFound": "Não Encontrado"
     },
     "notFound": {
-      "title": "Page not found",
-      "message": "This page has been moved or deleted.",
-      "goHome": "Go back to the start"
+      "title": "Página não encontrada",
+      "message": "Esta página foi movida ou excluída.",
+      "goHome": "Voltar ao início"
     },
     "appName": "AliasVault",
     "reinitialize": {
-      "vaultAutoLockedMessage": "Vault auto-locked after timeout.",
-      "attemptingToUnlockMessage": "Attempting to unlock."
+      "vaultAutoLockedMessage": "Cofre bloqueado automaticamente após período.",
+      "attemptingToUnlockMessage": "Tentando desbloquear."
     },
     "loginSettings": {
-      "title": "API Connection",
-      "aliasvaultNet": "Aliasvault.net",
+      "title": "Conexão com API",
+      "aliasvaultNet": "AliasVault.net",
       "selfHosted": "Self-hosted",
-      "customApiUrl": "Custom API URL",
-      "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "version": "Version: {{version}}"
+      "customApiUrl": "URL de API Customizada",
+      "customApiUrlPlaceholder": "https://minha-instancia-aliasvault.com/api",
+      "version": "Versão: {{version}}"
     }
   },
   "upgrade": {
-    "title": "Upgrade Vault",
-    "subtitle": "AliasVault has updated and your vault needs to be upgraded. This should only take a few seconds.",
-    "versionInformation": "Version Information",
-    "yourVault": "Your vault:",
-    "newVersion": "New version:",
-    "upgrade": "Upgrade",
-    "upgrading": "Upgrading...",
-    "logout": "Logout",
-    "whatsNew": "What's New",
-    "whatsNewDescription": "An upgrade is required to support the following changes:",
-    "noDescriptionAvailable": "No description available for this version.",
+    "title": "Atualizar Cofre",
+    "subtitle": "AliasVault foi atualizado e seu cofre precisa ser atualizado. Isso deve levar apenas alguns segundos.",
+    "versionInformation": "Informação de Versão",
+    "yourVault": "Versão do seu cofre:",
+    "newVersion": "Nova versão disponível:",
+    "upgrade": "Atualizar",
+    "upgrading": "Atualizando...",
+    "logout": "Sair",
+    "whatsNew": "O Que Há de Novo",
+    "whatsNewDescription": "Uma atualização é necessária para utilizar as seguintes mudanças:",
+    "noDescriptionAvailable": "Nenhuma descrição disponível para esta versão.",
     "status": {
-      "preparingUpgrade": "Preparing upgrade...",
-      "vaultAlreadyUpToDate": "Vault is already up to date",
-      "startingDatabaseTransaction": "Starting database transaction...",
-      "applyingDatabaseMigrations": "Applying database migrations...",
-      "applyingMigration": "Applying migration {{current}} of {{total}}...",
-      "committingChanges": "Committing changes..."
+      "preparingUpgrade": "Preparando atualização...",
+      "vaultAlreadyUpToDate": "Cofre está atualizado",
+      "startingDatabaseTransaction": "Iniciando transação no banco de dados...",
+      "applyingDatabaseMigrations": "Aplicando migrações do banco de dados...",
+      "applyingMigration": "Aplicando migração {{current}} de {{total}}...",
+      "committingChanges": "Confirmando mudanças..."
     },
     "alerts": {
-      "unableToGetVersionInfo": "Unable to get version information. Please try again.",
-      "selfHostedServer": "Self-Hosted Server",
-      "selfHostedWarning": "If you're using a self-hosted server, make sure to also update your self-hosted instance as otherwise logging in to the web client will stop working.",
-      "continueUpgrade": "Continue Upgrade",
-      "upgradeFailed": "Upgrade Failed",
-      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
+      "unableToGetVersionInfo": "Não foi possível solicitar informações da versão. Por favor tente novamente.",
+      "selfHostedServer": "Servidor Self-Hosted",
+      "selfHostedWarning": "Se você está utilizando um servidor self-hosted, faça também a atualização da instância self-hosted, caso contrário o login no cliente web vai parar de funcionar.",
+      "continueUpgrade": "Continuar Atualização",
+      "upgradeFailed": "Atualização Falhou",
+      "failedToApplyMigration": "Falha ao aplicar migração ({{current}} de {{total}})"
     }
   }
 }
