@@ -63,7 +63,7 @@
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>在此页面上，你可以导入和导出你的保险库。</value>
+    <value>在此页面上，您可以导入和导出您的密码库。</value>
     <comment>Page description</comment>
   </data>
   <data name="ImportSectionTitle" xml:space="preserve">
@@ -71,45 +71,45 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>选择要从中导入的服务。如果你使用的服务未在此处列出，并且希望看到它得到支持，请在&lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt;上提出问题或与我们联系。</value>
+    <value>选择要从中导入的服务。如果您使用的服务未在此处列出，并且希望看到它得到支持，请在&lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt;上提出问题或与我们联系。</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
-    <value>导出保险库</value>
+    <value>导出密码库</value>
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>如果你想将你的AliasVault凭据导出到另一台AliasVault服务器（例如从云到自托管，反之亦然）或完全导出到另一项服务，你可以在此处导出。请注意，所有导出都是未加密的，因此请将其存储在安全的地方，并在不再需要时将其删除。</value>
+    <value>如果您想将您的AliasVault凭据导出到另一台AliasVault服务器（例如从云到自托管，反之亦然）或完全导出到另一项服务，您可以在此处导出。请注意，所有导出都是未加密的，因此请将其存储在安全的地方，并在不再需要时将其删除。</value>
     <comment>Export section description</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>将保险库导出到未加密的CSV文件</value>
+    <value>将密码库导出到未加密的CSV文件</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportSqliteButton" xml:space="preserve">
-    <value>将保险库导出到未加密的SQLite文件</value>
+    <value>将密码库导出到未加密的SQLite文件</value>
     <comment>Button to export as SQLite</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
-    <value>导出保险库</value>
+    <value>导出密码库</value>
     <comment>Export confirmation dialog title</comment>
   </data>
   <data name="ExportWarningMessage" xml:space="preserve">
-    <value>警告：将你的保险库导出到未加密文件将以明文形式暴露你的所有密码和敏感信息。仅在受信任的计算机上执行此操作，并确保你：
+    <value>警告：将您的密码库导出到未加密文件将以明文形式暴露您的所有密码和敏感信息。仅在受信任的计算机上执行此操作，并确保您：
 
 • 将导出的文件存储在安全的位置
 • 不再需要时删除该文件
 • 切勿与他人共享导出的文件
 
-你确定要继续导出吗？</value>
+您确定要继续导出吗？</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>重置保险库</value>
+    <value>重置密码库</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>此选项允许你完全清空你的保险库，同时保留你的账户和电子邮件别名。如果你想从另一密码管理器导入数据后重新开始，或者想清除所有现有凭据重新开始，请使用此选项。</value>
+    <value>此选项允许您完全清空您的密码库，同时保留您的账户和电子邮件别名。如果您想从另一密码管理器导入数据后重新开始，或者想清除所有现有凭据重新开始，请使用此选项。</value>
     <comment>Reset vault section description</comment>
   </data>
 </root>
