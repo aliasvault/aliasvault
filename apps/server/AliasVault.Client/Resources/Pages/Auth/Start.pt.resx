@@ -59,27 +59,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="MainTitle" xml:space="preserve">
-    <value>Password &amp; (Email) Alias Manager</value>
+    <value>Gerenciador de Alias de Senha &amp; (E-mail)</value>
     <comment>Main title of the application</comment>
   </data>
   <data name="TaglineText" xml:space="preserve">
-    <value>Your Privacy. Protected.</value>
+    <value>Sua Privacidade. Protegida.</value>
     <comment>Tagline emphasizing privacy protection</comment>
   </data>
   <data name="CreateNewVaultButton" xml:space="preserve">
-    <value>Create new vault</value>
+    <value>Criar novo cofre</value>
     <comment>Button text for creating a new vault</comment>
   </data>
   <data name="LoginExistingAccountButton" xml:space="preserve">
-    <value>Log in with existing account</value>
+    <value>Fazer login com conta existente</value>
     <comment>Button text for logging in with existing account</comment>
   </data>
   <data name="HttpsWarningTitle" xml:space="preserve">
-    <value>HTTPS Required</value>
+    <value>HTTPS Necessário</value>
     <comment>Title for HTTPS warning banner</comment>
   </data>
   <data name="HttpsWarningMessage" xml:space="preserve">
-    <value>Browsers only allow secure crypto operations via HTTPS, except for localhost. Login/registration won't work over HTTP with the current hostname. Please switch to HTTPS.</value>
+    <value>Navegadores permitem apenas operações de criptografia seguras através de HTTPS, exceto para localhost. Login/registro não funcionará através de HTTP com o hostname atual. Por favor, altere para HTTPS.</value>
     <comment>Message explaining why HTTPS is required</comment>
   </data>
 </root>
