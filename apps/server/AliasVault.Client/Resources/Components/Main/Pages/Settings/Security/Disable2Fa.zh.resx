@@ -73,17 +73,17 @@
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>禁用双因素认证（2FA）意味着你只需密码即可登录。</value>
+    <value>禁用双因素认证（2FA）意味着您只需密码即可登录。</value>
     <comment>Description text explaining what disabling 2FA means</comment>
   </data>
   <!-- Warning message -->
   <data name="WarningMessage" xml:space="preserve">
-    <value>请注意：禁用双因素认证（2FA）后，所有已配置的认证器应用都将停止工作。如果想重新启用双因素认证（2FA），你需要重新配置认证器应用。</value>
+    <value>请注意：禁用双因素认证（2FA）后，所有已配置的认证器应用都将停止工作。如果想重新启用双因素认证（2FA），您需要重新配置认证器应用。</value>
     <comment>Warning message about the consequences of disabling 2FA</comment>
   </data>
   <!-- Status message -->
   <data name="StatusMessage" xml:space="preserve">
-    <value>当前已启用双因素认证（2FA）。禁用后，你只需密码即可访问保险库。</value>
+    <value>当前已启用双因素认证（2FA）。禁用后，您只需密码即可访问密码库。</value>
     <comment>Status message explaining current 2FA state</comment>
   </data>
   <!-- Button text -->
