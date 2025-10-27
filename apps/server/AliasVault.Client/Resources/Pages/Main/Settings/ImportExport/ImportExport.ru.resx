@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Выберите сервис, из которого хотите выполнить импорт. Если нужного сервиса нет в списке и вы хотите, чтобы он поддерживался, пожалуйста, создайте запрос на или свяжитесь с нами.</value>
+    <value>Выберите сервис, из которого хотите выполнить импорт. Если нужного сервиса нет в списке и вы хотите, чтобы он поддерживался, пожалуйста, создайте запрос на &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; или свяжитесь с нами.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -83,11 +83,11 @@
     <comment>Export section description</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Экспортировать хранилище в CSV-файл без шифрования</value>
+    <value>В CSV-файл (без шифрования)</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportSqliteButton" xml:space="preserve">
-    <value>Экспортировать хранилище в SQLite-файл без шифрования</value>
+    <value>В SQLite-файл (без шифрования)</value>
     <comment>Button to export as SQLite</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
