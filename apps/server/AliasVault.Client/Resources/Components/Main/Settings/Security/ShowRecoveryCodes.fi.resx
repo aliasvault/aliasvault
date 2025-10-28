@@ -63,7 +63,7 @@
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Allaolevia palautuskooeja käytetään sisäänkirjautumisesssa, kun hävität tai et muuten voi käyttää asetettua todennuslaitetta tai ohjelmaa. Ota niistä kuva tai kirjoita ne ylös ja tallenna ne varmaan paikkaan. Älä jaa niitä kenenkään kanssa. </value>
+    <value>Alla olevia palautuskoodeja käytetään tilillesi pääsemiseen, jos menetät pääsyn todennuslaitteeseesi. Ota valokuva tai kirjoita koodit muistiin ja säilytä niitä turvallisessa paikassa. Älä jaa niitä kenenkään kanssa.</value>
     <comment>Description of recovery codes</comment>
   </data>
   <data name="WarningTitle" xml:space="preserve">
@@ -71,7 +71,7 @@
     <comment>Warning title about storing codes</comment>
   </data>
   <data name="WarningDescription" xml:space="preserve">
-    <value>Jos menetät laitteesi ja sinulla ei ole palautuskoodeja, menetät pääsyn tiliisi. Nämä koodit näytetään vain kerran!</value>
+    <value>Jos kadotat laitteesi etkä sinulla ole palautuskoodeja, menetät pääsyn tilillesi. Nämä koodit näytetään vain kerran!</value>
     <comment>Warning description about recovery codes</comment>
   </data>
 </root>
