@@ -24,11 +24,11 @@
     <comment>Placeholder text for search input field</comment>
   </data>
   <data name="SearchHelpText">
-    <value>Kirjoita haettava termi, tämä voi olla palvelun nimi, kuvaus tai sähköpostiosoite.</value>
+    <value>Kirjoita haettava termi; tämä voi olla palvelun nimi, kuvaus tai sähköpostiosoite.</value>
     <comment>Help text explaining what can be searched</comment>
   </data>
   <data name="SearchTooShortMessage">
-    <value>Syötä lisää merkkejä</value>
+    <value>Syötäthän lisää merkkejä</value>
     <comment>Message when search term is too short</comment>
   </data>
   <data name="SearchingForMessage">
