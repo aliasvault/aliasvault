@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Viimeisimmät Todennuslokit</value>
+    <value>Viimeaikaiset todennuslokit</value>
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Alla näet yleiskuvan viimeaikaisista kirjautumisyrityksistä, joissa on yritetty kirjautua tilillesi.</value>
+    <value>Alta löydät yleiskatsauksen tilillesi viimeaikaisista kirjautumisyrityksistä.</value>
     <comment>Description of auth logs section</comment>
   </data>
   <data name="NoLogsMessage" xml:space="preserve">
@@ -71,11 +71,11 @@
     <comment>Message when no auth logs are available</comment>
   </data>
   <data name="TimestampColumn" xml:space="preserve">
-    <value>Tapahtuma-aika</value>
+    <value>Aikaleima</value>
     <comment>Table column header</comment>
   </data>
   <data name="EventTypeColumn" xml:space="preserve">
-    <value>Tapahtuman tyyppi</value>
+    <value>Tapahtumatyyppi</value>
     <comment>Table column header</comment>
   </data>
   <data name="ClientColumn" xml:space="preserve">
