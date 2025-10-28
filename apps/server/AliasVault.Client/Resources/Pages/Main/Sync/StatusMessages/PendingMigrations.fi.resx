@@ -71,7 +71,7 @@
     <comment>Title for version information section</comment>
   </data>
   <data name="UpgradeRequiredDescription" xml:space="preserve">
-    <value>Päivitys on tarpeen, jotta voidaan tukea seuraavia muutoksia:</value>
+    <value>Päivitys vaaditaan seuraavien muutosten tukemiseksi: {0}</value>
     <comment>Description of upgrade requirements with changes placeholder</comment>
   </data>
   <data name="NoDescriptionAvailable" xml:space="preserve">
