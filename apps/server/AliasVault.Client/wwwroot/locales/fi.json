@@ -1,24 +1,24 @@
 {
   "loading": {
-    "title": "AliasVault käynnistyy",
-    "message": "Alustetaan turvallista ympäristöä. AliasVault asettaa yksityisyytesi etusijalle toimien täysin verkkoselaimessasi. Ensimmäinen käynnistyskerta voi kestää jonkin aikaa. ",
-    "refreshText": "",
-    "refreshButtonText": "Päivitä sivu"
+    "title": "AliasVault on latautumassa",
+    "message": "Alustetaan turvallista ympäristöä. AliasVault asettaa yksityisyytesi etusijalle toimien täysin verkkoselaimessasi. Ensimmäinen latautuminen voi kestää jonkin aikaa.",
+    "refreshText": "Jos latautuminen näyttää juuttuneen, voit klikata alla olevaa painiketta virkistääksesi sivun.",
+    "refreshButtonText": "Virkistä sivu"
   },
   "errors": {
-    "unhandledError": "On tapahtunut käsittelemätön virhe. Yritä ladata sivu uudelleen. Jos ongelma jatkuu, ota yhteyttä tukeen.",
-    "webAssemblyError": "AliasVault tarvitsee WebAssemblyn, jota käyttämäsi selain ei tue. Kokeile käyttää nykyaikaisempaa selainta, joka tukee WebAssemblyä. ",
+    "unhandledError": "On tapahtunut käsittelemätön virhe. Yritäthän ladata sivu uudelleen. Jos ongelma jatkuu, otathan yhteyttä tukeen.",
+    "webAssemblyError": "AliasVault vaatii WebAssemblyn, jota tämä selain ei tue. Kokeile käyttää sitä tukevaa selainta.",
     "reloadPageText": "Lataa sivu uudelleen"
   },
   "quotes": {
     "security": [
-      "Henkilöllisyytesi on arvoikkain voimavarasi. Suojaa sitä ainokaisenasi. ",
+      "Identiteettisi on arvokkain voimavarasi. Suojele sitä kuin sellaista.",
       "Digitaalisessa maailmassa vahva salasana on sinun ensimmäinen puolustuslinja.",
-      "Turvallisuus ei ole tuote, vaan prosessi.",
-      "Turvallisimmassakin ketjussa heikoin lenkki on inhimillinen tekijä.",
+      "Tietoturva ei ole tuote, vaan prosessi.",
+      "Tietoturvaketjun heikoin lenkki on ihminen.",
       "Turvallisuus on aina ylenpalttista, kunnes se ei riitä.",
-      "Luota, mutta vahvista - erityisesti verkossa.",
-      "Datasi on vain niin turvallista kuin heikoin salasanasi .",
+      "Luota, mutta varmista aina – varsinkin verkossa asioidessa.",
+      "Tietosi ovat vain yhtä turvallisia kuin heikoin salasanasi.",
       "Turvallisin salasana on se, jota et pysty muistamaan. "
     ]
   }
