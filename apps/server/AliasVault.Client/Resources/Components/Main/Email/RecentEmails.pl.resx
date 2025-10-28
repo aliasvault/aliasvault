@@ -59,35 +59,35 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EmailSectionTitle" xml:space="preserve">
-    <value>Email</value>
+    <value>Wiadomość e-mail</value>
     <comment>Section title for email panel</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
-    <value>Auto-refresh enabled</value>
+    <value>Włączono automatyczne odświeżanie</value>
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="SubjectColumn" xml:space="preserve">
-    <value>Subject</value>
+    <value>Temat</value>
     <comment>Table column header for email subject</comment>
   </data>
   <data name="DateColumn" xml:space="preserve">
-    <value>Date</value>
+    <value>Data</value>
     <comment>Table column header for email date</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>No emails received (yet).</value>
+    <value>Nie otrzymano żadnych wiadomości e-mail (jeszcze).</value>
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
-    <value>The current chosen email address is already in use. Please change the email address by editing this credential.</value>
+    <value>Obecnie wybrany adres e-mail jest już używany. Proszę zmienić adres e-mail, edytując te dane logowania.</value>
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
-    <value>An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.</value>
+    <value>Wystąpił błąd podczas próby załadowania wiadomości e-mail. Spróbuj edytować i zapisać dane logowania, aby zsynchronizować bazę danych, a następnie spróbuj ponownie.</value>
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">
-    <value>Load more</value>
+    <value>Załaduj więcej</value>
     <comment>Button text to load more emails</comment>
   </data>
 </root>
