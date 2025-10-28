@@ -67,7 +67,7 @@
     <comment>Text before logout link</comment>
   </data>
   <data name="LogoutLink" xml:space="preserve">
-    <value>Kirjaudu ulos</value>
+    <value>Uloskirjautuminen</value>
     <comment>Link text for logout</comment>
   </data>
 </root>
