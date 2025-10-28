@@ -59,19 +59,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="LoggingInWithWebAuthn" xml:space="preserve">
-    <value>Kirjaudutaan käyttämällä WebAuthi:ia... </value>
+    <value>Kirjaudutaan sisään WebAuthnilla...</value>
     <comment>Message shown while WebAuthn authentication is in progress</comment>
   </data>
   <data name="QuickUnlockDescription" xml:space="preserve">
-    <value>Avaa holvi nopeasti käyttämällä sormenjälkeä, kasvotunnistetta tai turva-avainta. Tai kirjaudu sisään salasanallasi fallbackin avulla.</value>
+    <value>Avaa holvisi lukitus nopeasti käyttämällä sormenjälkiä, kasvotunnistetta tai turva-avainta. Tai kirjaudu sisään salasanallasi varatoimena.</value>
     <comment>Description explaining WebAuthn unlock options</comment>
   </data>
   <data name="UnlockWithWebAuthn" xml:space="preserve">
-    <value>Avaa WebAuth:ia käyttäen</value>
+    <value>Avaa lukitus WebAuthilla</value>
     <comment>Button text for WebAuthn unlock</comment>
   </data>
   <data name="UnlockWithPassword" xml:space="preserve">
-    <value>Avaa salasanalla</value>
+    <value>Avaa lukitus salasanalla</value>
     <comment>Button text for password unlock</comment>
   </data>
   <data name="EnterMasterPasswordDescription" xml:space="preserve">
@@ -83,7 +83,7 @@
     <comment>Label for password input field</comment>
   </data>
   <data name="UnlockButton" xml:space="preserve">
-    <value>Poista lukitus</value>
+    <value>Avaa lukitus</value>
     <comment>Button text for unlock submission</comment>
   </data>
   <data name="SwitchAccountsText" xml:space="preserve">
@@ -95,7 +95,7 @@
     <comment>Link text for logout</comment>
   </data>
   <data name="UnlockingVaultMessage" xml:space="preserve">
-    <value>Avataan holvia...</value>
+    <value>Avataan holvin lukitusta...</value>
     <comment>Loading message while unlocking vault</comment>
   </data>
   <data name="UnlockRequestError" xml:space="preserve">
@@ -103,23 +103,23 @@
     <comment>Error message for unlock request processing</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
-    <value>Salasana on virheellinen. Yritä syöttää salasana uudelleen tai kirjautua ulos ja kirjautua sisään uudelleen.</value>
+    <value>Salasana on virheellinen. Yritäthän syöttää salasana uudelleen tai kirjautua ulos ja kirjautua sisään uudelleen.</value>
     <comment>Error message for incorrect password</comment>
   </data>
   <data name="SessionTimedOutError" xml:space="preserve">
-    <value>Istuntosi aikakatkaistiin! Ole hyvä ja kirjaudu uudelleen!</value>
+    <value>Istuntosi aikakatkaistiin. Kirjauduthan sisään uudelleen.</value>
     <comment>Error message for session timeout</comment>
   </data>
   <data name="ConnectionFailedError" xml:space="preserve">
-    <value>Yhteys AliasVault-palvelimiin epäonnistui. Yritä uudelleen (myöhemmin).</value>
+    <value>Yhteys AliasVault-palvelimiin epäonnistui. Yritäthän uudelleen myöhemmin.</value>
     <comment>Error message for server connection failure</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Nykyinen selain ei tue WebAuthn PRF laajennusta. Ole hyvä ja kirjaudu sen sijaan salasanalla.</value>
+    <value>Nykyinen selain ei tue WebAuthn PRF -laajennusta. Kirjauduthan sisään sen sijaan salasanalla.</value>
     <comment>Error message when WebAuthn is not supported</comment>
   </data>
   <data name="GenericUnlockError" xml:space="preserve">
-    <value>Tapahtui virhe käsiteltäessä kirjautumispyyntöä. Yritä uudelleen (myöhemmin).</value>
+    <value>Tapahtui virhe käsiteltäessä sisäänkirjautumispyyntöä. Yritäthän uudelleen myöhemmin.</value>
     <comment>Generic error message for unlock failures</comment>
   </data>
 </root>
