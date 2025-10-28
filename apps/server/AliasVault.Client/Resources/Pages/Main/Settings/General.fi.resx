@@ -38,15 +38,15 @@
     <comment>Title for email settings section</comment>
   </data>
   <data name="DefaultEmailDomainLabel">
-    <value>Oletussähköpostin domain</value>
+    <value>Oletusarvoinen sähköpostiverkkotunnus</value>
     <comment>Label for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescription">
-    <value>Aseta oletussähköpostin domain, jota haluat käyttää uusillle käyttäjätunnuksille. </value>
+    <value>Aseta oletusarvoinen sähköpostiverkkotunnus, jota käytetään uusia tunnistetietoja luotaessa.</value>
     <comment>Description for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescriptionNote">
-    <value>Huomautus: Yksityisillä verkkotunnuksilla vastaanotettu sähköpostiosoite on salattu, ja vain sinä voit lukea sen kun taas sähköposti vastaanotettu julkisella verkkotunnuksella voi lukea kuka tahansa, joka tietää vastaanottavan sähköpostiosoitteen.</value>
+    <value>Huomautus: Yksityisille verkkotunnuksille vastaanotetut sähköpostit ovat päästä päähän -salattuja ja vain sinä voit lukea niitä, kun taas julkisille verkkotunnuksille vastaanotetut sähköpostit voivat lukea kaikki, jotka tietävät vastaanottajan sähköpostiosoitteen.</value>
     <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
   </data>
   <data name="DefaultEmailDomainLearnMore">
@@ -58,7 +58,7 @@
     <comment>Label for private domains group</comment>
   </data>
   <data name="PrivateDomainsDisabledLabel">
-    <value>Yksityisiä sähköposti verkkotunnuksia ei ole määritelty</value>
+    <value>Ei yksityisiä sähköpostiverkkotunnuksia määritettynä</value>
     <comment>Label for private domains group when no private email domains are configured</comment>
   </data>
   <data name="PublicDomainsLabel">
@@ -66,20 +66,20 @@
     <comment>Label for public domains group</comment>
   </data>
   <data name="AutoEmailRefreshLabel">
-    <value>Päivitä sähköpostien sisältö automaattisesti, kun uudet saapuvat</value>
+    <value>Virkistä sähköpostien sisältö automaattisesti, kun uusia saapuu</value>
     <comment>Label for auto email refresh setting</comment>
   </data>
   <!-- Alias Settings Section -->
   <data name="AliasSettingsTitle">
-    <value>Aliaksen asetukset</value>
+    <value>Alias-asetukset</value>
     <comment>Title for alias settings section</comment>
   </data>
   <data name="AliasGenerationLanguageLabel">
-    <value>Alias-generaattorin kieli</value>
+    <value>Aliaksen luontikieli</value>
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
-    <value>Aseta oletuskieli, jota käytetään luotaessa uusia henkilöllisyyksiä.</value>
+    <value>Aseta oletuskieli, jota käytetään luotaessa uusia identiteettejä.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
   <data name="EnglishOption">
@@ -91,11 +91,11 @@
     <comment>Dutch language option</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Aliaksen sukupuoli</value>
+    <value>Aliaksen sukupuoliluonti</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
-    <value>Aseta oletussukupuoli uusille henkilöllisyyksille.</value>
+    <value>Set the default gender preference for generating new identities.</value>
     <comment>Description for alias generation gender setting</comment>
   </data>
   <data name="RandomOption">
@@ -112,7 +112,7 @@
   </data>
   <!-- Clipboard Settings Section -->
   <data name="ClipboardSettingsTitle">
-    <value>Leikepöydän asetukset</value>
+    <value>Leikepöytä-asetukset</value>
     <comment>Title for clipboard settings section</comment>
   </data>
   <data name="ClipboardClearSecondsLabel">
