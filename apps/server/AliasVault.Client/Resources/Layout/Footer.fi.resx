@@ -63,19 +63,19 @@
     <comment>Copyright text in footer</comment>
   </data>
   <data name="TipCreateShortcut" xml:space="preserve">
-    <value>Vihje: Käytä g+c (go create) näppäimistön pikakomentoa luodaksesi nopeasti uuden aliaksen.</value>
+    <value>Vinkki: Käytä g + c (go, create) näppäimistön pikayhdistelmää luodaksesi nopeasti uuden aliaksen.</value>
     <comment>Tip about keyboard shortcut for creating aliases</comment>
   </data>
   <data name="TipFindShortcut" xml:space="preserve">
-    <value>Vinkki: Käytä g+f (go find) näppäimistön pikakomentoa tarkentaaksesi hakukenttää.</value>
+    <value>Vinkki: Käytä g + f (go, find) näppäimistön pikayhdistelmää tarkentaaksesi hakukenttää.</value>
     <comment>Tip about keyboard shortcut for search</comment>
   </data>
   <data name="TipHomeShortcut" xml:space="preserve">
-    <value>Vihje: Käytä g+h (go home) näppäimistön pikakomentoa siirtyäksesi kotisivulle.</value>
+    <value>Vinkki: Käytä g + h (go, home) näppäimistön pikayhdistelmää siirtyäksesi kotisivulle.</value>
     <comment>Tip about keyboard shortcut for home</comment>
   </data>
   <data name="TipLockShortcut" xml:space="preserve">
-    <value>Vihje: Käytä g+l (go lock) näppäimistön pikakomentoa lukitaksesi holvin.</value>
+    <value>Vinkki: Käytä g + l (go, lock) näppäimistön pikayhdistelmää holvin lukitsemiseksi.</value>
     <comment>Tip about keyboard shortcut for locking vault</comment>
   </data>
 </root>
