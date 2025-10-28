@@ -59,57 +59,57 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Import / Export</value>
+    <value>Import / Eksport</value>
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>On this page you can import and export your vault.</value>
+    <value>Na tej stronie możesz importować i eksportować swoje dane z sejfu.</value>
     <comment>Page description</comment>
   </data>
   <data name="ImportSectionTitle" xml:space="preserve">
-    <value>Import passwords</value>
+    <value>Importuj hasła</value>
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Select a service to import from. If you are using a service that is not listed here and would like to see it supported, please raise an issue on &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; or contact us.</value>
+    <value>Wybierz usługę, z której chcesz importować dane. Jeśli korzystasz z usługi, która nie jest tutaj wymieniona i chcesz, aby była obsługiwana, zgłoś problem na stronie &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; lub skontaktuj się z nami.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Eksportuj sejf</value>
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>If you want to export your AliasVault credentials to another AliasVault server (e.g. from cloud to self-hosted or vice-versa) or to another service altogether, you can export it here. Note that all exports are unencrypted so store it in a safe place and delete it when you no longer need it.</value>
+    <value>Jeśli chcesz wyeksportować swoje dane uwierzytelniające AliasVault na inny serwer AliasVault (np. z chmury do serwera własnego lub odwrotnie) lub do zupełnie innej usługi, możesz to zrobić tutaj. Pamiętaj, że wszystkie eksportowane dane są niezaszyfrowane, więc przechowuj je w bezpiecznym miejscu i usuń, gdy nie będą już potrzebne.</value>
     <comment>Export section description</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Export vault to unencrypted CSV file</value>
+    <value>Eksportuj magazyn do niezaszyfrowanego pliku CSV</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportSqliteButton" xml:space="preserve">
-    <value>Export vault to unencrypted SQLite file</value>
+    <value>Eksportuj sejf do niezaszyfrowanego pliku SQLite</value>
     <comment>Button to export as SQLite</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Eksportuj sejf</value>
     <comment>Export confirmation dialog title</comment>
   </data>
   <data name="ExportWarningMessage" xml:space="preserve">
-    <value>Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted computers and ensure you:
+    <value>Ostrzeżenie: Eksportowanie sejfu do niezaszyfrowanego pliku spowoduje ujawnienie wszystkich haseł i poufnych informacji w postaci zwykłego tekstu. Wykonuj tę czynność wyłącznie na zaufanych komputerach i upewnij się, że:
 
-• Store the exported file in a secure location
-• Delete the file when you no longer need it
-• Never share the exported file with others
+• Eksportowany plik jest przechowywany w bezpiecznej lokalizacji.
+• Plik zostanie usunięty, gdy nie będzie już potrzebny.
+• Eksportowany plik nie zostanie udostępniony innym osobom.
 
-Are you sure you want to continue with the export?</value>
+Czy na pewno chcesz kontynuować eksport?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Zresetuj sejf</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>This option allows you to completely empty your vault while keeping your account and email aliases. Use this if you want to start fresh after importing data from another password manager or if you want to clear all existing credentials to start over.</value>
+    <value>Ta opcja pozwala całkowicie opróżnić sejf, zachowując jednocześnie konto i aliasy e-mail. Użyj jej, jeśli chcesz zacząć od nowa po zaimportowaniu danych z innego menedżera haseł lub jeśli chcesz wyczyścić wszystkie istniejące dane uwierzytelniające, aby zacząć od nowa.</value>
     <comment>Reset vault section description</comment>
   </data>
 </root>
