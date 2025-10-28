@@ -200,6 +200,7 @@
     "welcomeTitle": "Welkom bij AliasVault!",
     "welcomeDescription": "Om de AliasVault browser extensie te gebruiken: navigeer naar een website en gebruik de AliasVault autofill popup om nieuwe credentials aan te maken.",
     "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "noMatchingCredentials": "Geen credentials gevonden",
     "createdAt": "Aangemaakt",
     "updatedAt": "Laatst bijgewerkt",
@@ -220,7 +221,8 @@
       "all": "(Alle) Credentials",
       "passkeys": "Passkeys",
       "aliases": "Aliassen",
-      "userpass": "Wachtwoorden"
+      "userpass": "Wachtwoorden",
+      "attachments": "Attachments"
     },
     "randomAlias": "Alias",
     "manual": "Handmatig",
