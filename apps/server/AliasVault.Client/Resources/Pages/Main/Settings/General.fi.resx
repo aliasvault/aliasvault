@@ -91,7 +91,7 @@
     <comment>Dutch language option</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Aliaksen sukupuoliluonti</value>
+    <value>Aliaksen luontisukupuoli</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
@@ -140,7 +140,7 @@
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
   <data name="ClipboardClearLimitationNote">
-    <value>Leikepöydän tyhjennys web-sovelluksessa on mahdollista vain, kun välilehti on aktiivinen. Kun välilehti menettää tarkennuksen, se tyhjentää leikepöydän, kun se tulee keskittyä uudelleen.</value>
+    <value>Huomautus: leikepöydän tyhjentäminen verkkosovelluksessa on mahdollista vain, kun välilehti on aktiivinen. Kun välilehti menettää tarkennuksen, leikepöytä tyhjennetään, kun se palaa tarkennettuna.</value>
     <comment>Note explaining limitations of clipboard clearing feature</comment>
   </data>
   <!-- Password Settings Section -->
