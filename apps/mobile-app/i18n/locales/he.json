@@ -57,10 +57,10 @@
       "httpError": "שגיאת HTTP:‏ {{status}}",
       "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
       "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "Failed to decrypt vault",
-      "vaultUnlockFailed": "Failed to unlock vault",
-      "biometricCancelled": "Biometric authentication cancelled",
-      "encryptionKeyFailed": "Failed to retrieve encryption key"
+      "vaultDecryptFailed": "פענוח הכספת נכשל",
+      "vaultUnlockFailed": "שחרור הכספת נכשל",
+      "biometricCancelled": "האימות הביומטרי בוטל",
+      "encryptionKeyFailed": "משיכת מפתח ההצפנה נכשל"
     },
     "confirmLogout": "לצאת? צריך להיכנס שוב עם סיסמת העל שלך כדי לגשת לכספת שלך.",
     "noAccountYet": "אין לך חשבון עדיין?",
@@ -129,7 +129,7 @@
     "privateEmailDescription": "הצפנה מקצה לקצה, פרטיות מלאה.",
     "publicEmailTitle": "ספקי תיבת דוא״ל זמנית ציבוריים",
     "publicEmailDescription": "פרטיות אלמונית אך מוגבלת. תוכן הדוא״ל נגיש לכל מי שיודע את הכתובת.",
-    "searchPlaceholder": "Search vault...",
+    "searchPlaceholder": "חיפוש בכספת…",
     "noMatchingCredentials": "לא נמצאו פרטי גישה מתאימים",
     "noCredentialsFound": "לא נמצאו פרטי גישה. נא ליצור כאלה כדי להתחיל. המלצה: אפשר גם להיכנס דרך האתר של AliasVault כדי לייבא פרטי גישה ממנהלי סיסמאות אחרים.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
@@ -159,7 +159,7 @@
     "emailPreview": "תצוגה מקדימה של הודעת דוא״ל",
     "switchBackToBrowser": "יש לחזור לדפדפן שלך כדי להמשיך.",
     "filters": {
-      "all": "(All) Credentials",
+      "all": "(כל) פרטי הגישה",
       "passkeys": "Passkeys",
       "aliases": "כינויים",
       "userpass": "סיסמאות"
