@@ -161,8 +161,8 @@
     "filters": {
       "all": "(All) Credentials",
       "passkeys": "Passkeys",
-      "aliases": "Aliases",
-      "userpass": "Passwords"
+      "aliases": "כינויים",
+      "userpass": "סיסמאות"
     },
     "twoFactorAuth": "אימות דו־שלבי",
     "totpCode": "קוד חד־פעמי זמני",
@@ -196,8 +196,8 @@
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "Site",
-    "displayName": "Display Name",
+    "site": "אתר",
+    "displayName": "שם תצוגה",
     "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
     "passkeyMarkedForDeletion": "Passkey marked for deletion",
     "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
@@ -474,7 +474,7 @@
       "stillOffline": "עדיין בלתי מקוון"
     },
     "alerts": {
-      "syncIssue": "No Connection",
+      "syncIssue": "אין חיבור",
       "syncIssueMessage": "לא ניתן לגשת לשרת ה־AliasVault ולא ניתן לסנכרן את הכספת שלך. לפתוח את הכספת המקומית במצב קריאה בלבד או לנסות להתחבר שוב?",
       "openLocalVault": "פתיחת כספת מקומית",
       "retrySync": "לנסות לסנכרן מחדש"
