@@ -21,32 +21,32 @@
   </xsd:schema>
   <!-- Instructions -->
   <data name="PleaseReadAndAgree">
-    <value>Please read and agree to the following terms and conditions before proceeding.</value>
+    <value>Przed kontynuowaniem prosimy o zapoznanie się z poniższymi warunkami i wyrażenie na nie zgody.</value>
     <comment>Instructions to read and agree to terms</comment>
   </data>
   <!-- Terms and Conditions title -->
   <data name="TermsAndConditionsTitle">
-    <value>Terms and Conditions</value>
+    <value>Warunki i zasady użytkowania</value>
     <comment>Title for the terms and conditions section</comment>
   </data>
   <!-- Terms content -->
   <data name="TermsContent">
-    <value>AliasVault is designed to enhance your online security and protect your privacy. With AliasVault, you can create unique identities and email aliases for your various online accounts, helping you maintain control over your personal information and reduce the risk of identity theft.
+    <value>AliasVault został zaprojektowany w celu zwiększenia bezpieczeństwa w Internecie i ochrony prywatności użytkowników. Dzięki AliasVault można tworzyć unikalne tożsamości i aliasy e-mailowe dla różnych kont internetowych, co pomaga zachować kontrolę nad danymi osobowymi i zmniejszyć ryzyko kradzieży tożsamości.
 
-By using AliasVault, you agree to the following terms:
+Korzystając z AliasVault, użytkownik wyraża zgodę na następujące warunki:
 
-1. You will not use AliasVault for any illegal purposes, including but not limited to fraud, identity theft, or impersonating real individuals.
+1. Użytkownik nie będzie wykorzystywał AliasVault do celów niezgodnych z prawem, w tym między innymi do oszustw, kradzieży tożsamości lub podszywania się pod prawdziwe osoby.
 
-2. You are responsible for maintaining the confidentiality of your account and any aliases created through AliasVault.
+2. Użytkownik jest odpowiedzialny za zachowanie poufności swojego konta i wszelkich aliasów utworzonych za pomocą AliasVault.
 
-3. AliasVault reserves the right to terminate your account if we suspect any misuse or violation of these terms.
+3. AliasVault zastrzega sobie prawo do zamknięcia konta użytkownika, jeśli podejrzewa nadużycie lub naruszenie niniejszych warunków.
 
-4. You understand that while AliasVault enhances your privacy, no system is completely foolproof, and you use the service at your own risk.</value>
+4. Użytkownik rozumie, że chociaż AliasVault zwiększa jego prywatność, żaden system nie jest całkowicie niezawodny i korzysta z usługi na własne ryzyko.</value>
     <comment>Full terms and conditions content</comment>
   </data>
   <!-- Agreement checkbox -->
   <data name="AgreementCheckboxLabel">
-    <value>I have read and agree to the Terms and Conditions</value>
+    <value>Przeczytałem i akceptuję Warunki użytkowania</value>
     <comment>Label for the agreement checkbox</comment>
   </data>
 </root>
