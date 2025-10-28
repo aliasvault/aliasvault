@@ -63,7 +63,7 @@
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Poista tilisi ja kaikki siihen liittyvät tiedot pysyvästi. Tätä ei voi perua.</value>
+    <value>Poista tilisi ja kaikki siihen liittyvät tiedot pysyvästi. Tätä toimia ei voi kumota.</value>
     <comment>Warning description for account deletion</comment>
   </data>
   <data name="DeleteButton" xml:space="preserve">
