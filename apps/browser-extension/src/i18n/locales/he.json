@@ -219,8 +219,8 @@
     "filters": {
       "all": "(All) Credentials",
       "passkeys": "Passkeys",
-      "aliases": "Aliases",
-      "userpass": "Passwords"
+      "aliases": "כינויים",
+      "userpass": "סיסמאות"
     },
     "randomAlias": "כינוי אקראי",
     "manual": "ידני",
@@ -380,16 +380,16 @@
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "Site",
-    "displayName": "Name",
+    "site": "אתר",
+    "displayName": "שם",
     "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
     "passkeyMarkedForDeletion": "Passkey marked for deletion",
     "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
     "bypass": {
       "title": "Use Browser Passkey",
       "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
-      "thisTimeOnly": "This time only",
-      "alwaysForSite": "Always for this site"
+      "thisTimeOnly": "בפעם הזאת בלבד",
+      "alwaysForSite": "תמיד לאתר הזה"
     },
     "authenticate": {
       "title": "Sign in with Passkey",
@@ -401,7 +401,7 @@
     "create": {
       "title": "Create Passkey",
       "createFor": "Create a new passkey for",
-      "titleLabel": "Title",
+      "titleLabel": "כותרת",
       "titlePlaceholder": "Enter a name for this passkey",
       "createButton": "Create Passkey",
       "creatingButton": "Creating...",
@@ -409,7 +409,7 @@
       "selectPasskeyToReplace": "Select a passkey to replace:",
       "createNewPasskey": "Create New Passkey",
       "replacingPasskey": "Replacing passkey: {{displayName}}",
-      "confirmReplace": "Confirm Replace"
+      "confirmReplace": "אישור החלפה"
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",
