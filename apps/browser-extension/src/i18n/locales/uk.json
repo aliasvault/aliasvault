@@ -200,6 +200,7 @@
     "welcomeTitle": "Ласкаво просимо до AliasVult!",
     "welcomeDescription": "Щоб скористатися розширенням браузера AliasVault: перейдіть на вебсайт і скористайтеся спливаючим вікном автозаповнення AliasVault, щоб створити нові облікові дані.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "noMatchingCredentials": "No matching credentials found",
     "createdAt": "Створено",
     "updatedAt": "Останнє оновлення",
@@ -220,7 +221,8 @@
       "all": "(All) Credentials",
       "passkeys": "Passkeys",
       "aliases": "Aliases",
-      "userpass": "Passwords"
+      "userpass": "Passwords",
+      "attachments": "Attachments"
     },
     "randomAlias": "Випадковий псевдонім",
     "manual": "Посібник",
