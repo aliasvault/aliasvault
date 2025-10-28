@@ -91,15 +91,15 @@
     <comment>Link text to advanced creation mode</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
-    <value>Luodaan uusi tunnus...</value>
+    <value>Luodaan uutta aliasta...</value>
     <comment>Loading message while creating alias</comment>
   </data>
   <data name="CreateCredentialErrorMessage" xml:space="preserve">
-    <value>Virhe uuden tunnuksen luomisessa. Yritä uudelleen (myöhemmin) tai kirjaudu ulos ja uudelleen.</value>
+    <value>Virhe uuden tunnistetiedon luomisessa. Yritäthän myöhemmin uudelleen tai kirjauduthan ulos ja sisään uudelleen.</value>
     <comment>Error message when credential creation fails</comment>
   </data>
   <data name="CredentialCreatedSuccessMessage" xml:space="preserve">
-    <value>Käyttäjätieto luotu onnistuneesti. </value>
+    <value>Tunnistetiedon luonti onnistui.</value>
     <comment>Success message when credential is created</comment>
   </data>
 </root>
