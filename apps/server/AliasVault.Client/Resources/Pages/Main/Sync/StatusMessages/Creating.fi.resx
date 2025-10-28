@@ -63,11 +63,11 @@
     <comment>Welcome title for new vault creation</comment>
   </data>
   <data name="CreatingDescription" xml:space="preserve">
-    <value>Uusi salattu holvisi on alustettu. Tämä prosessi voi kestää hetken. Odota.</value>
+    <value>Uutta salattua holviasi alustetaan. Tämä prosessi voi kestää hetken. Odotathan.</value>
     <comment>Description for vault creation process</comment>
   </data>
   <data name="SaveFailedError" xml:space="preserve">
-    <value>Holvin luonti onnistui, mutta ei voitu tallentaa palvelimelle. Päivitä sivu ja yritä uudelleen tai ota yhteyttä tukeen.</value>
+    <value>Holvin luonti onnistui, mutta tallennus palvelimelle epäonnistui. Virkistä sivu ja yritä uudelleen tai ota yhteyttä tukeen.</value>
     <comment>Error message when vault creation succeeds but save fails</comment>
   </data>
   <data name="CreationFailedError" xml:space="preserve">
