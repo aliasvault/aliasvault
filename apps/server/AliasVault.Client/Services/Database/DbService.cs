@@ -381,6 +381,7 @@ public sealed class DbService : IDisposable
 
     /// <summary>
     /// Get the current version (applied migration) of the database that is loaded in memory.
+    /// Uses semantic versioning to allow backwards-compatible minor/patch versions.
     /// </summary>
     /// <returns>Version as string.</returns>
     public async Task<SqlVaultVersion> GetCurrentDatabaseVersionAsync()
@@ -403,17 +404,47 @@ public sealed class DbService : IDisposable
             }
         }
 
+        // Check version compatibility using semantic versioning
+        var isCompatible = await _jsInteropService.IsVersionCompatibleAsync(currentVersion);
+
+        if (!isCompatible)
+        {
+            // Version is incompatible (different major version)
+            return new SqlVaultVersion
+            {
+                Revision = 0,
+                Version = _UNKNOWN_VERSION,
+                Description = _UNKNOWN_VERSION,
+                ReleaseVersion = _UNKNOWN_VERSION,
+                CompatibleUpToVersion = _UNKNOWN_VERSION,
+            };
+        }
+
         // Get all available vault versions to get the revision number of the current version.
         var allVersions = await _jsInteropService.GetAllVaultVersionsAsync();
         var currentVersionRevision = allVersions.FirstOrDefault(v => v.Version == currentVersion);
 
-        return currentVersionRevision ?? new SqlVaultVersion
+        // If the version is known, return it
+        if (currentVersionRevision is not null)
         {
-            Revision = 0,
-            Version = _UNKNOWN_VERSION,
-            Description = _UNKNOWN_VERSION,
-            ReleaseVersion = _UNKNOWN_VERSION,
-            CompatibleUpToVersion = _UNKNOWN_VERSION,
+            return currentVersionRevision;
+        }
+
+        /*
+         * Version is unknown but compatible (same major version).
+         * Create a version object with the actual database version but use the latest client's revision number.
+         * This allows older clients to work with newer backwards-compatible database versions.
+         */
+        var latestClientVersion = await _jsInteropService.GetLatestVaultVersionAsync();
+
+        // Return a version object with the actual database version string but the latest known revision
+        return new SqlVaultVersion
+        {
+            Revision = latestClientVersion.Revision,
+            Version = currentVersion, // Use the actual database version (e.g., "1.7.0")
+            Description = $"Unknown version {currentVersion} (backwards compatible)",
+            ReleaseVersion = latestClientVersion.ReleaseVersion,
+            CompatibleUpToVersion = latestClientVersion.CompatibleUpToVersion,
         };
     }
 

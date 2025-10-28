@@ -1554,10 +1554,76 @@ var VaultSqlGenerator = class {
 var CreateVaultSqlGenerator = () => {
   return new VaultSqlGenerator();
 };
+
+// src/utils/VersionCompatibility.ts
+function parseSemanticVersion(version) {
+  const versionRegex = /^(\d+)\.(\d+)\.(\d+)$/;
+  const match = versionRegex.exec(version);
+  if (!match) {
+    return null;
+  }
+  return {
+    major: parseInt(match[1], 10),
+    minor: parseInt(match[2], 10),
+    patch: parseInt(match[3], 10)
+  };
+}
+function checkVersionCompatibility(databaseVersion) {
+  const dbVersion = parseSemanticVersion(databaseVersion);
+  if (!dbVersion) {
+    return {
+      isCompatible: false,
+      databaseVersion,
+      isKnownVersion: false,
+      isMajorVersionDifference: false,
+      isMinorVersionDifference: false
+    };
+  }
+  const knownVersion = VAULT_VERSIONS.find((v) => v.version === databaseVersion);
+  if (knownVersion) {
+    return {
+      isCompatible: true,
+      databaseVersion,
+      clientVersion: knownVersion,
+      isKnownVersion: true,
+      isMajorVersionDifference: false,
+      isMinorVersionDifference: false
+    };
+  }
+  const latestClientVersion = VAULT_VERSIONS[VAULT_VERSIONS.length - 1];
+  const clientVersion = parseSemanticVersion(latestClientVersion.version);
+  if (!clientVersion) {
+    return {
+      isCompatible: false,
+      databaseVersion,
+      isKnownVersion: false,
+      isMajorVersionDifference: false,
+      isMinorVersionDifference: false
+    };
+  }
+  const isMajorVersionDifference = dbVersion.major !== clientVersion.major;
+  const isMinorVersionDifference = !isMajorVersionDifference && (dbVersion.minor !== clientVersion.minor || dbVersion.patch !== clientVersion.patch);
+  const isCompatible = !isMajorVersionDifference;
+  return {
+    isCompatible,
+    databaseVersion,
+    clientVersion: latestClientVersion,
+    isKnownVersion: false,
+    isMajorVersionDifference,
+    isMinorVersionDifference
+  };
+}
+function extractVersionFromMigrationId(migrationId) {
+  const versionRegex = /_(\d+\.\d+\.\d+)-/;
+  const versionMatch = versionRegex.exec(migrationId);
+  return versionMatch?.[1] ?? null;
+}
 export {
   COMPLETE_SCHEMA_SQL,
   CreateVaultSqlGenerator,
   MIGRATION_SCRIPTS,
   VAULT_VERSIONS,
-  VaultSqlGenerator
+  VaultSqlGenerator,
+  checkVersionCompatibility,
+  extractVersionFromMigrationId
 };

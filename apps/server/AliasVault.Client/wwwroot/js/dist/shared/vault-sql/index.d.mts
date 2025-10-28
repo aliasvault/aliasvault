@@ -135,4 +135,64 @@ declare const MIGRATION_SCRIPTS: Record<number, string>;
  */
 declare const CreateVaultSqlGenerator: () => VaultSqlGenerator;
 
-export { COMPLETE_SCHEMA_SQL, CreateVaultSqlGenerator, MIGRATION_SCRIPTS, type SqlGenerationResult, VAULT_VERSIONS, VaultSqlGenerator, type VaultVersion, type VaultVersionInfo };
+/**
+ * Utility for checking vault version compatibility using semantic versioning
+ */
+
+/**
+ * Result of version compatibility check
+ */
+type VersionCompatibilityResult = {
+    /**
+     * Whether the database version is compatible with the current client
+     */
+    isCompatible: boolean;
+    /**
+     * The database version string (e.g., "1.6.1")
+     */
+    databaseVersion: string;
+    /**
+     * The current client's version info (if found)
+     */
+    clientVersion?: VaultVersion;
+    /**
+     * Whether the database version is known to the client
+     */
+    isKnownVersion: boolean;
+    /**
+     * Whether this is a major version difference
+     */
+    isMajorVersionDifference: boolean;
+    /**
+     * Whether this is a minor/patch version difference
+     */
+    isMinorVersionDifference: boolean;
+};
+/**
+ * Check if a database version is compatible with the current client using semantic versioning rules.
+ *
+ * Compatibility rules:
+ * 1. If the database version is known to the client (exists in VAULT_VERSIONS), it's compatible
+ * 2. If the database version is unknown:
+ *    - Same major version (e.g., 1.6.1 vs 1.6.2 or 1.7.0): Compatible (backwards compatible minor/patch changes)
+ *    - Different major version (e.g., 1.6.1 vs 2.0.0): Incompatible (breaking changes)
+ *
+ * This allows newer database versions with backwards-compatible changes to work with older clients,
+ * while still preventing incompatibilities from major version changes.
+ *
+ * @param databaseVersion - The version string from the database migration (e.g., "1.6.1")
+ * @returns VersionCompatibilityResult with compatibility information
+ */
+declare function checkVersionCompatibility(databaseVersion: string): VersionCompatibilityResult;
+/**
+ * Extract version from a migration ID.
+ *
+ * Migration IDs follow the pattern: "YYYYMMDDHHMMSS_X.Y.Z-Description"
+ * For example: "20240917191243_1.4.1-RenameAttachmentsPlural"
+ *
+ * @param migrationId - The migration ID from __EFMigrationsHistory
+ * @returns The version string (e.g., "1.4.1") or null if not found
+ */
+declare function extractVersionFromMigrationId(migrationId: string): string | null;
+
+export { COMPLETE_SCHEMA_SQL, CreateVaultSqlGenerator, MIGRATION_SCRIPTS, type SqlGenerationResult, VAULT_VERSIONS, VaultSqlGenerator, type VaultVersion, type VaultVersionInfo, type VersionCompatibilityResult, checkVersionCompatibility, extractVersionFromMigrationId };

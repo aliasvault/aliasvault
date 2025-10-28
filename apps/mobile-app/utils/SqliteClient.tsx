@@ -2,7 +2,7 @@ import { Buffer } from 'buffer';
 
 import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/shared/models/metadata';
 import type { Attachment, Credential, EncryptionKey, PasswordSettings, TotpCode, Passkey } from '@/utils/dist/shared/models/vault';
-import { VaultSqlGenerator, VaultVersion } from '@/utils/dist/shared/vault-sql';
+import { VaultSqlGenerator, VaultVersion, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/shared/vault-sql';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
@@ -657,11 +657,9 @@ class SqliteClient {
   /**
    * Get the current database version from the migrations history.
    * Returns the internal version information that matches the current database version.
-   * Returns null if no matching version is found.
+   * Uses semantic versioning to allow backwards-compatible minor/patch versions.
    */
   public async getDatabaseVersion(): Promise<VaultVersion> {
-    let currentVersion = '';
-
     // Query the migrations history table for the latest migration
     const results = await this.executeQuery<{ MigrationId: string }>(`
       SELECT MigrationId
@@ -673,25 +671,42 @@ class SqliteClient {
       throw new Error('No migrations found');
     }
 
-    // Extract version using regex - matches patterns like "20240917191243_1.4.1-RenameAttachmentsPlural"
+    // Extract version from migration ID (e.g., "20240917191243_1.4.1-RenameAttachmentsPlural" -> "1.4.1")
     const migrationId = results[0].MigrationId;
-    const versionRegex = /_(\d+\.\d+\.\d+)-/;
-    const versionMatch = versionRegex.exec(migrationId);
+    const databaseVersion = extractVersionFromMigrationId(migrationId);
 
-    if (versionMatch?.[1]) {
-      currentVersion = versionMatch[1];
+    if (!databaseVersion) {
+      throw new Error('Could not extract version from migration ID');
     }
 
-    // Get all available vault versions to get the revision number of the current version.
-    const vaultSqlGenerator = new VaultSqlGenerator();
-    const allVersions = vaultSqlGenerator.getAllVersions();
-    const currentVersionRevision = allVersions.find(v => v.version === currentVersion);
+    // Check version compatibility using semantic versioning
+    const compatibilityResult = checkVersionCompatibility(databaseVersion);
 
-    if (!currentVersionRevision) {
+    if (!compatibilityResult.isCompatible) {
       throw new VaultVersionIncompatibleError('vault.errors.appOutdated');
     }
 
-    return currentVersionRevision;
+    // If the version is known, return the full version info
+    if (compatibilityResult.isKnownVersion && compatibilityResult.clientVersion) {
+      return compatibilityResult.clientVersion;
+    }
+
+    /*
+     * Version is unknown but compatible (same major version).
+     * Create a VaultVersion object with the actual database version but use the latest client's revision number.
+     * This allows older clients to work with newer backwards-compatible database versions.
+     */
+    const vaultSqlGenerator = new VaultSqlGenerator();
+    const latestClientVersion = vaultSqlGenerator.getLatestVersion();
+
+    // Return a version object with the actual database version string but the latest known revision
+    return {
+      revision: latestClientVersion.revision,
+      version: databaseVersion, // Use the actual database version (e.g., "1.7.0")
+      description: `Unknown version ${databaseVersion} (backwards compatible)`,
+      releaseVersion: latestClientVersion.releaseVersion,
+      compatibleUpToVersion: latestClientVersion.compatibleUpToVersion
+    };
   }
 
   /**

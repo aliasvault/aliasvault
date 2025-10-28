@@ -542,6 +542,31 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     }
 
     /// <summary>
+    /// Checks if a database version is compatible with the current client using semantic versioning.
+    /// Returns true if the version is compatible (known version or same major version).
+    /// Returns false if the version is incompatible (different major version).
+    /// </summary>
+    /// <param name="databaseVersion">The database version to check (e.g., "1.6.0").</param>
+    /// <returns>True if compatible, false otherwise.</returns>
+    public async Task<bool> IsVersionCompatibleAsync(string databaseVersion)
+    {
+        try
+        {
+            if (_vaultSqlInteropModule == null)
+            {
+                await InitializeAsync();
+            }
+
+            var result = await _vaultSqlInteropModule!.InvokeAsync<JsonElement>("checkVersionCompatibility", databaseVersion);
+            return result.GetProperty("isCompatible").GetBoolean();
+        }
+        catch (JSException)
+        {
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Gets SQL commands to upgrade vault from current to target migration.
     /// </summary>
     /// <param name="currentMigrationNumber">Current migration number.</param>
