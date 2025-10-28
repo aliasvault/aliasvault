@@ -458,7 +458,7 @@ export default function LoginScreen() : React.ReactNode {
       borderBottomRightRadius: 24,
       paddingBottom: 24,
       paddingHorizontal: 16,
-      paddingTop: 24,
+      paddingTop: Platform.OS === 'ios' ? 24 : 64,
     },
     headerSubtitle: {
       color: colors.textMuted,
