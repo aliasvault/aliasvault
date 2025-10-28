@@ -76,11 +76,11 @@
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>Enable Two-Factor Authentication In Security Settings</value>
+    <value>Ota kaksivaiheinen todennus käyttöön Tietoturva-asetuksissa</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>Kaksivaiheinen tunnistatuminen lisää tilillesi ylimääräisen turvallisuusrason. Se edellyttää, että syötät koodin tunnistautumisohjelmastasi tai annat yhden palautuskoodeistasi ennen kuin salattua holviasi voi käyttää. </value>
+    <value>Kaksivaiheinen todennus lisää tilillesi ylimääräisen turvakerroksen. Se edellyttää, että syötät koodin todennussovelluksestasi tai palautuskoodin, ennen kuin salattuun holviisi saa pääsyn.</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
