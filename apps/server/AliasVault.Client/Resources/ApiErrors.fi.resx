@@ -150,16 +150,16 @@
     <value>Annettu salasana ei vastaa nykyistä salasanaasi.</value>
   </data>
   <data name="ACCOUNT_SUCCESSFULLY_DELETED" xml:space="preserve">
-    <value>Käyttäjätilisi onnistuneesti poistettu,.</value>
+    <value>Tili poistettu.</value>
   </data>
   <data name="USERNAME_EMPTY_OR_WHITESPACE" xml:space="preserve">
-    <value>Käyttäjänimi ei voi olla tyhjä.</value>
+    <value>Käyttäjänimi ei voi olla tyhjä eikä siinä voi olla välilyöntejä.</value>
   </data>
   <data name="USERNAME_TOO_SHORT" xml:space="preserve">
-    <value>Käyttäjänimi on liian lyhyt. Sen pitää olla vähintään 3 merkkiä pitkä. </value>
+    <value>Käyttäjänimi liian lyhyt: sen on oltava vähintään 3 merkkiä pitkä.</value>
   </data>
   <data name="USERNAME_TOO_LONG" xml:space="preserve">
-    <value>Käyttäjänimi on liian pitkä. Se ei saa olla enempää kuin 40 merkkiä. </value>
+    <value>Käyttäjänimi liian pitkä: ei saa olla yli 40 merkkiä pidempi.</value>
   </data>
   <data name="USERNAME_INVALID_EMAIL" xml:space="preserve">
     <value>Virheellinen sähköpostiosoite. </value>
@@ -171,10 +171,10 @@
     <value>On vireillä olevia siirtoja. Ole hyvä ja suorita 'dotnet ef database update' hakeaksesi ne.</value>
   </data>
   <data name="SYSTEM_OK" xml:space="preserve">
-    <value>OK</value>
+    <value>Hyvä on</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
-    <value>Palvelimen sisäinen virhe</value>
+    <value>Sisäinen palvelinvirhe</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
     <value>Paikallinen holvi ei ole ajan tasalla. Synkronoi holvisi päivittämällä sivu ja yritä uudelleen.</value>
