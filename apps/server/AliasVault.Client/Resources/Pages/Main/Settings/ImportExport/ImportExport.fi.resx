@@ -79,7 +79,7 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Jos haluat viedä AliasVault-käyttäjätunnuksesi toiselle AliasVault-palvelimelle (esim. pilvestä itse palveluun tai kokonaan toiseen palveluun voit viedä sen täältä. Huomaa, että kaikki vienti on salaamatonta, joten tallenna se turvalliseen paikkaan ja poista se, kun et enää tarvitse sitä.</value>
+    <value>Jos haluat viedä AliasVault-tunnistetietosi toiselle AliasVault-palvelimelle (esim. pilvestä itseisännöityyn palvelimeen tai päinvastoin) tai kokonaan toiseen palveluun, voit viedä ne täällä. Huomaathan, että kaikki viennit ovat salaamattomia, joten säilytä ne turvallisessa paikassa ja poista ne, kun et enää tarvitse niitä.</value>
     <comment>Export section description</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
@@ -87,7 +87,7 @@
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportSqliteButton" xml:space="preserve">
-    <value>Vie holvi salaamattomaan SQLite tiedostoon</value>
+    <value>Vie holvi salaamattomaan SQLite-tiedostoon</value>
     <comment>Button to export as SQLite</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
@@ -95,7 +95,7 @@
     <comment>Export confirmation dialog title</comment>
   </data>
   <data name="ExportWarningMessage" xml:space="preserve">
-    <value>Varoitus: Holvisi vienti salaamattomaan tiedostoon paljastaa kaikki salasanasi ja arkaluonteiset tiedot pelkässä tekstissä. Tee tämä vain luotettavilla tietokoneilla ja varmista, että:
+    <value>Varoitus: Holvisi vienti salaamattomaan tiedostoon paljastaa kaikki salasanasi ja arkaluonteiset tiedot pelkässä tekstissä. Tee tämä vain luotettavilla tietokoneilla ja varmista, että seuraavat ehdot täyttyvät:
 
 • Tallenna viety tiedosto turvalliseen paikkaan
 • Poista tiedosto, kun et enää tarvitse sitä
@@ -105,11 +105,11 @@ Oletko varma, että haluat jatkaa vientiä?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>Tyhjennä holvi</value>
+    <value>Nollaa holvi</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>Tämän vaihtoehdon avulla voit tyhjentää holvisi kokonaan, kun pidät tilisi ja sähköpostin peitenimet. Käytä tätä, jos haluat aloittaa tuoreen datan tuonnin jälkeen toisesta salasananhallinnasta tai jos haluat poistaa kaikki olemassa olevat käyttäjätunnukset aloittaaksesi toiminnan.</value>
+    <value>Tämän vaihtoehdon avulla voit tyhjentää holvisi kokonaan, kun pidät tilisi ja sähköpostin aliakset. Käytä tätä, jos haluat aloittaa tuoreen datan tuonnin jälkeen toisesta salasananhallinnasta tai jos haluat poistaa kaikki olemassa olevat tunnistetiedot aloittaaksesi toiminnan.</value>
     <comment>Reset vault section description</comment>
   </data>
 </root>
