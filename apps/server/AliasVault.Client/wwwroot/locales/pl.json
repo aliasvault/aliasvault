@@ -1,6 +1,6 @@
 {
   "loading": {
-    "title": "AliasVault wczytywany.",
+    "title": "AliasVault jest wczytywany",
     "message": "Inicjowanie bezpiecznego środowiska. AliasVault stawia za priorytet Twoją prywatność, uruchamiając się całkowicie w przeglądarce. Pierwsze ładowanie może zająć chwilę.",
     "refreshText": "Jeśli ładowanie zatrzyma się, możesz kliknąć poniższy przycisk, aby odświeżyć stronę.",
     "refreshButtonText": "Odśwież stronę"
