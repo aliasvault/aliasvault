@@ -21,110 +21,110 @@
   </xsd:schema>
   <!-- Step titles -->
   <data name="WelcomeStepTitle">
-    <value>Welcome to AliasVault</value>
+    <value>Witamy w AliasVault</value>
     <comment>Title for the welcome step</comment>
   </data>
   <data name="HowAliasVaultWorksStepTitle">
-    <value>How AliasVault Works</value>
+    <value>Jak działa AliasVault</value>
     <comment>Title for the how it works step</comment>
   </data>
   <data name="TipsStepTitle">
-    <value>Tips</value>
+    <value>Porady</value>
     <comment>Title for the tips step</comment>
   </data>
   <data name="GetStartedStepTitle">
-    <value>Get Started</value>
+    <value>Rozpocznij</value>
     <comment>Title for the get started step</comment>
   </data>
   <data name="TutorialStepTitle">
-    <value>Tutorial</value>
+    <value>Samouczek</value>
     <comment>Default tutorial step title</comment>
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>Your vault has been successfully created! Protect your online privacy by creating unique aliases for each service you sign up for. Let's learn how AliasVault works and then create your first secure alias.</value>
+    <value>Twoje sejf został pomyślnie utworzony! Chroń swoją prywatność w Internecie, tworząc unikalne aliasy dla każdej usługi, z której korzystasz. Dowiedz się, jak działa AliasVault, a następnie utwórz swój pierwszy bezpieczny alias.</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
   <data name="HowItWorksIntro">
-    <value>When you need to sign up for a new service:</value>
+    <value>Kiedy musisz zarejestrować się w nowej usłudze:</value>
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
-    <value>AliasVault generates a random identity with a secure private email address</value>
+    <value>AliasVault generuje losową tożsamość z bezpiecznym prywatnym adresem e-mail</value>
     <comment>First step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep2">
-    <value>Use this information to sign up for the service</value>
+    <value>Wykorzystaj tę informację, aby zarejestrować się w serwisie</value>
     <comment>Second step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep3">
-    <value>Received emails show up in this app and can be opened in your browser</value>
+    <value>Otrzymane wiadomości e-mail pojawiają się w tej aplikacji i można je otworzyć w przeglądarce</value>
     <comment>Third step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep4">
-    <value>Your real email address and other personal information stay private</value>
+    <value>Twój prawdziwy adres e-mail i inne dane osobowe pozostają prywatne</value>
     <comment>Fourth step in how it works explanation</comment>
   </data>
   <!-- Tips step content -->
   <data name="MasterPasswordTipTitle">
-    <value>Keep Your Master Password Safe</value>
+    <value>Przechowuj swoje hasło główne w bezpiecznym miejscu</value>
     <comment>Title for master password tip</comment>
   </data>
   <data name="MasterPasswordTipContent">
-    <value>Your master password is required to decrypt your vault. Never share it with anyone and store it in a secure location. Warning: If you lose your master password, your data cannot be recovered - not even by our team.</value>
+    <value>Do odszyfrowania sejfu potrzebne jest hasło główne. Nigdy nie udostępniaj go nikomu i przechowuj w bezpiecznym miejscu. Ostrzeżenie: W przypadku utraty hasła głównego dane nie będą mogły zostać odzyskane – nawet przez nasz zespół.</value>
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>Enable Two-Factor Authentication In Security Settings</value>
+    <value>Włącz uwierzytelnianie dwuskładnikowe w ustawieniach bezpieczeństwa</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>Two-factor authentication adds an extra layer of security to your account. It requires you to enter a code from your authenticator app or provide a recovery code before your encrypted vault can be accessed.</value>
+    <value>Uwierzytelnianie dwuskładnikowe zapewnia dodatkową warstwę zabezpieczeń dla Twojego konta. Wymaga ono wprowadzenia kodu z aplikacji uwierzytelniającej lub podania kodu odzyskiwania, zanim będzie można uzyskać dostęp do zaszyfrowanego sejfu.</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
-    <value>Browser Extensions and Mobile Apps</value>
+    <value>Rozszerzenia przeglądarki i aplikacje mobilne</value>
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>Install the AliasVault browser extension and mobile app to create aliases and autofill forms directly from your browser and smartphone.</value>
+    <value>Zainstaluj rozszerzenie przeglądarki AliasVault i aplikację mobilną, aby tworzyć aliasy i automatycznie wypełniać formularze bezpośrednio z przeglądarki i smartfona.</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
   <data name="ReadyToStartTitle">
-    <value>Ready to Start?</value>
+    <value>Gotowy, aby kontynuować?</value>
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
-    <value>Now that you know how AliasVault works, let's create your first secure identity!</value>
+    <value>Teraz, gdy już wiesz, jak działa AliasVault, stwórzmy Twoją pierwszą bezpieczną tożsamość!</value>
     <comment>Message encouraging user to create first identity</comment>
   </data>
   <data name="CreateFirstIdentityButton">
-    <value>Create Your First Identity</value>
+    <value>Stwórz swoją pierwszą tożsamość</value>
     <comment>Button text for creating first identity</comment>
   </data>
   <!-- Navigation buttons -->
   <data name="ContinueButton">
-    <value>Continue</value>
+    <value>Dalej</value>
     <comment>Continue button text</comment>
   </data>
   <data name="GetStartedButton">
-    <value>Get Started</value>
+    <value>Zacznij</value>
     <comment>Get started button text</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="FinishingTutorialMessage">
-    <value>Finishing tutorial...</value>
+    <value>Kończenie samouczka...</value>
     <comment>Loading message when finishing tutorial</comment>
   </data>
   <!-- Extension and app labels -->
   <data name="ComingSoonLabel">
-    <value>Coming Soon</value>
+    <value>Wkrótce dostępne</value>
     <comment>Label for features coming soon</comment>
   </data>
   <data name="SoonSuffix">
-    <value>(Soon)</value>
+    <value>(Wkrótce)</value>
     <comment>Suffix indicating feature coming soon</comment>
   </data>
 </root>
