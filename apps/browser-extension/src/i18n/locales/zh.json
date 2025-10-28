@@ -200,6 +200,7 @@
     "welcomeTitle": "欢迎使用AliasVault！",
     "welcomeDescription": "要使用AliasVault浏览器扩展：导航到某个网站，使用AliasVault自动填充弹窗创建新凭据。",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "noMatchingCredentials": "No matching credentials found",
     "createdAt": "创建时间",
     "updatedAt": "最后更新时间",
@@ -220,7 +221,8 @@
       "all": "(All) Credentials",
       "passkeys": "Passkeys",
       "aliases": "Aliases",
-      "userpass": "Passwords"
+      "userpass": "Passwords",
+      "attachments": "Attachments"
     },
     "randomAlias": "随机别名",
     "manual": "手动",
