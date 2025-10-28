@@ -200,6 +200,7 @@
     "welcomeTitle": "Tervetuloa AliasVaultiin!",
     "welcomeDescription": "Käyttääksesi AliasVault-selainlaajennusta, siirry jollekin verkkosivustolle ja käytä AliasVaultin automaattisen täytön ponnahdusikkunaa luodaksesi uuden tunnistetiedon.",
     "noPasskeysFound": "Todennusavaimia,  Passkey ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "noMatchingCredentials": "Vastaavia tunnistetietoja ei löytynyt",
     "createdAt": "Luotu",
     "updatedAt": "Viimeksi päivitetty",
@@ -220,7 +221,8 @@
       "all": "(All) Käyttäjätunnukset",
       "passkeys": "Todennusavaimet",
       "aliases": "Aliakset",
-      "userpass": "Salasanat"
+      "userpass": "Salasanat",
+      "attachments": "Attachments"
     },
     "randomAlias": "Sattumanvarainen alias",
     "manual": "Käyttöopas",
