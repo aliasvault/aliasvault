@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Main navigation links -->
   <data name="CredentialsNav">
-    <value>Käyttäjätunnukset</value>
+    <value>Tunnistetiedot</value>
     <comment>Main navigation link for credentials section</comment>
   </data>
   <data name="EmailsNav">
@@ -38,7 +38,7 @@
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="ImportExportNav">
-    <value>Tuo / Vie</value>
+    <value>Tuonti / Vienti</value>
     <comment>Navigation link for import/export settings</comment>
   </data>
   <data name="ExtensionsAppsNav">
