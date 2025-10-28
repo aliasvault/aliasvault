@@ -12,7 +12,7 @@
   <string name="autofill_vault_locked">Sejf jest zablokowany</string>
   <!-- Biometric prompts -->
   <string name="biometric_store_key_title">Klucz szyfrujący sejfu</string>
-  <string name="biometric_store_key_subtitle">Authenticate to securely store your encryption key in the Android Keystore. This enables secure access to your vault.</string>
+  <string name="biometric_store_key_subtitle">Uwierzytelnij się, aby bezpiecznie przechowywać klucz szyfrujący w magazynie kluczy systemu Android. Umożliwia to bezpieczny dostęp do sejfu.</string>
   <string name="biometric_unlock_vault_title">Odblokuj sejf</string>
   <string name="biometric_unlock_vault_subtitle">Uwierzytelnij się, aby uzyskać dostęp do swojego sejfu</string>
   <!-- Passkey registration -->
@@ -54,13 +54,13 @@
   <string name="server_unavailable_message">Serwer jest obecnie niedostępny. Spróbuj ponownie później.</string>
   <string name="network_error_title">Błąd sieci</string>
   <string name="network_error_message">Wystąpił błąd sieciowy. Sprawdź połączenie i spróbuj ponownie.</string>
-  <string name="server_version_not_supported_title">Server Update Required</string>
-  <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
+  <string name="server_version_not_supported_title">Wymagana aktualizacja serwera</string>
+  <string name="server_version_not_supported_message">Wersja serwera jest nieaktualna. Skontaktuj się z administratorem, aby zaktualizować serwer.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_biometric_required">Please enable biometric authentication in the main AliasVault app in order to use passkeys</string>
-  <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
-  <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
-  <string name="error_vault_unlock_failed">Failed to unlock vault</string>
-  <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
-  <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
+  <string name="error_biometric_required">Aby korzystać z kluczy dostępu, należy włączyć uwierzytelnianie biometryczne w głównej aplikacji AliasVault</string>
+  <string name="error_unlock_vault_first">Najpierw odblokuj sejf w aplikacji AliasVault</string>
+  <string name="error_vault_decrypt_failed">Nie udało się odszyfrować skarbca</string>
+  <string name="error_vault_unlock_failed">Nie udało się odblokować sejfu</string>
+  <string name="error_biometric_cancelled">Uwierzytelnianie biometryczne anulowane</string>
+  <string name="error_encryption_key_failed">Nie udało się pobrać klucza szyfrującego</string>
 </resources>
