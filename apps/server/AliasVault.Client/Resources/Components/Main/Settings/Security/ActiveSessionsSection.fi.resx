@@ -63,7 +63,7 @@
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Alla on luettelo laitteista, joissa tilisi on tällä hetkellä kirjautunut sisään tai jossa on aktiivinen istunto. Voit kirjautua ulos mistä tahansa näistä istunnoista täällä.</value>
+    <value>Alla on luettelo laitteista, joilla tililläsi on tällä hetkellä kirjautuneena sisään tai joilla sillä on aktiivinen istunto. Voit kirjautua ulos mistä tahansa näistä istunnoista täällä.</value>
     <comment>Description of active sessions</comment>
   </data>
   <data name="NoSessionsMessage" xml:space="preserve">
@@ -75,7 +75,7 @@
     <comment>Table column header</comment>
   </data>
   <data name="LastActiveColumn" xml:space="preserve">
-    <value>Aktiivisena viimeksi</value>
+    <value>Viimeksi aktiivisena</value>
     <comment>Table column header</comment>
   </data>
   <data name="ExpiresColumn" xml:space="preserve">
@@ -83,7 +83,7 @@
     <comment>Table column header</comment>
   </data>
   <data name="ActionColumn" xml:space="preserve">
-    <value>Toiminto</value>
+    <value>Toimi</value>
     <comment>Table column header</comment>
   </data>
   <data name="RevokeButton" xml:space="preserve">
@@ -91,11 +91,11 @@
     <comment>Button to revoke session</comment>
   </data>
   <data name="RevokeSuccessMessage" xml:space="preserve">
-    <value>Istunto peruttu onnistuneesti.</value>
+    <value>Istunto peruttu.</value>
     <comment>Success message when session is revoked</comment>
   </data>
   <data name="RevokeErrorMessage" xml:space="preserve">
-    <value>Istuntoa ei voitu peruuttaa.</value>
+    <value>Istunnon peruuttaminen epäonnistui.</value>
     <comment>Error message when session revocation fails</comment>
   </data>
   <data name="RevokeExceptionMessage" xml:space="preserve">
