@@ -1,7 +1,36 @@
 import { describe, it, expect } from 'vitest';
-import { checkVersionCompatibility, extractVersionFromMigrationId } from '../utils/VersionCompatibility';
+import { checkVersionCompatibility, extractVersionFromMigrationId, getLatestClientVersion } from '../utils/VersionCompatibility';
+import { VAULT_VERSIONS } from '../sql/VaultVersions';
+
+/*
+ * Use a fixed client version for testing to make tests deterministic
+ * and not dependent on the actual latest version in VAULT_VERSIONS
+ */
+const TEST_CLIENT_VERSION = '1.6.0';
 
 describe('VersionCompatibility', () => {
+  describe('getLatestClientVersion', () => {
+    it('should return the latest client version from VAULT_VERSIONS', () => {
+      const result = getLatestClientVersion();
+      const expectedLatest = VAULT_VERSIONS[VAULT_VERSIONS.length - 1];
+
+      expect(result).toBeDefined();
+      expect(result).toBe(expectedLatest);
+      expect(result.version).toBe(expectedLatest.version);
+      expect(result.revision).toBe(expectedLatest.revision);
+      expect(result.description).toBe(expectedLatest.description);
+    });
+
+    it('should return a valid VaultVersion object', () => {
+      const result = getLatestClientVersion();
+      expect(result).toHaveProperty('version');
+      expect(result).toHaveProperty('revision');
+      expect(result).toHaveProperty('description');
+      expect(result).toHaveProperty('releaseVersion');
+      expect(result).toHaveProperty('compatibleUpToVersion');
+    });
+  });
+
   describe('extractVersionFromMigrationId', () => {
     it('should extract version from valid migration ID', () => {
       const result = extractVersionFromMigrationId('20240917191243_1.4.1-RenameAttachmentsPlural');
@@ -50,7 +79,7 @@ describe('VersionCompatibility', () => {
 
     describe('Unknown versions - Same major version (backwards compatible)', () => {
       it('should be compatible with unknown patch version (1.6.1)', () => {
-        const result = checkVersionCompatibility('1.6.1');
+        const result = checkVersionCompatibility('1.6.1', TEST_CLIENT_VERSION);
         expect(result.isCompatible).toBe(true);
         expect(result.isKnownVersion).toBe(false);
         expect(result.isMajorVersionDifference).toBe(false);
@@ -58,7 +87,7 @@ describe('VersionCompatibility', () => {
       });
 
       it('should be compatible with unknown patch version (1.6.2)', () => {
-        const result = checkVersionCompatibility('1.6.2');
+        const result = checkVersionCompatibility('1.6.2', TEST_CLIENT_VERSION);
         expect(result.isCompatible).toBe(true);
         expect(result.isKnownVersion).toBe(false);
         expect(result.isMajorVersionDifference).toBe(false);
@@ -66,15 +95,15 @@ describe('VersionCompatibility', () => {
       });
 
       it('should be compatible with unknown minor version (1.49.0)', () => {
-        const result = checkVersionCompatibility('1.49.0');
+        const result = checkVersionCompatibility('1.49.0', TEST_CLIENT_VERSION);
         expect(result.isCompatible).toBe(true);
         expect(result.isKnownVersion).toBe(false);
         expect(result.isMajorVersionDifference).toBe(false);
         expect(result.isMinorVersionDifference).toBe(true);
       });
 
-      it('should be compatible with unknown minor+patch version (1.49.5)', () => {
-        const result = checkVersionCompatibility('1.49.5');
+      it('should be compatible with unknown minor+patch version (1.99.5)', () => {
+        const result = checkVersionCompatibility('1.99.5', TEST_CLIENT_VERSION);
         expect(result.isCompatible).toBe(true);
         expect(result.isKnownVersion).toBe(false);
         expect(result.isMajorVersionDifference).toBe(false);
@@ -84,7 +113,7 @@ describe('VersionCompatibility', () => {
 
     describe('Unknown versions - Different major version (incompatible)', () => {
       it('should be incompatible with major version 26.0.0', () => {
-        const result = checkVersionCompatibility('26.0.0');
+        const result = checkVersionCompatibility('26.0.0', TEST_CLIENT_VERSION);
         expect(result.isCompatible).toBe(false);
         expect(result.isKnownVersion).toBe(false);
         expect(result.isMajorVersionDifference).toBe(true);
@@ -92,14 +121,14 @@ describe('VersionCompatibility', () => {
       });
 
       it('should be incompatible with major version 31.1.5', () => {
-        const result = checkVersionCompatibility('31.1.5');
+        const result = checkVersionCompatibility('31.1.5', TEST_CLIENT_VERSION);
         expect(result.isCompatible).toBe(false);
         expect(result.isKnownVersion).toBe(false);
         expect(result.isMajorVersionDifference).toBe(true);
       });
 
       it('should be incompatible with major version 0.5.0', () => {
-        const result = checkVersionCompatibility('0.5.0');
+        const result = checkVersionCompatibility('0.5.0', TEST_CLIENT_VERSION);
         expect(result.isCompatible).toBe(false);
         expect(result.isKnownVersion).toBe(false);
         expect(result.isMajorVersionDifference).toBe(true);
@@ -131,7 +160,7 @@ describe('VersionCompatibility', () => {
 
       it('should handle version with leading zeros (treats as 1.5.0)', () => {
         // Note: parseInt handles leading zeros, so "01.05.00" becomes 1.5.0
-        const result = checkVersionCompatibility('01.05.00');
+        const result = checkVersionCompatibility('01.05.00', TEST_CLIENT_VERSION);
         expect(result.isCompatible).toBe(true);
         expect(result.isKnownVersion).toBe(false);
       });

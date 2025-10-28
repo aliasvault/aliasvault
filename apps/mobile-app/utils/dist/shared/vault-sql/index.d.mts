@@ -181,9 +181,16 @@ type VersionCompatibilityResult = {
  * while still preventing incompatibilities from major version changes.
  *
  * @param databaseVersion - The version string from the database migration (e.g., "1.6.1")
+ * @param clientVersionToCompare - Optional client version to compare against (for testing). If not provided, uses the latest version from VAULT_VERSIONS.
  * @returns VersionCompatibilityResult with compatibility information
  */
-declare function checkVersionCompatibility(databaseVersion: string): VersionCompatibilityResult;
+declare function checkVersionCompatibility(databaseVersion: string, clientVersionToCompare?: string): VersionCompatibilityResult;
+/**
+ * Get the latest client version from VAULT_VERSIONS.
+ *
+ * @returns The latest VaultVersion
+ */
+declare function getLatestClientVersion(): VaultVersion;
 /**
  * Extract version from a migration ID.
  *
@@ -195,4 +202,4 @@ declare function checkVersionCompatibility(databaseVersion: string): VersionComp
  */
 declare function extractVersionFromMigrationId(migrationId: string): string | null;
 
-export { COMPLETE_SCHEMA_SQL, CreateVaultSqlGenerator, MIGRATION_SCRIPTS, type SqlGenerationResult, VAULT_VERSIONS, VaultSqlGenerator, type VaultVersion, type VaultVersionInfo, type VersionCompatibilityResult, checkVersionCompatibility, extractVersionFromMigrationId };
+export { COMPLETE_SCHEMA_SQL, CreateVaultSqlGenerator, MIGRATION_SCRIPTS, type SqlGenerationResult, VAULT_VERSIONS, VaultSqlGenerator, type VaultVersion, type VaultVersionInfo, type VersionCompatibilityResult, checkVersionCompatibility, extractVersionFromMigrationId, getLatestClientVersion };

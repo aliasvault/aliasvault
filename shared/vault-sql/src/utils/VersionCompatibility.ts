@@ -71,9 +71,13 @@ function parseSemanticVersion(version: string): { major: number; minor: number; 
  * while still preventing incompatibilities from major version changes.
  *
  * @param databaseVersion - The version string from the database migration (e.g., "1.6.1")
+ * @param clientVersionToCompare - Optional client version to compare against (for testing). If not provided, uses the latest version from VAULT_VERSIONS.
  * @returns VersionCompatibilityResult with compatibility information
  */
-export function checkVersionCompatibility(databaseVersion: string): VersionCompatibilityResult {
+export function checkVersionCompatibility(
+  databaseVersion: string,
+  clientVersionToCompare?: string
+): VersionCompatibilityResult {
   // Parse the database version
   const dbVersion = parseSemanticVersion(databaseVersion);
 
@@ -104,9 +108,12 @@ export function checkVersionCompatibility(databaseVersion: string): VersionCompa
 
   /*
    * Unknown version - check semantic versioning compatibility
-   * Find the latest version known to this client
+   * Find the latest version known to this client (or use the provided version for testing)
    */
-  const latestClientVersion = VAULT_VERSIONS[VAULT_VERSIONS.length - 1];
+  const latestClientVersion = clientVersionToCompare
+    ? VAULT_VERSIONS.find(v => v.version === clientVersionToCompare) ?? getLatestClientVersion()
+    : getLatestClientVersion();
+
   const clientVersion = parseSemanticVersion(latestClientVersion.version);
 
   if (!clientVersion) {
@@ -135,6 +142,15 @@ export function checkVersionCompatibility(databaseVersion: string): VersionCompa
     isMajorVersionDifference,
     isMinorVersionDifference
   };
+}
+
+/**
+ * Get the latest client version from VAULT_VERSIONS.
+ *
+ * @returns The latest VaultVersion
+ */
+export function getLatestClientVersion(): VaultVersion {
+  return VAULT_VERSIONS[VAULT_VERSIONS.length - 1];
 }
 
 /**

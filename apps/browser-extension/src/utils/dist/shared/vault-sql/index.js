@@ -29,7 +29,8 @@ __export(index_exports, {
   VAULT_VERSIONS: () => VAULT_VERSIONS,
   VaultSqlGenerator: () => VaultSqlGenerator,
   checkVersionCompatibility: () => checkVersionCompatibility,
-  extractVersionFromMigrationId: () => extractVersionFromMigrationId
+  extractVersionFromMigrationId: () => extractVersionFromMigrationId,
+  getLatestClientVersion: () => getLatestClientVersion
 });
 module.exports = __toCommonJS(index_exports);
 
@@ -1599,7 +1600,7 @@ function parseSemanticVersion(version) {
     patch: parseInt(match[3], 10)
   };
 }
-function checkVersionCompatibility(databaseVersion) {
+function checkVersionCompatibility(databaseVersion, clientVersionToCompare) {
   const dbVersion = parseSemanticVersion(databaseVersion);
   if (!dbVersion) {
     return {
@@ -1621,7 +1622,7 @@ function checkVersionCompatibility(databaseVersion) {
       isMinorVersionDifference: false
     };
   }
-  const latestClientVersion = VAULT_VERSIONS[VAULT_VERSIONS.length - 1];
+  const latestClientVersion = clientVersionToCompare ? VAULT_VERSIONS.find((v) => v.version === clientVersionToCompare) ?? getLatestClientVersion() : getLatestClientVersion();
   const clientVersion = parseSemanticVersion(latestClientVersion.version);
   if (!clientVersion) {
     return {
@@ -1644,6 +1645,9 @@ function checkVersionCompatibility(databaseVersion) {
     isMinorVersionDifference
   };
 }
+function getLatestClientVersion() {
+  return VAULT_VERSIONS[VAULT_VERSIONS.length - 1];
+}
 function extractVersionFromMigrationId(migrationId) {
   const versionRegex = /_(\d+\.\d+\.\d+)-/;
   const versionMatch = versionRegex.exec(migrationId);
@@ -1657,5 +1661,6 @@ function extractVersionFromMigrationId(migrationId) {
   VAULT_VERSIONS,
   VaultSqlGenerator,
   checkVersionCompatibility,
-  extractVersionFromMigrationId
+  extractVersionFromMigrationId,
+  getLatestClientVersion
 });
