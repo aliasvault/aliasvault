@@ -219,7 +219,7 @@
     "deleteCredentialConfirm": "Oletko varma, että haluat poistaa tämän tunnistetiedon? Tätä toimintoa ei voi perua.",
     "filters": {
       "all": "(All) Käyttäjätunnukset",
-      "passkeys": "Todennusavaimet",
+      "passkeys": "Sala-avaimet",
       "aliases": "Aliakset",
       "userpass": "Salasanat",
       "attachments": "Attachments"
@@ -364,15 +364,15 @@
     "selectLanguage": "Valitse kieli",
     "serverConfiguration": "Palvelimen asetukset",
     "serverConfigurationDescription": "Määritä AliasVault-palvelimen URL-osoite itse isännöityille instanssille",
-    "customApiUrl": "API-osoite",
-    "customClientUrl": "Asiakkaan URL-osoite",
+    "customApiUrl": "API-URL-osoite",
+    "customClientUrl": "Asiakas-URL-osoite",
     "apiUrlHint": "API päätepisteen URL (yleensä asiakkaan URL + /api)",
     "clientUrlHint": "Web-käyttöliittymän URL-osoite itse isännöidyssä instanssissa",
     "autofillSettingsDescription": "Ota käyttöön tai poista käytöstä automaattisen täytön ponnahdusikkuna verkkosivuilta",
     "autofillEnabledDescription": "Automaattisen täytön ehdotukset näkyvät kirjautumislomakkeissa",
     "autofillDisabledDescription": "Automaattitäyttöehdotukset on poistettu käytöstä kaikkialla",
     "languageSettings": "Keili",
-    "languageSettingsDescription": "Valitse haluamasi kieli",
+    "languageSettingsDescription": "Valitse ensisijainen kieli",
     "validation": {
       "apiUrlRequired": "API-URL-osoite vaaditaan",
       "apiUrlInvalid": "Syötä kelvollinen API-URL-osoite",
@@ -381,14 +381,14 @@
     }
   },
   "passkeys": {
-    "passkey": "Todennusavain",
+    "passkey": "Sala-avain",
     "site": "Sivusto",
     "displayName": "Nimi",
     "helpText": "Todennusavaimet, Passkeys, luodaan sivustolle pyydettäessä. Niitä ei voi manuaalisesti muokata. Voit poistaa tämän salasanan, voit poistaa sen tästä käyttäjätunnuksesta. Voit korvata tämän salasanan tai luoda uuden, käy verkkosivuilla ja seuraa sen kehotuksia.",
     "passkeyMarkedForDeletion": "Todennusavain merkitty poistettavaksi",
     "passkeyWillBeDeleted": "Tämä todennusavain poistetaan, kun tallennat tämän käyttäjätiedon.",
     "bypass": {
-      "title": "Käytä selaimen todennusavainta",
+      "title": "Käytä selaimen sala-avainta",
       "description": "Kuinka kauan haluat käyttää selaimen todennusavaimen tarjoajaa {{origin}}?",
       "thisTimeOnly": "Vain tällä kertaa",
       "alwaysForSite": "Aina tällä sivustolla"
@@ -407,9 +407,9 @@
       "titlePlaceholder": "Anna nimi tälle todennusavaimelle",
       "createButton": "Luo todennusavain, Passkey",
       "creatingButton": "Luodaan...",
-      "useBrowserPasskey": "Käytä selaimen todennusavainta",
+      "useBrowserPasskey": "Käytä selaimen sala-avainta",
       "selectPasskeyToReplace": "Valitse todennusavain, johon korvataan",
-      "createNewPasskey": "Luo uusi todennusavain, Passkey",
+      "createNewPasskey": "Luo uusi sala-avain",
       "replacingPasskey": "Korvaava todennusavain: {{displayName}}",
       "confirmReplace": "Vahvista korvaaminen"
     },
