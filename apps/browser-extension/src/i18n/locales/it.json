@@ -200,6 +200,7 @@
     "welcomeTitle": "Benvenuto in AliasVault!",
     "welcomeDescription": "Per usare l'estensione browser AliasVault: naviga su un sito e usa la finestra di compilazione automatica per creare una nuova credenziale.",
     "noPasskeysFound": "Non sono state ancora create chiavi di accesso. Le passkey vengono create visitando un sito web che offre le chiavi di accesso come metodo di autenticazione.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "noMatchingCredentials": "Nessuna credenziale corrispondente trovata",
     "createdAt": "Creato",
     "updatedAt": "Ultimo aggiornamento",
@@ -220,7 +221,8 @@
       "all": "(Tutte) Credenziali",
       "passkeys": "Passkey",
       "aliases": "Alias",
-      "userpass": "Password"
+      "userpass": "Password",
+      "attachments": "Attachments"
     },
     "randomAlias": "Alias casuale",
     "manual": "Manuale",
