@@ -95,7 +95,7 @@
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
-    <value>Set the default gender preference for generating new identities.</value>
+    <value>Aseta oletussukupuoli uusien identiteettien luomiseksi.</value>
     <comment>Description for alias generation gender setting</comment>
   </data>
   <data name="RandomOption">
