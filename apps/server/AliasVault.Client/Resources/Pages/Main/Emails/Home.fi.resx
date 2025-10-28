@@ -63,19 +63,19 @@
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Voit tarkastella kaikkia sähköpostiviestejä, jotka on vastaanotettu yksityisellä sähköpostiosoitteellasi.</value>
+    <value>Voit tarkastella alla kaikkia sähköpostiviestejä, jotka on vastaanotettu yksityisellä sähköpostiosoitteellasi.</value>
     <comment>Page description</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
-    <value>Automaattinen päivitys käytössä</value>
+    <value>Automaattinen virkistys otettu käyttöön</value>
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="RefreshButton" xml:space="preserve">
-    <value>Päivitä</value>
+    <value>Virkistä</value>
     <comment>Refresh button text</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
-    <value>Et käytä mitään yksityistä sähköpostiosoitetta (vielä). Luo uusi alias ja käytä yksityistä sähköpostiosoitetta AliasVaultin tukemana. Kaikki näiden yksityisten sähköpostiosoitteiden vastaanottamat sähköpostit näkyvät täällä.</value>
+    <value>Et vielä käytä yksityisiä sähköpostiosoitteita. Luo uusi alias ja käytä AliasVaultin tukemaa yksityistä sähköpostiosoitetta. Kaikki näihin yksityisiin sähköpostiosoitteisiin vastaanotetut sähköpostit näkyvät täällä.</value>
     <comment>Message when no email addresses are configured</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
@@ -91,7 +91,7 @@
     <comment>Load more button text with count. {0} is placeholder for number of remaining emails</comment>
   </data>
   <data name="ClaimDoesNotExistError" xml:space="preserve">
-    <value>Tapahtui virhe ladattaessa sähköpostiviestejä. Yritä muokata ja tallentaa kaikki tietueet synkronoidaksesi tietokannan, ja yritä sitten uudelleen.</value>
+    <value>Sähköpostien lataamisen yrittäessä tapahtui virhe. Yritä muokata ja tallentaa tunnistetietomerkintä synkronoidaksesi tietokannan ja yritä sitten uudelleen.</value>
     <comment>Error message when email claim does not exist</comment>
   </data>
   <data name="LoadEmailsFailedMessage" xml:space="preserve">
@@ -99,7 +99,7 @@
     <comment>Error message when loading email fails. {0} is placeholder for error message</comment>
   </data>
   <data name="LoadMoreEmailsFailedMessage" xml:space="preserve">
-    <value>Useamman sähköpostin lataaminen epäonnistui: {0}</value>
+    <value>Lisäsähköpostien lataaminen epäonnistui: {0}</value>
     <comment>Error message when loading more emails fails. {0} is placeholder for error message</comment>
   </data>
 </root>
