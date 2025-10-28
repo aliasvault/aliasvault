@@ -25,7 +25,7 @@
     <comment>Title for the terms and conditions step</comment>
   </data>
   <data name="UsernameStepTitle">
-    <value>Valitse käyttäjätunnus</value>
+    <value>Valitse käyttäjänimi</value>
     <comment>Title for the username selection step</comment>
   </data>
   <data name="PasswordStepTitle">
@@ -37,7 +37,7 @@
     <comment>Title for the vault creation step</comment>
   </data>
   <data name="SetupStepTitle">
-    <value>Asetukset</value>
+    <value>Asettaminen</value>
     <comment>Default setup step title</comment>
   </data>
   <!-- Button text -->
