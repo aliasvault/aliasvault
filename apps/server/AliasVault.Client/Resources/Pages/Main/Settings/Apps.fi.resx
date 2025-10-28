@@ -25,7 +25,7 @@
     <comment>Page title for extensions and apps</comment>
   </data>
   <data name="PageDescription">
-    <value>Asenna selainlaajennukset ja mobiilisovellukset päästäksesi käsiksi holvisi kaikista laitteistasi ja täyttääksesi automaattisesti käyttäjätiedot verkkosivustoillasi.</value>
+    <value>Asenna selainlaajennukset ja mobiilisovellukset päästäksesi käsiksi holvisi kaikista laitteistasi ja täyttääksesi automaattisesti tunnistetiedot verkkosivustoilla.</value>
     <comment>Page description for extensions and apps</comment>
   </data>
   <data name="BreadcrumbTitle">
@@ -38,7 +38,7 @@
     <comment>Title for browser extensions section</comment>
   </data>
   <data name="BrowserExtensionsDescription">
-    <value>AliasVault-selainlaajennuksen avulla voit automaattisesti täyttää olemassa olevat tiedot millä tahansa sivustolla. Sen avulla voit myös luoda uusia peitenimiä rekisteröinnin aikana, käyttää vastaanotettuja sähköposteja kaikki peitenimet, ja katsella peitenimiä ja identiteettejä.</value>
+    <value>AliasVault-selainlaajennuksen avulla voit automaattisesti täyttää olemassa olevat tunnistetiedot millä tahansa sivustolla, luoda uusia aliaksia rekisteröinnin aikana, käyttää vastaanotettuja sähköposteja kaikki aliakset, ja katsella aliaksia ja identiteettejä.</value>
     <comment>Description for browser extensions</comment>
   </data>
   <data name="InstallButton">
@@ -55,7 +55,7 @@
     <comment>Title for mobile apps section</comment>
   </data>
   <data name="MobileAppsDescription">
-    <value>AliasVault-mobiilisovelluksen avulla voit käyttää aliaksiasi ja identiteettiäsi liikkeellä, tarkastella ja hallita vastaanotettuja sähköposteja sekä luoda uusia aliaksia milloin tahansa. Tietosi on täysin suojattu laitteessa olevalla biometrisellä tunnistautumisella.</value>
+    <value>AliasVault-mobiilisovelluksen avulla voit käyttää aliaksiasi ja identiteettejäsi välittömästi, tarkastella ja hallita vastaanotettuja sähköposteja sekä luoda uusia aliaksia milloin tahansa. Tietosi ovat täysin suojattuja laitteella tapahtuvalla biometrisellä todennuksella.</value>
     <comment>Description for mobile apps</comment>
   </data>
   <data name="DownloadButton">
