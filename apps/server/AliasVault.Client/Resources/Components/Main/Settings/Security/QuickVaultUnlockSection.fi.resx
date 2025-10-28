@@ -91,7 +91,7 @@
     <comment>Success message when quick unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Your current browser does not support the WebAuthn PRF extension. Please try again with a different browser.</value>
+    <value>Nykyinen selain ei tue WebAuth PRF -laajennusta. Kirjauduthan sisään sen sijaan salasanalla.</value>
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
