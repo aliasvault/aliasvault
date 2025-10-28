@@ -12,11 +12,18 @@ export type ThemedContainerProps = ViewProps;
 export function ThemedContainer({ style, ...otherProps }: ThemedContainerProps): React.ReactNode {
   const insets = useSafeAreaInsets();
 
+  const getTopPadding = () => {
+    if (Platform.OS !== 'ios') return 0;
+
+    const iosVersion = parseInt(Platform.Version as string, 10);
+    return iosVersion >= 26 ? insets.top + 14 : insets.top;
+  };
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
       paddingHorizontal: 14,
-      paddingTop: Platform.OS === 'ios' ? insets.top : 0,
+      paddingTop: getTopPadding(),
     },
   });
   return <ThemedView style={[styles.container, style]} {...otherProps} />;

@@ -496,10 +496,22 @@ export default function AddEditCredentialScreen() : React.ReactNode {
     );
   };
 
+  /**
+   * Get the top padding for the container.
+   */
+  const getTopPadding = (): number => {
+    if (Platform.OS !== 'ios') {
+      return 0;
+    }
+
+    const iosVersion = parseInt(Platform.Version as string, 10);
+    return iosVersion >= 26 ? 72 : 52;
+  };
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      paddingTop: Platform.OS === 'ios' ? 52 : 0,
+      paddingTop: getTopPadding(),
     },
     contentContainer: {
       paddingBottom: 40,
