@@ -67,7 +67,7 @@
     <comment>Description when quick unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Poista holvisi lukituksen pika-avaus käytöstä</value>
+    <value>Poista holvin lukituksen pika-avaus käytöstä</value>
     <comment>Button to disable quick vault unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
@@ -95,7 +95,7 @@
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
-    <value>Tapahtui virhe holvin pikalukitusta käyttöönotettaessa. Yritä uudelleen (myöhemmin).</value>
+    <value>Tapahtui virhe yritettäessä ottaa holvin lukituksen pika-avaus käyttöön. Yritä uudelleen myöhemmin.</value>
     <comment>Generic error message when enabling fails</comment>
   </data>
 </root>
