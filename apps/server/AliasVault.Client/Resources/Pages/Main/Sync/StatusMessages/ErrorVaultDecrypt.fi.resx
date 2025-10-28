@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ErrorTitle" xml:space="preserve">
-    <value>Virhe salauksen purkutilanteessa.</value>
+    <value>Holvin salauksen purkuvirhe.</value>
     <comment>Title for vault decryption error</comment>
   </data>
   <data name="ErrorDescription" xml:space="preserve">
-    <value>Paikallisesti salauksen purkamisessa tapahtui virhe. Tietosi eivät ole käytettävissä tällä hetkellä. Yritä uudelleen (myöhemmin) tai ota yhteyttä tukeen.</value>
+    <value>Holvin paikallisessa salauksen purkamisessa tapahtui virhe. Tietoihisi ei ole tällä hetkellä pääsyä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen.</value>
     <comment>Description for vault decryption error</comment>
   </data>
 </root>
