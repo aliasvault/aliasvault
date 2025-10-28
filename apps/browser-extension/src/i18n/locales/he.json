@@ -200,6 +200,7 @@
     "welcomeTitle": "ברוך בואך ל־AliasVault!",
     "welcomeDescription": "כדי להשתמש בהרחבת הדפדפן של AliasVault: יש לנווט לאתר ולהשתמש בחלונית ההשלמה האוטומטית של AliasVault כדי ליצור פרטי גישה חדשים.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "noMatchingCredentials": "No matching credentials found",
     "createdAt": "יצירה",
     "updatedAt": "עדכון אחרון",
@@ -220,7 +221,8 @@
       "all": "(כל) פרטי הגישה",
       "passkeys": "Passkeys",
       "aliases": "כינויים",
-      "userpass": "סיסמאות"
+      "userpass": "סיסמאות",
+      "attachments": "Attachments"
     },
     "randomAlias": "כינוי אקראי",
     "manual": "ידני",
