@@ -42,12 +42,12 @@
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>Holvisi on onnistuneesti luotu! Suojaa yksityisyytesi luomalla ainutlaatuisia peitenimiä jokaiselle palvelulle, johon rekisteröityt. Opetellaan, miten AliasVault toimii ja sitten luodaan ensimmäinen turvallinen alias.</value>
+    <value>Holvisi on luotu! Suojaa yksityisyytesi verkossa luomalla yksilöllisiä aliaksia jokaiselle rekisteröimällesi palvelulle. Opitaanpa, kuinka AliasVault toimii, ja luodaan sitten ensimmäinen turvallinen aliaksesi.</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
   <data name="HowItWorksIntro">
-    <value>Kun sinun täytyy rekisteröityä uutta palvelua varten:</value>
+    <value>Kun sinun on rekisteröidyttävä uutta palvelua varten:</value>
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
@@ -55,7 +55,7 @@
     <comment>First step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep2">
-    <value>Käytä näitä tietoja liittyäksesi palveluun</value>
+    <value>Käytä näitä tietoja palveluun rekisteröitymistä varten</value>
     <comment>Second step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep3">
@@ -63,20 +63,20 @@
     <comment>Third step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep4">
-    <value>Todellinen sähköpostiosoitteesi ja muut henkilökohtaiset tiedot pysyvät yksityisinä</value>
+    <value>Oikea sähköpostiosoitteesi ja muut henkilökohtaiset tietosi pysyvät yksityisinä</value>
     <comment>Fourth step in how it works explanation</comment>
   </data>
   <!-- Tips step content -->
   <data name="MasterPasswordTipTitle">
-    <value>Pidä Pääsalasanasi Turvassa.</value>
+    <value>Pidä pääsalasanasi turvassa</value>
     <comment>Title for master password tip</comment>
   </data>
   <data name="MasterPasswordTipContent">
-    <value>Pääsalasanasi vaaditaan salauksen purkamiseksi. Älä koskaan jaa sitä kenenkään kanssa ja säilytä se turvalliseen paikkaan. Varoitus: Jos pääsalasanasi katoaa, tietojasi ei voi palauttaa - ei edes tiimimme toimesta.</value>
+    <value>Pääsalasanasi tarvitaan holvin salauksen purkamiseksi. Älä koskaan jaa sitä kenenkään kanssa ja säilytä sitä turvallisessa paikassa. Varoitus: Jos kadotat pääsalasanasi, tietojasi ei voida palauttaa - ei edes joukkueemme toimesta.</value>
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>Ota käyttöön kaksivaiheinen tunnustautuminen Tietoturva-asetuksista.</value>
+    <value>Enable Two-Factor Authentication In Security Settings</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
@@ -84,16 +84,16 @@
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
-    <value>Selainlaajennukset ja Mobiilisovellukset</value>
+    <value>Selainlaajennukset ja mobiilisovellukset</value>
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>Asenna AliasVault-selainlaajennus ja mobiilisovellus luodaksesi peitenimiä ja automaattisia lomakkeita suoraan selaimestasi ja älypuhelimestasi. </value>
+    <value>Asenna AliasVault-selainlaajennus ja mobiilisovellus luodaksesi aliaksia ja automaattisia lomakkeita suoraan selaimestasi ja mobiililaitteestasi.</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
   <data name="ReadyToStartTitle">
-    <value>Valmis aloittamaan?</value>
+    <value>Valmiina aloittamaan?</value>
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
@@ -115,7 +115,7 @@
   </data>
   <!-- Loading and status messages -->
   <data name="FinishingTutorialMessage">
-    <value>Viimeistellään oppituntia...</value>
+    <value>Viimeistellään opastusta...</value>
     <comment>Loading message when finishing tutorial</comment>
   </data>
   <!-- Extension and app labels -->
@@ -124,7 +124,7 @@
     <comment>Label for features coming soon</comment>
   </data>
   <data name="SoonSuffix">
-    <value>(Pian )</value>
+    <value>(pian)</value>
     <comment>Suffix indicating feature coming soon</comment>
   </data>
 </root>
