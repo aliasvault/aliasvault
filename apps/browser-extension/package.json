@@ -67,6 +67,6 @@
     "tailwindcss": "^3.4.17",
     "typescript": "^5.6.3",
     "vite-plugin-static-copy": "^2.3.2",
-    "wxt": "^0.20.6"
+    "wxt": "^0.20.11"
   }
 }
