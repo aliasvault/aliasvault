@@ -53,14 +53,7 @@
       "networkError": "Network request failed. Please check your internet connection and try again.",
       "networkErrorSelfHosted": "Network request failed. Check your network connection and server availability. For self-hosted instances, please ensure you have a valid SSL certificate installed. Self-signed certificates are not supported on mobile devices for security reasons.",
       "sessionExpired": "Your session has expired. Please login again.",
-      "tokenRefreshFailed": "Failed to refresh authentication token",
-      "httpError": "HTTP error: {{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "Failed to decrypt vault",
-      "vaultUnlockFailed": "Failed to unlock vault",
-      "biometricCancelled": "Biometric authentication cancelled",
-      "encryptionKeyFailed": "Failed to retrieve encryption key"
+      "httpError": "HTTP error: {{status}}"
     },
     "confirmLogout": "Are you sure you want to logout? You need to login again with your master password to access your vault.",
     "noAccountYet": "No account yet?",
@@ -133,6 +126,7 @@
     "noMatchingCredentials": "No matching credentials found",
     "noCredentialsFound": "No credentials found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "recentEmails": "Recent emails",
     "loadingEmails": "Loading emails...",
     "noEmailsYet": "No emails received yet.",
@@ -162,7 +156,8 @@
       "all": "(All) Credentials",
       "passkeys": "Passkeys",
       "aliases": "Aliases",
-      "userpass": "Passwords"
+      "userpass": "Passwords",
+      "attachments": "Attachments"
     },
     "twoFactorAuth": "Two-factor authentication",
     "totpCode": "TOTP Code",
