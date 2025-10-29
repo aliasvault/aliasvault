@@ -126,7 +126,7 @@
     "noMatchingCredentials": "Geen credentials gevonden",
     "noCredentialsFound": "Geen credentials gevonden. Maak er een aan om te beginnen. Tip: je kunt ook inloggen op de AliasVault webapp om credentials te importeren uit andere wachtwoord-managers.",
     "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
-    "noAttachmentsFound": "No credentials with attachments found",
+    "noAttachmentsFound": "Geen credentials gevonden met bijlagen",
     "recentEmails": "Recente e-mails",
     "loadingEmails": "E-mails laden...",
     "noEmailsYet": "Nog geen e-mails ontvangen.",
@@ -157,7 +157,7 @@
       "passkeys": "Passkeys",
       "aliases": "Aliassen",
       "userpass": "Wachtwoorden",
-      "attachments": "Attachments"
+      "attachments": "Bijlagen"
     },
     "twoFactorAuth": "Tweestapsverificatie",
     "totpCode": "TOTP Code",
