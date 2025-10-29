@@ -783,19 +783,13 @@
 				en,
 				fi,
 				he,
-				it,
 				nl,
-				uk,
-				zh,
-				es,
-				sv,
-				tr,
-				ca,
-				fr,
+				it,
+				pl,
+				pt,
 				ru,
 				uk,
-				he,
-				pt,
+				zh,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
