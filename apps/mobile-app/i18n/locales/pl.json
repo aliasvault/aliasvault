@@ -53,14 +53,7 @@
       "networkError": "Wystąpił błąd żądania sieciowego. Sprawdź połączenie internetowe i spróbuj ponownie.",
       "networkErrorSelfHosted": "Wystąpił błąd żądania sieciowego. Sprawdź połączenie sieciowe i dostępność serwera. W przypadku instancji hostowanych samodzielnie upewnij się, że masz zainstalowany ważny certyfikat SSL. Certyfikaty z podpisem własnym nie są obsługiwane na urządzeniach mobilnych ze względów bezpieczeństwa.",
       "sessionExpired": "Twoja sesja wygasła. Zaloguj się ponownie.",
-      "tokenRefreshFailed": "Nie udało się odświeżyć tokena uwierzytelniającego",
-      "httpError": "Błąd HTTP: {{status}}",
-      "biometricRequired": "Aby korzystać z kluczy dostępu, włącz uwierzytelnianie biometryczne w głównej aplikacji AliasVault",
-      "unlockVaultFirst": "Najpierw odblokuj sejf w aplikacji AliasVault",
-      "vaultDecryptFailed": "Nie udało się odszyfrować sejfu",
-      "vaultUnlockFailed": "Nie udało się odblokować sejfu",
-      "biometricCancelled": "Autoryzacja biometryczna anulowana",
-      "encryptionKeyFailed": "Nie udało się pobrać klucza szyfrującego"
+      "httpError": "Błąd HTTP: {{status}}"
     },
     "confirmLogout": "Czy na pewno chcesz się wylogować? Aby uzyskać dostęp do swojego sejfu, musisz ponownie zalogować się przy użyciu hasła głównego.",
     "noAccountYet": "Nie masz jeszcze konta?",
@@ -133,6 +126,7 @@
     "noMatchingCredentials": "Nie znaleziono pasujących danych logowania",
     "noCredentialsFound": "Nie znaleziono danych logowania. Utwórz je, aby rozpocząć. Wskazówka: możesz również zalogować się do aplikacji internetowej AliasVault, aby zaimportować dane logowania z innych menedżerów haseł.",
     "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "recentEmails": "Ostatnie wiadomości e-mail",
     "loadingEmails": "Ładowanie wiadomości e-mail...",
     "noEmailsYet": "Nie otrzymano jeszcze żadnych wiadomości e-mail.",
@@ -162,7 +156,8 @@
       "all": "(Wszystkie) Dane logowania",
       "passkeys": "Klucze dostępu",
       "aliases": "Aliasy",
-      "userpass": "Hasła"
+      "userpass": "Hasła",
+      "attachments": "Attachments"
     },
     "twoFactorAuth": "Uwierzytelnianie dwuskładnikowe",
     "totpCode": "Kod TOTP",
