@@ -26,7 +26,7 @@
     "username": "Nazwa użytkownika lub adres e-mail",
     "password": "Hasło",
     "authCode": "Kod uwierzytelniający",
-    "unlock": "Odblokuj",
+    "unlock": "Odblokuj sejf",
     "unlocking": "Odblokowywanie...",
     "loggingIn": "Logowanie",
     "validatingCredentials": "Weryfikacja danych logowania",
@@ -126,7 +126,7 @@
     "noMatchingCredentials": "Nie znaleziono pasujących danych logowania",
     "noCredentialsFound": "Nie znaleziono danych logowania. Utwórz je, aby rozpocząć. Wskazówka: możesz również zalogować się do aplikacji internetowej AliasVault, aby zaimportować dane logowania z innych menedżerów haseł.",
     "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
-    "noAttachmentsFound": "No credentials with attachments found",
+    "noAttachmentsFound": "Nie znaleziono żadnych danych logowania z załącznikami",
     "recentEmails": "Ostatnie wiadomości e-mail",
     "loadingEmails": "Ładowanie wiadomości e-mail...",
     "noEmailsYet": "Nie otrzymano jeszcze żadnych wiadomości e-mail.",
@@ -157,7 +157,7 @@
       "passkeys": "Klucze dostępu",
       "aliases": "Aliasy",
       "userpass": "Hasła",
-      "attachments": "Attachments"
+      "attachments": "Załączniki"
     },
     "twoFactorAuth": "Uwierzytelnianie dwuskładnikowe",
     "totpCode": "Kod TOTP",
