@@ -140,7 +140,8 @@
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
   <data name="ClipboardClearLimitationNote">
-    <value>Uwaga: wyczyszczenie schowka w aplikacji internetowej jest możliwe tylko wtedy, gdy karta jest aktywna. Jeśli karta straci aktywność, schowek zostanie wyczyszczony, gdy ponownie stanie się aktywna.</value>
+    <value>Uwaga: Schowek wyczyści się tylko przy aktywnej karcie.
+Jeśli przełączysz kartę, dane znikną po powrocie.</value>
     <comment>Note explaining limitations of clipboard clearing feature</comment>
   </data>
   <!-- Password Settings Section -->
