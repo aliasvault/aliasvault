@@ -280,7 +280,7 @@
       "biometricEnabled": "{{biometric}} zostało pomyślnie włączone",
       "biometricNotAvailable": "{{biometric}} nie dostepne",
       "biometricDisabledMessage": "Funkcja {{biometric}} jest wyłączona dla AliasVault. Aby z niej skorzystać, należy najpierw włączyć ją w ustawieniach urządzenia.",
-      "biometricHelp": "Klucz deszyfrujący do skarbca zostanie bezpiecznie zapisany na Twoim urządzeniu lokalnym w folderze {{keystore}} i będzie można uzyskać do niego bezpieczny dostęp za pomocą {{biometric}}.",
+      "biometricHelp": "Klucz deszyfrujący do sejfu zostanie bezpiecznie zapisany na Twoim urządzeniu lokalnym w folderze {{keystore}} i będzie można uzyskać do niego bezpieczny dostęp za pomocą {{biometric}}.",
       "biometricUnavailableHelp": "Funkcja {{biometric}} jest niedostępna. Dotknij, aby otworzyć ustawienia i/lub przejdź do ustawień urządzenia, aby ją włączyć i skonfigurować.",
       "passwordHelp": "Wprowadź ponownie swoje pełne hasło główne, aby odblokować sejf. Ta opcja jest zawsze włączona jako opcja awaryjna.",
       "keystoreIOS": "iOS Keychain",
