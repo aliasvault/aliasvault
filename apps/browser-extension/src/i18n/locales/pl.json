@@ -370,7 +370,7 @@
     "clientUrlHint": "Adres URL interfejsu sieci web dla twojej samodzielnej instancji",
     "autofillSettingsDescription": "Włącz lub wyłącz okno autouzupełniania na stronach internetowych",
     "autofillEnabledDescription": "Sugestie autouzupełniania pojawią się na formularzach logowania",
-    "autofillDisabledDescription": "Sugestie autouzupełniania są wyłączone globalnie",
+    "autofillDisabledDescription": "Podpowiedzi wyłączone we wszystkich polach",
     "languageSettings": "Język",
     "languageSettingsDescription": "Wybierz preferowany język interfejsu",
     "validation": {
