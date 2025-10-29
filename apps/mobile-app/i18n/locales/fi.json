@@ -126,7 +126,7 @@
     "noMatchingCredentials": "Vastaavia tunnistetietoja ei löytynyt",
     "noCredentialsFound": "Tunnistetietoja ei löytynyt. Luo sellainen päästäksesi alkuun. Vinkki: voit myös kirjautua AliasVault-verkkosovellukseen tuodaksesi tunnistetietoja muista salasanojen hallintaohjelmista.",
     "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
-    "noAttachmentsFound": "No credentials with attachments found",
+    "noAttachmentsFound": "Tunnuksia liitteiden kanssa ei löytynyt",
     "recentEmails": "Viimeaikaiset sähköpostit",
     "loadingEmails": "Ladataan sähköposteja...",
     "noEmailsYet": "Sähköposteja ei ole vielä vastaanotettu.",
@@ -157,7 +157,7 @@
       "passkeys": "Todennusavaimet",
       "aliases": "Aliakset",
       "userpass": "Salasanat",
-      "attachments": "Attachments"
+      "attachments": "Liitteet"
     },
     "twoFactorAuth": "Kaksivaiheinen todennus",
     "totpCode": "TOTP-koodi",
