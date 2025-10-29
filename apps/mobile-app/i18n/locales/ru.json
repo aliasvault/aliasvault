@@ -53,14 +53,7 @@
       "networkError": "Не удалось выполнить сетевой запрос. Пожалуйста, проверьте подключение к Интернету и повторите попытку.",
       "networkErrorSelfHosted": "Не удалось выполнить сетевой запрос. Проверьте сетевое подключение и доступность сервера. Для автономных экземпляров убедитесь, что у вас установлен действующий SSL сертификат. Самозаверяющие сертификаты не поддерживаются на мобильных устройствах по соображениям безопасности.",
       "sessionExpired": "Срок действия вашего сеанса истек. Пожалуйста, войдите в систему еще раз.",
-      "tokenRefreshFailed": "Не удалось обновить токен аутентификации",
-      "httpError": "Ошибка HTTP: {{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "Failed to decrypt vault",
-      "vaultUnlockFailed": "Failed to unlock vault",
-      "biometricCancelled": "Biometric authentication cancelled",
-      "encryptionKeyFailed": "Failed to retrieve encryption key"
+      "httpError": "Ошибка HTTP: {{status}}"
     },
     "confirmLogout": "Вы уверены, что хотите выйти? Вам необходимо повторно войти в систему, используя свой мастер-пароль, чтобы получить доступ к своему хранилищу.",
     "noAccountYet": "Нет аккаунта?",
@@ -133,6 +126,7 @@
     "noMatchingCredentials": "Соответствующие учетные данные не найдены",
     "noCredentialsFound": "Учетные данные не найдены. Для начала создайте их. Совет: вы также можете войти в веб-приложение AliasVault, чтобы импортировать учетные данные из других менеджеров паролей.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "recentEmails": "Последние письма",
     "loadingEmails": "Загрузка писем...",
     "noEmailsYet": "Писем пока не поступало.",
@@ -162,7 +156,8 @@
       "all": "(All) Credentials",
       "passkeys": "Passkeys",
       "aliases": "Aliases",
-      "userpass": "Passwords"
+      "userpass": "Passwords",
+      "attachments": "Attachments"
     },
     "twoFactorAuth": "Двухфакторная аутентификация",
     "totpCode": "TOTP код",
