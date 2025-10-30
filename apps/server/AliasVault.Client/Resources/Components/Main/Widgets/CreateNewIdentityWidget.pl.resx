@@ -75,7 +75,7 @@
     <comment>Label for service name field</comment>
   </data>
   <data name="ServiceNamePlaceholder" xml:space="preserve">
-    <value>Np. Facebook</value>
+    <value>np. Facebook</value>
     <comment>Placeholder text for service name field</comment>
   </data>
   <data name="ServiceUrlLabel" xml:space="preserve">
