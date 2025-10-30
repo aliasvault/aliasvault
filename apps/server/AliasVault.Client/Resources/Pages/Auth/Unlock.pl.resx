@@ -95,7 +95,7 @@
     <comment>Link text for logout</comment>
   </data>
   <data name="UnlockingVaultMessage" xml:space="preserve">
-    <value>Odblokowywanie skarbca...</value>
+    <value>Odblokowywanie sejfu...</value>
     <comment>Loading message while unlocking vault</comment>
   </data>
   <data name="UnlockRequestError" xml:space="preserve">
