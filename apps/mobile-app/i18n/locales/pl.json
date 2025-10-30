@@ -91,7 +91,7 @@
     "addCredential": "Dodaj dane logowania",
     "editCredential": "Edytuj dane logowania",
     "deleteCredential": "Usuń dane logowania",
-    "deleteConfirm": "Czy na pewno chcesz usunąć te poświadczenia? Tego działania nie można cofnąć.",
+    "deleteConfirm": "Czy na pewno chcesz usunąć te dane logowania? Tego działania nie można cofnąć.",
     "service": "Usługi",
     "serviceName": "Nazwa usługi",
     "serviceUrl": "Adres URL strony internetowej",
@@ -103,7 +103,7 @@
     "firstName": "Imię",
     "lastName": "Nazwisko",
     "nickName": "Pseudonim",
-    "fullName": "Pełne imię i nazwisko",
+    "fullName": "Imię i nazwisko",
     "gender": "Płeć",
     "birthDate": "Data urodzenia",
     "birthDatePlaceholder": "RRRR-MM-DD",
@@ -124,7 +124,7 @@
     "publicEmailDescription": "Anonimowość, ale ograniczona prywatność. Treść wiadomości e-mail jest dostępna dla każdego, kto zna adres.",
     "searchPlaceholder": "Wyszukaj w sejfie...",
     "noMatchingCredentials": "Nie znaleziono pasujących danych logowania",
-    "noCredentialsFound": "Nie znaleziono danych logowania. Utwórz je, aby rozpocząć. Wskazówka: możesz również zalogować się do aplikacji internetowej AliasVault, aby zaimportować dane logowania z innych menedżerów haseł.",
+    "noCredentialsFound": "Nie znaleziono danych logowania. Utwórz je, aby rozpocząć. Podpowiedź: możesz również zalogować się do aplikacji internetowej AliasVault, aby zaimportować dane logowania z innych menedżerów haseł.",
     "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
     "noAttachmentsFound": "Nie znaleziono żadnych danych logowania z załącznikami",
     "recentEmails": "Ostatnie wiadomości e-mail",
@@ -199,7 +199,7 @@
   },
   "settings": {
     "title": "Ustawienia",
-    "autofill": "Autouzupełnianie i klucze uwierzytelniające",
+    "autofill": "Autouzupełnianie i klucze dostępu",
     "iosAutofillSettings": {
       "headerText": "Możesz skonfigurować AliasVault, aby zapewnić natywną funkcję automatycznego wypełniania haseł i kluczy dostępu w systemie iOS. Aby ją włączyć, postępuj zgodnie z poniższymi instrukcjami.",
       "passkeyNotice": "Klucze dostępu są tworzone za pośrednictwem systemu iOS. Aby zapisać je w AliasVault, upewnij się, że opcja Autofill poniżej jest włączona.",
@@ -226,10 +226,10 @@
       "step2": "2. Niektóre aplikacje, np. Google Chrome, mogą wymagać ręcznej konfiguracji w ustawieniach, aby zezwolić na korzystanie z aplikacji innych firm do automatycznego wypełniania formularzy. Jednak większość aplikacji powinna domyślnie obsługiwać funkcję automatycznego wypełniania formularzy.",
       "alreadyConfigured": "Już to skonfigurowałem"
     },
-    "vaultUnlock": "Metoda odblokowania sejfu",
-    "autoLock": "Czas automatycznego blokowania",
+    "vaultUnlock": "Blokada sejfu",
+    "autoLock": "Automatyczne blokowanie",
     "clipboardClear": "Wyczyść schowek",
-    "clipboardClearDescription": "Automatycznie usuwać skopiowane hasła i poufne informacje ze schowka po upływie określonego czasu.",
+    "clipboardClearDescription": "Automatycznie usuwa skopiowane hasła i poufne informacje ze schowka po upływie określonego czasu.",
     "clipboardClearAndroidWarning": "Uwaga: niektóre urządzenia z systemem Android mają włączoną historię schowka, która może śledzić wcześniej skopiowane elementy, nawet po wyczyszczeniu schowka przez AliasVault. AliasVault może nadpisać tylko najnowszy element, ale starsze wpisy mogą pozostać widoczne w historii. Ze względów bezpieczeństwa zalecamy wyłączenie funkcji historii schowka w ustawieniach urządzenia.",
     "clipboardClearOptions": {
       "never": "Nigdy",
@@ -248,13 +248,13 @@
     "importExport": "Import / Eksport",
     "importSectionTitle": "Importowanie",
     "importSectionDescription": "Zaimportuj swoje hasła z innych menedżerów haseł lub z poprzedniego eksportu AliasVault.",
-    "importWebNote": "Aby zaimportować dane uwierzytelniające z istniejących menedżerów haseł, zaloguj się do aplikacji internetowej. Funkcja importowania jest obecnie dostępna tylko w wersji internetowej.",
+    "importWebNote": "Aby zaimportować dane logowania z istniejących menedżerów haseł, zaloguj się do aplikacji internetowej. Funkcja importowania jest obecnie dostępna tylko w wersji internetowej.",
     "exportSectionTitle": "Eksportowanie",
-    "exportSectionDescription": "Wyeksportuj dane ze swojego sejfu do pliku CSV. Plik ten może służyć jako kopia zapasowa, a także może zostać zaimportowany do innych menedżerów haseł.",
+    "exportSectionDescription": "Wyeksportuj dane swojego sejfu do pliku CSV. Plik ten może służyć jako kopia zapasowa, a także może zostać zaimportowany do innych menedżerów haseł.",
     "exportCsvButton": "Eksportuj sejf do pliku CSV",
     "exporting": "Eksportowanie...",
     "exportConfirmTitle": "Eksportuj sejf",
-    "exportWarning": "Ostrzeżenie: Eksportowanie sejfu do niezaszyfrowanego pliku spowoduje ujawnienie wszystkich haseł i poufnych informacji w postaci zwykłego tekstu. Wykonuj tę czynność wyłącznie na zaufanych urządzeniach i upewnij się, że:\n\n• Eksportowany plik jest przechowywany w bezpiecznej lokalizacji.\n• Plik zostanie usunięty, gdy nie będzie już potrzebny.\n• Eksportowany plik nie zostanie udostępniony innym osobom.\n\nCzy na pewno chcesz kontynuować eksport?",
+    "exportWarning": "Uwaga: Eksportowanie sejfu do niezaszyfrowanego pliku spowoduje zapisanie wszystkich haseł i poufnych informacji w postaci zwykłego tekstu. Wykonuj tę czynność wyłącznie na zaufanych urządzeniach i upewnij się, że:\n\n• Eksportowany plik jest przechowywany w bezpiecznej lokalizacji.\n• Plik zostanie usunięty, gdy nie będzie już potrzebny.\n• Eksportowany plik nie zostanie udostępniony innym osobom.\n\nCzy na pewno chcesz kontynuować eksport?",
     "security": "Bezpieczeństwo",
     "appVersion": "Wersja aplikacji {{version}} ({{url}})",
     "autoLockOptions": {
@@ -281,13 +281,13 @@
       "biometricNotAvailable": "{{biometric}} nie dostepne",
       "biometricDisabledMessage": "Funkcja {{biometric}} jest wyłączona dla AliasVault. Aby z niej skorzystać, należy najpierw włączyć ją w ustawieniach urządzenia.",
       "biometricHelp": "Klucz deszyfrujący do sejfu zostanie bezpiecznie zapisany na Twoim urządzeniu lokalnym w folderze {{keystore}} i będzie można uzyskać do niego bezpieczny dostęp za pomocą {{biometric}}.",
-      "biometricUnavailableHelp": "Funkcja {{biometric}} jest niedostępna. Dotknij, aby otworzyć ustawienia i/lub przejdź do ustawień urządzenia, aby ją włączyć i skonfigurować.",
-      "passwordHelp": "Wprowadź ponownie swoje pełne hasło główne, aby odblokować sejf. Ta opcja jest zawsze włączona jako opcja awaryjna.",
+      "biometricUnavailableHelp": "Funkcja {{biometric}} jest niedostępna. Dotknij, aby otworzyć ustawienia i/lub przejdź do ustawień urządzenia, aby ją włączyć.",
+      "passwordHelp": "Wymaga wprowadzenia hasło głównego, aby odblokować sejf. Ta opcja jest zawsze włączona jako opcja awaryjna.",
       "keystoreIOS": "iOS Keychain",
       "keystoreAndroid": "Android Keystore"
     },
     "autoLockSettings": {
-      "description": "Wybierz, jak długo aplikacja może pozostawać w tle, zanim konieczne będzie ponowne uwierzytelnienie. Aby ponownie odblokować sejf, konieczne będzie użycie funkcji uwierzytelnienia twarzy lub wprowadzenie hasła."
+      "description": "Wybierz, jak długo aplikacja może pozostawać w tle, zanim konieczne będzie ponowne uwierzytelnienie. Aby ponownie odblokować sejf, konieczne będzie użycie biometrii lub wprowadzenie hasła głównego."
     },
     "identityGeneratorSettings": {
       "description": "Skonfiguruj domyślny język i preferencje dotyczące płci dla generowania nowych tożsamości.",
@@ -325,7 +325,7 @@
         "headerText": "Zmiana hasła głównego powoduje również zmianę kluczy szyfrujących sejf. Zaleca się okresową zmianę hasła głównego, aby zapewnić bezpieczeństwo sejfu.",
         "currentPassword": "Aktualne hasło",
         "newPassword": "Nowe hasło",
-        "confirmNewPassword": "Potwierdź hasło",
+        "confirmNewPassword": "Potwierdź nowe hasło",
         "enterCurrentPassword": "Podaj aktualne hasło",
         "enterNewPassword": "Podaj nowe hasło",
         "changePassword": "Zmień hasło",
