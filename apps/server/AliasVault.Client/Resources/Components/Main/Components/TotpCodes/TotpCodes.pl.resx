@@ -67,11 +67,11 @@
     <comment>Button text to add new TOTP code</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
-    <value>Dodaj kod uwierzytelniający dwuskładnikowy 2FA</value>
+    <value>Dodaj kod uwierzytelniający dwuskładnikowy (2FA)</value>
     <comment>Description for adding TOTP codes</comment>
   </data>
   <data name="AddTotpCodeModalTitle" xml:space="preserve">
-    <value>Dodaj kod 2FA TOTP</value>
+    <value>Dodaj kod TOTP</value>
     <comment>Modal title for adding TOTP code</comment>
   </data>
   <data name="CloseFormButton" xml:space="preserve">
@@ -91,7 +91,7 @@
     <comment>Label for secret key field</comment>
   </data>
   <data name="SecretKeyPlaceholder" xml:space="preserve">
-    <value>Wprowadź tajny klucz (wprowadzanie ręczne)</value>
+    <value>Wprowadź tajny klucz TOTP (ręcznie)</value>
     <comment>Placeholder text for secret key input</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">
