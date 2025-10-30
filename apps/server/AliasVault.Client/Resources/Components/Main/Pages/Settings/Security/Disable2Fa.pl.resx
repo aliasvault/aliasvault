@@ -101,7 +101,7 @@
     <comment>Error message when 2FA disable fails</comment>
   </data>
   <data name="TwoFactorNotEnabled" xml:space="preserve">
-    <value>Weryfikacja dwuetapowa (2FA) nie jest włączona.</value>
+    <value>Weryfikacja dwuetapowa nie jest włączona.</value>
     <comment>Error message when 2FA is not enabled</comment>
   </data>
 </root>
