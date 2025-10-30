@@ -38,7 +38,7 @@
     <comment>Title for browser extensions section</comment>
   </data>
   <data name="BrowserExtensionsDescription">
-    <value>Rozszerzenie przeglądarki **AliasVault** automatycznie wypełnia dane logowania na dowolnej stronie internetowej. Umożliwia też generowanie nowych aliasów przy rejestracji, dostęp do wiadomości e-mail otrzymanych na wszystkie aliasy oraz przeglądanie aliasów i tożsamości.</value>
+    <value>Rozszerzenie przeglądarki AliasVault automatycznie wypełnia dane logowania na dowolnej stronie internetowej. Umożliwia też generowanie nowych aliasów przy rejestracji, dostęp do wiadomości e-mail otrzymanych na wszystkie aliasy oraz przeglądanie aliasów i tożsamości.</value>
     <comment>Description for browser extensions</comment>
   </data>
   <data name="InstallButton">
