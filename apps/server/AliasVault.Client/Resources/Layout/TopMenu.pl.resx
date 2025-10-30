@@ -51,11 +51,11 @@
     <comment>Button text for switching to light theme</comment>
   </data>
   <data name="EnableDarkMode">
-    <value>Przełącz na tryb nocny</value>
+    <value>Przełącz na tryb ciemny</value>
     <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
-    <value>Wyloguj</value>
+    <value>Wyloguj się</value>
     <comment>Button text for logging out</comment>
   </data>
   <!-- Accessibility labels -->
