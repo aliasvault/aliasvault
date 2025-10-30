@@ -82,7 +82,7 @@
       "versionNotSupported": "Ta wersja aplikacji mobilnej AliasVault nie jest już obsługiwana przez serwer. Zaktualizuj aplikację do najnowszej wersji.",
       "serverVersionNotSupported": "Aby korzystać z tej aplikacji mobilnej, serwer AliasVault musi zostać zaktualizowany do nowszej wersji. Jeśli potrzebujesz pomocy, skontaktuj się z działem pomocy technicznej.",
       "appOutdated": "Ta aplikacja jest nieaktualna i nie można jej używać do uzyskania dostępu do tej (nowszej) wersji sejfu. Aby kontynuować, zaktualizuj aplikację AliasVault.",
-      "vaultDecryptFailed": "Nie można odszyfrować skarbca. Jeśli problem nadal występuje, wyloguj się i zaloguj ponownie.",
+      "vaultDecryptFailed": "Nie można odszyfrować sejfu. Jeśli problem nadal występuje, wyloguj się i zaloguj ponownie.",
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się."
     }
   },
@@ -111,7 +111,7 @@
     "randomAlias": "Losowy alias",
     "manual": "Ręcznie",
     "generateRandomAlias": "Generuj losowy tożsamość",
-    "clearAliasFields": "Wyczyść pola aliasów",
+    "clearAliasFields": "Wyczyść pola aliasu",
     "enterFullEmail": "Wprowadź pełny adres e-mail",
     "enterEmailPrefix": "Wprowadź prefiks adresu e-mail",
     "useDomainChooser": "Użyj narzędzia do wyboru domeny",
@@ -159,7 +159,7 @@
       "userpass": "Hasła",
       "attachments": "Załączniki"
     },
-    "twoFactorAuth": "Uwierzytelnianie dwuskładnikowe",
+    "twoFactorAuth": "Weryfikacja dwuetapowa (2FA)",
     "totpCode": "Kod TOTP",
     "attachments": "Załączniki",
     "loadingAttachments": "Ładowanie załączników...",
@@ -291,7 +291,7 @@
     },
     "identityGeneratorSettings": {
       "description": "Skonfiguruj domyślny język i preferencje dotyczące płci dla generowania nowych tożsamości.",
-      "languageSection": "Język",
+      "languageSection": "Wybierz język",
       "languageDescription": "Ustaw język, który będzie używany podczas generowania nowych tożsamości.",
       "genderSection": "Płeć",
       "genderDescription": "Ustaw preferencje dotyczące płci dla generowania nowych tożsamości.",
