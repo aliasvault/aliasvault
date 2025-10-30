@@ -34,7 +34,7 @@
     <comment>Navigation link for general settings</comment>
   </data>
   <data name="SecuritySettingsNav">
-    <value>Ustawienia zabezpieczeń</value>
+    <value>Ustawienie bezpieczeństwa</value>
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="ImportExportNav">
