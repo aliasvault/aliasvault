@@ -87,7 +87,7 @@
     <comment>Success message when quick unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Funkcja szybkiego odblokowywania skarbca została pomyślnie wyłączona.</value>
+    <value>Funkcja szybkiego odblokowywania sejfu została pomyślnie wyłączona.</value>
     <comment>Success message when quick unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
