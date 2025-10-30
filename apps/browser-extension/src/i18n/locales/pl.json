@@ -266,7 +266,7 @@
     "enterEmailPrefix": "Wprowadź prefiks e-mail"
   },
   "emails": {
-    "title": "Wiadomości e-mail",
+    "title": "Skrzynka odbiorcza",
     "deleteEmailTitle": "Usuń adres e-mail",
     "deleteEmailConfirm": "Czy na pewno chcesz trwale usunąć ten e-mail?",
     "from": "Od",
