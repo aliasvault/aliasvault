@@ -22,7 +22,7 @@
   },
   "auth": {
     "login": "Zaloguj się",
-    "logout": "Wyloguj",
+    "logout": "Wyloguj się",
     "username": "Nazwa użytkownika lub adres e-mail",
     "password": "Hasło",
     "authCode": "Kod uwierzytelniający",
