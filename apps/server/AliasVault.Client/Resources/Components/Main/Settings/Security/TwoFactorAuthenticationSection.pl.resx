@@ -63,7 +63,7 @@
     <comment>Section title</comment>
   </data>
   <data name="EnabledMessage" xml:space="preserve">
-    <value>Weryfikacja dwuetapowa (2FA) jest włączona.</value>
+    <value>Weryfikacja dwuetapowa jest włączona.</value>
     <comment>Status message when 2FA is enabled</comment>
   </data>
   <data name="DisabledMessage" xml:space="preserve">
@@ -71,11 +71,11 @@
     <comment>Status message when 2FA is disabled</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Włącz weryfikację dwuetapową (2FA)</value>
+    <value>Włącz weryfikację dwuetapową</value>
     <comment>Button to enable 2FA</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Wyłącz weryfikację dwuetapową (2FA)</value>
+    <value>Wyłącz weryfikację dwuetapową</value>
     <comment>Button to disable 2FA</comment>
   </data>
 </root>
