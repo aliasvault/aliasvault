@@ -64,7 +64,7 @@
     <comment>Main login page title</comment>
   </data>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Uwierzytelnianie dwuskładnikowe</value>
+    <value>Weryfikacja dwuetapowa (2FA)</value>
     <comment>Title for 2FA step</comment>
   </data>
   <data name="RecoveryCodeVerificationTitle" xml:space="preserve">
