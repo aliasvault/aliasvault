@@ -75,7 +75,7 @@
     <comment>Table column header for email date</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>Nie otrzymano żadnych wiadomości e-mail (jeszcze).</value>
+    <value>Nie otrzymano żadnych wiadomości e-mail.</value>
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
