@@ -88,7 +88,7 @@
   </data>
   <!-- Button text -->
   <data name="ConfirmDisableButton" xml:space="preserve">
-    <value>Potwierdź wyłączenie uwierzytelniania dwuskładnikowego</value>
+    <value>Potwierdź wyłączenie uwierzytelniania dwuskładnikowego (2FA)</value>
     <comment>Button text to confirm disabling 2FA</comment>
   </data>
   <!-- Success and error messages -->
@@ -97,7 +97,7 @@
     <comment>Success message when 2FA is disabled</comment>
   </data>
   <data name="FailedToDisable2Fa" xml:space="preserve">
-    <value>Nie udało się wyłączyć uwierzytelniania dwuskładnikowego.</value>
+    <value>Nie udało się wyłączyć uwierzytelniania dwuskładnikowego (2FA).</value>
     <comment>Error message when 2FA disable fails</comment>
   </data>
   <data name="TwoFactorNotEnabled" xml:space="preserve">
