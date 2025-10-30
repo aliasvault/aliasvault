@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">AliasVault Autouzupełnianie</string>
+  <string name="autofill_service_description" translatable="true">AliasVault autouzupełnianie</string>
   <string name="aliasvault_icon">AliasVault ikona</string>
   <!-- Common strings -->
   <string name="common_close">Zamknij</string>
@@ -38,7 +38,7 @@
   <string name="passkey_create_new_button">Utwórz nowy klucz dostępu</string>
   <string name="passkey_select_to_replace">Lub zastąp istniejący klucz dostępu:</string>
   <string name="passkey_replace_button">Zastąp klucz dostępu</string>
-  <string name="passkey_replace_explanation">Spowoduje to zastąpienie dotychczasowego hasła nowym. Należy pamiętać, że stare hasło zostanie nadpisane i nie będzie już dostępne. Jeśli chcesz utworzyć osobne hasło, wróć do poprzedniego ekranu.</string>
+  <string name="passkey_replace_explanation">Spowoduje to zastąpienie dotychczasowego klucza dostępu nowym. Należy pamiętać, że stare klucz zostanie nadpisany i nie będzie już dostępny. Jeśli chcesz utworzyć nowy klucz dostępu, wróć do poprzedniego ekranu.</string>
   <string name="passkey_replacing">Zastępowanie klucza dostępu…</string>
   <string name="passkey_checking_connection">Sprawdzanie połączenia…</string>
   <!-- Vault sync error messages -->
