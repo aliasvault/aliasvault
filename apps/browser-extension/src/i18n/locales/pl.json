@@ -43,7 +43,7 @@
   },
   "menu": {
     "credentials": "Dane logowania",
-    "emails": "Wiadomości e-mail",
+    "emails": "Skrzynka odbiorcza",
     "settings": "Ustawienia"
   },
   "common": {
@@ -421,8 +421,8 @@
     }
   },
   "upgrade": {
-    "title": "Uaktualnij sejf",
-    "subtitle": "AliasVault został zaktualizowany i konieczna jest aktualizacja Twojego sejfu. Zajmie to tylko kilka sekund.",
+    "title": "Aktualizacja sejfu",
+    "subtitle": "Wersja AliasVault jest nieaktualna i konieczna jest aktualizacja Twojego sejfu. Zajmie to tylko kilka sekund.",
     "versionInformation": "Informacje o wersji",
     "yourVault": "Twoja wersja sejfu:",
     "newVersion": "Nowa dostępna wersja:",
