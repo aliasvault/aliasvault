@@ -67,7 +67,7 @@
     <comment>Button text to add new TOTP code</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
-    <value>Dodaj kod uwierzytelniający dwuskładnikowy (2FA)</value>
+    <value>Dodaj kod 2FA</value>
     <comment>Description for adding TOTP codes</comment>
   </data>
   <data name="AddTotpCodeModalTitle" xml:space="preserve">
