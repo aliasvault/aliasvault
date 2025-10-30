@@ -46,9 +46,13 @@
     <comment>Navigation link for extensions and apps settings</comment>
   </data>
   <!-- Menu actions -->
-  <data name="ToggleDarkMode">
-    <value>Helles/Dunkles Layout umschalten</value>
-    <comment>Button text for toggling dark/light theme</comment>
+  <data name="EnableLightMode">
+    <value>Switch to light mode</value>
+    <comment>Button text for switching to light theme</comment>
+  </data>
+  <data name="EnableDarkMode">
+    <value>Switch to dark mode</value>
+    <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
     <value>Abmelden</value>
