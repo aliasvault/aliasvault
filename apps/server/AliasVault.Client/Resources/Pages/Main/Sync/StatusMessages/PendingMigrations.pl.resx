@@ -63,7 +63,7 @@
     <comment>Title for vault upgrade process</comment>
   </data>
   <data name="UpgradeDescription" xml:space="preserve">
-    <value>AliasVault został zaktualizowany i konieczna jest aktualizacja Twojego sejfu. Zajmie to tylko kilka sekund.</value>
+    <value>Wersja AliasVault jest nieaktualna i konieczna jest aktualizacja Twojego sejfu. Zajmie to tylko kilka sekund.</value>
     <comment>Description of vault upgrade process</comment>
   </data>
   <data name="VersionInformationTitle" xml:space="preserve">
