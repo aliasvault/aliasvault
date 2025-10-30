@@ -63,7 +63,7 @@
     <comment>Page title for the sync page</comment>
   </data>
   <data name="SwitchAccountsText" xml:space="preserve">
-    <value>Przełączyć konta?</value>
+    <value>Przełącz konto</value>
     <comment>Text before logout link</comment>
   </data>
   <data name="LogoutLink" xml:space="preserve">
