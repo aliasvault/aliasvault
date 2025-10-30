@@ -96,7 +96,7 @@
     <comment>Success message when 2FA is enabled</comment>
   </data>
   <data name="FailedToEnable2Fa" xml:space="preserve">
-    <value>Nie udało się włączyć uwierzytelniania dwuskładnikowego.</value>
+    <value>Nie udało się włączyć uwierzytelniania dwuskładnikowego (2FA).</value>
     <comment>Error message when 2FA setup fails</comment>
   </data>
 </root>
