@@ -63,7 +63,7 @@
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Poniżej znajdują się wszystkie wiadomości e-mail, otrzymane na swoje prywatne adresy e-mail.</value>
+    <value>Możesz wyświetlić wszystkie wiadomości otrzymywane przez prywatne adresy e-mail poniżej.</value>
     <comment>Page description</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
