@@ -169,14 +169,14 @@
       "credentialUpdated": "פרטי הגישה עודכנו בהצלחה",
       "credentialCreated": "פרטי הגישה נוצרו בהצלחה",
       "credentialDeleted": "פרטי הגישה נמחקו בהצלחה",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
+      "usernameCopied": "שם המשתמש הועתק ללוח הגזירים",
+      "emailCopied": "הדוא״ל הועתק ללוח הגזירים",
+      "passwordCopied": "הסיסמה הועתקה ללוח הגזירים"
     },
     "createNewAliasFor": "יצירת כינוי חדש עבור",
     "errors": {
       "loadFailed": "טעינת פרטי הגישה נכשלה",
-      "saveFailed": "Failed to save credential",
+      "saveFailed": "שמירת פרטי הגישה נכשלה",
       "generateUsernameFailed": "יצירת שם משתמש נכשלה",
       "generatePasswordFailed": "יצירת סיסמה נכשלה"
     },
