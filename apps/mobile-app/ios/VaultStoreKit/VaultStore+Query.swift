@@ -107,66 +107,68 @@ extension VaultStore {
         try dbConnection.execute("BEGIN TRANSACTION")
     }
 
-    /// Persist the in-memory database to encrypted local storage.
-    /// This method can be called independently to persist the database without committing a transaction.
+    /// Persist the in-memory database to encrypted local storage using VACUUM INTO.
+    /// Produces a fully faithful, compact copy (schema + data), unlike CTAS copies.
     public func persistDatabaseToEncryptedStorage() throws {
         guard let dbConnection = self.dbConnection else {
             throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
         }
 
-        let tempDbPath = FileManager.default.temporaryDirectory.appendingPathComponent("temp_db.sqlite")
-        try Data().write(to: tempDbPath)
+        // Make sure we are not inside an explicit transaction; VACUUM INTO must run outside.
+        // If you have your own transaction management, ensure it's committed before calling this.
+        // Optional: give SQLite time to resolve locks
+        try? dbConnection.execute("PRAGMA busy_timeout=5000")
+        
+        // End any lingering transaction (no-op if none).
+       _ = try? dbConnection.execute("END")
 
-        do {
-            try dbConnection.attach(.uri(tempDbPath.path, parameters: [.mode(.readWrite)]), as: "target")
-
-            let tables = try dbConnection.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
-            try dbConnection.execute("BEGIN TRANSACTION")
-
-            for table in tables {
-                guard let tableName = table[0] as? String else {
-                    continue
-                }
-                try dbConnection.execute("CREATE TABLE target.\(tableName) AS SELECT * FROM main.\(tableName)")
-            }
-
-            try dbConnection.execute("COMMIT")
-
-            // Retry DETACH with delay to handle database lock after COMMIT
-            // SQLite may not immediately release locks after COMMIT completes
-            var detachSuccess = false
-            var lastError: Error?
-
-            for attempt in 1...5 {
-                do {
-                    try dbConnection.execute("DETACH DATABASE target")
-                    detachSuccess = true
-                    break
-                } catch {
-                    lastError = error
-                    if "\(error)".lowercased().contains("locked") && attempt < 5 {
-                        Thread.sleep(forTimeInterval: 0.1)
-                    } else {
-                        break
-                    }
-                }
-            }
-
-            if !detachSuccess {
-                throw lastError ?? NSError(domain: "VaultStore", code: 5, userInfo: [NSLocalizedDescriptionKey: "Failed to detach database"])
-            }
-        } catch {
-            try? dbConnection.execute("DETACH DATABASE target")
-            throw error
+        // Prepare a fresh temp file path for VACUUM INTO; it must NOT already exist.
+        let tempDbURL = FileManager.default.temporaryDirectory.appendingPathComponent("temp_db.sqlite")
+        if FileManager.default.fileExists(atPath: tempDbURL.path) {
+            try FileManager.default.removeItem(at: tempDbURL)
         }
 
-        let rawData = try Data(contentsOf: tempDbPath)
+        // Quote the target path safely for SQL (VACUUM INTO does not accept parameters in some builds).
+        // Escape single quotes per SQL rules.
+        let quotedPath = "'" + tempDbURL.path.replacingOccurrences(of: "'", with: "''") + "'"
+
+        // Run VACUUM INTO to create a compact, faithful copy of the current DB.
+        // Must be executed with no active transaction and no attached target needed.
+        // This preserves schema, indexes, triggers, views, pragmas like page_size, auto_vacuum, encoding, user_version, etc.
+        // Retry VACUUM INTO a few times if we hit “statements in progress”
+        var lastError: Error?
+        for attempt in 1...5 {
+            do {
+                try dbConnection.execute("VACUUM INTO \(quotedPath)")
+                lastError = nil
+                break
+            } catch {
+                lastError = error
+                let msg = String(describing: error).lowercased()
+                if msg.contains("statements in progress") || msg.contains("locked") {
+                    Thread.sleep(forTimeInterval: 0.15 * Double(attempt)) // backoff
+                    continue
+                } else {
+                    break
+                }
+            }
+        }
+        if let err = lastError {
+            print("❌ VACUUM INTO failed after retries:", err)
+            throw NSError(domain: "VaultStore", code: 6,
+                          userInfo: [NSLocalizedDescriptionKey:
+                            "VACUUM INTO failed: \(err.localizedDescription)"])
+        }
+
+        // Read -> encrypt -> store the compact copy
+        let rawData = try Data(contentsOf: tempDbURL)
         let base64String = rawData.base64EncodedString()
         let encryptedBase64Data = try encrypt(data: Data(base64String.utf8))
         let encryptedBase64String = encryptedBase64Data.base64EncodedString()
-
         try storeEncryptedDatabase(encryptedBase64String)
-        try? FileManager.default.removeItem(at: tempDbPath)
+
+        // Clean up temp file
+        try? FileManager.default.removeItem(at: tempDbURL)
     }
 
     /// Commit a transaction on the database. This is required for all database operations that modify the database.
