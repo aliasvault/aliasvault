@@ -228,7 +228,7 @@
     "manual": "Ręcznie",
     "service": "Usługa",
     "serviceUrl": "Adres URL usługi",
-    "loginCredentials": "Informacje logowania",
+    "loginCredentials": "Dane logowania",
     "generateRandomUsername": "Wygeneruj losową nazwę użytkownika",
     "generateRandomPassword": "Wygeneruj losowe hasło",
     "changePasswordComplexity": "Zmień komplikację hasła",
