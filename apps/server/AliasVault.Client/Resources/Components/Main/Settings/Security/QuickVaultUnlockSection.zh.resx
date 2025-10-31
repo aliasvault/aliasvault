@@ -59,36 +59,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>快速解锁密码库</value>
-    <comment>Title for quick vault unlock section</comment>
+    <value>Passkey unlock</value>
+    <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>密码库解密密钥通过密钥保存。这意味着当您重新加载AliasVault页面或标签时，您可以使用面部、指纹或内置浏览器安全密钥登录。如果您想禁用快速解锁密码库功能，可以通过下方按钮进行操作。</value>
-    <comment>Description when quick unlock is enabled</comment>
+    <value>Your master password is encrypted with the passkey PRF and stored locally. When you reload the AliasVault page or tab, you can unlock your vault with your passkey. If you wish to disable passkey unlock, you can do so with the button below. Your master password will still work for unlocking the vault.</value>
+    <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>禁用快速解锁密码库</value>
-    <comment>Button to disable quick vault unlock</comment>
+    <value>Disable Passkey Unlock</value>
+    <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>默认情况下，当您重新加载AliasVault页面或标签时，系统会提示您再次输入主密码。或者，您可以选择使用浏览器密钥（或硬件验证器，如YubiKey）代替主密码。这将允许您使用面部、指纹或内置浏览器安全密钥解锁密码库。此功能仅适用于当前设备和浏览器。</value>
-    <comment>Description when quick unlock is disabled</comment>
+    <value>By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.</value>
+    <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>请注意，此功能尚处于试验阶段，可能并非在所有设备或浏览器上都能正常工作。您的浏览器必须支持WebAuthn和PRF扩展才能使用此功能。如果遇到任何问题，您可以随时禁用此功能。</value>
-    <comment>Warning about experimental nature of the feature</comment>
+    <value>This feature is currently supported by AliasVault browser extension and iOS app. Android support is coming soon. If you experience any issues, you can disable this feature at any time.</value>
+    <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>启用快速解锁密码库</value>
-    <comment>Button to enable quick vault unlock</comment>
+    <value>Enable Passkey Unlock</value>
+    <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>快速解锁密码库已成功启用。下次您的密码库被锁定时，您可以使用创建的密钥解锁。</value>
-    <comment>Success message when quick unlock is enabled</comment>
+    <value>Passkey unlock is successfully enabled. The next time your vault is locked, you can unlock it with your created passkey.</value>
+    <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>快速解锁密码库已成功禁用。</value>
-    <comment>Success message when quick unlock is disabled</comment>
+    <value>Passkey unlock is successfully disabled.</value>
+    <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
     <value>您当前的浏览器不支持WebAuthn PRF扩展。请尝试使用其他浏览器。</value>

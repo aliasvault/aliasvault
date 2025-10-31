@@ -289,7 +289,7 @@
     <comment>Tooltip text for lock vault button</comment>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Home</value>
+    <value>Panel główny</value>
     <comment>Home breadcrumb text</comment>
   </data>
   <data name="Notes" xml:space="preserve">

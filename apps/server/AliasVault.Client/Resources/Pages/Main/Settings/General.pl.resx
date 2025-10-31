@@ -50,7 +50,7 @@
     <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
   </data>
   <data name="DefaultEmailDomainLearnMore">
-    <value>Dowiedz się więcej o różnicach</value>
+    <value>Zobacz różnice</value>
     <comment>Link to documentation for default email domain setting</comment>
   </data>
   <data name="PrivateDomainsLabel">
@@ -91,7 +91,7 @@
     <comment>Dutch language option</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Generowanie aliasów płci</value>
+    <value>Przypisywanie płci tożsamości</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
@@ -140,7 +140,8 @@
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
   <data name="ClipboardClearLimitationNote">
-    <value>Uwaga: wyczyszczenie schowka w aplikacji internetowej jest możliwe tylko wtedy, gdy karta jest aktywna. Jeśli karta straci aktywność, schowek zostanie wyczyszczony, gdy ponownie stanie się aktywna.</value>
+    <value>Uwaga: Schowek wyczyści się tylko przy aktywnej karcie.
+Jeśli przełączysz kartę, dane znikną po powrocie.</value>
     <comment>Note explaining limitations of clipboard clearing feature</comment>
   </data>
   <!-- Password Settings Section -->

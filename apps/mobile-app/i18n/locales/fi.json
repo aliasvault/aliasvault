@@ -53,14 +53,7 @@
       "networkError": "Verkkopyyntö epäonnistui. Tarkista internet-yhteytesi ja yritä uudelleen.",
       "networkErrorSelfHosted": "Verkkopyyntö epäonnistui. Tarkista verkkoyhteytesi ja palvelimen saatavuus. Varmista, että itseisännöidyissä instansseissa on asennettuna voimassa oleva SSL-varmenne. Itseallekirjoitettuja varmenteita ei tueta mobiililaitteilla turvallisuussyistä.",
       "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
-      "tokenRefreshFailed": "Todennuspoletin virkistäminen epäonnistui",
-      "httpError": "HTTP-virhe: {{status}}",
-      "biometricRequired": "Ole hyvä ja ota biometrinen todennus käyttöön AliasVault-sovelluksessa, jotta voit käyttää todennusavaimia.",
-      "unlockVaultFirst": "Ole hyvä ja avaa holvi ensin AliasHolt-sovelluksessa",
-      "vaultDecryptFailed": "Holvin salauksen purku epäonnistui",
-      "vaultUnlockFailed": "Holvin lukituksen poisto epäonnistui",
-      "biometricCancelled": "Biometrinen tunnistus peruttu",
-      "encryptionKeyFailed": "Salausavaimen noutaminen epäonnistui"
+      "httpError": "HTTP-virhe: {{status}}"
     },
     "confirmLogout": "Oletko varma, että haluat kirjautua ulos? Sinun täytyy kirjautua sisään uudelleen pääsalasanallasi päästäksesi holviisi.",
     "noAccountYet": "Eikö vielä tiliä?",
@@ -133,6 +126,7 @@
     "noMatchingCredentials": "Vastaavia tunnistetietoja ei löytynyt",
     "noCredentialsFound": "Tunnistetietoja ei löytynyt. Luo sellainen päästäksesi alkuun. Vinkki: voit myös kirjautua AliasVault-verkkosovellukseen tuodaksesi tunnistetietoja muista salasanojen hallintaohjelmista.",
     "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
+    "noAttachmentsFound": "Tunnuksia liitteiden kanssa ei löytynyt",
     "recentEmails": "Viimeaikaiset sähköpostit",
     "loadingEmails": "Ladataan sähköposteja...",
     "noEmailsYet": "Sähköposteja ei ole vielä vastaanotettu.",
@@ -162,7 +156,8 @@
       "all": "(Näytä käyttäjätunnukset",
       "passkeys": "Todennusavaimet",
       "aliases": "Aliakset",
-      "userpass": "Salasanat"
+      "userpass": "Salasanat",
+      "attachments": "Liitteet"
     },
     "twoFactorAuth": "Kaksivaiheinen todennus",
     "totpCode": "TOTP-koodi",

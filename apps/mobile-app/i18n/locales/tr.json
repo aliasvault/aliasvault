@@ -53,14 +53,7 @@
       "networkError": "Ağ isteği başarısız oldu. Lütfen internet bağlantınızı kontrol edin ve tekrar deneyin.",
       "networkErrorSelfHosted": "Ağ isteği başarısız oldu. Lütfen internet bağlantınızı ve sunucunun erişilebilirliğini kontrol edin. Kendi sunucunuzu kullanıyorsanız, geçerli bir SSL sertifikası yüklü olduğundan emin olun. Güvenlik nedeniyle mobil cihazlarda kendi imzaladığınız sertifikalar desteklenmez.",
       "sessionExpired": "Oturumun zaman aşımına uğradı. Lütfen tekrar giriş yap.",
-      "tokenRefreshFailed": "Kimlik doğrulama anahtarı yenilenemedi",
-      "httpError": "HTTP hatası: {{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "Failed to decrypt vault",
-      "vaultUnlockFailed": "Failed to unlock vault",
-      "biometricCancelled": "Biometric authentication cancelled",
-      "encryptionKeyFailed": "Failed to retrieve encryption key"
+      "httpError": "HTTP hatası: {{status}}"
     },
     "confirmLogout": "Çıkış yapmak istediğinizden emin misiniz? Kasaya erişmek için tekrar ana parolanızla giriş yapmanız gerekecek.",
     "noAccountYet": "Henüz hesabınız yok mu?",
@@ -133,6 +126,7 @@
     "noMatchingCredentials": "Eşleşen kimlik bilgisi bulunamadı",
     "noCredentialsFound": "Hiç kimlik bilgisi bulunamadı. Başlamak için bir tane oluşturun. İpucu: Diğer parola yöneticilerinden kimlik bilgilerini almak için AliasVault web uygulamasına da giriş yapabilirsiniz.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "recentEmails": "Son e-postalar",
     "loadingEmails": "E-postalar yükleniyor…",
     "noEmailsYet": "Henüz e-posta alınmadı.",
@@ -162,7 +156,8 @@
       "all": "(All) Credentials",
       "passkeys": "Passkeys",
       "aliases": "Aliases",
-      "userpass": "Passwords"
+      "userpass": "Passwords",
+      "attachments": "Attachments"
     },
     "twoFactorAuth": "İki faktörlü kimlik doğrulama",
     "totpCode": "TOTP Kodu",

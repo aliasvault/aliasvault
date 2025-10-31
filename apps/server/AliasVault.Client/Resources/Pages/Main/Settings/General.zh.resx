@@ -112,11 +112,11 @@
   </data>
   <!-- Clipboard Settings Section -->
   <data name="ClipboardSettingsTitle">
-    <value>剪切板设置</value>
+    <value>剪贴板设置</value>
     <comment>Title for clipboard settings section</comment>
   </data>
   <data name="ClipboardClearSecondsLabel">
-    <value>复制后自动清除剪切板</value>
+    <value>复制后自动清除剪贴板</value>
     <comment>Label for clipboard clear seconds setting</comment>
   </data>
   <data name="ClipboardClearSecondsDescription">

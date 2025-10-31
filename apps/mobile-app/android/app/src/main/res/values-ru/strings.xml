@@ -4,7 +4,7 @@
   <string name="autofill_service_description" translatable="true">Автозаполнение AliasVault</string>
   <string name="aliasvault_icon">Значок AliasVault</string>
   <!-- Common strings -->
-  <string name="common_close">Close</string>
+  <string name="common_close">Закрыть</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Не удалось извлечь, открыть приложение</string>
   <string name="autofill_no_match_found">Совпадений не найдено, создать новое?</string>

@@ -76,11 +76,11 @@
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>Włącz uwierzytelnianie dwuskładnikowe w ustawieniach bezpieczeństwa</value>
+    <value>Włącz weryfikację dwuetapową ustawieniach (2FA) bezpieczeństwa</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>Uwierzytelnianie dwuskładnikowe zapewnia dodatkową warstwę zabezpieczeń dla Twojego konta. Wymaga ono wprowadzenia kodu z aplikacji uwierzytelniającej lub podania kodu odzyskiwania, zanim będzie można uzyskać dostęp do zaszyfrowanego sejfu.</value>
+    <value>Weryfikacja dwuetapowa (2FA) zapewnia dodatkową warstwę zabezpieczeń dla Twojego konta. Wymaga ona wprowadzenia kodu z aplikacji uwierzytelniającej lub podania kodu odzyskiwania, zanim będzie można uzyskać dostęp do zaszyfrowanego sejfu.</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">

@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EmailSectionTitle" xml:space="preserve">
-    <value>Wiadomość e-mail</value>
+    <value>Skrzynka odbiorcza</value>
     <comment>Section title for email panel</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
@@ -75,7 +75,7 @@
     <comment>Table column header for email date</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>Nie otrzymano żadnych wiadomości e-mail (jeszcze).</value>
+    <value>Nie otrzymano żadnych wiadomości e-mail.</value>
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">

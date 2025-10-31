@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Wyłącz uwierzytelnianie dwuskładnikowe</value>
+    <value>Wyłącz weryfikację dwuetapową (2FA)</value>
     <comment>Page title for the disable 2FA page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
@@ -68,7 +68,7 @@
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbDisable2Fa" xml:space="preserve">
-    <value>Wyłącz uwierzytelnianie dwuskładnikowe</value>
+    <value>Wyłącz weryfikację dwuetapową (2FA)</value>
     <comment>Breadcrumb text for disable 2FA</comment>
   </data>
   <!-- Page description -->
@@ -78,30 +78,30 @@
   </data>
   <!-- Warning message -->
   <data name="WarningMessage" xml:space="preserve">
-    <value>Uwaga: po wyłączeniu uwierzytelniania dwuskładnikowego wszystkie skonfigurowane aplikacje uwierzytelniające przestaną działać. Jeśli chcesz ponownie włączyć uwierzytelnianie dwuskładnikowe, musisz ponownie skonfigurować aplikacje uwierzytelniające.</value>
+    <value>Uwaga: po wyłączeniu weryfikacji dwuetapowej (2FA) wszystkie skonfigurowane aplikacje uwierzytelniające przestaną działać. Jeśli chcesz ponownie włączyć weryfikację dwuetapową, musisz ponownie skonfigurować aplikacje uwierzytelniające.</value>
     <comment>Warning message about the consequences of disabling 2FA</comment>
   </data>
   <!-- Status message -->
   <data name="StatusMessage" xml:space="preserve">
-    <value>Obecnie włączone jest uwierzytelnianie dwuskładnikowe. Wyłącz je, aby uzyskać dostęp do sejfu za pomocą samego hasła.</value>
+    <value>Obecnie włączona jest weryfikacja dwuetapowa (2FA). Wyłącz ją, aby uzyskać dostęp do sejfu za pomocą samego hasła.</value>
     <comment>Status message explaining current 2FA state</comment>
   </data>
   <!-- Button text -->
   <data name="ConfirmDisableButton" xml:space="preserve">
-    <value>Potwierdź wyłączenie uwierzytelniania dwuskładnikowego</value>
+    <value>Potwierdź wyłączenie uwierzytelniania dwuskładnikowego (2FA)</value>
     <comment>Button text to confirm disabling 2FA</comment>
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorDisabledSuccess" xml:space="preserve">
-    <value>Uwierzytelnianie dwuskładnikowe zostało pomyślnie wyłączone.</value>
+    <value>Weryfikacja dwuetapowa (2FA) zostało pomyślnie wyłączona.</value>
     <comment>Success message when 2FA is disabled</comment>
   </data>
   <data name="FailedToDisable2Fa" xml:space="preserve">
-    <value>Nie udało się wyłączyć uwierzytelniania dwuskładnikowego.</value>
+    <value>Nie udało się wyłączyć uwierzytelniania dwuskładnikowego (2FA).</value>
     <comment>Error message when 2FA disable fails</comment>
   </data>
   <data name="TwoFactorNotEnabled" xml:space="preserve">
-    <value>Uwierzytelnianie dwuskładnikowe nie jest włączone.</value>
+    <value>Weryfikacja dwuetapowa nie jest włączona.</value>
     <comment>Error message when 2FA is not enabled</comment>
   </data>
 </root>

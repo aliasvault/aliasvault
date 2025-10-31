@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">Alias Vault Autouzupełnianie</string>
+  <string name="autofill_service_description" translatable="true">AliasVault autouzupełnianie</string>
   <string name="aliasvault_icon">AliasVault ikona</string>
   <!-- Common strings -->
   <string name="common_close">Zamknij</string>
@@ -34,11 +34,11 @@
   <string name="passkey_creation_failed">Nie udało się utworzyć klucza dostępu</string>
   <string name="passkey_retry_button">Ponów próbę</string>
   <string name="passkey_info_icon">Ikona</string>
-  <string name="passkey_create_explanation">Spowoduje to utworzenie nowego klucza dostępu i zapisanie go w skarbcu. Zostanie on automatycznie zsynchronizowany na wszystkich urządzeniach korzystających z AliasVault.</string>
+  <string name="passkey_create_explanation">Spowoduje to utworzenie nowego klucza dostępu i zapisanie go w sejfie. Zostanie on automatycznie zsynchronizowany na wszystkich urządzeniach korzystających z AliasVault.</string>
   <string name="passkey_create_new_button">Utwórz nowy klucz dostępu</string>
   <string name="passkey_select_to_replace">Lub zastąp istniejący klucz dostępu:</string>
   <string name="passkey_replace_button">Zastąp klucz dostępu</string>
-  <string name="passkey_replace_explanation">Spowoduje to zastąpienie dotychczasowego hasła nowym. Należy pamiętać, że stare hasło zostanie nadpisane i nie będzie już dostępne. Jeśli chcesz utworzyć osobne hasło, wróć do poprzedniego ekranu.</string>
+  <string name="passkey_replace_explanation">Spowoduje to zastąpienie dotychczasowego klucza dostępu nowym. Należy pamiętać, że stare klucz zostanie nadpisany i nie będzie już dostępny. Jeśli chcesz utworzyć nowy klucz dostępu, wróć do poprzedniego ekranu.</string>
   <string name="passkey_replacing">Zastępowanie klucza dostępu…</string>
   <string name="passkey_checking_connection">Sprawdzanie połączenia…</string>
   <!-- Vault sync error messages -->
@@ -59,7 +59,7 @@
   <!-- Passkey authentication and unlock error messages -->
   <string name="error_biometric_required">Aby korzystać z kluczy dostępu, należy włączyć uwierzytelnianie biometryczne w głównej aplikacji AliasVault</string>
   <string name="error_unlock_vault_first">Najpierw odblokuj sejf w aplikacji AliasVault</string>
-  <string name="error_vault_decrypt_failed">Nie udało się odszyfrować skarbca</string>
+  <string name="error_vault_decrypt_failed">Nie udało się odszyfrować sejfu</string>
   <string name="error_vault_unlock_failed">Nie udało się odblokować sejfu</string>
   <string name="error_biometric_cancelled">Uwierzytelnianie biometryczne anulowane</string>
   <string name="error_encryption_key_failed">Nie udało się pobrać klucza szyfrującego</string>

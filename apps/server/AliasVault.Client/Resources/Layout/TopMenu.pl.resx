@@ -25,7 +25,7 @@
     <comment>Main navigation link for credentials section</comment>
   </data>
   <data name="EmailsNav">
-    <value>Adresy e-mail</value>
+    <value>Skrzynka odbiorcza</value>
     <comment>Main navigation link for emails section</comment>
   </data>
   <!-- Settings menu items -->
@@ -34,7 +34,7 @@
     <comment>Navigation link for general settings</comment>
   </data>
   <data name="SecuritySettingsNav">
-    <value>Ustawienia zabezpieczeń</value>
+    <value>Ustawienie bezpieczeństwa</value>
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="ImportExportNav">
@@ -46,12 +46,16 @@
     <comment>Navigation link for extensions and apps settings</comment>
   </data>
   <!-- Menu actions -->
-  <data name="ToggleDarkMode">
-    <value>Włącz tryb ciemny</value>
-    <comment>Button text for toggling dark/light theme</comment>
+  <data name="EnableLightMode">
+    <value>Przełącz na tryb jasny</value>
+    <comment>Button text for switching to light theme</comment>
+  </data>
+  <data name="EnableDarkMode">
+    <value>Przełącz na tryb ciemny</value>
+    <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
-    <value>Wyloguj</value>
+    <value>Wyloguj się</value>
     <comment>Button text for logging out</comment>
   </data>
   <!-- Accessibility labels -->

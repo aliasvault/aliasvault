@@ -53,14 +53,7 @@
       "networkError": "网络请求失败，请检查您的互联网连接并重试。",
       "networkErrorSelfHosted": "网络请求失败。请检查网络连接及服务器可用性。对于自托管实例，请确保已安装有效的SSL证书。出于安全考虑，移动设备不支持自签名证书。",
       "sessionExpired": "会话已过期，请重新登录。",
-      "tokenRefreshFailed": "身份验证令牌刷新失败",
-      "httpError": "HTTP 错误：{{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "Failed to decrypt vault",
-      "vaultUnlockFailed": "Failed to unlock vault",
-      "biometricCancelled": "Biometric authentication cancelled",
-      "encryptionKeyFailed": "Failed to retrieve encryption key"
+      "httpError": "HTTP 错误：{{status}}"
     },
     "confirmLogout": "确定要退出登录吗？否则需要重新输入主密码才能访问密码库内容。",
     "noAccountYet": "还没有账号？",
@@ -133,6 +126,7 @@
     "noMatchingCredentials": "未找到匹配的凭据",
     "noCredentialsFound": "未找到凭据。请创建一个以开始使用。提示：您也可以登录 AliasVault 网页应用，从其他密码管理器导入凭据。",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "recentEmails": "近期电子邮件",
     "loadingEmails": "加载电子邮件中…",
     "noEmailsYet": "尚未收到电子邮件。",
@@ -162,7 +156,8 @@
       "all": "(All) Credentials",
       "passkeys": "Passkeys",
       "aliases": "Aliases",
-      "userpass": "Passwords"
+      "userpass": "Passwords",
+      "attachments": "Attachments"
     },
     "twoFactorAuth": "两步验证",
     "totpCode": "TOTP 验证码",
@@ -233,7 +228,7 @@
     },
     "vaultUnlock": "密码库解锁方式",
     "autoLock": "自动锁定超时时间",
-    "clipboardClear": "清空剪切板",
+    "clipboardClear": "清空剪贴板",
     "clipboardClearDescription": "在指定时间后自动清除剪贴板中复制的密码及敏感信息。",
     "clipboardClearAndroidWarning": "注意：部分安卓设备已启用剪贴板历史记录功能，即使AliasVault清除了剪贴板内容，系统仍可能保留先前复制的项目。AliasVault仅能覆盖最近一项记录，但历史记录中的旧条目可能仍可见。出于安全考虑，建议您在设备设置中禁用所有剪贴板历史记录功能。",
     "clipboardClearOptions": {
@@ -245,7 +240,7 @@
     },
     "batteryOptimizationHelpTitle": "启用背景剪贴板清除",
     "batteryOptimizationActive": "电池优化正在阻止后台任务",
-    "batteryOptimizationDisabled": "后台剪切板清除已启用",
+    "batteryOptimizationDisabled": "后台剪贴板清除已启用",
     "batteryOptimizationHelpDescription": "Android的电池优化阻止应用在后台时清理可靠的剪贴板。 禁用AliasVault 电池优化可以清理准确的背景剪贴板，并自动授予必要的提醒权限。",
     "disableBatteryOptimization": "禁用电池优化",
     "identityGenerator": "身份生成器",

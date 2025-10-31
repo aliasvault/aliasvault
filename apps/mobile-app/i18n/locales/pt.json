@@ -53,14 +53,7 @@
       "networkError": "Conexão falhou. Por favor verifique sua conexão com a internet e tente novamente.",
       "networkErrorSelfHosted": "Conexão falhou. Verifique sua conexão com a rede e a disponibilidade do servidor. Para instâncias self-hosted, por favor confirme que possue um certificado SSL válido instalado. Certificados self-signed não são suportados em celulares por questões de segurança.",
       "sessionExpired": "Sua sessão expirou. Por favor faça login novamente.",
-      "tokenRefreshFailed": "Falha ao atualizar token de autenticação",
-      "httpError": "Erro HTTP: {{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "Failed to decrypt vault",
-      "vaultUnlockFailed": "Failed to unlock vault",
-      "biometricCancelled": "Biometric authentication cancelled",
-      "encryptionKeyFailed": "Failed to retrieve encryption key"
+      "httpError": "Erro HTTP: {{status}}"
     },
     "confirmLogout": "Tem certeza que deseja sair? Você precisará fazer login novamente com sua senha mestre para acessar o cofre.",
     "noAccountYet": "Não tem conta ainda?",
@@ -133,6 +126,7 @@
     "noMatchingCredentials": "Nenhuma credencial foi encontrada",
     "noCredentialsFound": "Nenhuma credencial encontrada. Crie uma para iniciar. Dica: você também pode fazer login no site do AliasVault e importar credenciais de outros gerenciadores de senhas.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "recentEmails": "E-mails recentes",
     "loadingEmails": "Carregando emails...",
     "noEmailsYet": "Nenhum e-mail recebido ainda.",
@@ -162,7 +156,8 @@
       "all": "(All) Credentials",
       "passkeys": "Passkeys",
       "aliases": "Aliases",
-      "userpass": "Passwords"
+      "userpass": "Passwords",
+      "attachments": "Attachments"
     },
     "twoFactorAuth": "Autenticação de dois fatores",
     "totpCode": "Código TOTP",

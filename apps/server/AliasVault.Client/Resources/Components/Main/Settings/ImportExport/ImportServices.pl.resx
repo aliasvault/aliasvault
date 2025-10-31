@@ -103,7 +103,7 @@
     <comment>Description for Chrome import service</comment>
   </data>
   <data name="ChromeInstructionsPart1" xml:space="preserve">
-    <value>Aby zaimportować menedżera haseł Chrome, należy wyeksportować go jako plik CSV. Można to zrobić, logując się do przeglądarki Chrome, przechodząc do menu „Ustawienia” > „Hasła i autouzupełnianie” > „Menedżer haseł Google”. Następnie należy kliknąć „Eksportuj hasła”.</value>
+    <value>Aby zaimportować sejf menedżera haseł Chrome, należy wyeksportować go jako plik CSV. Można to zrobić, logując się do przeglądarki Chrome, przechodząc do menu „Ustawienia” > „Hasła i autouzupełnianie” > „Menedżer haseł Google”. Następnie należy kliknąć „Eksportuj hasła”.</value>
     <comment>Chrome export instructions part 1</comment>
   </data>
   <data name="ChromeInstructionsPart2" xml:space="preserve">
@@ -158,7 +158,7 @@
     <comment>Description for Firefox import service</comment>
   </data>
   <data name="FirefoxInstructionsPart1" xml:space="preserve">
-    <value>Aby zaimportować hasła z przeglądarki Firefox, należy je wyeksportować jako plik CSV. W tym celu należy otworzyć przeglądarkę Firefox, przejść do menu > „Hasła”. Następnie należy kliknąć ikonę menu w prawym górnym rogu i wybrać opcję „Eksportuj hasła”.</value>
+    <value>Aby zaimportować sejf z przeglądarki Firefox, należy je wyeksportować jako plik CSV. W tym celu należy otworzyć przeglądarkę Firefox, przejść do menu > „Hasła”. Następnie należy kliknąć ikonę menu w prawym górnym rogu i wybrać opcję „Eksportuj hasła”.</value>
     <comment>Firefox export instructions part 1</comment>
   </data>
   <data name="FirefoxInstructionsPart2" xml:space="preserve">
@@ -171,7 +171,7 @@
     <comment>Description for Dashlane import service</comment>
   </data>
   <data name="DashlaneInstructionsPart1" xml:space="preserve">
-    <value>Aby zaimportować hasła z Dashlane, należy wyeksportować je do pliku CSV. W tym celu należy zalogować się na konto Dashlane, przejść do menu „Konto” > „Ustawienia” i wybrać opcję „Eksportuj do CSV”.</value>
+    <value>Aby zaimportować sejf z Dashlane, należy wyeksportować je do pliku CSV. W tym celu należy zalogować się na konto Dashlane, przejść do menu „Konto” > „Ustawienia” i wybrać opcję „Eksportuj do CSV”.</value>
     <comment>Dashlane export instructions part 1</comment>
   </data>
   <data name="DashlaneInstructionsPart2" xml:space="preserve">
@@ -197,7 +197,7 @@
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>Aby zaimportować hasła z Proton Pass, należy wyeksportować je do pliku CSV. W tym celu należy zalogować się do Proton Pass (wersja internetowa), kliknąć menu „Ustawienia” > „Eksportuj” > „Format pliku: CSV”. Następnie należy kliknąć „Eksportuj”.</value>
+    <value>Aby zaimportować sejf z Proton Pass, należy wyeksportować je do pliku CSV. W tym celu należy zalogować się do Proton Pass (wersja internetowa), kliknąć menu „Ustawienia” > „Eksportuj” > „Format pliku: CSV”. Następnie należy kliknąć „Eksportuj”.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
@@ -232,7 +232,7 @@
     <comment>Description for Dropbox import service</comment>
   </data>
   <data name="DropboxInstructionsPart1" xml:space="preserve">
-    <value>Aby zaimportować hasła z Dropbox Passwords, należy je wyeksportować jako plik CSV. Można to zrobić, otwierając Dropbox Passwords, przechodząc do „Konto” > „Eksportuj” (do pliku .CSV).</value>
+    <value>Aby zaimportować sejf z Dropbox Passwords, należy je wyeksportować jako plik CSV. Można to zrobić, otwierając Dropbox Passwords, przechodząc do „Konto” > „Eksportuj” (do pliku .CSV).</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
   <!-- Common text that can be reused -->

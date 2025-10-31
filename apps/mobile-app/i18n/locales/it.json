@@ -53,14 +53,7 @@
       "networkError": "Errore di rete: Controlla la tua connessione e riprova.",
       "networkErrorSelfHosted": "Errore di rete. Verifica la tua connessione di rete e la disponibilità del server. Per le istanze auto-ospitate, assicurati di avere installato un certificato SSL valido. I certificati autofirmati non sono supportati sui dispositivi mobili per motivi di sicurezza.",
       "sessionExpired": "La tua sessione è scaduta. Effettua nuovamente il login.",
-      "tokenRefreshFailed": "Aggiornamento del token di autenticazione non riuscito",
-      "httpError": "Errore HTTP: {{status}}",
-      "biometricRequired": "Abilitare l'autenticazione biometrica nell'app principale di AliasVault per utilizzare le passkey",
-      "unlockVaultFirst": "Si prega di sbloccare prima la cassaforte nell'app AliasVault",
-      "vaultDecryptFailed": "Decifratura della cassaforte non riuscita",
-      "vaultUnlockFailed": "Sblocco della cassaforte non riuscito",
-      "biometricCancelled": "Autenticazione biometrica annullata",
-      "encryptionKeyFailed": "Recupero della chiave di crittografia non riuscito"
+      "httpError": "Errore HTTP: {{status}}"
     },
     "confirmLogout": "Sei sicuro di voler uscire? Dovrai accedere nuovamente con la password principale per accedere alla cassaforte.",
     "noAccountYet": "Non hai ancora un account?",
@@ -133,6 +126,7 @@
     "noMatchingCredentials": "Nessuna credenziale corrispondente trovata",
     "noCredentialsFound": "Nessuna credenziale trovata. Creane una per iniziare. Consiglio: puoi anche accedere al sito AliasVault per importare credenziali da altri gestori password.",
     "noPasskeysFound": "Non sono state ancora create passkey. Le passkey vengono create visitando un sito web che offre le passkey come metodo di autenticazione.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "recentEmails": "Email recenti",
     "loadingEmails": "Caricamento email...",
     "noEmailsYet": "Nessuna email ricevuta.",
@@ -162,7 +156,8 @@
       "all": "(Tutte) Credenziali",
       "passkeys": "Passkey",
       "aliases": "Alias",
-      "userpass": "Password"
+      "userpass": "Password",
+      "attachments": "Attachments"
     },
     "twoFactorAuth": "Autenticazione a due fattori",
     "totpCode": "Codice TOTP",

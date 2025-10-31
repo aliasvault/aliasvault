@@ -53,14 +53,7 @@
       "networkError": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט תקין ולנסות שוב.",
       "networkErrorSelfHosted": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט והשרת זמינים. למערכות באירוח עצמי, נא לוודא שמותקן אצלך אישור SSL תקף. אישורים בחתימה עצמית לא נתמכים במכשירים ניידים מטעמי אבטחת מידע.",
       "sessionExpired": "משך ההפעלה שלך פג. נא להיכנס שוב.",
-      "tokenRefreshFailed": "ריענון אסימון האימות נכשל",
-      "httpError": "שגיאת HTTP:‏ {{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "פענוח הכספת נכשל",
-      "vaultUnlockFailed": "שחרור הכספת נכשל",
-      "biometricCancelled": "האימות הביומטרי בוטל",
-      "encryptionKeyFailed": "משיכת מפתח ההצפנה נכשל"
+      "httpError": "שגיאת HTTP:‏ {{status}}"
     },
     "confirmLogout": "לצאת? צריך להיכנס שוב עם סיסמת העל שלך כדי לגשת לכספת שלך.",
     "noAccountYet": "אין לך חשבון עדיין?",
@@ -133,6 +126,7 @@
     "noMatchingCredentials": "לא נמצאו פרטי גישה מתאימים",
     "noCredentialsFound": "לא נמצאו פרטי גישה. נא ליצור כאלה כדי להתחיל. המלצה: אפשר גם להיכנס דרך האתר של AliasVault כדי לייבא פרטי גישה ממנהלי סיסמאות אחרים.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "recentEmails": "הודעות דוא״ל אחרונות",
     "loadingEmails": "הודעות הדוא״ל נטענות…",
     "noEmailsYet": "לא התקבלו הודעות דוא״ל עדיין.",
@@ -162,7 +156,8 @@
       "all": "(כל) פרטי הגישה",
       "passkeys": "Passkeys",
       "aliases": "כינויים",
-      "userpass": "סיסמאות"
+      "userpass": "סיסמאות",
+      "attachments": "Attachments"
     },
     "twoFactorAuth": "אימות דו־שלבי",
     "totpCode": "קוד חד־פעמי זמני",
@@ -174,14 +169,14 @@
       "credentialUpdated": "פרטי הגישה עודכנו בהצלחה",
       "credentialCreated": "פרטי הגישה נוצרו בהצלחה",
       "credentialDeleted": "פרטי הגישה נמחקו בהצלחה",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
+      "usernameCopied": "שם המשתמש הועתק ללוח הגזירים",
+      "emailCopied": "הדוא״ל הועתק ללוח הגזירים",
+      "passwordCopied": "הסיסמה הועתקה ללוח הגזירים"
     },
     "createNewAliasFor": "יצירת כינוי חדש עבור",
     "errors": {
       "loadFailed": "טעינת פרטי הגישה נכשלה",
-      "saveFailed": "Failed to save credential",
+      "saveFailed": "שמירת פרטי הגישה נכשלה",
       "generateUsernameFailed": "יצירת שם משתמש נכשלה",
       "generatePasswordFailed": "יצירת סיסמה נכשלה"
     },

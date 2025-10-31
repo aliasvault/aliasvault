@@ -53,14 +53,7 @@
       "networkError": "Не вдалося виконати мережевий запит. Перевірте підключення до Інтернету та повторіть спробу.",
       "networkErrorSelfHosted": "Не вдалося виконати мережевий запит. Перевірте мережеве з’єднання та доступність сервера. Для самостійно розміщених екземплярів переконайтеся, що у вас встановлено дійсний SSL-сертифікат. Самопідписані сертифікати не підтримуються на мобільних пристроях з міркувань безпеки.",
       "sessionExpired": "Термін дії вашого сеансу закінчився. Будь ласка, увійдіть знову.",
-      "tokenRefreshFailed": "Не вдалося оновити токен автентифікації",
-      "httpError": "Помилка HTTP: {{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "Failed to decrypt vault",
-      "vaultUnlockFailed": "Failed to unlock vault",
-      "biometricCancelled": "Biometric authentication cancelled",
-      "encryptionKeyFailed": "Failed to retrieve encryption key"
+      "httpError": "Помилка HTTP: {{status}}"
     },
     "confirmLogout": "Ви впевнені, що хочете вийти? Вам потрібно знову увійти, використовуючи свій головний пароль, щоб отримати доступ до свого сховища.",
     "noAccountYet": "Ще не маєте облікового запису?",
@@ -133,6 +126,7 @@
     "noMatchingCredentials": "Не знайдено відповідних облікових даних",
     "noCredentialsFound": "Облікові дані не знайдено. Створіть їх, щоб розпочати. Порада: ви також можете увійти у вебдодаток AliasVault, щоб імпортувати облікові дані з інших менеджерів паролів.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No credentials with attachments found",
     "recentEmails": "Недавні електронні листи",
     "loadingEmails": "Завантаження електронних листів...",
     "noEmailsYet": "Поки що не отримано жодних електронних листів.",
@@ -162,7 +156,8 @@
       "all": "(All) Credentials",
       "passkeys": "Passkeys",
       "aliases": "Aliases",
-      "userpass": "Passwords"
+      "userpass": "Passwords",
+      "attachments": "Attachments"
     },
     "twoFactorAuth": "Двофакторна автентифікація",
     "totpCode": "Код TOTP",

@@ -46,9 +46,13 @@
     <comment>Navigation link for extensions and apps settings</comment>
   </data>
   <!-- Menu actions -->
-  <data name="ToggleDarkMode">
-    <value>מיתוג מצב לילה</value>
-    <comment>Button text for toggling dark/light theme</comment>
+  <data name="EnableLightMode">
+    <value>מעבר למצב בהיר</value>
+    <comment>Button text for switching to light theme</comment>
+  </data>
+  <data name="EnableDarkMode">
+    <value>מעבר למצב כהה</value>
+    <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
     <value>יציאה</value>

@@ -53,14 +53,7 @@
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
       "networkErrorSelfHosted": "Netwerkfout. Controleer de verbinding en probeer het opnieuw. Voor self-hosted instances, controleer dat er een geldig SSL-certificaat is geconfigureerd. Self-signed SSL-certificaten worden niet ondersteund door de app wegens veiligheidsredenen.",
       "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
-      "tokenRefreshFailed": "Authenticatietoken vernieuwen mislukt",
-      "httpError": "HTTP fout: {{status}}",
-      "biometricRequired": "Schakel biometrische authenticatie in om passkeys te gebruiken",
-      "unlockVaultFirst": "Ontgrendel eerst de vault in de AliasVault app",
-      "vaultDecryptFailed": "Ontsleutelen van vault mislukt",
-      "vaultUnlockFailed": "Ontgrendelen van vault mislukt",
-      "biometricCancelled": "Biometrische verificatie geannuleerd",
-      "encryptionKeyFailed": "Fout bij ophalen van encryptiesleutel"
+      "httpError": "HTTP fout: {{status}}"
     },
     "confirmLogout": "Weet je zeker dat je wilt uitloggen? Je moet opnieuw inloggen met je hoofdwachtwoord om toegang te krijgen tot je vault.",
     "noAccountYet": "Nog geen account?",
@@ -133,6 +126,7 @@
     "noMatchingCredentials": "Geen credentials gevonden",
     "noCredentialsFound": "Geen credentials gevonden. Maak er een aan om te beginnen. Tip: je kunt ook inloggen op de AliasVault webapp om credentials te importeren uit andere wachtwoord-managers.",
     "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
+    "noAttachmentsFound": "Geen credentials gevonden met bijlagen",
     "recentEmails": "Recente e-mails",
     "loadingEmails": "E-mails laden...",
     "noEmailsYet": "Nog geen e-mails ontvangen.",
@@ -162,7 +156,8 @@
       "all": "(Alle) Credentials",
       "passkeys": "Passkeys",
       "aliases": "Aliassen",
-      "userpass": "Wachtwoorden"
+      "userpass": "Wachtwoorden",
+      "attachments": "Bijlagen"
     },
     "twoFactorAuth": "Tweestapsverificatie",
     "totpCode": "TOTP Code",

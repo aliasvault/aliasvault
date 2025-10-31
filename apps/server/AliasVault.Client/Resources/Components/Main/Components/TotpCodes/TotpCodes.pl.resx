@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Uwierzytelnianie dwuskładnikowe</value>
+    <value>Weryfikacja dwuetapowa (2FA)</value>
     <comment>Section title for 2FA codes</comment>
   </data>
   <data name="AddTotpCodeButton" xml:space="preserve">
@@ -67,11 +67,11 @@
     <comment>Button text to add new TOTP code</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
-    <value>Dodaj kod uwierzytelniający dwuskładnikowy 2FA</value>
+    <value>Dodaj kod 2FA usługi</value>
     <comment>Description for adding TOTP codes</comment>
   </data>
   <data name="AddTotpCodeModalTitle" xml:space="preserve">
-    <value>Dodaj kod 2FA TOTP</value>
+    <value>Dodaj kod TOTP</value>
     <comment>Modal title for adding TOTP code</comment>
   </data>
   <data name="CloseFormButton" xml:space="preserve">
@@ -79,7 +79,7 @@
     <comment>Button to close the add TOTP form</comment>
   </data>
   <data name="TotpInstructions" xml:space="preserve">
-    <value>Jeśli strona internetowa oferuje lub wymaga uwierzytelniania dwuskładnikowego 2FA dla Twojego konta, skopiuj tajny klucz lub adres URI kodu QR i wklej go poniżej.</value>
+    <value>Jeśli strona internetowa oferuje lub wymaga weryfikacji 2FA dla Twojego konta, skopiuj tajny klucz lub adres URL kodu QR i wklej go poniżej.</value>
     <comment>Instructions for adding TOTP codes</comment>
   </data>
   <data name="NameOptionalLabel" xml:space="preserve">
@@ -91,7 +91,7 @@
     <comment>Label for secret key field</comment>
   </data>
   <data name="SecretKeyPlaceholder" xml:space="preserve">
-    <value>Wprowadź tajny klucz (wprowadzanie ręczne)</value>
+    <value>Wprowadź tajny klucz TOTP (ręcznie)</value>
     <comment>Placeholder text for secret key input</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">

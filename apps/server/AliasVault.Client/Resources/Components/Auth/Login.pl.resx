@@ -64,7 +64,7 @@
     <comment>Main login page title</comment>
   </data>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Uwierzytelnianie dwuskładnikowe</value>
+    <value>Weryfikacja dwuetapowa (2FA)</value>
     <comment>Title for 2FA step</comment>
   </data>
   <data name="RecoveryCodeVerificationTitle" xml:space="preserve">
@@ -128,7 +128,7 @@
     <comment>Description for 2FA step</comment>
   </data>
   <data name="RecoveryCodeDescription" xml:space="preserve">
-    <value>Poprosiłeś o zalogowanie się za pomocą kodu odzyskiwania. Kod odzyskiwania to jednorazowy kod, którego można użyć do zalogowania się na swoje konto. Pamiętaj, że jeśli nie wyłączysz ręcznie uwierzytelniania dwuskładnikowego po zalogowaniu, przy następnym logowaniu zostaniesz ponownie poproszony o podanie kodu uwierzytelniającego.</value>
+    <value>Poprosiłeś o zalogowanie się za pomocą kodu odzyskiwania. Kod odzyskiwania to jednorazowy kod, którego można użyć do zalogowania się na swoje konto. Pamiętaj, że jeśli nie wyłączysz ręcznie uwierzytelniania dwuskładnikowego (2FA) po zalogowaniu, przy następnym logowaniu zostaniesz ponownie poproszony o podanie kodu uwierzytelniającego.</value>
     <comment>Description for recovery code step</comment>
   </data>
   <data name="NoAccountYetText" xml:space="preserve">

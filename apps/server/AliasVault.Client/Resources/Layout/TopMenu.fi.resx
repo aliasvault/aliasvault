@@ -46,9 +46,13 @@
     <comment>Navigation link for extensions and apps settings</comment>
   </data>
   <!-- Menu actions -->
-  <data name="ToggleDarkMode">
+  <data name="EnableLightMode">
+    <value>Vaihda vaaleaan tilaan</value>
+    <comment>Button text for switching to light theme</comment>
+  </data>
+  <data name="EnableDarkMode">
     <value>Vaihda tummaan tilaan</value>
-    <comment>Button text for toggling dark/light theme</comment>
+    <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
     <value>Kirjaudu ulos</value>
