@@ -230,6 +230,10 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
         if isQuickReturnMode {
             let vaultStore = VaultStore()
 
+            if !sanityChecks(vaultStore: vaultStore) {
+                return
+            }
+
             // Check if biometric authentication is available
             if !vaultStore.isBiometricAuthEnabled() {
                 print("Quick return failed: Biometric auth not enabled")

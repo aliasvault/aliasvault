@@ -52,7 +52,6 @@
     "expo-router": "~5.1.6",
     "expo-sharing": "~13.1.5",
     "expo-splash-screen": "~0.30.10",
-    "expo-sqlite": "~15.2.14",
     "expo-status-bar": "~2.2.3",
     "expo-symbols": "~0.4.5",
     "expo-web-browser": "~14.2.0",
