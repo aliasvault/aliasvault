@@ -240,7 +240,7 @@
     },
     "batteryOptimizationHelpTitle": "Włącz czyszczenie schowka w tle",
     "batteryOptimizationActive": "Optymalizacja baterii blokuje zadania w tle",
-    "batteryOptimizationDisabled": "Włączono czyszczenie schowka tła",
+    "batteryOptimizationDisabled": "Włączono czyszczenie schowka w tle",
     "batteryOptimizationHelpDescription": "Optymalizacja baterii systemu Android uniemożliwia niezawodne czyszczenie schowka, gdy aplikacja działa w tle. Wyłączenie optymalizacji baterii dla AliasVault umożliwia precyzyjne czyszczenie schowka w tle i automatycznie przyznaje niezbędne uprawnienia alarmowe.",
     "disableBatteryOptimization": "Wyłącz optymalizację baterii",
     "identityGenerator": "Generator tożsamości",
