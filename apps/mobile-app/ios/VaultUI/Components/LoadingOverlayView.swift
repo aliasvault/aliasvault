@@ -14,50 +14,56 @@ public struct LoadingOverlayView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
+        GeometryReader { geometry in
             VStack(spacing: 0) {
-                // AliasVault logo animation - four pulsing dots
-                HStack(spacing: 10) {
-                    ForEach(0..<4) { index in
-                        Circle()
-                            .fill(ColorConstants.Light.tertiary)
-                            .frame(width: 8, height: 8)
-                            .opacity(animatingDots[index] ? 1.0 : 0.3)
-                            .animation(
-                                Animation.easeInOut(duration: 0.7)
-                                    .repeatForever(autoreverses: true)
-                                    .delay(Double(index) * 0.2),
-                                value: animatingDots[index]
+                // Position content at 20% from top to avoid Face ID prompt obstruction
+                Spacer()
+                    .frame(height: geometry.size.height * 0.15)
+
+                VStack(spacing: 0) {
+                    // AliasVault logo animation - four pulsing dots
+                    HStack(spacing: 10) {
+                        ForEach(0..<4) { index in
+                            Circle()
+                                .fill(ColorConstants.Light.tertiary)
+                                .frame(width: 8, height: 8)
+                                .opacity(animatingDots[index] ? 1.0 : 0.3)
+                                .animation(
+                                    Animation.easeInOut(duration: 0.7)
+                                        .repeatForever(autoreverses: true)
+                                        .delay(Double(index) * 0.2),
+                                    value: animatingDots[index]
+                                )
+                        }
+                    }
+                    .padding(12)
+                    .padding(.horizontal, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .fill(colorScheme == .dark ? Color.clear : Color.white)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 20)
+                                    .stroke(ColorConstants.Light.tertiary, lineWidth: 5)
                             )
+                            .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
+                    )
+
+                    // Loading message with animated dots
+                    if !message.isEmpty {
+                        Text(message + textDots)
+                            .font(.body)
+                            .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                            .padding(.top, 16)
                     }
                 }
-                .padding(12)
-                .padding(.horizontal, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(colorScheme == .dark ? Color.clear : Color.white)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(ColorConstants.Light.tertiary, lineWidth: 5)
-                        )
-                        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
-                )
+                .padding(20)
+                .frame(maxWidth: .infinity) // Ensure horizontal centering
 
-                // Loading message with animated dots
-                if !message.isEmpty {
-                    Text(message + textDots)
-                        .font(.body)
-                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                        .padding(.top, 16)
-                }
+                Spacer()
             }
-            .padding(20)
-
-            Spacer()
+            .frame(maxWidth: .infinity) // Ensure horizontal centering for entire VStack
         }
         .onAppear {
             // Start dot animations
