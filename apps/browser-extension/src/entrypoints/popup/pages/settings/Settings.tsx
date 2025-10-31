@@ -109,7 +109,7 @@ const Settings: React.FC = () => {
    * Handle logout.
    */
   const handleLogout = async () : Promise<void> => {
-    navigate('/logout', { replace: true });
+    app.logout();
   };
 
   /**

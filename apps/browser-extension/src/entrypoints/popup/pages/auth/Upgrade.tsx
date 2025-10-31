@@ -24,7 +24,7 @@ import { VaultSqlGenerator } from '@/utils/dist/shared/vault-sql';
  */
 const Upgrade: React.FC = () => {
   const { t } = useTranslation();
-  const { username } = useApp();
+  const { username, logout } = useApp();
   const dbContext = useDb();
   const { sqliteClient } = dbContext;
   const { setHeaderButtons } = useHeaderButtons();
@@ -206,7 +206,7 @@ const Upgrade: React.FC = () => {
    * Handle the logout.
    */
   const handleLogout = async (): Promise<void> => {
-    navigate('/logout');
+    logout();
   };
 
   /**

@@ -52,7 +52,6 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       '/unlock-success',
       '/auth-settings',
       '/upgrade',
-      '/logout',
       '/passkeys/create',
       '/passkeys/authenticate'
     ];

@@ -152,7 +152,7 @@ const Unlock: React.FC = () => {
    * Handle logout
    */
   const handleLogout = () : void => {
-    navigate('/logout', { replace: true });
+    app.logout();
   };
 
   return (

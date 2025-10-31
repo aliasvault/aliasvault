@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useCallback, useEffect, useState } from 'react';
+import React, { createContext, useContext, useMemo, useCallback, useEffect, useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
@@ -15,7 +15,6 @@ type AppContextType = {
   setAuthTokens: (username: string, accessToken: string, refreshToken: string) => Promise<void>;
   globalMessage: string | null;
   clearGlobalMessage: () => void;
-  isLoggingOut: boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -27,7 +26,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const auth = useAuth();
   const webApi = useWebApi();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const isLoggingOutRef = useRef(false);
   const { t } = useTranslation();
 
   /**
@@ -35,23 +34,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
    * Prevents recursive logout calls by tracking logout state.
    */
   const logout = useCallback(async (errorMessage?: string): Promise<void> => {
-    // Prevent recursive logout calls
-    if (isLoggingOut) {
-      console.debug('Logout already in progress, ignoring duplicate call');
+    if (isLoggingOutRef.current) {
       return;
     }
 
     try {
-      setIsLoggingOut(true);
-      webApi.revokeTokens();
-      auth.clearAuth(errorMessage);
-      setIsLoggedIn(false);
+      isLoggingOutRef.current = true;
+      await webApi.revokeTokens();
+      await auth.clearAuth(errorMessage);
     } catch (error) {
       console.error('Error during logout:', error);
     } finally {
-      setIsLoggingOut(false);
+      isLoggingOutRef.current = false;
+      setIsLoggedIn(false);
     }
-  }, [auth, webApi, isLoggingOut]);
+  }, [auth, webApi]);
 
   /**
    * Initialize the authentication state.
@@ -93,7 +90,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAuthTokens: auth.setAuthTokens,
     clearGlobalMessage: auth.clearGlobalMessage,
     isLoggedIn: isLoggedIn,
-    isLoggingOut: isLoggingOut,
   }), [
     auth.isInitialized,
     auth.username,
@@ -103,7 +99,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logout,
     initializeAuth,
     isLoggedIn,
-    isLoggingOut,
   ]);
 
   return (

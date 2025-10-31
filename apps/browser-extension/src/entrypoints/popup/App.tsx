@@ -12,7 +12,6 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { NavigationProvider } from '@/entrypoints/popup/context/NavigationContext';
 import AuthSettings from '@/entrypoints/popup/pages/auth/AuthSettings';
 import Login from '@/entrypoints/popup/pages/auth/Login';
-import Logout from '@/entrypoints/popup/pages/auth/Logout';
 import Unlock from '@/entrypoints/popup/pages/auth/Unlock';
 import UnlockSuccess from '@/entrypoints/popup/pages/auth/UnlockSuccess';
 import Upgrade from '@/entrypoints/popup/pages/auth/Upgrade';
@@ -168,7 +167,6 @@ const App: React.FC = () => {
     { path: '/settings/language', element: <LanguageSettings />, showBackButton: true, title: t('settings.language') },
     { path: '/settings/auto-lock', element: <AutoLockSettings />, showBackButton: true, title: t('settings.autoLockTimeout') },
     { path: '/settings/passkeys', element: <PasskeySettings />, showBackButton: true, title: t('settings.passkeySettings') },
-    { path: '/logout', element: <Logout />, showBackButton: false },
   ], [t]);
 
   useEffect(() => {
