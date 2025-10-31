@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="LoggingInWithWebAuthn" xml:space="preserve">
-    <value>מתבצעת כניסה עם WebAuthn…</value>
+    <value>Logging in with passkey...</value>
     <comment>Message shown while WebAuthn authentication is in progress</comment>
   </data>
   <data name="QuickUnlockDescription" xml:space="preserve">
-    <value>אפשר לשחרר את נעילת הכספת שלך במהירות בעזרת טביעת אצבע, זיהוי פנים או מפתח אבטחה. או להיכנס עם הסיסמה שלך כמוצא אחרון.</value>
+    <value>Quickly unlock your vault using your passkey. Or login with your password as a fallback.</value>
     <comment>Description explaining WebAuthn unlock options</comment>
   </data>
   <data name="UnlockWithWebAuthn" xml:space="preserve">
-    <value>שחרור נעילה עם WebAuthn</value>
+    <value>Unlock with passkey</value>
     <comment>Button text for WebAuthn unlock</comment>
   </data>
   <data name="UnlockWithPassword" xml:space="preserve">
