@@ -50,10 +50,18 @@ if [ ! -f /etc/nginx/ssl/nginx.crt ] || [ ! -f /etc/nginx/ssl/nginx.key ]; then
     chmod 600 /etc/nginx/ssl/nginx.key
 fi
 
-# Create simple JSON with environment variables
+# Convert comma-separated PRIVATE_EMAIL_DOMAINS to JSON array
+if [ -z "$PRIVATE_EMAIL_DOMAINS" ]; then
+    json_array="[]"
+else
+    # Convert comma-separated list to JSON array
+    json_array=$(echo "$PRIVATE_EMAIL_DOMAINS" | awk '{split($0,a,","); printf "["; for(i=1;i<=length(a);i++) {printf "\"%s\"", a[i]; if(i<length(a)) printf ","} printf "]"}')
+fi
+
+# Create JSON with environment variables
 cat > /app/client/wwwroot/appsettings.json << EOF
 {
-    "PrivateEmailDomains": ["$PRIVATE_EMAIL_DOMAINS"],
+    "PrivateEmailDomains": $json_array,
     "SupportEmail": "$SUPPORT_EMAIL",
     "PublicRegistrationEnabled": "$PUBLIC_REGISTRATION_ENABLED"
 }
