@@ -69,6 +69,7 @@
     "react-native-edge-to-edge": "1.6.0",
     "react-native-gesture-handler": "~2.24.0",
     "react-native-get-random-values": "^1.11.0",
+    "react-native-image-zoom-viewer": "^3.0.1",
     "react-native-keyboard-controller": "^1.18.6",
     "react-native-quick-crypto": "^0.7.13",
     "react-native-reanimated": "~3.17.4",

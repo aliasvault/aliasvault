@@ -9,10 +9,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  Image,
   Dimensions,
   Alert
 } from 'react-native';
+import ImageViewer from 'react-native-image-zoom-viewer';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -227,21 +227,18 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
     }
 
     if (isImage) {
+      const imageUrls = [{ url: filePath }];
+
       return (
-        <ScrollView
-          contentContainerStyle={styles.scrollContainer}
-          maximumZoomScale={3}
-          minimumZoomScale={1}
-        >
-          <Image
-            source={{ uri: filePath }}
-            style={styles.image}
-            /**
-             * Handle image load error.
-             */
-            onError={(): void => Alert.alert('Error', 'Could not load image')}
-          />
-        </ScrollView>
+        <ImageViewer
+          imageUrls={imageUrls}
+          enableSwipeDown={false}
+          backgroundColor={colors.background}
+          /**
+           * Handle image load failure.
+           */
+          onLoadFailure={(): void => Alert.alert('Error', 'Could not load image')}
+        />
       );
     }
 
