@@ -163,7 +163,6 @@ class PasskeyRegistrationActivity : FragmentActivity() {
                     rpId = viewModel.rpId,
                     userName = viewModel.userName,
                     userId = viewModel.userId,
-                    db = db,
                 )
             }
 

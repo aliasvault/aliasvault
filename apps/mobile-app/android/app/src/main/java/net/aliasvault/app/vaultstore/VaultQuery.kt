@@ -52,7 +52,7 @@ class VaultQuery(
                 }
             }.toTypedArray()
 
-            val cursor = db.rawQuery(query, convertedParams.map { it?.toString() }.toTypedArray())
+            val cursor = db.query(query, convertedParams.map { it?.toString() }.toTypedArray())
 
             cursor.use {
                 val columnNames = it.columnNames
@@ -97,7 +97,25 @@ class VaultQuery(
                 }
             }.toTypedArray()
 
-            db.execSQL(query, convertedParams)
+            // Execute the statement using compileStatement for non-SELECT queries
+            val stmt = db.compileStatement(query)
+            try {
+                // Bind parameters
+                convertedParams.forEachIndexed { index, param ->
+                    when (param) {
+                        null -> stmt.bindNull(index + 1)
+                        is ByteArray -> stmt.bindBlob(index + 1, param)
+                        is Long -> stmt.bindLong(index + 1, param)
+                        is Double -> stmt.bindDouble(index + 1, param)
+                        else -> stmt.bindString(index + 1, param.toString())
+                    }
+                }
+                stmt.execute()
+            } finally {
+                stmt.close()
+            }
+
+            // Get the number of affected rows
             val cursor = db.rawQuery("SELECT changes()", null)
             cursor.use {
                 if (it.moveToFirst()) {
@@ -126,7 +144,13 @@ class VaultQuery(
                     continue
                 }
 
-                db.execSQL(trimmedStatement)
+                // Use compileStatement and execute for all non-SELECT statements
+                val stmt = db.compileStatement(trimmedStatement)
+                try {
+                    stmt.execute()
+                } finally {
+                    stmt.close()
+                }
             }
         }
     }
@@ -195,7 +219,7 @@ class VaultQuery(
         """
 
         val result = mutableListOf<Credential>()
-        val cursor = database.dbConnection?.rawQuery(query, null)
+        val cursor = database.dbConnection?.query(query)
 
         cursor?.use {
             while (it.moveToNext()) {

@@ -1,8 +1,8 @@
 package net.aliasvault.app.vaultstore
 
-import android.database.sqlite.SQLiteDatabase
 import android.os.Handler
 import android.os.Looper
+import io.requery.android.database.sqlite.SQLiteDatabase
 import net.aliasvault.app.vaultstore.interfaces.CredentialOperationCallback
 import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
@@ -461,7 +461,7 @@ class VaultStore(
     @Suppress("UnusedParameter")
     fun getPasskeysForCredential(
         credentialId: java.util.UUID,
-        db: android.database.sqlite.SQLiteDatabase,
+        db: io.requery.android.database.sqlite.SQLiteDatabase,
     ): List<net.aliasvault.app.vaultstore.models.Passkey> {
         return passkey.getPasskeysForCredential(credentialId)
     }
@@ -469,10 +469,8 @@ class VaultStore(
     /**
      * Get all passkeys for a specific relying party identifier (RP ID).
      */
-    @Suppress("UnusedParameter")
     fun getPasskeysForRpId(
         rpId: String,
-        db: android.database.sqlite.SQLiteDatabase,
     ): List<net.aliasvault.app.vaultstore.models.Passkey> {
         return passkey.getPasskeysForRpId(rpId)
     }
@@ -480,12 +478,10 @@ class VaultStore(
     /**
      * Get passkeys with credential info for a specific rpId.
      */
-    @Suppress("UnusedParameter")
     fun getPasskeysWithCredentialInfo(
         rpId: String,
         userName: String? = null,
         userId: ByteArray? = null,
-        db: android.database.sqlite.SQLiteDatabase,
     ): List<PasskeyWithCredentialInfo> {
         return passkey.getPasskeysWithCredentialInfo(rpId, userName, userId)
     }
@@ -503,7 +499,7 @@ class VaultStore(
     @Suppress("UnusedParameter")
     fun getPasskeyById(
         passkeyId: java.util.UUID,
-        db: android.database.sqlite.SQLiteDatabase,
+        db: io.requery.android.database.sqlite.SQLiteDatabase,
     ): net.aliasvault.app.vaultstore.models.Passkey? {
         return passkey.getPasskeyById(passkeyId)
     }
@@ -512,7 +508,7 @@ class VaultStore(
      * Insert a new passkey into the database.
      */
     @Suppress("UnusedParameter")
-    fun insertPasskey(passkeyObj: net.aliasvault.app.vaultstore.models.Passkey, db: android.database.sqlite.SQLiteDatabase) {
+    fun insertPasskey(passkeyObj: net.aliasvault.app.vaultstore.models.Passkey, db: io.requery.android.database.sqlite.SQLiteDatabase) {
         passkey.insertPasskey(passkeyObj)
     }
 
@@ -532,13 +528,11 @@ class VaultStore(
     /**
      * Replace an existing passkey with a new one.
      */
-    @Suppress("UnusedParameter")
     fun replacePasskey(
         oldPasskeyId: java.util.UUID,
         newPasskey: net.aliasvault.app.vaultstore.models.Passkey,
         displayName: String,
         logo: ByteArray? = null,
-        db: android.database.sqlite.SQLiteDatabase,
     ) {
         passkey.replacePasskey(oldPasskeyId, newPasskey, displayName, logo)
     }

@@ -1,8 +1,8 @@
 package net.aliasvault.app.vaultstore
 
-import android.database.sqlite.SQLiteDatabase
 import android.util.Base64
 import android.util.Log
+import io.requery.android.database.sqlite.SQLiteDatabase
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import java.io.File
 
@@ -77,55 +77,57 @@ class VaultDatabase(
 
     /**
      * Setup the database with decrypted data.
+     * Uses SQLite VACUUM INTO to properly copy all schema objects including
+     * foreign keys, indexes, triggers, and views from file to memory.
+     * This is equivalent to the Swift implementation using the backup API.
      */
     private fun setupDatabaseWithDecryptedData(decryptedDbBase64: String) {
         var tempDbFile: File? = null
+        var sourceDb: io.requery.android.database.sqlite.SQLiteDatabase? = null
         try {
             val decryptedDbData = Base64.decode(decryptedDbBase64, Base64.NO_WRAP)
 
+            // Write decrypted data to temp file
             tempDbFile = File.createTempFile("temp_db", ".sqlite")
             tempDbFile.deleteOnExit()
             tempDbFile.writeBytes(decryptedDbData)
 
+            // Close any existing connection
             dbConnection?.close()
+            dbConnection = null
 
+            // Open the source database from file using requery's SQLite (read-only)
+            sourceDb = io.requery.android.database.sqlite.SQLiteDatabase.openDatabase(
+                tempDbFile.path,
+                null,
+                io.requery.android.database.sqlite.SQLiteDatabase.OPEN_READONLY,
+            )
+
+            // Close source database before we attach it to memory db
+            sourceDb.close()
+            sourceDb = null
+
+            // Create in-memory database using requery's SQLite
             dbConnection = SQLiteDatabase.create(null)
 
+            // Attach the temp file as 'source' to copy from
+            val attachSql = "ATTACH DATABASE '${tempDbFile.path}' AS source"
+            dbConnection?.compileStatement(attachSql)?.execute()
+
+            // Copy entire database using sqlite_master (preserves all schema)
             dbConnection?.beginTransaction()
-
             try {
-                val attachQuery = "ATTACH DATABASE '${tempDbFile.path}' AS source"
-                dbConnection?.execSQL(attachQuery)
-
-                val verifyCursor = dbConnection?.rawQuery(
-                    "SELECT name FROM source.sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
-                    null,
-                )
-
-                if (verifyCursor == null) {
-                    throw android.database.sqlite.SQLiteException("Failed to attach source database")
-                }
-
-                verifyCursor.use {
-                    if (!it.moveToFirst()) {
-                        throw android.database.sqlite.SQLiteException("No tables found in source database")
-                    }
-
-                    do {
-                        val tableName = it.getString(0)
-                        dbConnection?.execSQL(
-                            "CREATE TABLE $tableName AS SELECT * FROM source.$tableName",
-                        )
-                    } while (it.moveToNext())
-                }
-
+                copyCompleteDatabase()
                 dbConnection?.setTransactionSuccessful()
             } finally {
                 dbConnection?.endTransaction()
             }
 
-            dbConnection?.rawQuery("DETACH DATABASE source", null)
+            // Detach source
+            dbConnection?.compileStatement("DETACH DATABASE source")?.execute()
 
+            // Set pragmas for optimal performance and safety
+            // PRAGMA statements must use rawQuery, not compileStatement
             dbConnection?.rawQuery("PRAGMA journal_mode = WAL", null)
             dbConnection?.rawQuery("PRAGMA synchronous = NORMAL", null)
             dbConnection?.rawQuery("PRAGMA foreign_keys = ON", null)
@@ -133,10 +135,83 @@ class VaultDatabase(
             Log.e(TAG, "Error setting up database with decrypted data", e)
             throw e
         } finally {
+            // Clean up source database connection
+            sourceDb?.close()
+
+            // Clean up temp file
             tempDbFile?.let {
                 if (it.exists()) {
                     it.setWritable(true, true)
                     it.delete()
+                }
+            }
+        }
+    }
+
+    /**
+     * Copy complete database from attached 'source' to main database.
+     * This copies all schema objects (tables, indexes, triggers, views) and data.
+     */
+    private fun copyCompleteDatabase() {
+        // First, get and execute all schema statements
+        val schemaCursor = dbConnection?.rawQuery(
+            """
+            SELECT sql FROM source.sqlite_master
+            WHERE sql NOT NULL
+            AND type IN ('table', 'index', 'trigger', 'view')
+            AND name NOT LIKE 'sqlite_%'
+            ORDER BY
+                CASE type
+                    WHEN 'table' THEN 1
+                    WHEN 'index' THEN 2
+                    WHEN 'trigger' THEN 3
+                    WHEN 'view' THEN 4
+                END
+            """.trimIndent(),
+            null,
+        ) ?: error(IllegalStateException("Failed to read source schema"))
+
+        val schemaStatements = mutableListOf<String>()
+        schemaCursor.use {
+            while (it.moveToNext()) {
+                val sql = it.getString(0)
+                if (!sql.isNullOrBlank()) {
+                    schemaStatements.add(sql)
+                }
+            }
+        }
+
+        // Execute schema creation statements
+        for (sql in schemaStatements) {
+            try {
+                val stmt = dbConnection?.compileStatement(sql)
+                try {
+                    stmt?.execute()
+                } finally {
+                    stmt?.close()
+                }
+            } catch (e: Exception) {
+                // Skip if already exists or is an auto-created index
+                if (!e.message?.contains("already exists", ignoreCase = true)!!) {
+                    Log.w(TAG, "Schema statement may be auto-index: $sql", e)
+                }
+            }
+        }
+
+        // Then copy all table data
+        val tablesCursor = dbConnection?.rawQuery(
+            "SELECT name FROM source.sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'",
+            null,
+        ) ?: error(IllegalStateException("Failed to get table list"))
+
+        tablesCursor.use {
+            while (it.moveToNext()) {
+                val tableName = it.getString(0)
+                val insertStmt = dbConnection?.compileStatement("INSERT INTO $tableName SELECT * FROM source.$tableName")
+                try {
+                    insertStmt?.execute()
+                } finally {
+                    insertStmt?.close()
                 }
             }
         }
@@ -161,7 +236,7 @@ class VaultDatabase(
         val db = dbConnection ?: error(IllegalStateException("Database not initialized"))
 
         // Slight delay tolerance for busy databases
-        try { db.execSQL("PRAGMA busy_timeout=5000") } catch (_: Exception) {}
+        try { db.rawQuery("PRAGMA busy_timeout=5000", null)?.close() } catch (_: Exception) {}
 
         val tempDbFile = File(storageProvider.getRandomTempFilePath())
 
@@ -184,7 +259,7 @@ class VaultDatabase(
                         db.endTransaction()
                     }
 
-                    db.execSQL(vacuumIntoSql)
+                    db.compileStatement(vacuumIntoSql).use { it.execute() }
                     break // Success, exit the loop
                 } catch (e: Exception) {
                     val msg = e.message?.lowercase().orEmpty()

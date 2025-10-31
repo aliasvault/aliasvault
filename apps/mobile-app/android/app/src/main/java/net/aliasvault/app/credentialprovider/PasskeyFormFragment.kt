@@ -487,7 +487,6 @@ class PasskeyFormFragment : Fragment() {
                     newPasskey = newPasskey,
                     displayName = displayName,
                     logo = logo,
-                    db = db,
                 )
 
                 // Commit transaction and persist to encrypted vault file

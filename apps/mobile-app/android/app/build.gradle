@@ -200,6 +200,9 @@ dependencies {
     // Add Argon2 library for password key derivation
     implementation("com.lambdapioneer.argon2kt:argon2kt:1.6.0")
 
+    // Add modern SQLite library with VACUUM INTO and backup API support
+    implementation("com.github.requery:sqlite-android:3.49.0")
+
     // Test dependencies
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:4.0.0'

@@ -68,7 +68,7 @@ class VaultPasskey(
             LIMIT 1
         """.trimIndent()
 
-        val cursor = db.rawQuery(query, arrayOf(credentialIdString.uppercase()))
+        val cursor = db.query(query, arrayOf(credentialIdString.uppercase()))
         cursor.use {
             if (it.moveToFirst()) {
                 return parsePasskeyRow(it)
@@ -93,7 +93,7 @@ class VaultPasskey(
         """.trimIndent()
 
         val passkeys = mutableListOf<Passkey>()
-        val cursor = db.rawQuery(query, arrayOf(credentialId.toString().uppercase()))
+        val cursor = db.query(query, arrayOf(credentialId.toString().uppercase()))
 
         cursor.use {
             while (it.moveToNext()) {
@@ -121,7 +121,7 @@ class VaultPasskey(
         """.trimIndent()
 
         val passkeys = mutableListOf<Passkey>()
-        val cursor = db.rawQuery(query, arrayOf(rpId))
+        val cursor = db.query(query, arrayOf(rpId))
 
         cursor.use {
             while (it.moveToNext()) {
@@ -157,7 +157,7 @@ class VaultPasskey(
         """.trimIndent()
 
         val results = mutableListOf<PasskeyWithCredentialInfo>()
-        val cursor = db.rawQuery(query, arrayOf(rpId))
+        val cursor = db.query(query, arrayOf(rpId))
 
         cursor.use {
             while (it.moveToNext()) {
@@ -210,7 +210,7 @@ class VaultPasskey(
         """.trimIndent()
 
         val results = mutableListOf<PasskeyWithCredential>()
-        val cursor = db.rawQuery(query, null)
+        val cursor = db.query(query)
 
         cursor.use {
             while (it.moveToNext()) {
@@ -268,7 +268,7 @@ class VaultPasskey(
             LIMIT 1
         """.trimIndent()
 
-        val cursor = db.rawQuery(query, arrayOf(passkeyId.toString().uppercase()))
+        val cursor = db.query(query, arrayOf(passkeyId.toString().uppercase()))
         cursor.use {
             if (it.moveToFirst()) {
                 return parsePasskeyRow(it)
@@ -297,7 +297,7 @@ class VaultPasskey(
         val publicKeyString = String(passkey.publicKey, Charsets.UTF_8)
         val privateKeyString = String(passkey.privateKey, Charsets.UTF_8)
 
-        db.execSQL(
+        db.query(
             insert,
             arrayOf(
                 passkey.id.toString().uppercase(),
@@ -359,7 +359,7 @@ class VaultPasskey(
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """.trimIndent()
 
-            db.execSQL(
+            db.query(
                 aliasInsert,
                 arrayOf(
                     aliasId.toString().uppercase(),
@@ -381,7 +381,7 @@ class VaultPasskey(
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             """.trimIndent()
 
-            db.execSQL(
+            db.query(
                 credentialInsert,
                 arrayOf(
                     credentialId.toString().uppercase(),
@@ -468,7 +468,7 @@ class VaultPasskey(
                 SELECT ServiceId FROM Credentials WHERE Id = ? LIMIT 1
             """.trimIndent()
 
-            val cursor = db.rawQuery(credQuery, arrayOf(credentialId.toString().uppercase()))
+            val cursor = db.query(credQuery, arrayOf(credentialId.toString().uppercase()))
             cursor.use {
                 if (it.moveToFirst()) {
                     val serviceId = it.getString(0)
@@ -479,7 +479,7 @@ class VaultPasskey(
                         WHERE Id = ?
                     """.trimIndent()
 
-                    db.execSQL(serviceUpdate, arrayOf(logo, displayName, timestamp, serviceId))
+                    db.query(serviceUpdate, arrayOf(logo, displayName, timestamp, serviceId))
                 }
             }
         }
@@ -491,7 +491,7 @@ class VaultPasskey(
             WHERE Id = ?
         """.trimIndent()
 
-        db.execSQL(deleteQuery, arrayOf(timestamp, oldPasskeyId.toString().uppercase()))
+        db.query(deleteQuery, arrayOf(timestamp, oldPasskeyId.toString().uppercase()))
 
         // Create the new passkey with the same credential ID
         val updatedPasskey = newPasskey.copy(
