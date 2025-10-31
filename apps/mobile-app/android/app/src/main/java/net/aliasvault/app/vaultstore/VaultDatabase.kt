@@ -184,12 +184,7 @@ class VaultDatabase(
         // Execute schema creation statements
         for (sql in schemaStatements) {
             try {
-                val stmt = dbConnection?.compileStatement(sql)
-                try {
-                    stmt?.execute()
-                } finally {
-                    stmt?.close()
-                }
+                dbConnection?.compileStatement(sql)?.execute()
             } catch (e: Exception) {
                 // Skip if already exists or is an auto-created index
                 if (!e.message?.contains("already exists", ignoreCase = true)!!) {
