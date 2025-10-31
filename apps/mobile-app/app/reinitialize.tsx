@@ -277,9 +277,9 @@ export default function ReinitializeScreen() : React.ReactNode {
               }
 
               // Add small delay for UX
-              await new Promise(resolve => setTimeout(resolve, 1000));
+              await new Promise(resolve => setTimeout(resolve, 500));
               updateStatus(t('app.status.decryptingVault'));
-              await new Promise(resolve => setTimeout(resolve, 1000));
+              await new Promise(resolve => setTimeout(resolve, 750));
 
               // Check if the vault needs migration before syncing
               if (await dbContext.hasPendingMigrations()) {
@@ -383,8 +383,9 @@ export default function ReinitializeScreen() : React.ReactNode {
     container: {
       alignItems: 'center',
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
       paddingHorizontal: 20,
+      paddingTop: '40%', // Position above center to avoid Face ID prompt obstruction
     },
     contentWrapper: {
       alignItems: 'center',
@@ -393,18 +394,16 @@ export default function ReinitializeScreen() : React.ReactNode {
     message1: {
       marginTop: 5,
       textAlign: 'center',
+      color: colors.textMuted,
     },
     message2: {
       textAlign: 'center',
-      marginBottom: 10,
+      marginBottom: 20,
+      color: colors.textMuted,
     },
     messageContainer: {
-      backgroundColor: colors.accentBackground,
-      borderRadius: 10,
-      padding: 20,
       alignItems: 'center',
       width: '100%',
-      maxWidth: 300,
     },
     skipButton: {
       flexDirection: 'row',
@@ -429,9 +428,9 @@ export default function ReinitializeScreen() : React.ReactNode {
     <ThemedView style={styles.container}>
       <View style={styles.contentWrapper}>
         <View style={styles.messageContainer}>
+          {status ? <LoadingIndicator status={status} /> : null}
           <ThemedText style={styles.message1}>{t('app.reinitialize.vaultAutoLockedMessage')}</ThemedText>
           <ThemedText style={styles.message2}>{t('app.reinitialize.attemptingToUnlockMessage')}</ThemedText>
-          {status ? <LoadingIndicator status={status} /> : null}
           {showSkipButton && (
             <TouchableOpacity style={styles.skipButton} onPress={handleSkipPress}>
               <Ionicons name="play-forward-outline" size={20} color={colors.textMuted} />

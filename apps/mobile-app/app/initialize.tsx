@@ -342,8 +342,9 @@ export default function Initialize() : React.ReactNode {
     container: {
       alignItems: 'center',
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
       paddingHorizontal: 20,
+      paddingTop: '40%', // Position above center to avoid Face ID prompt obstruction
     },
     skipButton: {
       flexDirection: 'row',
