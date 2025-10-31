@@ -154,12 +154,10 @@ class VaultDatabase(
     }
 
     /**
-     * Commit a SQL transaction and persist the encrypted vault.
+     * Persist the in-memory database to encrypted local storage.
+     * This method can be called independently to persist the database without committing a transaction.
      */
-    fun commitTransaction() {
-        dbConnection?.setTransactionSuccessful()
-        dbConnection?.endTransaction()
-
+    fun persistDatabaseToEncryptedStorage() {
         val tempDbFile = File.createTempFile("temp_db", ".sqlite")
         tempDbFile.deleteOnExit()
 
@@ -205,6 +203,15 @@ class VaultDatabase(
                 tempDbFile.delete()
             }
         }
+    }
+
+    /**
+     * Commit a SQL transaction and persist the encrypted vault.
+     */
+    fun commitTransaction() {
+        dbConnection?.setTransactionSuccessful()
+        dbConnection?.endTransaction()
+        persistDatabaseToEncryptedStorage()
     }
 
     /**

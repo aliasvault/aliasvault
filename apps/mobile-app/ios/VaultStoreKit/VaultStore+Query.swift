@@ -107,14 +107,12 @@ extension VaultStore {
         try dbConnection.execute("BEGIN TRANSACTION")
     }
 
-    /// Commit a transaction on the database. This is required for all database operations that modify the database.
-    /// Committing a transaction will also trigger a persist from the in-memory database to the encrypted database file.
-    public func commitTransaction() throws {
+    /// Persist the in-memory database to encrypted local storage.
+    /// This method can be called independently to persist the database without committing a transaction.
+    public func persistDatabaseToEncryptedStorage() throws {
         guard let dbConnection = self.dbConnection else {
             throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
         }
-
-        try dbConnection.execute("COMMIT")
 
         let tempDbPath = FileManager.default.temporaryDirectory.appendingPathComponent("temp_db.sqlite")
         try Data().write(to: tempDbPath)
@@ -169,6 +167,17 @@ extension VaultStore {
 
         try storeEncryptedDatabase(encryptedBase64String)
         try? FileManager.default.removeItem(at: tempDbPath)
+    }
+
+    /// Commit a transaction on the database. This is required for all database operations that modify the database.
+    /// Committing a transaction will also trigger a persist from the in-memory database to the encrypted database file.
+    public func commitTransaction() throws {
+        guard let dbConnection = self.dbConnection else {
+            throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
+        }
+
+        try dbConnection.execute("COMMIT")
+        try persistDatabaseToEncryptedStorage()
     }
 
     /// Rollback a transaction on the database on error.
