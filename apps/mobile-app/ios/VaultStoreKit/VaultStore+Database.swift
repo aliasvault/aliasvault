@@ -77,12 +77,8 @@ extension VaultStore {
             )
         }
 
-        // Step 2: Clean up any existing connection to prevent leftover attachments
-        if self.dbConnection != nil {
-            // Try to detach any existing "source" database from previous failed attempts
-            try? self.dbConnection?.execute("DETACH DATABASE source")
-            self.dbConnection = nil
-        }
+        // Step 2: Clean up any existing connection
+        self.dbConnection = nil
 
         // Step 3: Write decrypted data to temp file
         let tempDbPath = FileManager.default.temporaryDirectory.appendingPathComponent("temp_db.sqlite")
@@ -99,14 +95,30 @@ extension VaultStore {
             )
         }
 
-        // Step 4: Create in-memory database connection
+        // Step 4: Open source database from temp file
+        let sourceConnection: Connection
+        do {
+            sourceConnection = try Connection(tempDbPath.path)
+        } catch {
+            try? FileManager.default.removeItem(at: tempDbPath)
+            throw NSError(
+                domain: "VaultStore",
+                code: 12,
+                userInfo: [
+                    NSLocalizedDescriptionKey: "Database setup failed: Could not open source database (file may be corrupt)",
+                    NSUnderlyingErrorKey: error
+                ]
+            )
+        }
+
+        // Step 5: Create in-memory database connection
         do {
             self.dbConnection = try Connection(":memory:")
         } catch {
             try? FileManager.default.removeItem(at: tempDbPath)
             throw NSError(
                 domain: "VaultStore",
-                code: 12,
+                code: 13,
                 userInfo: [
                     NSLocalizedDescriptionKey: "Database setup failed: Could not create in-memory database connection",
                     NSUnderlyingErrorKey: error
@@ -114,131 +126,20 @@ extension VaultStore {
             )
         }
 
-        // Step 4: Attach temp database
+        // Step 6: Use SQLite backup API to copy entire database with full schema preservation
+        // This preserves foreign keys, indexes, triggers, views, and all other schema objects
         do {
-            try self.dbConnection?.attach(.uri(tempDbPath.path, parameters: [.mode(.readOnly)]), as: "source")
-        } catch {
-            try? FileManager.default.removeItem(at: tempDbPath)
-            throw NSError(
-                domain: "VaultStore",
-                code: 13,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Database setup failed: Could not attach temp database (file may be corrupt)",
-                    NSUnderlyingErrorKey: error
-                ]
-            )
-        }
-
-        // Step 5: Begin transaction
-        do {
-            try self.dbConnection?.execute("BEGIN TRANSACTION")
+            let backup = try sourceConnection.backup(usingConnection: self.dbConnection!)
+            try backup.step()
+            backup.finish()
         } catch {
             try? FileManager.default.removeItem(at: tempDbPath)
             throw NSError(
                 domain: "VaultStore",
                 code: 14,
                 userInfo: [
-                    NSLocalizedDescriptionKey: "Database setup failed: Could not begin transaction",
+                    NSLocalizedDescriptionKey: "Database setup failed: Could not backup database to memory",
                     NSUnderlyingErrorKey: error
-                ]
-            )
-        }
-
-        // Step 6: Copy tables
-        do {
-            // Collect table names first, then iterate
-            // This ensures the prepared statement is finalized before we start creating tables
-            var tableNames: [String] = []
-            let tables = try self.dbConnection?.prepare("SELECT name FROM source.sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")
-            for table in tables! {
-                guard let tableName = table[0] as? String else {
-                    continue
-                }
-                tableNames.append(tableName)
-            }
-
-            // Now create tables from the collected names
-            for tableName in tableNames {
-                try self.dbConnection?.execute("CREATE TABLE \(tableName) AS SELECT * FROM source.\(tableName)")
-            }
-        } catch {
-            try? self.dbConnection?.execute("ROLLBACK")
-            try? FileManager.default.removeItem(at: tempDbPath)
-            throw NSError(
-                domain: "VaultStore",
-                code: 15,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Database setup failed: Could not copy tables from source database",
-                    NSUnderlyingErrorKey: error
-                ]
-            )
-        }
-
-        // Step 7: Commit transaction
-        do {
-            try self.dbConnection?.execute("COMMIT")
-        } catch {
-            try? self.dbConnection?.execute("ROLLBACK")
-            try? FileManager.default.removeItem(at: tempDbPath)
-            throw NSError(
-                domain: "VaultStore",
-                code: 16,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Database setup failed: Could not commit transaction",
-                    NSUnderlyingErrorKey: error
-                ]
-            )
-        }
-
-        // Step 8: Detach source database with retry logic
-        var detachSuccess = false
-        var lastDetachError: Error?
-
-        for attempt in 1...5 {
-            do {
-                // First check if source database is still attached by collecting database names
-                // We collect names first to ensure the statement is finalized before detaching
-                var isSourceAttached = false
-                if let attachedDbs = try self.dbConnection?.prepare("PRAGMA database_list") {
-                    let dbNames = attachedDbs.map { row -> String? in
-                        row[1] as? String
-                    }
-                    isSourceAttached = dbNames.contains("source")
-                }
-
-                if !isSourceAttached {
-                    // Source is already detached (shouldn't happen, but handle gracefully)
-                    detachSuccess = true
-                    break
-                }
-
-                // Try to detach
-                try self.dbConnection?.execute("DETACH DATABASE source")
-                detachSuccess = true
-                break
-            } catch let error as NSError {
-                // Check if error is "no such database" - means it's already detached
-                if error.localizedDescription.lowercased().contains("no such database") {
-                    detachSuccess = true
-                    break
-                }
-
-                lastDetachError = error
-                if attempt < 5 {
-                    // Small delay before retry
-                    Thread.sleep(forTimeInterval: Double(attempt) * 0.01)
-                }
-            }
-        }
-
-        if !detachSuccess {
-            try? FileManager.default.removeItem(at: tempDbPath)
-            throw NSError(
-                domain: "VaultStore",
-                code: 17,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Database setup failed: Could not detach source database after 5 attempts",
-                    NSUnderlyingErrorKey: lastDetachError as Any
                 ]
             )
         }
@@ -246,7 +147,7 @@ extension VaultStore {
         // Clean up temp file
         try? FileManager.default.removeItem(at: tempDbPath)
 
-        // Step 9: Set pragmas
+        // Step 7: Set pragmas
         do {
             try self.dbConnection?.execute("PRAGMA journal_mode = WAL")
             try self.dbConnection?.execute("PRAGMA synchronous = NORMAL")
@@ -254,7 +155,7 @@ extension VaultStore {
         } catch {
             throw NSError(
                 domain: "VaultStore",
-                code: 18,
+                code: 15,
                 userInfo: [
                     NSLocalizedDescriptionKey: "Database setup failed: Could not set database pragmas",
                     NSUnderlyingErrorKey: error
