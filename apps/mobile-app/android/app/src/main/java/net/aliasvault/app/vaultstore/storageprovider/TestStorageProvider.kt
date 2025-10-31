@@ -22,6 +22,12 @@ class TestStorageProvider : StorageProvider {
         tempFile.writeText(encryptedData)
     }
 
+    override fun getRandomTempFilePath(): String {
+        val tempFile = File.createTempFile("temp_db", ".sqlite")
+        tempFile.deleteOnExit()
+        return tempFile.absolutePath
+    }
+
     override fun setMetadata(metadata: String) {
         tempMetadata = metadata
     }

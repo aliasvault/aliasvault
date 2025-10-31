@@ -158,49 +158,68 @@ class VaultDatabase(
      * This method can be called independently to persist the database without committing a transaction.
      */
     fun persistDatabaseToEncryptedStorage() {
-        val tempDbFile = File.createTempFile("temp_db", ".sqlite")
-        tempDbFile.deleteOnExit()
+        val db = dbConnection ?: error(IllegalStateException("Database not initialized"))
+
+        // Slight delay tolerance for busy databases
+        try { db.execSQL("PRAGMA busy_timeout=5000") } catch (_: Exception) {}
+
+        val tempDbFile = File(storageProvider.getRandomTempFilePath())
+
+        // Ensure the temp file does not exist yet
+        if (tempDbFile.exists()) {
+            tempDbFile.delete()
+        }
 
         try {
-            dbConnection?.execSQL("ATTACH DATABASE '${tempDbFile.path}' AS target")
+            // Properly quote the path for SQL
+            val quotedPath = tempDbFile.absolutePath.replace("'", "''")
+            val vacuumIntoSql = "VACUUM INTO '$quotedPath'"
 
-            dbConnection?.beginTransaction()
+            // Retry up to 5 times if we hit transient locking errors
+            for (attempt in 1..5) {
+                try {
+                    // VACUUM cannot run inside a transaction
+                    if (db.inTransaction()) {
+                        Log.w(TAG, "Database was in a transaction; ending before VACUUM")
+                        db.endTransaction()
+                    }
 
-            try {
-                val cursor = dbConnection?.rawQuery(
-                    "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name NOT LIKE 'android_%'",
-                    null,
-                )
+                    db.execSQL(vacuumIntoSql)
+                    break // Success, exit the loop
+                } catch (e: Exception) {
+                    val msg = e.message?.lowercase().orEmpty()
+                    val transient = msg.contains("locked") || msg.contains("busy") || msg.contains("statements in progress")
 
-                cursor?.use {
-                    while (it.moveToNext()) {
-                        val tableName = it.getString(0)
-                        dbConnection?.execSQL(
-                            "CREATE TABLE target.$tableName AS SELECT * FROM main.$tableName",
-                        )
+                    Log.w(TAG, "VACUUM INTO attempt $attempt/5 failed: ${e.message}")
+
+                    if (transient && attempt < 5) {
+                        Thread.sleep((150L * attempt))
+                    } else {
+                        Log.e(TAG, "VACUUM INTO failed after retries", e)
+                        throw e
                     }
                 }
-
-                dbConnection?.setTransactionSuccessful()
-            } finally {
-                dbConnection?.endTransaction()
             }
 
-            dbConnection?.execSQL("DETACH DATABASE target")
+            // Validate output file exists and has content
+            if (!tempDbFile.exists() || tempDbFile.length() == 0L) {
+                Log.e(TAG, "VACUUM INTO produced no file or empty file at ${tempDbFile.absolutePath}")
+                error(IllegalStateException("VACUUM INTO produced no output"))
+            }
 
             val rawData = tempDbFile.readBytes()
-
-            val base64String = Base64.encodeToString(rawData, Base64.NO_WRAP)
+            val base64String = android.util.Base64.encodeToString(rawData, android.util.Base64.NO_WRAP)
             val encryptedBase64Data = crypto.encryptData(base64String)
-
             storeEncryptedDatabase(encryptedBase64Data)
         } catch (e: Exception) {
             Log.e(TAG, "Error exporting and encrypting database", e)
             throw e
         } finally {
-            if (tempDbFile.exists()) {
-                tempDbFile.setWritable(true, true)
+            // Always clean up the temp file
+            try {
                 tempDbFile.delete()
+            } catch (e: Exception) {
+                Log.e(TAG, "Error deleting temp file", e)
             }
         }
     }
