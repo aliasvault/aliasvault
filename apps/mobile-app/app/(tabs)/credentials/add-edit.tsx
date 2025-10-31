@@ -365,6 +365,9 @@ export default function AddEditCredentialScreen() : React.ReactNode {
         if (serviceUrl && !isEditMode) {
           router.replace('/credentials/autofill-credential-created');
         } else {
+          setIsSyncing(false);
+          setIsSaveDisabled(false);
+
           // First close the modal
           router.dismiss();
 
@@ -401,11 +404,11 @@ export default function AddEditCredentialScreen() : React.ReactNode {
           position: 'bottom'
         });
         console.error('Error saving credential:', error.message);
+
+        setIsSyncing(false);
+        setIsSaveDisabled(false);
       }
     });
-
-    setIsSyncing(false);
-    setIsSaveDisabled(false);
   }, [isEditMode, id, serviceUrl, router, executeVaultMutation, dbContext.sqliteClient, mode, generateRandomAlias, webApi, watch, setIsSaveDisabled, setIsSyncing, isSaveDisabled, t, originalAttachmentIds, attachments, passkeyMarkedForDeletion]);
 
   /**
