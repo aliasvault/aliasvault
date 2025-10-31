@@ -59,36 +59,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Déverrouillage rapide du coffre-fort</value>
-    <comment>Title for quick vault unlock section</comment>
+    <value>Passkey unlock</value>
+    <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>La clé de décryptage du coffre-fort est sauvegardée via un mot de passe. Cela signifie que lorsque vous rechargez la page ou l'onglet AliasVault, vous pouvez vous connecter avec votre visage, votre empreinte digitale ou les clés de sécurité intégrées du navigateur. Si vous désactivez le déverrouillage rapide du coffre, vous pouvez le faire avec le bouton ci-dessous.</value>
-    <comment>Description when quick unlock is enabled</comment>
+    <value>Your master password is encrypted with the passkey PRF and stored locally. When you reload the AliasVault page or tab, you can unlock your vault with your passkey. If you wish to disable passkey unlock, you can do so with the button below. Your master password will still work for unlocking the vault.</value>
+    <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Désactiver le déverrouillage rapide du coffre</value>
-    <comment>Button to disable quick vault unlock</comment>
+    <value>Disable Passkey Unlock</value>
+    <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>Par défaut, lorsque vous rechargez la page ou l'onglet AliasVault, il vous sera demandé d'entrer à nouveau votre mot de passe principal. Vous pouvez également choisir d'utiliser une clé d'accès (ou un authentificateur matériel tel que YubiKey) au lieu de votre mot de passe principal. Cela vous permettra de déverrouiller votre coffre avec votre visage, votre empreinte digitale ou les clés de sécurité intégrées du navigateur. Ceci s'applique uniquement au périphérique actuel et au navigateur.</value>
-    <comment>Description when quick unlock is disabled</comment>
+    <value>By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.</value>
+    <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>Veuillez noter que cette fonctionnalité est expérimentale et peut ne pas fonctionner sur tous les appareils ou navigateurs. Pour que cela fonctionne, votre navigateur doit prendre en charge WebAuthn et l'extension PRF. Si vous rencontrez des problèmes, vous pouvez désactiver cette fonctionnalité à tout moment.</value>
-    <comment>Warning about experimental nature of the feature</comment>
+    <value>This feature is currently supported by AliasVault browser extension and iOS app. Android support is coming soon. If you experience any issues, you can disable this feature at any time.</value>
+    <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Activer le déverrouillage rapide du coffre</value>
-    <comment>Button to enable quick vault unlock</comment>
+    <value>Enable Passkey Unlock</value>
+    <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Déverrouillage rapide du coffre est bien activé. La prochaine fois que votre coffre sera verrouillé, vous pourrez le déverrouiller avec votre clé d'accès créée.</value>
-    <comment>Success message when quick unlock is enabled</comment>
+    <value>Passkey unlock is successfully enabled. The next time your vault is locked, you can unlock it with your created passkey.</value>
+    <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Déverrouillage rapide du coffre est désactivé avec succès.</value>
-    <comment>Success message when quick unlock is disabled</comment>
+    <value>Passkey unlock is successfully disabled.</value>
+    <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
     <value>Votre navigateur actuel ne supporte pas l'extension WebAuthn PRF. Veuillez vous connecter avec votre mot de passe.</value>
