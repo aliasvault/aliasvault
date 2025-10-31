@@ -124,6 +124,9 @@ export class SqliteClient {
     }
 
     try {
+      // Execute vacuum command to free up space before exporting (because of potential temp tables etc.)
+      this.db.run('VACUUM');
+
       // Export database to Uint8Array
       const binaryArray = this.db.export();
 
