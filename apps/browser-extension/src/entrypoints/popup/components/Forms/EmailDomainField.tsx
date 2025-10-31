@@ -101,7 +101,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
         }
       }
     }
-  }, [value, privateEmailDomains, showPrivateDomains, selectedDomain]);
+  }, [value, privateEmailDomains, showPrivateDomains]);
 
   // Handle local part changes
   const handleLocalPartChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {

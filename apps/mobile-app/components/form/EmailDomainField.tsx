@@ -57,16 +57,16 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
      */
     const loadDomains = async (): Promise<void> => {
       try {
-        const defaultDomain = await dbContext.sqliteClient?.getDefaultEmailDomain();
-        if (defaultDomain) {
-          setPrivateEmailDomains([defaultDomain]);
+        const metadata = await dbContext.getVaultMetadata();
+        if (metadata?.privateEmailDomains) {
+          setPrivateEmailDomains(metadata.privateEmailDomains);
         }
       } catch (err) {
         console.error('Error loading email domains:', err);
       }
     };
     loadDomains();
-  }, [dbContext.sqliteClient]);
+  }, [dbContext]);
 
   // Check if private domains are available and valid
   const showPrivateDomains = useMemo(() => {
@@ -108,7 +108,7 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
         }
       }
     }
-  }, [value, privateEmailDomains, showPrivateDomains, selectedDomain]);
+  }, [value, privateEmailDomains, showPrivateDomains]);
 
   // Handle local part changes
   const handleLocalPartChange = useCallback((newText: string) => {
