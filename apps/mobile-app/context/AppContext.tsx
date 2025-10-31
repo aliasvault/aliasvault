@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useCallback, useEffect, useState } from 'react';
+import React, { createContext, useContext, useMemo, useCallback, useEffect, useRef } from 'react';
 import { router } from 'expo-router';
 
 import { useAuth } from '@/context/AuthContext';
@@ -17,7 +17,6 @@ type AppContextType = {
   initializeAuth: () => Promise<{ isLoggedIn: boolean; enabledAuthMethods: AuthMethod[] }>;
   setAuthTokens: (username: string, accessToken: string, refreshToken: string) => Promise<void>;
   login: () => Promise<void>;
-  isLoggingOut: boolean;
   // Auth methods from AuthContext
   getEnabledAuthMethods: () => Promise<AuthMethod[]>;
   isBiometricsEnabled: () => Promise<boolean>;
@@ -50,7 +49,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const auth = useAuth();
   const webApi = useWebApi();
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const isLoggingOutRef = useRef(false);
 
   /**
    * Logout the user by revoking tokens and clearing the auth tokens from storage.
@@ -58,21 +57,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
    */
   const logout = useCallback(async (errorMessage?: string): Promise<void> => {
     // Prevent recursive logout calls
-    if (isLoggingOut) {
-      console.debug('Logout already in progress, ignoring duplicate call');
+    if (isLoggingOutRef.current) {
       return;
     }
 
     try {
-      setIsLoggingOut(true);
+      isLoggingOutRef.current = true;
       await webApi.revokeTokens();
       await auth.clearAuth(errorMessage);
     } catch (error) {
       console.error('Error during logout:', error);
     } finally {
-      setIsLoggingOut(false);
+      isLoggingOutRef.current = false;
     }
-  }, [auth, webApi, isLoggingOut]);
+  }, [auth, webApi]);
 
   /**
    * Subscribe to logout events from WebApiService.
@@ -113,7 +111,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     initializeAuth: auth.initializeAuth,
     setAuthTokens: auth.setAuthTokens,
     login: auth.login,
-    isLoggingOut,
     // Pass through other auth methods
     getEnabledAuthMethods: auth.getEnabledAuthMethods,
     isBiometricsEnabled: auth.isBiometricsEnabled,
@@ -156,7 +153,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     auth.markAutofillConfigured,
     auth.setReturnUrl,
     logout,
-    isLoggingOut,
   ]);
 
   return (

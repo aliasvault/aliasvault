@@ -195,6 +195,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
    * This is called by AppContext after revoking tokens on the server.
    */
   const clearAuth = useCallback(async (errorMessage?: string): Promise<void> => {
+    console.log('Clearing auth --- attempt');
+    // Clear credential identity store (password and passkey autofill metadata)
+    try {
+      await NativeVaultManager.removeCredentialIdentities();
+    } catch (error) {
+      console.error('Failed to remove credential identities:', error);
+      // Non-fatal error - continue with logout
+    }
+
     // Clear from native layer
     await NativeVaultManager.clearUsername();
     await NativeVaultManager.clearAuthTokens();
@@ -205,14 +214,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await AsyncStorage.removeItem('accessToken');
     await AsyncStorage.removeItem('refreshToken');
     await AsyncStorage.removeItem('authMethods');
-
-    // Clear credential identity store (passkey metadata)
-    try {
-      await NativeVaultManager.removeCredentialIdentities();
-    } catch (error) {
-      console.error('Failed to remove credential identities:', error);
-      // Non-fatal error - continue with logout
-    }
 
     dbContext?.clearDatabase();
 
