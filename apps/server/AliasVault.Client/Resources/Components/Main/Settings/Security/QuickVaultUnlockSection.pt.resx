@@ -59,31 +59,31 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Passkey unlock</value>
+    <value>Desbloqueio com Passkey</value>
     <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Your master password is encrypted with the passkey PRF and stored locally. When you reload the AliasVault page or tab, you can unlock your vault with your passkey. If you wish to disable passkey unlock, you can do so with the button below. Your master password will still work for unlocking the vault.</value>
+    <value>Sua senha mestre é criptografada com passkey PRF e armazenada localmente. Quando você atualiza a página ou aba do AliasVault, você pode desbloquear seu cofre com sua passkey. Se você deseja desabilitar o desbloqueio por passkey, você pode utilizar o botão abaixo. Sua senha mestre ainda funcionará para desbloquear o cofre.</value>
     <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Disable Passkey Unlock</value>
+    <value>Desabilitar Desbloqueio com Passkey</value>
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.</value>
+    <value>Por padrão, atualizar a página ou aba do AliasVault requer que você digite sua senha mestre novamente. Com uma passkey, você pode desbloquear seu cofre instantaneamente. Quando habilitado, sua senha mestre é criptografada localmente ussndo a extensão PRF do passkey. Nota: o passkey funcionará apenas no dispositivo atual e navegador em que você habilitar.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>This feature is currently supported by AliasVault browser extension and iOS app. Android support is coming soon. If you experience any issues, you can disable this feature at any time.</value>
+    <value>Esta função é suportada pela extensão de navegador e aplicativo iOS do AliasVault. Suporte para Android será adicionado em breve. Se você tiver qualquer problema, você pode desabilitar esta função a qualquer momento.</value>
     <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Passkey Unlock</value>
+    <value>Habilitar Desbloqueio com Passkey</value>
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully enabled. The next time your vault is locked, you can unlock it with your created passkey.</value>
+    <value>Desbloqueio com passkey foi habilitado com sucesso. Na próxima vez que seu cofre for bloqueado, você poderá desbloqueá-lo com o passkey criado.</value>
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
