@@ -43,24 +43,24 @@
   <string name="passkey_checking_connection">Verificando conexão…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Erro de Conexão</string>
-  <string name="connection_error_message">No connection to the server can be made. Please check your internet connection and try creating the passkey again.</string>
+  <string name="connection_error_message">A conexão com o servidor não foi feita. Por favor, confira sua conexão com a internet e tente criar a passkey novamente.</string>
   <string name="session_expired_title">Sessão Expirada</string>
-  <string name="session_expired_message">Your session has expired. Please sign in again.</string>
+  <string name="session_expired_message">Sua sessão expirou. Por favor, faça login novamente.</string>
   <string name="password_changed_title">Senha Alterada</string>
-  <string name="password_changed_message">Your password has been changed. Please sign in again.</string>
+  <string name="password_changed_message">Sua senha foi alterada. Por favor, faça login novamente.</string>
   <string name="version_not_supported_title">Atualização Necessária</string>
-  <string name="version_not_supported_message">Your app version is no longer supported. Please update to the latest version.</string>
+  <string name="version_not_supported_message">A versão do seu aplicativo não é mais suportada. Por favor, atualize para a versão mais recente.</string>
   <string name="server_unavailable_title">Servidor Indisponível</string>
-  <string name="server_unavailable_message">The server is currently unavailable. Please try again later.</string>
+  <string name="server_unavailable_message">O servidor está indisponível no momento. Por favor, tente novamente mais tarde.</string>
   <string name="network_error_title">Erro de Rede</string>
-  <string name="network_error_message">A network error occurred. Please check your connection and try again.</string>
-  <string name="server_version_not_supported_title">Server Update Required</string>
-  <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
+  <string name="network_error_message">Ocorreu um erro de rede. Por favor, verifique sua conexão e tente novamente.</string>
+  <string name="server_version_not_supported_title">Atualização de Servidor Necessária</string>
+  <string name="server_version_not_supported_message">A versão do servidor está desatualizada. Por favor, entre em contato com seu administrador para atualizar o servidor.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_biometric_required">Please enable biometric authentication in the main AliasVault app in order to use passkeys</string>
-  <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
-  <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
-  <string name="error_vault_unlock_failed">Failed to unlock vault</string>
-  <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
-  <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
+  <string name="error_biometric_required">Por favor, habilite a autenticação biométrica no aplicativo AliasVault principal para utilizar passkeys</string>
+  <string name="error_unlock_vault_first">Por favor, desbloqueie seu cofre no aplicativo do AliasVault antes</string>
+  <string name="error_vault_decrypt_failed">Falha ao descriptografar cofre</string>
+  <string name="error_vault_unlock_failed">Falha ao desbloquear cofre</string>
+  <string name="error_biometric_cancelled">Autenticação biométrica cancelada</string>
+  <string name="error_encryption_key_failed">Falha ao recuperar chave de criptografia</string>
 </resources>
