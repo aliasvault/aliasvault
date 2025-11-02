@@ -71,7 +71,7 @@
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>Por padrão, atualizar a página ou aba do AliasVault requer que você digite sua senha mestre novamente. Com uma passkey, você pode desbloquear seu cofre instantaneamente. Quando habilitado, sua senha mestre é criptografada localmente ussndo a extensão PRF do passkey. Nota: o passkey funcionará apenas no dispositivo atual e navegador em que você habilitar.</value>
+    <value>Por padrão, atualizar a página ou aba do AliasVault requer que você digite sua senha mestre novamente. Com uma passkey, você pode desbloquear seu cofre instantaneamente. Quando habilitado, sua senha mestre é criptografada localmente usando a extensão PRF da passkey. Nota: a passkey funcionará apenas no dispositivo atual e navegador em que você habilitar.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
@@ -83,11 +83,11 @@
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Desbloqueio com passkey foi habilitado com sucesso. Na próxima vez que seu cofre for bloqueado, você poderá desbloqueá-lo com o passkey criado.</value>
+    <value>Desbloqueio com passkey foi habilitado com sucesso. Na próxima vez que seu cofre for bloqueado, você poderá desbloqueá-lo com a passkey criada.</value>
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully disabled.</value>
+    <value>Desbloqueio por Passkey foi desabilitado com sucesso.</value>
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
