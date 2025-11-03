@@ -2,8 +2,17 @@
 
 BUNDLE_ID="net.aliasvault.app"
 
+SCHEME="AliasVault"
+WORKSPACE="AliasVault.xcworkspace"
+CONFIG="Release"
+ARCHIVE_PATH="$PWD/build/${SCHEME}.xcarchive"
+EXPORT_DIR="$PWD/build/export"
+EXPORT_PLIST="$PWD/exportOptions.plist"
+
 # Put the fastlane API key in the home directory
 API_KEY_PATH="$HOME/APPSTORE_CONNECT_FASTLANE.json"
+
+# ------------------------------------------
 
 if [ ! -f "$API_KEY_PATH" ]; then
   echo "❌ API key file '$API_KEY_PATH' does not exist. Please provide the App Store Connect API key at this path."
@@ -31,13 +40,6 @@ extract_version_info() {
 # ------------------------------------------
 # Ask if user wants to build or use existing
 # ------------------------------------------
-
-SCHEME="AliasVault"
-WORKSPACE="AliasVault.xcworkspace"
-CONFIG="Release"
-ARCHIVE_PATH="$PWD/build/${SCHEME}.xcarchive"
-EXPORT_DIR="$PWD/build/export"
-EXPORT_PLIST="$PWD/exportOptions.plist"
 
 echo ""
 echo "What do you want to do?"

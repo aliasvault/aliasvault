@@ -431,3 +431,6 @@ temp
 
 # Android keystore file (for publishing to Google Play)
 *.keystore
+
+# Safari extension build files
+apps/browser-extension/safari-xcode/AliasVault/build
