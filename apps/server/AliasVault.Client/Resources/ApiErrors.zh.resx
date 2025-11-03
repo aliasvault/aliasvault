@@ -120,7 +120,7 @@
     <value>刷新令牌为必填项。</value>
   </data>
   <data name="ACCOUNT_BLOCKED" xml:space="preserve">
-    <value>您的账户已被停用。若认为此操作有误，请联系支持团队。</value>
+    <value>您的账户已被停用。若您认为此操作有误，请联系支持人员。</value>
   </data>
   <data name="INVALID_REFRESH_TOKEN" xml:space="preserve">
     <value>刷新令牌无效</value>
