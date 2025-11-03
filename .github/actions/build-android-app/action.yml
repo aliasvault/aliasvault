@@ -44,6 +44,18 @@ runs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
+    - name: Configure Gradle JVM memory for CI
+      run: |
+        mkdir -p android
+        cat >> android/gradle.properties <<EOF
+        org.gradle.jvmargs=-Xmx4096m -XX:MaxMetaspaceSize=1024m -XX:+HeapDumpOnOutOfMemoryError
+        org.gradle.daemon.performance.disable-logging=true
+        org.gradle.daemon=true
+        org.gradle.caching=true
+        EOF
+      shell: bash
+      working-directory: apps/mobile-app
+
     - name: Build JS bundle (Expo)
       run: |
         mkdir -p build
