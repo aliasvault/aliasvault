@@ -64,7 +64,7 @@
     <comment>Main login page title</comment>
   </data>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>双因素认证（2FA）</value>
+    <value>两步验证</value>
     <comment>Title for 2FA step</comment>
   </data>
   <data name="RecoveryCodeVerificationTitle" xml:space="preserve">
@@ -81,7 +81,7 @@
     <comment>Label for password input field</comment>
   </data>
   <data name="AuthenticatorCodeLabel" xml:space="preserve">
-    <value>认证器代码</value>
+    <value>身份验证器代码</value>
     <comment>Label for 2FA code input field</comment>
   </data>
   <data name="RecoveryCodeLabel" xml:space="preserve">
@@ -93,7 +93,7 @@
     <comment>Label for remember me checkbox</comment>
   </data>
   <data name="RememberMachineLabel" xml:space="preserve">
-    <value>记住这台设备</value>
+    <value>记住此设备</value>
     <comment>Label for remember machine checkbox</comment>
   </data>
   <!-- Buttons -->
