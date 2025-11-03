@@ -93,8 +93,8 @@ android {
         applicationId 'net.aliasvault.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2400301
-        versionName "0.24.0-beta"
+        versionCode 2400900
+        versionName "0.24.0"
     }
     signingConfigs {
         debug {

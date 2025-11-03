@@ -35,7 +35,7 @@ public static class AppInfo
     /// <summary>
     /// Gets the version stage (e.g., "", "-alpha", "-beta", "-rc").
     /// </summary>
-    public const string VersionStage = "-beta";
+    public const string VersionStage = "";
 
     /// <summary>
     /// Gets the minimum supported AliasVault client version. Normally the minimum client version is the same

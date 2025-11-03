@@ -1,0 +1,5 @@
+- Add passkey support
+- Add Brazilian Portugese, Russian and Polish languages
+- Improved search logic
+- Improved UI for custom URL settings
+- Fix a bug where multiple private domains were not shown correctly in email domain chooser

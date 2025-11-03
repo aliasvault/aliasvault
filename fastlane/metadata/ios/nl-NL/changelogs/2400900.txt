@@ -1,0 +1,7 @@
+- AliasVault ondersteund nu Passkeys
+- Nieuwe talen: Braziliaans Portugees, Russisch en Pools
+- Ondersteuning voor snelle autofill
+- Afbeelding bijlagen kunnen nu worden ingezoomd
+- Verbeterde zoekfunctie
+- Layout tweaks voor iOS 26
+- Bug opgelost waarbij meerdere email domeinen niet goed werden weergegeven in email veld

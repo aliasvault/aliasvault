@@ -1,0 +1,6 @@
+- Add passkey support
+- Add Brazilian Portugese, Russian and Polish languages
+- Add image zoom support to attachment previews
+- Improve search logic
+- Improve dark mode support
+- Fix a bug where multiple private domains were not shown correctly in email domain chooser
