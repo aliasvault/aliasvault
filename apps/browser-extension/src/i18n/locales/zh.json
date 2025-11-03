@@ -105,7 +105,7 @@
     "apiErrors": {
       "UNKNOWN_ERROR": "发生未知错误。请重试。",
       "ACCOUNT_LOCKED": "由于多次尝试失败，账户已暂时锁定。请稍后重试。",
-      "ACCOUNT_BLOCKED": "您的账户已被禁用。如果您认为这是误操作，请联系支持人员。",
+      "ACCOUNT_BLOCKED": "您的账户已被停用。若您认为此操作有误，请联系支持人员。",
       "USER_NOT_FOUND": "用户名或密码无效。请重试。",
       "INVALID_AUTHENTICATOR_CODE": "认证器验证码无效。请重试。",
       "INVALID_RECOVERY_CODE": "恢复码无效。请重试。",
