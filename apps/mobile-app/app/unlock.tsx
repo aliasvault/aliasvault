@@ -245,7 +245,9 @@ export default function UnlockScreen() : React.ReactNode {
     loadingContainer: {
       alignItems: 'center',
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
+      paddingHorizontal: 20,
+      paddingTop: '40%',
     },
     logoContainer: {
       alignItems: 'center',
