@@ -12,4 +12,5 @@ export enum IconSymbolName {
   Paperplane,
   ChevronRight,
   ChevronLeftRight,
+  Trash,
 }

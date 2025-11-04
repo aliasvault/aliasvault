@@ -15,6 +15,7 @@ const SF_SYMBOLS_MAPPING: Record<IconSymbolName, import('expo-symbols').SymbolVi
   [IconSymbolName.Paperplane]: 'paperplane.fill',
   [IconSymbolName.ChevronRight]: 'chevron.right',
   [IconSymbolName.ChevronLeftRight]: 'chevron.left.forwardslash.chevron.right',
+  [IconSymbolName.Trash]: 'trash.fill',
 };
 
 /**

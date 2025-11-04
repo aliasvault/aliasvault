@@ -18,6 +18,7 @@ const MATERIAL_ICONS_MAPPING: Record<IconSymbolName, React.ComponentProps<typeof
   [IconSymbolName.Paperplane]: 'send',
   [IconSymbolName.ChevronRight]: 'chevron-right',
   [IconSymbolName.ChevronLeftRight]: 'code',
+  [IconSymbolName.Trash]: 'delete',
 };
 
 /**

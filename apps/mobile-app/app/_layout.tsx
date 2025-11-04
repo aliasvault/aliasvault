@@ -187,7 +187,7 @@ export default function RootLayout() : React.ReactNode {
         <WebApiProvider>
           <AppProvider>
             <ClipboardCountdownProvider>
-              <GestureHandlerRootView>
+              <GestureHandlerRootView style={{ flex: 1 }}>
                 <RootLayoutNav />
               </GestureHandlerRootView>
             </ClipboardCountdownProvider>

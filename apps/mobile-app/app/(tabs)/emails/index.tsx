@@ -13,7 +13,7 @@ import emitter from '@/utils/EventEmitter';
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
-import { EmailCard } from '@/components/EmailCard';
+import { SwipeableEmailCard } from '@/components/SwipeableEmailCard';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
@@ -216,7 +216,7 @@ export default function EmailsScreen() : React.ReactNode {
     }
 
     return emails.map((email) => (
-      <EmailCard key={email.id} email={email} />
+      <SwipeableEmailCard key={email.id} email={email} />
     ));
   };
 
