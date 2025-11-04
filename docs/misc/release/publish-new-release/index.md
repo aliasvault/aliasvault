@@ -108,7 +108,7 @@ The GitHub Actions workflow `Browser Extension Build` will build the browser ext
 ```bash
 ./gradlew app:bundleRelease
 ```
-    2. The resulting .aapb file will be available in the following location.
+    2. The resulting .aab file will be available in the following location.
 ```bash
 apps/mobile-ap/android/app/build/outputs/bundle/release
 ```

@@ -74,7 +74,7 @@ cd android
 ./gradlew app:bundleRelease
 ```
 
-The resulting .aapb file will be available in:
+The resulting .aab file will be available in:
 
 ```bash
 app/build/outputs/bundle/release
