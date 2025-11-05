@@ -224,7 +224,10 @@
       "openAutofillSettings": "Open Autofill Settings",
       "buttonTip": "If the button above doesn't work it might be blocked because of security settings. You can manually go to Android Settings → General Management → Passwords and autofill.",
       "step2": "2. Some apps, e.g. Google Chrome, may require manual configuration in their settings to allow third-party autofill apps. However, most apps should work with autofill by default.",
-      "alreadyConfigured": "I already configured it"
+      "alreadyConfigured": "I already configured it",
+      "advancedOptions": "Advanced Options",
+      "showSearchText": "Show search text",
+      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "Vault Unlock Method",
     "autoLock": "Auto-lock Timeout",

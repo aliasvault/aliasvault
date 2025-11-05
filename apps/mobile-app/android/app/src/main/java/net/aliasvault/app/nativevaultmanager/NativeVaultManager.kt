@@ -846,6 +846,39 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Get the autofill show search text setting.
+     * @param promise The promise to resolve with boolean result
+     */
+    @ReactMethod
+    override fun getAutofillShowSearchText(promise: Promise) {
+        try {
+            val sharedPreferences = reactApplicationContext.getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
+            val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
+            promise.resolve(showSearchText)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting autofill show search text setting", e)
+            promise.reject("ERR_GET_AUTOFILL_SETTING", "Failed to get autofill show search text setting: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Set the autofill show search text setting.
+     * @param showSearchText Whether to show search text in autofill
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun setAutofillShowSearchText(showSearchText: Boolean, promise: Promise) {
+        try {
+            val sharedPreferences = reactApplicationContext.getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
+            sharedPreferences.edit().putBoolean("autofill_show_search_text", showSearchText).apply()
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error setting autofill show search text setting", e)
+            promise.reject("ERR_SET_AUTOFILL_SETTING", "Failed to set autofill show search text setting: ${e.message}", e)
+        }
+    }
+
+    /**
      * Get the current fragment activity.
      * @return The fragment activity
      */

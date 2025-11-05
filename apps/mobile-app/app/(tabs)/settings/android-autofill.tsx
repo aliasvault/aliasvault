@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, TouchableOpacity, Linking } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Linking, Switch } from 'react-native';
+import { useState, useEffect } from 'react';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -17,6 +18,23 @@ export default function AndroidAutofillScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const { markAutofillConfigured, shouldShowAutofillReminder } = useAuth();
+  const [advancedOptionsExpanded, setAdvancedOptionsExpanded] = useState(false);
+  const [showSearchText, setShowSearchText] = useState(false);
+
+  /**
+   * Load the show search text setting on mount.
+   */
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        const value = await NativeVaultManager.getAutofillShowSearchText();
+        setShowSearchText(value);
+      } catch (err) {
+        console.warn('Failed to load autofill settings:', err);
+      }
+    };
+    loadSettings();
+  }, []);
 
   /**
    * Handle the configure press.
@@ -45,10 +63,70 @@ export default function AndroidAutofillScreen() : React.ReactNode {
     Linking.openURL('https://docs.aliasvault.net/mobile-apps/android/autofill.html');
   };
 
+  /**
+   * Handle toggling the show search text setting.
+   */
+  const handleToggleShowSearchText = async (value: boolean) : Promise<void> => {
+    try {
+      await NativeVaultManager.setAutofillShowSearchText(value);
+      setShowSearchText(value);
+    } catch (err) {
+      console.warn('Failed to update show search text setting:', err);
+    }
+  };
+
   const styles = StyleSheet.create({
+    advancedOptionsContainer: {
+      marginTop: 16,
+      paddingBottom: 16,
+    },
+    advancedOptionsDescription: {
+      color: colors.textMuted,
+      fontSize: 13,
+      lineHeight: 18,
+      marginBottom: 8,
+    },
+    advancedOptionsHeader: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+    },
+    advancedOptionsTitle: {
+      color: colors.text,
+      fontSize: 15,
+      fontWeight: '600',
+    },
+    advancedOptionsToggle: {
+      alignItems: 'center',
+      backgroundColor: colors.accentBackground,
+      borderRadius: 8,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 16,
+      padding: 16,
+    },
+    advancedOptionsToggleContainer: {
+      flex: 1,
+      marginRight: 12,
+    },
+    advancedOptionsToggleHeader: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      paddingVertical: 8,
+    },
+    advancedOptionsToggleText: {
+      color: colors.text,
+      fontSize: 15,
+      fontWeight: '500',
+    },
     buttonContainer: {
       padding: 16,
-      paddingBottom: 32,
+      paddingBottom: 16,
+    },
+    chevron: {
+      color: colors.textMuted,
+      fontSize: 20,
     },
     configureButton: {
       alignItems: 'center',
@@ -91,6 +169,31 @@ export default function AndroidAutofillScreen() : React.ReactNode {
       color: colors.text,
       fontSize: 16,
       fontWeight: '600',
+    },
+    settingRow: {
+      alignItems: 'center',
+      backgroundColor: colors.accentBackground,
+      borderRadius: 10,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 12,
+      padding: 16,
+    },
+    settingRowDescription: {
+      color: colors.textMuted,
+      fontSize: 13,
+      lineHeight: 18,
+      marginTop: 4,
+    },
+    settingRowText: {
+      color: colors.text,
+      flex: 1,
+      marginRight: 12,
+    },
+    settingRowTitle: {
+      color: colors.text,
+      fontSize: 15,
+      fontWeight: '500',
     },
     tipStep: {
       color: colors.textMuted,
@@ -173,6 +276,41 @@ export default function AndroidAutofillScreen() : React.ReactNode {
               </TouchableOpacity>
             )}
           </View>
+        </View>
+
+        <View style={styles.advancedOptionsContainer}>
+          <TouchableOpacity
+            style={styles.advancedOptionsToggleHeader}
+            onPress={() => setAdvancedOptionsExpanded(!advancedOptionsExpanded)}
+          >
+            <ThemedText style={styles.advancedOptionsTitle}>
+              {t('settings.androidAutofillSettings.advancedOptions')}
+            </ThemedText>
+            <ThemedText style={styles.chevron}>
+              {advancedOptionsExpanded ? '▼' : '▶'}
+            </ThemedText>
+          </TouchableOpacity>
+
+          {advancedOptionsExpanded && (
+            <View>
+              <View style={styles.settingRow}>
+                <View style={styles.settingRowText}>
+                  <ThemedText style={styles.settingRowTitle}>
+                    {t('settings.androidAutofillSettings.showSearchText')}
+                  </ThemedText>
+                  <ThemedText style={styles.settingRowDescription}>
+                    {t('settings.androidAutofillSettings.showSearchTextDescription')}
+                  </ThemedText>
+                </View>
+                <Switch
+                  value={showSearchText}
+                  onValueChange={handleToggleShowSearchText}
+                  trackColor={{ false: colors.accentBackground, true: colors.primary }}
+                  thumbColor={colors.primarySurfaceText}
+                />
+              </View>
+            </View>
+          )}
         </View>
       </ThemedScrollView>
     </ThemedContainer>

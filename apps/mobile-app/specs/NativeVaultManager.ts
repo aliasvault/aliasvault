@@ -40,6 +40,8 @@ export interface Spec extends TurboModule {
   getAutoLockTimeout(): Promise<number>;
   getAuthMethods(): Promise<string[]>;
   openAutofillSettingsPage(): Promise<void>;
+  getAutofillShowSearchText(): Promise<boolean>;
+  setAutofillShowSearchText(showSearchText: boolean): Promise<void>;
 
   // Clipboard management
   clearClipboardAfterDelay(delayInSeconds: number): Promise<void>;

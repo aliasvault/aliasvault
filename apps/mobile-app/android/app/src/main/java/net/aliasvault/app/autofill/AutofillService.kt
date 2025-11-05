@@ -96,8 +96,12 @@ class AutofillService : AutofillService() {
 
                 val responseBuilder = FillResponse.Builder()
 
-                // Add debug dataset showing what we're searching for
-                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                // Add debug dataset if enabled in settings
+                val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
+                val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
+                if (showSearchText) {
+                    responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                }
 
                 // Add failed to retrieve dataset
                 responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder))
@@ -169,8 +173,12 @@ class AutofillService : AutofillService() {
 
                             val responseBuilder = FillResponse.Builder()
 
-                            // Always add debug dataset as first option showing what we're searching for
-                            responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                            // Add debug dataset if enabled in settings
+                            val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
+                            val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
+                            if (showSearchText) {
+                                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                            }
 
                             // If there are no results, return "no matches" placeholder option.
                             if (filteredCredentials.isEmpty()) {
@@ -193,7 +201,11 @@ class AutofillService : AutofillService() {
                             Log.e(TAG, "Error parsing credentials", e)
                             // Show "Failed to retrieve, open app" option instead of failing
                             val responseBuilder = FillResponse.Builder()
-                            responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                            val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
+                            val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
+                            if (showSearchText) {
+                                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                            }
                             responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder))
                             callback(responseBuilder.build())
                         }
@@ -203,7 +215,11 @@ class AutofillService : AutofillService() {
                         Log.e(TAG, "Error getting credentials", e)
                         // Show "Failed to retrieve, open app" option instead of failing
                         val responseBuilder = FillResponse.Builder()
-                        responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                        val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
+                        val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
+                        if (showSearchText) {
+                            responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                        }
                         responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder))
                         callback(responseBuilder.build())
                     }

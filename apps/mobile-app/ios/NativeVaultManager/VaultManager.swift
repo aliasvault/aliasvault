@@ -414,6 +414,21 @@ public class VaultManager: NSObject {
     }
 
     @objc
+    func getAutofillShowSearchText(_ resolve: @escaping RCTPromiseResolveBlock,
+                                   rejecter reject: @escaping RCTPromiseRejectBlock) {
+        // iOS autofill doesn't have this feature, always return false
+        resolve(false)
+    }
+
+    @objc
+    func setAutofillShowSearchText(_ showSearchText: Bool,
+                                   resolver resolve: @escaping RCTPromiseResolveBlock,
+                                   rejecter reject: @escaping RCTPromiseRejectBlock) {
+        // iOS autofill doesn't have this feature, no-op
+        resolve(nil)
+    }
+
+    @objc
     func copyToClipboardWithExpiration(_ text: String,
                                       expirationSeconds: Double,
                                       resolver resolve: @escaping RCTPromiseResolveBlock,

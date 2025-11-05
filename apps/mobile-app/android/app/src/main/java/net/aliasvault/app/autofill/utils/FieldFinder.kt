@@ -238,11 +238,48 @@ class FieldFinder(var structure: AssistStructure) {
     }
 
     /**
+     * Check if a field should be excluded from autofill (e.g., email composition, search fields).
+     * @param node The node to check
+     * @return Whether the node should be excluded from autofill
+     */
+    private fun isExcludedField(node: AssistStructure.ViewNode): Boolean {
+        val idEntry = node.idEntry?.lowercase()
+        val hint = node.hint?.lowercase()
+        val contentDescription = node.contentDescription?.toString()?.lowercase()
+
+        // Common patterns for non-login fields that should be excluded
+        val excludePatterns = listOf(
+            // Email composition fields
+            "to", "from", "cc", "bcc", "recipient", "compose", "subject",
+            // Search fields
+            "search", "query", "find",
+            // Other non-login contexts
+            "comment", "reply", "message", "chat", "filter",
+        )
+
+        // Check if any exclude pattern matches
+        for (pattern in excludePatterns) {
+            val idEntryContains = idEntry?.contains(pattern, ignoreCase = false) == true
+            val hintContains = hint?.contains(pattern, ignoreCase = false) == true
+            val contentContains = contentDescription?.contains(pattern, ignoreCase = false) == true
+
+            return idEntryContains || hintContains || contentContains
+        }
+
+        return false
+    }
+
+    /**
      * Check if a node is an email field.
      * @param node The node to check
      * @return Whether the node is an email field
      */
     private fun isEmailField(node: AssistStructure.ViewNode): Boolean {
+        // Exclude non-login email fields (like "To" in email clients)
+        if (isExcludedField(node)) {
+            return false
+        }
+
         // Check input type for email - mask to get only the variation bits
         val inputType = node.inputType
         if ((inputType and android.text.InputType.TYPE_MASK_CLASS) == android.text.InputType.TYPE_CLASS_TEXT &&
@@ -297,6 +334,11 @@ class FieldFinder(var structure: AssistStructure) {
      * @return Whether the node is a username field
      */
     private fun isUsernameField(node: AssistStructure.ViewNode): Boolean {
+        // Exclude non-login fields
+        if (isExcludedField(node)) {
+            return false
+        }
+
         val searchTerms = listOf("username", "user")
 
         // Check autofill hints
