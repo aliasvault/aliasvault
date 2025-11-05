@@ -9,6 +9,42 @@ import net.aliasvault.app.vaultstore.models.Credential
 object CredentialMatcher {
 
     /**
+     * Common top-level domains (TLDs) that should be excluded from matching.
+     * This prevents false matches when dealing with reversed domain names (Android package names).
+     */
+    private val commonTlds = setOf(
+        // Generic TLDs
+        "com", "net", "org", "edu", "gov", "mil", "int",
+        // Country code TLDs
+        "nl", "de", "uk", "fr", "it", "es", "pl", "be", "ch", "at", "se", "no", "dk", "fi",
+        "pt", "gr", "cz", "hu", "ro", "bg", "hr", "sk", "si", "lt", "lv", "ee", "ie", "lu",
+        "us", "ca", "mx", "br", "ar", "cl", "co", "ve", "pe", "ec",
+        "au", "nz", "jp", "cn", "in", "kr", "tw", "hk", "sg", "my", "th", "id", "ph", "vn",
+        "za", "eg", "ng", "ke", "ug", "tz", "ma",
+        "ru", "ua", "by", "kz", "il", "tr", "sa", "ae", "qa", "kw",
+        // New gTLDs (common ones)
+        "app", "dev", "io", "ai", "tech", "shop", "store", "online", "site", "website",
+        "blog", "news", "media", "tv", "video", "music", "pro", "info", "biz", "name",
+    )
+
+    /**
+     * Check if a string is likely an Android package name (reversed domain).
+     * Android package names start with TLD followed by dot (e.g., "com.example", "nl.app").
+     * @param text The text to check
+     * @return True if it looks like an Android package name
+     */
+    private fun isAndroidPackageName(text: String): Boolean {
+        if (!text.contains(".")) {
+            return false
+        }
+
+        val firstPart = text.substringBefore(".").lowercase()
+
+        // Check if first part is a common TLD - this indicates reversed domain (package name)
+        return commonTlds.contains(firstPart)
+    }
+
+    /**
      * Extract domain from URL, handling both full URLs and partial domains.
      * @param urlString URL or domain string
      * @return Normalized domain without protocol or www, or empty string if not a valid URL/domain
@@ -22,6 +58,12 @@ object CredentialMatcher {
 
         // Check if it starts with a protocol
         val hasProtocol = domain.startsWith("http://") || domain.startsWith("https://")
+
+        // If no protocol and starts with TLD + dot, it's likely an Android package name
+        // Return it as-is for package name matching logic
+        if (!hasProtocol && isAndroidPackageName(domain)) {
+            return ""
+        }
 
         // Remove protocol if present
         if (hasProtocol) {
@@ -170,8 +212,8 @@ object CredentialMatcher {
         }
 
         return text.lowercase()
-            // Replace common separators and punctuation with spaces
-            .replace(Regex("[|,;:\\-–—/\\\\()\\[\\]{}'\" ~!@#$%^&*+=<>?]"), " ")
+            // Replace common separators and punctuation with spaces (including dots)
+            .replace(Regex("[|,;:\\-–—/\\\\()\\[\\]{}'\" ~!@#$%^&*+=<>?.]"), " ")
             .split(Regex("\\s+"))
             .filter { word ->
                 word.length > 3 // Filter out short words

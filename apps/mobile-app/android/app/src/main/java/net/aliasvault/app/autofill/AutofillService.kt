@@ -194,6 +194,11 @@ class AutofillService : AutofillService() {
                                         createCredentialDataset(fieldFinder, credential),
                                     )
                                 }
+
+                                // Add "Open app" option at the bottom (when search text is not shown and there are matches)
+                                if (!showSearchText) {
+                                    responseBuilder.addDataset(createOpenAppDataset(fieldFinder))
+                                }
                             }
 
                             callback(responseBuilder.build())
@@ -522,6 +527,49 @@ class AutofillService : AutofillService() {
         val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
 
         // Create deep link URL to credentials page with service URL
+        val deepLinkUrl = "net.aliasvault.app://credentials?serviceUrl=$encodedUrl"
+
+        // Add a click listener to open AliasVault app with deep link
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            data = android.net.Uri.parse(deepLinkUrl)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this@AutofillService,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        dataSetBuilder.setAuthentication(pendingIntent.intentSender)
+
+        // Add placeholder values to satisfy Android's requirement that at least one value must be set
+        if (fieldFinder.autofillableFields.isNotEmpty()) {
+            for (field in fieldFinder.autofillableFields) {
+                dataSetBuilder.setValue(field.first, AutofillValue.forText(""))
+            }
+        }
+
+        return dataSetBuilder.build()
+    }
+
+    /**
+     * Create a dataset for the "open app" option.
+     * @param fieldFinder The field finder
+     * @return The dataset
+     */
+    private fun createOpenAppDataset(fieldFinder: FieldFinder): Dataset {
+        // Create presentation for the "open app" option with AliasVault logo
+        val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_logo)
+        presentation.setTextViewText(
+            R.id.text,
+            getString(R.string.autofill_open_app),
+        )
+
+        val dataSetBuilder = Dataset.Builder(presentation)
+
+        // Create deep link URL to open the credentials page
+        val appInfo = fieldFinder.getAppInfo()
+        val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
         val deepLinkUrl = "net.aliasvault.app://credentials?serviceUrl=$encodedUrl"
 
         // Add a click listener to open AliasVault app with deep link

@@ -295,7 +295,62 @@ class AutofillTest {
         assertEquals("Reddit", matches[0].service.name)
     }
 
-    // [#20] - Test multi-part TLDs like .com.au don't match incorrectly
+    // [#20] - Test reversed domain (Android package name) doesn't match on TLD
+    @Test
+    fun testReversedDomainTldCheck() {
+        // Test that dumpert.nl credential doesn't match nl.marktplaats.android package
+        // They both contain "nl" in the name but shouldn't match since "nl" is just a TLD
+        val reversedDomainCredentials = listOf(
+            createTestCredential("Dumpert.nl", "", "user@dumpert.nl"),
+            createTestCredential("Marktplaats.nl", "", "user@marktplaats.nl"),
+        )
+
+        val matches = CredentialMatcher.filterCredentialsByAppInfo(
+            reversedDomainCredentials,
+            "nl.marktplaats.android",
+        )
+
+        // Should only match Marktplaats, not Dumpert (even though both have "nl")
+        assertEquals(1, matches.size)
+        assertEquals("Marktplaats.nl", matches[0].service.name)
+    }
+
+    // [#21] - Test Android package names are properly detected and handled
+    @Test
+    fun testAndroidPackageNameDetection() {
+        val packageCredentials = listOf(
+            createTestCredential("Google App", "com.google.android.googlequicksearchbox", "user@google.com"),
+            createTestCredential("Facebook", "com.facebook.katana", "user@facebook.com"),
+            createTestCredential("WhatsApp", "com.whatsapp", "user@whatsapp.com"),
+            createTestCredential("Generic Site", "example.com", "user@example.com"),
+        )
+
+        // Test com.google.android package matches
+        val googleMatches = CredentialMatcher.filterCredentialsByAppInfo(
+            packageCredentials,
+            "com.google.android.googlequicksearchbox",
+        )
+        assertEquals(1, googleMatches.size)
+        assertEquals("Google App", googleMatches[0].service.name)
+
+        // Test com.facebook package matches
+        val facebookMatches = CredentialMatcher.filterCredentialsByAppInfo(
+            packageCredentials,
+            "com.facebook.katana",
+        )
+        assertEquals(1, facebookMatches.size)
+        assertEquals("Facebook", facebookMatches[0].service.name)
+
+        // Test that web domain doesn't match package name
+        val webMatches = CredentialMatcher.filterCredentialsByAppInfo(
+            packageCredentials,
+            "https://example.com",
+        )
+        assertEquals(1, webMatches.size)
+        assertEquals("Generic Site", webMatches[0].service.name)
+    }
+
+    // [#22] - Test multi-part TLDs like .com.au don't match incorrectly
     @Test
     fun testMultiPartTldNoFalseMatches() {
         // Create test data with different .com.au domains
