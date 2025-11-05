@@ -215,6 +215,32 @@ final class CredentialFilterTests: XCTestCase {
         XCTAssertEqual(ukMatches.first?.service.name, "UK Site")
     }
 
+    /**
+     * [#20] - Test reversed domain (Android package name) doesn't match on TLD
+     * Note: Android package name filtering is not applicable to iOS autofill in the same way.
+     * This test is included for consistency with Android test suite but is skipped.
+     */
+    func testReversedDomainTldCheck() throws {
+        /**
+         * Android package name detection is implemented in Android-specific autofill code.
+         * iOS uses a different autofill mechanism and doesn't require the same TLD filtering.
+         */
+        throw XCTSkip("Android package name filtering not applicable to iOS autofill")
+    }
+
+    /**
+     * [#21] - Test Android package names are properly detected and handled
+     * Note: Android package name filtering is not applicable to iOS autofill in the same way.
+     * This test is included for consistency with Android test suite but is skipped.
+     */
+    func testAppPackageNameDetection() throws {
+        /**
+         * Android package name detection is implemented in Android-specific autofill code.
+         * iOS uses a different autofill mechanism and doesn't require the same TLD filtering.
+         */
+        throw XCTSkip("Android package name filtering not applicable to iOS autofill")
+    }
+
     // MARK: - Shared Test Data
 
     /**

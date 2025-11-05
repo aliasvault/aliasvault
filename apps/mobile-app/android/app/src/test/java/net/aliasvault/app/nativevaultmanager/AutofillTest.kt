@@ -295,7 +295,7 @@ class AutofillTest {
         assertEquals("Reddit", matches[0].service.name)
     }
 
-    // [#20] - Test reversed domain (Android package name) doesn't match on TLD
+    // [#20] - Test reversed domain (App package name) doesn't match on TLD
     @Test
     fun testReversedDomainTldCheck() {
         // Test that dumpert.nl credential doesn't match nl.marktplaats.android package
@@ -315,9 +315,9 @@ class AutofillTest {
         assertEquals("Marktplaats.nl", matches[0].service.name)
     }
 
-    // [#21] - Test Android package names are properly detected and handled
+    // [#21] - Test App package names are properly detected and handled
     @Test
-    fun testAndroidPackageNameDetection() {
+    fun testAppPackageNameDetection() {
         val packageCredentials = listOf(
             createTestCredential("Google App", "com.google.android.googlequicksearchbox", "user@google.com"),
             createTestCredential("Facebook", "com.facebook.katana", "user@facebook.com"),

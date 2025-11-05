@@ -292,7 +292,31 @@ describe('Filter - Credential URL Matching', () => {
     expect(matches[0].ServiceName).toBe('Reddit');
   });
 
-  // [#20] - Test multi-part TLDs like .com.au don't match incorrectly
+  /**
+   * [#20] - Test reversed domain (Android package name) doesn't match on TLD
+   * Note: Android package name filtering is not applicable to browser extensions.
+   * This test is included for consistency with Android and iOS test suites but is skipped.
+   */
+  it.skip('should not match credentials based on TLD when filtering reversed domains', () => {
+    /**
+     * Android package name detection is not implemented in browser extensions
+     * since they only deal with web URLs, not Android app contexts.
+     */
+  });
+
+  /**
+   * [#21] - Test Android package names are properly detected and handled
+   * Note: Android package name filtering is not applicable to browser extensions.
+   * This test is included for consistency with Android and iOS test suites but is skipped.
+   */
+  it.skip('should properly handle Android package names in filtering', () => {
+    /**
+     * Android package name detection is not implemented in browser extensions
+     * since they only deal with web URLs, not Android app contexts.
+     */
+  });
+
+  // [#22] - Test multi-part TLDs like .com.au don't match incorrectly
   it('should handle multi-part TLDs correctly without false matches', () => {
     // Create test data with different .com.au domains
     const australianCredentials = [

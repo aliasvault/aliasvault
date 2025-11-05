@@ -10,7 +10,7 @@ object CredentialMatcher {
 
     /**
      * Common top-level domains (TLDs) that should be excluded from matching.
-     * This prevents false matches when dealing with reversed domain names (Android package names).
+     * This prevents false matches when dealing with reversed domain names (App package names).
      */
     private val commonTlds = setOf(
         // Generic TLDs
@@ -28,12 +28,12 @@ object CredentialMatcher {
     )
 
     /**
-     * Check if a string is likely an Android package name (reversed domain).
-     * Android package names start with TLD followed by dot (e.g., "com.example", "nl.app").
+     * Check if a string is likely an App package name (reversed domain).
+     * App package names start with TLD followed by dot (e.g., "com.example", "nl.app").
      * @param text The text to check
-     * @return True if it looks like an Android package name
+     * @return True if it looks like an App package name
      */
-    private fun isAndroidPackageName(text: String): Boolean {
+    private fun isAppPackageName(text: String): Boolean {
         if (!text.contains(".")) {
             return false
         }
@@ -64,10 +64,10 @@ object CredentialMatcher {
         // Check if it starts with a protocol
         val hasProtocol = domain.startsWith("http://") || domain.startsWith("https://")
 
-        // If no protocol and starts with TLD + dot, it's likely an Android package name
+        // If no protocol and starts with TLD + dot, it's likely an App package name
         // Return empty string to indicate that domain extraction has failed for this string as
         // this is most likely not a real domain that the caller expects
-        if (!hasProtocol && isAndroidPackageName(domain)) {
+        if (!hasProtocol && isAppPackageName(domain)) {
             return ""
         }
 
@@ -250,9 +250,9 @@ object CredentialMatcher {
 
         val searchDomain = extractDomain(searchText)
 
-        // Try to parse as Android package name first.
-        if (isAndroidPackageName(searchText)) {
-            // Is most likely android package name, do a simple exact match search on URL field
+        // Try to parse as App package name first.
+        if (isAppPackageName(searchText)) {
+            // Is most likely app package name, do a simple exact match search on URL field
             credentials.forEach { credential ->
                 val serviceUrl = credential.service.url
                 if (!serviceUrl.isNullOrEmpty()) {
@@ -263,7 +263,7 @@ object CredentialMatcher {
             }
         }
 
-        // If android package name results in matches, return them immediately.
+        // If app package name results in matches, return them immediately.
         if (matches.isNotEmpty()) {
             return matches.toList()
         }
