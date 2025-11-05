@@ -243,8 +243,11 @@ class FieldFinder(var structure: AssistStructure) {
      * @return Whether the node is an email field
      */
     private fun isEmailField(node: AssistStructure.ViewNode): Boolean {
-        // Check input type for email
-        if ((node.inputType and android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS) != 0) {
+        // Check input type for email - mask to get only the variation bits
+        val inputType = node.inputType
+        if ((inputType and android.text.InputType.TYPE_MASK_CLASS) == android.text.InputType.TYPE_CLASS_TEXT &&
+            (inputType and android.text.InputType.TYPE_MASK_VARIATION) == android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS
+        ) {
             return true
         }
 
