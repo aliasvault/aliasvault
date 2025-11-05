@@ -80,7 +80,6 @@ class AutofillService : AutofillService() {
                 safeCallback()
                 return
             }
-
             launchActivityForAutofill(fieldFinder) { response -> safeCallback(response) }
         } catch (e: Exception) {
             Log.e(TAG, "Unexpected error in onFillRequest", e)
@@ -279,7 +278,7 @@ class AutofillService : AutofillService() {
                     }
                 }
                 FieldType.EMAIL -> {
-                    if (credential.alias?.email != null) {
+                    if (credential.alias?.email != null && credential.alias.email.isNotEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
                             AutofillValue.forText(credential.alias.email),
@@ -290,7 +289,7 @@ class AutofillService : AutofillService() {
                         } else if (!credential.username.isNullOrEmpty()) {
                             presentationDisplayValue += " (${credential.username})"
                         }
-                    } else if (credential.username != null) {
+                    } else if (!credential.username.isNullOrEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
                             AutofillValue.forText(credential.username),
@@ -304,7 +303,7 @@ class AutofillService : AutofillService() {
                     }
                 }
                 FieldType.USERNAME -> {
-                    if (credential.username != null) {
+                    if (!credential.username.isNullOrEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
                             AutofillValue.forText(credential.username),
@@ -315,7 +314,7 @@ class AutofillService : AutofillService() {
                         } else if ((credential.alias?.email ?: "").isNotEmpty()) {
                             presentationDisplayValue += " (${credential.alias?.email})"
                         }
-                    } else if (credential.alias?.email != null) {
+                    } else if (credential.alias?.email != null && credential.alias.email.isNotEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
                             AutofillValue.forText(credential.alias.email),
@@ -328,7 +327,7 @@ class AutofillService : AutofillService() {
                 }
                 else -> {
                     // For unknown field types, try both email and username
-                    if (credential.alias?.email != null) {
+                    if (credential.alias?.email != null && credential.alias.email.isNotEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
                             AutofillValue.forText(credential.alias.email),
@@ -337,7 +336,7 @@ class AutofillService : AutofillService() {
                         if (credential.alias.email.isNotEmpty()) {
                             presentationDisplayValue += " (${credential.alias.email})"
                         }
-                    } else if (credential.username != null) {
+                    } else if (!credential.username.isNullOrEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
                             AutofillValue.forText(credential.username),

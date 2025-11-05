@@ -35,9 +35,9 @@ class FieldFinder(var structure: AssistStructure) {
     var foundPasswordField = false
 
     /**
-     * Whether a username field has been found.
+     * List of undetected editable fields (not identified as password/username/email).
      */
-    var lastField: AutofillId? = null
+    private val unknownFields = mutableListOf<AutofillId>()
 
     /**
      * Parse the structure.
@@ -48,6 +48,15 @@ class FieldFinder(var structure: AssistStructure) {
             val windowNode = structure.getWindowNodeAt(i)
             val rootNode = windowNode.rootViewNode
             parseNode(rootNode)
+        }
+
+        // If only a password field was found, but there is exactly one other undetected field,
+        // assume it's the username/email field
+        if (foundPasswordField && !foundUsernameField && unknownFields.size == 1) {
+            val unknownFieldId = unknownFields.first()
+            Log.d(TAG, "Found password field without username - promoting unknown field to USERNAME type")
+            autofillableFields.add(Pair(unknownFieldId, FieldType.USERNAME))
+            foundUsernameField = true
         }
     }
 
@@ -81,7 +90,7 @@ class FieldFinder(var structure: AssistStructure) {
     /**
      * Determines if a field is most likely an email field, username field, password field, or unknown.
      */
-    fun determineFieldType(fieldId: AutofillId): FieldType {
+    private fun determineFieldType(fieldId: AutofillId): FieldType {
         // Find the node in the structure
         val node = findNodeById(fieldId) ?: return FieldType.UNKNOWN
 
@@ -221,12 +230,15 @@ class FieldFinder(var structure: AssistStructure) {
             if (fieldType == FieldType.PASSWORD) {
                 foundPasswordField = true
                 autofillableFields.add(Pair(viewId, fieldType))
+                Log.d(TAG, "Found PASSWORD field: ${node.idEntry}")
             } else if (fieldType == FieldType.USERNAME || fieldType == FieldType.EMAIL) {
                 foundUsernameField = true
                 autofillableFields.add(Pair(viewId, fieldType))
+                Log.d(TAG, "Found ${fieldType.name} field: ${node.idEntry}")
             } else {
-                // Store the last field we saw in case we need it for username detection
-                lastField = viewId
+                // Store undetected editable fields for potential username promotion
+                unknownFields.add(viewId)
+                Log.d(TAG, "Found UNKNOWN editable field: ${node.idEntry}, hint=${node.hint}, inputType=${node.inputType}")
             }
         }
 
@@ -263,7 +275,9 @@ class FieldFinder(var structure: AssistStructure) {
             val hintContains = hint?.contains(pattern, ignoreCase = false) == true
             val contentContains = contentDescription?.contains(pattern, ignoreCase = false) == true
 
-            return idEntryContains || hintContains || contentContains
+            if (idEntryContains || hintContains || contentContains) {
+                return true
+            }
         }
 
         return false
