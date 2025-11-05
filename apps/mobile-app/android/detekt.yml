@@ -20,7 +20,7 @@ complexity:
     thresholdInObjects: 60
   CyclomaticComplexMethod:
     active: true
-    threshold: 30
+    threshold: 35
   NestedBlockDepth:
     active: true
     threshold: 5

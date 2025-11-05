@@ -38,6 +38,10 @@ object CredentialMatcher {
             return false
         }
 
+        if (text.startsWith("http://") || text.startsWith("https://")) {
+            return false
+        }
+
         val firstPart = text.substringBefore(".").lowercase()
 
         // Check if first part is a common TLD - this indicates reversed domain (package name)
@@ -56,16 +60,17 @@ object CredentialMatcher {
 
         var domain = urlString.lowercase().trim()
 
+        // Remove protocol if present
         // Check if it starts with a protocol
         val hasProtocol = domain.startsWith("http://") || domain.startsWith("https://")
 
         // If no protocol and starts with TLD + dot, it's likely an Android package name
-        // Return it as-is for package name matching logic
+        // Return empty string to indicate that domain extraction has failed for this string as
+        // this is most likely not a real domain that the caller expects
         if (!hasProtocol && isAndroidPackageName(domain)) {
             return ""
         }
 
-        // Remove protocol if present
         if (hasProtocol) {
             domain = domain.replace("https://", "").replace("http://", "")
         }
@@ -188,6 +193,9 @@ object CredentialMatcher {
         val d1 = extractDomain(domain1)
         val d2 = extractDomain(domain2)
 
+        // If either extracted domain is empty, early return false.
+        if (d1.isEmpty() || d2.isEmpty()) return false
+
         // Exact match
         if (d1 == d2) return true
 
@@ -238,12 +246,30 @@ object CredentialMatcher {
             return credentials
         }
 
-        // Try to parse as URL first
+        val matches = mutableSetOf<Credential>()
+
         val searchDomain = extractDomain(searchText)
 
-        if (searchDomain.isNotEmpty()) {
-            val matches = mutableSetOf<Credential>()
+        // Try to parse as Android package name first.
+        if (isAndroidPackageName(searchText)) {
+            // Is most likely android package name, do a simple exact match search on URL field
+            credentials.forEach { credential ->
+                val serviceUrl = credential.service.url
+                if (!serviceUrl.isNullOrEmpty()) {
+                    if (searchText == serviceUrl) {
+                        matches.add(credential)
+                    }
+                }
+            }
+        }
 
+        // If android package name results in matches, return them immediately.
+        if (matches.isNotEmpty()) {
+            return matches.toList()
+        }
+
+        // Try URL second
+        if (searchDomain.isNotEmpty()) {
             // Check for domain matches with priority
             credentials.forEach { credential ->
                 val serviceUrl = credential.service.url
