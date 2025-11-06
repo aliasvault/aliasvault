@@ -31,7 +31,7 @@ const HeaderBlock: React.FC<HeaderBlockProps> = ({ credential }) => (
               {credential.ServiceUrl}
             </a>
           ) : (
-            <span className="break-all">{credential.ServiceUrl}</span>
+            <span className="text-gray-500 dark:text-gray-300 break-all">{credential.ServiceUrl}</span>
           )
         )}
       </div>
