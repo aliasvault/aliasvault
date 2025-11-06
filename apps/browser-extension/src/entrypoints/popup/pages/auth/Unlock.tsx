@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
@@ -19,12 +19,26 @@ import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
+import {
+  getFailedAttempts,
+  getPinLength,
+  isPinEnabled,
+  isPinLocked,
+  PinLockedError,
+  resetFailedAttempts,
+  unlockWithPin
+} from '@/utils/PinUnlockService';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { storage } from '#imports';
 
 /**
- * Unlock page
+ * Unlock mode type
+ */
+type UnlockMode = 'pin' | 'password';
+
+/**
+ * Unified unlock page that handles both PIN and password unlock
  */
 const Unlock: React.FC = () => {
   const { t } = useTranslation();
@@ -37,8 +51,23 @@ const Unlock: React.FC = () => {
   const webApi = useWebApi();
   const srpUtil = new SrpUtility(webApi);
 
+  // Unlock mode state
+  const [unlockMode, setUnlockMode] = useState<UnlockMode>('password');
+  const [pinAvailable, setPinAvailable] = useState<boolean>(false);
+
+  // Password unlock state
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  // PIN unlock state
+  const [pin, setPin] = useState('');
+  const [pinLength, setPinLength] = useState<number>(6);
+  const [failedAttempts, setFailedAttempts] = useState<number>(0);
+  const [isLocked, setIsLocked] = useState<boolean>(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Common state
   const [error, setError] = useState<string | null>(null);
   const { showLoading, hideLoading, setIsInitialLoading } = useLoading();
 
@@ -64,8 +93,39 @@ const Unlock: React.FC = () => {
     return true;
   };
 
+  /**
+   * Initialize unlock page - check status and PIN availability
+   */
   useEffect(() => {
-    checkStatus();
+    /**
+     * Initialize unlock page - check status and PIN availability
+     */
+    const initialize = async (): Promise<void> => {
+      // First check PIN availability and set initial mode
+      const [enabled, length, attempts, locked] = await Promise.all([
+        isPinEnabled(),
+        getPinLength(),
+        getFailedAttempts(),
+        isPinLocked()
+      ]);
+
+      setPinAvailable(enabled && !locked);
+      setPinLength(length || 6);
+      setFailedAttempts(attempts);
+      setIsLocked(locked);
+
+      // Default to PIN mode if available, otherwise password
+      if (enabled && !locked) {
+        setUnlockMode('pin');
+      } else {
+        setUnlockMode('password');
+      }
+
+      // Then check API status
+      await checkStatus();
+    };
+
+    initialize();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Only run once on mount
 
@@ -87,9 +147,56 @@ const Unlock: React.FC = () => {
   }, [setHeaderButtons, t]);
 
   /**
-   * Handle submit
+   * Keep input focused for PIN mode
    */
-  const handleSubmit = async (e: React.FormEvent) : Promise<void> => {
+  useEffect(() => {
+    if (unlockMode !== 'pin') {
+      return;
+    }
+
+    /**
+     * Focus the hidden input element
+     */
+    const focusInput = (): void => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    };
+
+    /**
+     * Re-focus input whenever user clicks anywhere on the page
+     */
+    const handleClick = (): void => {
+      focusInput();
+    };
+
+    /**
+     * Re-focus input when window/extension regains focus
+     */
+    const handleFocus = (): void => {
+      focusInput();
+    };
+
+    focusInput();
+
+    const container = containerRef.current;
+    if (container) {
+      container.addEventListener('click', handleClick);
+    }
+    window.addEventListener('focus', handleFocus);
+
+    return (): void => {
+      if (container) {
+        container.removeEventListener('click', handleClick);
+      }
+      window.removeEventListener('focus', handleFocus);
+    };
+  }, [unlockMode]);
+
+  /**
+   * Handle password unlock
+   */
+  const handlePasswordSubmit = async (e: React.FormEvent) : Promise<void> => {
     e.preventDefault();
     setError(null);
     showLoading();
@@ -131,8 +238,11 @@ const Unlock: React.FC = () => {
         return;
       }
 
-      // Clear dismiss until (which can be enabled after user has dimissed vault is locked popup) to ensure popup is shown.
+      // Clear dismiss until
       await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
+
+      // Reset PIN failed attempts on successful password unlock
+      await resetFailedAttempts();
 
       navigate('/reinitialize', { replace: true });
     } catch (err) {
@@ -149,15 +259,234 @@ const Unlock: React.FC = () => {
   };
 
   /**
+   * Handle PIN input change
+   */
+  const handlePinChange = useCallback(async (newPin: string): Promise<void> => {
+    setPin(newPin);
+    setError(null);
+
+    // Auto-submit when PIN length is reached
+    if (newPin.length === pinLength) {
+      await handlePinUnlock(newPin);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pinLength]);
+
+  /**
+   * Handle numpad button click
+   */
+  const handleNumpadClick = (digit: string): void => {
+    if (pin.length < 8) {
+      handlePinChange(pin + digit);
+    }
+  };
+
+  /**
+   * Handle backspace
+   */
+  const handleBackspace = (): void => {
+    setPin(pin.slice(0, -1));
+    setError(null);
+  };
+
+  /**
+   * Handle PIN unlock
+   */
+  const handlePinUnlock = async (pinToUse: string = pin): Promise<void> => {
+    if (pinToUse.length !== pinLength) {
+      return;
+    }
+
+    setError(null);
+    showLoading();
+
+    try {
+      // Unlock with PIN
+      const passwordHashBase64 = await unlockWithPin(pinToUse);
+
+      // Get latest vault from API
+      const vaultResponseJson = await webApi.get<VaultResponse>('Vault');
+
+      // Store the encryption key in session storage
+      await dbContext.storeEncryptionKey(passwordHashBase64);
+
+      // Initialize the SQLite context with the vault data
+      const sqliteClient = await dbContext.initializeDatabase(vaultResponseJson, passwordHashBase64);
+
+      // Check if there are pending migrations
+      if (await sqliteClient.hasPendingMigrations()) {
+        navigate('/upgrade', { replace: true });
+        hideLoading();
+        return;
+      }
+
+      // Clear dismiss until
+      await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
+
+      navigate('/reinitialize', { replace: true });
+      hideLoading();
+    } catch (err: any) {
+      if (err instanceof PinLockedError) {
+        setIsLocked(true);
+        setPinAvailable(false);
+        setUnlockMode('password');
+        setError(t('settings.unlockMethod.pinLocked'));
+      } else {
+        console.error('PIN unlock failed:', err);
+        setError((err as Error).message);
+        setPin('');
+        hideLoading();
+
+        // Update failed attempts
+        const newAttempts = await getFailedAttempts();
+        setFailedAttempts(newAttempts);
+      }
+      hideLoading();
+    }
+  };
+
+  /**
    * Handle logout
    */
   const handleLogout = () : void => {
     app.logout();
   };
 
+  /**
+   * Switch to password mode
+   */
+  const switchToPassword = () : void => {
+    setUnlockMode('password');
+    setError(null);
+  };
+
+  /**
+   * Switch to PIN mode
+   */
+  const switchToPin = () : void => {
+    setUnlockMode('pin');
+    setError(null);
+  };
+
+  // Generate PIN dots display
+  const pinDots = Array.from({ length: pinLength }, (_, i) => (
+    <div
+      key={i}
+      className={`w-4 h-4 rounded-full border-2 transition-all ${
+        i < pin.length
+          ? 'bg-primary-500 border-primary-500'
+          : 'bg-transparent border-gray-300 dark:border-gray-600'
+      }`}
+    />
+  ));
+
+  // Render PIN unlock UI
+  if (unlockMode === 'pin') {
+    return (
+      <div ref={containerRef} className="flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+        <div className="w-full max-w-md">
+          {/* Logo */}
+          <div className="text-center mb-4">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+              {t('auth.unlockTitle')}
+            </h1>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {t('auth.enterPinToUnlock')}
+            </p>
+          </div>
+
+          {/* PIN Dots Display */}
+          <div className="flex justify-center gap-2 mb-4">
+            {pinDots}
+          </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mb-3 p-2 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-md text-red-800 dark:text-red-300 text-xs text-center">
+              {error}
+            </div>
+          )}
+
+          {/* Hidden Input for Keyboard Entry */}
+          <input
+            ref={inputRef}
+            type="password"
+            inputMode="numeric"
+            pattern="[0-9]*"
+            maxLength={8}
+            value={pin}
+            onChange={(e) => handlePinChange(e.target.value.replace(/\D/g, ''))}
+            className="w-0 h-0 opacity-0 absolute"
+            autoFocus
+            aria-label="PIN input"
+          />
+
+          {/* On-Screen Numpad */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-3">
+            <div className="grid grid-cols-3 gap-2">
+              {/* Numbers 1-9 */}
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                <button
+                  key={num}
+                  type="button"
+                  onClick={() => handleNumpadClick(num.toString())}
+                  className="h-16 flex items-center justify-center text-xl font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors active:scale-95"
+                >
+                  {num}
+                </button>
+              ))}
+
+              {/* Empty space, 0, Backspace */}
+              <div />
+              <button
+                type="button"
+                onClick={() => handleNumpadClick('0')}
+                className="h-16 flex items-center justify-center text-xl font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors active:scale-95"
+              >
+                0
+              </button>
+              <button
+                type="button"
+                onClick={handleBackspace}
+                className="h-16 flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors active:scale-95"
+                aria-label="Backspace"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-3 my-3">
+            <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+            <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.or')}</span>
+            <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+          </div>
+
+          {/* Use Password Button */}
+          <button
+            type="button"
+            onClick={switchToPassword}
+            className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors text-sm"
+          >
+            {t('auth.useMasterPassword')}
+          </button>
+
+          {/* Tip */}
+          <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
+            {t('auth.pinUnlockTip')}
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Render password unlock UI
   return (
     <div>
-      <form onSubmit={handleSubmit} className="bg-white dark:bg-gray-700 w-full shadow-md rounded px-8 pt-6 pb-8 mb-4">
+      <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-gray-700 w-full shadow-md rounded px-8 pt-6 pb-8 mb-4">
         {/* User Avatar and Username Section */}
         <div className="flex items-center space-x-3 mb-6">
           <div className="flex-shrink-0">
@@ -218,8 +547,26 @@ const Unlock: React.FC = () => {
           {t('auth.unlockVault')}
         </Button>
 
+        {/* Switch to PIN button if PIN is available */}
+        {pinAvailable && (
+          <>
+            <div className="flex items-center gap-3 my-4">
+              <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+              <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.or')}</span>
+              <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+            </div>
+            <button
+              type="button"
+              onClick={switchToPin}
+              className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
+            >
+              {t('auth.unlockWithPin')}
+            </button>
+          </>
+        )}
+
         <div className="font-medium text-gray-500 dark:text-gray-200 mt-6">
-          {t('auth.switchAccounts')} <button onClick={handleLogout} className="text-primary-700 hover:underline dark:text-primary-500">{t('auth.logout')}</button>
+          {t('auth.switchAccounts')} <button type="button" onClick={handleLogout} className="text-primary-700 hover:underline dark:text-primary-500">{t('auth.logout')}</button>
         </div>
       </form>
     </div>

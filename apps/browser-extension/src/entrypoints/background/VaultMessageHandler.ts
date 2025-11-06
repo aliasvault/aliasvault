@@ -235,6 +235,13 @@ export function handleClearVault(
 }
 
 /**
+ * Lock the vault by clearing the encryption key from browser storage. This will force the user to unlock the vault again.
+ */
+export function handleLockVault(): void {
+  storage.removeItem('session:encryptionKey');
+}
+
+/**
  * Get all credentials.
  */
 export async function handleGetCredentials(

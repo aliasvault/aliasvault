@@ -13,7 +13,8 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import { AppInfo } from '@/utils/AppInfo';
 
-import { browser } from "#imports";
+import { browser, storage } from "#imports";
+import { sendMessage } from 'webext-bridge/popup';
 
 /**
  * Settings page component.
@@ -26,6 +27,7 @@ const Settings: React.FC = () => {
   const { setIsInitialLoading } = useLoading();
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
   const navigate = useNavigate();
+  const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
 
   /**
    * Open the client tab.
@@ -109,7 +111,19 @@ const Settings: React.FC = () => {
    * Handle logout.
    */
   const handleLogout = async () : Promise<void> => {
+    setShowLogoutConfirm(false);
     app.logout();
+  };
+
+  /**
+   * Handle lock vault.
+   */
+  const handleLock = async () : Promise<void> => {
+    // Lock the vault
+    await sendMessage('LOCK_VAULT', {}, 'background');
+
+    // Navigate to unlock page
+    navigate('/unlock');
   };
 
   /**
@@ -138,6 +152,13 @@ const Settings: React.FC = () => {
    */
   const navigateToAutoLockSettings = () : void => {
     navigate('/settings/auto-lock');
+  };
+
+  /**
+   * Navigate to unlock method settings.
+   */
+  const navigateToUnlockMethodSettings = () : void => {
+    navigate('/settings/unlock-method');
   };
 
   /**
@@ -182,26 +203,48 @@ const Settings: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <button
-                onClick={handleLogout}
-                title={t('settings.logout')}
-                className="p-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 rounded-md transition-colors"
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                  aria-label={t('settings.logout')}
+              <div className="flex gap-2">
+                <button
+                  onClick={handleLock}
+                  title={t('settings.lock')}
+                  className="p-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 rounded-md transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-              </button>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                    aria-label={t('settings.lock')}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                </button>
+                <button
+                  onClick={() => setShowLogoutConfirm(true)}
+                  title={t('settings.logout')}
+                  className="p-2 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 rounded-md transition-colors"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                    aria-label={t('settings.logout')}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -212,6 +255,38 @@ const Settings: React.FC = () => {
         <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('settings.preferences')}</h3>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            {/* Vault Unlock Method */}
+            <button
+              onClick={navigateToUnlockMethodSettings}
+              className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              <div className="flex items-center">
+                <svg
+                  className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
+                  />
+                </svg>
+                <span className="text-gray-900 dark:text-white">{t('settings.unlockMethod.title')}</span>
+              </div>
+              <svg
+                className="w-4 h-4 text-gray-400"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
             {/* Autofill Settings */}
             <button
               onClick={navigateToAutofillSettings}
@@ -479,6 +554,34 @@ const Settings: React.FC = () => {
       <div className="text-center text-gray-400 dark:text-gray-600">
         {t('settings.versionPrefix')}{AppInfo.VERSION} ({getDisplayUrl()})
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full mx-4">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
+              {t('settings.logoutConfirmTitle')}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
+              {t('settings.logoutConfirmMessage')}
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 px-4 py-2 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-md transition-colors"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex-1 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors"
+              >
+                {t('settings.logout')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
