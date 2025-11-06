@@ -224,7 +224,10 @@
       "openAutofillSettings": "פתיחת הגדרות השלמה אוטומטית",
       "buttonTip": "אם הכפתור שלעיל לא עובד כנראה שהוא חסום עקב הגדרות אבטחת מידע. אפשר לגשת ידנית להגדרות Android ← ניהול כללי ← סיסמאות והשלמה אוטומטית.",
       "step2": "2. חלק מהיישומונים, למשל: Google Chrome, עלולים לדרוש הגדרות ידניות בהגדרות שלהן כדי שתאפשרנה יישומוני השלמות אוטומטיות מגורמי צד־שלישי. עם זאת, רוב היישומונים אמורים לעבוד עם השלמה אוטומטית כברירת מחדל.",
-      "alreadyConfigured": "כבר הגדרתי את זה"
+      "alreadyConfigured": "כבר הגדרתי את זה",
+      "advancedOptions": "Advanced Options",
+      "showSearchText": "Show search text",
+      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "שיטת שחרור נעילת כספת",
     "autoLock": "תום המתנה לנעילה אוטומטית",
