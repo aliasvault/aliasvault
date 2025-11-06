@@ -224,7 +224,10 @@
       "openAutofillSettings": "Apri Impostazioni Di Riempimento Automatico",
       "buttonTip": "Se il pulsante qui sopra non funziona, potrebbe essere bloccato a causa delle impostazioni di sicurezza. È possibile andare manualmente in Impostazioni Android → Gestione generale → Password e riempimento automatico.",
       "step2": "2. Alcune applicazioni, ad esempio Google Chrome, potrebbero richiedere la configurazione manuale nelle loro impostazioni per consentire applicazioni di riempimento automatico di terze parti. Tuttavia, la maggior parte delle app dovrebbe funzionare con il riempimento automatico di default.",
-      "alreadyConfigured": "L'ho già configurato"
+      "alreadyConfigured": "L'ho già configurato",
+      "advancedOptions": "Advanced Options",
+      "showSearchText": "Show search text",
+      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "Metodo di sblocco cassaforte",
     "autoLock": "Blocco automatico per Timeout",
