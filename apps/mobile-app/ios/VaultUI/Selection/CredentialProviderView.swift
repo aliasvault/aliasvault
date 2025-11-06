@@ -266,7 +266,7 @@ public class CredentialProviderViewModel: ObservableObject {
     }
 
     func filterCredentials() {
-        filteredCredentials = CredentialFilter.filterCredentials(credentials, searchText: searchText)
+        filteredCredentials = CredentialMatcher.filterCredentials(credentials, searchText: searchText)
     }
 
     func handleSelection(username: String, password: String) {

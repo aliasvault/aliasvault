@@ -2,7 +2,7 @@ import XCTest
 @testable import VaultUI
 @testable import VaultModels
 
-final class CredentialFilterTests: XCTestCase {
+final class CredentialMatcherTests: XCTestCase {
     private var testCredentials: [Credential] = []
 
     override func setUp() {
@@ -220,8 +220,8 @@ final class CredentialFilterTests: XCTestCase {
         // Test that dumpert.nl credential doesn't match nl.marktplaats.android package
         // They both contain "nl" in the name but shouldn't match since "nl" is just a TLD
         let reversedDomainCredentials = [
-            createTestCredential(serviceName: "Dumpert.nl", serviceUrl: "", username: "user@dumpert.nl"),
-            createTestCredential(serviceName: "Marktplaats.nl", serviceUrl: "", username: "user@marktplaats.nl"),
+            createTestCredential(serviceName: "Dumpert.nl", serviceUrl: "dumpert.nl", username: "user@dumpert.nl"),
+            createTestCredential(serviceName: "Marktplaats.nl", serviceUrl: "nl.marktplaats.android", username: "user@marktplaats.nl"),
         ]
 
         let matches = CredentialMatcher.filterCredentials(reversedDomainCredentials, searchText: "nl.marktplaats.android")
@@ -277,6 +277,7 @@ final class CredentialFilterTests: XCTestCase {
             createTestCredential(serviceName: "Bank Account", serviceUrl: "https://secure-bank.com", username: "user@bank.com"),
             createTestCredential(serviceName: "AliExpress", serviceUrl: "https://aliexpress.com", username: "user@aliexpress.com"),
             createTestCredential(serviceName: "Reddit", serviceUrl: "", username: "user@reddit.com"),
+            createTestCredential(serviceName: "Marktplaats", serviceUrl: "nl.marktplaats.android", username: "user@marktplaats.nl"),
         ]
     }
 
