@@ -193,7 +193,7 @@
     "passkey": "通行密钥",
     "site": "网站",
     "displayName": "显示名",
-    "helpText": "通行密钥会在网站提示时自动生成，无法手动编辑。要移除此通行密钥，您可以在此凭据中进行删除。",
+    "helpText": "通行密钥是在网站提示时创建的，无法手动编辑。要移除此通行密钥，您可以在此凭据中进行删除。",
     "passkeyMarkedForDeletion": "通行密钥已标记为删除",
     "passkeyWillBeDeleted": "保存此凭据后，此通行密钥将被删除。"
   },
@@ -225,8 +225,8 @@
       "buttonTip": "如果上方按钮无效，可能是安全设置阻止了操作。您可手动前往：\nAndroid 设置 → 通用管理 → 密码与自动填充",
       "step2": "部分应用（比如Chrome浏览器）可能需在设置中手动配置，以允许第三方自动填充应用。但大多数应用默认应支持自动填充功能。",
       "alreadyConfigured": "我已经配置好了",
-      "advancedOptions": "Advanced Options",
-      "showSearchText": "Show search text",
+      "advancedOptions": "高级选项",
+      "showSearchText": "显示搜索文本",
       "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "密码库解锁方式",
