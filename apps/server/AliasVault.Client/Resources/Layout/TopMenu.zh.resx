@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Main navigation links -->
   <data name="CredentialsNav">
-    <value>登录凭据</value>
+    <value>凭据</value>
     <comment>Main navigation link for credentials section</comment>
   </data>
   <data name="EmailsNav">
@@ -42,16 +42,16 @@
     <comment>Navigation link for import/export settings</comment>
   </data>
   <data name="ExtensionsAppsNav">
-    <value>扩展与应用程序</value>
+    <value>扩展与应用</value>
     <comment>Navigation link for extensions and apps settings</comment>
   </data>
   <!-- Menu actions -->
   <data name="EnableLightMode">
-    <value>Switch to light mode</value>
+    <value>切换到浅色模式</value>
     <comment>Button text for switching to light theme</comment>
   </data>
   <data name="EnableDarkMode">
-    <value>Switch to dark mode</value>
+    <value>切换到深色模式</value>
     <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
