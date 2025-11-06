@@ -224,7 +224,10 @@
       "openAutofillSettings": "Открыть настройки автозаполнения",
       "buttonTip": "Если кнопка выше не работает, возможно, она заблокирована из-за настроек безопасности. Вы можете вручную перейти в Настройки Android → Общее управление → Пароли и автозаполнение.",
       "step2": "2. Для некоторых приложений, например Google Chrome, может потребоваться ручная настройка в настройках, чтобы разрешить сторонним приложениям автозаполнение. Однако большинство приложений должны работать с автозаполнением по умолчанию.",
-      "alreadyConfigured": "Я уже настроил его"
+      "alreadyConfigured": "Я уже настроил его",
+      "advancedOptions": "Advanced Options",
+      "showSearchText": "Show search text",
+      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "Способ разблокировки хранилища",
     "autoLock": "Тайм-аут автоматической блокировки",
