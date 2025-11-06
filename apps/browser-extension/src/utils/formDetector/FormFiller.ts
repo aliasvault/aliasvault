@@ -33,11 +33,12 @@ export class FormFiller {
       return;
     }
 
-    // Fill basic fields and password fields in parallel
-    await Promise.all([
-      this.fillBasicFields(credential),
-      this.fillPasswordFields(credential)
-    ]);
+    /*
+     * Fill fields sequentially to avoid race conditions and conflicts.
+     * Some websites have event handlers that can interfere with parallel filling.
+     */
+    await this.fillBasicFields(credential);
+    await this.fillPasswordFields(credential);
 
     this.fillBirthdateFields(credential);
     this.fillGenderFields(credential);
@@ -254,25 +255,37 @@ export class FormFiller {
    * @param value The value to set
    */
   private setElementValue(element: HTMLInputElement | HTMLSelectElement, value: string): void {
-    // Try to set value directly on the element
-    element.value = value;
-
-    // If it's a custom element with shadow DOM, try to find and fill the actual input
+    /*
+     * Check for shadow DOM first - if found, only set value on the shadow input
+     * to avoid duplicate value setting which can cause conflicts.
+     */
     if (element.shadowRoot) {
       const shadowInput = element.shadowRoot.querySelector('input, textarea') as HTMLInputElement;
       if (shadowInput) {
         shadowInput.value = value;
-        // Trigger events on the shadow input as well
         this.triggerInputEvents(shadowInput, false);
+        return;
       }
     }
 
-    // Also check if the element contains a regular child input (non-shadow DOM)
-    const childInput = element.querySelector('input, textarea') as HTMLInputElement;
-    if (childInput && childInput !== element) {
-      childInput.value = value;
-      this.triggerInputEvents(childInput, false);
+    /*
+     * Check for child input (non-shadow DOM) only if element is not already an input.
+     * This handles custom wrapper elements.
+     */
+    if (element.tagName.toLowerCase() !== 'input' && element.tagName.toLowerCase() !== 'select' && element.tagName.toLowerCase() !== 'textarea') {
+      const childInput = element.querySelector('input, textarea, select') as HTMLInputElement | HTMLSelectElement;
+      if (childInput) {
+        childInput.value = value;
+        this.triggerInputEvents(childInput, false);
+        return;
+      }
     }
+
+    /*
+     * Default case: set value directly on the element.
+     * This handles standard HTML input/select/textarea elements.
+     */
+    element.value = value;
   }
 
   /**
@@ -333,7 +346,10 @@ export class FormFiller {
    * @param text The text to fill the field with.
    */
   private async fillTextFieldWithTyping(field: HTMLInputElement, text: string): Promise<void> {
-    // Find the actual input element (could be in shadow DOM)
+    /*
+     * Find the actual input element (could be in shadow DOM).
+     * This ensures we only fill one element, avoiding duplicate fills.
+     */
     let actualInput = field;
 
     // Check for shadow DOM input
@@ -398,7 +414,10 @@ export class FormFiller {
    * @param password The password to fill the field with.
    */
   private async fillPasswordField(field: HTMLInputElement, password: string): Promise<void> {
-    // Find the actual input element (could be in shadow DOM)
+    /*
+     * Find the actual input element (could be in shadow DOM).
+     * This ensures we only fill one element, avoiding duplicate fills.
+     */
     let actualInput = field;
 
     // Check for shadow DOM input
