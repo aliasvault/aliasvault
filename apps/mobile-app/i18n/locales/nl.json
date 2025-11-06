@@ -224,7 +224,10 @@
       "openAutofillSettings": "Open Autofill Instellingen",
       "buttonTip": "Als bovenstaande knop niet werkt, dan zou deze geblokkeerd kunnen worden vanwege beveiligingsinstellingen. Open in dit geval handmatig Android Instellingen → Algemeen → Wachtwoorden en Automatisch invullen.",
       "step2": "2. Sommige apps, bijvoorbeeld Google Chrome, vereisen handmatige configuratie om third-party apps toe te staan voor autofill. De meeste apps zouden echter standaard met autofill moeten werken.",
-      "alreadyConfigured": "Al geconfigureerd"
+      "alreadyConfigured": "Al geconfigureerd",
+      "advancedOptions": "Advanced Options",
+      "showSearchText": "Show search text",
+      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "Vault ontgrendelmethode",
     "autoLock": "Automatisch vergrendelen",
