@@ -60,7 +60,7 @@
   <string name="error_biometric_required">Please enable biometric authentication in the main AliasVault app in order to use passkeys</string>
   <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
   <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
-  <string name="error_vault_unlock_failed">Failed to unlock vault</string>
+  <string name="error_vault_unlock_failed">解锁密码库失败</string>
   <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
   <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
 </resources>
