@@ -1,9 +1,55 @@
 import Foundation
 import VaultModels
 
-/// Utility class for filtering credentials based on search text.
-/// This class contains the core filtering logic used by both UI and tests for consistency.
-public class CredentialFilter {
+/// Utility class for matching credentials against app/website information for autofill.
+/// This implementation follows the unified filtering algorithm specification defined in
+/// docs/CREDENTIAL_FILTERING_SPEC.md for cross-platform consistency with Android and Browser Extension.
+///
+/// Algorithm Structure (Priority Order with Early Returns):
+/// 1. PRIORITY 1: App Package Name Exact Match (e.g., com.coolblue.app)
+/// 2. PRIORITY 2: URL Domain Matching (exact, subdomain, root domain)
+/// 3. PRIORITY 3: Service Name Fallback (only for credentials without URLs - anti-phishing)
+/// 4. PRIORITY 4: Text/Word Matching (non-URL search)
+public class CredentialMatcher {
+
+    /// Common top-level domains (TLDs) used for app package name detection.
+    /// When a search string starts with one of these TLDs followed by a dot (e.g., "com.coolblue.app"),
+    /// it's identified as a reversed domain name (app package name) rather than a regular URL.
+    /// This prevents false matches and enables proper package name handling.
+    private static let commonTlds: Set<String> = [
+        // Generic TLDs
+        "com", "net", "org", "edu", "gov", "mil", "int",
+        // Country code TLDs
+        "nl", "de", "uk", "fr", "it", "es", "pl", "be", "ch", "at", "se", "no", "dk", "fi",
+        "pt", "gr", "cz", "hu", "ro", "bg", "hr", "sk", "si", "lt", "lv", "ee", "ie", "lu",
+        "us", "ca", "mx", "br", "ar", "cl", "co", "ve", "pe", "ec",
+        "au", "nz", "jp", "cn", "in", "kr", "tw", "hk", "sg", "my", "th", "id", "ph", "vn",
+        "za", "eg", "ng", "ke", "ug", "tz", "ma",
+        "ru", "ua", "by", "kz", "il", "tr", "sa", "ae", "qa", "kw",
+        // New gTLDs (common ones)
+        "app", "dev", "io", "ai", "tech", "shop", "store", "online", "site", "website",
+        "blog", "news", "media", "tv", "video", "music", "pro", "info", "biz", "name"
+    ]
+
+    /// Check if a string is likely an app package name (reversed domain).
+    /// Package names start with TLD followed by dot (e.g., "com.example", "nl.app").
+    /// - Parameter text: The text to check
+    /// - Returns: True if it looks like an app package name
+    private static func isAppPackageName(_ text: String) -> Bool {
+        // Must contain a dot
+        guard text.contains(".") else { return false }
+
+        // Must not have protocol
+        if text.hasPrefix("http://") || text.hasPrefix("https://") {
+            return false
+        }
+
+        // Extract first part before first dot
+        let firstPart = text.components(separatedBy: ".").first?.lowercased() ?? ""
+
+        // Check if first part is a common TLD - indicates reversed domain (package name)
+        return commonTlds.contains(firstPart)
+    }
 
     /// Extract domain from URL, handling both full URLs and partial domains.
     /// - Parameter urlString: URL or domain string
@@ -15,6 +61,12 @@ public class CredentialFilter {
 
         // Check if it starts with a protocol
         let hasProtocol = domain.hasPrefix("http://") || domain.hasPrefix("https://")
+
+        // If no protocol and starts with TLD + dot, it's likely an app package name
+        // Return empty string to indicate that domain extraction has failed for this string
+        if !hasProtocol && isAppPackageName(domain) {
+            return ""
+        }
 
         // Remove protocol if present
         if hasProtocol {
@@ -184,82 +236,112 @@ public class CredentialFilter {
     }
 
     /// Filter credentials based on search text with anti-phishing protection.
+    ///
+    /// This method follows a strict priority-based algorithm with early returns:
+    /// 1. PRIORITY 1: App Package Name Exact Match (highest priority)
+    /// 2. PRIORITY 2: URL Domain Matching
+    /// 3. PRIORITY 3: Service Name Fallback (anti-phishing protection)
+    /// 4. PRIORITY 4: Text/Word Matching (lowest priority)
+    ///
     /// - Parameters:
     ///   - credentials: List of credentials to filter
-    ///   - searchText: Search term (app info, URL, etc.)
+    ///   - searchText: Search term (app package name, URL, or text)
     /// - Returns: Filtered list of credentials
     ///
-    /// **Security Note**: When searching with a URL, text search fallback only applies to
-    /// credentials with no service URL defined. This prevents phishing attacks where a
-    /// malicious site might match credentials intended for the legitimate site.
+    /// **Security Note**: Priority 3 only searches credentials with no service URL defined.
+    /// This prevents phishing attacks where a malicious site might match credentials
+    /// intended for a legitimate site.
     public static func filterCredentials(_ credentials: [Credential], searchText: String) -> [Credential] {
+        // Early return for empty search
         if searchText.isEmpty {
             return credentials
         }
 
-        // Try to parse as URL first
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // PRIORITY 1: App Package Name Exact Match
+        // Check if search text is an app package name (e.g., com.coolblue.app)
+        // ═══════════════════════════════════════════════════════════════════════════════
+        if isAppPackageName(searchText) {
+            // Perform exact string match on service URL field
+            let packageMatches = credentials.filter { credential in
+                guard let serviceUrl = credential.service.url, !serviceUrl.isEmpty else { return false }
+                return searchText == serviceUrl
+            }
+
+            // EARLY RETURN if matches found
+            if !packageMatches.isEmpty {
+                return packageMatches
+            }
+            // If no matches found, continue to next priority
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // PRIORITY 2: URL Domain Matching
+        // Try to extract domain from search text
+        // ═══════════════════════════════════════════════════════════════════════════════
         let searchDomain = extractDomain(from: searchText)
 
         if !searchDomain.isEmpty {
-            var matches: Set<Credential> = []
-
-            // Check for domain matches with priority
-            credentials.forEach { credential in
-                guard let serviceUrl = credential.service.url, !serviceUrl.isEmpty else { return }
-
-                if domainsMatch(searchText, serviceUrl) {
-                    matches.insert(credential)
-                }
+            // Valid domain extracted - perform domain matching
+            let domainMatches = credentials.filter { credential in
+                guard let serviceUrl = credential.service.url, !serviceUrl.isEmpty else { return false }
+                return domainsMatch(searchText, serviceUrl)
             }
 
-            // SECURITY: If no domain matches found, only search text in credentials with NO service URL
-            // This prevents phishing attacks by ensuring URL-based credentials only match their domains
-            if matches.isEmpty {
-                let domainParts = searchDomain.components(separatedBy: ".")
-                let domainWithoutExtension = domainParts.first?.lowercased() ?? searchDomain.lowercased()
-
-                let nameMatches = credentials.filter { credential in
-                    // CRITICAL: Only search in credentials that have no service URL defined
-                    guard credential.service.url?.isEmpty != false else { return false }
-
-                    let serviceNameMatch = credential.service.name?.lowercased().contains(domainWithoutExtension) ?? false
-                    let notesMatch = credential.notes?.lowercased().contains(domainWithoutExtension) ?? false
-                    return serviceNameMatch || notesMatch
-                }
-                matches.formUnion(nameMatches)
+            // EARLY RETURN if matches found
+            if !domainMatches.isEmpty {
+                return domainMatches
             }
 
-            return Array(matches)
-        } else {
-            // Non-URL fallback: Multi-word AND search for better matching
-            let lowercasedSearch = searchText.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+            // ═══════════════════════════════════════════════════════════════════════════
+            // PRIORITY 3: Service Name Fallback (Anti-Phishing Protection)
+            // No domain matches found - search in service names
+            // CRITICAL: Only search credentials with NO service URL defined
+            // ═══════════════════════════════════════════════════════════════════════════
+            let domainParts = searchDomain.components(separatedBy: ".")
+            let domainWithoutExtension = domainParts.first?.lowercased() ?? searchDomain.lowercased()
 
-            // Split search term into words for AND search
-            let searchWords = lowercasedSearch
-                .components(separatedBy: .whitespacesAndNewlines)
-                .filter { !$0.isEmpty }
+            let nameMatches = credentials.filter { credential in
+                // SECURITY: Skip credentials that have a URL defined
+                guard credential.service.url?.isEmpty != false else { return false }
 
-            if searchWords.isEmpty {
-                return credentials
+                // Search in ServiceName and Notes using substring contains
+                let serviceNameMatch = credential.service.name?.lowercased().contains(domainWithoutExtension) ?? false
+                let notesMatch = credential.notes?.lowercased().contains(domainWithoutExtension) ?? false
+                return serviceNameMatch || notesMatch
             }
 
-            // Filter credentials where ALL search words match (each in at least one field)
+            // Return matches from Priority 3 (don't continue to Priority 4)
+            return nameMatches
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // PRIORITY 4: Text/Word Matching
+        // Search text is not a URL or package name - perform text-based matching
+        // ═══════════════════════════════════════════════════════════════════════════════
+        let searchWords = extractWords(from: searchText)
+
+        if searchWords.isEmpty {
+            // If no meaningful words after extraction, fall back to simple substring contains
+            let lowercasedSearch = searchText.lowercased()
             return credentials.filter { credential in
-                // Prepare searchable fields
-                let searchableFields = [
-                    credential.service.name?.lowercased() ?? "",
-                    credential.username?.lowercased() ?? "",
-                    credential.alias?.email?.lowercased() ?? "",
-                    credential.service.url?.lowercased() ?? "",
-                    credential.notes?.lowercased() ?? ""
-                ]
+                (credential.service.name?.lowercased().contains(lowercasedSearch) ?? false) ||
+                    (credential.username?.lowercased().contains(lowercasedSearch) ?? false) ||
+                    (credential.notes?.lowercased().contains(lowercasedSearch) ?? false)
+            }
+        }
 
-                // All search words must be found (each in at least one field)
-                return searchWords.allSatisfy { word in
-                    searchableFields.contains { field in
-                        field.contains(word)
-                    }
-                }
+        // Match using extracted words - exact word matching only
+        return credentials.filter { credential in
+            let serviceNameWords = credential.service.name.map { extractWords(from: $0) } ?? []
+            let usernameWords = credential.username.map { extractWords(from: $0) } ?? []
+            let notesWords = credential.notes.map { extractWords(from: $0) } ?? []
+
+            // Check if any search word matches any credential word exactly
+            return searchWords.contains { searchWord in
+                serviceNameWords.contains(searchWord) ||
+                    usernameWords.contains(searchWord) ||
+                    notesWords.contains(searchWord)
             }
         }
     }

@@ -4,13 +4,22 @@ import net.aliasvault.app.vaultstore.models.Credential
 
 /**
  * Helper class to match credentials against app/website information for autofill.
- * This implementation matches the iOS filtering logic exactly for cross-platform consistency.
+ * This implementation follows the unified filtering algorithm specification defined in
+ * docs/CREDENTIAL_FILTERING_SPEC.md for cross-platform consistency with iOS and Browser Extension.
+ *
+ * Algorithm Structure (Priority Order with Early Returns):
+ * 1. PRIORITY 1: App Package Name Exact Match (e.g., com.coolblue.app)
+ * 2. PRIORITY 2: URL Domain Matching (exact, subdomain, root domain)
+ * 3. PRIORITY 3: Service Name Fallback (only for credentials without URLs - anti-phishing)
+ * 4. PRIORITY 4: Text/Word Matching (non-URL search)
  */
 object CredentialMatcher {
 
     /**
-     * Common top-level domains (TLDs) that should be excluded from matching.
-     * This prevents false matches when dealing with reversed domain names (App package names).
+     * Common top-level domains (TLDs) used for app package name detection.
+     * When a search string starts with one of these TLDs followed by a dot (e.g., "com.coolblue.app"),
+     * it's identified as a reversed domain name (app package name) rather than a regular URL.
+     * This prevents false matches and enables proper package name handling.
      */
     private val commonTlds = setOf(
         // Generic TLDs
@@ -230,101 +239,117 @@ object CredentialMatcher {
 
     /**
      * Filter credentials based on search text with anti-phishing protection.
+     *
+     * This method follows a strict priority-based algorithm with early returns:
+     * 1. PRIORITY 1: App Package Name Exact Match (highest priority)
+     * 2. PRIORITY 2: URL Domain Matching
+     * 3. PRIORITY 3: Service Name Fallback (anti-phishing protection)
+     * 4. PRIORITY 4: Text/Word Matching (lowest priority)
+     *
      * @param credentials List of credentials to filter
-     * @param searchText Search term (app info, URL, etc.)
+     * @param searchText Search term (app package name, URL, or text)
      * @return Filtered list of credentials
      *
-     * **Security Note**: When searching with a URL, text search fallback only applies to
-     * credentials with no service URL defined. This prevents phishing attacks where a
-     * malicious site might match credentials intended for the legitimate site.
+     * **Security Note**: Priority 3 only searches credentials with no service URL defined.
+     * This prevents phishing attacks where a malicious site might match credentials
+     * intended for a legitimate site.
      */
     fun filterCredentialsByAppInfo(
         credentials: List<Credential>,
         searchText: String,
     ): List<Credential> {
+        // Early return for empty search
         if (searchText.isEmpty()) {
             return credentials
         }
 
-        val matches = mutableSetOf<Credential>()
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // PRIORITY 1: App Package Name Exact Match
+        // Check if search text is an app package name (e.g., com.coolblue.app)
+        // ═══════════════════════════════════════════════════════════════════════════════
+        if (isAppPackageName(searchText)) {
+            // Perform exact string match on ServiceUrl field
+            val packageMatches = credentials.filter { credential ->
+                val serviceUrl = credential.service.url
+                !serviceUrl.isNullOrEmpty() && searchText == serviceUrl
+            }
 
+            // EARLY RETURN if matches found
+            if (packageMatches.isNotEmpty()) {
+                return packageMatches
+            }
+            // If no matches found, continue to next priority
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // PRIORITY 2: URL Domain Matching
+        // Try to extract domain from search text
+        // ═══════════════════════════════════════════════════════════════════════════════
         val searchDomain = extractDomain(searchText)
 
-        // Try to parse as App package name first.
-        if (isAppPackageName(searchText)) {
-            // Is most likely app package name, do a simple exact match search on URL field
-            credentials.forEach { credential ->
-                val serviceUrl = credential.service.url
-                if (!serviceUrl.isNullOrEmpty()) {
-                    if (searchText == serviceUrl) {
-                        matches.add(credential)
-                    }
-                }
-            }
-        }
-
-        // If app package name results in matches, return them immediately.
-        if (matches.isNotEmpty()) {
-            return matches.toList()
-        }
-
-        // Try URL second
         if (searchDomain.isNotEmpty()) {
-            // Check for domain matches with priority
-            credentials.forEach { credential ->
+            // Valid domain extracted - perform domain matching
+            val domainMatches = credentials.filter { credential ->
                 val serviceUrl = credential.service.url
-                if (!serviceUrl.isNullOrEmpty()) {
-                    if (domainsMatch(searchText, serviceUrl)) {
-                        matches.add(credential)
-                    }
-                }
+                !serviceUrl.isNullOrEmpty() && domainsMatch(searchText, serviceUrl)
             }
 
-            // SECURITY: If no domain matches found, only search text in credentials with NO service URL
-            // This prevents phishing attacks by ensuring URL-based credentials only match their domains
-            if (matches.isEmpty()) {
-                val domainParts = searchDomain.split(".")
-                val domainWithoutExtension = domainParts.firstOrNull()?.lowercase() ?: searchDomain.lowercase()
-
-                val nameMatches = credentials.filter { credential ->
-                    if (!credential.service.url.isNullOrEmpty()) {
-                        return@filter false
-                    }
-
-                    val serviceNameMatch = credential.service.name?.lowercase()?.contains(domainWithoutExtension) ?: false
-                    val notesMatch = credential.notes?.lowercase()?.contains(domainWithoutExtension) ?: false
-                    serviceNameMatch || notesMatch
-                }
-                matches.addAll(nameMatches)
+            // EARLY RETURN if matches found
+            if (domainMatches.isNotEmpty()) {
+                return domainMatches
             }
 
-            return matches.toList()
-        } else {
-            // Non-URL fallback: Extract words from search text for better matching
-            val searchWords = extractWords(searchText)
+            // ═══════════════════════════════════════════════════════════════════════════
+            // PRIORITY 3: Service Name Fallback (Anti-Phishing Protection)
+            // No domain matches found - search in service names
+            // CRITICAL: Only search credentials with NO service URL defined
+            // ═══════════════════════════════════════════════════════════════════════════
+            val domainParts = searchDomain.split(".")
+            val domainWithoutExtension = domainParts.firstOrNull()?.lowercase() ?: searchDomain.lowercase()
 
-            if (searchWords.isEmpty()) {
-                // If no meaningful words after extraction, fall back to simple contains
-                val lowercasedSearch = searchText.lowercase()
-                return credentials.filter { credential ->
-                    (credential.service.name?.lowercase()?.contains(lowercasedSearch) ?: false) ||
-                        (credential.username?.lowercase()?.contains(lowercasedSearch) ?: false) ||
-                        (credential.notes?.lowercase()?.contains(lowercasedSearch) ?: false)
+            val nameMatches = credentials.filter { credential ->
+                // SECURITY: Skip credentials that have a URL defined
+                if (!credential.service.url.isNullOrEmpty()) {
+                    return@filter false
                 }
+
+                // Search in ServiceName and Notes using substring contains
+                val serviceNameMatch = credential.service.name?.lowercase()?.contains(domainWithoutExtension) ?: false
+                val notesMatch = credential.notes?.lowercase()?.contains(domainWithoutExtension) ?: false
+                serviceNameMatch || notesMatch
             }
 
-            // Match using extracted words
+            // Return matches from Priority 3 (don't continue to Priority 4)
+            return nameMatches
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // PRIORITY 4: Text/Word Matching
+        // Search text is not a URL or package name - perform text-based matching
+        // ═══════════════════════════════════════════════════════════════════════════════
+        val searchWords = extractWords(searchText)
+
+        if (searchWords.isEmpty()) {
+            // If no meaningful words after extraction, fall back to simple substring contains
+            val lowercasedSearch = searchText.lowercase()
             return credentials.filter { credential ->
-                val serviceNameWords = credential.service.name?.let { extractWords(it) } ?: emptyList()
-                val usernameWords = credential.username?.let { extractWords(it) } ?: emptyList()
-                val notesWords = credential.notes?.let { extractWords(it) } ?: emptyList()
+                (credential.service.name?.lowercase()?.contains(lowercasedSearch) ?: false) ||
+                    (credential.username?.lowercase()?.contains(lowercasedSearch) ?: false) ||
+                    (credential.notes?.lowercase()?.contains(lowercasedSearch) ?: false)
+            }
+        }
 
-                // Check if any search word matches any credential word exactly
-                searchWords.any { searchWord ->
-                    serviceNameWords.contains(searchWord) ||
-                        usernameWords.contains(searchWord) ||
-                        notesWords.contains(searchWord)
-                }
+        // Match using extracted words - exact word matching only
+        return credentials.filter { credential ->
+            val serviceNameWords = credential.service.name?.let { extractWords(it) } ?: emptyList()
+            val usernameWords = credential.username?.let { extractWords(it) } ?: emptyList()
+            val notesWords = credential.notes?.let { extractWords(it) } ?: emptyList()
+
+            // Check if any search word matches any credential word exactly
+            searchWords.any { searchWord ->
+                serviceNameWords.contains(searchWord) ||
+                    usernameWords.contains(searchWord) ||
+                    notesWords.contains(searchWord)
             }
         }
     }

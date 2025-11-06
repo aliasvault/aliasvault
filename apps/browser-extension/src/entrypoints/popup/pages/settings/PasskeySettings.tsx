@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { extractDomain, extractRootDomain } from '@/entrypoints/contentScript/Filter';
+import { extractDomain, extractRootDomain } from '@/entrypoints/contentScript/CredentialMatcher';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import {

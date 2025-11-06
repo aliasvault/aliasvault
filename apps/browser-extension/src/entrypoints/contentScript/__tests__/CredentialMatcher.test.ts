@@ -2,9 +2,9 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 import type { Credential } from '@/utils/dist/shared/models/vault';
 
-import { filterCredentials } from '../Filter';
+import { filterCredentials } from '../CredentialMatcher';
 
-describe('Filter - Credential URL Matching', () => {
+describe('CredentialMatcher - Credential URL Matching', () => {
   let testCredentials: Credential[];
 
   beforeEach(() => {
@@ -292,28 +292,63 @@ describe('Filter - Credential URL Matching', () => {
     expect(matches[0].ServiceName).toBe('Reddit');
   });
 
-  /**
-   * [#20] - Test reversed domain (Android package name) doesn't match on TLD
-   * Note: Android package name filtering is not applicable to browser extensions.
-   * This test is included for consistency with Android and iOS test suites but is skipped.
-   */
-  it.skip('should not match credentials based on TLD when filtering reversed domains', () => {
-    /**
-     * Android package name detection is not implemented in browser extensions
-     * since they only deal with web URLs, not Android app contexts.
+  // [#20] - Test reversed domain (app package name) doesn't match on TLD
+  it('should not match credentials based on TLD when filtering reversed domains', () => {
+    /*
+     * Test that dumpert.nl credential doesn't match nl.marktplaats.android package
+     * They both contain "nl" in the name but shouldn't match since "nl" is just a TLD
      */
+    const reversedDomainCredentials = [
+      createTestCredential('Dumpert.nl', '', 'user@dumpert.nl'),
+      createTestCredential('Marktplaats.nl', '', 'user@marktplaats.nl'),
+    ];
+
+    const matches = filterCredentials(
+      reversedDomainCredentials,
+      'nl.marktplaats.android',
+      ''
+    );
+
+    // Should only match Marktplaats, not Dumpert (even though both have "nl")
+    expect(matches).toHaveLength(1);
+    expect(matches[0].ServiceName).toBe('Marktplaats.nl');
   });
 
-  /**
-   * [#21] - Test Android package names are properly detected and handled
-   * Note: Android package name filtering is not applicable to browser extensions.
-   * This test is included for consistency with Android and iOS test suites but is skipped.
-   */
-  it.skip('should properly handle Android package names in filtering', () => {
-    /**
-     * Android package name detection is not implemented in browser extensions
-     * since they only deal with web URLs, not Android app contexts.
-     */
+  // [#21] - Test app package names are properly detected and handled
+  it('should properly handle app package names in filtering', () => {
+    const packageCredentials = [
+      createTestCredential('Google App', 'com.google.android.googlequicksearchbox', 'user@google.com'),
+      createTestCredential('Facebook', 'com.facebook.katana', 'user@facebook.com'),
+      createTestCredential('WhatsApp', 'com.whatsapp', 'user@whatsapp.com'),
+      createTestCredential('Generic Site', 'example.com', 'user@example.com'),
+    ];
+
+    // Test com.google.android package matches
+    const googleMatches = filterCredentials(
+      packageCredentials,
+      'com.google.android.googlequicksearchbox',
+      ''
+    );
+    expect(googleMatches).toHaveLength(1);
+    expect(googleMatches[0].ServiceName).toBe('Google App');
+
+    // Test com.facebook package matches
+    const facebookMatches = filterCredentials(
+      packageCredentials,
+      'com.facebook.katana',
+      ''
+    );
+    expect(facebookMatches).toHaveLength(1);
+    expect(facebookMatches[0].ServiceName).toBe('Facebook');
+
+    // Test that web domain doesn't match package name
+    const webMatches = filterCredentials(
+      packageCredentials,
+      'https://example.com',
+      ''
+    );
+    expect(webMatches).toHaveLength(1);
+    expect(webMatches[0].ServiceName).toBe('Generic Site');
   });
 
   // [#22] - Test multi-part TLDs like .com.au don't match incorrectly

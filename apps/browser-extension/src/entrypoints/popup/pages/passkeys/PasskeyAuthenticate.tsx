@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { sendMessage } from 'webext-bridge/popup';
 
-import { extractDomain, extractRootDomain } from '@/entrypoints/contentScript/Filter';
+import { extractDomain, extractRootDomain } from '@/entrypoints/contentScript/CredentialMatcher';
 import Button from '@/entrypoints/popup/components/Button';
 import PasskeyBypassDialog from '@/entrypoints/popup/components/Dialogs/PasskeyBypassDialog';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';

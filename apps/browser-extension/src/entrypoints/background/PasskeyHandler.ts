@@ -3,7 +3,7 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { extractDomain, extractRootDomain } from '@/entrypoints/contentScript/Filter';
+import { extractDomain, extractRootDomain } from '@/entrypoints/contentScript/CredentialMatcher';
 
 import {
   PASSKEY_PROVIDER_ENABLED_KEY,

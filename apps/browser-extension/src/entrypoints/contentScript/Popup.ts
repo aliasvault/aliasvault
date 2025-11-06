@@ -1,6 +1,6 @@
 import { sendMessage } from 'webext-bridge/content-script';
 
-import { filterCredentials, AutofillMatchingMode } from '@/entrypoints/contentScript/Filter';
+import { filterCredentials, AutofillMatchingMode } from '@/entrypoints/contentScript/CredentialMatcher';
 import { fillCredential } from '@/entrypoints/contentScript/Form';
 
 import { DISABLED_SITES_KEY, TEMPORARY_DISABLED_SITES_KEY, GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, VAULT_LOCKED_DISMISS_UNTIL_KEY, AUTOFILL_MATCHING_MODE_KEY, CUSTOM_EMAIL_HISTORY_KEY, CUSTOM_USERNAME_HISTORY_KEY } from '@/utils/Constants';
