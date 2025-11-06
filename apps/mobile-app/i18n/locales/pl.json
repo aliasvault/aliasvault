@@ -224,7 +224,10 @@
       "openAutofillSettings": "Otwórz ustawienia autouzupełniania",
       "buttonTip": "Jeśli powyższy przycisk nie działa, może to oznaczać, że został zablokowany w ustawieniach bezpieczeństwa. Możesz ręcznie przejść do Ustawień Androida → Zarządzanie ogólne → Hasła i autouzupełnianie.",
       "step2": "2. Niektóre aplikacje, np. Google Chrome, mogą wymagać ręcznej konfiguracji w ustawieniach, aby zezwolić na korzystanie z aplikacji innych firm do automatycznego wypełniania formularzy. Jednak większość aplikacji powinna domyślnie obsługiwać funkcję automatycznego wypełniania formularzy.",
-      "alreadyConfigured": "Już to skonfigurowałem"
+      "alreadyConfigured": "Już to skonfigurowałem",
+      "advancedOptions": "Advanced Options",
+      "showSearchText": "Show search text",
+      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "Blokada sejfu",
     "autoLock": "Automatyczne blokowanie",
