@@ -224,7 +224,10 @@
       "openAutofillSettings": "打开自动填充设置",
       "buttonTip": "如果上方按钮无效，可能是安全设置阻止了操作。您可手动前往：\nAndroid 设置 → 通用管理 → 密码与自动填充",
       "step2": "部分应用（比如Chrome浏览器）可能需在设置中手动配置，以允许第三方自动填充应用。但大多数应用默认应支持自动填充功能。",
-      "alreadyConfigured": "我已经配置好了"
+      "alreadyConfigured": "我已经配置好了",
+      "advancedOptions": "Advanced Options",
+      "showSearchText": "Show search text",
+      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "密码库解锁方式",
     "autoLock": "自动锁定超时时间",
