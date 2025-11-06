@@ -224,7 +224,10 @@
       "openAutofillSettings": "Otomatik Doldurma Ayarlarını Aç",
       "buttonTip": "Eğer yukarıdaki buton çalışmazsa, güvenlik ayarları nedeniyle engellenmiş olabilir. Manuel olarak Android Ayarları → Genel Yönetim → Parolalar ve otomatik doldurma bölümüne gidebilirsiniz.",
       "step2": "2. Bazı uygulamalar, örneğin Google Chrome, üçüncü taraf otomatik doldurma uygulamalarına izin vermek için kendi ayarlarında manuel yapılandırma gerektirebilir. Ancak çoğu uygulama varsayılan olarak otomatik doldurma ile çalışmalıdır.",
-      "alreadyConfigured": "Yapılandırma tamamlandı"
+      "alreadyConfigured": "Yapılandırma tamamlandı",
+      "advancedOptions": "Advanced Options",
+      "showSearchText": "Show search text",
+      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "Kasa Açma Yöntemi",
     "autoLock": "Otomatik Kilit Süresi",
