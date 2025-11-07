@@ -18,7 +18,7 @@
   <!-- Passkey registration -->
   <string name="passkey_registration_title">Passkey erstellen</string>
   <string name="create_passkey_title">Neuen Passkey erstellen</string>
-  <string name="create_passkey_subtitle">Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.</string>
+  <string name="create_passkey_subtitle">Registriere einen neuen Passkey für diese Website. Er wird sicher in Deinem Tresor gespeichert und automatisch mit AliasVault synchronisiert.</string>
   <string name="replace_passkey_title">Passkey ersetzen</string>
   <string name="passkey_display_name_label">Name des Passkeys</string>
   <string name="passkey_display_name_hint">Gib einen Namen für diesen Passkey ein</string>
@@ -34,33 +34,33 @@
   <string name="passkey_creation_failed">Fehler beim Erstellen des Passkeys</string>
   <string name="passkey_retry_button">Erneut versuchen</string>
   <string name="passkey_info_icon">Info-Symbol</string>
-  <string name="passkey_create_explanation">This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.</string>
+  <string name="passkey_create_explanation">Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf allen Geräten synchronisiert, die AliasVault verwenden.</string>
   <string name="passkey_create_new_button">Neuen Passkey erstellen</string>
   <string name="passkey_select_to_replace">Oder ersetze einen bestehenden Passkey:</string>
   <string name="passkey_replace_button">Passkey ersetzen</string>
-  <string name="passkey_replace_explanation">This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.</string>
+  <string name="passkey_replace_explanation">Dies wird den bestehenden Passkey durch einen neuen ersetzen. Bitte beachte, dass Dein alter Passkey überschrieben wird und nicht mehr zugänglich ist. Wenn Du stattdessen einen separaten Passkey erstellen möchtest, gehe zurück zum vorherigen Schritt.</string>
   <string name="passkey_replacing">Passkey ersetzen…</string>
   <string name="passkey_checking_connection">Verbindung wird überprüft…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Verbindungsfehler</string>
-  <string name="connection_error_message">No connection to the server can be made. Please check your internet connection and try creating the passkey again.</string>
+  <string name="connection_error_message">Es kann keine Verbindung zum Server hergestellt werden. Bitte überprüfe Deine Internetverbindung und versuche das Erstellen des Passkeys erneut.</string>
   <string name="session_expired_title">Sitzung abgelaufen</string>
   <string name="session_expired_message">Deine Sitzung ist abgelaufen. Bitte melde Dich erneut an.</string>
-  <string name="password_changed_title">Password Changed</string>
-  <string name="password_changed_message">Your password has been changed. Please sign in again.</string>
-  <string name="version_not_supported_title">Update Required</string>
-  <string name="version_not_supported_message">Your app version is no longer supported. Please update to the latest version.</string>
-  <string name="server_unavailable_title">Server Unavailable</string>
-  <string name="server_unavailable_message">The server is currently unavailable. Please try again later.</string>
-  <string name="network_error_title">Network Error</string>
-  <string name="network_error_message">A network error occurred. Please check your connection and try again.</string>
-  <string name="server_version_not_supported_title">Server Update Required</string>
-  <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
+  <string name="password_changed_title">Passwort geändert</string>
+  <string name="password_changed_message">Dein Passwort wurde geändert. Bitte melde Dich erneut an.</string>
+  <string name="version_not_supported_title">Aktualisierung erforderlich</string>
+  <string name="version_not_supported_message">Deine App-Version wird nicht mehr unterstützt. Bitte aktualisiere auf die neueste Version.</string>
+  <string name="server_unavailable_title">Server nicht erreichbar</string>
+  <string name="server_unavailable_message">Der Server ist derzeit nicht erreichbar. Bitte versuche es später erneut.</string>
+  <string name="network_error_title">Netzwerkfehler</string>
+  <string name="network_error_message">Es ist ein Netzwerkfehler aufgetreten. Bitte überprüfe Deine Verbindung und versuche es erneut.</string>
+  <string name="server_version_not_supported_title">Server-Update erforderlich</string>
+  <string name="server_version_not_supported_message">Die Server-Version ist veraltet. Bitte kontaktiere den Administrator, um den Server zu aktualisieren.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_biometric_required">Please enable biometric authentication in the main AliasVault app in order to use passkeys</string>
-  <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
-  <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
-  <string name="error_vault_unlock_failed">Failed to unlock vault</string>
-  <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
-  <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
+  <string name="error_biometric_required">Bitte aktiviere die biometrische Authentifizierung in der AliasVault-App um Passkeys zu verwenden</string>
+  <string name="error_unlock_vault_first">Bitte entsperre zuerst den Tresor in der AliasVault-App</string>
+  <string name="error_vault_decrypt_failed">Fehler beim Entschlüsseln des Tresors</string>
+  <string name="error_vault_unlock_failed">Fehler beim Entsperren des Tresors</string>
+  <string name="error_biometric_cancelled">Biometrische Authentifizierung abgebrochen</string>
+  <string name="error_encryption_key_failed">Fehler beim Abrufen des Schlüssel</string>
 </resources>
