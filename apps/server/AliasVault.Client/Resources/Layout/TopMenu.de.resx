@@ -47,11 +47,11 @@
   </data>
   <!-- Menu actions -->
   <data name="EnableLightMode">
-    <value>Switch to light mode</value>
+    <value>Zum hellen Design wechseln</value>
     <comment>Button text for switching to light theme</comment>
   </data>
   <data name="EnableDarkMode">
-    <value>Switch to dark mode</value>
+    <value>Zum dunklen Design wechseln</value>
     <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
