@@ -25,9 +25,10 @@ export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, i
   const username = await storage.getItem('local:username');
   const accessToken = await storage.getItem('local:accessToken');
   const vaultData = await storage.getItem('session:encryptedVault');
+  const encryptionKey = await handleGetEncryptionKey();
 
   const isLoggedIn = username !== null && accessToken !== null;
-  const isVaultLocked = isLoggedIn && vaultData === null;
+  const isVaultLocked = isLoggedIn && (vaultData === null || encryptionKey === null);
 
   // If vault is locked, we can't check for pending migrations
   if (isVaultLocked) {

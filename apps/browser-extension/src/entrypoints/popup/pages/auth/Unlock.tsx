@@ -428,7 +428,7 @@ const Unlock: React.FC = () => {
             />
 
             {/* On-Screen Numpad */}
-            <div className="mb-4">
+            <div>
               <div className="grid grid-cols-3 gap-2">
                 {/* Numbers 1-9 */}
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
