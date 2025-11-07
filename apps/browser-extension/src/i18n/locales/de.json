@@ -367,10 +367,10 @@
     "customApiUrl": "API-URL",
     "customClientUrl": "Client-URL",
     "apiUrlHint": "Die API-Endpunkt-URL (normalerweise Client-URL + /api)",
-    "clientUrlHint": "The web interface URL of your self-hosted instance",
-    "autofillSettingsDescription": "Enable or disable the autofill popup on web pages",
-    "autofillEnabledDescription": "Autofill suggestions will appear on login forms",
-    "autofillDisabledDescription": "Autofill suggestions are disabled globally",
+    "clientUrlHint": "Die URL der Webschnittstelle Deiner selbst gehosteten Instanz",
+    "autofillSettingsDescription": "Aktiviere oder deaktiviere das Autofill-Popup auf Webseiten",
+    "autofillEnabledDescription": "Autofill-Vorschläge werden auf den Anmeldeformularen angezeigt",
+    "autofillDisabledDescription": "Autofill-Vorschläge sind global deaktiviert",
     "languageSettings": "Sprache",
     "languageSettingsDescription": "Wähle Deine bevorzugte Sprache",
     "validation": {
@@ -384,7 +384,7 @@
     "passkey": "Passkey",
     "site": "Seite",
     "displayName": "Name",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
+    "helpText": "Passkeys werden auf der Webseite erzeugt. Sie können nicht manuell erstellt oder bearbeitet werden. Um diesen Passkey zu entfernen, kannst Du ihn von diesem Zugang löschen. Um einen Passkey zu ersetzen oder neu zu erstellen, rufe die entsprechende Webseite auf und folge den dortigen Anweisungen.",
     "passkeyMarkedForDeletion": "Passkey zum Löschen vorgemerkt",
     "passkeyWillBeDeleted": "Dieser Passkey wird gelöscht, wenn Du den Zugang speicherst.",
     "bypass": {
@@ -417,7 +417,7 @@
       "passkeyProvider": "Passkey-Anbieter",
       "passkeyProviderOn": "Passkey-Anbieter an ",
       "enable": "AliasVault als Passkey-Anbieter aktivieren",
-      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+      "description": "Wenn aktiviert, übernimmt AliasVault die Verarbeitung von Passkey-Anfragen von Webseiten. Fordert eine Website einen Passkey an, wird das AliasVault‑Popup statt der nativen Passkey‑Oberfläche des Browsers oder Betriebssystems angezeigt."
     }
   },
   "upgrade": {
