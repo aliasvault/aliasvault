@@ -80,7 +80,7 @@
       "failedToSyncVault": "Fehler beim Synchronisieren des Tresors",
       "operationFailed": "Vorgang fehlgeschlagen",
       "versionNotSupported": "Diese Version der AliasVault-App wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine App auf die neueste Version.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "serverVersionNotSupported": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese mobile App nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
       "appOutdated": "Diese App ist veraltet und kann nicht verwendet werden, um auf diesen Tresor zuzugreifen. Bitte aktualisiere die App, um fortzufahren.",
       "vaultDecryptFailed": "Tresor konnte nicht entschlüsselt werden. Wenn das Problem weiterhin besteht, melden Dich bitte erneut an.",
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an."
@@ -122,11 +122,11 @@
     "privateEmailDescription": "Ende-zu-Ende verschlüsselt, vollständig privat.",
     "publicEmailTitle": "Öffentliche Temp-E-Mail-Anbieter",
     "publicEmailDescription": "Anonyme, aber beschränkte Privatsphäre. E-Mail-Inhalt ist für jeden lesbar, der die Adresse kennt.",
-    "searchPlaceholder": "Search vault...",
+    "searchPlaceholder": "Tresor durchsuchen...",
     "noMatchingCredentials": "Keine passenden Zugangsdaten gefunden",
     "noCredentialsFound": "Keine Zugangsdaten gefunden. Lege einen Zugang an, um loszulegen. Tipp: Du kannst Dich auch in der AliasVault-Web-App anmelden, um Zugangsdaten aus anderen Passwortmanagern zu importieren.",
-    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
-    "noAttachmentsFound": "No credentials with attachments found",
+    "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
+    "noAttachmentsFound": "Es wurden keine Zugangsdaten mit Anhang gefunden",
     "recentEmails": "Neueste E-Mails",
     "loadingEmails": "E-Mails werden geladen...",
     "noEmailsYet": "Bisher wurden noch keine E-Mails empfangen.",
@@ -153,11 +153,11 @@
     "emailPreview": "E-Mail-Vorschau",
     "switchBackToBrowser": "Wechsle zurück zu Deinem Browser, um fortzufahren",
     "filters": {
-      "all": "(All) Credentials",
+      "all": "(Alle) Zugangsdaten",
       "passkeys": "Passkeys",
-      "aliases": "Aliases",
-      "userpass": "Passwords",
-      "attachments": "Attachments"
+      "aliases": "Aliase",
+      "userpass": "Passwörter",
+      "attachments": "Anhänge"
     },
     "twoFactorAuth": "Zwei-Faktor-Authentifizierung",
     "totpCode": "TOTP-Code",
@@ -169,14 +169,14 @@
       "credentialUpdated": "Zugang erfolgreich aktualisiert",
       "credentialCreated": "Zugang erfolgreich erstellt",
       "credentialDeleted": "Zugang erfolgreich gelöscht",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
+      "usernameCopied": "Nutzername in die Zwischenablage kopiert",
+      "emailCopied": "E-Mail in die Zwischenablage kopiert",
+      "passwordCopied": "Passwort in die Zwischenablage kopiert"
     },
     "createNewAliasFor": "Neuen Alias für",
     "errors": {
       "loadFailed": "Laden des Zugangs fehlgeschlagen",
-      "saveFailed": "Failed to save credential",
+      "saveFailed": "Fehler beim Speichern der Zugangsdaten",
       "generateUsernameFailed": "Benutzername konnte nicht generiert werden",
       "generatePasswordFailed": "Passwort konnte nicht generiert werden"
     },
@@ -191,19 +191,19 @@
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "Site",
-    "displayName": "Display Name",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
-    "passkeyMarkedForDeletion": "Passkey marked for deletion",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+    "site": "Seite",
+    "displayName": "Anzeigename",
+    "helpText": "Passkeys werden auf der Webseite erzeugt, wenn sie aufgefordert werden. Sie können nicht manuell bearbeitet werden. Um diesen Passkey zu entfernen, kannst Du ihn aus diesem Zugang löschen.",
+    "passkeyMarkedForDeletion": "Passkey zum Löschen vorgemerkt",
+    "passkeyWillBeDeleted": "Dieser Passkey wird gelöscht, wenn Du den Zugang speicherst."
   },
   "settings": {
     "title": "Einstellungen",
     "autofill": "Autofill & Passkeys",
     "iosAutofillSettings": {
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "AliasVault kann so eingerichtet werden, dass es die integrierte Passwort- und Passkey-Autofill-Funktion von iOS unterstützt. Befolge dazu die folgenden Schritte.",
+      "passkeyNotice": "Passkeys werden durch iOS erstellt. Um sie in AliasVault zu speichern, stelle sicher, dass Autofill unten aktiviert ist.",
+      "howToEnable": "So aktivierst Du Autofill & Passkey:",
       "step1": "1. Tippe unten auf die Schaltfläche, um die iOS-Einstellungen zu öffnen.",
       "step2": "2. Gehe zu \"Allgemein\"",
       "step3": "3. Tippe auf \"Automatisch ausfüllen & Passwörter\"",
@@ -215,18 +215,18 @@
     },
     "androidAutofillSettings": {
       "warningTitle": "Achtung: Experimentelles Feature",
-      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
+      "warningDescription": "Die Autofill- und Passkeys-Funktionalität für Android ist aktuell noch experimentell.",
       "warningLink": "Mehr Informationen findest Du hier",
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "AliasVault kann so eingerichtet werden, dass es die integrierte Passwort- und Passkeys-Autofill-Funktion von Android unterstützt. Befolge dazu die folgenden Schritte.",
+      "passkeyNotice": "Passkeys werden durch den Android Credential Manager (Android 14+) erstellt. Um sie in AliasVault zu speichern, stelle sicher, dass Autofill unten aktiviert ist.",
+      "howToEnable": "So aktivierst Du Autofill & Passkey:",
       "step1": "1. Tippe unten auf die Schaltfläche, um die Android-Einstellungen zu öffnen. Wähle \"AliasVault\" anschließend als bevorzugten Dienst aus.",
       "openAutofillSettings": "Öffne die Autofill-Einstellungen",
       "buttonTip": "Falls die Schaltfläche oben nicht funktionieren sollte, könnte sie aufgrund von Sicherheitseinstellungen blockiert sein. Gehe in diesem Fall manuell zu \"Android-Einstellungen → Passwörter, Passkeys & Konten\"",
       "step2": "2. Manche Apps wie Google Chrome erfordern möglicherweise eine manuelle Konfiguration in ihren Einstellungen, um Drittanbieter-Autofill-Apps zuzulassen. Die meisten Apps sollten jedoch standardmäßig mit Autofill funktionieren.",
       "alreadyConfigured": "Ich habe es bereits konfiguriert",
-      "advancedOptions": "Advanced Options",
-      "showSearchText": "Show search text",
+      "advancedOptions": "Erweiterte Einstellungen",
+      "showSearchText": "Suchtext anzeigen",
       "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "Methode zum Entsperren des Tresors",
@@ -472,7 +472,7 @@
       "stillOffline": "Immer noch offline"
     },
     "alerts": {
-      "syncIssue": "No Connection",
+      "syncIssue": "Keine Verbindung",
       "syncIssueMessage": "Der AliasVault-Server konnte nicht erreicht werden und Dein Tresor konnte nicht synchronisiert werden. Möchtest Du Deinen lokalen Tresor im Lese-Modus öffnen oder die Verbindung erneut versuchen",
       "openLocalVault": "Lokalen Tresor öffnen",
       "retrySync": "Synchronisierung erneut versuchen"
