@@ -21,7 +21,7 @@ const VaultUnlockSettings: React.FC = () => {
   const dbContext = useDb();
   const { setIsInitialLoading, showLoading, hideLoading } = useLoading();
 
-  const [pinEnabled, setPinEnabled] = useState<boolean>(false);
+  const [pinEnabled, setPinEnabled] = useState<boolean | undefined>(undefined);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showPinSetup, setShowPinSetup] = useState<boolean>(false);
@@ -199,16 +199,18 @@ const VaultUnlockSettings: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <button
-                  onClick={pinEnabled && !isLocked ? handleDisablePin : handleEnablePin}
-                  className={`px-4 py-2 rounded-md transition-colors ${
-                    pinEnabled && !isLocked
-                      ? 'bg-green-500 hover:bg-green-600 text-white'
-                      : 'bg-red-500 hover:bg-red-600 text-white'
-                  }`}
-                >
-                  {pinEnabled && !isLocked ? t('common.enabled') : t('common.disabled')}
-                </button>
+                {pinEnabled !== undefined && (
+                  <button
+                    onClick={pinEnabled && !isLocked ? handleDisablePin : handleEnablePin}
+                    className={`px-4 py-2 rounded-md transition-colors ${
+                      pinEnabled && !isLocked
+                        ? 'bg-green-500 hover:bg-green-600 text-white'
+                        : 'bg-red-500 hover:bg-red-600 text-white'
+                    }`}
+                  >
+                    {pinEnabled && !isLocked ? t('common.enabled') : t('common.disabled')}
+                  </button>
+                )}
               </div>
             </div>
           </div>
