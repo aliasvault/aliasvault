@@ -225,9 +225,9 @@
       "buttonTip": "Se o botão acima não funcionar pode estar bloqueado pelas configurações de segurança. Você pode ir manualmente às Configurações do Android → Configurações Gerais → Senhas e autopreenchimento.",
       "step2": "2. Alguns aplicativos, ex. Google Chrome, podem solicitar configurações manuais nas suas configurações para habilitar autopreenchimento de aplicativos terceiros. Porém, a maioria dos aplicativos deve funcionar com autopreenchimento por padrão.",
       "alreadyConfigured": "Já configurei",
-      "advancedOptions": "Advanced Options",
-      "showSearchText": "Show search text",
-      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
+      "advancedOptions": "Opções Avançadas",
+      "showSearchText": "Mostrar busca por texto",
+      "showSearchTextDescription": "Inclua o texto que o AliasVault recebe do Android, e que é usado para pesquisar credenciais relacionadas"
     },
     "vaultUnlock": "Método de Desbloqueio do Cofre",
     "autoLock": "Tempo para Bloqueio Automático",
