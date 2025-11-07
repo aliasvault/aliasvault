@@ -529,25 +529,17 @@ const Unlock: React.FC = () => {
             {t('auth.unlockVault')}
           </Button>
 
-          {/* Switch to PIN button if PIN is available */}
-          {pinAvailable && (
-            <>
-              <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
-                <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.or')}</span>
-                <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
-              </div>
-              <Button type="button" onClick={switchToPin} variant="secondary">
-                {t('auth.unlockWithPin')}
-              </Button>
-            </>
-          )}
-
           <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
             {t('auth.switchAccounts')} <button type="button" onClick={handleLogout} className="text-primary-600 hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400 hover:underline font-medium">{t('auth.logout')}</button>
           </div>
         </form>
       </div>
+
+      {pinAvailable && (
+        <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+          <button type="button" onClick={switchToPin} className="text-primary-600 hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400 hover:underline font-medium">{t('auth.unlockWithPin')}</button>
+        </div>
+      )}
     </div>
   );
 };
