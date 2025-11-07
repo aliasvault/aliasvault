@@ -51,8 +51,8 @@ export class PinLockedError extends Error {
  */
 export async function isPinEnabled(): Promise<boolean> {
   try {
-    const result = await chrome.storage.local.get([PIN_ENABLED_KEY]);
-    return result[PIN_ENABLED_KEY] === true;
+    const result = await storage.getItem(PIN_ENABLED_KEY) as boolean | null;
+    return result === true;
   } catch {
     return false;
   }
@@ -63,8 +63,8 @@ export async function isPinEnabled(): Promise<boolean> {
  */
 export async function getPinLength(): Promise<number | null> {
   try {
-    const result = await chrome.storage.local.get([PIN_LENGTH_KEY]);
-    return result[PIN_LENGTH_KEY] || null;
+    const result = await storage.getItem(PIN_LENGTH_KEY) as number | null;
+    return result || null;
   } catch {
     return null;
   }
@@ -83,8 +83,8 @@ export function isValidPin(pin: string): boolean {
  */
 export async function getFailedAttempts(): Promise<number> {
   try {
-    const result = await chrome.storage.local.get([PIN_FAILED_ATTEMPTS_KEY]);
-    return result[PIN_FAILED_ATTEMPTS_KEY] || 0;
+    const result = await storage.getItem(PIN_FAILED_ATTEMPTS_KEY) as number | null;
+    return result || 0;
   } catch {
     return 0;
   }
@@ -132,14 +132,14 @@ export async function setupPin(pin: string, vaultEncryptionKey: string): Promise
     combined.set(new Uint8Array(encryptedKey), iv.length);
     const encryptedKeyBase64 = arrayBufferToBase64(combined.buffer);
 
-    // Store encrypted key, salt, PIN length, and enable flag
-    await chrome.storage.local.set({
-      [PIN_ENABLED_KEY]: true,
-      [PIN_ENCRYPTED_KEY_KEY]: encryptedKeyBase64,
-      [PIN_SALT_KEY]: saltBase64,
-      [PIN_LENGTH_KEY]: pin.length,
-      [PIN_FAILED_ATTEMPTS_KEY]: 0
-    });
+    /* Store encrypted key, salt, PIN length, and enable flag */
+    await Promise.all([
+      storage.setItem(PIN_ENABLED_KEY, true),
+      storage.setItem(PIN_ENCRYPTED_KEY_KEY, encryptedKeyBase64),
+      storage.setItem(PIN_SALT_KEY, saltBase64),
+      storage.setItem(PIN_LENGTH_KEY, pin.length),
+      storage.setItem(PIN_FAILED_ATTEMPTS_KEY, 0)
+    ]);
 
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -167,15 +167,11 @@ export async function unlockWithPin(pin: string): Promise<string> {
   }
 
   try {
-    // Get stored data
-    const result = await chrome.storage.local.get([
-      PIN_ENCRYPTED_KEY_KEY,
-      PIN_SALT_KEY,
-      PIN_FAILED_ATTEMPTS_KEY
+    /* Get stored data */
+    const [encryptedKeyBase64, saltBase64] = await Promise.all([
+      storage.getItem(PIN_ENCRYPTED_KEY_KEY) as Promise<string | null>,
+      storage.getItem(PIN_SALT_KEY) as Promise<string | null>
     ]);
-
-    const encryptedKeyBase64 = result[PIN_ENCRYPTED_KEY_KEY];
-    const saltBase64 = result[PIN_SALT_KEY];
 
     if (!encryptedKeyBase64 || !saltBase64) {
       throw new Error('PIN unlock is not configured');
@@ -199,15 +195,15 @@ export async function unlockWithPin(pin: string): Promise<string> {
 
     const vaultEncryptionKey = new TextDecoder().decode(decryptedData);
 
-    // Reset failed attempts on success
-    await chrome.storage.local.set({ [PIN_FAILED_ATTEMPTS_KEY]: 0 });
+    /* Reset failed attempts on success */
+    await storage.setItem(PIN_FAILED_ATTEMPTS_KEY, 0);
 
     return vaultEncryptionKey;
   } catch {
     /* Increment failed attempts */
     const currentAttempts = await getFailedAttempts();
     const newAttempts = currentAttempts + 1;
-    await chrome.storage.local.set({ [PIN_FAILED_ATTEMPTS_KEY]: newAttempts });
+    await storage.setItem(PIN_FAILED_ATTEMPTS_KEY, newAttempts);
 
     /*
      * If max attempts reached, disable PIN and clear ALL stored data for security.
@@ -227,12 +223,12 @@ export async function unlockWithPin(pin: string): Promise<string> {
  */
 export async function disablePin(): Promise<void> {
   try {
-    await chrome.storage.local.remove([
-      PIN_ENABLED_KEY,
-      PIN_ENCRYPTED_KEY_KEY,
-      PIN_SALT_KEY,
-      PIN_LENGTH_KEY,
-      PIN_FAILED_ATTEMPTS_KEY
+    await Promise.all([
+      storage.removeItem(PIN_ENABLED_KEY),
+      storage.removeItem(PIN_ENCRYPTED_KEY_KEY),
+      storage.removeItem(PIN_SALT_KEY),
+      storage.removeItem(PIN_LENGTH_KEY),
+      storage.removeItem(PIN_FAILED_ATTEMPTS_KEY)
     ]);
   } catch (error) {
     console.error('[PinUnlockService] Failed to disable PIN:', error);
@@ -246,7 +242,7 @@ export async function disablePin(): Promise<void> {
  */
 export async function resetFailedAttempts(): Promise<void> {
   try {
-    await chrome.storage.local.set({ [PIN_FAILED_ATTEMPTS_KEY]: 0 });
+    await storage.setItem(PIN_FAILED_ATTEMPTS_KEY, 0);
   } catch (error) {
     console.error('[PinUnlockService] Failed to reset failed attempts:', error);
   }

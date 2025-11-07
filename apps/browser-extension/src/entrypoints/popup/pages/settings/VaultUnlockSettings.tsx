@@ -14,6 +14,8 @@ import {
   isPinLocked
 } from '@/utils/PinUnlockService';
 
+import { storage } from '#imports';
+
 /**
  * Vault unlock method settings page component.
  */
@@ -109,8 +111,8 @@ const VaultUnlockSettings: React.FC = () => {
       showLoading();
 
       // Get the encryption key from session storage
-      const encryptionKeyResponse = await chrome.storage.session.get('encryptionKey');
-      const encryptionKey = encryptionKeyResponse.encryptionKey as string;
+      const encryptionKeyResponse = await storage.getItem('session:encryptionKey') as string | undefined;
+      const encryptionKey = encryptionKeyResponse as string;
 
       if (!encryptionKey) {
         setError(t('common.errors.unknownErrorTryAgain'));
@@ -235,7 +237,7 @@ const VaultUnlockSettings: React.FC = () => {
                     <p className="font-medium text-gray-900 dark:text-white">{t('settings.unlockMethod.password')}</p>
                   </div>
                 </div>
-                <div className="px-4 py-2 rounded-md bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300 cursor-not-allowed">
+                <div className="px-4 py-2 rounded-md bg-green-500 text-white hover:bg-green-600 cursor-not-allowed">
                   {t('common.enabled')}
                 </div>
               </div>
