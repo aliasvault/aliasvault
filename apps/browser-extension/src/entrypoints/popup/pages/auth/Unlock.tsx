@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import Button from '@/entrypoints/popup/components/Button';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import UsernameAvatar from '@/entrypoints/popup/components/Unlock/UsernameAvatar';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
@@ -385,6 +386,9 @@ const Unlock: React.FC = () => {
     return (
       <div ref={containerRef} className="flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
         <div className="w-full max-w-md">
+          {/* User Avatar and Username Section */}
+          <UsernameAvatar />
+
           {/* Logo */}
           <div className="text-center mb-4">
             <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
@@ -488,23 +492,7 @@ const Unlock: React.FC = () => {
     <div>
       <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-gray-700 w-full shadow-md rounded px-8 pt-6 pb-8 mb-4">
         {/* User Avatar and Username Section */}
-        <div className="flex items-center space-x-3 mb-6">
-          <div className="flex-shrink-0">
-            <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900 flex items-center justify-center">
-              <span className="text-primary-600 dark:text-primary-400 text-lg font-medium">
-                {authContext.username?.[0]?.toUpperCase() || '?'}
-              </span>
-            </div>
-          </div>
-          <div>
-            <p className="font-medium text-gray-900 dark:text-white">
-              {authContext.username}
-            </p>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {t('auth.loggedIn')}
-            </p>
-          </div>
-        </div>
+        <UsernameAvatar />
 
         {/* Instruction Title */}
         <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">

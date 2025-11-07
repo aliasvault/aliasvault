@@ -17,7 +17,7 @@ const PIN_ENCRYPTED_KEY_KEY = 'aliasvault_pin_encrypted_key';
 const PIN_SALT_KEY = 'aliasvault_pin_salt';
 const PIN_LENGTH_KEY = 'aliasvault_pin_length';
 const PIN_FAILED_ATTEMPTS_KEY = 'aliasvault_pin_failed_attempts';
-const MAX_PIN_ATTEMPTS = 4;
+const MAX_PIN_ATTEMPTS = 3;
 const MIN_PIN_LENGTH = 4;
 const MAX_PIN_LENGTH = 8;
 

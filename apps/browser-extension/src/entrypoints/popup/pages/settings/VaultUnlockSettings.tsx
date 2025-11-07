@@ -165,198 +165,188 @@ const VaultUnlockSettings: React.FC = () => {
 
 
   return (
-    <div className="space-y-4">
-      {/* Error/Success Messages */}
-      {error && (
-        <div className="p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-md text-red-800 dark:text-red-300 text-sm">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="p-3 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-md text-green-800 dark:text-green-300 text-sm">
-          {success}
-        </div>
-      )}
+    <>
+      <div>
+        <p className="text-sm text-gray-600 dark:text-gray-400">
+          {t('settings.unlockMethod.helpText')}
+        </p>
+      </div>
+      <div className="mt-6">
+        {/* Error/Success Messages */}
+        {error && (
+          <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-md text-red-800 dark:text-red-300 text-sm">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="mb-4 p-3 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-md text-green-800 dark:text-green-300 text-sm">
+            {success}
+          </div>
+        )}
 
-      {/* Locked Warning */}
-      {isLocked && (
-        <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-md text-yellow-800 dark:text-yellow-300 text-sm">
-          {t('settings.unlockMethod.pinLocked')}
-        </div>
-      )}
+        {/* Locked Warning */}
+        {isLocked && (
+          <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-300 dark:border-yellow-700 rounded-md text-yellow-800 dark:text-yellow-300 text-sm">
+            {t('settings.unlockMethod.pinLocked')}
+          </div>
+        )}
 
-      {/* PIN Code option */}
-      <section>
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                </svg>
-                <div>
-                  <div className="flex items-center">
-                    <p className="font-medium text-gray-900 dark:text-white">{t('settings.unlockMethod.pin')}</p>
-                    <HelpModal
-                      titleKey="settings.unlockMethod.pin"
-                      contentKey="settings.unlockMethod.helpText"
-                      className="ml-2"
-                    />
+        {/* PIN Code option */}
+        <section>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                  </svg>
+                  <div>
+                    <div className="flex items-center">
+                      <p className="font-medium text-gray-900 dark:text-white">{t('settings.unlockMethod.pin')}</p>
+                    </div>
+                    <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
+                      {t('settings.unlockMethod.pinDescription')}
+                    </p>
                   </div>
-                  <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
-                    {t('settings.unlockMethod.pinDescription')}
-                  </p>
+                </div>
+                <button
+                  onClick={pinEnabled && !isLocked ? handleDisablePin : handleEnablePin}
+                  className={`px-4 py-2 rounded-md transition-colors ${
+                    pinEnabled && !isLocked
+                      ? 'bg-green-500 hover:bg-green-600 text-white'
+                      : 'bg-red-500 hover:bg-red-600 text-white'
+                  }`}
+                >
+                  {pinEnabled && !isLocked ? t('settings.enabled') : t('settings.disabled')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Master Password option (always enabled, cannot be toggled) */}
+        <section className="mt-4">
+          <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <div>
+                    <p className="font-medium text-gray-900 dark:text-white">{t('settings.unlockMethod.password')}</p>
+                  </div>
+                </div>
+                <div className="px-4 py-2 rounded-md bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300 cursor-not-allowed">
+                  {t('settings.enabled')}
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* PIN Setup Modal */}
+        {showPinSetup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 relative">
+              {/* Cancel button in top right corner */}
               <button
-                onClick={pinEnabled && !isLocked ? handleDisablePin : handleEnablePin}
-                className={`px-4 py-2 rounded-md transition-colors ${
-                  pinEnabled && !isLocked
-                    ? 'bg-green-500 hover:bg-green-600 text-white'
-                    : 'bg-red-500 hover:bg-red-600 text-white'
-                }`}
+                type="button"
+                onClick={() => {
+                  setShowPinSetup(false);
+                  setPinSetupStep(1);
+                  setNewPin('');
+                  setConfirmPin('');
+                  setError(null);
+                }}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
+                aria-label="Cancel"
               >
-                {pinEnabled && !isLocked ? t('settings.enabled') : t('settings.disabled')}
-              </button>
-            </div>
-
-            {/* Reset PIN if locked */}
-            {isLocked && (
-              <div className="mt-4">
-                <Button onClick={handleEnablePin} className="w-full">
-                  {t('settings.unlockMethod.resetPin')}
-                </Button>
-              </div>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Master Password option (always enabled, cannot be toggled) */}
-      <section>
-        <div className="bg-gray-50 dark:bg-gray-700/30 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 opacity-75">
-          <div className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <svg className="w-5 h-5 mr-2 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{t('settings.unlockMethod.password')}</p>
-                  <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
-                    {t('settings.unlockMethod.passwordDescription')}
+              </button>
+
+              {/* Step 1: Enter PIN */}
+              {pinSetupStep === 1 && (
+                <>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pr-8">
+                    {t('settings.unlockMethod.setupPin')}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    {t('settings.unlockMethod.enterNewPinDescription')}
                   </p>
-                </div>
-              </div>
-              <div className="px-4 py-2 rounded-md bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300 cursor-not-allowed">
-                {t('settings.enabled')}
-              </div>
+                  <form onSubmit={handlePinSetupNext}>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('settings.unlockMethod.enterNewPin')}
+                      </label>
+                      <input
+                        type="password"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={8}
+                        value={newPin}
+                        onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
+                        placeholder={t('settings.unlockMethod.pinPlaceholder')}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest"
+                        autoFocus
+                      />
+                    </div>
+                    {error && (
+                      <div className="mb-4 text-red-500 dark:text-red-400 text-sm">
+                        {error}
+                      </div>
+                    )}
+                    <Button type="submit">
+                      {t('settings.unlockMethod.next')}
+                    </Button>
+                  </form>
+                </>
+              )}
+
+              {/* Step 2: Confirm PIN */}
+              {pinSetupStep === 2 && (
+                <>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pr-8">
+                    {t('settings.unlockMethod.confirmPinTitle')}
+                  </h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    {t('settings.unlockMethod.confirmPinDescription')}
+                  </p>
+                  <form onSubmit={handlePinSetupSubmit}>
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('settings.unlockMethod.confirmPin')}
+                      </label>
+                      <input
+                        type="password"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={8}
+                        value={confirmPin}
+                        onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
+                        placeholder={t('settings.unlockMethod.pinPlaceholder')}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest"
+                        autoFocus
+                      />
+                    </div>
+                    {error && (
+                      <div className="mb-4 text-red-500 dark:text-red-400 text-sm">
+                        {error}
+                      </div>
+                    )}
+                    <Button type="submit">
+                      {t('settings.unlockMethod.confirm')}
+                    </Button>
+                  </form>
+                </>
+              )}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* PIN Setup Modal */}
-      {showPinSetup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 relative">
-            {/* Cancel button in top right corner */}
-            <button
-              type="button"
-              onClick={() => {
-                setShowPinSetup(false);
-                setPinSetupStep(1);
-                setNewPin('');
-                setConfirmPin('');
-                setError(null);
-              }}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 transition-colors"
-              aria-label="Cancel"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {/* Step 1: Enter PIN */}
-            {pinSetupStep === 1 && (
-              <>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pr-8">
-                  {t('settings.unlockMethod.setupPin')}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {t('settings.unlockMethod.enterNewPinDescription')}
-                </p>
-                <form onSubmit={handlePinSetupNext}>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('settings.unlockMethod.enterNewPin')}
-                    </label>
-                    <input
-                      type="password"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={8}
-                      value={newPin}
-                      onChange={(e) => setNewPin(e.target.value.replace(/\D/g, ''))}
-                      placeholder={t('settings.unlockMethod.pinPlaceholder')}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest"
-                      autoFocus
-                    />
-                  </div>
-                  {error && (
-                    <div className="mb-4 text-red-500 dark:text-red-400 text-sm">
-                      {error}
-                    </div>
-                  )}
-                  <Button type="submit">
-                    {t('settings.unlockMethod.next')}
-                  </Button>
-                </form>
-              </>
-            )}
-
-            {/* Step 2: Confirm PIN */}
-            {pinSetupStep === 2 && (
-              <>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pr-8">
-                  {t('settings.unlockMethod.confirmPinTitle')}
-                </h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  {t('settings.unlockMethod.confirmPinDescription')}
-                </p>
-                <form onSubmit={handlePinSetupSubmit}>
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('settings.unlockMethod.confirmPin')}
-                    </label>
-                    <input
-                      type="password"
-                      inputMode="numeric"
-                      pattern="[0-9]*"
-                      maxLength={8}
-                      value={confirmPin}
-                      onChange={(e) => setConfirmPin(e.target.value.replace(/\D/g, ''))}
-                      placeholder={t('settings.unlockMethod.pinPlaceholder')}
-                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-center text-2xl tracking-widest"
-                      autoFocus
-                    />
-                  </div>
-                  {error && (
-                    <div className="mb-4 text-red-500 dark:text-red-400 text-sm">
-                      {error}
-                    </div>
-                  )}
-                  <Button type="submit">
-                    {t('settings.unlockMethod.confirm')}
-                  </Button>
-                </form>
-              </>
-            )}
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </>
   );
 };
 

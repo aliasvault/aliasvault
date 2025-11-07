@@ -394,9 +394,8 @@
     "unlockMethod": {
       "title": "Vault Unlock Method",
       "methods": "Unlock Methods",
-      "helpText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a quick 4-8 digit PIN for faster access. After 4 failed PIN attempts, you'll need to use your master password.",
+      "helpText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a quick 4-8 digit PIN for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
       "password": "Master Password",
-      "passwordDescription": "Always available as fallback",
       "alwaysEnabled": "Always Enabled",
       "enabled": "Enabled",
       "disabled": "Disabled",
@@ -407,7 +406,6 @@
       "pinLockedDescription": "PIN locked after too many failed attempts",
       "enablePin": "Enable PIN Unlock",
       "disablePin": "Disable PIN Unlock",
-      "resetPin": "Reset PIN",
       "testPin": "Test PIN",
       "setupPin": "Setup PIN Code",
       "setupPinDescription": "Enter a 4-8 digit PIN that you'll use to quickly unlock your vault. Your vault encryption key will be encrypted with this PIN and stored locally.",
@@ -431,7 +429,7 @@
       "testError": "Incorrect PIN.",
       "loadError": "Failed to load unlock method settings.",
       "unlockVaultFirst": "Please unlock your vault with your master password first.",
-      "pinLocked": "PIN unlock has been disabled after 4 failed attempts. Please use your master password to unlock your vault.",
+      "pinLocked": "PIN unlock has been disabled. Please use your master password to unlock your vault.",
       "failedAttempts": "failed attempts"
     }
   },

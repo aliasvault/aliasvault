@@ -46,7 +46,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ routes, headerButtons, me
           height: 'calc(100% - 120px)',
         }}
       >
-        <div className="p-4 mb-16">
+        <div className="px-4 pb-4 pt-2 mb-16">
           {message && (
             <p className="text-red-500 mb-4">{message}</p>
           )}
