@@ -147,7 +147,7 @@ const PasskeySettings: React.FC = () => {
                     : 'bg-red-500 hover:bg-red-600 text-white'
                 }`}
               >
-                {settings.isGloballyEnabled ? t('settings.enabled') : t('settings.disabled')}
+                {settings.isGloballyEnabled ? t('common.enabled') : t('common.disabled')}
               </button>
             </div>
           </div>
@@ -176,7 +176,7 @@ const PasskeySettings: React.FC = () => {
                         : 'bg-red-500 hover:bg-red-600 text-white'
                     }`}
                   >
-                    {settings.isEnabled ? t('settings.enabled') : t('settings.disabled')}
+                    {settings.isEnabled ? t('common.enabled') : t('common.disabled')}
                   </button>
                 )}
               </div>

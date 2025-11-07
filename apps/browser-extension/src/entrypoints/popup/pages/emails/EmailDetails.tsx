@@ -158,7 +158,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
           )}
           <HeaderButton
             onClick={() => setShowDeleteModal(true)}
-            title={t('emails.deleteEmail')}
+            title={t('emails.deleteEmailTitle')}
             iconType={HeaderIconType.DELETE}
             variant="danger"
           />

@@ -26,7 +26,7 @@ const DEFAULT_OPTIONS: ApiOption[] = [
  */
 const createUrlSchema = (t: (key: string) => string): Yup.ObjectSchema<{apiUrl: string; clientUrl: string}> => Yup.object().shape({
   apiUrl: Yup.string()
-    .required(t('validation.apiUrlRequired'))
+    .required(t('settings.validation.apiUrlRequired'))
     .test('is-valid-api-url', t('settings.validation.apiUrlInvalid'), (value: string | undefined) => {
       if (!value) {
         return true; // Allow empty for non-custom option
@@ -39,7 +39,7 @@ const createUrlSchema = (t: (key: string) => string): Yup.ObjectSchema<{apiUrl: 
       }
     }),
   clientUrl: Yup.string()
-    .required(t('validation.clientUrlRequired'))
+    .required(t('settings.validation.clientUrlRequired'))
     .test('is-valid-client-url', t('settings.validation.clientUrlInvalid'), (value: string | undefined) => {
       if (!value) {
         return true; // Allow empty for non-custom option

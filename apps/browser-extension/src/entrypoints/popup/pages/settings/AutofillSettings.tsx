@@ -4,11 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { AutofillMatchingMode } from '@/entrypoints/contentScript/Filter';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import { 
-  DISABLED_SITES_KEY, 
-  GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, 
+import {
+  DISABLED_SITES_KEY,
+  GLOBAL_AUTOFILL_POPUP_ENABLED_KEY,
   TEMPORARY_DISABLED_SITES_KEY,
-  AUTOFILL_MATCHING_MODE_KEY 
+  AUTOFILL_MATCHING_MODE_KEY
 } from '@/utils/Constants';
 
 import { storage, browser } from "#imports";
@@ -180,7 +180,7 @@ const AutofillSettings: React.FC = () => {
                     : 'bg-red-500 hover:bg-red-600 text-white'
                 }`}
               >
-                {settings.isGloballyEnabled ? t('settings.enabled') : t('settings.disabled')}
+                {settings.isGloballyEnabled ? t('common.enabled') : t('common.disabled')}
               </button>
             </div>
           </div>
@@ -214,7 +214,7 @@ const AutofillSettings: React.FC = () => {
                         : 'bg-red-500 hover:bg-red-600 text-white'
                     }`}
                   >
-                    {settings.isEnabled ? t('settings.enabled') : t('settings.disabled')}
+                    {settings.isEnabled ? t('common.enabled') : t('common.disabled')}
                   </button>
                 )}
               </div>

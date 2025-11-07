@@ -384,104 +384,93 @@ const Unlock: React.FC = () => {
   // Render PIN unlock UI
   if (unlockMode === 'pin') {
     return (
-      <div ref={containerRef} className="flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-900">
+      <div ref={containerRef} className="flex flex-col items-center justify-center p-4">
         <div className="w-full max-w-md">
           {/* User Avatar and Username Section */}
           <UsernameAvatar />
 
-          {/* Logo */}
-          <div className="text-center mb-4">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-              {t('auth.unlockTitle')}
-            </h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              {t('auth.enterPinToUnlock')}
-            </p>
-          </div>
-
-          {/* PIN Dots Display */}
-          <div className="flex justify-center gap-2 mb-4">
-            {pinDots}
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-3 p-2 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-md text-red-800 dark:text-red-300 text-xs text-center">
-              {error}
+          {/* Main Content Card */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+            {/* Title */}
+            <div className="text-center mb-4">
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                {t('auth.unlockTitle')}
+              </h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {t('auth.enterPinToUnlock')}
+              </p>
             </div>
-          )}
 
-          {/* Hidden Input for Keyboard Entry */}
-          <input
-            ref={inputRef}
-            type="password"
-            inputMode="numeric"
-            pattern="[0-9]*"
-            maxLength={8}
-            value={pin}
-            onChange={(e) => handlePinChange(e.target.value.replace(/\D/g, ''))}
-            className="w-0 h-0 opacity-0 absolute"
-            autoFocus
-            aria-label="PIN input"
-          />
+            {/* PIN Dots Display */}
+            <div className="flex justify-center gap-2 mb-4">
+              {pinDots}
+            </div>
 
-          {/* On-Screen Numpad */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-4 mb-3">
-            <div className="grid grid-cols-3 gap-2">
-              {/* Numbers 1-9 */}
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+            {/* Error Message */}
+            {error && (
+              <div className="mb-3 p-2 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-md text-red-800 dark:text-red-300 text-xs text-center">
+                {error}
+              </div>
+            )}
+
+            {/* Hidden Input for Keyboard Entry */}
+            <input
+              ref={inputRef}
+              type="password"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={8}
+              value={pin}
+              onChange={(e) => handlePinChange(e.target.value.replace(/\D/g, ''))}
+              className="w-0 h-0 opacity-0 absolute"
+              autoFocus
+              aria-label="PIN input"
+            />
+
+            {/* On-Screen Numpad */}
+            <div className="mb-4">
+              <div className="grid grid-cols-3 gap-2">
+                {/* Numbers 1-9 */}
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((num) => (
+                  <button
+                    key={num}
+                    type="button"
+                    onClick={() => handleNumpadClick(num.toString())}
+                    className="h-12 flex items-center justify-center text-xl font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors active:scale-95"
+                  >
+                    {num}
+                  </button>
+                ))}
+
+                {/* Empty space, 0, Backspace */}
+                <div />
                 <button
-                  key={num}
                   type="button"
-                  onClick={() => handleNumpadClick(num.toString())}
-                  className="h-16 flex items-center justify-center text-xl font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors active:scale-95"
+                  onClick={() => handleNumpadClick('0')}
+                  className="h-12 flex items-center justify-center text-xl font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors active:scale-95"
                 >
-                  {num}
+                  0
                 </button>
-              ))}
-
-              {/* Empty space, 0, Backspace */}
-              <div />
-              <button
-                type="button"
-                onClick={() => handleNumpadClick('0')}
-                className="h-16 flex items-center justify-center text-xl font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors active:scale-95"
-              >
-                0
-              </button>
-              <button
-                type="button"
-                onClick={handleBackspace}
-                className="h-16 flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors active:scale-95"
-                aria-label="Backspace"
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
-                </svg>
-              </button>
+                <button
+                  type="button"
+                  onClick={handleBackspace}
+                  className="h-12 flex items-center justify-center bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-900 dark:text-white rounded-lg transition-colors active:scale-95"
+                  aria-label="Backspace"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414 6.414a2 2 0 001.414.586H19a2 2 0 002-2V7a2 2 0 00-2-2h-8.172a2 2 0 00-1.414.586L3 12z" />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
-
-          {/* Divider */}
-          <div className="flex items-center gap-3 my-3">
-            <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
-            <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.or')}</span>
-            <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
           </div>
 
           {/* Use Password Button */}
-          <button
-            type="button"
-            onClick={switchToPassword}
-            className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors text-sm"
-          >
-            {t('auth.useMasterPassword')}
-          </button>
-
-          {/* Tip */}
-          <p className="mt-2 text-center text-xs text-gray-500 dark:text-gray-400">
-            {t('auth.pinUnlockTip')}
-          </p>
+          <div className="mt-4">
+            <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+              <button type="button" onClick={switchToPassword} className="text-primary-600 hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400 hover:underline font-medium">{t('auth.useMasterPassword')}</button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -489,74 +478,76 @@ const Unlock: React.FC = () => {
 
   // Render password unlock UI
   return (
-    <div>
-      <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-gray-700 w-full shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <div className="flex flex-col items-center justify-center p-4">
+      <div className="w-full max-w-md">
         {/* User Avatar and Username Section */}
         <UsernameAvatar />
 
-        {/* Instruction Title */}
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-          {t('auth.unlockTitle')}
-        </h2>
-
-        {error && (
-          <div className="mb-4 text-red-500 dark:text-red-400">
-            {error}
+        {/* Main Content Card */}
+        <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
+          {/* Title */}
+          <div className="text-center mb-6">
+            <h1 className="text-xl font-bold text-gray-900 dark:text-white">
+              {t('auth.unlockTitle')}
+            </h1>
           </div>
-        )}
 
-        <div className="mb-2">
-          <label className="block text-gray-700 dark:text-gray-200 font-bold mb-2" htmlFor="password">
-            {t('auth.masterPassword')}
-          </label>
-          <div className="relative">
-            <input
-              className="shadow appearance-none border rounded w-full py-2 px-3 pr-10 text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-gray-600 mb-3 leading-tight focus:outline-none focus:shadow-outline"
-              id="password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder={t('auth.passwordPlaceholder')}
-              required
-              autoFocus
-            />
-            <button
-              type="button"
-              className="absolute right-2 top-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
-              onClick={() => setShowPassword(!showPassword)}
-              tabIndex={-1}
-            >
-              <HeaderIcon type={showPassword ? HeaderIconType.EYE_OFF : HeaderIconType.EYE} className="w-5 h-5 text-gray-400 dark:text-gray-500" />
-            </button>
-          </div>
-        </div>
-
-        <Button type="submit">
-          {t('auth.unlockVault')}
-        </Button>
-
-        {/* Switch to PIN button if PIN is available */}
-        {pinAvailable && (
-          <>
-            <div className="flex items-center gap-3 my-4">
-              <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
-              <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.or')}</span>
-              <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+          {/* Error Message */}
+          {error && (
+            <div className="mb-4 p-2 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-md text-red-800 dark:text-red-300 text-xs text-center">
+              {error}
             </div>
-            <button
-              type="button"
-              onClick={switchToPin}
-              className="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors"
-            >
-              {t('auth.unlockWithPin')}
-            </button>
-          </>
-        )}
+          )}
 
-        <div className="font-medium text-gray-500 dark:text-gray-200 mt-6">
-          {t('auth.switchAccounts')} <button type="button" onClick={handleLogout} className="text-primary-700 hover:underline dark:text-primary-500">{t('auth.logout')}</button>
-        </div>
-      </form>
+          <div className="mb-4">
+            <label className="block text-gray-700 dark:text-gray-200 font-medium mb-2" htmlFor="password">
+              {t('auth.masterPassword')}
+            </label>
+            <div className="relative">
+              <input
+                className="shadow appearance-none border rounded-lg w-full py-2 px-3 pr-10 text-gray-700 dark:text-gray-200 dark:bg-gray-700 dark:border-gray-600 leading-tight focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder={t('auth.passwordPlaceholder')}
+                required
+                autoFocus
+              />
+              <button
+                type="button"
+                className="absolute right-2 top-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+              >
+                <HeaderIcon type={showPassword ? HeaderIconType.EYE_OFF : HeaderIconType.EYE} className="w-5 h-5 text-gray-400 dark:text-gray-500" />
+              </button>
+            </div>
+          </div>
+
+          <Button type="submit">
+            {t('auth.unlockVault')}
+          </Button>
+
+          {/* Switch to PIN button if PIN is available */}
+          {pinAvailable && (
+            <>
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+                <span className="text-xs text-gray-500 dark:text-gray-400">{t('common.or')}</span>
+                <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+              </div>
+              <Button type="button" onClick={switchToPin} variant="secondary">
+                {t('auth.unlockWithPin')}
+              </Button>
+            </>
+          )}
+
+          <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
+            {t('auth.switchAccounts')} <button type="button" onClick={handleLogout} className="text-primary-600 hover:text-primary-700 dark:text-primary-500 dark:hover:text-primary-400 hover:underline font-medium">{t('auth.logout')}</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

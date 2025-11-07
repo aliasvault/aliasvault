@@ -126,7 +126,7 @@ export async function handleStoreEncryptionKey(
     return { success: true };
   } catch (error) {
     console.error('Failed to store encryption key:', error);
-    return { success: false, error: await t('common.errors.failedToStoreEncryptionKey') };
+    return { success: false, error: await t('common.errors.unknownErrorTryAgain') };
   }
 }
 
@@ -141,7 +141,7 @@ export async function handleStoreEncryptionKeyDerivationParams(
     return { success: true };
   } catch (error) {
     console.error('Failed to store encryption key derivation params:', error);
-    return { success: false, error: await t('common.errors.failedToStoreEncryptionParams') };
+    return { success: false, error: await t('common.errors.unknownErrorTryAgain') };
   }
 }
 

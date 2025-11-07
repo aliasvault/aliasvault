@@ -1,6 +1,7 @@
 import React, { useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { sendMessage } from 'webext-bridge/popup';
 
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
@@ -14,7 +15,6 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import { AppInfo } from '@/utils/AppInfo';
 
 import { browser, storage } from "#imports";
-import { sendMessage } from 'webext-bridge/popup';
 
 /**
  * Settings page component.
@@ -550,10 +550,10 @@ const Settings: React.FC = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full mx-4">
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">
-              {t('settings.logoutConfirmTitle')}
+              {t('auth.logout')}
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
-              {t('settings.logoutConfirmMessage')}
+              {t('auth.logoutConfirm')}
             </p>
             <div className="flex gap-3">
               <button

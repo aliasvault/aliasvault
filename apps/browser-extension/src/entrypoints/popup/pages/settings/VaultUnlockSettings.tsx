@@ -2,8 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Button from '@/entrypoints/popup/components/Button';
-import HelpModal from '@/entrypoints/popup/components/Dialogs/HelpModal';
-import { useAuth } from '@/entrypoints/popup/context/AuthContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
@@ -12,7 +10,6 @@ import {
   setupPin,
   disablePin,
   isValidPin,
-  getFailedAttempts,
   isPinLocked
 } from '@/utils/PinUnlockService';
 
@@ -21,7 +18,6 @@ import {
  */
 const VaultUnlockSettings: React.FC = () => {
   const { t } = useTranslation();
-  const authContext = useAuth();
   const dbContext = useDb();
   const { setIsInitialLoading, showLoading, hideLoading } = useLoading();
 
@@ -32,7 +28,6 @@ const VaultUnlockSettings: React.FC = () => {
   const [pinSetupStep, setPinSetupStep] = useState<number>(1); // 1 = enter, 2 = confirm
   const [newPin, setNewPin] = useState<string>('');
   const [confirmPin, setConfirmPin] = useState<string>('');
-  const [failedAttempts, setFailedAttempts] = useState<number>(0);
   const [isLocked, setIsLocked] = useState<boolean>(false);
 
   /**
@@ -40,19 +35,17 @@ const VaultUnlockSettings: React.FC = () => {
    */
   const loadSettings = useCallback(async (): Promise<void> => {
     try {
-      const [enabled, attempts, locked] = await Promise.all([
+      const [enabled, locked] = await Promise.all([
         isPinEnabled(),
-        getFailedAttempts(),
         isPinLocked()
       ]);
 
       setPinEnabled(enabled);
-      setFailedAttempts(attempts);
       setIsLocked(locked);
       setIsInitialLoading(false);
     } catch (err: any) {
       console.error('Failed to load PIN settings:', err);
-      setError(t('settings.unlockMethod.loadError'));
+      setError(t('common.errors.unknownErrorTryAgain'));
       setIsInitialLoading(false);
     }
   }, [setIsInitialLoading, t]);
@@ -70,7 +63,7 @@ const VaultUnlockSettings: React.FC = () => {
 
     // Check if we have the encryption key in memory
     if (!dbContext.dbAvailable) {
-      setError(t('settings.unlockMethod.unlockVaultFirst'));
+      setError(t('common.errors.unknownErrorTryAgain'));
       return;
     }
 
@@ -136,7 +129,7 @@ const VaultUnlockSettings: React.FC = () => {
       hideLoading();
     } catch (err: any) {
       console.error('Failed to enable PIN:', err);
-      setError(err.message || t('settings.unlockMethod.enableError'));
+      setError(t('common.errors.unknownErrorTryAgain'));
       hideLoading();
     }
   };
@@ -153,22 +146,19 @@ const VaultUnlockSettings: React.FC = () => {
       await disablePin();
       setPinEnabled(false);
       setIsLocked(false);
-      setFailedAttempts(0);
-      setSuccess(t('settings.unlockMethod.disableSuccess'));
       hideLoading();
     } catch (err: any) {
       console.error('Failed to disable PIN:', err);
-      setError(t('settings.unlockMethod.disableError'));
+      setError(t('common.errors.unknownErrorTryAgain'));
       hideLoading();
     }
   };
-
 
   return (
     <>
       <div>
         <p className="text-sm text-gray-600 dark:text-gray-400">
-          {t('settings.unlockMethod.helpText')}
+          {t('settings.unlockMethod.introText')}
         </p>
       </div>
       <div className="mt-6">
@@ -217,7 +207,7 @@ const VaultUnlockSettings: React.FC = () => {
                       : 'bg-red-500 hover:bg-red-600 text-white'
                   }`}
                 >
-                  {pinEnabled && !isLocked ? t('settings.enabled') : t('settings.disabled')}
+                  {pinEnabled && !isLocked ? t('common.enabled') : t('common.disabled')}
                 </button>
               </div>
             </div>
@@ -238,7 +228,7 @@ const VaultUnlockSettings: React.FC = () => {
                   </div>
                 </div>
                 <div className="px-4 py-2 rounded-md bg-gray-300 text-gray-600 dark:bg-gray-600 dark:text-gray-300 cursor-not-allowed">
-                  {t('settings.enabled')}
+                  {t('common.enabled')}
                 </div>
               </div>
             </div>
@@ -278,9 +268,6 @@ const VaultUnlockSettings: React.FC = () => {
                   </p>
                   <form onSubmit={handlePinSetupNext}>
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('settings.unlockMethod.enterNewPin')}
-                      </label>
                       <input
                         type="password"
                         inputMode="numeric"
@@ -299,7 +286,7 @@ const VaultUnlockSettings: React.FC = () => {
                       </div>
                     )}
                     <Button type="submit">
-                      {t('settings.unlockMethod.next')}
+                      {t('common.next')}
                     </Button>
                   </form>
                 </>
@@ -309,16 +296,13 @@ const VaultUnlockSettings: React.FC = () => {
               {pinSetupStep === 2 && (
                 <>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 pr-8">
-                    {t('settings.unlockMethod.confirmPinTitle')}
+                    {t('settings.unlockMethod.confirmPin')}
                   </h3>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                     {t('settings.unlockMethod.confirmPinDescription')}
                   </p>
                   <form onSubmit={handlePinSetupSubmit}>
                     <div className="mb-4">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('settings.unlockMethod.confirmPin')}
-                      </label>
                       <input
                         type="password"
                         inputMode="numeric"
@@ -337,7 +321,7 @@ const VaultUnlockSettings: React.FC = () => {
                       </div>
                     )}
                     <Button type="submit">
-                      {t('settings.unlockMethod.confirm')}
+                      {t('common.confirm')}
                     </Button>
                   </form>
                 </>

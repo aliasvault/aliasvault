@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 type HelpModalProps = {
-  titleKey: string;
-  contentKey: string;
+  title: string;
+  content: string;
   className?: string;
 }
 
@@ -11,7 +11,7 @@ type HelpModalProps = {
  * Reusable help modal component with a question mark icon button.
  * Shows a modal popup with help information when clicked.
  */
-const HelpModal: React.FC<HelpModalProps> = ({ titleKey, contentKey, className = '' }) => {
+const HelpModal: React.FC<HelpModalProps> = ({ title, content, className = '' }) => {
   const { t } = useTranslation();
   const [showModal, setShowModal] = useState(false);
 
@@ -43,7 +43,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ titleKey, contentKey, className =
           <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-sm w-full">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                {t(titleKey)}
+                {title}
               </h3>
               <button
                 onClick={() => setShowModal(false)}
@@ -66,7 +66,7 @@ const HelpModal: React.FC<HelpModalProps> = ({ titleKey, contentKey, className =
               </button>
             </div>
             <p className="text-sm text-gray-600 dark:text-gray-300">
-              {t(contentKey)}
+              {content}
             </p>
             <button
               onClick={() => setShowModal(false)}
