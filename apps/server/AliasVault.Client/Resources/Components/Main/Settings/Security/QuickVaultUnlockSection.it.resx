@@ -59,35 +59,35 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Passkey unlock</value>
+    <value>Sblocco con passkey</value>
     <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Your master password is encrypted with the passkey PRF and stored locally. When you reload the AliasVault page or tab, you can unlock your vault with your passkey. If you wish to disable passkey unlock, you can do so with the button below. Your master password will still work for unlocking the vault.</value>
+    <value>La tua password principale è crittografata con passkey PRF e memorizzata localmente. Quando ricarichi la pagina o la scheda di AliasVault, puoi sbloccare la cassaforte con la tua passkey. Se si desidera disabilitare lo sblocco con passkey, è possibile farlo con il pulsante qui sotto. La password principale continuerà a funzionare per sbloccare la cassaforte.</value>
     <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Disable Passkey Unlock</value>
+    <value>Disabilita Sblocco con Passkey</value>
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.</value>
+    <value>Per impostazione predefinita, ricaricare la pagina di AliasVault o la scheda richiede di inserire nuovamente la password principale. Con una passkey, è possibile sbloccare immediatamente la cassaforte. Se abilitata, la tua password principale viene crittografata localmente usando l'estensione PRF della passkey. Nota: la passkey funzionerà solo per il dispositivo e il browser attuali su cui è attivato.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>This feature is currently supported by AliasVault browser extension and iOS app. Android support is coming soon. If you experience any issues, you can disable this feature at any time.</value>
+    <value>Questa funzione è attualmente supportata dall'estensione del browser AliasVault e dall'app iOS. Il supporto Android arriverà presto. Se riscontri qualche problema, puoi disabilitare questa funzione in qualsiasi momento.</value>
     <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Passkey Unlock</value>
+    <value>Abilita lo Sblocco con Passkey</value>
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully enabled. The next time your vault is locked, you can unlock it with your created passkey.</value>
+    <value>Lo sblocco con passkey è stato abilitato con successo. La prossima volta che la cassaforte sarà bloccata potrai sbloccarla con la tua passkey.</value>
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully disabled.</value>
+    <value>Lo sblocco con passkey è stato disabilitato.</value>
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
