@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import Button from '@/entrypoints/popup/components/Button';
+import HelpModal from '@/entrypoints/popup/components/Dialogs/HelpModal';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
@@ -112,7 +113,7 @@ const VaultUnlockSettings: React.FC = () => {
       const encryptionKey = encryptionKeyResponse.encryptionKey as string;
 
       if (!encryptionKey) {
-        setError(t('settings.unlockMethod.unlockVaultFirst'));
+        setError(t('common.errors.unknownErrorTryAgain'));
         hideLoading();
         return;
       }
@@ -156,7 +157,7 @@ const VaultUnlockSettings: React.FC = () => {
 
   return (
     <>
-      <div>
+      <div className="flex items-start gap-2">
         <p className="text-sm text-gray-600 dark:text-gray-400">
           {t('settings.unlockMethod.introText')}
         </p>
@@ -193,6 +194,11 @@ const VaultUnlockSettings: React.FC = () => {
                   <div>
                     <div className="flex items-center">
                       <p className="font-medium text-gray-900 dark:text-white">{t('settings.unlockMethod.pin')}</p>
+                      <HelpModal
+                        title={t('common.notice')}
+                        content={t('settings.unlockMethod.pinSecurityWarning')}
+                        className="ml-2"
+                      />
                     </div>
                     <p className="text-sm mt-1 text-gray-600 dark:text-gray-400">
                       {t('settings.unlockMethod.pinDescription')}

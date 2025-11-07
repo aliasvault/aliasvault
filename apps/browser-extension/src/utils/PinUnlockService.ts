@@ -1,3 +1,7 @@
+import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
+
+import { storage } from '#imports';
+
 /**
  * PinUnlockService - Handles PIN-based vault unlock
  *
@@ -6,17 +10,24 @@
  * with a key derived from the PIN and stored locally.
  *
  * Security features:
- * - 4 failed attempts maximum before requiring full password
+ * - 3 failed attempts maximum before requiring full password
  * - PIN must be 4-8 digits
- * - Encryption key derived using PBKDF2 with random salt
+ * - Encryption key derived using Argon2id (memory-hard, GPU-resistant)
  * - Failed attempts counter stored separately
+ * - Encrypted data automatically deleted after max failed attempts
+ *
+ * Security considerations:
+ * - PIN unlock is less secure than full password unlock
+ * - Vulnerable to offline brute-force if device is compromised
+ * - Use Argon2id with high memory cost to slow down attacks
+ * - Recommended for trusted devices only
  */
 
-const PIN_ENABLED_KEY = 'aliasvault_pin_enabled';
-const PIN_ENCRYPTED_KEY_KEY = 'aliasvault_pin_encrypted_key';
-const PIN_SALT_KEY = 'aliasvault_pin_salt';
-const PIN_LENGTH_KEY = 'aliasvault_pin_length';
-const PIN_FAILED_ATTEMPTS_KEY = 'aliasvault_pin_failed_attempts';
+const PIN_ENABLED_KEY = 'local:aliasvault_pin_enabled';
+const PIN_ENCRYPTED_KEY_KEY = 'local:aliasvault_pin_encrypted_key';
+const PIN_SALT_KEY = 'local:aliasvault_pin_salt';
+const PIN_LENGTH_KEY = 'local:aliasvault_pin_length';
+const PIN_FAILED_ATTEMPTS_KEY = 'local:aliasvault_pin_failed_attempts';
 const MAX_PIN_ATTEMPTS = 3;
 const MIN_PIN_LENGTH = 4;
 const MAX_PIN_LENGTH = 8;
@@ -193,13 +204,17 @@ export async function unlockWithPin(pin: string): Promise<string> {
 
     return vaultEncryptionKey;
   } catch {
-    // Increment failed attempts
+    /* Increment failed attempts */
     const currentAttempts = await getFailedAttempts();
     const newAttempts = currentAttempts + 1;
     await chrome.storage.local.set({ [PIN_FAILED_ATTEMPTS_KEY]: newAttempts });
 
-    // If max attempts reached, disable PIN and clear stored data
+    /*
+     * If max attempts reached, disable PIN and clear ALL stored data for security.
+     * This prevents offline brute-force attacks on the encrypted key.
+     */
     if (newAttempts >= MAX_PIN_ATTEMPTS) {
+      await disablePin();
       throw new PinLockedError();
     }
 
@@ -238,27 +253,37 @@ export async function resetFailedAttempts(): Promise<void> {
 }
 
 /**
- * Derive encryption key from PIN using PBKDF2
+ * Derive encryption key from PIN using Argon2id
+ *
+ * Uses Argon2id with high memory cost (64 MB) to make brute-force attacks
+ * significantly more expensive. This is especially important for PINs which
+ * have lower entropy than passwords.
+ *
+ * Parameters chosen for security:
+ * - Memory: 65536 KB (64 MB) - makes GPU attacks much harder
+ * - Iterations: 3 - standard for Argon2id
+ * - Parallelism: 1 - suitable for browser environment
+ * - Output: 32 bytes for AES-256-GCM
  */
 async function derivePinKey(pin: string, salt: Uint8Array): Promise<CryptoKey> {
-  // Import PIN as key material
-  const pinMaterial = await crypto.subtle.importKey(
-    'raw',
-    new TextEncoder().encode(pin),
-    'PBKDF2',
-    false,
-    ['deriveKey']
-  );
+  // Convert salt to base64 string (required by argon2-browser)
+  const saltBase64 = arrayBufferToBase64(salt.buffer as ArrayBuffer);
 
-  // Derive AES-GCM key using PBKDF2
-  const pinKey = await crypto.subtle.deriveKey(
-    {
-      name: 'PBKDF2',
-      salt: salt,
-      iterations: 100000, // 100k iterations for security
-      hash: 'SHA-256'
-    },
-    pinMaterial,
+  // Derive key using Argon2id
+  const hash = await argon2.hash({
+    pass: pin,
+    salt: saltBase64,
+    time: 3,
+    mem: 65536,
+    parallelism: 1,
+    hashLen: 32,
+    type: 2,
+  });
+
+  // Import the derived key into WebCrypto API
+  const pinKey = await crypto.subtle.importKey(
+    'raw',
+    hash.hash,
     { name: 'AES-GCM', length: 256 },
     false,
     ['encrypt', 'decrypt']

@@ -56,6 +56,7 @@
   },
   "common": {
     "loading": "Loading...",
+    "notice": "Notice",
     "error": "Error",
     "cancel": "Cancel",
     "confirm": "Confirm",
@@ -368,7 +369,8 @@
       "password": "Master Password",
       "pin": "PIN Code",
       "pinDescription": "Unlock vault with PIN code",
-      "setupPin": "Setup PIN Code",
+      "pinSecurityWarning": "PIN unlock is less secure than your master password. PINs have lower entropy and can be brute-forced if your device is compromised. Use it only on devices you fully trust.",
+      "setupPin": "Enable PIN Code",
       "enterNewPin": "Enter new PIN",
       "enterNewPinDescription": "Choose a 4-8 digit PIN code",
       "confirmPin": "Confirm PIN",
