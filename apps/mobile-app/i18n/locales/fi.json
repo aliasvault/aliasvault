@@ -225,9 +225,9 @@
       "buttonTip": "Jos yllä oleva painike ei toimi, se saattaa olla estetty turvallisuusasetusten vuoksi. Voit manuaalisesti mennä kohtaan Android-asetukset → Yleinen hallinta → Salasanat ja automaattinen täyttö.",
       "step2": "2. Jotkin sovellukset, kuten Google Chrome, saattavat vaatia asetuksissaan manuaalista määrittämistä salliakseen kolmannen osapuolen täytön sovellukset. Useimpien sovellusten pitäisi kuitenkin toimia oletuksena automaattisen täytön kanssa.",
       "alreadyConfigured": "Olen jo määrittänyt sen",
-      "advancedOptions": "Advanced Options",
-      "showSearchText": "Show search text",
-      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
+      "advancedOptions": "Lisäasetukset",
+      "showSearchText": "Näytä hakuteksti",
+      "showSearchTextDescription": "Sisällytä teksti AliasVault vastaanottaa Androidilta, jota se käyttää etsimään vastaavaa tunnusta"
     },
     "vaultUnlock": "Holvin lukituksen avausmenetelmä",
     "autoLock": "Automaattisen lukituksen aikakatkaisu",
