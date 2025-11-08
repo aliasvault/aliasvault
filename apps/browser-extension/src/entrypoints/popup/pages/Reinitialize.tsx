@@ -103,7 +103,6 @@ const Reinitialize: React.FC = () => {
         if (!isLoggedIn) {
           navigate('/login', { replace: true });
         } else if (!dbAvailable) {
-          // Navigate to unified unlock page (handles both PIN and password)
           navigate('/unlock', { replace: true });
         }
       } else if (shouldRunSync) {
