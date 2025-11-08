@@ -26,6 +26,9 @@ import {
   isPinEnabled,
   isPinLocked,
   PinLockedError,
+  IncorrectPinError,
+  InvalidPinFormatError,
+  PinNotConfiguredError,
   resetFailedAttempts,
   unlockWithPin
 } from '@/utils/PinUnlockService';
@@ -326,21 +329,35 @@ const Unlock: React.FC = () => {
 
       navigate('/reinitialize', { replace: true });
       hideLoading();
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err instanceof PinLockedError) {
         setIsLocked(true);
         setPinAvailable(false);
         setUnlockMode('password');
         setError(t('settings.unlockMethod.pinLocked'));
-      } else {
-        console.error('PIN unlock failed:', err);
-        setError((err as Error).message);
+      } else if (err instanceof IncorrectPinError) {
+        /* Show translatable error with attempts remaining */
+        const attemptsRemaining = err.attemptsRemaining;
+        if (attemptsRemaining === 1) {
+          setError(t('settings.unlockMethod.incorrectPinSingular'));
+        } else {
+          setError(t('settings.unlockMethod.incorrectPin', { attemptsRemaining }));
+        }
         setPin('');
-        hideLoading();
 
-        // Update failed attempts
+        /* Update failed attempts counter */
         const newAttempts = await getFailedAttempts();
         setFailedAttempts(newAttempts);
+      } else if (err instanceof InvalidPinFormatError) {
+        setError(t('settings.unlockMethod.invalidPinFormat'));
+        setPin('');
+      } else if (err instanceof PinNotConfiguredError) {
+        setError(t('settings.unlockMethod.pinNotConfigured'));
+        setPin('');
+      } else {
+        console.error('PIN unlock failed:', err);
+        setError(t('common.errors.unknownErrorTryAgain'));
+        setPin('');
       }
       hideLoading();
     }

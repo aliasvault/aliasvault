@@ -11,7 +11,8 @@ import {
   setupPin,
   disablePin,
   isValidPin,
-  isPinLocked
+  isPinLocked,
+  InvalidPinFormatError
 } from '@/utils/PinUnlockService';
 
 import { storage } from '#imports';
@@ -110,17 +111,17 @@ const VaultUnlockSettings: React.FC = () => {
     try {
       showLoading();
 
-      // Get the encryption key from session storage
+      /* Get the encryption key from session storage */
       const encryptionKeyResponse = await storage.getItem('session:encryptionKey') as string | undefined;
       const encryptionKey = encryptionKeyResponse as string;
 
       if (!encryptionKey) {
-        setError(t('common.errors.unknownErrorTryAgain'));
+        setError(t('settings.unlockMethod.unlockVaultFirst'));
         hideLoading();
         return;
       }
 
-      // Setup PIN with the encryption key
+      /* Setup PIN with the encryption key */
       await setupPin(newPin, encryptionKey);
 
       setPinEnabled(true);
@@ -130,9 +131,15 @@ const VaultUnlockSettings: React.FC = () => {
       setConfirmPin('');
       setSuccess(t('settings.unlockMethod.enableSuccess'));
       hideLoading();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to enable PIN:', err);
-      setError(t('common.errors.unknownErrorTryAgain'));
+
+      if (err instanceof InvalidPinFormatError) {
+        setError(t('settings.unlockMethod.invalidPinFormat'));
+      } else {
+        setError(t('common.errors.unknownErrorTryAgain'));
+      }
+
       hideLoading();
     }
   };

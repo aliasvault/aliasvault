@@ -28,21 +28,80 @@ const PIN_ENCRYPTED_KEY_KEY = 'local:aliasvault_pin_encrypted_key';
 const PIN_SALT_KEY = 'local:aliasvault_pin_salt';
 const PIN_LENGTH_KEY = 'local:aliasvault_pin_length';
 const PIN_FAILED_ATTEMPTS_KEY = 'local:aliasvault_pin_failed_attempts';
-const MAX_PIN_ATTEMPTS = 3;
-const MIN_PIN_LENGTH = 4;
-const MAX_PIN_LENGTH = 8;
+const MAX_PIN_ATTEMPTS = 4;
 
 /**
  * Error thrown when PIN is locked after too many failed attempts.
+ * Translation key: settings.unlockMethod.pinLocked
  */
 export class PinLockedError extends Error {
   /**
    * Creates a new instance of PinLockedError.
-   * @param message - The error message.
    */
-  public constructor(message: string = 'PIN locked after too many failed attempts') {
-    super(message);
+  public constructor() {
+    super('PIN locked after too many failed attempts');
     this.name = 'PinLockedError';
+  }
+}
+
+/**
+ * Error thrown when PIN format is invalid.
+ * Translation key: settings.unlockMethod.invalidPinFormat
+ */
+export class InvalidPinFormatError extends Error {
+  /**
+   * Creates a new instance of InvalidPinFormatError.
+   */
+  public constructor() {
+    super('Invalid PIN format');
+    this.name = 'InvalidPinFormatError';
+  }
+}
+
+/**
+ * Error thrown when PIN is incorrect.
+ * Includes remaining attempts count.
+ * Translation key: settings.unlockMethod.incorrectPin
+ */
+export class IncorrectPinError extends Error {
+  public readonly attemptsRemaining: number;
+
+  /**
+   * Creates a new instance of IncorrectPinError.
+   * @param attemptsRemaining - Number of attempts remaining
+   */
+  public constructor(attemptsRemaining: number) {
+    super(`Incorrect PIN. ${attemptsRemaining} attempts remaining.`);
+    this.name = 'IncorrectPinError';
+    this.attemptsRemaining = attemptsRemaining;
+  }
+}
+
+/**
+ * Error thrown when PIN unlock is not configured.
+ * Translation key: settings.unlockMethod.pinNotConfigured
+ */
+export class PinNotConfiguredError extends Error {
+  /**
+   * Creates a new instance of PinNotConfiguredError.
+   */
+  public constructor() {
+    super('PIN unlock is not configured');
+    this.name = 'PinNotConfiguredError';
+  }
+}
+
+/**
+ * Error thrown when encryption key is not available for PIN setup.
+ * Translation key: settings.unlockMethod.unlockVaultFirst
+ */
+export class EncryptionKeyNotAvailableError extends Error {
+  /**
+   * Creates a new instance of EncryptionKeyNotAvailableError.
+   */
+  public constructor() {
+    super('Encryption key not available');
+    this.name = 'EncryptionKeyNotAvailableError';
   }
 }
 
@@ -107,7 +166,7 @@ export async function isPinLocked(): Promise<boolean> {
  */
 export async function setupPin(pin: string, vaultEncryptionKey: string): Promise<void> {
   if (!isValidPin(pin)) {
-    throw new Error(`PIN must be ${MIN_PIN_LENGTH}-${MAX_PIN_LENGTH} digits`);
+    throw new InvalidPinFormatError();
   }
 
   try {
@@ -142,10 +201,13 @@ export async function setupPin(pin: string, vaultEncryptionKey: string): Promise
     ]);
 
   } catch (error: unknown) {
-    if (error instanceof Error) {
-      throw new Error(`Failed to setup PIN: ${error.message}`);
+    /* Re-throw custom errors as-is */
+    if (error instanceof InvalidPinFormatError) {
+      throw error;
     }
-    throw new Error('Failed to setup PIN');
+    /* Log internal errors and throw generic error for user */
+    console.error('[PinUnlockService] Failed to setup PIN:', error);
+    throw error;
   }
 }
 
@@ -158,12 +220,12 @@ export async function setupPin(pin: string, vaultEncryptionKey: string): Promise
  */
 export async function unlockWithPin(pin: string): Promise<string> {
   if (!isValidPin(pin)) {
-    throw new Error('Invalid PIN format');
+    throw new InvalidPinFormatError();
   }
 
-  // Check if locked due to too many attempts
+  /* Check if locked due to too many attempts */
   if (await isPinLocked()) {
-    throw new Error('Too many failed attempts. Please use your master password.');
+    throw new PinLockedError();
   }
 
   try {
@@ -174,7 +236,7 @@ export async function unlockWithPin(pin: string): Promise<string> {
     ]);
 
     if (!encryptedKeyBase64 || !saltBase64) {
-      throw new Error('PIN unlock is not configured');
+      throw new PinNotConfiguredError();
     }
 
     // Decode encrypted package
@@ -214,7 +276,7 @@ export async function unlockWithPin(pin: string): Promise<string> {
       throw new PinLockedError();
     }
 
-    throw new Error(`Incorrect PIN. ${MAX_PIN_ATTEMPTS - newAttempts} attempts remaining.`);
+    throw new IncorrectPinError(MAX_PIN_ATTEMPTS - newAttempts);
   }
 }
 

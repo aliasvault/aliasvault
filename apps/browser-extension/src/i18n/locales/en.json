@@ -369,17 +369,21 @@
       "password": "Master Password",
       "pin": "PIN Code",
       "pinDescription": "Unlock vault with PIN code",
-      "pinSecurityWarning": "PIN unlock is less secure than your master password. PINs have lower entropy and can be brute-forced if your device is compromised. Use it only on devices you fully trust.",
-      "setupPin": "Enable PIN Code",
+      "setupPin": "Setup PIN Code",
       "enterNewPin": "Enter new PIN",
-      "enterNewPinDescription": "Choose a 4-8 digit PIN code",
+      "enterNewPinDescription": "Enter a PIN code consisting of minimum 4 digits",
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
       "pinPlaceholder": "••••",
-      "invalidPinFormat": "PIN must be 4-8 digits",
+      "invalidPinFormat": "Invalid PIN format",
       "pinMismatch": "PINs do not match",
+      "incorrectPin": "Incorrect PIN. {{attemptsRemaining}} attempts remaining.",
+      "incorrectPinSingular": "Incorrect PIN. 1 attempt remaining.",
+      "pinNotConfigured": "PIN unlock is not configured.",
       "enableSuccess": "PIN unlock enabled successfully!",
-      "pinLocked": "PIN unlock has been disabled. Please use your master password to unlock your vault."
+      "pinLocked": "PIN unlock has been disabled. Please use your master password to unlock your vault.",
+      "unlockVaultFirst": "Please unlock your vault first before setting up PIN.",
+      "pinSecurityWarning": "PIN unlock is less secure than your master password. PINs have lower entropy and can be brute-forced if your device is compromised. Use it only on devices you fully trust."
     }
   },
   "passkeys": {
