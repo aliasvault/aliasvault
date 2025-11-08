@@ -272,7 +272,7 @@ export async function unlockWithPin(pin: string): Promise<string> {
      * This prevents offline brute-force attacks on the encrypted key.
      */
     if (newAttempts >= MAX_PIN_ATTEMPTS) {
-      await disablePin();
+      await removeAndDisablePin();
       throw new PinLockedError();
     }
 
@@ -281,9 +281,9 @@ export async function unlockWithPin(pin: string): Promise<string> {
 }
 
 /**
- * Disable PIN unlock and clear all stored data
+ * Disable PIN unlock and remove all stored (encrypted) data.
  */
-export async function disablePin(): Promise<void> {
+export async function removeAndDisablePin(): Promise<void> {
   try {
     await Promise.all([
       storage.removeItem(PIN_ENABLED_KEY),

@@ -9,7 +9,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import {
   isPinEnabled,
   setupPin,
-  disablePin,
+  removeAndDisablePin,
   isValidPin,
   isPinLocked,
   InvalidPinFormatError
@@ -153,7 +153,7 @@ const VaultUnlockSettings: React.FC = () => {
 
     try {
       showLoading();
-      await disablePin();
+      await removeAndDisablePin();
       setPinEnabled(false);
       setIsLocked(false);
       hideLoading();
