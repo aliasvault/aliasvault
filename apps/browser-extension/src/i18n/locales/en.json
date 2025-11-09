@@ -199,7 +199,6 @@
     "noMatchingCredentials": "No matching credentials found",
     "createdAt": "Created",
     "updatedAt": "Last updated",
-    "saveSuccess": "Credential saved successfully",
     "saveCredential": "Save credential",
     "deleteCredentialTitle": "Delete Credential",
     "deleteCredentialConfirm": "Are you sure you want to delete this credential? This action cannot be undone.",

@@ -537,7 +537,7 @@ const Settings: React.FC = () => {
                 </div>
                 <button
                   onClick={openKeyboardShortcuts}
-                  className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+                  className="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-md transition-colors"
                 >
                   {t('settings.configure')}
                 </button>

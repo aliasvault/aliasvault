@@ -4,6 +4,7 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import Button from '@/entrypoints/popup/components/Button';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIcon, HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
@@ -411,11 +412,7 @@ const Unlock: React.FC = () => {
             </div>
 
             {/* Error Message */}
-            {error && (
-              <div className="mb-3 p-2 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-md text-red-800 dark:text-red-300 text-xs text-center">
-                {error}
-              </div>
-            )}
+            {error && <AlertMessage type="error" message={error} className="mb-3 text-center" />}
 
             {/* Hidden Input for Keyboard Entry */}
             <input
@@ -497,11 +494,7 @@ const Unlock: React.FC = () => {
           </div>
 
           {/* Error Message */}
-          {error && (
-            <div className="mb-4 p-2 bg-red-100 dark:bg-red-900/30 border border-red-300 dark:border-red-700 rounded-md text-red-800 dark:text-red-300 text-xs text-center">
-              {error}
-            </div>
-          )}
+          {error && <AlertMessage type="error" message={error} className="mb-4 text-center" />}
 
           <div className="mb-4">
             <label className="block text-gray-700 dark:text-gray-200 font-medium mb-2" htmlFor="password">
