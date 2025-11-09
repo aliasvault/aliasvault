@@ -33,10 +33,10 @@ const Settings: React.FC = () => {
    * Open the client tab.
    */
   const openClientTab = async () : Promise<void> => {
-    const settingClientUrl = await browser.storage.local.get('clientUrl');
+    const settingClientUrl = await storage.getItem('local:clientUrl') as string | undefined;
     let clientUrl = AppInfo.DEFAULT_CLIENT_URL;
-    if (settingClientUrl?.clientUrl && settingClientUrl.clientUrl.length > 0) {
-      clientUrl = settingClientUrl.clientUrl;
+    if (settingClientUrl && settingClientUrl.length > 0) {
+      clientUrl = settingClientUrl;
     }
 
     window.open(clientUrl, '_blank');

@@ -47,7 +47,7 @@ const VaultUnlockSettings: React.FC = () => {
       setPinEnabled(enabled);
       setIsLocked(locked);
       setIsInitialLoading(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load PIN settings:', err);
       setError(t('common.errors.unknownErrorTryAgain'));
       setIsInitialLoading(false);
@@ -157,7 +157,7 @@ const VaultUnlockSettings: React.FC = () => {
       setPinEnabled(false);
       setIsLocked(false);
       hideLoading();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to disable PIN:', err);
       setError(t('common.errors.unknownErrorTryAgain'));
       hideLoading();

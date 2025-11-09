@@ -21,10 +21,8 @@ import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import {
-  getFailedAttempts,
   getPinLength,
   isPinEnabled,
-  isPinLocked,
   PinLockedError,
   IncorrectPinError,
   InvalidPinFormatError,
@@ -66,8 +64,6 @@ const Unlock: React.FC = () => {
   // PIN unlock state
   const [pin, setPin] = useState('');
   const [pinLength, setPinLength] = useState<number>(6);
-  const [failedAttempts, setFailedAttempts] = useState<number>(0);
-  const [isLocked, setIsLocked] = useState<boolean>(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -106,20 +102,16 @@ const Unlock: React.FC = () => {
      */
     const initialize = async (): Promise<void> => {
       // First check PIN availability and set initial mode
-      const [enabled, length, attempts, locked] = await Promise.all([
+      const [pinEnabled, pinLength] = await Promise.all([
         isPinEnabled(),
         getPinLength(),
-        getFailedAttempts(),
-        isPinLocked()
       ]);
 
-      setPinAvailable(enabled && !locked);
-      setPinLength(length || 6);
-      setFailedAttempts(attempts);
-      setIsLocked(locked);
+      setPinAvailable(pinEnabled);
+      setPinLength(pinLength || 6);
 
       // Default to PIN mode if available, otherwise password
-      if (enabled && !locked) {
+      if (pinEnabled) {
         setUnlockMode('pin');
       } else {
         setUnlockMode('password');
@@ -331,7 +323,6 @@ const Unlock: React.FC = () => {
       hideLoading();
     } catch (err: unknown) {
       if (err instanceof PinLockedError) {
-        setIsLocked(true);
         setPinAvailable(false);
         setUnlockMode('password');
         setError(t('settings.unlockMethod.pinLocked'));
@@ -344,10 +335,6 @@ const Unlock: React.FC = () => {
           setError(t('settings.unlockMethod.incorrectPin', { attemptsRemaining }));
         }
         setPin('');
-
-        /* Update failed attempts counter */
-        const newAttempts = await getFailedAttempts();
-        setFailedAttempts(newAttempts);
       } else if (err instanceof InvalidPinFormatError) {
         setError(t('settings.unlockMethod.invalidPinFormat'));
         setPin('');
