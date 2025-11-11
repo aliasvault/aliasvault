@@ -46,21 +46,12 @@ public struct PinUnlockView: View {
                     .padding(.bottom, 8)
 
                 // Subtitle
-                if let pinLength = viewModel.pinLength {
-                    Text(String(format: String(localized: "enter_pin_to_unlock", bundle: locBundle), pinLength))
-                        .font(.system(size: 16))
-                        .foregroundColor(theme.text.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
-                        .padding(.bottom, 32)
-                } else {
-                    Text(String(localized: "enter_pin_to_unlock_vault", bundle: locBundle))
-                        .font(.system(size: 16))
-                        .foregroundColor(theme.text.opacity(0.7))
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
-                        .padding(.bottom, 32)
-                }
+                Text(String(format: String(localized: "enter_pin_to_unlock_vault", bundle: locBundle)))
+                    .font(.system(size: 16))
+                    .foregroundColor(theme.text.opacity(0.7))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+                    .padding(.bottom, 32)
 
                 // PIN dots display
                 if let pinLength = viewModel.pinLength {
