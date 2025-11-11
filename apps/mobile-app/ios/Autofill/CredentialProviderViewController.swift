@@ -103,12 +103,15 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
             return
         }
 
-        // Check if biometric authentication is available before attempting unlock
-        if !vaultStore.isBiometricAuthEnabled() {
-            // Biometric auth is not enabled or not available - show error
+        // Check if any authentication method is enabled (PIN or biometric)
+        let pinEnabled = vaultStore.isPinEnabled()
+        let biometricEnabled = vaultStore.isBiometricAuthEnabled()
+
+        if !pinEnabled && !biometricEnabled {
+            // No authentication method is enabled - show error
             let alert = UIAlertController(
-                title: NSLocalizedString("biometric_auth_required", comment: "Biometric Authentication Required"),
-                message: NSLocalizedString("biometric_auth_required_message", comment: "Please enable Face ID in the main AliasVault app to use autofill."),
+                title: NSLocalizedString("auth_required", comment: "Authentication Required"),
+                message: NSLocalizedString("auth_required_message", comment: "Please enable Face ID or PIN unlock in the main AliasVault app to use autofill."),
                 preferredStyle: .alert
             )
             alert.addAction(UIAlertAction(title: NSLocalizedString("ok", comment: "OK"), style: .default) { [weak self] _ in
@@ -121,105 +124,9 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
             return
         }
 
-        // Try to unlock the vault. If it fails, show proper error message.
-        do {
-            try vaultStore.unlockVault()
-        } catch let error as NSError {
-            print("Failed to unlock vault: \(error)")
-
-            // Check for specific error codes to provide better user feedback
-            var errorTitle = NSLocalizedString("unlock_failed", comment: "Unlock Failed")
-            var errorMessage = error.localizedDescription
-
-            if error.domain == "VaultStore" {
-                switch error.code {
-                case 3:
-                    // No encryption key found in memory
-                    errorTitle = NSLocalizedString("no_encryption_key", comment: "No Encryption Key")
-                    errorMessage = NSLocalizedString("no_encryption_key_message", comment: "No encryption key found. Please unlock the vault in the main AliasVault app first.")
-                case 2:
-                    // Biometric auth not available
-                    errorTitle = NSLocalizedString("biometric_unavailable", comment: "Biometric Unavailable")
-                    errorMessage = NSLocalizedString("biometric_unavailable_message", comment: "Face ID is not available on this device.")
-                case 9:
-                    // Failed to retrieve key from keychain
-                    errorTitle = NSLocalizedString("keychain_error", comment: "Keychain Error")
-                    errorMessage = NSLocalizedString("keychain_error_message", comment: "Failed to retrieve encryption key. This may be due to cancelled biometric authentication.")
-                default:
-                    break
-                }
-            }
-
-            let alert = UIAlertController(
-                title: errorTitle,
-                message: errorMessage,
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: NSLocalizedString("ok", comment: "OK"), style: .default) { [weak self] _ in
-                self?.extensionContext.cancelRequest(withError: NSError(
-                    domain: ASExtensionErrorDomain,
-                    code: ASExtensionError.failed.rawValue,
-                    userInfo: [NSLocalizedDescriptionKey: errorMessage]
-                ))
-            })
-            present(alert, animated: true)
-            return
-        }
-
-        // Handle passkey registration mode after vault is unlocked
-        if isPasskeyRegistrationMode {
-            guard let params = passkeyRegistrationParams else {
-                extensionContext.cancelRequest(withError: NSError(
-                    domain: ASExtensionErrorDomain,
-                    code: ASExtensionError.failed.rawValue,
-                    userInfo: [NSLocalizedDescriptionKey: "Missing passkey registration parameters"]
-                ))
-                return
-            }
-
-            // Show passkey registration UI
-            showPasskeyRegistrationView(
-                rpId: params.rpId,
-                userName: params.userName,
-                userDisplayName: params.userDisplayName,
-                userId: params.userId,
-                clientDataHash: params.clientDataHash,
-                vaultStore: vaultStore,
-                enablePrf: params.enablePrf,
-                prfInputs: params.prfInputs
-            )
-            return
-        }
-
-        // Only set up the view if we haven't already
-        if currentHostingController == nil {
-            do {
-                try setupView(vaultStore: vaultStore)
-
-                // Perform initial credential sync if the credential identity store is empty
-                // This is an OOBE (Out Of Box Experience) step to populate the store on first use
-                // Note: Regular syncs happen in the main app, this is just a fallback
-                Task {
-                    await performInitialSyncIfNeeded(vaultStore: vaultStore)
-                }
-            } catch {
-                print("Failed to setup view: \(error)")
-                let alert = UIAlertController(
-                    title: NSLocalizedString("loading_error", comment: ""),
-                    message: NSLocalizedString("loading_error_message", comment: ""),
-                    preferredStyle: .alert
-                )
-                alert.addAction(UIAlertAction(title: NSLocalizedString("ok", comment: ""), style: .default) { [weak self] _ in
-                    self?.extensionContext.cancelRequest(withError: NSError(
-                        domain: ASExtensionErrorDomain,
-                        code: ASExtensionError.failed.rawValue,
-                        userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("failed_to_load_credentials", comment: "")]
-                    ))
-                })
-                present(alert, animated: true)
-                return
-            }
-        }
+        // Show unlock coordinator which will handle PIN/biometric unlock
+        // and then show the actual view after successful unlock
+        showUnlockCoordinator(vaultStore: vaultStore)
     }
 
     override public func viewDidAppear(_ animated: Bool) {
@@ -228,8 +135,8 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
         // If we're in quick return mode, now trigger the unlock and complete the request
         // The loading view is already visible from viewWillAppear
         if isQuickReturnMode {
-            // Dispatch async to ensure the view is fully rendered before showing biometric prompt
-            // This prevents a race condition where the first tap doesn't trigger the biometric UI
+            // Dispatch async to ensure the view is fully rendered before showing auth prompt
+            // This prevents a race condition where the first tap doesn't trigger the auth UI
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else { return }
 
@@ -239,20 +146,32 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                     return
                 }
 
-                // Check if biometric authentication is available
-                if !vaultStore.isBiometricAuthEnabled() {
-                    print("Quick return failed: Biometric auth not enabled")
+                // Check if any authentication method is enabled
+                let pinEnabled = vaultStore.isPinEnabled()
+                let biometricEnabled = vaultStore.isBiometricAuthEnabled()
+
+                if !pinEnabled && !biometricEnabled {
+                    print("Quick return failed: No auth method enabled")
                     self.extensionContext.cancelRequest(withError: NSError(
                         domain: ASExtensionErrorDomain,
                         code: ASExtensionError.failed.rawValue,
-                        userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("biometric_auth_required_message", comment: "Please enable Face ID in the main AliasVault app to use autofill.")]
+                        userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("auth_required_message", comment: "Please enable Face ID or PIN unlock in the main AliasVault app to use autofill.")]
                     ))
                     return
                 }
 
+                // If PIN is enabled, show PIN unlock immediately (PIN takes priority)
+                if pinEnabled {
+                    self.showQuickReturnPinUnlock(vaultStore: vaultStore)
+                    return
+                }
+
+                // Only biometric is enabled - try to unlock with biometric
                 do {
+                    // Try to unlock the vault with biometric
                     try vaultStore.unlockVault()
 
+                    // Unlock succeeded - process the credential request
                     if let passkeyRequest = self.quickReturnPasskeyRequest {
                         self.handleQuickReturnPasskeyCredential(vaultStore: vaultStore, request: passkeyRequest)
                     } else if let passwordRequest = self.quickReturnPasswordRequest {
@@ -267,7 +186,7 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                         switch error.code {
                         case 3:
                             errorMessage = NSLocalizedString("no_encryption_key_message", comment: "No encryption key found. Please unlock the vault in the main AliasVault app first.")
-                        case 9:
+                        case 8, 9:
                             errorMessage = NSLocalizedString("keychain_error_message", comment: "Failed to retrieve encryption key. This may be due to cancelled biometric authentication.")
                         default:
                             break
@@ -282,6 +201,61 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                 }
             }
         }
+    }
+
+    /// Show PIN unlock for quick return mode when biometric fails
+    private func showQuickReturnPinUnlock(vaultStore: VaultStore) {
+        // Remove the loading view
+        if let loadingController = currentHostingController {
+            loadingController.willMove(toParent: nil)
+            loadingController.view.removeFromSuperview()
+            loadingController.removeFromParent()
+            currentHostingController = nil
+        }
+
+        // Create PIN unlock view model with injected dependencies
+        let viewModel = PinUnlockViewModel(
+            pinLength: vaultStore.getPinLength(),
+            unlockHandler: { [weak self] pin in
+                guard let self = self else { return }
+
+                // Attempt to unlock with PIN
+                let encryptionKeyBase64 = try vaultStore.unlockWithPin(pin)
+
+                // Store the encryption key and unlock
+                try vaultStore.storeEncryptionKey(base64Key: encryptionKeyBase64)
+                try vaultStore.unlockVault()
+
+                // Process the credential request
+                await MainActor.run {
+                    if let passkeyRequest = self.quickReturnPasskeyRequest {
+                        self.handleQuickReturnPasskeyCredential(vaultStore: vaultStore, request: passkeyRequest)
+                    } else if let passwordRequest = self.quickReturnPasswordRequest {
+                        self.handleQuickReturnPasswordCredential(vaultStore: vaultStore, request: passwordRequest)
+                    }
+                }
+            },
+            cancelHandler: { [weak self] in
+                self?.handleCancel()
+            }
+        )
+
+        // Show PIN unlock view
+        let pinUnlockView = PinUnlockView(viewModel: viewModel)
+        let hostingController = UIHostingController(rootView: pinUnlockView)
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+
+        hostingController.didMove(toParent: self)
+        currentHostingController = hostingController
     }
 
     private func setupView(vaultStore: VaultStore) throws {
@@ -340,6 +314,99 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
             domain: ASExtensionErrorDomain,
             code: ASExtensionError.userCanceled.rawValue
         ))
+    }
+
+    // MARK: - Unlock Flow
+
+    /// Show the unlock coordinator which handles PIN/biometric unlock
+    private func showUnlockCoordinator(vaultStore: VaultStore) {
+        let unlockController = UnlockCoordinatorViewController(
+            vaultStore: vaultStore,
+            onUnlocked: { [weak self] in
+                self?.onUnlockSuccess(vaultStore: vaultStore)
+            },
+            onCancel: { [weak self] in
+                self?.handleCancel()
+            }
+        )
+
+        // Add as child view controller
+        addChild(unlockController)
+        view.addSubview(unlockController.view)
+
+        unlockController.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            unlockController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            unlockController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            unlockController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            unlockController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+
+        unlockController.didMove(toParent: self)
+        self.currentHostingController = unlockController
+    }
+
+    /// Called after successful unlock - show the actual credential/passkey view
+    private func onUnlockSuccess(vaultStore: VaultStore) {
+        // Remove the unlock coordinator view
+        if let unlockController = currentHostingController {
+            unlockController.willMove(toParent: nil)
+            unlockController.view.removeFromSuperview()
+            unlockController.removeFromParent()
+            currentHostingController = nil
+        }
+
+        // Handle passkey registration mode after vault is unlocked
+        if isPasskeyRegistrationMode {
+            guard let params = passkeyRegistrationParams else {
+                extensionContext.cancelRequest(withError: NSError(
+                    domain: ASExtensionErrorDomain,
+                    code: ASExtensionError.failed.rawValue,
+                    userInfo: [NSLocalizedDescriptionKey: "Missing passkey registration parameters"]
+                ))
+                return
+            }
+
+            // Show passkey registration UI
+            showPasskeyRegistrationView(
+                rpId: params.rpId,
+                userName: params.userName,
+                userDisplayName: params.userDisplayName,
+                userId: params.userId,
+                clientDataHash: params.clientDataHash,
+                vaultStore: vaultStore,
+                enablePrf: params.enablePrf,
+                prfInputs: params.prfInputs
+            )
+            return
+        }
+
+        // Set up the credential/passkey selection view
+        do {
+            try setupView(vaultStore: vaultStore)
+
+            // Perform initial credential sync if the credential identity store is empty
+            // This is an OOBE (Out Of Box Experience) step to populate the store on first use
+            // Note: Regular syncs happen in the main app, this is just a fallback
+            Task {
+                await performInitialSyncIfNeeded(vaultStore: vaultStore)
+            }
+        } catch {
+            print("Failed to setup view: \(error)")
+            let alert = UIAlertController(
+                title: NSLocalizedString("loading_error", comment: ""),
+                message: NSLocalizedString("loading_error_message", comment: ""),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: NSLocalizedString("ok", comment: ""), style: .default) { [weak self] _ in
+                self?.extensionContext.cancelRequest(withError: NSError(
+                    domain: ASExtensionErrorDomain,
+                    code: ASExtensionError.failed.rawValue,
+                    userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("failed_to_load_credentials", comment: "")]
+                ))
+            })
+            present(alert, animated: true)
+        }
     }
 
     // MARK: - Passkey Support
@@ -416,57 +483,62 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
             return false
         }
 
-        // Check if Face ID/Touch ID is enabled
-        let context = LAContext()
-        var authMethod = NSLocalizedString("face_id_touch_id", comment: "")
-        var biometricsAvailable = false
-        var biometricsError: NSError?
+        // Check if any authentication method (PIN or biometric) is enabled
+        let pinEnabled = vaultStore.isPinEnabled()
+        let biometricEnabled = vaultStore.getAuthMethods().contains(.faceID)
 
-        // Check if device supports biometrics
-        if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &biometricsError) {
-            biometricsAvailable = true
-            switch context.biometryType {
-            case .faceID:
-                authMethod = NSLocalizedString("face_id", comment: "")
-            case .touchID:
-                authMethod = NSLocalizedString("touch_id", comment: "")
-            default:
-                break
+        // If neither PIN nor biometric is enabled, show error
+        if !pinEnabled && !biometricEnabled {
+            let alert = UIAlertController(
+                title: NSLocalizedString("auth_required", comment: ""),
+                message: NSLocalizedString("auth_required_message", comment: ""),
+                preferredStyle: .alert
+            )
+            alert.addAction(UIAlertAction(title: NSLocalizedString("ok", comment: ""), style: .default) { [weak self] _ in
+                self?.extensionContext.cancelRequest(withError: NSError(
+                    domain: ASExtensionErrorDomain,
+                    code: ASExtensionError.userCanceled.rawValue
+                ))
+            })
+            present(alert, animated: true)
+            return false
+        }
+
+        // If biometric is enabled, check if device supports it
+        if biometricEnabled {
+            let context = LAContext()
+            var authMethod = NSLocalizedString("face_id_touch_id", comment: "")
+            var biometricsError: NSError?
+
+            // Check if device supports biometrics
+            if context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &biometricsError) {
+                switch context.biometryType {
+                case .faceID:
+                    authMethod = NSLocalizedString("face_id", comment: "")
+                case .touchID:
+                    authMethod = NSLocalizedString("touch_id", comment: "")
+                default:
+                    break
+                }
+            } else {
+                // Device doesn't support biometrics but biometric is enabled
+                // Check if PIN is available as fallback
+                if !pinEnabled {
+                    let alert = UIAlertController(
+                        title: String(format: NSLocalizedString("biometric_required", comment: ""), authMethod),
+                        message: String(format: NSLocalizedString("biometric_required_message", comment: ""), authMethod),
+                        preferredStyle: .alert
+                    )
+                    alert.addAction(UIAlertAction(title: NSLocalizedString("ok", comment: ""), style: .default) { [weak self] _ in
+                        self?.extensionContext.cancelRequest(withError: NSError(
+                            domain: ASExtensionErrorDomain,
+                            code: ASExtensionError.userCanceled.rawValue
+                        ))
+                    })
+                    present(alert, animated: true)
+                    return false
+                }
             }
-        }
-
-        // First check if biometrics are available on the device
-        if !biometricsAvailable {
-            let alert = UIAlertController(
-                title: String(format: NSLocalizedString("biometric_required", comment: ""), authMethod),
-                message: String(format: NSLocalizedString("biometric_required_message", comment: ""), authMethod),
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: NSLocalizedString("ok", comment: ""), style: .default) { [weak self] _ in
-                self?.extensionContext.cancelRequest(withError: NSError(
-                    domain: ASExtensionErrorDomain,
-                    code: ASExtensionError.userCanceled.rawValue
-                ))
-            })
-            present(alert, animated: true)
-            return false
-        }
-
-        // Then check if Face ID/Touch ID is enabled in the app settings
-        if !vaultStore.getAuthMethods().contains(.faceID) {
-            let alert = UIAlertController(
-                title: String(format: NSLocalizedString("biometric_required", comment: ""), authMethod),
-                message: String(format: NSLocalizedString("biometric_app_required_message", comment: ""), authMethod),
-                preferredStyle: .alert
-            )
-            alert.addAction(UIAlertAction(title: NSLocalizedString("ok", comment: ""), style: .default) { [weak self] _ in
-                self?.extensionContext.cancelRequest(withError: NSError(
-                    domain: ASExtensionErrorDomain,
-                    code: ASExtensionError.userCanceled.rawValue
-                ))
-            })
-            present(alert, animated: true)
-            return false
         }
 
         return true

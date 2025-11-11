@@ -71,6 +71,7 @@ class VaultStore(
     private val mutate = VaultMutate(databaseComponent, query, metadata)
     private val cache = VaultCache(crypto, databaseComponent, keystoreProvider, storageProvider)
     private val passkey = VaultPasskey(databaseComponent)
+    private val pin = VaultPin(storageProvider)
 
     // endregion
 
@@ -553,6 +554,64 @@ class VaultStore(
      */
     fun clearVault() {
         cache.clearVault()
+    }
+
+    // endregion
+
+    // region PIN Methods
+
+    /**
+     * Check if PIN unlock is enabled.
+     */
+    fun isPinEnabled(): Boolean {
+        return pin.isPinEnabled()
+    }
+
+    /**
+     * Get the configured PIN length.
+     */
+    fun getPinLength(): Int? {
+        return pin.getPinLength()
+    }
+
+    /**
+     * Get failed PIN attempts count.
+     */
+    fun getPinFailedAttempts(): Int {
+        return pin.getPinFailedAttempts()
+    }
+
+    // Note: isPinLocked() removed - PIN is automatically disabled after max attempts
+    // Use isPinEnabled() instead - it returns false when PIN is not set up OR was locked and cleared
+
+    /**
+     * Setup PIN unlock.
+     */
+    @Throws(Exception::class)
+    fun setupPin(pinValue: String, vaultEncryptionKeyBase64: String) {
+        pin.setupPin(pinValue, vaultEncryptionKeyBase64)
+    }
+
+    /**
+     * Unlock with PIN.
+     */
+    @Throws(Exception::class)
+    fun unlockWithPin(pinValue: String): String {
+        return pin.unlockWithPin(pinValue)
+    }
+
+    /**
+     * Reset failed PIN attempts counter.
+     */
+    fun resetPinFailedAttempts() {
+        pin.resetPinFailedAttempts()
+    }
+
+    /**
+     * Disable PIN unlock and remove all stored data.
+     */
+    fun removeAndDisablePin() {
+        pin.removeAndDisablePin()
     }
 
     // endregion

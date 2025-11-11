@@ -283,20 +283,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   /**
    * Get the display label translation key for the current auth method
-   * Prefers Face ID if enabled, otherwise falls back to Password
+   * Priority: Biometrics > PIN > Password
    */
   const getAuthMethodDisplayKey = useCallback(async (): Promise<string> => {
-    const methods = await getEnabledAuthMethods();
-    if (methods.includes('faceid')) {
-      try {
+    try {
+      // Check for biometrics first (highest priority)
+      const methods = await getEnabledAuthMethods();
+      if (methods.includes('faceid')) {
         if (await isBiometricsEnabledOnDevice()) {
           return await getBiometricDisplayNameKey();
         }
-      } catch (error) {
-        console.error('Failed to check Face ID enrollment:', error);
       }
+
+      // Check for PIN (second priority)
+      const pinEnabled = await NativeVaultManager.isPinEnabled();
+      if (pinEnabled) {
+        return 'settings.vaultUnlockSettings.pin';
+      }
+
+      // Fallback to password
+      return 'credentials.password';
+    } catch (error) {
+      console.error('Failed to get auth method display key:', error);
+      return 'credentials.password';
     }
-    return 'credentials.password';
   }, [getEnabledAuthMethods, getBiometricDisplayNameKey, isBiometricsEnabledOnDevice]);
 
   /**

@@ -1,0 +1,151 @@
+import SwiftUI
+import UIKit
+import VaultStoreKit
+import VaultUI
+
+/// Coordinator view that handles the unlock flow before showing the actual autofill/passkey content
+/// This view decides whether to show PIN unlock, biometric unlock, or directly show the content
+struct UnlockCoordinatorView: View {
+    @StateObject private var coordinator: UnlockCoordinator
+
+    init(
+        vaultStore: VaultStore,
+        onUnlocked: @escaping () -> Void,
+        onCancel: @escaping () -> Void
+    ) {
+        _coordinator = StateObject(wrappedValue: UnlockCoordinator(
+            vaultStore: vaultStore,
+            onUnlocked: onUnlocked,
+            onCancel: onCancel
+        ))
+    }
+
+    var body: some View {
+        Group {
+            if let pinViewModel = coordinator.pinViewModel {
+                // Show PIN unlock view
+                PinUnlockView(viewModel: pinViewModel)
+            } else {
+                // Show loading while attempting biometric unlock
+                VStack {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle())
+                        .scaleEffect(1.5)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(Color(UIColor.systemBackground))
+            }
+        }
+        .onAppear {
+            coordinator.startUnlockFlow()
+        }
+    }
+}
+
+/// Coordinator that manages the unlock flow logic
+@MainActor
+class UnlockCoordinator: ObservableObject {
+    @Published var pinViewModel: PinUnlockViewModel?
+
+    let vaultStore: VaultStore
+    private let onUnlocked: () -> Void
+    private let onCancel: () -> Void
+
+    init(
+        vaultStore: VaultStore,
+        onUnlocked: @escaping () -> Void,
+        onCancel: @escaping () -> Void
+    ) {
+        self.vaultStore = vaultStore
+        self.onUnlocked = onUnlocked
+        self.onCancel = onCancel
+    }
+
+    func startUnlockFlow() {
+        // Check if PIN is enabled
+        let pinEnabled = vaultStore.isPinEnabled()
+        let biometricEnabled = vaultStore.isBiometricAuthEnabled()
+
+        if pinEnabled {
+            // PIN is enabled - show PIN unlock view
+            createPinViewModel()
+        } else if biometricEnabled {
+            // Only biometric is enabled - attempt biometric unlock
+            Task {
+                await attemptBiometricUnlock()
+            }
+        } else {
+            // No auth method enabled - this shouldn't happen, but cancel the request
+            cancel()
+        }
+    }
+
+    private func createPinViewModel() {
+        pinViewModel = PinUnlockViewModel(
+            pinLength: vaultStore.getPinLength(),
+            unlockHandler: { [weak self] pin in
+                guard let self = self else { return }
+
+                // Attempt to unlock with PIN
+                let encryptionKeyBase64 = try self.vaultStore.unlockWithPin(pin)
+
+                // Store the encryption key in memory
+                try self.vaultStore.storeEncryptionKey(base64Key: encryptionKeyBase64)
+
+                // Now unlock the vault with the key in memory
+                try self.vaultStore.unlockVault()
+
+                // Success - proceed to the actual autofill/passkey view
+                await MainActor.run {
+                    self.onUnlocked()
+                }
+            },
+            cancelHandler: { [weak self] in
+                self?.cancel()
+            }
+        )
+    }
+
+    func cancel() {
+        onCancel()
+    }
+
+    private func attemptBiometricUnlock() async {
+        do {
+            // Attempt to unlock with biometric
+            try vaultStore.unlockVault()
+
+            // Success - proceed to the actual autofill/passkey view
+            onUnlocked()
+        } catch {
+            print("Biometric unlock failed: \(error)")
+            // If biometric fails, check if PIN is available as fallback
+            if vaultStore.isPinEnabled() {
+                createPinViewModel()
+            } else {
+                // No fallback available - cancel
+                cancel()
+            }
+        }
+    }
+}
+
+/// UIHostingController wrapper for the UnlockCoordinatorView
+class UnlockCoordinatorViewController: UIHostingController<UnlockCoordinatorView> {
+    init(
+        vaultStore: VaultStore,
+        onUnlocked: @escaping () -> Void,
+        onCancel: @escaping () -> Void
+    ) {
+        let coordinatorView = UnlockCoordinatorView(
+            vaultStore: vaultStore,
+            onUnlocked: onUnlocked,
+            onCancel: onCancel
+        )
+        super.init(rootView: coordinatorView)
+    }
+
+    @MainActor required dynamic init?(coder aDecoder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+}

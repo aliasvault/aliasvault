@@ -247,4 +247,30 @@
     [vaultManager mutateVault:resolve rejecter:reject];
 }
 
+// MARK: - PIN Unlock
+
+- (void)isPinEnabled:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager isPinEnabled:resolve rejecter:reject];
+}
+
+- (void)getPinLength:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getPinLength:resolve rejecter:reject];
+}
+
+- (void)setupPin:(NSString *)pin resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager setupPin:pin resolver:resolve rejecter:reject];
+}
+
+- (void)unlockWithPin:(NSString *)pin resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager unlockWithPin:pin resolver:resolve rejecter:reject];
+}
+
+- (void)removeAndDisablePin:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager removeAndDisablePin:resolve rejecter:reject];
+}
+
+- (void)showPinUnlockUI:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager showPinUnlockUI:resolve rejecter:reject];
+}
+
 @end

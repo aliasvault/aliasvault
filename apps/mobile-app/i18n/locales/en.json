@@ -16,8 +16,13 @@
     "loadMore": "Load more",
     "use": "Use",
     "confirm": "Confirm",
+    "next": "Next",
+    "notice": "Notice",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
     "errors": {
-      "unknownError": "An unknown error occurred. Please try again."
+      "unknownError": "An unknown error occurred. Please try again.",
+      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
     }
   },
   "auth": {
@@ -34,6 +39,10 @@
     "verifyingAuthCode": "Verifying authentication code",
     "verify": "Verify",
     "unlockVault": "Unlock Vault",
+    "unlockWithPin": "Unlock with PIN",
+    "useMasterPassword": "Use Master Password",
+    "enterPin": "Enter PIN",
+    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Enter your password to unlock your vault",
     "enterPasswordPlaceholder": "Password",
     "enterAuthCode": "Enter 6-digit code",
@@ -285,6 +294,20 @@
       "biometricDisabledMessage": "{{biometric}} is disabled for AliasVault. In order to use it, please enable it in your device settings first.",
       "biometricHelp": "Your vault decryption key will be securely stored on your local device in the {{keystore}} and can be accessed securely with {{biometric}}.",
       "biometricUnavailableHelp": "{{biometric}} is not available. Tap to open settings and/or go to your device settings to enable and configure it.",
+      "pin": "PIN Code",
+      "pinDescription": "Use a custom PIN code to unlock your vault quickly",
+      "pinHelp": "Your vault decryption key will be encrypted with your PIN and stored securely on your device.",
+      "pinEnabled": "PIN unlock enabled successfully",
+      "pinDisabled": "PIN unlock has been disabled",
+      "setupPin": "Setup PIN",
+      "enterNewPin": "Enter New PIN",
+      "enterNewPinDescription": "Choose a PIN to unlock your vault",
+      "confirmPin": "Confirm PIN",
+      "confirmPinDescription": "Re-enter your PIN to confirm",
+      "pinMismatch": "PINs do not match. Please try again.",
+      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
+      "incorrectPin": "Incorrect PIN. {{attemptsRemaining}} attempts remaining.",
+      "incorrectPinSingular": "Incorrect PIN. 1 attempt remaining.",
       "passwordHelp": "Re-enter your full master password to unlock your vault. This is always enabled as fallback option.",
       "keystoreIOS": "iOS Keychain",
       "keystoreAndroid": "Android Keystore"

@@ -3,6 +3,8 @@ import SQLite
 import LocalAuthentication
 import VaultStoreKit
 import VaultModels
+import SwiftUI
+import VaultUI
 
 /**
  * This class is used as a bridge to allow React Native to interact with the VaultStoreKit class.
@@ -743,6 +745,134 @@ public class VaultManager: NSObject {
                     reject("MUTATE_ERROR", "Failed to mutate vault: \(error.localizedDescription)", error)
                 }
             }
+        }
+    }
+
+    // MARK: - PIN Unlock Methods
+
+    @objc
+    func isPinEnabled(_ resolve: @escaping RCTPromiseResolveBlock,
+                     rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(vaultStore.isPinEnabled())
+    }
+
+    @objc
+    func getPinLength(_ resolve: @escaping RCTPromiseResolveBlock,
+                     rejecter reject: @escaping RCTPromiseRejectBlock) {
+        if let length = vaultStore.getPinLength() {
+            resolve(length)
+        } else {
+            resolve(nil)
+        }
+    }
+
+    @objc
+    func getPinFailedAttempts(_ resolve: @escaping RCTPromiseResolveBlock,
+                             rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(vaultStore.getPinFailedAttempts())
+    }
+
+    @objc
+    func setupPin(_ pin: String,
+                 resolver resolve: @escaping RCTPromiseResolveBlock,
+                 rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            try vaultStore.setupPin(pin)
+            resolve(nil)
+        } catch {
+            reject("SETUP_PIN_ERROR", "Failed to setup PIN: \(error.localizedDescription)", error)
+        }
+    }
+
+    @objc
+    func unlockWithPin(_ pin: String,
+                      resolver resolve: @escaping RCTPromiseResolveBlock,
+                      rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            let vaultEncryptionKey = try vaultStore.unlockWithPin(pin)
+            resolve(vaultEncryptionKey)
+        } catch let error as NSError {
+            // Extract attempts remaining from error if available and include in message
+            if let attemptsRemaining = error.userInfo["attemptsRemaining"] as? Int {
+                let message = "\(error.localizedDescription) - \(attemptsRemaining) attempts remaining"
+                reject("INCORRECT_PIN", message, error)
+            } else {
+                reject("PIN_UNLOCK_ERROR", error.localizedDescription, error)
+            }
+        }
+    }
+
+    @objc
+    func resetPinFailedAttempts(_ resolve: @escaping RCTPromiseResolveBlock,
+                               rejecter reject: @escaping RCTPromiseRejectBlock) {
+        vaultStore.resetPinFailedAttempts()
+        resolve(nil)
+    }
+
+    @objc
+    func removeAndDisablePin(_ resolve: @escaping RCTPromiseResolveBlock,
+                            rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            try vaultStore.removeAndDisablePin()
+            resolve(nil)
+        } catch {
+            reject("REMOVE_PIN_ERROR", "Failed to remove PIN: \(error.localizedDescription)", error)
+        }
+    }
+
+    @objc
+    func showPinUnlockUI(_ resolve: @escaping RCTPromiseResolveBlock,
+                        rejecter reject: @escaping RCTPromiseRejectBlock) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else {
+                reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
+                return
+            }
+
+            // Get the root view controller from React Native
+            guard let rootVC = RCTPresentedViewController() else {
+                reject("NO_VIEW_CONTROLLER", "No view controller available", nil)
+                return
+            }
+
+            // Create PIN unlock view with ViewModel
+            let viewModel = PinUnlockViewModel(
+                pinLength: self.vaultStore.getPinLength(),
+                unlockHandler: { [weak self] pin in
+                    guard let self = self else {
+                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
+                    }
+
+                    // Unlock vault with PIN
+                    let encryptionKeyBase64 = try self.vaultStore.unlockWithPin(pin)
+
+                    // Store the encryption key in memory
+                    try self.vaultStore.storeEncryptionKey(base64Key: encryptionKeyBase64)
+
+                    // Now unlock the vault with the key in memory
+                    try self.vaultStore.unlockVault()
+
+                    // Success - dismiss and resolve
+                    await MainActor.run {
+                        rootVC.dismiss(animated: true) {
+                            resolve(nil)
+                        }
+                    }
+                },
+                cancelHandler: {
+                    // User cancelled
+                    rootVC.dismiss(animated: true) {
+                        reject("USER_CANCELLED", "User cancelled PIN unlock", nil)
+                    }
+                }
+            )
+
+            let pinView = PinUnlockView(viewModel: viewModel)
+            let hostingController = UIHostingController(rootView: pinView)
+
+            // Present modally as full screen
+            hostingController.modalPresentationStyle = .fullScreen
+            rootVC.present(hostingController, animated: true)
         }
     }
 
