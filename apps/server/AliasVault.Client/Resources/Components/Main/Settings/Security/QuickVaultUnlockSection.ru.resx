@@ -59,35 +59,35 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Passkey unlock</value>
+    <value>Разблокировка ключом доступа</value>
     <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Your master password is encrypted with the passkey PRF and stored locally. When you reload the AliasVault page or tab, you can unlock your vault with your passkey. If you wish to disable passkey unlock, you can do so with the button below. Your master password will still work for unlocking the vault.</value>
+    <value>Ваш мастер-пароль зашифрован PRF ключом доступа и хранится локально, что позволяет разблокировать хранилище при перезагрузке страницы. Эту функцию можно отключить кнопкой ниже, при этом вход по мастер-паролю останется доступен.</value>
     <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Disable Passkey Unlock</value>
+    <value>Отключить разблокировку ключом</value>
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.</value>
+    <value>По умолчанию при перезагрузке страницы или вкладки AliasVault требуется повторный ввод мастер-пароля. С помощью ключа доступа вы можете мгновенно разблокировать свое хранилище. Когда эта функция включена, ваш мастер-пароль шифруется локально с помощью расширения PRF ключа доступа. Примечание: ключ доступа будет работать только на том устройстве и в том браузере, на которых вы его активировали.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>This feature is currently supported by AliasVault browser extension and iOS app. Android support is coming soon. If you experience any issues, you can disable this feature at any time.</value>
+    <value>В настоящее время эта функция поддерживается браузерным расширением AliasVault и приложением для iOS. Поддержка для Android появится в ближайшее время. Если у вас возникнут какие-либо проблемы, вы можете отключить эту функцию в любое время.</value>
     <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Passkey Unlock</value>
+    <value>Включить разблокировку ключом</value>
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully enabled. The next time your vault is locked, you can unlock it with your created passkey.</value>
+    <value>Разблокировка по ключу доступа успешно включена. В следующий раз, когда ваше хранилище будет заблокировано, вы сможете разблокировать его с помощью созданного ключа доступа.</value>
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully disabled.</value>
+    <value>Разблокировка по ключу доступа успешно отключена.</value>
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
