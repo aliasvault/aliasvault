@@ -268,6 +268,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                 )
             },
             cancelHandler: { [weak self] in
+                // Passkey registration - just cancel on any dismissal
                 self?.extensionContext.cancelRequest(withError: NSError(
                     domain: ASExtensionErrorDomain,
                     code: ASExtensionError.userCanceled.rawValue

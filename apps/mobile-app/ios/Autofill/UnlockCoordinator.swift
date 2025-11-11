@@ -100,8 +100,24 @@ class UnlockCoordinator: ObservableObject {
                     self.onUnlocked()
                 }
             },
-            cancelHandler: { [weak self] in
-                self?.cancel()
+            cancelHandler: { [weak self] pinWasDisabled in
+                guard let self = self else { return }
+
+                if pinWasDisabled {
+                    // PIN was disabled due to max attempts
+                    // Try biometric as fallback if available
+                    if self.vaultStore.isBiometricAuthEnabled() {
+                        Task {
+                            await self.attemptBiometricUnlock()
+                        }
+                    } else {
+                        // No other auth method available - cancel
+                        self.cancel()
+                    }
+                } else {
+                    // User manually cancelled - just cancel
+                    self.cancel()
+                }
             }
         )
     }

@@ -235,8 +235,36 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                     }
                 }
             },
-            cancelHandler: { [weak self] in
-                self?.handleCancel()
+            cancelHandler: { [weak self] pinWasDisabled in
+                guard let self = self else { return }
+
+                if pinWasDisabled {
+                    // PIN was disabled due to max attempts
+                    // Try biometric as fallback if available
+                    if vaultStore.isBiometricAuthEnabled() {
+                        do {
+                            // Try to unlock with biometric
+                            try vaultStore.unlockVault()
+
+                            // Success - process the credential request
+                            if let passkeyRequest = self.quickReturnPasskeyRequest {
+                                self.handleQuickReturnPasskeyCredential(vaultStore: vaultStore, request: passkeyRequest)
+                            } else if let passwordRequest = self.quickReturnPasswordRequest {
+                                self.handleQuickReturnPasswordCredential(vaultStore: vaultStore, request: passwordRequest)
+                            }
+                        } catch {
+                            // Biometric failed - cancel
+                            print("Biometric fallback failed after PIN lockout: \(error)")
+                            self.handleCancel()
+                        }
+                    } else {
+                        // No other auth method - cancel
+                        self.handleCancel()
+                    }
+                } else {
+                    // User manually cancelled
+                    self.handleCancel()
+                }
             }
         )
 
@@ -525,8 +553,8 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                 // Check if PIN is available as fallback
                 if !pinEnabled {
                     let alert = UIAlertController(
-                        title: String(format: NSLocalizedString("biometric_required", comment: ""), authMethod),
-                        message: String(format: NSLocalizedString("biometric_required_message", comment: ""), authMethod),
+                        title: String(format: NSLocalizedString("auth_required", comment: ""), authMethod),
+                        message: String(format: NSLocalizedString("auth_required_message", comment: ""), authMethod),
                         preferredStyle: .alert
                     )
                     alert.addAction(UIAlertAction(title: NSLocalizedString("ok", comment: ""), style: .default) { [weak self] _ in

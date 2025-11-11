@@ -859,10 +859,16 @@ public class VaultManager: NSObject {
                         }
                     }
                 },
-                cancelHandler: {
-                    // User cancelled
+                cancelHandler: { pinWasDisabled in
+                    // Dismiss the view
                     rootVC.dismiss(animated: true) {
-                        reject("USER_CANCELLED", "User cancelled PIN unlock", nil)
+                        if pinWasDisabled {
+                            // PIN was disabled due to max attempts
+                            reject("PIN_DISABLED", "PIN was disabled after too many failed attempts", nil)
+                        } else {
+                            // User manually cancelled
+                            reject("USER_CANCELLED", "User cancelled PIN unlock", nil)
+                        }
                     }
                 }
             )

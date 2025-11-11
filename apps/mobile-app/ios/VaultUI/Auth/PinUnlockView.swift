@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 private let locBundle = Bundle.vaultUI
 
@@ -288,12 +289,12 @@ public class PinUnlockViewModel: ObservableObject {
 
     public let pinLength: Int?
     private let unlockHandler: (String) async throws -> Void
-    private let cancelHandler: () -> Void
+    private let cancelHandler: (Bool) -> Void  // Bool indicates if PIN was disabled/locked
 
     public init(
         pinLength: Int?,
         unlockHandler: @escaping (String) async throws -> Void,
-        cancelHandler: @escaping () -> Void
+        cancelHandler: @escaping (Bool) -> Void
     ) {
         self.pinLength = pinLength
         self.unlockHandler = unlockHandler
@@ -328,7 +329,7 @@ public class PinUnlockViewModel: ObservableObject {
     }
 
     public func cancel() {
-        cancelHandler()
+        cancelHandler(false)  // User manually cancelled
     }
 
     private func attemptUnlock() async {
@@ -341,16 +342,34 @@ public class PinUnlockViewModel: ObservableObject {
             // Success - the handler will navigate away or complete the flow
             // Keep loading state active since we're navigating
         } catch let nsError as NSError {
-            // Handle unlock errors
+            // Check for PIN disabled errors (error code 25)
+            // This occurs when PIN was disabled due to max attempts or configuration issue
+            if nsError.code == 25 {
+                // PIN is no longer available - auto-dismiss the view
+                // This happens when user enters wrong PIN too many times
+                isUnlocking = false
+                cancelHandler(true)
+                return
+            }
+
+            // Handle other unlock errors (incorrect PIN, etc.)
             isUnlocking = false
             self.error = nsError.localizedDescription
+            triggerErrorFeedback()
             shakeAndClear()
         } catch let genericError {
             // Generic error
             isUnlocking = false
             self.error = String(localized: "unlock_failed", bundle: locBundle)
+            triggerErrorFeedback()
             shakeAndClear()
         }
+    }
+
+    private func triggerErrorFeedback() {
+        // Trigger haptic feedback for error
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
     }
 
     private func shakeAndClear() {
