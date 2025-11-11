@@ -581,9 +581,6 @@ class VaultStore(
         return pin.getPinFailedAttempts()
     }
 
-    // Note: isPinLocked() removed - PIN is automatically disabled after max attempts
-    // Use isPinEnabled() instead - it returns false when PIN is not set up OR was locked and cleared
-
     /**
      * Setup PIN unlock.
      */

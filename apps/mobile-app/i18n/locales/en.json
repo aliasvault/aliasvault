@@ -306,8 +306,6 @@
       "confirmPinDescription": "Re-enter your PIN to confirm",
       "pinMismatch": "PINs do not match. Please try again.",
       "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
-      "incorrectPin": "Incorrect PIN. {{attemptsRemaining}} attempts remaining.",
-      "incorrectPinSingular": "Incorrect PIN. 1 attempt remaining.",
       "passwordHelp": "Re-enter your full master password to unlock your vault. This is always enabled as fallback option.",
       "keystoreIOS": "iOS Keychain",
       "keystoreAndroid": "Android Keystore"

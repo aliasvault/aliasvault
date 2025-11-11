@@ -7,9 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, TextInput, Alert, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text, Pressable } from 'react-native';
 
 import EncryptionUtility from '@/utils/EncryptionUtility';
-import {
-  isPinEnabled,
-} from '@/utils/PinUnlockService';
+import { isPinEnabled } from '@/utils/PinUnlockService';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -41,7 +39,6 @@ export default function UnlockScreen() : React.ReactNode {
 
   // PIN unlock state
   const [pinAvailable, setPinAvailable] = useState(false);
-  const [showPasswordInput, setShowPasswordInput] = useState(false);
 
   // Error state for password unlock
   const [error, setError] = useState<string | null>(null);
@@ -60,7 +57,6 @@ export default function UnlockScreen() : React.ReactNode {
     return params;
   }, [logout, getEncryptionKeyDerivationParams]);
 
-
   /**
    * Handle PIN unlock using native UI.
    * Falls back to showing password input on cancel.
@@ -70,13 +66,11 @@ export default function UnlockScreen() : React.ReactNode {
       /*
        * Show native PIN unlock UI
        * This will handle the unlock internally and store the encryption key
-       * The vault is now unlocked in native memory
        */
       await NativeVaultManager.showPinUnlockUI();
 
       /*
        * Check if the vault is ready
-       * The native code already unlocked it, so just verify it's available
        */
       if (dbContext.dbAvailable) {
         // Check if the vault is up to date, if not, redirect to the upgrade page.
@@ -91,12 +85,8 @@ export default function UnlockScreen() : React.ReactNode {
          */
         router.replace('/initialize');
       } else {
-        /*
-         * This shouldn't happen if unlock succeeded, but handle it
-         * Show password input as fallback
-         */
+        // If db is not available for whatever reason, fallback to password unlock.
         setIsLoading(false);
-        setShowPasswordInput(true);
         Alert.alert(
           t('common.error'),
           t('auth.errors.incorrectPassword'),
@@ -111,14 +101,12 @@ export default function UnlockScreen() : React.ReactNode {
         const error = err as { code?: string; message?: string };
         if (error.code === 'USER_CANCELLED') {
           // User cancelled PIN entry - show password input as fallback
-          setShowPasswordInput(true);
           return;
         } else if (error.code === 'NOT_IMPLEMENTED') {
           /*
            * Native PIN UI not implemented on this platform (Android)
            * Show password input and informative message
            */
-          setShowPasswordInput(true);
           Alert.alert(
             t('common.info'),
             'Native PIN unlock is currently only available on iOS. Android support coming soon.',
@@ -128,7 +116,6 @@ export default function UnlockScreen() : React.ReactNode {
         } else if (error.code === 'PIN_DISABLED') {
           // PIN was disabled due to too many attempts
           setPinAvailable(false);
-          setShowPasswordInput(true);
           Alert.alert(
             t('common.error'),
             t('settings.vaultUnlockSettings.pinLocked'),
@@ -136,7 +123,6 @@ export default function UnlockScreen() : React.ReactNode {
           );
         } else {
           // Other errors - show password input as fallback
-          setShowPasswordInput(true);
           console.error('PIN unlock failed:', err);
           Alert.alert(
             t('common.error'),
@@ -144,9 +130,6 @@ export default function UnlockScreen() : React.ReactNode {
             [{ text: t('common.ok'), style: 'default' }]
           );
         }
-      } else {
-        // Unknown error - show password input as fallback
-        setShowPasswordInput(true);
       }
     }
   }, [dbContext, t, setPinAvailable]);
@@ -171,15 +154,13 @@ export default function UnlockScreen() : React.ReactNode {
       /*
        * If PIN is enabled, automatically try PIN unlock first
        * Show loading state, then launch native PIN UI
-       * Only show password input if user cancels or PIN is not available
+       * If user cancels or PIN is not available, loading stops and password input shows
        */
       if (pinEnabled) {
         setIsLoading(true);
         await handlePinUnlock();
-      } else {
-        // No PIN available, show password input immediately
-        setShowPasswordInput(true);
       }
+      // If no PIN, isLoading stays false and password input shows automatically
     };
     fetchConfigAndUnlock();
 
@@ -423,7 +404,7 @@ export default function UnlockScreen() : React.ReactNode {
   // Render password mode or loading
   return (
     <ThemedView style={styles.container}>
-      {isLoading || !showPasswordInput ? (
+      {isLoading ? (
         <View style={styles.loadingContainer}>
           <LoadingIndicator status={t('app.status.unlockingVault')} />
         </View>
@@ -513,7 +494,6 @@ export default function UnlockScreen() : React.ReactNode {
                     <Pressable
                       style={styles.linkButton}
                       onPress={() => {
-                        setShowPasswordInput(false);
                         setIsLoading(true);
                         handlePinUnlock();
                       }}

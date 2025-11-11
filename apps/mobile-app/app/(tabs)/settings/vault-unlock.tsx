@@ -14,9 +14,7 @@ import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
-import { RobustPressable } from '@/components/ui/RobustPressable';
 import { AuthMethod, useAuth } from '@/context/AuthContext';
-import { useDb } from '@/context/DbContext';
 
 /**
  * Vault unlock settings screen.
@@ -24,7 +22,6 @@ import { useDb } from '@/context/DbContext';
 export default function VaultUnlockSettingsScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
-  const dbContext = useDb();
   const [initialized, setInitialized] = useState(false);
   const { setAuthMethods, getEnabledAuthMethods, getBiometricDisplayNameKey } = useAuth();
   const [hasBiometrics, setHasBiometrics] = useState(false);
@@ -34,7 +31,6 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
 
   // PIN state
   const [pinEnabled, setPinEnabled] = useState(false);
-  const [pinLocked, setPinLocked] = useState(false);
   const [showPinSetup, setShowPinSetup] = useState(false);
   const [pinSetupStep, setPinSetupStep] = useState(1);
   const [newPin, setNewPin] = useState('');
@@ -73,7 +69,6 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
         // Load PIN settings (locked state removed - automatically handled by native code)
         const enabled = await isPinEnabled();
         setPinEnabled(enabled);
-        setPinLocked(false); // No longer tracking locked state
 
         setInitialized(true);
       } catch (error) {
@@ -188,7 +183,6 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
     try {
       await removeAndDisablePin();
       setPinEnabled(false);
-      setPinLocked(false);
       Toast.show({
         type: 'success',
         text1: t('settings.vaultUnlockSettings.pinDisabled'),
@@ -229,26 +223,6 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
   }, []);
 
   /**
-   * Handle step 2 submit (confirm and save PIN).
-   */
-  const handleConfirmPinSubmit = useCallback(() : void => {
-    if (confirmPin !== newPin) {
-      setPinError(t('settings.vaultUnlockSettings.pinMismatch'));
-      // Restart from step 1 on mismatch
-      setTimeout(() => {
-        setPinSetupStep(1);
-        setNewPin('');
-        setConfirmPin('');
-        setPinError(null);
-      }, 1000); // Show error for 1s before restarting
-      return;
-    }
-
-    // PINs match, submit
-    handlePinSetupSubmit(confirmPin);
-  }, [confirmPin, newPin, t]);
-
-  /**
    * Handle PIN setup submit.
    */
   const handlePinSetupSubmit = useCallback(async (pin: string) : Promise<void> => {
@@ -282,6 +256,26 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
       setConfirmPin('');
     }
   }, [isBiometricsEnabled, setAuthMethods, t]);
+
+  /**
+   * Handle step 2 submit (confirm and save PIN).
+   */
+  const handleConfirmPinSubmit = useCallback(() : void => {
+    if (confirmPin !== newPin) {
+      setPinError(t('settings.vaultUnlockSettings.pinMismatch'));
+      // Restart from step 1 on mismatch
+      setTimeout(() => {
+        setPinSetupStep(1);
+        setNewPin('');
+        setConfirmPin('');
+        setPinError(null);
+      }, 1000); // Show error for 1s before restarting
+      return;
+    }
+
+    // PINs match, submit
+    handlePinSetupSubmit(confirmPin);
+  }, [confirmPin, newPin, t, handlePinSetupSubmit]);
 
   const styles = StyleSheet.create({
     button: {
@@ -444,29 +438,23 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
           {/* PIN option */}
           <TouchableOpacity
             style={styles.option}
-            onPress={pinEnabled && !pinLocked ? handleDisablePin : handleEnablePin}
+            onPress={pinEnabled ? handleDisablePin : handleEnablePin}
           >
             <View style={styles.optionHeader}>
               <View style={styles.optionHeaderLeft}>
-                <ThemedText style={[styles.optionText, pinLocked && styles.disabledText]}>
+                <ThemedText style={[styles.optionText]}>
                   {t('settings.vaultUnlockSettings.pin')}
                 </ThemedText>
               </View>
               <View pointerEvents="none">
                 <Switch
-                  value={pinEnabled && !pinLocked}
-                  disabled={pinLocked}
+                  value={pinEnabled}
                 />
               </View>
             </View>
             <ThemedText style={styles.helpText}>
               {t('settings.vaultUnlockSettings.pinDescription')}
             </ThemedText>
-            {pinLocked && (
-              <ThemedText style={styles.warningText}>
-                {t('settings.vaultUnlockSettings.pinLocked')}
-              </ThemedText>
-            )}
           </TouchableOpacity>
 
           <View style={[styles.option, styles.optionLast]}>
