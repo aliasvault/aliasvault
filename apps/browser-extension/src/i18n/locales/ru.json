@@ -370,9 +370,9 @@
     "clientUrlHint": "URL-адрес веб-интерфейса вашего самостоятельно размещенного экземпляра",
     "autofillSettingsDescription": "Включить или отключить всплывающее окно автозаполнения на веб-страницах",
     "autofillEnabledDescription": "В формах входа будут появляться подсказки для автозаполнения",
-    "autofillDisabledDescription": "Autofill suggestions are disabled globally",
-    "languageSettings": "Language",
-    "languageSettingsDescription": "Choose your preferred language",
+    "autofillDisabledDescription": "Подсказки автозаполнения отключены глобально",
+    "languageSettings": "Язык",
+    "languageSettingsDescription": "Выберите предпочитаемый язык",
     "validation": {
       "apiUrlRequired": "Требуется URL-адрес API",
       "apiUrlInvalid": "Пожалуйста, введите корректный URL-адрес API",
@@ -381,14 +381,14 @@
     }
   },
   "passkeys": {
-    "passkey": "Passkey",
-    "site": "Site",
-    "displayName": "Name",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
-    "passkeyMarkedForDeletion": "Passkey marked for deletion",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
+    "passkey": "Ключ доступа",
+    "site": "Сайт",
+    "displayName": "Имя",
+    "helpText": "Ключи доступа создаются на веб-сайте по запросу. Их нельзя редактировать вручную. Чтобы удалить этот ключ доступа, вы можете удалить его из этой учетной записи. Чтобы заменить этот ключ доступа или создать новый, посетите веб-сайт и следуйте его инструкциям.",
+    "passkeyMarkedForDeletion": "Ключ доступа помечен на удаление﻿",
+    "passkeyWillBeDeleted": "Этот ключ доступа будет удален при сохранении этой учетной записи.",
     "bypass": {
-      "title": "Use Browser Passkey",
+      "title": "Использовать ключ доступа браузера﻿",
       "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
       "thisTimeOnly": "This time only",
       "alwaysForSite": "Always for this site"
