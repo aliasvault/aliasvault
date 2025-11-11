@@ -389,35 +389,35 @@
     "passkeyWillBeDeleted": "Этот ключ доступа будет удален при сохранении этой учетной записи.",
     "bypass": {
       "title": "Использовать ключ доступа браузера﻿",
-      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
-      "thisTimeOnly": "This time only",
-      "alwaysForSite": "Always for this site"
+      "description": "На какой срок вы хотите предоставить сайту {{origin}} доступ к ключам, сохраненным в браузере?",
+      "thisTimeOnly": "Только в этот раз",
+      "alwaysForSite": "Всегда для этого сайта"
     },
     "authenticate": {
-      "title": "Sign in with Passkey",
-      "signInFor": "Sign in with passkey for",
-      "selectPasskey": "Select a passkey to sign in:",
-      "noPasskeysFound": "No passkeys found for this site",
-      "useBrowserPasskey": "Use Browser Passkey"
+      "title": "Вход с помощью ключа доступа",
+      "signInFor": "Вход с ключом доступа для",
+      "selectPasskey": "Выберите ключ доступа для входа:",
+      "noPasskeysFound": "Ключи доступа для этого сайта не найдены",
+      "useBrowserPasskey": "Использовать ключ доступа из браузера"
     },
     "create": {
-      "title": "Create Passkey",
-      "createFor": "Create a new passkey for",
-      "titleLabel": "Title",
-      "titlePlaceholder": "Enter a name for this passkey",
-      "createButton": "Create Passkey",
-      "creatingButton": "Creating...",
-      "useBrowserPasskey": "Use Browser Passkey",
-      "selectPasskeyToReplace": "Select a passkey to replace:",
-      "createNewPasskey": "Create New Passkey",
-      "replacingPasskey": "Replacing passkey: {{displayName}}",
-      "confirmReplace": "Confirm Replace"
+      "title": "Создание ключа доступа",
+      "createFor": "Создайте новый ключ доступа для",
+      "titleLabel": "Название",
+      "titlePlaceholder": "Укажите название для этого ключа доступа",
+      "createButton": "Создать ключ доступа",
+      "creatingButton": "Создание...",
+      "useBrowserPasskey": "Использовать ключ доступа из браузера﻿",
+      "selectPasskeyToReplace": "Выберите ключ доступа для замены:",
+      "createNewPasskey": "Создать новый ключ доступа",
+      "replacingPasskey": "Замена ключа доступа: {{displayName}}",
+      "confirmReplace": "Подтвердить замену"
     },
     "settings": {
-      "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on ",
-      "enable": "Enable AliasVault as passkey provider",
-      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+      "passkeyProvider": "Провайдер ключей доступа",
+      "passkeyProviderOn": "Провайдер ключей доступа включен ",
+      "enable": "Использовать AliasVault как провайдер ключей доступа",
+      "description": "После включения этой функции AliasVault будет обрабатывать запросы ключей доступа от сайтов. Когда сайт запросит ключ доступа, вместо стандартного интерфейса браузера или операционной системы появится всплывающее окно AliasVault."
     }
   },
   "upgrade": {
