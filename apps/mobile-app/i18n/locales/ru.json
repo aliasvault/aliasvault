@@ -80,7 +80,7 @@
       "failedToSyncVault": "Не удалось синхронизировать хранилище",
       "operationFailed": "Сбой операции",
       "versionNotSupported": "Эта версия мобильного приложения AliasVault больше не поддерживается сервером. Пожалуйста, обновите ваше приложение до последней версии.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "serverVersionNotSupported": "Для использования этого мобильного приложения необходимо обновить сервер AliasVault до новой версии. Если вам нужна помощь, обратитесь в службу поддержки.",
       "appOutdated": "Это приложение устарело и не может быть использовано для доступа к этой (более новой) версии хранилища. Пожалуйста, обновите приложение AliasVault, чтобы продолжить.",
       "vaultDecryptFailed": "Хранилище не удалось расшифровать, если проблема не устраняется, пожалуйста, выйдите и войдите в систему еще раз.",
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности."
@@ -122,11 +122,11 @@
     "privateEmailDescription": "Шифрование E2E, полностью приватный.",
     "publicEmailTitle": "Общедоступные временные поставщики электронной почты",
     "publicEmailDescription": "Анонимность, но ограниченная конфиденциальность. Содержимое письма может прочитать любой, кому известен адрес.",
-    "searchPlaceholder": "Search vault...",
+    "searchPlaceholder": "Поиск хранилища...",
     "noMatchingCredentials": "Соответствующие учетные данные не найдены",
     "noCredentialsFound": "Учетные данные не найдены. Для начала создайте их. Совет: вы также можете войти в веб-приложение AliasVault, чтобы импортировать учетные данные из других менеджеров паролей.",
-    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
-    "noAttachmentsFound": "No credentials with attachments found",
+    "noPasskeysFound": "Ключи доступа еще не созданы. Ключи доступа создаются при посещении веб-сайта, который предлагает их в качестве метода аутентификации.",
+    "noAttachmentsFound": "Не найдено учетных данных с вложениями",
     "recentEmails": "Последние письма",
     "loadingEmails": "Загрузка писем...",
     "noEmailsYet": "Писем пока не поступало.",
@@ -153,11 +153,11 @@
     "emailPreview": "Предварительный просмотр электронной почты",
     "switchBackToBrowser": "Вернитесь в свой браузер, чтобы продолжить.",
     "filters": {
-      "all": "(All) Credentials",
-      "passkeys": "Passkeys",
-      "aliases": "Aliases",
-      "userpass": "Passwords",
-      "attachments": "Attachments"
+      "all": "(Все) учетные данные",
+      "passkeys": "Ключи доступа",
+      "aliases": "Псевдонимы",
+      "userpass": "Пароли",
+      "attachments": "Вложения"
     },
     "twoFactorAuth": "Двухфакторная аутентификация",
     "totpCode": "TOTP код",
@@ -169,14 +169,14 @@
       "credentialUpdated": "Учетные данные успешно обновлены",
       "credentialCreated": "Учетные данные успешно созданы",
       "credentialDeleted": "Учетные данные успешно удалены",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
+      "usernameCopied": "Имя пользователя скопировано в буфер обмена",
+      "emailCopied": "Email скопирован в буфер обмена",
+      "passwordCopied": "Пароль скопирован в буфер обмена"
     },
     "createNewAliasFor": "Создайте новый псевдоним для",
     "errors": {
       "loadFailed": "Не удалось загрузить учетные данные",
-      "saveFailed": "Failed to save credential",
+      "saveFailed": "Не удалось сохранить учетную запись",
       "generateUsernameFailed": "Не удалось сгенерировать имя пользователя",
       "generatePasswordFailed": "Не удалось сгенерировать пароль"
     },
@@ -190,20 +190,20 @@
     }
   },
   "passkeys": {
-    "passkey": "Passkey",
-    "site": "Site",
-    "displayName": "Display Name",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
-    "passkeyMarkedForDeletion": "Passkey marked for deletion",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+    "passkey": "Ключ доступа",
+    "site": "Сайт",
+    "displayName": "Отображаемое имя",
+    "helpText": "Ключи доступа создаются на сайте по запросу. Их нельзя редактировать вручную. Чтобы удалить этот ключ доступа, вы можете удалить его из этой учетной записи.",
+    "passkeyMarkedForDeletion": "Ключ доступа помечен на удаление﻿",
+    "passkeyWillBeDeleted": "Этот ключ доступа будет удален при сохранении этой учетной записи."
   },
   "settings": {
     "title": "Настройки",
-    "autofill": "Autofill & Passkeys",
+    "autofill": "Автозаполнение и ключи доступа",
     "iosAutofillSettings": {
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "Вы можете настроить AliasVault для нативного автозаполнения паролей и ключей доступа в iOS. Следуйте инструкциям ниже, чтобы включить эту функцию.",
+      "passkeyNotice": "Ключи доступа создаются в iOS. Чтобы сохранить их в AliasVault, убедитесь, что автозаполнение ниже включено.",
+      "howToEnable": "Как включить автозаполнение и ключи доступа:",
       "step1": "1. Откройте настройки iOS с помощью кнопки ниже",
       "step2": "2. Перейдите в раздел \"Общие\"",
       "step3": "3. Нажмите \"Автозаполнение и пароли\"",
@@ -215,19 +215,19 @@
     },
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Экспериментальная функция",
-      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
+      "warningDescription": "Поддержка автозаполнения и ключей доступа для Android пока работает в экспериментальном режиме.",
       "warningLink": "Подробнее об этом читайте здесь",
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "Вы можете настроить AliasVault для нативного автозаполнения паролей и ключей доступа в Android. Следуйте инструкциям ниже, чтобы включить эту функцию.",
+      "passkeyNotice": "Ключи доступа создаются через Диспетчер учетных данных Android (Android 14+). Чтобы сохранять их в AliasVault, убедитесь, что функция автозаполнения, указанная ниже, включена.",
+      "howToEnable": "Как включить автозаполнение и ключи доступа:",
       "step1": "1. Откройте настройки Android с помощью кнопки ниже и измените \"предпочтительный сервис автозаполнения\" на \"Alias Vault\".",
       "openAutofillSettings": "Открыть настройки автозаполнения",
       "buttonTip": "Если кнопка выше не работает, возможно, она заблокирована из-за настроек безопасности. Вы можете вручную перейти в Настройки Android → Общее управление → Пароли и автозаполнение.",
       "step2": "2. Для некоторых приложений, например Google Chrome, может потребоваться ручная настройка в настройках, чтобы разрешить сторонним приложениям автозаполнение. Однако большинство приложений должны работать с автозаполнением по умолчанию.",
       "alreadyConfigured": "Я уже настроил его",
-      "advancedOptions": "Advanced Options",
-      "showSearchText": "Show search text",
-      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
+      "advancedOptions": "Дополнительные параметры",
+      "showSearchText": "Показать текст поиска",
+      "showSearchTextDescription": "Включите текст, который AliasVault получает от Android и использует для поиска подходящих учетных данных"
     },
     "vaultUnlock": "Способ разблокировки хранилища",
     "autoLock": "Тайм-аут автоматической блокировки",
@@ -472,7 +472,7 @@
       "stillOffline": "Нет подключения"
     },
     "alerts": {
-      "syncIssue": "No Connection",
+      "syncIssue": "Нет соединения",
       "syncIssueMessage": "Не удалось связаться с сервером AliasVault, и не удалось синхронизировать ваше хранилище. Хотите ли вы открыть свое локальное хранилище в режиме только для чтения или повторить попытку подключения?",
       "openLocalVault": "Откройте локальное хранилище",
       "retrySync": "Повторить попытку синхронизации"
