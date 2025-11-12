@@ -58,12 +58,25 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         const val PIN_UNLOCK_REQUEST_CODE = 1001
 
         /**
+         * Request code for PIN setup activity.
+         */
+        const val PIN_SETUP_REQUEST_CODE = 1002
+
+        /**
          * Static holder for the pending promise from showPinUnlockUI.
          * This allows MainActivity to resolve/reject the promise directly without
          * depending on React context availability.
          */
         @Volatile
         var pendingActivityResultPromise: Promise? = null
+
+        /**
+         * Static holder for the pending promise from showNativePinSetup.
+         * This allows MainActivity to resolve/reject the promise directly without
+         * depending on React context availability.
+         */
+        @Volatile
+        var pinSetupPromise: Promise? = null
     }
 
     private val vaultStore = VaultStore.getInstance(
@@ -1305,6 +1318,46 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                 } catch (e: Exception) {
                     Log.e(TAG, "Error setting up PIN", e)
                     promise.reject("ERR_SETUP_PIN", "Failed to setup PIN: ${e.message}", e)
+                }
+            }
+
+            override fun onError(error: Exception) {
+                Log.e(TAG, "Error getting encryption key for PIN setup", error)
+                promise.reject("ERR_SETUP_PIN", "Failed to get encryption key: ${error.message}", error)
+            }
+        })
+    }
+
+    /**
+     * Show native PIN setup UI.
+     * Launches the native PinUnlockActivity in setup mode.
+     * Gets the vault encryption key from memory (vault must be unlocked).
+     * @param promise The promise to resolve when setup completes or rejects if cancelled/error.
+     */
+    @ReactMethod
+    override fun showNativePinSetup(promise: Promise) {
+        // Get encryption key first
+        vaultStore.getEncryptionKey(object : net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback {
+            override fun onSuccess(encryptionKey: String) {
+                try {
+                    val activity = currentActivity
+                    if (activity == null) {
+                        promise.reject("ERR_NO_ACTIVITY", "No activity available")
+                        return
+                    }
+
+                    // Store the promise for later resolution
+                    pinSetupPromise = promise
+
+                    // Launch PIN setup activity
+                    val intent = android.content.Intent(activity, net.aliasvault.app.pinunlock.PinUnlockActivity::class.java)
+                    intent.putExtra(net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_MODE, net.aliasvault.app.pinunlock.PinUnlockActivity.MODE_SETUP)
+                    intent.putExtra(net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_SETUP_ENCRYPTION_KEY, encryptionKey)
+
+                    activity.startActivityForResult(intent, PIN_SETUP_REQUEST_CODE)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error launching PIN setup activity", e)
+                    promise.reject("ERR_LAUNCH_PIN_SETUP", "Failed to launch PIN setup: ${e.message}", e)
                 }
             }
 

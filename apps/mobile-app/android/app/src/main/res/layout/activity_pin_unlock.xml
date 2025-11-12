@@ -113,6 +113,24 @@
         android:layout_marginStart="40dp"
         android:layout_marginEnd="40dp" />
 
+    <!-- Continue Button (for PIN setup) -->
+    <Button
+        android:id="@+id/continueButton"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:text="@string/pin_next"
+        android:textColor="@android:color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:background="@color/primary"
+        android:visibility="gone"
+        app:layout_constraintBottom_toTopOf="@id/numpadContainer"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="24dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp" />
+
     <!-- Numpad -->
     <LinearLayout
         android:id="@+id/numpadContainer"

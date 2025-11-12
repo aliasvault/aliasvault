@@ -80,4 +80,13 @@
   <string name="pin_not_configured">PIN unlock is not configured</string>
   <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
   <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
+
+  <!-- PIN setup -->
+  <string name="pin_setup_title">Setup PIN</string>
+  <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
+  <string name="pin_confirm_title">Confirm PIN</string>
+  <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
+  <string name="pin_mismatch">PINs do not match. Please try again.</string>
+  <string name="pin_next">Next</string>
+  <string name="pin_confirm">Confirm</string>
 </resources>

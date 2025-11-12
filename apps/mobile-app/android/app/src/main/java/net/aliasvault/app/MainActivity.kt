@@ -103,7 +103,7 @@ class MainActivity : ReactActivity() {
     }
 
     /**
-     * Handle activity results - specifically for PIN unlock.
+     * Handle activity results - specifically for PIN unlock and PIN setup.
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -111,6 +111,8 @@ class MainActivity : ReactActivity() {
         // Handle PIN unlock results directly
         if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.PIN_UNLOCK_REQUEST_CODE) {
             handlePinUnlockResult(resultCode, data)
+        } else if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.PIN_SETUP_REQUEST_CODE) {
+            handlePinSetupResult(resultCode, data)
         }
     }
 
@@ -160,6 +162,35 @@ class MainActivity : ReactActivity() {
             }
             else -> {
                 promise.reject("UNKNOWN_ERROR", "Unknown error in PIN unlock", null)
+            }
+        }
+    }
+
+    /**
+     * Handle PIN setup result.
+     * @param resultCode The result code from the PIN setup activity.
+     * @param data The intent data (not used for setup, setup happens internally).
+     */
+    @Suppress("UNUSED_PARAMETER")
+    private fun handlePinSetupResult(resultCode: Int, data: Intent?) {
+        val promise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.pinSetupPromise
+        net.aliasvault.app.nativevaultmanager.NativeVaultManager.pinSetupPromise = null
+
+        if (promise == null) {
+            return
+        }
+
+        when (resultCode) {
+            net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_SUCCESS -> {
+                // PIN setup successful
+                promise.resolve(null)
+            }
+            net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_CANCELLED -> {
+                // User cancelled PIN setup
+                promise.reject("USER_CANCELLED", "User cancelled PIN setup", null)
+            }
+            else -> {
+                promise.reject("SETUP_ERROR", "PIN setup failed", null)
             }
         }
     }

@@ -97,6 +97,7 @@ export interface Spec extends TurboModule {
   setupPin(pin: string): Promise<void>;
   removeAndDisablePin(): Promise<void>;
   showPinUnlockUI(): Promise<void>;
+  showNativePinSetup(): Promise<void>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeVaultManager');

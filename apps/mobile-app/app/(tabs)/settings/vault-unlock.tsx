@@ -1,20 +1,18 @@
-import { MaterialIcons } from '@expo/vector-icons';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, Alert, Platform, Linking, Switch, TouchableOpacity, Modal } from 'react-native';
+import { StyleSheet, View, Alert, Platform, Linking, Switch, TouchableOpacity } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import { isPinEnabled, setupPin, removeAndDisablePin } from '@/utils/PinUnlockService';
+import { isPinEnabled, removeAndDisablePin } from '@/utils/PinUnlockService';
 
 import { useColors } from '@/hooks/useColorScheme';
 
-import { PinNumpad } from '@/components/pin/PinNumpad';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { ThemedView } from '@/components/themed/ThemedView';
 import { AuthMethod, useAuth } from '@/context/AuthContext';
+import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
  * Vault unlock settings screen.
@@ -31,11 +29,6 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
 
   // PIN state
   const [pinEnabled, setPinEnabled] = useState(false);
-  const [showPinSetup, setShowPinSetup] = useState(false);
-  const [pinSetupStep, setPinSetupStep] = useState(1);
-  const [newPin, setNewPin] = useState('');
-  const [confirmPin, setConfirmPin] = useState('');
-  const [pinError, setPinError] = useState<string | null>(null);
 
   useEffect(() => {
     /**
@@ -166,15 +159,41 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
   }, [hasBiometrics, pinEnabled, setAuthMethods, biometricDisplayName, t]);
 
   /**
-   * Handle enable PIN.
+   * Handle enable PIN - launches native PIN setup UI.
    */
-  const handleEnablePin = useCallback(() : void => {
-    // Don't disable biometrics yet - only after successful PIN setup
-    setPinSetupStep(1);
-    setNewPin('');
-    setConfirmPin('');
-    setShowPinSetup(true);
-  }, []);
+  const handleEnablePin = useCallback(async () : Promise<void> => {
+    try {
+      // Launch native PIN setup UI
+      await NativeVaultManager.showNativePinSetup();
+
+      // PIN setup successful - now disable biometrics if it was enabled
+      if (isBiometricsEnabled) {
+        setIsBiometricsEnabled(false);
+        await setAuthMethods(['password']);
+      }
+
+      setPinEnabled(true);
+      Toast.show({
+        type: 'success',
+        text1: t('settings.vaultUnlockSettings.pinEnabled'),
+        position: 'bottom',
+        visibilityTime: 1200,
+      });
+    } catch (error) {
+      // Handle cancellation or errors
+      if ((error as { code?: string })?.code === 'USER_CANCELLED') {
+        // User cancelled - do nothing
+        return;
+      }
+
+      console.error('Failed to enable PIN:', error);
+      Alert.alert(
+        t('common.error'),
+        t('common.errors.unknownErrorTryAgain'),
+        [{ text: t('common.ok'), style: 'default' }]
+      );
+    }
+  }, [isBiometricsEnabled, setAuthMethods, t]);
 
   /**
    * Handle disable PIN.
@@ -198,84 +217,6 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
       );
     }
   }, [t]);
-
-  /**
-   * Handle PIN change for step 1 (enter new PIN).
-   */
-  const handleNewPinChange = useCallback((pin: string) : void => {
-    setNewPin(pin);
-    setPinError(null);
-  }, []);
-
-  /**
-   * Handle step 1 submit (advance to confirmation).
-   */
-  const handleNewPinSubmit = useCallback(() : void => {
-    setPinSetupStep(2);
-  }, []);
-
-  /**
-   * Handle PIN change for step 2 (confirm PIN).
-   */
-  const handleConfirmPinChange = useCallback((pin: string) : void => {
-    setConfirmPin(pin);
-    setPinError(null);
-  }, []);
-
-  /**
-   * Handle PIN setup submit.
-   */
-  const handlePinSetupSubmit = useCallback(async (pin: string) : Promise<void> => {
-    try {
-      // Setup PIN - encryption key is retrieved internally by native code
-      await setupPin(pin);
-
-      // PIN setup successful - now disable biometrics if it was enabled
-      if (isBiometricsEnabled) {
-        setIsBiometricsEnabled(false);
-        await setAuthMethods(['password']);
-      }
-
-      setPinEnabled(true);
-      setShowPinSetup(false);
-      setPinSetupStep(1);
-      setNewPin('');
-      setConfirmPin('');
-      setPinError(null);
-      Toast.show({
-        type: 'success',
-        text1: t('settings.vaultUnlockSettings.pinEnabled'),
-        position: 'bottom',
-        visibilityTime: 1200,
-      });
-    } catch (error) {
-      console.error('Failed to enable PIN:', error);
-      let errorMessage = t('common.errors.unknownErrorTryAgain');
-
-      setPinError(errorMessage);
-      setConfirmPin('');
-    }
-  }, [isBiometricsEnabled, setAuthMethods, t]);
-
-  /**
-   * Handle step 2 submit (confirm and save PIN).
-   */
-  const handleConfirmPinSubmit = useCallback(() : void => {
-    if (confirmPin !== newPin) {
-      setPinError(t('settings.vaultUnlockSettings.pinMismatch'));
-      // Restart from step 1 on mismatch
-      setTimeout(() => {
-        setPinSetupStep(1);
-        setNewPin('');
-        setConfirmPin('');
-        setPinError(null);
-      }, 1000); // Show error for 1s before restarting
-      return;
-    }
-
-    // PINs match, submit
-    handlePinSetupSubmit(confirmPin);
-  }, [confirmPin, newPin, t, handlePinSetupSubmit]);
 
   const styles = StyleSheet.create({
     button: {
@@ -307,61 +248,6 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
       color: colors.textMuted,
       fontSize: 13,
       marginTop: 4,
-    },
-    input: {
-      backgroundColor: colors.background,
-      borderColor: colors.accentBorder,
-      borderRadius: 8,
-      borderWidth: 1,
-      color: colors.text,
-      fontSize: 24,
-      height: 60,
-      letterSpacing: 8,
-      paddingHorizontal: 16,
-      textAlign: 'center',
-    },
-    modalButton: {
-      alignItems: 'center',
-      backgroundColor: colors.primary,
-      borderRadius: 8,
-      height: 50,
-      justifyContent: 'center',
-      marginTop: 16,
-      width: '100%',
-    },
-    modalButtonText: {
-      color: colors.primarySurfaceText,
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    modalCloseButton: {
-      padding: 8,
-      position: 'absolute',
-      right: 8,
-      top: 8,
-    },
-    modalContainer: {
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
-      flex: 1,
-      justifyContent: 'center',
-      padding: 20,
-    },
-    modalContent: {
-      backgroundColor: colors.accentBackground,
-      borderRadius: 16,
-      padding: 24,
-    },
-    modalText: {
-      color: colors.textMuted,
-      fontSize: 14,
-      marginBottom: 16,
-    },
-    modalTitle: {
-      color: colors.text,
-      fontSize: 18,
-      fontWeight: '600',
-      marginBottom: 16,
-      paddingRight: 32,
     },
     option: {
       borderBottomColor: colors.accentBorder,
@@ -471,60 +357,6 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
           </View>
         </View>
 
-        {/* PIN Setup Modal */}
-        <Modal
-          visible={showPinSetup}
-          transparent={true}
-          animationType="fade"
-          onRequestClose={() => {
-            setShowPinSetup(false);
-            setPinSetupStep(1);
-            setNewPin('');
-            setConfirmPin('');
-          }}
-        >
-          <View style={styles.modalContainer}>
-            <ThemedView style={styles.modalContent}>
-              <TouchableOpacity
-                style={styles.modalCloseButton}
-                onPress={() => {
-                  setShowPinSetup(false);
-                  setPinSetupStep(1);
-                  setNewPin('');
-                  setConfirmPin('');
-                }}
-              >
-                <MaterialIcons name="close" size={24} color={colors.textMuted} />
-              </TouchableOpacity>
-
-              {pinSetupStep === 1 ? (
-                <PinNumpad
-                  pin={newPin}
-                  onPinChange={handleNewPinChange}
-                  onSubmit={handleNewPinSubmit}
-                  error={pinError}
-                  title={t('settings.vaultUnlockSettings.setupPin')}
-                  subtitle={t('settings.vaultUnlockSettings.enterNewPinDescription')}
-                  submitButtonText={t('common.next')}
-                  minLength={4}
-                  maxLength={8}
-                />
-              ) : (
-                <PinNumpad
-                  pin={confirmPin}
-                  onPinChange={handleConfirmPinChange}
-                  onSubmit={handleConfirmPinSubmit}
-                  error={pinError}
-                  title={t('settings.vaultUnlockSettings.confirmPin')}
-                  subtitle={t('settings.vaultUnlockSettings.confirmPinDescription')}
-                  submitButtonText={t('common.confirm')}
-                  minLength={4}
-                  maxLength={8}
-                />
-              )}
-            </ThemedView>
-          </View>
-        </Modal>
       </ThemedScrollView>
     </ThemedContainer>
   );
