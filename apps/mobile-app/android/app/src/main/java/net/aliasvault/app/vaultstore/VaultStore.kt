@@ -71,7 +71,14 @@ class VaultStore(
     private val mutate = VaultMutate(databaseComponent, query, metadata)
     private val cache = VaultCache(crypto, databaseComponent, keystoreProvider, storageProvider)
     private val passkey = VaultPasskey(databaseComponent)
-    private val pin = VaultPin(storageProvider)
+    private val pin by lazy {
+        val androidProvider = storageProvider as net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
+        // Use reflection to access private context field
+        val contextField = androidProvider.javaClass.getDeclaredField("context")
+        contextField.isAccessible = true
+        val context = contextField.get(androidProvider) as android.content.Context
+        VaultPin(context)
+    }
 
     // endregion
 

@@ -36,6 +36,7 @@ import org.json.JSONObject
  *
  * @param reactContext The React context
  */
+@Suppress("TooManyFunctions") // Required by React Native TurboModule interface
 @ReactModule(name = NativeVaultManager.NAME)
 class NativeVaultManager(reactContext: ReactApplicationContext) :
     NativeVaultManagerSpec(reactContext), TurboModule, LifecycleEventListener {
@@ -50,6 +51,11 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
          * The tag for logging.
          */
         private const val TAG = "NativeVaultManager"
+
+        /**
+         * Request code for PIN unlock activity.
+         */
+        private const val PIN_UNLOCK_REQUEST_CODE = 1001
     }
 
     private val vaultStore = VaultStore.getInstance(
@@ -1276,35 +1282,29 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Get failed PIN attempts count.
-     * @param promise The promise to resolve.
-     */
-    @ReactMethod
-    override fun getPinFailedAttempts(promise: Promise) {
-        try {
-            val attempts = vaultStore.getPinFailedAttempts()
-            promise.resolve(attempts)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting PIN failed attempts", e)
-            promise.reject("ERR_GET_PIN_FAILED_ATTEMPTS", "Failed to get PIN failed attempts: ${e.message}", e)
-        }
-    }
-
-    /**
      * Setup PIN unlock.
+     * Gets the vault encryption key from memory (vault must be unlocked).
      * @param pin The PIN to set.
-     * @param vaultEncryptionKeyBase64 The vault encryption key.
      * @param promise The promise to resolve.
      */
     @ReactMethod
-    override fun setupPin(pin: String, vaultEncryptionKeyBase64: String, promise: Promise) {
-        try {
-            vaultStore.setupPin(pin, vaultEncryptionKeyBase64)
-            promise.resolve(null)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error setting up PIN", e)
-            promise.reject("ERR_SETUP_PIN", "Failed to setup PIN: ${e.message}", e)
-        }
+    override fun setupPin(pin: String, promise: Promise) {
+        vaultStore.getEncryptionKey(object : net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback {
+            override fun onSuccess(result: String) {
+                try {
+                    vaultStore.setupPin(pin, result)
+                    promise.resolve(null)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error setting up PIN", e)
+                    promise.reject("ERR_SETUP_PIN", "Failed to setup PIN: ${e.message}", e)
+                }
+            }
+
+            override fun onError(error: Exception) {
+                Log.e(TAG, "Error getting encryption key for PIN setup", error)
+                promise.reject("ERR_SETUP_PIN", "Failed to get encryption key: ${error.message}", error)
+            }
+        })
     }
 
     /**
@@ -1317,35 +1317,25 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         try {
             val vaultEncryptionKey = vaultStore.unlockWithPin(pin)
             promise.resolve(vaultEncryptionKey)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error unlocking with PIN", e)
-            // Extract attempts remaining from exception message if available
-            val message = e.message ?: "Unknown error"
-            val attemptsPattern = """(\d+) attempts remaining""".toRegex()
-            val matchResult = attemptsPattern.find(message)
-            if (matchResult != null) {
-                val attemptsRemaining = matchResult.groupValues[1].toInt()
-                val errorData = Arguments.createMap()
-                errorData.putInt("attemptsRemaining", attemptsRemaining)
-                promise.reject("INCORRECT_PIN", message, e)
-            } else {
-                promise.reject("ERR_UNLOCK_WITH_PIN", "Failed to unlock with PIN: ${e.message}", e)
+        } catch (e: net.aliasvault.app.vaultstore.PinUnlockException) {
+            // Handle PinUnlockException with proper error codes and English messages for React Native
+            Log.e(TAG, "PIN unlock error: ${e.errorCode}", e)
+            when (e) {
+                is net.aliasvault.app.vaultstore.PinUnlockException.NotConfigured -> {
+                    promise.reject("PIN_NOT_CONFIGURED", "PIN unlock is not configured", null)
+                }
+                is net.aliasvault.app.vaultstore.PinUnlockException.Locked -> {
+                    promise.reject("PIN_LOCKED", "PIN locked after too many failed attempts", null)
+                }
+                is net.aliasvault.app.vaultstore.PinUnlockException.IncorrectPin -> {
+                    val message = "Incorrect PIN. ${e.attemptsRemaining} attempts remaining"
+                    promise.reject("INCORRECT_PIN", message, null)
+                }
             }
-        }
-    }
-
-    /**
-     * Reset failed PIN attempts counter.
-     * @param promise The promise to resolve.
-     */
-    @ReactMethod
-    override fun resetPinFailedAttempts(promise: Promise) {
-        try {
-            vaultStore.resetPinFailedAttempts()
-            promise.resolve(null)
         } catch (e: Exception) {
-            Log.e(TAG, "Error resetting PIN failed attempts", e)
-            promise.reject("ERR_RESET_PIN_FAILED_ATTEMPTS", "Failed to reset PIN failed attempts: ${e.message}", e)
+            // Fallback for any other errors
+            Log.e(TAG, "Error unlocking with PIN", e)
+            promise.reject("PIN_UNLOCK_ERROR", "Failed to unlock with PIN: ${e.message}", e)
         }
     }
 
@@ -1374,12 +1364,72 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      */
     @ReactMethod
     override fun showPinUnlockUI(promise: Promise) {
-        // TODO: Implement native Android PIN unlock UI
-        // For now, reject with NOT_IMPLEMENTED to allow React Native to fall back
-        promise.reject(
-            "NOT_IMPLEMENTED",
-            "Native PIN unlock UI not yet implemented on Android. Please use the React Native PIN UI.",
-            null
-        )
+        val activity = currentActivity
+        if (activity == null) {
+            promise.reject("NO_ACTIVITY", "No activity available", null)
+            return
+        }
+
+        // Store promise for later resolution
+        pendingPinUnlockPromise = promise
+
+        // Launch PIN unlock activity
+        val intent = Intent(activity, net.aliasvault.app.pinunlock.PinUnlockActivity::class.java)
+        activity.startActivityForResult(intent, PIN_UNLOCK_REQUEST_CODE)
+    }
+
+    // Store pending promise
+    private var pendingPinUnlockPromise: Promise? = null
+
+    /**
+     * Handle activity result from PIN unlock.
+     */
+    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == PIN_UNLOCK_REQUEST_CODE) {
+            val promise = pendingPinUnlockPromise
+            pendingPinUnlockPromise = null
+
+            if (promise == null) {
+                Log.w(TAG, "No pending promise for PIN unlock result")
+                return
+            }
+
+            when (resultCode) {
+                net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_SUCCESS -> {
+                    // Get encryption key from result
+                    val encryptionKeyBase64 = data?.getStringExtra(
+                        net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_ENCRYPTION_KEY,
+                    )
+
+                    if (encryptionKeyBase64 == null) {
+                        promise.reject("UNLOCK_ERROR", "Failed to get encryption key from PIN unlock", null)
+                        return
+                    }
+
+                    try {
+                        // Store encryption key in memory
+                        vaultStore.storeEncryptionKey(encryptionKeyBase64)
+
+                        // Unlock the vault
+                        vaultStore.unlockVault()
+
+                        // Success
+                        promise.resolve(null)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error after PIN unlock", e)
+                        promise.reject("UNLOCK_ERROR", "Failed to unlock vault: ${e.message}", e)
+                    }
+                }
+                net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_CANCELLED -> {
+                    promise.reject("USER_CANCELLED", "User cancelled PIN unlock", null)
+                }
+                net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_PIN_DISABLED -> {
+                    promise.reject("PIN_DISABLED", "PIN was disabled", null)
+                }
+                else -> {
+                    promise.reject("UNKNOWN_ERROR", "Unknown error in PIN unlock", null)
+                }
+            }
+        }
     }
 }

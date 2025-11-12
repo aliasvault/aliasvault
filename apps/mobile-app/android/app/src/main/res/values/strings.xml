@@ -71,4 +71,13 @@
   <string name="error_vault_unlock_failed">Failed to unlock vault</string>
   <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
   <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
+
+  <!-- PIN unlock -->
+  <string name="pin_unlock_vault">Unlock Vault</string>
+  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
+  <string name="pin_cancel">Cancel</string>
+  <string name="pin_unlock_failed">Unlock failed</string>
+  <string name="pin_not_configured">PIN unlock is not configured</string>
+  <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
+  <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
 </resources>

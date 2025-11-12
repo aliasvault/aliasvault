@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PIN unlock dimensions -->
+    <dimen name="pin_dot_size">16dp</dimen>
+    <dimen name="pin_dot_spacing">6dp</dimen>
+</resources>

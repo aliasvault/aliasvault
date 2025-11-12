@@ -1,4 +1,5 @@
 package net.aliasvault.app
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.WindowInsetsController
@@ -100,5 +101,19 @@ class MainActivity : ReactActivity() {
                 fabricEnabled,
             ) {},
         )
+    }
+
+    /**
+     * Handle activity results - forward to NativeVaultManager for PIN unlock.
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // Forward result to NativeVaultManager to handle PIN unlock
+        val reactInstanceManager = reactNativeHost.reactInstanceManager
+        val nativeModule = reactInstanceManager.currentReactContext
+            ?.getNativeModule(net.aliasvault.app.nativevaultmanager.NativeVaultManager::class.java)
+
+        nativeModule?.handleActivityResult(requestCode, resultCode, data)
     }
 }

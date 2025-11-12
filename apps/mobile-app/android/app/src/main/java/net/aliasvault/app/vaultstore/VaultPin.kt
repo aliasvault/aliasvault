@@ -1,16 +1,48 @@
 package net.aliasvault.app.vaultstore
 
+import android.content.Context
+import android.content.SharedPreferences
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Log
-import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
-import org.signal.argon2.Argon2
-import org.signal.argon2.MemoryCost
-import org.signal.argon2.Type
-import org.signal.argon2.Version
+import com.lambdapioneer.argon2kt.Argon2Kt
+import com.lambdapioneer.argon2kt.Argon2Mode
+import com.lambdapioneer.argon2kt.Argon2Version
+import org.json.JSONObject
+import java.security.KeyStore
 import java.security.SecureRandom
 import javax.crypto.Cipher
+import javax.crypto.KeyGenerator
+import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 import javax.crypto.spec.SecretKeySpec
+
+/**
+ * Exception types for PIN unlock operations.
+ * UI layer should handle localization based on these exception types.
+ */
+sealed class PinUnlockException(message: String) : Exception(message) {
+    /** PIN is not configured. */
+    object NotConfigured : PinUnlockException("PIN unlock is not configured")
+
+    /** PIN is locked after too many failed attempts. */
+    object Locked : PinUnlockException("PIN locked after too many failed attempts")
+
+    /**
+     * Incorrect PIN with remaining attempts.
+     * @property attemptsRemaining The number of attempts remaining before PIN is locked.
+     */
+    data class IncorrectPin(val attemptsRemaining: Int) : PinUnlockException("Incorrect PIN. $attemptsRemaining attempts remaining")
+
+    /** Get error code for React Native bridge compatibility. */
+    val errorCode: String
+        get() = when (this) {
+            is NotConfigured -> "PIN_NOT_CONFIGURED"
+            is Locked -> "PIN_LOCKED"
+            is IncorrectPin -> "INCORRECT_PIN"
+        }
+}
 
 /**
  * Handles PIN unlock functionality for the vault store.
@@ -19,16 +51,19 @@ import javax.crypto.spec.SecretKeySpec
  *
  * Security features:
  * - 4 failed attempts maximum before requiring full password
- * - PIN must be 4-8 digits
+ * - Device pepper stored in Android Keystore (makes offline brute-force impossible)
+ * - Failed attempts counter stored in Keystore (prevents tampering)
  * - Encryption key derived using Argon2id (memory-hard, GPU-resistant)
- * - Failed attempts counter stored separately
  * - Encrypted data automatically deleted after max failed attempts
  *
- * @param storageProvider The storage provider for persisting PIN data
+ * @param context The Android context for accessing SharedPreferences and Keystore
  */
 class VaultPin(
-    private val storageProvider: StorageProvider,
+    context: Context,
 ) {
+    private val sharedPreferences: SharedPreferences = context.getSharedPreferences("AliasVaultPrefs", Context.MODE_PRIVATE)
+    private val keyStore: KeyStore = KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+
     companion object {
         /**
          * The tag for logging.
@@ -41,13 +76,18 @@ class VaultPin(
         private const val MAX_PIN_ATTEMPTS = 4
 
         /**
-         * Shared preferences keys for PIN data.
+         * Shared preferences keys for PIN metadata (non-sensitive data only).
          */
         private const val PIN_ENABLED_KEY = "aliasvault_pin_enabled"
-        private const val PIN_ENCRYPTED_KEY_KEY = "aliasvault_pin_encrypted_key"
-        private const val PIN_SALT_KEY = "aliasvault_pin_salt"
         private const val PIN_LENGTH_KEY = "aliasvault_pin_length"
-        private const val PIN_FAILED_ATTEMPTS_KEY = "aliasvault_pin_failed_attempts"
+
+        /**
+         * Android Keystore aliases for secure data storage.
+         */
+        private const val KEYSTORE_ALIAS_PIN_DATA = "aliasvault_pin_data"
+        private const val KEYSTORE_ALIAS_PIN_PEPPER = "aliasvault_pin_pepper"
+        private const val KEYSTORE_ALIAS_FAILED_ATTEMPTS = "aliasvault_pin_failed_attempts"
+        private const val KEYSTORE_ALIAS_DATA_ENCRYPTION = "aliasvault_pin_data_encryption_key"
 
         /**
          * Argon2id parameters for PIN key derivation.
@@ -63,15 +103,15 @@ class VaultPin(
         private const val ARGON2_OUTPUT_LENGTH = 32
 
         /**
-         * Keystore alias for PIN encryption.
-         */
-        private const val KEYSTORE_ALIAS = "alias_vault_pin_key"
-
-        /**
          * AES-GCM parameters.
          */
         private const val GCM_IV_LENGTH = 12
         private const val GCM_TAG_LENGTH = 128
+
+        /**
+         * Device pepper size (32 bytes for strong security).
+         */
+        private const val PEPPER_SIZE = 32
     }
 
     // MARK: - PIN Status Methods
@@ -81,7 +121,7 @@ class VaultPin(
      * @return True if PIN unlock is enabled, false otherwise
      */
     fun isPinEnabled(): Boolean {
-        return storageProvider.getBoolean(PIN_ENABLED_KEY, false)
+        return sharedPreferences.getBoolean(PIN_ENABLED_KEY, false)
     }
 
     /**
@@ -90,16 +130,21 @@ class VaultPin(
      */
     fun getPinLength(): Int? {
         if (!isPinEnabled()) return null
-        val length = storageProvider.getInt(PIN_LENGTH_KEY, 0)
+        val length = sharedPreferences.getInt(PIN_LENGTH_KEY, 0)
         return if (length > 0) length else null
     }
 
     /**
-     * Get failed attempts count.
+     * Get failed attempts count from secure storage (Android Keystore).
      * @return The number of failed PIN attempts
      */
     fun getPinFailedAttempts(): Int {
-        return storageProvider.getInt(PIN_FAILED_ATTEMPTS_KEY, 0)
+        return try {
+            retrievePinFailedAttemptsFromKeystore()
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to retrieve failed attempts, returning 0", e)
+            0
+        }
     }
 
     // MARK: - PIN Setup Methods
@@ -108,7 +153,7 @@ class VaultPin(
      * Setup PIN unlock.
      * Encrypts the vault encryption key with the PIN and stores it securely.
      *
-     * @param pin The PIN to set (4-8 digits)
+     * @param pin The PIN to set (4+ digits)
      * @param vaultEncryptionKeyBase64 The base64-encoded vault encryption key to protect
      * @throws IllegalArgumentException if PIN format is invalid
      * @throws Exception if encryption or storage fails
@@ -121,10 +166,12 @@ class VaultPin(
         // Generate random salt
         val salt = ByteArray(16)
         SecureRandom().nextBytes(salt)
-        val saltBase64 = Base64.encodeToString(salt, Base64.NO_WRAP)
 
-        // Derive key from PIN using Argon2id
-        val pinKey = derivePinKey(pin, salt)
+        // Generate or retrieve device pepper (device-bound secret)
+        val pepper = getOrCreateDevicePepper()
+
+        // Derive key from PIN + pepper using Argon2id
+        val pinKey = derivePinKey(pin, salt, pepper)
 
         // Encrypt the vault encryption key using AES-GCM
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -141,16 +188,21 @@ class VaultPin(
         val combined = ByteArray(iv.size + encryptedKey.size)
         System.arraycopy(iv, 0, combined, 0, iv.size)
         System.arraycopy(encryptedKey, 0, combined, iv.size, encryptedKey.size)
-        val combinedBase64 = Base64.encodeToString(combined, Base64.NO_WRAP)
 
-        // Store encrypted key, salt, and metadata in SharedPreferences
-        storageProvider.putBoolean(PIN_ENABLED_KEY, true)
-        storageProvider.putString(PIN_ENCRYPTED_KEY_KEY, combinedBase64)
-        storageProvider.putString(PIN_SALT_KEY, saltBase64)
-        storageProvider.putInt(PIN_LENGTH_KEY, pin.length)
-        storageProvider.putInt(PIN_FAILED_ATTEMPTS_KEY, 0)
+        // Store encrypted key and salt in Android Keystore
+        storePinDataInKeystore(combined, salt)
 
-        Log.d(TAG, "PIN unlock enabled successfully")
+        // Initialize failed attempts counter in Keystore
+        storePinFailedAttemptsInKeystore(0)
+
+        // Store PIN metadata in SharedPreferences (non-sensitive data only)
+        sharedPreferences.edit().apply {
+            putBoolean(PIN_ENABLED_KEY, true)
+            putInt(PIN_LENGTH_KEY, pin.length)
+            apply()
+        }
+
+        Log.d(TAG, "PIN unlock enabled successfully with device pepper")
     }
 
     // MARK: - PIN Unlock Methods
@@ -161,34 +213,27 @@ class VaultPin(
      *
      * @param pin The PIN to use for unlocking
      * @return The decrypted vault encryption key (base64)
-     * @throws IllegalArgumentException if PIN format is invalid
-     * @throws IllegalStateException if PIN is not configured or is locked
-     * @throws Exception if decryption fails or PIN is incorrect
+     * @throws PinUnlockException with specific error type and metadata
      */
-    @Throws(Exception::class)
+    @Throws(PinUnlockException::class)
+    @Suppress("SwallowedException") // We intentionally swallow to avoid exposing crypto implementation details
     fun unlockWithPin(pin: String): String {
         // Check if PIN is enabled
-        // Note: If PIN was previously locked (max attempts), it's automatically disabled and cleared,
-        // so isPinEnabled() returning false means either PIN was never set up or it was locked and cleared
         if (!isPinEnabled()) {
-            throw IllegalStateException("PIN unlock is not configured")
+            throw PinUnlockException.NotConfigured
         }
 
         try {
-            // Retrieve encrypted key and salt
-            val encryptedKeyBase64 = storageProvider.getString(PIN_ENCRYPTED_KEY_KEY, null)
-                ?: throw IllegalStateException("No encrypted key found")
-            val saltBase64 = storageProvider.getString(PIN_SALT_KEY, null)
-                ?: throw IllegalStateException("No salt found")
+            // Retrieve encrypted key, salt, and pepper from Keystore
+            val (encryptedKey, salt) = retrievePinDataFromKeystore()
+            val pepper = retrieveDevicePepper()
 
             // Decode encrypted package
-            val combined = Base64.decode(encryptedKeyBase64, Base64.NO_WRAP)
-            val iv = combined.copyOfRange(0, GCM_IV_LENGTH)
-            val encryptedData = combined.copyOfRange(GCM_IV_LENGTH, combined.size)
+            val iv = encryptedKey.copyOfRange(0, GCM_IV_LENGTH)
+            val encryptedData = encryptedKey.copyOfRange(GCM_IV_LENGTH, encryptedKey.size)
 
-            // Derive key from PIN
-            val salt = Base64.decode(saltBase64, Base64.NO_WRAP)
-            val pinKey = derivePinKey(pin, salt)
+            // Derive key from PIN + pepper
+            val pinKey = derivePinKey(pin, salt, pepper)
 
             // Decrypt the vault encryption key
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -197,7 +242,7 @@ class VaultPin(
             val decryptedKey = cipher.doFinal(encryptedData)
 
             // Reset failed attempts on success
-            storageProvider.putInt(PIN_FAILED_ATTEMPTS_KEY, 0)
+            storePinFailedAttemptsInKeystore(0)
 
             // Return the decrypted vault encryption key as base64
             return Base64.encodeToString(decryptedKey, Base64.NO_WRAP)
@@ -205,72 +250,377 @@ class VaultPin(
             // Increment failed attempts
             val currentAttempts = getPinFailedAttempts()
             val newAttempts = currentAttempts + 1
-            storageProvider.putInt(PIN_FAILED_ATTEMPTS_KEY, newAttempts)
+            storePinFailedAttemptsInKeystore(newAttempts)
 
             // If max attempts reached, disable PIN and clear all stored data
             if (newAttempts >= MAX_PIN_ATTEMPTS) {
                 removeAndDisablePin()
-                throw IllegalStateException("PIN locked after too many failed attempts")
+                throw PinUnlockException.Locked
             }
 
             // Return incorrect PIN error with attempts remaining
             val attemptsRemaining = MAX_PIN_ATTEMPTS - newAttempts
-            throw Exception("Incorrect PIN. $attemptsRemaining attempts remaining", e)
+            throw PinUnlockException.IncorrectPin(attemptsRemaining)
         }
     }
 
     /**
-     * Reset failed attempts counter.
-     * Called after successful password unlock.
+     * Reset failed attempts counter (called after successful password unlock).
      */
     fun resetPinFailedAttempts() {
-        storageProvider.putInt(PIN_FAILED_ATTEMPTS_KEY, 0)
+        try {
+            storePinFailedAttemptsInKeystore(0)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to reset PIN attempts", e)
+        }
     }
 
     /**
      * Disable PIN unlock and remove all stored data.
      */
     fun removeAndDisablePin() {
-        // Clear all PIN data from SharedPreferences
-        storageProvider.remove(PIN_ENABLED_KEY)
-        storageProvider.remove(PIN_ENCRYPTED_KEY_KEY)
-        storageProvider.remove(PIN_SALT_KEY)
-        storageProvider.remove(PIN_LENGTH_KEY)
-        storageProvider.remove(PIN_FAILED_ATTEMPTS_KEY)
+        try {
+            // Remove PIN data from Keystore
+            removePinDataFromKeystore()
 
-        Log.d(TAG, "PIN unlock disabled and all data removed")
+            // Remove failed attempts counter from Keystore
+            removePinFailedAttemptsFromKeystore()
+
+            // Note: We DO NOT remove the device pepper - it's reused if PIN is re-enabled
+            // This maintains consistency and doesn't degrade security
+
+            // Clear PIN metadata from SharedPreferences
+            sharedPreferences.edit().apply {
+                remove(PIN_ENABLED_KEY)
+                remove(PIN_LENGTH_KEY)
+                apply()
+            }
+
+            Log.d(TAG, "PIN unlock disabled and all data removed (pepper retained)")
+        } catch (e: Exception) {
+            Log.e(TAG, "Error removing PIN data", e)
+            throw Exception("Failed to remove PIN data", e)
+        }
     }
 
     // MARK: - Private PIN Methods
 
     /**
-     * Derive encryption key from PIN using Argon2id.
+     * Derive encryption key from PIN + pepper using Argon2id.
      *
-     * Uses Argon2id with high memory cost (64 MB) to make brute-force attacks
-     * significantly more expensive. This is especially important for PINs which
-     * have lower entropy than passwords.
+     * Uses Argon2id with high memory cost (64 MB) and a device-bound pepper
+     * to make offline brute-force attacks infeasible even if the encrypted blob is exfiltrated.
      *
-     * @param pin The PIN string
-     * @param salt The salt bytes
+     * The pepper is a 32-byte random value stored in Android Keystore,
+     * which means an attacker who steals the encrypted blob cannot brute-force offline
+     * because they don't have the pepper.
+     *
+     * @param pin User's PIN (low entropy)
+     * @param salt Random salt (stored with encrypted data)
+     * @param pepper Device-bound secret (stored in Keystore, not with encrypted data)
      * @return The derived key bytes (32 bytes)
      * @throws Exception if key derivation fails
      */
     @Throws(Exception::class)
-    private fun derivePinKey(pin: String, salt: ByteArray): ByteArray {
+    private fun derivePinKey(pin: String, salt: ByteArray, pepper: ByteArray): ByteArray {
         try {
-            val argon2 = Argon2.Builder(Version.V13)
-                .type(Type.Argon2id)
-                .memoryCost(MemoryCost.KiB(ARGON2_MEMORY_KB))
-                .parallelism(ARGON2_PARALLELISM)
-                .iterations(ARGON2_ITERATIONS)
-                .hashLength(ARGON2_OUTPUT_LENGTH)
-                .build()
+            // Concatenate PIN + pepper before hashing
+            // This ensures offline brute-force is impossible without the pepper
+            val pinBytes = pin.toByteArray(Charsets.UTF_8)
+            val combinedInput = ByteArray(pinBytes.size + pepper.size)
+            System.arraycopy(pinBytes, 0, combinedInput, 0, pinBytes.size)
+            System.arraycopy(pepper, 0, combinedInput, pinBytes.size, pepper.size)
 
-            val result = argon2.hash(pin.toByteArray(), salt)
-            return result.hash
+            val argon2 = Argon2Kt()
+
+            val hashResult = argon2.hash(
+                mode = Argon2Mode.ARGON2_ID,
+                password = combinedInput,
+                salt = salt,
+                tCostInIterations = ARGON2_ITERATIONS,
+                mCostInKibibyte = ARGON2_MEMORY_KB,
+                parallelism = ARGON2_PARALLELISM,
+                hashLengthInBytes = ARGON2_OUTPUT_LENGTH,
+                version = Argon2Version.V13,
+            )
+
+            return hashResult.rawHashAsByteArray()
         } catch (e: Exception) {
             Log.e(TAG, "Argon2 PIN hashing failed", e)
             throw Exception("Argon2 PIN hashing failed", e)
         }
+    }
+
+    // MARK: - Device Pepper Management
+
+    /**
+     * Get or create device pepper (device-bound secret).
+     *
+     * The pepper is a 32-byte random value stored in Android Keystore.
+     * It's only readable when the device is unlocked (device credential required).
+     * This makes offline brute-force impossible because the pepper isn't in the encrypted blob.
+     */
+    @Throws(Exception::class)
+    private fun getOrCreateDevicePepper(): ByteArray {
+        // Try to retrieve existing pepper
+        return try {
+            retrieveDevicePepper()
+        } catch (e: Exception) {
+            // Pepper doesn't exist, generate new 32-byte pepper
+            Log.d(TAG, "Device pepper not found, creating new one", e)
+            val pepper = ByteArray(PEPPER_SIZE)
+            SecureRandom().nextBytes(pepper)
+
+            // Store pepper in Android Keystore with strong device protection
+            storePepperInKeystore(pepper)
+
+            Log.d(TAG, "Device pepper created and stored securely")
+            pepper
+        }
+    }
+
+    /**
+     * Store pepper in Android Keystore with device-bound protection.
+     */
+    @Throws(Exception::class)
+    private fun storePepperInKeystore(pepper: ByteArray) {
+        // Create encryption key for pepper storage in Keystore
+        val keyGenerator = KeyGenerator.getInstance(
+            KeyProperties.KEY_ALGORITHM_AES,
+            "AndroidKeyStore",
+        )
+
+        val keySpec = KeyGenParameterSpec.Builder(
+            KEYSTORE_ALIAS_PIN_PEPPER,
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
+        )
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setUserAuthenticationRequired(false)
+            // Require device to be unlocked (equivalent to iOS's kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly)
+            .setUnlockedDeviceRequired(true)
+            .build()
+
+        keyGenerator.init(keySpec)
+        val secretKey = keyGenerator.generateKey()
+
+        // Encrypt pepper
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        val encryptedPepper = cipher.doFinal(pepper)
+        val iv = cipher.iv
+
+        // Combine IV + encrypted pepper
+        val combined = ByteArray(iv.size + encryptedPepper.size)
+        System.arraycopy(iv, 0, combined, 0, iv.size)
+        System.arraycopy(encryptedPepper, 0, combined, iv.size, encryptedPepper.size)
+
+        // Store in SharedPreferences (encrypted by Keystore key)
+        val pepperBase64 = Base64.encodeToString(combined, Base64.NO_WRAP)
+        sharedPreferences.edit().putString(KEYSTORE_ALIAS_PIN_PEPPER, pepperBase64).apply()
+    }
+
+    /**
+     * Retrieve pepper from Android Keystore.
+     */
+    @Throws(Exception::class)
+    private fun retrieveDevicePepper(): ByteArray {
+        // Get encrypted pepper from SharedPreferences
+        val pepperBase64 = sharedPreferences.getString(KEYSTORE_ALIAS_PIN_PEPPER, null)
+            ?: throw Exception("Device pepper not found")
+
+        val combined = Base64.decode(pepperBase64, Base64.NO_WRAP)
+        val iv = combined.copyOfRange(0, GCM_IV_LENGTH)
+        val encryptedPepper = combined.copyOfRange(GCM_IV_LENGTH, combined.size)
+
+        // Get decryption key from Keystore
+        val secretKey = keyStore.getKey(KEYSTORE_ALIAS_PIN_PEPPER, null) as? SecretKey
+            ?: throw Exception("Keystore key for pepper not found")
+
+        // Decrypt pepper
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_LENGTH, iv))
+        return cipher.doFinal(encryptedPepper)
+    }
+
+    // MARK: - PIN Data Storage (Encrypted Key + Salt)
+
+    /**
+     * Store PIN data (encrypted key and salt) in Android Keystore.
+     * Note: We DO NOT store the pepper here - it's separate for security.
+     */
+    @Throws(Exception::class)
+    private fun storePinDataInKeystore(encryptedKey: ByteArray, salt: ByteArray) {
+        // Create JSON with both encrypted key and salt
+        val pinData = JSONObject().apply {
+            put("encryptedKey", Base64.encodeToString(encryptedKey, Base64.NO_WRAP))
+            put("salt", Base64.encodeToString(salt, Base64.NO_WRAP))
+        }
+        val dataToStore = pinData.toString().toByteArray(Charsets.UTF_8)
+
+        // Get or create encryption key for PIN data storage
+        val secretKey = getOrCreateDataEncryptionKey()
+
+        // Encrypt the PIN data
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        val encryptedData = cipher.doFinal(dataToStore)
+        val iv = cipher.iv
+
+        // Combine IV + encrypted data
+        val combined = ByteArray(iv.size + encryptedData.size)
+        System.arraycopy(iv, 0, combined, 0, iv.size)
+        System.arraycopy(encryptedData, 0, combined, iv.size, encryptedData.size)
+
+        // Store in SharedPreferences
+        val combinedBase64 = Base64.encodeToString(combined, Base64.NO_WRAP)
+        sharedPreferences.edit().putString(KEYSTORE_ALIAS_PIN_DATA, combinedBase64).apply()
+    }
+
+    /**
+     * Retrieve PIN data (encrypted key and salt) from Android Keystore.
+     */
+    @Throws(Exception::class)
+    private fun retrievePinDataFromKeystore(): Pair<ByteArray, ByteArray> {
+        // Get encrypted data from SharedPreferences
+        val combinedBase64 = sharedPreferences.getString(KEYSTORE_ALIAS_PIN_DATA, null)
+            ?: throw Exception("No PIN data found in keystore")
+
+        val combined = Base64.decode(combinedBase64, Base64.NO_WRAP)
+        val iv = combined.copyOfRange(0, GCM_IV_LENGTH)
+        val encryptedData = combined.copyOfRange(GCM_IV_LENGTH, combined.size)
+
+        // Get decryption key from Keystore
+        val secretKey = keyStore.getKey(KEYSTORE_ALIAS_DATA_ENCRYPTION, null) as? SecretKey
+            ?: throw Exception("Keystore key for PIN data not found")
+
+        // Decrypt the PIN data
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_LENGTH, iv))
+        val decryptedData = cipher.doFinal(encryptedData)
+
+        // Parse JSON
+        val pinData = JSONObject(String(decryptedData, Charsets.UTF_8))
+        val encryptedKey = Base64.decode(pinData.getString("encryptedKey"), Base64.NO_WRAP)
+        val salt = Base64.decode(pinData.getString("salt"), Base64.NO_WRAP)
+
+        return Pair(encryptedKey, salt)
+    }
+
+    /**
+     * Remove PIN data from keystore.
+     */
+    @Throws(Exception::class)
+    private fun removePinDataFromKeystore() {
+        sharedPreferences.edit().remove(KEYSTORE_ALIAS_PIN_DATA).apply()
+    }
+
+    // MARK: - Failed Attempts Counter (Keystore Storage)
+
+    /**
+     * Store failed attempts counter in Android Keystore (not SharedPreferences).
+     * This is stored in Keystore to prevent tampering.
+     */
+    @Throws(Exception::class)
+    private fun storePinFailedAttemptsInKeystore(attempts: Int) {
+        // Convert Int to ByteArray
+        val attemptsData = ByteArray(4).apply {
+            this[0] = (attempts shr 24).toByte()
+            this[1] = (attempts shr 16).toByte()
+            this[2] = (attempts shr 8).toByte()
+            this[3] = attempts.toByte()
+        }
+
+        // Get or create encryption key for attempts storage
+        val secretKey = getOrCreateDataEncryptionKey()
+
+        // Encrypt the attempts data
+        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+        val encryptedData = cipher.doFinal(attemptsData)
+        val iv = cipher.iv
+
+        // Combine IV + encrypted data
+        val combined = ByteArray(iv.size + encryptedData.size)
+        System.arraycopy(iv, 0, combined, 0, iv.size)
+        System.arraycopy(encryptedData, 0, combined, iv.size, encryptedData.size)
+
+        // Store in SharedPreferences
+        val combinedBase64 = Base64.encodeToString(combined, Base64.NO_WRAP)
+        sharedPreferences.edit().putString(KEYSTORE_ALIAS_FAILED_ATTEMPTS, combinedBase64).apply()
+    }
+
+    /**
+     * Retrieve failed attempts counter from Android Keystore.
+     */
+    @Throws(Exception::class)
+    private fun retrievePinFailedAttemptsFromKeystore(): Int {
+        // Get encrypted data from SharedPreferences
+        val combinedBase64 = sharedPreferences.getString(KEYSTORE_ALIAS_FAILED_ATTEMPTS, null)
+            ?: return 0 // Default if not found
+
+        try {
+            val combined = Base64.decode(combinedBase64, Base64.NO_WRAP)
+            val iv = combined.copyOfRange(0, GCM_IV_LENGTH)
+            val encryptedData = combined.copyOfRange(GCM_IV_LENGTH, combined.size)
+
+            // Get decryption key from Keystore
+            val secretKey = keyStore.getKey(KEYSTORE_ALIAS_DATA_ENCRYPTION, null) as? SecretKey
+                ?: return 0
+
+            // Decrypt the attempts data
+            val cipher = Cipher.getInstance("AES/GCM/NoPadding")
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_LENGTH, iv))
+            val decryptedData = cipher.doFinal(encryptedData)
+
+            // Convert ByteArray to Int
+            return ((decryptedData[0].toInt() and 0xFF) shl 24) or
+                ((decryptedData[1].toInt() and 0xFF) shl 16) or
+                ((decryptedData[2].toInt() and 0xFF) shl 8) or
+                (decryptedData[3].toInt() and 0xFF)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to decode failed attempts", e)
+            return 0
+        }
+    }
+
+    /**
+     * Remove failed attempts counter from Android Keystore.
+     */
+    @Throws(Exception::class)
+    private fun removePinFailedAttemptsFromKeystore() {
+        sharedPreferences.edit().remove(KEYSTORE_ALIAS_FAILED_ATTEMPTS).apply()
+    }
+
+    // MARK: - Keystore Helper Methods
+
+    /**
+     * Get or create the encryption key for PIN data storage in Keystore.
+     */
+    @Throws(Exception::class)
+    private fun getOrCreateDataEncryptionKey(): SecretKey {
+        // Check if key already exists
+        if (keyStore.containsAlias(KEYSTORE_ALIAS_DATA_ENCRYPTION)) {
+            return keyStore.getKey(KEYSTORE_ALIAS_DATA_ENCRYPTION, null) as SecretKey
+        }
+
+        // Create new key
+        val keyGenerator = KeyGenerator.getInstance(
+            KeyProperties.KEY_ALGORITHM_AES,
+            "AndroidKeyStore",
+        )
+
+        val keySpec = KeyGenParameterSpec.Builder(
+            KEYSTORE_ALIAS_DATA_ENCRYPTION,
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
+        )
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setUserAuthenticationRequired(false)
+            .setUnlockedDeviceRequired(true)
+            .build()
+
+        keyGenerator.init(keySpec)
+        return keyGenerator.generateKey()
     }
 }
