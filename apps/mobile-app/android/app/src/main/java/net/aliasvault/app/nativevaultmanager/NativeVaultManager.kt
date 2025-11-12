@@ -55,7 +55,15 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         /**
          * Request code for PIN unlock activity.
          */
-        private const val PIN_UNLOCK_REQUEST_CODE = 1001
+        const val PIN_UNLOCK_REQUEST_CODE = 1001
+
+        /**
+         * Static holder for the pending promise from showPinUnlockUI.
+         * This allows MainActivity to resolve/reject the promise directly without
+         * depending on React context availability.
+         */
+        @Volatile
+        var pendingActivityResultPromise: Promise? = null
     }
 
     private val vaultStore = VaultStore.getInstance(
@@ -1370,66 +1378,12 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
             return
         }
 
-        // Store promise for later resolution
-        pendingPinUnlockPromise = promise
+        // Store promise in static companion object so MainActivity can resolve it directly
+        // This avoids race conditions with React context availability
+        pendingActivityResultPromise = promise
 
         // Launch PIN unlock activity
         val intent = Intent(activity, net.aliasvault.app.pinunlock.PinUnlockActivity::class.java)
         activity.startActivityForResult(intent, PIN_UNLOCK_REQUEST_CODE)
-    }
-
-    // Store pending promise
-    private var pendingPinUnlockPromise: Promise? = null
-
-    /**
-     * Handle activity result from PIN unlock.
-     */
-    fun handleActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == PIN_UNLOCK_REQUEST_CODE) {
-            val promise = pendingPinUnlockPromise
-            pendingPinUnlockPromise = null
-
-            if (promise == null) {
-                Log.w(TAG, "No pending promise for PIN unlock result")
-                return
-            }
-
-            when (resultCode) {
-                net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_SUCCESS -> {
-                    // Get encryption key from result
-                    val encryptionKeyBase64 = data?.getStringExtra(
-                        net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_ENCRYPTION_KEY,
-                    )
-
-                    if (encryptionKeyBase64 == null) {
-                        promise.reject("UNLOCK_ERROR", "Failed to get encryption key from PIN unlock", null)
-                        return
-                    }
-
-                    try {
-                        // Store encryption key in memory
-                        vaultStore.storeEncryptionKey(encryptionKeyBase64)
-
-                        // Unlock the vault
-                        vaultStore.unlockVault()
-
-                        // Success
-                        promise.resolve(null)
-                    } catch (e: Exception) {
-                        Log.e(TAG, "Error after PIN unlock", e)
-                        promise.reject("UNLOCK_ERROR", "Failed to unlock vault: ${e.message}", e)
-                    }
-                }
-                net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_CANCELLED -> {
-                    promise.reject("USER_CANCELLED", "User cancelled PIN unlock", null)
-                }
-                net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_PIN_DISABLED -> {
-                    promise.reject("PIN_DISABLED", "PIN was disabled", null)
-                }
-                else -> {
-                    promise.reject("UNKNOWN_ERROR", "Unknown error in PIN unlock", null)
-                }
-            }
-        }
     }
 }

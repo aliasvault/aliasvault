@@ -37,7 +37,6 @@ class MainActivity : ReactActivity() {
     override fun onResume() {
         super.onResume()
         // Reapply system bar configuration when app resumes
-        // This ensures our settings persist even if other code tries to override them
         configureSystemBars()
     }
 
@@ -104,16 +103,64 @@ class MainActivity : ReactActivity() {
     }
 
     /**
-     * Handle activity results - forward to NativeVaultManager for PIN unlock.
+     * Handle activity results - specifically for PIN unlock.
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        // Forward result to NativeVaultManager to handle PIN unlock
-        val reactInstanceManager = reactNativeHost.reactInstanceManager
-        val nativeModule = reactInstanceManager.currentReactContext
-            ?.getNativeModule(net.aliasvault.app.nativevaultmanager.NativeVaultManager::class.java)
+        // Handle PIN unlock results directly
+        if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.PIN_UNLOCK_REQUEST_CODE) {
+            handlePinUnlockResult(resultCode, data)
+        }
+    }
 
-        nativeModule?.handleActivityResult(requestCode, resultCode, data)
+    /**
+     * Handle PIN unlock result directly without going through React context.
+     * This avoids race conditions with React context initialization.
+     * @param resultCode The result code from the PIN unlock activity.
+     * @param data The intent data containing the encryption key.
+     */
+    private fun handlePinUnlockResult(resultCode: Int, data: Intent?) {
+        val promise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise
+        net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise = null
+
+        if (promise == null) {
+            return
+        }
+
+        val vaultStore = net.aliasvault.app.vaultstore.VaultStore.getInstance(
+            net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider(this) { null },
+            net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider(this),
+        )
+
+        when (resultCode) {
+            net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_SUCCESS -> {
+                val encryptionKeyBase64 = data?.getStringExtra(
+                    net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_ENCRYPTION_KEY,
+                )
+
+                if (encryptionKeyBase64 == null) {
+                    promise.reject("UNLOCK_ERROR", "Failed to get encryption key from PIN unlock", null)
+                    return
+                }
+
+                try {
+                    vaultStore.storeEncryptionKey(encryptionKeyBase64)
+                    vaultStore.unlockVault()
+                    promise.resolve(null)
+                } catch (e: Exception) {
+                    promise.reject("UNLOCK_ERROR", "Failed to unlock vault: ${e.message}", e)
+                }
+            }
+            net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_CANCELLED -> {
+                promise.reject("USER_CANCELLED", "User cancelled PIN unlock", null)
+            }
+            net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_PIN_DISABLED -> {
+                promise.reject("PIN_DISABLED", "PIN was disabled", null)
+            }
+            else -> {
+                promise.reject("UNKNOWN_ERROR", "Unknown error in PIN unlock", null)
+            }
+        }
     }
 }

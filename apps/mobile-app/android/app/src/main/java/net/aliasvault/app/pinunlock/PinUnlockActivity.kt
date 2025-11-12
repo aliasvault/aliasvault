@@ -60,6 +60,22 @@ class PinUnlockActivity : AppCompatActivity() {
         // Keep screen on during PIN entry
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+        // Apply window insets to the root layout for safe area
+        findViewById<android.view.View>(android.R.id.content).setOnApplyWindowInsetsListener { view, insets ->
+            val cancelButton = findViewById<Button>(R.id.cancelButton)
+            val systemBarsInsets = insets.systemWindowInsets
+
+            // Apply top inset to cancel button
+            cancelButton.setPadding(
+                cancelButton.paddingLeft,
+                systemBarsInsets.top + cancelButton.paddingTop,
+                cancelButton.paddingRight,
+                cancelButton.paddingBottom,
+            )
+
+            insets
+        }
+
         // Initialize VaultStore
         vaultStore = VaultStore.getInstance(
             net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider(this) { null },
