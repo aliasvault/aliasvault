@@ -98,35 +98,13 @@ export default function UnlockScreen() : React.ReactNode {
       setIsLoading(false);
 
       if (err && typeof err === 'object' && 'code' in err) {
-        const error = err as { code?: string; message?: string };
-        if (error.code === 'USER_CANCELLED') {
-          /*
-           * User cancelled PIN entry or PIN was disabled
-           * Check if PIN is still available and update state accordingly
-           */
-          const pinStillEnabled = await isPinEnabled();
-          setPinAvailable(pinStillEnabled);
-          return;
-        } else if (error.code === 'NOT_IMPLEMENTED') {
-          /*
-           * Native PIN UI not implemented on this platform (Android)
-           * Show password input and informative message
-           */
-          Alert.alert(
-            t('common.info'),
-            'Native PIN unlock is currently only available on iOS. Android support coming soon.',
-            [{ text: t('common.ok'), style: 'default' }]
-          );
-          return;
-        } else {
-          // Other errors - show password input as fallback
-          console.error('PIN unlock failed:', err);
-          Alert.alert(
-            t('common.error'),
-            error.message || t('common.errors.unknownErrorTryAgain'),
-            [{ text: t('common.ok'), style: 'default' }]
-          );
-        }
+        // Show password input as fallback on error
+        console.error('PIN unlock failed:', err);
+
+        // Check if PIN is still enabled and update state accordingly
+        const pinStillEnabled = await isPinEnabled();
+        setPinAvailable(pinStillEnabled);
+        return;
       }
     }
   }, [dbContext, t, setPinAvailable]);
