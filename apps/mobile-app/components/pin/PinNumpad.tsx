@@ -1,10 +1,9 @@
 import { MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, View, Text, Pressable, Animated } from 'react-native';
+import { StyleSheet, View, Text, Pressable, Animated, TouchableOpacity } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { RobustPressable } from '@/components/ui/RobustPressable';
 
 /**
  * Animated button for numpad
@@ -153,6 +152,11 @@ export const PinNumpad: React.FC<PinNumpadProps> = ({
   };
 
   const canSubmit = pin.length >= minLength;
+
+  // Debug: Log when canSubmit changes
+  React.useEffect(() => {
+    console.debug('[PinNumpad] canSubmit:', canSubmit, 'pin.length:', pin.length, 'minLength:', minLength);
+  }, [canSubmit, pin.length, minLength]);
 
   const styles = StyleSheet.create({
     confirmButton: {
@@ -333,15 +337,21 @@ export const PinNumpad: React.FC<PinNumpadProps> = ({
 
       {/* Confirm Button - only show if onSubmit is provided */}
       {showSubmitButton && (
-        <RobustPressable
+        <TouchableOpacity
           style={styles.confirmButton}
-          onPress={onSubmit}
+          onPress={() => {
+            console.debug('[PinNumpad] Submit button pressed, canSubmit:', canSubmit);
+            if (onSubmit) {
+              onSubmit();
+            }
+          }}
           disabled={!canSubmit}
+          activeOpacity={0.7}
         >
           <ThemedText style={styles.confirmButtonText}>
             {submitButtonText}
           </ThemedText>
-        </RobustPressable>
+        </TouchableOpacity>
       )}
     </View>
   );
