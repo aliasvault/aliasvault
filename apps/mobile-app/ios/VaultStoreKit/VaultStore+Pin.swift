@@ -10,7 +10,6 @@ extension VaultStore {
 
     private static let pinEncryptedKeyKey = "pinEncryptedKey"
     private static let pinSaltKey = "pinSalt"
-    private static let pinPepperKey = "pinPepper" // Device-bound secret
     private static let pinLengthKey = "pinLength"
     private static let pinFailedAttemptsKey = "pinFailedAttempts"
     private static let maxPinAttempts = 4
@@ -56,11 +55,8 @@ extension VaultStore {
             throw NSError(domain: "VaultStore", code: 22, userInfo: [NSLocalizedDescriptionKey: "Failed to generate random salt"])
         }
 
-        // Generate or retrieve device pepper (device-bound secret)
-        let pepper = try getOrCreateDevicePepper()
-
-        // Derive key from PIN + pepper using Argon2id
-        let pinKey = try derivePinKey(pin: pin, salt: salt, pepper: pepper)
+        // Derive key from PIN + salt using Argon2id
+        let pinKey = try derivePinKey(pin: pin, salt: salt)
 
         // Encrypt the vault encryption key using AES-GCM
         let symmetricKey = SymmetricKey(data: pinKey)
@@ -80,7 +76,7 @@ extension VaultStore {
         userDefaults.set(pin.count, forKey: Self.pinLengthKey)
         userDefaults.synchronize()
 
-        print("PIN unlock enabled successfully with device pepper")
+        print("PIN unlock enabled successfully")
     }
 
     // MARK: - PIN Unlock Methods
@@ -98,12 +94,11 @@ extension VaultStore {
         }
 
         do {
-            // Retrieve encrypted key, salt, and pepper from keychain
+            // Retrieve encrypted key and salt from keychain
             let (encryptedKey, salt) = try retrievePinDataFromKeychain()
-            let pepper = try retrieveDevicePepper()
 
-            // Derive key from PIN + pepper
-            let pinKey = try derivePinKey(pin: pin, salt: salt, pepper: pepper)
+            // Derive key from PIN + salt
+            let pinKey = try derivePinKey(pin: pin, salt: salt)
 
             // Decrypt the vault encryption key
             let symmetricKey = SymmetricKey(data: pinKey)
@@ -146,49 +141,37 @@ extension VaultStore {
         // Remove failed attempts counter from keychain
         try removePinFailedAttemptsFromKeychain()
 
-        // Note: We DO NOT remove the device pepper - it's reused if PIN is re-enabled
-        // This maintains consistency and doesn't degrade security
-
         // Clear PIN metadata from UserDefaults
         userDefaults.removeObject(forKey: VaultConstants.pinEnabledKey)
         userDefaults.removeObject(forKey: Self.pinLengthKey)
         userDefaults.synchronize()
 
-        print("PIN unlock disabled and all data removed (pepper retained)")
+        print("PIN unlock disabled and all data removed")
     }
 
     // MARK: - Private PIN Methods
 
-    /// Derive encryption key from PIN + pepper using Argon2id
+    /// Derive encryption key from PIN + salt using Argon2id
     ///
-    /// Uses Argon2id with high memory cost (64 MB) and a device-bound pepper
-    /// to make offline brute-force attacks infeasible even if the encrypted blob is exfiltrated.
-    ///
-    /// The pepper is a 32-byte random value stored in the Secure Enclave-protected Keychain,
-    /// which means an attacker who steals the encrypted blob cannot brute-force offline
-    /// because they don't have the pepper.
+    /// Uses Argon2id with high memory cost (64 MB) to make brute-force attacks expensive.
+    /// The salt is stored in Keychain with device-unlock protection, which means an attacker
+    /// who steals the encrypted blob cannot brute-force offline because they cannot access
+    /// the salt without unlocking the device.
     ///
     /// Parameters:
     /// - pin: User's PIN (low entropy)
-    /// - salt: Random salt (stored with encrypted data)
-    /// - pepper: Device-bound secret
-    private func derivePinKey(pin: String, salt: Data, pepper: Data) throws -> Data {
+    /// - salt: Random salt (stored in Keychain, requires device unlock to access)
+    private func derivePinKey(pin: String, salt: Data) throws -> Data {
         guard let pinData = pin.data(using: .utf8) else {
             throw NSError(domain: "VaultStore", code: 28, userInfo: [NSLocalizedDescriptionKey: "Failed to convert PIN to data"])
         }
 
-        // Concatenate PIN + pepper before hashing
-        // This ensures offline brute-force is impossible without the pepper
-        var combinedInput = Data()
-        combinedInput.append(pinData)
-        combinedInput.append(pepper)
-
-        // Use SignalArgon2 to hash (PIN + pepper) via Argon2id
+        // Use SignalArgon2 to hash PIN via Argon2id
         guard let derivedKeyTuple = try? Argon2.hash(
             iterations: 3,
             memoryInKiB: 65536, // 64 MB
             threads: 1,
-            password: combinedInput,
+            password: pinData,
             salt: salt,
             desiredLength: 32,
             variant: .id,
@@ -200,74 +183,9 @@ extension VaultStore {
         return derivedKeyTuple.raw
     }
 
-    /// Get or create device pepper (device-bound secret)
-    ///
-    /// The pepper is a 32-byte random value stored in Keychain with Secure Enclave protection.
-    /// It's only readable when the device is unlocked (passcode entered), but can be cached in memory.
-    /// This prevents offline brute-force when only the encrypted blob would be captured.
-    private func getOrCreateDevicePepper() throws -> Data {
-        // Try to retrieve existing pepper
-        if let pepper = try? retrieveDevicePepper() {
-            return pepper
-        }
-
-        // Generate new 32-byte pepper
-        var pepper = Data(count: 32)
-        let result = pepper.withUnsafeMutableBytes {
-            SecRandomCopyBytes(kSecRandomDefault, 32, $0.baseAddress!)
-        }
-        guard result == errSecSuccess else {
-            throw NSError(domain: "VaultStore", code: 36, userInfo: [NSLocalizedDescriptionKey: "Failed to generate device pepper"])
-        }
-
-        // Store pepper in Keychain with device passcode protection
-        // This uses kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly which provides:
-        // 1. Device-bound (cannot be moved to another device)
-        // 2. Requires passcode to be set
-        // 3. Available when device is unlocked
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: VaultConstants.keychainService,
-            kSecAttrAccount as String: Self.pinPepperKey,
-            kSecAttrAccessGroup as String: VaultConstants.keychainAccessGroup,
-            kSecValueData as String: pepper,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly
-        ]
-
-        let status = SecItemAdd(query as CFDictionary, nil)
-        guard status == errSecSuccess else {
-            throw NSError(domain: "VaultStore", code: 37, userInfo: [NSLocalizedDescriptionKey: "Failed to store device pepper: \(status)"])
-        }
-
-        print("Device pepper created and stored securely")
-        return pepper
-    }
-
-    /// Retrieve device pepper from Keychain
-    private func retrieveDevicePepper() throws -> Data {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: VaultConstants.keychainService,
-            kSecAttrAccount as String: Self.pinPepperKey,
-            kSecAttrAccessGroup as String: VaultConstants.keychainAccessGroup,
-            kSecReturnData as String: true,
-            kSecMatchLimit as String: kSecMatchLimitOne
-        ]
-
-        var result: AnyObject?
-        let status = SecItemCopyMatching(query as CFDictionary, &result)
-
-        guard status == errSecSuccess, let pepper = result as? Data else {
-            throw NSError(domain: "VaultStore", code: 38, userInfo: [NSLocalizedDescriptionKey: "Device pepper not found"])
-        }
-
-        return pepper
-    }
-
     /// Store PIN encrypted data in keychain (without biometric protection)
     private func storePinDataInKeychain(encryptedKey: Data, salt: Data) throws {
         // Create a dictionary to store both encrypted key and salt
-        // Note: We DO NOT store the pepper here - it's separate for security
         let pinData: [String: Data] = [
             "encryptedKey": encryptedKey,
             "salt": salt

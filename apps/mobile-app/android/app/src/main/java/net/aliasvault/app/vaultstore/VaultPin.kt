@@ -51,7 +51,7 @@ sealed class PinUnlockException(message: String) : Exception(message) {
  *
  * Security features:
  * - 4 failed attempts maximum before requiring full password
- * - Device pepper stored in Android Keystore (makes offline brute-force impossible)
+ * - Salt stored in Android Keystore (makes offline brute-force impossible)
  * - Failed attempts counter stored in Keystore (prevents tampering)
  * - Encryption key derived using Argon2id (memory-hard, GPU-resistant)
  * - Encrypted data automatically deleted after max failed attempts
@@ -85,7 +85,6 @@ class VaultPin(
          * Android Keystore aliases for secure data storage.
          */
         private const val KEYSTORE_ALIAS_PIN_DATA = "aliasvault_pin_data"
-        private const val KEYSTORE_ALIAS_PIN_PEPPER = "aliasvault_pin_pepper"
         private const val KEYSTORE_ALIAS_FAILED_ATTEMPTS = "aliasvault_pin_failed_attempts"
         private const val KEYSTORE_ALIAS_DATA_ENCRYPTION = "aliasvault_pin_data_encryption_key"
 
@@ -107,11 +106,6 @@ class VaultPin(
          */
         private const val GCM_IV_LENGTH = 12
         private const val GCM_TAG_LENGTH = 128
-
-        /**
-         * Device pepper size (32 bytes for strong security).
-         */
-        private const val PEPPER_SIZE = 32
     }
 
     // MARK: - PIN Status Methods
@@ -167,11 +161,8 @@ class VaultPin(
         val salt = ByteArray(16)
         SecureRandom().nextBytes(salt)
 
-        // Generate or retrieve device pepper (device-bound secret)
-        val pepper = getOrCreateDevicePepper()
-
-        // Derive key from PIN + pepper using Argon2id
-        val pinKey = derivePinKey(pin, salt, pepper)
+        // Derive key from PIN + salt using Argon2id
+        val pinKey = derivePinKey(pin, salt)
 
         // Encrypt the vault encryption key using AES-GCM
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -202,7 +193,7 @@ class VaultPin(
             apply()
         }
 
-        Log.d(TAG, "PIN unlock enabled successfully with device pepper")
+        Log.d(TAG, "PIN unlock enabled successfully")
     }
 
     // MARK: - PIN Unlock Methods
@@ -224,16 +215,15 @@ class VaultPin(
         }
 
         try {
-            // Retrieve encrypted key, salt, and pepper from Keystore
+            // Retrieve encrypted key and salt from Keystore
             val (encryptedKey, salt) = retrievePinDataFromKeystore()
-            val pepper = retrieveDevicePepper()
 
             // Decode encrypted package
             val iv = encryptedKey.copyOfRange(0, GCM_IV_LENGTH)
             val encryptedData = encryptedKey.copyOfRange(GCM_IV_LENGTH, encryptedKey.size)
 
-            // Derive key from PIN + pepper
-            val pinKey = derivePinKey(pin, salt, pepper)
+            // Derive key from PIN + salt
+            val pinKey = derivePinKey(pin, salt)
 
             // Decrypt the vault encryption key
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -286,9 +276,6 @@ class VaultPin(
             // Remove failed attempts counter from Keystore
             removePinFailedAttemptsFromKeystore()
 
-            // Note: We DO NOT remove the device pepper - it's reused if PIN is re-enabled
-            // This maintains consistency and doesn't degrade security
-
             // Clear PIN metadata from SharedPreferences
             sharedPreferences.edit().apply {
                 remove(PIN_ENABLED_KEY)
@@ -296,7 +283,7 @@ class VaultPin(
                 apply()
             }
 
-            Log.d(TAG, "PIN unlock disabled and all data removed (pepper retained)")
+            Log.d(TAG, "PIN unlock disabled and all data removed")
         } catch (e: Exception) {
             Log.e(TAG, "Error removing PIN data", e)
             throw Exception("Failed to remove PIN data", e)
@@ -306,36 +293,27 @@ class VaultPin(
     // MARK: - Private PIN Methods
 
     /**
-     * Derive encryption key from PIN + pepper using Argon2id.
+     * Derive encryption key from PIN + salt using Argon2id.
      *
-     * Uses Argon2id with high memory cost (64 MB) and a device-bound pepper
-     * to make offline brute-force attacks infeasible even if the encrypted blob is exfiltrated.
-     *
-     * The pepper is a 32-byte random value stored in Android Keystore,
-     * which means an attacker who steals the encrypted blob cannot brute-force offline
-     * because they don't have the pepper.
+     * Uses Argon2id with high memory cost (64 MB) to make brute-force attacks expensive.
+     * The salt is stored in Android Keystore with device-unlock protection, which means
+     * an attacker who steals the encrypted blob cannot brute-force offline because they
+     * cannot access the salt without unlocking the device.
      *
      * @param pin User's PIN (low entropy)
-     * @param salt Random salt (stored with encrypted data)
-     * @param pepper Device-bound secret (stored in Keystore, not with encrypted data)
+     * @param salt Random salt (stored in Keystore, requires device unlock to access)
      * @return The derived key bytes (32 bytes)
      * @throws Exception if key derivation fails
      */
     @Throws(Exception::class)
-    private fun derivePinKey(pin: String, salt: ByteArray, pepper: ByteArray): ByteArray {
+    private fun derivePinKey(pin: String, salt: ByteArray): ByteArray {
         try {
-            // Concatenate PIN + pepper before hashing
-            // This ensures offline brute-force is impossible without the pepper
             val pinBytes = pin.toByteArray(Charsets.UTF_8)
-            val combinedInput = ByteArray(pinBytes.size + pepper.size)
-            System.arraycopy(pinBytes, 0, combinedInput, 0, pinBytes.size)
-            System.arraycopy(pepper, 0, combinedInput, pinBytes.size, pepper.size)
-
             val argon2 = Argon2Kt()
 
             val hashResult = argon2.hash(
                 mode = Argon2Mode.ARGON2_ID,
-                password = combinedInput,
+                password = pinBytes,
                 salt = salt,
                 tCostInIterations = ARGON2_ITERATIONS,
                 mCostInKibibyte = ARGON2_MEMORY_KB,
@@ -351,103 +329,10 @@ class VaultPin(
         }
     }
 
-    // MARK: - Device Pepper Management
-
-    /**
-     * Get or create device pepper (device-bound secret).
-     *
-     * The pepper is a 32-byte random value stored in Android Keystore.
-     * It's only readable when the device is unlocked (device credential required).
-     * This makes offline brute-force impossible because the pepper isn't in the encrypted blob.
-     */
-    @Throws(Exception::class)
-    private fun getOrCreateDevicePepper(): ByteArray {
-        // Try to retrieve existing pepper
-        return try {
-            retrieveDevicePepper()
-        } catch (e: Exception) {
-            // Pepper doesn't exist, generate new 32-byte pepper
-            Log.d(TAG, "Device pepper not found, creating new one", e)
-            val pepper = ByteArray(PEPPER_SIZE)
-            SecureRandom().nextBytes(pepper)
-
-            // Store pepper in Android Keystore with strong device protection
-            storePepperInKeystore(pepper)
-
-            Log.d(TAG, "Device pepper created and stored securely")
-            pepper
-        }
-    }
-
-    /**
-     * Store pepper in Android Keystore with device-bound protection.
-     */
-    @Throws(Exception::class)
-    private fun storePepperInKeystore(pepper: ByteArray) {
-        // Create encryption key for pepper storage in Keystore
-        val keyGenerator = KeyGenerator.getInstance(
-            KeyProperties.KEY_ALGORITHM_AES,
-            "AndroidKeyStore",
-        )
-
-        val keySpec = KeyGenParameterSpec.Builder(
-            KEYSTORE_ALIAS_PIN_PEPPER,
-            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
-        )
-            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-            .setUserAuthenticationRequired(false)
-            // Require device to be unlocked (equivalent to iOS's kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly)
-            .setUnlockedDeviceRequired(true)
-            .build()
-
-        keyGenerator.init(keySpec)
-        val secretKey = keyGenerator.generateKey()
-
-        // Encrypt pepper
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-        val encryptedPepper = cipher.doFinal(pepper)
-        val iv = cipher.iv
-
-        // Combine IV + encrypted pepper
-        val combined = ByteArray(iv.size + encryptedPepper.size)
-        System.arraycopy(iv, 0, combined, 0, iv.size)
-        System.arraycopy(encryptedPepper, 0, combined, iv.size, encryptedPepper.size)
-
-        // Store in SharedPreferences (encrypted by Keystore key)
-        val pepperBase64 = Base64.encodeToString(combined, Base64.NO_WRAP)
-        sharedPreferences.edit().putString(KEYSTORE_ALIAS_PIN_PEPPER, pepperBase64).apply()
-    }
-
-    /**
-     * Retrieve pepper from Android Keystore.
-     */
-    @Throws(Exception::class)
-    private fun retrieveDevicePepper(): ByteArray {
-        // Get encrypted pepper from SharedPreferences
-        val pepperBase64 = sharedPreferences.getString(KEYSTORE_ALIAS_PIN_PEPPER, null)
-            ?: throw Exception("Device pepper not found")
-
-        val combined = Base64.decode(pepperBase64, Base64.NO_WRAP)
-        val iv = combined.copyOfRange(0, GCM_IV_LENGTH)
-        val encryptedPepper = combined.copyOfRange(GCM_IV_LENGTH, combined.size)
-
-        // Get decryption key from Keystore
-        val secretKey = keyStore.getKey(KEYSTORE_ALIAS_PIN_PEPPER, null) as? SecretKey
-            ?: throw Exception("Keystore key for pepper not found")
-
-        // Decrypt pepper
-        val cipher = Cipher.getInstance("AES/GCM/NoPadding")
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, GCMParameterSpec(GCM_TAG_LENGTH, iv))
-        return cipher.doFinal(encryptedPepper)
-    }
-
     // MARK: - PIN Data Storage (Encrypted Key + Salt)
 
     /**
      * Store PIN data (encrypted key and salt) in Android Keystore.
-     * Note: We DO NOT store the pepper here - it's separate for security.
      */
     @Throws(Exception::class)
     private fun storePinDataInKeystore(encryptedKey: ByteArray, salt: ByteArray) {
