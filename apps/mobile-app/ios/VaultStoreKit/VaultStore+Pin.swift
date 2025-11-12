@@ -2,6 +2,7 @@ import Foundation
 import CryptoKit
 import Security
 import SignalArgon2
+import VaultUI
 
 /// Extension for the VaultStore class to handle PIN unlock functionality
 extension VaultStore {
@@ -89,7 +90,9 @@ extension VaultStore {
         // Note: If PIN was previously locked (max attempts), it's automatically disabled and cleared,
         // so isPinEnabled() returning false means either PIN was never set up or it was locked and cleared
         guard isPinEnabled() else {
-            throw NSError(domain: "VaultStore", code: 25, userInfo: [NSLocalizedDescriptionKey: "PIN unlock is not configured"])
+            throw NSError(domain: "VaultStore", code: 25, userInfo: [
+                NSLocalizedDescriptionKey: NSLocalizedString("pin_not_configured", bundle: Bundle.vaultUI, comment: "PIN not configured error")
+            ])
         }
 
         do {
@@ -120,13 +123,19 @@ extension VaultStore {
             // If max attempts reached, disable PIN and clear all stored data
             if newAttempts >= Self.maxPinAttempts {
                 try? removeAndDisablePin()
-                throw NSError(domain: "VaultStore", code: 26, userInfo: [NSLocalizedDescriptionKey: "PIN locked after too many failed attempts"])
+                throw NSError(domain: "VaultStore", code: 26, userInfo: [
+                    NSLocalizedDescriptionKey: NSLocalizedString("pin_locked_max_attempts", bundle: Bundle.vaultUI, comment: "PIN locked error")
+                ])
             }
 
             // Return incorrect PIN error with attempts remaining
             let attemptsRemaining = Self.maxPinAttempts - newAttempts
+            let localizedMessage = String(
+                format: NSLocalizedString("pin_incorrect_attempts_remaining", bundle: Bundle.vaultUI, comment: "Incorrect PIN with attempts remaining"),
+                attemptsRemaining
+            )
             throw NSError(domain: "VaultStore", code: 27, userInfo: [
-                NSLocalizedDescriptionKey: "Incorrect PIN. \(attemptsRemaining) attempts remaining",
+                NSLocalizedDescriptionKey: localizedMessage,
                 "attemptsRemaining": attemptsRemaining
             ])
         }
