@@ -791,14 +791,20 @@ public class VaultManager: NSObject {
         do {
             let vaultEncryptionKey = try vaultStore.unlockWithPin(pin)
             resolve(vaultEncryptionKey)
-        } catch let error as NSError {
-            // Extract attempts remaining from error if available and include in message
-            if let attemptsRemaining = error.userInfo["attemptsRemaining"] as? Int {
-                let message = "\(error.localizedDescription) - \(attemptsRemaining) attempts remaining"
-                reject("INCORRECT_PIN", message, error)
-            } else {
-                reject("PIN_UNLOCK_ERROR", error.localizedDescription, error)
+        } catch let error as PinUnlockError {
+            // Handle PinUnlockError with proper error codes and localized messages
+            switch error {
+            case .notConfigured:
+                reject("PIN_NOT_CONFIGURED", "PIN unlock is not configured", nil)
+            case .locked:
+                reject("PIN_LOCKED", "PIN locked after too many failed attempts", nil)
+            case .incorrectPin(let attemptsRemaining):
+                let message = "Incorrect PIN. \(attemptsRemaining) attempts remaining"
+                reject("INCORRECT_PIN", message, nil)
             }
+        } catch {
+            // Fallback for any other errors
+            reject("PIN_UNLOCK_ERROR", error.localizedDescription, error)
         }
     }
 

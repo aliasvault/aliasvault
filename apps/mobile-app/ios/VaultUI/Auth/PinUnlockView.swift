@@ -1,4 +1,5 @@
 import SwiftUI
+import VaultModels
 import UIKit
 
 private let locBundle = Bundle.vaultUI
@@ -341,13 +342,13 @@ public class PinUnlockViewModel: ObservableObject {
             try await unlockHandler(pin)
             // Success - the handler will navigate away or complete the flow
             // Keep loading state active since we're navigating
-        } catch let nsError as NSError {
-            // Check for PIN disabled/locked errors (error codes 25 or 26)
-            // These occur when PIN was disabled due to max attempts or configuration issue
-            if nsError.code == 25 || nsError.code == 26 {
-                // Show the error message briefly before auto-dismissing
+        } catch let pinError as PinUnlockError {
+            // Handle PinUnlockError with localized messages
+            switch pinError {
+            case .notConfigured:
+                // PIN was disabled/not configured
                 isUnlocking = false
-                self.error = nsError.localizedDescription
+                self.error = String(localized: "pin_not_configured", bundle: locBundle)
                 triggerErrorFeedback()
 
                 // Wait to let user see the error message
@@ -357,15 +358,31 @@ public class PinUnlockViewModel: ObservableObject {
                 self.error = nil
                 cancelHandler()
                 return
-            }
 
-            // Handle other unlock errors (incorrect PIN, etc.)
-            isUnlocking = false
-            self.error = nsError.localizedDescription
-            triggerErrorFeedback()
-            shakeAndClear()
-        } catch let genericError {
-            // Generic error
+            case .locked:
+                // PIN locked after too many attempts
+                isUnlocking = false
+                self.error = String(localized: "pin_locked_max_attempts", bundle: locBundle)
+                triggerErrorFeedback()
+
+                // Wait to let user see the error message
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+
+                // Clear the error and dismiss
+                self.error = nil
+                cancelHandler()
+                return
+
+            case .incorrectPin(let attemptsRemaining):
+                // Incorrect PIN - show attempts remaining
+                isUnlocking = false
+                self.error = String(localized: "pin_incorrect_attempts_remaining", bundle: locBundle)
+                    .replacingOccurrences(of: "%d", with: "\(attemptsRemaining)")
+                triggerErrorFeedback()
+                shakeAndClear()
+            }
+        } catch {
+            // Generic error fallback
             isUnlocking = false
             self.error = String(localized: "unlock_failed", bundle: locBundle)
             triggerErrorFeedback()
