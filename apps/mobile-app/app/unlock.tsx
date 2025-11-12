@@ -30,7 +30,7 @@ export default function UnlockScreen() : React.ReactNode {
   const { isLoggedIn, username, isBiometricsEnabled, getBiometricDisplayNameKey, getEncryptionKeyDerivationParams, logout } = useApp();
   const dbContext = useDb();
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isBiometricsAvailable, setIsBiometricsAvailable] = useState(false);
   const colors = useColors();
   const { t } = useTranslation();
@@ -100,7 +100,12 @@ export default function UnlockScreen() : React.ReactNode {
       if (err && typeof err === 'object' && 'code' in err) {
         const error = err as { code?: string; message?: string };
         if (error.code === 'USER_CANCELLED') {
-          // User cancelled PIN entry - show password input as fallback
+          /*
+           * User cancelled PIN entry or PIN was disabled
+           * Check if PIN is still available and update state accordingly
+           */
+          const pinStillEnabled = await isPinEnabled();
+          setPinAvailable(pinStillEnabled);
           return;
         } else if (error.code === 'NOT_IMPLEMENTED') {
           /*
@@ -113,14 +118,6 @@ export default function UnlockScreen() : React.ReactNode {
             [{ text: t('common.ok'), style: 'default' }]
           );
           return;
-        } else if (error.code === 'PIN_DISABLED') {
-          // PIN was disabled due to too many attempts
-          setPinAvailable(false);
-          Alert.alert(
-            t('common.error'),
-            t('settings.vaultUnlockSettings.pinLocked'),
-            [{ text: t('common.ok'), style: 'default' }]
-          );
         } else {
           // Other errors - show password input as fallback
           console.error('PIN unlock failed:', err);
@@ -157,10 +154,11 @@ export default function UnlockScreen() : React.ReactNode {
        * If user cancels or PIN is not available, loading stops and password input shows
        */
       if (pinEnabled) {
-        setIsLoading(true);
         await handlePinUnlock();
+      } else {
+        // No PIN available, stop loading to show password input
+        setIsLoading(false);
       }
-      // If no PIN, isLoading stays false and password input shows automatically
     };
     fetchConfigAndUnlock();
 

@@ -235,36 +235,9 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                     }
                 }
             },
-            cancelHandler: { [weak self] pinWasDisabled in
-                guard let self = self else { return }
-
-                if pinWasDisabled {
-                    // PIN was disabled due to max attempts
-                    // Try biometric as fallback if available
-                    if vaultStore.isBiometricAuthEnabled() {
-                        do {
-                            // Try to unlock with biometric
-                            try vaultStore.unlockVault()
-
-                            // Success - process the credential request
-                            if let passkeyRequest = self.quickReturnPasskeyRequest {
-                                self.handleQuickReturnPasskeyCredential(vaultStore: vaultStore, request: passkeyRequest)
-                            } else if let passwordRequest = self.quickReturnPasswordRequest {
-                                self.handleQuickReturnPasswordCredential(vaultStore: vaultStore, request: passwordRequest)
-                            }
-                        } catch {
-                            // Biometric failed - cancel
-                            print("Biometric fallback failed after PIN lockout: \(error)")
-                            self.handleCancel()
-                        }
-                    } else {
-                        // No other auth method - cancel
-                        self.handleCancel()
-                    }
-                } else {
-                    // User manually cancelled
-                    self.handleCancel()
-                }
+            cancelHandler: { [weak self] in
+                // User cancelled or PIN was disabled - just cancel
+                self?.handleCancel()
             }
         )
 

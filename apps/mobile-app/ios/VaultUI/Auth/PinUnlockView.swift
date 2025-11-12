@@ -154,21 +154,15 @@ public struct PinUnlockView: View {
                         Color.black.opacity(0.3)
                             .ignoresSafeArea()
 
-                        VStack(spacing: 16) {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: theme.primary))
-                                .scaleEffect(1.5)
-
-                            Text(String(localized: "unlocking", bundle: locBundle))
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(theme.text)
-                        }
-                        .padding(24)
-                        .background(
-                            RoundedRectangle(cornerRadius: 16)
-                                .fill(theme.accentBackground)
-                        )
-                        .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 4)
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: theme.primary))
+                            .scaleEffect(1.5)
+                            .padding(24)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(theme.accentBackground)
+                            )
+                            .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 4)
                     }
                     .transition(.opacity)
                 }
@@ -289,12 +283,12 @@ public class PinUnlockViewModel: ObservableObject {
 
     public let pinLength: Int?
     private let unlockHandler: (String) async throws -> Void
-    private let cancelHandler: (Bool) -> Void  // Bool indicates if PIN was disabled/locked
+    private let cancelHandler: () -> Void
 
     public init(
         pinLength: Int?,
         unlockHandler: @escaping (String) async throws -> Void,
-        cancelHandler: @escaping (Bool) -> Void
+        cancelHandler: @escaping () -> Void
     ) {
         self.pinLength = pinLength
         self.unlockHandler = unlockHandler
@@ -317,6 +311,8 @@ public class PinUnlockViewModel: ObservableObject {
         if let expectedLength = pinLength, pin.count == expectedLength {
             // Small delay to show the last dot filled before attempting unlock
             Task {
+                // Wait for the UI to update with the last filled dot
+                try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
                 await attemptUnlock()
             }
         }
@@ -329,26 +325,37 @@ public class PinUnlockViewModel: ObservableObject {
     }
 
     public func cancel() {
-        cancelHandler(false)  // User manually cancelled
+        cancelHandler()
     }
 
     private func attemptUnlock() async {
-        // Show loading state
+        // Show loading state immediately before expensive Argon2 computation
         isUnlocking = true
+
+        // Give the UI one more frame to show the loading state
+        try? await Task.sleep(nanoseconds: 50_000_000) // 50ms
 
         do {
             // Call the injected unlock handler with the PIN
+            // This will perform Argon2 key derivation which may take 500ms-1s
             try await unlockHandler(pin)
             // Success - the handler will navigate away or complete the flow
             // Keep loading state active since we're navigating
         } catch let nsError as NSError {
-            // Check for PIN disabled errors (error code 25)
-            // This occurs when PIN was disabled due to max attempts or configuration issue
-            if nsError.code == 25 {
-                // PIN is no longer available - auto-dismiss the view
-                // This happens when user enters wrong PIN too many times
+            // Check for PIN disabled/locked errors (error codes 25 or 26)
+            // These occur when PIN was disabled due to max attempts or configuration issue
+            if nsError.code == 25 || nsError.code == 26 {
+                // Show the error message briefly before auto-dismissing
                 isUnlocking = false
-                cancelHandler(true)
+                self.error = nsError.localizedDescription
+                triggerErrorFeedback()
+
+                // Wait to let user see the error message
+                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+
+                // Clear the error and dismiss
+                self.error = nil
+                cancelHandler()
                 return
             }
 

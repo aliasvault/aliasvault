@@ -859,16 +859,12 @@ public class VaultManager: NSObject {
                         }
                     }
                 },
-                cancelHandler: { pinWasDisabled in
+                cancelHandler: {
                     // Dismiss the view
+                    // No need to distinguish between user cancel vs PIN disabled
+                    // React Native will check isPinEnabled() to update UI state
                     rootVC.dismiss(animated: true) {
-                        if pinWasDisabled {
-                            // PIN was disabled due to max attempts
-                            reject("PIN_DISABLED", "PIN was disabled after too many failed attempts", nil)
-                        } else {
-                            // User manually cancelled
-                            reject("USER_CANCELLED", "User cancelled PIN unlock", nil)
-                        }
+                        reject("USER_CANCELLED", "User cancelled PIN unlock", nil)
                     }
                 }
             )
