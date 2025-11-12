@@ -12,7 +12,6 @@ import net.aliasvault.app.R
 import net.aliasvault.app.utils.Helpers
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
-import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreOperationCallback
 import net.aliasvault.app.vaultstore.passkey.PasskeyAuthenticator
 import net.aliasvault.app.vaultstore.passkey.PasskeyHelper
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
@@ -44,6 +43,7 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
     }
 
     private lateinit var vaultStore: VaultStore
+    private lateinit var unlockCoordinator: UnlockCoordinator
     private var providerRequest: ProviderGetCredentialRequest? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,47 +66,30 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                 VaultStore.getInstance(keystoreProvider, storageProvider)
             }
 
-            // Show loading screen while biometric prompt is displayed
+            // Show loading screen while unlock is in progress
             setContentView(R.layout.activity_loading)
 
-            // Check if biometric authentication is available before attempting unlock
-            if (!vaultStore.isBiometricAuthEnabled()) {
-                Log.e(TAG, "Biometric authentication is not enabled or not available")
-                showError(getString(R.string.error_biometric_required))
-                return
-            }
-
-            // Show biometric prompt to unlock vault (same pattern as registration)
-            val keystoreProvider = AndroidKeystoreProvider(applicationContext) { this }
-            keystoreProvider.retrieveKeyExternal(
-                this,
-                object : KeystoreOperationCallback {
-                    override fun onSuccess(result: String) {
-                        try {
-                            // Biometric authentication successful, unlock vault
-                            vaultStore.initEncryptionKey(result)
-                            vaultStore.unlockVault()
-
-                            // Now process the authentication request
-                            runOnUiThread {
-                                processAuthenticationRequest()
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Failed to unlock vault after biometric auth", e)
-                            runOnUiThread {
-                                showUnlockError(e)
-                            }
-                        }
-                    }
-
-                    override fun onError(e: Exception) {
-                        Log.e(TAG, "Failed to retrieve encryption key", e)
-                        runOnUiThread {
-                            showKeychainError(e)
-                        }
-                    }
+            // Initialize unlock coordinator
+            unlockCoordinator = UnlockCoordinator(
+                activity = this,
+                vaultStore = vaultStore,
+                onUnlocked = {
+                    // Vault unlocked successfully - process authentication request
+                    processAuthenticationRequest()
+                },
+                onCancelled = {
+                    // User cancelled unlock
+                    setResult(RESULT_CANCELED)
+                    finish()
+                },
+                onError = { errorMessage ->
+                    // Error during unlock
+                    showError(errorMessage)
                 },
             )
+
+            // Start the unlock flow
+            unlockCoordinator.startUnlockFlow()
         } catch (e: Exception) {
             Log.e(TAG, "Error in onCreate", e)
             // Make sure we have the layout set before showing error
@@ -117,9 +100,18 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // Delegate PIN unlock result to coordinator
+        if (requestCode == UnlockCoordinator.REQUEST_CODE_PIN_UNLOCK) {
+            unlockCoordinator.handlePinUnlockResult(resultCode, data)
+        }
+    }
+
     /**
      * Process the passkey authentication request and generate assertion.
-     * Called after biometric authentication succeeds and vault is unlocked.
+     * Called after authentication (biometric or PIN) succeeds and vault is unlocked.
      */
     private fun processAuthenticationRequest() {
         val providerRequest = this.providerRequest ?: run {
@@ -335,33 +327,6 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
         return androidx.credentials.GetCredentialResponse(
             androidx.credentials.PublicKeyCredential(responseObj.toString()),
         )
-    }
-
-    /**
-     * Show error message when unlocking vault fails.
-     */
-    private fun showUnlockError(e: Exception) {
-        val errorMessage = when {
-            e.message?.contains("No encryption key found", ignoreCase = true) == true ->
-                getString(R.string.error_unlock_vault_first)
-            e.message?.contains("Database setup error", ignoreCase = true) == true ->
-                getString(R.string.error_vault_decrypt_failed)
-            else -> getString(R.string.error_vault_unlock_failed)
-        }
-        showError(errorMessage)
-    }
-
-    /**
-     * Show error message when retrieving key from keychain fails.
-     */
-    private fun showKeychainError(e: Exception) {
-        val errorMessage = when {
-            e.message?.contains("user canceled", ignoreCase = true) == true ||
-                e.message?.contains("authentication failed", ignoreCase = true) == true ->
-                getString(R.string.error_biometric_cancelled)
-            else -> getString(R.string.error_encryption_key_failed)
-        }
-        showError(errorMessage)
     }
 
     /**

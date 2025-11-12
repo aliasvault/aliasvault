@@ -65,7 +65,7 @@
   <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
 
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_biometric_required">Please enable biometric authentication in the main AliasVault app in order to use passkeys</string>
+  <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
   <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
   <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
   <string name="error_vault_unlock_failed">Failed to unlock vault</string>

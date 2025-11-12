@@ -1,5 +1,6 @@
 package net.aliasvault.app.credentialprovider
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -13,7 +14,6 @@ import net.aliasvault.app.credentialprovider.models.PasskeyRegistrationViewModel
 import net.aliasvault.app.utils.Helpers
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
-import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreOperationCallback
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 import org.json.JSONObject
 
@@ -36,6 +36,7 @@ class PasskeyRegistrationActivity : FragmentActivity() {
 
     private val viewModel: PasskeyRegistrationViewModel by viewModels()
     private lateinit var vaultStore: VaultStore
+    private lateinit var unlockCoordinator: UnlockCoordinator
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -101,57 +102,46 @@ class PasskeyRegistrationActivity : FragmentActivity() {
                 null
             }
 
-            // Show loading screen first
+            // Show loading screen while unlock is in progress
             setContentView(R.layout.activity_loading)
 
-            // Check if biometric authentication is available before attempting unlock
-            if (!vaultStore.isBiometricAuthEnabled()) {
-                Log.e(TAG, "Biometric authentication is not enabled or not available")
-                showError(getString(R.string.error_biometric_required))
-                return
-            }
-
-            // Add biometric prompt here to get decryption key and act as user verification as well
-            // If biometric prompt is successful, we can proceed with the passkey registration
-            // Create new keystore provider instance to avoid using the existing one
-            val keystoreProvider = AndroidKeystoreProvider(applicationContext) { this }
-            keystoreProvider.retrieveKeyExternal(
-                this,
-                object : KeystoreOperationCallback {
-                    override fun onSuccess(result: String) {
-                        try {
-                            Log.d(TAG, "Got decrypt key: ${result.length} bytes")
-                            // Biometric authentication successful, now proceed with passkey registration
-                            // (Re)unlock the vault now that the decryption key is available
-                            vaultStore.initEncryptionKey(result)
-                            vaultStore.unlockVault()
-                            runOnUiThread {
-                                proceedWithPasskeyRegistration(savedInstanceState)
-                            }
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Failed to unlock vault after biometric auth", e)
-                            runOnUiThread {
-                                showUnlockError(e)
-                            }
-                        }
-                    }
-
-                    override fun onError(e: Exception) {
-                        Log.e(TAG, "Failed to retrieve encryption key", e)
-                        runOnUiThread {
-                            showKeychainError(e)
-                        }
-                    }
+            // Initialize unlock coordinator
+            unlockCoordinator = UnlockCoordinator(
+                activity = this,
+                vaultStore = vaultStore,
+                onUnlocked = {
+                    // Vault unlocked successfully - proceed with passkey registration
+                    proceedWithPasskeyRegistration(savedInstanceState)
+                },
+                onCancelled = {
+                    // User cancelled unlock
+                    finish()
+                },
+                onError = { errorMessage ->
+                    // Error during unlock
+                    showError(errorMessage)
                 },
             )
+
+            // Start the unlock flow
+            unlockCoordinator.startUnlockFlow()
         } catch (e: Exception) {
             Log.e(TAG, "Error in onCreate", e)
             finish()
         }
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // Delegate PIN unlock result to coordinator
+        if (requestCode == UnlockCoordinator.REQUEST_CODE_PIN_UNLOCK) {
+            unlockCoordinator.handlePinUnlockResult(resultCode, data)
+        }
+    }
+
     /**
-     * Proceed with passkey registration after biometric authentication.
+     * Proceed with passkey registration after authentication (biometric or PIN).
      */
     private fun proceedWithPasskeyRegistration(savedInstanceState: Bundle?) {
         try {
@@ -204,33 +194,6 @@ class PasskeyRegistrationActivity : FragmentActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commit()
-    }
-
-    /**
-     * Show error message when unlocking vault fails.
-     */
-    private fun showUnlockError(e: Exception) {
-        val errorMessage = when {
-            e.message?.contains("No encryption key found", ignoreCase = true) == true ->
-                getString(R.string.error_unlock_vault_first)
-            e.message?.contains("Database setup error", ignoreCase = true) == true ->
-                getString(R.string.error_vault_decrypt_failed)
-            else -> getString(R.string.error_vault_unlock_failed)
-        }
-        showError(errorMessage)
-    }
-
-    /**
-     * Show error message when retrieving key from keychain fails.
-     */
-    private fun showKeychainError(e: Exception) {
-        val errorMessage = when {
-            e.message?.contains("user canceled", ignoreCase = true) == true ||
-                e.message?.contains("authentication failed", ignoreCase = true) == true ->
-                getString(R.string.error_biometric_cancelled)
-            else -> getString(R.string.error_encryption_key_failed)
-        }
-        showError(errorMessage)
     }
 
     /**
