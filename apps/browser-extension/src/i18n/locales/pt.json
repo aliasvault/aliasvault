@@ -18,18 +18,12 @@
     "masterPassword": "Senha Mestre",
     "unlockVault": "Desbloquear cofre",
     "unlockWithPin": "Desbloquear com PIN",
-    "enterPin": "Digite Seu PIN",
     "enterPinToUnlock": "Digite seu PIN para desbloquear seu cofre",
-    "unlock": "Desbloquear",
-    "usePassword": "Utilizar Senha",
     "useMasterPassword": "Utilizar Senha Mestre",
     "pinUnlockTip": "Você também pode digitar seu PIN utilizando o teclado",
     "unlockTitle": "Desbloquear Seu Cofre",
-    "unlockDescription": "Digite sua senha para desbloquear o cofre.",
     "logout": "Sair",
     "logoutConfirm": "Tem certeza que deseja sair?",
-    "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
-    "unlockSuccess": "Cofre sincronizado com sucesso!",
     "unlockSuccessTitle": "O seu cofre foi desbloqueado com sucesso",
     "unlockSuccessDescription": "Agora você pode utilizar o preenchimento automático nos formulários de login no seu navegador.",
     "closePopup": "Fechar este pop-up",
@@ -40,8 +34,6 @@
     "errors": {
       "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
       "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
-      "noToken": "Login falhou -- nenhum token retornado",
-      "migrationError": "Ocorreu um erro durante a verificação de migrações pendentes.",
       "wrongPassword": "Senha incorreta. Por favor tente novamente.",
       "accountLocked": "Conta temporariamente bloqueada por muitas tentativas de login falhas. Por favor, tente novamente mais tarde.",
       "networkError": "Conexão falhou. Por favor verifique sua conexão com a internet e tente novamente.",
@@ -107,9 +99,7 @@
       "unknownError": "Ocorreu um erro desconhecido",
       "unknownErrorTryAgain": "Ocorreu um erro inesperado. Por favor, tente novamente.",
       "vaultNotAvailable": "Cofre não disponível",
-      "failedToRetrieveData": "Falha ao recuperar dados",
       "vaultIsLocked": "O cofre está bloqueado",
-      "failedToUploadVault": "Falha ao fazer upload do cofre",
       "passwordChanged": "Sua senha mudou desde o último login. Por favor, realize login novamente por questões de segurança."
     },
     "apiErrors": {
@@ -184,8 +174,6 @@
     "deleteCredential": "Excluir Credencial",
     "credentialDetails": "Detalhes da Credencial",
     "serviceName": "Nome do Serviço",
-    "username": "Nome de Usuário",
-    "password": "Senha",
     "notes": "Notas",
     "totp": "Autenticação de Dois Fatores",
     "totpCode": "Código TOTP",
@@ -335,7 +323,6 @@
     "autoLock8Hours": "8 horas",
     "autoLock24Hours": "24 horas",
     "versionPrefix": "Versão ",
-    "preferences": "Preferências",
     "autofillSettings": "Configurações de Preenchimento Automático",
     "clipboardSettings": "Configurações da Área de Transferência",
     "contextMenuSettings": "Configurações do Menu de Contexto",
@@ -368,7 +355,6 @@
       "pin": "Código PIN",
       "pinDescription": "Desbloquear cofre com código PIN",
       "setupPin": "Configurar Código PIN",
-      "enterNewPin": "Digite seu novo PIN",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "Confirmar PIN",
       "confirmPinDescription": "Digite seu PIN novamente para confirmar",
@@ -408,7 +394,6 @@
       "titleLabel": "Título",
       "titlePlaceholder": "Digite um nome para esta passkey",
       "createButton": "Criar Passkey",
-      "creatingButton": "Criando...",
       "useBrowserPasskey": "Utilizar Passkey do Navegador",
       "selectPasskeyToReplace": "Selecione uma passkey para alterar:",
       "createNewPasskey": "Criar Nova Passkey",
@@ -417,9 +402,7 @@
     },
     "settings": {
       "passkeyProvider": "Provedor de Passkey",
-      "passkeyProviderOn": "Provedor de Passkey em ",
-      "enable": "Habilitar AliasVault como provedor de passkey",
-      "description": "Quando habilitado, o AliasVault cuidará de solicitações de passkey de websites. Quando um website solicita uma passkey, o AliasVault mostrará um popup ao invés da interface de passkey padrão do navegador ou do OS."
+      "passkeyProviderOn": "Provedor de Passkey em "
     }
   },
   "upgrade": {
