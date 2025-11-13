@@ -40,9 +40,6 @@
     "verify": "Проверить",
     "unlockVault": "Разблокировать хранилище",
     "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Введите ваш пароль для разблокировки вашего хранилища",
     "enterPasswordPlaceholder": "Пароль",
     "enterAuthCode": "Введите 6-значный код",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Не удалось получить зашифрованную базу данных",
       "usernameNotFound": "Имя пользователя не найдено",
-      "vaultMergeRequired": "Требуется объединение хранилища. Пожалуйста, войдите в систему через веб-приложение, чтобы объединить несколько ожидающих обновлений в вашем хранилище.",
       "vaultOutdated": "Ваше хранилище устарело. Пожалуйста, войдите на сайт AliasVault и следуйте инструкциям.",
-      "failedToUploadVault": "Не удалось загрузить хранилище на сервер. Пожалуйста, повторите попытку, повторно открыв приложение.",
-      "usernameNotFoundLoginAgain": "Имя пользователя не найдено. Пожалуйста, войдите в систему еще раз.",
-      "errorDuringPasswordChange": "Ошибка при смене пароля. Пожалуйста, войдите в систему еще раз, чтобы получить доступ к вашему последнему хранилищу.",
       "failedToSyncVault": "Не удалось синхронизировать хранилище",
-      "operationFailed": "Сбой операции",
       "versionNotSupported": "Эта версия мобильного приложения AliasVault больше не поддерживается сервером. Пожалуйста, обновите ваше приложение до последней версии.",
       "serverVersionNotSupported": "Для использования этого мобильного приложения необходимо обновить сервер AliasVault до новой версии. Если вам нужна помощь, обратитесь в службу поддержки.",
       "appOutdated": "Это приложение устарело и не может быть использовано для доступа к этой (более новой) версии хранилища. Пожалуйста, обновите приложение AliasVault, чтобы продолжить.",
-      "vaultDecryptFailed": "Хранилище не удалось расшифровать, если проблема не устраняется, пожалуйста, выйдите и войдите в систему еще раз.",
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности."
     }
   },
@@ -171,9 +162,10 @@
     "twoFactorAuth": "Двухфакторная аутентификация",
     "totpCode": "TOTP код",
     "attachments": "Вложения",
-    "loadingAttachments": "Загрузка вложений...",
-    "addAttachments": "Добавить вложения",
     "deleteAttachment": "Удалить",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
     "toasts": {
       "credentialUpdated": "Учетные данные успешно обновлены",
       "credentialCreated": "Учетные данные успешно созданы",
@@ -185,9 +177,7 @@
     "createNewAliasFor": "Создайте новый псевдоним для",
     "errors": {
       "loadFailed": "Не удалось загрузить учетные данные",
-      "saveFailed": "Не удалось сохранить учетную запись",
-      "generateUsernameFailed": "Не удалось сгенерировать имя пользователя",
-      "generatePasswordFailed": "Не удалось сгенерировать пароль"
+      "saveFailed": "Не удалось сохранить учетную запись"
     },
     "contextMenu": {
       "title": "Параметры учетных данных",
@@ -326,11 +316,6 @@
         "random": "Случайный",
         "male": "Мужской",
         "female": "Женский"
-      },
-      "errors": {
-        "loadFailed": "Не удалось загрузить настройки генератора личностей.",
-        "languageUpdateFailed": "Не удалось обновить языковые настройки.",
-        "genderUpdateFailed": "Не удалось обновить настройки пола."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +363,6 @@
         "success": "Успешно",
         "failed": "Неудачно",
         "time": "Время",
-        "device": "Устройство",
         "ipAddress": "IP-адрес",
         "client": "Клиент",
         "failedToLoad": "Не удалось загрузить журналы авторизации"
@@ -435,14 +419,6 @@
       "hoursAgo_single": "{{count}} часов назад",
       "hoursAgo_plural": "{{count}} часов назад",
       "yesterday": "вчера"
-    },
-    "errors": {
-      "generic": "Произошла ошибка",
-      "loadFailed": "Не удалось загрузить письма",
-      "deleteFailed": "Не удалось удалить письмо",
-      "dbNotAvailable": "Контекст базы данных или адрес электронной почты недоступны",
-      "decryptFailed": "Не удалось расшифровать вложение",
-      "downloadFailed": "Не удалось загрузить вложение"
     }
   },
   "validation": {
@@ -480,11 +456,11 @@
     "VAULT_ERROR": "Локальное хранилище не обновлено. Пожалуйста, синхронизируйте ваше хранилище, обновив страницу, и повторите попытку."
   },
   "app": {
-    "openReadOnlyMode": "Открыть в режиме только для чтения",
     "status": {
       "unlockingVault": "Разблокировка хранилища",
       "decryptingVault": "Расшифровка хранилища",
-      "openingVaultReadOnly": "Открытие хранилища в режиме только для чтения"
+      "openingVaultReadOnly": "Открытие хранилища в режиме только для чтения",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "Офлайн режим (только для чтения)",
@@ -499,8 +475,7 @@
     },
     "navigation": {
       "login": "Логин",
-      "loginSettings": "Настройки входа",
-      "notFound": "Не найдено"
+      "loginSettings": "Настройки входа"
     },
     "notFound": {
       "title": "Страница не найдена",
