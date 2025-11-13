@@ -96,53 +96,15 @@ public struct PinUnlockView: View {
                 Spacer()
 
                 // Numpad
-                VStack(spacing: 12) {
-                    // Row 1: 1-3
-                    HStack(spacing: 12) {
-                        ForEach(1...3, id: \.self) { num in
-                            NumpadButton(value: "\(num)", theme: theme) {
-                                viewModel.addDigit("\(num)")
-                            }
-                        }
+                PinNumpadView(
+                    theme: theme,
+                    onDigit: { digit in
+                        viewModel.addDigit(digit)
+                    },
+                    onBackspace: {
+                        viewModel.removeDigit()
                     }
-
-                    // Row 2: 4-6
-                    HStack(spacing: 12) {
-                        ForEach(4...6, id: \.self) { num in
-                            NumpadButton(value: "\(num)", theme: theme) {
-                                viewModel.addDigit("\(num)")
-                            }
-                        }
-                    }
-
-                    // Row 3: 7-9
-                    HStack(spacing: 12) {
-                        ForEach(7...9, id: \.self) { num in
-                            NumpadButton(value: "\(num)", theme: theme) {
-                                viewModel.addDigit("\(num)")
-                            }
-                        }
-                    }
-
-                    // Row 4: Empty, 0, Backspace
-                    HStack(spacing: 12) {
-                        // Empty space
-                        Color.clear
-                            .frame(height: 60)
-
-                        // 0 button
-                        NumpadButton(value: "0", theme: theme) {
-                            viewModel.addDigit("0")
-                        }
-
-                        // Backspace button
-                        NumpadButton(icon: "delete.left", theme: theme) {
-                            viewModel.removeDigit()
-                        }
-                    }
-                }
-                .padding(.horizontal, 40)
-                .padding(.bottom, 40)
+                )
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height)
                 .background(theme.background)
@@ -246,10 +208,11 @@ struct NumpadButtonStyle: ButtonStyle {
 // MARK: - Theme
 
 /// Theme colors matching the React Native app
-struct Theme {
+public struct Theme {
     let background: Color
     let text: Color
     let primary: Color
+    let primarySurfaceText: Color
     let accentBackground: Color
     let accentBorder: Color
     let errorBorder: Color
@@ -258,6 +221,7 @@ struct Theme {
         background: Color(UIColor.systemBackground),
         text: Color(UIColor.label),
         primary: ColorConstants.Light.primary,
+        primarySurfaceText: Color.white,
         accentBackground: Color(UIColor.secondarySystemBackground),
         accentBorder: Color(UIColor.separator),
         errorBorder: Color.red
@@ -267,6 +231,7 @@ struct Theme {
         background: Color(UIColor.systemBackground),
         text: Color(UIColor.label),
         primary: ColorConstants.Dark.primary,
+        primarySurfaceText: Color.white,
         accentBackground: Color(UIColor.secondarySystemBackground),
         accentBorder: Color(UIColor.separator),
         errorBorder: Color.red

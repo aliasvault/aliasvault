@@ -141,6 +141,14 @@
     [vaultManager openAutofillSettingsPage:resolve rejecter:reject];
 }
 
+- (void)getAutofillShowSearchText:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getAutofillShowSearchText:resolve rejecter:reject];
+}
+
+- (void)setAutofillShowSearchText:(BOOL)showSearchText resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager setAutofillShowSearchText:showSearchText resolver:resolve rejecter:reject];
+}
+
 - (void)copyToClipboardWithExpiration:(NSString *)text expirationSeconds:(double)expirationSeconds resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager copyToClipboardWithExpiration:text expirationSeconds:expirationSeconds resolver:resolve rejecter:reject];
 }
@@ -271,6 +279,10 @@
 
 - (void)showPinUnlockUI:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager showPinUnlockUI:resolve rejecter:reject];
+}
+
+- (void)showNativePinSetup:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager showNativePinSetup:resolve rejecter:reject];
 }
 
 @end

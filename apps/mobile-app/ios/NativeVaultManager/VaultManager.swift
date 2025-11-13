@@ -885,6 +885,55 @@ public class VaultManager: NSObject {
     }
 
     @objc
+    func showNativePinSetup(_ resolve: @escaping RCTPromiseResolveBlock,
+                           rejecter reject: @escaping RCTPromiseRejectBlock) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else {
+                reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
+                return
+            }
+
+            // Get the root view controller from React Native
+            guard let rootVC = RCTPresentedViewController() else {
+                reject("NO_VIEW_CONTROLLER", "No view controller available", nil)
+                return
+            }
+
+            // Create PIN setup view with ViewModel
+            let viewModel = PinSetupViewModel(
+                setupHandler: { [weak self] pin in
+                    guard let self = self else {
+                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
+                    }
+
+                    // Setup PIN (vault must be unlocked - encryption key is retrieved from memory)
+                    try self.vaultStore.setupPin(pin)
+
+                    // Success - dismiss and resolve
+                    await MainActor.run {
+                        rootVC.dismiss(animated: true) {
+                            resolve(nil)
+                        }
+                    }
+                },
+                cancelHandler: {
+                    // Dismiss the view
+                    rootVC.dismiss(animated: true) {
+                        reject("USER_CANCELLED", "User cancelled PIN setup", nil)
+                    }
+                }
+            )
+
+            let pinSetupView = PinSetupView(viewModel: viewModel)
+            let hostingController = UIHostingController(rootView: pinSetupView)
+
+            // Present modally as full screen
+            hostingController.modalPresentationStyle = .fullScreen
+            rootVC.present(hostingController, animated: true)
+        }
+    }
+
+    @objc
     func requiresMainQueueSetup() -> Bool {
         return false
     }
