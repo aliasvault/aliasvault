@@ -58,7 +58,7 @@
     "notice": "Notice",
     "error": "Ошибка",
     "cancel": "Отмена",
-    "confirm": "Confirm",
+    "confirm": "Подтвердить",
     "back": "Назад",
     "next": "Next",
     "use": "Использовать",
@@ -363,9 +363,9 @@
     },
     "unlockMethod": {
       "title": "Vault Unlock Method",
-      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a quick 4-8 digit PIN for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
+      "introText": "Выберите способ разблокировки вашего хранилища. Вы можете использовать свой мастер-пароль (доступен всегда) или настроить быстрый 4-8-значный ПИН-код для более оперативного доступа. После 3 неудачных попыток ввода ПИН-кода вам потребуется использовать мастер-пароль.",
       "password": "Master Password",
-      "pin": "PIN Code",
+      "pin": "ПИН-код",
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
       "enterNewPin": "Enter new PIN",
@@ -373,14 +373,14 @@
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
       "invalidPinFormat": "Invalid PIN format",
-      "pinMismatch": "PINs do not match",
-      "incorrectPin": "Incorrect PIN. {{attemptsRemaining}} attempts remaining.",
-      "incorrectPinSingular": "Incorrect PIN. 1 attempt remaining.",
-      "pinNotConfigured": "PIN unlock is not configured.",
-      "enableSuccess": "PIN unlock enabled successfully!",
-      "pinLocked": "PIN unlock has been disabled. Please use your master password to unlock your vault.",
-      "unlockVaultFirst": "Please unlock your vault first before setting up PIN.",
-      "pinSecurityWarning": "PIN unlock in the browser extension can be less secure than your master password, as PINs typically have lower entropy and may be brute-forced if your device is compromised. Use it only on devices you fully trust."
+      "pinMismatch": "ПИН-коды не совпадают",
+      "incorrectPin": "Неверный ПИН-код. Осталось {{attemptsRemaining}} попытки.",
+      "incorrectPinSingular": "Неверный ПИН-код. Осталась 1 попытка.",
+      "pinNotConfigured": "Разблокировка по ПИН-коду не настроена.",
+      "enableSuccess": "Разблокировка по ПИН-коду успешно включена",
+      "pinLocked": "Разблокировка по ПИН-коду отключена. Пожалуйста, используйте ваш мастер-пароль для разблокировки хранилища.",
+      "unlockVaultFirst": "Пожалуйста, сначала разблокируйте хранилище, прежде чем настраивать ПИН-код.",
+      "pinSecurityWarning": "Разблокировка с помощью ПИН-кода в расширении для браузера может быть менее безопасной, чем использование вашего мастер-пароля, поскольку ПИН-коды обычно имеют более низкую энтропию и могут быть подобраны методом перебора (брутфорс), если ваше устройство будет скомпрометировано. Используйте этот способ только на устройствах, которым вы полностью доверяете."
     }
   },
   "passkeys": {
