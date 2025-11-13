@@ -40,9 +40,6 @@
     "verify": "Weryfikacja",
     "unlockVault": "Odblokuj sejf",
     "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Wprowadź hasło, aby odblokować sejf",
     "enterPasswordPlaceholder": "Hasło",
     "enterAuthCode": "Wprowadź 6-cyfrowy kod",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Nie udało się pobrać zaszyfrowanej bazy danych",
       "usernameNotFound": "Nazwa użytkownika nie została znaleziona",
-      "vaultMergeRequired": "Wymagane połączenie sejfu. Zaloguj się za pośrednictwem aplikacji internetowej, aby połączyć wiele oczekujących aktualizacji do swojego sejfu.",
       "vaultOutdated": "Twoje sejf jest nieaktualny. Zaloguj się na stronie AliasVault i postępuj zgodnie z instrukcjami.",
-      "failedToUploadVault": "Nie udało się przesłać sejfu na serwer. Spróbuj ponownie, otwierając aplikację.",
-      "usernameNotFoundLoginAgain": "Nie znaleziono nazwy użytkownika. Zaloguj się ponownie.",
-      "errorDuringPasswordChange": "Błąd podczas zmiany hasła. Zaloguj się ponownie, aby odzyskać najnowszą wersję sejfu.",
       "failedToSyncVault": "Nie udało się zsynchronizować sejfu",
-      "operationFailed": "Operacja nie powiodła się",
       "versionNotSupported": "Ta wersja aplikacji mobilnej AliasVault nie jest już obsługiwana przez serwer. Zaktualizuj aplikację do najnowszej wersji.",
       "serverVersionNotSupported": "Aby korzystać z tej aplikacji mobilnej, serwer AliasVault musi zostać zaktualizowany do nowszej wersji. Jeśli potrzebujesz pomocy, skontaktuj się z działem pomocy technicznej.",
       "appOutdated": "Ta aplikacja jest nieaktualna i nie można jej używać do uzyskania dostępu do tej (nowszej) wersji sejfu. Aby kontynuować, zaktualizuj aplikację AliasVault.",
-      "vaultDecryptFailed": "Nie można odszyfrować sejfu. Jeśli problem nadal występuje, wyloguj się i zaloguj ponownie.",
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się."
     }
   },
@@ -171,9 +162,10 @@
     "twoFactorAuth": "Weryfikacja dwuetapowa (2FA)",
     "totpCode": "Kod TOTP",
     "attachments": "Załączniki",
-    "loadingAttachments": "Ładowanie załączników...",
-    "addAttachments": "Dodaj załączniki",
     "deleteAttachment": "Usuń",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
     "toasts": {
       "credentialUpdated": "Dane logowania zaktualizowane pomyślnie",
       "credentialCreated": "Dane logowania utworzone pomyślnie",
@@ -185,9 +177,7 @@
     "createNewAliasFor": "Utwórz nowy alias dla",
     "errors": {
       "loadFailed": "Nie udało się załadować danych logowania",
-      "saveFailed": "Nie udało się zapisać danych logowania",
-      "generateUsernameFailed": "Nie udało się wygenerować nazwy użytkownika",
-      "generatePasswordFailed": "Nie udało się wygenerować hasła"
+      "saveFailed": "Nie udało się zapisać danych logowania"
     },
     "contextMenu": {
       "title": "Opcje danych logowania",
@@ -326,11 +316,6 @@
         "random": "Losowy",
         "male": "Mężczyzna",
         "female": "Kobieta"
-      },
-      "errors": {
-        "loadFailed": "Nie udało się załadować ustawień generatora tożsamości.",
-        "languageUpdateFailed": "Nie udało się zaktualizować ustawień języka.",
-        "genderUpdateFailed": "Nie udało się zaktualizować ustawień dotyczących płci."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +363,6 @@
         "success": "Sukces",
         "failed": "Nie powiodło się",
         "time": "Czas",
-        "device": "Urządzenie",
         "ipAddress": "Adres IP",
         "client": "Klient",
         "failedToLoad": "Nie udało się załadować dzienników uwierzytelniania"
@@ -435,14 +419,6 @@
       "hoursAgo_single": "{{count}} godzinę temu",
       "hoursAgo_plural": "{{count}} godzin temu",
       "yesterday": "wczoraj"
-    },
-    "errors": {
-      "generic": "Wystąpił błąd",
-      "loadFailed": "Nie udało się załadować wiadomości e-mail",
-      "deleteFailed": "Nie udało się usunąć wiadomości e-mail",
-      "dbNotAvailable": "Kontekst bazy danych lub adres e-mail niedostępny",
-      "decryptFailed": "Nie udało się odszyfrować załącznika",
-      "downloadFailed": "Nie udało się pobrać załącznika"
     }
   },
   "validation": {
@@ -480,11 +456,11 @@
     "VAULT_ERROR": "Lokalny sejf nie jest aktualny. Zsynchronizuj sejf, odświeżając stronę, i spróbuj ponownie."
   },
   "app": {
-    "openReadOnlyMode": "Otwórz w trybie tylko do odczytu",
     "status": {
       "unlockingVault": "Odblokowanie sejfu",
       "decryptingVault": "Odszyfrowywanie sejfu",
-      "openingVaultReadOnly": "Otwieranie sejfu w trybie tylko do odczytu"
+      "openingVaultReadOnly": "Otwieranie sejfu w trybie tylko do odczytu",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "Tryb offline (tylko do odczytu)",
@@ -499,8 +475,7 @@
     },
     "navigation": {
       "login": "Logowanie",
-      "loginSettings": "Ustawienia logowania",
-      "notFound": "Nie znaleziono"
+      "loginSettings": "Ustawienia logowania"
     },
     "notFound": {
       "title": "Nie znaleziono strony",
