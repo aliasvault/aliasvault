@@ -16,8 +16,13 @@
     "loadMore": "加载更多",
     "use": "使用",
     "confirm": "确认",
+    "next": "Next",
+    "notice": "Notice",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
     "errors": {
-      "unknownError": "发生未知错误，请重试。"
+      "unknownError": "发生未知错误，请重试。",
+      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
     }
   },
   "auth": {
@@ -34,6 +39,10 @@
     "verifyingAuthCode": "正在验证身份验证码",
     "verify": "验证",
     "unlockVault": "解锁密码库",
+    "unlockWithPin": "Unlock with PIN",
+    "useMasterPassword": "Use Master Password",
+    "enterPin": "Enter PIN",
+    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "输入您的密码以解锁密码库",
     "enterPasswordPlaceholder": "密码",
     "enterAuthCode": "输入 6 位数代码",
@@ -283,8 +292,19 @@
       "biometricEnabled": "{{biometric}} 现已成功启用",
       "biometricNotAvailable": "{{biometric}} 不可用",
       "biometricDisabledMessage": "AliasVault的{{biometric}}已禁用。如需使用，请先在设备设置中启用它。",
-      "biometricHelp": "您的密码库解密密钥将安全存储在本地设备的{{keystore}}中，可通过{{biometric}}安全访问。",
+      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}}不可用。点击打开设置和/或前往设备设置启用并配置它。",
+      "pin": "PIN Code",
+      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
+      "pinEnabled": "PIN unlock enabled successfully",
+      "pinDisabled": "PIN unlock has been disabled",
+      "setupPin": "Setup PIN",
+      "enterNewPin": "Enter New PIN",
+      "enterNewPinDescription": "Choose a PIN to unlock your vault",
+      "confirmPin": "Confirm PIN",
+      "confirmPinDescription": "Re-enter your PIN to confirm",
+      "pinMismatch": "PINs do not match. Please try again.",
+      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
       "passwordHelp": "重新输入完整主密码以解锁密码库。这始终作为备用选项启用。",
       "keystoreIOS": "iOS 钥匙串",
       "keystoreAndroid": "Android 密钥库"
