@@ -24,6 +24,7 @@ jobs:
           dotnet-version: 9.0.x
 
     - name: Install dependencies
+      working-directory: apps/server
       run: dotnet workload install wasm-tools
 
     - name: Build

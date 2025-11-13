@@ -14,11 +14,12 @@ RUN mkdir -p /src/msbuild-logs
 # Install Python which is required by the WebAssembly tools
 RUN apt-get update && apt-get install -y python3 && apt-get clean
 
-# Install the WebAssembly tools
+# Install the WebAssembly tools with correct dotnet version auto-detected from apps/server folder.
+WORKDIR /src/apps/server
 RUN dotnet workload install wasm-tools
 
 # Copy all project files
-COPY apps/server .
+COPY apps/server /src
 
 # Build the Client project
 WORKDIR "/src/AliasVault.Client"
