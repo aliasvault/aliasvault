@@ -1,26 +1,31 @@
 import argon2 from 'argon2-browser/dist/argon2-bundled.min.js';
+import { browser } from 'wxt/browser';
 
 import { storage } from '#imports';
 
 /**
  * PinUnlockService - Handles PIN-based vault unlock
  *
- * This service allows users to set a 4-8 digit PIN to unlock their vault instead
+ * This service allows users to set a 6-8 digit PIN to unlock their vault instead
  * of entering their full master password. The vault encryption key is encrypted
  * with a key derived from the PIN and stored locally.
  *
  * Security features:
- * - 3 failed attempts maximum before requiring full password
- * - PIN must be 4-8 digits
+ * - 4 failed attempts maximum before requiring full password
+ * - PIN must be 6-8 digits
  * - Encryption key derived using Argon2id (memory-hard, GPU-resistant)
+ * - Extension ID pepper adds friction for naive attacks
  * - Failed attempts counter stored separately
  * - Encrypted data automatically deleted after max failed attempts
  *
- * Security considerations:
- * - PIN unlock is less secure than full password unlock
- * - Vulnerable to offline brute-force if device is compromised
- * - Use Argon2id with high memory cost to slow down attacks
- * - Recommended for trusted devices only
+ * Security model
+ * - Random salt: Stored locally (prevents rainbow tables)
+ * - Extension ID pepper: Derived from browser.runtime.id
+ * - Argon2id memory cost: 64 MB makes each attempt expensive
+ * - Attempt limiting: 4 attempts max before PIN is disabled
+ *
+ * Recommendation: Use PIN unlock only on trusted devices. For high-security scenarios, always
+ * use full master password unlock.
  */
 
 const PIN_ENABLED_KEY = 'local:aliasvault_pin_enabled';
@@ -130,10 +135,10 @@ export async function getPinLength(): Promise<number | null> {
 }
 
 /**
- * Validate PIN format (4-8 digits)
+ * Validate PIN format (6-8 digits)
  */
 export function isValidPin(pin: string): boolean {
-  const pinRegex = /^\d{4,8}$/;
+  const pinRegex = /^\d{6,8}$/;
   return pinRegex.test(pin);
 }
 
@@ -161,7 +166,7 @@ export async function isPinLocked(): Promise<boolean> {
  * Setup PIN unlock
  * Encrypts the vault encryption key with the PIN and stores it
  *
- * @param pin - The PIN to set (4-8 digits)
+ * @param pin - The PIN to set (6-8 digits)
  * @param vaultEncryptionKey - The base64-encoded vault encryption key to protect
  */
 export async function setupPin(pin: string, vaultEncryptionKey: string): Promise<void> {
@@ -174,8 +179,9 @@ export async function setupPin(pin: string, vaultEncryptionKey: string): Promise
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const saltBase64 = arrayBufferToBase64(salt.buffer);
 
-    // Derive key from PIN using PBKDF2
-    const pinKey = await derivePinKey(pin, salt);
+    // Derive key from PIN using Argon2id
+    const combinedSalt = await assembleSaltWithPepper(salt);
+    const pinKey = await derivePinKey(pin, combinedSalt);
 
     // Encrypt the vault encryption key
     const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -244,9 +250,10 @@ export async function unlockWithPin(pin: string): Promise<string> {
     const iv = combined.slice(0, 12);
     const encryptedData = combined.slice(12);
 
-    // Derive key from PIN
+    // Derive key from PIN with extension ID pepper
     const salt = new Uint8Array(base64ToArrayBuffer(saltBase64));
-    const pinKey = await derivePinKey(pin, salt);
+    const combinedSalt = await assembleSaltWithPepper(salt);
+    const pinKey = await derivePinKey(pin, combinedSalt);
 
     // Decrypt the vault encryption key
     const decryptedData = await crypto.subtle.decrypt(
@@ -311,11 +318,55 @@ export async function resetFailedAttempts(): Promise<void> {
 }
 
 /**
+ * Get extension ID pepper component
+ *
+ * This provides a device-bound value that is NOT stored in chrome.storage.
+ * The extension ID is unique per installation and accessible via browser.runtime.id.
+ *
+ * Security benefits:
+ * - Not stored in chrome.storage directly (however still stored elsewhere on filesystem)
+ * - Adds friction for attackers who only copy storage directory
+ * - Unique per extension installation
+ *
+ * @returns SHA-256 hash of extension ID as Uint8Array
+ */
+async function getExtensionPepper(): Promise<Uint8Array> {
+  const extensionId = browser.runtime.id;
+  const pepperSource = new TextEncoder().encode(extensionId);
+  const pepperHash = await crypto.subtle.digest('SHA-256', pepperSource);
+  return new Uint8Array(pepperHash);
+}
+
+/**
+ * Combine random salt with extension ID pepper
+ *
+ * Creates a composite salt that includes both:
+ * 1. Random salt (stored locally, prevents rainbow tables)
+ * 2. Extension ID pepper (not stored, prevents offline brute-force)
+ *
+ * @param randomSalt - The random salt stored in chrome.storage
+ * @returns Combined salt for Argon2id key derivation
+ */
+async function assembleSaltWithPepper(randomSalt: Uint8Array): Promise<Uint8Array> {
+  const pepper = await getExtensionPepper();
+
+  // Combine: random_salt || extension_id_pepper
+  const combinedSalt = new Uint8Array(randomSalt.length + pepper.length);
+  combinedSalt.set(randomSalt, 0);
+  combinedSalt.set(pepper, randomSalt.length);
+
+  return combinedSalt;
+}
+
+/**
  * Derive encryption key from PIN using Argon2id
  *
  * Uses Argon2id with high memory cost (64 MB) to make brute-force attacks
  * significantly more expensive. This is especially important for PINs which
  * have lower entropy than passwords.
+ *
+ * The salt parameter should be the COMBINED salt (random salt + extension pepper)
+ * created by assembleSaltWithPepper().
  *
  * Parameters chosen for security:
  * - Memory: 65536 KB (64 MB) - makes GPU attacks much harder

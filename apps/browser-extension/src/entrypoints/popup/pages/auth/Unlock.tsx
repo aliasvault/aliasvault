@@ -264,6 +264,8 @@ const Unlock: React.FC = () => {
 
     // Auto-submit when PIN length is reached
     if (newPin.length === pinLength) {
+      // Small delay to allow UI to update with the last digit before showing loading spinner
+      await new Promise(resolve => setTimeout(resolve, 50));
       await handlePinUnlock(newPin);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

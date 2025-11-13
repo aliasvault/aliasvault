@@ -369,7 +369,7 @@
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
       "enterNewPin": "Enter new PIN",
-      "enterNewPinDescription": "Enter a PIN code consisting of minimum 4 digits",
+      "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
       "invalidPinFormat": "Invalid PIN format",
