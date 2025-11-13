@@ -18,18 +18,12 @@
     "masterPassword": "Hoofdwachtwoord",
     "unlockVault": "Vault ontgrendelen",
     "unlockWithPin": "Unlock with PIN",
-    "enterPin": "Enter Your PIN",
     "enterPinToUnlock": "Enter your PIN to unlock your vault",
-    "unlock": "Unlock",
-    "usePassword": "Use Password",
     "useMasterPassword": "Use Master Password",
     "pinUnlockTip": "You can also type your PIN using your keyboard",
     "unlockTitle": "Ontgrendel je vault",
-    "unlockDescription": "Voer je hoofdwachtwoord in om je vault te ontgrendelen.",
     "logout": "Uitloggen",
     "logoutConfirm": "Weet je zeker dat je wilt uitloggen?",
-    "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
-    "unlockSuccess": "Vault succesvol ontgrendeld!",
     "unlockSuccessTitle": "Je vault is succesvol ontgrendeld",
     "unlockSuccessDescription": "Je kunt nu automatisch invullen gebruiken in inlogformulieren in je browser.",
     "closePopup": "Sluit deze popup",
@@ -40,8 +34,6 @@
     "errors": {
       "invalidCode": "Voer een geldige 6-cijferige code in.",
       "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
-      "noToken": "Inloggen mislukt -- geen token ontvangen",
-      "migrationError": "Er is een fout opgetreden bij het controleren op updates.",
       "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
       "accountLocked": "Account tijdelijk vergrendeld vanwege te veel mislukte pogingen.",
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
@@ -107,9 +99,7 @@
       "unknownError": "Er is een onbekende fout opgetreden",
       "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
       "vaultNotAvailable": "Vault niet beschikbaar",
-      "failedToRetrieveData": "Gegevens ophalen mislukt",
       "vaultIsLocked": "Vault is vergrendeld",
-      "failedToUploadVault": "Vault uploaden mislukt",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in."
     },
     "apiErrors": {
@@ -184,8 +174,6 @@
     "deleteCredential": "Credential verwijderen",
     "credentialDetails": "Credential details",
     "serviceName": "Naam",
-    "username": "Gebruikersnaam",
-    "password": "Wachtwoord",
     "notes": "Notities",
     "totp": "Tweestapsverificatie",
     "totpCode": "TOTP-code",
@@ -335,7 +323,6 @@
     "autoLock8Hours": "8 uur",
     "autoLock24Hours": "24 uur",
     "versionPrefix": "Versie ",
-    "preferences": "Voorkeuren",
     "autofillSettings": "Autofill instellingen",
     "clipboardSettings": "Klembord instellingen",
     "contextMenuSettings": "Context menu instellingen",
@@ -368,7 +355,6 @@
       "pin": "PIN Code",
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
-      "enterNewPin": "Enter new PIN",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
@@ -408,7 +394,6 @@
       "titleLabel": "Titel",
       "titlePlaceholder": "Voer een naam in voor deze passkey",
       "createButton": "Passkey aanmaken",
-      "creatingButton": "Aanmaken...",
       "useBrowserPasskey": "Gebruik browser passkey",
       "selectPasskeyToReplace": "Selecteer een passkey om te vervangen:",
       "createNewPasskey": "Passkey aanmaken",
@@ -417,9 +402,7 @@
     },
     "settings": {
       "passkeyProvider": "Passkey provider",
-      "passkeyProviderOn": "Passkey provider ingeschakeld",
-      "enable": "AliasVault als passkey provider inschakelen",
-      "description": "Wanneer ingeschakeld, behandelt AliasVault passkey verzoeken van websites. Wanneer een website een passkey aanvraagt, wordt de AliasVault pop-up getoond in plaats van de browser of OS pop-up."
+      "passkeyProviderOn": "Passkey provider ingeschakeld"
     }
   },
   "upgrade": {
