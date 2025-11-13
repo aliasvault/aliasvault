@@ -106,13 +106,13 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ credential
         });
       } else {
         Alert.alert(
-          t('credentials.fileReady'),
+          t('common.success'),
           `${t('credentials.fileSavedTo')}: ${filePath}`
         );
       }
     } catch (error) {
       console.error('Error downloading file:', error);
-      Alert.alert('Error', 'Failed to download file');
+      Alert.alert(t('common.error'), t('common.errors.unknownError'));
     }
   };
 

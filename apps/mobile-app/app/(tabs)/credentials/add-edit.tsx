@@ -432,11 +432,6 @@ export default function AddEditCredentialScreen() : React.ReactNode {
       }
     } catch (error) {
       console.error('Error generating random username:', error);
-      Toast.show({
-        type: 'error',
-        text1: t('credentials.errors.generateUsernameFailed'),
-        text2: t('auth.errors.enterPassword')
-      });
     }
   };
 

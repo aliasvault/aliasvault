@@ -35,7 +35,7 @@ type AuthContextType = {
   setAutoLockTimeout: (timeout: number) => Promise<void>;
   getClipboardClearTimeout: () => Promise<number>;
   setClipboardClearTimeout: (timeout: number) => Promise<void>;
-  getBiometricDisplayNameKey: () => Promise<string>;
+  getBiometricDisplayName: () => Promise<string>;
   isBiometricsEnabledOnDevice: () => Promise<boolean>;
   setOfflineMode: (isOffline: boolean) => void;
   verifyPassword: (password: string) => Promise<string | null>;
@@ -257,19 +257,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /**
    * Get the appropriate biometric display name translation key based on device capabilities
    */
-  const getBiometricDisplayNameKey = useCallback(async (): Promise<string> => {
+  const getBiometricDisplayName = useCallback(async (): Promise<string> => {
     try {
       const hasBiometrics = await LocalAuthentication.hasHardwareAsync();
       const enrolled = await LocalAuthentication.isEnrolledAsync();
 
       // For Android, we use the term "Biometrics" for facial recognition and fingerprint.
       if (Platform.OS === 'android') {
-        return 'settings.vaultUnlockSettings.biometrics';
+        return i18n.t('settings.vaultUnlockSettings.biometrics');
       }
 
       // For iOS, we check if the device has explicit Face ID or Touch ID support.
       if (!hasBiometrics || !enrolled) {
-        return 'settings.vaultUnlockSettings.faceIdTouchId';
+        return i18n.t('settings.vaultUnlockSettings.faceIdTouchId');
       }
 
       const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
@@ -277,15 +277,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const hasTouchIDSupport = types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT);
 
       if (hasFaceIDSupport) {
-        return 'settings.vaultUnlockSettings.faceId';
+        return i18n.t('settings.vaultUnlockSettings.faceId');
       } else if (hasTouchIDSupport) {
-        return 'settings.vaultUnlockSettings.touchId';
+        return i18n.t('settings.vaultUnlockSettings.touchId');
       }
 
-      return 'settings.vaultUnlockSettings.faceIdTouchId';
+      return i18n.t('settings.vaultUnlockSettings.faceIdTouchId');
     } catch (error) {
       console.error('Failed to get biometric display name:', error);
-      return 'settings.vaultUnlockSettings.faceIdTouchId';
+      return i18n.t('settings.vaultUnlockSettings.faceIdTouchId');
     }
   }, []);
 
@@ -299,7 +299,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const methods = await getEnabledAuthMethods();
       if (methods.includes('faceid')) {
         if (await isBiometricsEnabledOnDevice()) {
-          return await getBiometricDisplayNameKey();
+          return await getBiometricDisplayName();
         }
       }
 
@@ -315,7 +315,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.error('Failed to get auth method display key:', error);
       return 'credentials.password';
     }
-  }, [getEnabledAuthMethods, getBiometricDisplayNameKey, isBiometricsEnabledOnDevice]);
+  }, [getEnabledAuthMethods, getBiometricDisplayName, isBiometricsEnabledOnDevice]);
 
   /**
    * Get the auto-lock timeout from the iOS credentials manager
@@ -515,7 +515,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAutoLockTimeout,
     getClipboardClearTimeout,
     setClipboardClearTimeout,
-    getBiometricDisplayNameKey,
+    getBiometricDisplayName,
     markAutofillConfigured,
     setReturnUrl,
     verifyPassword,
@@ -541,7 +541,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAutoLockTimeout,
     getClipboardClearTimeout,
     setClipboardClearTimeout,
-    getBiometricDisplayNameKey,
+    getBiometricDisplayName,
     markAutofillConfigured,
     setReturnUrl,
     verifyPassword,

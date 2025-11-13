@@ -115,7 +115,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
         });
       } else {
         Alert.alert(
-          t('credentials.fileReady'),
+          t('common.success'),
           `${t('credentials.fileSavedTo')}: ${filePath}`
         );
       }
@@ -234,10 +234,6 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
           imageUrls={imageUrls}
           enableSwipeDown={false}
           backgroundColor={colors.background}
-          /**
-           * Handle image load failure.
-           */
-          onLoadFailure={(): void => Alert.alert('Error', 'Could not load image')}
         />
       );
     }

@@ -169,7 +169,7 @@ export function useVaultMutate() : {
     // Get username from the auth context, always lowercase and trimmed which is required for the argon2id key derivation
     const username = authContext.username?.toLowerCase().trim();
     if (!username) {
-      throw new Error(t('vault.errors.usernameNotFoundLoginAgain'));
+      throw new Error(t('common.errors.unknownError'));
     }
 
     const privateKey = srp.derivePrivateKey(currentSalt, username, currentPasswordHashString);
@@ -209,7 +209,7 @@ export function useVaultMutate() : {
       await NativeVaultManager.unlockVault();
     } catch {
       // If any part of this fails, we need logout the user as the local vault and stored encryption key are now potentially corrupt.
-      await authContext.logout(t('vault.errors.errorDuringPasswordChange'));
+      await authContext.logout(t('common.errors.unknownErrorTryAgain'));
     }
 
     // Generate SRP password change data
@@ -325,8 +325,7 @@ export function useVaultMutate() : {
       console.error('Error during vault mutation:', error);
       Toast.show({
         type: 'error',
-        text1: t('vault.errors.operationFailed'),
-        text2: error instanceof Error ? error.message : t('common.errors.unknownError'),
+        text1: t('common.errors.unknownError'),
         position: 'bottom'
       });
       options.onError?.(error instanceof Error ? error : new Error(t('common.errors.unknownError')));
@@ -394,8 +393,8 @@ export function useVaultMutate() : {
           onError: (error) => {
             Toast.show({
               type: 'error',
-              text1: t('vault.errors.failedToSyncVault'),
-              text2: error,
+              text1: t('common.error'),
+              text2: t('common.errors.unknownError'),
               position: 'bottom'
             });
             options.onError?.(new Error(error));
@@ -406,8 +405,8 @@ export function useVaultMutate() : {
       console.error('Error during vault mutation:', error);
       Toast.show({
         type: 'error',
-        text1: t('vault.errors.operationFailed'),
-        text2: error instanceof Error ? error.message : t('common.errors.unknownError'),
+        text1: t('common.error'),
+        text2: t('common.errors.unknownError'),
         position: 'bottom'
       });
       options.onError?.(error instanceof Error ? error : new Error(t('common.errors.unknownError')));

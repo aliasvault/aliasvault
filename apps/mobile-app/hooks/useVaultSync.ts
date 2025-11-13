@@ -208,12 +208,12 @@ export const useVaultSync = () : {
         // Log detailed error information for database setup failures
         if (err?.code === 'DATABASE_SETUP_ERROR') {
           console.error('Database setup error during unlock:', err.message);
-          throw new Error(`${t('vault.errors.vaultDecryptFailed')}: ${err.message}`);
+          throw new Error(t('common.errors.unknownErrorTryAgain'));
         }
 
         // Vault could not be unlocked
         console.error('Failed to unlock vault:', err);
-        throw new Error(t('vault.errors.vaultDecryptFailed'));
+        throw new Error(t('common.errors.unknownErrorTryAgain'));
       }
     } catch (err) {
       console.error('Vault sync error:', err);

@@ -83,10 +83,10 @@ export default function EmailsScreen() : React.ReactNode {
         // Show toast and throw error
         Toast.show({
           type: 'error',
-          text1: t('emails.errors.loadFailed'),
+          text1: t('common.errors.unknownError'),
           position: 'bottom',
         });
-        throw new Error(t('emails.errors.loadFailed'));
+        throw new Error(t('common.errors.unknownError'));
       } finally {
         setIsLoading(false);
       }

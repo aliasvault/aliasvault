@@ -88,9 +88,8 @@ export default function LoginScreen() : React.ReactNode {
     passwordHashBase64: string,
     initiateLoginResponse: LoginResponse
   ) : Promise<void> => {
-    // Get biometric display name key and translate it
-    const biometricDisplayNameKey = await authContext.getBiometricDisplayNameKey();
-    const biometricDisplayName = t(biometricDisplayNameKey);
+    // Get biometric display name from auth context
+    const biometricDisplayName = await authContext.getBiometricDisplayName();
     const isBiometricsEnabledOnDevice = await authContext.isBiometricsEnabledOnDevice();
 
     if (isBiometricsEnabledOnDevice) {
@@ -318,7 +317,7 @@ export default function LoginScreen() : React.ReactNode {
         console.error('Login error:', err);
         // Check if self-hosted to show appropriate server error message
         const isSelfHosted = await webApi.isSelfHosted();
-        setError(t(isSelfHosted ? 'auth.errors.serverErrorSelfHosted' : 'auth.errors.serverError'));
+        setError(isSelfHosted ? t('auth.errors.serverErrorSelfHosted') : t('auth.errors.serverError'));
       }
       setIsLoading(false);
       setLoginStatus(null);

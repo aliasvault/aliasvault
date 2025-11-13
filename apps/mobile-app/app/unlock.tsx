@@ -26,7 +26,7 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
  * Unlock screen.
  */
 export default function UnlockScreen() : React.ReactNode {
-  const { isLoggedIn, username, isBiometricsEnabled, getBiometricDisplayNameKey, getEncryptionKeyDerivationParams, logout } = useApp();
+  const { isLoggedIn, username, isBiometricsEnabled, getBiometricDisplayName, getEncryptionKeyDerivationParams, logout } = useApp();
   const dbContext = useDb();
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -118,8 +118,8 @@ export default function UnlockScreen() : React.ReactNode {
       const enabled = await isBiometricsEnabled();
       setIsBiometricsAvailable(enabled);
 
-      const displayNameKey = await getBiometricDisplayNameKey();
-      setBiometricDisplayName(t(displayNameKey));
+      const displayName = await getBiometricDisplayName();
+      setBiometricDisplayName(displayName);
 
       // Check PIN availability
       const pinEnabled = await NativeVaultManager.isPinEnabled();
@@ -139,7 +139,7 @@ export default function UnlockScreen() : React.ReactNode {
     };
     fetchConfigAndUnlock();
 
-  }, [isBiometricsEnabled, getKeyDerivationParams, getBiometricDisplayNameKey, t, handlePinUnlock]);
+  }, [isBiometricsEnabled, getKeyDerivationParams, getBiometricDisplayName, t, handlePinUnlock]);
 
   /**
    * Handle the unlock.

@@ -114,7 +114,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
               // Go back to the emails list screen.
               router.back();
             } catch (err) {
-              setError(err instanceof Error ? err.message : t('emails.errors.deleteFailed'));
+              setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
             }
           },
         },
@@ -132,7 +132,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
       );
 
       if (!dbContext?.sqliteClient || !email) {
-        setError(t('emails.errors.dbNotAvailable'));
+        setError(t('common.errors.unknownError'));
         return;
       }
 
@@ -144,7 +144,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
       );
 
       if (!decryptedBytes) {
-        setError(t('emails.errors.decryptFailed'));
+        setError(t('common.errors.unknownError'));
         return;
       }
 
@@ -163,7 +163,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
       await FileSystem.deleteAsync(tempFile);
     } catch (err) {
       console.error('handleDownloadAttachment error', err);
-      setError(err instanceof Error ? err.message : t('emails.errors.downloadFailed'));
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
     }
   };
 
