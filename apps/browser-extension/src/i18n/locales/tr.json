@@ -18,18 +18,12 @@
     "masterPassword": "Master Password",
     "unlockVault": "Unlock Vault",
     "unlockWithPin": "Unlock with PIN",
-    "enterPin": "Enter Your PIN",
     "enterPinToUnlock": "Enter your PIN to unlock your vault",
-    "unlock": "Unlock",
-    "usePassword": "Use Password",
     "useMasterPassword": "Use Master Password",
     "pinUnlockTip": "You can also type your PIN using your keyboard",
     "unlockTitle": "Unlock Your Vault",
-    "unlockDescription": "Enter your master password to unlock your vault.",
     "logout": "Logout",
     "logoutConfirm": "Are you sure you want to logout?",
-    "sessionExpired": "Your session has expired. Please log in again.",
-    "unlockSuccess": "Vault unlocked successfully!",
     "unlockSuccessTitle": "Your vault is successfully unlocked",
     "unlockSuccessDescription": "You can now use autofill in login forms in your browser.",
     "closePopup": "Close this popup",
@@ -40,8 +34,6 @@
     "errors": {
       "invalidCode": "Please enter a valid 6-digit authentication code.",
       "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "noToken": "Login failed -- no token returned",
-      "migrationError": "An error occurred while checking for pending migrations.",
       "wrongPassword": "Incorrect password. Please try again.",
       "accountLocked": "Account temporarily locked due to too many failed attempts.",
       "networkError": "Network error. Please check your connection and try again.",
@@ -107,9 +99,7 @@
       "unknownError": "An unknown error occurred",
       "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
       "vaultNotAvailable": "Vault not available",
-      "failedToRetrieveData": "Failed to retrieve data",
       "vaultIsLocked": "Vault is locked",
-      "failedToUploadVault": "Failed to upload vault",
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons."
     },
     "apiErrors": {
@@ -184,8 +174,6 @@
     "deleteCredential": "Delete Credential",
     "credentialDetails": "Credential Details",
     "serviceName": "Service Name",
-    "username": "Username",
-    "password": "Password",
     "notes": "Notes",
     "totp": "Two-Factor Authentication",
     "totpCode": "TOTP Code",
@@ -335,7 +323,6 @@
     "autoLock8Hours": "8 hours",
     "autoLock24Hours": "24 hours",
     "versionPrefix": "Version ",
-    "preferences": "Preferences",
     "autofillSettings": "Autofill Settings",
     "clipboardSettings": "Clipboard Settings",
     "contextMenuSettings": "Context Menu Settings",
@@ -368,7 +355,6 @@
       "pin": "PIN Code",
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
-      "enterNewPin": "Enter new PIN",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
@@ -408,7 +394,6 @@
       "titleLabel": "Title",
       "titlePlaceholder": "Enter a name for this passkey",
       "createButton": "Create Passkey",
-      "creatingButton": "Creating...",
       "useBrowserPasskey": "Use Browser Passkey",
       "selectPasskeyToReplace": "Select a passkey to replace:",
       "createNewPasskey": "Create New Passkey",
@@ -417,9 +402,7 @@
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on ",
-      "enable": "Enable AliasVault as passkey provider",
-      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+      "passkeyProviderOn": "Passkey Provider on "
     }
   },
   "upgrade": {
