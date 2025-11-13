@@ -16,8 +16,13 @@
     "loadMore": "Voir plus",
     "use": "Use",
     "confirm": "Confirm",
+    "next": "Next",
+    "notice": "Notice",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
     "errors": {
-      "unknownError": "An unknown error occurred. Please try again."
+      "unknownError": "An unknown error occurred. Please try again.",
+      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
     }
   },
   "auth": {
@@ -34,6 +39,10 @@
     "verifyingAuthCode": "Verifying authentication code",
     "verify": "Verify",
     "unlockVault": "Unlock Vault",
+    "unlockWithPin": "Unlock with PIN",
+    "useMasterPassword": "Use Master Password",
+    "enterPin": "Enter PIN",
+    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Enter your password to unlock your vault",
     "enterPasswordPlaceholder": "Password",
     "enterAuthCode": "Enter 6-digit code",
@@ -283,8 +292,19 @@
       "biometricEnabled": "{{biometric}} est désormais activé avec succès",
       "biometricNotAvailable": "{{biometric}} non disponible",
       "biometricDisabledMessage": "{{biometric}} est désactivé pour AliasVault. Pour l'utiliser, veuillez d'abord l'activer dans les paramètres de votre appareil.",
-      "biometricHelp": "La clé de déchiffrement de votre coffre sera stockée de façon sécurisée sur votre appareil local dans l' {{keystore}} et sera accessible en toute sécurité avec {{biometric}}.",
+      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} n'est pas disponible. Appuyez pour ouvrir les paramètres et/ou allez dans les paramètres de votre appareil pour l'activer et le configurer.",
+      "pin": "PIN Code",
+      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
+      "pinEnabled": "PIN unlock enabled successfully",
+      "pinDisabled": "PIN unlock has been disabled",
+      "setupPin": "Setup PIN",
+      "enterNewPin": "Enter New PIN",
+      "enterNewPinDescription": "Choose a PIN to unlock your vault",
+      "confirmPin": "Confirm PIN",
+      "confirmPinDescription": "Re-enter your PIN to confirm",
+      "pinMismatch": "PINs do not match. Please try again.",
+      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
       "passwordHelp": "Saisissez à nouveau votre mot de passe maître complet pour déverrouiller votre coffre. Ceci est toujours activé comme option de repli.",
       "keystoreIOS": "Trousseau iOS",
       "keystoreAndroid": "Android Keystore"
