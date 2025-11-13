@@ -40,9 +40,6 @@
     "verify": "Перевірка",
     "unlockVault": "Розблокувати Vault",
     "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Введіть свій пароль, щоб розблокувати сховище",
     "enterPasswordPlaceholder": "Пароль",
     "enterAuthCode": "Введіть 6-значний код",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Не вдалося отримати зашифровану базу даних",
       "usernameNotFound": "Ім'я користувача не знайдено",
-      "vaultMergeRequired": "Потрібне об’єднання сховища. Увійдіть через вебдодаток у своє сховище, щоб об’єднати кілька оновлень, що очікують на розгляд.",
       "vaultOutdated": "Ваше сховище застаріло. Будь ласка, увійдіть на вебсайт AliasVault та виконайте наведені нижче дії.",
-      "failedToUploadVault": "Не вдалося завантажити сховище на сервер. Спробуйте ще раз, перезапустивши програму.",
-      "usernameNotFoundLoginAgain": "Ім’я користувача не знайдено. Увійдіть знову.",
-      "errorDuringPasswordChange": "Помилка під час зміни пароля. Будь ласка, увійдіть ще раз, щоб отримати доступ до останнього сховища.",
       "failedToSyncVault": "Не вдалося синхронізувати сховище",
-      "operationFailed": "Помилка здійснення операції",
       "versionNotSupported": "Ця версія мобільного застосунку AliasVault більше не підтримується сервером. Будь ласка, оновіть свій застосунок до останньої версії.",
       "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
       "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
-      "vaultDecryptFailed": "Не вдалося розшифрувати сховище. Якщо проблема не зникає, вийдіть із системи та увійдіть знову.",
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз."
     }
   },
@@ -171,9 +162,10 @@
     "twoFactorAuth": "Двофакторна автентифікація",
     "totpCode": "Код TOTP",
     "attachments": "Вкладення",
-    "loadingAttachments": "Завантаження вкладень...",
-    "addAttachments": "Додати вкладення",
     "deleteAttachment": "Видалити",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
     "toasts": {
       "credentialUpdated": "Облікові дані успішно оновлено",
       "credentialCreated": "Облікові дані успішно створено",
@@ -185,9 +177,7 @@
     "createNewAliasFor": "Створити новий псевдонім для",
     "errors": {
       "loadFailed": "Не вдалося завантажити облікові дані",
-      "saveFailed": "Failed to save credential",
-      "generateUsernameFailed": "Не вдалося згенерувати ім'я користувача",
-      "generatePasswordFailed": "Не вдалося згенерувати пароль"
+      "saveFailed": "Failed to save credential"
     },
     "contextMenu": {
       "title": "Відомості про облікові дані",
@@ -326,11 +316,6 @@
         "random": "Випадкова",
         "male": "Чоловіча",
         "female": "Жіноча"
-      },
-      "errors": {
-        "loadFailed": "Не вдалося завантажити налаштування генератора ідентифікаційних даних.",
-        "languageUpdateFailed": "Не вдалося оновити налаштування мови.",
-        "genderUpdateFailed": "Не вдалося оновити налаштування статі."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +363,6 @@
         "success": "Успішно",
         "failed": "Невдало",
         "time": "Час",
-        "device": "Пристрій",
         "ipAddress": "Адреса IP",
         "client": "Клієнт",
         "failedToLoad": "Не вдалося завантажити журнали автентифікації"
@@ -435,14 +419,6 @@
       "hoursAgo_single": "{{count}} година тому",
       "hoursAgo_plural": "{{count}} годин тому",
       "yesterday": "учора"
-    },
-    "errors": {
-      "generic": "Сталась помилка",
-      "loadFailed": "Не вдалося завантажити електронні листи",
-      "deleteFailed": "Не вдалося видалити електронний лист",
-      "dbNotAvailable": "Контекст бази даних або електронні листи недоступні",
-      "decryptFailed": "Не вдалося розшифрувати вкладення",
-      "downloadFailed": "Не вдалося завантажити вкладення"
     }
   },
   "validation": {
@@ -480,11 +456,11 @@
     "VAULT_ERROR": "Локальне сховище не оновлене. Синхронізуйте своє сховище, оновивши сторінку, та повторіть спробу."
   },
   "app": {
-    "openReadOnlyMode": "Open in read-only mode",
     "status": {
       "unlockingVault": "Розблокування сховища",
       "decryptingVault": "Розшифрування сховища",
-      "openingVaultReadOnly": "Відкриття сховища в режимі лише для читання"
+      "openingVaultReadOnly": "Відкриття сховища в режимі лише для читання",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "Offline mode (read-only)",
@@ -499,8 +475,7 @@
     },
     "navigation": {
       "login": "Увійти",
-      "loginSettings": "Налаштування входу",
-      "notFound": "Не знайдено"
+      "loginSettings": "Налаштування входу"
     },
     "notFound": {
       "title": "Сторінку не знайдено",
