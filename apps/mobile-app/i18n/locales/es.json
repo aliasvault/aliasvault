@@ -40,9 +40,6 @@
     "verify": "Verify",
     "unlockVault": "Unlock Vault",
     "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Enter your password to unlock your vault",
     "enterPasswordPlaceholder": "Password",
     "enterAuthCode": "Enter 6-digit code",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Failed to get encrypted database",
       "usernameNotFound": "Username not found",
-      "vaultMergeRequired": "Vault merge required. Please login via the web app to merge the multiple pending updates to your vault.",
       "vaultOutdated": "Your vault is outdated. Please login on the AliasVault website and follow the steps.",
-      "failedToUploadVault": "Failed to upload vault to server. Please try again by re-opening the app.",
-      "usernameNotFoundLoginAgain": "Username not found. Please login again.",
-      "errorDuringPasswordChange": "Error during password change operation. Please log in again to retrieve your latest vault.",
       "failedToSyncVault": "Failed to sync vault",
-      "operationFailed": "Operation failed",
       "versionNotSupported": "This version of the AliasVault mobile app is not supported by the server anymore. Please update your app to the latest version.",
       "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
       "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
-      "vaultDecryptFailed": "Vault could not be decrypted, if the problem persists please logout and login again.",
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons."
     }
   },
@@ -171,9 +162,10 @@
     "twoFactorAuth": "Two-factor authentication",
     "totpCode": "TOTP Code",
     "attachments": "Attachments",
-    "loadingAttachments": "Loading attachments...",
-    "addAttachments": "Add Attachments",
     "deleteAttachment": "Delete",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
     "toasts": {
       "credentialUpdated": "Credential updated successfully",
       "credentialCreated": "Credential created successfully",
@@ -185,9 +177,7 @@
     "createNewAliasFor": "Create new alias for",
     "errors": {
       "loadFailed": "Failed to load credential",
-      "saveFailed": "Failed to save credential",
-      "generateUsernameFailed": "Failed to generate username",
-      "generatePasswordFailed": "Failed to generate password"
+      "saveFailed": "Failed to save credential"
     },
     "contextMenu": {
       "title": "Credential Options",
@@ -326,11 +316,6 @@
         "random": "Random",
         "male": "Male",
         "female": "Female"
-      },
-      "errors": {
-        "loadFailed": "Failed to load identity generator settings.",
-        "languageUpdateFailed": "Failed to update language setting.",
-        "genderUpdateFailed": "Failed to update gender setting."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +363,6 @@
         "success": "Success",
         "failed": "Failed",
         "time": "Time",
-        "device": "Device",
         "ipAddress": "IP Address",
         "client": "Client",
         "failedToLoad": "Failed to load auth logs"
@@ -435,14 +419,6 @@
       "hoursAgo_single": "{{count}} hr ago",
       "hoursAgo_plural": "{{count}} hrs ago",
       "yesterday": "yesterday"
-    },
-    "errors": {
-      "generic": "An error occurred",
-      "loadFailed": "Failed to load emails",
-      "deleteFailed": "Failed to delete email",
-      "dbNotAvailable": "Database context or email not available",
-      "decryptFailed": "Failed to decrypt attachment",
-      "downloadFailed": "Failed to download attachment"
     }
   },
   "validation": {
@@ -480,11 +456,11 @@
     "VAULT_ERROR": "The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again."
   },
   "app": {
-    "openReadOnlyMode": "Open in read-only mode",
     "status": {
       "unlockingVault": "Unlocking vault",
       "decryptingVault": "Decrypting vault",
-      "openingVaultReadOnly": "Opening vault in read-only mode"
+      "openingVaultReadOnly": "Opening vault in read-only mode",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "Offline mode (read-only)",
@@ -499,8 +475,7 @@
     },
     "navigation": {
       "login": "Login",
-      "loginSettings": "Login Settings",
-      "notFound": "Not Found"
+      "loginSettings": "Login Settings"
     },
     "notFound": {
       "title": "Page not found",
