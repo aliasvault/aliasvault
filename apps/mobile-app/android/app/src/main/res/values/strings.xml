@@ -9,6 +9,8 @@
   <!-- Common strings -->
   <string name="common_close">Close</string>
   <string name="common_next">Next</string>
+  <string name="common_cancel">Cancel</string>
+  <string name="unknown_error">An unknown error occurred</string>
 
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
@@ -32,7 +34,6 @@
   <string name="passkey_website_label">Website</string>
   <string name="passkey_username_label">Username</string>
   <string name="passkey_create_button">Create Passkey</string>
-  <string name="passkey_cancel_button">Cancel</string>
   <string name="passkey_creating">Creating passkey…</string>
   <string name="passkey_saving">Saving to vault…</string>
   <string name="passkey_syncing">Syncing with server…</string>
@@ -69,15 +70,12 @@
   <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
   <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
   <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
-  <string name="error_vault_unlock_failed">Failed to unlock vault</string>
   <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
   <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
 
   <!-- PIN unlock -->
   <string name="pin_unlock_vault">Unlock Vault</string>
   <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
-  <string name="pin_cancel">Cancel</string>
-  <string name="pin_unlock_failed">Unlock failed</string>
   <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
   <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
 

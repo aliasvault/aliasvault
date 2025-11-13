@@ -305,11 +305,10 @@ public class PinUnlockViewModel: ObservableObject {
                 shakeAndClear()
             }
         } catch {
-            // Generic error fallback
-            isUnlocking = false
-            self.error = String(localized: "unlock_failed", bundle: locBundle)
+            // Generic error fallback, dismiss view
+            self.error = nil
             triggerErrorFeedback()
-            shakeAndClear()
+            cancelHandler()
         }
     }
 

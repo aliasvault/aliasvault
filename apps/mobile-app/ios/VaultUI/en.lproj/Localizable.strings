@@ -1,7 +1,14 @@
 /* English localization strings for VaultUI */
 "error" = "Error";
 "cancel" = "Cancel";
+"back" = "Back";
 "next" = "Next";
+"edit" = "Edit";
+"website" = "Website";
+"username" = "Username";
+"title" = "Title";
+"unknown_error" = "An unknown error occurred";
+
 "loading_credentials" = "Loading credentials...";
 "no_credentials_found" = "No credentials found";
 "no_credentials_match" = "No existing credentials match your search";
@@ -24,7 +31,6 @@
 "copy_password" = "Copy Password";
 "copy_email" = "Copy Email";
 "view_details" = "View Details";
-"edit" = "Edit";
 "username_copied" = "Username copied";
 "password_copied" = "Password copied";
 "email_copied" = "Email copied";
@@ -36,9 +42,6 @@
 "create_passkey_title" = "Create New Passkey";
 "create_passkey_subtitle" = "Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.";
 "create_passkey_button_confirm" = "Create Passkey";
-"website" = "Website";
-"username" = "Username";
-"title" = "Title";
 
 /* Passkey provider */
 "passkey" = "Passkey";
@@ -49,7 +52,6 @@
 "passkeys_load_error" = "Failed to load passkeys. Please open the AliasVault app to check for updates.";
 
 /* Passkey replacement */
-"back" = "Back";
 "create_new_passkey" = "Create New Passkey";
 "select_passkey_to_replace" = "Or, replace an existing passkey";
 "confirm_replace" = "Replace Passkey";
@@ -59,11 +61,7 @@
 
 /* PIN Unlock */
 "unlock_vault" = "Unlock Vault";
-"enter_pin" = "Enter PIN";
 "enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"unlock_failed" = "Unlock failed";
-
-/* PIN Error Messages */
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
 
@@ -73,5 +71,4 @@
 "pin_confirm_title" = "Confirm PIN";
 "pin_confirm_subtitle" = "Re-enter your PIN to confirm";
 "pin_mismatch" = "PINs do not match. Please try again.";
-"pin_setup_error" = "An error occurred during PIN setup";
 

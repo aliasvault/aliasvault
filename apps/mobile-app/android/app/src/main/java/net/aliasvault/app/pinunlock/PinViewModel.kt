@@ -76,7 +76,7 @@ class PinViewModel(
             }
         } catch (e: Exception) {
             PinResult.Error(
-                e.message ?: context.getString(R.string.pin_unlock_failed),
+                e.message ?: context.getString(R.string.unknown_error),
                 shouldClear = true,
             )
         }

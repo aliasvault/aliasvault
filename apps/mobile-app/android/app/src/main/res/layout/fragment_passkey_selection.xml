@@ -99,7 +99,7 @@
                 android:id="@+id/cancelButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/passkey_cancel_button"
+                android:text="@string/common_cancel"
                 android:textColor="@color/av_primary"
                 style="@style/Widget.Material3.Button.TextButton"
                 android:paddingVertical="14dp"

@@ -12,7 +12,7 @@
         android:id="@+id/cancelButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/pin_cancel"
+        android:text="@string/common_cancel"
         android:textColor="@color/primary"
         style="?android:attr/borderlessButtonStyle"
         android:layout_marginTop="8dp"

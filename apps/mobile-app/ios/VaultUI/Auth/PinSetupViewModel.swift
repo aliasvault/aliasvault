@@ -123,7 +123,7 @@ public class PinSetupViewModel: ObservableObject {
             // Check if PINs match
             guard let firstPin = configuration.firstStepPin else {
                 isProcessing = false
-                self.error = String(localized: "pin_setup_error", bundle: locBundle)
+                self.error = String(localized: "unknown_error", bundle: locBundle)
                 triggerErrorFeedback()
                 return
             }
@@ -157,7 +157,7 @@ public class PinSetupViewModel: ObservableObject {
             } catch {
                 // Generic error fallback
                 isProcessing = false
-                self.error = String(localized: "pin_setup_error", bundle: locBundle)
+                self.error = String(localized: "unknown_error", bundle: locBundle)
                 triggerErrorFeedback()
                 shakeAndClear()
             }
