@@ -8,6 +8,7 @@
 
   <!-- Common strings -->
   <string name="common_close">Close</string>
+  <string name="common_next">Next</string>
 
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
@@ -87,6 +88,4 @@
   <string name="pin_confirm_title">Confirm PIN</string>
   <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
   <string name="pin_mismatch">PINs do not match. Please try again.</string>
-  <string name="pin_next">Next</string>
-  <string name="pin_confirm">Confirm</string>
 </resources>

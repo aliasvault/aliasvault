@@ -1,6 +1,7 @@
 /* English localization strings for VaultUI */
 "error" = "Error";
 "cancel" = "Cancel";
+"next" = "Next";
 "loading_credentials" = "Loading credentials...";
 "no_credentials_found" = "No credentials found";
 "no_credentials_match" = "No existing credentials match your search";
@@ -61,7 +62,6 @@
 "enter_pin" = "Enter PIN";
 "enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
 "unlock_failed" = "Unlock failed";
-"pin_locked" = "PIN locked. Please unlock with password in the main app.";
 "unlocking" = "Unlocking...";
 
 /* PIN Error Messages */
@@ -75,7 +75,5 @@
 "pin_confirm_title" = "Confirm PIN";
 "pin_confirm_subtitle" = "Re-enter your PIN to confirm";
 "pin_mismatch" = "PINs do not match. Please try again.";
-"pin_next" = "Next";
 "pin_setup_error" = "An error occurred during PIN setup";
-"pin_setup_failed" = "Failed to setup PIN";
 

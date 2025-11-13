@@ -193,7 +193,7 @@ class PinUnlockActivity : AppCompatActivity() {
 
         // Update button text based on current step
         if (showContinueButton) {
-            continueButton.text = getString(R.string.pin_next)
+            continueButton.text = getString(R.string.common_next)
         }
 
         // Setup PIN display based on whether we have a fixed length

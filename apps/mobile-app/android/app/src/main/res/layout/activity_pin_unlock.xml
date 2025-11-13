@@ -118,7 +118,7 @@
         android:id="@+id/continueButton"
         android:layout_width="0dp"
         android:layout_height="56dp"
-        android:text="@string/pin_next"
+        android:text="@string/common_next"
         android:textColor="@android:color/white"
         android:textSize="16sp"
         android:textStyle="bold"

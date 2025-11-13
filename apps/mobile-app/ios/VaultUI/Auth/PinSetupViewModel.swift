@@ -157,7 +157,7 @@ public class PinSetupViewModel: ObservableObject {
             } catch {
                 // Generic error fallback
                 isProcessing = false
-                self.error = String(localized: "pin_setup_failed", bundle: locBundle)
+                self.error = String(localized: "pin_setup_error", bundle: locBundle)
                 triggerErrorFeedback()
                 shakeAndClear()
             }
