@@ -16,8 +16,13 @@
     "loadMore": "לטעון עוד",
     "use": "להשתמש",
     "confirm": "אישור",
+    "next": "Next",
+    "notice": "Notice",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
     "errors": {
-      "unknownError": "אירעה שגיאה לא ידועה, נא לנסות שוב."
+      "unknownError": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
+      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
     }
   },
   "auth": {
@@ -34,6 +39,10 @@
     "verifyingAuthCode": "קוד האימות נבדק",
     "verify": "אימות",
     "unlockVault": "שחרור נעילת כספת",
+    "unlockWithPin": "Unlock with PIN",
+    "useMasterPassword": "Use Master Password",
+    "enterPin": "Enter PIN",
+    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "נא למלא את הסיסמה שלך כדי לשחרר את הכספת שלך",
     "enterPasswordPlaceholder": "סיסמה",
     "enterAuthCode": "נא למלא קוד באורך 6 ספרות",
@@ -283,8 +292,19 @@
       "biometricEnabled": "{{biometric}} פעיל כעת",
       "biometricNotAvailable": "{{biometric}} לא זמין",
       "biometricDisabledMessage": "{{biometric}} מושבת עבור AliasVault. כדי להשתמש בו, נא להפעיל אותו בהגדרות ההתקן תחילה.",
-      "biometricHelp": "מפתח פענוח הכספת שלך יאוחסן בצורה מאובטחת במכשיר שלך ב{{keystore}} וניתן יהיה לגשת אליו בצורה מאובטחת עם {{biometric}}.",
+      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} לא זמין. נא לגעת כדי לפתוח את ההגדרות ו/או לגשת להגדרות המכשיר שלך כדי להפעיל ולהגדיר אותו.",
+      "pin": "PIN Code",
+      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
+      "pinEnabled": "PIN unlock enabled successfully",
+      "pinDisabled": "PIN unlock has been disabled",
+      "setupPin": "Setup PIN",
+      "enterNewPin": "Enter New PIN",
+      "enterNewPinDescription": "Choose a PIN to unlock your vault",
+      "confirmPin": "Confirm PIN",
+      "confirmPinDescription": "Re-enter your PIN to confirm",
+      "pinMismatch": "PINs do not match. Please try again.",
+      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
       "passwordHelp": "נא למלא מחדש את סיסמת העל המלאה שלך כדי לשחרר את נעילת הכספת שלך. זה תמיד מופעל כאפשרות גיבוי.",
       "keystoreIOS": "iOS Keychain (צרור מפתחות)",
       "keystoreAndroid": "Android Keystore (אחסון מפתחות)"
