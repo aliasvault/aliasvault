@@ -18,18 +18,12 @@
     "masterPassword": "Password principale",
     "unlockVault": "Sblocca Cassaforte",
     "unlockWithPin": "Unlock with PIN",
-    "enterPin": "Enter Your PIN",
     "enterPinToUnlock": "Enter your PIN to unlock your vault",
-    "unlock": "Unlock",
-    "usePassword": "Use Password",
     "useMasterPassword": "Use Master Password",
     "pinUnlockTip": "You can also type your PIN using your keyboard",
     "unlockTitle": "Sblocca la tua cassaforte",
-    "unlockDescription": "Inserisci la tua password principale per sbloccare la tua cassaforte.",
     "logout": "Disconnetti",
     "logoutConfirm": "Sei sicuro di volerti disconnettere?",
-    "sessionExpired": "La sessione è scaduta. Effettua di nuovo il login.",
-    "unlockSuccess": "Cassaforte sbloccata con successo!",
     "unlockSuccessTitle": "La cassaforte è stata sbloccata con successo",
     "unlockSuccessDescription": "Ora puoi usare l'auto-riempimento nei moduli di accesso nel tuo browser.",
     "closePopup": "Chiudi questo popup",
@@ -40,8 +34,6 @@
     "errors": {
       "invalidCode": "Inserisci un codice di autenticazione a 6 cifre valido.",
       "serverError": "Impossibile connettersi al server di AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
-      "noToken": "Accesso fallito — nessun token ricevuto",
-      "migrationError": "Si è verificato un errore nel controllo delle migrazioni pendenti.",
       "wrongPassword": "Password non corretta. Riprova nuovamente.",
       "accountLocked": "Account temporaneamente bloccato a causa di troppi tentativi falliti.",
       "networkError": "Errore di rete: Controlla la tua connessione e riprova.",
@@ -107,9 +99,7 @@
       "unknownError": "Si è verificato un errore sconosciuto",
       "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
       "vaultNotAvailable": "Cassaforte non disponibile",
-      "failedToRetrieveData": "Recupero dati non riuscito",
       "vaultIsLocked": "La cassaforte è bloccata",
-      "failedToUploadVault": "Caricare della cassaforte non riuscito.",
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza."
     },
     "apiErrors": {
@@ -184,8 +174,6 @@
     "deleteCredential": "Elimina credenziali",
     "credentialDetails": "Dettagli credenziali",
     "serviceName": "Nome servizio",
-    "username": "Nome utente",
-    "password": "Password",
     "notes": "Note",
     "totp": "Autenticazione a due fattori",
     "totpCode": "Codice TOTP",
@@ -335,7 +323,6 @@
     "autoLock8Hours": "8 ore",
     "autoLock24Hours": "24 ore",
     "versionPrefix": "Versione ",
-    "preferences": "Preferenze",
     "autofillSettings": "Impostazioni di riempimento automatico",
     "clipboardSettings": "Impostazioni appunti",
     "contextMenuSettings": "Preferenze menu contestuale",
@@ -368,7 +355,6 @@
       "pin": "PIN Code",
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
-      "enterNewPin": "Enter new PIN",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
@@ -408,7 +394,6 @@
       "titleLabel": "Titolo",
       "titlePlaceholder": "Inserisci un nome per questa passkey",
       "createButton": "Crea Passkey",
-      "creatingButton": "Creazione in corso...",
       "useBrowserPasskey": "Usa Browser Passkey",
       "selectPasskeyToReplace": "Selezionare una chiave di accesso da sostituire:",
       "createNewPasskey": "Crea Nuova Passkey",
@@ -417,9 +402,7 @@
     },
     "settings": {
       "passkeyProvider": "Provider Passkey",
-      "passkeyProviderOn": "Passkey Provider attivo",
-      "enable": "Abilita AliasVault come provider di passkey",
-      "description": "Quando abilitato, AliasVault gestirà le richieste di passkey dai siti web. Quando un sito web richiede una passkey, verrà mostrato il popup di AliasVault invece dell'interfaccia nativa del browser o dell'interfaccia di password del sistema operativo."
+      "passkeyProviderOn": "Passkey Provider attivo"
     }
   },
   "upgrade": {
