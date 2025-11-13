@@ -18,18 +18,12 @@
     "masterPassword": "Hasło główne",
     "unlockVault": "Odblokuj sejf",
     "unlockWithPin": "Unlock with PIN",
-    "enterPin": "Enter Your PIN",
     "enterPinToUnlock": "Enter your PIN to unlock your vault",
-    "unlock": "Unlock",
-    "usePassword": "Use Password",
     "useMasterPassword": "Use Master Password",
     "pinUnlockTip": "You can also type your PIN using your keyboard",
     "unlockTitle": "Odblokuj swój sejf",
-    "unlockDescription": "Wprowadź hasło główne, aby odblokować sejf.",
     "logout": "Wyloguj się",
     "logoutConfirm": "Czy na pewno chcesz się wylogować?",
-    "sessionExpired": "Twoja sesja wygasła. Zaloguj się ponownie.",
-    "unlockSuccess": "Sejf odblokowany pomyślnie!",
     "unlockSuccessTitle": "Twój sejf został pomyślnie odblokowany.",
     "unlockSuccessDescription": "Możesz teraz używać automatycznego uzupełniania w formularzach logowania w przeglądarce.",
     "closePopup": "Zamknij to okno.",
@@ -40,8 +34,6 @@
     "errors": {
       "invalidCode": "Wprowadź prawidłowy 6-cyfrowy kod uwierzytelniający.",
       "serverError": "Nie można połączyć się z serwerem AliasVault. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem będzie się powtarzał.",
-      "noToken": "Logowanie nie powiodło się — nie zwrócono tokena.",
-      "migrationError": "Wystąpił błąd podczas sprawdzania oczekujących migracji.",
       "wrongPassword": "Hasło jest nieprawidłowe. Spróbuj ponownie.",
       "accountLocked": "Konto tymczasowo zostało zablokowane z powodu zbyt wielu nieudanych prób.",
       "networkError": "Błąd sieci. Sprawdź swoje połączenie i spróbuj ponownie.",
@@ -107,9 +99,7 @@
       "unknownError": "Wystąpił nieznany błąd",
       "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
       "vaultNotAvailable": "Sejf niedostępny",
-      "failedToRetrieveData": "Nie udało się pobrać danych",
       "vaultIsLocked": "Sejf jest zablokowany",
-      "failedToUploadVault": "Nie udało się załadować sejfu",
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się."
     },
     "apiErrors": {
@@ -184,8 +174,6 @@
     "deleteCredential": "Usuń dane logowania",
     "credentialDetails": "Dane uwierzytelniające",
     "serviceName": "Nazwa usługi",
-    "username": "Nazwa użytkownika",
-    "password": "Hasło",
     "notes": "Notatki",
     "totp": "Weryfikacja dwuetapowa (2FA)",
     "totpCode": "Kod TOTP",
@@ -335,7 +323,6 @@
     "autoLock8Hours": "8 godzin",
     "autoLock24Hours": "24 godziny",
     "versionPrefix": "Wersja ",
-    "preferences": "Ustawienia",
     "autofillSettings": "Ustawienia autouzupełniania",
     "clipboardSettings": "Ustawienia schowka",
     "contextMenuSettings": "Ustawienia menu kontekstowego",
@@ -368,7 +355,6 @@
       "pin": "PIN Code",
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
-      "enterNewPin": "Enter new PIN",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
@@ -408,7 +394,6 @@
       "titleLabel": "Tytuł",
       "titlePlaceholder": "Wprowadź nazwę dla tego klucza dostępu",
       "createButton": "Utwórz klucz dostępu",
-      "creatingButton": "Tworzenie...",
       "useBrowserPasskey": "Użyj klucza dostępu przeglądarki",
       "selectPasskeyToReplace": "Wybierz klucz dostępu, który chcesz zastąpić:",
       "createNewPasskey": "Utwórz nowy klucz dostępu",
@@ -417,9 +402,7 @@
     },
     "settings": {
       "passkeyProvider": "Dostawca klucza dostępu",
-      "passkeyProviderOn": "Dostawca klucza dostępu włączony ",
-      "enable": "Włącz AliasVault jako dostawcę kluczy dostępu",
-      "description": "Po włączeniu AliasVault będzie obsługiwać żądania kluczy dostępu od stron internetowych. Gdy strona internetowa zażąda klucza dostępu, zamiast natywnego interfejsu przeglądarki lub systemu operacyjnego wyświetli się okienko AliasVault."
+      "passkeyProviderOn": "Dostawca klucza dostępu włączony "
     }
   },
   "upgrade": {
