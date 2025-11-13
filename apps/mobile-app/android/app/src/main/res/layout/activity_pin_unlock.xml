@@ -28,14 +28,14 @@
     <!-- Logo -->
     <ImageView
         android:id="@+id/logoImageView"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
         android:src="@mipmap/ic_launcher"
         android:contentDescription="@string/aliasvault_icon"
         app:layout_constraintTop_toBottomOf="@id/cancelButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="60dp" />
+        android:layout_marginTop="16dp" />
 
     <!-- Title -->
     <TextView
@@ -43,13 +43,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/pin_unlock_vault"
-        android:textSize="24sp"
+        android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="?android:attr/textColorPrimary"
         app:layout_constraintTop_toBottomOf="@id/logoImageView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp" />
+        android:layout_marginTop="12dp" />
 
     <!-- Subtitle -->
     <TextView
@@ -57,15 +57,15 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="@string/pin_enter_to_unlock"
-        android:textSize="16sp"
+        android:textSize="15sp"
         android:textColor="?android:attr/textColorSecondary"
         android:gravity="center"
         app:layout_constraintTop_toBottomOf="@id/titleTextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="8dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp" />
+        android:layout_marginTop="6dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp" />
 
     <!-- PIN Dots Container (for fixed-length PINs) -->
     <LinearLayout
@@ -77,16 +77,16 @@
         app:layout_constraintTop_toBottomOf="@id/subtitleTextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="20dp"
         android:visibility="visible" />
 
     <!-- PIN Text View (for variable-length PINs) -->
     <TextView
         android:id="@+id/pinTextView"
         android:layout_width="wrap_content"
-        android:layout_height="48dp"
+        android:layout_height="44dp"
         android:text="----"
-        android:textSize="42sp"
+        android:textSize="38sp"
         android:textStyle="bold"
         android:textColor="?android:attr/textColorPrimary"
         android:letterSpacing="0.2"
@@ -94,7 +94,7 @@
         app:layout_constraintTop_toBottomOf="@id/subtitleTextView"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="20dp"
         android:visibility="gone" />
 
     <!-- Error Message -->
@@ -102,34 +102,34 @@
         android:id="@+id/errorTextView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
+        android:textSize="13sp"
         android:textColor="@android:color/holo_red_dark"
         android:gravity="center"
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@id/pinDotsContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp" />
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp" />
 
     <!-- Continue Button (for PIN setup) -->
     <Button
         android:id="@+id/continueButton"
         android:layout_width="0dp"
-        android:layout_height="56dp"
+        android:layout_height="44dp"
         android:text="@string/common_next"
         android:textColor="@android:color/white"
-        android:textSize="16sp"
+        android:textSize="15sp"
         android:textStyle="bold"
         android:background="@color/primary"
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/numpadContainer"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="24dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp" />
+        android:layout_marginBottom="16dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp" />
 
     <!-- Numpad -->
     <LinearLayout
@@ -141,17 +141,17 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="40dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginEnd="40dp">
+        android:layout_marginBottom="32dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp">
 
         <!-- Row 1: 1-3 -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="56dp"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="10dp">
 
             <Button
                 android:id="@+id/btn1"
@@ -172,10 +172,10 @@
         <!-- Row 2: 4-6 -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="56dp"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="10dp">
 
             <Button
                 android:id="@+id/btn4"
@@ -196,10 +196,10 @@
         <!-- Row 3: 7-9 -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="56dp"
             android:orientation="horizontal"
             android:gravity="center"
-            android:layout_marginBottom="12dp">
+            android:layout_marginBottom="10dp">
 
             <Button
                 android:id="@+id/btn7"
@@ -220,14 +220,14 @@
         <!-- Row 4: Empty, 0, Backspace -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="60dp"
+            android:layout_height="56dp"
             android:orientation="horizontal"
             android:gravity="center">
 
             <!-- Empty space -->
             <View
                 android:layout_width="0dp"
-                android:layout_height="60dp"
+                android:layout_height="56dp"
                 android:layout_weight="1" />
 
             <Button

@@ -41,22 +41,22 @@ public struct PinSetupView: View {
                     Image("Logo", bundle: .vaultUI)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 80, height: 80)
-                        .padding(.bottom, 20)
+                        .frame(width: 70, height: 70)
+                        .padding(.bottom, 12)
 
                     // Title
                     Text(viewModel.configuration.title)
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(.system(size: 22, weight: .semibold))
                         .foregroundColor(colors.text)
-                        .padding(.bottom, 8)
+                        .padding(.bottom, 6)
 
                     // Subtitle
                     Text(viewModel.configuration.subtitle)
-                        .font(.system(size: 16))
+                        .font(.system(size: 15))
                         .foregroundColor(colors.text.opacity(0.7))
                         .multilineTextAlignment(.center)
-                        .padding(.horizontal, 40)
-                        .padding(.bottom, 32)
+                        .padding(.horizontal, 32)
+                        .padding(.bottom, 20)
 
                     // PIN dots display or text based on step
                     if let pinLength = viewModel.configuration.pinLength {
@@ -75,29 +75,29 @@ public struct PinSetupView: View {
                                     .frame(width: 16, height: 16)
                             }
                         }
-                        .padding(.bottom, 24)
+                        .padding(.bottom, 20)
                     } else {
                         // Enter new step: show bullet points for variable length
                         Text(viewModel.pin.isEmpty ? "----" : String(repeating: "•", count: viewModel.pin.count))
-                            .font(.system(size: 42, weight: .semibold))
+                            .font(.system(size: 38, weight: .semibold))
                             .foregroundColor(colors.text)
-                            .kerning(8)
-                            .frame(minHeight: 48)
-                            .padding(.bottom, 24)
+                            .kerning(6)
+                            .frame(minHeight: 44)
+                            .padding(.bottom, 20)
                     }
 
                     // Error message
                     if let error = viewModel.error {
                         Text(error)
-                            .font(.system(size: 14))
+                            .font(.system(size: 13))
                             .foregroundColor(.red)
                             .multilineTextAlignment(.center)
-                            .padding(.horizontal, 40)
-                            .padding(.bottom, 12)
+                            .padding(.horizontal, 32)
+                            .padding(.bottom, 10)
                             .transition(.opacity)
                     }
 
-                    // Continue/Confirm button (for enter new step with variable length)
+                    // Continue/Next button (for enter new step with variable length) - compact version
                     if viewModel.configuration.step == .enterNew && viewModel.configuration.pinLength == nil {
                         Button(action: {
                             Task {
@@ -105,18 +105,18 @@ public struct PinSetupView: View {
                             }
                         }) {
                             Text(String(localized: "next", bundle: locBundle))
-                                .font(.system(size: 16, weight: .semibold))
+                                .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
-                                .frame(height: 50)
+                                .frame(height: 44)
                                 .background(
                                     RoundedRectangle(cornerRadius: 8)
                                         .fill(viewModel.canSubmit ? colors.primary : colors.primary.opacity(0.5))
                                 )
                         }
                         .disabled(!viewModel.canSubmit)
-                        .padding(.horizontal, 40)
-                        .padding(.bottom, 24)
+                        .padding(.horizontal, 32)
+                        .padding(.bottom, 16)
                     }
 
                     Spacer()
