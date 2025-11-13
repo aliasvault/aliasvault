@@ -16,8 +16,13 @@
     "loadMore": "Załaduj więcej",
     "use": "Użyj",
     "confirm": "Potwierdź",
+    "next": "Next",
+    "notice": "Notice",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
     "errors": {
-      "unknownError": "Wystąpił nieznany błąd. Spróbuj ponownie."
+      "unknownError": "Wystąpił nieznany błąd. Spróbuj ponownie.",
+      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
     }
   },
   "auth": {
@@ -34,6 +39,10 @@
     "verifyingAuthCode": "Weryfikacja kodu uwierzytelniającego",
     "verify": "Weryfikacja",
     "unlockVault": "Odblokuj sejf",
+    "unlockWithPin": "Unlock with PIN",
+    "useMasterPassword": "Use Master Password",
+    "enterPin": "Enter PIN",
+    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Wprowadź hasło, aby odblokować sejf",
     "enterPasswordPlaceholder": "Hasło",
     "enterAuthCode": "Wprowadź 6-cyfrowy kod",
@@ -283,8 +292,19 @@
       "biometricEnabled": "{{biometric}} zostało pomyślnie włączone",
       "biometricNotAvailable": "{{biometric}} nie dostepne",
       "biometricDisabledMessage": "Funkcja {{biometric}} jest wyłączona dla AliasVault. Aby z niej skorzystać, należy najpierw włączyć ją w ustawieniach urządzenia.",
-      "biometricHelp": "Klucz deszyfrujący do sejfu zostanie bezpiecznie zapisany na Twoim urządzeniu lokalnym w folderze {{keystore}} i będzie można uzyskać do niego bezpieczny dostęp za pomocą {{biometric}}.",
+      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "Funkcja {{biometric}} jest niedostępna. Dotknij, aby otworzyć ustawienia i/lub przejdź do ustawień urządzenia, aby ją włączyć.",
+      "pin": "PIN Code",
+      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
+      "pinEnabled": "PIN unlock enabled successfully",
+      "pinDisabled": "PIN unlock has been disabled",
+      "setupPin": "Setup PIN",
+      "enterNewPin": "Enter New PIN",
+      "enterNewPinDescription": "Choose a PIN to unlock your vault",
+      "confirmPin": "Confirm PIN",
+      "confirmPinDescription": "Re-enter your PIN to confirm",
+      "pinMismatch": "PINs do not match. Please try again.",
+      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
       "passwordHelp": "Wymaga wprowadzenia hasło głównego, aby odblokować sejf. Ta opcja jest zawsze włączona jako opcja awaryjna.",
       "keystoreIOS": "iOS Keychain",
       "keystoreAndroid": "Android Keystore"
