@@ -18,18 +18,12 @@
     "masterPassword": "סיסמת על",
     "unlockVault": "שחרור נעילת כספת",
     "unlockWithPin": "שחרור נעילה עם קוד אישי",
-    "enterPin": "נא למלא את הקוד האישי שלך",
     "enterPinToUnlock": "נא למלא את הקוד האישי שלך כדי לשחרר את הכספת שלך",
-    "unlock": "שחרור נעילה",
-    "usePassword": "להשתמש בסיסמה",
     "useMasterPassword": "להשתמש בסיסמה על",
     "pinUnlockTip": "אפשר להקליד את הקוד האישי שלך באמצעות המקלדת שלך",
     "unlockTitle": "שחרור נעילת הכספת שלך",
-    "unlockDescription": "נא למלא את סיסמת העל שלך כדי לשחרר את הכספת שלך.",
     "logout": "יציאה",
     "logoutConfirm": "לצאת?",
-    "sessionExpired": "תוקף ההפעלה שלך פג. נא להיכנס מחדש.",
-    "unlockSuccess": "נעילת הכספת שוחררה בהצלחה!",
     "unlockSuccessTitle": "נעילת הכספת שלך נפתחה בהצלחה",
     "unlockSuccessDescription": "מעתה ניתן להשתמש בהשלמה אוטומטית בטופסי כניסה בדפדפן שלך.",
     "closePopup": "סגירת החלונית הצצה הזאת",
@@ -40,8 +34,6 @@
     "errors": {
       "invalidCode": "נא למלא קוד אימות באורך 6 ספרות.",
       "serverError": "לא ניתן ליצור קשר עם השרת של AliasVault. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
-      "noToken": "הכניסה נכשלה - לא הוחזר אסימון",
-      "migrationError": "אירעה שגיאה בעת בדיקה לאיתור הסבות ממתינות.",
       "wrongPassword": "סיסמה שגויה. נא לנסות שוב.",
       "accountLocked": "החשבון נעול זמנית עקב ריבוי ניסיונות כושלים.",
       "networkError": "שגיאת רשת. נא לבדוק את החיבור ולנסות שוב.",
@@ -107,9 +99,7 @@
       "unknownError": "אירעה שגיאה לא ידועה",
       "unknownErrorTryAgain": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
       "vaultNotAvailable": "הכספת לא זמינה",
-      "failedToRetrieveData": "משיכת הנתונים נכשלה",
       "vaultIsLocked": "הכספת נעולה",
-      "failedToUploadVault": "העלאת הכספת נכשלה",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע."
     },
     "apiErrors": {
@@ -184,8 +174,6 @@
     "deleteCredential": "מחיקת פרטי גישה",
     "credentialDetails": "פירוט פרטי גישה",
     "serviceName": "שם השירות",
-    "username": "שם משתמש",
-    "password": "סיסמה",
     "notes": "הערות",
     "totp": "אימות דו־שלבי",
     "totpCode": "קוד חד־פעמי זמני",
@@ -335,7 +323,6 @@
     "autoLock8Hours": "8 שעות",
     "autoLock24Hours": "24 שעות",
     "versionPrefix": "גרסה ",
-    "preferences": "העדפות",
     "autofillSettings": "הגדרות השלמה אוטומטית",
     "clipboardSettings": "הגדרות לוח הגזירים",
     "contextMenuSettings": "הגדרות תפריט הקשר",
@@ -368,7 +355,6 @@
       "pin": "קוד אישי",
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
-      "enterNewPin": "Enter new PIN",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "אישור קוד אישי",
       "confirmPinDescription": "נא למלא את הקוד האישי שלך שוב לאישור",
@@ -408,7 +394,6 @@
       "titleLabel": "כותרת",
       "titlePlaceholder": "Enter a name for this passkey",
       "createButton": "Create Passkey",
-      "creatingButton": "נוצר…",
       "useBrowserPasskey": "Use Browser Passkey",
       "selectPasskeyToReplace": "Select a passkey to replace:",
       "createNewPasskey": "Create New Passkey",
@@ -417,9 +402,7 @@
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on ",
-      "enable": "Enable AliasVault as passkey provider",
-      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+      "passkeyProviderOn": "Passkey Provider on "
     }
   },
   "upgrade": {
