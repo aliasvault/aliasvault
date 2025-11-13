@@ -18,18 +18,12 @@
     "masterPassword": "Головний пароль",
     "unlockVault": "Розблокувати Vault",
     "unlockWithPin": "Unlock with PIN",
-    "enterPin": "Enter Your PIN",
     "enterPinToUnlock": "Enter your PIN to unlock your vault",
-    "unlock": "Unlock",
-    "usePassword": "Use Password",
     "useMasterPassword": "Use Master Password",
     "pinUnlockTip": "You can also type your PIN using your keyboard",
     "unlockTitle": "Розблокувати своє сховище",
-    "unlockDescription": "Введіть свій головний пароль, щоб розблокувати сховище.",
     "logout": "Вийти",
     "logoutConfirm": "Ви впевнені, що хочете вийти?",
-    "sessionExpired": "Ваш сеанс закінчився. Будь ласка, увійдіть знову.",
-    "unlockSuccess": "Сховище успішно розблоковано!",
     "unlockSuccessTitle": "Ваше сховище успішно розблоковано",
     "unlockSuccessDescription": "Тепер ви можете використовувати автозаповнення форм входу у вашому браузері.",
     "closePopup": "Закрити цю підказку",
@@ -40,8 +34,6 @@
     "errors": {
       "invalidCode": "Будь ласка, введіть дійсний 6-значний код автентифікації.",
       "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
-      "noToken": "Не вдалося ввійти -- токен не знайдено",
-      "migrationError": "Під час перевірки незавершених перенесень сталася помилка.",
       "wrongPassword": "Невірний пароль. Будь ласка, спробуйте ще раз.",
       "accountLocked": "Обліковий запис тимчасово заблоковано через занадто багато невдалих спроб.",
       "networkError": "Помилка мережі. Будь ласка, перевірте з’єднання та спробуйте ще раз.",
@@ -107,9 +99,7 @@
       "unknownError": "Сталася невідома помилка",
       "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
       "vaultNotAvailable": "Сховище недоступне",
-      "failedToRetrieveData": "Не вдалося отримати дані",
       "vaultIsLocked": "Сховище заблоковано",
-      "failedToUploadVault": "Не вдалося завантажити сховище",
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз."
     },
     "apiErrors": {
@@ -184,8 +174,6 @@
     "deleteCredential": "Видалити облікові дані",
     "credentialDetails": "Відомості про облікові дані",
     "serviceName": "Назва сервісу",
-    "username": "Ім'я користувача",
-    "password": "Пароль",
     "notes": "Нотатки",
     "totp": "Двофакторна аутентифікація",
     "totpCode": "Код TOTP",
@@ -335,7 +323,6 @@
     "autoLock8Hours": "8 годин",
     "autoLock24Hours": "24 години",
     "versionPrefix": "Версія ",
-    "preferences": "Налаштування",
     "autofillSettings": "Налаштування автозаповнення",
     "clipboardSettings": "Параметри буфера обміну",
     "contextMenuSettings": "Налаштування контекстного меню",
@@ -368,7 +355,6 @@
       "pin": "PIN Code",
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
-      "enterNewPin": "Enter new PIN",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
@@ -408,7 +394,6 @@
       "titleLabel": "Title",
       "titlePlaceholder": "Enter a name for this passkey",
       "createButton": "Create Passkey",
-      "creatingButton": "Creating...",
       "useBrowserPasskey": "Use Browser Passkey",
       "selectPasskeyToReplace": "Select a passkey to replace:",
       "createNewPasskey": "Create New Passkey",
@@ -417,9 +402,7 @@
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on ",
-      "enable": "Enable AliasVault as passkey provider",
-      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+      "passkeyProviderOn": "Passkey Provider on "
     }
   },
   "upgrade": {
