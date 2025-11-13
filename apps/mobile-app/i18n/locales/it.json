@@ -40,9 +40,6 @@
     "verify": "Verifica",
     "unlockVault": "Sblocca Cassaforte",
     "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Inserisci la tua password per sbloccare la cassaforte",
     "enterPasswordPlaceholder": "Password",
     "enterAuthCode": "Inserire codice a 6 cifre",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Recupero del database crittografato non riuscito",
       "usernameNotFound": "Nome utente non trovato",
-      "vaultMergeRequired": "È necessario unire la cassaforte. Effettua il login tramite web per unire gli aggiornamenti pendenti alla cassaforte.",
       "vaultOutdated": "La tua cassaforte è obsoleta. Effettua il login sul sito AliasVault e segui i passaggi.",
-      "failedToUploadVault": "Caricamento della cassaforte sul server fallito. Riprova riaprendo l'app.",
-      "usernameNotFoundLoginAgain": "Nome utente non trovato. Effettua nuovamente il login.",
-      "errorDuringPasswordChange": "Errore durante l'operazione di cambio password. Effettua nuovamente il login per scaricare la cassaforte aggiornata.",
       "failedToSyncVault": "Sincronizzazione della cassaforte fallita",
-      "operationFailed": "Operazione non riuscita",
       "versionNotSupported": "Questa versione dell'app AliasVault non è più supportata dal server. Aggiorna l'app all'ultima versione.",
       "serverVersionNotSupported": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa app mobile. Se hai bisogno di aiuto, contatta il supporto.",
       "appOutdated": "Questa applicazione è obsoleta e non può essere utilizzata per accedere a questa (nuova) versione della cassaforte. Si prega di aggiornare l'app AliasVault per continuare.",
-      "vaultDecryptFailed": "Impossibile decriptare la cassaforte, se il problema persiste esci e accedi nuovamente.",
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza."
     }
   },
@@ -171,9 +162,10 @@
     "twoFactorAuth": "Autenticazione a due fattori",
     "totpCode": "Codice TOTP",
     "attachments": "Allegati",
-    "loadingAttachments": "Caricamento allegati...",
-    "addAttachments": "Aggiungi allegati",
     "deleteAttachment": "Elimina",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
     "toasts": {
       "credentialUpdated": "Credenziali aggiornate con successo",
       "credentialCreated": "Credenziali create con successo",
@@ -185,9 +177,7 @@
     "createNewAliasFor": "Crea un nuovo alias per",
     "errors": {
       "loadFailed": "Caricamento credenziali non riuscito",
-      "saveFailed": "Salvataggio credenziali non riuscito",
-      "generateUsernameFailed": "Generazione nome utente non riuscita",
-      "generatePasswordFailed": "Generazione password non riuscita"
+      "saveFailed": "Salvataggio credenziali non riuscito"
     },
     "contextMenu": {
       "title": "Opzioni Credenziali",
@@ -326,11 +316,6 @@
         "random": "Casuale",
         "male": "Maschio",
         "female": "Femmina"
-      },
-      "errors": {
-        "loadFailed": "Caricamento impostazioni generatore identità non riuscito.",
-        "languageUpdateFailed": "Aggiornamento lingua non riuscito.",
-        "genderUpdateFailed": "Aggiornamento genere non riuscito."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +363,6 @@
         "success": "Successo",
         "failed": "Fallito",
         "time": "Ora",
-        "device": "Dispositivo",
         "ipAddress": "Indirizzo IP",
         "client": "Client",
         "failedToLoad": "Caricamento log accessi fallito"
@@ -435,14 +419,6 @@
       "hoursAgo_single": "{{count}} ora fa",
       "hoursAgo_plural": "{{count}} ore fa",
       "yesterday": "ieri"
-    },
-    "errors": {
-      "generic": "Si è verificato un errore",
-      "loadFailed": "Caricamento email non riuscito",
-      "deleteFailed": "Eliminazione email non riuscita",
-      "dbNotAvailable": "Database o email non disponibile",
-      "decryptFailed": "Decriptazione allegato non riuscita",
-      "downloadFailed": "Download allegato non riuscito"
     }
   },
   "validation": {
@@ -480,11 +456,11 @@
     "VAULT_ERROR": "La cassaforte locale non è aggiornata. Sincronizzala ricaricando la pagina e riprova."
   },
   "app": {
-    "openReadOnlyMode": "Apri in modalità di sola lettura",
     "status": {
       "unlockingVault": "Sblocco cassaforte in corso",
       "decryptingVault": "Decriptazione cassaforte in corso",
-      "openingVaultReadOnly": "Apertura cassaforte in modalità sola lettura"
+      "openingVaultReadOnly": "Apertura cassaforte in modalità sola lettura",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "Modalità offline (sola lettura)",
@@ -499,8 +475,7 @@
     },
     "navigation": {
       "login": "Accesso",
-      "loginSettings": "Impostazioni di accesso",
-      "notFound": "Non trovato"
+      "loginSettings": "Impostazioni di accesso"
     },
     "notFound": {
       "title": "Pagina non trovata",
