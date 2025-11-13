@@ -7,7 +7,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, TextInput, Alert, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text, Pressable } from 'react-native';
 
 import EncryptionUtility from '@/utils/EncryptionUtility';
-import { isPinEnabled } from '@/utils/PinUnlockService';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -102,7 +101,7 @@ export default function UnlockScreen() : React.ReactNode {
         console.error('PIN unlock failed:', err);
 
         // Check if PIN is still enabled and update state accordingly
-        const pinStillEnabled = await isPinEnabled();
+        const pinStillEnabled = await NativeVaultManager.isPinEnabled();
         setPinAvailable(pinStillEnabled);
         return;
       }
@@ -123,7 +122,7 @@ export default function UnlockScreen() : React.ReactNode {
       setBiometricDisplayName(t(displayNameKey));
 
       // Check PIN availability
-      const pinEnabled = await isPinEnabled();
+      const pinEnabled = await NativeVaultManager.isPinEnabled();
       setPinAvailable(pinEnabled);
 
       /*

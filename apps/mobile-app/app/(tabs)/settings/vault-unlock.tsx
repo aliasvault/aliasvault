@@ -4,8 +4,6 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Alert, Platform, Linking, Switch, TouchableOpacity } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import { isPinEnabled, removeAndDisablePin } from '@/utils/PinUnlockService';
-
 import { useColors } from '@/hooks/useColorScheme';
 
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
@@ -60,7 +58,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
         }
 
         // Load PIN settings (locked state removed - automatically handled by native code)
-        const enabled = await isPinEnabled();
+        const enabled = await NativeVaultManager.isPinEnabled();
         setPinEnabled(enabled);
 
         setInitialized(true);
@@ -137,7 +135,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
     // If enabling biometrics and PIN is enabled, disable PIN first
     if (value && pinEnabled) {
       try {
-        await removeAndDisablePin();
+        await NativeVaultManager.removeAndDisablePin();
         setPinEnabled(false);
       } catch (error) {
         console.error('Failed to disable PIN:', error);
@@ -200,7 +198,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
    */
   const handleDisablePin = useCallback(async () : Promise<void> => {
     try {
-      await removeAndDisablePin();
+      await NativeVaultManager.removeAndDisablePin();
       setPinEnabled(false);
       Toast.show({
         type: 'success',
