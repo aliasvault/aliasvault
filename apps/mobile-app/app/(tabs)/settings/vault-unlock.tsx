@@ -162,7 +162,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
   const handleEnablePin = useCallback(async () : Promise<void> => {
     try {
       // Launch native PIN setup UI
-      await NativeVaultManager.showNativePinSetup();
+      await NativeVaultManager.showPinSetup();
 
       // PIN setup successful - now disable biometrics if it was enabled
       if (isBiometricsEnabled) {
@@ -308,8 +308,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
             </View>
             <ThemedText style={styles.helpText}>
               {t('settings.vaultUnlockSettings.biometricHelp', {
-                keystore: Platform.OS === 'ios' ? t('settings.vaultUnlockSettings.keystoreIOS') : t('settings.vaultUnlockSettings.keystoreAndroid'),
-                biometric: biometricDisplayName
+                keystore: Platform.OS === 'ios' ? t('settings.vaultUnlockSettings.keystoreIOS') : t('settings.vaultUnlockSettings.keystoreAndroid')
               })}
             </ThemedText>
             {!hasBiometrics && (

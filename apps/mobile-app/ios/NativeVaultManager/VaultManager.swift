@@ -757,55 +757,9 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func getPinLength(_ resolve: @escaping RCTPromiseResolveBlock,
-                     rejecter reject: @escaping RCTPromiseRejectBlock) {
-        if let length = vaultStore.getPinLength() {
-            resolve(length)
-        } else {
-            resolve(nil)
-        }
-    }
-
-    @objc
     func getPinFailedAttempts(_ resolve: @escaping RCTPromiseResolveBlock,
                              rejecter reject: @escaping RCTPromiseRejectBlock) {
         resolve(vaultStore.getPinFailedAttempts())
-    }
-
-    @objc
-    func setupPin(_ pin: String,
-                 resolver resolve: @escaping RCTPromiseResolveBlock,
-                 rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            try vaultStore.setupPin(pin)
-            resolve(nil)
-        } catch {
-            reject("SETUP_PIN_ERROR", "Failed to setup PIN: \(error.localizedDescription)", error)
-        }
-    }
-
-    @objc
-    func unlockWithPin(_ pin: String,
-                      resolver resolve: @escaping RCTPromiseResolveBlock,
-                      rejecter reject: @escaping RCTPromiseRejectBlock) {
-        do {
-            let vaultEncryptionKey = try vaultStore.unlockWithPin(pin)
-            resolve(vaultEncryptionKey)
-        } catch let error as PinUnlockError {
-            // Handle PinUnlockError with proper error codes and localized messages
-            switch error {
-            case .notConfigured:
-                reject("PIN_NOT_CONFIGURED", "PIN unlock is not configured", nil)
-            case .locked:
-                reject("PIN_LOCKED", "PIN locked after too many failed attempts", nil)
-            case .incorrectPin(let attemptsRemaining):
-                let message = "Incorrect PIN. \(attemptsRemaining) attempts remaining"
-                reject("INCORRECT_PIN", message, nil)
-            }
-        } catch {
-            // Fallback for any other errors
-            reject("PIN_UNLOCK_ERROR", error.localizedDescription, error)
-        }
     }
 
     @objc
@@ -827,7 +781,7 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func showPinUnlockUI(_ resolve: @escaping RCTPromiseResolveBlock,
+    func showPinUnlock(_ resolve: @escaping RCTPromiseResolveBlock,
                         rejecter reject: @escaping RCTPromiseRejectBlock) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else {
@@ -885,7 +839,7 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func showNativePinSetup(_ resolve: @escaping RCTPromiseResolveBlock,
+    func showPinSetup(_ resolve: @escaping RCTPromiseResolveBlock,
                            rejecter reject: @escaping RCTPromiseRejectBlock) {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else {

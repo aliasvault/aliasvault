@@ -104,7 +104,7 @@ public struct PinSetupView: View {
                                 await viewModel.submitPin()
                             }
                         }) {
-                            Text(String(localized: "common_next", bundle: locBundle))
+                            Text(String(localized: "next", bundle: locBundle))
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)

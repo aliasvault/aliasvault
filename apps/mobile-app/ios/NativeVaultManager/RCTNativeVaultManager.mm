@@ -261,28 +261,16 @@
     [vaultManager isPinEnabled:resolve rejecter:reject];
 }
 
-- (void)getPinLength:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager getPinLength:resolve rejecter:reject];
-}
-
-- (void)setupPin:(NSString *)pin resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager setupPin:pin resolver:resolve rejecter:reject];
-}
-
-- (void)unlockWithPin:(NSString *)pin resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager unlockWithPin:pin resolver:resolve rejecter:reject];
-}
-
 - (void)removeAndDisablePin:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager removeAndDisablePin:resolve rejecter:reject];
 }
 
-- (void)showPinUnlockUI:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager showPinUnlockUI:resolve rejecter:reject];
+- (void)showPinUnlock:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager showPinUnlock:resolve rejecter:reject];
 }
 
-- (void)showNativePinSetup:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager showNativePinSetup:resolve rejecter:reject];
+- (void)showPinSetup:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager showPinSetup:resolve rejecter:reject];
 }
 
 @end

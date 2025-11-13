@@ -66,7 +66,7 @@ export default function UnlockScreen() : React.ReactNode {
        * Show native PIN unlock UI
        * This will handle the unlock internally and store the encryption key
        */
-      await NativeVaultManager.showPinUnlockUI();
+      await NativeVaultManager.showPinUnlock();
 
       /*
        * Check if the vault is ready
