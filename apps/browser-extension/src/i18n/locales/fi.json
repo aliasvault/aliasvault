@@ -369,7 +369,7 @@
       "pinDescription": "Avaa holvi PIN-koodilla",
       "setupPin": "PIN-koodin määrittäminen",
       "enterNewPin": "Syötä uusi PIN",
-      "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
+      "enterNewPinDescription": "Syötä PIN-koodi, jossa on vähintään 6 numeroa",
       "confirmPin": "Vahvista PIN",
       "confirmPinDescription": "Syötä PIN-koodi uudelleen vahvistaaksesi",
       "invalidPinFormat": "Virheellinen PIN-muoto",
