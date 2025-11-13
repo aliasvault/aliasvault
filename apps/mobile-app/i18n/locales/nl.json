@@ -40,9 +40,6 @@
     "verify": "Verifiëren",
     "unlockVault": "Vault ontgrendelen",
     "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Voer je wachtwoord in om je vault te ontgrendelen",
     "enterPasswordPlaceholder": "Wachtwoord",
     "enterAuthCode": "Voer 6-cijferige code in",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Fout bij ophalen van versleutelde vault",
       "usernameNotFound": "Gebruikersnaam niet gevonden",
-      "vaultMergeRequired": "Vault merge is vereist. Login via de web app om meerdere vault updates te kunnen verwerken.",
       "vaultOutdated": "Je vault is verouderd. Log in op de AliasVault website en volg de stappen.",
-      "failedToUploadVault": "Fout bij het uploaden van de vault naar de server. Probeer het opnieuw door de app af te sluiten en opnieuw te openen.",
-      "usernameNotFoundLoginAgain": "Gebruikersnaam niet gevonden. Log opnieuw in.",
-      "errorDuringPasswordChange": "Fout tijdens het wijzigen van het wachtwoord. Log opnieuw in om de vault te synchroniseren en probeer het opnieuw.",
       "failedToSyncVault": "Vault ophalen mislukt",
-      "operationFailed": "Bewerking mislukt",
       "versionNotSupported": "Deze versie van de mobiele app van AliasVault wordt niet meer ondersteund door de server. Update de app naar de nieuwste versie.",
       "serverVersionNotSupported": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze mobiele app te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
       "appOutdated": "Deze app is verouderd en kan niet worden gebruikt om deze (nieuwe) vault te openen. Update de AliasVault app om door te gaan.",
-      "vaultDecryptFailed": "Vault kon niet worden gedecrypt, probeer uit- en opnieuw in te loggen.",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in."
     }
   },
@@ -171,9 +162,10 @@
     "twoFactorAuth": "Tweestapsverificatie",
     "totpCode": "TOTP Code",
     "attachments": "Bijlagen",
-    "loadingAttachments": "Bijlagen laden...",
-    "addAttachments": "Bijlage toevoegen",
     "deleteAttachment": "Verwijderen",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
     "toasts": {
       "credentialUpdated": "Credential succesvol bijgewerkt",
       "credentialCreated": "Credential succesvol aangemaakt",
@@ -185,9 +177,7 @@
     "createNewAliasFor": "Nieuwe alias maken voor",
     "errors": {
       "loadFailed": "Laden van credential mislukt",
-      "saveFailed": "Credential opslaan mislukt",
-      "generateUsernameFailed": "Genereren van gebruikersnaam mislukt",
-      "generatePasswordFailed": "Genereren van wachtwoord mislukt"
+      "saveFailed": "Credential opslaan mislukt"
     },
     "contextMenu": {
       "title": "Credential opties",
@@ -326,11 +316,6 @@
         "random": "Willekeurig",
         "male": "Mannelijk",
         "female": "Vrouwelijk"
-      },
-      "errors": {
-        "loadFailed": "Laden van identiteit generator instellingen mislukt.",
-        "languageUpdateFailed": "Bijwerken van taalinstelling mislukt.",
-        "genderUpdateFailed": "Bijwerken van geslacht voorkeur mislukt."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +363,6 @@
         "success": "Succesvol",
         "failed": "Mislukt",
         "time": "Tijd",
-        "device": "Apparaat",
         "ipAddress": "IP-adres",
         "client": "Client",
         "failedToLoad": "Laden van auth logs mislukt"
@@ -435,14 +419,6 @@
       "hoursAgo_single": "{{count}} uur geleden",
       "hoursAgo_plural": "{{count}} uur geleden",
       "yesterday": "gisteren"
-    },
-    "errors": {
-      "generic": "Er is een fout opgetreden",
-      "loadFailed": "Laden van e-mails mislukt",
-      "deleteFailed": "E-mail verwijderen mislukt",
-      "dbNotAvailable": "Database context of e-mail niet beschikbaar",
-      "decryptFailed": "Bijlage ontsleutelen mislukt",
-      "downloadFailed": "Bijlage downloaden mislukt"
     }
   },
   "validation": {
@@ -480,11 +456,11 @@
     "VAULT_ERROR": "De lokale vault is niet up-to-date. Synchroniseer je vault door de pagina te vernieuwen en probeer het opnieuw."
   },
   "app": {
-    "openReadOnlyMode": "Open in read-only modus",
     "status": {
       "unlockingVault": "Vault ontgrendelen",
       "decryptingVault": "Vault decrypten",
-      "openingVaultReadOnly": "Vault openen in alleen-lezen modus"
+      "openingVaultReadOnly": "Vault openen in alleen-lezen modus",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "Offline modus (alleen lezen)",
@@ -499,8 +475,7 @@
     },
     "navigation": {
       "login": "Login",
-      "loginSettings": "Login instellingen",
-      "notFound": "Niet gevonden"
+      "loginSettings": "Login instellingen"
     },
     "notFound": {
       "title": "Pagina niet gevonden",
