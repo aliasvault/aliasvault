@@ -16,8 +16,13 @@
     "loadMore": "Daha fazla yükle",
     "use": "Kullan",
     "confirm": "Confirm",
+    "next": "Next",
+    "notice": "Notice",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
     "errors": {
-      "unknownError": "An unknown error occurred. Please try again."
+      "unknownError": "An unknown error occurred. Please try again.",
+      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
     }
   },
   "auth": {
@@ -34,6 +39,10 @@
     "verifyingAuthCode": "Doğrulama kodu kontrol ediliyor",
     "verify": "Doğrula",
     "unlockVault": "Kasa Kilidini Aç",
+    "unlockWithPin": "Unlock with PIN",
+    "useMasterPassword": "Use Master Password",
+    "enterPin": "Enter PIN",
+    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Kasayı açmak için parolanızı girin",
     "enterPasswordPlaceholder": "Parola",
     "enterAuthCode": "6 rakamlı kodu yazın",
@@ -283,8 +292,19 @@
       "biometricEnabled": "{{biometric}} başarıyla etkinleştirildi",
       "biometricNotAvailable": "{{biometric}} Kullanılamıyor",
       "biometricDisabledMessage": "{{biometric}} AliasVault için devre dışı bırakılmış. Kullanabilmek için önce cihaz ayarlarınızdan etkinleştirmeniz gerekmektedir.",
-      "biometricHelp": "Kasa şifre çözme anahtarınız, {{keystore}} içinde cihazınızda güvenli bir şekilde saklanacak ve {{biometric}} ile güvenli bir şekilde erişilebilecektir.",
+      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} kullanılamıyor. Ayarları açmak için dokunun veya etkinleştirmek ve yapılandırmak için cihaz ayarlarınıza gidin.",
+      "pin": "PIN Code",
+      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
+      "pinEnabled": "PIN unlock enabled successfully",
+      "pinDisabled": "PIN unlock has been disabled",
+      "setupPin": "Setup PIN",
+      "enterNewPin": "Enter New PIN",
+      "enterNewPinDescription": "Choose a PIN to unlock your vault",
+      "confirmPin": "Confirm PIN",
+      "confirmPinDescription": "Re-enter your PIN to confirm",
+      "pinMismatch": "PINs do not match. Please try again.",
+      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
       "passwordHelp": "Kasayı açmak için ana parolanızı tekrar girin. Bu her zaman yedek seçenek olarak etkin durumdadır.",
       "keystoreIOS": "iOS Anahtar Zinciri",
       "keystoreAndroid": "Android Keystore"
