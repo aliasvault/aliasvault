@@ -40,9 +40,6 @@
     "verify": "אימות",
     "unlockVault": "שחרור נעילת כספת",
     "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "נא למלא את הסיסמה שלך כדי לשחרר את הכספת שלך",
     "enterPasswordPlaceholder": "סיסמה",
     "enterAuthCode": "נא למלא קוד באורך 6 ספרות",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "משיכת מסד הנתונים המוצפן נכשלה",
       "usernameNotFound": "שם המשתמש לא נמצא",
-      "vaultMergeRequired": "יש למזג את הכספות. נא להיכנס דרך הדפדפן כדי למזג את השינויים הממתינים לכספת שלך.",
       "vaultOutdated": "הכספת שלך לא עדכנית. נא להיכנס לאתר AliasVault ולעקוב אחר ההנחיות.",
-      "failedToUploadVault": "שליחת הכספת לשרת נכשלה. נא לנסות שוב על ידי פתיחת היישום מחדש.",
-      "usernameNotFoundLoginAgain": "שם המשתמש לא נמצא. נא להיכנס שוב.",
-      "errorDuringPasswordChange": "שגיאה במהלך פעולת החלפת סיסמה. נא להיכנס שוב כדי למשוך את הכספת העדכנית ביותר שלך.",
       "failedToSyncVault": "סנכרון הכספת נכשל",
-      "operationFailed": "הפעולה נכשלה",
       "versionNotSupported": "הגרסה הזאת של היישומון של AliasVault לניידים לא נתמכת עוד על ידי השרת. נא לעדכן את היישומון שלך לגרסה העדכנית ביותר.",
       "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
       "appOutdated": "היישום הזה לא עדכני ואי אפשר להשתמש בו כדי לגשת לגרסת הכספת (החדשה יותר) הזאת. נא לעדכן את יישום AliasVault כדי להמשיך.",
-      "vaultDecryptFailed": "לא ניתן לפענח את הכספת, אם הבעיה נמשכת נא לצאת מהמערכת ולהיכנס שוב.",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע."
     }
   },
@@ -171,9 +162,10 @@
     "twoFactorAuth": "אימות דו־שלבי",
     "totpCode": "קוד חד־פעמי זמני",
     "attachments": "צרופות",
-    "loadingAttachments": "הצרופות נטענות…",
-    "addAttachments": "הוספת צרופות",
     "deleteAttachment": "מחיקה",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
     "toasts": {
       "credentialUpdated": "פרטי הגישה עודכנו בהצלחה",
       "credentialCreated": "פרטי הגישה נוצרו בהצלחה",
@@ -185,9 +177,7 @@
     "createNewAliasFor": "יצירת כינוי חדש עבור",
     "errors": {
       "loadFailed": "טעינת פרטי הגישה נכשלה",
-      "saveFailed": "שמירת פרטי הגישה נכשלה",
-      "generateUsernameFailed": "יצירת שם משתמש נכשלה",
-      "generatePasswordFailed": "יצירת סיסמה נכשלה"
+      "saveFailed": "שמירת פרטי הגישה נכשלה"
     },
     "contextMenu": {
       "title": "אפשרויות פרטי גישה",
@@ -326,11 +316,6 @@
         "random": "אקראי",
         "male": "זכר",
         "female": "נקבה"
-      },
-      "errors": {
-        "loadFailed": "טעינת הגדרות מייצר הזהויות נכשלה.",
-        "languageUpdateFailed": "עדכון הגדרת השפה נכשל.",
-        "genderUpdateFailed": "עדכון הגדרת המגדר נכשל."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +363,6 @@
         "success": "הצלחה",
         "failed": "כשל",
         "time": "זמן",
-        "device": "מכשיר",
         "ipAddress": "כתובת IP",
         "client": "לקוח",
         "failedToLoad": "טעינת יומני האימות נכשלה"
@@ -435,14 +419,6 @@
       "hoursAgo_single": "לפני שעה",
       "hoursAgo_plural": "לפני {{count}} שעות",
       "yesterday": "אתמול"
-    },
-    "errors": {
-      "generic": "אירעה שגיאה",
-      "loadFailed": "טעינת הודעות הדוא״ל נכשלה",
-      "deleteFailed": "מחיקת הודעת הדוא״ל נכשלה",
-      "dbNotAvailable": "הקשר מסד הנתונים או כתובת הדוא״ל לא זמינים",
-      "decryptFailed": "פענוח הצרופה נכשל",
-      "downloadFailed": "הורדת הצרופה נכשלה"
     }
   },
   "validation": {
@@ -480,11 +456,11 @@
     "VAULT_ERROR": "הכספת המקומית אינה עדכנית. נא לסנכרן את הכספת שלך על ידי ריענון העמוד ולנסות שוב."
   },
   "app": {
-    "openReadOnlyMode": "פתיחה במצב לקריאה בלבד",
     "status": {
       "unlockingVault": "שחרור נעילת כספת",
       "decryptingVault": "פענוח הצפנת כספת",
-      "openingVaultReadOnly": "כספת נפתח במצב לקריאה בלבד"
+      "openingVaultReadOnly": "כספת נפתח במצב לקריאה בלבד",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "מצב בלתי מקוון (קריאה בלבד)",
@@ -499,8 +475,7 @@
     },
     "navigation": {
       "login": "כניסה",
-      "loginSettings": "הגדרות כניסה",
-      "notFound": "לא נמצא"
+      "loginSettings": "הגדרות כניסה"
     },
     "notFound": {
       "title": "העמוד לא נמצא",
