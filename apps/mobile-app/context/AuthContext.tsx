@@ -205,6 +205,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Non-fatal error - continue with logout
     }
 
+    // Clear PIN unlock data (if any)
+    try {
+      await NativeVaultManager.removeAndDisablePin();
+    } catch (error) {
+      console.error('Failed to remove PIN data:', error);
+      // Non-fatal error - continue with logout
+    }
+
     // Clear from native layer
     await NativeVaultManager.clearUsername();
     await NativeVaultManager.clearAuthTokens();

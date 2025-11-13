@@ -4,6 +4,7 @@ import { sendMessage } from 'webext-bridge/popup';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
+import { removeAndDisablePin } from '@/utils/PinUnlockService';
 
 import { storage } from '#imports';
 
@@ -72,6 +73,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await sendMessage('CLEAR_VAULT', {}, 'background');
     await storage.removeItems(['local:username', 'local:accessToken', 'local:refreshToken']);
     dbContext?.clearDatabase();
+
+    // Clear PIN unlock data (if any)
+    try {
+      await removeAndDisablePin();
+    } catch (error) {
+      console.error('Failed to remove PIN data:', error);
+      // Non-fatal error - continue with logout
+    }
 
     // Set local storage global message that will be shown on the login page.
     if (errorMessage) {
