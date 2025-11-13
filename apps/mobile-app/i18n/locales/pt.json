@@ -16,13 +16,13 @@
     "loadMore": "Carregar mais",
     "use": "Utilizar",
     "confirm": "Confirmar",
-    "next": "Next",
-    "notice": "Notice",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "next": "Próximo",
+    "notice": "Aviso",
+    "enabled": "Habilitado",
+    "disabled": "Desabilitado",
     "errors": {
       "unknownError": "Ocorreu um erro desconhecido. Por favor, tente novamente.",
-      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
+      "unknownErrorTryAgain": "Ocorreu um erro desconhecido. Por favor, tente novamente."
     }
   },
   "auth": {
@@ -39,10 +39,7 @@
     "verifyingAuthCode": "Verificando código de autenticação",
     "verify": "Verificar",
     "unlockVault": "Desbloquear cofre",
-    "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
+    "unlockWithPin": "Desbloquear com PIN",
     "enterPassword": "Digite sua senha para desbloquear o cofre",
     "enterPasswordPlaceholder": "Senha",
     "enterAuthCode": "Digite o código de 6 dígitos",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Falha ao acessar dados criptografados",
       "usernameNotFound": "Usuário não encontrado",
-      "vaultMergeRequired": "Junção de cofres necessária. Por favor realize o login via site para adicionar as atualizações pendentes ao cofre.",
       "vaultOutdated": "Seu cofre está desatualizado. Por favor realize login pelo site do AliasVault e siga as instruções.",
-      "failedToUploadVault": "Falha ao enviar cofre ao servidor. Por favor tente novamente reabrindo o aplicativo.",
-      "usernameNotFoundLoginAgain": "Usuário não encontrado. Por favor realize login novamente.",
-      "errorDuringPasswordChange": "Erro ao atualizar a senha. Por favor realize login novamente para recuperar seu último cofre.",
       "failedToSyncVault": "Falha ao sincronizar cofre",
-      "operationFailed": "Operação falhou",
       "versionNotSupported": "Esta versão do aplicativo AliasVault não é mais suportada pelo servidor. Por favor atualize seu aplicativo para a última versão.",
       "serverVersionNotSupported": "O servidor do AliasVault precisa ser atualizado para uma nova versão para poder utilizar o aplicativo móvel. Por favor, entre em contato com o suporte caso precise de ajuda.",
       "appOutdated": "Este aplicativo está desatualizado e não pode ser utilizado para acessar essa (nova) versão do cofre. Por favor, atualize seu aplicativo AliasVault para continuar.",
-      "vaultDecryptFailed": "Cofre não pôde ser descriptografado, se o problema persistir por favor saia e realize login novamente.",
       "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança."
     }
   },
@@ -171,9 +162,10 @@
     "twoFactorAuth": "Autenticação de dois fatores",
     "totpCode": "Código TOTP",
     "attachments": "Anexos",
-    "loadingAttachments": "Carregando anexos...",
-    "addAttachments": "Adicionar Anexo",
     "deleteAttachment": "Excluir",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
     "toasts": {
       "credentialUpdated": "Credencial atualizada com sucesso",
       "credentialCreated": "Credencial criada com sucesso",
@@ -185,9 +177,7 @@
     "createNewAliasFor": "Criar novo alias para",
     "errors": {
       "loadFailed": "Falha ao carregar crerencial",
-      "saveFailed": "Falha ao salvar credencial",
-      "generateUsernameFailed": "Falha ao gerar usuário",
-      "generatePasswordFailed": "Falha ao gerar senha"
+      "saveFailed": "Falha ao salvar credencial"
     },
     "contextMenu": {
       "title": "Opções da Credencial",
@@ -326,11 +316,6 @@
         "random": "Aleatório",
         "male": "Masculino",
         "female": "Feminino"
-      },
-      "errors": {
-        "loadFailed": "Falha ao carregar configurações do gerador.",
-        "languageUpdateFailed": "Falha ao atualizar configurações de idioma.",
-        "genderUpdateFailed": "Falha ao atualizar configurações de gênero."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +363,6 @@
         "success": "Sucesso",
         "failed": "Falha",
         "time": "Horário",
-        "device": "Dispositivo",
         "ipAddress": "Endereço IP",
         "client": "Cliente",
         "failedToLoad": "Falha ao carregar registros de autenticação"
@@ -435,14 +419,6 @@
       "hoursAgo_single": "há {{count}} hora",
       "hoursAgo_plural": "há {{count}} horas",
       "yesterday": "ontem"
-    },
-    "errors": {
-      "generic": "Ocorreu um erro",
-      "loadFailed": "Falha ao carregar e-mails",
-      "deleteFailed": "Falha ao excluir e-mail",
-      "dbNotAvailable": "E-mail ou contexto do banco de dados não disponível",
-      "decryptFailed": "Falha ao descriptografar anexo",
-      "downloadFailed": "Falha ao baixar anexo"
     }
   },
   "validation": {
@@ -480,11 +456,11 @@
     "VAULT_ERROR": "O cofre local não está atualizado. Por favor sincronize seu cofre recarregando a página e tente novamente."
   },
   "app": {
-    "openReadOnlyMode": "Abrir em modo de leitura",
     "status": {
       "unlockingVault": "Desbloqueando cofre",
       "decryptingVault": "Descriptografando cofre",
-      "openingVaultReadOnly": "Abrindo cofre em modo de leitura"
+      "openingVaultReadOnly": "Abrindo cofre em modo de leitura",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "Modo offline (apenas leitura)",
@@ -499,8 +475,7 @@
     },
     "navigation": {
       "login": "Login",
-      "loginSettings": "Configurações de Login",
-      "notFound": "Não Encontrado"
+      "loginSettings": "Configurações de Login"
     },
     "notFound": {
       "title": "Página não encontrada",
