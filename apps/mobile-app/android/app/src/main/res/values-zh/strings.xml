@@ -5,6 +5,9 @@
   <string name="aliasvault_icon">AliasVault 图标</string>
   <!-- Common strings -->
   <string name="common_close">关闭</string>
+  <string name="common_next">Next</string>
+  <string name="common_cancel">Cancel</string>
+  <string name="unknown_error">An unknown error occurred</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">获取失败，请打开应用</string>
   <string name="autofill_no_match_found">未找到匹配项，是否新建？</string>
@@ -25,7 +28,6 @@
   <string name="passkey_website_label">网站</string>
   <string name="passkey_username_label">用户名</string>
   <string name="passkey_create_button">创建通行密钥</string>
-  <string name="passkey_cancel_button">取消</string>
   <string name="passkey_creating">正在创建通行密钥…</string>
   <string name="passkey_saving">正在保存至密码库…</string>
   <string name="passkey_syncing">正在与服务器同步…</string>
@@ -57,10 +59,20 @@
   <string name="server_version_not_supported_title">Server Update Required</string>
   <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_biometric_required">Please enable biometric authentication in the main AliasVault app in order to use passkeys</string>
+  <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
   <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
   <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
-  <string name="error_vault_unlock_failed">解锁密码库失败</string>
   <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
   <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
+  <!-- PIN unlock -->
+  <string name="pin_unlock_vault">Unlock Vault</string>
+  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
+  <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
+  <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
+  <!-- PIN setup -->
+  <string name="pin_setup_title">Setup PIN</string>
+  <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
+  <string name="pin_confirm_title">Confirm PIN</string>
+  <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
+  <string name="pin_mismatch">PINs do not match. Please try again.</string>
 </resources>
