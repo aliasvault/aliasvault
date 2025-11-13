@@ -16,8 +16,13 @@
     "loadMore": "Laad meer",
     "use": "Gebruik",
     "confirm": "Bevestigen",
+    "next": "Next",
+    "notice": "Notice",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
     "errors": {
-      "unknownError": "Er is een onbekende fout opgetreden. Probeer het opnieuw."
+      "unknownError": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
+      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
     }
   },
   "auth": {
@@ -34,6 +39,10 @@
     "verifyingAuthCode": "Authenticatiecode verifiëren",
     "verify": "Verifiëren",
     "unlockVault": "Vault ontgrendelen",
+    "unlockWithPin": "Unlock with PIN",
+    "useMasterPassword": "Use Master Password",
+    "enterPin": "Enter PIN",
+    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Voer je wachtwoord in om je vault te ontgrendelen",
     "enterPasswordPlaceholder": "Wachtwoord",
     "enterAuthCode": "Voer 6-cijferige code in",
@@ -283,8 +292,19 @@
       "biometricEnabled": "{{biometric}} is nu succesvol ingeschakeld",
       "biometricNotAvailable": "{{biometric}} Niet Beschikbaar",
       "biometricDisabledMessage": "{{biometric}} is uitgeschakeld voor AliasVault. Ga naar de app instellingen om dit in te schakelen.",
-      "biometricHelp": "Je vault ontsleutelingssleutel wordt veilig opgeslagen op je lokale apparaat in de {{keystore}} en kan veilig worden opgehaald met {{biometric}}.",
+      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} is niet beschikbaar. Tik om instellingen te openen en/of ga naar je apparaat-instellingen om het in te schakelen en te configureren.",
+      "pin": "PIN Code",
+      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
+      "pinEnabled": "PIN unlock enabled successfully",
+      "pinDisabled": "PIN unlock has been disabled",
+      "setupPin": "Setup PIN",
+      "enterNewPin": "Enter New PIN",
+      "enterNewPinDescription": "Choose a PIN to unlock your vault",
+      "confirmPin": "Confirm PIN",
+      "confirmPinDescription": "Re-enter your PIN to confirm",
+      "pinMismatch": "PINs do not match. Please try again.",
+      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
       "passwordHelp": "Voer je volledige hoofdwachtwoord opnieuw in om je vault te ontgrendelen. Dit is altijd ingeschakeld als fallback optie.",
       "keystoreIOS": "iOS Sleutelhanger",
       "keystoreAndroid": "Android Sleutelopslag"
