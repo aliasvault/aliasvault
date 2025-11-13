@@ -18,18 +18,12 @@
     "masterPassword": "Pääsalasana",
     "unlockVault": "Avaa holvin lukitus",
     "unlockWithPin": "Avaa PIN-koodilla",
-    "enterPin": "Anna PIN-koodisi",
     "enterPinToUnlock": "Syötä PIN-koodi avataksesi holvisi",
-    "unlock": "Avaa lukitus",
-    "usePassword": "Käytä salasanaa",
     "useMasterPassword": "Käytä pääsalasanaa",
     "pinUnlockTip": "Voit myös syöttää PIN-koodisi näppäimistön avulla",
     "unlockTitle": "Avaa holvisi lukitus",
-    "unlockDescription": "Syötä pääsalasanasi avataksesi holvisi lukituksen.",
     "logout": "Uloskirjautuminen",
     "logoutConfirm": "Oletko varma, että haluat kirjautua ulos?",
-    "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
-    "unlockSuccess": "Holvin lukitus avattu!",
     "unlockSuccessTitle": "Holvisi lukitus on avattu",
     "unlockSuccessDescription": "Voit nyt käyttää automaattista täyttöä sisäänkirjautumislomakkeissa selaimessasi.",
     "closePopup": "Sulje tämä ponnahdusikkuna",
@@ -40,8 +34,6 @@
     "errors": {
       "invalidCode": "Syötä kelvollinen 6-numeroinen tunnistautumiskoodi.",
       "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
-      "noToken": "Sisäänkirjautuminen epäonnistui -- polettia ei palautettu",
-      "migrationError": "Tapahtui virhe tarkistettaessa odottavia siirtoja.",
       "wrongPassword": "Virheellinen salasana. Yritä uudelleen.",
       "accountLocked": "Tili tilapäisesti lukittu liian monen epäonnistuneen yrityksen vuoksi.",
       "networkError": "Verkkovirhe: tarkista yhteytesi ja yritä uudelleen.",
@@ -107,9 +99,7 @@
       "unknownError": "Tapahtui tuntematon virhe",
       "unknownErrorTryAgain": "Tapahtui tuntematon virhe. Yritä uudelleen.",
       "vaultNotAvailable": "Holvi ei käytettävissä",
-      "failedToRetrieveData": "Tietojen nouto epäonnistui",
       "vaultIsLocked": "Holvi on lukittu",
-      "failedToUploadVault": "Holvin ulospäinlataaminen epäonnistui",
       "passwordChanged": "Salasanasi on muuttunut edellisen sisäänkirjautumisen jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä."
     },
     "apiErrors": {
@@ -184,8 +174,6 @@
     "deleteCredential": "Poista tunnistetieto",
     "credentialDetails": "Tunnistetietojen yksityiskohdat",
     "serviceName": "Palvelun nimi",
-    "username": "Käyttäjänimi",
-    "password": "Salasana",
     "notes": "Huomautukset",
     "totp": "Kaksivaiheinen tunnistautuminen",
     "totpCode": "TOTP-koodi",
@@ -335,7 +323,6 @@
     "autoLock8Hours": "8 tuntia",
     "autoLock24Hours": "24 tuntia",
     "versionPrefix": "Versio",
-    "preferences": "Määritykset",
     "autofillSettings": "Automaatisen täytön asetukset",
     "clipboardSettings": "Leikepöydän asetukset",
     "contextMenuSettings": "Kontekstivalikon asetukset",
@@ -368,7 +355,6 @@
       "pin": "PIN-koodi",
       "pinDescription": "Avaa holvi PIN-koodilla",
       "setupPin": "PIN-koodin määrittäminen",
-      "enterNewPin": "Syötä uusi PIN",
       "enterNewPinDescription": "Syötä PIN-koodi, jossa on vähintään 6 numeroa",
       "confirmPin": "Vahvista PIN",
       "confirmPinDescription": "Syötä PIN-koodi uudelleen vahvistaaksesi",
@@ -408,7 +394,6 @@
       "titleLabel": "Otsikko",
       "titlePlaceholder": "Anna nimi tälle todennusavaimelle",
       "createButton": "Luo todennusavain, Passkey",
-      "creatingButton": "Luodaan...",
       "useBrowserPasskey": "Käytä selaimen sala-avainta",
       "selectPasskeyToReplace": "Valitse todennusavain, johon korvataan",
       "createNewPasskey": "Luo uusi sala-avain",
@@ -417,9 +402,7 @@
     },
     "settings": {
       "passkeyProvider": "Todennusavaimen toimittaja",
-      "passkeyProviderOn": "Todennusavaimen toimittaja käytössä ",
-      "enable": "Ota AliasVault käyttöön todennusavainten tarjoajana",
-      "description": "Kun AliasVault on käytössä, se käsittelee todennusavaimia verkkosivustoilta. Kun sivusto pyytää todennusavainta, AliasVaultin ponnahdusikkuna näytetään natiivin selaimen tai käyttöjärjestelmän todennusavaimen sijaan."
+      "passkeyProviderOn": "Todennusavaimen toimittaja käytössä "
     }
   },
   "upgrade": {
