@@ -40,9 +40,6 @@
     "verify": "Doğrula",
     "unlockVault": "Kasa Kilidini Aç",
     "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Kasayı açmak için parolanızı girin",
     "enterPasswordPlaceholder": "Parola",
     "enterAuthCode": "6 rakamlı kodu yazın",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Şifrelenmiş veritabanı alınamadı",
       "usernameNotFound": "Kullanıcı adı bulunamadı",
-      "vaultMergeRequired": "Kasa birleştirmesi gerekiyor. Bekleyen birden fazla güncellemeyi birleştirmek için lütfen web uygulaması üzerinden giriş yapın.",
       "vaultOutdated": "Kasınız güncel değil. Lütfen AliasVault web sitesinden giriş yapın ve gerekli adımları izleyin.",
-      "failedToUploadVault": "Kasa sunucuya yüklenemedi. Lütfen uygulamayı yeniden açarak tekrar deneyin.",
-      "usernameNotFoundLoginAgain": "Kullanıcı adı bulunamadı. Lütfen tekrar giriş yapın.",
-      "errorDuringPasswordChange": "Parola değiştirme işlemi sırasında hata oluştu. Kasanın güncel haline erişmek için lütfen tekrar giriş yapın.",
       "failedToSyncVault": "Kasa senkronize edilemedi",
-      "operationFailed": "İşlem başarısız",
       "versionNotSupported": "AliasVault mobil uygulamasının bu sürümü artık sunucu tarafından desteklenmiyor. Lütfen uygulamanızı en son sürüme güncelleyin.",
       "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
       "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
-      "vaultDecryptFailed": "Kasa çözülemedi. Sorun devam ederse, lütfen çıkış yapın ve tekrar giriş yapın.",
       "passwordChanged": "Parolanız, en son giriş yaptığınızdan bu yana değişti. Güvenlik nedeniyle lütfen tekrar giriş yapın."
     }
   },
@@ -171,9 +162,10 @@
     "twoFactorAuth": "İki faktörlü kimlik doğrulama",
     "totpCode": "TOTP Kodu",
     "attachments": "Ekler",
-    "loadingAttachments": "Ekler yükleniyor...",
-    "addAttachments": "Dosya Ekle",
     "deleteAttachment": "Sil",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
     "toasts": {
       "credentialUpdated": "Kimlik bilgisi başarıyla güncellendi",
       "credentialCreated": "Kimlik bilgisi başarıyla oluşturuldu",
@@ -185,9 +177,7 @@
     "createNewAliasFor": "Create new alias for",
     "errors": {
       "loadFailed": "Kimlik bilgisi yüklenemedi",
-      "saveFailed": "Failed to save credential",
-      "generateUsernameFailed": "Kullanıcı adı oluşturulamadı",
-      "generatePasswordFailed": "Parola oluşturulamadı"
+      "saveFailed": "Failed to save credential"
     },
     "contextMenu": {
       "title": "Kimlik Bilgisi Seçenekleri",
@@ -326,11 +316,6 @@
         "random": "Rastgele",
         "male": "Erkek",
         "female": "Kadın"
-      },
-      "errors": {
-        "loadFailed": "Kimlik oluşturucu ayarları yüklenemedi",
-        "languageUpdateFailed": "Dil ayarı güncellenemedi.",
-        "genderUpdateFailed": "Cinsiyet ayarı güncellenemedi."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +363,6 @@
         "success": "Başarılı",
         "failed": "Başarısız oldu",
         "time": "Zaman",
-        "device": "Cihaz",
         "ipAddress": "IP Adres",
         "client": "İstemci",
         "failedToLoad": "Kimlik doğrulama kayıtları yüklenemedi"
@@ -435,14 +419,6 @@
       "hoursAgo_single": "{{count}} saat önce",
       "hoursAgo_plural": "{{count}} saat önce",
       "yesterday": "dün"
-    },
-    "errors": {
-      "generic": "Bir hata oluştu",
-      "loadFailed": "E-postalar yüklenemedi",
-      "deleteFailed": "E-posta silinemedi",
-      "dbNotAvailable": "Veritabanı bağlamı veya e-posta kullanılamıyor",
-      "decryptFailed": "Ek dosya çözülemedi",
-      "downloadFailed": "Ek dosya indirilemedi"
     }
   },
   "validation": {
@@ -480,11 +456,11 @@
     "VAULT_ERROR": "The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again."
   },
   "app": {
-    "openReadOnlyMode": "Open in read-only mode",
     "status": {
       "unlockingVault": "Unlocking vault",
       "decryptingVault": "Decrypting vault",
-      "openingVaultReadOnly": "Opening vault in read-only mode"
+      "openingVaultReadOnly": "Opening vault in read-only mode",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "Offline mode (read-only)",
@@ -499,8 +475,7 @@
     },
     "navigation": {
       "login": "Login",
-      "loginSettings": "Login Settings",
-      "notFound": "Not Found"
+      "loginSettings": "Login Settings"
     },
     "notFound": {
       "title": "Page not found",
