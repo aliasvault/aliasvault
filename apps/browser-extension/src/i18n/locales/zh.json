@@ -18,18 +18,12 @@
     "masterPassword": "主密码",
     "unlockVault": "解锁密码库",
     "unlockWithPin": "使用 PIN 解锁",
-    "enterPin": "输入您的 PIN",
     "enterPinToUnlock": "输入您的 PIN 以解锁密码库",
-    "unlock": "解锁",
-    "usePassword": "使用密码",
     "useMasterPassword": "使用主密码",
     "pinUnlockTip": "You can also type your PIN using your keyboard",
     "unlockTitle": "解锁您的密码库",
-    "unlockDescription": "输入您的主密码以解锁密码库。",
     "logout": "登出",
     "logoutConfirm": "确定要退出登录吗？",
-    "sessionExpired": "您的会话已过期。请重新登录。",
-    "unlockSuccess": "密码库解锁成功！",
     "unlockSuccessTitle": "您的密码库已成功解锁",
     "unlockSuccessDescription": "现在您可以在浏览器的登录表单中使用自动填充功能了。",
     "closePopup": "关闭此弹窗",
@@ -40,8 +34,6 @@
     "errors": {
       "invalidCode": "请输入有效的6位动态验证码。",
       "serverError": "无法连接到AliasVault服务器。请稍后重试，若问题依旧，请联系支持人员。",
-      "noToken": "登录失败——未返回令牌",
-      "migrationError": "检查待处理迁移时发生错误。",
       "wrongPassword": "密码不正确。请重试。",
       "accountLocked": "由于多次尝试失败，账户已暂时锁定。",
       "networkError": "网络错误。请检查您的连接后重试。",
@@ -107,9 +99,7 @@
       "unknownError": "发生未知错误",
       "unknownErrorTryAgain": "发生未知错误，请重试。",
       "vaultNotAvailable": "密码库不可用",
-      "failedToRetrieveData": "无法检索数据",
       "vaultIsLocked": "密码库已锁定",
-      "failedToUploadVault": "上传密码库失败",
       "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。"
     },
     "apiErrors": {
@@ -184,8 +174,6 @@
     "deleteCredential": "删除凭据",
     "credentialDetails": "凭据详情",
     "serviceName": "服务名称",
-    "username": "用户名",
-    "password": "密码",
     "notes": "备注",
     "totp": "双因素认证（2FA）",
     "totpCode": "TOTP验证码",
@@ -335,7 +323,6 @@
     "autoLock8Hours": "8 小时",
     "autoLock24Hours": "24 小时",
     "versionPrefix": "版本 ",
-    "preferences": "首选项",
     "autofillSettings": "自动填充设置",
     "clipboardSettings": "剪贴板设置",
     "contextMenuSettings": "上下文菜单设置",
@@ -368,7 +355,6 @@
       "pin": "PIN 码",
       "pinDescription": "使用 PIN 码解锁密码库",
       "setupPin": "设置 PIN 码",
-      "enterNewPin": "输入新的 PIN 码",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "确认 PIN",
       "confirmPinDescription": "再次输入您的 PIN 以确认",
@@ -408,7 +394,6 @@
       "titleLabel": "标题",
       "titlePlaceholder": "输入此通行密钥的名称",
       "createButton": "创建通行密钥",
-      "creatingButton": "创建中…",
       "useBrowserPasskey": "使用浏览器通行密钥",
       "selectPasskeyToReplace": "选择要替换的通行密钥：",
       "createNewPasskey": "创建新通行密钥",
@@ -417,9 +402,7 @@
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on ",
-      "enable": "Enable AliasVault as passkey provider",
-      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+      "passkeyProviderOn": "Passkey Provider on "
     }
   },
   "upgrade": {
