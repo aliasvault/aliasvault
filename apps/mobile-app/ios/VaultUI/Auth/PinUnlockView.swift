@@ -281,19 +281,6 @@ public class PinUnlockViewModel: ObservableObject {
         } catch let pinError as PinUnlockError {
             // Handle PinUnlockError with localized messages
             switch pinError {
-            case .notConfigured:
-                // PIN was disabled/not configured
-                isUnlocking = false
-                self.error = String(localized: "pin_not_configured", bundle: locBundle)
-                triggerErrorFeedback()
-
-                // Wait to let user see the error message
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
-
-                // Clear the error and dismiss
-                self.error = nil
-                cancelHandler()
-                return
 
             case .locked:
                 // PIN locked after too many attempts

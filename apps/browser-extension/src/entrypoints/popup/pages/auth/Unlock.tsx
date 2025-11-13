@@ -27,7 +27,6 @@ import {
   PinLockedError,
   IncorrectPinError,
   InvalidPinFormatError,
-  PinNotConfiguredError,
   resetFailedAttempts,
   unlockWithPin
 } from '@/utils/PinUnlockService';
@@ -340,9 +339,6 @@ const Unlock: React.FC = () => {
         setPin('');
       } else if (err instanceof InvalidPinFormatError) {
         setError(t('settings.unlockMethod.invalidPinFormat'));
-        setPin('');
-      } else if (err instanceof PinNotConfiguredError) {
-        setError(t('settings.unlockMethod.pinNotConfigured'));
         setPin('');
       } else {
         console.error('PIN unlock failed:', err);

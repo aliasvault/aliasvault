@@ -376,7 +376,6 @@
       "pinMismatch": "PINs do not match",
       "incorrectPin": "Incorrect PIN. {{attemptsRemaining}} attempts remaining.",
       "incorrectPinSingular": "Incorrect PIN. 1 attempt remaining.",
-      "pinNotConfigured": "PIN unlock is not configured.",
       "enableSuccess": "PIN unlock enabled successfully!",
       "pinLocked": "PIN unlock has been disabled. Please use your master password to unlock your vault.",
       "unlockVaultFirst": "Please unlock your vault first before setting up PIN.",

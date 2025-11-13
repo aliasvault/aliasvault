@@ -78,7 +78,6 @@
   <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
   <string name="pin_cancel">Cancel</string>
   <string name="pin_unlock_failed">Unlock failed</string>
-  <string name="pin_not_configured">PIN unlock is not configured</string>
   <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
   <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
 

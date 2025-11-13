@@ -3,9 +3,6 @@ import Foundation
 /// Error types for PIN unlock operations
 /// This is in VaultModels so both VaultStoreKit and VaultUI can access it without circular dependencies
 public enum PinUnlockError: Error {
-    /// PIN is not configured
-    case notConfigured
-
     /// PIN is locked after too many failed attempts
     case locked
 
@@ -15,7 +12,6 @@ public enum PinUnlockError: Error {
     /// Get error code for React Native bridge compatibility
     public var code: String {
         switch self {
-        case .notConfigured: return "PIN_NOT_CONFIGURED"
         case .locked: return "PIN_LOCKED"
         case .incorrectPin: return "INCORRECT_PIN"
         }

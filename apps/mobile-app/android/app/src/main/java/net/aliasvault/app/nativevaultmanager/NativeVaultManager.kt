@@ -1294,7 +1294,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      * @param promise The promise to resolve when setup completes or rejects if cancelled/error.
      */
     @ReactMethod
-    override fun showNativePinSetup(promise: Promise) {
+    override fun showPinSetup(promise: Promise) {
         // Get encryption key first
         vaultStore.getEncryptionKey(object : net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback {
             override fun onSuccess(encryptionKey: String) {

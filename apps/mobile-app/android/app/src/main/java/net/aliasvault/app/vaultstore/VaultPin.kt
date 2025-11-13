@@ -23,9 +23,6 @@ import javax.crypto.spec.SecretKeySpec
  * UI layer should handle localization based on these exception types.
  */
 sealed class PinUnlockException(message: String) : Exception(message) {
-    /** PIN is not configured. */
-    object NotConfigured : PinUnlockException("PIN unlock is not configured")
-
     /** PIN is locked after too many failed attempts. */
     object Locked : PinUnlockException("PIN locked after too many failed attempts")
 
@@ -38,7 +35,6 @@ sealed class PinUnlockException(message: String) : Exception(message) {
     /** Get error code for React Native bridge compatibility. */
     val errorCode: String
         get() = when (this) {
-            is NotConfigured -> "PIN_NOT_CONFIGURED"
             is Locked -> "PIN_LOCKED"
             is IncorrectPin -> "INCORRECT_PIN"
         }
@@ -209,11 +205,6 @@ class VaultPin(
     @Throws(PinUnlockException::class)
     @Suppress("SwallowedException") // We intentionally swallow to avoid exposing crypto implementation details
     fun unlockWithPin(pin: String): String {
-        // Check if PIN is enabled
-        if (!isPinEnabled()) {
-            throw PinUnlockException.NotConfigured
-        }
-
         try {
             // Retrieve encrypted key and salt from Keystore
             val (encryptedKey, salt) = retrievePinDataFromKeystore()

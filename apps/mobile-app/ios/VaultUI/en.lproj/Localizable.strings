@@ -62,10 +62,8 @@
 "enter_pin" = "Enter PIN";
 "enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
 "unlock_failed" = "Unlock failed";
-"unlocking" = "Unlocking...";
 
 /* PIN Error Messages */
-"pin_not_configured" = "PIN unlock is not configured";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
 

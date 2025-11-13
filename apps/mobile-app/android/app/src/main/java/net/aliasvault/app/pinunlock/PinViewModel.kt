@@ -64,12 +64,6 @@ class PinViewModel(
             PinResult.Success(encryptionKey)
         } catch (e: PinUnlockException) {
             when (e) {
-                is PinUnlockException.NotConfigured -> {
-                    PinResult.Error(
-                        context.getString(R.string.pin_not_configured),
-                        shouldClear = false,
-                    )
-                }
                 is PinUnlockException.Locked -> {
                     PinResult.PinDisabled
                 }

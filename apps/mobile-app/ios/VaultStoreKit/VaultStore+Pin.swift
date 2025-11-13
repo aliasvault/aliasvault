@@ -88,11 +88,6 @@ extension VaultStore {
     /// - Returns: The decrypted vault encryption key (base64)
     /// - Throws: PinUnlockError with specific error type and metadata
     public func unlockWithPin(_ pin: String) throws -> String {
-        // Check if PIN is enabled
-        guard isPinEnabled() else {
-            throw PinUnlockError.notConfigured
-        }
-
         do {
             // Retrieve encrypted key and salt from keychain
             let (encryptedKey, salt) = try retrievePinDataFromKeychain()

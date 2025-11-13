@@ -83,20 +83,6 @@ export class IncorrectPinError extends Error {
 }
 
 /**
- * Error thrown when PIN unlock is not configured.
- * Translation key: settings.unlockMethod.pinNotConfigured
- */
-export class PinNotConfiguredError extends Error {
-  /**
-   * Creates a new instance of PinNotConfiguredError.
-   */
-  public constructor() {
-    super('PIN unlock is not configured');
-    this.name = 'PinNotConfiguredError';
-  }
-}
-
-/**
  * Error thrown when encryption key is not available for PIN setup.
  * Translation key: settings.unlockMethod.unlockVaultFirst
  */
@@ -242,7 +228,7 @@ export async function unlockWithPin(pin: string): Promise<string> {
     ]);
 
     if (!encryptedKeyBase64 || !saltBase64) {
-      throw new PinNotConfiguredError();
+      throw new PinLockedError();
     }
 
     // Decode encrypted package
