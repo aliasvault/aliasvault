@@ -11,6 +11,10 @@ public struct QuickUnlockLoadingView: View {
         self.type = type
     }
 
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
+    }
+
     private var localizedMessage: String {
         switch type {
         case .credential:
@@ -23,7 +27,7 @@ public struct QuickUnlockLoadingView: View {
     public var body: some View {
         ZStack {
             // Background
-            Color(colorScheme == .dark ? ColorConstants.Dark.background : ColorConstants.Light.background)
+            colors.background
                 .ignoresSafeArea()
 
             // Loading overlay

@@ -15,17 +15,21 @@ public struct CredentialProviderView: View {
          self._viewModel = ObservedObject(wrappedValue: viewModel)
     }
 
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
+    }
+
     public var body: some View {
         NavigationView {
             ZStack {
-                (colorScheme == .dark ? ColorConstants.Dark.background : ColorConstants.Light.background)
+                colors.background
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     SearchBarView(text: $viewModel.searchText)
                         .padding(.horizontal)
                         .padding(.vertical, 8)
-                        .background(colorScheme == .dark ? ColorConstants.Dark.background : ColorConstants.Light.background)
+                        .background(colors.background)
                         .onChange(of: viewModel.searchText) { _ in
                             viewModel.filterCredentials()
                         }
@@ -42,15 +46,15 @@ public struct CredentialProviderView: View {
                                 VStack(spacing: 20) {
                                     Image(systemName: "magnifyingglass")
                                         .font(.system(size: 50))
-                                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                                        .foregroundColor(colors.text)
 
                                     Text(String(localized: "no_credentials_found", bundle: locBundle))
                                         .font(.headline)
-                                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                                        .foregroundColor(colors.text)
 
                                     Text(String(localized: "no_credentials_match", bundle: locBundle))
                                         .font(.subheadline)
-                                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                                        .foregroundColor(colors.text)
                                         .multilineTextAlignment(.center)
 
                                     if !viewModel.isChoosingTextToInsert {
@@ -71,7 +75,7 @@ public struct CredentialProviderView: View {
                                                 }
                                                 .padding()
                                                 .frame(maxWidth: .infinity)
-                                                .background(ColorConstants.Light.primary)
+                                                .background(colors.primary)
                                                 .foregroundColor(.white)
                                                 .cornerRadius(8)
                                             })
@@ -112,7 +116,7 @@ public struct CredentialProviderView: View {
                     Button(String(localized: "cancel", bundle: locBundle)) {
                         viewModel.cancel()
                     }
-                    .foregroundColor(ColorConstants.Light.primary)
+                    .foregroundColor(colors.primary)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
@@ -127,7 +131,7 @@ public struct CredentialProviderView: View {
                             }
                         }, label: {
                             Image(systemName: "plus")
-                            .foregroundColor(ColorConstants.Light.primary)
+                            .foregroundColor(colors.primary)
                         })
                     }
                 }

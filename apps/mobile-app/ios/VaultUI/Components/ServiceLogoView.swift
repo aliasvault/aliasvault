@@ -9,6 +9,10 @@ public struct ServiceLogoView: View {
     let logoData: Data?
     @Environment(\.colorScheme) private var colorScheme
 
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
+    }
+
     private var placeholderImage: UIImage? {
         if let data = Data(base64Encoded: placeholderImageBase64) {
             return UIImage(data: data)
@@ -91,11 +95,11 @@ public struct ServiceLogoView: View {
             } else {
                 // Ultimate fallback if placeholder fails to load
                 Circle()
-                    .fill(colorScheme == .dark ? ColorConstants.Dark.accentBackground : ColorConstants.Light.background)
+                    .fill(colors.accentBackground)
                     .frame(width: 32, height: 32)
                     .overlay(
                         Circle()
-                            .stroke(colorScheme == .dark ? ColorConstants.Dark.accentBorder : ColorConstants.Light.accentBorder, lineWidth: 1)
+                            .stroke(colors.accentBorder, lineWidth: 1)
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 4))
             }

@@ -15,17 +15,21 @@ public struct PasskeyProviderView: View {
         self._viewModel = ObservedObject(wrappedValue: viewModel)
     }
 
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
+    }
+
     public var body: some View {
         NavigationView {
             ZStack {
-                (colorScheme == .dark ? ColorConstants.Dark.background : ColorConstants.Light.background)
+                colors.background
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     SearchBarView(text: $viewModel.searchText)
                         .padding(.horizontal)
                         .padding(.vertical, 8)
-                        .background(colorScheme == .dark ? ColorConstants.Dark.background : ColorConstants.Light.background)
+                        .background(colors.background)
                         .onChange(of: viewModel.searchText) { _ in
                             viewModel.filterCredentials()
                         }
@@ -42,15 +46,15 @@ public struct PasskeyProviderView: View {
                                 VStack(spacing: 20) {
                                     Image(systemName: "key.fill")
                                         .font(.system(size: 50))
-                                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                                        .foregroundColor(colors.text)
 
                                     Text(String(localized: "no_passkeys_found", bundle: locBundle))
                                         .font(.headline)
-                                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                                        .foregroundColor(colors.text)
 
                                     Text(String(localized: "no_passkeys_match", bundle: locBundle))
                                         .font(.subheadline)
-                                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                                        .foregroundColor(colors.text)
                                         .multilineTextAlignment(.center)
                                 }
                                 .padding(.top, 60)
@@ -83,7 +87,7 @@ public struct PasskeyProviderView: View {
                     Button(String(localized: "cancel", bundle: locBundle)) {
                         viewModel.cancel()
                     }
-                    .foregroundColor(ColorConstants.Light.primary)
+                    .foregroundColor(colors.primary)
                 }
             }
             .alert(String(localized: "error", bundle: locBundle), isPresented: $viewModel.showError) {
@@ -113,6 +117,10 @@ private struct PasskeyCredentialCard: View {
 
     @Environment(\.colorScheme) private var colorScheme
 
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
+    }
+
     var body: some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 12) {
@@ -129,11 +137,11 @@ private struct PasskeyCredentialCard: View {
                         // Fallback to passkey icon when favicon is not available
                         ZStack {
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(ColorConstants.Light.primary.opacity(0.1))
+                                .fill(colors.primary.opacity(0.1))
                                 .frame(width: 40, height: 40)
                             Image(systemName: "key.fill")
                                 .font(.system(size: 20))
-                                .foregroundColor(ColorConstants.Light.primary)
+                                .foregroundColor(colors.primary)
                         }
                         .frame(width: 40, height: 40)
                         .padding()
@@ -142,34 +150,34 @@ private struct PasskeyCredentialCard: View {
                     VStack(alignment: .leading, spacing: 4) {
                         Text(credential.service.name ?? credential.service.url ?? "-")
                             .font(.headline)
-                            .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                            .foregroundColor(colors.text)
 
                         if let username = credential.username, !username.isEmpty {
                             Text(username)
                                 .font(.subheadline)
-                                .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.textMuted : ColorConstants.Light.textMuted)
+                                .foregroundColor(colors.textMuted)
                         } else if let email = credential.alias?.email {
                             Text(email)
                                 .font(.subheadline)
-                                .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.textMuted : ColorConstants.Light.textMuted)
+                                .foregroundColor(colors.textMuted)
                         }
 
                         // Show passkey count
                         if let passkeys = credential.passkeys, !passkeys.isEmpty {
                             Text(String(localized: "passkey", bundle: locBundle))
                                 .font(.caption)
-                                .foregroundColor(ColorConstants.Light.primary)
+                                .foregroundColor(colors.primary)
                         }
                     }
 
                     Spacer()
 
                     Image(systemName: "chevron.right")
-                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.textMuted : ColorConstants.Light.textMuted)
+                        .foregroundColor(colors.textMuted)
                 }
             }
             .padding()
-            .background(colorScheme == .dark ? ColorConstants.Dark.accentBackground : ColorConstants.Light.accentBackground)
+            .background(colors.accentBackground)
             .cornerRadius(12)
         }
         .buttonStyle(PlainButtonStyle())

@@ -17,6 +17,10 @@ public struct CredentialCard: View {
         self.onCopy = onCopy
     }
 
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
+    }
+
     public var body: some View {
         Button(action: action) {
             HStack(spacing: 16) {
@@ -27,25 +31,25 @@ public struct CredentialCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(truncateText(credential.service.name ?? "Unknown", limit: 26))
                         .font(.headline)
-                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                        .foregroundColor(colors.text)
 
                     Text(truncateText(CredentialHelpers.usernameOrEmail(credential: credential), limit: 26))
                         .font(.subheadline)
-                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.textMuted : ColorConstants.Light.textMuted)
+                        .foregroundColor(colors.textMuted)
                 }
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.icon : ColorConstants.Light.icon)
+                    .foregroundColor(colors.icon)
             }
             .padding(8)
             .padding(.horizontal, 8)
             .padding(.vertical, 2)
-            .background(colorScheme == .dark ? ColorConstants.Dark.accentBackground : ColorConstants.Light.accentBackground)
+            .background(colors.accentBackground)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(colorScheme == .dark ? ColorConstants.Dark.accentBorder : ColorConstants.Light.accentBorder, lineWidth: 1)
+                    .stroke(colors.accentBorder, lineWidth: 1)
             )
             .cornerRadius(8)
         }
