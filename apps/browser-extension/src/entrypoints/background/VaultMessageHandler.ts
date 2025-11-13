@@ -212,7 +212,7 @@ export async function handleGetVault(
     };
   } catch (error) {
     console.error('Failed to get vault:', error);
-    return { success: false, error: await t('common.errors.failedToRetrieveData') };
+    return { success: false, error: await t('common.errors.unknownError') };
   }
 }
 
@@ -252,7 +252,7 @@ export async function handleGetCredentials(
     return { success: true, credentials: credentials };
   } catch (error) {
     console.error('Error getting credentials:', error);
-    return { success: false, error: await t('common.errors.failedToRetrieveData') };
+    return { success: false, error: await t('common.errors.unknownError') };
   }
 }
 
@@ -322,7 +322,7 @@ export function handleGetDefaultEmailDomain(): Promise<stringResponse> {
       return { success: true, value: defaultEmailDomain ?? undefined };
     } catch (error) {
       console.error('Error getting default email domain:', error);
-      return { success: false, error: await t('common.errors.failedToRetrieveData') };
+      return { success: false, error: await t('common.errors.unknownError') };
     }
   })();
 }
@@ -346,7 +346,7 @@ export async function handleGetDefaultIdentitySettings(
     };
   } catch (error) {
     console.error('Error getting default identity settings:', error);
-    return { success: false, error: await t('common.errors.failedToRetrieveData') };
+    return { success: false, error: await t('common.errors.unknownError') };
   }
 }
 
@@ -362,7 +362,7 @@ export async function handleGetPasswordSettings(
     return { success: true, settings: passwordSettings };
   } catch (error) {
     console.error('Error getting password settings:', error);
-    return { success: false, error: await t('common.errors.failedToRetrieveData') };
+    return { success: false, error: await t('common.errors.unknownError') };
   }
 }
 
@@ -410,7 +410,7 @@ export async function handleUploadVault(
     return { success: true, status: response.status, newRevisionNumber: response.newRevisionNumber };
   } catch (error) {
     console.error('Failed to upload vault:', error);
-    return { success: false, error: await t('common.errors.failedToUploadVault') };
+    return { success: false, error: await t('common.errors.unknownError') };
   }
 }
 
@@ -513,7 +513,7 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
   if (response.status === 0) {
     await storage.setItem('session:vaultRevisionNumber', response.newRevisionNumber);
   } else {
-    throw new Error(await t('common.errors.failedToUploadVault'));
+    throw new Error(await t('common.errors.unknownError'));
   }
 
   return response;

@@ -88,7 +88,7 @@ const Login: React.FC = () => {
       }
     } catch (err) {
       await app.logout();
-      setError(err instanceof Error ? err.message : t('auth.errors.migrationError'));
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
       hideLoading();
       return;
     }
@@ -190,7 +190,7 @@ const Login: React.FC = () => {
 
       // Check if token was returned.
       if (!validationResponse.token) {
-        throw new Error(t('auth.errors.noToken'));
+        throw new Error(t('common.errors.unknownError'));
       }
 
       // Handle successful authentication
@@ -242,7 +242,7 @@ const Login: React.FC = () => {
 
       // Check if token was returned.
       if (!validationResponse.token) {
-        throw new Error(t('auth.errors.noToken'));
+        throw new Error(t('common.errors.unknownError'));
       }
 
       // Handle successful authentication

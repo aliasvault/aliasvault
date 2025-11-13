@@ -74,9 +74,9 @@ export function useVaultMutate() : {
       // Note: vault merge is no longer allowed by the API as of 0.20.0, updates with the same revision number are rejected. So this check can be removed later.
       throw new Error('Vault merge required. Please login via the web app to merge the multiple pending updates to your vault.');
     } else if (response.status === 2) {
-      throw new Error(t('common.errors.failedToUploadVault'));
+      throw new Error(t('common.errors.unknownError'));
     } else {
-      throw new Error(t('common.errors.failedToUploadVault'));
+      throw new Error(t('common.errors.unknownError'));
     }
 
     // Check if it's a network error
