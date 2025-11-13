@@ -40,9 +40,6 @@
     "verify": "验证",
     "unlockVault": "解锁密码库",
     "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "输入您的密码以解锁密码库",
     "enterPasswordPlaceholder": "密码",
     "enterAuthCode": "输入 6 位数代码",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "获取加密数据库失败",
       "usernameNotFound": "未找到用户名",
-      "vaultMergeRequired": "密码库需合并变更，请登录网页版处理待合并更新。",
       "vaultOutdated": "您的密码库版本过低，请登录 AliasVault 官网并执行更新流程。",
-      "failedToUploadVault": "密码库上传失败，请重启应用并重试。",
-      "usernameNotFoundLoginAgain": "用户不存在，请重新登录。",
-      "errorDuringPasswordChange": "密码修改操作出错，请重新登录以获取最新密码库数据。",
       "failedToSyncVault": "同步密码库失败",
-      "operationFailed": "操作失败",
       "versionNotSupported": "此版本的AliasVault移动应用已不再被服务器支持。请将应用更新至最新版本。",
       "serverVersionNotSupported": "AliasVault 服务器需要更新到更高版本才能使用此移动应用。如需帮助，请联系支持人员。",
       "appOutdated": "此应用已过时，无法用于访问新版本的密码库。请更新 AliasVault 应用以继续。",
-      "vaultDecryptFailed": "密码库解密失败，若问题持续，请退出登录后重新登录。",
       "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。"
     }
   },
@@ -171,9 +162,10 @@
     "twoFactorAuth": "两步验证",
     "totpCode": "TOTP 验证码",
     "attachments": "附件",
-    "loadingAttachments": "加载附件中…",
-    "addAttachments": "添加附件",
     "deleteAttachment": "删除",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
     "toasts": {
       "credentialUpdated": "凭据更新成功",
       "credentialCreated": "凭据创建成功",
@@ -185,9 +177,7 @@
     "createNewAliasFor": "创建新别名",
     "errors": {
       "loadFailed": "加载凭据失败",
-      "saveFailed": "保存凭据失败",
-      "generateUsernameFailed": "生成用户名失败",
-      "generatePasswordFailed": "生成密码失败"
+      "saveFailed": "保存凭据失败"
     },
     "contextMenu": {
       "title": "凭据选项",
@@ -326,11 +316,6 @@
         "random": "随机",
         "male": "男",
         "female": "女"
-      },
-      "errors": {
-        "loadFailed": "加载身份生成器设置失败。",
-        "languageUpdateFailed": "更新语言设置失败。",
-        "genderUpdateFailed": "更新性别设置失败。"
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +363,6 @@
         "success": "成功",
         "failed": "失败",
         "time": "时间",
-        "device": "设备",
         "ipAddress": "IP地址",
         "client": "客户端",
         "failedToLoad": "加载认证日志失败"
@@ -435,14 +419,6 @@
       "hoursAgo_single": "{{count}} 小时前",
       "hoursAgo_plural": "{{count}} 小时前",
       "yesterday": "昨天"
-    },
-    "errors": {
-      "generic": "发生错误",
-      "loadFailed": "加载邮件失败",
-      "deleteFailed": "删除邮件失败",
-      "dbNotAvailable": "数据库上下文或邮件不可用",
-      "decryptFailed": "解密附件失败",
-      "downloadFailed": "下载附件失败"
     }
   },
   "validation": {
@@ -480,11 +456,11 @@
     "VAULT_ERROR": "本地密码库不是最新版本。请刷新页面同步密码库后重试。"
   },
   "app": {
-    "openReadOnlyMode": "以只读模式打开",
     "status": {
       "unlockingVault": "解锁密码库",
       "decryptingVault": "解密密码库",
-      "openingVaultReadOnly": "以只读模式打开密码库"
+      "openingVaultReadOnly": "以只读模式打开密码库",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "离线模式 (只读)",
@@ -499,8 +475,7 @@
     },
     "navigation": {
       "login": "登录",
-      "loginSettings": "登录设置",
-      "notFound": "未找到"
+      "loginSettings": "登录设置"
     },
     "notFound": {
       "title": "未找到页面",
