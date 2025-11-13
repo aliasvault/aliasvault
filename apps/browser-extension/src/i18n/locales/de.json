@@ -18,18 +18,12 @@
     "masterPassword": "Master-Passwort",
     "unlockVault": "Tresor entsperren",
     "unlockWithPin": "Unlock with PIN",
-    "enterPin": "Enter Your PIN",
     "enterPinToUnlock": "Enter your PIN to unlock your vault",
-    "unlock": "Unlock",
-    "usePassword": "Use Password",
     "useMasterPassword": "Use Master Password",
     "pinUnlockTip": "You can also type your PIN using your keyboard",
     "unlockTitle": "Entsperre Deinen Tresor",
-    "unlockDescription": "Bitte gib Dein Master-Passwort zum Entsperren des Tresors ein.",
     "logout": "Abmelden",
     "logoutConfirm": "Bist Du sicher, dass Du Dich abmelden möchtest?",
-    "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde Dich erneut an.",
-    "unlockSuccess": "Tresor erfolgreich entsperrt!",
     "unlockSuccessTitle": "Ihr Tresor wurde erfolgreich entsperrt",
     "unlockSuccessDescription": "Du kannst jetzt die Autofill-Funktion in Anmeldeformularen in Deinem Browser nutzen.",
     "closePopup": "Popup schließen",
@@ -40,8 +34,6 @@
     "errors": {
       "invalidCode": "Bitte gib einen gültigen 6-stelligen Sicherheits-Code ein.",
       "serverError": "Der AliasVault-Server konnte nicht erreicht werden. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
-      "noToken": "Anmeldung fehlgeschlagen -- es wurde kein Token zurückgegeben",
-      "migrationError": "Beim Prüfen auf ausstehende Migrationen ist ein Fehler aufgetreten.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut.",
       "accountLocked": "Das Konto wurde wegen zu vieler fehlgeschlagener Anmeldeversuche vorübergehend gesperrt.",
       "networkError": "Netzwerkfehler. Bitte überprüfe Deine Verbindung und versuche es erneut.",
@@ -107,9 +99,7 @@
       "unknownError": "Ein unbekannter Fehler ist aufgetreten",
       "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
       "vaultNotAvailable": "Tresor nicht verfügbar",
-      "failedToRetrieveData": "Abruf der Daten fehlgeschlagen",
       "vaultIsLocked": "Der Tresor ist gesperrt.",
-      "failedToUploadVault": "Das Hochladen des Tresors ist fehlgeschlagen",
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an."
     },
     "apiErrors": {
@@ -184,8 +174,6 @@
     "deleteCredential": "Zugang löschen",
     "credentialDetails": "Details zum Zugang",
     "serviceName": "Name des Dienstes",
-    "username": "Benutzername",
-    "password": "Passwort",
     "notes": "Notizen",
     "totp": "Zwei-Faktor-Authentifizierung",
     "totpCode": "TOTP-Code",
@@ -335,7 +323,6 @@
     "autoLock8Hours": "8 Stunden",
     "autoLock24Hours": "24 Stunden",
     "versionPrefix": "Version ",
-    "preferences": "Einstellungen",
     "autofillSettings": "Autofill-Einstellungen",
     "clipboardSettings": "Zwischenablage-Einstellungen",
     "contextMenuSettings": "Kontextmenü-Einstellungen",
@@ -368,7 +355,6 @@
       "pin": "PIN Code",
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
-      "enterNewPin": "Enter new PIN",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
@@ -408,7 +394,6 @@
       "titleLabel": "Titel",
       "titlePlaceholder": "Gib einen Namen für diesen Passkey ein",
       "createButton": "Passkey erstellen",
-      "creatingButton": "Wird erstellt …",
       "useBrowserPasskey": "Browser-Passkey verwenden",
       "selectPasskeyToReplace": "Wähle einen Passkey zum Ersetzen:",
       "createNewPasskey": "Neuen Passkey erstellen",
@@ -417,9 +402,7 @@
     },
     "settings": {
       "passkeyProvider": "Passkey-Anbieter",
-      "passkeyProviderOn": "Passkey-Anbieter an ",
-      "enable": "AliasVault als Passkey-Anbieter aktivieren",
-      "description": "Wenn aktiviert, übernimmt AliasVault die Verarbeitung von Passkey-Anfragen von Webseiten. Fordert eine Website einen Passkey an, wird das AliasVault‑Popup statt der nativen Passkey‑Oberfläche des Browsers oder Betriebssystems angezeigt."
+      "passkeyProviderOn": "Passkey-Anbieter an "
     }
   },
   "upgrade": {
