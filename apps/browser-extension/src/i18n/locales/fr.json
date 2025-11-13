@@ -18,18 +18,12 @@
     "masterPassword": "Mot de passe principal",
     "unlockVault": "Déverrouiller le coffre",
     "unlockWithPin": "Unlock with PIN",
-    "enterPin": "Enter Your PIN",
     "enterPinToUnlock": "Enter your PIN to unlock your vault",
-    "unlock": "Unlock",
-    "usePassword": "Use Password",
     "useMasterPassword": "Use Master Password",
     "pinUnlockTip": "You can also type your PIN using your keyboard",
     "unlockTitle": "Déverrouiller votre coffre",
-    "unlockDescription": "Entrez votre mot de passe principal pour déverrouiller votre coffre-fort.",
     "logout": "Se déconnecter",
     "logoutConfirm": "Êtes-vous sûr de vouloir vous déconnecter ?",
-    "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
-    "unlockSuccess": "Parcourir le contenu du coffre !",
     "unlockSuccessTitle": "Votre coffre a été déverrouillé avec succès",
     "unlockSuccessDescription": "Vous pouvez maintenant utiliser le remplissage automatique des formulaires de connexion dans votre navigateur.",
     "closePopup": "Fermer cette popup",
@@ -40,8 +34,6 @@
     "errors": {
       "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
       "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
-      "noToken": "Échec de la connexion -- aucun jeton retourné",
-      "migrationError": "Une erreur s'est produite lors de la vérification des migrations en attente.",
       "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
       "accountLocked": "Compte temporairement verrouillé en raison d'un trop grand nombre de tentatives échouées.",
       "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez.",
@@ -107,9 +99,7 @@
       "unknownError": "Une erreur inconnue s'est produite",
       "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
       "vaultNotAvailable": "Coffre non disponible",
-      "failedToRetrieveData": "Échec de la récupération des données",
       "vaultIsLocked": "Le coffre est verrouillé",
-      "failedToUploadVault": "Échec du téléchargement du coffre",
       "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité."
     },
     "apiErrors": {
@@ -184,8 +174,6 @@
     "deleteCredential": "Supprimer les identifiants",
     "credentialDetails": "Informations sur les identifiants",
     "serviceName": "Nom du service",
-    "username": "Nom d'utilisateur",
-    "password": "Mot de passe",
     "notes": "Notes",
     "totp": "Authentification à deux facteurs",
     "totpCode": "Mot de passe à usage unique",
@@ -335,7 +323,6 @@
     "autoLock8Hours": "8 heures",
     "autoLock24Hours": "24 heures",
     "versionPrefix": "Version ",
-    "preferences": "Préférences",
     "autofillSettings": "Paramètres du remplissage automatique",
     "clipboardSettings": "Paramètres du presse-papiers",
     "contextMenuSettings": "Paramètres du menu contextuel",
@@ -368,7 +355,6 @@
       "pin": "PIN Code",
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
-      "enterNewPin": "Enter new PIN",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
       "confirmPin": "Confirm PIN",
       "confirmPinDescription": "Enter your PIN again to confirm",
@@ -408,7 +394,6 @@
       "titleLabel": "Title",
       "titlePlaceholder": "Enter a name for this passkey",
       "createButton": "Create Passkey",
-      "creatingButton": "Creating...",
       "useBrowserPasskey": "Use Browser Passkey",
       "selectPasskeyToReplace": "Select a passkey to replace:",
       "createNewPasskey": "Create New Passkey",
@@ -417,9 +402,7 @@
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on ",
-      "enable": "Enable AliasVault as passkey provider",
-      "description": "When enabled, AliasVault will handle passkey requests from websites. When a website requests a passkey, the AliasVault popup will be shown instead of the native browser or OS passkey interface."
+      "passkeyProviderOn": "Passkey Provider on "
     }
   },
   "upgrade": {
