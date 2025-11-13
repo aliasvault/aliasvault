@@ -5,6 +5,9 @@
   <string name="aliasvault_icon">AliasVault-kuvake</string>
   <!-- Common strings -->
   <string name="common_close">Sulje</string>
+  <string name="common_next">Next</string>
+  <string name="common_cancel">Cancel</string>
+  <string name="unknown_error">An unknown error occurred</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Nouto epäonnistui, avaa sovellus</string>
   <string name="autofill_no_match_found">Ei osumia löytynyt, luodaanko uusi?</string>
@@ -25,7 +28,6 @@
   <string name="passkey_website_label">Verkkosivusto</string>
   <string name="passkey_username_label">Käyttäjänimi</string>
   <string name="passkey_create_button">Luo todennusavain, Passkey</string>
-  <string name="passkey_cancel_button">Peruuta</string>
   <string name="passkey_creating">Luodaan todennusavainta...</string>
   <string name="passkey_saving">Tallennetaan holviin…</string>
   <string name="passkey_syncing">Synkronoidaan palvelimeen…</string>
@@ -57,10 +59,20 @@
   <string name="server_version_not_supported_title">Palvelimen päivtys vaaditaan</string>
   <string name="server_version_not_supported_message">Palvelimen versio on vanhentunut. Ota yhteyttä järjestelmänvalvojaan päivittääksesi palvelin.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_biometric_required">Ole hyvä ja ota biometrinen todennus käyttöön AliasVault-sovelluksessa, jotta voit käyttää todennusavaimia.</string>
+  <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
   <string name="error_unlock_vault_first">Ole hyvä ja avaa holvi ensin AliasVault-sovelluksessa</string>
   <string name="error_vault_decrypt_failed">Holvin salauksen purku epäonnistui</string>
-  <string name="error_vault_unlock_failed">Holvin lukituksen poisto epäonnistui</string>
   <string name="error_biometric_cancelled">Biometrinen tunnistus peruttu</string>
   <string name="error_encryption_key_failed">Salausavaimen noutaminen epäonnistui</string>
+  <!-- PIN unlock -->
+  <string name="pin_unlock_vault">Unlock Vault</string>
+  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
+  <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
+  <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
+  <!-- PIN setup -->
+  <string name="pin_setup_title">Setup PIN</string>
+  <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
+  <string name="pin_confirm_title">Confirm PIN</string>
+  <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
+  <string name="pin_mismatch">PINs do not match. Please try again.</string>
 </resources>
