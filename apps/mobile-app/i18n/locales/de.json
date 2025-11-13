@@ -40,9 +40,6 @@
     "verify": "Bestätige",
     "unlockVault": "Tresor entsperren",
     "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "enterPassword": "Bitte gib Dein Passwort zum Entsperren des Tresors ein",
     "enterPasswordPlaceholder": "Passwort",
     "enterAuthCode": "Gib den 6-stelligen Sicherheits-Code ein.",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Fehler beim Abrufen der verschlüsselten Datenbank",
       "usernameNotFound": "Benutzername nicht gefunden",
-      "vaultMergeRequired": "Tresor-Zusammenführung erforderlich. Bitte melde Dich über die Web-App an, um mehrere ausstehende Aktualisierungen in Deinem Tresor zusammenzuführen.",
       "vaultOutdated": "Dein Tresor ist veraltet. Bitte melde Dich auf der AliasVault-Webseite an und folge den Anweisungen.",
-      "failedToUploadVault": "Fehler beim Hochladen des Tresors auf den Server. Bitte starte die App neu.",
-      "usernameNotFoundLoginAgain": "Benutzername nicht gefunden. Bitte erneut anmelden.",
-      "errorDuringPasswordChange": "Fehler beim Ändern des Passworts. Bitte melde Dich erneut an, um Deinen letzten Tresor abzurufen.",
       "failedToSyncVault": "Fehler beim Synchronisieren des Tresors",
-      "operationFailed": "Vorgang fehlgeschlagen",
       "versionNotSupported": "Diese Version der AliasVault-App wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine App auf die neueste Version.",
       "serverVersionNotSupported": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese mobile App nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
       "appOutdated": "Diese App ist veraltet und kann nicht verwendet werden, um auf diesen Tresor zuzugreifen. Bitte aktualisiere die App, um fortzufahren.",
-      "vaultDecryptFailed": "Tresor konnte nicht entschlüsselt werden. Wenn das Problem weiterhin besteht, melden Dich bitte erneut an.",
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an."
     }
   },
@@ -171,9 +162,10 @@
     "twoFactorAuth": "Zwei-Faktor-Authentifizierung",
     "totpCode": "TOTP-Code",
     "attachments": "Anhänge",
-    "loadingAttachments": "Anhänge werden geladen...",
-    "addAttachments": "Anhänge hinzufügen",
     "deleteAttachment": "Löschen",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
     "toasts": {
       "credentialUpdated": "Zugang erfolgreich aktualisiert",
       "credentialCreated": "Zugang erfolgreich erstellt",
@@ -185,9 +177,7 @@
     "createNewAliasFor": "Neuen Alias für",
     "errors": {
       "loadFailed": "Laden des Zugangs fehlgeschlagen",
-      "saveFailed": "Fehler beim Speichern der Zugangsdaten",
-      "generateUsernameFailed": "Benutzername konnte nicht generiert werden",
-      "generatePasswordFailed": "Passwort konnte nicht generiert werden"
+      "saveFailed": "Fehler beim Speichern der Zugangsdaten"
     },
     "contextMenu": {
       "title": "Zugangsoptionen",
@@ -326,11 +316,6 @@
         "random": "Zufällig",
         "male": "Männlich",
         "female": "Weiblich"
-      },
-      "errors": {
-        "loadFailed": "Einstellungen des Identitätsgenerators konnten nicht geladen werden.",
-        "languageUpdateFailed": "Die Spracheinstellung konnte nicht aktualisiert werden.",
-        "genderUpdateFailed": "Die Geschlechtseinstellung konnte nicht aktualisiert werden."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +363,6 @@
         "success": "Anmeldung erfolgreich",
         "failed": "Aktion fehlgeschlagen",
         "time": "Zeit",
-        "device": "Gerät",
         "ipAddress": "IP-Adresse",
         "client": "Client",
         "failedToLoad": "Das Laden der Anmeldeversuche ist fehlgeschlagen"
@@ -435,14 +419,6 @@
       "hoursAgo_single": "vor {{count}} Stunde",
       "hoursAgo_plural": "vor {{count}} Stunden",
       "yesterday": "gestern"
-    },
-    "errors": {
-      "generic": "Ein Fehler ist aufgetreten",
-      "loadFailed": "Laden der E-Mails fehlgeschlagen",
-      "deleteFailed": "Löschen der E-Mail fehlgeschlagen",
-      "dbNotAvailable": "Datenbank-Kontext oder E-Mail nicht verfügbar",
-      "decryptFailed": "Fehler beim Entschlüsseln des Anhangs",
-      "downloadFailed": "Herunterladen des Anhangs fehlgeschlagen"
     }
   },
   "validation": {
@@ -480,11 +456,11 @@
     "VAULT_ERROR": "Der lokale Tresor ist nicht aktuell. Bitte synchronisiere Deinen Tresor, indem Du die Seite aktualisierst, und versuche es erneut."
   },
   "app": {
-    "openReadOnlyMode": "Im Lese-Modus öffnen",
     "status": {
       "unlockingVault": "Tresor wird entsperrt",
       "decryptingVault": "Tresor wird entschlüsselt",
-      "openingVaultReadOnly": "Tresor wird im Lese-Modus geöffnet"
+      "openingVaultReadOnly": "Tresor wird im Lese-Modus geöffnet",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "Offline-Modus (nur lesender Zugriff)",
@@ -499,8 +475,7 @@
     },
     "navigation": {
       "login": "Anmelden",
-      "loginSettings": "Anmeldeeinstellungen",
-      "notFound": "Nicht gefunden"
+      "loginSettings": "Anmeldeeinstellungen"
     },
     "notFound": {
       "title": "Seite konnte nicht gefunden werden",
