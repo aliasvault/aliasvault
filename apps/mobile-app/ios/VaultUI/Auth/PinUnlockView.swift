@@ -14,6 +14,10 @@ public struct PinUnlockView: View {
         self._viewModel = ObservedObject(wrappedValue: viewModel)
     }
 
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
+    }
+
     public var body: some View {
         GeometryReader { geometry in
             ZStack {
@@ -25,7 +29,7 @@ public struct PinUnlockView: View {
                             viewModel.cancel()
                         }) {
                             Text(String(localized: "cancel", bundle: locBundle))
-                                .foregroundColor(theme.primary)
+                                .foregroundColor(colors.primary)
                         }
                         .padding(.trailing, 20)
                     }
@@ -44,13 +48,13 @@ public struct PinUnlockView: View {
                 // Title
                 Text(String(localized: "unlock_vault", bundle: locBundle))
                     .font(.system(size: 24, weight: .semibold))
-                    .foregroundColor(theme.text)
+                    .foregroundColor(colors.text)
                     .padding(.bottom, 8)
 
                 // Subtitle
                 Text(String(format: String(localized: "enter_pin_to_unlock_vault", bundle: locBundle)))
                     .font(.system(size: 16))
-                    .foregroundColor(theme.text.opacity(0.7))
+                    .foregroundColor(colors.text.opacity(0.7))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 40)
                     .padding(.bottom, 32)
@@ -61,12 +65,12 @@ public struct PinUnlockView: View {
                         ForEach(0..<pinLength, id: \.self) { index in
                             Circle()
                                 .strokeBorder(
-                                    index < viewModel.pin.count ? theme.primary : theme.accentBorder,
+                                    index < viewModel.pin.count ? colors.primary : colors.accentBorder,
                                     lineWidth: 2
                                 )
                                 .background(
                                     Circle()
-                                        .fill(index < viewModel.pin.count ? theme.primary : Color.clear)
+                                        .fill(index < viewModel.pin.count ? colors.primary : Color.clear)
                                 )
                                 .frame(width: 16, height: 16)
                         }
@@ -76,7 +80,7 @@ public struct PinUnlockView: View {
                     // For variable length, show bullet points
                     Text(viewModel.pin.isEmpty ? "----" : String(repeating: "•", count: viewModel.pin.count))
                         .font(.system(size: 42, weight: .semibold))
-                        .foregroundColor(theme.text)
+                        .foregroundColor(colors.text)
                         .kerning(8)
                         .frame(minHeight: 48)
                         .padding(.bottom, 24)
@@ -86,7 +90,7 @@ public struct PinUnlockView: View {
                 if let error = viewModel.error {
                     Text(error)
                         .font(.system(size: 14))
-                        .foregroundColor(theme.errorBorder)
+                        .foregroundColor(.red)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 40)
                         .padding(.bottom, 12)
@@ -97,7 +101,7 @@ public struct PinUnlockView: View {
 
                 // Numpad
                 PinNumpadView(
-                    theme: theme,
+                    colorScheme: colorScheme,
                     onDigit: { digit in
                         viewModel.addDigit(digit)
                     },
@@ -107,7 +111,7 @@ public struct PinUnlockView: View {
                 )
                 }
                 .frame(width: geometry.size.width, height: geometry.size.height)
-                .background(theme.background)
+                .background(colors.background)
                 .blur(radius: viewModel.isUnlocking ? 2 : 0)
                 .disabled(viewModel.isUnlocking)
 
@@ -118,12 +122,12 @@ public struct PinUnlockView: View {
                             .ignoresSafeArea()
 
                         ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: theme.primary))
+                            .progressViewStyle(CircularProgressViewStyle(tint: colors.primary))
                             .scaleEffect(1.5)
                             .padding(24)
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .fill(theme.accentBackground)
+                                    .fill(colors.accentBackground)
                             )
                             .shadow(color: Color.black.opacity(0.2), radius: 10, x: 0, y: 4)
                     }
@@ -132,33 +136,33 @@ public struct PinUnlockView: View {
             }
         }
     }
-
-    private var theme: Theme {
-        colorScheme == .dark ? Theme.dark : Theme.light
-    }
 }
 
 /// Numpad button component
 struct NumpadButton: View {
     let value: String?
     let icon: String?
-    let theme: Theme
+    let colorScheme: ColorScheme
     let action: () -> Void
 
     @State private var isPressed = false
 
-    init(value: String, theme: Theme, action: @escaping () -> Void) {
+    init(value: String, colorScheme: ColorScheme, action: @escaping () -> Void) {
         self.value = value
         self.icon = nil
-        self.theme = theme
+        self.colorScheme = colorScheme
         self.action = action
     }
 
-    init(icon: String, theme: Theme, action: @escaping () -> Void) {
+    init(icon: String, colorScheme: ColorScheme, action: @escaping () -> Void) {
         self.value = nil
         self.icon = icon
-        self.theme = theme
+        self.colorScheme = colorScheme
         self.action = action
+    }
+
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
     }
 
     var body: some View {
@@ -167,22 +171,22 @@ struct NumpadButton: View {
         }) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(theme.accentBackground)
+                    .fill(colors.accentBackground)
 
                 // Highlight overlay when pressed
                 if isPressed {
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(theme.primary.opacity(0.2))
+                        .fill(colors.primary.opacity(0.2))
                 }
 
                 if let value = value {
                     Text(value)
                         .font(.system(size: 24, weight: .semibold))
-                        .foregroundColor(theme.text)
+                        .foregroundColor(colors.text)
                 } else if let icon = icon {
                     Image(systemName: icon)
                         .font(.system(size: 24))
-                        .foregroundColor(theme.text)
+                        .foregroundColor(colors.text)
                 }
             }
             .frame(height: 60)
@@ -203,39 +207,6 @@ struct NumpadButtonStyle: ButtonStyle {
                 isPressed = newValue
             }
     }
-}
-
-// MARK: - Theme
-
-/// Theme colors matching the React Native app
-public struct Theme {
-    let background: Color
-    let text: Color
-    let primary: Color
-    let primarySurfaceText: Color
-    let accentBackground: Color
-    let accentBorder: Color
-    let errorBorder: Color
-
-    static let light = Theme(
-        background: Color(UIColor.systemBackground),
-        text: Color(UIColor.label),
-        primary: ColorConstants.Light.primary,
-        primarySurfaceText: Color.white,
-        accentBackground: Color(UIColor.secondarySystemBackground),
-        accentBorder: Color(UIColor.separator),
-        errorBorder: Color.red
-    )
-
-    static let dark = Theme(
-        background: Color(UIColor.systemBackground),
-        text: Color(UIColor.label),
-        primary: ColorConstants.Dark.primary,
-        primarySurfaceText: Color.white,
-        accentBackground: Color(UIColor.secondarySystemBackground),
-        accentBorder: Color(UIColor.separator),
-        errorBorder: Color.red
-    )
 }
 
 // MARK: - ViewModel
