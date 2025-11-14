@@ -20,7 +20,6 @@
     "unlockWithPin": "שחרור נעילה עם קוד אישי",
     "enterPinToUnlock": "נא למלא את הקוד האישי שלך כדי לשחרר את הכספת שלך",
     "useMasterPassword": "להשתמש בסיסמה על",
-    "pinUnlockTip": "אפשר להקליד את הקוד האישי שלך באמצעות המקלדת שלך",
     "unlockTitle": "שחרור נעילת הכספת שלך",
     "logout": "יציאה",
     "logoutConfirm": "לצאת?",
@@ -350,7 +349,7 @@
     },
     "unlockMethod": {
       "title": "שיטת שחרור נעילת כספת",
-      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a quick 4-8 digit PIN for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
+      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
       "password": "סיסמת על",
       "pin": "קוד אישי",
       "pinDescription": "Unlock vault with PIN code",
