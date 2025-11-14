@@ -282,7 +282,7 @@
       "biometricEnabled": "{{biometric}} foi ativado com sucesso",
       "biometricNotAvailable": "{{biometric}} Não Disponível",
       "biometricDisabledMessage": "{{biometric}} está desabitado para o AliasVault. Para utilizar, por favor primeiro habilite nas configurações do seu dispositivo.",
-      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
+      "biometricHelp": "Utilize biometria para desbloquear seu cofre, que está protegido por {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} não está disponível. Clique para abrir as configurações e/ou vá às configurações do seu dispositivo para habilitar e configurar.",
       "pin": "Código PIN",
       "pinDescription": "Utilize um código PIN para desbloquear seu cofre mais rapidamente.",
@@ -294,7 +294,7 @@
       "confirmPin": "Confirme o PIN",
       "confirmPinDescription": "Digite seu PIN novamente para confirmar",
       "pinMismatch": "PINs não correspondem. Por favor, tente novamente.",
-      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
+      "pinLocked": "PIN bloqueado após muitas tentativas incorretas. Por favor, utilize sua senha mestre.",
       "passwordHelp": "Re-digite sua senha mestre para desbloquear seu cofre. Isso sempre estará disponível como uma opção alternativa.",
       "keystoreIOS": "iOS Keychain",
       "keystoreAndroid": "Android Keystore"
@@ -460,7 +460,7 @@
       "unlockingVault": "Desbloqueando cofre",
       "decryptingVault": "Descriptografando cofre",
       "openingVaultReadOnly": "Abrindo cofre em modo de leitura",
-      "retryingConnection": "Retrying connection..."
+      "retryingConnection": "Reconectando..."
     },
     "offline": {
       "banner": "Modo offline (apenas leitura)",
