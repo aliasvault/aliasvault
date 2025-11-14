@@ -20,7 +20,6 @@
     "unlockWithPin": "使用 PIN 解锁",
     "enterPinToUnlock": "输入您的 PIN 以解锁密码库",
     "useMasterPassword": "使用主密码",
-    "pinUnlockTip": "You can also type your PIN using your keyboard",
     "unlockTitle": "解锁您的密码库",
     "logout": "登出",
     "logoutConfirm": "确定要退出登录吗？",
@@ -350,7 +349,7 @@
     },
     "unlockMethod": {
       "title": "密码库解锁方式",
-      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a quick 4-8 digit PIN for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
+      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
       "password": "主密码",
       "pin": "PIN 码",
       "pinDescription": "使用 PIN 码解锁密码库",
