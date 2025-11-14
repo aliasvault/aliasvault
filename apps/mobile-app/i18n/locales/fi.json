@@ -163,9 +163,9 @@
     "totpCode": "TOTP-koodi",
     "attachments": "Liitteet",
     "deleteAttachment": "Poista",
-    "fileSavedTo": "File saved to",
-    "previewNotSupported": "Preview not supported",
-    "downloadToView": "Download the file to view it",
+    "fileSavedTo": "Tiedosto tallennettu kohteeseen",
+    "previewNotSupported": "Esikatselua ei tuettu",
+    "downloadToView": "Lataa tiedosto nähdäksesi sen",
     "toasts": {
       "credentialUpdated": "Tunnistetieto päivitetty",
       "credentialCreated": "Tunnistetieto luotu",
@@ -460,7 +460,7 @@
       "unlockingVault": "Avataan holvia",
       "decryptingVault": "Pureraan holvin salausta",
       "openingVaultReadOnly": "Avataan holvi vain luku -tilassa",
-      "retryingConnection": "Retrying connection..."
+      "retryingConnection": "Yritetään yhdistää uudelleen..."
     },
     "offline": {
       "banner": "Offline-tila (vain luku)",
