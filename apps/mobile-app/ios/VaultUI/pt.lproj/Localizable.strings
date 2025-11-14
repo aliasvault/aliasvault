@@ -2,12 +2,12 @@
 "error" = "Erro";
 "cancel" = "Cancelar";
 "back" = "Voltar";
-"next" = "Next";
+"next" = "Próximo";
 "edit" = "Editar";
 "website" = "Website";
 "username" = "Nome de Usuário";
 "title" = "Título";
-"unknown_error" = "An unknown error occurred";
+"unknown_error" = "Ocorreu um erro desconhecido";
 
 "loading_credentials" = "Carregando credenciais...";
 "no_credentials_found" = "Nenhuma credencial encontrada";
@@ -60,14 +60,14 @@
 "create_passkey_explanation" = "Isto cria uma nova passkey e a armazena no seu cofre. Ela será sincronizada automaticamente através de todos os seus dispositivos que utilizam o AliasVault.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "Desbloquear Cofre";
+"enter_pin_to_unlock_vault" = "Digite seu PIN para desbloquear seu cofre";
+"pin_locked_max_attempts" = "PIN bloqueado após muitas tentativas incorretas";
+"pin_incorrect_attempts_remaining" = "PIN incorreto. %d tentativas restantes";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "Configurar PIN";
+"pin_setup_subtitle" = "Escolha um PIN para desbloquear seu cofre";
+"pin_confirm_title" = "Confirmar PIN";
+"pin_confirm_subtitle" = "Digite seu PIN novamente para confirmar";
+"pin_mismatch" = "PINs não correspondem. Por favor, tente novamente.";
