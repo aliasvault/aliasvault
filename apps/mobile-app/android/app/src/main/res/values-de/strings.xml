@@ -5,9 +5,9 @@
   <string name="aliasvault_icon">AliasVault-Icon</string>
   <!-- Common strings -->
   <string name="common_close">Schließen</string>
-  <string name="common_next">Next</string>
-  <string name="common_cancel">Cancel</string>
-  <string name="unknown_error">An unknown error occurred</string>
+  <string name="common_next">Weiter</string>
+  <string name="common_cancel">Abbrechen</string>
+  <string name="unknown_error">Ein unbekannter Fehler ist aufgetreten</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Abruf der Daten fehlgeschlagen. Öffne die App</string>
   <string name="autofill_no_match_found">Keine Übereinstimmung gefunden, neun Eintrag erstellen?</string>
@@ -65,14 +65,14 @@
   <string name="error_biometric_cancelled">Biometrische Authentifizierung abgebrochen</string>
   <string name="error_encryption_key_failed">Fehler beim Abrufen des Schlüssel</string>
   <!-- PIN unlock -->
-  <string name="pin_unlock_vault">Unlock Vault</string>
-  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
-  <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
-  <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
+  <string name="pin_unlock_vault">Tresor entsperren</string>
+  <string name="pin_enter_to_unlock">PIN zum Entsperren des Tresors auswählen</string>
+  <string name="pin_locked_max_attempts">PIN nach zu vielen Fehlversuchen gesperrt</string>
+  <string name="pin_incorrect_attempts_remaining">Ungültiger PIN-Code, %d verbleibende Versuche</string>
   <!-- PIN setup -->
-  <string name="pin_setup_title">Setup PIN</string>
-  <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
-  <string name="pin_confirm_title">Confirm PIN</string>
-  <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
-  <string name="pin_mismatch">PINs do not match. Please try again.</string>
+  <string name="pin_setup_title">PIN einrichten</string>
+  <string name="pin_setup_description">PIN zum Entsperren des Tresors auswählen</string>
+  <string name="pin_confirm_title">PIN bestätigen</string>
+  <string name="pin_confirm_description">Zur Bestätigung erneut PIN eingeben</string>
+  <string name="pin_mismatch">PINs stimmen nicht überein. Bitte versuche es erneut.</string>
 </resources>
