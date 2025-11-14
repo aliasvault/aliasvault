@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.aliasvault.app.vaultstore.VaultStore
+import net.aliasvault.app.vaultstore.VaultSyncError
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 import net.aliasvault.app.webapi.WebApiService
@@ -1218,10 +1219,17 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                 withContext(Dispatchers.Main) {
                     promise.resolve(resultMap)
                 }
+            } catch (e: VaultSyncError) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Vault sync error checking vault version", e)
+                    // Map VaultSyncError to proper error codes for React Native
+                    promise.reject(e.code, e.message, e)
+                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e(TAG, "Error checking vault version", e)
-                    promise.reject("ERR_CHECK_VAULT_VERSION", "Failed to check vault version: ${e.message}", e)
+                    // Fallback for unknown errors
+                    promise.reject("VAULT_CHECK_VERSION_ERROR", "Failed to check vault version: ${e.message}", e)
                 }
             }
         }
@@ -1240,10 +1248,17 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                 withContext(Dispatchers.Main) {
                     promise.resolve(success)
                 }
+            } catch (e: VaultSyncError) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Vault sync error downloading vault", e)
+                    // Map VaultSyncError to proper error codes for React Native
+                    promise.reject(e.code, e.message, e)
+                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e(TAG, "Error downloading vault", e)
-                    promise.reject("ERR_DOWNLOAD_VAULT", "Failed to download vault: ${e.message}", e)
+                    // Fallback for unknown errors
+                    promise.reject("VAULT_DOWNLOAD_ERROR", "Failed to download vault: ${e.message}", e)
                 }
             }
         }
@@ -1261,10 +1276,17 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                 withContext(Dispatchers.Main) {
                     promise.resolve(success)
                 }
+            } catch (e: VaultSyncError) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Vault sync error mutating vault", e)
+                    // Map VaultSyncError to proper error codes for React Native
+                    promise.reject(e.code, e.message, e)
+                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     Log.e(TAG, "Error mutating vault", e)
-                    promise.reject("ERR_MUTATE_VAULT", "Failed to mutate vault: ${e.message}", e)
+                    // Fallback for unknown errors
+                    promise.reject("VAULT_MUTATE_ERROR", "Failed to mutate vault: ${e.message}", e)
                 }
             }
         }
