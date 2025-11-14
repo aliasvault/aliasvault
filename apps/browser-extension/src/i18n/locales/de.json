@@ -363,7 +363,6 @@
       "incorrectPinSingular": "Falsche PIN. 1 Versuch übrig.",
       "enableSuccess": "PIN-Sperre erfolgreich aktiviert!",
       "pinLocked": "PIN-Sperre wurde deaktiviert. Bitte nutze dein Master-Passwort, um deinen Tresor zu entsperren.",
-      "unlockVaultFirst": "Bitte entsperre zuerst deinen Tresor, bevor du einen PIN einrichtest.",
       "pinSecurityWarning": "PIN unlock in the browser extension can be less secure than your master password, as PINs typically have lower entropy and may be brute-forced if your device is compromised. Use it only on devices you fully trust."
     }
   },
