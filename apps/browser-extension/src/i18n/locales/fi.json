@@ -363,7 +363,6 @@
       "incorrectPinSingular": "Virheellinen PIN-koodi. 1 yritys jäljellä.",
       "enableSuccess": "PIN-lukituksen avaus käytössä onnistuneesti!",
       "pinLocked": "PIN-lukituksen avaus on poistettu käytöstä. Ole hyvä ja käytä pääsalasanaa avataksesi holvisi.",
-      "unlockVaultFirst": "Ole hyvä ja avaa holvisi lukitus ennen PIN-koodin asettamista.",
       "pinSecurityWarning": "PIN-koodin lukituksen poisto selaimen laajennuksessa voi olla vähemmän turvallista kuin pääsalasana, koska PIN-koodit ovat tyypillisesti alempia entropia ja voi olla brute-pakko jos laite on vaarassa. Käytä sitä vain laitteissa, joihin täysin luotat."
     }
   },
