@@ -2,6 +2,7 @@ import { Buffer } from 'buffer';
 
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { usePreventRemove } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { Stack, useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useState, useEffect, useRef, useCallback } from 'react';
@@ -56,6 +57,7 @@ export default function AddEditCredentialScreen() : React.ReactNode {
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [originalAttachmentIds, setOriginalAttachmentIds] = useState<string[]>([]);
   const [passkeyMarkedForDeletion, setPasskeyMarkedForDeletion] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { t } = useTranslation();
 
   // Track last generated values to avoid overwriting manual entries
@@ -65,7 +67,7 @@ export default function AddEditCredentialScreen() : React.ReactNode {
     email: string | null;
   }>({ username: null, password: null, email: null });
 
-  const { control, handleSubmit, setValue, watch } = useForm<Credential>({
+  const { control, handleSubmit, setValue, watch, formState } = useForm<Credential>({
     resolver: yupResolver(createCredentialSchema(t)) as Resolver<Credential>,
     defaultValues: {
       Id: "",
@@ -89,6 +91,45 @@ export default function AddEditCredentialScreen() : React.ReactNode {
    * If we received an ID, we're in edit mode.
    */
   const isEditMode = id !== undefined && id.length > 0;
+
+  /**
+   * Track form changes to warn user before dismissing with unsaved changes.
+   */
+  useEffect(() => {
+    // Update unsaved changes state based on form dirty state
+    setHasUnsavedChanges(formState.isDirty);
+  }, [formState.isDirty]);
+
+  /**
+   * Prevent accidental dismissal when there are unsaved changes.
+   */
+  usePreventRemove(hasUnsavedChanges, ({ data }) : void => {
+    Alert.alert(
+      t('credentials.unsavedChanges.title'),
+      t('credentials.unsavedChanges.message'),
+      [
+        {
+          text: t('common.cancel'),
+          style: 'cancel',
+          /**
+           * Cancel button handler.
+           */
+          onPress: () : void => {}
+        },
+        {
+          text: t('credentials.unsavedChanges.discard'),
+          style: 'destructive',
+          /**
+           * Discard button handler.
+           */
+          onPress: () : void => {
+            setHasUnsavedChanges(false);
+            navigation.dispatch(data.action);
+          },
+        },
+      ]
+    );
+  });
 
   /**
    * Load an existing credential from the database in edit mode.
@@ -360,6 +401,9 @@ export default function AddEditCredentialScreen() : React.ReactNode {
        * Handle successful vault mutation.
        */
       onSuccess: () => {
+        // Reset unsaved changes flag to allow dismissal without confirmation
+        setHasUnsavedChanges(false);
+
         // If this was created from autofill (serviceUrl param), show confirmation screen
         if (serviceUrl && !isEditMode) {
           router.replace('/credentials/autofill-credential-created');
@@ -600,6 +644,34 @@ export default function AddEditCredentialScreen() : React.ReactNode {
     },
   });
 
+  /**
+   * Handle cancel button press with unsaved changes check.
+   */
+  const handleCancel = useCallback(() : void => {
+    if (hasUnsavedChanges) {
+      Alert.alert(
+        t('credentials.unsavedChanges.title'),
+        t('credentials.unsavedChanges.message'),
+        [
+          {
+            text: t('common.cancel'),
+            style: 'cancel',
+          },
+          {
+            text: t('credentials.unsavedChanges.discard'),
+            style: 'destructive',
+            /**
+             * Discard button handler.
+             */
+            onPress: () : void => router.back(),
+          },
+        ]
+      );
+    } else {
+      router.back();
+    }
+  }, [hasUnsavedChanges, router, t]);
+
   // Set header buttons
   useEffect(() => {
     navigation.setOptions({
@@ -612,7 +684,7 @@ export default function AddEditCredentialScreen() : React.ReactNode {
          */
         headerLeft: () : React.ReactNode => (
           <RobustPressable
-            onPress={() => router.back()}
+            onPress={handleCancel}
             style={styles.headerLeftButton}
           >
             <ThemedText style={styles.headerLeftButtonText}>{t('common.cancel')}</ThemedText>
@@ -636,7 +708,7 @@ export default function AddEditCredentialScreen() : React.ReactNode {
         </RobustPressable>
       ),
     });
-  }, [navigation, mode, handleSubmit, onSubmit, colors.primary, isEditMode, router, styles.headerLeftButton, styles.headerLeftButtonText, styles.headerRightButton, styles.headerRightButtonDisabled, isSaveDisabled, t]);
+  }, [navigation, mode, handleSubmit, onSubmit, colors.primary, isEditMode, router, styles.headerLeftButton, styles.headerLeftButtonText, styles.headerRightButton, styles.headerRightButtonDisabled, isSaveDisabled, t, handleCancel]);
 
   return (
     <>
