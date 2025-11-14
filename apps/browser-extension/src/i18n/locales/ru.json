@@ -20,7 +20,6 @@
     "unlockWithPin": "Разблокировать ПИН-кодом﻿",
     "enterPinToUnlock": "Введите ПИН-код для разблокировки хранилища",
     "useMasterPassword": "Использовать мастер-пароль",
-    "pinUnlockTip": "Вы также можете ввести ПИН-код с клавиатуры",
     "unlockTitle": "Разблокировать ваше хранилище",
     "logout": "Выйти",
     "logoutConfirm": "Вы уверены, что хотите выйти?",
@@ -350,7 +349,7 @@
     },
     "unlockMethod": {
       "title": "Способ разблокировки хранилища",
-      "introText": "Выберите способ разблокировки вашего хранилища. Вы можете использовать свой мастер-пароль (доступен всегда) или настроить быстрый 4-8-значный ПИН-код для более оперативного доступа. После 3 неудачных попыток ввода ПИН-кода вам потребуется использовать мастер-пароль.",
+      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
       "password": "Мастер-пароль",
       "pin": "ПИН-код",
       "pinDescription": "Разблокировать хранилище ПИН-кодом",
