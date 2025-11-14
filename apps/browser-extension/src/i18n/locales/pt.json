@@ -20,7 +20,6 @@
     "unlockWithPin": "Desbloquear com PIN",
     "enterPinToUnlock": "Digite seu PIN para desbloquear seu cofre",
     "useMasterPassword": "Utilizar Senha Mestre",
-    "pinUnlockTip": "Você também pode digitar seu PIN utilizando o teclado",
     "unlockTitle": "Desbloquear Seu Cofre",
     "logout": "Sair",
     "logoutConfirm": "Tem certeza que deseja sair?",
@@ -350,7 +349,7 @@
     },
     "unlockMethod": {
       "title": "Método de Desbloqueio do Cofre",
-      "introText": "Escolha como você quer desbloquear seu cofre. Você pode utilizar a senha mestre (sempre disponível), ou configurar um PIN de acesso rápido de 4-8 dígitos. Após 3 falhas de PIN, você deverá utilizar sua senha mestre.",
+      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
       "password": "Senha Mestre",
       "pin": "Código PIN",
       "pinDescription": "Desbloquear cofre com código PIN",
