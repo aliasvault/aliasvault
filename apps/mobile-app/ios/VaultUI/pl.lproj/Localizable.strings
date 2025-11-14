@@ -2,12 +2,12 @@
 "error" = "Błąd";
 "cancel" = "Anuluj";
 "back" = "Wstecz";
-"next" = "Next";
+"next" = "Dalej";
 "edit" = "Edytuj";
 "website" = "Strona internetowa";
 "username" = "Nazwa użytkownika";
 "title" = "Nazwa";
-"unknown_error" = "An unknown error occurred";
+"unknown_error" = "Wystąpił nieznany błąd";
 
 "loading_credentials" = "Ładowanie danych uwierzytelniających...";
 "no_credentials_found" = "Nie znaleziono danych logowania";
@@ -60,14 +60,14 @@
 "create_passkey_explanation" = "Spowoduje to utworzenie nowego klucza dostępu i zapisanie go w sejfie. Zostanie on automatycznie zsynchronizowany na wszystkich urządzeniach korzystających z AliasVault.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "Odblokuj sejf";
+"enter_pin_to_unlock_vault" = "Wprowadź swój kod PIN, aby odblokować sejf";
+"pin_locked_max_attempts" = "PIN zablokowany po zbyt wielu nieudanych próbach";
+"pin_incorrect_attempts_remaining" = "Nieprawidłowy kod PIN. Pozostało %d prób.";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
+"pin_setup_title" = "Ustaw kod PIN";
+"pin_setup_subtitle" = "Wybierz kod PIN, aby odblokować sejf";
+"pin_confirm_title" = "Potwierdź kod PIN";
+"pin_confirm_subtitle" = "Wprowadź ponownie swój kod PIN, aby potwierdzić";
 "pin_mismatch" = "PINs do not match. Please try again.";
