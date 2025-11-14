@@ -2,12 +2,12 @@
 "error" = "Fout";
 "cancel" = "Annuleren";
 "back" = "Terug";
-"next" = "Next";
+"next" = "Volgende";
 "edit" = "Bewerken";
 "website" = "Website";
 "username" = "Gebruikersnaam";
 "title" = "Titel";
-"unknown_error" = "An unknown error occurred";
+"unknown_error" = "Er is een onbekende fout opgetreden";
 
 "loading_credentials" = "Credentials laden...";
 "no_credentials_found" = "Geen credentials gevonden";
@@ -60,14 +60,14 @@
 "create_passkey_explanation" = "Dit maakt een nieuwe passkey aan en slaat deze op in je vault. De passkey wordt automatisch gesynchroniseerd naar je andere apparaten.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "Vault ontgrendelen";
+"enter_pin_to_unlock_vault" = "Voer je pincode in om je vault te ontgrendelen";
+"pin_locked_max_attempts" = "Pincode vergrendeld na te veel mislukte pogingen";
+"pin_incorrect_attempts_remaining" = "Onjuiste pincode, %d pogingen resterend";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "Pincode instellen";
+"pin_setup_subtitle" = "Kies een pincode om je vault te ontgrendelen";
+"pin_confirm_title" = "Bevestig pincode";
+"pin_confirm_subtitle" = "Voer je pincode opnieuw in om te bevestigen";
+"pin_mismatch" = "Pincodes komen niet overeen. Probeer het opnieuw.";
