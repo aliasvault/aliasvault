@@ -167,9 +167,9 @@
     "previewNotSupported": "Pré-visualização não suportada",
     "downloadToView": "Baixe o arquivo para abri-lo",
     "unsavedChanges": {
-      "title": "Discard Changes?",
-      "message": "You have unsaved changes. Are you sure you want to discard them?",
-      "discard": "Discard"
+      "title": "Descartar alterações?",
+      "message": "Você tem alterações pendentes. Tem certeza que deseja descartá-las?",
+      "discard": "Descartar"
     },
     "toasts": {
       "credentialUpdated": "Credencial atualizada com sucesso",
