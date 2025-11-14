@@ -20,7 +20,6 @@
     "unlockWithPin": "Mit PIN entsperren",
     "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "useMasterPassword": "Masterpasswort benutzen",
-    "pinUnlockTip": "You can also type your PIN using your keyboard",
     "unlockTitle": "Entsperre Deinen Tresor",
     "logout": "Abmelden",
     "logoutConfirm": "Bist Du sicher, dass Du Dich abmelden möchtest?",
@@ -350,7 +349,7 @@
     },
     "unlockMethod": {
       "title": "Methode zum Entsperren des Tresors",
-      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a quick 4-8 digit PIN for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
+      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
       "password": "Master-Passwort",
       "pin": "PIN-Code",
       "pinDescription": "Tresor mit PIN entsperren",
