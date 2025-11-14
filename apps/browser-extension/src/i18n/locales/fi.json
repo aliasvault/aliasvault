@@ -20,7 +20,6 @@
     "unlockWithPin": "Avaa PIN-koodilla",
     "enterPinToUnlock": "Syötä PIN-koodi avataksesi holvisi",
     "useMasterPassword": "Käytä pääsalasanaa",
-    "pinUnlockTip": "Voit myös syöttää PIN-koodisi näppäimistön avulla",
     "unlockTitle": "Avaa holvisi lukitus",
     "logout": "Uloskirjautuminen",
     "logoutConfirm": "Oletko varma, että haluat kirjautua ulos?",
@@ -350,7 +349,7 @@
     },
     "unlockMethod": {
       "title": "Holvin lukituksen avausmenetelmä",
-      "introText": "Valitse, miten haluat avata holvisi. Voit käyttää pääsalasanaa (aina saatavilla) tai määrittää nopean 4-8 numeroisen PIN-koodin nopeampaa käyttöä varten. Kolmen epäonnistuneen PIN-yrityksen jälkeen sinun on käytettävä pääsalasanaa.",
+      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
       "password": "Pääsalasana",
       "pin": "PIN-koodi",
       "pinDescription": "Avaa holvi PIN-koodilla",
