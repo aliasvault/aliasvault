@@ -363,7 +363,6 @@
       "incorrectPinSingular": "PIN incorreto. 1 tentativa restante.",
       "enableSuccess": "Desbloqueio por PIN habilitado com sucesso!",
       "pinLocked": "Desbloqueio por PIN foi desabilitado. Por favor, utilize sua senha mestre para desbloquear o cofre.",
-      "unlockVaultFirst": "Por favor, desbloqueie seu cofre antes de configurar um PIN.",
       "pinSecurityWarning": "Desbloqueio por PIN na extensão de navegador pode ser menos segura que sua senha mestre, uma vez que PINs geralmente tem uma entropia menor e podem ser vulneráveis à tentativas forçadas caso seu dispositivo esteja comprometido. Utilize apenas em dispositivos que tenha total confiança."
     }
   },
