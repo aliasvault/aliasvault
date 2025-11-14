@@ -20,7 +20,6 @@
     "unlockWithPin": "Unlock with PIN",
     "enterPinToUnlock": "Enter your PIN to unlock your vault",
     "useMasterPassword": "Use Master Password",
-    "pinUnlockTip": "You can also type your PIN using your keyboard",
     "unlockTitle": "Розблокувати своє сховище",
     "logout": "Вийти",
     "logoutConfirm": "Ви впевнені, що хочете вийти?",
@@ -350,7 +349,7 @@
     },
     "unlockMethod": {
       "title": "Vault Unlock Method",
-      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a quick 4-8 digit PIN for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
+      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
       "password": "Master Password",
       "pin": "PIN Code",
       "pinDescription": "Unlock vault with PIN code",
