@@ -166,6 +166,11 @@
     "fileSavedTo": "File saved to",
     "previewNotSupported": "Preview not supported",
     "downloadToView": "Download the file to view it",
+    "unsavedChanges": {
+      "title": "Discard Changes?",
+      "message": "You have unsaved changes. Are you sure you want to discard them?",
+      "discard": "Discard"
+    },
     "toasts": {
       "credentialUpdated": "Credential updated successfully",
       "credentialCreated": "Credential created successfully",
