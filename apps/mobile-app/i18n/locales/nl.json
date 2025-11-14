@@ -167,9 +167,9 @@
     "previewNotSupported": "Voorbeeldweergave wordt niet ondersteund",
     "downloadToView": "Download het bestand om het te bekijken",
     "unsavedChanges": {
-      "title": "Discard Changes?",
-      "message": "You have unsaved changes. Are you sure you want to discard them?",
-      "discard": "Discard"
+      "title": "Wijzigingen ongedaan maken?",
+      "message": "Er zijn niet opgeslagen wijzigingen. \nWeet je zeker dat je deze ongedaan wilt maken?",
+      "discard": "Ongedaan maken"
     },
     "toasts": {
       "credentialUpdated": "Credential succesvol bijgewerkt",
