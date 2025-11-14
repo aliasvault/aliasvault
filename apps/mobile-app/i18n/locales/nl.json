@@ -166,6 +166,11 @@
     "fileSavedTo": "Bestand opgeslagen in",
     "previewNotSupported": "Voorbeeldweergave wordt niet ondersteund",
     "downloadToView": "Download het bestand om het te bekijken",
+    "unsavedChanges": {
+      "title": "Discard Changes?",
+      "message": "You have unsaved changes. Are you sure you want to discard them?",
+      "discard": "Discard"
+    },
     "toasts": {
       "credentialUpdated": "Credential succesvol bijgewerkt",
       "credentialCreated": "Credential succesvol aangemaakt",
