@@ -363,7 +363,6 @@
       "incorrectPinSingular": "Incorrect PIN. 1 attempt remaining.",
       "enableSuccess": "PIN unlock enabled successfully!",
       "pinLocked": "PIN unlock has been disabled. Please use your master password to unlock your vault.",
-      "unlockVaultFirst": "Please unlock your vault first before setting up PIN.",
       "pinSecurityWarning": "PIN unlock in the browser extension can be less secure than your master password, as PINs typically have lower entropy and may be brute-forced if your device is compromised. Use it only on devices you fully trust."
     }
   },
