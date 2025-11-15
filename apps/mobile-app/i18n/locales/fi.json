@@ -167,9 +167,9 @@
     "previewNotSupported": "Esikatselua ei tuettu",
     "downloadToView": "Lataa tiedosto nähdäksesi sen",
     "unsavedChanges": {
-      "title": "Discard Changes?",
-      "message": "You have unsaved changes. Are you sure you want to discard them?",
-      "discard": "Discard"
+      "title": "Hylkää muutokset",
+      "message": "Sinulla on tallentamattomia muutoksia. Haluatko varmasti hylätä ne?",
+      "discard": "Hylkää"
     },
     "toasts": {
       "credentialUpdated": "Tunnistetieto päivitetty",
