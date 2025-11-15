@@ -16,13 +16,13 @@
     "loadMore": "לטעון עוד",
     "use": "להשתמש",
     "confirm": "אישור",
-    "next": "Next",
-    "notice": "Notice",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "next": "הבא",
+    "notice": "לתשומת ליבך",
+    "enabled": "פעיל",
+    "disabled": "כבוי",
     "errors": {
       "unknownError": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
-      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
+      "unknownErrorTryAgain": "אירעה שגיאה לא ידועה, נא לנסות שוב."
     }
   },
   "auth": {
@@ -39,7 +39,7 @@
     "verifyingAuthCode": "קוד האימות נבדק",
     "verify": "אימות",
     "unlockVault": "שחרור נעילת כספת",
-    "unlockWithPin": "Unlock with PIN",
+    "unlockWithPin": "שחרור נעילה עם קוד אישי",
     "enterPassword": "נא למלא את הסיסמה שלך כדי לשחרר את הכספת שלך",
     "enterPasswordPlaceholder": "סיסמה",
     "enterAuthCode": "נא למלא קוד באורך 6 ספרות",
@@ -81,7 +81,7 @@
       "vaultOutdated": "הכספת שלך לא עדכנית. נא להיכנס לאתר AliasVault ולעקוב אחר ההנחיות.",
       "failedToSyncVault": "סנכרון הכספת נכשל",
       "versionNotSupported": "הגרסה הזאת של היישומון של AliasVault לניידים לא נתמכת עוד על ידי השרת. נא לעדכן את היישומון שלך לגרסה העדכנית ביותר.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "serverVersionNotSupported": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש ביישומון הזה לנייד. נא ליצור קשר עם התמיכה לקבלת עזרה.",
       "appOutdated": "היישום הזה לא עדכני ואי אפשר להשתמש בו כדי לגשת לגרסת הכספת (החדשה יותר) הזאת. נא לעדכן את יישום AliasVault כדי להמשיך.",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע."
     }
@@ -163,11 +163,11 @@
     "totpCode": "קוד חד־פעמי זמני",
     "attachments": "צרופות",
     "deleteAttachment": "מחיקה",
-    "fileSavedTo": "File saved to",
-    "previewNotSupported": "Preview not supported",
-    "downloadToView": "Download the file to view it",
+    "fileSavedTo": "הקובץ נשמר אל",
+    "previewNotSupported": "אין תמיכה בתצוגה מקדימה",
+    "downloadToView": "יש להוריד את הקובץ כדי לצפות בו",
     "unsavedChanges": {
-      "title": "Discard Changes?",
+      "title": "להתעלם מהשינויים?",
       "message": "You have unsaved changes. Are you sure you want to discard them?",
       "discard": "Discard"
     },
@@ -229,8 +229,8 @@
       "buttonTip": "אם הכפתור שלעיל לא עובד כנראה שהוא חסום עקב הגדרות אבטחת מידע. אפשר לגשת ידנית להגדרות Android ← ניהול כללי ← סיסמאות והשלמה אוטומטית.",
       "step2": "2. חלק מהיישומונים, למשל: Google Chrome, עלולים לדרוש הגדרות ידניות בהגדרות שלהן כדי שתאפשרנה יישומוני השלמות אוטומטיות מגורמי צד־שלישי. עם זאת, רוב היישומונים אמורים לעבוד עם השלמה אוטומטית כברירת מחדל.",
       "alreadyConfigured": "כבר הגדרתי את זה",
-      "advancedOptions": "Advanced Options",
-      "showSearchText": "Show search text",
+      "advancedOptions": "אפשרויות מתקדמות",
+      "showSearchText": "הצגת טקסט חיפוש",
       "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "שיטת שחרור נעילת כספת",
@@ -289,7 +289,7 @@
       "biometricDisabledMessage": "{{biometric}} מושבת עבור AliasVault. כדי להשתמש בו, נא להפעיל אותו בהגדרות ההתקן תחילה.",
       "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} לא זמין. נא לגעת כדי לפתוח את ההגדרות ו/או לגשת להגדרות המכשיר שלך כדי להפעיל ולהגדיר אותו.",
-      "pin": "PIN Code",
+      "pin": "קוד גישה אישי",
       "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
       "pinEnabled": "PIN unlock enabled successfully",
       "pinDisabled": "PIN unlock has been disabled",
@@ -464,7 +464,7 @@
       "unlockingVault": "שחרור נעילת כספת",
       "decryptingVault": "פענוח הצפנת כספת",
       "openingVaultReadOnly": "כספת נפתח במצב לקריאה בלבד",
-      "retryingConnection": "Retrying connection..."
+      "retryingConnection": "מתבצע ניסיון להתחבר מחדש…"
     },
     "offline": {
       "banner": "מצב בלתי מקוון (קריאה בלבד)",
