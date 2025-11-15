@@ -125,9 +125,6 @@
   <data name="INVALID_REFRESH_TOKEN" xml:space="preserve">
     <value>Недействительный токен обновления</value>
   </data>
-  <data name="REFRESH_TOKEN_REVOKED_SUCCESSFULLY" xml:space="preserve">
-    <value>Токен обновления успешно отозван</value>
-  </data>
   <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
     <value>Регистрация новых аккаунтов на этом сервере отключена. Пожалуйста, свяжитесь с администратором.</value>
   </data>
@@ -169,9 +166,6 @@
   </data>
   <data name="PENDING_MIGRATIONS" xml:space="preserve">
     <value>Есть незавершённые миграции. Запустите 'dotnet ef database update', чтобы применить их.</value>
-  </data>
-  <data name="SYSTEM_OK" xml:space="preserve">
-    <value>ОК</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
     <value>Внутренняя ошибка сервера</value>
