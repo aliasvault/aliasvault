@@ -110,7 +110,6 @@
       "INVALID_RECOVERY_CODE": "Virheellinen palautuskoodi. Yritä uudelleen.",
       "REFRESH_TOKEN_REQUIRED": "Virkistyspoletti vaaditaan.",
       "INVALID_REFRESH_TOKEN": "Virheellinen virkistyspoletti.",
-      "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Virkistyspoletti peruutettu.",
       "PUBLIC_REGISTRATION_DISABLED": "Uuden tilin rekisteröinti on tällä hetkellä poistettu käytöstä tällä palvelimella. Ota yhteyttä järjestelmänvalvojaan.",
       "USERNAME_REQUIRED": "Käyttäjänimi vaaditaan.",
       "USERNAME_ALREADY_IN_USE": "Käyttäjänimi on jo käytössä.",
