@@ -443,7 +443,6 @@
     "INVALID_RECOVERY_CODE": "Codice di recupero non valido. Riprova.",
     "REFRESH_TOKEN_REQUIRED": "È richiesto il token di aggiornamento.",
     "INVALID_REFRESH_TOKEN": "Token di aggiornamento non valido.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Token di aggiornamento revocato con successo.",
     "PUBLIC_REGISTRATION_DISABLED": "La registrazione di nuovi account è disabilitata su questo server. Contatta l'amministratore.",
     "USERNAME_REQUIRED": "Il nome utente è obbligatorio.",
     "USERNAME_ALREADY_IN_USE": "Il nome utente è già in uso.",
