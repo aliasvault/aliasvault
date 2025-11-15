@@ -110,7 +110,6 @@
       "INVALID_RECOVERY_CODE": "Ungültiger Wiederherstellungscode. Bitte versuche es erneut.",
       "REFRESH_TOKEN_REQUIRED": "Aktualisierungstoken ist erforderlich.",
       "INVALID_REFRESH_TOKEN": "Ungültiger Aktualisierungstoken.",
-      "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Aktualisierungstoken wurde erfolgreich widerrufen.",
       "PUBLIC_REGISTRATION_DISABLED": "Die Registrierung eines neuen Kontos ist auf diesem Server derzeit deaktiviert. Bitte kontaktiere den Administrator.",
       "USERNAME_REQUIRED": "Der Benutzername ist erforderlich.",
       "USERNAME_ALREADY_IN_USE": "Benutzername ist bereits vergeben.",
