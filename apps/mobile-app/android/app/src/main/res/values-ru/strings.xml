@@ -68,11 +68,11 @@
   <string name="pin_unlock_vault">Разблокировать хранилище</string>
   <string name="pin_enter_to_unlock">Введите ПИН-код для разблокировки хранилища</string>
   <string name="pin_locked_max_attempts">ПИН-код заблокирован: слишком много попыток ввода</string>
-  <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
+  <string name="pin_incorrect_attempts_remaining">Неверный PIN-код. Осталось попыток: %d</string>
   <!-- PIN setup -->
-  <string name="pin_setup_title">Setup PIN</string>
-  <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
-  <string name="pin_confirm_title">Confirm PIN</string>
-  <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
-  <string name="pin_mismatch">PINs do not match. Please try again.</string>
+  <string name="pin_setup_title">Настройка PIN-кода</string>
+  <string name="pin_setup_description">Придумайте PIN-код для разблокировки хранилища</string>
+  <string name="pin_confirm_title">Подтвердите ПИН-код﻿</string>
+  <string name="pin_confirm_description">Введите PIN-код еще раз для подтверждения</string>
+  <string name="pin_mismatch">PIN-коды не совпадают. Повторите попытку.</string>
 </resources>
