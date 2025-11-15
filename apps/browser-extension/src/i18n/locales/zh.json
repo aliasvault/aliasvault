@@ -110,7 +110,6 @@
       "INVALID_RECOVERY_CODE": "恢复码无效。请重试。",
       "REFRESH_TOKEN_REQUIRED": "刷新令牌为必填项。",
       "INVALID_REFRESH_TOKEN": "刷新令牌无效。",
-      "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "刷新令牌已成功撤销。",
       "PUBLIC_REGISTRATION_DISABLED": "当前服务器已禁用新账户注册。请联系管理员。",
       "USERNAME_REQUIRED": "用户名为必填项。",
       "USERNAME_ALREADY_IN_USE": "用户名已被使用。",
