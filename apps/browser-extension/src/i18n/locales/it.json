@@ -110,7 +110,6 @@
       "INVALID_RECOVERY_CODE": "Codice di recupero non valido. Riprova.",
       "REFRESH_TOKEN_REQUIRED": "È necessario aggiornare il token.",
       "INVALID_REFRESH_TOKEN": "Token di aggiornamento non valido",
-      "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Aggiornamento token revocato con successo.",
       "PUBLIC_REGISTRATION_DISABLED": "La registrazione di nuovi account è attualmente disabilitata su questo server. Contatta l'amministratore.",
       "USERNAME_REQUIRED": "È richiesto il nome utente.",
       "USERNAME_ALREADY_IN_USE": "Il nome utente è già in uso.",
