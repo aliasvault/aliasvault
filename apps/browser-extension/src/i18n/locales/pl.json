@@ -110,7 +110,6 @@
       "INVALID_RECOVERY_CODE": "Nieprawidłowy kod odzyskiwania. Spróbuj ponownie.",
       "REFRESH_TOKEN_REQUIRED": "Wymagany jest token odświeżania.",
       "INVALID_REFRESH_TOKEN": "Nieprawidłowy token odświeżania.",
-      "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Odnowienie tokenu zakończyło się powodzeniem.",
       "PUBLIC_REGISTRATION_DISABLED": "Rejestracja nowych kont jest obecnie wyłączona na tym serwerze. Skontaktuj się z administratorem.",
       "USERNAME_REQUIRED": "Wymagane jest podanie nazwy użytkownika.",
       "USERNAME_ALREADY_IN_USE": "Nazwa użytkownika jest już używana.",
