@@ -443,7 +443,6 @@
     "INVALID_RECOVERY_CODE": "Invalid recovery code. Please try again.",
     "REFRESH_TOKEN_REQUIRED": "Refresh token is required.",
     "INVALID_REFRESH_TOKEN": "Invalid refresh token.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Refresh token revoked successfully.",
     "PUBLIC_REGISTRATION_DISABLED": "New account registration is currently disabled on this server. Please contact the administrator.",
     "USERNAME_REQUIRED": "Username is required.",
     "USERNAME_ALREADY_IN_USE": "Username is already in use.",
