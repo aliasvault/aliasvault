@@ -110,7 +110,6 @@
       "INVALID_RECOVERY_CODE": "Code de récupération invalide. Veuillez réessayer.",
       "REFRESH_TOKEN_REQUIRED": "Un jeton d'actualisation est requis.",
       "INVALID_REFRESH_TOKEN": "Jeton d'actualisation invalide.",
-      "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Le jeton d'actualisation a été révoqué.",
       "PUBLIC_REGISTRATION_DISABLED": "L'enregistrement d'un nouveau compte est actuellement désactivé sur ce serveur. Veuillez contacter l'administrateur.",
       "USERNAME_REQUIRED": "Nom d’utilisateur requis.",
       "USERNAME_ALREADY_IN_USE": "Nom d'utilisateur déjà utilisé.",
