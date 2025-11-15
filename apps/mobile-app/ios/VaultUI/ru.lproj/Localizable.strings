@@ -2,12 +2,12 @@
 "error" = "Ошибка";
 "cancel" = "Отмена";
 "back" = "Назад";
-"next" = "Next";
+"next" = "Далее";
 "edit" = "Редактировать";
 "website" = "Сайт";
 "username" = "Имя пользователя";
 "title" = "Название";
-"unknown_error" = "An unknown error occurred";
+"unknown_error" = "Произошла неизвестная ошибка";
 
 "loading_credentials" = "Загрузка учетных данных...";
 "no_credentials_found" = "Учетные данные не найдены";
@@ -60,14 +60,14 @@
 "create_passkey_explanation" = "Будет создан новый ключ доступа, который сохранится в вашем хранилище. Он будет автоматически синхронизирован со всеми вашими устройствами, на которых используется AliasVault.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "Разблокировать хранилище";
+"enter_pin_to_unlock_vault" = "Введите ПИН-код для разблокировки хранилища";
+"pin_locked_max_attempts" = "ПИН-код заблокирован: слишком много попыток ввода";
+"pin_incorrect_attempts_remaining" = "Неверный PIN-код. Осталось попыток: %d";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "Настройка PIN-кода";
+"pin_setup_subtitle" = "Придумайте PIN-код для разблокировки хранилища";
+"pin_confirm_title" = "Подтвердите ПИН-код﻿";
+"pin_confirm_subtitle" = "Введите PIN-код еще раз для подтверждения";
+"pin_mismatch" = "PIN-коды не совпадают. Повторите попытку.";
