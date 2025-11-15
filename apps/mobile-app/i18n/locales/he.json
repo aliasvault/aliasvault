@@ -443,7 +443,6 @@
     "INVALID_RECOVERY_CODE": "קוד שחזור שגוי. נא לנסות שוב.",
     "REFRESH_TOKEN_REQUIRED": "אסימון ריענון חובה.",
     "INVALID_REFRESH_TOKEN": "אסימון ריענון שגוי.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "אסימון הריענון נשלל בהצלחה.",
     "PUBLIC_REGISTRATION_DISABLED": "רישום חשבון חדש מושבת כרגע בשרת הזה. נא ליצור קשר עם ההנהלה.",
     "USERNAME_REQUIRED": "שם משתמש חובה.",
     "USERNAME_ALREADY_IN_USE": "שם המשתמש תפוס.",
