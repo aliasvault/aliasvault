@@ -443,7 +443,6 @@
     "INVALID_RECOVERY_CODE": "Ongeldige herstelcode. Probeer het opnieuw.",
     "REFRESH_TOKEN_REQUIRED": "Refreshtoken is vereist.",
     "INVALID_REFRESH_TOKEN": "Ongeldige refreshtoken.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Refreshtoken succesvol gerevoked.",
     "PUBLIC_REGISTRATION_DISABLED": "Registratie van nieuwe accounts is momenteel uitgeschakeld op deze server. Neem contact op met de beheerder.",
     "USERNAME_REQUIRED": "Gebruikersnaam is vereist.",
     "USERNAME_ALREADY_IN_USE": "Gebruikersnaam is al in gebruik.",
