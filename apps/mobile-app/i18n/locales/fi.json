@@ -443,7 +443,6 @@
     "INVALID_RECOVERY_CODE": "Virheellinen palautuskoodi. Ole hyvä ja yritä uudelleen.",
     "REFRESH_TOKEN_REQUIRED": "Päivitetty tunniste tarvitaan",
     "INVALID_REFRESH_TOKEN": "Virheellinen päivitetty tunniste.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Päivitetty tunniste peruutettu onnistuneesti.",
     "PUBLIC_REGISTRATION_DISABLED": "Uuden tilin rekisteröinti on poistettu käytöstä tällä palvelimella. Ota yhteyttä järjestelmänvalvojaan.",
     "USERNAME_REQUIRED": "Käyttäjänimi vaaditaan",
     "USERNAME_ALREADY_IN_USE": "Käyttäjänimi on jo käytössä.",
