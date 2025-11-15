@@ -5,9 +5,9 @@
   <string name="aliasvault_icon">Значок AliasVault</string>
   <!-- Common strings -->
   <string name="common_close">Закрыть</string>
-  <string name="common_next">Next</string>
-  <string name="common_cancel">Cancel</string>
-  <string name="unknown_error">An unknown error occurred</string>
+  <string name="common_next">Далее</string>
+  <string name="common_cancel">Отмена</string>
+  <string name="unknown_error">Произошла неизвестная ошибка</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Не удалось извлечь, открыть приложение</string>
   <string name="autofill_no_match_found">Совпадений не найдено, создать новое?</string>
@@ -59,20 +59,20 @@
   <string name="server_version_not_supported_title">Требуется обновление сервера</string>
   <string name="server_version_not_supported_message">Версия сервера устарела. Свяжитесь с вашим администратором для обновления сервера.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
+  <string name="error_unlock_method_required">Чтобы продолжить, включите аутентификацию по биометрии или ПИН-коду в основном приложении AliasVault</string>
   <string name="error_unlock_vault_first">Сначала разблокируйте хранилище в приложении AliasVault</string>
   <string name="error_vault_decrypt_failed">Не удалось расшифровать хранилище</string>
   <string name="error_biometric_cancelled">Биометрическая аутентификация отменена</string>
   <string name="error_encryption_key_failed">Не удалось получить ключ шифрования</string>
   <!-- PIN unlock -->
-  <string name="pin_unlock_vault">Unlock Vault</string>
-  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
-  <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
-  <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
+  <string name="pin_unlock_vault">Разблокировать хранилище</string>
+  <string name="pin_enter_to_unlock">Введите ПИН-код для разблокировки хранилища</string>
+  <string name="pin_locked_max_attempts">ПИН-код заблокирован: слишком много попыток ввода</string>
+  <string name="pin_incorrect_attempts_remaining">Неверный PIN-код. Осталось попыток: %d</string>
   <!-- PIN setup -->
-  <string name="pin_setup_title">Setup PIN</string>
-  <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
-  <string name="pin_confirm_title">Confirm PIN</string>
-  <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
-  <string name="pin_mismatch">PINs do not match. Please try again.</string>
+  <string name="pin_setup_title">Настройка PIN-кода</string>
+  <string name="pin_setup_description">Придумайте PIN-код для разблокировки хранилища</string>
+  <string name="pin_confirm_title">Подтвердите ПИН-код﻿</string>
+  <string name="pin_confirm_description">Введите PIN-код еще раз для подтверждения</string>
+  <string name="pin_mismatch">PIN-коды не совпадают. Повторите попытку.</string>
 </resources>

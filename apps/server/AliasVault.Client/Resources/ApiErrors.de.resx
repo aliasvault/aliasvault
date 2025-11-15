@@ -125,9 +125,6 @@
   <data name="INVALID_REFRESH_TOKEN" xml:space="preserve">
     <value>Ungültiger Aktualisierungstoken</value>
   </data>
-  <data name="REFRESH_TOKEN_REVOKED_SUCCESSFULLY" xml:space="preserve">
-    <value>Aktualisierungstoken wurde erfolgreich widerrufen</value>
-  </data>
   <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
     <value>Die Registrierung eines neuen Kontos ist auf diesem Server derzeit deaktiviert. Bitte kontaktiere den Administrator.</value>
   </data>
@@ -169,9 +166,6 @@
   </data>
   <data name="PENDING_MIGRATIONS" xml:space="preserve">
     <value>Es gibt ausstehende Migrationen. Bitte führe 'dotnet ef database update' aus, um diese durchzuführen.</value>
-  </data>
-  <data name="SYSTEM_OK" xml:space="preserve">
-    <value>OK</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
     <value>Internal server error.</value>

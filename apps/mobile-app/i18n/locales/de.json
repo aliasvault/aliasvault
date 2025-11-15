@@ -16,13 +16,13 @@
     "loadMore": "Mehr laden",
     "use": "Benutzen",
     "confirm": "Bestätigen",
-    "next": "Next",
+    "next": "Weiter",
     "notice": "Notice",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "enabled": "Aktiviert",
+    "disabled": "Deaktiviert",
     "errors": {
       "unknownError": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
-      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
+      "unknownErrorTryAgain": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut."
     }
   },
   "auth": {
@@ -39,10 +39,7 @@
     "verifyingAuthCode": "Sicherheits-Code wird überprüft",
     "verify": "Bestätige",
     "unlockVault": "Tresor entsperren",
-    "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
+    "unlockWithPin": "Mit PIN entsperren",
     "enterPassword": "Bitte gib Dein Passwort zum Entsperren des Tresors ein",
     "enterPasswordPlaceholder": "Passwort",
     "enterAuthCode": "Gib den 6-stelligen Sicherheits-Code ein.",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Fehler beim Abrufen der verschlüsselten Datenbank",
       "usernameNotFound": "Benutzername nicht gefunden",
-      "vaultMergeRequired": "Tresor-Zusammenführung erforderlich. Bitte melde Dich über die Web-App an, um mehrere ausstehende Aktualisierungen in Deinem Tresor zusammenzuführen.",
       "vaultOutdated": "Dein Tresor ist veraltet. Bitte melde Dich auf der AliasVault-Webseite an und folge den Anweisungen.",
-      "failedToUploadVault": "Fehler beim Hochladen des Tresors auf den Server. Bitte starte die App neu.",
-      "usernameNotFoundLoginAgain": "Benutzername nicht gefunden. Bitte erneut anmelden.",
-      "errorDuringPasswordChange": "Fehler beim Ändern des Passworts. Bitte melde Dich erneut an, um Deinen letzten Tresor abzurufen.",
       "failedToSyncVault": "Fehler beim Synchronisieren des Tresors",
-      "operationFailed": "Vorgang fehlgeschlagen",
       "versionNotSupported": "Diese Version der AliasVault-App wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine App auf die neueste Version.",
       "serverVersionNotSupported": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese mobile App nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
       "appOutdated": "Diese App ist veraltet und kann nicht verwendet werden, um auf diesen Tresor zuzugreifen. Bitte aktualisiere die App, um fortzufahren.",
-      "vaultDecryptFailed": "Tresor konnte nicht entschlüsselt werden. Wenn das Problem weiterhin besteht, melden Dich bitte erneut an.",
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an."
     }
   },
@@ -171,9 +162,15 @@
     "twoFactorAuth": "Zwei-Faktor-Authentifizierung",
     "totpCode": "TOTP-Code",
     "attachments": "Anhänge",
-    "loadingAttachments": "Anhänge werden geladen...",
-    "addAttachments": "Anhänge hinzufügen",
     "deleteAttachment": "Löschen",
+    "fileSavedTo": "Datei gespeichert unter",
+    "previewNotSupported": "Vorschau nicht unterstützt",
+    "downloadToView": "Datei herunterladen, um sie anzuzeigen",
+    "unsavedChanges": {
+      "title": "Discard Changes?",
+      "message": "You have unsaved changes. Are you sure you want to discard them?",
+      "discard": "Discard"
+    },
     "toasts": {
       "credentialUpdated": "Zugang erfolgreich aktualisiert",
       "credentialCreated": "Zugang erfolgreich erstellt",
@@ -185,9 +182,7 @@
     "createNewAliasFor": "Neuen Alias für",
     "errors": {
       "loadFailed": "Laden des Zugangs fehlgeschlagen",
-      "saveFailed": "Fehler beim Speichern der Zugangsdaten",
-      "generateUsernameFailed": "Benutzername konnte nicht generiert werden",
-      "generatePasswordFailed": "Passwort konnte nicht generiert werden"
+      "saveFailed": "Fehler beim Speichern der Zugangsdaten"
     },
     "contextMenu": {
       "title": "Zugangsoptionen",
@@ -294,16 +289,16 @@
       "biometricDisabledMessage": "{{biometric}} ist für AliasVault deaktiviert. Bitte aktiviere es zuerst in den Geräteeinstellungen, um es zu verwenden.",
       "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} ist nicht verfügbar. Tippe, um die Einstellungen zu öffnen und/oder gehe zu den Geräteeinstellungen, um es zu aktivieren und zu konfigurieren.",
-      "pin": "PIN Code",
-      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
-      "pinEnabled": "PIN unlock enabled successfully",
-      "pinDisabled": "PIN unlock has been disabled",
-      "setupPin": "Setup PIN",
-      "enterNewPin": "Enter New PIN",
-      "enterNewPinDescription": "Choose a PIN to unlock your vault",
-      "confirmPin": "Confirm PIN",
-      "confirmPinDescription": "Re-enter your PIN to confirm",
-      "pinMismatch": "PINs do not match. Please try again.",
+      "pin": "PIN-Code",
+      "pinDescription": "Benutze einen eigenen PIN-Code, um deinen Tresor schneller zu entsperren.",
+      "pinEnabled": "PIN-Sperre erfolgreich aktiviert",
+      "pinDisabled": "PIN-Sperre wurde deaktiviert",
+      "setupPin": "PIN einrichten",
+      "enterNewPin": "Neue PIN eingeben",
+      "enterNewPinDescription": "PIN zum Entsperren des Tresors auswählen",
+      "confirmPin": "PIN bestätigen",
+      "confirmPinDescription": "Zur Bestätigung erneut PIN eingeben",
+      "pinMismatch": "PINs stimmen nicht überein. Bitte versuche es erneut.",
       "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
       "passwordHelp": "Gib Dein vollständiges Master-Passwort erneut ein, um Deinen Tresor zu entsperren. Diese Option ist immer als Fallback-Option aktiviert.",
       "keystoreIOS": "iCloud-Schlüsselbund",
@@ -326,11 +321,6 @@
         "random": "Zufällig",
         "male": "Männlich",
         "female": "Weiblich"
-      },
-      "errors": {
-        "loadFailed": "Einstellungen des Identitätsgenerators konnten nicht geladen werden.",
-        "languageUpdateFailed": "Die Spracheinstellung konnte nicht aktualisiert werden.",
-        "genderUpdateFailed": "Die Geschlechtseinstellung konnte nicht aktualisiert werden."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +368,6 @@
         "success": "Anmeldung erfolgreich",
         "failed": "Aktion fehlgeschlagen",
         "time": "Zeit",
-        "device": "Gerät",
         "ipAddress": "IP-Adresse",
         "client": "Client",
         "failedToLoad": "Das Laden der Anmeldeversuche ist fehlgeschlagen"
@@ -435,14 +424,6 @@
       "hoursAgo_single": "vor {{count}} Stunde",
       "hoursAgo_plural": "vor {{count}} Stunden",
       "yesterday": "gestern"
-    },
-    "errors": {
-      "generic": "Ein Fehler ist aufgetreten",
-      "loadFailed": "Laden der E-Mails fehlgeschlagen",
-      "deleteFailed": "Löschen der E-Mail fehlgeschlagen",
-      "dbNotAvailable": "Datenbank-Kontext oder E-Mail nicht verfügbar",
-      "decryptFailed": "Fehler beim Entschlüsseln des Anhangs",
-      "downloadFailed": "Herunterladen des Anhangs fehlgeschlagen"
     }
   },
   "validation": {
@@ -462,7 +443,6 @@
     "INVALID_RECOVERY_CODE": "Ungültiger Wiederherstellungscode. Bitte versuche es erneut.",
     "REFRESH_TOKEN_REQUIRED": "Aktualisierungstoken ist erforderlich.",
     "INVALID_REFRESH_TOKEN": "Ungültiger Aktualisierungstoken.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Aktualisierungstoken wurde erfolgreich widerrufen.",
     "PUBLIC_REGISTRATION_DISABLED": "Die Registrierung eines neuen Kontos ist auf diesem Server derzeit deaktiviert. Bitte kontaktiere den Administrator.",
     "USERNAME_REQUIRED": "Der Benutzername ist erforderlich.",
     "USERNAME_ALREADY_IN_USE": "Benutzername ist bereits vergeben.",
@@ -480,11 +460,11 @@
     "VAULT_ERROR": "Der lokale Tresor ist nicht aktuell. Bitte synchronisiere Deinen Tresor, indem Du die Seite aktualisierst, und versuche es erneut."
   },
   "app": {
-    "openReadOnlyMode": "Im Lese-Modus öffnen",
     "status": {
       "unlockingVault": "Tresor wird entsperrt",
       "decryptingVault": "Tresor wird entschlüsselt",
-      "openingVaultReadOnly": "Tresor wird im Lese-Modus geöffnet"
+      "openingVaultReadOnly": "Tresor wird im Lese-Modus geöffnet",
+      "retryingConnection": "Retrying connection..."
     },
     "offline": {
       "banner": "Offline-Modus (nur lesender Zugriff)",
@@ -499,8 +479,7 @@
     },
     "navigation": {
       "login": "Anmelden",
-      "loginSettings": "Anmeldeeinstellungen",
-      "notFound": "Nicht gefunden"
+      "loginSettings": "Anmeldeeinstellungen"
     },
     "notFound": {
       "title": "Seite konnte nicht gefunden werden",

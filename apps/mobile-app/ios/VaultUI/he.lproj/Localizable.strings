@@ -2,12 +2,12 @@
 "error" = "שגיאה";
 "cancel" = "ביטול";
 "back" = "חזרה";
-"next" = "Next";
+"next" = "הבא";
 "edit" = "עריכה";
 "website" = "אתר";
 "username" = "שם משתמש";
 "title" = "כותרת";
-"unknown_error" = "An unknown error occurred";
+"unknown_error" = "אירעה שגיאה לא ידועה";
 
 "loading_credentials" = "פרטי הגישה נטענים…";
 "no_credentials_found" = "לא נמצאו פרטי גישה";
@@ -60,14 +60,14 @@
 "create_passkey_explanation" = "This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "שחרור נעילת כספת";
+"enter_pin_to_unlock_vault" = "נא למלא את הקוד האישי שלך כדי לשחרר את הכספת שלך";
+"pin_locked_max_attempts" = "הקוד האישי ננעל אחרי יותר מדי ניסיונות כושלים";
+"pin_incorrect_attempts_remaining" = "קוד אישי שגוי, נותרו %d ניסיונות";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "הגדרת קוד אישי";
+"pin_setup_subtitle" = "נא לבחור קוד אישי לשחרור נעילת הכספת שלך";
+"pin_confirm_title" = "אישור קוד אישי";
+"pin_confirm_subtitle" = "נא למלא את הקוד האישי שלך מחדש לאישור";
+"pin_mismatch" = "הקודים האישיים לא תואמים. נא לנסות שוב.";

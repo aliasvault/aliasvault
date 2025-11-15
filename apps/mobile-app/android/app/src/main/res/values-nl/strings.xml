@@ -5,9 +5,9 @@
   <string name="aliasvault_icon">AliasVault pictogram</string>
   <!-- Common strings -->
   <string name="common_close">Sluiten</string>
-  <string name="common_next">Next</string>
-  <string name="common_cancel">Cancel</string>
-  <string name="unknown_error">An unknown error occurred</string>
+  <string name="common_next">Volgende</string>
+  <string name="common_cancel">Annuleren</string>
+  <string name="unknown_error">Er is een onbekende fout opgetreden</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Ophalen mislukt, open app</string>
   <string name="autofill_no_match_found">Geen match gevonden, nieuwe maken?</string>
@@ -59,20 +59,20 @@
   <string name="server_version_not_supported_title">Server update vereist</string>
   <string name="server_version_not_supported_message">De server versie is verouderd. Neem contact op met de beheerder van je server om deze bij te werken.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
+  <string name="error_unlock_method_required">Schakel biometrische ontgrendeling of een pincode in de AliasVault-app in om passkeys te gebruiken</string>
   <string name="error_unlock_vault_first">Ontgrendel eerst de vault in de AliasVault app</string>
   <string name="error_vault_decrypt_failed">Ontsleutelen van vault mislukt</string>
   <string name="error_biometric_cancelled">Biometrische verificatie geannuleerd</string>
   <string name="error_encryption_key_failed">Fout bij ophalen van encryptiesleutel</string>
   <!-- PIN unlock -->
-  <string name="pin_unlock_vault">Unlock Vault</string>
-  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
-  <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
-  <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
+  <string name="pin_unlock_vault">Vault ontgrendelen</string>
+  <string name="pin_enter_to_unlock">Voer je pincode in om je vault te ontgrendelen</string>
+  <string name="pin_locked_max_attempts">Pincode vergrendeld na te veel mislukte pogingen</string>
+  <string name="pin_incorrect_attempts_remaining">Onjuiste pincode, %d pogingen resterend</string>
   <!-- PIN setup -->
-  <string name="pin_setup_title">Setup PIN</string>
-  <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
-  <string name="pin_confirm_title">Confirm PIN</string>
-  <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
-  <string name="pin_mismatch">PINs do not match. Please try again.</string>
+  <string name="pin_setup_title">Pincode instellen</string>
+  <string name="pin_setup_description">Kies een pincode om je vault te ontgrendelen</string>
+  <string name="pin_confirm_title">Bevestig pincode</string>
+  <string name="pin_confirm_description">Voer je pincode opnieuw in om te bevestigen</string>
+  <string name="pin_mismatch">Pincodes komen niet overeen. Probeer het opnieuw.</string>
 </resources>

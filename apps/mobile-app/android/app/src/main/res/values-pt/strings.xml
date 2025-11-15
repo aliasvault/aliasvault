@@ -5,9 +5,9 @@
   <string name="aliasvault_icon">Ícone do AliasVault</string>
   <!-- Common strings -->
   <string name="common_close">Fechar</string>
-  <string name="common_next">Next</string>
-  <string name="common_cancel">Cancel</string>
-  <string name="unknown_error">An unknown error occurred</string>
+  <string name="common_next">Próximo</string>
+  <string name="common_cancel">Cancelar</string>
+  <string name="unknown_error">Ocorreu um erro desconhecido</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Falha ao recuperar, abra o aplicativo</string>
   <string name="autofill_no_match_found">Nenhum resultado encontrado, criar novo?</string>
@@ -59,20 +59,20 @@
   <string name="server_version_not_supported_title">Atualização de Servidor Necessária</string>
   <string name="server_version_not_supported_message">A versão do servidor está desatualizada. Por favor, entre em contato com seu administrador para atualizar o servidor.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
+  <string name="error_unlock_method_required">Por favor, habilite a autenticação por biometria ou PIN no aplicativo AliasVault principal para continuar</string>
   <string name="error_unlock_vault_first">Por favor, desbloqueie seu cofre no aplicativo do AliasVault antes</string>
   <string name="error_vault_decrypt_failed">Falha ao descriptografar cofre</string>
   <string name="error_biometric_cancelled">Autenticação biométrica cancelada</string>
   <string name="error_encryption_key_failed">Falha ao recuperar chave de criptografia</string>
   <!-- PIN unlock -->
-  <string name="pin_unlock_vault">Unlock Vault</string>
-  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
-  <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
-  <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
+  <string name="pin_unlock_vault">Desbloquear Cofre</string>
+  <string name="pin_enter_to_unlock">Digite seu PIN para desbloquear seu cofre</string>
+  <string name="pin_locked_max_attempts">PIN bloqueado após muitas tentativas incorretas</string>
+  <string name="pin_incorrect_attempts_remaining">PIN incorreto. %d tentativas restantes</string>
   <!-- PIN setup -->
-  <string name="pin_setup_title">Setup PIN</string>
-  <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
-  <string name="pin_confirm_title">Confirm PIN</string>
-  <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
-  <string name="pin_mismatch">PINs do not match. Please try again.</string>
+  <string name="pin_setup_title">Configurar PIN</string>
+  <string name="pin_setup_description">Escolha um PIN para desbloquear seu cofre</string>
+  <string name="pin_confirm_title">Confirmar PIN</string>
+  <string name="pin_confirm_description">Digite seu PIN novamente para confirmar</string>
+  <string name="pin_mismatch">PINs não correspondem. Por favor, tente novamente.</string>
 </resources>

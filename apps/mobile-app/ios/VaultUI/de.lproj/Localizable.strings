@@ -2,12 +2,12 @@
 "error" = "Fehler";
 "cancel" = "Abbrechen";
 "back" = "Zurück";
-"next" = "Next";
+"next" = "Weiter";
 "edit" = "Bearbeiten";
 "website" = "Webseite";
 "username" = "Benutzername";
 "title" = "Titel";
-"unknown_error" = "An unknown error occurred";
+"unknown_error" = "Ein unbekannter Fehler ist aufgetreten";
 
 "loading_credentials" = "Zugangsdaten werden geladen...";
 "no_credentials_found" = "Keine Zugangsdaten gefunden";
@@ -60,14 +60,14 @@
 "create_passkey_explanation" = "Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf allen Geräten synchronisiert, die AliasVault verwenden.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "Tresor entsperren";
+"enter_pin_to_unlock_vault" = "PIN zum Entsperren des Tresors auswählen";
+"pin_locked_max_attempts" = "PIN nach zu vielen Fehlversuchen gesperrt";
+"pin_incorrect_attempts_remaining" = "Ungültiger PIN-Code, %d verbleibende Versuche";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "PIN einrichten";
+"pin_setup_subtitle" = "PIN zum Entsperren des Tresors auswählen";
+"pin_confirm_title" = "PIN bestätigen";
+"pin_confirm_subtitle" = "Zur Bestätigung erneut PIN eingeben";
+"pin_mismatch" = "PINs stimmen nicht überein. Bitte versuche es erneut.";

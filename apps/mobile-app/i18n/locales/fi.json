@@ -16,13 +16,13 @@
     "loadMore": "Lataa lisää",
     "use": "Käytä",
     "confirm": "Vahvista",
-    "next": "Next",
-    "notice": "Notice",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "next": "Seuraava",
+    "notice": "Huomautus",
+    "enabled": "Otettu käyttöön",
+    "disabled": "Pois käytöstä",
     "errors": {
       "unknownError": "Tapahtui tuntematon virhe. Yritä uudelleen.",
-      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
+      "unknownErrorTryAgain": "Tapahtui tuntematon virhe. Yritä uudelleen."
     }
   },
   "auth": {
@@ -39,10 +39,7 @@
     "verifyingAuthCode": "Todennuskoodia tarkistetaan",
     "verify": "Tarkista",
     "unlockVault": "Avaa holvin lukitus",
-    "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
+    "unlockWithPin": "Avaa PIN-koodilla",
     "enterPassword": "Syötä salasanasi avataksesi holvisi lukituksen",
     "enterPasswordPlaceholder": "Salasana",
     "enterAuthCode": "Syötä 6-numeroinen koodi",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Salatun tietokannan haku epäonnistui",
       "usernameNotFound": "Käyttäjänimeä ei löytynyt",
-      "vaultMergeRequired": "Holvin yhdistäminen vaaditaan. Kirjaudu sisään verkkosovelluksen kautta yhdistääksesi useita odottavia päivityksiä holviisi.",
       "vaultOutdated": "Holvisi on vanhentunut. Kirjaudu sisään AliasVault-verkkosivustolle ja seuraa ohjeita.",
-      "failedToUploadVault": "Holvin ulospäinlataaminen palvelimeen epäonnistui. Yritä uudelleen avaamalla sovellus uudelleen.",
-      "usernameNotFoundLoginAgain": "Käyttäjänimeä ei löytynyt. Kirjaudu sisään uudelleen.",
-      "errorDuringPasswordChange": "Virhe salasanan vaihdon aikana. Kirjaudu sisään uudelleen noutaaksesi viimeisimmän holvisi.",
       "failedToSyncVault": "Holvin synkronointi epäonnistui",
-      "operationFailed": "Toiminto epäonnistui",
       "versionNotSupported": "Palvelin ei enää tue tätä AliasVault-mobiilisovelluksen versiota. Päivitä sovelluksesi uusimpaan versioon.",
       "serverVersionNotSupported": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta tätä mobiilisovellusta voi käyttää. Ota yhteyttä tukeen, jos tarvitset apua.",
       "appOutdated": "Tämä sovellus on vanhentunut, eikä sillä voi käyttää tätä (uudempaa) holviversiota. Päivitä AliasVault-sovellus jatkaaksesi.",
-      "vaultDecryptFailed": "Holvin salausta ei voitu purkaa. Jos ongelma jatkuu, kirjaudu ulos ja kirjaudu sisään uudelleen.",
       "passwordChanged": "Salasanasi on muuttunut viimeisimmän sisäänkirjautumisesi jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä."
     }
   },
@@ -171,9 +162,15 @@
     "twoFactorAuth": "Kaksivaiheinen todennus",
     "totpCode": "TOTP-koodi",
     "attachments": "Liitteet",
-    "loadingAttachments": "Ladataan liitteitä",
-    "addAttachments": "Lisää liitteitä",
     "deleteAttachment": "Poista",
+    "fileSavedTo": "Tiedosto tallennettu kohteeseen",
+    "previewNotSupported": "Esikatselua ei tuettu",
+    "downloadToView": "Lataa tiedosto nähdäksesi sen",
+    "unsavedChanges": {
+      "title": "Hylkää muutokset",
+      "message": "Sinulla on tallentamattomia muutoksia. Haluatko varmasti hylätä ne?",
+      "discard": "Hylkää"
+    },
     "toasts": {
       "credentialUpdated": "Tunnistetieto päivitetty",
       "credentialCreated": "Tunnistetieto luotu",
@@ -185,9 +182,7 @@
     "createNewAliasFor": "Luo uusi alias kohteelle",
     "errors": {
       "loadFailed": "Tunnistetiedon lataaminen epäonnistui",
-      "saveFailed": "Käyttäjätunnuksen tallentaminen epäonnistui",
-      "generateUsernameFailed": "Käyttäjänimen luominen epäonnistui",
-      "generatePasswordFailed": "Salasanan luominen epäonnistui"
+      "saveFailed": "Käyttäjätunnuksen tallentaminen epäonnistui"
     },
     "contextMenu": {
       "title": "Tunnistetietojen vaihtoehdot",
@@ -292,19 +287,19 @@
       "biometricEnabled": "{{biometric}} on nyt onnistuneesti käytössä",
       "biometricNotAvailable": "{{biometric}} ei käytettävissä",
       "biometricDisabledMessage": "{{biometric}} on poistettu käytöstä AliasVaultin osalta. Ota se ensin käyttöön laitteen asetuksissa.",
-      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
+      "biometricHelp": "Käytä biometriikkaa avataksesi holvisi, joka on suojattu {{keystore}} -tunnuksella.",
       "biometricUnavailableHelp": "{{biometric}} ei ole käytettävissä. Avaa asetukset napauttamalla ja/tai siirry laitteen asetuksiin ottaaksesi sen käyttöön ja määrittääksesi sen.",
-      "pin": "PIN Code",
-      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
-      "pinEnabled": "PIN unlock enabled successfully",
-      "pinDisabled": "PIN unlock has been disabled",
-      "setupPin": "Setup PIN",
-      "enterNewPin": "Enter New PIN",
-      "enterNewPinDescription": "Choose a PIN to unlock your vault",
-      "confirmPin": "Confirm PIN",
-      "confirmPinDescription": "Re-enter your PIN to confirm",
-      "pinMismatch": "PINs do not match. Please try again.",
-      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
+      "pin": "PIN-koodi",
+      "pinDescription": "Käytä mukautettua PIN-koodia avataksesi holvisi nopeammin.",
+      "pinEnabled": "PIN-lukituksen avaus käytössä onnistuneesti",
+      "pinDisabled": "PIN-lukituksen avaus on poistettu käytöstä",
+      "setupPin": "Aseta PIN-koodi",
+      "enterNewPin": "Syötä uusi PIN",
+      "enterNewPinDescription": "Valitse PIN-koodi avataksesi holvisi",
+      "confirmPin": "Vahvista PIN",
+      "confirmPinDescription": "Syötä PIN-koodi uudelleen vahvistaaksesi",
+      "pinMismatch": "PIN-koodit eivät täsmää. Yritä uudelleen.",
+      "pinLocked": "PIN-koodi on lukittu liian monen epäonnistuneen yrityksen jälkeen. Käytä pääsalasanaa.",
       "passwordHelp": "Syötä koko pääsalasanasi uudelleen avataksesi holvisi. Tämä on aina käytössä varamenettelynä.",
       "keystoreIOS": "iOS Avainketju",
       "keystoreAndroid": "Android Keystore"
@@ -326,11 +321,6 @@
         "random": "Satunnainen",
         "male": "Mies",
         "female": "Nainen"
-      },
-      "errors": {
-        "loadFailed": "Identiteettigeneraattorin asetusten lataaminen epäonnistui.",
-        "languageUpdateFailed": "Kielen asetusten päivittäminen epäonnistui.",
-        "genderUpdateFailed": "Sukupuolen asettamista ei voitu päivittää."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +368,6 @@
         "success": "Onnistui",
         "failed": "Epäonnistui",
         "time": "Aika",
-        "device": "Laite",
         "ipAddress": "IP-osoite",
         "client": "Asiakas",
         "failedToLoad": "Todennuslokien lataaminen epäonnistui"
@@ -435,14 +424,6 @@
       "hoursAgo_single": "{{count}} h sitten",
       "hoursAgo_plural": "{{count}} tuntia sitten",
       "yesterday": "eilen"
-    },
-    "errors": {
-      "generic": "Tapahtui virhe",
-      "loadFailed": "Sähköpostien lataaminen epäonnistui",
-      "deleteFailed": "Sähköpostin poistaminen epäonnistui",
-      "dbNotAvailable": "Tietokannan konteksti tai sähköposti ei ole käytettävissä",
-      "decryptFailed": "Liitteen salauksen purkaminen epäonnistui",
-      "downloadFailed": "Liitetiedoston lataaminen epäonnistui"
     }
   },
   "validation": {
@@ -462,7 +443,6 @@
     "INVALID_RECOVERY_CODE": "Virheellinen palautuskoodi. Ole hyvä ja yritä uudelleen.",
     "REFRESH_TOKEN_REQUIRED": "Päivitetty tunniste tarvitaan",
     "INVALID_REFRESH_TOKEN": "Virheellinen päivitetty tunniste.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Päivitetty tunniste peruutettu onnistuneesti.",
     "PUBLIC_REGISTRATION_DISABLED": "Uuden tilin rekisteröinti on poistettu käytöstä tällä palvelimella. Ota yhteyttä järjestelmänvalvojaan.",
     "USERNAME_REQUIRED": "Käyttäjänimi vaaditaan",
     "USERNAME_ALREADY_IN_USE": "Käyttäjänimi on jo käytössä.",
@@ -480,11 +460,11 @@
     "VAULT_ERROR": "Paikallinen holvi ei ole ajan tasalla. Synkronoi holvisi päivittämällä sivu ja yritä uudelleen."
   },
   "app": {
-    "openReadOnlyMode": "Avaa vain luku -tilassa",
     "status": {
       "unlockingVault": "Avataan holvia",
       "decryptingVault": "Pureraan holvin salausta",
-      "openingVaultReadOnly": "Avataan holvi vain luku -tilassa"
+      "openingVaultReadOnly": "Avataan holvi vain luku -tilassa",
+      "retryingConnection": "Yritetään yhdistää uudelleen..."
     },
     "offline": {
       "banner": "Offline-tila (vain luku)",
@@ -499,8 +479,7 @@
     },
     "navigation": {
       "login": "Kirjaudu sisään",
-      "loginSettings": "Sisäänkirjautumisen asetukset",
-      "notFound": "Ei löytynyt"
+      "loginSettings": "Sisäänkirjautumisen asetukset"
     },
     "notFound": {
       "title": "Sivua ei löydy",

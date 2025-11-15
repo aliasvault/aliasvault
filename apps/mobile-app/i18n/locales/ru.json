@@ -16,13 +16,13 @@
     "loadMore": "Загрузить ещё",
     "use": "Использовать",
     "confirm": "Подтвердить",
-    "next": "Next",
-    "notice": "Notice",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "next": "Далее",
+    "notice": "Примечание",
+    "enabled": "Включено",
+    "disabled": "Отключено",
     "errors": {
       "unknownError": "Произошла неизвестная ошибка. Пожалуйста, попробуйте снова.",
-      "unknownErrorTryAgain": "An unknown error occurred. Please try again."
+      "unknownErrorTryAgain": "Произошла неизвестная ошибка. Попробуйте снова."
     }
   },
   "auth": {
@@ -39,10 +39,7 @@
     "verifyingAuthCode": "Проверка кода аутентификации",
     "verify": "Проверить",
     "unlockVault": "Разблокировать хранилище",
-    "unlockWithPin": "Unlock with PIN",
-    "useMasterPassword": "Use Master Password",
-    "enterPin": "Enter PIN",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
+    "unlockWithPin": "Разблокировать ПИН-кодом﻿",
     "enterPassword": "Введите ваш пароль для разблокировки вашего хранилища",
     "enterPasswordPlaceholder": "Пароль",
     "enterAuthCode": "Введите 6-значный код",
@@ -81,17 +78,11 @@
     "errors": {
       "failedToGetEncryptedDatabase": "Не удалось получить зашифрованную базу данных",
       "usernameNotFound": "Имя пользователя не найдено",
-      "vaultMergeRequired": "Требуется объединение хранилища. Пожалуйста, войдите в систему через веб-приложение, чтобы объединить несколько ожидающих обновлений в вашем хранилище.",
       "vaultOutdated": "Ваше хранилище устарело. Пожалуйста, войдите на сайт AliasVault и следуйте инструкциям.",
-      "failedToUploadVault": "Не удалось загрузить хранилище на сервер. Пожалуйста, повторите попытку, повторно открыв приложение.",
-      "usernameNotFoundLoginAgain": "Имя пользователя не найдено. Пожалуйста, войдите в систему еще раз.",
-      "errorDuringPasswordChange": "Ошибка при смене пароля. Пожалуйста, войдите в систему еще раз, чтобы получить доступ к вашему последнему хранилищу.",
       "failedToSyncVault": "Не удалось синхронизировать хранилище",
-      "operationFailed": "Сбой операции",
       "versionNotSupported": "Эта версия мобильного приложения AliasVault больше не поддерживается сервером. Пожалуйста, обновите ваше приложение до последней версии.",
       "serverVersionNotSupported": "Для использования этого мобильного приложения необходимо обновить сервер AliasVault до новой версии. Если вам нужна помощь, обратитесь в службу поддержки.",
       "appOutdated": "Это приложение устарело и не может быть использовано для доступа к этой (более новой) версии хранилища. Пожалуйста, обновите приложение AliasVault, чтобы продолжить.",
-      "vaultDecryptFailed": "Хранилище не удалось расшифровать, если проблема не устраняется, пожалуйста, выйдите и войдите в систему еще раз.",
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности."
     }
   },
@@ -171,9 +162,15 @@
     "twoFactorAuth": "Двухфакторная аутентификация",
     "totpCode": "TOTP код",
     "attachments": "Вложения",
-    "loadingAttachments": "Загрузка вложений...",
-    "addAttachments": "Добавить вложения",
     "deleteAttachment": "Удалить",
+    "fileSavedTo": "Файл сохранен в",
+    "previewNotSupported": "Предварительный просмотр не поддерживается",
+    "downloadToView": "Скачайте файл, чтобы просмотреть его",
+    "unsavedChanges": {
+      "title": "Отменить изменения?",
+      "message": "Все несохраненные изменения будут утеряны. Продолжить?",
+      "discard": "Отменить"
+    },
     "toasts": {
       "credentialUpdated": "Учетные данные успешно обновлены",
       "credentialCreated": "Учетные данные успешно созданы",
@@ -185,9 +182,7 @@
     "createNewAliasFor": "Создайте новый псевдоним для",
     "errors": {
       "loadFailed": "Не удалось загрузить учетные данные",
-      "saveFailed": "Не удалось сохранить учетную запись",
-      "generateUsernameFailed": "Не удалось сгенерировать имя пользователя",
-      "generatePasswordFailed": "Не удалось сгенерировать пароль"
+      "saveFailed": "Не удалось сохранить учетную запись"
     },
     "contextMenu": {
       "title": "Параметры учетных данных",
@@ -292,19 +287,19 @@
       "biometricEnabled": "{{biometric}} теперь успешно включен",
       "biometricNotAvailable": "{{biometric}} недоступен",
       "biometricDisabledMessage": "{{biometric}} отключен для AliasVault. Чтобы использовать его, пожалуйста, сначала включите его в настройках вашего устройства.",
-      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
+      "biometricHelp": "Разблокируйте хранилище с помощью биометрии. Оно защищено {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} недоступен. Нажмите, чтобы открыть настройки, и/или перейдите в настройки своего устройства, чтобы включить и настроить его.",
-      "pin": "PIN Code",
-      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
-      "pinEnabled": "PIN unlock enabled successfully",
-      "pinDisabled": "PIN unlock has been disabled",
-      "setupPin": "Setup PIN",
-      "enterNewPin": "Enter New PIN",
-      "enterNewPinDescription": "Choose a PIN to unlock your vault",
-      "confirmPin": "Confirm PIN",
-      "confirmPinDescription": "Re-enter your PIN to confirm",
-      "pinMismatch": "PINs do not match. Please try again.",
-      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
+      "pin": "ПИН-код",
+      "pinDescription": "Используйте PIN-код для быстрой разблокировки хранилища.",
+      "pinEnabled": "Вход по PIN-коду успешно включен",
+      "pinDisabled": "Вход по PIN-коду отключен",
+      "setupPin": "Настройка PIN-кода",
+      "enterNewPin": "Введите новый PIN-код",
+      "enterNewPinDescription": "Придумайте PIN-код для разблокировки хранилища",
+      "confirmPin": "Подтвердите ПИН-код﻿",
+      "confirmPinDescription": "Введите PIN-код еще раз для подтверждения",
+      "pinMismatch": "PIN-коды не совпадают. Повторите попытку.",
+      "pinLocked": "Доступ по PIN-коду заблокирован из-за превышения лимита попыток. Пожалуйста, войдите с помощью мастер-пароля.",
       "passwordHelp": "Повторно введите свой полный мастер-пароль, чтобы разблокировать хранилище. Эта опция всегда включена в качестве запасного варианта.",
       "keystoreIOS": "Связь ключей iOS",
       "keystoreAndroid": "Хранилище ключей Android"
@@ -326,11 +321,6 @@
         "random": "Случайный",
         "male": "Мужской",
         "female": "Женский"
-      },
-      "errors": {
-        "loadFailed": "Не удалось загрузить настройки генератора личностей.",
-        "languageUpdateFailed": "Не удалось обновить языковые настройки.",
-        "genderUpdateFailed": "Не удалось обновить настройки пола."
       }
     },
     "passwordGeneratorSettings": {
@@ -378,7 +368,6 @@
         "success": "Успешно",
         "failed": "Неудачно",
         "time": "Время",
-        "device": "Устройство",
         "ipAddress": "IP-адрес",
         "client": "Клиент",
         "failedToLoad": "Не удалось загрузить журналы авторизации"
@@ -435,14 +424,6 @@
       "hoursAgo_single": "{{count}} часов назад",
       "hoursAgo_plural": "{{count}} часов назад",
       "yesterday": "вчера"
-    },
-    "errors": {
-      "generic": "Произошла ошибка",
-      "loadFailed": "Не удалось загрузить письма",
-      "deleteFailed": "Не удалось удалить письмо",
-      "dbNotAvailable": "Контекст базы данных или адрес электронной почты недоступны",
-      "decryptFailed": "Не удалось расшифровать вложение",
-      "downloadFailed": "Не удалось загрузить вложение"
     }
   },
   "validation": {
@@ -462,7 +443,6 @@
     "INVALID_RECOVERY_CODE": "Неверный код восстановления. Пожалуйста, попробуйте снова.",
     "REFRESH_TOKEN_REQUIRED": "Требуется токен обновления.",
     "INVALID_REFRESH_TOKEN": "Недопустимый токен обновления.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Токен обновления успешно отозван.",
     "PUBLIC_REGISTRATION_DISABLED": "В настоящее время регистрация новой учетной записи на этом сервере отключена. Пожалуйста, свяжитесь с администратором.",
     "USERNAME_REQUIRED": "Требуется ввести имя пользователя.",
     "USERNAME_ALREADY_IN_USE": "Имя пользователя уже используется.",
@@ -480,11 +460,11 @@
     "VAULT_ERROR": "Локальное хранилище не обновлено. Пожалуйста, синхронизируйте ваше хранилище, обновив страницу, и повторите попытку."
   },
   "app": {
-    "openReadOnlyMode": "Открыть в режиме только для чтения",
     "status": {
       "unlockingVault": "Разблокировка хранилища",
       "decryptingVault": "Расшифровка хранилища",
-      "openingVaultReadOnly": "Открытие хранилища в режиме только для чтения"
+      "openingVaultReadOnly": "Открытие хранилища в режиме только для чтения",
+      "retryingConnection": "Повторная попытка подключения..."
     },
     "offline": {
       "banner": "Офлайн режим (только для чтения)",
@@ -499,8 +479,7 @@
     },
     "navigation": {
       "login": "Логин",
-      "loginSettings": "Настройки входа",
-      "notFound": "Не найдено"
+      "loginSettings": "Настройки входа"
     },
     "notFound": {
       "title": "Страница не найдена",

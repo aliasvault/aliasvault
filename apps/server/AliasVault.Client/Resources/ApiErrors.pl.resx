@@ -125,9 +125,6 @@
   <data name="INVALID_REFRESH_TOKEN" xml:space="preserve">
     <value>Nieprawidłowy token odświeżania</value>
   </data>
-  <data name="REFRESH_TOKEN_REVOKED_SUCCESSFULLY" xml:space="preserve">
-    <value>Odnowienie tokenu zostało cofnięte</value>
-  </data>
   <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
     <value>Rejestracja nowych kont jest obecnie wyłączona na tym serwerze. Skontaktuj się z administratorem.</value>
   </data>
@@ -169,9 +166,6 @@
   </data>
   <data name="PENDING_MIGRATIONS" xml:space="preserve">
     <value>Istnieją oczekujące migracje. Aby je zastosować, uruchom polecenie „dotnet ef database update”.</value>
-  </data>
-  <data name="SYSTEM_OK" xml:space="preserve">
-    <value>Ok</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
     <value>Wewnętrzny błąd serwera</value>

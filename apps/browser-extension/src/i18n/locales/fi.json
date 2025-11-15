@@ -18,18 +18,11 @@
     "masterPassword": "Pääsalasana",
     "unlockVault": "Avaa holvin lukitus",
     "unlockWithPin": "Avaa PIN-koodilla",
-    "enterPin": "Anna PIN-koodisi",
     "enterPinToUnlock": "Syötä PIN-koodi avataksesi holvisi",
-    "unlock": "Avaa lukitus",
-    "usePassword": "Käytä salasanaa",
     "useMasterPassword": "Käytä pääsalasanaa",
-    "pinUnlockTip": "Voit myös syöttää PIN-koodisi näppäimistön avulla",
     "unlockTitle": "Avaa holvisi lukitus",
-    "unlockDescription": "Syötä pääsalasanasi avataksesi holvisi lukituksen.",
     "logout": "Uloskirjautuminen",
     "logoutConfirm": "Oletko varma, että haluat kirjautua ulos?",
-    "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
-    "unlockSuccess": "Holvin lukitus avattu!",
     "unlockSuccessTitle": "Holvisi lukitus on avattu",
     "unlockSuccessDescription": "Voit nyt käyttää automaattista täyttöä sisäänkirjautumislomakkeissa selaimessasi.",
     "closePopup": "Sulje tämä ponnahdusikkuna",
@@ -40,8 +33,6 @@
     "errors": {
       "invalidCode": "Syötä kelvollinen 6-numeroinen tunnistautumiskoodi.",
       "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
-      "noToken": "Sisäänkirjautuminen epäonnistui -- polettia ei palautettu",
-      "migrationError": "Tapahtui virhe tarkistettaessa odottavia siirtoja.",
       "wrongPassword": "Virheellinen salasana. Yritä uudelleen.",
       "accountLocked": "Tili tilapäisesti lukittu liian monen epäonnistuneen yrityksen vuoksi.",
       "networkError": "Verkkovirhe: tarkista yhteytesi ja yritä uudelleen.",
@@ -107,9 +98,7 @@
       "unknownError": "Tapahtui tuntematon virhe",
       "unknownErrorTryAgain": "Tapahtui tuntematon virhe. Yritä uudelleen.",
       "vaultNotAvailable": "Holvi ei käytettävissä",
-      "failedToRetrieveData": "Tietojen nouto epäonnistui",
       "vaultIsLocked": "Holvi on lukittu",
-      "failedToUploadVault": "Holvin ulospäinlataaminen epäonnistui",
       "passwordChanged": "Salasanasi on muuttunut edellisen sisäänkirjautumisen jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä."
     },
     "apiErrors": {
@@ -121,7 +110,6 @@
       "INVALID_RECOVERY_CODE": "Virheellinen palautuskoodi. Yritä uudelleen.",
       "REFRESH_TOKEN_REQUIRED": "Virkistyspoletti vaaditaan.",
       "INVALID_REFRESH_TOKEN": "Virheellinen virkistyspoletti.",
-      "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Virkistyspoletti peruutettu.",
       "PUBLIC_REGISTRATION_DISABLED": "Uuden tilin rekisteröinti on tällä hetkellä poistettu käytöstä tällä palvelimella. Ota yhteyttä järjestelmänvalvojaan.",
       "USERNAME_REQUIRED": "Käyttäjänimi vaaditaan.",
       "USERNAME_ALREADY_IN_USE": "Käyttäjänimi on jo käytössä.",
@@ -184,8 +172,6 @@
     "deleteCredential": "Poista tunnistetieto",
     "credentialDetails": "Tunnistetietojen yksityiskohdat",
     "serviceName": "Palvelun nimi",
-    "username": "Käyttäjänimi",
-    "password": "Salasana",
     "notes": "Huomautukset",
     "totp": "Kaksivaiheinen tunnistautuminen",
     "totpCode": "TOTP-koodi",
@@ -335,7 +321,6 @@
     "autoLock8Hours": "8 tuntia",
     "autoLock24Hours": "24 tuntia",
     "versionPrefix": "Versio",
-    "preferences": "Määritykset",
     "autofillSettings": "Automaatisen täytön asetukset",
     "clipboardSettings": "Leikepöydän asetukset",
     "contextMenuSettings": "Kontekstivalikon asetukset",
@@ -368,8 +353,7 @@
       "pin": "PIN-koodi",
       "pinDescription": "Avaa holvi PIN-koodilla",
       "setupPin": "PIN-koodin määrittäminen",
-      "enterNewPin": "Syötä uusi PIN",
-      "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
+      "enterNewPinDescription": "Syötä PIN-koodi, jossa on vähintään 6 numeroa",
       "confirmPin": "Vahvista PIN",
       "confirmPinDescription": "Syötä PIN-koodi uudelleen vahvistaaksesi",
       "invalidPinFormat": "Virheellinen PIN-muoto",
@@ -378,7 +362,6 @@
       "incorrectPinSingular": "Virheellinen PIN-koodi. 1 yritys jäljellä.",
       "enableSuccess": "PIN-lukituksen avaus käytössä onnistuneesti!",
       "pinLocked": "PIN-lukituksen avaus on poistettu käytöstä. Ole hyvä ja käytä pääsalasanaa avataksesi holvisi.",
-      "unlockVaultFirst": "Ole hyvä ja avaa holvisi lukitus ennen PIN-koodin asettamista.",
       "pinSecurityWarning": "PIN-koodin lukituksen poisto selaimen laajennuksessa voi olla vähemmän turvallista kuin pääsalasana, koska PIN-koodit ovat tyypillisesti alempia entropia ja voi olla brute-pakko jos laite on vaarassa. Käytä sitä vain laitteissa, joihin täysin luotat."
     }
   },
@@ -408,7 +391,6 @@
       "titleLabel": "Otsikko",
       "titlePlaceholder": "Anna nimi tälle todennusavaimelle",
       "createButton": "Luo todennusavain, Passkey",
-      "creatingButton": "Luodaan...",
       "useBrowserPasskey": "Käytä selaimen sala-avainta",
       "selectPasskeyToReplace": "Valitse todennusavain, johon korvataan",
       "createNewPasskey": "Luo uusi sala-avain",
@@ -417,9 +399,7 @@
     },
     "settings": {
       "passkeyProvider": "Todennusavaimen toimittaja",
-      "passkeyProviderOn": "Todennusavaimen toimittaja käytössä ",
-      "enable": "Ota AliasVault käyttöön todennusavainten tarjoajana",
-      "description": "Kun AliasVault on käytössä, se käsittelee todennusavaimia verkkosivustoilta. Kun sivusto pyytää todennusavainta, AliasVaultin ponnahdusikkuna näytetään natiivin selaimen tai käyttöjärjestelmän todennusavaimen sijaan."
+      "passkeyProviderOn": "Todennusavaimen toimittaja käytössä "
     }
   },
   "upgrade": {

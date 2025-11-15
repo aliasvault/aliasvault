@@ -2,12 +2,12 @@
 "error" = "Virhe";
 "cancel" = "Peruuta";
 "back" = "Takaisin";
-"next" = "Next";
+"next" = "Seuraava";
 "edit" = "Muokkaa";
 "website" = "Verkkosivusto";
 "username" = "Käyttäjänimi";
 "title" = "Otsikko";
-"unknown_error" = "An unknown error occurred";
+"unknown_error" = "Tapahtui tuntematon virhe";
 
 "loading_credentials" = "Ladataan tunnistetietoja...";
 "no_credentials_found" = "Tunnistetietoja ei löytynyt";
@@ -60,14 +60,14 @@
 "create_passkey_explanation" = "Tämä luo uuden todennusavaimen ja tallentaa sen holviisi. Se synkronoidaan automaattisesti kaikkiin laitteisiin, jotka käyttävät AliasVaultia.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "Avaa holvin lukitus";
+"enter_pin_to_unlock_vault" = "Syötä PIN-koodi avataksesi holvisi";
+"pin_locked_max_attempts" = "PIN-koodi lukittu liian monen epäonnistuneen yrityksen jälkeen";
+"pin_incorrect_attempts_remaining" = "Virheellinen PIN, %d yritystä jäljellä";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "Aseta PIN-koodi";
+"pin_setup_subtitle" = "Syötä PIN-koodi avataksesi holvisi";
+"pin_confirm_title" = "Vahvista PIN";
+"pin_confirm_subtitle" = "Syötä PIN-koodi uudelleen vahvistaaksesi";
+"pin_mismatch" = "PIN-koodit eivät täsmää. Yritä uudelleen.";
