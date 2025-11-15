@@ -110,7 +110,6 @@
       "INVALID_RECOVERY_CODE": "Código de recuperação inválido. Por favor, tente novamente.",
       "REFRESH_TOKEN_REQUIRED": "Token de atualização é obrigatório.",
       "INVALID_REFRESH_TOKEN": "Token de atualização inválido.",
-      "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Token de atualização revogado com sucesso.",
       "PUBLIC_REGISTRATION_DISABLED": "Registro de novas contas está atualmente desabilitado neste servidor. Por favor entre em contato com o administrador.",
       "USERNAME_REQUIRED": "Nome de usuário é obrigatório.",
       "USERNAME_ALREADY_IN_USE": "Nome de usuário já está em uso.",
