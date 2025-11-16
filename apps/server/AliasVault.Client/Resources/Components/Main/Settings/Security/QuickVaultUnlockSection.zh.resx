@@ -63,39 +63,39 @@
     <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Your master password is encrypted with the passkey PRF and stored locally. When you reload the AliasVault page or tab, you can unlock your vault with your passkey. If you wish to disable passkey unlock, you can do so with the button below. Your master password will still work for unlocking the vault.</value>
+    <value>您的主密码已使用通行密钥 PRF 加密并存储在本地。重新加载 AliasVault 页面或标签页即可使用通行密钥解锁密码库。如果您希望禁用通行密钥解锁，可以使用下方的按钮。您的主密码仍然可以用来解锁密码库。</value>
     <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Disable Passkey Unlock</value>
+    <value>禁用通行密钥解锁</value>
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.</value>
+    <value>默认情况下，重新加载 AliasVault 页面或标签页需要您重新输入主密码。使用通行密钥，您可以即刻解锁密码库。启用后，您的主密码将使用通行密钥的 PRF 扩展进行本地加密。注意：通行密钥仅适用于您启用它的当前设备和浏览器。</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>This feature is currently supported by AliasVault browser extension and iOS app. Android support is coming soon. If you experience any issues, you can disable this feature at any time.</value>
+    <value>此功能目前仅支持 AliasVault 浏览器扩展和 iOS 应用，Android 版本即将推出。如果遇到任何问题，可以随时禁用此功能。</value>
     <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Passkey Unlock</value>
+    <value>启用通行密钥解锁</value>
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully enabled. The next time your vault is locked, you can unlock it with your created passkey.</value>
+    <value>通行密钥解锁已成功启用。下次您的密码库被锁定时，您可以使用创建的通行密钥解锁。</value>
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully disabled.</value>
+    <value>通行密钥解锁已成功禁用。</value>
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>您当前的浏览器不支持WebAuthn PRF扩展。请尝试使用其他浏览器。</value>
+    <value>您当前的浏览器不支持 WebAuthn PRF 扩展，请尝试使用其他浏览器。</value>
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
-    <value>尝试启用快速解锁密码库时发生错误。请（稍后）再试一次。</value>
+    <value>启用快速解锁密码库时出错，请（稍后）重试。</value>
     <comment>Generic error message when enabling fails</comment>
   </data>
 </root>
