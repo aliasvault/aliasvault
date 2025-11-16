@@ -2,12 +2,12 @@
 "error" = "错误";
 "cancel" = "取消";
 "back" = "返回";
-"next" = "Next";
+"next" = "下一步";
 "edit" = "编辑";
 "website" = "网站";
 "username" = "用户名";
 "title" = "标题";
-"unknown_error" = "An unknown error occurred";
+"unknown_error" = "发生未知错误";
 
 "loading_credentials" = "加载凭据中…";
 "no_credentials_found" = "未找到凭据";
@@ -60,14 +60,14 @@
 "create_passkey_explanation" = "这将创建一个新的通行密钥并将其存储在您的密码库中。它将自动同步到您所有使用 AliasVault 的设备。";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "解锁密码库";
+"enter_pin_to_unlock_vault" = "输入您的 PIN 以解锁密码库";
+"pin_locked_max_attempts" = "PIN 因多次尝试失败而被锁定";
+"pin_incorrect_attempts_remaining" = "PIN 错误，剩余 %d 次尝试";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "设置 PIN";
+"pin_setup_subtitle" = "选择一个 PIN 以解锁保险库";
+"pin_confirm_title" = "确认 PIN";
+"pin_confirm_subtitle" = "重新输入您的 PIN 以确认";
+"pin_mismatch" = "PIN 不匹配，请重试。";
