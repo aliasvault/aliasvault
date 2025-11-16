@@ -1,6 +1,6 @@
 {
   "auth": {
-    "loginTitle": "登录AliasVault",
+    "loginTitle": "登录到 AliasVault",
     "username": "用户名或电子邮箱",
     "usernamePlaceholder": "姓名 / name@company.com",
     "password": "密码",
@@ -10,8 +10,8 @@
     "noAccount": "还没有账户？",
     "createVault": "创建新密码库",
     "twoFactorTitle": "请输入认证器的动态验证码。",
-    "authCode": "动态验证码",
-    "authCodePlaceholder": "输入6位动态验证码",
+    "authCode": "身份验证码",
+    "authCodePlaceholder": "输入 6 位数代码",
     "verify": "验证",
     "cancel": "取消",
     "twoFactorNote": "注意：如果无法访问您的认证设备，您可以通过网站登录，使用恢复码重置双因素认证（2FA）。",
@@ -21,13 +21,13 @@
     "enterPinToUnlock": "输入您的 PIN 以解锁密码库",
     "useMasterPassword": "使用主密码",
     "unlockTitle": "解锁您的密码库",
-    "logout": "登出",
+    "logout": "退出登录",
     "logoutConfirm": "确定要退出登录吗？",
     "unlockSuccessTitle": "您的密码库已成功解锁",
     "unlockSuccessDescription": "现在您可以在浏览器的登录表单中使用自动填充功能了。",
     "closePopup": "关闭此弹窗",
     "browseVault": "浏览密码库内容",
-    "connectingTo": "正在连接到",
+    "connectingTo": "正在连接",
     "switchAccounts": "切换账户？",
     "loggedIn": "已登录",
     "errors": {
@@ -70,7 +70,7 @@
     "attachments": "附件",
     "loadingAttachments": "加载附件中…",
     "settings": "设置",
-    "recentEmails": "最近邮件",
+    "recentEmails": "近期电子邮件",
     "loginCredentials": "登录凭据",
     "twoFactorAuthentication": "双因素认证（2FA）",
     "alias": "别名",
@@ -274,7 +274,7 @@
     "openInNewWindow": "在新窗口中打开",
     "openWebApp": "打开网页应用",
     "loggedIn": "已登录",
-    "logout": "登出",
+    "logout": "退出登录",
     "lock": "锁定",
     "globalSettings": "全局设置",
     "autofillPopup": "自动填充弹窗",
@@ -398,8 +398,8 @@
       "confirmReplace": "确认替换"
     },
     "settings": {
-      "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on "
+      "passkeyProvider": "通行密钥提供程序",
+      "passkeyProviderOn": "通行密钥提供程序于"
     }
   },
   "upgrade": {
