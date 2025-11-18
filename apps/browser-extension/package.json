@@ -53,7 +53,7 @@
     "@types/yup": "^0.29.14",
     "@typescript-eslint/eslint-plugin": "^8.21.0",
     "@typescript-eslint/parser": "^8.21.0",
-    "@vitest/coverage-v8": "^3.0.8",
+    "@vitest/coverage-v8": "^4.0.10",
     "@wxt-dev/module-react": "^1.1.2",
     "autoprefixer": "^10.4.20",
     "eslint": "^9.19.0",
@@ -64,7 +64,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "jsdom": "^26.0.0",
     "postcss": "^8.5.1",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^4.1.17",
     "typescript": "^5.6.3",
     "vite-plugin-static-copy": "^2.3.2",
     "wxt": "^0.20.11"
