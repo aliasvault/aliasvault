@@ -111,7 +111,10 @@
     {
         base.OnInitialized();
 
-        IsCustomDomain = !PublicDomains.Contains(SelectedDomain) && !PrivateDomains.Contains(SelectedDomain);
+        // Check if domain is known (including hidden private domains)
+        IsCustomDomain = !PublicDomains.Contains(SelectedDomain)
+            && !PrivateDomains.Contains(SelectedDomain)
+            && !Config.HiddenPrivateEmailDomains.Contains(SelectedDomain);
     }
 
     /// <inheritdoc />
@@ -137,7 +140,10 @@
             SelectedDomain = PublicDomains[0];
         }
 
-        IsCustomDomain = !PublicDomains.Contains(SelectedDomain) && !PrivateDomains.Contains(SelectedDomain);
+        // Check if domain is known (including hidden private domains)
+        IsCustomDomain = !PublicDomains.Contains(SelectedDomain)
+            && !PrivateDomains.Contains(SelectedDomain)
+            && !Config.HiddenPrivateEmailDomains.Contains(SelectedDomain);
         if (IsCustomDomain)
         {
             LocalPart = Value;
