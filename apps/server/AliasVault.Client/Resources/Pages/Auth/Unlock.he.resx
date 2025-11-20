@@ -122,4 +122,8 @@
     <value>אירעה שגיאה בעיבוד בקשת הכניסה. נא לנסות שוב (מאוחר יותר).</value>
     <comment>Generic error message for unlock failures</comment>
   </data>
+  <data name="UnlockWithMobileButton" xml:space="preserve">
+    <value>Unlock with Mobile App</value>
+    <comment>Button text for unlocking with mobile app</comment>
+  </data>
 </root>
