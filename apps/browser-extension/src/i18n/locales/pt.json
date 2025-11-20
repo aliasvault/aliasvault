@@ -6,7 +6,7 @@
     "password": "Senha",
     "passwordPlaceholder": "Digite sua senha",
     "rememberMe": "Lembrar-me",
-    "loginButton": "Log in",
+    "loginButton": "Entrar",
     "noAccount": "Não possui conta?",
     "createVault": "Criar novo cofre",
     "twoFactorTitle": "Por favor, insira o código de autenticação do seu aplicativo de autenticação.",
@@ -15,7 +15,7 @@
     "verify": "Verificar",
     "twoFactorNote": "Nota: se você não tem acesso ao seu aparelho de verificação, você pode resetar seu 2FA com um código de recuperação fazendo login no site.",
     "masterPassword": "Senha Mestre",
-    "unlockVault": "Unlock",
+    "unlockVault": "Desbloquear",
     "unlockWithPin": "Desbloquear com PIN",
     "enterPinToUnlock": "Digite seu PIN para desbloquear seu cofre",
     "useMasterPassword": "Utilizar Senha Mestre",
@@ -29,9 +29,9 @@
     "connectingTo": "Conectando à",
     "switchAccounts": "Mudar de conta?",
     "loggedIn": "Logado",
-    "loginWithMobile": "Log in using Mobile App",
-    "unlockWithMobile": "Unlock using Mobile App",
-    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
+    "loginWithMobile": "Entrar utilizado Dispositivo Móvel",
+    "unlockWithMobile": "Desbloquear utilizando Dispositivo Móvel",
+    "scanQrCode": "Escaneie este código QR com seu aplicativo AliasVault para dispositivo móvel para entrar e desbloquear seu cofre.",
     "errors": {
       "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
       "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
@@ -39,7 +39,7 @@
       "accountLocked": "Conta temporariamente bloqueada por muitas tentativas de login falhas. Por favor, tente novamente mais tarde.",
       "networkError": "Conexão falhou. Por favor verifique sua conexão com a internet e tente novamente.",
       "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "mobileLoginRequestExpired": "Requisição de login pelo dispositivo móvel demorou muito. Por favor, atualize a página e tente novamente."
     }
   },
   "menu": {
@@ -98,7 +98,7 @@
       "clientVersionNotSupported": "Esta versão da extensão AliasVault para o navegador não é mais suportada pelo servidor. Por favor, atualize sua extensão para a última versão.",
       "browserExtensionOutdated": "Esta extensão do navegador está desatualizada e não pode ser utilizada para acessar este cofre. Por favor, atualize esta extensão para continuar.",
       "serverVersionNotSupported": "O servidor AliasVault precisa ser atualizado para uma nova versão para poder utilizar esta extensão de navegador. Por favor, entre em contato com o suporte caso precise de ajuda.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help.",
+      "serverVersionTooOld": "O servidor do AliasVault deve ser atualizado para uma versão mais recente para utilizar esta função. Por favor, entre em contato com o administrador do servidor se precisar de ajuda.",
       "unknownError": "Ocorreu um erro desconhecido",
       "unknownErrorTryAgain": "Ocorreu um erro inesperado. Por favor, tente novamente.",
       "vaultNotAvailable": "Cofre não disponível",
