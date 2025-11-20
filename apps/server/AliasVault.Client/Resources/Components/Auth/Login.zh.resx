@@ -101,10 +101,6 @@
     <value>登录</value>
     <comment>Login button text</comment>
   </data>
-  <data name="LoginToAccountButton" xml:space="preserve">
-    <value>登录您的账户</value>
-    <comment>Extended login button text</comment>
-  </data>
   <!-- Links -->
   <data name="LostPasswordLink" xml:space="preserve">
     <value>忘记密码？</value>
@@ -121,6 +117,10 @@
   <data name="LoginWithAuthenticatorLink" xml:space="preserve">
     <value>使用验证码登录。</value>
     <comment>Link text for logging in with authenticator</comment>
+  </data>
+  <data name="MobileDeviceLink" xml:space="preserve">
+    <value>Log in using Mobile App</value>
+    <comment>Link text for mobile device login</comment>
   </data>
   <!-- Descriptions and help text -->
   <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
