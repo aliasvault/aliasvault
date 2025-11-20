@@ -55,7 +55,7 @@
     <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
-    <value>登出</value>
+    <value>退出登录</value>
     <comment>Button text for logging out</comment>
   </data>
   <!-- Accessibility labels -->
