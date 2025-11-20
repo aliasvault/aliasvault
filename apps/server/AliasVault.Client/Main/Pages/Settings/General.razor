@@ -144,7 +144,7 @@
         BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["BreadcrumbTitle"] });
 
         DefaultEmailDomain = DbService.Settings.DefaultEmailDomain;
-        if (DefaultEmailDomain == string.Empty)
+        if (DefaultEmailDomain == string.Empty || Config.HiddenPrivateEmailDomains.Contains(DefaultEmailDomain))
         {
             if (HasValidPrivateDomains())
             {

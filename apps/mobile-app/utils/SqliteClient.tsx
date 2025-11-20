@@ -82,19 +82,20 @@ class SqliteClient {
       const { privateEmailDomains, publicEmailDomains, hiddenPrivateEmailDomains } = metadata;
 
       /**
-       * Check if a domain is valid (not empty, not 'DISABLED.TLD', and exists in either private or public domains)
+       * Check if a domain is valid (not empty, not 'DISABLED.TLD', not hidden, and exists in either private or public domains)
        */
       const isValidDomain = (domain: string): boolean => {
         return Boolean(domain &&
                domain !== 'DISABLED.TLD' &&
                domain !== '' &&
+               !hiddenPrivateEmailDomains?.includes(domain) &&
                (privateEmailDomains?.includes(domain) || publicEmailDomains?.includes(domain)));
       };
 
       // Get the default email domain from vault settings
       const defaultEmailDomain = await this.getSetting('DefaultEmailDomain');
 
-      // First check if the default domain that is configured in the vault is still valid
+      // First check if the default domain that is configured in the vault is still valid (not hidden)
       if (defaultEmailDomain && isValidDomain(defaultEmailDomain)) {
         return defaultEmailDomain;
       }

@@ -105,21 +105,22 @@ public sealed class CredentialService(HttpClient httpClient, DbService dbService
     {
         var defaultDomain = dbService.Settings.DefaultEmailDomain;
 
-        // Function to check if a domain is valid
+        // Function to check if a domain is valid (not disabled, not hidden, and exists in domain lists)
         // TODO: "DISABLED.TLD" was a placeholder used < 0.22.0 that has been replaced by an empty string.
         // That value is still here for legacy purposes, but it can be removed from the codebase in a future release.
         bool IsValidDomain(string domain) =>
             !string.IsNullOrEmpty(domain) &&
             domain != "DISABLED.TLD" &&
+            !config.HiddenPrivateEmailDomains.Contains(domain) &&
             (config.PublicEmailDomains.Contains(domain) || config.PrivateEmailDomains.Contains(domain));
 
-        // Get the first valid domain from private or public domains
+        // Get the first valid domain from private or public domains (excluding hidden ones)
         string GetFirstValidDomain() =>
             config.PrivateEmailDomains.Find(IsValidDomain) ??
             config.PublicEmailDomains.FirstOrDefault() ??
             "example.com";
 
-        // Use the default domain if it's valid, otherwise get the first valid domain
+        // Use the default domain if it's valid (not hidden), otherwise get the first valid domain
         string domainToUse = IsValidDomain(defaultDomain) ? defaultDomain : GetFirstValidDomain();
 
         return domainToUse;
