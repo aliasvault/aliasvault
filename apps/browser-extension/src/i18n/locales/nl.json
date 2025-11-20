@@ -6,7 +6,7 @@
     "password": "Wachtwoord",
     "passwordPlaceholder": "Voer je wachtwoord in",
     "rememberMe": "Onthoud mij",
-    "loginButton": "Log in",
+    "loginButton": "Inloggen",
     "noAccount": "Nog geen account?",
     "createVault": "Nieuwe vault aanmaken",
     "twoFactorTitle": "Voer de authenticatiecode van je authenticator-app in.",
@@ -15,7 +15,7 @@
     "verify": "Verifiëren",
     "twoFactorNote": "Opmerking: als je geen toegang hebt tot je authenticator, kunt je je 2FA resetten door met een in te loggen via de website.",
     "masterPassword": "Hoofdwachtwoord",
-    "unlockVault": "Unlock",
+    "unlockVault": "Ontgrendelen",
     "unlockWithPin": "Ontgrendelen met PIN",
     "enterPinToUnlock": "Voer je pincode in om je vault te ontgrendelen",
     "useMasterPassword": "Gebruik hoofdwachtwoord",
@@ -29,9 +29,9 @@
     "connectingTo": "Verbinden met",
     "switchAccounts": "Wisselen van account?",
     "loggedIn": "Ingelogd",
-    "loginWithMobile": "Log in using Mobile App",
-    "unlockWithMobile": "Unlock using Mobile App",
-    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
+    "loginWithMobile": "Log in via de mobiele app",
+    "unlockWithMobile": "Ontgrendel met mobiele app",
+    "scanQrCode": "Scan deze QR-code met de AliasVault mobiele app om in te loggen en je kluis te ontgrendelen.",
     "errors": {
       "invalidCode": "Voer een geldige 6-cijferige code in.",
       "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
@@ -39,7 +39,7 @@
       "accountLocked": "Account tijdelijk vergrendeld vanwege te veel mislukte pogingen.",
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
       "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "mobileLoginRequestExpired": "Time-out van de mobiele inlogaanvraag. Herlaad de pagina en probeer opnieuw."
     }
   },
   "menu": {
@@ -98,7 +98,7 @@
       "clientVersionNotSupported": "Deze versie van de AliasVault browserextensie wordt niet meer ondersteund door de server. Update je browserextensie naar de nieuwste versie.",
       "browserExtensionOutdated": "Deze browserextensie is verouderd en kan niet worden gebruikt om toegang te krijgen tot deze vault. Update deze browserextensie om door te gaan.",
       "serverVersionNotSupported": "De AliasVault server moet worden bijgewerkt naar een nieuwere versie om deze browserextensie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help.",
+      "serverVersionTooOld": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze functie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
       "unknownError": "Er is een onbekende fout opgetreden",
       "unknownErrorTryAgain": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
       "vaultNotAvailable": "Vault niet beschikbaar",
