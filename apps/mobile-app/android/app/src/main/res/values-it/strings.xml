@@ -5,9 +5,9 @@
   <string name="aliasvault_icon">AliasVault icona</string>
   <!-- Common strings -->
   <string name="common_close">Chiudi</string>
-  <string name="common_next">Next</string>
-  <string name="common_cancel">Cancel</string>
-  <string name="unknown_error">An unknown error occurred</string>
+  <string name="common_next">Avanti</string>
+  <string name="common_cancel">Annulla</string>
+  <string name="unknown_error">Si è verificato un errore sconosciuto</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Impossibile recuperare, aprire l\'app</string>
   <string name="autofill_no_match_found">Nessuna corrispondenza trovata, crearne una nuova?</string>
