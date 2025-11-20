@@ -94,7 +94,7 @@ public class ClientPlaywrightTest : PlaywrightTest
         ApiBaseUrl = "http://localhost:" + apiPort + "/";
 
         // Set environment variables for the API.
-        string[] privateEmailDomains = ["example.tld", "example2.tld","disabled.tld"];
+        string[] privateEmailDomains = ["example.tld", "example2.tld", "disabled.tld"];
         Environment.SetEnvironmentVariable("PRIVATE_EMAIL_DOMAINS", string.Join(",", privateEmailDomains));
         string[] hiddenPrivateEmailDomains = ["disabled.tld"];
         Environment.SetEnvironmentVariable("HIDDEN_PRIVATE_EMAIL_DOMAINS", string.Join(",", hiddenPrivateEmailDomains));
