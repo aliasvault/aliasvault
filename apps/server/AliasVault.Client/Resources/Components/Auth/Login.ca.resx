@@ -101,10 +101,6 @@
     <value>Log in</value>
     <comment>Login button text</comment>
   </data>
-  <data name="LoginToAccountButton" xml:space="preserve">
-    <value>Login to your account</value>
-    <comment>Extended login button text</comment>
-  </data>
   <!-- Links -->
   <data name="LostPasswordLink" xml:space="preserve">
     <value>Lost Password?</value>
@@ -121,6 +117,10 @@
   <data name="LoginWithAuthenticatorLink" xml:space="preserve">
     <value>Log in with an authenticator code instead.</value>
     <comment>Link text for logging in with authenticator</comment>
+  </data>
+  <data name="MobileDeviceLink" xml:space="preserve">
+    <value>Log in using Mobile App</value>
+    <comment>Link text for mobile device login</comment>
   </data>
   <!-- Descriptions and help text -->
   <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
