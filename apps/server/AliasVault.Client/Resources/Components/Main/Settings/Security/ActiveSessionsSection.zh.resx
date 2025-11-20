@@ -63,7 +63,7 @@
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>以下是您的账户当前登录或存在活跃会话的设备列表。您可以在此处从这些会话中登出。</value>
+    <value>以下是您的账户当前登录或存在活跃会话的设备列表。您可以在此处从这些会话中退出登录。</value>
     <comment>Description of active sessions</comment>
   </data>
   <data name="NoSessionsMessage" xml:space="preserve">
