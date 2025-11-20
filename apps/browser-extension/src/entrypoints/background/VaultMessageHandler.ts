@@ -105,6 +105,10 @@ export async function handleStoreVault(
       await storage.setItem('session:privateEmailDomains', vaultRequest.privateEmailDomainList);
     }
 
+    if (vaultRequest.hiddenPrivateEmailDomainList) {
+      await storage.setItem('session:hiddenPrivateEmailDomains', vaultRequest.hiddenPrivateEmailDomainList);
+    }
+
     if (vaultRequest.vaultRevisionNumber) {
       await storage.setItem('session:vaultRevisionNumber', vaultRequest.vaultRevisionNumber);
     }
@@ -168,6 +172,7 @@ export async function handleSyncVault(
       { key: 'session:encryptedVault', value: vaultResponse.vault.blob },
       { key: 'session:publicEmailDomains', value: vaultResponse.vault.publicEmailDomainList },
       { key: 'session:privateEmailDomains', value: vaultResponse.vault.privateEmailDomainList },
+      { key: 'session:hiddenPrivateEmailDomains', value: vaultResponse.vault.hiddenPrivateEmailDomainList },
       { key: 'session:vaultRevisionNumber', value: vaultResponse.vault.currentRevisionNumber }
     ]);
   }
@@ -186,6 +191,7 @@ export async function handleGetVault(
     const encryptedVault = await storage.getItem('session:encryptedVault') as string;
     const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[];
     const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[];
+    const hiddenPrivateEmailDomains = await storage.getItem('session:hiddenPrivateEmailDomains') as string[] ?? [];
     const vaultRevisionNumber = await storage.getItem('session:vaultRevisionNumber') as number;
 
     if (!encryptedVault) {
@@ -208,6 +214,7 @@ export async function handleGetVault(
       vault: decryptedVault,
       publicEmailDomains: publicEmailDomains ?? [],
       privateEmailDomains: privateEmailDomains ?? [],
+      hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? [],
       vaultRevisionNumber: vaultRevisionNumber ?? 0
     };
   } catch (error) {
@@ -229,6 +236,7 @@ export function handleClearVault(
     'session:encryptionKeyDerivationParams',
     'session:publicEmailDomains',
     'session:privateEmailDomains',
+    'session:hiddenPrivateEmailDomains',
     'session:vaultRevisionNumber'
   ]);
 
@@ -497,13 +505,11 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
     credentialsCount: sqliteClient.getAllCredentials().length,
     currentRevisionNumber: vaultRevisionNumber,
     emailAddressList: emailAddresses,
-    privateEmailDomainList: [], // Empty on purpose, API will not use this for vault updates.
-    publicEmailDomainList: [], // Empty on purpose, API will not use this for vault updates.
-    encryptionPublicKey: '', // Empty on purpose, only required if new public/private key pair is generated.
-    client: '', // Empty on purpose, API will not use this for vault updates.
     updatedAt: new Date().toISOString(),
     username: username,
-    version: (await sqliteClient.getDatabaseVersion()).version
+    version: (await sqliteClient.getDatabaseVersion()).version,
+    // TODO: add public RSA encryption key to payload when implementing vault creation from browser extension. Currently only web app does this.
+    encryptionPublicKey: '',
   };
 
   const webApi = new WebApiService(() => {});

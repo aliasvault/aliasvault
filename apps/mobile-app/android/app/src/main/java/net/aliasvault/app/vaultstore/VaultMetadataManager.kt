@@ -47,6 +47,7 @@ class VaultMetadataManager(
             JSONObject().apply {
                 put("publicEmailDomains", JSONArray(updatedMetadata.publicEmailDomains))
                 put("privateEmailDomains", JSONArray(updatedMetadata.privateEmailDomains))
+                put("hiddenPrivateEmailDomains", JSONArray(updatedMetadata.hiddenPrivateEmailDomains))
                 put("vaultRevisionNumber", updatedMetadata.vaultRevisionNumber)
             }.toString(),
         )
@@ -156,6 +157,9 @@ class VaultMetadataManager(
                     List(array.length()) { i -> array.getString(i) }
                 } ?: emptyList(),
                 privateEmailDomains = json.optJSONArray("privateEmailDomains")?.let { array ->
+                    List(array.length()) { i -> array.getString(i) }
+                } ?: emptyList(),
+                hiddenPrivateEmailDomains = json.optJSONArray("hiddenPrivateEmailDomains")?.let { array ->
                     List(array.length()) { i -> array.getString(i) }
                 } ?: emptyList(),
                 vaultRevisionNumber = json.optInt("vaultRevisionNumber", 0),

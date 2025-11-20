@@ -30,7 +30,9 @@ class SqliteClient {
    * Store the vault metadata via the native code implementation.
    *
    * Metadata is stored in plain text in UserDefaults. The metadata consists of the following:
-   * - public and private email domains
+   * - public email domains
+   * - private email domains
+   * - hidden private email domains
    * - vault revision number
    */
   public async storeMetadata(metadata: string): Promise<void> {
@@ -77,7 +79,7 @@ class SqliteClient {
         return null;
       }
 
-      const { privateEmailDomains, publicEmailDomains } = metadata;
+      const { privateEmailDomains, publicEmailDomains, hiddenPrivateEmailDomains } = metadata;
 
       /**
        * Check if a domain is valid (not empty, not 'DISABLED.TLD', and exists in either private or public domains)
@@ -98,7 +100,8 @@ class SqliteClient {
       }
 
       // If default domain is not valid, fall back to first available private domain
-      const firstPrivate = privateEmailDomains?.find(isValidDomain);
+      // Filter out hidden private domains from the list of private domains
+      const firstPrivate = privateEmailDomains?.filter(domain => !hiddenPrivateEmailDomains?.includes(domain)).find(isValidDomain);
       if (firstPrivate) {
         return firstPrivate;
       }

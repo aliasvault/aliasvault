@@ -186,12 +186,10 @@ export const NavigationProvider: React.FC<{ children: React.ReactNode }> = ({ ch
               }
 
               // Database connection failed, navigate to reinitialize flow
-              console.log('database connection failed, navigating to reinitialize');
               router.replace('/reinitialize');
             }
           } catch {
             // Database query failed, navigate to reinitialize flow
-            console.log('database query failed, navigating to reinitialize');
             router.replace('/reinitialize');
           }
         }

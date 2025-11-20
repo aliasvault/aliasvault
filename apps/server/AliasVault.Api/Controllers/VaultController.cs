@@ -89,11 +89,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                     Blob = string.Empty,
                     Version = string.Empty,
                     CurrentRevisionNumber = 0,
-                    EncryptionPublicKey = string.Empty,
                     CredentialsCount = 0,
-                    EmailAddressList = [],
-                    PrivateEmailDomainList = [],
-                    PublicEmailDomainList = [],
                     CreatedAt = DateTime.MinValue,
                     UpdatedAt = DateTime.MinValue,
                 },
@@ -121,6 +117,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
 
         // Get dynamic list of private email domains from config.
         var privateEmailDomainList = config.PrivateEmailDomains;
+        var hiddenPrivateEmailDomainList = config.HiddenPrivateEmailDomains;
 
         // Hardcoded list of public (SpamOK) email domains that are available to the client.
         var publicEmailDomainList = new List<string>(["spamok.com", "solarflarecorp.com", "spamok.nl", "3060.nl",
@@ -137,8 +134,8 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 CurrentRevisionNumber = vault.RevisionNumber,
                 EncryptionPublicKey = string.Empty,
                 CredentialsCount = 0,
-                EmailAddressList = [],
                 PrivateEmailDomainList = privateEmailDomainList,
+                HiddenPrivateEmailDomainList = hiddenPrivateEmailDomainList,
                 PublicEmailDomainList = publicEmailDomainList,
                 CreatedAt = vault.CreatedAt,
                 UpdatedAt = vault.UpdatedAt,
@@ -176,11 +173,7 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 Blob = x.VaultBlob,
                 Version = x.Version,
                 CurrentRevisionNumber = x.RevisionNumber,
-                EncryptionPublicKey = string.Empty,
                 CredentialsCount = 0,
-                EmailAddressList = [],
-                PrivateEmailDomainList = [],
-                PublicEmailDomainList = [],
                 CreatedAt = x.CreatedAt,
                 UpdatedAt = x.UpdatedAt,
             }).ToList(),

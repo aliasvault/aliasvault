@@ -35,7 +35,8 @@ class VaultStoreTest {
         val metadata = """
         {
             "publicEmailDomains": ["spamok.com", "spamok.nl"],
-            "privateEmailDomains": ["aliasvault.net", "main.aliasvault.net"],
+            "privateEmailDomains": ["aliasvault.net", "main.aliasvault.net", "hidden.aliasvault.net"],
+            "hiddenPrivateEmailDomains": ["hidden.aliasvault.net"],
             "vaultRevisionNumber": 1
         }
         """

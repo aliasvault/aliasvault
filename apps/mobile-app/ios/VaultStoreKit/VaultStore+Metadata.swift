@@ -42,6 +42,7 @@ extension VaultStore {
             metadata = VaultMetadata(
                 publicEmailDomains: [],
                 privateEmailDomains: [],
+                hiddenPrivateEmailDomains: [],
                 vaultRevisionNumber: revisionNumber
             )
         }

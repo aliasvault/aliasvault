@@ -9,7 +9,8 @@
         "JWT_KEY": "12345678901234567890123456789012",
         "DATA_PROTECTION_CERT_PASS": "Development",
         "PUBLIC_REGISTRATION_ENABLED": "true",
-        "PRIVATE_EMAIL_DOMAINS": "example.tld,example2.tld",
+        "PRIVATE_EMAIL_DOMAINS": "example.tld,example2.tld,disabled.tld",
+        "HIDDEN_PRIVATE_EMAIL_DOMAINS": "disabled.tld",
         "IP_LOGGING_ENABLED": "true"
       },
       "dotnetRunMessages": true,
@@ -24,7 +25,8 @@
         "JWT_KEY": "12345678901234567890123456789012",
         "DATA_PROTECTION_CERT_PASS": "Development",
         "PUBLIC_REGISTRATION_ENABLED": "true",
-        "PRIVATE_EMAIL_DOMAINS": "example.tld,example2.tld",
+        "PRIVATE_EMAIL_DOMAINS": "example.tld,example2.tld,disabled.tld",
+        "HIDDEN_PRIVATE_EMAIL_DOMAINS": "disabled.tld",
         "IP_LOGGING_ENABLED": "true"
       },
       "dotnetRunMessages": true,

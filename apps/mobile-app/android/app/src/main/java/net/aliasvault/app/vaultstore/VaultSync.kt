@@ -173,10 +173,32 @@ class VaultSync(
         database.storeEncryptedDatabase(vault.vault.blob)
         metadata.setVaultRevisionNumber(newRevision)
 
+        // Store vault metadata (public/private email domains)
+        val vaultMetadata = net.aliasvault.app.vaultstore.models.VaultMetadata(
+            publicEmailDomains = vault.vault.publicEmailDomainList,
+            privateEmailDomains = vault.vault.privateEmailDomainList,
+            hiddenPrivateEmailDomains = vault.vault.hiddenPrivateEmailDomainList,
+            vaultRevisionNumber = newRevision,
+        )
+        storeVaultMetadata(vaultMetadata)
+
         if (database.isVaultUnlocked()) {
             // Re-unlock with new data
             // Note: This requires auth methods to be passed, handled by VaultStore
         }
+    }
+
+    /**
+     * Store vault metadata as JSON string.
+     */
+    private fun storeVaultMetadata(vaultMetadata: net.aliasvault.app.vaultstore.models.VaultMetadata) {
+        val json = JSONObject().apply {
+            put("publicEmailDomains", org.json.JSONArray(vaultMetadata.publicEmailDomains))
+            put("privateEmailDomains", org.json.JSONArray(vaultMetadata.privateEmailDomains))
+            put("hiddenPrivateEmailDomains", org.json.JSONArray(vaultMetadata.hiddenPrivateEmailDomains))
+            put("vaultRevisionNumber", vaultMetadata.vaultRevisionNumber)
+        }
+        metadata.storeMetadata(json.toString())
     }
 
     private fun parseVaultResponse(body: String): VaultResponse {
@@ -196,6 +218,12 @@ class VaultSync(
                 privateList.add(privateArray.getString(i))
             }
 
+            val hiddenPrivateList = mutableListOf<String>()
+            val hiddenPrivateArray = vaultJson.getJSONArray("hiddenPrivateEmailDomainList")
+            for (i in 0 until hiddenPrivateArray.length()) {
+                hiddenPrivateList.add(hiddenPrivateArray.getString(i))
+            }
+
             val publicList = mutableListOf<String>()
             val publicArray = vaultJson.getJSONArray("publicEmailDomainList")
             for (i in 0 until publicArray.length()) {
@@ -213,6 +241,7 @@ class VaultSync(
                     credentialsCount = vaultJson.getInt("credentialsCount"),
                     emailAddressList = emailList,
                     privateEmailDomainList = privateList,
+                    hiddenPrivateEmailDomainList = hiddenPrivateList,
                     publicEmailDomainList = publicList,
                     createdAt = vaultJson.getString("createdAt"),
                     updatedAt = vaultJson.getString("updatedAt"),
@@ -253,6 +282,7 @@ class VaultSync(
         val credentialsCount: Int,
         val emailAddressList: List<String>,
         val privateEmailDomainList: List<String>,
+        val hiddenPrivateEmailDomainList: List<String>,
         val publicEmailDomainList: List<String>,
         val createdAt: String,
         val updatedAt: String,

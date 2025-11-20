@@ -4,7 +4,7 @@
       "commandName": "Project",
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
-        "PRIVATE_EMAIL_DOMAINS": "example.tld",
+        "PRIVATE_EMAIL_DOMAINS": "example.tld,example2.tld,disabled.tld",
         "SMTP_TLS_ENABLED": "false"
       },
       "dotnetRunMessages": true

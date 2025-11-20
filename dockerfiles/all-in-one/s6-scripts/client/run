@@ -27,8 +27,10 @@ done
 
 # Client service entrypoint
 DEFAULT_PRIVATE_EMAIL_DOMAINS=""
+DEFAULT_HIDDEN_PRIVATE_EMAIL_DOMAINS=""
 DEFAULT_SUPPORT_EMAIL=""
 PRIVATE_EMAIL_DOMAINS=${PRIVATE_EMAIL_DOMAINS:-$DEFAULT_PRIVATE_EMAIL_DOMAINS}
+HIDDEN_PRIVATE_EMAIL_DOMAINS=${HIDDEN_PRIVATE_EMAIL_DOMAINS:-$DEFAULT_HIDDEN_PRIVATE_EMAIL_DOMAINS}
 SUPPORT_EMAIL=${SUPPORT_EMAIL:-$DEFAULT_SUPPORT_EMAIL}
 PUBLIC_REGISTRATION_ENABLED=${PUBLIC_REGISTRATION_ENABLED:-true}
 
@@ -58,10 +60,19 @@ else
     json_array=$(echo "$PRIVATE_EMAIL_DOMAINS" | awk '{split($0,a,","); printf "["; for(i=1;i<=length(a);i++) {printf "\"%s\"", a[i]; if(i<length(a)) printf ","} printf "]"}')
 fi
 
+# Convert comma-separated HIDDEN_PRIVATE_EMAIL_DOMAINS to JSON array
+if [ -z "$HIDDEN_PRIVATE_EMAIL_DOMAINS" ]; then
+    hidden_json_array="[]"
+else
+    # Convert comma-separated list to JSON array
+    hidden_json_array=$(echo "$HIDDEN_PRIVATE_EMAIL_DOMAINS" | awk '{split($0,a,","); printf "["; for(i=1;i<=length(a);i++) {printf "\"%s\"", a[i]; if(i<length(a)) printf ","} printf "]"}')
+fi
+
 # Create JSON with environment variables
 cat > /app/client/wwwroot/appsettings.json << EOF
 {
     "PrivateEmailDomains": $json_array,
+    "HiddenPrivateEmailDomains": $hidden_json_array,
     "SupportEmail": "$SUPPORT_EMAIL",
     "PublicRegistrationEnabled": "$PUBLIC_REGISTRATION_ENABLED"
 }

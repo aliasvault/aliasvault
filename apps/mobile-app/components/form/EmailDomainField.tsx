@@ -49,18 +49,21 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
   const [selectedDomain, setSelectedDomain] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [privateEmailDomains, setPrivateEmailDomains] = useState<string[]>([]);
+  const [hiddenPrivateEmailDomains, setHiddenPrivateEmailDomains] = useState<string[]>([]);
 
   // Get private email domains from vault metadata
   useEffect(() => {
     /**
-     * Load private email domains from vault metadata.
+     * Load private email domains from vault metadata, excluding hidden ones from UI.
      */
     const loadDomains = async (): Promise<void> => {
       try {
         const metadata = await dbContext.getVaultMetadata();
-        if (metadata?.privateEmailDomains) {
-          setPrivateEmailDomains(metadata.privateEmailDomains);
-        }
+        setPrivateEmailDomains(metadata?.privateEmailDomains ?? []);
+        setHiddenPrivateEmailDomains(metadata?.hiddenPrivateEmailDomains ?? []);
+
+        console.log('privateEmailDomains', metadata?.privateEmailDomains);
+        console.log('hiddenPrivateEmailDomains', metadata?.hiddenPrivateEmailDomains);
       } catch (err) {
         console.error('Error loading email domains:', err);
       }
@@ -91,9 +94,10 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       setLocalPart(local);
       setSelectedDomain(domain);
 
-      // Check if it's a custom domain
+      // Check if it's a custom domain (including hidden private domains as known domains)
       const isKnownDomain = PUBLIC_EMAIL_DOMAINS.includes(domain) ||
-                           privateEmailDomains.includes(domain);
+                           privateEmailDomains.includes(domain) ||
+                           hiddenPrivateEmailDomains.includes(domain);
       setIsCustomDomain(!isKnownDomain);
     } else {
       setLocalPart(value);
@@ -108,7 +112,7 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
         }
       }
     }
-  }, [value, privateEmailDomains, showPrivateDomains]);
+  }, [value, privateEmailDomains, hiddenPrivateEmailDomains, showPrivateDomains]);
 
   // Handle local part changes
   const handleLocalPartChange = useCallback((newText: string) => {
@@ -410,7 +414,7 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
                     {t('credentials.privateEmailDescription')}
                   </Text>
                   <View style={styles.domainList}>
-                    {privateEmailDomains.map((domain) => (
+                    {privateEmailDomains.filter(domain => !hiddenPrivateEmailDomains.includes(domain)).map((domain) => (
                       <TouchableOpacity
                         key={domain}
                         style={[

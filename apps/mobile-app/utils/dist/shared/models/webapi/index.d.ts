@@ -28,18 +28,18 @@ type ApiErrorResponse = {
  * Vault type.
  */
 type Vault = {
-    blob: string;
-    createdAt: string;
-    credentialsCount: number;
-    currentRevisionNumber: number;
-    emailAddressList: string[];
-    privateEmailDomainList: string[];
-    publicEmailDomainList: string[];
-    encryptionPublicKey: string;
-    updatedAt: string;
     username: string;
+    blob: string;
     version: string;
-    client: string;
+    currentRevisionNumber: number;
+    credentialsCount: number;
+    createdAt: string;
+    updatedAt: string;
+    encryptionPublicKey?: string;
+    emailAddressList?: string[];
+    privateEmailDomainList?: string[];
+    hiddenPrivateEmailDomainList?: string[];
+    publicEmailDomainList?: string[];
 };
 
 /**

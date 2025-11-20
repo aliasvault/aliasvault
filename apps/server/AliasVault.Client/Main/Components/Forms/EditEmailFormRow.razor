@@ -99,7 +99,9 @@
     private string SelectedDomain = string.Empty;
     private bool IsPopupVisible = false;
 
-    private List<string> PrivateDomains => Config.PrivateEmailDomains;
+    private List<string> PrivateDomains => Config.PrivateEmailDomains
+        .Where(d => !Config.HiddenPrivateEmailDomains.Contains(d))
+        .ToList();
     private List<string> PublicDomains => Config.PublicEmailDomains;
 
     private bool ShowPrivateDomains => PrivateDomains.Count > 0 && !(PrivateDomains.Count == 1 && PrivateDomains[0] == "DISABLED.TLD");

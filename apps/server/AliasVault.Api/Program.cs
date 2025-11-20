@@ -48,6 +48,12 @@ var privateEmailDomains = Environment.GetEnvironmentVariable("PRIVATE_EMAIL_DOMA
     .Where(d => !string.IsNullOrWhiteSpace(d));
 config.PrivateEmailDomains = privateEmailDomains?.ToList() ?? new List<string>();
 
+var hiddenPrivateEmailDomains = Environment.GetEnvironmentVariable("HIDDEN_PRIVATE_EMAIL_DOMAINS")?
+    .Split(",", StringSplitOptions.RemoveEmptyEntries)
+    .Select(d => d.Trim())
+    .Where(d => !string.IsNullOrWhiteSpace(d));
+config.HiddenPrivateEmailDomains = hiddenPrivateEmailDomains?.ToList() ?? new List<string>();
+
 var ipLoggingEnabled = Environment.GetEnvironmentVariable("IP_LOGGING_ENABLED") ?? "false";
 config.IpLoggingEnabled = bool.Parse(ipLoggingEnabled);
 

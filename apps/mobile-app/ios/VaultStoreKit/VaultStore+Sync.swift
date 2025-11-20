@@ -19,6 +19,7 @@ public struct VaultData: Codable {
     public let credentialsCount: Int
     public let emailAddressList: [String]
     public let privateEmailDomainList: [String]
+    public let hiddenPrivateEmailDomainList: [String]
     public let publicEmailDomainList: [String]
     public let createdAt: String
     public let updatedAt: String
@@ -177,9 +178,29 @@ extension VaultStore {
         try storeEncryptedDatabase(vault.vault.blob)
         setCurrentVaultRevisionNumber(newRevision)
 
+        // Store vault metadata (public/private email domains)
+        let metadata = VaultMetadata(
+            publicEmailDomains: vault.vault.publicEmailDomainList,
+            privateEmailDomains: vault.vault.privateEmailDomainList,
+            hiddenPrivateEmailDomains: vault.vault.hiddenPrivateEmailDomainList,
+            vaultRevisionNumber: newRevision
+        )
+        try storeVaultMetadata(metadata)
+
         if isVaultUnlocked {
             try unlockVault()
         }
+    }
+
+    /// Store vault metadata
+    private func storeVaultMetadata(_ metadata: VaultMetadata) throws {
+        let encoder = JSONEncoder()
+        guard let metadataData = try? encoder.encode(metadata),
+              let metadataJson = String(data: metadataData, encoding: .utf8) else {
+            throw VaultSyncError.parseError(message: "Failed to encode vault metadata")
+        }
+
+        try storeMetadata(metadataJson)
     }
 
     /// Parse vault response from JSON

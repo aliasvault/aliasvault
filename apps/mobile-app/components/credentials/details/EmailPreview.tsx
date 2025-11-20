@@ -75,7 +75,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
   }, [dbContext]);
 
   /**
-   * Check if the email is a private domain.
+   * Check if the email is a private domain (including hidden domains).
    */
   const isPrivateDomain = useCallback(async (emailAddress: string): Promise<boolean> => {
     // Get private domains from stored metadata
@@ -84,7 +84,9 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) : React.Rea
       return false;
     }
 
-    return metadata.privateEmailDomains.includes(emailAddress.split('@')[1]);
+    const domain = emailAddress.split('@')[1];
+    return metadata.privateEmailDomains.includes(domain) ||
+           (metadata.hiddenPrivateEmailDomains || []).includes(domain);
   }, [dbContext]);
 
   // Handle app state changes

@@ -45,18 +45,18 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
   const [selectedDomain, setSelectedDomain] = useState('');
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [privateEmailDomains, setPrivateEmailDomains] = useState<string[]>([]);
+  const [hiddenPrivateEmailDomains, setHiddenPrivateEmailDomains] = useState<string[]>([]);
   const popupRef = useRef<HTMLDivElement>(null);
 
   // Get private email domains from vault metadata
   useEffect(() => {
     /**
-     * Load private email domains from vault metadata.
+     * Load private email domains from vault metadata, excluding hidden ones.
      */
     const loadDomains = async (): Promise<void> => {
       const metadata = await dbContext.getVaultMetadata();
-      if (metadata?.privateEmailDomains) {
-        setPrivateEmailDomains(metadata.privateEmailDomains);
-      }
+      setPrivateEmailDomains(metadata?.privateEmailDomains ?? []);
+      setHiddenPrivateEmailDomains(metadata?.hiddenPrivateEmailDomains ?? []);
     };
     loadDomains();
   }, [dbContext]);
@@ -84,9 +84,10 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       setLocalPart(local);
       setSelectedDomain(domain);
 
-      // Check if it's a custom domain
+      // Check if it's a custom domain (including hidden private domains as known domains)
       const isKnownDomain = PUBLIC_EMAIL_DOMAINS.includes(domain) ||
-                           privateEmailDomains.includes(domain);
+                           privateEmailDomains.includes(domain) ||
+                           hiddenPrivateEmailDomains.includes(domain);
       setIsCustomDomain(!isKnownDomain);
     } else {
       setLocalPart(value);
@@ -102,7 +103,7 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value, privateEmailDomains, showPrivateDomains]);
+  }, [value, privateEmailDomains, hiddenPrivateEmailDomains, showPrivateDomains]);
 
   // Handle local part changes
   const handleLocalPartChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,20 +247,22 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
                     {t('credentials.privateEmailDescription')}
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {privateEmailDomains.map((domain) => (
-                      <button
-                        key={domain}
-                        type="button"
-                        onClick={() => selectDomain(domain)}
-                        className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
-                          selectedDomain === domain
-                            ? 'bg-primary-600 text-white hover:bg-primary-700'
-                            : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
-                        }`}
-                      >
-                        {domain}
-                      </button>
-                    ))}
+                    {privateEmailDomains
+                      .filter((domain) => !hiddenPrivateEmailDomains.includes(domain))
+                      .map((domain) => (
+                        <button
+                          key={domain}
+                          type="button"
+                          onClick={() => selectDomain(domain)}
+                          className={`px-3 py-1.5 text-sm rounded-md transition-colors ${
+                            selectedDomain === domain
+                              ? 'bg-primary-600 text-white hover:bg-primary-700'
+                              : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 border border-gray-300 dark:border-gray-600'
+                          }`}
+                        >
+                          {domain}
+                        </button>
+                      ))}
                   </div>
                 </div>
               )}

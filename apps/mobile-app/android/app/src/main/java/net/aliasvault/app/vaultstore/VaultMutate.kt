@@ -33,13 +33,10 @@ class VaultMutate(
             json.put("credentialsCount", vault.credentialsCount)
             json.put("currentRevisionNumber", vault.currentRevisionNumber)
             json.put("emailAddressList", JSONArray(vault.emailAddressList))
-            json.put("privateEmailDomainList", JSONArray(vault.privateEmailDomainList))
-            json.put("publicEmailDomainList", JSONArray(vault.publicEmailDomainList))
             json.put("encryptionPublicKey", vault.encryptionPublicKey)
             json.put("updatedAt", vault.updatedAt)
             json.put("username", vault.username)
             json.put("version", vault.version)
-            json.put("client", vault.client)
 
             val response = webApiService.executeRequest(
                 method = "POST",
@@ -124,8 +121,6 @@ class VaultMutate(
         } catch (e: Exception) {
             "0.0.0"
         }
-        val baseVersion = version.split("-").firstOrNull() ?: "0.0.0"
-        val client = "android-$baseVersion"
 
         val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US)
         dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
@@ -137,13 +132,11 @@ class VaultMutate(
             credentialsCount = credentials.size,
             currentRevisionNumber = currentRevision,
             emailAddressList = privateEmailAddresses,
-            privateEmailDomainList = emptyList(),
-            publicEmailDomainList = emptyList(),
+            // TODO: add public RSA encryption key to payload when implementing vault creation from mobile app. Currently only web app does this.
             encryptionPublicKey = "",
             updatedAt = now,
             username = username,
             version = dbVersion,
-            client = client,
         )
     }
 
@@ -157,13 +150,10 @@ class VaultMutate(
         val credentialsCount: Int,
         val currentRevisionNumber: Int,
         val emailAddressList: List<String>,
-        val privateEmailDomainList: List<String>,
-        val publicEmailDomainList: List<String>,
         val encryptionPublicKey: String,
         val updatedAt: String,
         val username: String,
         val version: String,
-        val client: String,
     )
 
     private data class VaultPostResponse(

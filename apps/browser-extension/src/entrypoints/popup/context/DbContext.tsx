@@ -62,8 +62,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setDbInitialized(true);
     setDbAvailable(true);
     setVaultMetadata({
-      publicEmailDomains: vaultResponse.vault.publicEmailDomainList,
-      privateEmailDomains: vaultResponse.vault.privateEmailDomainList,
+      publicEmailDomains: vaultResponse.vault.publicEmailDomainList ?? [],
+      privateEmailDomains: vaultResponse.vault.privateEmailDomainList ?? [],
+      hiddenPrivateEmailDomains: vaultResponse.vault.hiddenPrivateEmailDomainList ?? [],
       vaultRevisionNumber: vaultResponse.vault.currentRevisionNumber,
     });
 
@@ -74,6 +75,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       vaultBlob: vaultResponse.vault.blob,
       publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
       privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
+      hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
       vaultRevisionNumber: vaultResponse.vault.currentRevisionNumber,
     };
 
@@ -96,6 +98,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         setVaultMetadata({
           publicEmailDomains: response.publicEmailDomains ?? [],
           privateEmailDomains: response.privateEmailDomains ?? [],
+          hiddenPrivateEmailDomains: response.hiddenPrivateEmailDomains ?? [],
           vaultRevisionNumber: response.vaultRevisionNumber ?? 0,
         });
       } else {
@@ -123,6 +126,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setVaultMetadata({
       publicEmailDomains: vaultMetadata?.publicEmailDomains ?? [],
       privateEmailDomains: vaultMetadata?.privateEmailDomains ?? [],
+      hiddenPrivateEmailDomains: vaultMetadata?.hiddenPrivateEmailDomains ?? [],
       vaultRevisionNumber: revisionNumber,
     });
   }, [vaultMetadata]);

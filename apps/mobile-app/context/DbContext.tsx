@@ -80,13 +80,16 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   /**
    * Initialize the database in the native module.
+   * This is called during initial login/registration to set up the vault.
+   * Note: During sync operations, metadata is stored automatically by native VaultSync.
    *
    * @param vaultResponse The vault response from the API
    */
   const initializeDatabase = useCallback(async (vaultResponse: VaultResponse) => {
     const metadata: VaultMetadata = {
-      publicEmailDomains: vaultResponse.vault.publicEmailDomainList,
-      privateEmailDomains: vaultResponse.vault.privateEmailDomainList,
+      publicEmailDomains: vaultResponse.vault.publicEmailDomainList ?? [],
+      privateEmailDomains: vaultResponse.vault.privateEmailDomainList ?? [],
+      hiddenPrivateEmailDomains: vaultResponse.vault.hiddenPrivateEmailDomainList ?? [],
       vaultRevisionNumber: vaultResponse.vault.currentRevisionNumber,
     };
 
@@ -94,7 +97,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     await sqliteClient.storeEncryptedDatabase(vaultResponse.vault.blob);
     await sqliteClient.storeMetadata(JSON.stringify(metadata));
 
-    // Initialize the database in the native module
+    // Unlock the vault to make it available for queries
     await unlockVault();
 
     setDbInitialized(true);

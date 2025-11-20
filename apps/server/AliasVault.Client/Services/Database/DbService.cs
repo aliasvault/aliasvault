@@ -490,6 +490,7 @@ public sealed class DbService : IDisposable
             CredentialsCount = credentialsCount,
             EmailAddressList = emailAddresses,
             PrivateEmailDomainList = [],
+            HiddenPrivateEmailDomainList = [],
             PublicEmailDomainList = [],
             CreatedAt = currentDateTime,
             UpdatedAt = currentDateTime,

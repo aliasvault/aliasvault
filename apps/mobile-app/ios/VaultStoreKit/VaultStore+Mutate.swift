@@ -8,13 +8,10 @@ public struct VaultUpload: Codable {
     public let credentialsCount: Int
     public let currentRevisionNumber: Int
     public let emailAddressList: [String]
-    public let privateEmailDomainList: [String]
-    public let publicEmailDomainList: [String]
     public let encryptionPublicKey: String
     public let updatedAt: String
     public let username: String
     public let version: String
-    public let client: String
 }
 
 /// Vault POST response from API
@@ -86,11 +83,6 @@ extension VaultStore {
         // Get database version
         let dbVersion = try getDatabaseVersion()
 
-        // Get client version
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
-        let baseVersion = version.split(separator: "-").first.map(String.init) ?? "0.0.0"
-        let client = "ios-\(baseVersion)"
-
         let dateFormatter = ISO8601DateFormatter()
         dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         let now = dateFormatter.string(from: Date())
@@ -101,13 +93,11 @@ extension VaultStore {
             credentialsCount: credentials.count,
             currentRevisionNumber: currentRevision,
             emailAddressList: privateEmailAddresses,
-            privateEmailDomainList: [], // Empty on purpose, API will not use this for vault updates
-            publicEmailDomainList: [], // Empty on purpose, API will not use this for vault updates
-            encryptionPublicKey: "", // Empty on purpose, only required if new public/private key pair is generated
+            // TODO: add public RSA encryption key to payload when implementing vault creation from mobile app. Currently only web app does this.
+            encryptionPublicKey: "",
             updatedAt: now,
             username: username,
             version: dbVersion,
-            client: client
         )
     }
 

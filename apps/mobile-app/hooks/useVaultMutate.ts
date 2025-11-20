@@ -76,6 +76,7 @@ export function useVaultMutate() : {
       currentRevisionNumber: currentRevision,
       emailAddressList: privateEmailAddresses,
       privateEmailDomainList: [],
+      hiddenPrivateEmailDomainList: [],
       publicEmailDomainList: [],
       encryptionPublicKey: '',
       client: '',

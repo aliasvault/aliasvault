@@ -3183,6 +3183,12 @@ check_and_populate_env() {
         printf "  Set PRIVATE_EMAIL_DOMAINS\n"
     fi
 
+    # HIDDEN_PRIVATE_EMAIL_DOMAINS
+    if ! grep -q "^HIDDEN_PRIVATE_EMAIL_DOMAINS=" "$ENV_FILE"; then
+        update_env_var "HIDDEN_PRIVATE_EMAIL_DOMAINS" ""
+        printf "  Set HIDDEN_PRIVATE_EMAIL_DOMAINS\n"
+    fi
+
     # HTTP_PORT
     if ! grep -q "^HTTP_PORT=" "$ENV_FILE" || [ -z "$(grep "^HTTP_PORT=" "$ENV_FILE" | cut -d '=' -f2)" ]; then
         update_env_var "HTTP_PORT" "80"

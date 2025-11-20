@@ -125,7 +125,9 @@
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Settings.General", "AliasVault.Client");
 
-    private List<string> PrivateDomains => Config.PrivateEmailDomains;
+    private List<string> PrivateDomains => Config.PrivateEmailDomains
+        .Where(d => !Config.HiddenPrivateEmailDomains.Contains(d))
+        .ToList();
     private List<string> PublicDomains => Config.PublicEmailDomains;
 
     private string DefaultEmailDomain { get; set; } = string.Empty;

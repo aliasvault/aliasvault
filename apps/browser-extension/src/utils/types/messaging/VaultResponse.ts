@@ -3,5 +3,6 @@ export type VaultResponse = {
     vault?: string,
     publicEmailDomains?: string[],
     privateEmailDomains?: string[],
+    hiddenPrivateEmailDomains?: string[],
     vaultRevisionNumber?: number
 };
