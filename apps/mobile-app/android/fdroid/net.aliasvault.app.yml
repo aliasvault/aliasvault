@@ -3,14 +3,14 @@ Categories:
   - Security
 License: AGPL-3.0-or-later
 AuthorName: Leendert de Borst
-SourceCode: https://github.com/lanedirt/AliasVault
-IssueTracker: https://github.com/lanedirt/AliasVault/issues
-Changelog: https://github.com/lanedirt/AliasVault/releases
+SourceCode: https://github.com/aliasvault/aliasvault
+IssueTracker: https://github.com/aliasvault/aliasvault/issues
+Changelog: https://github.com/aliasvault/aliasvault/releases
 
 AutoName: AliasVault
 
 RepoType: git
-Repo: https://github.com/lanedirt/AliasVault.git
+Repo: https://github.com/aliasvault/aliasvault.git
 
 Builds:
   - versionName: 0.1.0
