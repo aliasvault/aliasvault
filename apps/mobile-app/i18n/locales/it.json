@@ -8,7 +8,7 @@
     "no": "No",
     "ok": "OK",
     "continue": "Continua",
-    "loading": "Loading",
+    "loading": "Caricamento",
     "error": "Errore",
     "success": "Riuscito",
     "never": "Mai",
@@ -16,14 +16,14 @@
     "loadMore": "Carica altro",
     "use": "Usa",
     "confirm": "Conferma",
-    "next": "Next",
-    "notice": "Notice",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
+    "next": "Avanti",
+    "notice": "Avviso",
+    "enabled": "Abilitato",
+    "disabled": "Disabilitato",
     "errors": {
       "unknownError": "Si è verificato un errore sconosciuto. Riprova.",
-      "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help."
+      "unknownErrorTryAgain": "Si è verificato un errore sconosciuto. Riprova.",
+      "serverVersionTooOld": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa funzione. Se hai bisogno di aiuto, contatta il supporto."
     }
   },
   "auth": {
@@ -40,7 +40,7 @@
     "verifyingAuthCode": "Verifica codice di autenticazione",
     "verify": "Verifica",
     "unlockVault": "Sblocca Cassaforte",
-    "unlockWithPin": "Unlock with PIN",
+    "unlockWithPin": "Sblocca con PIN",
     "enterPassword": "Inserisci la tua password per sbloccare la cassaforte",
     "enterPasswordPlaceholder": "Password",
     "enterAuthCode": "Inserire codice a 6 cifre",
@@ -49,7 +49,7 @@
     "enableBiometric": "Abilitare {{biometric}}?",
     "biometricPrompt": "Vuoi usare {{biometric}} per sbloccare la tua cassaforte?",
     "tryBiometricAgain": "Riprova {{biometric}}",
-    "tryPinAgain": "Try PIN Again",
+    "tryPinAgain": "Prova di nuovo il PIN",
     "authCodeNote": "Nota: se non hai accesso al tuo dispositivo di autenticazione, puoi reimpostare il 2FA con un codice di recupero accedendo via sito web.",
     "errors": {
       "credentialsRequired": "Nome utente e password sono richiesti",
@@ -165,13 +165,13 @@
     "totpCode": "Codice TOTP",
     "attachments": "Allegati",
     "deleteAttachment": "Elimina",
-    "fileSavedTo": "File saved to",
-    "previewNotSupported": "Preview not supported",
-    "downloadToView": "Download the file to view it",
+    "fileSavedTo": "File salvato in",
+    "previewNotSupported": "Anteprima non supportata",
+    "downloadToView": "Scarica il file per visualizzarlo",
     "unsavedChanges": {
-      "title": "Discard Changes?",
-      "message": "You have unsaved changes. Are you sure you want to discard them?",
-      "discard": "Discard"
+      "title": "Annullare le modifiche?",
+      "message": "Sono presenti modifiche non salvate. \nSei sicuro di volerli scartare?",
+      "discard": "Scarta"
     },
     "toasts": {
       "credentialUpdated": "Credenziali aggiornate con successo",
@@ -289,19 +289,19 @@
       "biometricEnabled": "{{biometric}} abilitato con successo",
       "biometricNotAvailable": "{{biometric}} non disponibile",
       "biometricDisabledMessage": "{{biometric}} è disabilitato per AliasVault. Per usarlo, abilitalo prima nelle impostazioni del dispositivo.",
-      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
+      "biometricHelp": "Usa la biometria per sbloccare la tua cassaforte, protetta dall' {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} non è disponibile. Tocca per aprire le impostazioni o vai alle impostazioni del dispositivo per abilitarlo e configurarlo.",
-      "pin": "PIN Code",
-      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
-      "pinEnabled": "PIN unlock enabled successfully",
-      "pinDisabled": "PIN unlock has been disabled",
-      "setupPin": "Setup PIN",
-      "enterNewPin": "Enter New PIN",
-      "enterNewPinDescription": "Choose a PIN to unlock your vault",
-      "confirmPin": "Confirm PIN",
-      "confirmPinDescription": "Re-enter your PIN to confirm",
-      "pinMismatch": "PINs do not match. Please try again.",
-      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
+      "pin": "Codice PIN",
+      "pinDescription": "Usa un codice PIN personalizzato per sbloccare la cassaforte più rapidamente.",
+      "pinEnabled": "Sblocco PIN abilitato correttamente",
+      "pinDisabled": "Lo sblocco PIN è stato disabilitato",
+      "setupPin": "Configurare PIN",
+      "enterNewPin": "Inserisci Nuovo PIN",
+      "enterNewPinDescription": "Scegli un PIN per sbloccare la cassaforte",
+      "confirmPin": "Conferma PIN",
+      "confirmPinDescription": "Reinserisci il tuo PIN per confermare.",
+      "pinMismatch": "I PIN non corrispondono. Riprova.",
+      "pinLocked": "PIN bloccato dopo troppi tentativi falliti. Si prega di utilizzare la password principale.",
       "passwordHelp": "Reinserisci la password principale per sbloccare la cassaforte. Sempre abilitato come opzione di fallback.",
       "keystoreIOS": "Keychain iOS",
       "keystoreAndroid": "Keystore Android"
@@ -399,20 +399,20 @@
       }
     },
     "qrScanner": {
-      "title": "QR Code Scanner",
-      "scanningMessage": "Scan AliasVault QR code",
-      "invalidQrCode": "Invalid QR Code",
-      "notAliasVaultQr": "This is not a valid AliasVault QR code. Please scan a QR code generated by AliasVault.",
-      "cameraPermissionTitle": "Camera Permission Required",
-      "cameraPermissionMessage": "Please allow camera access to scan QR codes.",
+      "title": "Scanner codice QR",
+      "scanningMessage": "Scansiona AliasVault QR code",
+      "invalidQrCode": "Codice QR non valido",
+      "notAliasVaultQr": "Questo non è un codice QR AliasVault valido. Scansiona un codice QR generato da AliasVault.",
+      "cameraPermissionTitle": "Permesso Fotocamera Richiesto",
+      "cameraPermissionMessage": "Consenti alla fotocamera di eseguire la scansione dei codici QR.",
       "mobileLogin": {
-        "confirmTitle": "Confirm Login Request",
-        "confirmSubtitle": "Re-authenticate to approve login on another device.",
-        "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
-        "successDescription": "The remote device has been successfully logged in.",
-        "requestExpired": "This login request has expired. Please generate a new QR code.",
-        "authenticationFailed": "Authentication failed. Please try again.",
-        "noAuthMethodEnabled": "Biometric or PIN unlock needs to be enabled to unlock with mobile"
+        "confirmTitle": "Conferma Richiesta Di Accesso",
+        "confirmSubtitle": "Ri-autenticazione per approvare il login su un altro dispositivo.",
+        "confirmMessage": "Stai per accedere a un dispositivo remoto con il tuo account. Questo altro dispositivo avrà pieno accesso alla tua cassaforte. Procedi solo se ti fidi di questo dispositivo.",
+        "successDescription": "Il dispositivo remoto è stato loggato con successo.",
+        "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR.",
+        "authenticationFailed": "Autenticazione fallita. Riprova.",
+        "noAuthMethodEnabled": "È necessario abilitare lo sblocco biometrico o PIN per sbloccare con dispositivi mobili"
       }
     }
   },
@@ -483,7 +483,7 @@
       "unlockingVault": "Sblocco cassaforte in corso",
       "decryptingVault": "Decriptazione cassaforte in corso",
       "openingVaultReadOnly": "Apertura cassaforte in modalità sola lettura",
-      "retryingConnection": "Retrying connection..."
+      "retryingConnection": "Riprovando la connessione..."
     },
     "offline": {
       "banner": "Modalità offline (sola lettura)",
