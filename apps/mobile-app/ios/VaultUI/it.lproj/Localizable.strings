@@ -2,12 +2,12 @@
 "error" = "Errore";
 "cancel" = "Annulla";
 "back" = "Indietro";
-"next" = "Next";
+"next" = "Avanti";
 "edit" = "Modifica";
 "website" = "Sito Web";
 "username" = "Nome Utente";
 "title" = "Titolo";
-"unknown_error" = "An unknown error occurred";
+"unknown_error" = "Si è verificato un errore sconosciuto";
 
 "loading_credentials" = "Caricamento credenziali...";
 "no_credentials_found" = "Credenziali non trovate";
@@ -60,14 +60,14 @@
 "create_passkey_explanation" = "Questo crea una nuova passkey e la memorizza nella tua cassaforte. Sarà sincronizzata automaticamente su tutti i tuoi dispositivi che usano AliasVault.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "Sblocca Cassaforte";
+"enter_pin_to_unlock_vault" = "Inserisci il PIN per sbloccare la cassaforte";
+"pin_locked_max_attempts" = "PIN bloccato dopo troppi tentativi falliti";
+"pin_incorrect_attempts_remaining" = "PIN errato, %d tentativi rimasti";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "Configurare PIN";
+"pin_setup_subtitle" = "Scegli un PIN per sbloccare la cassaforte";
+"pin_confirm_title" = "Conferma PIN";
+"pin_confirm_subtitle" = "Reinserisci il tuo PIN per confermare.";
+"pin_mismatch" = "I PIN non corrispondono. Riprova.";
