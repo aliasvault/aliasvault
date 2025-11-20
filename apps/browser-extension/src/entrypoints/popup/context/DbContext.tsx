@@ -8,6 +8,8 @@ import SqliteClient from '@/utils/SqliteClient';
 import { StoreVaultRequest } from '@/utils/types/messaging/StoreVaultRequest';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 
+import { storage } from '#imports';
+
 type DbContextType = {
   sqliteClient: SqliteClient | null;
   dbInitialized: boolean;
@@ -42,11 +44,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    */
   const [dbAvailable, setDbAvailable] = useState(false);
 
-  /**
-   * Vault revision.
-   */
-  const [vaultMetadata, setVaultMetadata] = useState<VaultMetadata | null>(null);
-
   const initializeDatabase = useCallback(async (vaultResponse: VaultResponse, derivedKey: string) => {
     // Attempt to decrypt the blob.
     const decryptedBlob = await EncryptionUtility.symmetricDecrypt(
@@ -61,15 +58,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setSqliteClient(client);
     setDbInitialized(true);
     setDbAvailable(true);
-    setVaultMetadata({
-      publicEmailDomains: vaultResponse.vault.publicEmailDomainList ?? [],
-      privateEmailDomains: vaultResponse.vault.privateEmailDomainList ?? [],
-      hiddenPrivateEmailDomains: vaultResponse.vault.hiddenPrivateEmailDomainList ?? [],
-      vaultRevisionNumber: vaultResponse.vault.currentRevisionNumber,
-    });
 
     /**
-     * Store encrypted vault in background worker.
+     * Store encrypted vault and metadata in background worker (session storage).
      */
     const request: StoreVaultRequest = {
       vaultBlob: vaultResponse.vault.blob,
@@ -94,13 +85,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         setSqliteClient(client);
         setDbInitialized(true);
         setDbAvailable(true);
-
-        setVaultMetadata({
-          publicEmailDomains: response.publicEmailDomains ?? [],
-          privateEmailDomains: response.privateEmailDomains ?? [],
-          hiddenPrivateEmailDomains: response.hiddenPrivateEmailDomains ?? [],
-          vaultRevisionNumber: response.vaultRevisionNumber ?? 0,
-        });
+        // Metadata is already stored in session storage by background worker
       } else {
         setDbInitialized(true);
         setDbAvailable(false);
@@ -113,23 +98,37 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, []);
 
   /**
-   * Get the vault metadata.
+   * Get the vault metadata from session storage.
    */
   const getVaultMetadata = useCallback(async () : Promise<VaultMetadata | null> => {
-    return vaultMetadata;
-  }, [vaultMetadata]);
+    try {
+      const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[] | null;
+      const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[] | null;
+      const hiddenPrivateEmailDomains = await storage.getItem('session:hiddenPrivateEmailDomains') as string[] | null;
+      const vaultRevisionNumber = await storage.getItem('session:vaultRevisionNumber') as number | null;
+
+      if (!publicEmailDomains && !privateEmailDomains) {
+        return null;
+      }
+
+      return {
+        publicEmailDomains: publicEmailDomains ?? [],
+        privateEmailDomains: privateEmailDomains ?? [],
+        hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? [],
+        vaultRevisionNumber: vaultRevisionNumber ?? 0,
+      };
+    } catch (error) {
+      console.error('Error getting vault metadata from session storage:', error);
+      return null;
+    }
+  }, []);
 
   /**
-   * Set the current vault revision number.
+   * Set the current vault revision number in session storage.
    */
   const setCurrentVaultRevisionNumber = useCallback(async (revisionNumber: number) => {
-    setVaultMetadata({
-      publicEmailDomains: vaultMetadata?.publicEmailDomains ?? [],
-      privateEmailDomains: vaultMetadata?.privateEmailDomains ?? [],
-      hiddenPrivateEmailDomains: vaultMetadata?.hiddenPrivateEmailDomains ?? [],
-      vaultRevisionNumber: revisionNumber,
-    });
-  }, [vaultMetadata]);
+    await storage.setItem('session:vaultRevisionNumber', revisionNumber);
+  }, []);
 
   /**
    * Check if there are pending migrations.

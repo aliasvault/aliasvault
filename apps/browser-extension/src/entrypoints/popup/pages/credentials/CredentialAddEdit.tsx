@@ -396,11 +396,7 @@ const CredentialAddEdit: React.FC = () => {
     const identity = identityGenerator.generateRandomIdentity(genderPreference);
     const password = passwordGenerator.generateRandomPassword();
 
-    const metadata = await dbContext.getVaultMetadata();
-
-    const privateEmailDomains = metadata?.privateEmailDomains ?? [];
-    const publicEmailDomains = metadata?.publicEmailDomains ?? [];
-    const defaultEmailDomain = dbContext.sqliteClient!.getDefaultEmailDomain(privateEmailDomains, publicEmailDomains);
+    const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
     const email = defaultEmailDomain ? `${identity.emailPrefix}@${defaultEmailDomain}` : identity.emailPrefix;
 
     // Check current values

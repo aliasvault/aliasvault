@@ -321,11 +321,8 @@ export async function getEmailAddressesForVault(
 export function handleGetDefaultEmailDomain(): Promise<stringResponse> {
   return (async (): Promise<stringResponse> => {
     try {
-      const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[];
-      const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[];
-
       const sqliteClient = await createVaultSqliteClient();
-      const defaultEmailDomain = sqliteClient.getDefaultEmailDomain(privateEmailDomains, publicEmailDomains);
+      const defaultEmailDomain = await sqliteClient.getDefaultEmailDomain();
 
       return { success: true, value: defaultEmailDomain ?? undefined };
     } catch (error) {

@@ -9,6 +9,8 @@ import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersion
 
 import { t } from '@/i18n/StandaloneI18n';
 
+import { storage } from '#imports';
+
 /**
  * Placeholder base64 image for credentials without a logo.
  */
@@ -381,18 +383,24 @@ export class SqliteClient {
    * Get the default email domain from the database.
    * @param privateEmailDomains - Array of private email domains
    * @param publicEmailDomains - Array of public email domains
+   * @param hiddenPrivateEmailDomains - Array of hidden private email domains (optional)
    * @returns The default email domain or null if no valid domain is found
    */
-  public getDefaultEmailDomain(privateEmailDomains: string[], publicEmailDomains: string[]): string | null {
+  public async getDefaultEmailDomain(): Promise<string | null> {
+    const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[] ?? [];
+    const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[] ?? [];
+    const hiddenPrivateEmailDomains = await storage.getItem('session:hiddenPrivateEmailDomains') as string[] ?? [];
+
     const defaultEmailDomain = this.getSetting('DefaultEmailDomain');
 
     /**
-     * Check if a domain is valid.
+     * Check if a domain is valid (not disabled, not hidden, and exists in domain lists).
      */
     const isValidDomain = (domain: string): boolean => {
       return Boolean(domain &&
         domain !== 'DISABLED.TLD' &&
         domain !== '' &&
+        !hiddenPrivateEmailDomains.includes(domain) &&
         (privateEmailDomains.includes(domain) || publicEmailDomains.includes(domain)));
     };
 
@@ -401,7 +409,7 @@ export class SqliteClient {
       return defaultEmailDomain;
     }
 
-    // If default domain is not valid, fall back to first available private domain.
+    // If default domain is not valid, fall back to first available private domain (excluding hidden ones).
     const firstPrivate = privateEmailDomains.find(isValidDomain);
     if (firstPrivate) {
       return firstPrivate;
