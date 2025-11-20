@@ -91,7 +91,7 @@
     <comment>Text before logout link</comment>
   </data>
   <data name="LogOutLink" xml:space="preserve">
-    <value>登出</value>
+    <value>退出登录</value>
     <comment>Link text for logout</comment>
   </data>
   <data name="UnlockingVaultMessage" xml:space="preserve">
@@ -103,7 +103,7 @@
     <comment>Error message for unlock request processing</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
-    <value>密码不正确。请尝试重新输入密码，或登出后重新登录。</value>
+    <value>密码不正确。请尝试重新输入密码，或退出登录后重新登录。</value>
     <comment>Error message for incorrect password</comment>
   </data>
   <data name="SessionTimedOutError" xml:space="preserve">
@@ -121,5 +121,9 @@
   <data name="GenericUnlockError" xml:space="preserve">
     <value>处理登录请求时发生错误。（稍后）再试一次。</value>
     <comment>Generic error message for unlock failures</comment>
+  </data>
+  <data name="UnlockWithMobileButton" xml:space="preserve">
+    <value>Unlock with Mobile App</value>
+    <comment>Button text for unlocking with mobile app</comment>
   </data>
 </root>
