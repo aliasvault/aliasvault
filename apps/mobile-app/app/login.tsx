@@ -10,7 +10,7 @@ import { StyleSheet, View, Text, SafeAreaView, TextInput, ActivityIndicator, Ani
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import ConversionUtility from '@/utils/ConversionUtility';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
-import type { LoginResponse, VaultResponse } from '@/utils/dist/shared/models/webapi';
+import type { LoginResponse } from '@/utils/dist/shared/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { SrpUtility } from '@/utils/SrpUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
@@ -77,14 +77,12 @@ export default function LoginScreen() : React.ReactNode {
    * Process the vault response by storing the vault and logging in the user.
    * @param token - The token to use for the vault
    * @param refreshToken - The refresh token to use for the vault
-   * @param vaultResponseJson - The vault response
    * @param passwordHashBase64 - The password hash base64
    * @param initiateLoginResponse - The initiate login response
    */
   const processVaultResponse = async (
     token: string,
     refreshToken: string,
-    vaultResponseJson: VaultResponse,
     passwordHashBase64: string,
     initiateLoginResponse: LoginResponse
   ) : Promise<void> => {
@@ -109,7 +107,6 @@ export default function LoginScreen() : React.ReactNode {
               await continueProcessVaultResponse(
                 token,
                 refreshToken,
-                vaultResponseJson,
                 passwordHashBase64,
                 initiateLoginResponse
               );
@@ -126,7 +123,6 @@ export default function LoginScreen() : React.ReactNode {
               await continueProcessVaultResponse(
                 token,
                 refreshToken,
-                vaultResponseJson,
                 passwordHashBase64,
                 initiateLoginResponse
               );
@@ -140,7 +136,6 @@ export default function LoginScreen() : React.ReactNode {
       await continueProcessVaultResponse(
         token,
         refreshToken,
-        vaultResponseJson,
         passwordHashBase64,
         initiateLoginResponse
       );
@@ -151,7 +146,6 @@ export default function LoginScreen() : React.ReactNode {
    * Continue processing the vault response after biometric choice
    * @param token - The token to use for the vault
    * @param refreshToken - The refresh token to use for the vault
-   * @param vaultResponseJson - The vault response
    * @param passwordHashBase64 - The password hash base64
    * @param initiateLoginResponse - The initiate login response
    * @param encryptionKeyDerivationParams - The encryption key derivation parameters
@@ -159,7 +153,6 @@ export default function LoginScreen() : React.ReactNode {
   const continueProcessVaultResponse = async (
     token: string,
     refreshToken: string,
-    vaultResponseJson: VaultResponse,
     passwordHashBase64: string,
     initiateLoginResponse: LoginResponse
   ) : Promise<void> => {
@@ -169,20 +162,29 @@ export default function LoginScreen() : React.ReactNode {
       salt: initiateLoginResponse.salt,
     };
 
-    // Set auth tokens, store encryption key and key derivation params, and initialize database
+    /*
+     * Set auth tokens, store encryption key and key derivation params.
+     * Note: We don't call initializeDatabase here anymore - instead, syncVault will download
+     * the vault and store it (including metadata) through native code.
+     */
     await authContext.setAuthTokens(ConversionUtility.normalizeUsername(credentials.username), token, refreshToken);
     await dbContext.storeEncryptionKey(passwordHashBase64);
     await dbContext.storeEncryptionKeyDerivationParams(encryptionKeyDerivationParams);
-    await dbContext.initializeDatabase(vaultResponseJson);
 
     let checkSuccess = true;
     /**
      * After setting auth tokens, execute a server status check immediately
      * which takes care of certain sanity checks such as ensuring client/server
-     * compatibility.
+     * compatibility. This also downloads the vault and stores it (including metadata)
+     * through native code.
      */
     await syncVault({
-      initialSync: true,
+      /**
+       * Update login status during sync.
+       */
+      onStatus: (status) => {
+        setLoginStatus(status);
+      },
       /**
        * Handle the status update.
        */
@@ -217,6 +219,12 @@ export default function LoginScreen() : React.ReactNode {
       // If the syncvault checks have failed, we can't continue with the login process.
       return;
     }
+
+    /*
+     * After syncVault completes, the vault has been downloaded and stored by native code.
+     * Immediately mark the database as available without file system checks for faster bootstrap.
+     */
+    dbContext.setDatabaseAvailable();
 
     await authContext.login();
 
@@ -286,23 +294,10 @@ export default function LoginScreen() : React.ReactNode {
 
       setLoginStatus(t('auth.syncingVault'));
       await new Promise(resolve => requestAnimationFrame(resolve));
-      const vaultResponseJson = await webApi.authFetch<VaultResponse>('Vault', { method: 'GET', headers: {
-        'Authorization': `Bearer ${validationResponse.token.token}`
-      } });
-
-      const vaultError = webApi.validateVaultResponse(vaultResponseJson);
-      if (vaultError) {
-        console.error('vaultError', vaultError);
-        setError(vaultError);
-        setIsLoading(false);
-        setLoginStatus(null);
-        return;
-      }
 
       await processVaultResponse(
         validationResponse.token.token,
         validationResponse.token.refreshToken,
-        vaultResponseJson,
         passwordHashBase64,
         initiateLoginResponse
       );
@@ -357,21 +352,10 @@ export default function LoginScreen() : React.ReactNode {
 
       setLoginStatus(t('auth.syncingVault'));
       await new Promise(resolve => requestAnimationFrame(resolve));
-      const vaultResponseJson = await webApi.authFetch<VaultResponse>('Vault', { method: 'GET', headers: {
-        'Authorization': `Bearer ${validationResponse.token.token}`
-      } });
-
-      const vaultError = webApi.validateVaultResponse(vaultResponseJson);
-      if (vaultError) {
-        setError(vaultError);
-        setIsLoading(false);
-        return;
-      }
 
       await processVaultResponse(
         validationResponse.token.token,
         validationResponse.token.refreshToken,
-        vaultResponseJson,
         passwordHashBase64,
         initiateLoginResponse
       );

@@ -18,6 +18,8 @@ type DbContextType = {
   getVaultMetadata: () => Promise<VaultMetadata | null>;
   testDatabaseConnection: (derivedKey: string) => Promise<boolean>;
   unlockVault: () => Promise<boolean>;
+  checkStoredVault: () => Promise<void>;
+  setDatabaseAvailable: () => void;
 }
 
 const DbContext = createContext<DbContextType | undefined>(undefined);
@@ -160,6 +162,15 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, []);
 
   /**
+   * Manually set the database as available. Used after vault sync to immediately
+   * mark the database as ready without file system checks.
+   */
+  const setDatabaseAvailable = useCallback(() : void => {
+    setDbInitialized(true);
+    setDbAvailable(true);
+  }, []);
+
+  /**
    * Get the current vault metadata directly from SQLite client
    */
   const getVaultMetadata = useCallback(async () : Promise<VaultMetadata | null> => {
@@ -202,7 +213,9 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     unlockVault,
     storeEncryptionKey,
     storeEncryptionKeyDerivationParams,
-  }), [sqliteClient, dbInitialized, dbAvailable, initializeDatabase, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, unlockVault, storeEncryptionKey, storeEncryptionKeyDerivationParams]);
+    checkStoredVault,
+    setDatabaseAvailable,
+  }), [sqliteClient, dbInitialized, dbAvailable, initializeDatabase, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, unlockVault, storeEncryptionKey, storeEncryptionKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
 
   return (
     <DbContext.Provider value={contextValue}>

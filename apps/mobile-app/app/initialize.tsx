@@ -261,7 +261,6 @@ export default function Initialize() : React.ReactNode {
 
         // Now perform vault sync (network operations - these are skippable)
         await syncVault({
-          initialSync: true,
           abortSignal: abortControllerRef.current.signal,
           /**
            * Handle the status update.

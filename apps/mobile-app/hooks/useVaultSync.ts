@@ -16,16 +16,7 @@ import { VaultSyncErrorCode, getVaultSyncErrorCode } from '@/utils/types/errors/
 /**
  * Utility function to ensure a minimum time has elapsed for an operation
  */
-const withMinimumDelay = async <T>(
-  operation: () => Promise<T>,
-  minDelayMs: number,
-  enableDelay: boolean = true
-): Promise<T> => {
-  if (!enableDelay) {
-    // If delay is disabled, return the result immediately.
-    return operation();
-  }
-
+const withMinimumDelay = async <T>(operation: () => Promise<T>, minDelayMs: number): Promise<T> => {
   const startTime = Date.now();
   const result = await operation();
   const elapsedTime = Date.now() - startTime;
@@ -38,7 +29,6 @@ const withMinimumDelay = async <T>(
 };
 
 type VaultSyncOptions = {
-  initialSync?: boolean;
   onSuccess?: (hasNewVault: boolean) => void;
   onError?: (error: string) => void;
   onStatus?: (message: string) => void;
@@ -59,10 +49,7 @@ export const useVaultSync = () : {
   const dbContext = useDb();
 
   const syncVault = useCallback(async (options: VaultSyncOptions = {}) => {
-    const { initialSync = false, onSuccess, onError, onStatus, onOffline, onUpgradeRequired, abortSignal } = options;
-
-    // For the initial sync, we add an artifical delay to various steps which makes it feel more fluid.
-    const enableDelay = initialSync;
+    const { onSuccess, onError, onStatus, onOffline, onUpgradeRequired, abortSignal } = options;
 
     try {
       // Check if operation was aborted
@@ -86,11 +73,6 @@ export const useVaultSync = () : {
 
       // Update status
       onStatus?.(t('vault.checkingVaultUpdates'));
-
-      // Add artificial delay for initial sync UX
-      if (enableDelay) {
-        await new Promise(resolve => setTimeout(resolve, 300));
-      }
 
       // Check if operation was aborted
       if (abortSignal?.aborted) {
@@ -128,8 +110,7 @@ export const useVaultSync = () : {
           // Run downloadVault with a min delay for UX purposes
           await withMinimumDelay(
             () => NativeVaultManager.downloadVault(newRevision!),
-            enableDelay ? 500 : 300,
-            true
+            300
           );
         }
       } catch (err) {
@@ -181,11 +162,6 @@ export const useVaultSync = () : {
         if (await dbContext.hasPendingMigrations()) {
           onUpgradeRequired?.();
           return false;
-        }
-
-        // Add artificial delay for initial sync UX
-        if (enableDelay) {
-          await new Promise(resolve => setTimeout(resolve, hasNewVault ? 1000 : 300));
         }
 
         onSuccess?.(hasNewVault);

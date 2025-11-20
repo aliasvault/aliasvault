@@ -245,7 +245,6 @@ export default function ReinitializeScreen() : React.ReactNode {
 
       // Now perform vault sync (network operations - these are skippable)
       await syncVault({
-        initialSync: true,
         /**
          * Handle the status update.
          */
