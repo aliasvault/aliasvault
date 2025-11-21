@@ -17,8 +17,8 @@
     "masterPassword": "Master-Passwort",
     "unlockVault": "Unlock",
     "unlockWithPin": "Mit PIN entsperren",
-    "enterPinToUnlock": "Enter your PIN to unlock your vault",
-    "useMasterPassword": "Masterpasswort benutzen",
+    "enterPinToUnlock": "Bitte gib Deine PIN zum Entsperren des Tresors ein",
+    "useMasterPassword": "Master-Passwort benutzen",
     "unlockTitle": "Entsperre Deinen Tresor",
     "logout": "Abmelden",
     "logoutConfirm": "Bist Du sicher, dass Du Dich abmelden möchtest?",
@@ -49,7 +49,7 @@
   },
   "common": {
     "loading": "Laden...",
-    "notice": "Notice",
+    "notice": "Hinweis",
     "error": "Fehler",
     "cancel": "Abbrechen",
     "confirm": "Bestätigen",
@@ -359,14 +359,14 @@
       "setupPin": "PIN-Code einrichten",
       "enterNewPinDescription": "PIN-Code aus mindestens 6 Ziffern eingeben",
       "confirmPin": "PIN bestätigen",
-      "confirmPinDescription": "Zur Bestätigung erneut PIN eingeben",
-      "invalidPinFormat": "Ungültiges PIN Format",
+      "confirmPinDescription": "Zur Bestätigung PIN erneut eingeben",
+      "invalidPinFormat": "Ungültiges PIN-Format",
       "pinMismatch": "PINs stimmen nicht überein",
       "incorrectPin": "Falsche PIN. {{attemptsRemaining}} verbleibende Versuche.",
-      "incorrectPinSingular": "Falsche PIN. 1 Versuch übrig.",
+      "incorrectPinSingular": "Falsche PIN. Ein Versuch übrig.",
       "enableSuccess": "PIN-Sperre erfolgreich aktiviert!",
-      "pinLocked": "PIN-Sperre wurde deaktiviert. Bitte nutze dein Master-Passwort, um deinen Tresor zu entsperren.",
-      "pinSecurityWarning": "PIN unlock in the browser extension can be less secure than your master password, as PINs typically have lower entropy and may be brute-forced if your device is compromised. Use it only on devices you fully trust."
+      "pinLocked": "Die PIN-Sperre wurde deaktiviert. Bitte nutze Dein Master-Passwort, um Deinen Tresor zu entsperren.",
+      "pinSecurityWarning": "Die PIN-Entsperre in der Browser-Erweiterung kann weniger sicher Dein Master-Passwort sein, da PINs typischerweise eine niedrigere Entropie haben und möglicherweise gebruteforced werden können, wenn Dein Gerät kompromittiert wird. Benutze es nur auf Geräten, denen Du vollkommen vertraust."
     }
   },
   "passkeys": {
