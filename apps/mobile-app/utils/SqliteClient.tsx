@@ -477,6 +477,13 @@ class SqliteClient {
   }
 
   /**
+   * Get the default identity age range from the database.
+   */
+  public async getDefaultIdentityAgeRange(): Promise<string> {
+    return this.getSetting('DefaultIdentityAgeRange', 'random');
+  }
+
+  /**
    * Update a setting in the database.
    * @param key The setting key
    * @param value The setting value

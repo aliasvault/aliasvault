@@ -54,6 +54,12 @@ public sealed class SettingsService
     public string DefaultIdentityGender => GetSetting("DefaultIdentityGender", "random")!;
 
     /// <summary>
+    /// Gets the DefaultIdentityAgeRange setting.
+    /// </summary>
+    /// <returns>Default identity age range (e.g., "random", "21-25", "25-30", etc.).</returns>
+    public string DefaultIdentityAgeRange => GetSetting("DefaultIdentityAgeRange", "random")!;
+
+    /// <summary>
     /// Gets a value indicating whether the tutorial has been completed.
     /// </summary>
     public bool TutorialDone => GetSetting("TutorialDone", false);
@@ -142,6 +148,13 @@ public sealed class SettingsService
     /// <param name="value">The new value.</param>
     /// <returns>Task.</returns>
     public Task SetDefaultIdentityGender(string value) => SetSettingAsync("DefaultIdentityGender", value);
+
+    /// <summary>
+    /// Sets the DefaultIdentityAgeRange setting.
+    /// </summary>
+    /// <param name="value">The new value.</param>
+    /// <returns>Task.</returns>
+    public Task SetDefaultIdentityAgeRange(string value) => SetSettingAsync("DefaultIdentityAgeRange", value);
 
     /// <summary>
     /// Sets the TutorialDone setting.

@@ -440,6 +440,13 @@ export class SqliteClient {
   }
 
   /**
+   * Get the default identity age range from the database.
+   */
+  public getDefaultIdentityAgeRange(): string {
+    return this.getSetting('DefaultIdentityAgeRange', 'random');
+  }
+
+  /**
    * Get the password settings from the database.
    */
   public getPasswordSettings(): PasswordSettings {
