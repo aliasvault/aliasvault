@@ -55,7 +55,7 @@ export abstract class IdentityGenerator implements IIdentityGenerator {
    * Generate a random date of birth.
    * @param birthdateOptions Optional birthdate configuration
    */
-  protected generateRandomDateOfBirth(birthdateOptions?: IBirthdateOptions): Date {
+  protected generateRandomDateOfBirth(birthdateOptions?: IBirthdateOptions | null): Date {
     if (birthdateOptions) {
       const { targetYear, yearDeviation } = birthdateOptions;
 
@@ -129,7 +129,7 @@ export abstract class IdentityGenerator implements IIdentityGenerator {
   /**
    * Generate a random identity.
    */
-  public generateRandomIdentity(gender?: string | 'random', birthdateOptions?: IBirthdateOptions): Identity {
+  public generateRandomIdentity(gender?: string | 'random', birthdateOptions?: IBirthdateOptions | null): Identity {
     const identity: Identity = {
       firstName: '',
       lastName: '',

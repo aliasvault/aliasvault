@@ -31,7 +31,7 @@ interface IBirthdateOptions {
     yearDeviation: number;
 }
 interface IIdentityGenerator {
-    generateRandomIdentity(gender?: string | 'random', birthdateOptions?: IBirthdateOptions): Identity;
+    generateRandomIdentity(gender?: string | 'random', birthdateOptions?: IBirthdateOptions | null): Identity;
 }
 
 /**
@@ -71,7 +71,7 @@ declare abstract class IdentityGenerator implements IIdentityGenerator {
      * Generate a random date of birth.
      * @param birthdateOptions Optional birthdate configuration
      */
-    protected generateRandomDateOfBirth(birthdateOptions?: IBirthdateOptions): Date;
+    protected generateRandomDateOfBirth(birthdateOptions?: IBirthdateOptions | null): Date;
     /**
      * Select appropriate firstnames based on birthdate.
      * Falls back to generic names if no decade-specific data is available.
@@ -80,7 +80,7 @@ declare abstract class IdentityGenerator implements IIdentityGenerator {
     /**
      * Generate a random identity.
      */
-    generateRandomIdentity(gender?: string | 'random', birthdateOptions?: IBirthdateOptions): Identity;
+    generateRandomIdentity(gender?: string | 'random', birthdateOptions?: IBirthdateOptions | null): Identity;
 }
 
 /**

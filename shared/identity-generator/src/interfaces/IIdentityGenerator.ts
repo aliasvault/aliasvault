@@ -17,5 +17,5 @@ export interface IBirthdateOptions {
 }
 
 export interface IIdentityGenerator {
-  generateRandomIdentity(gender?: string | 'random', birthdateOptions?: IBirthdateOptions): Identity;
+  generateRandomIdentity(gender?: string | 'random', birthdateOptions?: IBirthdateOptions | null): Identity;
 }
