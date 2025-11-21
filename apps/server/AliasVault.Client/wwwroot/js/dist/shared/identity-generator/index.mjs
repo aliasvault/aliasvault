@@ -1961,15 +1961,25 @@ function convertAgeRangeToBirthdateOptions(ageRange) {
   return { targetYear, yearDeviation };
 }
 
+// src/utils/LanguageProvider.ts
+function getAvailableLanguages() {
+  return [
+    { value: "en", label: "English", flag: "\u{1F1EC}\u{1F1E7}" },
+    { value: "nl", label: "Nederlands", flag: "\u{1F1F3}\u{1F1F1}" }
+  ];
+}
+
 // src/factories/IdentityGeneratorFactory.ts
 var CreateIdentityGenerator = (language) => {
-  switch (language) {
+  switch (language.toLowerCase()) {
     case "en":
       return new IdentityGeneratorEn();
     case "nl":
       return new IdentityGeneratorNl();
+    default:
+      console.warn(`Language '${language}' is not supported. Falling back to English.`);
+      return new IdentityGeneratorEn();
   }
-  throw new Error(`Unsupported language: ${language}`);
 };
 
 // src/factories/UsernameEmailGeneratorFactory.ts
@@ -1986,5 +1996,6 @@ export {
   IdentityHelperUtils,
   UsernameEmailGenerator,
   convertAgeRangeToBirthdateOptions,
-  getAvailableAgeRanges
+  getAvailableAgeRanges,
+  getAvailableLanguages
 };

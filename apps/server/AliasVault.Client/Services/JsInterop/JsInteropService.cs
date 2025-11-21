@@ -361,10 +361,33 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     }
 
     /// <summary>
+    /// Gets all available languages for identity generation.
+    /// </summary>
+    /// <returns>Array of language options.</returns>
+    public async Task<List<LanguageOption>> GetAvailableIdentityGeneratorLanguagesAsync()
+    {
+        try
+        {
+            if (_identityGeneratorModule == null)
+            {
+                await InitializeAsync();
+            }
+
+            var result = await _identityGeneratorModule!.InvokeAsync<List<LanguageOption>>("getAvailableLanguages");
+            return result ?? new List<LanguageOption>();
+        }
+        catch (JSException ex)
+        {
+            await Console.Error.WriteLineAsync($"JavaScript error getting available languages: {ex.Message}");
+            return new List<LanguageOption>();
+        }
+    }
+
+    /// <summary>
     /// Gets all available age range options from the shared JavaScript utility.
     /// </summary>
     /// <returns>Array of age range options.</returns>
-    public async Task<List<AgeRangeOption>> GetAvailableAgeRangesAsync()
+    public async Task<List<AgeRangeOption>> GetAvailableIdentityGeneratorAgeRangesAsync()
     {
         try
         {

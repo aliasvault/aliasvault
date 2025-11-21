@@ -74,9 +74,10 @@
     <div class="mb-4">
         <label for="defaultIdentityLanguage" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["AliasGenerationLanguageLabel"]</label>
         <select @bind="DefaultIdentityLanguage" @bind:after="UpdateDefaultIdentityLanguage" id="defaultIdentityLanguage" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            <option value="en">@Localizer["EnglishOption"]</option>
-            <option value="nl">@Localizer["DutchOption"]</option>
-            <option value="de">@Localizer["GermanOption"]</option>
+            @foreach (var language in AvailableLanguages)
+            {
+                <option value="@language.Value">@language.Flag @language.Label</option>
+            }
         </select>
         <span class="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">
             @Localizer["AliasGenerationLanguageDescription"]
@@ -154,6 +155,7 @@
     private string DefaultIdentityAgeRange { get; set; } = string.Empty;
     private string AppLanguage { get; set; } = string.Empty;
     private int ClipboardClearSeconds { get; set; }
+    private List<LanguageOption> AvailableLanguages { get; set; } = new();
     private List<AgeRangeOption> AvailableAgeRanges { get; set; } = new();
 
     /// <inheritdoc />
@@ -162,8 +164,9 @@
         await base.OnInitializedAsync();
         BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["BreadcrumbTitle"] });
 
-        // Load available age ranges from JavaScript utility
-        AvailableAgeRanges = await JsInteropService.GetAvailableAgeRangesAsync();
+        // Load available languages and age ranges from JavaScript utility
+        AvailableLanguages = await JsInteropService.GetAvailableIdentityGeneratorLanguagesAsync();
+        AvailableAgeRanges = await JsInteropService.GetAvailableIdentityGeneratorAgeRangesAsync();
 
         DefaultEmailDomain = DbService.Settings.DefaultEmailDomain;
         if (DefaultEmailDomain == string.Empty || Config.HiddenPrivateEmailDomains.Contains(DefaultEmailDomain))

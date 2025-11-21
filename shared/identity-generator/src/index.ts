@@ -7,5 +7,6 @@ export * from './interfaces/IIdentityGenerator';
 export * from './utils/IdentityHelperUtils';
 export * from './utils/UsernameEmailGenerator';
 export * from './utils/AgeRangeConverter';
+export * from './utils/LanguageProvider';
 export * from './factories/IdentityGeneratorFactory';
 export * from './factories/UsernameEmailGeneratorFactory';

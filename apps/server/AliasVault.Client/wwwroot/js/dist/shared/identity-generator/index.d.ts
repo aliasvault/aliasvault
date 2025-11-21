@@ -198,7 +198,32 @@ declare function getAvailableAgeRanges(): IAgeRangeOption[];
 declare function convertAgeRangeToBirthdateOptions(ageRange: string): IBirthdateOptions | null;
 
 /**
+ * Represents a language option for identity generation.
+ */
+interface ILanguageOption {
+    /**
+     * The language code (e.g., "en", "nl", "de")
+     */
+    value: string;
+    /**
+     * The display label in the native language (e.g., "English", "Nederlands", "Deutsch")
+     */
+    label: string;
+    /**
+     * The flag emoji for the language (e.g., "🇬🇧", "🇳🇱", "🇩🇪")
+     */
+    flag: string;
+}
+/**
+ * Gets all available languages for identity generation.
+ * Display labels are in the native language, with optional flag emoji that clients can choose to display.
+ * @returns Array of language options
+ */
+declare function getAvailableLanguages(): ILanguageOption[];
+
+/**
  * Creates a new identity generator based on the language.
+ * Falls back to English if the requested language is not supported.
  * @param language - The language to use for generating the identity (e.g. "en", "nl").
  * @returns A new identity generator instance.
  */
@@ -211,4 +236,4 @@ declare const CreateIdentityGenerator: (language: string) => IdentityGenerator;
  */
 declare const CreateUsernameEmailGenerator: () => UsernameEmailGenerator;
 
-export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type Identity, IdentityGenerator, IdentityGeneratorEn, IdentityGeneratorNl, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges };
+export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type ILanguageOption, type Identity, IdentityGenerator, IdentityGeneratorEn, IdentityGeneratorNl, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages };

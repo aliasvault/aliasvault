@@ -85,18 +85,6 @@
     <value>Set the default language that will be used when generating new identities.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
-  <data name="EnglishOption">
-    <value>English</value>
-    <comment>English language option</comment>
-  </data>
-  <data name="DutchOption">
-    <value>Dutch</value>
-    <comment>Dutch language option</comment>
-  </data>
-  <data name="GermanOption">
-    <value>German</value>
-    <comment>German language option</comment>
-  </data>
   <data name="AliasGenerationGenderLabel">
     <value>Gender</value>
     <comment>Label for alias generation gender setting</comment>
