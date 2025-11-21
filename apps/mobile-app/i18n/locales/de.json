@@ -17,7 +17,7 @@
     "use": "Benutzen",
     "confirm": "Bestätigen",
     "next": "Weiter",
-    "notice": "Notice",
+    "notice": "Hinweis",
     "enabled": "Aktiviert",
     "disabled": "Deaktiviert",
     "errors": {
@@ -167,11 +167,11 @@
     "deleteAttachment": "Löschen",
     "fileSavedTo": "Datei gespeichert unter",
     "previewNotSupported": "Vorschau nicht unterstützt",
-    "downloadToView": "Datei herunterladen, um sie anzuzeigen",
+    "downloadToView": "Lade die Datei herunterladen, um sie anzuzeigen",
     "unsavedChanges": {
-      "title": "Discard Changes?",
-      "message": "You have unsaved changes. Are you sure you want to discard them?",
-      "discard": "Discard"
+      "title": "Änderungen verwerfen?",
+      "message": "Du hast ungespeicherte Änderungen. Bist Du Dir sicher, dass Du diese verwerfen möchtest?",
+      "discard": "Verwerfen"
     },
     "toasts": {
       "credentialUpdated": "Zugang erfolgreich aktualisiert",
@@ -289,19 +289,19 @@
       "biometricEnabled": "{{biometric}} wurde erfolgreich aktiviert",
       "biometricNotAvailable": "{{biometric}} nicht verfügbar",
       "biometricDisabledMessage": "{{biometric}} ist für AliasVault deaktiviert. Bitte aktiviere es zuerst in den Geräteeinstellungen, um es zu verwenden.",
-      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
+      "biometricHelp": "Benutze Biometrie, um Deinen Tresor zu entsperren. Dieser ist durch den {{keystore}} gesichert ist.",
       "biometricUnavailableHelp": "{{biometric}} ist nicht verfügbar. Tippe, um die Einstellungen zu öffnen und/oder gehe zu den Geräteeinstellungen, um es zu aktivieren und zu konfigurieren.",
       "pin": "PIN-Code",
-      "pinDescription": "Benutze einen eigenen PIN-Code, um deinen Tresor schneller zu entsperren.",
+      "pinDescription": "Benutze einen eigenen PIN-Code, um Deinen Tresor schneller zu entsperren.",
       "pinEnabled": "PIN-Sperre erfolgreich aktiviert",
       "pinDisabled": "PIN-Sperre wurde deaktiviert",
       "setupPin": "PIN einrichten",
       "enterNewPin": "Neue PIN eingeben",
-      "enterNewPinDescription": "PIN zum Entsperren des Tresors auswählen",
+      "enterNewPinDescription": "Wähle eine PIN zum Entsperren des Tresors",
       "confirmPin": "PIN bestätigen",
-      "confirmPinDescription": "Zur Bestätigung erneut PIN eingeben",
+      "confirmPinDescription": "Zur Bestätigung PIN erneut eingeben",
       "pinMismatch": "PINs stimmen nicht überein. Bitte versuche es erneut.",
-      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
+      "pinLocked": "Die PIN wurde nach zu vielen fehlgeschlagenen Versuchen gesperrt. Bitte verwende Dein Master-Passwort.",
       "passwordHelp": "Gib Dein vollständiges Master-Passwort erneut ein, um Deinen Tresor zu entsperren. Diese Option ist immer als Fallback-Option aktiviert.",
       "keystoreIOS": "iCloud-Schlüsselbund",
       "keystoreAndroid": "Android-Schlüsselspeicher"
@@ -483,7 +483,7 @@
       "unlockingVault": "Tresor wird entsperrt",
       "decryptingVault": "Tresor wird entschlüsselt",
       "openingVaultReadOnly": "Tresor wird im Lese-Modus geöffnet",
-      "retryingConnection": "Retrying connection..."
+      "retryingConnection": "Verbindungsversuch wird wiederholt..."
     },
     "offline": {
       "banner": "Offline-Modus (nur lesender Zugriff)",
