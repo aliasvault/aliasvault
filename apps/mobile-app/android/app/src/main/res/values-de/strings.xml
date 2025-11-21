@@ -59,20 +59,20 @@
   <string name="server_version_not_supported_title">Server-Update erforderlich</string>
   <string name="server_version_not_supported_message">Die Server-Version ist veraltet. Bitte kontaktiere den Administrator, um den Server zu aktualisieren.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
+  <string name="error_unlock_method_required">Bitte aktiviere die biometrische Authentifizierung oder die PIN-Sperre in der AliasVault-App um fortzufahren.</string>
   <string name="error_unlock_vault_first">Bitte entsperre zuerst den Tresor in der AliasVault-App</string>
   <string name="error_vault_decrypt_failed">Fehler beim Entschlüsseln des Tresors</string>
   <string name="error_biometric_cancelled">Biometrische Authentifizierung abgebrochen</string>
   <string name="error_encryption_key_failed">Fehler beim Abrufen des Schlüssel</string>
   <!-- PIN unlock -->
   <string name="pin_unlock_vault">Tresor entsperren</string>
-  <string name="pin_enter_to_unlock">PIN zum Entsperren des Tresors auswählen</string>
-  <string name="pin_locked_max_attempts">PIN nach zu vielen Fehlversuchen gesperrt</string>
-  <string name="pin_incorrect_attempts_remaining">Ungültiger PIN-Code, %d verbleibende Versuche</string>
+  <string name="pin_enter_to_unlock">Bitte gib Deine PIN zum Entsperren des Tresors ein</string>
+  <string name="pin_locked_max_attempts">Deine PIN wurde nach zu vielen Fehlversuchen gesperrt</string>
+  <string name="pin_incorrect_attempts_remaining">Ungültige PIN, %d verbleibende Versuche</string>
   <!-- PIN setup -->
   <string name="pin_setup_title">PIN einrichten</string>
-  <string name="pin_setup_description">PIN zum Entsperren des Tresors auswählen</string>
+  <string name="pin_setup_description">Wähle eine PIN zum Entsperren des Tresors</string>
   <string name="pin_confirm_title">PIN bestätigen</string>
-  <string name="pin_confirm_description">Zur Bestätigung erneut PIN eingeben</string>
+  <string name="pin_confirm_description">Zur Bestätigung PIN erneut eingeben</string>
   <string name="pin_mismatch">PINs stimmen nicht überein. Bitte versuche es erneut.</string>
 </resources>
