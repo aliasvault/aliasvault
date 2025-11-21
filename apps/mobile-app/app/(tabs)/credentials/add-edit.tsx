@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Alert, Keyboard, Platform, ScrollView, KeyboardAvoidingView } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import { CreateIdentityGenerator, IdentityGenerator, IdentityHelperUtils } from '@/utils/dist/shared/identity-generator';
+import { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, Identity, IdentityHelperUtils, convertAgeRangeToBirthdateOptions } from '@/utils/dist/shared/identity-generator';
 import type { Attachment, Credential } from '@/utils/dist/shared/models/vault';
 import type { FaviconExtractModel } from '@/utils/dist/shared/models/webapi';
 import { CreatePasswordGenerator, PasswordGenerator } from '@/utils/dist/shared/password-generator';
@@ -91,6 +91,21 @@ export default function AddEditCredentialScreen() : React.ReactNode {
    * If we received an ID, we're in edit mode.
    */
   const isEditMode = id !== undefined && id.length > 0;
+
+  /**
+   * Generate a random identity.
+   */
+  const generateRandomIdentity = useCallback(async () : Promise<Identity> => {
+    const identityLanguage = await dbContext.sqliteClient!.getDefaultIdentityLanguage();
+    const identityGenerator = CreateIdentityGenerator(identityLanguage);
+
+    const genderPreference = await dbContext.sqliteClient!.getDefaultIdentityGender();
+    const ageRange = await dbContext.sqliteClient!.getDefaultIdentityAgeRange();
+    const birthdateOptions = convertAgeRangeToBirthdateOptions(ageRange);
+
+    // Generate identity with gender preference and birthdate options
+    return identityGenerator.generateRandomIdentity(genderPreference, birthdateOptions);
+  }, [dbContext.sqliteClient]);
 
   /**
    * Track form changes to warn user before dismissing with unsaved changes.
@@ -204,34 +219,25 @@ export default function AddEditCredentialScreen() : React.ReactNode {
   }, [id, isEditMode, serviceUrl, loadExistingCredential, setValue, authContext.isOffline, router, t, dbContext.sqliteClient]);
 
   /**
-   * Initialize the identity and password generators with settings from user's vault.
-   * @returns {identityGenerator: IIdentityGenerator, passwordGenerator: PasswordGenerator}
+   * Initialize the password generator with settings from user's vault.
+   * @returns {PasswordGenerator}
    */
-  const initializeGenerators = useCallback(async () : Promise<{ identityGenerator: IdentityGenerator, passwordGenerator: PasswordGenerator }> => {
-    // Get default identity language from database
-    const identityLanguage = await dbContext.sqliteClient!.getDefaultIdentityLanguage();
-
-    // Initialize identity generator based on language
-    const identityGenerator = CreateIdentityGenerator(identityLanguage);
-
+  const initializePasswordGenerator = useCallback(async () : Promise<PasswordGenerator> => {
     // Initialize password generator with settings from vault
     const passwordSettings = await dbContext.sqliteClient!.getPasswordSettings();
     const passwordGenerator = CreatePasswordGenerator(passwordSettings);
 
-    return { identityGenerator, passwordGenerator };
+    return passwordGenerator;
   }, [dbContext.sqliteClient]);
 
   /**
    * Generate a random alias and password.
    */
   const generateRandomAlias = useCallback(async (): Promise<void> => {
-    const { identityGenerator, passwordGenerator } = await initializeGenerators();
+    const passwordGenerator = await initializePasswordGenerator();
 
-    // Get gender preference from database
-    const genderPreference = await dbContext.sqliteClient!.getDefaultIdentityGender();
-
-    // Generate identity with gender preference
-    const identity = identityGenerator.generateRandomIdentity(genderPreference);
+    // Generate identity with gender preference and birthdate options
+    const identity = await generateRandomIdentity();
 
     const password = passwordGenerator.generateRandomPassword();
     const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
@@ -270,7 +276,7 @@ export default function AddEditCredentialScreen() : React.ReactNode {
       password: password,
       email: email
     });
-  }, [watch, setValue, setIsPasswordVisible, initializeGenerators, dbContext.sqliteClient, lastGeneratedValues, setLastGeneratedValues]);
+  }, [watch, setValue, setIsPasswordVisible, initializePasswordGenerator, generateRandomIdentity, dbContext.sqliteClient, lastGeneratedValues, setLastGeneratedValues]);
 
   /**
    * Clear all alias fields.
@@ -455,29 +461,57 @@ export default function AddEditCredentialScreen() : React.ReactNode {
   }, [isEditMode, id, serviceUrl, router, executeVaultMutation, dbContext.sqliteClient, mode, generateRandomAlias, webApi, watch, setIsSaveDisabled, setIsSyncing, isSaveDisabled, t, originalAttachmentIds, attachments, passkeyMarkedForDeletion]);
 
   /**
-   * Generate a random username.
+   * Generate a random username based on current identity fields, or completely random if fields are empty.
    */
-  const generateRandomUsername = async () : Promise<void> => {
+  const generateRandomUsername = useCallback(async () : Promise<void> => {
     try {
-      const { identityGenerator } = await initializeGenerators();
+      const firstName = watch('Alias.FirstName') ?? '';
+      const lastName = watch('Alias.LastName') ?? '';
+      const nickName = watch('Alias.NickName') ?? '';
+      const birthDate = watch('Alias.BirthDate') ?? '';
 
-      // Get gender preference from database
-      const genderPreference = await dbContext.sqliteClient!.getDefaultIdentityGender();
+      let username: string;
 
-      // Generate identity with gender preference
-      const identity = identityGenerator.generateRandomIdentity(genderPreference);
+      // If alias fields are empty, generate a completely random username
+      if (!firstName && !lastName && !nickName && !birthDate) {
+        const randomIdentity = await generateRandomIdentity();
+        username = randomIdentity.nickName;
+      } else {
+        // Generate username based on current identity fields
+        const usernameEmailGenerator = CreateUsernameEmailGenerator();
 
-      // Only overwrite username if it's empty or matches the last generated value
-      const currentUsername = watch('Username') ?? '';
-      if (!currentUsername || currentUsername === lastGeneratedValues.username) {
-        setValue('Username', identity.nickName);
-        // Update the tracking for username
-        setLastGeneratedValues(prev => ({ ...prev, username: identity.nickName }));
+        let gender = Gender.Other;
+        try {
+          gender = watch('Alias.Gender') as Gender;
+        } catch {
+          // Gender parsing failed, default to other.
+        }
+
+        // Parse birthDate, fallback to current date if invalid
+        let parsedBirthDate = new Date(birthDate);
+        if (!birthDate || isNaN(parsedBirthDate.getTime())) {
+          parsedBirthDate = new Date();
+        }
+
+        const identity: Identity = {
+          firstName,
+          lastName,
+          nickName,
+          gender,
+          birthDate: parsedBirthDate,
+          emailPrefix: watch('Alias.Email') ?? '',
+        };
+
+        username = usernameEmailGenerator.generateUsername(identity);
       }
+
+      setValue('Username', username);
+      // Update the tracking for username
+      setLastGeneratedValues(prev => ({ ...prev, username }));
     } catch (error) {
       console.error('Error generating random username:', error);
     }
-  };
+  }, [setValue, watch, setLastGeneratedValues, generateRandomIdentity]);
 
   /**
    * Handle the delete button press.
@@ -786,12 +820,10 @@ export default function AddEditCredentialScreen() : React.ReactNode {
                         control={control}
                         name="Username"
                         label={t('credentials.username')}
-                        buttons={[
-                          {
-                            icon: "refresh",
-                            onPress: generateRandomUsername
-                          }
-                        ]}
+                        buttons={[{
+                          icon: "refresh",
+                          onPress: generateRandomUsername
+                        }]}
                       />
                       {!passkeyMarkedForDeletion && (
                         <View style={{
@@ -923,12 +955,10 @@ export default function AddEditCredentialScreen() : React.ReactNode {
                         control={control}
                         name="Username"
                         label={t('credentials.username')}
-                        buttons={[
-                          {
-                            icon: "refresh",
-                            onPress: generateRandomUsername
-                          }
-                        ]}
+                        buttons={[{
+                          icon: "refresh",
+                          onPress: generateRandomUsername
+                        }]}
                       />
                       <AdvancedPasswordField
                         control={control}
