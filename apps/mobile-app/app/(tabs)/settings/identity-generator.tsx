@@ -14,8 +14,6 @@ import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
 
-// Language, gender, and age range options will be defined inside the component to use translations
-
 /**
  * Identity Generator Settings screen.
  */
@@ -119,7 +117,7 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   );
 
   /**
-   * Handle language change - just update UI and store pending change.
+   * Handle language change
    */
   const handleLanguageChange = useCallback((newLanguage: string): void => {
     setLanguage(newLanguage);
@@ -127,7 +125,7 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   }, []);
 
   /**
-   * Handle gender change - just update UI and store pending change.
+   * Handle gender change
    */
   const handleGenderChange = useCallback((newGender: string): void => {
     setGender(newGender);
@@ -135,7 +133,7 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   }, []);
 
   /**
-   * Handle age range change - just update UI and store pending change.
+   * Handle age range change
    */
   const handleAgeRangeChange = useCallback((newAgeRange: string): void => {
     setAgeRange(newAgeRange);
