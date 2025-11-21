@@ -122,9 +122,40 @@ var IdentityGenerator = class {
     this.lastNames = this.getLastNamesJson();
   }
   /**
-   * Generate a random date of birth.
+   * Get decade-based male first names. Override this to provide age-specific names.
+   * If not overridden, returns an empty array and falls back to generic names.
    */
-  generateRandomDateOfBirth() {
+  getFirstNamesMaleByDecade() {
+    return [];
+  }
+  /**
+   * Get decade-based female first names. Override this to provide age-specific names.
+   * If not overridden, returns an empty array and falls back to generic names.
+   */
+  getFirstNamesFemaleByDecade() {
+    return [];
+  }
+  /**
+   * Generate a random date of birth.
+   * @param birthdateOptions Optional birthdate configuration
+   */
+  generateRandomDateOfBirth(birthdateOptions) {
+    if (birthdateOptions) {
+      const { targetYear, yearDeviation } = birthdateOptions;
+      if (yearDeviation === 0) {
+        const startOfYear = new Date(targetYear, 0, 1);
+        const endOfYear = new Date(targetYear, 11, 31);
+        const timestamp2 = startOfYear.getTime() + this.random() * (endOfYear.getTime() - startOfYear.getTime());
+        return new Date(timestamp2);
+      } else {
+        const minYear = targetYear - yearDeviation;
+        const maxYear = targetYear + yearDeviation;
+        const startDate = new Date(minYear, 0, 1);
+        const endDate = new Date(maxYear, 11, 31);
+        const timestamp2 = startDate.getTime() + this.random() * (endDate.getTime() - startDate.getTime());
+        return new Date(timestamp2);
+      }
+    }
     const today = /* @__PURE__ */ new Date();
     const minAge = 21;
     const maxAge = 65;
@@ -134,9 +165,34 @@ var IdentityGenerator = class {
     return new Date(timestamp);
   }
   /**
+   * Select appropriate firstnames based on birthdate.
+   * Falls back to generic names if no decade-specific data is available.
+   */
+  selectFirstnamesForBirthdate(birthdate, isMale) {
+    const birthYear = birthdate.getFullYear();
+    const decadeData = isMale ? this.getFirstNamesMaleByDecade() : this.getFirstNamesFemaleByDecade();
+    if (decadeData.length === 0) {
+      return isMale ? this.firstNamesMale : this.firstNamesFemale;
+    }
+    const matchingRanges = decadeData.filter(
+      (range) => birthYear >= range.startYear && birthYear <= range.endYear
+    );
+    if (matchingRanges.length > 0) {
+      const combinedNames = [];
+      matchingRanges.forEach((range) => combinedNames.push(...range.names));
+      return combinedNames;
+    }
+    const allDecadeNames = [];
+    decadeData.forEach((range) => allDecadeNames.push(...range.names));
+    if (allDecadeNames.length > 0) {
+      return allDecadeNames;
+    }
+    return isMale ? this.firstNamesMale : this.firstNamesFemale;
+  }
+  /**
    * Generate a random identity.
    */
-  generateRandomIdentity(gender) {
+  generateRandomIdentity(gender, birthdateOptions) {
     const identity = {
       firstName: "",
       lastName: "",
@@ -158,16 +214,18 @@ var IdentityGenerator = class {
       }
     }
     identity.gender = selectedGender;
+    identity.birthDate = this.generateRandomDateOfBirth(birthdateOptions);
+    let availableFirstnames;
     if (selectedGender === "Male" /* Male */) {
-      identity.firstName = this.firstNamesMale[Math.floor(this.random() * this.firstNamesMale.length)];
+      availableFirstnames = this.selectFirstnamesForBirthdate(identity.birthDate, true);
     } else if (selectedGender === "Female" /* Female */) {
-      identity.firstName = this.firstNamesFemale[Math.floor(this.random() * this.firstNamesFemale.length)];
+      availableFirstnames = this.selectFirstnamesForBirthdate(identity.birthDate, false);
     } else {
       const usesMaleNames = this.random() < 0.5;
-      identity.firstName = usesMaleNames ? this.firstNamesMale[Math.floor(this.random() * this.firstNamesMale.length)] : this.firstNamesFemale[Math.floor(this.random() * this.firstNamesFemale.length)];
+      availableFirstnames = this.selectFirstnamesForBirthdate(identity.birthDate, usesMaleNames);
     }
+    identity.firstName = availableFirstnames[Math.floor(this.random() * availableFirstnames.length)];
     identity.lastName = this.lastNames[Math.floor(this.random() * this.lastNames.length)];
-    identity.birthDate = this.generateRandomDateOfBirth();
     const generator = new UsernameEmailGenerator();
     identity.emailPrefix = generator.generateEmailPrefix(identity);
     identity.nickName = generator.generateUsername(identity);
@@ -1868,6 +1926,41 @@ var IdentityHelperUtils = class {
   }
 };
 
+// src/utils/AgeRangeConverter.ts
+function getAvailableAgeRanges() {
+  return [
+    { value: "random", label: "Random" },
+    { value: "21-25", label: "21-25" },
+    { value: "26-30", label: "26-30" },
+    { value: "31-35", label: "31-35" },
+    { value: "36-40", label: "36-40" },
+    { value: "41-45", label: "41-45" },
+    { value: "46-50", label: "46-50" },
+    { value: "51-55", label: "51-55" },
+    { value: "56-60", label: "56-60" },
+    { value: "61-65", label: "61-65" }
+  ];
+}
+function convertAgeRangeToBirthdateOptions(ageRange) {
+  if (ageRange === "random" || !ageRange) {
+    return null;
+  }
+  const parts = ageRange.split("-");
+  if (parts.length !== 2) {
+    return null;
+  }
+  const minAge = parseInt(parts[0], 10);
+  const maxAge = parseInt(parts[1], 10);
+  if (isNaN(minAge) || isNaN(maxAge)) {
+    return null;
+  }
+  const currentYear = (/* @__PURE__ */ new Date()).getFullYear();
+  const middleAge = Math.floor((minAge + maxAge) / 2);
+  const targetYear = currentYear - middleAge;
+  const yearDeviation = Math.floor((maxAge - minAge) / 2);
+  return { targetYear, yearDeviation };
+}
+
 // src/factories/IdentityGeneratorFactory.ts
 var CreateIdentityGenerator = (language) => {
   switch (language) {
@@ -1891,5 +1984,7 @@ export {
   IdentityGeneratorEn,
   IdentityGeneratorNl,
   IdentityHelperUtils,
-  UsernameEmailGenerator
+  UsernameEmailGenerator,
+  convertAgeRangeToBirthdateOptions,
+  getAvailableAgeRanges
 };

@@ -16,10 +16,32 @@ type Identity = {
     nickName: string;
 };
 
+/**
+ * Options for birthdate generation.
+ */
+interface IBirthdateOptions {
+    /**
+     * The target year for the birthdate (e.g., 1990).
+     */
+    targetYear: number;
+    /**
+     * The random deviation in years (e.g., 5 means ±5 years from targetYear).
+     * If 0, a random date within the target year will be chosen.
+     */
+    yearDeviation: number;
+}
 interface IIdentityGenerator {
-    generateRandomIdentity(gender?: string | 'random'): Identity;
+    generateRandomIdentity(gender?: string | 'random', birthdateOptions?: IBirthdateOptions): Identity;
 }
 
+/**
+ * Dictionary of firstnames organized by decade range.
+ */
+interface IDecadeFirstnames {
+    startYear: number;
+    endYear: number;
+    names: string[];
+}
 /**
  * Base identity generator.
  */
@@ -36,13 +58,29 @@ declare abstract class IdentityGenerator implements IIdentityGenerator {
     protected abstract getFirstNamesFemaleJson(): string[];
     protected abstract getLastNamesJson(): string[];
     /**
-     * Generate a random date of birth.
+     * Get decade-based male first names. Override this to provide age-specific names.
+     * If not overridden, returns an empty array and falls back to generic names.
      */
-    protected generateRandomDateOfBirth(): Date;
+    protected getFirstNamesMaleByDecade(): IDecadeFirstnames[];
+    /**
+     * Get decade-based female first names. Override this to provide age-specific names.
+     * If not overridden, returns an empty array and falls back to generic names.
+     */
+    protected getFirstNamesFemaleByDecade(): IDecadeFirstnames[];
+    /**
+     * Generate a random date of birth.
+     * @param birthdateOptions Optional birthdate configuration
+     */
+    protected generateRandomDateOfBirth(birthdateOptions?: IBirthdateOptions): Date;
+    /**
+     * Select appropriate firstnames based on birthdate.
+     * Falls back to generic names if no decade-specific data is available.
+     */
+    protected selectFirstnamesForBirthdate(birthdate: Date, isMale: boolean): string[];
     /**
      * Generate a random identity.
      */
-    generateRandomIdentity(gender?: string | 'random'): Identity;
+    generateRandomIdentity(gender?: string | 'random', birthdateOptions?: IBirthdateOptions): Identity;
 }
 
 /**
@@ -135,6 +173,31 @@ declare class UsernameEmailGenerator {
 }
 
 /**
+ * Represents an age range option for identity generation.
+ */
+interface IAgeRangeOption {
+    /**
+     * The value to store (e.g., "21-25", "random")
+     */
+    value: string;
+    /**
+     * The display label (e.g., "21-25", "Random")
+     */
+    label: string;
+}
+/**
+ * Gets all available age range options for identity generation.
+ * @returns Array of age range options
+ */
+declare function getAvailableAgeRanges(): IAgeRangeOption[];
+/**
+ * Converts an age range string (e.g., "21-25", "30-35", or "random") to birthdate options.
+ * @param ageRange - The age range string
+ * @returns An object containing targetYear and yearDeviation, or null if random
+ */
+declare function convertAgeRangeToBirthdateOptions(ageRange: string): IBirthdateOptions | null;
+
+/**
  * Creates a new identity generator based on the language.
  * @param language - The language to use for generating the identity (e.g. "en", "nl").
  * @returns A new identity generator instance.
@@ -148,4 +211,4 @@ declare const CreateIdentityGenerator: (language: string) => IdentityGenerator;
  */
 declare const CreateUsernameEmailGenerator: () => UsernameEmailGenerator;
 
-export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type Identity, IdentityGenerator, IdentityGeneratorEn, IdentityGeneratorNl, IdentityHelperUtils, UsernameEmailGenerator };
+export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type Identity, IdentityGenerator, IdentityGeneratorEn, IdentityGeneratorNl, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges };
