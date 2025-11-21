@@ -361,12 +361,60 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     }
 
     /// <summary>
+    /// Gets all available age range options from the shared JavaScript utility.
+    /// </summary>
+    /// <returns>Array of age range options.</returns>
+    public async Task<List<AgeRangeOption>> GetAvailableAgeRangesAsync()
+    {
+        try
+        {
+            if (_identityGeneratorModule == null)
+            {
+                await InitializeAsync();
+            }
+
+            var result = await _identityGeneratorModule!.InvokeAsync<List<AgeRangeOption>>("getAvailableAgeRanges");
+            return result ?? new List<AgeRangeOption>();
+        }
+        catch (JSException ex)
+        {
+            await Console.Error.WriteLineAsync($"JavaScript error getting age ranges: {ex.Message}");
+            return new List<AgeRangeOption>();
+        }
+    }
+
+    /// <summary>
+    /// Converts an age range string to birthdate options using the shared JavaScript utility.
+    /// </summary>
+    /// <param name="ageRange">Age range string (e.g., "21-25", "30-35", or "random").</param>
+    /// <returns>Birthdate options object or null if random.</returns>
+    public async Task<object?> ConvertAgeRangeToBirthdateOptionsAsync(string ageRange)
+    {
+        try
+        {
+            if (_identityGeneratorModule == null)
+            {
+                await InitializeAsync();
+            }
+
+            var result = await _identityGeneratorModule!.InvokeAsync<object?>("convertAgeRangeToBirthdateOptions", ageRange);
+            return result;
+        }
+        catch (JSException ex)
+        {
+            await Console.Error.WriteLineAsync($"JavaScript error converting age range: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Generates a random identity using the specified language.
     /// </summary>
-    /// <param name="language">The language to use for generating the identity (e.g. "en", "nl").</param>
-    /// <param name="gender">The gender preference for generating the identity (optional, defaults to random).</param>
+    /// <param name="language">The language to use for generating the identity (e.g. "en", "nl", "de").</param>
+    /// <param name="gender">The gender preference for generating the identity (defaults to "random").</param>
+    /// <param name="birthdateOptions">Optional birthdate options (targetYear and yearDeviation).</param>
     /// <returns>An AliasVaultIdentity containing the generated identity information.</returns>
-    public async Task<AliasVaultIdentity> GenerateRandomIdentityAsync(string language, string? gender = null)
+    public async Task<AliasVaultIdentity> GenerateRandomIdentityAsync(string language, string? gender = null, object? birthdateOptions = null)
     {
         try
         {
@@ -376,9 +424,15 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
             }
 
             var generatorInstance = await _identityGeneratorModule!.InvokeAsync<IJSObjectReference>("CreateIdentityGenerator", language);
-            var result = string.IsNullOrEmpty(gender) || gender == "random"
-                ? await generatorInstance.InvokeAsync<AliasVaultIdentity>("generateRandomIdentity")
-                : await generatorInstance.InvokeAsync<AliasVaultIdentity>("generateRandomIdentity", gender);
+
+            // Use "random" as default if gender is null or empty
+            var genderValue = "random";
+            if (!string.IsNullOrEmpty(gender))
+            {
+                genderValue = gender;
+            }
+
+            var result = await generatorInstance.InvokeAsync<AliasVaultIdentity>("generateRandomIdentity", genderValue, birthdateOptions);
 
             return result;
         }

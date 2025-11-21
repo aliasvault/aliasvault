@@ -58,8 +58,11 @@ public sealed class CredentialService(HttpClient httpClient, DbService dbService
 
         do
         {
+            // Convert age range to birthdate options using shared JS utility
+            var birthdateOptions = await jsInteropService.ConvertAgeRangeToBirthdateOptionsAsync(dbService.Settings.DefaultIdentityAgeRange);
+
             // Generate a random identity using the TypeScript library
-            var identity = await jsInteropService.GenerateRandomIdentityAsync(dbService.Settings.DefaultIdentityLanguage, dbService.Settings.DefaultIdentityGender);
+            var identity = await jsInteropService.GenerateRandomIdentityAsync(dbService.Settings.DefaultIdentityLanguage, dbService.Settings.DefaultIdentityGender, birthdateOptions);
 
             // Generate random values for the Identity properties
             credential.Username = identity.NickName;
