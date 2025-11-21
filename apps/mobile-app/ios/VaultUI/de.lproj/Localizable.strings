@@ -61,13 +61,13 @@
 
 /* PIN Unlock */
 "unlock_vault" = "Tresor entsperren";
-"enter_pin_to_unlock_vault" = "PIN zum Entsperren des Tresors auswählen";
-"pin_locked_max_attempts" = "PIN nach zu vielen Fehlversuchen gesperrt";
-"pin_incorrect_attempts_remaining" = "Ungültiger PIN-Code, %d verbleibende Versuche";
+"enter_pin_to_unlock_vault" = "Bitte gib Deine PIN zum Entsperren des Tresors ein";
+"pin_locked_max_attempts" = "Deine PIN wurde nach zu vielen Fehlversuchen gesperrt";
+"pin_incorrect_attempts_remaining" = "Ungültige PIN, %d verbleibende Versuche";
 
 /* PIN Setup */
 "pin_setup_title" = "PIN einrichten";
-"pin_setup_subtitle" = "PIN zum Entsperren des Tresors auswählen";
+"pin_setup_subtitle" = "Wähle eine PIN zum Entsperren des Tresors";
 "pin_confirm_title" = "PIN bestätigen";
-"pin_confirm_subtitle" = "Zur Bestätigung erneut PIN eingeben";
+"pin_confirm_subtitle" = "Zur Bestätigung PIN erneut eingeben";
 "pin_mismatch" = "PINs stimmen nicht überein. Bitte versuche es erneut.";
