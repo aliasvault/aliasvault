@@ -1,8 +1,21 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
-import { convertAgeRangeToBirthdateOptions } from '../utils/AgeRangeConverter';
+import { convertAgeRangeToBirthdateOptions, getAvailableAgeRanges } from '../utils/AgeRangeConverter';
 
 describe('AgeRangeConverter', () => {
+  describe('getAvailableAgeRanges', () => {
+    it('should return an array of age range options', () => {
+      const ranges = getAvailableAgeRanges();
+      expect(ranges).toBeInstanceOf(Array);
+      expect(ranges.length).toBeGreaterThan(0);
+    });
+
+    it('should include random option as first item', () => {
+      const ranges = getAvailableAgeRanges();
+      expect(ranges[0]).toEqual({ value: 'random', label: 'Random' });
+    });
+  });
+
   // Mock Date to ensure consistent test results
   const MOCK_CURRENT_YEAR = 2025;
   let originalDate: DateConstructor;
