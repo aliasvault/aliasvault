@@ -60,8 +60,13 @@ RUN find /app -name "*.pdb" -delete && \
 # ============================================
 FROM alpine:3.19 AS s6-downloader
 ARG S6_OVERLAY_VERSION=3.2.0.2
-RUN wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz && \
-    wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz
+ARG TARGETARCH
+RUN ARCH="${TARGETARCH}"; \
+    if [ "$ARCH" = "amd64" ]; then ARCH="x86_64"; fi; \
+    if [ "$ARCH" = "arm64" ]; then ARCH="aarch64"; fi; \
+    wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz && \
+    wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${ARCH}.tar.xz && \
+    mv s6-overlay-${ARCH}.tar.xz s6-overlay-arch.tar.xz
 
 # ============================================
 # Stage 3: Final runtime image
@@ -105,7 +110,7 @@ RUN apt-get update && \
     locale-gen && \
     # Extract s6-overlay
     tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz && \
-    tar -C / -Jxpf /tmp/s6-overlay-x86_64.tar.xz && \
+    tar -C / -Jxpf /tmp/s6-overlay-arch.tar.xz && \
     rm /tmp/s6-overlay-*.tar.xz && \
     # Clean up package manager files ONLY (preserve all PostgreSQL files)
     apt-get clean && \
