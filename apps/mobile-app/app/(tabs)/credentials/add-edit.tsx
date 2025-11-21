@@ -697,7 +697,10 @@ export default function AddEditCredentialScreen() : React.ReactNode {
             /**
              * Discard button handler.
              */
-            onPress: () : void => router.back(),
+            onPress: () : void => {
+              setHasUnsavedChanges(false);
+              router.back();
+            },
           },
         ]
       );
