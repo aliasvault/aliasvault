@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG TARGETARCH
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
@@ -14,7 +14,7 @@ RUN dotnet publish "./AliasVault.TaskRunner.csproj" \
     -o /app/publish \
     /p:UseAppHost=false
 
-FROM mcr.microsoft.com/dotnet/runtime:9.0 AS final
+FROM mcr.microsoft.com/dotnet/runtime:10.0 AS final
 
 # OCI Image Labels
 LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"
