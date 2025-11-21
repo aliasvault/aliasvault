@@ -6,7 +6,7 @@
     "password": "Salasana",
     "passwordPlaceholder": "Syötä salasanasi",
     "rememberMe": "Muista minut",
-    "loginButton": "Log in",
+    "loginButton": "Kirjaudu sisään",
     "noAccount": "Eikö tiliä vielä ole?",
     "createVault": "Luo uusi holvi",
     "twoFactorTitle": "Syötä tunnistautumiskoodi tunnistautumissovelluksestasi.",
@@ -15,7 +15,7 @@
     "verify": "Vahvista",
     "twoFactorNote": "Huomautus: jos sinulla ei ole pääsyä tunnistautumislaitteeseen, voit palauttaa 2FA:n palautuskoodilla kirjautumalla sisään sivuston kautta.",
     "masterPassword": "Pääsalasana",
-    "unlockVault": "Unlock",
+    "unlockVault": "Avaa lukitus",
     "unlockWithPin": "Avaa PIN-koodilla",
     "enterPinToUnlock": "Syötä PIN-koodi avataksesi holvisi",
     "useMasterPassword": "Käytä pääsalasanaa",
@@ -29,9 +29,9 @@
     "connectingTo": "Yhdistetään kohteeseen",
     "switchAccounts": "Vaihdetaanko tiliä?",
     "loggedIn": "Sisäänkirjautuneena",
-    "loginWithMobile": "Log in using Mobile App",
-    "unlockWithMobile": "Unlock using Mobile App",
-    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
+    "loginWithMobile": "Kirjaudu sisään mobiilisovelluksella",
+    "unlockWithMobile": "Avaa käyttämällä mobiilisovellusta",
+    "scanQrCode": "Skannaa tämä QR-koodi AliasVault-mobiilisovelluksellasi kirjautuaksesi sisään ja avataksesi holvisi.",
     "errors": {
       "invalidCode": "Syötä kelvollinen 6-numeroinen tunnistautumiskoodi.",
       "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
@@ -39,7 +39,7 @@
       "accountLocked": "Tili tilapäisesti lukittu liian monen epäonnistuneen yrityksen vuoksi.",
       "networkError": "Verkkovirhe: tarkista yhteytesi ja yritä uudelleen.",
       "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "mobileLoginRequestExpired": "Mobiilikirjautumispyyntö aikakatkaistiin. Lataa sivu uudelleen ja yritä uudelleen."
     }
   },
   "menu": {
@@ -98,7 +98,7 @@
       "clientVersionNotSupported": "Palvelin ei enää tue tätä AliasVault-selainlaajennuksen versiota. Päivitä selaimen laajennus uusimpaan versioon.",
       "browserExtensionOutdated": "Tämä selainlaajennus on vanhentunut, eikä sillä voi saada pääsyä tähän holviin. Päivitä tämä selainlaajennus jatkaaksesi.",
       "serverVersionNotSupported": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta voit käyttää tätä selainlaajennusta. Ota yhteyttä tukeen, jos tarvitset apua.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help.",
+      "serverVersionTooOld": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta se voi käyttää tätä ominaisuutta. Ota yhteyttä palvelimen ylläpitäjään jos tarvitset apua.",
       "unknownError": "Tapahtui tuntematon virhe",
       "unknownErrorTryAgain": "Tapahtui tuntematon virhe. Yritä uudelleen.",
       "vaultNotAvailable": "Holvi ei käytettävissä",
