@@ -24,7 +24,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import { SKIP_FORM_RESTORE_KEY } from '@/utils/Constants';
-import { IdentityHelperUtils, CreateIdentityGenerator, CreateUsernameEmailGenerator, Identity, Gender } from '@/utils/dist/shared/identity-generator';
+import { IdentityHelperUtils, CreateIdentityGenerator, CreateUsernameEmailGenerator, Identity, Gender, convertAgeRangeToBirthdateOptions } from '@/utils/dist/shared/identity-generator';
 import type { Attachment, Credential } from '@/utils/dist/shared/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
@@ -392,8 +392,12 @@ const CredentialAddEdit: React.FC = () => {
     // Get gender preference from database
     const genderPreference = dbContext.sqliteClient!.getDefaultIdentityGender();
 
-    // Generate identity with gender preference
-    const identity = identityGenerator.generateRandomIdentity(genderPreference);
+    // Get age range preference and convert to birthdate options
+    const ageRange = dbContext.sqliteClient!.getDefaultIdentityAgeRange();
+    const birthdateOptions = convertAgeRangeToBirthdateOptions(ageRange);
+
+    // Generate identity with gender preference and birthdate options (null is handled by generator)
+    const identity = identityGenerator.generateRandomIdentity(genderPreference, birthdateOptions);
     const password = passwordGenerator.generateRandomPassword();
 
     const defaultEmailDomain = await dbContext.sqliteClient!.getDefaultEmailDomain();
@@ -459,36 +463,57 @@ const CredentialAddEdit: React.FC = () => {
 
   const generateRandomUsername = useCallback(async () => {
     try {
-      const usernameEmailGenerator = CreateUsernameEmailGenerator();
+      const firstName = watch('Alias.FirstName') ?? '';
+      const lastName = watch('Alias.LastName') ?? '';
+      const nickName = watch('Alias.NickName') ?? '';
+      const birthDate = watch('Alias.BirthDate') ?? '';
 
-      let gender = Gender.Other;
-      try {
-        gender = watch('Alias.Gender') as Gender;
-      } catch {
-        // Gender parsing failed, default to other.
+      let username: string;
+
+      // If alias fields are empty, generate a completely random username
+      if (!firstName && !lastName && !nickName && !birthDate) {
+        const { identityGenerator } = await initializeGenerators();
+        const genderPreference = dbContext.sqliteClient!.getDefaultIdentityGender();
+        const ageRange = dbContext.sqliteClient!.getDefaultIdentityAgeRange();
+        const birthdateOptions = convertAgeRangeToBirthdateOptions(ageRange);
+        const randomIdentity = identityGenerator.generateRandomIdentity(genderPreference, birthdateOptions);
+        username = randomIdentity.nickName;
+      } else {
+        // Generate username based on current identity fields
+        const usernameEmailGenerator = CreateUsernameEmailGenerator();
+
+        let gender = Gender.Other;
+        try {
+          gender = watch('Alias.Gender') as Gender;
+        } catch {
+          // Gender parsing failed, default to other.
+        }
+
+        // Parse birthDate, fallback to current date if invalid
+        let parsedBirthDate = new Date(birthDate);
+        if (!birthDate || isNaN(parsedBirthDate.getTime())) {
+          parsedBirthDate = new Date();
+        }
+
+        const identity: Identity = {
+          firstName,
+          lastName,
+          nickName,
+          gender,
+          birthDate: parsedBirthDate,
+          emailPrefix: watch('Alias.Email') ?? '',
+        };
+
+        username = usernameEmailGenerator.generateUsername(identity);
       }
 
-      const identity: Identity = {
-        firstName: watch('Alias.FirstName') ?? '',
-        lastName: watch('Alias.LastName') ?? '',
-        nickName: watch('Alias.NickName') ?? '',
-        gender: gender,
-        birthDate: new Date(watch('Alias.BirthDate') ?? ''),
-        emailPrefix: watch('Alias.Email') ?? '',
-      };
-
-      const username = usernameEmailGenerator.generateUsername(identity);
-      const currentUsername = watch('Username') ?? '';
-      // Only overwrite username if it's empty or matches the last generated value
-      if (!currentUsername || currentUsername === lastGeneratedValues.username) {
-        setValue('Username', username);
-        // Update the tracking for username
-        setLastGeneratedValues(prev => ({ ...prev, username: username }));
-      }
+      setValue('Username', username);
+      // Update the tracking for username
+      setLastGeneratedValues(prev => ({ ...prev, username }));
     } catch (error) {
       console.error('Error generating random username:', error);
     }
-  }, [setValue, watch, lastGeneratedValues, setLastGeneratedValues]);
+  }, [setValue, watch, setLastGeneratedValues, initializeGenerators, dbContext.sqliteClient]);
 
   /**
    * Handle form submission.
@@ -514,7 +539,7 @@ const CredentialAddEdit: React.FC = () => {
       data.Alias.FirstName = watch('Alias.FirstName');
       data.Alias.LastName = watch('Alias.LastName');
       data.Alias.NickName = watch('Alias.NickName');
-      data.Alias.BirthDate = birthdate;
+      data.Alias.BirthDate = watch('Alias.BirthDate');
       data.Alias.Gender = watch('Alias.Gender');
       data.Alias.Email = watch('Alias.Email');
       // Clean up ServiceUrl for random mode too
