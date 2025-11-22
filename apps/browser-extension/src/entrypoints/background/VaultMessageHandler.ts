@@ -334,12 +334,13 @@ export function handleGetDefaultEmailDomain(): Promise<stringResponse> {
 
 /**
  * Get the default identity settings.
+ * Returns the effective language (with smart UI language matching if no explicit override is set).
  */
 export async function handleGetDefaultIdentitySettings(
 ) : Promise<IdentitySettingsResponse> {
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const language = sqliteClient.getDefaultIdentityLanguage();
+    const language = await sqliteClient.getEffectiveIdentityLanguage();
     const gender = sqliteClient.getDefaultIdentityGender();
 
     return {

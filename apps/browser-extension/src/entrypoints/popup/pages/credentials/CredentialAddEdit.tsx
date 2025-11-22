@@ -370,8 +370,8 @@ const CredentialAddEdit: React.FC = () => {
    * Initialize the identity and password generators with settings from user's vault.
    */
   const initializeGenerators = useCallback(async () => {
-    // Get default identity language from database
-    const identityLanguage = dbContext.sqliteClient!.getDefaultIdentityLanguage();
+    // Get effective identity language (smart default based on UI language if no explicit override)
+    const identityLanguage = await dbContext.sqliteClient!.getEffectiveIdentityLanguage();
 
     // Initialize identity generator based on language
     const identityGenerator = CreateIdentityGenerator(identityLanguage);

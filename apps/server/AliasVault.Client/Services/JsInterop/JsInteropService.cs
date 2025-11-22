@@ -407,6 +407,36 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     }
 
     /// <summary>
+    /// Maps a UI language code to an identity generator language code.
+    /// If no explicit match is found, returns null to indicate no preference.
+    /// </summary>
+    /// <param name="uiLanguageCode">The UI language code (e.g., "en", "en-US", "nl-NL", "de-DE", "fr").</param>
+    /// <returns>The matching identity generator language code or null if no match.</returns>
+    public async Task<string?> MapUiLanguageToIdentityLanguageAsync(string? uiLanguageCode)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(uiLanguageCode))
+            {
+                return null;
+            }
+
+            if (_identityGeneratorModule == null)
+            {
+                await InitializeAsync();
+            }
+
+            var result = await _identityGeneratorModule!.InvokeAsync<string?>("mapUiLanguageToIdentityLanguage", uiLanguageCode);
+            return result;
+        }
+        catch (JSException ex)
+        {
+            await Console.Error.WriteLineAsync($"JavaScript error mapping UI language to identity language: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Converts an age range string to birthdate options using the shared JavaScript utility.
     /// </summary>
     /// <param name="ageRange">Age range string (e.g., "21-25", "30-35", or "random").</param>

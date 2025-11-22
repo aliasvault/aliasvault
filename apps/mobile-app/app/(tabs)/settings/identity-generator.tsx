@@ -55,7 +55,7 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
       const loadSettings = async (): Promise<void> => {
         try {
           const [currentLanguage, currentGender, currentAgeRange] = await Promise.all([
-            dbContext.sqliteClient!.getDefaultIdentityLanguage(),
+            dbContext.sqliteClient!.getEffectiveIdentityLanguage(),
             dbContext.sqliteClient!.getDefaultIdentityGender(),
             dbContext.sqliteClient!.getDefaultIdentityAgeRange()
           ]);

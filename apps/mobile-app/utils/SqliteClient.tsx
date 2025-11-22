@@ -464,9 +464,36 @@ class SqliteClient {
 
   /**
    * Get the default identity language from the database.
+   * Returns the stored override value if set, otherwise returns empty string to indicate no explicit preference.
+   * Use getEffectiveIdentityLanguage() to get the language with smart defaults based on UI language.
    */
   public async getDefaultIdentityLanguage(): Promise<string> {
-    return this.getSetting('DefaultIdentityLanguage', 'en');
+    return this.getSetting('DefaultIdentityLanguage');
+  }
+
+  /**
+   * Get the effective identity generator language to use.
+   * If user has explicitly set a language preference, use that.
+   * Otherwise, intelligently match the UI language to an available identity generator language.
+   * Falls back to "en" if no match is found.
+   */
+  public async getEffectiveIdentityLanguage(): Promise<string> {
+    const explicitLanguage = await this.getDefaultIdentityLanguage();
+
+    // If user has explicitly set a language preference, use it
+    if (explicitLanguage) {
+      return explicitLanguage;
+    }
+
+    // Otherwise, try to match UI language to an identity generator language
+    const { mapUiLanguageToIdentityLanguage } = await import('@/utils/dist/shared/identity-generator');
+    const { default: i18n } = await import('@/i18n');
+
+    const uiLanguage = i18n.language;
+    const mappedLanguage = mapUiLanguageToIdentityLanguage(uiLanguage);
+
+    // Return the mapped language, or fall back to "en" if no match found
+    return mappedLanguage ?? 'en';
   }
 
   /**

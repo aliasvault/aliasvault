@@ -43,9 +43,11 @@ public sealed class SettingsService
 
     /// <summary>
     /// Gets the DefaultIdentityLanguage setting.
+    /// Returns the stored override value if set, otherwise returns empty string to indicate no explicit preference.
+    /// Use GetEffectiveIdentityLanguageAsync() to get the language with smart defaults based on UI language.
     /// </summary>
-    /// <returns>Default identity language as two-letter code.</returns>
-    public string DefaultIdentityLanguage => GetSetting("DefaultIdentityLanguage", "en")!;
+    /// <returns>Default identity language as two-letter code, or empty string if not set.</returns>
+    public string DefaultIdentityLanguage => GetSetting("DefaultIdentityLanguage");
 
     /// <summary>
     /// Gets the DefaultIdentityGender setting.
