@@ -51,6 +51,13 @@ public class AliasVaultUser : IdentityUser
     public DateTime? LastActivityDate { get; set; }
 
     /// <summary>
+    /// Gets or sets the total count of emails received by this user across all time.
+    /// This is a persistent counter that is incremented when emails are received and is never decremented,
+    /// even when emails are deleted. Used for abuse detection and usage statistics.
+    /// </summary>
+    public int EmailsReceived { get; set; } = 0;
+
+    /// <summary>
     /// Gets or sets the collection of vaults.
     /// </summary>
     public virtual ICollection<Vault> Vaults { get; set; } = [];
