@@ -242,6 +242,12 @@ interface ILanguageOption {
      * The flag emoji for the language (e.g., "🇬🇧", "🇳🇱", "🇩🇪")
      */
     flag: string;
+    /**
+     * Alternative language codes that map to this identity generator language.
+     * Used for matching UI locale codes to identity generator languages.
+     * For example, "en-US", "en-GB", "en-CA" all map to "en"
+     */
+    alternativeCodes?: string[];
 }
 /**
  * Gets all available languages for identity generation.
@@ -249,6 +255,20 @@ interface ILanguageOption {
  * @returns Array of language options
  */
 declare function getAvailableLanguages(): ILanguageOption[];
+/**
+ * Maps a UI language code to an identity generator language code.
+ * If no explicit match is found, returns null to indicate no preference.
+ *
+ * @param uiLanguageCode - The UI language code (e.g., "en", "en-US", "nl-NL", "de-DE", "fr")
+ * @returns The matching identity generator language code or null if no match
+ *
+ * @example
+ * mapUiLanguageToIdentityLanguage("en-US") // returns "en"
+ * mapUiLanguageToIdentityLanguage("nl") // returns "nl"
+ * mapUiLanguageToIdentityLanguage("de-CH") // returns "de"
+ * mapUiLanguageToIdentityLanguage("fr") // returns null (no French identity generator)
+ */
+declare function mapUiLanguageToIdentityLanguage(uiLanguageCode: string | null | undefined): string | null;
 
 /**
  * Creates a new identity generator based on the language.
@@ -265,4 +285,4 @@ declare const CreateIdentityGenerator: (language: string) => IdentityGenerator;
  */
 declare const CreateUsernameEmailGenerator: () => UsernameEmailGenerator;
 
-export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type ILanguageOption, type Identity, IdentityGenerator, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorNl, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages };
+export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type ILanguageOption, type Identity, IdentityGenerator, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorNl, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages, mapUiLanguageToIdentityLanguage };

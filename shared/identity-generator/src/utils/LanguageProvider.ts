@@ -16,6 +16,13 @@ export interface ILanguageOption {
    * The flag emoji for the language (e.g., "🇬🇧", "🇳🇱", "🇩🇪")
    */
   flag: string;
+
+  /**
+   * Alternative language codes that map to this identity generator language.
+   * Used for matching UI locale codes to identity generator languages.
+   * For example, "en-US", "en-GB", "en-CA" all map to "en"
+   */
+  alternativeCodes?: string[];
 }
 
 /**
@@ -25,8 +32,69 @@ export interface ILanguageOption {
  */
 export function getAvailableLanguages(): ILanguageOption[] {
   return [
-    { value: 'en', label: 'English', flag: '🇬🇧' },
-    { value: 'nl', label: 'Nederlands', flag: '🇳🇱' },
-    { value: 'de', label: 'Deutsch', flag: '🇩🇪' }
+    {
+      value: 'en',
+      label: 'English',
+      flag: '🇬🇧',
+      alternativeCodes: ['en-US', 'en-GB', 'en-CA', 'en-AU', 'en-NZ', 'en-IE', 'en-ZA', 'en-SG', 'en-IN']
+    },
+    {
+      value: 'nl',
+      label: 'Nederlands',
+      flag: '🇳🇱',
+      alternativeCodes: ['nl-NL', 'nl-BE']
+    },
+    {
+      value: 'de',
+      label: 'Deutsch',
+      flag: '🇩🇪',
+      alternativeCodes: ['de-DE', 'de-AT', 'de-CH', 'de-LU', 'de-LI']
+    }
   ];
+}
+
+/**
+ * Maps a UI language code to an identity generator language code.
+ * If no explicit match is found, returns null to indicate no preference.
+ *
+ * @param uiLanguageCode - The UI language code (e.g., "en", "en-US", "nl-NL", "de-DE", "fr")
+ * @returns The matching identity generator language code or null if no match
+ *
+ * @example
+ * mapUiLanguageToIdentityLanguage("en-US") // returns "en"
+ * mapUiLanguageToIdentityLanguage("nl") // returns "nl"
+ * mapUiLanguageToIdentityLanguage("de-CH") // returns "de"
+ * mapUiLanguageToIdentityLanguage("fr") // returns null (no French identity generator)
+ */
+export function mapUiLanguageToIdentityLanguage(uiLanguageCode: string | null | undefined): string | null {
+  if (!uiLanguageCode) {
+    return null;
+  }
+
+  const normalizedCode = uiLanguageCode.toLowerCase();
+  const availableLanguages = getAvailableLanguages();
+
+  // First, try exact match with the primary value
+  const exactMatch = availableLanguages.find(lang => lang.value.toLowerCase() === normalizedCode);
+  if (exactMatch) {
+    return exactMatch.value;
+  }
+
+  // Then, try matching with alternative codes
+  const alternativeMatch = availableLanguages.find(lang =>
+    lang.alternativeCodes?.some(code => code.toLowerCase() === normalizedCode)
+  );
+  if (alternativeMatch) {
+    return alternativeMatch.value;
+  }
+
+  // Finally, try matching the base language code (e.g., "en" from "en-US")
+  const baseCode = normalizedCode.split('-')[0];
+  const baseMatch = availableLanguages.find(lang => lang.value.toLowerCase() === baseCode);
+  if (baseMatch) {
+    return baseMatch.value;
+  }
+
+  // No match found
+  return null;
 }

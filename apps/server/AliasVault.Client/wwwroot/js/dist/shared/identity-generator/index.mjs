@@ -5890,10 +5890,48 @@ function convertAgeRangeToBirthdateOptions(ageRange) {
 // src/utils/LanguageProvider.ts
 function getAvailableLanguages() {
   return [
-    { value: "en", label: "English", flag: "\u{1F1EC}\u{1F1E7}" },
-    { value: "nl", label: "Nederlands", flag: "\u{1F1F3}\u{1F1F1}" },
-    { value: "de", label: "Deutsch", flag: "\u{1F1E9}\u{1F1EA}" }
+    {
+      value: "en",
+      label: "English",
+      flag: "\u{1F1EC}\u{1F1E7}",
+      alternativeCodes: ["en-US", "en-GB", "en-CA", "en-AU", "en-NZ", "en-IE", "en-ZA", "en-SG", "en-IN"]
+    },
+    {
+      value: "nl",
+      label: "Nederlands",
+      flag: "\u{1F1F3}\u{1F1F1}",
+      alternativeCodes: ["nl-NL", "nl-BE"]
+    },
+    {
+      value: "de",
+      label: "Deutsch",
+      flag: "\u{1F1E9}\u{1F1EA}",
+      alternativeCodes: ["de-DE", "de-AT", "de-CH", "de-LU", "de-LI"]
+    }
   ];
+}
+function mapUiLanguageToIdentityLanguage(uiLanguageCode) {
+  if (!uiLanguageCode) {
+    return null;
+  }
+  const normalizedCode = uiLanguageCode.toLowerCase();
+  const availableLanguages = getAvailableLanguages();
+  const exactMatch = availableLanguages.find((lang) => lang.value.toLowerCase() === normalizedCode);
+  if (exactMatch) {
+    return exactMatch.value;
+  }
+  const alternativeMatch = availableLanguages.find(
+    (lang) => lang.alternativeCodes?.some((code) => code.toLowerCase() === normalizedCode)
+  );
+  if (alternativeMatch) {
+    return alternativeMatch.value;
+  }
+  const baseCode = normalizedCode.split("-")[0];
+  const baseMatch = availableLanguages.find((lang) => lang.value.toLowerCase() === baseCode);
+  if (baseMatch) {
+    return baseMatch.value;
+  }
+  return null;
 }
 
 // src/factories/IdentityGeneratorFactory.ts
@@ -5927,5 +5965,6 @@ export {
   UsernameEmailGenerator,
   convertAgeRangeToBirthdateOptions,
   getAvailableAgeRanges,
-  getAvailableLanguages
+  getAvailableLanguages,
+  mapUiLanguageToIdentityLanguage
 };
