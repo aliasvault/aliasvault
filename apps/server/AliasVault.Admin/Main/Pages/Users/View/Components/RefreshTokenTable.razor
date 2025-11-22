@@ -10,7 +10,16 @@
         <SortableTableRow>
             <SortableTableColumn IsPrimary="true">@entry.Id</SortableTableColumn>
             <SortableTableColumn>@entry.DeviceIdentifier</SortableTableColumn>
-            <SortableTableColumn>@entry.IpAddress</SortableTableColumn>
+            <SortableTableColumn>
+                @if (!string.IsNullOrEmpty(entry.IpAddress))
+                {
+                    <a href="logging/auth?search=@Uri.EscapeDataString(entry.IpAddress)" class="cursor-pointer">@entry.IpAddress</a>
+                }
+                else
+                {
+                    <span>-</span>
+                }
+            </SortableTableColumn>
             <SortableTableColumn>@entry.CreatedAt.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
             <SortableTableColumn>@entry.ExpireDate.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
             <SortableTableColumn>

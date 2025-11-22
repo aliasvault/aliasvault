@@ -15,6 +15,7 @@ using Microsoft.EntityFrameworkCore;
 /// UserEmailClaim object. This object is used to reserve an email address for a user.
 /// </summary>
 [Index(nameof(Address), IsUnique = true)]
+[Index(nameof(UserId), nameof(Disabled))]
 public class UserEmailClaim
 {
     /// <summary>
