@@ -315,10 +315,8 @@
       "languageDescription": "Установите язык, который будет использоваться при создании новых личностей.",
       "genderSection": "Пол",
       "genderDescription": "Установите гендерные предпочтения для создания новых личностей.",
-      "languageOptions": {
-        "english": "Английский",
-        "dutch": "Голландский"
-      },
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
       "genderOptions": {
         "random": "Случайный",
         "male": "Мужской",
