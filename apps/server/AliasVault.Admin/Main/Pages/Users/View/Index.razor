@@ -112,6 +112,10 @@ else
                                         {
                                             <div class="text-xs text-center text-green-500 dark:text-green-400">(+@UserUsageStats.RecentReceivedEmails72h.ToString("N0") in last 72h)</div>
                                         }
+                                        @if (UserUsageStats.TotalEmailsReceivedPersistent > UserUsageStats.TotalReceivedEmails)
+                                        {
+                                            <div class="text-xs text-center text-orange-500 dark:text-orange-400" title="Persistent counter (never decremented, even when emails deleted)">(@UserUsageStats.TotalEmailsReceivedPersistent.ToString("N0") all-time)</div>
+                                        }
                                     </div>
                                     <div class="text-left">
                                         <div class="text-xl text-center font-semibold text-gray-900 dark:text-white">@UserUsageStats.TotalEmailAttachments.ToString("N0")</div>
@@ -224,7 +228,7 @@ else
             <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <div class="items-center">
                     <div>
-                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Vaults</h3>
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Vaults (@VaultList.Count)</h3>
 
                         <VaultTable VaultList="@VaultList" OnMakeCurrent="@MakeCurrentAsync" />
                     </div>
@@ -234,7 +238,7 @@ else
             <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <div class="items-center">
                     <div>
-                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Logged in devices</h3>
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Logged in devices (@RefreshTokenList.Count)</h3>
 
                         <RefreshTokenTable RefreshTokenList="@RefreshTokenList" OnRevokeToken="@RevokeRefreshToken" OnRevokeAllTokens="@RevokeAllTokens" />
                     </div>
@@ -244,7 +248,7 @@ else
             <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <div class="items-center">
                     <div>
-                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Recent authentication logs</h3>
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Recent authentication logs (@AuthLogList.Count)</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
                             Shows the last 5 authentication attempts for this user. Click "View all auth logs" to see complete history.
                         </p>
@@ -256,13 +260,26 @@ else
             <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                 <div class="items-center">
                     <div>
-                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Email claims</h3>
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Related users (@RelatedUsersCount)</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                            Other user accounts that have authenticated from the same IP addresses or IP ranges as this user.
+                            This can help identify potential duplicate accounts or related users.
+                        </p>
+                        <RelatedUsersTable UserId="@Id" @ref="RelatedUsersTableRef" OnCountChanged="HandleCountChanged" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                <div class="items-center">
+                    <div>
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white">Email claims (@EmailClaimsCount)</h3>
                         <p class="text-sm text-gray-500 dark:text-gray-400">
                             Email claims represent the email addresses that the user has (historically) used. Whenever a user deletes an email alias
                             the claim gets disabled and the server will reject all emails sent to that alias. A user can always re-enable
                             the claim by using it again. Email claims are permanently tied to a user and cannot be transferred to another user.
                         </p>
-                        <EmailClaimTable User="@User" />
+                        <EmailClaimTable User="@User" @ref="EmailClaimTableRef" OnCountChanged="HandleCountChanged" />
                     </div>
                 </div>
             </div>
@@ -290,6 +307,11 @@ else
     private bool IsEditingUsername { get; set; }
     private string NewUsername { get; set; } = string.Empty;
     private string UsernameValidationError { get; set; } = string.Empty;
+    private RelatedUsersTable? RelatedUsersTableRef { get; set; }
+    private EmailClaimTable? EmailClaimTableRef { get; set; }
+
+    private int RelatedUsersCount => RelatedUsersTableRef?.GetRelatedUsersCount() ?? 0;
+    private int EmailClaimsCount => EmailClaimTableRef?.GetTotalEmailClaimsCount() ?? 0;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -670,5 +692,13 @@ Do you want to proceed with the restoration?")) {
                 UsernameValidationError = $"Error updating username: {ex.Message}";
             }
         }
+    }
+
+    /// <summary>
+    /// Handle count changes from child components to trigger re-render.
+    /// </summary>
+    private void HandleCountChanged()
+    {
+        StateHasChanged();
     }
 }

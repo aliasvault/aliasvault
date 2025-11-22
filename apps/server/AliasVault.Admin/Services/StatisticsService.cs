@@ -316,6 +316,10 @@ public class StatisticsService
             .Where(e => e.EncryptionKey.UserId == userId)
             .CountAsync();
 
+        // Get persistent emails received counter from user record (never decremented, even when emails are deleted)
+        var user = await context.AliasVaultUsers.FindAsync(userId);
+        stats.TotalEmailsReceivedPersistent = user?.EmailsReceived ?? 0;
+
         // Get recent statistics (last 72 hours) - this is approximated since we don't have creation timestamps on individual credentials
         // For recent credentials and email claims, we'll use vault versions created in the last 72h as a proxy
         var recentVaultVersions = await context.Vaults

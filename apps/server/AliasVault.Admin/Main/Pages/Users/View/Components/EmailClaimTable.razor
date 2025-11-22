@@ -56,6 +56,12 @@ else
     public EventCallback<(Guid id, bool disabled)> OnEmailClaimStatusChanged { get; set; }
 
     /// <summary>
+    /// Gets or sets the event callback for when the count changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnCountChanged { get; set; }
+
+    /// <summary>
     /// Gets or sets the list of email claims to display.
     /// </summary>
     private List<UserEmailClaimWithCount> EmailClaimList { get; set; } = [];
@@ -132,6 +138,9 @@ else
             EmailCount = emailCountDict.TryGetValue(x.Address, out var count) ? count : 0,
             Disabled = x.Disabled
         }).ToList();
+
+        // Notify parent that count has changed
+        await OnCountChanged.InvokeAsync();
     }
 
     private void HandleSortChanged((string column, SortDirection direction) sort)
@@ -233,5 +242,13 @@ Do you want to proceed with disabling all email claims?"))
             "Disabled" => SortableTable.SortListByProperty(emailClaims, e => e.Disabled, sortDirection),
             _ => emailClaims
         };
+    }
+
+    /// <summary>
+    /// Gets the total count of email claims (including disabled).
+    /// </summary>
+    public int GetTotalEmailClaimsCount()
+    {
+        return EmailClaimList.Count;
     }
 }

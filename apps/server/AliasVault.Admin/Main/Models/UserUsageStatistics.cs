@@ -33,6 +33,12 @@ public class UserUsageStatistics
     public int TotalReceivedEmails { get; set; }
 
     /// <summary>
+    /// Gets or sets the total number of emails received across all time (persistent counter).
+    /// This counter is never decremented, even when emails are deleted. Used for abuse detection.
+    /// </summary>
+    public int TotalEmailsReceivedPersistent { get; set; }
+
+    /// <summary>
     /// Gets or sets the number of credentials created in the last 72 hours.
     /// </summary>
     public int RecentCredentials72h { get; set; }
