@@ -6,7 +6,7 @@
     "password": "Пароль",
     "passwordPlaceholder": "Введите ваш пароль",
     "rememberMe": "Запомнить меня",
-    "loginButton": "Log in",
+    "loginButton": "Войти",
     "noAccount": "Нет аккаунта?",
     "createVault": "Создать новое хранилище",
     "twoFactorTitle": "Пожалуйста, введите код аутентификации из вашего приложения-аутентификатора.",
@@ -15,7 +15,7 @@
     "verify": "Проверить",
     "twoFactorNote": "Примечание: если у вас нет доступа к устройству аутентификации, вы можете сбросить ваш 2FA с помощью кода восстановления, войдя в систему через сайт.",
     "masterPassword": "Мастер пароль",
-    "unlockVault": "Unlock",
+    "unlockVault": "Разблокировать",
     "unlockWithPin": "Разблокировать ПИН-кодом﻿",
     "enterPinToUnlock": "Введите ПИН-код для разблокировки хранилища",
     "useMasterPassword": "Использовать мастер-пароль",
@@ -29,9 +29,9 @@
     "connectingTo": "Подключение к",
     "switchAccounts": "Переключить аккаунт?",
     "loggedIn": "Вход выполнен",
-    "loginWithMobile": "Log in using Mobile App",
-    "unlockWithMobile": "Unlock using Mobile App",
-    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
+    "loginWithMobile": "Войти с помощью мобильного приложения",
+    "unlockWithMobile": "Разблокировать через мобильное приложение",
+    "scanQrCode": "Сканируйте QR-код в приложении AliasVault, чтобы войти.",
     "errors": {
       "invalidCode": "Пожалуйста, введите правильный 6-значный код аутентификации.",
       "serverError": "Не удалось подключиться к серверу AliasVault. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
@@ -39,7 +39,7 @@
       "accountLocked": "Аккаунт временно заблокирован из-за слишком большого числа неудачных попыток.",
       "networkError": "Ошибка сети. Пожалуйста, проверьте соединение и повторите еще раз.",
       "sessionExpired": "Время сеанса истекло. Пожалуйста, войдите снова.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "mobileLoginRequestExpired": "Истекло время ожидания входа. Перезагрузите страницу и повторите попытку."
     }
   },
   "menu": {
@@ -98,7 +98,7 @@
       "clientVersionNotSupported": "Эта версия браузерного расширения AliasVault больше не поддерживается сервером. Пожалуйста, обновите расширение вашего браузера до последней версии.",
       "browserExtensionOutdated": "Это расширение браузера устарело и не может быть использовано для доступа к этому хранилищу. Пожалуйста, обновите расширение, чтобы продолжить.",
       "serverVersionNotSupported": "Чтобы использовать это расширение для браузера, сервер AliasVault необходимо обновить до более новой версии. Пожалуйста, обратитесь в службу поддержки, если вам нужна помощь.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help.",
+      "serverVersionTooOld": "Сервер AliasVault необходимо обновить до более новой версии, чтобы использовать эту функцию. Если вам нужна помощь, обратитесь к администратору сервера.",
       "unknownError": "Произошла неизвестная ошибка",
       "unknownErrorTryAgain": "Произошла неизвестная ошибка. Попробуйте снова.",
       "vaultNotAvailable": "Хранилище недоступно",
