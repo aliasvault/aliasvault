@@ -315,10 +315,8 @@
       "languageDescription": "Встановіть мову, яка використовуватиметься під час створення нових ідентифікаторів.",
       "genderSection": "Стать",
       "genderDescription": "Встановити параметри гендеру для генерації нових ідентифікацій.",
-      "languageOptions": {
-        "english": "Англійська",
-        "dutch": "Нідерландська"
-      },
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
       "genderOptions": {
         "random": "Випадкова",
         "male": "Чоловіча",
