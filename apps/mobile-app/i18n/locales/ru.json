@@ -409,8 +409,8 @@
         "confirmMessage": "Внимание! Вы входите в аккаунт на другом устройстве. Оно получит полный доступ к вашему хранилищу. Продолжайте только если полностью доверяете этому устройству.",
         "successDescription": "Вход на удаленном устройстве выполнен успешно.",
         "requestExpired": "Срок действия запроса на вход истек. Пожалуйста, сгенерируйте новый QR-код.",
-        "authenticationFailed": "Authentication failed. Please try again.",
-        "noAuthMethodEnabled": "Biometric or PIN unlock needs to be enabled to unlock with mobile"
+        "authenticationFailed": "Ошибка аутентификации. Пожалуйста, попробуйте снова.",
+        "noAuthMethodEnabled": "Для разблокировки с помощью мобильного устройства необходимо включить биометрическую защиту или PIN-код"
       }
     }
   },
