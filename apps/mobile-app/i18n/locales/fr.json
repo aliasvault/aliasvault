@@ -315,10 +315,8 @@
       "languageDescription": "Définissez la langue qui sera utilisée pour générer de nouvelles identités.",
       "genderSection": "Genre",
       "genderDescription": "Définissez la préférence de genre pour la génération de nouvelles identités.",
-      "languageOptions": {
-        "english": "Anglais",
-        "dutch": "Néerlandais"
-      },
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
       "genderOptions": {
         "random": "Aléatoire",
         "male": "Homme",
