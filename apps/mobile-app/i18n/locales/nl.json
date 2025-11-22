@@ -315,8 +315,8 @@
       "languageDescription": "Stel de taal in die wordt gebruikt bij het genereren van nieuwe identiteiten.",
       "genderSection": "Geslacht",
       "genderDescription": "Stel de geslachtsvoorkeur in voor het genereren van nieuwe identiteiten.",
-      "ageRangeSection": "Age Range",
-      "ageRangeDescription": "Set the age range for generating new identities.",
+      "ageRangeSection": "Leeftijdsrange",
+      "ageRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
       "genderOptions": {
         "random": "Willekeurig",
         "male": "Mannelijk",
