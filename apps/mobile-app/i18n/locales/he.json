@@ -315,10 +315,8 @@
       "languageDescription": "נא להגדיר את השפה שתשמש ליצירת זהויות חדשות.",
       "genderSection": "מגדר",
       "genderDescription": "להגדיר את אפשרויות המגדר ליצירת זהויות חדשות.",
-      "languageOptions": {
-        "english": "אנגלית",
-        "dutch": "הולנדית"
-      },
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
       "genderOptions": {
         "random": "אקראי",
         "male": "זכר",

@@ -315,10 +315,8 @@
       "languageDescription": "Ustaw język, który będzie używany podczas generowania nowych tożsamości.",
       "genderSection": "Płeć",
       "genderDescription": "Ustaw preferencje dotyczące płci dla generowania nowych tożsamości.",
-      "languageOptions": {
-        "english": "Angielski",
-        "dutch": "Holenderski"
-      },
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
       "genderOptions": {
         "random": "Losowy",
         "male": "Mężczyzna",

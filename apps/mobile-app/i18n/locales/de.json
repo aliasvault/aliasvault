@@ -8,7 +8,7 @@
     "no": "Nein",
     "ok": "OK",
     "continue": "Fortfahren",
-    "loading": "Loading",
+    "loading": "Laden",
     "error": "Fehler",
     "success": "Aktion erfolgreich",
     "never": "Niemals",
@@ -17,13 +17,13 @@
     "use": "Benutzen",
     "confirm": "Bestätigen",
     "next": "Weiter",
-    "notice": "Notice",
+    "notice": "Hinweis",
     "enabled": "Aktiviert",
     "disabled": "Deaktiviert",
     "errors": {
       "unknownError": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
       "unknownErrorTryAgain": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help."
+      "serverVersionTooOld": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese Funktion nutzen zu können. Bitte kontaktiere den Administrator des Servers, falls Du Hilfe benötigst."
     }
   },
   "auth": {
@@ -49,7 +49,7 @@
     "enableBiometric": "{{biometric}} aktivieren?",
     "biometricPrompt": "Möchtest Du Deinen Tresor mit {{biometric}} entsperren?",
     "tryBiometricAgain": "{{biometric}} erneut versuchen",
-    "tryPinAgain": "Try PIN Again",
+    "tryPinAgain": "PIN erneut versuchen",
     "authCodeNote": "Hinweis: Wenn Du keinen Zugriff auf Dein Authentifizierungsgerät hast, kannst Du Deine Zwei-Faktor-Authentifizierung (2FA) mit einem Wiederherstellungscode zurücksetzen, indem Du Dich über die Website anmeldest.",
     "errors": {
       "credentialsRequired": "Benutzername und Passwort sind erforderlich",
@@ -167,11 +167,11 @@
     "deleteAttachment": "Löschen",
     "fileSavedTo": "Datei gespeichert unter",
     "previewNotSupported": "Vorschau nicht unterstützt",
-    "downloadToView": "Datei herunterladen, um sie anzuzeigen",
+    "downloadToView": "Lade die Datei herunterladen, um sie anzuzeigen",
     "unsavedChanges": {
-      "title": "Discard Changes?",
-      "message": "You have unsaved changes. Are you sure you want to discard them?",
-      "discard": "Discard"
+      "title": "Änderungen verwerfen?",
+      "message": "Du hast ungespeicherte Änderungen. Bist Du Dir sicher, dass Du diese verwerfen möchtest?",
+      "discard": "Verwerfen"
     },
     "toasts": {
       "credentialUpdated": "Zugang erfolgreich aktualisiert",
@@ -233,7 +233,7 @@
       "alreadyConfigured": "Ich habe es bereits konfiguriert",
       "advancedOptions": "Erweiterte Einstellungen",
       "showSearchText": "Suchtext anzeigen",
-      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
+      "showSearchTextDescription": "Füge den Text ein, den AliasVault von Android erhält und der verwendet wird, um nach passenden Anmeldedaten zu suchen."
     },
     "vaultUnlock": "Methode zum Entsperren des Tresors",
     "autoLock": "Sperr-Timeout",
@@ -289,19 +289,19 @@
       "biometricEnabled": "{{biometric}} wurde erfolgreich aktiviert",
       "biometricNotAvailable": "{{biometric}} nicht verfügbar",
       "biometricDisabledMessage": "{{biometric}} ist für AliasVault deaktiviert. Bitte aktiviere es zuerst in den Geräteeinstellungen, um es zu verwenden.",
-      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
+      "biometricHelp": "Benutze Biometrie, um Deinen Tresor zu entsperren. Dieser ist durch den {{keystore}} gesichert ist.",
       "biometricUnavailableHelp": "{{biometric}} ist nicht verfügbar. Tippe, um die Einstellungen zu öffnen und/oder gehe zu den Geräteeinstellungen, um es zu aktivieren und zu konfigurieren.",
       "pin": "PIN-Code",
-      "pinDescription": "Benutze einen eigenen PIN-Code, um deinen Tresor schneller zu entsperren.",
+      "pinDescription": "Benutze einen eigenen PIN-Code, um Deinen Tresor schneller zu entsperren.",
       "pinEnabled": "PIN-Sperre erfolgreich aktiviert",
       "pinDisabled": "PIN-Sperre wurde deaktiviert",
       "setupPin": "PIN einrichten",
       "enterNewPin": "Neue PIN eingeben",
-      "enterNewPinDescription": "PIN zum Entsperren des Tresors auswählen",
+      "enterNewPinDescription": "Wähle eine PIN zum Entsperren des Tresors",
       "confirmPin": "PIN bestätigen",
-      "confirmPinDescription": "Zur Bestätigung erneut PIN eingeben",
+      "confirmPinDescription": "Zur Bestätigung PIN erneut eingeben",
       "pinMismatch": "PINs stimmen nicht überein. Bitte versuche es erneut.",
-      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
+      "pinLocked": "Die PIN wurde nach zu vielen fehlgeschlagenen Versuchen gesperrt. Bitte verwende Dein Master-Passwort.",
       "passwordHelp": "Gib Dein vollständiges Master-Passwort erneut ein, um Deinen Tresor zu entsperren. Diese Option ist immer als Fallback-Option aktiviert.",
       "keystoreIOS": "iCloud-Schlüsselbund",
       "keystoreAndroid": "Android-Schlüsselspeicher"
@@ -315,10 +315,8 @@
       "languageDescription": "Lege die Sprache fest, die bei der Erstellung neuer Identitäten verwendet wird.",
       "genderSection": "Geschlecht",
       "genderDescription": "Lege die Geschlechtspräferenz für die Erstellung neuer Identitäten fest.",
-      "languageOptions": {
-        "english": "Englisch",
-        "dutch": "Niederländisch"
-      },
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
       "genderOptions": {
         "random": "Zufällig",
         "male": "Männlich",
@@ -399,20 +397,20 @@
       }
     },
     "qrScanner": {
-      "title": "QR Code Scanner",
-      "scanningMessage": "Scan AliasVault QR code",
-      "invalidQrCode": "Invalid QR Code",
-      "notAliasVaultQr": "This is not a valid AliasVault QR code. Please scan a QR code generated by AliasVault.",
-      "cameraPermissionTitle": "Camera Permission Required",
-      "cameraPermissionMessage": "Please allow camera access to scan QR codes.",
+      "title": "QR-Code-Scanner",
+      "scanningMessage": "Scanne den AliasVault-QR-Code",
+      "invalidQrCode": "Ungültiger QR-Code",
+      "notAliasVaultQr": "Dies ist kein gültiger AliasVault-QR-Code. Bitte scanne einen von AliasVault generierten QR-Code.",
+      "cameraPermissionTitle": "Kameraberechtigung erforderlich",
+      "cameraPermissionMessage": "Bitte erlaube AliasVault den Zugriff auf die Kamera, um QR-Codes zu scannen.",
       "mobileLogin": {
-        "confirmTitle": "Confirm Login Request",
-        "confirmSubtitle": "Re-authenticate to approve login on another device.",
-        "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
-        "successDescription": "The remote device has been successfully logged in.",
-        "requestExpired": "This login request has expired. Please generate a new QR code.",
-        "authenticationFailed": "Authentication failed. Please try again.",
-        "noAuthMethodEnabled": "Biometric or PIN unlock needs to be enabled to unlock with mobile"
+        "confirmTitle": "Anmeldeanfrage bestätigen",
+        "confirmSubtitle": "Authentifizieren Dich erneut, um die Anmeldung auf einem anderen Gerät zu genehmigen.",
+        "confirmMessage": "Du bist dabei, Dich mit Deinem Konto auf einem anderen Gerät anzumelden. Dieses Gerät wird vollen Zugriff auf Deinen Tresor haben. Fahre nur fort, wenn Du diesem Gerät vertraust.",
+        "successDescription": "Das andere Gerät wurde erfolgreich angemeldet.",
+        "requestExpired": "Diese Anmeldeanfrage ist abgelaufen. Bitte generiere einen neuen QR-Code.",
+        "authenticationFailed": "Authentifizierung fehlgeschlagen. Bitte versuche es erneut.",
+        "noAuthMethodEnabled": "Biometrische Authentifizierung oder PIN-Sperre muss aktiviert sein, um mit Deinem Smartphone zu entsperren"
       }
     }
   },
@@ -483,7 +481,7 @@
       "unlockingVault": "Tresor wird entsperrt",
       "decryptingVault": "Tresor wird entschlüsselt",
       "openingVaultReadOnly": "Tresor wird im Lese-Modus geöffnet",
-      "retryingConnection": "Retrying connection..."
+      "retryingConnection": "Verbindungsversuch wird wiederholt..."
     },
     "offline": {
       "banner": "Offline-Modus (nur lesender Zugriff)",

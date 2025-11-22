@@ -315,10 +315,8 @@
       "languageDescription": "Yeni kimlikler oluşturulurken kullanılacak dili belirleyin.",
       "genderSection": "Cinsiyet",
       "genderDescription": "Yeni kimlikler oluştururken cinsiyet tercihlerini belirleyin.",
-      "languageOptions": {
-        "english": "İngilizce",
-        "dutch": "Flemenkçe"
-      },
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
       "genderOptions": {
         "random": "Rastgele",
         "male": "Erkek",

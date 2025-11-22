@@ -119,7 +119,7 @@
     <comment>Link text for logging in with authenticator</comment>
   </data>
   <data name="MobileDeviceLink" xml:space="preserve">
-    <value>Log in using Mobile App</value>
+    <value>Войти с помощью мобильного приложения</value>
     <comment>Link text for mobile device login</comment>
   </data>
   <!-- Descriptions and help text -->

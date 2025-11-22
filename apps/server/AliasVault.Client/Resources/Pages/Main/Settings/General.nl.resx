@@ -71,27 +71,19 @@
   </data>
   <!-- Alias Settings Section -->
   <data name="AliasSettingsTitle">
-    <value>Alias Instellingen</value>
-    <comment>Title for alias settings section</comment>
+    <value>Identiteit generator instellingen</value>
+    <comment>Title for identity generator settings section</comment>
   </data>
   <data name="AliasGenerationLanguageLabel">
-    <value>Taal voor alias generatie</value>
+    <value>Taal</value>
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
     <value>Stel de standaardtaal in die wordt gebruikt bij het genereren van nieuwe identiteiten.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
-  <data name="EnglishOption">
-    <value>Engels</value>
-    <comment>English language option</comment>
-  </data>
-  <data name="DutchOption">
-    <value>Nederlands</value>
-    <comment>Dutch language option</comment>
-  </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Geslacht voor alias generatie</value>
+    <value>Geslacht</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
@@ -109,6 +101,14 @@
   <data name="FemaleOption">
     <value>Vrouw</value>
     <comment>Female gender option</comment>
+  </data>
+  <data name="AliasGenerationAgeRangeLabel">
+    <value>Leeftijdsrange</value>
+    <comment>Label for alias generation age range setting</comment>
+  </data>
+  <data name="AliasGenerationAgeRangeDescription">
+    <value>Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.</value>
+    <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
   <data name="ClipboardSettingsTitle">

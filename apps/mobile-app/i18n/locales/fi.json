@@ -315,10 +315,8 @@
       "languageDescription": "Aseta kieli, jota käytetään luotaessa uusia henkilöllisyyksiä.",
       "genderSection": "Sukupuoli",
       "genderDescription": "Aseta oletussukupuoli uusien henkilöllisyyksien luomiseksi. ",
-      "languageOptions": {
-        "english": "Englanti",
-        "dutch": "Hollanti"
-      },
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
       "genderOptions": {
         "random": "Satunnainen",
         "male": "Mies",

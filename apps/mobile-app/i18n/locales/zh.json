@@ -315,10 +315,8 @@
       "languageDescription": "设置生成新身份时使用的语言。",
       "genderSection": "性别",
       "genderDescription": "设置生成新身份时的性别偏好。",
-      "languageOptions": {
-        "english": "英语",
-        "dutch": "荷兰语"
-      },
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
       "genderOptions": {
         "random": "随机",
         "male": "男",
