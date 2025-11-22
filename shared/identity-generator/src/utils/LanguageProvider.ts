@@ -26,6 +26,7 @@ export interface ILanguageOption {
 export function getAvailableLanguages(): ILanguageOption[] {
   return [
     { value: 'en', label: 'English', flag: '🇬🇧' },
-    { value: 'nl', label: 'Nederlands', flag: '🇳🇱' }
+    { value: 'nl', label: 'Nederlands', flag: '🇳🇱' },
+    { value: 'de', label: 'Deutsch', flag: '🇩🇪' }
   ];
 }
