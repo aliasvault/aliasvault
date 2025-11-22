@@ -28,11 +28,22 @@ Help grow the AliasVault community by:
 
 Help make AliasVault accessible to users worldwide by contributing translations! AliasVault is currently available in English and Dutch, but we're looking for volunteers to help translate it into other languages such as German, French, Spanish, Ukrainian, Italian, and more.
 
-AliasVault translations are managed through [Crowdin](https://crowdin.com/), an online translation platform. If you’d like to help translate AliasVault into your native language, please [request access to the Crowdin project](https://crowdin.com/project/aliasvault).
+### UI Translations
 
-If you're willing to help, we also encourage you to get in contact via [Discord](https://discord.gg/DsaXMTEtpF) to chat (quickest), or contact us via email at [contact@support.aliasvault.net](mailto:contact@support.aliasvault.net) to discuss the language(s) you are willing to contribute to, and so we can answer any technical questions you might have.
+AliasVault UI translations are managed through [Crowdin](https://crowdin.com/), an online translation platform. If you'd like to help translate AliasVault into your native language, please [request access to the Crowdin project](https://crowdin.com/project/aliasvault).
 
-Your translation contributions will help make AliasVault more accessible to privacy-conscious users around the world!
+You can also get in contact via [Discord](https://discord.gg/DsaXMTEtpF) to chat, or via email at [contact@support.aliasvault.net](mailto:contact@support.aliasvault.net) to discuss the language(s) you are willing to contribute to, and so we can answer any technical questions you might have.
+
+### Identity Generator Translations
+
+In AliasVault, when creating a new credential AliasVault automatically generates realistic alias identities including: first names, last names and birthdates. For this AliasVault uses dictionaries of possible names per language. You can help to enable AliasVault to generate proper identities in your language too.
+
+**How to help:**
+- Create lists of common first names (male and female)
+- Create a list of common last names (surnames)
+- Optionally: Decade-specific names for more authentic generations
+
+Read the specific instructions on how to contribute here: [Identity Generator Translations](https://docs.aliasvault.net/contributing/identity-generator.html).
 
 ## 3. Contributing to the Documentation
 

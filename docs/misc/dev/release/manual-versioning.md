@@ -1,8 +1,8 @@
 ---
 layout: default
 title: Manual versioning
-parent: Publish new release
-grand_parent: Release
+parent: Release
+grand_parent: Development
 nav_order: 2
 ---
 

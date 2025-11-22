@@ -44,3 +44,14 @@ Create separate identities for different purposes, each with its own email alias
 ## Getting Started
 
 Ready to get started with AliasVault? Check out the [server installation guide](./installation).
+
+---
+
+## Want to Contribute?
+
+Help make AliasVault better for everyone:
+
+- 🌍 **[Translate the UI](./contributing/ui-translations.md)** - Help translate AliasVault into your language
+- 👤 **[Add Name Dictionaries](./contributing/identity-generator.md)** - Provide names for the identity generator
+
+See all ways to contribute: [Contributing Guide](./contributing/)
