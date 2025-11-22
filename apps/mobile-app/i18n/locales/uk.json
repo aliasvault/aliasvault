@@ -170,21 +170,21 @@
     "downloadToView": "Завантажте файл для його перегляду",
     "unsavedChanges": {
       "title": "Скасувати зміни?",
-      "message": "You have unsaved changes. Are you sure you want to discard them?",
-      "discard": "Discard"
+      "message": "У вас є незбережені зміни. Ви впевнені, що бажаєте їх скасувати?",
+      "discard": "Скасувати"
     },
     "toasts": {
       "credentialUpdated": "Облікові дані успішно оновлено",
       "credentialCreated": "Облікові дані успішно створено",
       "credentialDeleted": "Облікові дані успішно видалено",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
+      "usernameCopied": "Ім'я користувача скопійовано до буфера обміну",
+      "emailCopied": "Електронну адресу скопійовано до буфера обміну",
+      "passwordCopied": "Пароль скопійовано до буфера обміну"
     },
     "createNewAliasFor": "Створити новий псевдонім для",
     "errors": {
       "loadFailed": "Не вдалося завантажити облікові дані",
-      "saveFailed": "Failed to save credential"
+      "saveFailed": "Не вдалося зберегти облікові дані"
     },
     "contextMenu": {
       "title": "Відомості про облікові дані",
@@ -196,9 +196,9 @@
     }
   },
   "passkeys": {
-    "passkey": "Passkey",
-    "site": "Site",
-    "displayName": "Display Name",
+    "passkey": "Ключ доступу",
+    "site": "Вебсайт",
+    "displayName": "Показуване ім'я",
     "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
     "passkeyMarkedForDeletion": "Passkey marked for deletion",
     "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
