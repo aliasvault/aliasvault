@@ -2,7 +2,7 @@
 layout: default
 title: Private vs Public Email Domains
 parent: Miscellaneous
-nav_order: 3
+nav_order: 4
 ---
 
 # Private vs Public Email Domains

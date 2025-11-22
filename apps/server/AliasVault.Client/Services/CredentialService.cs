@@ -61,8 +61,11 @@ public sealed class CredentialService(HttpClient httpClient, DbService dbService
             // Convert age range to birthdate options using shared JS utility
             var birthdateOptions = await jsInteropService.ConvertAgeRangeToBirthdateOptionsAsync(dbService.Settings.DefaultIdentityAgeRange);
 
+            // Get the effective identity language (smart default based on UI language if no explicit override is set)
+            var identityLanguage = await GetEffectiveIdentityLanguageAsync();
+
             // Generate a random identity using the TypeScript library
-            var identity = await jsInteropService.GenerateRandomIdentityAsync(dbService.Settings.DefaultIdentityLanguage, dbService.Settings.DefaultIdentityGender, birthdateOptions);
+            var identity = await jsInteropService.GenerateRandomIdentityAsync(identityLanguage, dbService.Settings.DefaultIdentityGender, birthdateOptions);
 
             // Generate random values for the Identity properties
             credential.Username = identity.NickName;
@@ -575,5 +578,30 @@ public sealed class CredentialService(HttpClient httpClient, DbService dbService
                 // Ignore favicon extraction errors
             }
         }
+    }
+
+    /// <summary>
+    /// Gets the effective identity generator language to use.
+    /// If user has explicitly set a language preference, use that.
+    /// Otherwise, intelligently match the UI language to an available identity generator language.
+    /// Falls back to "en" if no match is found.
+    /// </summary>
+    /// <returns>The identity generator language code to use.</returns>
+    private async Task<string> GetEffectiveIdentityLanguageAsync()
+    {
+        var explicitLanguage = dbService.Settings.DefaultIdentityLanguage;
+
+        // If user has explicitly set a language preference, use it
+        if (!string.IsNullOrWhiteSpace(explicitLanguage))
+        {
+            return explicitLanguage;
+        }
+
+        // Otherwise, try to match UI language to an identity generator language
+        var uiLanguage = dbService.Settings.AppLanguage;
+        var mappedLanguage = await jsInteropService.MapUiLanguageToIdentityLanguageAsync(uiLanguage);
+
+        // Return the mapped language, or fall back to "en" if no match found
+        return mappedLanguage ?? "en";
     }
 }

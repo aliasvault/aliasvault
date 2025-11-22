@@ -96,7 +96,7 @@ export default function AddEditCredentialScreen() : React.ReactNode {
    * Generate a random identity.
    */
   const generateRandomIdentity = useCallback(async () : Promise<Identity> => {
-    const identityLanguage = await dbContext.sqliteClient!.getDefaultIdentityLanguage();
+    const identityLanguage = await dbContext.sqliteClient!.getEffectiveIdentityLanguage();
     const identityGenerator = CreateIdentityGenerator(identityLanguage);
 
     const genderPreference = await dbContext.sqliteClient!.getDefaultIdentityGender();

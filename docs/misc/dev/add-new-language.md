@@ -1,33 +1,15 @@
 ---
 layout: default
-title: Translations
+title: Add new language
 parent: Development
 grand_parent: Miscellaneous
 nav_order: 3
 ---
 
-# Translations
-
-AliasVault supports multiple languages across all applications. Currently supported languages:
-- English
-- Chinese (Simplified)
-- Dutch
-- Finnish
-- German
-- Hebrew
-- Italian
-- Polish
-- Portugese (Brazilian)
-- Russian
-- Ukrainian
-
----
-
-## Adding a New Language
-
+# Add new language
 To add a new language to AliasVault, follow these steps in order:
 
-### Step 1: Configure Crowdin Integration
+## Step 1: Configure Crowdin Integration
 
 1. **Update crowdin.yml**: Add the new language identifier to the `crowdin.yml` file in the root of the repository
 2. **Crowdin will automatically**:
@@ -35,25 +17,25 @@ To add a new language to AliasVault, follow these steps in order:
    - Offer new content for translation in the Crowdin web interface
    - Create translation files for the new language
 
-### Step 2: Web App (Blazor WASM)
+## Step 2: Web App (Blazor WASM)
 
 1. **Add language to LanguageService**: Update `apps/server/AliasVault.Client/Services/LanguageService.cs` with the new language identifier
 2. **Translation files to create (optional, Crowdin should make a PR for this automatically)**:
    - `apps/server/AliasVault.Client/wwwroot/locales/{language-code}.json`
    - `apps/server/AliasVault.Client/Resources/{language-code}.resx` files
 
-### Step 3: Browser Extension
+## Step 3: Browser Extension
 
 1. **Add language identifier to config**: Update `/apps/browser-extension/src/utils/i18n/config.ts` and insert new language based on existing structure
 1. **Create language file (optional, Crowdin should make a PR for this automatically)**:
    - `apps/browser-extension/src/locales/{language-code}.json`
 
-### Step 4: Mobile App - React Native
+## Step 4: Mobile App - React Native
 
 1. **Add language identifier to config:** Update `/apps/mobile-app/i18n/index.ts` and insert new language based on existing structure
 2 **Create translation file (optional, Crowdin should make a PR for this automatically)**: `apps/mobile-app/i18n/locales/{language-code}.json`
 
-### Step 5: Mobile App - iOS Native
+## Step 5: Mobile App - iOS Native
 
 **Location**: `apps/mobile-app/ios/`
 
@@ -69,7 +51,7 @@ To add a new language to AliasVault, follow these steps in order:
    - `Autofill/{language-code}.lproj/Localizable.strings`
    - `VaultUI/{language-code}.lproj/Localizable.strings`
 
-### Step 6: Mobile App - Android Native
+## Step 6: Mobile App - Android Native
 
 **Location**: `apps/mobile-app/android/app/src/main/res/`
 

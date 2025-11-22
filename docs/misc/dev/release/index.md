@@ -1,10 +1,11 @@
 ---
 layout: default
-title: Publish new release
-parent: Release
-grand_parent: Miscellaneous
-nav_order: 1
+title: Release
+parent: Development
+nav_order: 99
 ---
+
+# Publish new release
 
 Follow the steps in the checklist below to prepare a new release.
 

@@ -1,5 +1,6 @@
 import { IdentityGeneratorEn } from '../implementations/IdentityGeneratorEn';
 import { IdentityGeneratorNl } from '../implementations/IdentityGeneratorNl';
+import { IdentityGeneratorDe } from '../implementations/IdentityGeneratorDe';
 import { describe, it, expect } from 'vitest';
 import { IIdentityGenerator, IBirthdateOptions } from '../interfaces/IIdentityGenerator';
 import { Gender } from '../types/Gender';
@@ -51,6 +52,7 @@ const testIdentityGenerator = (
 describe('Identity Generators', () => {
   testIdentityGenerator('En', new IdentityGeneratorEn());
   testIdentityGenerator('Nl', new IdentityGeneratorNl());
+  testIdentityGenerator('De', new IdentityGeneratorDe());
 });
 
 // Additional tests for birthdate options
@@ -99,6 +101,54 @@ describe('Birthdate Options', () => {
 
       // Should generate at least a few different years
       expect(birthYears.size).toBeGreaterThan(1);
+    });
+  });
+});
+
+// Additional tests for German identity generator decade-based names
+describe('German Identity Generator Decade Names', () => {
+  const generator = new IdentityGeneratorDe();
+
+  describe('Decade-based name selection', () => {
+    it('should use age-appropriate names for 1950s births', () => {
+      const birthdateOptions: IBirthdateOptions = {
+        targetYear: 1955,
+        yearDeviation: 0
+      };
+
+      const identity = generator.generateRandomIdentity('male', birthdateOptions);
+
+      expect(identity.firstName).toBeTruthy();
+      expect(identity.birthDate.getFullYear()).toBe(1955);
+    });
+
+    it('should use age-appropriate names for 2020s births', () => {
+      const birthdateOptions: IBirthdateOptions = {
+        targetYear: 2020,
+        yearDeviation: 0
+      };
+
+      const identity = generator.generateRandomIdentity('female', birthdateOptions);
+
+      expect(identity.firstName).toBeTruthy();
+      expect(identity.birthDate.getFullYear()).toBe(2020);
+    });
+
+    it('should generate valid German identities across all decades', () => {
+      const decades = [1955, 1965, 1975, 1985, 1995, 2005, 2015, 2025];
+
+      decades.forEach(year => {
+        const birthdateOptions: IBirthdateOptions = {
+          targetYear: year,
+          yearDeviation: 0
+        };
+
+        const identity = generator.generateRandomIdentity('random', birthdateOptions);
+
+        expect(identity.firstName).toBeTruthy();
+        expect(identity.lastName).toBeTruthy();
+        expect(identity.birthDate.getFullYear()).toBe(year);
+      });
     });
   });
 });

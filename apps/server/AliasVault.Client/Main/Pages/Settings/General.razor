@@ -181,11 +181,31 @@
             }
         }
         AutoEmailRefresh = DbService.Settings.AutoEmailRefresh;
-        DefaultIdentityLanguage = DbService.Settings.DefaultIdentityLanguage;
+
+        await SetDefaultIdentityLanguageAsync();
         DefaultIdentityGender = DbService.Settings.DefaultIdentityGender;
         DefaultIdentityAgeRange = DbService.Settings.DefaultIdentityAgeRange;
         AppLanguage = DbService.Settings.AppLanguage;
         ClipboardClearSeconds = DbService.Settings.ClipboardClearSeconds;
+    }
+
+    /// <summary>
+    /// Sets the default identity language.
+    /// </summary>
+    private async Task SetDefaultIdentityLanguageAsync()
+    {
+        var explicitLanguage = DbService.Settings.DefaultIdentityLanguage;
+        if (!string.IsNullOrWhiteSpace(explicitLanguage))
+        {
+            // User has explicitly set a language, use it
+            DefaultIdentityLanguage = explicitLanguage;
+        }
+        else
+        {
+            // No explicit language set, try to match UI language to identity generator language
+            var mappedLanguage = await JsInteropService.MapUiLanguageToIdentityLanguageAsync(DbService.Settings.AppLanguage);
+            DefaultIdentityLanguage = mappedLanguage ?? "en";
+        }
     }
 
     /// <summary>
@@ -235,10 +255,14 @@
 
     /// <summary>
     /// Updates the app language setting.
+    /// Also refreshes the identity generator language to reflect the new UI language if no explicit override is set.
     /// </summary>
     private async Task UpdateAppLanguage()
     {
         await LanguageService.SetLanguageAsync(AppLanguage);
+
+        // After changing UI language, refresh identity generator language if user hasn't set an explicit override
+        await SetDefaultIdentityLanguageAsync();
         StateHasChanged();
     }
 
