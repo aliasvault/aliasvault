@@ -145,7 +145,7 @@ public class StatisticsService
             {
                 UserId = g.Key,
                 Username = g.First().User.UserName,
-                TotalStorageBytes = g.OrderByDescending(v => v.Version).First().FileSize,
+                TotalStorageBytes = g.OrderByDescending(v => v.RevisionNumber).First().FileSize,
             })
             .OrderByDescending(u => u.TotalStorageBytes)
             .Skip((page - 1) * pageSize)
@@ -265,7 +265,7 @@ public class StatisticsService
             {
                 UserId = g.Key,
                 Username = g.First().User.UserName,
-                CredentialCount = g.OrderByDescending(v => v.Version).First().CredentialsCount,
+                CredentialCount = g.OrderByDescending(v => v.RevisionNumber).First().CredentialsCount,
             })
             .OrderByDescending(u => u.CredentialCount)
             .Skip((page - 1) * pageSize)
@@ -297,7 +297,7 @@ public class StatisticsService
         // Get latest vault for this user to get credential and email claim counts
         var latestVault = await context.Vaults
             .Where(v => v.UserId == userId)
-            .OrderByDescending(v => v.Version)
+            .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
 
         if (latestVault != null)
@@ -324,8 +324,8 @@ public class StatisticsService
 
         if (recentVaultVersions.Count > 0)
         {
-            var latestRecentVault = recentVaultVersions.OrderByDescending(v => v.Version).First();
-            var earliestRecentVault = recentVaultVersions.OrderBy(v => v.Version).First();
+            var latestRecentVault = recentVaultVersions.OrderByDescending(v => v.RevisionNumber).First();
+            var earliestRecentVault = recentVaultVersions.OrderBy(v => v.RevisionNumber).First();
 
             if (earliestRecentVault != null)
             {
