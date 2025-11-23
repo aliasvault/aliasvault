@@ -107,7 +107,7 @@
     <comment>Label for alias generation age range setting</comment>
   </data>
   <data name="AliasGenerationAgeRangeDescription">
-    <value>Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.</value>
+    <value>Aseta oletusikähaarukka uusien henkilöllisyyksien luomiseen. Tämä vaikuttaa luotuun henkilöllisyyteen asetettavaan syntymäpäivään.</value>
     <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
