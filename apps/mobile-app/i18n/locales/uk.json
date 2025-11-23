@@ -401,16 +401,16 @@
       "scanningMessage": "Проскануйте QR-код AliasVault",
       "invalidQrCode": "Недійсний QR-код",
       "notAliasVaultQr": "Це недійсний QR-код AliasVault. Проскануйте QR-код, створений AliasVault.",
-      "cameraPermissionTitle": "Camera Permission Required",
-      "cameraPermissionMessage": "Please allow camera access to scan QR codes.",
+      "cameraPermissionTitle": "Потрібен дозвіл на доступ до камери",
+      "cameraPermissionMessage": "Будь ласка, надайте доступ до камери для сканування QR-кодів.",
       "mobileLogin": {
-        "confirmTitle": "Confirm Login Request",
-        "confirmSubtitle": "Re-authenticate to approve login on another device.",
-        "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
-        "successDescription": "The remote device has been successfully logged in.",
-        "requestExpired": "This login request has expired. Please generate a new QR code.",
-        "authenticationFailed": "Authentication failed. Please try again.",
-        "noAuthMethodEnabled": "Biometric or PIN unlock needs to be enabled to unlock with mobile"
+        "confirmTitle": "Підтвердити запит на вхід",
+        "confirmSubtitle": "Повторно пройдіть автентифікацію, щоб підтвердити вхід на іншому пристрої.",
+        "confirmMessage": "Ви збираєтеся ввійти на віддаленому пристрої за допомогою свого облікового запису. Цей інший пристрій матиме повний доступ до вашого сховища. Продовжуйте, лише якщо ви довіряєте цьому пристрою.",
+        "successDescription": "Віддалений пристрій успішно ввійшов у систему.",
+        "requestExpired": "Термін дії цього запиту на вхід минув. Будь ласка, згенеруйте новий QR-код.",
+        "authenticationFailed": "Помилка автентифікації. Спробуйте ще раз.",
+        "noAuthMethodEnabled": "Для розблокування за допомогою мобільного телефону потрібно ввімкнути біометричне розблокування або ПІН-код"
       }
     }
   },
@@ -481,15 +481,15 @@
       "unlockingVault": "Розблокування сховища",
       "decryptingVault": "Розшифрування сховища",
       "openingVaultReadOnly": "Відкриття сховища в режимі лише для читання",
-      "retryingConnection": "Retrying connection..."
+      "retryingConnection": "Повторна спроба підключення..."
     },
     "offline": {
-      "banner": "Offline mode (read-only)",
-      "backOnline": "Back online",
-      "stillOffline": "Still offline"
+      "banner": "Офлайн-режим (лише для читання)",
+      "backOnline": "Знову онлайн",
+      "stillOffline": "Досі офлайн"
     },
     "alerts": {
-      "syncIssue": "No Connection",
+      "syncIssue": "Відсутнє з'єднання",
       "syncIssueMessage": "Не вдалося зв’язатися із сервером AliasVault і ваше сховище не вдалося синхронізувати. Бажаєте відкрити локальне сховище в режимі лише для читання чи повторити спробу підключення?",
       "openLocalVault": "Відкрити локальне сховище",
       "retrySync": "Повторити синхронізацію"
@@ -521,8 +521,8 @@
     "title": "Оновлення сховища",
     "subtitle": "AliasVault оновлено, і ваше сховище потрібно оновити. Це займе лише кілька секунд.",
     "versionInformation": "Інформація про версію",
-    "yourVault": "Your vault version:",
-    "newVersion": "New available version:",
+    "yourVault": "Ваша версія сховища:",
+    "newVersion": "Доступна нова версія:",
     "upgrade": "Оновити",
     "upgrading": "Оновлення...",
     "logout": "Вихід",
