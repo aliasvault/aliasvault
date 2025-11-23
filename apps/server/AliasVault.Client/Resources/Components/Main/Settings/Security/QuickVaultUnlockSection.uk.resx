@@ -75,19 +75,19 @@
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>This feature is currently supported by AliasVault browser extension and iOS app. Android support is coming soon. If you experience any issues, you can disable this feature at any time.</value>
+    <value>Ця функція наразі підтримується розширенням для браузера AliasVault та додатком для iOS. Підтримка Android з’явиться найближчим часом. Якщо у вас виникнуть проблеми, ви можете вимкнути цю функцію будь-коли.</value>
     <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Passkey Unlock</value>
+    <value>Увімкнути розблокування кодом доступу</value>
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully enabled. The next time your vault is locked, you can unlock it with your created passkey.</value>
+    <value>Розблокування ключем доступу успішно ввімкнено. Наступного разу, коли ваше сховище буде заблоковано, ви зможете розблокувати його за допомогою створеного ключа доступу.</value>
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully disabled.</value>
+    <value>Розблокування ключем доступу успішно вимкнено.</value>
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
