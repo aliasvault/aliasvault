@@ -3,12 +3,15 @@
  */
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { handleGetEncryptionKey } from '@/entrypoints/background/VaultMessageHandler';
 import { extractDomain, extractRootDomain } from '@/entrypoints/contentScript/CredentialMatcher';
 
 import {
   PASSKEY_PROVIDER_ENABLED_KEY,
   PASSKEY_DISABLED_SITES_KEY
 } from '@/utils/Constants';
+import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type {
   PasskeyPopupResponse,
   WebAuthnCreateRequest,
@@ -20,6 +23,7 @@ import type {
   WebAuthnCreationPayload,
   WebAuthnPublicKeyGetPayload
 } from '@/utils/passkey/types';
+import { SqliteClient } from '@/utils/SqliteClient';
 
 import { browser, storage } from '#imports';
 
@@ -124,8 +128,28 @@ export async function handleWebAuthnCreate(data: any): Promise<any> {
  * Note: Passkey retrieval is now handled in the popup via SqliteClient
  */
 export async function handleWebAuthnGet(data: any): Promise<any> {
-  const { publicKey, origin } = data as WebAuthnGetRequest;
+  const { publicKey, origin, isAutomaticRequest } = data as WebAuthnGetRequest;
   const requestId = Math.random().toString(36).substr(2, 9);
+
+  /*
+   * If this is an automatic request (within 2 seconds of page load), check if we have matching credentials
+   * before opening the popup. This prevents AliasVault from blocking other password managers when we
+   * don't have the passkey they need.
+   */
+  if (isAutomaticRequest) {
+    try {
+      // Check if we have any matching passkeys in storage
+      const hasMatchingPasskeys = await checkForMatchingPasskeys(publicKey, origin);
+
+      if (!hasMatchingPasskeys) {
+        // No matching passkeys - don't intercept, let other password managers handle it
+        return { fallback: true };
+      }
+    } catch (error) {
+      console.error('Error checking for matching passkeys:', error);
+      // On error, fall back to showing the popup (better UX than silently failing)
+    }
+  }
 
   // Store request data temporarily (to avoid URL length limits)
   const requestData: PendingPasskeyGetRequest = {
@@ -175,6 +199,66 @@ export async function handleWebAuthnGet(data: any): Promise<any> {
     });
   } catch {
     return { error: 'Failed to create popup window' };
+  }
+}
+
+/**
+ * Check if we have any matching passkeys for the given request.
+ * This is used to determine if we should intercept automatic passkey requests.
+ */
+async function checkForMatchingPasskeys(publicKey: any, origin: string): Promise<boolean> {
+  try {
+    // Check if vault is unlocked
+    const encryptedVault = await storage.getItem('session:encryptedVault') as string;
+    const encryptionKey = await handleGetEncryptionKey();
+
+    if (!encryptedVault || !encryptionKey) {
+      /*
+       * Vault is locked - we can't check for passkeys
+       * In this case, we return false to avoid intercepting
+       */
+      return false;
+    }
+
+    // Decrypt and load the vault
+    const decryptedVault = await EncryptionUtility.symmetricDecrypt(
+      encryptedVault,
+      encryptionKey
+    );
+    const sqliteClient = new SqliteClient();
+    await sqliteClient.initializeFromBase64(decryptedVault);
+
+    // Get the rpId from the request or derive from origin
+    const rpId = publicKey.rpId || new URL(origin).hostname;
+
+    // Get passkeys for this rpId
+    const passkeys = sqliteClient.getPasskeysByRpId(rpId);
+
+    // If allowCredentials is specified, filter by those specific credentials
+    if (publicKey.allowCredentials && publicKey.allowCredentials.length > 0) {
+      // Convert the RP's base64url credential IDs to GUIDs for comparison
+      const allowedGuids = new Set(
+        publicKey.allowCredentials.map((c: any) => {
+          try {
+            return PasskeyHelper.base64urlToGuid(c.id);
+          } catch (e) {
+            console.warn('Failed to convert credential ID to GUID:', c.id, e);
+            return null;
+          }
+        }).filter((id: string | null): id is string => id !== null)
+      );
+
+      // Check if we have any of the allowed credentials
+      const matchingPasskeys = passkeys.filter(pk => allowedGuids.has(pk.Id));
+      return matchingPasskeys.length > 0;
+    }
+
+    // No allowCredentials specified - just check if we have any passkeys for this rpId
+    return passkeys.length > 0;
+  } catch (error) {
+    console.error('Error in checkForMatchingPasskeys:', error);
+    // On error, return false to avoid intercepting
+    return false;
   }
 }
 

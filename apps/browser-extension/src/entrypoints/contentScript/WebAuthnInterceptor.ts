@@ -26,6 +26,14 @@ let lastCancelledTimestamp = 0;
 const CANCEL_COOLDOWN_MS = 500; // 500ms cooldown after a recent cancellation
 
 /**
+ * Track when the page finished loading to detect automatic vs user-initiated requests.
+ * Some websites (like Nintendo, Amazon) automatically trigger passkey requests on page load.
+ * We should filter these if no matching credentials exist.
+ */
+let pageLoadTime = 0;
+const AUTO_REQUEST_THRESHOLD_MS = 1000; // Requests within 1 second of page load are considered "automatic"
+
+/**
  * Check if page is ready for WebAuthn interactions.
  * Safari and other browsers can trigger WebAuthn requests during URL autocomplete
  * or page prefetch, which creates popups before the user actually navigates to the page.
@@ -53,6 +61,9 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
   if (interceptorInitialized) {
     return;
   }
+
+  // Track page load time for detecting automatic requests
+  pageLoadTime = Date.now();
 
   // Listen for WebAuthn create events from the page
   window.addEventListener('aliasvault:webauthn:create', async (event: any) => {
@@ -196,10 +207,14 @@ export async function initializeWebAuthnInterceptor(_ctx: any): Promise<void> {
         return;
       }
 
+      // Detect if this is an automatic request (within 2 seconds of page load)
+      const isAutomaticRequest = (Date.now() - pageLoadTime) < AUTO_REQUEST_THRESHOLD_MS;
+
       // Send to background script to handle
       const result = await sendMessage('WEBAUTHN_GET', {
         publicKey,
-        origin
+        origin,
+        isAutomaticRequest
       }, 'background');
 
       // Track if user cancelled to enable cooldown

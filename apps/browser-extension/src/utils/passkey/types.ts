@@ -72,6 +72,7 @@ export type WebAuthnGetRequest = {
     allowCredentials?: Array<{ id: string }>;
   };
   origin: string;
+  isAutomaticRequest?: boolean;
 };
 
 /**
