@@ -315,8 +315,8 @@
       "languageDescription": "Defina o idioma que será utilizado ao gerar novas identidades.",
       "genderSection": "Gênero",
       "genderDescription": "Defina a preferência de gênero para geração de novas identidades.",
-      "ageRangeSection": "Age Range",
-      "ageRangeDescription": "Set the age range for generating new identities.",
+      "ageRangeSection": "Faixa Etária",
+      "ageRangeDescription": "Selecione a faixa etária para geração de novas identidades.",
       "genderOptions": {
         "random": "Aleatório",
         "male": "Masculino",
