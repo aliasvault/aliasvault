@@ -123,7 +123,7 @@
     <comment>Generic error message for unlock failures</comment>
   </data>
   <data name="UnlockWithMobileButton" xml:space="preserve">
-    <value>Unlock with Mobile App</value>
+    <value>Odblokuj za pomocą aplikacji mobilnej</value>
     <comment>Button text for unlocking with mobile app</comment>
   </data>
 </root>
