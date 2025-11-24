@@ -9,6 +9,7 @@ import { sendMessage } from 'webext-bridge/popup';
 import * as Yup from 'yup';
 
 import AttachmentUploader from '@/entrypoints/popup/components/Credentials/Details/AttachmentUploader';
+import TotpEditor from '@/entrypoints/popup/components/Credentials/Details/TotpEditor';
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import EmailDomainField from '@/entrypoints/popup/components/Forms/EmailDomainField';
 import { FormInput } from '@/entrypoints/popup/components/Forms/FormInput';
@@ -25,7 +26,7 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import { SKIP_FORM_RESTORE_KEY } from '@/utils/Constants';
 import { IdentityHelperUtils, CreateIdentityGenerator, CreateUsernameEmailGenerator, Identity, Gender, convertAgeRangeToBirthdateOptions } from '@/utils/dist/shared/identity-generator';
-import type { Attachment, Credential } from '@/utils/dist/shared/models/vault';
+import type { Attachment, Credential, TotpCode } from '@/utils/dist/shared/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 
@@ -38,6 +39,13 @@ type PersistedFormData = {
   credentialId: string | null;
   mode: CredentialMode;
   formValues: Omit<Credential, 'Logo'> & { Logo?: string | null };
+  totpEditorState?: {
+    isAddFormVisible: boolean;
+    formData: {
+      name: string;
+      secretKey: string;
+    };
+  };
 }
 
 /**
@@ -92,6 +100,15 @@ const CredentialAddEdit: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [originalAttachmentIds, setOriginalAttachmentIds] = useState<string[]>([]);
+  const [totpCodes, setTotpCodes] = useState<TotpCode[]>([]);
+  const [originalTotpCodeIds, setOriginalTotpCodeIds] = useState<string[]>([]);
+  const [totpEditorState, setTotpEditorState] = useState<{
+    isAddFormVisible: boolean;
+    formData: { name: string; secretKey: string };
+  }>({
+    isAddFormVisible: false,
+    formData: { name: '', secretKey: '' }
+  });
   const [passkeyMarkedForDeletion, setPasskeyMarkedForDeletion] = useState(false);
   const webApi = useWebApi();
 
@@ -141,19 +158,20 @@ const CredentialAddEdit: React.FC = () => {
       formValues: {
         ...formValues,
         Logo: null // Don't persist the Logo field as it can't be user modified in the UI.
-      }
+      },
+      totpEditorState
     };
     await sendMessage('PERSIST_FORM_VALUES', JSON.stringify(persistedData), 'background');
-  }, [watch, id, mode, localLoading]);
+  }, [watch, id, mode, localLoading, totpEditorState]);
 
   /**
-   * Watch for mode changes and persist form values
+   * Watch for mode and totpEditorState changes and persist form values
    */
   useEffect(() => {
     if (!localLoading) {
       void persistFormValues();
     }
-  }, [mode, persistFormValues, localLoading]);
+  }, [mode, totpEditorState, persistFormValues, localLoading]);
 
   // Watch for form changes and persist them
   useEffect(() => {
@@ -200,6 +218,11 @@ const CredentialAddEdit: React.FC = () => {
         Object.entries(persistedDataObject.formValues).forEach(([key, value]) => {
           setValue(key as keyof Credential, value as Credential[keyof Credential]);
         });
+
+        // Restore TOTP editor state if it exists
+        if (persistedDataObject.totpEditorState) {
+          setTotpEditorState(persistedDataObject.totpEditorState);
+        }
       } else {
         console.error('Persisted values do not match current page');
       }
@@ -329,6 +352,11 @@ const CredentialAddEdit: React.FC = () => {
         const credentialAttachments = dbContext.sqliteClient.getAttachmentsForCredential(id);
         setAttachments(credentialAttachments);
         setOriginalAttachmentIds(credentialAttachments.map(a => a.Id));
+
+        // Load TOTP codes for this credential
+        const credentialTotpCodes = dbContext.sqliteClient.getTotpCodesForCredential(id);
+        setTotpCodes(credentialTotpCodes);
+        setOriginalTotpCodeIds(credentialTotpCodes.map(tc => tc.Id));
 
         setMode('manual');
         setIsInitialLoading(false);
@@ -571,14 +599,14 @@ const CredentialAddEdit: React.FC = () => {
       setLocalLoading(false);
 
       if (isEditMode) {
-        await dbContext.sqliteClient!.updateCredentialById(data, originalAttachmentIds, attachments);
+        await dbContext.sqliteClient!.updateCredentialById(data, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes);
 
         // Delete passkeys if marked for deletion
         if (passkeyMarkedForDeletion) {
           await dbContext.sqliteClient!.deletePasskeysByCredentialId(data.Id);
         }
       } else {
-        const credentialId = await dbContext.sqliteClient!.createCredential(data, attachments);
+        const credentialId = await dbContext.sqliteClient!.createCredential(data, attachments, totpCodes);
         data.Id = credentialId.toString();
       }
     }, {
@@ -597,7 +625,7 @@ const CredentialAddEdit: React.FC = () => {
         }
       },
     });
-  }, [isEditMode, dbContext.sqliteClient, executeVaultMutation, navigate, mode, watch, generateRandomAlias, webApi, clearPersistedValues, originalAttachmentIds, attachments, passkeyMarkedForDeletion]);
+  }, [isEditMode, dbContext.sqliteClient, executeVaultMutation, navigate, mode, watch, generateRandomAlias, webApi, clearPersistedValues, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyMarkedForDeletion]);
 
   // Set header buttons on mount and clear on unmount
   useEffect((): (() => void) => {
@@ -973,6 +1001,15 @@ const CredentialAddEdit: React.FC = () => {
                 />
               </div>
             </div>
+
+            <TotpEditor
+              totpCodes={totpCodes}
+              onTotpCodesChange={setTotpCodes}
+              originalTotpCodeIds={originalTotpCodeIds}
+              isAddFormVisible={totpEditorState.isAddFormVisible}
+              formData={totpEditorState.formData}
+              onStateChange={setTotpEditorState}
+            />
 
             <AttachmentUploader
               attachments={attachments}

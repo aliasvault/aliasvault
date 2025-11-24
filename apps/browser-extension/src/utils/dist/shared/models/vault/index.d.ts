@@ -50,6 +50,8 @@ type TotpCode = {
     SecretKey: string;
     /** The credential ID this TOTP code belongs to */
     CredentialId: string;
+    /** Whether the TOTP code has been deleted (soft delete) */
+    IsDeleted?: boolean;
 };
 
 /**
