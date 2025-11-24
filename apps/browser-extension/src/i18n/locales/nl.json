@@ -57,7 +57,7 @@
     "next": "Volgende",
     "use": "Gebruik",
     "delete": "Verwijderen",
-    "save": "Save",
+    "save": "Opslaan",
     "or": "Of",
     "close": "Sluiten",
     "copied": "Gekopieerd!",
@@ -242,11 +242,11 @@
     "enterEmailPrefix": "E-mailprefix invoeren"
   },
   "totp": {
-    "addCode": "Add 2FA Code",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "nameOptional": "Name (optional)",
-    "secretKey": "Secret Key",
-    "saveToViewCode": "Save to view code",
+    "addCode": "2FA-code toevoegen",
+    "instructions": "Voer de secret key in die door de website wordt weergegeven waar je tweestapsverificatie wilt toevoegen.",
+    "nameOptional": "Naam (optioneel)",
+    "secretKey": "Secret key",
+    "saveToViewCode": "Opslaan om code te bekijken",
     "errors": {
       "invalidSecretKey": "Invalid secret key format."
     }
