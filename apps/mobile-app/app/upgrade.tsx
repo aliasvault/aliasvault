@@ -28,7 +28,8 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
 export default function UpgradeScreen() : React.ReactNode {
   const { username, logout } = useApp();
   const webApi = useWebApi();
-  const { sqliteClient } = useDb();
+  const dbContext = useDb();
+  const { sqliteClient } = dbContext;
   const [isLoading, setIsLoading] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<VaultVersion | null>(null);
   const [latestVersion, setLatestVersion] = useState<VaultVersion | null>(null);
@@ -113,6 +114,22 @@ export default function UpgradeScreen() : React.ReactNode {
       return;
     }
 
+    // Ensure vault is unlocked before upgrade
+    const isUnlocked = await NativeVaultManager.isVaultUnlocked();
+    if (!isUnlocked) {
+      try {
+        await NativeVaultManager.unlockVault();
+      } catch (error) {
+        console.error('Failed to unlock vault for upgrade:', error);
+        Alert.alert(
+          t('common.error'),
+          t('auth.errors.enterPassword'),
+          [{ text: t('common.ok'), style: 'default' }]
+        );
+        return;
+      }
+    }
+
     setIsLoading(true);
     setUpgradeStatus(t('upgrade.status.preparingUpgrade'));
 
@@ -149,8 +166,9 @@ export default function UpgradeScreen() : React.ReactNode {
             await NativeVaultManager.executeRaw(sqlCommand);
           } catch (error) {
             console.error(`Error executing SQL command ${i + 1}:`, sqlCommand, error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             await NativeVaultManager.rollbackTransaction();
-            throw new Error(t('upgrade.alerts.failedToApplyMigration', { current: i + 1, total: upgradeResult.sqlCommands.length }));
+            throw new Error(`${t('upgrade.alerts.failedToApplyMigration', { current: i + 1, total: upgradeResult.sqlCommands.length })}\n\nDetails: ${errorMessage}`);
           }
         }
 
@@ -196,7 +214,16 @@ export default function UpgradeScreen() : React.ReactNode {
    */
   const handleUpgradeSuccess = async () : Promise<void> => {
     try {
-      // Sync vault to ensure we have the latest data
+      // Re-unlock the vault to ensure React Native sees the upgraded database
+      setUpgradeStatus(t('auth.unlocking'));
+      const unlockSuccess = await dbContext.unlockVault();
+
+      if (unlockSuccess) {
+        // Mark database as available after successful unlock
+        dbContext.setDatabaseAvailable();
+      }
+
+      // Sync vault to check for updates and verify server connection
       await syncVault({
         /**
          * Handle the status update.
@@ -206,7 +233,6 @@ export default function UpgradeScreen() : React.ReactNode {
          * Handle successful vault sync and navigate to credentials.
          */
         onSuccess: () => {
-          // Navigate to credentials index
           router.replace('/(tabs)/credentials');
         },
         /**
@@ -219,8 +245,8 @@ export default function UpgradeScreen() : React.ReactNode {
         }
       });
     } catch (error) {
-      console.error('Error during post-upgrade sync:', error);
-      // Navigate to credentials even if sync fails
+      console.error('Error during post-upgrade flow:', error);
+      // Navigate to credentials anyway
       router.replace('/(tabs)/credentials');
     }
   };
