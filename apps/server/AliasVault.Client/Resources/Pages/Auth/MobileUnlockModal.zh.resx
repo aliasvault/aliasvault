@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Log in using Mobile App</value>
+    <value>使用移动应用登录</value>
     <comment>Page title for mobile unlock feature</comment>
   </data>
   <data name="UnlockTitle" xml:space="preserve">
-    <value>Unlock using Mobile App</value>
+    <value>使用移动应用解锁</value>
     <comment>Modal title for mobile unlock feature</comment>
   </data>
   <data name="ScanQrCodeDescription" xml:space="preserve">
