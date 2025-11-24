@@ -248,7 +248,7 @@
     "secretKey": "Secret key",
     "saveToViewCode": "Opslaan om code te bekijken",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Ongeldig formaat."
     }
   },
   "emails": {
