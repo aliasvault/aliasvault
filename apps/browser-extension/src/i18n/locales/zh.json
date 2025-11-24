@@ -6,7 +6,7 @@
     "password": "密码",
     "passwordPlaceholder": "输入您的密码",
     "rememberMe": "记住我",
-    "loginButton": "Log in",
+    "loginButton": "登录",
     "noAccount": "还没有账户？",
     "createVault": "创建新密码库",
     "twoFactorTitle": "请输入认证器的动态验证码。",
@@ -15,7 +15,7 @@
     "verify": "验证",
     "twoFactorNote": "注意：如果无法访问您的认证设备，您可以通过网站登录，使用恢复码重置双因素认证（2FA）。",
     "masterPassword": "主密码",
-    "unlockVault": "Unlock",
+    "unlockVault": "解锁",
     "unlockWithPin": "使用 PIN 解锁",
     "enterPinToUnlock": "输入您的 PIN 以解锁密码库",
     "useMasterPassword": "使用主密码",
@@ -29,8 +29,8 @@
     "connectingTo": "正在连接",
     "switchAccounts": "切换账户？",
     "loggedIn": "已登录",
-    "loginWithMobile": "Log in using Mobile App",
-    "unlockWithMobile": "Unlock using Mobile App",
+    "loginWithMobile": "使用移动应用登录",
+    "unlockWithMobile": "使用移动应用解锁",
     "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
     "errors": {
       "invalidCode": "请输入有效的6位动态验证码。",
@@ -57,7 +57,7 @@
     "next": "下一步",
     "use": "使用",
     "delete": "删除",
-    "save": "Save",
+    "save": "保存",
     "or": "或",
     "close": "关闭",
     "copied": "已复制！",
@@ -99,7 +99,7 @@
       "clientVersionNotSupported": "此版本的AliasVault浏览器扩展已不被服务器支持。请将浏览器扩展更新到最新版本。",
       "browserExtensionOutdated": "此浏览器扩展已过时，无法用于访问此密码库。请更新此浏览器扩展以继续。",
       "serverVersionNotSupported": "AliasVault服务器需要更新到新版本才能使用此浏览器扩展。如需帮助，请联系支持人员。",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help.",
+      "serverVersionTooOld": "AliasVault 服务器需要更新到更高版本才能使用此功能。如需帮助，请联系服务器管理员。",
       "unknownError": "发生未知错误",
       "unknownErrorTryAgain": "发生未知错误，请重试。",
       "vaultNotAvailable": "密码库不可用",
@@ -185,7 +185,7 @@
     "totpSecretPlaceholder": "输入TOTP密钥",
     "welcomeTitle": "欢迎使用AliasVault！",
     "welcomeDescription": "要使用AliasVault浏览器扩展：导航到某个网站，使用AliasVault自动填充弹窗创建新凭据。",
-    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noPasskeysFound": "尚未创建通行密钥。访问以通行密钥为认证方式的网站才能创建通行密钥。",
     "noAttachmentsFound": "未找到带有附件的凭据",
     "noMatchingCredentials": "未找到匹配的凭据",
     "createdAt": "创建时间",
@@ -242,13 +242,13 @@
     "enterEmailPrefix": "输入邮箱前缀"
   },
   "totp": {
-    "addCode": "Add 2FA Code",
+    "addCode": "添加两步验证码",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "nameOptional": "Name (optional)",
-    "secretKey": "Secret Key",
-    "saveToViewCode": "Save to view code",
+    "nameOptional": "名称（可选）",
+    "secretKey": "密钥",
+    "saveToViewCode": "保存以查看验证码",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "密钥格式无效。"
     }
   },
   "emails": {
