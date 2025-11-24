@@ -12,7 +12,7 @@ import { StyleSheet, View, Alert, Keyboard, Platform, ScrollView, KeyboardAvoidi
 import Toast from 'react-native-toast-message';
 
 import { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, Identity, IdentityHelperUtils, convertAgeRangeToBirthdateOptions } from '@/utils/dist/shared/identity-generator';
-import type { Attachment, Credential } from '@/utils/dist/shared/models/vault';
+import type { Attachment, Credential, TotpCode } from '@/utils/dist/shared/models/vault';
 import type { FaviconExtractModel } from '@/utils/dist/shared/models/webapi';
 import { CreatePasswordGenerator, PasswordGenerator } from '@/utils/dist/shared/password-generator';
 import emitter from '@/utils/EventEmitter';
@@ -23,6 +23,7 @@ import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 
 import { AttachmentUploader } from '@/components/credentials/details/AttachmentUploader';
+import { TotpEditor } from '@/components/credentials/details/TotpEditor';
 import { AdvancedPasswordField } from '@/components/form/AdvancedPasswordField';
 import { EmailDomainField } from '@/components/form/EmailDomainField';
 import { ValidatedFormField, ValidatedFormFieldRef } from '@/components/form/ValidatedFormField';
@@ -56,6 +57,8 @@ export default function AddEditCredentialScreen() : React.ReactNode {
   const [isSaveDisabled, setIsSaveDisabled] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [originalAttachmentIds, setOriginalAttachmentIds] = useState<string[]>([]);
+  const [totpCodes, setTotpCodes] = useState<TotpCode[]>([]);
+  const [originalTotpCodeIds, setOriginalTotpCodeIds] = useState<string[]>([]);
   const [passkeyMarkedForDeletion, setPasskeyMarkedForDeletion] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const { t } = useTranslation();
@@ -164,6 +167,11 @@ export default function AddEditCredentialScreen() : React.ReactNode {
         // Load attachments for this credential
         const credentialAttachments = await dbContext.sqliteClient!.getAttachmentsForCredential(id);
         setAttachments(credentialAttachments);
+
+        // Load TOTP codes for this credential
+        const credentialTotpCodes = await dbContext.sqliteClient!.getTotpCodesForCredential(id);
+        setTotpCodes(credentialTotpCodes);
+        setOriginalTotpCodeIds(credentialTotpCodes.map(tc => tc.Id));
         setOriginalAttachmentIds(credentialAttachments.map(a => a.Id));
       }
     } catch (err) {
@@ -388,14 +396,14 @@ export default function AddEditCredentialScreen() : React.ReactNode {
 
     await executeVaultMutation(async () => {
       if (isEditMode) {
-        await dbContext.sqliteClient!.updateCredentialById(credentialToSave, originalAttachmentIds, attachments);
+        await dbContext.sqliteClient!.updateCredentialById(credentialToSave, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes);
 
         // Delete passkeys if marked for deletion
         if (passkeyMarkedForDeletion) {
           await dbContext.sqliteClient!.deletePasskeysByCredentialId(credentialToSave.Id);
         }
       } else {
-        const credentialId = await dbContext.sqliteClient!.createCredential(credentialToSave, attachments);
+        const credentialId = await dbContext.sqliteClient!.createCredential(credentialToSave, attachments, totpCodes);
         credentialToSave.Id = credentialId;
       }
 
@@ -458,7 +466,7 @@ export default function AddEditCredentialScreen() : React.ReactNode {
         setIsSaveDisabled(false);
       }
     });
-  }, [isEditMode, id, serviceUrl, router, executeVaultMutation, dbContext.sqliteClient, mode, generateRandomAlias, webApi, watch, setIsSaveDisabled, setIsSyncing, isSaveDisabled, t, originalAttachmentIds, attachments, passkeyMarkedForDeletion]);
+  }, [isEditMode, id, serviceUrl, router, executeVaultMutation, dbContext.sqliteClient, mode, generateRandomAlias, webApi, watch, setIsSaveDisabled, setIsSyncing, isSaveDisabled, t, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyMarkedForDeletion]);
 
   /**
    * Generate a random username based on current identity fields, or completely random if fields are empty.
@@ -1032,7 +1040,14 @@ export default function AddEditCredentialScreen() : React.ReactNode {
                     numberOfLines={4}
                     textAlignVertical="top"
                   />
-                  {/* TODO: Add TOTP management */}
+                </View>
+
+                <View style={styles.section}>
+                  <TotpEditor
+                    totpCodes={totpCodes}
+                    onTotpCodesChange={setTotpCodes}
+                    originalTotpCodeIds={originalTotpCodeIds}
+                  />
                 </View>
 
                 <View style={styles.section}>

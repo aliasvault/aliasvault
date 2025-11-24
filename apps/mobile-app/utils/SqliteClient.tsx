@@ -579,7 +579,7 @@ class SqliteClient {
    * @param attachments The attachments to insert
    * @returns The ID of the newly created credential
    */
-  public async createCredential(credential: Credential, attachments: Attachment[]): Promise<string> {
+  public async createCredential(credential: Credential, attachments: Attachment[], totpCodes: TotpCode[] = []): Promise<string> {
     try {
       await NativeVaultManager.beginTransaction();
 
@@ -675,6 +675,27 @@ class SqliteClient {
           attachment.Id,
           attachment.Filename,
           attachment.Blob as Uint8Array,
+          credentialId,
+          currentDateTime,
+          currentDateTime,
+          0
+        ]);
+      }
+
+      // 6. Insert TOTP codes
+      for (const totpCode of totpCodes) {
+        // Skip deleted codes
+        if (totpCode.IsDeleted) {
+          continue;
+        }
+
+        const totpCodeQuery = `
+          INSERT INTO TotpCodes (Id, Name, SecretKey, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
+          VALUES (?, ?, ?, ?, ?, ?, ?)`;
+        await this.executeUpdate(totpCodeQuery, [
+          totpCode.Id || crypto.randomUUID().toUpperCase(),
+          totpCode.Name,
+          totpCode.SecretKey,
           credentialId,
           currentDateTime,
           currentDateTime,
@@ -891,9 +912,11 @@ class SqliteClient {
    * @param credential The credential object to update
    * @param originalAttachmentIds The IDs of the original attachments
    * @param attachments The attachments to update
+   * @param originalTotpCodeIds The IDs of the original TOTP codes
+   * @param totpCodes The TOTP codes to update
    * @returns The number of rows modified
    */
-  public async updateCredentialById(credential: Credential, originalAttachmentIds: string[], attachments: Attachment[]): Promise<number> {
+  public async updateCredentialById(credential: Credential, originalAttachmentIds: string[], attachments: Attachment[], originalTotpCodeIds: string[], totpCodes: TotpCode[]): Promise<number> {
     try {
       await NativeVaultManager.beginTransaction();
       const currentDateTime = dateFormatter.now();
@@ -1065,6 +1088,72 @@ class SqliteClient {
               currentDateTime,
               currentDateTime,
               0
+            ]);
+          }
+        }
+      }
+
+      // 6. Handle TOTP Codes
+      if (totpCodes) {
+        // Get current TOTP code IDs to track what needs to be deleted
+        const currentTotpCodeIds = totpCodes.filter(tc => !tc.IsDeleted).map(tc => tc.Id);
+
+        // Delete TOTP codes that were removed (in originalTotpCodeIds but not in current codes)
+        const totpCodesToDelete = originalTotpCodeIds.filter(id => !currentTotpCodeIds.includes(id));
+        for (const totpCodeId of totpCodesToDelete) {
+          const deleteQuery = `
+            UPDATE TotpCodes
+            SET IsDeleted = 1,
+                UpdatedAt = ?
+            WHERE Id = ?`;
+          await this.executeUpdate(deleteQuery, [currentDateTime, totpCodeId]);
+        }
+
+        // Process each TOTP code
+        for (const totpCode of totpCodes) {
+          // Skip codes marked as deleted
+          if (totpCode.IsDeleted) {
+            // If it was an original code, mark it as deleted in DB
+            if (originalTotpCodeIds.includes(totpCode.Id)) {
+              const deleteQuery = `
+                UPDATE TotpCodes
+                SET IsDeleted = 1,
+                    UpdatedAt = ?
+                WHERE Id = ?`;
+              await this.executeUpdate(deleteQuery, [currentDateTime, totpCode.Id]);
+            }
+            continue;
+          }
+
+          const isExistingTotpCode = originalTotpCodeIds.includes(totpCode.Id);
+
+          if (!isExistingTotpCode) {
+            // Insert new TOTP code
+            const insertQuery = `
+              INSERT INTO TotpCodes (Id, Name, SecretKey, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
+              VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            await this.executeUpdate(insertQuery, [
+              totpCode.Id,
+              totpCode.Name,
+              totpCode.SecretKey,
+              credential.Id,
+              currentDateTime,
+              currentDateTime,
+              0
+            ]);
+          } else {
+            // Update existing TOTP code
+            const updateQuery = `
+              UPDATE TotpCodes
+              SET Name = ?,
+                  SecretKey = ?,
+                  UpdatedAt = ?
+              WHERE Id = ?`;
+            await this.executeUpdate(updateQuery, [
+              totpCode.Name,
+              totpCode.SecretKey,
+              currentDateTime,
+              totpCode.Id
             ]);
           }
         }

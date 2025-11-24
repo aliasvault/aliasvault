@@ -111,7 +111,7 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ credential }) : React.
     };
 
     loadTotpCodes();
-  }, [credential.Id, dbContext?.sqliteClient]);
+  }, [credential, dbContext?.sqliteClient]);
 
   useEffect(() => {
     /**
