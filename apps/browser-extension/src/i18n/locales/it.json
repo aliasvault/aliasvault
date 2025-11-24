@@ -57,6 +57,7 @@
     "next": "Avanti",
     "use": "Usa",
     "delete": "Elimina",
+    "save": "Save",
     "or": "O",
     "close": "Chiudi",
     "copied": "Copiato!",
@@ -239,6 +240,16 @@
     "enterCustomDomain": "Inserisci un dominio personalizzato",
     "enterFullEmail": "Inserisci l'indirizzo email completo",
     "enterEmailPrefix": "Inserisci prefisso email"
+  },
+  "totp": {
+    "addCode": "Add 2FA Code",
+    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
+    "nameOptional": "Name (optional)",
+    "secretKey": "Secret Key",
+    "saveToViewCode": "Save to view code",
+    "errors": {
+      "invalidSecretKey": "Invalid secret key format."
+    }
   },
   "emails": {
     "title": "Email",
