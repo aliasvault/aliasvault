@@ -1,0 +1,5 @@
+- Add login with mobile app option
+- Add PIN unlock method
+- Update identity generator with age preference
+- Add german language to identity generator
+- Create and edit 2FA TOTP codes in browser extension
