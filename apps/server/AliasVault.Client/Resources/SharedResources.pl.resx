@@ -213,7 +213,7 @@
     <comment>Generic error message</comment>
   </data>
   <data name="ErrorUnknown" xml:space="preserve">
-    <value>An unknown error occurred. Please try again.</value>
+    <value>Wystąpił nieznany błąd. Spróbuj ponownie.</value>
     <comment>Generic unknown error message</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
@@ -289,7 +289,7 @@
   </data>
   <!-- General UI text -->
   <data name="Or" xml:space="preserve">
-    <value>or</value>
+    <value>lub</value>
     <comment>Divider text between options</comment>
   </data>
   <data name="LockVault" xml:space="preserve">
