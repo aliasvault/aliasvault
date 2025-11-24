@@ -57,7 +57,7 @@
     "next": "Dalej",
     "use": "Użyj",
     "delete": "Usuń",
-    "save": "Save",
+    "save": "Zapisz",
     "or": "lub",
     "close": "Zamknąć",
     "copied": "Skopiowano",
@@ -238,22 +238,22 @@
     "publicEmailDescription": "Anonimowa, ale ograniczona prywatność. Treści e-mail są czytelne dla każdego, kto zna adres.",
     "useDomainChooser": "Użyj wybierania domen",
     "enterCustomDomain": "Wprowadź własną domenę",
-    "enterFullEmail": "Wprowadź pełny adres e-mail",
+    "enterFullEmail": "Wprowadź adres e-mail",
     "enterEmailPrefix": "Wprowadź prefiks e-mail"
   },
   "totp": {
-    "addCode": "Add 2FA Code",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "nameOptional": "Name (optional)",
-    "secretKey": "Secret Key",
-    "saveToViewCode": "Save to view code",
+    "addCode": "Dodaj kod 2FA",
+    "instructions": "Wprowadź tajny klucz wyświetlony na stronie internetowej, na której chcesz dodać uwierzytelnianie dwuskładnikowe.",
+    "nameOptional": "Nazwa (opcjonalnie)",
+    "secretKey": "Tajny klucz",
+    "saveToViewCode": "Zapisz, aby wyświetlić kod",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Nieprawidłowy format tajnego klucza."
     }
   },
   "emails": {
     "title": "Skrzynka odbiorcza",
-    "deleteEmailTitle": "Usuń adres e-mail",
+    "deleteEmailTitle": "Usuń e-mail",
     "deleteEmailConfirm": "Czy na pewno chcesz trwale usunąć ten e-mail?",
     "from": "Od",
     "to": "Do",
