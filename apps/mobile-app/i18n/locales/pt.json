@@ -20,9 +20,9 @@
     "notice": "Aviso",
     "enabled": "Habilitado",
     "disabled": "Desabilitado",
-    "twoFactorAuthentication": "Two-Factor Authentication",
-    "deleteItemConfirmTitle": "Delete Item",
-    "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
+    "twoFactorAuthentication": "Autenticação de Dois Fatores",
+    "deleteItemConfirmTitle": "Excluir Item",
+    "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "errors": {
       "unknownError": "Ocorreu um erro desconhecido. Por favor, tente novamente.",
       "unknownErrorTryAgain": "Ocorreu um erro desconhecido. Por favor, tente novamente.",
@@ -207,13 +207,13 @@
     "passkeyWillBeDeleted": "Esta passkey será excluída quando você salvar esta credencial."
   },
   "totp": {
-    "addCode": "Add 2FA Code",
-    "nameOptional": "Name (optional)",
-    "secretKey": "Secret Key",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "saveToViewCode": "Save to view code",
+    "addCode": "Adicionar Código de Autenticação de Dois Fatores",
+    "nameOptional": "Nome (opcional)",
+    "secretKey": "Chave Secreta",
+    "instructions": "Digite a chave secreta exibida pelo website que você quer adicionar a autenticação de dois fatores.",
+    "saveToViewCode": "Salvar para ver código",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Formato de chave secreta inválido."
     }
   },
   "settings": {
