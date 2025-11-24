@@ -210,10 +210,10 @@
     "addCode": "2FA-code toevoegen",
     "nameOptional": "Naam (optioneel)",
     "secretKey": "Secret key",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
+    "instructions": "Voer de secret key in die door de website wordt weergegeven waar je tweestapsverificatie wilt toevoegen.",
     "saveToViewCode": "Opslaan om code te bekijken",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Ongeldig formaat."
     }
   },
   "settings": {
