@@ -119,7 +119,7 @@
     <comment>Link text for logging in with authenticator</comment>
   </data>
   <data name="MobileDeviceLink" xml:space="preserve">
-    <value>Log in using Mobile App</value>
+    <value>使用移动应用登录</value>
     <comment>Link text for mobile device login</comment>
   </data>
   <!-- Descriptions and help text -->
