@@ -6,7 +6,7 @@
     "password": "Hasło",
     "passwordPlaceholder": "Wprowadź swoje hasło ",
     "rememberMe": "Zapamiętaj mnie",
-    "loginButton": "Log in",
+    "loginButton": "Zaloguj się",
     "noAccount": "Nie masz jeszcze konta?",
     "createVault": "Utwórz nowy sejf",
     "twoFactorTitle": "Wprowadź kod uwierzytelniający z aplikacji uwierzytelniającej.",
@@ -15,7 +15,7 @@
     "verify": "Potwierdź",
     "twoFactorNote": "Uwaga: Jeśli nie masz dostępu do swojego urządzenia uwierzytelniającego, możesz zresetować swój kod 2FA za pomocą kodu odzyskiwania, logując się za pośrednictwem strony internetowej.",
     "masterPassword": "Hasło główne",
-    "unlockVault": "Unlock",
+    "unlockVault": "Odblokuj",
     "unlockWithPin": "Odblokuj za pomocą kodu PIN",
     "enterPinToUnlock": "Wprowadź swój kod PIN, aby odblokować sejf",
     "useMasterPassword": "Użyj hasła głównego",
@@ -29,9 +29,9 @@
     "connectingTo": "Łączenie z",
     "switchAccounts": "Przełącz konto",
     "loggedIn": "Zalogowano",
-    "loginWithMobile": "Log in using Mobile App",
-    "unlockWithMobile": "Unlock using Mobile App",
-    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
+    "loginWithMobile": "Zaloguj się za pomocą aplikacji mobilnej",
+    "unlockWithMobile": "Odblokuj za pomocą aplikacji mobilnej",
+    "scanQrCode": "Zeskanuj ten kod QR za pomocą aplikacji mobilnej AliasVault, aby się zalogować i odblokować sejf.",
     "errors": {
       "invalidCode": "Wprowadź prawidłowy 6-cyfrowy kod uwierzytelniający.",
       "serverError": "Nie można połączyć się z serwerem AliasVault. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem będzie się powtarzał.",
@@ -39,7 +39,7 @@
       "accountLocked": "Konto tymczasowo zostało zablokowane z powodu zbyt wielu nieudanych prób.",
       "networkError": "Błąd sieci. Sprawdź swoje połączenie i spróbuj ponownie.",
       "sessionExpired": "Twoja sesja wygasła. Prosimy o zalogowanie się ponownie.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "mobileLoginRequestExpired": "Limit czasu logowania upłynął. Proszę odświeżyć stronę i spróbować ponownie."
     }
   },
   "menu": {
@@ -57,6 +57,7 @@
     "next": "Dalej",
     "use": "Użyj",
     "delete": "Usuń",
+    "save": "Save",
     "or": "lub",
     "close": "Zamknąć",
     "copied": "Skopiowano",
@@ -98,7 +99,7 @@
       "clientVersionNotSupported": "Ta wersja rozszerzenia przeglądarki AliasVault nie jest już obsługiwana przez serwer. Zaktualizuj rozszerzenie przeglądarki do najnowszej wersji.",
       "browserExtensionOutdated": "To rozszerzenie przeglądarki jest nieaktualne i nie można go używać do uzyskania dostępu do tego sejfu. Aby kontynuować, zaktualizuj to rozszerzenie przeglądarki.",
       "serverVersionNotSupported": "Aby korzystać z tego rozszerzenia przeglądarki, należy zaktualizować serwer AliasVault do nowszej wersji. Jeśli potrzebujesz pomocy, skontaktuj się z działem pomocy technicznej.",
-      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help.",
+      "serverVersionTooOld": "Aby korzystać z tej funkcji, serwer AliasVault musi zostać zaktualizowany do nowszej wersji. Jeśli potrzebujesz pomocy, skontaktuj się z administratorem serwera.",
       "unknownError": "Wystąpił nieznany błąd",
       "unknownErrorTryAgain": "Wystąpił nieznany błąd. Spróbuj ponownie.",
       "vaultNotAvailable": "Sejf niedostępny",
@@ -239,6 +240,16 @@
     "enterCustomDomain": "Wprowadź własną domenę",
     "enterFullEmail": "Wprowadź pełny adres e-mail",
     "enterEmailPrefix": "Wprowadź prefiks e-mail"
+  },
+  "totp": {
+    "addCode": "Add 2FA Code",
+    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
+    "nameOptional": "Name (optional)",
+    "secretKey": "Secret Key",
+    "saveToViewCode": "Save to view code",
+    "errors": {
+      "invalidSecretKey": "Invalid secret key format."
+    }
   },
   "emails": {
     "title": "Skrzynka odbiorcza",
