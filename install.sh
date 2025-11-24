@@ -1,5 +1,5 @@
 #!/bin/bash
-# @version 0.23.2
+# @version 0.25.0
 
 # Repository information used for downloading files and images from GitHub
 REPO_OWNER="aliasvault"
@@ -1450,8 +1450,8 @@ migrate_docker_image_urls() {
         sed -i.tmp 's|ghcr.io/lanedirt/aliasvault-task-runner:|ghcr.io/aliasvault/task-runner:|g' docker-compose.yml
         sed -i.tmp 's|ghcr.io/lanedirt/aliasvault-reverse-proxy:|ghcr.io/aliasvault/reverse-proxy:|g' docker-compose.yml
 
-        # Clean up temp file
-        rm -f docker-compose.yml.backup.*
+        # Clean up temp files
+        rm -f docker-compose.yml.tmp docker-compose.yml.backup.*
 
         printf "  ${GREEN}✓ Updated docker-compose.yml${NC}\n"
     fi
@@ -2945,6 +2945,9 @@ handle_db_import() {
 
     # Create a temporary file to store the input
     temp_file=$(mktemp)
+    # Set up trap to ensure temp file cleanup on exit
+    trap 'rm -f "$temp_file"' EXIT INT TERM
+
     cat <&3 > "$temp_file"  # Read from fd 3 instead of stdin
     exec 3<&-  # Close fd 3
 
@@ -2959,7 +2962,6 @@ handle_db_import() {
             printf "${CYAN}> Detected plain SQL backup${NC}\n"
         else
             printf "${RED}Error: Input is neither a valid gzip file nor a SQL file${NC}\n"
-            rm "$temp_file"
             exit 1
         fi
     fi
