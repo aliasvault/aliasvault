@@ -210,10 +210,10 @@
     "addCode": "Add 2FA Code",
     "nameOptional": "Name (optional)",
     "secretKey": "Secret Key",
-    "instructions": "Enter the secret key from your authenticator app, or paste the full otpauth:// URI.",
+    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "Save to view code",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format. Please enter a valid base32-encoded key or otpauth:// URI."
+      "invalidSecretKey": "Invalid secret key format."
     }
   },
   "settings": {
