@@ -20,8 +20,8 @@
     "notice": "Uwaga",
     "enabled": "Włączone",
     "disabled": "Wyłączone",
-    "twoFactorAuthentication": "Two-Factor Authentication",
-    "deleteItemConfirmTitle": "Delete Item",
+    "twoFactorAuthentication": "Uwierzytelnianie dwuskładnikowe",
+    "deleteItemConfirmTitle": "Usuń element",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
       "unknownError": "Wystąpił nieznany błąd. Spróbuj ponownie.",
