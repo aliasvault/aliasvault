@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="LoggingInWithWebAuthn" xml:space="preserve">
-    <value>Logging in with passkey...</value>
+    <value>正在使用通行密钥登录…</value>
     <comment>Message shown while WebAuthn authentication is in progress</comment>
   </data>
   <data name="QuickUnlockDescription" xml:space="preserve">
@@ -67,7 +67,7 @@
     <comment>Description explaining WebAuthn unlock options</comment>
   </data>
   <data name="UnlockWithWebAuthn" xml:space="preserve">
-    <value>Unlock with passkey</value>
+    <value>使用通行密钥解锁</value>
     <comment>Button text for WebAuthn unlock</comment>
   </data>
   <data name="UnlockWithPassword" xml:space="preserve">
@@ -123,7 +123,7 @@
     <comment>Generic error message for unlock failures</comment>
   </data>
   <data name="UnlockWithMobileButton" xml:space="preserve">
-    <value>Unlock with Mobile App</value>
+    <value>使用移动应用解锁</value>
     <comment>Button text for unlocking with mobile app</comment>
   </data>
 </root>
