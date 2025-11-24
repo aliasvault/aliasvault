@@ -57,7 +57,7 @@
     "next": "Próximo",
     "use": "Utilizar",
     "delete": "Excluir",
-    "save": "Save",
+    "save": "Salvar",
     "or": "Ou",
     "close": "Fechar",
     "copied": "Copiado!",
@@ -242,13 +242,13 @@
     "enterEmailPrefix": "Digite o prefixo do e-mail"
   },
   "totp": {
-    "addCode": "Add 2FA Code",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "nameOptional": "Name (optional)",
-    "secretKey": "Secret Key",
-    "saveToViewCode": "Save to view code",
+    "addCode": "Adicionar Código de Autenticação de Dois Fatores",
+    "instructions": "Digite a chave secreta exibida pelo website que você quer adicionar a autenticação de dois fatores.",
+    "nameOptional": "Nome (opcional)",
+    "secretKey": "Chave Secreta",
+    "saveToViewCode": "Salvar para ver código",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Formato de chave secreta inválido."
     }
   },
   "emails": {
