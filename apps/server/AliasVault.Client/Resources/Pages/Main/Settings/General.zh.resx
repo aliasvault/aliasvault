@@ -71,11 +71,11 @@
   </data>
   <!-- Alias Settings Section -->
   <data name="AliasSettingsTitle">
-    <value>Identity Generator Settings</value>
+    <value>身份生成器设置</value>
     <comment>Title for identity generator settings section</comment>
   </data>
   <data name="AliasGenerationLanguageLabel">
-    <value>Language</value>
+    <value>语种</value>
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
@@ -83,7 +83,7 @@
     <comment>Description for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Gender</value>
+    <value>性别</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
@@ -103,7 +103,7 @@
     <comment>Female gender option</comment>
   </data>
   <data name="AliasGenerationAgeRangeLabel">
-    <value>Age range</value>
+    <value>年龄范围</value>
     <comment>Label for alias generation age range setting</comment>
   </data>
   <data name="AliasGenerationAgeRangeDescription">
