@@ -71,11 +71,11 @@
   </data>
   <!-- Alias Settings Section -->
   <data name="AliasSettingsTitle">
-    <value>Identity Generator Settings</value>
+    <value>Henkilöllisyysgeneraattorin asetukset</value>
     <comment>Title for identity generator settings section</comment>
   </data>
   <data name="AliasGenerationLanguageLabel">
-    <value>Language</value>
+    <value>Kieli</value>
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
@@ -83,7 +83,7 @@
     <comment>Description for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Gender</value>
+    <value>Sukupuoli</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
@@ -103,7 +103,7 @@
     <comment>Female gender option</comment>
   </data>
   <data name="AliasGenerationAgeRangeLabel">
-    <value>Age range</value>
+    <value>Ikähaarukka</value>
     <comment>Label for alias generation age range setting</comment>
   </data>
   <data name="AliasGenerationAgeRangeDescription">
