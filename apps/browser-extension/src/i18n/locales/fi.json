@@ -57,7 +57,7 @@
     "next": "Seuraava",
     "use": "Käytä",
     "delete": "Poista",
-    "save": "Save",
+    "save": "Tallenna",
     "or": "Tai",
     "close": "Sulje",
     "copied": "Kopioitu!",
@@ -242,13 +242,13 @@
     "enterEmailPrefix": "Syötä sähköpostin etuliite"
   },
   "totp": {
-    "addCode": "Add 2FA Code",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "nameOptional": "Name (optional)",
-    "secretKey": "Secret Key",
-    "saveToViewCode": "Save to view code",
+    "addCode": "Lisää 2FA TOTP -koodi",
+    "instructions": "Syötä salainen avain, joka näkyy sivustossa, jossa haluat lisätä kaksivaiheisen tunnistautumisen",
+    "nameOptional": "Nimi (valinnainen)",
+    "secretKey": "Salainen avain",
+    "saveToViewCode": "Tallenna nähdäksesi koodin",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Virheellinen salatun avaimen muoto."
     }
   },
   "emails": {
