@@ -332,6 +332,18 @@ else
         }
     }
 
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        // Refresh data when navigating to a different user (e.g., clicking related user links)
+        if (!IsLoading && User?.Id != Id)
+        {
+            await RefreshData();
+        }
+    }
+
     private async Task RefreshData()
     {
         IsLoading = true;

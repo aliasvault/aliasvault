@@ -15,6 +15,8 @@ else if (RelatedUsers.Any())
                 </SortableTableColumn>
                 <SortableTableColumn>@relatedUser.SharedIpAddresses.ToString("N0")</SortableTableColumn>
                 <SortableTableColumn>@relatedUser.MostRecentSharedIp</SortableTableColumn>
+                <SortableTableColumn>@relatedUser.CredentialsCount.ToString("N0")</SortableTableColumn>
+                <SortableTableColumn>@relatedUser.EmailClaimsCount.ToString("N0")</SortableTableColumn>
                 <SortableTableColumn>@relatedUser.RegistrationDate.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
                 <SortableTableColumn><StatusPill Enabled="!relatedUser.IsBlocked" TextTrue="Active" TextFalse="Blocked" /></SortableTableColumn>
             </SortableTableRow>
@@ -65,6 +67,8 @@ else
         new TableColumn { Title = "Username", PropertyName = "Username" },
         new TableColumn { Title = "Shared IPs", PropertyName = "SharedIpAddresses" },
         new TableColumn { Title = "Most Recent IP", PropertyName = "MostRecentSharedIp" },
+        new TableColumn { Title = "Credentials", PropertyName = "CredentialsCount" },
+        new TableColumn { Title = "Email Claims", PropertyName = "EmailClaimsCount" },
         new TableColumn { Title = "Registered", PropertyName = "RegistrationDate" },
         new TableColumn { Title = "Status", PropertyName = "IsBlocked" },
     ];
@@ -152,15 +156,32 @@ else
 
         TotalRelatedUsers = users.Count;
 
+        // Get vault statistics for all related users (from their latest vault)
+        var userIds = users.Select(u => u.Id).ToList();
+        var vaultStats = await dbContext.Vaults
+            .Where(v => userIds.Contains(v.UserId))
+            .GroupBy(v => v.UserId)
+            .Select(g => new
+            {
+                UserId = g.Key,
+                CredentialsCount = g.OrderByDescending(v => v.RevisionNumber).First().CredentialsCount,
+                EmailClaimsCount = g.OrderByDescending(v => v.RevisionNumber).First().EmailClaimsCount
+            })
+            .ToListAsync();
+
         // Combine the data
         RelatedUsers = (from user in users
                        join data in relatedUserData on user.UserName equals data.Username
+                       join vaultStat in vaultStats on user.Id equals vaultStat.UserId into vaultGroup
+                       from vault in vaultGroup.DefaultIfEmpty()
                        select new RelatedUserInfo
                        {
                            UserId = user.Id,
                            Username = user.UserName ?? "Unknown",
                            SharedIpAddresses = data.SharedIps,
                            MostRecentSharedIp = data.MostRecentSharedIp ?? "-",
+                           CredentialsCount = vault?.CredentialsCount ?? 0,
+                           EmailClaimsCount = vault?.EmailClaimsCount ?? 0,
                            RegistrationDate = user.CreatedAt,
                            IsBlocked = user.Blocked
                        })
@@ -186,6 +207,8 @@ else
             "Username" => SortableTable.SortListByProperty(relatedUsers, r => r.Username, sortDirection),
             "SharedIpAddresses" => SortableTable.SortListByProperty(relatedUsers, r => r.SharedIpAddresses, sortDirection),
             "MostRecentSharedIp" => SortableTable.SortListByProperty(relatedUsers, r => r.MostRecentSharedIp, sortDirection),
+            "CredentialsCount" => SortableTable.SortListByProperty(relatedUsers, r => r.CredentialsCount, sortDirection),
+            "EmailClaimsCount" => SortableTable.SortListByProperty(relatedUsers, r => r.EmailClaimsCount, sortDirection),
             "RegistrationDate" => SortableTable.SortListByProperty(relatedUsers, r => r.RegistrationDate, sortDirection),
             "IsBlocked" => SortableTable.SortListByProperty(relatedUsers, r => r.IsBlocked, sortDirection),
             _ => relatedUsers
@@ -206,6 +229,8 @@ else
         public string Username { get; set; } = string.Empty;
         public int SharedIpAddresses { get; set; }
         public string MostRecentSharedIp { get; set; } = string.Empty;
+        public int CredentialsCount { get; set; }
+        public int EmailClaimsCount { get; set; }
         public DateTime RegistrationDate { get; set; }
         public bool IsBlocked { get; set; }
     }
