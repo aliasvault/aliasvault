@@ -46,6 +46,7 @@ Builds:
       - apps/mobile-app/node_modules/react-native-svg/android/build.gradle
       - apps/mobile-app/node_modules/expo-dev-launcher/android/build.gradle
       - apps/mobile-app/node_modules/expo-dev-menu/android/build.gradle
+      - apps/mobile-app/node_modules/expo-camera/android/build.gradle
     scandelete:
       - apps/mobile-app/node_modules/
 
