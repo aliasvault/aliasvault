@@ -1,8 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { CameraView, useCameraPermissions } from 'expo-camera';
 import { Href, router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useCallback, useRef } from 'react';
-import { View, Alert, StyleSheet } from 'react-native';
+import { View, Alert, StyleSheet, Linking } from 'react-native';
+import { Camera, useCameraDevice, useCameraPermission, useCodeScanner } from 'react-native-vision-camera';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -54,7 +54,8 @@ function parseQRCode(data: string): ScannedQRCode {
 export default function QRScannerScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
-  const [permission, requestPermission] = useCameraPermissions();
+  const { hasPermission, requestPermission } = useCameraPermission();
+  const device = useCameraDevice('back');
   const { url } = useLocalSearchParams<{ url?: string }>();
   const hasProcessedUrl = useRef(false);
   const processedUrls = useRef(new Set<string>());
@@ -65,35 +66,51 @@ export default function QRScannerScreen() : React.ReactNode {
      * Request camera permission.
      */
     const requestCameraPermission = async () : Promise<void> => {
-      if (!permission) {
+      if (hasPermission === undefined) {
         return; // Still loading permission status
       }
 
-      if (!permission.granted && permission.canAskAgain) {
-        // Request permission
-        await requestPermission();
-      } else if (!permission.granted && !permission.canAskAgain) {
-        // Permission was permanently denied
-        Alert.alert(
-          t('settings.qrScanner.cameraPermissionTitle'),
-          t('settings.qrScanner.cameraPermissionMessage'),
-          [{ text: t('common.ok'), /**
-           * Go back to the settings tab.
-           */
-            onPress: (): void => router.back() }]
-        );
+      if (!hasPermission) {
+        const permission = await requestPermission();
+
+        if (!permission) {
+          // Permission was denied
+          Alert.alert(
+            t('settings.qrScanner.cameraPermissionTitle'),
+            t('settings.qrScanner.cameraPermissionMessage'),
+            [
+              { text: t('common.cancel'),
+                /**
+                 * Go back to the settings tab.
+                 */
+                onPress: (): void => router.back(),
+                style: 'cancel'
+              },
+              {
+                text: t('common.openSettings'),
+                /**
+                 * Open app settings.
+                 */
+                onPress: (): void => {
+                  Linking.openSettings();
+                  router.back();
+                }
+              }
+            ]
+          );
+        }
       }
     };
 
     requestCameraPermission();
-  }, [permission, requestPermission, t]);
+  }, [hasPermission, requestPermission, t]);
 
   /*
    * Handle barcode scanned - parse and navigate to appropriate page.
    * Only processes AliasVault QR codes, silently ignores others.
    * Validation is handled by the destination page.
    */
-  const handleBarcodeScanned = useCallback(({ data }: { data: string }) : void => {
+  const handleBarcodeScanned = useCallback((data: string) : void => {
     // Prevent processing the same URL multiple times
     if (processedUrls.current.has(data)) {
       return;
@@ -119,6 +136,20 @@ export default function QRScannerScreen() : React.ReactNode {
     }
   }, []);
 
+  // Configure code scanner
+  const codeScanner = useCodeScanner({
+    codeTypes: ['qr'],
+    /**
+     * Handle QR code scanned.
+     * @param codes - Scanned codes.
+     */
+    onCodeScanned: (codes) => {
+      if (codes.length > 0 && codes[0]?.value) {
+        handleBarcodeScanned(codes[0].value);
+      }
+    },
+  });
+
   /**
    * Reset hasProcessedUrl when URL changes to allow processing new URLs.
    */
@@ -132,7 +163,7 @@ export default function QRScannerScreen() : React.ReactNode {
   useEffect(() => {
     if (url && typeof url === 'string' && !hasProcessedUrl.current) {
       hasProcessedUrl.current = true;
-      handleBarcodeScanned({ data: url });
+      handleBarcodeScanned(url);
     }
   }, [url, handleBarcodeScanned]);
 
@@ -179,8 +210,8 @@ export default function QRScannerScreen() : React.ReactNode {
     },
   });
 
-  // Show permission request screen
-  if (!permission || !permission.granted) {
+  // Show permission request screen or loading if device not ready
+  if (hasPermission === undefined || !hasPermission || !device) {
     return (
       <ThemedContainer>
         <View style={styles.loadingContainer}>
@@ -193,13 +224,11 @@ export default function QRScannerScreen() : React.ReactNode {
   return (
     <ThemedContainer style={styles.container}>
       <View style={styles.cameraContainer}>
-        <CameraView
+        <Camera
           style={styles.camera}
-          facing="back"
-          barcodeScannerSettings={{
-            barcodeTypes: ['qr'],
-          }}
-          onBarcodeScanned={handleBarcodeScanned}
+          device={device}
+          isActive={true}
+          codeScanner={codeScanner}
         >
           <View style={styles.cameraOverlay}>
             <Ionicons name="qr-code-outline" size={100} color={colors.white} />
@@ -207,7 +236,7 @@ export default function QRScannerScreen() : React.ReactNode {
               {t('settings.qrScanner.scanningMessage')}
             </ThemedText>
           </View>
-        </CameraView>
+        </Camera>
       </View>
     </ThemedContainer>
   );
