@@ -26,7 +26,7 @@ Builds:
     init:
       - cd ../..
       - sed -i -e '/signingConfig /d' android/app/build.gradle
-      - npm install --build-from-source
+      - npm install --production --build-from-source
     gradle:
       - yes
     scanignore:
@@ -44,9 +44,6 @@ Builds:
       - apps/mobile-app/node_modules/react-native-context-menu-view/android/build.gradle
       - apps/mobile-app/node_modules/react-native-get-random-values/android/build.gradle
       - apps/mobile-app/node_modules/react-native-svg/android/build.gradle
-      - apps/mobile-app/node_modules/expo-dev-launcher/android/build.gradle
-      - apps/mobile-app/node_modules/expo-dev-menu/android/build.gradle
-      - apps/mobile-app/node_modules/expo-camera/android/build.gradle
     scandelete:
       - apps/mobile-app/node_modules/
 
