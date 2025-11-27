@@ -311,7 +311,18 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
             return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.REFRESH_TOKEN_REQUIRED, 400));
         }
 
-        var principal = GetPrincipalFromToken(tokenModel.Token);
+        ClaimsPrincipal principal;
+        try
+        {
+            principal = GetPrincipalFromToken(tokenModel.Token);
+        }
+        catch (Exception)
+        {
+            // If token validation fails (expired, malformed, or invalid signature),
+            // return unauthorized as we cannot identify the user from the access token.
+            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.INVALID_REFRESH_TOKEN, 401));
+        }
+
         if (principal.FindFirst(ClaimTypes.NameIdentifier)?.Value == null)
         {
             return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USER_NOT_FOUND, 401));
@@ -354,31 +365,24 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        // If the token is not provided, return bad request.
+        // If the refresh token is not provided, return bad request.
         if (string.IsNullOrWhiteSpace(model.RefreshToken))
         {
             return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.REFRESH_TOKEN_REQUIRED, 400));
         }
 
-        var principal = GetPrincipalFromToken(model.Token);
-        if (principal.FindFirst(ClaimTypes.NameIdentifier)?.Value == null)
+        // Look up the refresh token directly - we don't need to validate the access token
+        // since the refresh token itself contains the user information we need.
+        var refreshTokenEntry = await context.AliasVaultUserRefreshTokens.Include(t => t.User).FirstOrDefaultAsync(t => t.Value == model.RefreshToken);
+
+        if (refreshTokenEntry == null)
         {
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USER_NOT_FOUND, 401));
+            // Token doesn't exist - could already be revoked or never existed.
+            // Return success to avoid leaking information about token validity.
+            return Ok();
         }
 
-        var user = await userManager.FindByIdAsync(principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
-        if (user == null)
-        {
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USER_NOT_FOUND, 401));
-        }
-
-        // Check if the refresh token is valid.
-        var providedTokenExists = await context.AliasVaultUserRefreshTokens.AnyAsync(t => t.UserId == user.Id && t.Value == model.RefreshToken);
-        if (!providedTokenExists)
-        {
-            await authLoggingService.LogAuthEventFailAsync(user.UserName!, AuthEventType.Logout, AuthFailureReason.InvalidRefreshToken);
-            return Unauthorized(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.INVALID_REFRESH_TOKEN, 401));
-        }
+        var user = refreshTokenEntry.User;
 
         // Remove the provided refresh token and any other existing refresh tokens that are issued to the current device ID.
         // This to make sure all tokens are revoked for this device that user is "logging out" from.
