@@ -57,7 +57,7 @@
     "next": "Далее",
     "use": "Использовать",
     "delete": "Удалить",
-    "save": "Save",
+    "save": "Сохранить",
     "or": "Или",
     "close": "Закрыть",
     "copied": "Скопировано!",
@@ -242,13 +242,13 @@
     "enterEmailPrefix": "Введите префикс электронной почты"
   },
   "totp": {
-    "addCode": "Add 2FA Code",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "nameOptional": "Name (optional)",
-    "secretKey": "Secret Key",
-    "saveToViewCode": "Save to view code",
+    "addCode": "Добавить код 2FA",
+    "instructions": "Введите секретный ключ, указанный на веб-сайте, где вы хотите добавить двухфакторную аутентификацию.",
+    "nameOptional": "Имя (необязательно)",
+    "secretKey": "Секретный ключ",
+    "saveToViewCode": "Сохранить для просмотра кода",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Неверный формат секретного ключа."
     }
   },
   "emails": {
