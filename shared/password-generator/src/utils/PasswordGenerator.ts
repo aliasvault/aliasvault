@@ -8,7 +8,21 @@ export class PasswordGenerator {
   private readonly uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   private readonly numberChars = '0123456789';
   private readonly specialChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
-  private readonly ambiguousChars = 'Il1O0o';
+  /**
+   * Ambiguous characters that look similar and are easy to confuse when typing:
+   * - I, l, 1, | (pipe) - all look like vertical lines
+   * - O, 0, o - all look like circles
+   * - Z, 2 - similar appearance
+   * - S, 5 - similar appearance
+   * - B, 8 - similar appearance
+   * - G, 6 - similar appearance
+   * - Brackets, braces, parentheses: [], {}, ()
+   * - Quotes: ', ", `
+   * - Punctuation pairs: ;:, .,
+   * - Dashes: -, _
+   * - Angle brackets: <>
+   */
+  private readonly ambiguousChars = 'Il1O0oZzSsBbGg2568|[]{}()<>;:,.`\'"_-';
 
   private length: number = 18;
   private useLowercase: boolean = true;

@@ -103,4 +103,69 @@ describe('PasswordGenerator', () => {
 
     expect(result).toBe(generator);
   });
+
+  it('removes ambiguous characters when useNonAmbiguousCharacters is enabled', () => {
+    /**
+     * Generate 50 passwords to ensure statistical confidence
+     * Check that none of the ambiguous characters appear:
+     * - I, l, 1, | - vertical line lookalikes
+     * - O, 0, o - circle lookalikes
+     * - Z, z, 2 - similar appearance
+     * - S, s, 5 - similar appearance
+     * - B, b, 8 - similar appearance
+     * - G, g, 6 - similar appearance
+     * - Brackets, braces, parentheses
+     * - Quotes
+     * - Punctuation pairs
+     * - Dashes
+     */
+    for (let i = 0; i < 50; i++) {
+      const password = generator
+        .setLength(32)
+        .useNonAmbiguousCharacters(true)
+        .generateRandomPassword();
+
+      expect(password).not.toMatch(/[Il1|]/);
+      expect(password).not.toMatch(/[O0o]/);
+      expect(password).not.toMatch(/[Zz2]/);
+      expect(password).not.toMatch(/[Ss5]/);
+      expect(password).not.toMatch(/[Bb8]/);
+      expect(password).not.toMatch(/[Gg6]/);
+      expect(password).not.toMatch(/[[\]{}()<>]/);
+      expect(password).not.toMatch(/['"`]/);
+      expect(password).not.toMatch(/[;:,.]/);
+      expect(password).not.toMatch(/[_-]/);
+    }
+  });
+
+  it('still generates valid passwords with non-ambiguous characters enabled', () => {
+    const password = generator
+      .setLength(20)
+      .useNonAmbiguousCharacters(true)
+      .generateRandomPassword();
+
+    expect(password.length).toBe(20);
+    // Should still contain allowed characters
+    expect(password.length).toBeGreaterThan(0);
+  });
+
+  it('includes ambiguous characters when useNonAmbiguousCharacters is disabled', () => {
+    // Generate multiple passwords and check if at least one contains ambiguous characters
+    let foundAmbiguous = false;
+
+    for (let i = 0; i < 100; i++) {
+      const password = generator
+        .setLength(32)
+        .useNonAmbiguousCharacters(false)
+        .generateRandomPassword();
+
+      // Check if any ambiguous characters are present
+      if (/[Il1O0oZzSsBbGg2568|[\]{}()<>;:,.`'"_-]/.test(password)) {
+        foundAmbiguous = true;
+        break;
+      }
+    }
+
+    expect(foundAmbiguous).toBe(true);
+  });
 });
