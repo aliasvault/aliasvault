@@ -105,6 +105,10 @@ export interface Spec extends TurboModule {
   // Re-authentication methods
   // Authenticate user with biometric or PIN. If title/subtitle are null/empty, defaults to "Unlock Vault" context.
   authenticateUser(title: string | null, subtitle: string | null): Promise<boolean>;
+
+  // QR code scanner
+  // Scan a QR code and return the scanned data. Returns null if cancelled or failed.
+  scanQRCode(): Promise<string | null>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeVaultManager');

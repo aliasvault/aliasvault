@@ -202,6 +202,9 @@ dependencies {
     // Add modern SQLite library with VACUUM INTO and backup API support
     implementation("com.github.requery:sqlite-android:3.49.0")
 
+    // Add ZXing library for QR code scanning (F-Droid compatible)
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+
     // Test dependencies
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:4.0.0'

@@ -113,6 +113,8 @@ class MainActivity : ReactActivity() {
             handlePinUnlockResult(resultCode, data)
         } else if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.PIN_SETUP_REQUEST_CODE) {
             handlePinSetupResult(resultCode, data)
+        } else if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.QR_SCANNER_REQUEST_CODE) {
+            handleQRScannerResult(resultCode, data)
         }
     }
 
@@ -191,6 +193,33 @@ class MainActivity : ReactActivity() {
             }
             else -> {
                 promise.reject("SETUP_ERROR", "PIN setup failed", null)
+            }
+        }
+    }
+
+    /**
+     * Handle QR scanner result.
+     * @param resultCode The result code from the QR scanner activity.
+     * @param data The intent data containing the scanned QR code.
+     */
+    private fun handleQRScannerResult(resultCode: Int, data: Intent?) {
+        val promise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise
+        net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise = null
+
+        if (promise == null) {
+            return
+        }
+
+        when (resultCode) {
+            RESULT_OK -> {
+                val scannedData = data?.getStringExtra("SCAN_RESULT")
+                promise.resolve(scannedData)
+            }
+            RESULT_CANCELED -> {
+                promise.resolve(null)
+            }
+            else -> {
+                promise.resolve(null)
             }
         }
     }
