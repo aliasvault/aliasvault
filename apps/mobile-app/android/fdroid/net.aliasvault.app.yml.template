@@ -44,7 +44,6 @@ Builds:
       - apps/mobile-app/node_modules/react-native-context-menu-view/android/build.gradle
       - apps/mobile-app/node_modules/react-native-get-random-values/android/build.gradle
       - apps/mobile-app/node_modules/react-native-svg/android/build.gradle
-      - apps/mobile-app/node_modules/react-native-vision-camera/android/build.gradle
     scandelete:
       - apps/mobile-app/node_modules/
 
