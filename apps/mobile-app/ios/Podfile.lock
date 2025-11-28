@@ -2444,12 +2444,6 @@ PODS:
   - SQLite.swift/standard (0.14.1)
   - SwiftLint (0.59.1)
   - SWXMLHash (7.0.2)
-  - VisionCamera (4.7.3):
-    - VisionCamera/Core (= 4.7.3)
-    - VisionCamera/React (= 4.7.3)
-  - VisionCamera/Core (4.7.3)
-  - VisionCamera/React (4.7.3):
-    - React-Core
   - Yoga (0.0.0)
 
 DEPENDENCIES:
@@ -2567,7 +2561,6 @@ DEPENDENCIES:
   - SignalArgon2 (~> 1.3.2)
   - SQLite.swift (~> 0.14.0)
   - SwiftLint
-  - VisionCamera (from `../node_modules/react-native-vision-camera`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
@@ -2798,8 +2791,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-screens"
   RNSVG:
     :path: "../node_modules/react-native-svg"
-  VisionCamera:
-    :path: "../node_modules/react-native-vision-camera"
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -2919,7 +2910,6 @@ SPEC CHECKSUMS:
   SQLite.swift: 2992550ebf3c5b268bf4352603e3df87d2a4ed72
   SwiftLint: 3d48e2fb2a3468fdaccf049e5e755df22fb40c2c
   SWXMLHash: dd733a457e9c4fe93b1538654057aefae4acb382
-  VisionCamera: 7187b3dac1ff3071234ead959ce311875748e14f
   Yoga: dc7c21200195acacb62fa920c588e7c2106de45e
 
 PODFILE CHECKSUM: ac288e273086bafdd610cafff08ccca0d164f7c3

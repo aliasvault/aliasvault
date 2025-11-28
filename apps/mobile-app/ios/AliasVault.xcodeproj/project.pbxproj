@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 60;
+	objectVersion = 70;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -212,7 +212,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		CEE9098F2DA548C7008D568F /* Exceptions for "Autofill" folder in "Autofill" target */ = {
+		CEE9098F2DA548C7008D568F /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -222,84 +222,13 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		CE59C7602E4F47FD0024A246 /* VaultUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultUITests;
-			sourceTree = "<group>";
-		};
-		CE77825E2EA1822400A75E6F /* VaultUtils */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultUtils;
-			sourceTree = "<group>";
-		};
-		CEE480882DBE86DC00F4A367 /* VaultStoreKit */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultStoreKit;
-			sourceTree = "<group>";
-		};
-		CEE480972DBE86DD00F4A367 /* VaultStoreKitTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultStoreKitTests;
-			sourceTree = "<group>";
-		};
-		CEE4816B2DBE8AC800F4A367 /* VaultUI */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultUI;
-			sourceTree = "<group>";
-		};
-		CEE482AB2DBE8EFE00F4A367 /* VaultModels */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = VaultModels;
-			sourceTree = "<group>";
-		};
-		CEE909812DA548C7008D568F /* Autofill */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				CEE9098F2DA548C7008D568F /* Exceptions for "Autofill" folder in "Autofill" target */,
-			);
-			explicitFileTypes = {
-			};
-			explicitFolders = (
-			);
-			path = Autofill;
-			sourceTree = "<group>";
-		};
+		CE59C7602E4F47FD0024A246 /* VaultUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUITests; sourceTree = "<group>"; };
+		CE77825E2EA1822400A75E6F /* VaultUtils */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUtils; sourceTree = "<group>"; };
+		CEE480882DBE86DC00F4A367 /* VaultStoreKit */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultStoreKit; sourceTree = "<group>"; };
+		CEE480972DBE86DD00F4A367 /* VaultStoreKitTests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultStoreKitTests; sourceTree = "<group>"; };
+		CEE4816B2DBE8AC800F4A367 /* VaultUI */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultUI; sourceTree = "<group>"; };
+		CEE482AB2DBE8EFE00F4A367 /* VaultModels */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = VaultModels; sourceTree = "<group>"; };
+		CEE909812DA548C7008D568F /* Autofill */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (CEE9098F2DA548C7008D568F /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = Autofill; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1418,10 +1347,7 @@
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -1475,10 +1401,7 @@
 				);
 				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift\"$(inherited)\"";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = true;
