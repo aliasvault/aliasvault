@@ -1,15 +1,26 @@
 import SwiftUI
 import AVFoundation
 
+private let locBundle = Bundle.vaultUI
+
 /// SwiftUI view for scanning QR codes using AVFoundation
 public struct QRScannerView: View {
     let onCodeScanned: (String) -> Void
     let onCancel: () -> Void
+    let prefixes: [String]?
+    let statusText: String
 
     @State private var hasScanned = false
     @State private var showFlash = false
 
-    public init(onCodeScanned: @escaping (String) -> Void, onCancel: @escaping () -> Void) {
+    public init(
+        prefixes: [String]? = nil,
+        statusText: String? = nil,
+        onCodeScanned: @escaping (String) -> Void,
+        onCancel: @escaping () -> Void
+    ) {
+        self.prefixes = prefixes
+        self.statusText = statusText?.isEmpty == false ? statusText! : "Scan QR code"
         self.onCodeScanned = onCodeScanned
         self.onCancel = onCancel
     }
@@ -18,6 +29,7 @@ public struct QRScannerView: View {
         ZStack {
             // Camera preview
             QRScannerRepresentable(
+                prefixes: prefixes,
                 onCodeScanned: { code in
                     if !hasScanned {
                         hasScanned = true
@@ -28,6 +40,10 @@ public struct QRScannerView: View {
                             onCodeScanned(code)
                         }
                     }
+                },
+                onCodeRejected: {
+                    // Reset hasScanned to allow scanning again
+                    hasScanned = false
                 }
             )
             .edgesIgnoringSafeArea(.all)
@@ -51,7 +67,7 @@ public struct QRScannerView: View {
                 Spacer()
 
                 // Status text
-                Text("Scan AliasVault QR Code")
+                Text(statusText)
                     .foregroundColor(.white)
                     .padding()
                     .background(Color.black.opacity(0.7))
@@ -79,11 +95,15 @@ public struct QRScannerView: View {
 
 /// UIViewControllerRepresentable wrapper for AVFoundation camera
 struct QRScannerRepresentable: UIViewControllerRepresentable {
+    let prefixes: [String]?
     let onCodeScanned: (String) -> Void
+    let onCodeRejected: () -> Void
 
     func makeUIViewController(context: Context) -> QRScannerViewController {
         let controller = QRScannerViewController()
+        controller.prefixes = prefixes
         controller.onCodeScanned = onCodeScanned
+        controller.onCodeRejected = onCodeRejected
         return controller
     }
 
@@ -96,7 +116,10 @@ struct QRScannerRepresentable: UIViewControllerRepresentable {
 class QRScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsDelegate {
     var captureSession: AVCaptureSession?
     var previewLayer: AVCaptureVideoPreviewLayer?
+    var prefixes: [String]?
     var onCodeScanned: ((String) -> Void)?
+    var onCodeRejected: (() -> Void)?
+    private var rejectedQRCodes = Set<String>() // Track rejected QR codes to avoid repeated haptic feedback
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -182,10 +205,31 @@ class QRScannerViewController: UIViewController, AVCaptureMetadataOutputObjectsD
            let readableObject = metadataObject as? AVMetadataMachineReadableCodeObject,
            let stringValue = readableObject.stringValue {
 
-            // Stop scanning
+            // Check if prefixes filter is enabled
+            if let prefixes = prefixes, !prefixes.isEmpty {
+                // Check if the scanned code starts with any of the accepted prefixes
+                let hasValidPrefix = prefixes.contains { prefix in
+                    stringValue.hasPrefix(prefix)
+                }
+
+                if !hasValidPrefix {
+                    // Invalid QR code - only give haptic feedback once per unique code
+                    if !rejectedQRCodes.contains(stringValue) {
+                        let generator = UINotificationFeedbackGenerator()
+                        generator.notificationOccurred(.warning)
+                        rejectedQRCodes.insert(stringValue)
+                    }
+
+                    // Notify that code was rejected (to reset UI state if needed)
+                    onCodeRejected?()
+                    return
+                }
+            }
+
+            // Valid QR code - stop scanning
             captureSession?.stopRunning()
 
-            // Haptic feedback
+            // Success haptic feedback
             let generator = UINotificationFeedbackGenerator()
             generator.notificationOccurred(.success)
 

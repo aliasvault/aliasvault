@@ -60,7 +60,7 @@ export default function QRScannerScreen() : React.ReactNode {
 
   /*
    * Handle barcode scanned - parse and navigate to appropriate page.
-   * Only processes AliasVault QR codes, silently ignores others.
+   * Native scanner already filters by prefix, so we only get AliasVault QR codes here.
    * Validation is handled by the destination page.
    */
   const handleQRCodeScanned = useCallback((data: string) : void => {
@@ -69,25 +69,19 @@ export default function QRScannerScreen() : React.ReactNode {
       return;
     }
 
-    // Parse the QR code to determine its type
-    const parsedData = parseQRCode(data);
-
-    // Silently ignore non-AliasVault QR codes
-    if (!parsedData.type) {
-      // Go back if not an AliasVault QR code
-      router.back();
-      return;
-    }
-
     // Mark this URL as processed
     processedUrls.current.add(data);
 
+    // Parse the QR code to determine its type
+    const parsedData = parseQRCode(data);
+
     /*
      * Navigate to the appropriate page based on QR code type
-     * Validation will be handled by the destination page
+     * Use push instead of replace to navigate while scanner is still dismissing
+     * This creates a smoother transition without returning to settings first
      */
     if (parsedData.type === 'MOBILE_UNLOCK') {
-      router.replace(`/(tabs)/settings/mobile-unlock/${parsedData.payload}` as Href);
+      router.push(`/(tabs)/settings/mobile-unlock/${parsedData.payload}` as Href);
     }
   }, []);
 
@@ -102,7 +96,10 @@ export default function QRScannerScreen() : React.ReactNode {
     hasLaunchedScanner.current = true;
 
     try {
-      const scannedData = await NativeVaultManager.scanQRCode();
+      // Pass prefixes to native scanner for filtering and translated status text
+      const prefixes = Object.values(QR_CODE_PREFIXES);
+      const statusText = t('settings.qrScanner.scanningMessage');
+      const scannedData = await NativeVaultManager.scanQRCode(prefixes, statusText);
 
       if (scannedData) {
         handleQRCodeScanned(scannedData);

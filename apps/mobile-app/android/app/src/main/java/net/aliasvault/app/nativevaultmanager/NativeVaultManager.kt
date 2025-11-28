@@ -1443,7 +1443,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      * @param promise The promise to resolve with authentication result.
      */
     @ReactMethod
-    override fun scanQRCode(promise: Promise) {
+    override fun scanQRCode(prefixes: ReadableArray?, statusText: String?, promise: Promise) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 val activity = currentActivity
@@ -1455,8 +1455,21 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                 // Store promise for later resolution by MainActivity
                 pendingActivityResultPromise = promise
 
-                // Launch QR scanner activity
+                // Launch QR scanner activity with optional prefixes and status text
                 val intent = Intent(activity, QRScannerActivity::class.java)
+                if (prefixes != null && prefixes.size() > 0) {
+                    val prefixList = ArrayList<String>()
+                    for (i in 0 until prefixes.size()) {
+                        val prefix = prefixes.getString(i)
+                        if (prefix != null) {
+                            prefixList.add(prefix)
+                        }
+                    }
+                    intent.putStringArrayListExtra(QRScannerActivity.EXTRA_PREFIXES, prefixList)
+                }
+                if (statusText != null && statusText.isNotEmpty()) {
+                    intent.putExtra(QRScannerActivity.EXTRA_STATUS_TEXT, statusText)
+                }
                 activity.startActivityForResult(intent, QR_SCANNER_REQUEST_CODE)
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to launch QR scanner", e)

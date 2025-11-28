@@ -915,7 +915,9 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func scanQRCode(_ resolve: @escaping RCTPromiseResolveBlock,
+    func scanQRCode(_ prefixes: [String]?,
+                    statusText: String?,
+                    resolver resolve: @escaping RCTPromiseResolveBlock,
                     rejecter reject: @escaping RCTPromiseRejectBlock) {
         DispatchQueue.main.async {
             // Get the root view controller from React Native
@@ -924,19 +926,19 @@ public class VaultManager: NSObject {
                 return
             }
 
-            // Create QR scanner view
+            // Create QR scanner view with optional prefix filtering and custom status text
             let scannerView = QRScannerView(
+                prefixes: prefixes,
+                statusText: statusText,
                 onCodeScanned: { code in
-                    // Dismiss and return scanned code
-                    rootVC.dismiss(animated: true) {
-                        resolve(code)
-                    }
+                    // Resolve immediately and dismiss without waiting (matches Android behavior)
+                    resolve(code)
+                    rootVC.dismiss(animated: true)
                 },
                 onCancel: {
-                    // Dismiss and return nil
-                    rootVC.dismiss(animated: true) {
-                        resolve(nil)
-                    }
+                    // Cancel resolves nil and dismisses
+                    resolve(nil)
+                    rootVC.dismiss(animated: true)
                 }
             )
 

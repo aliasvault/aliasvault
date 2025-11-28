@@ -108,7 +108,10 @@ export interface Spec extends TurboModule {
 
   // QR code scanner
   // Scan a QR code and return the scanned data. Returns null if cancelled or failed.
-  scanQRCode(): Promise<string | null>;
+  // If prefixes is provided, only QR codes starting with one of these prefixes will be accepted.
+  // Scanner will keep scanning until a matching code is found or user cancels.
+  // statusText is the message to display on the scanner screen (defaults to "Scan QR code" if null/empty).
+  scanQRCode(prefixes: string[] | null, statusText: string | null): Promise<string | null>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('NativeVaultManager');

@@ -18,13 +18,28 @@ class QRScannerActivity : Activity() {
     private lateinit var barcodeView: DecoratedBarcodeView
     private lateinit var capture: CaptureManager
     private var hasScanned = false
+    private var prefixes: List<String>? = null
+
+    companion object {
+        /** Intent extra key for prefixes. */
+        const val EXTRA_PREFIXES = "EXTRA_PREFIXES"
+
+        /** Intent extra key for status text. */
+        const val EXTRA_STATUS_TEXT = "EXTRA_STATUS_TEXT"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Get prefixes from intent if provided
+        prefixes = intent.getStringArrayListExtra(EXTRA_PREFIXES)
+
+        // Get status text from intent, default to "Scan QR code" if not provided
+        val statusText = intent.getStringExtra(EXTRA_STATUS_TEXT)?.takeIf { it.isNotEmpty() } ?: "Scan QR code"
+
         // Create and configure barcode view
         barcodeView = DecoratedBarcodeView(this)
-        barcodeView.setStatusText("Scan AliasVault QR Code")
+        barcodeView.setStatusText(statusText)
         setContentView(barcodeView)
 
         // Initialize capture manager
@@ -35,6 +50,23 @@ class QRScannerActivity : Activity() {
         barcodeView.decodeContinuous(object : BarcodeCallback {
             override fun barcodeResult(result: BarcodeResult?) {
                 if (result != null && !hasScanned) {
+                    val scannedText = result.text
+
+                    // Check if prefixes filter is enabled
+                    if (prefixes != null && prefixes!!.isNotEmpty()) {
+                        // Check if the scanned code starts with any of the accepted prefixes
+                        val hasValidPrefix = prefixes!!.any { prefix ->
+                            scannedText.startsWith(prefix)
+                        }
+
+                        if (!hasValidPrefix) {
+                            // Invalid QR code - continue scanning without setting hasScanned
+                            // Note: ZXing library continues scanning automatically
+                            return
+                        }
+                    }
+
+                    // Valid QR code
                     hasScanned = true
 
                     // Show success animation
@@ -45,7 +77,7 @@ class QRScannerActivity : Activity() {
 
                     // Set result and finish after animation
                     val resultIntent = Intent()
-                    resultIntent.putExtra("SCAN_RESULT", result.text)
+                    resultIntent.putExtra("SCAN_RESULT", scannedText)
                     setResult(RESULT_OK, resultIntent)
 
                     // Delay finish to allow animation to complete
