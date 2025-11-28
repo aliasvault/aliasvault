@@ -13,9 +13,9 @@ RepoType: git
 Repo: https://github.com/aliasvault/aliasvault.git
 
 Builds:
-  - versionName: 0.1.0
-    versionCode: 1
-    commit: main
+  - versionName: __VERSION_NAME__
+    versionCode: __VERSION_CODE__
+    commit: __COMMIT__
     subdir: apps/mobile-app/android/app/
     sudo:
       - sysctl fs.inotify.max_user_watches=524288 || true
@@ -44,6 +44,7 @@ Builds:
       - apps/mobile-app/node_modules/react-native-context-menu-view/android/build.gradle
       - apps/mobile-app/node_modules/react-native-get-random-values/android/build.gradle
       - apps/mobile-app/node_modules/react-native-svg/android/build.gradle
+      - apps/mobile-app/node_modules/react-native-vision-camera/android/build.gradle
     scandelete:
       - apps/mobile-app/node_modules/
 
