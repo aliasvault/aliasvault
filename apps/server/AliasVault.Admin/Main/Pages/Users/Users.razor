@@ -218,11 +218,7 @@ else
                         v.RevisionNumber,
                         CredentialCount = v.CredentialsCount,
                     }),
-                    EmailClaims = u.EmailClaims.Select(ec => new
-                    {
-                        ec.CreatedAt,
-                        ec.Address
-                    }),
+                    EmailClaimCount = u.EmailClaims.Count(),
                 })
                 .ToListAsync(cancellationToken);
 
@@ -247,7 +243,7 @@ else
                     IsInactive = isInactive,
                     VaultCount = user.Vaults.Count(),
                     CredentialCount = user.Vaults.OrderByDescending(x => x.RevisionNumber).First().CredentialCount,
-                    EmailClaimCount = user.EmailClaims.Count(),
+                    EmailClaimCount = user.EmailClaimCount,
                     VaultStorageInKb = user.Vaults.Sum(x => x.FileSize),
                 };
             }).ToList();
