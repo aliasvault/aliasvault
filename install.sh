@@ -72,9 +72,10 @@ show_usage() {
     printf "  configure-dev-db          Enable/disable development database (for local development only)\n"
     printf "\n"
     printf "Options:\n"
-    printf "  --verbose         Show detailed output\n"
-    printf "  -y, --yes         Automatic yes to prompts\n"
-    printf "  --dev             Target development database for db import/export operations"
+    printf "  --verbose                Show detailed output\n"
+    printf "  -y, --yes                Automatic yes to prompts\n"
+    printf "  --dev                    Target development database for db import/export operations\n"
+    printf "  --parallel=N             Use pigz with N threads for faster compression (default: off, max: 32)\n"
     printf "\n"
 }
 
@@ -98,6 +99,7 @@ parse_args() {
     FORCE_YES=false
     COMMAND_ARG=""
     DEV_DB=false
+    PARALLEL_JOBS=0         # 0 = use standard gzip, >0 = use pigz with N threads
 
     if [ $# -eq 0 ]; then
         show_usage
@@ -226,6 +228,14 @@ parse_args() {
                 ;;
             --dev)
                 DEV_DB=true
+                shift
+                ;;
+            --parallel=*)
+                PARALLEL_JOBS="${1#*=}"
+                if ! [[ "$PARALLEL_JOBS" =~ ^[0-9]+$ ]] || [ "$PARALLEL_JOBS" -lt 1 ] || [ "$PARALLEL_JOBS" -gt 32 ]; then
+                    echo "Error: Invalid --parallel value '$PARALLEL_JOBS'. Must be a number between 1 and 32"
+                    exit 1
+                fi
                 shift
                 ;;
             *)
@@ -2816,18 +2826,30 @@ handle_db_export() {
 
     # Check if output redirection is present
     if [ -t 1 ]; then
-        printf "Usage: ./install.sh db-export [--dev] > backup.sql.gz\n" >&2
+        printf "Usage: ./install.sh db-export [OPTIONS] > backup.sql.gz\n" >&2
         printf "\n" >&2
         printf "Options:\n" >&2
-        printf "  --dev    Export from development database\n" >&2
+        printf "  --dev                Export from development database\n" >&2
+        printf "  --parallel=N         Use pigz with N threads for parallel compression (max: 32)\n" >&2
         printf "\n" >&2
-        printf "Examples:\n" >&2
-        printf "  ./install.sh db-export > my_backup_$(date +%Y%m%d).sql.gz\n" >&2
-        printf "  ./install.sh db-export --dev > my_dev_backup_$(date +%Y%m%d).sql.gz\n" >&2
+        printf "Compression:\n" >&2
+        printf "  Default (no --parallel)  Uses standard gzip (slowest, lowest CPU usage)\n" >&2
+        printf "  --parallel=X             Uses pigz with X threads (~2x faster, good for production)\n" >&2
+        printf "\n" >&2
+        printf "Note: Parallel compression runs at lowest priority (nice/ionice) to minimize\n" >&2
+        printf "      impact on production.\n" >&2
         printf "\n" >&2
         exit 1
     fi
 
+    # Create temporary file for export
+    temp_export_file=$(mktemp)
+    trap 'rm -f "$temp_export_file"' EXIT INT TERM
+
+    # Start timing
+    export_start_time=$(date +%s)
+
+    # Determine docker compose command based on dev/prod
     if [ "$DEV_DB" = true ]; then
         # Check if dev containers are running
         if ! docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev ps postgres-dev --quiet 2>/dev/null | grep -q .; then
@@ -2841,8 +2863,8 @@ handle_db_export() {
             exit 1
         fi
 
-        printf "${CYAN}> Exporting development database...${NC}\n" >&2
-        docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec postgres-dev pg_dump -U aliasvault aliasvault | gzip
+        DOCKER_CMD="docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev exec -T postgres-dev"
+        DB_TYPE="development"
     else
         # Production database export logic
         if ! docker compose ps --quiet 2>/dev/null | grep -q .; then
@@ -2855,12 +2877,67 @@ handle_db_export() {
             exit 1
         fi
 
-        printf "${CYAN}> Exporting production database...${NC}\n" >&2
-        docker compose exec postgres pg_dump -U aliasvault aliasvault | gzip
+        DOCKER_CMD="docker compose exec -T postgres"
+        DB_TYPE="production"
     fi
 
-    if [ $? -eq 0 ]; then
+    # Execute export based on parallel setting
+    if [ "$PARALLEL_JOBS" -gt 0 ]; then
+        printf "${CYAN}> Exporting ${DB_TYPE} database (with ${PARALLEL_JOBS}-thread parallel compression)...${NC}\n" >&2
+        # Use pigz for parallel compression
+        $DOCKER_CMD bash -c "
+            # Install pigz if not available (for parallel gzip)
+            if ! command -v pigz >/dev/null 2>&1; then
+                if command -v apk >/dev/null 2>&1; then
+                    apk add --no-cache pigz >/dev/null 2>&1 || true
+                elif command -v apt-get >/dev/null 2>&1; then
+                    apt-get update >/dev/null 2>&1 && apt-get install -y pigz >/dev/null 2>&1 || true
+                fi
+            fi
+
+            # Dump with pigz parallel compression (or fallback to gzip -1 if pigz install failed)
+            # Use nice (lowest CPU priority) and ionice (lowest I/O priority) to minimize impact
+            if command -v pigz >/dev/null 2>&1; then
+                ionice -c 3 nice -n 19 pg_dump -U aliasvault aliasvault | ionice -c 3 nice -n 19 pigz -1 -p ${PARALLEL_JOBS} 2>/dev/null || \
+                nice -n 19 pg_dump -U aliasvault aliasvault | nice -n 19 pigz -1 -p ${PARALLEL_JOBS}
+            else
+                ionice -c 3 nice -n 19 pg_dump -U aliasvault aliasvault | ionice -c 3 nice -n 19 gzip -1 2>/dev/null || \
+                nice -n 19 pg_dump -U aliasvault aliasvault | nice -n 19 gzip -1
+            fi
+        " > "$temp_export_file" 2>/dev/null
+        export_status=$?
+    else
+        # Default: standard gzip (backwards compatible)
+        printf "${CYAN}> Exporting ${DB_TYPE} database (standard compression)...${NC}\n" >&2
+        $DOCKER_CMD nice -n 19 pg_dump -U aliasvault aliasvault | gzip -1 > "$temp_export_file"
+        export_status=$?
+    fi
+
+    # End timing
+    export_end_time=$(date +%s)
+    export_duration=$((export_end_time - export_start_time))
+
+    # Get filesize
+    if [ -f "$temp_export_file" ]; then
+        export_filesize=$(wc -c < "$temp_export_file")
+        export_filesize_mb=$(awk "BEGIN {printf \"%.2f\", $export_filesize/1024/1024}")
+    fi
+
+    if [ $export_status -eq 0 ]; then
+        # Output the file to stdout
+        cat "$temp_export_file"
+
         printf "${GREEN}> Database exported successfully.${NC}\n" >&2
+        printf "${CYAN}> Export format: SQL (.sql.gz)${NC}\n" >&2
+        if [ "$PARALLEL_JOBS" -gt 0 ]; then
+            printf "${CYAN}> Compression: pigz with ${PARALLEL_JOBS} threads${NC}\n" >&2
+        else
+            printf "${CYAN}> Compression: gzip (standard)${NC}\n" >&2
+        fi
+        printf "${CYAN}> Export duration: ${export_duration}s${NC}\n" >&2
+        if [ -n "$export_filesize_mb" ]; then
+            printf "${CYAN}> Export filesize: ${export_filesize_mb} MB (compressed)${NC}\n" >&2
+        fi
     else
         printf "${RED}> Failed to export database.${NC}\n" >&2
         exit 1
@@ -2892,9 +2969,9 @@ handle_db_import() {
         printf "  --dev    Import to development database\n"
         printf "\n"
         printf "Examples:\n"
-        printf "  ./install.sh db-import < backup.sql.gz    # Import gzipped backup\n"
-        printf "  ./install.sh db-import < backup.sql       # Import plain SQL backup\n"
-        printf "  ./install.sh db-import --dev < backup.sql # Import to dev database\n"
+        printf "  ./install.sh db-import < backup.sql.gz         # Import gzipped SQL (standard)\n"
+        printf "  ./install.sh db-import < backup.sql            # Import plain SQL\n"
+        printf "  ./install.sh db-import --dev < backup.sql.gz   # Import to dev database\n"
         exit 1
     fi
 
@@ -2951,8 +3028,16 @@ handle_db_import() {
     cat <&3 > "$temp_file"  # Read from fd 3 instead of stdin
     exec 3<&-  # Close fd 3
 
-    # Detect if the file is gzipped or plain SQL
+    # Get input filesize
+    if [ -f "$temp_file" ]; then
+        import_filesize=$(wc -c < "$temp_file")
+        import_filesize_mb=$(awk "BEGIN {printf \"%.2f\", $import_filesize/1024/1024}")
+        printf "${CYAN}> Input file size: ${import_filesize_mb} MB${NC}\n"
+    fi
+
+    # Detect file format
     is_gzipped=false
+
     if gzip -t "$temp_file" 2>/dev/null; then
         is_gzipped=true
         printf "${CYAN}> Detected gzipped SQL backup${NC}\n"
@@ -2965,6 +3050,9 @@ handle_db_import() {
             exit 1
         fi
     fi
+
+    # Start timing
+    import_start_time=$(date +%s)
 
     if [ "$DEV_DB" = true ]; then
         if [ "$VERBOSE" = true ]; then
@@ -3009,10 +3097,16 @@ handle_db_import() {
     fi
 
     import_status=$?
+
+    # End timing
+    import_end_time=$(date +%s)
+    import_duration=$((import_end_time - import_start_time))
+
     rm "$temp_file"
 
     if [ $import_status -eq 0 ]; then
         printf "${GREEN}> Database imported successfully.${NC}\n"
+        printf "${CYAN}> Import duration: ${import_duration}s${NC}\n"
         if [ "$DEV_DB" != true ]; then
             printf "${CYAN}> Starting services...${NC}\n"
             if [ "$VERBOSE" = true ]; then
