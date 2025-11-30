@@ -273,5 +273,12 @@ public class AliasServerDbContext : WorkerStatusDbContext, IDataProtectionKeyCon
             .WithMany(c => c.EncryptionKeys)
             .HasForeignKey(l => l.UserId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure MobileLoginRequest - AliasVaultUser relationship
+        modelBuilder.Entity<MobileLoginRequest>()
+            .HasOne(m => m.User)
+            .WithMany()
+            .HasForeignKey(m => m.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
