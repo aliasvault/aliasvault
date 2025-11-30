@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { extractDomain, extractRootDomain } from '@/entrypoints/contentScript/CredentialMatcher';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import {
   PASSKEY_PROVIDER_ENABLED_KEY,
   PASSKEY_DISABLED_SITES_KEY
 } from '@/utils/Constants';
+import { extractDomain, extractRootDomain } from '@/utils/credentialMatcher/CredentialMatcher';
 
 import { storage, browser } from "#imports";
 

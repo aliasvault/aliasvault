@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { AutofillMatchingMode } from '@/entrypoints/contentScript/CredentialMatcher';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import {
@@ -10,6 +9,7 @@ import {
   TEMPORARY_DISABLED_SITES_KEY,
   AUTOFILL_MATCHING_MODE_KEY
 } from '@/utils/Constants';
+import { AutofillMatchingMode } from '@/utils/credentialMatcher/CredentialMatcher';
 
 import { storage, browser } from "#imports";
 

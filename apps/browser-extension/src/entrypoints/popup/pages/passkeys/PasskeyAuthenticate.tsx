@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
 import { sendMessage } from 'webext-bridge/popup';
 
-import { extractDomain, extractRootDomain } from '@/entrypoints/contentScript/CredentialMatcher';
 import Button from '@/entrypoints/popup/components/Button';
 import PasskeyBypassDialog from '@/entrypoints/popup/components/Dialogs/PasskeyBypassDialog';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';
@@ -12,6 +11,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 
 import { PASSKEY_DISABLED_SITES_KEY } from '@/utils/Constants';
+import { extractDomain, extractRootDomain } from '@/utils/credentialMatcher/CredentialMatcher';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { GetRequest, PasskeyGetCredentialResponse, PendingPasskeyGetRequest, StoredPasskeyRecord } from '@/utils/passkey/types';

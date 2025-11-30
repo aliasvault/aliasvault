@@ -1,9 +1,9 @@
 import { sendMessage } from 'webext-bridge/content-script';
 
-import { filterCredentials, AutofillMatchingMode } from '@/entrypoints/contentScript/CredentialMatcher';
 import { fillCredential } from '@/entrypoints/contentScript/Form';
 
 import { DISABLED_SITES_KEY, TEMPORARY_DISABLED_SITES_KEY, GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, VAULT_LOCKED_DISMISS_UNTIL_KEY, AUTOFILL_MATCHING_MODE_KEY, CUSTOM_EMAIL_HISTORY_KEY, CUSTOM_USERNAME_HISTORY_KEY } from '@/utils/Constants';
+import { AutofillMatchingMode } from '@/utils/credentialMatcher/CredentialMatcher';
 import { CreateIdentityGenerator } from '@/utils/dist/shared/identity-generator';
 import type { Credential } from '@/utils/dist/shared/models/vault';
 import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/shared/password-generator';
@@ -49,7 +49,14 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
   document.addEventListener('keydown', handleEnterKey);
 
   (async () : Promise<void> => {
-    const response = await sendMessage('GET_CREDENTIALS', { }, 'background') as CredentialsResponse;
+    // Load autofill matching mode setting to send to background for filtering
+    const matchingMode = await storage.getItem(AUTOFILL_MATCHING_MODE_KEY) as AutofillMatchingMode ?? AutofillMatchingMode.DEFAULT;
+
+    const response = await sendMessage('GET_FILTERED_CREDENTIALS', {
+      currentUrl: window.location.href,
+      pageTitle: document.title,
+      matchingMode: matchingMode
+    }, 'background') as CredentialsResponse;
 
     if (response.success) {
       await createAutofillPopup(input, response.credentials, container);
@@ -182,22 +189,12 @@ export async function createAutofillPopup(input: HTMLInputElement, credentials: 
   credentialList.className = 'av-credential-list';
   popup.appendChild(credentialList);
 
-  // Add initial credentials
+  // Add initial credentials (already filtered by background script for performance)
   if (!credentials) {
     credentials = [];
   }
 
-  // Load autofill matching mode setting
-  const matchingMode = await storage.getItem(AUTOFILL_MATCHING_MODE_KEY) as AutofillMatchingMode ?? AutofillMatchingMode.DEFAULT;
-
-  const filteredCredentials = filterCredentials(
-    credentials,
-    window.location.href,
-    document.title,
-    matchingMode
-  );
-
-  updatePopupContent(filteredCredentials, credentialList, input, rootContainer, noMatchesText);
+  updatePopupContent(credentials, credentialList, input, rootContainer, noMatchesText);
 
   // Add divider
   const divider = document.createElement('div');
@@ -549,62 +546,41 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
 }
 
 /**
- * Handle popup search input by filtering credentials based on the search term.
+ * Handle popup search input - searches entire vault when user types.
+ * When empty, shows the initially URL-filtered credentials.
+ * When user types, searches ALL credentials in vault (not just the pre-filtered set).
+ *
+ * @param searchInput - The search input element
+ * @param initialCredentials - The initially URL-filtered credentials to show when search is empty
+ * @param rootContainer - The root container element
+ * @param searchTimeout - Timeout for debouncing search
+ * @param credentialList - The credential list element to update
+ * @param input - The input field that triggered the popup
+ * @param noMatchesText - Text to show when no matches found
  */
-async function handleSearchInput(searchInput: HTMLInputElement, credentials: Credential[], rootContainer: HTMLElement, searchTimeout: NodeJS.Timeout | null, credentialList: HTMLElement | null, input: HTMLInputElement, noMatchesText?: string) : Promise<void> {
+async function handleSearchInput(searchInput: HTMLInputElement, initialCredentials: Credential[], rootContainer: HTMLElement, searchTimeout: NodeJS.Timeout | null, credentialList: HTMLElement | null, input: HTMLInputElement, noMatchesText?: string) : Promise<void> {
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
-  const searchTerm = searchInput.value.toLowerCase();
 
-  // Ensure we have unique credentials
-  const uniqueCredentials = Array.from(new Map(credentials.map(cred => [cred.Id, cred])).values());
-  let filteredCredentials;
+  const searchTerm = searchInput.value.trim();
 
   if (searchTerm === '') {
-    // Load autofill matching mode setting
-    const matchingMode = await storage.getItem(AUTOFILL_MATCHING_MODE_KEY) as AutofillMatchingMode ?? AutofillMatchingMode.DEFAULT;
-
-    // If search is empty, use original URL-based filtering
-    filteredCredentials = filterCredentials(
-      uniqueCredentials,
-      window.location.href,
-      document.title,
-      matchingMode
-    ).sort((a, b) => {
-      // First compare by service name
-      const serviceNameComparison = (a.ServiceName ?? '').localeCompare(b.ServiceName ?? '');
-      if (serviceNameComparison !== 0) {
-        return serviceNameComparison;
-      }
-
-      // If service names are equal, compare by username/nickname
-      return (a.Username ?? '').localeCompare(b.Username ?? '');
-    });
+    // If search is empty, show the initially URL-filtered credentials
+    updatePopupContent(initialCredentials, credentialList, input, rootContainer, noMatchesText);
   } else {
-    // Otherwise filter based on search term
-    filteredCredentials = uniqueCredentials.filter(cred => {
-      const searchableFields = [
-        cred.ServiceName?.toLowerCase(),
-        cred.Username?.toLowerCase(),
-        cred.Alias?.Email?.toLowerCase(),
-        cred.ServiceUrl?.toLowerCase()
-      ];
-      return searchableFields.some(field => field?.includes(searchTerm));
-    }).sort((a, b) => {
-      // First compare by service name
-      const serviceNameComparison = (a.ServiceName ?? '').localeCompare(b.ServiceName ?? '');
-      if (serviceNameComparison !== 0) {
-        return serviceNameComparison;
-      }
+    // Search in full vault with search term
+    const response = await sendMessage('GET_SEARCH_CREDENTIALS', {
+      searchTerm: searchTerm
+    }, 'background') as CredentialsResponse;
 
-      // If service names are equal, compare by username/nickname
-      return (a.Username ?? '').localeCompare(b.Username ?? '');
-    });
+    if (response.success && response.credentials) {
+      updatePopupContent(response.credentials, credentialList, input, rootContainer, noMatchesText);
+    } else {
+      // On error, fallback to showing initial filtered credentials
+      updatePopupContent(initialCredentials, credentialList, input, rootContainer, noMatchesText);
+    }
   }
-
-  // Update popup content with filtered results
-  updatePopupContent(filteredCredentials, credentialList, input, rootContainer, noMatchesText);
 }
 
 /**

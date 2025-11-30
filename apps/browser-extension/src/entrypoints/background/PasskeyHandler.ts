@@ -4,12 +4,12 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { handleGetEncryptionKey } from '@/entrypoints/background/VaultMessageHandler';
-import { extractDomain, extractRootDomain } from '@/entrypoints/contentScript/CredentialMatcher';
 
 import {
   PASSKEY_PROVIDER_ENABLED_KEY,
   PASSKEY_DISABLED_SITES_KEY
 } from '@/utils/Constants';
+import { extractDomain, extractRootDomain } from '@/utils/credentialMatcher/CredentialMatcher';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type {
