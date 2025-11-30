@@ -131,7 +131,7 @@ describe('PasswordGenerator', () => {
       expect(password).not.toMatch(/[Ss5]/);
       expect(password).not.toMatch(/[Bb8]/);
       expect(password).not.toMatch(/[Gg6]/);
-      expect(password).not.toMatch(/[[\]{}()<>]/);
+      expect(password).not.toMatch(/[\\[\\]{}()<>]/);
       expect(password).not.toMatch(/['"`]/);
       expect(password).not.toMatch(/[;:,.]/);
       expect(password).not.toMatch(/[_-]/);
