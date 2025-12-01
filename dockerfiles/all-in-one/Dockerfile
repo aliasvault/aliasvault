@@ -3,7 +3,7 @@
 # ============================================
 # Stage 1: Build .NET applications
 # ============================================
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-builder
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS dotnet-builder
 
 # Install Python (required for WASM compilation)
 RUN apt-get update && \
@@ -71,7 +71,7 @@ RUN ARCH="${TARGETARCH}"; \
 # ============================================
 # Stage 3: Final runtime image
 # ============================================
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-bookworm-slim
 
 # OCI Image Labels
 LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"
