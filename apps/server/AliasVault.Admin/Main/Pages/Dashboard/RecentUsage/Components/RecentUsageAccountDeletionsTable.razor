@@ -1,0 +1,83 @@
+@using AliasVault.Admin.Main.Models
+@using AliasVault.RazorComponents.Tables
+
+<div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Top Usernames by Account Deletions (Last 72h)</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Usernames with the most account deletion events in the last 72 hours</p>
+        </div>
+    </div>
+
+    @if (Data != null && Data.Any())
+    {
+        <div class="mb-3">
+            <Paginator CurrentPage="@CurrentPage" PageSize="@PageSize" TotalRecords="@Data.Count" OnPageChanged="@HandlePageChanged" />
+        </div>
+        <div class="overflow-x-auto">
+            <SortableTable Columns="@_tableColumns">
+                @foreach (var deletion in PagedData)
+                {
+                    <SortableTableRow>
+                        <SortableTableColumn IsPrimary="true">
+                            <a href="logging/auth?search=@Uri.EscapeDataString(deletion.Username)" class="text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
+                                @deletion.Username
+                            </a>
+                        </SortableTableColumn>
+                        <SortableTableColumn>@deletion.DeletionCount72h.ToString("N0")</SortableTableColumn>
+                        <SortableTableColumn>
+                            @if (deletion.LastDeletionDate.HasValue)
+                            {
+                                <span>@deletion.LastDeletionDate.Value.ToString("yyyy-MM-dd HH:mm:ss") UTC</span>
+                            }
+                            else
+                            {
+                                <span class="text-gray-400 dark:text-gray-500">-</span>
+                            }
+                        </SortableTableColumn>
+                    </SortableTableRow>
+                }
+            </SortableTable>
+        </div>
+    }
+    else if (Data != null)
+    {
+        <div class="text-center text-gray-500 dark:text-gray-400">
+            <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No Recent Account Deletions</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No account deletions occurred in the last 72 hours.</p>
+        </div>
+    }
+    else
+    {
+        <div class="px-6 py-8 flex justify-center">
+            <LoadingIndicator />
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<RecentUsageAccountDeletions>? Data { get; set; }
+
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 10;
+
+    private IEnumerable<RecentUsageAccountDeletions> PagedData =>
+        Data?.Skip((CurrentPage - 1) * PageSize).Take(PageSize) ?? Enumerable.Empty<RecentUsageAccountDeletions>();
+
+    private readonly List<TableColumn> _tableColumns = new()
+    {
+        new() { Title = "Username", PropertyName = "Username", Sortable = false },
+        new() { Title = "Deletions (72h)", PropertyName = "DeletionCount72h", Sortable = false },
+        new() { Title = "Last Deletion", PropertyName = "LastDeletionDate", Sortable = false }
+    };
+
+    private void HandlePageChanged(int page)
+    {
+        CurrentPage = page;
+        StateHasChanged();
+    }
+}

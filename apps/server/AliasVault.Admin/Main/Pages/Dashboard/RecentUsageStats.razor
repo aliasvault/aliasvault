@@ -30,6 +30,12 @@
 
         <!-- Top IP Addresses by Mobile Login Requests ---->
         <RecentUsageMobileLoginsTable Data="@_recentUsageStats?.TopIpsByMobileLogins72h" />
+
+        <!-- Top IP Addresses by Account Deletions ---->
+        <RecentUsageDeletionsByIpTable Data="@_recentUsageStats?.TopIpsByDeletions72h" />
+
+        <!-- Top Usernames by Account Deletions ---->
+        <RecentUsageAccountDeletionsTable Data="@_recentUsageStats?.TopUsernamesByDeletions72h" />
     </div>
 
     @if (_loadingError)

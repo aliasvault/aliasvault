@@ -61,7 +61,7 @@
     public List<RecentUsageEmails>? Data { get; set; }
 
     private int CurrentPage { get; set; } = 1;
-    private int PageSize { get; set; } = 20;
+    private int PageSize { get; set; } = 10;
 
     private IEnumerable<RecentUsageEmails> PagedData =>
         Data?.Skip((CurrentPage - 1) * PageSize).Take(PageSize) ?? Enumerable.Empty<RecentUsageEmails>();

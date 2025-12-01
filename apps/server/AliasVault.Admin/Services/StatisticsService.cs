@@ -116,6 +116,8 @@ public class StatisticsService
             GetTopUsersByEmails72hAsync().ContinueWith(t => stats.TopUsersByEmails72h = t.Result),
             GetTopIpsByRegistrations72hAsync().ContinueWith(t => stats.TopIpsByRegistrations72h = t.Result),
             GetTopIpsByMobileLogins72hAsync().ContinueWith(t => stats.TopIpsByMobileLogins72h = t.Result),
+            GetTopIpsByDeletions72hAsync().ContinueWith(t => stats.TopIpsByDeletions72h = t.Result),
+            GetTopUsernamesByDeletions72hAsync().ContinueWith(t => stats.TopUsernamesByDeletions72h = t.Result),
         };
 
         await Task.WhenAll(tasks);
@@ -475,7 +477,7 @@ public class StatisticsService
     }
 
     /// <summary>
-    /// Gets the top 20 users by number of aliases created in the last 72 hours.
+    /// Gets the top 100 users by number of aliases created in the last 72 hours.
     /// </summary>
     /// <returns>List of top users by recent aliases.</returns>
     private async Task<List<RecentUsageAliases>> GetTopUsersByAliases72hAsync()
@@ -495,7 +497,7 @@ public class StatisticsService
                 AliasCount72h = g.Count(),
             })
             .OrderByDescending(u => u.AliasCount72h)
-            .Take(20)
+            .Take(100)
             .ToListAsync();
 
         return topUsers.Select(u => new RecentUsageAliases
@@ -509,7 +511,7 @@ public class StatisticsService
     }
 
     /// <summary>
-    /// Gets the top 20 users by number of emails received in the last 72 hours.
+    /// Gets the top 100 users by number of emails received in the last 72 hours.
     /// </summary>
     /// <returns>List of top users by recent emails.</returns>
     private async Task<List<RecentUsageEmails>> GetTopUsersByEmails72hAsync()
@@ -529,7 +531,7 @@ public class StatisticsService
                 EmailCount72h = g.Count(),
             })
             .OrderByDescending(u => u.EmailCount72h)
-            .Take(20)
+            .Take(100)
             .ToListAsync();
 
         return topUsers.Select(u => new RecentUsageEmails
@@ -543,7 +545,7 @@ public class StatisticsService
     }
 
     /// <summary>
-    /// Gets the top 20 IP addresses by number of registrations in the last 72 hours.
+    /// Gets the top 100 IP addresses by number of registrations in the last 72 hours.
     /// </summary>
     /// <returns>List of top IP addresses by recent registrations.</returns>
     private async Task<List<RecentUsageRegistrations>> GetTopIpsByRegistrations72hAsync()
@@ -565,7 +567,7 @@ public class StatisticsService
                 RegistrationCount72h = g.Count(),
             })
             .OrderByDescending(ip => ip.RegistrationCount72h)
-            .Take(20)
+            .Take(100)
             .ToListAsync();
 
         return topIps.Select(ip => new RecentUsageRegistrations
@@ -577,7 +579,7 @@ public class StatisticsService
     }
 
     /// <summary>
-    /// Gets the top 20 IP addresses by number of mobile login requests in the last 72 hours.
+    /// Gets the top 100 IP addresses by number of mobile login requests in the last 72 hours.
     /// </summary>
     /// <returns>List of top IP addresses by mobile login requests.</returns>
     private async Task<List<RecentUsageMobileLogins>> GetTopIpsByMobileLogins72hAsync()
@@ -597,7 +599,7 @@ public class StatisticsService
                 MobileLoginCount72h = g.Count(),
             })
             .OrderByDescending(ip => ip.MobileLoginCount72h)
-            .Take(20)
+            .Take(100)
             .ToListAsync();
 
         return topIps.Select(ip => new RecentUsageMobileLogins
@@ -605,6 +607,72 @@ public class StatisticsService
             OriginalIpAddress = ip.IpAddress!,
             IpAddress = AnonymizeIpAddress(ip.IpAddress!),
             MobileLoginCount72h = ip.MobileLoginCount72h,
+        }).ToList();
+    }
+
+    /// <summary>
+    /// Gets the top 100 IP addresses by number of account deletions in the last 72 hours.
+    /// </summary>
+    /// <returns>List of top IP addresses by recent account deletions.</returns>
+    private async Task<List<RecentUsageDeletionsByIp>> GetTopIpsByDeletions72hAsync()
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var cutoffDate = DateTime.UtcNow.AddHours(-72);
+
+        // Get account deletions by IP from auth logs (using AccountDeletion event type)
+        var topIps = await context.AuthLogs
+            .Where(al => al.Timestamp >= cutoffDate &&
+                        al.IpAddress != null &&
+                        al.IpAddress != "xxx.xxx.xxx.xxx" &&
+                        al.EventType == AuthEventType.AccountDeletion)
+            .GroupBy(al => al.IpAddress)
+            .Select(g => new
+            {
+                IpAddress = g.Key,
+                DeletionCount72h = g.Count(),
+            })
+            .OrderByDescending(ip => ip.DeletionCount72h)
+            .Take(100)
+            .ToListAsync();
+
+        return topIps.Select(ip => new RecentUsageDeletionsByIp
+        {
+            OriginalIpAddress = ip.IpAddress!,
+            IpAddress = AnonymizeIpAddress(ip.IpAddress!),
+            DeletionCount72h = ip.DeletionCount72h,
+        }).ToList();
+    }
+
+    /// <summary>
+    /// Gets the top 100 usernames by number of account deletions in the last 72 hours.
+    /// </summary>
+    /// <returns>List of top usernames by recent account deletions.</returns>
+    private async Task<List<RecentUsageAccountDeletions>> GetTopUsernamesByDeletions72hAsync()
+    {
+        await using var context = await _contextFactory.CreateDbContextAsync();
+        var cutoffDate = DateTime.UtcNow.AddHours(-72);
+
+        // Get account deletions by username from auth logs (using AccountDeletion event type)
+        var topUsernames = await context.AuthLogs
+            .Where(al => al.Timestamp >= cutoffDate &&
+                        al.Username != null &&
+                        al.EventType == AuthEventType.AccountDeletion)
+            .GroupBy(al => al.Username)
+            .Select(g => new
+            {
+                Username = g.Key,
+                DeletionCount72h = g.Count(),
+                LastDeletionDate = g.Max(al => al.Timestamp),
+            })
+            .OrderByDescending(u => u.DeletionCount72h)
+            .Take(100)
+            .ToListAsync();
+
+        return topUsernames.Select(u => new RecentUsageAccountDeletions
+        {
+            Username = u.Username!,
+            DeletionCount72h = u.DeletionCount72h,
+            LastDeletionDate = u.LastDeletionDate,
         }).ToList();
     }
 }

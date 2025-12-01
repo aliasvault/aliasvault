@@ -4,8 +4,8 @@
 <div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
     <div class="flex items-center justify-between mb-4">
         <div>
-            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Top IP Addresses by Registrations (Last 72h)</h3>
-            <p class="text-sm text-gray-500 dark:text-gray-400">IP addresses with the most account registrations in the last 72 hours (last octet anonymized)</p>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Top IP Addresses by Account Deletions (Last 72h)</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">IP addresses with the most account deletions in the last 72 hours (last octet anonymized)</p>
         </div>
     </div>
 
@@ -24,7 +24,7 @@
                                 @ip.IpAddress
                             </a>
                         </SortableTableColumn>
-                        <SortableTableColumn>@ip.RegistrationCount72h.ToString("N0")</SortableTableColumn>
+                        <SortableTableColumn>@ip.DeletionCount72h.ToString("N0")</SortableTableColumn>
                     </SortableTableRow>
                 }
             </SortableTable>
@@ -34,10 +34,10 @@
     {
         <div class="text-center text-gray-500 dark:text-gray-400">
             <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No Recent Registrations</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No account registrations occurred in the last 72 hours.</p>
+            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No Recent Account Deletions</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No account deletions occurred in the last 72 hours.</p>
         </div>
     }
     else
@@ -50,18 +50,18 @@
 
 @code {
     [Parameter]
-    public List<RecentUsageRegistrations>? Data { get; set; }
+    public List<RecentUsageDeletionsByIp>? Data { get; set; }
 
     private int CurrentPage { get; set; } = 1;
     private int PageSize { get; set; } = 10;
 
-    private IEnumerable<RecentUsageRegistrations> PagedData =>
-        Data?.Skip((CurrentPage - 1) * PageSize).Take(PageSize) ?? Enumerable.Empty<RecentUsageRegistrations>();
+    private IEnumerable<RecentUsageDeletionsByIp> PagedData =>
+        Data?.Skip((CurrentPage - 1) * PageSize).Take(PageSize) ?? Enumerable.Empty<RecentUsageDeletionsByIp>();
 
     private readonly List<TableColumn> _tableColumns = new()
     {
         new() { Title = "IP Range", PropertyName = "IpAddress", Sortable = false },
-        new() { Title = "Registrations (72h)", PropertyName = "RegistrationCount72h", Sortable = false }
+        new() { Title = "Deletions (72h)", PropertyName = "DeletionCount72h", Sortable = false }
     };
 
     private void HandlePageChanged(int page)
