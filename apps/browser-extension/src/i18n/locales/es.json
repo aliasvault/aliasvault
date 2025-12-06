@@ -1,8 +1,8 @@
 {
   "auth": {
-    "loginTitle": "Log in to AliasVault",
+    "loginTitle": "Iniciar sesión en AliasVault",
     "username": "Username or email",
-    "usernamePlaceholder": "name / name@company.com",
+    "usernamePlaceholder": "nombre / nombre@empresa.com",
     "password": "Contraseña",
     "passwordPlaceholder": "Enter your password",
     "rememberMe": "Remember me",
