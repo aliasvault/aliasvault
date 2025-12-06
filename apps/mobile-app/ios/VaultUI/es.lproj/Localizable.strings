@@ -1,73 +1,73 @@
 /* English localization strings for VaultUI */
 "error" = "Error";
-"cancel" = "Cancel";
-"back" = "Back";
-"next" = "Next";
-"edit" = "Edit";
-"website" = "Website";
-"username" = "Username";
-"title" = "Title";
-"unknown_error" = "An unknown error occurred";
+"cancel" = "Cancelar";
+"back" = "Atrás";
+"next" = "Siguiente";
+"edit" = "Editar";
+"website" = "Sitio Web";
+"username" = "Usuario";
+"title" = "Título";
+"unknown_error" = "Se produjo un error desconocido";
 
-"loading_credentials" = "Loading credentials...";
-"no_credentials_found" = "No credentials found";
-"no_credentials_match" = "No existing credentials match your search";
-"create_new_credential" = "Create New Credential";
-"select_credential" = "Select Credential";
-"select_text_to_insert" = "Select Text to Insert";
-"choose_username" = "Choose Username";
-"select_text_to_insert_message" = "Select the text to insert into the focused input field";
-"choose_username_message" = "This website may require either your username or your email address to log in";
-"username_prefix" = "Username: ";
+"loading_credentials" = "Cargando credenciales...";
+"no_credentials_found" = "No se encontraron credenciales";
+"no_credentials_match" = "No hay credenciales existentes que coincidan con su búsqueda";
+"create_new_credential" = "Crear nueva credencial";
+"select_credential" = "Seleccionar credencial";
+"select_text_to_insert" = "Seleccionar texto a insertar";
+"choose_username" = "Escoge un nombre de usuario";
+"select_text_to_insert_message" = "Seleccione el texto a insertar en el campo de entrada resaltado";
+"choose_username_message" = "Este sitio web puede requerir su nombre de usuario o correo electrónico para iniciar sesión";
+"username_prefix" = "Usuario: ";
 "email_prefix" = "Email: ";
-"password" = "Password";
-"credentials_load_error" = "Failed to load credentials. Please open the AliasVault app to check for updates.";
-"no_credential_selected" = "No credential selected.";
-"retrieving_credential" = "Retrieving credential";
-"retrieving_passkey" = "Retrieving passkey";
+"password" = "Contraseña";
+"credentials_load_error" = "Error al cargar las credenciales. Por favor, abre la aplicación AliasVault para buscar actualizaciones.";
+"no_credential_selected" = "Ninguna credencial seleccionada.";
+"retrieving_credential" = "Recuperar credencial";
+"retrieving_passkey" = "Recuperando llave";
 
 /* Context menu strings */
-"copy_username" = "Copy Username";
-"copy_password" = "Copy Password";
-"copy_email" = "Copy Email";
-"view_details" = "View Details";
-"username_copied" = "Username copied";
-"password_copied" = "Password copied";
-"email_copied" = "Email copied";
+"copy_username" = "Copiar nombre de usuario";
+"copy_password" = "Copiar Contraseña";
+"copy_email" = "Copiar email";
+"view_details" = "Ver detalles";
+"username_copied" = "Usuario copiado";
+"password_copied" = "Contraseña copiada";
+"email_copied" = "Email copiado";
 
 /* Search bar */
-"search_credentials" = "Search credentials...";
+"search_credentials" = "Buscar credenciales...";
 
 /* Passkey registration */
-"create_passkey_title" = "Create New Passkey";
-"create_passkey_subtitle" = "Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.";
-"create_passkey_button_confirm" = "Create Passkey";
+"create_passkey_title" = "Crear Nueva llave";
+"create_passkey_subtitle" = "Registre una nueva llave de acceso para este sitio web. Se almacenará de forma segura en su bóveda y se sincronizará automáticamente en todos sus dispositivos con AliasVault.";
+"create_passkey_button_confirm" = "Crear llave de acceso";
 
 /* Passkey provider */
-"passkey" = "Passkey";
-"loading_passkeys" = "Loading passkeys...";
-"no_passkeys_found" = "No passkeys found";
-"no_passkeys_match" = "No existing passkeys match your search";
-"select_passkey" = "Select Passkey";
-"passkeys_load_error" = "Failed to load passkeys. Please open the AliasVault app to check for updates.";
+"passkey" = "Llave de acceso";
+"loading_passkeys" = "Cargando llaves de acceso...";
+"no_passkeys_found" = "No se encontraron claves de acceso";
+"no_passkeys_match" = "Ninguna llave de acceso existente coincide con la búsqueda";
+"select_passkey" = "Seleccionar la clave de acceso";
+"passkeys_load_error" = "Error al cargar las credenciales. Por favor, abre la aplicación AliasVault para buscar actualizaciones.";
 
 /* Passkey replacement */
-"create_new_passkey" = "Create New Passkey";
-"select_passkey_to_replace" = "Or, replace an existing passkey";
-"confirm_replace" = "Replace Passkey";
-"replace_passkey_title" = "Replace Passkey";
-"replace_passkey_explanation" = "This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.";
-"create_passkey_explanation" = "This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.";
+"create_new_passkey" = "Crear nueva llave de acceso";
+"select_passkey_to_replace" = "O, reemplazar una llave de acceso existente";
+"confirm_replace" = "Reemplazar llave de acceso";
+"replace_passkey_title" = "Reemplazar llave de acceso";
+"replace_passkey_explanation" = "Esto reemplazará la llave de acceso existente con una nueva. Tenga en cuenta que su llave de acceso antigua será sobrescrita y ya no será accesible. Si desea crear una llave de acceso separada en su lugar, vuelva a la pantalla anterior.";
+"create_passkey_explanation" = "Esto crea una nueva llave de acceso y la almacena en tu bóveda. Se sincronizará automáticamente en todos tus dispositivos que utilicen AliasVault.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "Desbloquear bóveda";
+"enter_pin_to_unlock_vault" = "Introduzca su PIN para desbloquear su bóveda";
+"pin_locked_max_attempts" = "PIN bloqueado tras demasiados intentos fallidos";
+"pin_incorrect_attempts_remaining" = "PIN incorrecto, %d intentos restantes";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "Configurar PIN";
+"pin_setup_subtitle" = "Elija un PIN para desbloquear su bóveda";
+"pin_confirm_title" = "Confirmar PIN";
+"pin_confirm_subtitle" = "Vuelva a introducir su PIN para confirmar";
+"pin_mismatch" = "Los PIN no coinciden. Por favor, inténtalo de nuevo.";
