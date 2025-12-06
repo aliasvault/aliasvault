@@ -1,8 +1,8 @@
 {
   "common": {
-    "cancel": "Cancel",
-    "close": "Close",
-    "delete": "Delete",
+    "cancel": "Cancelar",
+    "close": "Cerrar",
+    "delete": "Borrar",
     "save": "Save",
     "yes": "Yes",
     "no": "No",
