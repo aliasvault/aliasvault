@@ -6,7 +6,7 @@
     "password": "סיסמה",
     "passwordPlaceholder": "נא למלא את הסיסמה שלך",
     "rememberMe": "לזכור אותי",
-    "loginButton": "Log in",
+    "loginButton": "כניסה",
     "noAccount": "אין לך חשבון עדיין?",
     "createVault": "יצירת כספת חדשה",
     "twoFactorTitle": "נא למלא את קוד האימות מיישומון המאמת שלך.",
@@ -57,7 +57,7 @@
     "next": "הבא",
     "use": "להשתמש",
     "delete": "מחיקה",
-    "save": "Save",
+    "save": "שמירה",
     "or": "או",
     "close": "סגירה",
     "copied": "הועתק!",
@@ -244,8 +244,8 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "nameOptional": "Name (optional)",
-    "secretKey": "Secret Key",
+    "nameOptional": "שם (רשות)",
+    "secretKey": "מפתח סודי",
     "saveToViewCode": "Save to view code",
     "errors": {
       "invalidSecretKey": "Invalid secret key format."
