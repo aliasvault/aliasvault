@@ -59,43 +59,43 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Passkey unlock</value>
+    <value>Desbloqueo con llave de acceso</value>
     <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Your master password is encrypted with the passkey PRF and stored locally. When you reload the AliasVault page or tab, you can unlock your vault with your passkey. If you wish to disable passkey unlock, you can do so with the button below. Your master password will still work for unlocking the vault.</value>
+    <value>Su contraseña maestra se encripta con la llave PRF y se almacena local. Al recargar la página o pestaña de AliasVault, puede desbloquear su bóveda con su llave. Si desea deshabilitar el desbloqueo de contraseña, puede hacerlo con el botón de abajo. Su contraseña maestra seguirá funcionando para desbloquear la bóveda.</value>
     <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Disable Passkey Unlock</value>
+    <value>Desactivar el desbloqueo con llave de acceso</value>
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.</value>
+    <value>Por defecto, recargar la página o pestaña de AliasVault requiere que vuelva a introducir su contraseña maestra. Con una llave de acceso, puede desbloquear la bóveda al instante. Cuando está habilitada, su contraseña maestra se cifrará localmente usando la extensión PRF de la contraseña. Nota: la llave de acceso sólo funcionará para el dispositivo actual y el navegador en el que la active.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>This feature is currently supported by AliasVault browser extension and iOS app. Android support is coming soon. If you experience any issues, you can disable this feature at any time.</value>
+    <value>Esta función está soportada actualmente por la extensión del navegador AliasVault y la aplicación iOS. El soporte para Android estará disponible pronto. Si experimenta algún problema, puede desactivar esta característica en cualquier momento.</value>
     <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Passkey Unlock</value>
+    <value>Activar desbloqueo de llave</value>
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully enabled. The next time your vault is locked, you can unlock it with your created passkey.</value>
+    <value>El desbloqueo con llave de acceso se ha habilitado con éxito. La próxima vez que su bóveda esté bloqueada, puede desbloquearla con su llave de acceso creada.</value>
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully disabled.</value>
+    <value>El desbloqueo con llave de acceso está desactivado correctamente.</value>
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Your current browser does not support the WebAuthn PRF extension. Please try again with a different browser.</value>
+    <value>Su navegador actual no soporta la extensión WebAuthn PRF. Por favor, inténtelo de nuevo con un navegador diferente.</value>
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
-    <value>An error occurred while trying to enable Quick Vault Unlock. Please try again (later).</value>
+    <value>Ocurrió un error mientras se intentaba habilitar el desbloqueo rápido de la bóveda. Por favor, inténtalo de nuevo (más tarde).</value>
     <comment>Generic error message when enabling fails</comment>
   </data>
 </root>
