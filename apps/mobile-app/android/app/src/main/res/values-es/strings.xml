@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">Autocompletado AliasVault</string>
+  <string name="autofill_service_description" translatable="true">AutoFill de AliasVault</string>
   <string name="aliasvault_icon">Icono AliasVault</string>
   <!-- Common strings -->
   <string name="common_close">Cerrar</string>
@@ -63,16 +63,16 @@
   <string name="error_unlock_vault_first">Por favor, primero desbloquea bóveda en la aplicación AliasVault</string>
   <string name="error_vault_decrypt_failed">Error al descifrar la bóveda</string>
   <string name="error_biometric_cancelled">Autenticación biométrica cancelada</string>
-  <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
+  <string name="error_encryption_key_failed">Fallo al recuperar la clave de cifrado</string>
   <!-- PIN unlock -->
-  <string name="pin_unlock_vault">Unlock Vault</string>
-  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
-  <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
-  <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
+  <string name="pin_unlock_vault">Desbloquear bóveda</string>
+  <string name="pin_enter_to_unlock">Introduzca su PIN para desbloquear su bóveda</string>
+  <string name="pin_locked_max_attempts">PIN bloqueado tras demasiados intentos fallidos</string>
+  <string name="pin_incorrect_attempts_remaining">PIN incorrecto, %d intentos restantes</string>
   <!-- PIN setup -->
-  <string name="pin_setup_title">Setup PIN</string>
-  <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
-  <string name="pin_confirm_title">Confirm PIN</string>
-  <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
-  <string name="pin_mismatch">PINs do not match. Please try again.</string>
+  <string name="pin_setup_title">Configurar PIN</string>
+  <string name="pin_setup_description">Elija un PIN para desbloquear su bóveda</string>
+  <string name="pin_confirm_title">Confirmar PIN</string>
+  <string name="pin_confirm_description">Vuelva a introducir su PIN para confirmar</string>
+  <string name="pin_mismatch">Los PIN no coinciden. Por favor, inténtalo de nuevo.</string>
 </resources>
