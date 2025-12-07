@@ -59,19 +59,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Security settings</value>
+    <value>Ajustes de seguridad</value>
     <comment>Title for the security settings page</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Configure security settings.</value>
+    <value>Configurar ajustes de seguridad.</value>
     <comment>Description for the security settings page</comment>
   </data>
   <data name="RefreshButton" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Refrescar</value>
     <comment>Refresh button text</comment>
   </data>
   <data name="BreadcrumbTitle" xml:space="preserve">
-    <value>Security settings</value>
+    <value>Ajustes de seguridad</value>
     <comment>Breadcrumb title for security settings</comment>
   </data>
 </root>
