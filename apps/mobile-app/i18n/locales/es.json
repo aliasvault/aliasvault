@@ -225,12 +225,12 @@
       "howToEnable": "Cómo habilitar Autocompletar y llaves de acceso:",
       "step1": "1. Abre los ajustes de iOS a través del botón de abajo",
       "step2": "2. Ir a \"General\"",
-      "step3": "3. Tap \"AutoFill & Passwords\"",
-      "step4": "4. Enable \"AliasVault\"",
-      "step5": "5. Disable other password providers (e.g. \"iCloud Passwords\") to avoid conflicts",
-      "openIosSettings": "Open iOS Settings",
-      "alreadyConfigured": "I already configured it",
-      "warningText": "Note: You'll need to authenticate with Face ID/Touch ID or your device passcode when using autofill."
+      "step3": "3. Pulsa en \"Autorelleno y contraseñas\"",
+      "step4": "4. Activar \"AliasVault\"",
+      "step5": "5. Desactivar otros proveedores de contraseñas (por ejemplo, \"contraseñas iCloud\") para evitar conflictos",
+      "openIosSettings": "Abrir ajustes de iOS",
+      "alreadyConfigured": "Ya lo he configurado",
+      "warningText": "Nota: Deberá autenticarse con Face ID/Touch ID o con el código de acceso de su dispositivo cuando use autorelleno."
     },
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Experimental Feature",
