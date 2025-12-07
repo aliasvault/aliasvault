@@ -121,11 +121,11 @@
   </data>
   <!-- Extension and app labels -->
   <data name="ComingSoonLabel">
-    <value>Coming Soon</value>
+    <value>Próximamente</value>
     <comment>Label for features coming soon</comment>
   </data>
   <data name="SoonSuffix">
-    <value>(Soon)</value>
+    <value>(Próximamente)</value>
     <comment>Suffix indicating feature coming soon</comment>
   </data>
 </root>
