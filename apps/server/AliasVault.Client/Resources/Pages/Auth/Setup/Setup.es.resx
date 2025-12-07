@@ -21,11 +21,11 @@
   </xsd:schema>
   <!-- Step titles -->
   <data name="TermsAndConditionsStepTitle">
-    <value>Using AliasVault</value>
+    <value>Usando AliasVault</value>
     <comment>Title for the terms and conditions step</comment>
   </data>
   <data name="UsernameStepTitle">
-    <value>Choose Username</value>
+    <value>Elige nombre de usuario</value>
     <comment>Title for the username selection step</comment>
   </data>
   <data name="PasswordStepTitle">
