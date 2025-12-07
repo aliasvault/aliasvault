@@ -95,13 +95,13 @@
     <comment>Export confirmation dialog title</comment>
   </data>
   <data name="ExportWarningMessage" xml:space="preserve">
-    <value>Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted computers and ensure you:
+    <value>Advertencia: Exportando su bóveda a un archivo no cifrado expondrá todas sus contraseñas e información sensible en texto plano. Solo haga esto en ordenadores de confianza y asegúrese de que:
 
-• Store the exported file in a secure location
-• Delete the file when you no longer need it
-• Never share the exported file with others
+• Almacene el archivo exportado en una ubicación segura
+• Elimine el archivo cuando ya no lo necesite
+• Nunca comparta el archivo exportado con otros
 
-Are you sure you want to continue with the export?</value>
+¿Está seguro de que desea continuar con la exportación?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
