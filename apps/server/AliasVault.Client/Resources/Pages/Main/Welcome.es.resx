@@ -89,7 +89,7 @@
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>Instala la extensión del navegador AliasVault y la aplicación móvil para crear alias y autorellenar formularios directamente desde tu navegador y smartphone.</value>
+    <value>Instala la extensión de AliasVault para tu navegador y la aplicación móvil para crear alias y autocompletar formularios directamente desde tu navegador y smartphone.</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
