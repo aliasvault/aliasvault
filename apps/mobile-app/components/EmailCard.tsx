@@ -2,8 +2,8 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
-import type { MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { Credential } from '@/utils/dist/core/models/vault';
+import type { MailboxEmail } from '@/utils/dist/core/models/webapi';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';

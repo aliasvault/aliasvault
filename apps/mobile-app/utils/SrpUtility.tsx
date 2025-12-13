@@ -1,6 +1,6 @@
 import srp from 'secure-remote-password/client';
 
-import type { LoginResponse, ValidateLoginRequest2Fa, ValidateLoginResponse, BadRequestResponse } from '@/utils/dist/shared/models/webapi';
+import type { LoginResponse, ValidateLoginRequest2Fa, ValidateLoginResponse, BadRequestResponse } from '@/utils/dist/core/models/webapi';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { WebApiService } from '@/utils/WebApiService';
 
@@ -49,18 +49,19 @@ export class SrpUtility {
     rememberMe: boolean,
     loginResponse: LoginResponse
   ): Promise<ValidateLoginResponse> {
-    // Generate client ephemeral
+    /**
+     * Use srpIdentity from server response if available, otherwise fall back to username.
+     * Note: the fallback can be removed in the future after 0.26.0+ is deployed.
+     */
+    const srpIdentity = loginResponse.srpIdentity ?? username;
+
     const clientEphemeral = srp.generateEphemeral();
-
-    // Derive private key
-    const privateKey = srp.derivePrivateKey(loginResponse.salt, username, passwordHash);
-
-    // Derive session
+    const privateKey = srp.derivePrivateKey(loginResponse.salt, srpIdentity, passwordHash);
     const sessionProof = srp.deriveSession(
       clientEphemeral.secret,
       loginResponse.serverEphemeral,
       loginResponse.salt,
-      username,
+      srpIdentity,
       privateKey
     );
 
@@ -98,18 +99,19 @@ export class SrpUtility {
     loginResponse: LoginResponse,
     twoFactorCode: number
   ): Promise<ValidateLoginResponse> {
-    // Generate client ephemeral
+    /**
+     * Use srpIdentity from server response if available, otherwise fall back to username.
+     * Note: the fallback can be removed in the future after 0.26.0+ is deployed.
+     */
+    const srpIdentity = loginResponse.srpIdentity ?? username;
+
     const clientEphemeral = srp.generateEphemeral();
-
-    // Derive private key
-    const privateKey = srp.derivePrivateKey(loginResponse.salt, username, passwordHash);
-
-    // Derive session
+    const privateKey = srp.derivePrivateKey(loginResponse.salt, srpIdentity, passwordHash);
     const sessionProof = srp.deriveSession(
       clientEphemeral.secret,
       loginResponse.serverEphemeral,
       loginResponse.salt,
-      username,
+      srpIdentity,
       privateKey
     );
 

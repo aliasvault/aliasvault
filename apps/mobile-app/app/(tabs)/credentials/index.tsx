@@ -8,7 +8,7 @@ import { StyleSheet, Text, FlatList, TouchableOpacity, TextInput, RefreshControl
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import type { Credential } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 

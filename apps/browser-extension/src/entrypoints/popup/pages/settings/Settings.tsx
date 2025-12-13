@@ -119,8 +119,7 @@ const Settings: React.FC = () => {
    * Handle lock vault.
    */
   const handleLock = async () : Promise<void> => {
-    // Clear the vault which will lock it and require user to login again
-    await sendMessage('CLEAR_VAULT', {}, 'background');
+    await sendMessage('LOCK_VAULT', {}, 'background');
 
     // Navigate to unlock page
     navigate('/unlock');

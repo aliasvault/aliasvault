@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import type { Credential } from '@/utils/dist/core/models/vault';
 import SqliteClient from '@/utils/SqliteClient';
 
 type HeaderBlockProps = {

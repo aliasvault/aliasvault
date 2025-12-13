@@ -6,7 +6,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import { AppInfo } from '@/utils/AppInfo';
-import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 
 import { storage } from '#imports';
@@ -56,7 +56,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
    */
   const isPublicDomain = async (emailAddress: string): Promise<boolean> => {
     // Get metadata from storage
-    const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[] ?? [];
+    const publicEmailDomains = await storage.getItem('local:publicEmailDomains') as string[] ?? [];
     return publicEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
   };
 
@@ -65,7 +65,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
    */
   const isPrivateDomain = async (emailAddress: string): Promise<boolean> => {
     // Get metadata from storage
-    const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[] ?? [];
+    const privateEmailDomains = await storage.getItem('local:privateEmailDomains') as string[] ?? [];
     return privateEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
   };
 

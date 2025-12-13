@@ -6,7 +6,7 @@ import ContextMenu, { OnPressMenuItemEvent } from 'react-native-context-menu-vie
 import Toast from 'react-native-toast-message';
 
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import type { Credential } from '@/utils/dist/core/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 

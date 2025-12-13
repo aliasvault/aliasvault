@@ -3,8 +3,8 @@ import { Buffer } from 'buffer';
 import AesGcmCrypto from 'react-native-aes-gcm-crypto';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
-import type { EncryptionKey } from '@/utils/dist/shared/models/vault';
-import type { Email, MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { EncryptionKey } from '@/utils/dist/core/models/vault';
+import type { Email, MailboxEmail } from '@/utils/dist/core/models/webapi';
 
 /**
  * Utility class for encryption operations including:

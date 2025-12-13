@@ -19,9 +19,14 @@ import Upgrade from '@/entrypoints/popup/pages/auth/Upgrade';
 import CredentialAddEdit from '@/entrypoints/popup/pages/credentials/CredentialAddEdit';
 import CredentialDetails from '@/entrypoints/popup/pages/credentials/CredentialDetails';
 import CredentialsList from '@/entrypoints/popup/pages/credentials/CredentialsList';
+import ItemAddEdit from '@/entrypoints/popup/pages/credentials/ItemAddEdit';
+import ItemDetails from '@/entrypoints/popup/pages/credentials/ItemDetails';
+import ItemTypeSelector from '@/entrypoints/popup/pages/credentials/ItemTypeSelector';
 import EmailDetails from '@/entrypoints/popup/pages/emails/EmailDetails';
 import EmailsList from '@/entrypoints/popup/pages/emails/EmailsList';
 import Index from '@/entrypoints/popup/pages/Index';
+import ItemsList from '@/entrypoints/popup/pages/items/ItemsList';
+import RecentlyDeleted from '@/entrypoints/popup/pages/items/RecentlyDeleted';
 import PasskeyAuthenticate from '@/entrypoints/popup/pages/passkeys/PasskeyAuthenticate';
 import PasskeyCreate from '@/entrypoints/popup/pages/passkeys/PasskeyCreate';
 import Reinitialize from '@/entrypoints/popup/pages/Reinitialize';
@@ -186,6 +191,13 @@ const App: React.FC = () => {
     { path: '/credentials/add', element: <CredentialAddEdit />, showBackButton: true, title: t('credentials.addCredential') },
     { path: '/credentials/:id', element: <CredentialDetails />, showBackButton: true, title: t('credentials.credentialDetails') },
     { path: '/credentials/:id/edit', element: <CredentialAddEdit />, showBackButton: true, title: t('credentials.editCredential') },
+    { path: '/items', element: <ItemsList />, showBackButton: false },
+    { path: '/items/folder/:folderId', element: <ItemsList />, showBackButton: true, title: t('items.title') },
+    { path: '/items/select-type', element: <ItemTypeSelector />, showBackButton: true, title: t('itemTypes.selectType') },
+    { path: '/items/add', element: <ItemAddEdit />, showBackButton: true, title: t('items.addItem') },
+    { path: '/items/deleted', element: <RecentlyDeleted />, showBackButton: true, title: t('recentlyDeleted.title') },
+    { path: '/items/:id', element: <ItemDetails />, showBackButton: true, title: t('items.itemDetails') },
+    { path: '/items/:id/edit', element: <ItemAddEdit />, showBackButton: true, title: t('items.editItem') },
     { path: '/passkeys/create', element: <PasskeyCreate />, layout: LayoutType.PASSKEY },
     { path: '/passkeys/authenticate', element: <PasskeyAuthenticate />, layout: LayoutType.PASSKEY },
     { path: '/emails', element: <EmailsList />, showBackButton: false },

@@ -9,10 +9,10 @@ import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardCl
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithCredential, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearVault, handleCreateIdentity, handleGetCredentials, handleGetFilteredCredentials, handleGetSearchCredentials, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVault, handleSyncVault, handleUploadVault } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearVault, handleLockVault, handleCreateIdentity, handleGetCredentials, handleGetFilteredCredentials, handleGetSearchCredentials, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision } from '@/entrypoints/background/VaultMessageHandler';
 
 import { GLOBAL_CONTEXT_MENU_ENABLED_KEY } from '@/utils/Constants';
-import { EncryptionKeyDerivationParams } from "@/utils/dist/shared/models/metadata";
+import { EncryptionKeyDerivationParams } from "@/utils/dist/core/models/metadata";
 
 import { defineBackground, storage, browser } from '#imports';
 
@@ -35,13 +35,20 @@ export default defineBackground({
     onMessage('GET_DEFAULT_IDENTITY_SETTINGS', () => handleGetDefaultIdentitySettings());
     onMessage('GET_PASSWORD_SETTINGS', () => handleGetPasswordSettings());
 
-    onMessage('STORE_VAULT', ({ data }) => handleStoreVault(data));
+    onMessage('STORE_VAULT_METADATA', ({ data }) => handleStoreVaultMetadata(data as { publicEmailDomainList?: string[]; privateEmailDomainList?: string[]; hiddenPrivateEmailDomainList?: string[] }));
     onMessage('STORE_ENCRYPTION_KEY', ({ data }) => handleStoreEncryptionKey(data as string));
     onMessage('STORE_ENCRYPTION_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreEncryptionKeyDerivationParams(data as EncryptionKeyDerivationParams));
 
+    onMessage('GET_ENCRYPTED_VAULT', () => handleGetEncryptedVault());
+    onMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVault(data as { vaultBlob: string; markDirty?: boolean; serverRevision?: number; expectedMutationSeq?: number }));
+    onMessage('GET_SYNC_STATE', () => handleGetSyncState());
+    onMessage('MARK_VAULT_CLEAN', ({ data }) => handleMarkVaultClean(data as { mutationSeqAtStart: number; newServerRevision: number }));
+    onMessage('GET_SERVER_REVISION', () => handleGetServerRevision());
+
     onMessage('CREATE_IDENTITY', ({ data }) => handleCreateIdentity(data));
-    onMessage('UPLOAD_VAULT', ({ data }) => handleUploadVault(data));
+    onMessage('UPLOAD_VAULT', () => handleUploadVault());
     onMessage('SYNC_VAULT', () => handleSyncVault());
+    onMessage('LOCK_VAULT', () => handleLockVault());
     onMessage('CLEAR_VAULT', () => handleClearVault());
 
     onMessage('OPEN_POPUP', () => handleOpenPopup());

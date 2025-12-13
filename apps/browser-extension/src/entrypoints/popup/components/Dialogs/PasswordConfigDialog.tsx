@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { PasswordSettings } from '@/utils/dist/shared/models/vault';
-import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
+import type { PasswordSettings } from '@/utils/dist/core/models/vault';
+import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
 
 interface IPasswordConfigDialogProps {
   isOpen: boolean;

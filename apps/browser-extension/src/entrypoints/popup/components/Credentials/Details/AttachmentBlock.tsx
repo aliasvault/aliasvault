@@ -3,16 +3,17 @@ import { useTranslation } from 'react-i18next';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import type { Attachment } from '@/utils/dist/shared/models/vault';
+import type { Attachment } from '@/utils/dist/core/models/vault';
 
 type AttachmentBlockProps = {
-  credentialId: string;
+  credentialId?: string;
+  itemId?: string;
 }
 
 /**
- * This component shows attachments for a credential.
+ * This component shows attachments for a credential or item.
  */
-const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ credentialId }) => {
+const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ credentialId, itemId }) => {
   const { t } = useTranslation();
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,7 +50,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ credentialId }) => {
 
   useEffect(() => {
     /**
-     * Loads the attachments for the credential.
+     * Loads the attachments for the credential or item.
      */
     const loadAttachments = async (): Promise<void> => {
       if (!dbContext?.sqliteClient) {
@@ -57,7 +58,12 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ credentialId }) => {
       }
 
       try {
-        const attachmentList = dbContext.sqliteClient.getAttachmentsForCredential(credentialId);
+        let attachmentList: Attachment[] = [];
+        if (itemId) {
+          attachmentList = dbContext.sqliteClient.getAttachmentsForItem(itemId);
+        } else if (credentialId) {
+          attachmentList = dbContext.sqliteClient.getAttachmentsForCredential(credentialId);
+        }
         setAttachments(attachmentList);
       } catch (error) {
         console.error('Error loading attachments:', error);
@@ -67,7 +73,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ credentialId }) => {
     };
 
     loadAttachments();
-  }, [credentialId, dbContext?.sqliteClient]);
+  }, [credentialId, itemId, dbContext?.sqliteClient]);
 
   if (loading) {
     return (

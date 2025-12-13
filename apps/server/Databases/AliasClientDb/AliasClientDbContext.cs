@@ -45,29 +45,9 @@ public class AliasClientDbContext : DbContext
     }
 
     /// <summary>
-    /// Gets or sets the Alias DbSet.
-    /// </summary>
-    public DbSet<Alias> Aliases { get; set; }
-
-    /// <summary>
     /// Gets or sets the Attachment DbSet.
     /// </summary>
     public DbSet<Attachment> Attachments { get; set; }
-
-    /// <summary>
-    /// Gets or sets the Credential DbSet.
-    /// </summary>
-    public DbSet<Credential> Credentials { get; set; }
-
-    /// <summary>
-    /// Gets or sets the Password DbSet.
-    /// </summary>
-    public DbSet<Password> Passwords { get; set; }
-
-    /// <summary>
-    /// Gets or sets the Service DbSet.
-    /// </summary>
-    public DbSet<Service> Services { get; set; }
 
     /// <summary>
     /// Gets or sets the EncryptionKey DbSet.
@@ -90,6 +70,46 @@ public class AliasClientDbContext : DbContext
     public DbSet<Passkey> Passkeys { get; set; }
 
     /// <summary>
+    /// Gets or sets the Items DbSet.
+    /// </summary>
+    public DbSet<Item> Items { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Folders DbSet.
+    /// </summary>
+    public DbSet<Folder> Folders { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Logos DbSet.
+    /// </summary>
+    public DbSet<Logo> Logos { get; set; }
+
+    /// <summary>
+    /// Gets or sets the FieldDefinitions DbSet.
+    /// </summary>
+    public DbSet<FieldDefinition> FieldDefinitions { get; set; }
+
+    /// <summary>
+    /// Gets or sets the FieldValues DbSet.
+    /// </summary>
+    public DbSet<FieldValue> FieldValues { get; set; }
+
+    /// <summary>
+    /// Gets or sets the FieldHistories DbSet.
+    /// </summary>
+    public DbSet<FieldHistory> FieldHistories { get; set; }
+
+    /// <summary>
+    /// Gets or sets the Tags DbSet.
+    /// </summary>
+    public DbSet<Tag> Tags { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ItemTags DbSet.
+    /// </summary>
+    public DbSet<ItemTag> ItemTags { get; set; }
+
+    /// <summary>
     /// The OnModelCreating method.
     /// </summary>
     /// <param name="modelBuilder">ModelBuilder instance.</param>
@@ -109,60 +129,25 @@ public class AliasClientDbContext : DbContext
             }
         }
 
-        // Create a value converter that maps DateTime.MinValue to an empty string and vice versa.
-        // This prevents an empty string in the client DB from causing a fatal exception while loading
-        // Alias objects. It also supports reading . and : as separators as pre 0.23.0 some clients were susceptible to use
-        // local culture settings which could cause the birthdate field to be either format.
-        // TODO: when the birthdate field is made optional in data model and all existing values have been converted from "yyyy-MM-dd HH.mm.ss" to "yyyy-MM-dd HH':'mm':'ss", this can probably
-        // be removed. But test the usecase where the birthdate field is empty string (because of browser extension error).
-        var emptyDateTimeConverter = new ValueConverter<DateTime, string>(
-            v => DateTimeToString(v),
-            v => StringToDateTime(v));
-
-        modelBuilder.Entity<Alias>()
-            .Property(e => e.BirthDate)
-            .HasConversion(emptyDateTimeConverter);
-
-        // Configure Credential - Alias relationship
-        modelBuilder.Entity<Credential>()
-            .HasOne(l => l.Alias)
-            .WithMany(c => c.Credentials)
-            .HasForeignKey(l => l.AliasId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Configure Credential - Service relationship
-        modelBuilder.Entity<Credential>()
-            .HasOne(l => l.Service)
-            .WithMany(c => c.Credentials)
-            .HasForeignKey(l => l.ServiceId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Configure Attachment - Credential relationship
+        // Configure Attachment - Item relationship
         modelBuilder.Entity<Attachment>()
-            .HasOne(l => l.Credential)
+            .HasOne(l => l.Item)
             .WithMany(c => c.Attachments)
-            .HasForeignKey(l => l.CredentialId)
+            .HasForeignKey(l => l.ItemId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Configure Password - Credential relationship
-        modelBuilder.Entity<Password>()
-            .HasOne(l => l.Credential)
-            .WithMany(c => c.Passwords)
-            .HasForeignKey(l => l.CredentialId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        // Configure TotpCode - Credential relationship
+        // Configure TotpCode - Item relationship
         modelBuilder.Entity<TotpCode>()
-            .HasOne(l => l.Credential)
+            .HasOne(l => l.Item)
             .WithMany(c => c.TotpCodes)
-            .HasForeignKey(l => l.CredentialId)
+            .HasForeignKey(l => l.ItemId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // Configure Passkey - Credential relationship
+        // Configure Passkey - Item relationship
         modelBuilder.Entity<Passkey>()
-            .HasOne(p => p.Credential)
+            .HasOne(p => p.Item)
             .WithMany(c => c.Passkeys)
-            .HasForeignKey(p => p.CredentialId)
+            .HasForeignKey(p => p.ItemId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Configure Passkey indexes
@@ -172,6 +157,113 @@ public class AliasClientDbContext : DbContext
         modelBuilder.Entity<Passkey>()
             .Property(e => e.RpId)
             .UseCollation("NOCASE");
+
+        // Configure Item - Logo relationship
+        modelBuilder.Entity<Item>()
+            .HasOne(i => i.Logo)
+            .WithMany(l => l.Items)
+            .HasForeignKey(i => i.LogoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Configure Item - Folder relationship
+        modelBuilder.Entity<Item>()
+            .HasOne(i => i.Folder)
+            .WithMany(f => f.Items)
+            .HasForeignKey(i => i.FolderId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // Configure Folder - ParentFolder relationship
+        modelBuilder.Entity<Folder>()
+            .HasOne(f => f.ParentFolder)
+            .WithMany(f => f.ChildFolders)
+            .HasForeignKey(f => f.ParentFolderId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure Logo unique index on Source
+        modelBuilder.Entity<Logo>()
+            .HasIndex(l => l.Source)
+            .IsUnique();
+
+        // Configure FieldValue - Item relationship
+        modelBuilder.Entity<FieldValue>()
+            .HasOne(fv => fv.Item)
+            .WithMany(i => i.FieldValues)
+            .HasForeignKey(fv => fv.ItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure FieldValue - FieldDefinition relationship (nullable for system fields)
+        modelBuilder.Entity<FieldValue>()
+            .HasOne(fv => fv.FieldDefinition)
+            .WithMany(fd => fd.FieldValues)
+            .HasForeignKey(fv => fv.FieldDefinitionId)
+            .OnDelete(DeleteBehavior.Cascade)
+            .IsRequired(false); // Nullable for system fields
+
+        // Configure FieldHistory - FieldDefinition relationship
+        modelBuilder.Entity<FieldHistory>()
+            .HasOne(fh => fh.FieldDefinition)
+            .WithMany(fd => fd.FieldHistories)
+            .HasForeignKey(fh => fh.FieldDefinitionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure indexes for FieldValue
+        modelBuilder.Entity<FieldValue>()
+            .HasIndex(fv => fv.ItemId);
+
+        modelBuilder.Entity<FieldValue>()
+            .HasIndex(fv => fv.FieldDefinitionId);
+
+        modelBuilder.Entity<FieldValue>()
+            .HasIndex(fv => fv.FieldKey); // Index for system field lookups
+
+        modelBuilder.Entity<FieldValue>()
+            .HasIndex(fv => new { fv.ItemId, fv.FieldDefinitionId, fv.Weight });
+
+        modelBuilder.Entity<FieldValue>()
+            .HasIndex(fv => new { fv.ItemId, fv.FieldKey }); // Composite index for system field queries
+
+        // Configure indexes for FieldHistory
+        modelBuilder.Entity<FieldHistory>()
+            .HasIndex(fh => fh.ItemId);
+
+        modelBuilder.Entity<FieldHistory>()
+            .HasIndex(fh => fh.FieldDefinitionId);
+
+        // FieldDefinition indexes (FieldKey removed - custom fields use GUID only)
+
+        // Configure indexes for Folder
+        modelBuilder.Entity<Folder>()
+            .HasIndex(f => f.ParentFolderId);
+
+        // Configure ItemTag - Item relationship
+        modelBuilder.Entity<ItemTag>()
+            .HasOne(it => it.Item)
+            .WithMany(i => i.ItemTags)
+            .HasForeignKey(it => it.ItemId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure ItemTag - Tag relationship
+        modelBuilder.Entity<ItemTag>()
+            .HasOne(it => it.Tag)
+            .WithMany(t => t.ItemTags)
+            .HasForeignKey(it => it.TagId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure indexes for Tag
+        modelBuilder.Entity<Tag>()
+            .HasIndex(t => t.Name);
+
+        // Configure indexes for ItemTag
+        modelBuilder.Entity<ItemTag>()
+            .HasIndex(it => it.ItemId);
+
+        modelBuilder.Entity<ItemTag>()
+            .HasIndex(it => it.TagId);
+
+        // Configure unique index for ItemTag to prevent duplicate tag assignments
+        modelBuilder.Entity<ItemTag>()
+            .HasIndex(it => new { it.ItemId, it.TagId })
+            .IsUnique();
     }
 
     /// <summary>

@@ -67,14 +67,14 @@ The more names = the more variety and more realistic identities!
 Want to see what the actual dictionaries look like that AliasVault uses right now? Check out these examples. We also welcome any additions to existing languages, e.g. adding more names.
 
 ### English (Simple Implementation)
-- [View female names](https://github.com/aliasvault/aliasvault/blob/main/shared/identity-generator/src/dictionaries/en/firstnames_female.ts)
-- [View male names](https://github.com/aliasvault/aliasvault/blob/main/shared/identity-generator/src/dictionaries/en/firstnames_male.ts)
-- [View last names](https://github.com/aliasvault/aliasvault/blob/main/shared/identity-generator/src/dictionaries/en/lastnames.ts)
+- [View female names](https://github.com/aliasvault/aliasvault/blob/main/core/typescript/identity-generator/src/dictionaries/en/firstnames_female.ts)
+- [View male names](https://github.com/aliasvault/aliasvault/blob/main/core/typescript/identity-generator/src/dictionaries/en/firstnames_male.ts)
+- [View last names](https://github.com/aliasvault/aliasvault/blob/main/core/typescript/identity-generator/src/dictionaries/en/lastnames.ts)
 
 ### German (Decade-Based Implementation)
-- [View 1950s female names](https://github.com/aliasvault/aliasvault/blob/main/shared/identity-generator/src/dictionaries/de/firstnames_female_1950_1959.ts)
-- [View 2020s female names](https://github.com/aliasvault/aliasvault/blob/main/shared/identity-generator/src/dictionaries/de/firstnames_female_2020_2029.ts)
-- [Browse all German files](https://github.com/aliasvault/aliasvault/tree/main/shared/identity-generator/src/dictionaries/de)
+- [View 1950s female names](https://github.com/aliasvault/aliasvault/blob/main/core/typescript/identity-generator/src/dictionaries/de/firstnames_female_1950_1959.ts)
+- [View 2020s female names](https://github.com/aliasvault/aliasvault/blob/main/core/typescript/identity-generator/src/dictionaries/de/firstnames_female_2020_2029.ts)
+- [Browse all German files](https://github.com/aliasvault/aliasvault/tree/main/core/typescript/identity-generator/src/dictionaries/de)
 
 ---
 

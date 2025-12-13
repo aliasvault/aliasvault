@@ -14,7 +14,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import type { Credential } from '@/utils/dist/core/models/vault';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
@@ -85,9 +85,10 @@ const CredentialsList: React.FC = () => {
 
   /**
    * Handle add new credential.
+   * Navigate to item type selector for new item-based flow.
    */
   const handleAddCredential = useCallback(() : void => {
-    navigate('/credentials/add');
+    navigate('/items/select-type');
   }, [navigate]);
 
   /**
@@ -110,8 +111,8 @@ const CredentialsList: React.FC = () => {
         /**
          * On offline.
          */
-        _onOffline: () => {
-          // Not implemented for browser extension yet.
+        onOffline: () => {
+          // Continue with local vault in offline mode.
         },
         /**
          * On error.
@@ -207,18 +208,16 @@ const CredentialsList: React.FC = () => {
       passesTypeFilter = !!(
         (credential.Alias?.FirstName && credential.Alias.FirstName.trim()) ||
         (credential.Alias?.LastName && credential.Alias.LastName.trim()) ||
-        (credential.Alias?.NickName && credential.Alias.NickName.trim()) ||
         (credential.Alias?.Gender && credential.Alias.Gender.trim()) ||
-        (credential.Alias?.BirthDate && credential.Alias.BirthDate.trim() && credential.Alias.BirthDate.trim().startsWith('0001-01-01') !== true)
+        (credential.Alias?.BirthDate && credential.Alias.BirthDate.trim())
       );
     } else if (filterType === 'userpass') {
       // Show only credentials that have username/password AND do NOT have alias fields AND do NOT have passkey
       const hasAliasFields = !!(
         (credential.Alias?.FirstName && credential.Alias.FirstName.trim()) ||
         (credential.Alias?.LastName && credential.Alias.LastName.trim()) ||
-        (credential.Alias?.NickName && credential.Alias.NickName.trim()) ||
         (credential.Alias?.Gender && credential.Alias.Gender.trim()) ||
-        (credential.Alias?.BirthDate && credential.Alias.BirthDate.trim() && credential.Alias.BirthDate.trim().startsWith('0001-01-01') !== true)
+        (credential.Alias?.BirthDate && credential.Alias.BirthDate.trim())
       );
       const hasUsernameOrPassword = !!(
         (credential.Username && credential.Username.trim()) ||

@@ -25,9 +25,9 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
 import { SKIP_FORM_RESTORE_KEY } from '@/utils/Constants';
-import { IdentityHelperUtils, CreateIdentityGenerator, CreateUsernameEmailGenerator, Identity, Gender, convertAgeRangeToBirthdateOptions } from '@/utils/dist/shared/identity-generator';
-import type { Attachment, Credential, TotpCode } from '@/utils/dist/shared/models/vault';
-import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
+import { IdentityHelperUtils, CreateIdentityGenerator, CreateUsernameEmailGenerator, Identity, Gender, convertAgeRangeToBirthdateOptions } from '@/utils/dist/core/identity-generator';
+import type { Attachment, Credential, TotpCode } from '@/utils/dist/core/models/vault';
+import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 
 import { browser } from '#imports';
@@ -69,7 +69,6 @@ const CredentialAddEdit: React.FC = () => {
     Alias: Yup.object().shape({
       FirstName: Yup.string().nullable().optional(),
       LastName: Yup.string().nullable().optional(),
-      NickName: Yup.string().nullable().optional(),
       BirthDate: Yup.string()
         .nullable()
         .optional()
@@ -91,7 +90,7 @@ const CredentialAddEdit: React.FC = () => {
     Notes: Yup.string().nullable().optional()
   }), [t]);
 
-  const { executeVaultMutation, isLoading, syncStatus } = useVaultMutate();
+  const { executeVaultMutationAsync } = useVaultMutate();
   const [mode, setMode] = useState<CredentialMode>('random');
   const { setHeaderButtons } = useHeaderButtons();
   const { setIsInitialLoading } = useLoading();
@@ -133,7 +132,6 @@ const CredentialAddEdit: React.FC = () => {
       Alias: {
         FirstName: "",
         LastName: "",
-        NickName: "",
         BirthDate: "",
         Gender: undefined,
         Email: ""
@@ -381,18 +379,13 @@ const CredentialAddEdit: React.FC = () => {
       return;
     }
 
-    executeVaultMutation(async () => {
+    await executeVaultMutationAsync(async () => {
       dbContext.sqliteClient!.deleteCredentialById(id);
-    }, {
-      /**
-       * Navigate to the credentials list page on success.
-       */
-      onSuccess: () => {
-        void clearPersistedValues();
-        navigate('/credentials');
-      }
     });
-  }, [id, executeVaultMutation, dbContext.sqliteClient, navigate, clearPersistedValues]);
+
+    void clearPersistedValues();
+    navigate('/credentials');
+  }, [id, executeVaultMutationAsync, dbContext.sqliteClient, navigate, clearPersistedValues]);
 
   /**
    * Initialize the identity and password generators with settings from user's vault.
@@ -442,7 +435,6 @@ const CredentialAddEdit: React.FC = () => {
     }
     setValue('Alias.FirstName', identity.firstName);
     setValue('Alias.LastName', identity.lastName);
-    setValue('Alias.NickName', identity.nickName);
     setValue('Alias.Gender', identity.gender);
     setValue('Alias.BirthDate', IdentityHelperUtils.normalizeBirthDateForDisplay(identity.birthDate.toISOString()));
 
@@ -470,13 +462,12 @@ const CredentialAddEdit: React.FC = () => {
   const clearAliasFields = useCallback(() => {
     setValue('Alias.FirstName', '');
     setValue('Alias.LastName', '');
-    setValue('Alias.NickName', '');
     setValue('Alias.Gender', '');
     setValue('Alias.BirthDate', '');
   }, [setValue]);
 
   //  Check if any alias fields have values.
-  const hasAliasValues = !!(watch('Alias.FirstName') || watch('Alias.LastName') || watch('Alias.NickName') || watch('Alias.Gender') || watch('Alias.BirthDate'));
+  const hasAliasValues = !!(watch('Alias.FirstName') || watch('Alias.LastName') || watch('Alias.Gender') || watch('Alias.BirthDate'));
 
   /**
    * Handle the generate random alias button press.
@@ -493,13 +484,12 @@ const CredentialAddEdit: React.FC = () => {
     try {
       const firstName = watch('Alias.FirstName') ?? '';
       const lastName = watch('Alias.LastName') ?? '';
-      const nickName = watch('Alias.NickName') ?? '';
       const birthDate = watch('Alias.BirthDate') ?? '';
 
       let username: string;
 
       // If alias fields are empty, generate a completely random username
-      if (!firstName && !lastName && !nickName && !birthDate) {
+      if (!firstName && !lastName && !birthDate) {
         const { identityGenerator } = await initializeGenerators();
         const genderPreference = dbContext.sqliteClient!.getDefaultIdentityGender();
         const ageRange = dbContext.sqliteClient!.getDefaultIdentityAgeRange();
@@ -526,7 +516,7 @@ const CredentialAddEdit: React.FC = () => {
         const identity: Identity = {
           firstName,
           lastName,
-          nickName,
+          nickName: '', // nickName is auto-generated but no longer stored as a separate alias field
           gender,
           birthDate: parsedBirthDate,
           emailPrefix: watch('Alias.Email') ?? '',
@@ -566,7 +556,6 @@ const CredentialAddEdit: React.FC = () => {
       data.Password = watch('Password');
       data.Alias.FirstName = watch('Alias.FirstName');
       data.Alias.LastName = watch('Alias.LastName');
-      data.Alias.NickName = watch('Alias.NickName');
       data.Alias.BirthDate = watch('Alias.BirthDate');
       data.Alias.Gender = watch('Alias.Gender');
       data.Alias.Email = watch('Alias.Email');
@@ -595,7 +584,7 @@ const CredentialAddEdit: React.FC = () => {
       }
     }
 
-    executeVaultMutation(async () => {
+    await executeVaultMutationAsync(async () => {
       setLocalLoading(false);
 
       if (isEditMode) {
@@ -603,29 +592,24 @@ const CredentialAddEdit: React.FC = () => {
 
         // Delete passkeys if marked for deletion
         if (passkeyMarkedForDeletion) {
-          await dbContext.sqliteClient!.deletePasskeysByCredentialId(data.Id);
+          await dbContext.sqliteClient!.deletePasskeysByItemId(data.Id);
         }
       } else {
         const credentialId = await dbContext.sqliteClient!.createCredential(data, attachments, totpCodes);
         data.Id = credentialId.toString();
       }
-    }, {
-      /**
-       * Navigate to the credential details page on success.
-       */
-      onSuccess: () => {
-        void clearPersistedValues();
-        // If in add mode, navigate to the credential details page.
-        if (!isEditMode) {
-          // Navigate to the credential details page.
-          navigate(`/credentials/${data.Id}`, { replace: true });
-        } else {
-          // If in edit mode, pop the current page from the history stack to end up on details page as well.
-          navigate(-1);
-        }
-      },
     });
-  }, [isEditMode, dbContext.sqliteClient, executeVaultMutation, navigate, mode, watch, generateRandomAlias, webApi, clearPersistedValues, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyMarkedForDeletion]);
+
+    void clearPersistedValues();
+    // If in add mode, navigate to the credential details page.
+    if (!isEditMode) {
+      // Navigate to the credential details page.
+      navigate(`/credentials/${data.Id}`, { replace: true });
+    } else {
+      // If in edit mode, pop the current page from the history stack to end up on details page as well.
+      navigate(-1);
+    }
+  }, [isEditMode, dbContext.sqliteClient, executeVaultMutationAsync, navigate, mode, watch, generateRandomAlias, webApi, clearPersistedValues, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyMarkedForDeletion]);
 
   // Set header buttons on mount and clear on unmount
   useEffect((): (() => void) => {
@@ -664,12 +648,9 @@ const CredentialAddEdit: React.FC = () => {
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
       <button type="submit" style={{ display: 'none' }} />
-      {(localLoading || isLoading) && (
+      {localLoading && (
         <div className="fixed inset-0 flex flex-col justify-center items-center bg-white dark:bg-gray-900 bg-opacity-90 dark:bg-opacity-90 z-50">
           <LoadingSpinner />
-          <div className="text-sm text-gray-500 mt-2">
-            {syncStatus}
-          </div>
         </div>
       )}
 
@@ -961,13 +942,6 @@ const CredentialAddEdit: React.FC = () => {
                   value={watch('Alias.LastName') ?? ''}
                   onChange={(value) => setValue('Alias.LastName', value)}
                   error={errors.Alias?.LastName?.message}
-                />
-                <FormInput
-                  id="nickName"
-                  label={t('credentials.nickName')}
-                  value={watch('Alias.NickName') ?? ''}
-                  onChange={(value) => setValue('Alias.NickName', value)}
-                  error={errors.Alias?.NickName?.message}
                 />
                 <FormInput
                   id="gender"

@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer';
 
-import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/shared/models/metadata';
-import type { Attachment, Credential, EncryptionKey, PasswordSettings, TotpCode, Passkey } from '@/utils/dist/shared/models/vault';
-import { VaultSqlGenerator, VaultVersion, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/shared/vault-sql';
+import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/core/models/metadata';
+import type { Attachment, Credential, EncryptionKey, PasswordSettings, TotpCode, Passkey } from '@/utils/dist/core/models/vault';
+import { VaultSqlGenerator, VaultVersion, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/core/vault';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
@@ -486,7 +486,7 @@ class SqliteClient {
     }
 
     // Otherwise, try to match UI language to an identity generator language
-    const { mapUiLanguageToIdentityLanguage } = await import('@/utils/dist/shared/identity-generator');
+    const { mapUiLanguageToIdentityLanguage } = await import('@/utils/dist/core/identity-generator');
     const { default: i18n } = await import('@/i18n');
 
     const uiLanguage = i18n.language;

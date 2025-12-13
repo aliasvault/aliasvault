@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 
-import type { Attachment } from '@/utils/dist/shared/models/vault';
+import type { Attachment } from '@/utils/dist/core/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 

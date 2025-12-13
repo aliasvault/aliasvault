@@ -8,15 +8,6 @@ nav_order: 5
 # Architecture
 {: .no_toc }
 
-<details open markdown="block">
-  <summary>
-    Table of contents
-  </summary>
-  {: .text-delta }
-- TOC
-{:toc}
-</details>
-
 ---
 
 AliasVault implements zero-knowledge encryption where sensitive user data never leaves the client device in unencrypted form. Below is a detailed explanation of how the system secures user data and communications.
@@ -35,6 +26,15 @@ The security architecture diagram below illustrates all encryption and authentic
 </picture>
 
 You can also view the diagram in a browser-friendly HTML format: [AliasVault Security Architecture](https://docs.aliasvault.net/assets/diagrams/security-architecture/aliasvault-security-architecture.html)
+
+<details open markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
 
 ## Key Components and Process Flow
 

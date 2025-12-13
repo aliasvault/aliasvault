@@ -9,8 +9,8 @@ import { StyleSheet, View, Text, SafeAreaView, TextInput, ActivityIndicator, Ani
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import ConversionUtility from '@/utils/ConversionUtility';
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
-import type { LoginResponse } from '@/utils/dist/shared/models/webapi';
+import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import type { LoginResponse } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { SrpUtility } from '@/utils/SrpUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';

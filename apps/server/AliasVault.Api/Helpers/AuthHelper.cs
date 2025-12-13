@@ -28,16 +28,19 @@ public static class AuthHelper
     public static readonly string CachePrefixFakeData = "FakeData_";
 
     /// <summary>
-    /// Helper method that validates the SRP session based on provided username, ephemeral and proof.
+    /// Helper method that validates the SRP session based on provided SRP identity, ephemeral and proof.
     /// </summary>
     /// <param name="cache">IMemoryCache instance.</param>
     /// <param name="user">The user object.</param>
     /// <param name="clientEphemeral">The client ephemeral value.</param>
     /// <param name="clientSessionProof">The client session proof.</param>
-    /// <returns>Tuple.</returns>
+    /// <returns>SrpSession if validation succeeds, null otherwise.</returns>
     public static SrpSession? ValidateSrpSession(IMemoryCache cache, AliasVaultUser user, string clientEphemeral, string clientSessionProof)
     {
-        if (!cache.TryGetValue(CachePrefixEphemeral + user.UserName, out var serverSecretEphemeral) || serverSecretEphemeral is not string)
+        // Get or create SRP identity. For existing users without SrpIdentity, fall back to username (lowercase).
+        var srpIdentity = user.SrpIdentity ?? user.UserName!.ToLowerInvariant();
+
+        if (!cache.TryGetValue(CachePrefixEphemeral + srpIdentity, out var serverSecretEphemeral) || serverSecretEphemeral is not string)
         {
             return null;
         }
@@ -45,11 +48,13 @@ public static class AuthHelper
         // Retrieve latest vault of user which contains the current salt and verifier.
         var latestVaultEncryptionSettings = GetUserLatestVaultEncryptionSettings(user);
 
+        // Use SrpIdentity for the SRP session derivation. This is the fixed identity that was used
+        // when the verifier was originally created, ensuring username changes don't break authentication.
         var serverSession = Srp.DeriveSessionServer(
             serverSecretEphemeral.ToString() ?? string.Empty,
             clientEphemeral,
             latestVaultEncryptionSettings.Salt,
-            user.UserName ?? string.Empty,
+            srpIdentity,
             latestVaultEncryptionSettings.Verifier,
             clientSessionProof);
 

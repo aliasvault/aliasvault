@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
 import { AppInfo } from '@/utils/AppInfo';
-import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
+import type { VaultResponse } from '@/utils/dist/core/models/webapi';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useTranslation } from '@/hooks/useTranslation';

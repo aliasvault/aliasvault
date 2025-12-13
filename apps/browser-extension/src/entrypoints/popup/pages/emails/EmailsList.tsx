@@ -12,7 +12,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';

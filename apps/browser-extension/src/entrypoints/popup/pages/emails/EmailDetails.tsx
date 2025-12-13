@@ -11,7 +11,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import ConversionUtility from '@/entrypoints/popup/utils/ConversionUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { EmailAttachment, Email } from '@/utils/dist/shared/models/webapi';
+import type { EmailAttachment, Email } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';

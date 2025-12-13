@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import type { Credential } from '@/utils/dist/core/models/vault';
 import SqliteClient from '@/utils/SqliteClient';
 
 type CredentialCardProps = {
@@ -57,7 +57,7 @@ const CredentialCard: React.FC<CredentialCardProps> = ({ credential }) => {
   return (
     <li>
       <button
-        onClick={() => navigate(`/credentials/${credential.Id}`)}
+        onClick={() => navigate(`/items/${credential.Id}`)}
         className="w-full p-2 border dark:border-gray-600 rounded flex items-center bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <img

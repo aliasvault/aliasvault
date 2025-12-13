@@ -7,7 +7,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 
-import type { Credential, Attachment } from '@/utils/dist/shared/models/vault';
+import type { Credential, Attachment } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';

@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TouchableOpacity, Linking, AppState } from 'react-native';
 
 import { AppInfo } from '@/utils/AppInfo';
-import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useColors } from '@/hooks/useColorScheme';

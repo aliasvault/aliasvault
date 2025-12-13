@@ -1,4 +1,4 @@
-import type { Credential } from "@/utils/dist/shared/models/vault";
+import type { Credential } from "@/utils/dist/core/models/vault";
 
 export type CredentialsResponse = {
     success: boolean,

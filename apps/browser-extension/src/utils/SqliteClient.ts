@@ -1,10 +1,11 @@
 import initSqlJs, { Database } from 'sql.js';
 
 import * as dateFormatter from '@/utils/dateFormatter';
-import type { Credential, EncryptionKey, PasswordSettings, TotpCode, Passkey } from '@/utils/dist/shared/models/vault';
-import type { Attachment } from '@/utils/dist/shared/models/vault';
-import type { VaultVersion } from '@/utils/dist/shared/vault-sql';
-import { VaultSqlGenerator, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/shared/vault-sql';
+import type { Credential, EncryptionKey, PasswordSettings, TotpCode, Passkey, Item, ItemField, ItemTagRef, FieldType, FieldHistory } from '@/utils/dist/core/models/vault';
+import type { Attachment } from '@/utils/dist/core/models/vault';
+import { FieldKey, getSystemField, MAX_FIELD_HISTORY_RECORDS } from '@/utils/dist/core/models/vault';
+import type { VaultVersion } from '@/utils/dist/core/vault';
+import { VaultSqlGenerator, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/core/vault';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -207,37 +208,25 @@ export class SqliteClient {
    * @returns Credential object with service details or null if not found.
    */
   public getCredentialById(credentialId: string): Credential | null {
+    // WIP: Quick V5 schema refactor - field-based queries
     const query = `
         SELECT DISTINCT
-            c.Id,
-            c.Username,
-            c.Notes,
-            c.ServiceId,
-            s.Name as ServiceName,
-            s.Url as ServiceUrl,
-            s.Logo as Logo,
-            a.FirstName,
-            a.LastName,
-            a.NickName,
-            a.BirthDate,
-            a.Gender,
-            a.Email,
-            p.Value as Password,
+            i.Id,
+            i.Name as ServiceName,
+            l.FileData as Logo,
             CASE
                 WHEN EXISTS (
                     SELECT 1 FROM Passkeys pk
-                    WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0
+                    WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0
                 ) THEN 1
                 ELSE 0
             END as HasPasskey,
-            (SELECT pk.RpId FROM Passkeys pk WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyRpId,
-            (SELECT pk.DisplayName FROM Passkeys pk WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyDisplayName
-        FROM Credentials c
-        LEFT JOIN Services s ON c.ServiceId = s.Id
-        LEFT JOIN Aliases a ON c.AliasId = a.Id
-        LEFT JOIN Passwords p ON p.CredentialId = c.Id
-        WHERE c.IsDeleted = 0
-        AND c.Id = ?`;
+            (SELECT pk.RpId FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyRpId,
+            (SELECT pk.DisplayName FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyDisplayName
+        FROM Items i
+        LEFT JOIN Logos l ON i.LogoId = l.Id
+        WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL
+        AND i.Id = ?`;
 
     const results = this.executeQuery(query, [credentialId]);
 
@@ -245,27 +234,43 @@ export class SqliteClient {
       return null;
     }
 
-    // Convert the first row to a Credential object
+    // Get field values for this item (only system fields, which have FieldKey)
+    const fieldQuery = `
+        SELECT
+          fv.FieldKey,
+          fv.Value
+        FROM FieldValues fv
+        WHERE fv.ItemId = ? AND fv.IsDeleted = 0 AND fv.FieldKey IS NOT NULL`;
+
+    const fieldResults = this.executeQuery<{FieldKey: string, Value: string}>(fieldQuery, [credentialId]);
+
+    // Map field values by FieldKey
+    const fields: {[key: string]: string} = {};
+    fieldResults.forEach(f => {
+      if (f.FieldKey) {
+        fields[f.FieldKey] = f.Value;
+      }
+    });
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const row = results[0] as any;
     return {
       Id: row.Id,
-      Username: row.Username,
-      Password: row.Password,
+      Username: fields[FieldKey.LoginUsername] || undefined,
+      Password: fields[FieldKey.LoginPassword] || '',
       ServiceName: row.ServiceName,
-      ServiceUrl: row.ServiceUrl,
+      ServiceUrl: fields[FieldKey.LoginUrl] || undefined,
       Logo: row.Logo,
-      Notes: row.Notes,
+      Notes: fields[FieldKey.LoginNotes] || undefined,
       HasPasskey: row.HasPasskey === 1,
       PasskeyRpId: row.PasskeyRpId,
       PasskeyDisplayName: row.PasskeyDisplayName,
       Alias: {
-        FirstName: row.FirstName,
-        LastName: row.LastName,
-        NickName: row.NickName,
-        BirthDate: row.BirthDate,
-        Gender: row.Gender,
-        Email: row.Email
+        FirstName: fields[FieldKey.AliasFirstName] || undefined,
+        LastName: fields[FieldKey.AliasLastName] || undefined,
+        BirthDate: fields[FieldKey.AliasBirthdate] || '',
+        Gender: fields[FieldKey.AliasGender] || undefined,
+        Email: fields[FieldKey.LoginEmail] || undefined
       },
     };
   }
@@ -275,65 +280,426 @@ export class SqliteClient {
    * @returns Array of Credential objects with service details.
    */
   public getAllCredentials(): Credential[] {
+    // WIP: Quick V5 schema refactor - field-based queries
     const query = `
             SELECT DISTINCT
-                c.Id,
-                c.Username,
-                c.Notes,
-                c.ServiceId,
-                s.Name as ServiceName,
-                s.Url as ServiceUrl,
-                s.Logo as Logo,
-                a.FirstName,
-                a.LastName,
-                a.NickName,
-                a.BirthDate,
-                a.Gender,
-                a.Email,
-                p.Value as Password,
+                i.Id,
+                i.Name as ServiceName,
+                l.FileData as Logo,
                 CASE
                     WHEN EXISTS (
                         SELECT 1 FROM Passkeys pk
-                        WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0
+                        WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0
                     ) THEN 1
                     ELSE 0
                 END as HasPasskey,
                 CASE
                     WHEN EXISTS (
                         SELECT 1 FROM Attachments att
-                        WHERE att.CredentialId = c.Id AND att.IsDeleted = 0
+                        WHERE att.ItemId = i.Id AND att.IsDeleted = 0
                     ) THEN 1
                     ELSE 0
                 END as HasAttachment
-            FROM Credentials c
-            LEFT JOIN Services s ON c.ServiceId = s.Id
-            LEFT JOIN Aliases a ON c.AliasId = a.Id
-            LEFT JOIN Passwords p ON p.CredentialId = c.Id
-            WHERE c.IsDeleted = 0
-            ORDER BY c.CreatedAt DESC`;
+            FROM Items i
+            LEFT JOIN Logos l ON i.LogoId = l.Id
+            WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL
+            ORDER BY i.CreatedAt DESC`;
 
     const results = this.executeQuery(query);
 
+    // Get all field values in one query for performance
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return results.map((row: any) => ({
+    const itemIds = results.map((r: any) => r.Id);
+    if (itemIds.length === 0) {
+      return [];
+    }
+
+    const fieldQuery = `
+        SELECT fv.ItemId, fv.FieldKey, fv.Value
+        FROM FieldValues fv
+        WHERE fv.ItemId IN (${itemIds.map(() => '?').join(',')})
+          AND fv.IsDeleted = 0
+          AND fv.FieldKey IS NOT NULL`;
+
+    const fieldResults = this.executeQuery<{ItemId: string, FieldKey: string, Value: string}>(fieldQuery, itemIds);
+
+    // Group fields by item ID
+    const fieldsByItem: {[itemId: string]: {[fieldKey: string]: string}} = {};
+    fieldResults.forEach(f => {
+      if (!fieldsByItem[f.ItemId]) {
+        fieldsByItem[f.ItemId] = {};
+      }
+      if (f.FieldKey) {
+        fieldsByItem[f.ItemId][f.FieldKey] = f.Value;
+      }
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return results.map((row: any) => {
+      const fields = fieldsByItem[row.Id] || {};
+      return {
+        Id: row.Id,
+        Username: fields[FieldKey.LoginUsername] || undefined,
+        Password: fields[FieldKey.LoginPassword] || '',
+        ServiceName: row.ServiceName,
+        ServiceUrl: fields[FieldKey.LoginUrl] || undefined,
+        Logo: row.Logo,
+        Notes: fields[FieldKey.LoginNotes] || undefined,
+        HasPasskey: row.HasPasskey === 1,
+        HasAttachment: row.HasAttachment === 1,
+        Alias: {
+          FirstName: fields[FieldKey.AliasFirstName] || undefined,
+          LastName: fields[FieldKey.AliasLastName] || undefined,
+          BirthDate: fields[FieldKey.AliasBirthdate] || '',
+          Gender: fields[FieldKey.AliasGender] || undefined,
+          Email: fields[FieldKey.LoginEmail] || undefined
+        }
+      };
+    });
+  }
+
+  /**
+   * Fetch all items with their dynamic fields and tags.
+   * @returns Array of Item objects with field-based data (empty array if Items table doesn't exist yet).
+   */
+  public getAllItems(): Item[] {
+    let items;
+    try {
+      const query = `
+        SELECT DISTINCT
+          i.Id,
+          i.Name,
+          i.ItemType,
+          i.FolderId,
+          f.Name as FolderPath,
+          l.FileData as Logo,
+          CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
+          CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
+          CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
+          i.CreatedAt,
+          i.UpdatedAt
+        FROM Items i
+        LEFT JOIN Logos l ON i.LogoId = l.Id
+        LEFT JOIN Folders f ON i.FolderId = f.Id
+        WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL
+        ORDER BY i.CreatedAt DESC`;
+
+      items = this.executeQuery(query);
+    } catch (error) {
+      // Items table may not exist in older vault versions - return empty array
+      if (error instanceof Error && error.message.includes('no such table')) {
+        return [];
+      }
+      throw error;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const itemIds = items.map((i: any) => i.Id);
+    if (itemIds.length === 0) {
+      return [];
+    }
+
+    // Get all field values (both system fields and custom fields)
+    const fieldsQuery = `
+      SELECT
+        fv.ItemId,
+        fv.FieldKey,
+        fv.FieldDefinitionId,
+        fd.Label as CustomLabel,
+        fd.FieldType as CustomFieldType,
+        fd.IsHidden as CustomIsHidden,
+        fv.Value,
+        fv.Weight as DisplayOrder
+      FROM FieldValues fv
+      LEFT JOIN FieldDefinitions fd ON fv.FieldDefinitionId = fd.Id
+      WHERE fv.ItemId IN (${itemIds.map(() => '?').join(',')})
+        AND fv.IsDeleted = 0
+      ORDER BY fv.ItemId, fv.Weight`;
+
+    const fieldRows = this.executeQuery<{
+      ItemId: string;
+      FieldKey: string | null;
+      FieldDefinitionId: string | null;
+      CustomLabel: string | null;
+      CustomFieldType: string | null;
+      CustomIsHidden: number | null;
+      Value: string;
+      DisplayOrder: number;
+    }>(fieldsQuery, itemIds);
+
+    /* Process fields - handle system fields vs custom fields. */
+    const fields = fieldRows.map(row => {
+      // System field: has FieldKey, get metadata from SystemFieldRegistry
+      if (row.FieldKey) {
+        const systemField = getSystemField(row.FieldKey);
+        return {
+          ItemId: row.ItemId,
+          FieldKey: row.FieldKey,
+          Label: row.FieldKey, // Use FieldKey as label; UI layer translates via fieldLabels.*
+          FieldType: systemField?.FieldType || 'Text',
+          IsHidden: systemField?.IsHidden ? 1 : 0,
+          Value: row.Value,
+          DisplayOrder: row.DisplayOrder
+        };
+      } else {
+        // Custom field: has FieldDefinitionId, get metadata from FieldDefinitions
+        return {
+          ItemId: row.ItemId,
+          FieldKey: row.FieldDefinitionId || '', // Use FieldDefinitionId as the key for custom fields
+          Label: row.CustomLabel || '',
+          FieldType: row.CustomFieldType || 'Text',
+          IsHidden: row.CustomIsHidden || 0,
+          Value: row.Value,
+          DisplayOrder: row.DisplayOrder
+        };
+      }
+    });
+
+    // Get all tags
+    const tagsQuery = `
+      SELECT
+        it.ItemId,
+        t.Id,
+        t.Name,
+        t.Color
+      FROM ItemTags it
+      INNER JOIN Tags t ON it.TagId = t.Id
+      WHERE it.ItemId IN (${itemIds.map(() => '?').join(',')})
+        AND it.IsDeleted = 0
+        AND t.IsDeleted = 0
+      ORDER BY t.DisplayOrder, t.Name`;
+
+    const tags = this.executeQuery<{
+      ItemId: string;
+      Id: string;
+      Name: string;
+      Color: string | null;
+    }>(tagsQuery, itemIds);
+
+    // Group by ItemId and FieldKey (to handle multi-value fields)
+    const fieldsByItem: {[itemId: string]: ItemField[]} = {};
+    const fieldValuesByKey: {[itemId_fieldKey: string]: string[]} = {};
+
+    fields.forEach(f => {
+      const key = `${f.ItemId}_${f.FieldKey}`;
+
+      // Accumulate values for the same field
+      if (!fieldValuesByKey[key]) {
+        fieldValuesByKey[key] = [];
+      }
+      fieldValuesByKey[key].push(f.Value);
+
+      // Create ItemField entry only once per unique FieldKey
+      if (!fieldsByItem[f.ItemId]) {
+        fieldsByItem[f.ItemId] = [];
+      }
+
+      const existingField = fieldsByItem[f.ItemId].find(field => field.FieldKey === f.FieldKey);
+      if (!existingField) {
+        fieldsByItem[f.ItemId].push({
+          FieldKey: f.FieldKey,
+          Label: f.Label,
+          FieldType: f.FieldType as FieldType,
+          Value: '', // Will be set below
+          IsHidden: f.IsHidden === 1,
+          DisplayOrder: f.DisplayOrder
+        });
+      }
+    });
+
+    // Set Values (single value or array for multi-value fields)
+    Object.keys(fieldsByItem).forEach(itemId => {
+      fieldsByItem[itemId].forEach(field => {
+        const key = `${itemId}_${field.FieldKey}`;
+        const values = fieldValuesByKey[key];
+
+        if (values.length === 1) {
+          field.Value = values[0];
+        } else {
+          field.Value = values;
+        }
+      });
+    });
+
+    const tagsByItem: {[itemId: string]: ItemTagRef[]} = {};
+    tags.forEach(t => {
+      if (!tagsByItem[t.ItemId]) {
+        tagsByItem[t.ItemId] = [];
+      }
+      tagsByItem[t.ItemId].push({
+        Id: t.Id,
+        Name: t.Name,
+        Color: t.Color || undefined
+      });
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return items.map((row: any) => ({
       Id: row.Id,
-      Username: row.Username,
-      Password: row.Password,
-      ServiceName: row.ServiceName,
-      ServiceUrl: row.ServiceUrl,
+      Name: row.Name,
+      ItemType: row.ItemType,
       Logo: row.Logo,
-      Notes: row.Notes,
+      FolderId: row.FolderId,
+      FolderPath: row.FolderPath || null,
+      Tags: tagsByItem[row.Id] || [],
+      Fields: fieldsByItem[row.Id] || [],
       HasPasskey: row.HasPasskey === 1,
       HasAttachment: row.HasAttachment === 1,
-      Alias: {
-        FirstName: row.FirstName,
-        LastName: row.LastName,
-        NickName: row.NickName,
-        BirthDate: row.BirthDate,
-        Gender: row.Gender,
-        Email: row.Email
-      }
+      HasTotp: row.HasTotp === 1,
+      CreatedAt: row.CreatedAt,
+      UpdatedAt: row.UpdatedAt
     }));
+  }
+
+  /**
+   * Fetch a single item by ID with its dynamic fields and tags.
+   * @param itemId - The ID of the item to fetch.
+   * @returns Item object or null if not found.
+   */
+  public getItemById(itemId: string): Item | null {
+    const query = `
+      SELECT
+        i.Id,
+        i.Name,
+        i.ItemType,
+        i.FolderId,
+        l.FileData as Logo,
+        CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
+        CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
+        CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
+        i.CreatedAt,
+        i.UpdatedAt
+      FROM Items i
+      LEFT JOIN Logos l ON i.LogoId = l.Id
+      WHERE i.Id = ? AND i.IsDeleted = 0`;
+
+    const results = this.executeQuery(query, [itemId]);
+    if (results.length === 0) {
+      return null;
+    }
+
+    // Get field values (both system fields and custom fields)
+    const fieldsQuery = `
+      SELECT
+        fv.FieldKey,
+        fv.FieldDefinitionId,
+        fd.Label as CustomLabel,
+        fd.FieldType as CustomFieldType,
+        fd.IsHidden as CustomIsHidden,
+        fv.Value,
+        fv.Weight as DisplayOrder
+      FROM FieldValues fv
+      LEFT JOIN FieldDefinitions fd ON fv.FieldDefinitionId = fd.Id
+      WHERE fv.ItemId = ? AND fv.IsDeleted = 0
+      ORDER BY fv.Weight`;
+
+    const fieldRows = this.executeQuery<{
+      FieldKey: string | null;
+      FieldDefinitionId: string | null;
+      CustomLabel: string | null;
+      CustomFieldType: string | null;
+      CustomIsHidden: number | null;
+      Value: string;
+      DisplayOrder: number;
+    }>(fieldsQuery, [itemId]);
+
+    // Process fields - handle system fields vs custom fields AND group multi-value fields
+    const fieldValuesByKey: {[fieldKey: string]: string[]} = {};
+    const uniqueFields: {[fieldKey: string]: {
+      FieldKey: string;
+      Label: string;
+      FieldType: string;
+      IsHidden: number;
+      DisplayOrder: number;
+    }} = {};
+
+    fieldRows.forEach(row => {
+      const fieldKey = row.FieldKey || row.FieldDefinitionId || '';
+
+      // Accumulate values
+      if (!fieldValuesByKey[fieldKey]) {
+        fieldValuesByKey[fieldKey] = [];
+      }
+      fieldValuesByKey[fieldKey].push(row.Value);
+
+      /* Store field metadata (only once per FieldKey). */
+      if (!uniqueFields[fieldKey]) {
+        if (row.FieldKey) {
+          // System field
+          const systemField = getSystemField(row.FieldKey);
+          uniqueFields[fieldKey] = {
+            FieldKey: row.FieldKey,
+            Label: row.FieldKey, // Use FieldKey as label; UI layer translates via fieldLabels.*
+            FieldType: systemField?.FieldType || 'Text',
+            IsHidden: systemField?.IsHidden ? 1 : 0,
+            DisplayOrder: row.DisplayOrder
+          };
+        } else {
+          // Custom field
+          uniqueFields[fieldKey] = {
+            FieldKey: fieldKey,
+            Label: row.CustomLabel || '',
+            FieldType: row.CustomFieldType || 'Text',
+            IsHidden: row.CustomIsHidden || 0,
+            DisplayOrder: row.DisplayOrder
+          };
+        }
+      }
+    });
+
+    // Build fields array with proper single/multi values
+    const fields = Object.keys(uniqueFields).map(fieldKey => ({
+      ...uniqueFields[fieldKey],
+      Value: fieldValuesByKey[fieldKey].length === 1
+        ? fieldValuesByKey[fieldKey][0]
+        : fieldValuesByKey[fieldKey]
+    }));
+
+    // Get tags
+    const tagsQuery = `
+      SELECT
+        t.Id,
+        t.Name,
+        t.Color
+      FROM ItemTags it
+      INNER JOIN Tags t ON it.TagId = t.Id
+      WHERE it.ItemId = ? AND it.IsDeleted = 0 AND t.IsDeleted = 0
+      ORDER BY t.DisplayOrder, t.Name`;
+
+    const tags = this.executeQuery<{
+      Id: string;
+      Name: string;
+      Color: string | null;
+    }>(tagsQuery, [itemId]);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const row = results[0] as any;
+    return {
+      Id: row.Id,
+      Name: row.Name,
+      ItemType: row.ItemType,
+      Logo: row.Logo,
+      FolderId: row.FolderId,
+      FolderPath: null,
+      Tags: tags.map(t => ({
+        Id: t.Id,
+        Name: t.Name,
+        Color: t.Color || undefined
+      })),
+      Fields: fields.map(f => ({
+        FieldKey: f.FieldKey,
+        Label: f.Label,
+        FieldType: f.FieldType as FieldType,
+        Value: f.Value,
+        IsHidden: f.IsHidden === 1,
+        DisplayOrder: f.DisplayOrder
+      })),
+      HasPasskey: row.HasPasskey === 1,
+      HasAttachment: row.HasAttachment === 1,
+      HasTotp: row.HasTotp === 1,
+      CreatedAt: row.CreatedAt,
+      UpdatedAt: row.UpdatedAt
+    };
   }
 
   /**
@@ -342,14 +708,17 @@ export class SqliteClient {
    */
   public getAllEmailAddresses(): string[] {
     const query = `
-      SELECT DISTINCT
-        a.Email
-      FROM Credentials c
-      LEFT JOIN Aliases a ON c.AliasId = a.Id
-      WHERE a.Email IS NOT NULL AND a.Email != '' AND c.IsDeleted = 0
+      SELECT DISTINCT fv.Value as Email
+      FROM FieldValues fv
+      INNER JOIN Items i ON fv.ItemId = i.Id
+      WHERE fv.FieldKey = ?
+        AND fv.Value IS NOT NULL
+        AND fv.Value != ''
+        AND fv.IsDeleted = 0
+        AND i.IsDeleted = 0
     `;
 
-    const results = this.executeQuery(query);
+    const results = this.executeQuery(query, [FieldKey.LoginEmail]);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return results.map((row: any) => row.Email);
@@ -387,9 +756,9 @@ export class SqliteClient {
    * @returns The default email domain or null if no valid domain is found
    */
   public async getDefaultEmailDomain(): Promise<string | null> {
-    const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[] ?? [];
-    const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[] ?? [];
-    const hiddenPrivateEmailDomains = await storage.getItem('session:hiddenPrivateEmailDomains') as string[] ?? [];
+    const publicEmailDomains = await storage.getItem('local:publicEmailDomains') as string[] ?? [];
+    const privateEmailDomains = await storage.getItem('local:privateEmailDomains') as string[] ?? [];
+    const hiddenPrivateEmailDomains = await storage.getItem('local:hiddenPrivateEmailDomains') as string[] ?? [];
 
     const defaultEmailDomain = this.getSetting('DefaultEmailDomain');
 
@@ -449,7 +818,7 @@ export class SqliteClient {
     }
 
     // Otherwise, try to match UI language to an identity generator language
-    const { mapUiLanguageToIdentityLanguage } = await import('@/utils/dist/shared/identity-generator');
+    const { mapUiLanguageToIdentityLanguage } = await import('@/utils/dist/core/identity-generator');
     const { default: i18n } = await import('@/i18n/i18n');
 
     const uiLanguage = i18n.language;
@@ -501,10 +870,10 @@ export class SqliteClient {
   }
 
   /**
-   * Create a new credential with associated entities
+   * Create a new credential with associated entities (using new field-based schema)
    * @param credential The credential object to insert
    * @param attachments The attachments to insert
-   * @returns The ID of the created credential
+   * @returns The ID of the created item
    */
   public async createCredential(credential: Credential, attachments: Attachment[], totpCodes: TotpCode[] = []): Promise<string> {
     if (!this.db) {
@@ -514,94 +883,77 @@ export class SqliteClient {
     try {
       this.beginTransaction();
 
-      // 1. Insert Service
-      let logoData = null;
-      try {
-        if (credential.Logo) {
-          // Handle object-like array conversion
-          if (typeof credential.Logo === 'object' && !ArrayBuffer.isView(credential.Logo)) {
-            const values = Object.values(credential.Logo);
-            logoData = new Uint8Array(values);
-          // Handle existing array types
-          } else if (Array.isArray(credential.Logo) || credential.Logo instanceof ArrayBuffer || credential.Logo instanceof Uint8Array) {
-            logoData = new Uint8Array(credential.Logo);
-          }
+      const currentDateTime = dateFormatter.now();
+      const itemId = crypto.randomUUID().toUpperCase();
+
+      // 1. Handle Logo - get or create logo entry
+      let logoId: string | null = null;
+      if (credential.Logo) {
+        const logoData = SqliteClient.convertLogoToUint8Array(credential.Logo);
+        if (logoData) {
+          const source = SqliteClient.extractSourceFromUrl(credential.ServiceUrl);
+          logoId = this.getOrCreateLogoId(source, logoData, currentDateTime);
         }
-      } catch (error) {
-        console.warn('Failed to convert logo to Uint8Array:', error);
-        logoData = null;
       }
 
-      const serviceQuery = `
-                INSERT INTO Services (Id, Name, Url, Logo, CreatedAt, UpdatedAt, IsDeleted)
-                VALUES (?, ?, ?, ?, ?, ?, ?)`;
-      const serviceId = crypto.randomUUID().toUpperCase();
-      const currentDateTime = dateFormatter.now();
-      this.executeUpdate(serviceQuery, [
-        serviceId,
-        credential.ServiceName,
-        credential.ServiceUrl ?? null,
-        logoData,
+      // 2. Insert Item
+      const itemQuery = `
+        INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, CreatedAt, UpdatedAt, IsDeleted)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+      this.executeUpdate(itemQuery, [
+        itemId,
+        credential.ServiceName ?? null,
+        'Login', // ItemType
+        logoId,
+        null, // FolderId
         currentDateTime,
         currentDateTime,
         0
       ]);
 
-      // 2. Insert Alias
-      const aliasQuery = `
-                INSERT INTO Aliases (Id, FirstName, LastName, NickName, BirthDate, Gender, Email, CreatedAt, UpdatedAt, IsDeleted)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-      const aliasId = crypto.randomUUID().toUpperCase();
-      this.executeUpdate(aliasQuery, [
-        aliasId,
-        credential.Alias.FirstName ?? null,
-        credential.Alias.LastName ?? null,
-        credential.Alias.NickName ?? null,
-        credential.Alias.BirthDate ?? null,
-        credential.Alias.Gender ?? null,
-        credential.Alias.Email ?? null,
-        currentDateTime,
-        currentDateTime,
-        0
-      ]);
+      // 3. Insert FieldValues for credential fields
+      const fieldsToInsert: Array<{ key: string; value: string | null }> = [
+        { key: FieldKey.LoginUsername, value: credential.Username ?? null },
+        { key: FieldKey.LoginPassword, value: credential.Password ?? null },
+        { key: FieldKey.LoginUrl, value: credential.ServiceUrl ?? null },
+        { key: FieldKey.LoginNotes, value: credential.Notes ?? null },
+        { key: FieldKey.AliasFirstName, value: credential.Alias?.FirstName ?? null },
+        { key: FieldKey.AliasLastName, value: credential.Alias?.LastName ?? null },
+        { key: FieldKey.AliasBirthdate, value: credential.Alias?.BirthDate ?? null },
+        { key: FieldKey.AliasGender, value: credential.Alias?.Gender ?? null },
+        { key: FieldKey.LoginEmail, value: credential.Alias?.Email ?? null },
+      ];
 
-      // 3. Insert Credential
-      const credentialQuery = `
-                INSERT INTO Credentials (Id, Username, Notes, ServiceId, AliasId, CreatedAt, UpdatedAt, IsDeleted)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-      const credentialId = crypto.randomUUID().toUpperCase();
-      this.executeUpdate(credentialQuery, [
-        credentialId,
-        credential.Username ?? null,
-        credential.Notes ?? null,
-        serviceId,
-        aliasId,
-        currentDateTime,
-        currentDateTime,
-        0
-      ]);
+      for (const field of fieldsToInsert) {
+        // Skip empty fields
+        if (!field.value || (typeof field.value === 'string' && field.value.trim() === '')) {
+          continue;
+        }
 
-      // 4. Insert Password
-      if (credential.Password) {
-        const passwordQuery = `
-                    INSERT INTO Passwords (Id, Value, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
-                    VALUES (?, ?, ?, ?, ?, ?)`;
-        const passwordId = crypto.randomUUID().toUpperCase();
-        this.executeUpdate(passwordQuery, [
-          passwordId,
-          credential.Password,
-          credentialId,
+        const fieldValueId = crypto.randomUUID().toUpperCase();
+        const fieldQuery = `
+          INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        this.executeUpdate(fieldQuery, [
+          fieldValueId,
+          itemId,
+          null, // FieldDefinitionId is null for system fields
+          field.key, // FieldKey
+          field.value,
+          0, // Weight
           currentDateTime,
           currentDateTime,
           0
         ]);
       }
 
-      // 5. Insert Attachment
+      // 4. Insert Attachments
       if (attachments) {
         for (const attachment of attachments) {
           const attachmentQuery = `
-            INSERT INTO Attachments (Id, Filename, Blob, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
+            INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted)
             VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
           const attachmentId = crypto.randomUUID().toUpperCase();
@@ -609,7 +961,7 @@ export class SqliteClient {
             attachmentId,
             attachment.Filename,
             attachment.Blob as Uint8Array,
-            credentialId,
+            itemId,
             currentDateTime,
             currentDateTime,
             0
@@ -617,7 +969,7 @@ export class SqliteClient {
         }
       }
 
-      // 6. Insert TOTP codes
+      // 5. Insert TOTP codes
       if (totpCodes) {
         for (const totpCode of totpCodes) {
           // Skip deleted codes
@@ -626,14 +978,14 @@ export class SqliteClient {
           }
 
           const totpCodeQuery = `
-            INSERT INTO TotpCodes (Id, Name, SecretKey, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
+            INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted)
             VALUES (?, ?, ?, ?, ?, ?, ?)`;
 
           this.executeUpdate(totpCodeQuery, [
             totpCode.Id || crypto.randomUUID().toUpperCase(),
             totpCode.Name,
             totpCode.SecretKey,
-            credentialId,
+            itemId,
             currentDateTime,
             currentDateTime,
             0
@@ -642,7 +994,7 @@ export class SqliteClient {
       }
 
       await this.commitTransaction();
-      return credentialId;
+      return itemId;
 
     } catch (error) {
       this.rollbackTransaction();
@@ -743,8 +1095,8 @@ export class SqliteClient {
   }
 
   /**
-   * Get TOTP codes for a credential
-   * @param credentialId - The ID of the credential to get TOTP codes for
+   * Get TOTP codes for a credential (alias for getTotpCodesForItem)
+   * @param credentialId - The ID of the item to get TOTP codes for
    * @returns Array of TotpCode objects
    */
   public getTotpCodesForCredential(credentialId: string): TotpCode[] {
@@ -767,9 +1119,9 @@ export class SqliteClient {
           Id,
           Name,
           SecretKey,
-          CredentialId
+          ItemId
         FROM TotpCodes
-        WHERE CredentialId = ? AND IsDeleted = 0`;
+        WHERE ItemId = ? AND IsDeleted = 0`;
 
       return this.executeQuery<TotpCode>(query, [credentialId]);
     } catch (error) {
@@ -780,9 +1132,9 @@ export class SqliteClient {
   }
 
   /**
-   * Get attachments for a specific credential
-   * @param credentialId - The ID of the credential
-   * @returns Array of attachments for the credential
+   * Get attachments for a specific credential (alias for getAttachmentsForItem)
+   * @param credentialId - The ID of the item
+   * @returns Array of attachments for the item
    */
   public getAttachmentsForCredential(credentialId: string): Attachment[] {
     if (!this.db) {
@@ -799,15 +1151,79 @@ export class SqliteClient {
           Id,
           Filename,
           Blob,
-          CredentialId,
+          ItemId,
           CreatedAt,
           UpdatedAt,
           IsDeleted
         FROM Attachments
-        WHERE CredentialId = ? AND IsDeleted = 0`;
+        WHERE ItemId = ? AND IsDeleted = 0`;
       return this.executeQuery<Attachment>(query, [credentialId]);
     } catch (error) {
       console.error('Error getting attachments:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get TOTP codes for an item
+   * @param itemId - The ID of the item to get TOTP codes for
+   * @returns Array of TotpCode objects
+   */
+  public getTotpCodesForItem(itemId: string): TotpCode[] {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      if (!this.tableExists('TotpCodes')) {
+        return [];
+      }
+
+      const query = `
+        SELECT
+          Id,
+          Name,
+          SecretKey,
+          ItemId
+        FROM TotpCodes
+        WHERE ItemId = ? AND IsDeleted = 0`;
+
+      return this.executeQuery<TotpCode>(query, [itemId]);
+    } catch (error) {
+      console.error('Error getting TOTP codes for item:', error);
+      return [];
+    }
+  }
+
+  /**
+   * Get attachments for an item
+   * @param itemId - The ID of the item
+   * @returns Array of attachments for the item
+   */
+  public getAttachmentsForItem(itemId: string): Attachment[] {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      if (!this.tableExists('Attachments')) {
+        return [];
+      }
+
+      const query = `
+        SELECT
+          Id,
+          Filename,
+          Blob,
+          ItemId,
+          CreatedAt,
+          UpdatedAt,
+          IsDeleted
+        FROM Attachments
+        WHERE ItemId = ? AND IsDeleted = 0`;
+      return this.executeQuery<Attachment>(query, [itemId]);
+    } catch (error) {
+      console.error('Error getting attachments for item:', error);
       return [];
     }
   }
@@ -858,7 +1274,7 @@ export class SqliteClient {
         UPDATE Passkeys
         SET IsDeleted = 1,
             UpdatedAt = ?
-        WHERE CredentialId = ?`;
+        WHERE ItemId = ?`;
 
       const results = this.executeUpdate(query, [currentDateTime, credentialId]);
       this.executeUpdate(aliasQuery, [currentDateTime, credentialId]);
@@ -939,7 +1355,6 @@ export class SqliteClient {
         UPDATE Aliases
         SET FirstName = ?,
             LastName = ?,
-            NickName = ?,
             BirthDate = ?,
             Gender = ?,
             Email = ?,
@@ -963,7 +1378,6 @@ export class SqliteClient {
       this.executeUpdate(aliasQuery, [
         credential.Alias.FirstName ?? null,
         credential.Alias.LastName ?? null,
-        credential.Alias.NickName ?? null,
         birthDate ?? null,
         credential.Alias.Gender ?? null,
         credential.Alias.Email ?? null,
@@ -1047,7 +1461,7 @@ export class SqliteClient {
           if (!isExistingAttachment) {
             // Insert new attachment
             const insertQuery = `
-              INSERT INTO Attachments (Id, Filename, Blob, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
+              INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted)
               VALUES (?, ?, ?, ?, ?, ?, ?)`;
             this.executeUpdate(insertQuery, [
               attachment.Id,
@@ -1103,7 +1517,7 @@ export class SqliteClient {
           if (!isExistingTotpCode) {
             // Insert new TOTP code
             const insertQuery = `
-              INSERT INTO TotpCodes (Id, Name, SecretKey, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
+              INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted)
               VALUES (?, ?, ?, ?, ?, ?, ?)`;
             this.executeUpdate(insertQuery, [
               totpCode.Id || crypto.randomUUID().toUpperCase(),
@@ -1161,6 +1575,121 @@ export class SqliteClient {
     } else {
       return `data:image/x-icon;base64,${placeholderBase64}`;
     }
+  }
+
+  /**
+   * Check if a logo exists for the given source domain.
+   * @param source The normalized source domain (e.g., 'github.com')
+   * @returns True if a logo exists for this source, false otherwise
+   */
+  public hasLogoForSource(source: string): boolean {
+    const existingLogoQuery = `
+      SELECT Id FROM Logos
+      WHERE Source = ? AND IsDeleted = 0
+      LIMIT 1`;
+    const existingLogos = this.executeQuery<{ Id: string }>(existingLogoQuery, [source]);
+    return existingLogos.length > 0;
+  }
+
+  /**
+   * Get the logo ID for a given source domain if it exists.
+   * @param source The normalized source domain (e.g., 'github.com')
+   * @returns The logo ID if found, null otherwise
+   */
+  public getLogoIdForSource(source: string): string | null {
+    const existingLogoQuery = `
+      SELECT Id FROM Logos
+      WHERE Source = ? AND IsDeleted = 0
+      LIMIT 1`;
+    const existingLogos = this.executeQuery<{ Id: string }>(existingLogoQuery, [source]);
+    return existingLogos.length > 0 ? existingLogos[0].Id : null;
+  }
+
+  /**
+   * Get or create a logo ID for the given source domain.
+   * If a logo for this source already exists, returns its ID.
+   * Otherwise, creates a new logo entry and returns its ID.
+   * @param source The normalized source domain (e.g., 'github.com')
+   * @param logoData The logo image data as Uint8Array
+   * @param currentDateTime The current date/time string for timestamps
+   * @returns The logo ID (existing or newly created)
+   */
+  private getOrCreateLogoId(source: string, logoData: Uint8Array, currentDateTime: string): string {
+    // Check if a logo for this source already exists
+    const existingLogoQuery = `
+      SELECT Id FROM Logos
+      WHERE Source = ? AND IsDeleted = 0
+      LIMIT 1`;
+    const existingLogos = this.executeQuery<{ Id: string }>(existingLogoQuery, [source]);
+
+    if (existingLogos.length > 0) {
+      // Reuse existing logo
+      return existingLogos[0].Id;
+    }
+
+    // Create new logo entry
+    const logoId = crypto.randomUUID().toUpperCase();
+    const logoQuery = `
+      INSERT INTO Logos (Id, Source, FileData, CreatedAt, UpdatedAt, IsDeleted)
+      VALUES (?, ?, ?, ?, ?, ?)`;
+    this.executeUpdate(logoQuery, [
+      logoId,
+      source,
+      logoData,
+      currentDateTime,
+      currentDateTime,
+      0
+    ]);
+
+    return logoId;
+  }
+
+  /**
+   * Extract and normalize source domain from a URL string.
+   * Uses lowercase and removes www. prefix for case-insensitive matching.
+   * This matches the server-side migration logic for consistent deduplication.
+   * @param urlString The URL to extract the domain from
+   * @returns The normalized source domain (e.g., 'github.com'), or 'unknown' if extraction fails
+   */
+  public static extractSourceFromUrl(urlString: string | undefined | null): string {
+    if (!urlString) {
+      return 'unknown';
+    }
+
+    try {
+      const url = new URL(urlString.startsWith('http') ? urlString : `https://${urlString}`);
+      // Normalize hostname: lowercase and remove www. prefix
+      return url.hostname.toLowerCase().replace(/^www\./, '');
+    } catch {
+      return 'unknown';
+    }
+  }
+
+  /**
+   * Convert logo data from various formats to Uint8Array.
+   * @param logo The logo data in various possible formats
+   * @returns Uint8Array of logo data, or null if conversion fails
+   */
+  private static convertLogoToUint8Array(logo: unknown): Uint8Array | null {
+    if (!logo) {
+      return null;
+    }
+
+    try {
+      // Handle object-like array conversion (from JSON deserialization)
+      if (typeof logo === 'object' && !ArrayBuffer.isView(logo) && !Array.isArray(logo)) {
+        const values = Object.values(logo as Record<string, number>);
+        return new Uint8Array(values);
+      }
+      // Handle existing array types
+      if (Array.isArray(logo) || logo instanceof ArrayBuffer || logo instanceof Uint8Array) {
+        return new Uint8Array(logo as ArrayLike<number>);
+      }
+    } catch (error) {
+      console.warn('Failed to convert logo to Uint8Array:', error);
+    }
+
+    return null;
   }
 
   /**
@@ -1304,7 +1833,7 @@ export class SqliteClient {
     const query = `
       SELECT
         p.Id,
-        p.CredentialId,
+        p.ItemId,
         p.RpId,
         p.UserHandle,
         p.PublicKey,
@@ -1315,12 +1844,12 @@ export class SqliteClient {
         p.CreatedAt,
         p.UpdatedAt,
         p.IsDeleted,
-        c.Username,
-        s.Name as ServiceName
+        i.Name as ServiceName,
+        (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username
       FROM Passkeys p
-      LEFT JOIN Credentials c ON p.CredentialId = c.Id
-      LEFT JOIN Services s ON c.ServiceId = s.Id
+      INNER JOIN Items i ON p.ItemId = i.Id
       WHERE p.RpId = ? AND p.IsDeleted = 0
+        AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
       ORDER BY p.CreatedAt DESC
     `;
 
@@ -1329,7 +1858,7 @@ export class SqliteClient {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return results.map((row: any) => ({
       Id: row.Id,
-      CredentialId: row.CredentialId,
+      ItemId: row.ItemId,
       RpId: row.RpId,
       UserHandle: row.UserHandle,
       PublicKey: row.PublicKey,
@@ -1358,7 +1887,7 @@ export class SqliteClient {
     const query = `
       SELECT
         p.Id,
-        p.CredentialId,
+        p.ItemId,
         p.RpId,
         p.UserHandle,
         p.PublicKey,
@@ -1369,12 +1898,12 @@ export class SqliteClient {
         p.CreatedAt,
         p.UpdatedAt,
         p.IsDeleted,
-        c.Username,
-        s.Name as ServiceName
+        i.Name as ServiceName,
+        (SELECT fv.Value FROM FieldValues fv WHERE fv.ItemId = i.Id AND fv.FieldKey = '${FieldKey.LoginUsername}' AND fv.IsDeleted = 0 LIMIT 1) as Username
       FROM Passkeys p
-      LEFT JOIN Credentials c ON p.CredentialId = c.Id
-      LEFT JOIN Services s ON c.ServiceId = s.Id
+      INNER JOIN Items i ON p.ItemId = i.Id
       WHERE p.Id = ? AND p.IsDeleted = 0
+        AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
     `;
 
     const results = this.executeQuery(query, [passkeyId]);
@@ -1387,7 +1916,7 @@ export class SqliteClient {
     const row: any = results[0];
     return {
       Id: row.Id,
-      CredentialId: row.CredentialId,
+      ItemId: row.ItemId,
       RpId: row.RpId,
       UserHandle: row.UserHandle,
       PublicKey: row.PublicKey,
@@ -1404,11 +1933,11 @@ export class SqliteClient {
   }
 
   /**
-   * Get all passkeys for a specific credential
-   * @param credentialId - The credential ID
+   * Get all passkeys for a specific item
+   * @param itemId - The item ID
    * @returns Array of passkey objects
    */
-  public getPasskeysByCredentialId(credentialId: string): Passkey[] {
+  public getPasskeysByItemId(itemId: string): Passkey[] {
     if (!this.db) {
       throw new Error('Database not initialized');
     }
@@ -1416,7 +1945,7 @@ export class SqliteClient {
     const query = `
       SELECT
         p.Id,
-        p.CredentialId,
+        p.ItemId,
         p.RpId,
         p.UserHandle,
         p.PublicKey,
@@ -1428,16 +1957,16 @@ export class SqliteClient {
         p.UpdatedAt,
         p.IsDeleted
       FROM Passkeys p
-      WHERE p.CredentialId = ? AND p.IsDeleted = 0
+      WHERE p.ItemId = ? AND p.IsDeleted = 0
       ORDER BY p.CreatedAt DESC
     `;
 
-    const results = this.executeQuery(query, [credentialId]);
+    const results = this.executeQuery(query, [itemId]);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return results.map((row: any) => ({
       Id: row.Id,
-      CredentialId: row.CredentialId,
+      ItemId: row.ItemId,
       RpId: row.RpId,
       UserHandle: row.UserHandle,
       PublicKey: row.PublicKey,
@@ -1452,7 +1981,7 @@ export class SqliteClient {
   }
 
   /**
-   * Create a new passkey linked to a credential
+   * Create a new passkey linked to an item
    * @param passkey - The passkey object to create
    */
   public async createPasskey(passkey: Omit<Passkey, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted'>): Promise<void> {
@@ -1467,7 +1996,7 @@ export class SqliteClient {
 
       const query = `
         INSERT INTO Passkeys (
-          Id, CredentialId, RpId, UserHandle, PublicKey, PrivateKey,
+          Id, ItemId, RpId, UserHandle, PublicKey, PrivateKey,
           PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted
         )
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -1487,7 +2016,7 @@ export class SqliteClient {
 
       this.executeUpdate(query, [
         passkey.Id,
-        passkey.CredentialId,
+        passkey.ItemId,
         passkey.RpId,
         userHandleData,
         passkey.PublicKey,
@@ -1542,11 +2071,11 @@ export class SqliteClient {
   }
 
   /**
-   * Delete all passkeys for a specific credential (soft delete)
-   * @param credentialId - The ID of the credential
+   * Delete all passkeys for a specific item (soft delete)
+   * @param itemId - The ID of the item
    * @returns The number of rows updated
    */
-  public async deletePasskeysByCredentialId(credentialId: string): Promise<number> {
+  public async deletePasskeysByItemId(itemId: string): Promise<number> {
     if (!this.db) {
       throw new Error('Database not initialized');
     }
@@ -1560,16 +2089,16 @@ export class SqliteClient {
         UPDATE Passkeys
         SET IsDeleted = 1,
             UpdatedAt = ?
-        WHERE CredentialId = ?
+        WHERE ItemId = ?
       `;
 
-      const result = this.executeUpdate(query, [currentDateTime, credentialId]);
+      const result = this.executeUpdate(query, [currentDateTime, itemId]);
 
       await this.commitTransaction();
       return result;
     } catch (error) {
       this.rollbackTransaction();
-      console.error('Error deleting passkeys for credential:', error);
+      console.error('Error deleting passkeys for item:', error);
       throw error;
     }
   }
@@ -1604,6 +2133,1205 @@ export class SqliteClient {
     } catch (error) {
       this.rollbackTransaction();
       console.error('Error updating passkey display name:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Create a new item with field-based structure
+   * @param item The item object to insert
+   * @param attachments Optional attachments to associate with the item
+   * @param totpCodes Optional TOTP codes to associate with the item
+   * @returns The ID of the created item
+   */
+  public async createItem(item: Item, attachments: Attachment[] = [], totpCodes: TotpCode[] = []): Promise<string> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      this.beginTransaction();
+
+      const currentDateTime = dateFormatter.now();
+      const itemId = item.Id || crypto.randomUUID().toUpperCase();
+
+      // 1. Handle Logo - get or create logo entry, or link to existing logo by source
+      let logoId: string | null = null;
+      const urlField = item.Fields?.find(f => f.FieldKey === 'login.url');
+      const urlValue = urlField?.Value;
+      const urlString = Array.isArray(urlValue) ? urlValue[0] : urlValue;
+      const source = SqliteClient.extractSourceFromUrl(urlString);
+
+      if (item.Logo) {
+        const logoData = SqliteClient.convertLogoToUint8Array(item.Logo);
+        if (logoData) {
+          logoId = this.getOrCreateLogoId(source, logoData, currentDateTime);
+        }
+      } else if (source !== 'unknown') {
+        // No new logo provided, but check if an existing logo exists for this source
+        logoId = this.getLogoIdForSource(source);
+      }
+
+      // 2. Insert Item
+      const itemQuery = `
+        INSERT INTO Items (Id, Name, ItemType, LogoId, FolderId, CreatedAt, UpdatedAt, IsDeleted)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+
+      this.executeUpdate(itemQuery, [
+        itemId,
+        item.Name ?? null,
+        item.ItemType,
+        logoId,
+        item.FolderId ?? null,
+        currentDateTime,
+        currentDateTime,
+        0
+      ]);
+
+      // 3. Insert FieldValues for all fields
+      if (item.Fields && item.Fields.length > 0) {
+        for (const field of item.Fields) {
+          // Skip empty fields
+          if (!field.Value || (typeof field.Value === 'string' && field.Value.trim() === '')) {
+            continue;
+          }
+
+          const isCustomField = field.FieldKey.startsWith('custom_');
+          let fieldDefinitionId = null;
+
+          // For custom fields, create or get FieldDefinition
+          if (isCustomField) {
+            // Check if FieldDefinition already exists for this custom field
+            const existingDefQuery = `
+              SELECT Id FROM FieldDefinitions
+              WHERE Id = ?`;
+
+            const existingDef = this.executeQuery<{ Id: string }>(existingDefQuery, [field.FieldKey]);
+
+            if (existingDef.length === 0) {
+              // Create new FieldDefinition for custom field
+              const fieldDefQuery = `
+                INSERT INTO FieldDefinitions (Id, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt, IsDeleted)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+              this.executeUpdate(fieldDefQuery, [
+                field.FieldKey, // Use the custom_ ID as the FieldDefinition ID
+                field.FieldType,
+                field.Label,
+                0, // IsMultiValue
+                field.IsHidden ? 1 : 0,
+                0, // EnableHistory
+                field.DisplayOrder ?? 0,
+                item.ItemType, // ApplicableToTypes (single type for now)
+                currentDateTime,
+                currentDateTime,
+                0
+              ]);
+            }
+
+            fieldDefinitionId = field.FieldKey; // FieldDefinitionId = custom field ID
+          }
+
+          // Handle multi-value fields by creating separate FieldValue records
+          const values = Array.isArray(field.Value) ? field.Value : [field.Value];
+
+          for (let i = 0; i < values.length; i++) {
+            const value = values[i];
+
+            // Skip empty values
+            if (!value || (typeof value === 'string' && value.trim() === '')) {
+              continue;
+            }
+
+            const fieldValueId = crypto.randomUUID().toUpperCase();
+            const fieldQuery = `
+              INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+            this.executeUpdate(fieldQuery, [
+              fieldValueId,
+              itemId,
+              fieldDefinitionId, // NULL for system fields, custom field ID for custom fields
+              isCustomField ? null : field.FieldKey, // FieldKey set for system fields only
+              value, // Store each value separately, not as JSON
+              field.DisplayOrder ?? 0,
+              currentDateTime,
+              currentDateTime,
+              0
+            ]);
+          }
+        }
+      }
+
+      // 3. Insert TOTP codes
+      for (const totpCode of totpCodes) {
+        const totpQuery = `
+          INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted)
+          VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+        this.executeUpdate(totpQuery, [
+          totpCode.Id || crypto.randomUUID().toUpperCase(),
+          totpCode.Name,
+          totpCode.SecretKey,
+          itemId,
+          currentDateTime,
+          currentDateTime,
+          0
+        ]);
+      }
+
+      // 4. Insert attachments
+      for (const attachment of attachments) {
+        const attachmentQuery = `
+          INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted)
+          VALUES (?, ?, ?, ?, ?, ?, ?)`;
+
+        // Convert number[] to Uint8Array if needed
+        const blobData = attachment.Blob instanceof Uint8Array
+          ? attachment.Blob
+          : new Uint8Array(attachment.Blob);
+
+        this.executeUpdate(attachmentQuery, [
+          attachment.Id || crypto.randomUUID().toUpperCase(),
+          attachment.Filename,
+          blobData,
+          itemId,
+          currentDateTime,
+          currentDateTime,
+          0
+        ]);
+      }
+
+      await this.commitTransaction();
+      return itemId;
+    } catch (error) {
+      this.rollbackTransaction();
+      console.error('Error creating item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update an existing item with field-based structure
+   * @param item The item object to update
+   * @param originalAttachmentIds Original attachment IDs for tracking changes
+   * @param attachments Current attachments list
+   * @param originalTotpCodeIds Original TOTP code IDs for tracking changes
+   * @param totpCodes Current TOTP codes list
+   * @returns The number of rows modified
+   */
+  public async updateItem(
+    item: Item,
+    originalAttachmentIds: string[] = [],
+    attachments: Attachment[] = [],
+    originalTotpCodeIds: string[] = [],
+    totpCodes: TotpCode[] = []
+  ): Promise<number> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      this.beginTransaction();
+
+      const currentDateTime = dateFormatter.now();
+
+      // 1. Handle Logo - get or create logo entry, or link to existing logo by source
+      let logoId: string | null = null;
+      const urlField = item.Fields?.find(f => f.FieldKey === 'login.url');
+      const urlValue = urlField?.Value;
+      const urlString = Array.isArray(urlValue) ? urlValue[0] : urlValue;
+      const source = SqliteClient.extractSourceFromUrl(urlString);
+
+      if (item.Logo) {
+        const logoData = SqliteClient.convertLogoToUint8Array(item.Logo);
+        if (logoData) {
+          logoId = this.getOrCreateLogoId(source, logoData, currentDateTime);
+        }
+      } else if (source !== 'unknown') {
+        /*
+         * No new logo provided, but check if an existing logo exists for this source.
+         * This handles the case where URL was changed to a domain we already have a logo for.
+         */
+        logoId = this.getLogoIdForSource(source);
+      }
+
+      // 2. Update Item (including LogoId if a new logo was provided or existing one found)
+      const itemQuery = `
+        UPDATE Items
+        SET Name = ?,
+            ItemType = ?,
+            FolderId = ?,
+            LogoId = COALESCE(?, LogoId),
+            UpdatedAt = ?
+        WHERE Id = ?`;
+
+      this.executeUpdate(itemQuery, [
+        item.Name ?? null,
+        item.ItemType,
+        item.FolderId ?? null,
+        logoId,
+        currentDateTime,
+        item.Id
+      ]);
+
+      // 3. Track history for fields that have EnableHistory=true before updating
+      await this.trackFieldHistory(item.Id, item.Fields, currentDateTime);
+
+      // 3. Get existing FieldValues for this item (to update in place, preserving IDs for merge)
+      const existingFieldValuesQuery = `
+        SELECT Id, FieldKey, FieldDefinitionId, Value
+        FROM FieldValues
+        WHERE ItemId = ? AND IsDeleted = 0`;
+
+      const existingFieldValues = this.executeQuery<{
+        Id: string;
+        FieldKey: string | null;
+        FieldDefinitionId: string | null;
+        Value: string;
+      }>(existingFieldValuesQuery, [item.Id]);
+
+      /*
+       * Build a map of existing FieldValues by their effective key (FieldKey for system fields, FieldDefinitionId for custom)
+       * Key format: "fieldKey:index" to handle multi-value fields
+       */
+      const existingByKey = new Map<string, { Id: string; Value: string }>();
+      const fieldValueCounts = new Map<string, number>();
+
+      for (const fv of existingFieldValues) {
+        const key = fv.FieldKey || fv.FieldDefinitionId || '';
+        const count = fieldValueCounts.get(key) || 0;
+        existingByKey.set(`${key}:${count}`, { Id: fv.Id, Value: fv.Value });
+        fieldValueCounts.set(key, count + 1);
+      }
+
+      // Track which existing FieldValue IDs we've processed (to know which to soft-delete)
+      const processedIds = new Set<string>();
+
+      // 4. Update existing or insert new FieldValues
+      if (item.Fields && item.Fields.length > 0) {
+        for (const field of item.Fields) {
+          // Skip empty fields
+          if (!field.Value || (typeof field.Value === 'string' && field.Value.trim() === '')) {
+            continue;
+          }
+
+          const isCustomField = field.FieldKey.startsWith('custom_');
+          let fieldDefinitionId = null;
+
+          // For custom fields, create or update FieldDefinition
+          if (isCustomField) {
+            // Check if FieldDefinition already exists
+            const existingDefQuery = `
+              SELECT Id FROM FieldDefinitions
+              WHERE Id = ? AND IsDeleted = 0`;
+
+            const existingDef = this.executeQuery<{ Id: string }>(existingDefQuery, [field.FieldKey]);
+
+            if (existingDef.length === 0) {
+              // Create new FieldDefinition
+              const fieldDefQuery = `
+                INSERT INTO FieldDefinitions (Id, FieldType, Label, IsMultiValue, IsHidden, EnableHistory, Weight, ApplicableToTypes, CreatedAt, UpdatedAt, IsDeleted)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+              this.executeUpdate(fieldDefQuery, [
+                field.FieldKey,
+                field.FieldType,
+                field.Label,
+                0, // IsMultiValue
+                field.IsHidden ? 1 : 0,
+                0, // EnableHistory
+                field.DisplayOrder ?? 0,
+                item.ItemType,
+                currentDateTime,
+                currentDateTime,
+                0
+              ]);
+            } else {
+              // Update existing FieldDefinition (label might have changed)
+              const updateDefQuery = `
+                UPDATE FieldDefinitions
+                SET Label = ?,
+                    FieldType = ?,
+                    IsHidden = ?,
+                    Weight = ?,
+                    UpdatedAt = ?
+                WHERE Id = ?`;
+
+              this.executeUpdate(updateDefQuery, [
+                field.Label,
+                field.FieldType,
+                field.IsHidden ? 1 : 0,
+                field.DisplayOrder ?? 0,
+                currentDateTime,
+                field.FieldKey
+              ]);
+            }
+
+            fieldDefinitionId = field.FieldKey;
+          }
+
+          // Handle multi-value fields by creating separate FieldValue records
+          const values = Array.isArray(field.Value) ? field.Value : [field.Value];
+          const effectiveKey = isCustomField ? field.FieldKey : field.FieldKey;
+
+          for (let i = 0; i < values.length; i++) {
+            const value = values[i];
+
+            // Skip empty values
+            if (!value || (typeof value === 'string' && value.trim() === '')) {
+              continue;
+            }
+
+            const lookupKey = `${effectiveKey}:${i}`;
+            const existing = existingByKey.get(lookupKey);
+
+            if (existing) {
+              // Update existing FieldValue in place (preserves ID for merge)
+              processedIds.add(existing.Id);
+
+              // Only update if value actually changed
+              if (existing.Value !== value) {
+                const updateQuery = `
+                  UPDATE FieldValues
+                  SET Value = ?,
+                      Weight = ?,
+                      UpdatedAt = ?
+                  WHERE Id = ?`;
+
+                this.executeUpdate(updateQuery, [
+                  value,
+                  field.DisplayOrder ?? 0,
+                  currentDateTime,
+                  existing.Id
+                ]);
+              }
+            } else {
+              // Insert new FieldValue
+              const fieldValueId = crypto.randomUUID().toUpperCase();
+              const fieldQuery = `
+                INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+              this.executeUpdate(fieldQuery, [
+                fieldValueId,
+                item.Id,
+                fieldDefinitionId, // NULL for system fields, custom field ID for custom fields
+                isCustomField ? null : field.FieldKey, // FieldKey set for system fields only
+                value, // Store each value separately, not as JSON
+                field.DisplayOrder ?? 0,
+                currentDateTime,
+                currentDateTime,
+                0
+              ]);
+            }
+          }
+        }
+      }
+
+      // 5. Soft-delete any FieldValues that were not processed (removed fields)
+      for (const fv of existingFieldValues) {
+        if (!processedIds.has(fv.Id)) {
+          const deleteQuery = `
+            UPDATE FieldValues
+            SET IsDeleted = 1,
+                UpdatedAt = ?
+            WHERE Id = ?`;
+
+          this.executeUpdate(deleteQuery, [currentDateTime, fv.Id]);
+        }
+      }
+
+      // 6. Handle TOTP codes
+      for (const totpCode of totpCodes) {
+        const wasOriginal = originalTotpCodeIds.includes(totpCode.Id);
+
+        if (totpCode.IsDeleted) {
+          // Soft-delete existing TOTP codes
+          if (wasOriginal) {
+            const deleteTotpQuery = `
+              UPDATE TotpCodes
+              SET IsDeleted = 1,
+                  UpdatedAt = ?
+              WHERE Id = ?`;
+            this.executeUpdate(deleteTotpQuery, [currentDateTime, totpCode.Id]);
+          }
+        } else if (wasOriginal) {
+          // Update existing TOTP code
+          const updateTotpQuery = `
+            UPDATE TotpCodes
+            SET Name = ?,
+                SecretKey = ?,
+                UpdatedAt = ?
+            WHERE Id = ?`;
+          this.executeUpdate(updateTotpQuery, [
+            totpCode.Name,
+            totpCode.SecretKey,
+            currentDateTime,
+            totpCode.Id
+          ]);
+        } else {
+          // Insert new TOTP code
+          const insertTotpQuery = `
+            INSERT INTO TotpCodes (Id, Name, SecretKey, ItemId, CreatedAt, UpdatedAt, IsDeleted)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`;
+          this.executeUpdate(insertTotpQuery, [
+            totpCode.Id || crypto.randomUUID().toUpperCase(),
+            totpCode.Name,
+            totpCode.SecretKey,
+            item.Id,
+            currentDateTime,
+            currentDateTime,
+            0
+          ]);
+        }
+      }
+
+      // 7. Handle attachments
+      for (const attachment of attachments) {
+        const wasOriginal = originalAttachmentIds.includes(attachment.Id);
+
+        if (attachment.IsDeleted) {
+          // Soft-delete existing attachments
+          if (wasOriginal) {
+            const deleteAttachmentQuery = `
+              UPDATE Attachments
+              SET IsDeleted = 1,
+                  UpdatedAt = ?
+              WHERE Id = ?`;
+            this.executeUpdate(deleteAttachmentQuery, [currentDateTime, attachment.Id]);
+          }
+        } else if (!wasOriginal) {
+          // Insert new attachment
+          const blobData = attachment.Blob instanceof Uint8Array
+            ? attachment.Blob
+            : new Uint8Array(attachment.Blob);
+
+          const insertAttachmentQuery = `
+            INSERT INTO Attachments (Id, Filename, Blob, ItemId, CreatedAt, UpdatedAt, IsDeleted)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`;
+          this.executeUpdate(insertAttachmentQuery, [
+            attachment.Id || crypto.randomUUID().toUpperCase(),
+            attachment.Filename,
+            blobData,
+            item.Id,
+            currentDateTime,
+            currentDateTime,
+            0
+          ]);
+        }
+        // Note: Existing attachments are not updated (blob data doesn't change)
+      }
+
+      await this.commitTransaction();
+      return 1;
+    } catch (error) {
+      this.rollbackTransaction();
+      console.error('Error updating item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Track field history for fields that have EnableHistory=true.
+   * This method should be called before updating/deleting field values.
+   * @param itemId - The ID of the item
+   * @param newFields - The new field values
+   * @param currentDateTime - The current timestamp
+   */
+  private async trackFieldHistory(itemId: string, newFields: ItemField[], currentDateTime: string): Promise<void> {
+    // Get existing field values from database
+    const existingFieldsQuery = `
+      SELECT FieldKey, Value
+      FROM FieldValues
+      WHERE ItemId = ? AND IsDeleted = 0 AND FieldKey IS NOT NULL`;
+
+    const existingFields = this.executeQuery<{FieldKey: string, Value: string}>(existingFieldsQuery, [itemId]);
+
+    // Create a map of existing values by FieldKey
+    const existingValuesMap: {[key: string]: string[]} = {};
+    existingFields.forEach(field => {
+      if (!existingValuesMap[field.FieldKey]) {
+        existingValuesMap[field.FieldKey] = [];
+      }
+      existingValuesMap[field.FieldKey].push(field.Value);
+    });
+
+    // Check each new field to see if it has EnableHistory and if the value changed
+    for (const newField of newFields) {
+      // Skip custom fields (only track system fields for now)
+      if (newField.FieldKey.startsWith('custom_')) {
+        continue;
+      }
+
+      // Get system field definition
+      const systemField = getSystemField(newField.FieldKey);
+      if (!systemField || !systemField.EnableHistory) {
+        continue;
+      }
+
+      // Get old and new values
+      const oldValues = existingValuesMap[newField.FieldKey] || [];
+      const newValues = Array.isArray(newField.Value) ? newField.Value : [newField.Value];
+
+      // Check if values changed
+      const valuesChanged = oldValues.length !== newValues.length ||
+                            !oldValues.every((val, idx) => val === newValues[idx]);
+
+      if (valuesChanged && oldValues.length > 0) {
+        // Create history record for the old value
+        const historyId = crypto.randomUUID().toUpperCase();
+        // Store just the values as JSON array
+        const valueSnapshot = JSON.stringify(oldValues);
+
+        const historyQuery = `
+          INSERT INTO FieldHistories (Id, ItemId, FieldDefinitionId, FieldKey, ValueSnapshot, ChangedAt, CreatedAt, UpdatedAt, IsDeleted)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+        this.executeUpdate(historyQuery, [
+          historyId,
+          itemId,
+          null, // FieldDefinitionId is NULL for system fields
+          newField.FieldKey, // FieldKey for system fields
+          valueSnapshot,
+          currentDateTime,
+          currentDateTime,
+          currentDateTime,
+          0
+        ]);
+
+        // Prune old history records if we exceed the limit
+        await this.pruneFieldHistory(itemId, newField.FieldKey, currentDateTime);
+      }
+    }
+  }
+
+  /**
+   * Prune old field history records, keeping only the most recent MAX_FIELD_HISTORY_RECORDS.
+   * @param itemId - The ID of the item
+   * @param fieldKey - The field key to prune history for
+   * @param currentDateTime - The current timestamp
+   */
+  private async pruneFieldHistory(itemId: string, fieldKey: string, currentDateTime: string): Promise<void> {
+    // Get all history records for this field
+    const historyQuery = `
+      SELECT Id, ChangedAt
+      FROM FieldHistories
+      WHERE ItemId = ? AND FieldKey = ? AND IsDeleted = 0
+      ORDER BY ChangedAt DESC`;
+
+    const matchingHistory = this.executeQuery<{Id: string, ChangedAt: string}>(historyQuery, [itemId, fieldKey]);
+
+    if (matchingHistory.length > MAX_FIELD_HISTORY_RECORDS) {
+      // Soft delete the oldest records beyond the limit
+      const recordsToDelete = matchingHistory.slice(MAX_FIELD_HISTORY_RECORDS);
+      const idsToDelete = recordsToDelete.map(r => r.Id);
+
+      if (idsToDelete.length > 0) {
+        const placeholders = idsToDelete.map(() => '?').join(',');
+        const deleteQuery = `
+          UPDATE FieldHistories
+          SET IsDeleted = 1, UpdatedAt = ?
+          WHERE Id IN (${placeholders})`;
+
+        this.executeUpdate(deleteQuery, [currentDateTime, ...idsToDelete]);
+      }
+    }
+  }
+
+  /**
+   * Get field history for a specific field.
+   * Returns history records ordered by ChangedAt descending (most recent first).
+   * @param itemId - The ID of the item
+   * @param fieldKey - The field key to get history for
+   * @returns Array of field history records
+   */
+  public getFieldHistory(itemId: string, fieldKey: string): FieldHistory[] {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    const query = `
+      SELECT
+        Id,
+        ItemId,
+        FieldKey,
+        ValueSnapshot,
+        ChangedAt,
+        CreatedAt,
+        UpdatedAt
+      FROM FieldHistories
+      WHERE ItemId = ? AND FieldKey = ? AND IsDeleted = 0
+      ORDER BY ChangedAt DESC
+      LIMIT ?`;
+
+    const results = this.executeQuery<{
+      Id: string;
+      ItemId: string;
+      FieldKey: string;
+      ValueSnapshot: string;
+      ChangedAt: string;
+      CreatedAt: string;
+      UpdatedAt: string;
+    }>(query, [itemId, fieldKey, MAX_FIELD_HISTORY_RECORDS]);
+
+    return results.map(row => ({
+      Id: row.Id,
+      ItemId: row.ItemId,
+      FieldKey: row.FieldKey,
+      ValueSnapshot: row.ValueSnapshot,
+      ChangedAt: row.ChangedAt,
+      CreatedAt: row.CreatedAt,
+      UpdatedAt: row.UpdatedAt
+    }));
+  }
+
+  /**
+   * Move an item to "Recently Deleted" (trash) by setting DeletedAt timestamp.
+   * Item can be restored within retention period (default 30 days).
+   * @param itemId - The ID of the item to trash
+   * @returns The number of rows updated
+   */
+  public async trashItem(itemId: string): Promise<number> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      this.beginTransaction();
+
+      const currentDateTime = dateFormatter.now();
+
+      const query = `
+        UPDATE Items
+        SET DeletedAt = ?,
+            UpdatedAt = ?
+        WHERE Id = ? AND IsDeleted = 0`;
+
+      const result = this.executeUpdate(query, [currentDateTime, currentDateTime, itemId]);
+
+      await this.commitTransaction();
+      return result;
+    } catch (error) {
+      this.rollbackTransaction();
+      console.error('Error trashing item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Restore an item from "Recently Deleted" by clearing DeletedAt timestamp.
+   * @param itemId - The ID of the item to restore
+   * @returns The number of rows updated
+   */
+  public async restoreItem(itemId: string): Promise<number> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      this.beginTransaction();
+
+      const currentDateTime = dateFormatter.now();
+
+      const query = `
+        UPDATE Items
+        SET DeletedAt = NULL,
+            UpdatedAt = ?
+        WHERE Id = ? AND IsDeleted = 0 AND DeletedAt IS NOT NULL`;
+
+      const result = this.executeUpdate(query, [currentDateTime, itemId]);
+
+      await this.commitTransaction();
+      return result;
+    } catch (error) {
+      this.rollbackTransaction();
+      console.error('Error restoring item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Permanently delete an item - converts to tombstone for sync.
+   * Hard deletes all child entities and marks item as IsDeleted=1.
+   * Also cleans up orphaned logos (logos no longer referenced by any item).
+   * @param itemId - The ID of the item to permanently delete
+   * @returns The number of rows updated
+   */
+  public async permanentlyDeleteItem(itemId: string): Promise<number> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      this.beginTransaction();
+
+      const currentDateTime = dateFormatter.now();
+
+      // 0. Get the LogoId before we clear it (for orphan cleanup)
+      const logoQuery = `SELECT LogoId FROM Items WHERE Id = ?`;
+      const logoResult = this.executeQuery<{ LogoId: string | null }>(logoQuery, [itemId]);
+      const logoId = logoResult.length > 0 ? logoResult[0].LogoId : null;
+
+      // 1. Hard delete all FieldValues for this item
+      this.executeUpdate(`DELETE FROM FieldValues WHERE ItemId = ?`, [itemId]);
+
+      // 2. Hard delete all FieldHistories for this item
+      this.executeUpdate(`DELETE FROM FieldHistories WHERE ItemId = ?`, [itemId]);
+
+      // 3. Hard delete all Passkeys for this item
+      this.executeUpdate(`DELETE FROM Passkeys WHERE ItemId = ?`, [itemId]);
+
+      // 4. Hard delete all TotpCodes for this item
+      this.executeUpdate(`DELETE FROM TotpCodes WHERE ItemId = ?`, [itemId]);
+
+      // 5. Hard delete all Attachments for this item (including blob data)
+      this.executeUpdate(`DELETE FROM Attachments WHERE ItemId = ?`, [itemId]);
+
+      // 6. Hard delete all ItemTags for this item
+      this.executeUpdate(`DELETE FROM ItemTags WHERE ItemId = ?`, [itemId]);
+
+      // 7. Convert item to tombstone (gut it, keep shell for sync)
+      const itemQuery = `
+        UPDATE Items
+        SET IsDeleted = 1,
+            Name = NULL,
+            LogoId = NULL,
+            FolderId = NULL,
+            UpdatedAt = ?
+        WHERE Id = ?`;
+
+      const result = this.executeUpdate(itemQuery, [currentDateTime, itemId]);
+
+      // 8. Clean up orphaned logo if this was the last item using it
+      if (logoId) {
+        const logoUsageQuery = `
+          SELECT COUNT(*) as count FROM Items
+          WHERE LogoId = ? AND IsDeleted = 0`;
+        const usageResult = this.executeQuery<{ count: number }>(logoUsageQuery, [logoId]);
+        const usageCount = usageResult.length > 0 ? usageResult[0].count : 0;
+
+        if (usageCount === 0) {
+          // No other items reference this logo, hard delete it
+          this.executeUpdate(`DELETE FROM Logos WHERE Id = ?`, [logoId]);
+          console.debug(`[SqliteClient] Deleted orphaned logo: ${logoId}`);
+        }
+      }
+
+      await this.commitTransaction();
+      return result;
+    } catch (error) {
+      this.rollbackTransaction();
+      console.error('Error permanently deleting item:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all items in "Recently Deleted" (where DeletedAt is set but not permanently deleted).
+   * @returns Array of trashed Item objects (empty array if Items table doesn't exist yet)
+   */
+  public getRecentlyDeletedItems(): Item[] {
+    let items;
+    try {
+      const query = `
+        SELECT DISTINCT
+          i.Id,
+          i.Name,
+          i.ItemType,
+          i.FolderId,
+          f.Name as FolderPath,
+          l.FileData as Logo,
+          i.DeletedAt,
+          CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
+          CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
+          CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
+          i.CreatedAt,
+          i.UpdatedAt
+        FROM Items i
+        LEFT JOIN Logos l ON i.LogoId = l.Id
+        LEFT JOIN Folders f ON i.FolderId = f.Id
+        WHERE i.IsDeleted = 0 AND i.DeletedAt IS NOT NULL
+        ORDER BY i.DeletedAt DESC`;
+
+      items = this.executeQuery(query);
+    } catch (error) {
+      // Items table may not exist in older vault versions - return empty array
+      if (error instanceof Error && error.message.includes('no such table')) {
+        return [];
+      }
+      throw error;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const itemIds = items.map((i: any) => i.Id);
+    if (itemIds.length === 0) {
+      return [];
+    }
+
+    // Get all field values
+    const fieldsQuery = `
+      SELECT
+        fv.ItemId,
+        fv.FieldKey,
+        fv.FieldDefinitionId,
+        fd.Label as CustomLabel,
+        fd.FieldType as CustomFieldType,
+        fd.IsHidden as CustomIsHidden,
+        fv.Value,
+        fv.Weight as DisplayOrder
+      FROM FieldValues fv
+      LEFT JOIN FieldDefinitions fd ON fv.FieldDefinitionId = fd.Id
+      WHERE fv.ItemId IN (${itemIds.map(() => '?').join(',')})
+        AND fv.IsDeleted = 0
+      ORDER BY fv.ItemId, fv.Weight`;
+
+    const fieldRows = this.executeQuery<{
+      ItemId: string;
+      FieldKey: string | null;
+      FieldDefinitionId: string | null;
+      CustomLabel: string | null;
+      CustomFieldType: string | null;
+      CustomIsHidden: number | null;
+      Value: string;
+      DisplayOrder: number;
+    }>(fieldsQuery, itemIds);
+
+    /* Process fields. System fields use FieldKey for Label (translation happens in UI layer) */
+    const fields = fieldRows.map(row => {
+      if (row.FieldKey) {
+        const systemField = getSystemField(row.FieldKey);
+        return {
+          ItemId: row.ItemId,
+          FieldKey: row.FieldKey,
+          Label: row.FieldKey, // UI layer translates via fieldLabels.*
+          FieldType: systemField?.FieldType || 'Text',
+          IsHidden: systemField?.IsHidden ? 1 : 0,
+          Value: row.Value,
+          DisplayOrder: row.DisplayOrder
+        };
+      } else {
+        return {
+          ItemId: row.ItemId,
+          FieldKey: row.FieldDefinitionId || '',
+          Label: row.CustomLabel || '',
+          FieldType: row.CustomFieldType || 'Text',
+          IsHidden: row.CustomIsHidden || 0,
+          Value: row.Value,
+          DisplayOrder: row.DisplayOrder
+        };
+      }
+    });
+
+    // Group fields by item ID
+    const fieldsByItem = new Map<string, typeof fields>();
+    fields.forEach(field => {
+      const existing = fieldsByItem.get(field.ItemId) || [];
+      existing.push(field);
+      fieldsByItem.set(field.ItemId, existing);
+    });
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return items.map((row: any) => {
+      const itemFields = fieldsByItem.get(row.Id) || [];
+      return {
+        Id: row.Id,
+        Name: row.Name,
+        ItemType: row.ItemType,
+        FolderId: row.FolderId,
+        FolderPath: row.FolderPath,
+        Logo: row.Logo ? new Uint8Array(row.Logo) : undefined,
+        DeletedAt: row.DeletedAt,
+        HasPasskey: row.HasPasskey === 1,
+        HasAttachment: row.HasAttachment === 1,
+        HasTotp: row.HasTotp === 1,
+        Fields: itemFields.map(f => ({
+          FieldKey: f.FieldKey,
+          Label: f.Label,
+          FieldType: f.FieldType as FieldType,
+          Value: f.Value,
+          IsHidden: f.IsHidden === 1,
+          DisplayOrder: f.DisplayOrder
+        })),
+        CreatedAt: row.CreatedAt,
+        UpdatedAt: row.UpdatedAt
+      };
+    });
+  }
+
+  /**
+   * Get count of items in "Recently Deleted".
+   * @returns Number of trashed items (0 if Items table doesn't exist yet)
+   */
+  public getRecentlyDeletedCount(): number {
+    try {
+      const query = `
+        SELECT COUNT(*) as count
+        FROM Items
+        WHERE IsDeleted = 0 AND DeletedAt IS NOT NULL`;
+
+      const result = this.executeQuery<{ count: number }>(query);
+      return result[0]?.count || 0;
+    } catch (error) {
+      // Table may not exist in older vault versions - return 0
+      if (error instanceof Error && error.message.includes('no such table')) {
+        return 0;
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Delete an item by ID (soft delete) - DEPRECATED, use trashItem instead.
+   * Kept for backwards compatibility.
+   * @param itemId - The ID of the item to delete
+   * @returns The number of rows updated
+   * @deprecated Use trashItem() for new code
+   */
+  public async deleteItemById(itemId: string): Promise<number> {
+    // Redirect to new trash functionality
+    return this.trashItem(itemId);
+  }
+
+  /**
+   * ===== FOLDER OPERATIONS =====
+   */
+
+  /**
+   * Create a new folder
+   * @param name - The name of the folder
+   * @param parentFolderId - Optional parent folder ID for nested folders
+   * @returns The ID of the created folder
+   */
+  public async createFolder(name: string, parentFolderId?: string | null): Promise<string> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      this.beginTransaction();
+
+      const folderId = crypto.randomUUID();
+      const currentDateTime = dateFormatter.now();
+
+      const query = `
+        INSERT INTO Folders (Id, Name, ParentFolderId, Weight, IsDeleted, CreatedAt, UpdatedAt)
+        VALUES (?, ?, ?, 0, 0, ?, ?)`;
+
+      this.executeUpdate(query, [
+        folderId,
+        name,
+        parentFolderId || null,
+        currentDateTime,
+        currentDateTime
+      ]);
+
+      await this.commitTransaction();
+      return folderId;
+    } catch (error) {
+      this.rollbackTransaction();
+      console.error('Error creating folder:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all folders
+   * @returns Array of folder objects (empty array if Folders table doesn't exist yet)
+   */
+  public getAllFolders(): Array<{ Id: string; Name: string; ParentFolderId: string | null; Weight: number }> {
+    try {
+      const query = `
+        SELECT Id, Name, ParentFolderId, Weight
+        FROM Folders
+        WHERE IsDeleted = 0
+        ORDER BY Weight, Name`;
+
+      return this.executeQuery(query);
+    } catch (error) {
+      // Table may not exist in older vault versions - return empty array
+      if (error instanceof Error && error.message.includes('no such table')) {
+        return [];
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * Update a folder's name
+   * @param folderId - The ID of the folder to update
+   * @param name - The new name for the folder
+   * @returns The number of rows updated
+   */
+  public async updateFolder(folderId: string, name: string): Promise<number> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      this.beginTransaction();
+
+      const currentDateTime = dateFormatter.now();
+
+      const query = `
+        UPDATE Folders
+        SET Name = ?,
+            UpdatedAt = ?
+        WHERE Id = ?`;
+
+      const result = this.executeUpdate(query, [name, currentDateTime, folderId]);
+
+      await this.commitTransaction();
+      return result;
+    } catch (error) {
+      this.rollbackTransaction();
+      console.error('Error updating folder:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a folder (soft delete)
+   * Note: Items in the folder will have their FolderId set to NULL
+   * @param folderId - The ID of the folder to delete
+   * @returns The number of rows updated
+   */
+  public async deleteFolder(folderId: string): Promise<number> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      this.beginTransaction();
+
+      const currentDateTime = dateFormatter.now();
+
+      // 1. Remove folder reference from all items in this folder
+      const itemsQuery = `
+        UPDATE Items
+        SET FolderId = NULL,
+            UpdatedAt = ?
+        WHERE FolderId = ?`;
+
+      this.executeUpdate(itemsQuery, [currentDateTime, folderId]);
+
+      // 2. Soft delete the folder
+      const folderQuery = `
+        UPDATE Folders
+        SET IsDeleted = 1,
+            UpdatedAt = ?
+        WHERE Id = ?`;
+
+      const result = this.executeUpdate(folderQuery, [currentDateTime, folderId]);
+
+      await this.commitTransaction();
+      return result;
+    } catch (error) {
+      this.rollbackTransaction();
+      console.error('Error deleting folder:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete a folder and all items within it (soft delete both folder and items)
+   * Items are moved to "Recently Deleted" (trash)
+   * @param folderId - The ID of the folder to delete
+   * @returns The number of items trashed
+   */
+  public async deleteFolderWithContents(folderId: string): Promise<number> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      this.beginTransaction();
+
+      const currentDateTime = dateFormatter.now();
+
+      /*
+       * 1. Move all items in this folder to trash (set DeletedAt) and clear FolderId
+       * so that when restored, items won't reference a deleted folder
+       */
+      const itemsQuery = `
+        UPDATE Items
+        SET DeletedAt = ?,
+            UpdatedAt = ?,
+            FolderId = NULL
+        WHERE FolderId = ? AND IsDeleted = 0 AND DeletedAt IS NULL`;
+
+      const itemsDeleted = this.executeUpdate(itemsQuery, [currentDateTime, currentDateTime, folderId]);
+
+      // 2. Soft delete the folder
+      const folderQuery = `
+        UPDATE Folders
+        SET IsDeleted = 1,
+            UpdatedAt = ?
+        WHERE Id = ?`;
+
+      this.executeUpdate(folderQuery, [currentDateTime, folderId]);
+
+      await this.commitTransaction();
+      return itemsDeleted;
+    } catch (error) {
+      this.rollbackTransaction();
+      console.error('Error deleting folder with contents:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Move an item to a folder
+   * @param itemId - The ID of the item to move
+   * @param folderId - The ID of the destination folder (null to remove from folder)
+   * @returns The number of rows updated
+   */
+  public async moveItemToFolder(itemId: string, folderId: string | null): Promise<number> {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      this.beginTransaction();
+
+      const currentDateTime = dateFormatter.now();
+
+      const query = `
+        UPDATE Items
+        SET FolderId = ?,
+            UpdatedAt = ?
+        WHERE Id = ?`;
+
+      const result = this.executeUpdate(query, [folderId, currentDateTime, itemId]);
+
+      await this.commitTransaction();
+      return result;
+    } catch (error) {
+      this.rollbackTransaction();
+      console.error('Error moving item to folder:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get folder by ID
+   * @param folderId - The ID of the folder to fetch
+   * @returns Folder object or null if not found (or if Folders table doesn't exist)
+   */
+  public getFolderById(folderId: string): { Id: string; Name: string; ParentFolderId: string | null } | null {
+    try {
+      const query = `
+        SELECT Id, Name, ParentFolderId
+        FROM Folders
+        WHERE Id = ? AND IsDeleted = 0`;
+
+      const results = this.executeQuery<{ Id: string; Name: string; ParentFolderId: string | null }>(query, [folderId]);
+      return results.length > 0 ? results[0] : null;
+    } catch (error) {
+      // Table may not exist in older vault versions - return null
+      if (error instanceof Error && error.message.includes('no such table')) {
+        return null;
+      }
       throw error;
     }
   }

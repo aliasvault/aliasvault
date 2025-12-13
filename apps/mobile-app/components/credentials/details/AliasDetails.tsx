@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
-import { IdentityHelperUtils } from '@/utils/dist/shared/identity-generator';
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import { IdentityHelperUtils } from '@/utils/dist/core/identity-generator';
+import type { Credential } from '@/utils/dist/core/models/vault';
 
 import FormInputCopyToClipboard from '@/components/form/FormInputCopyToClipboard';
 import { ThemedText } from '@/components/themed/ThemedText';

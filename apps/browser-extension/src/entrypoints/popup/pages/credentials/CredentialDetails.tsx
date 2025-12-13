@@ -4,7 +4,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import {
   HeaderBlock,
-  EmailBlock,
   TotpBlock,
   LoginCredentialsBlock,
   AliasBlock,
@@ -18,7 +17,7 @@ import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsConte
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import type { Credential } from '@/utils/dist/core/models/vault';
 
 /**
  * Credential details page.
@@ -106,11 +105,6 @@ const CredentialDetails: React.FC = (): React.ReactElement => {
       <div className="flex justify-between items-center">
         <HeaderBlock credential={credential} />
       </div>
-      {credential.Alias?.Email && (
-        <EmailBlock
-          email={credential.Alias.Email}
-        />
-      )}
       <TotpBlock credentialId={credential.Id} />
       <LoginCredentialsBlock credential={credential} />
       <AliasBlock credential={credential} />

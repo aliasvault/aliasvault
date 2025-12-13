@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { View, Text, StyleSheet, Linking, Pressable } from 'react-native';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import type { Credential } from '@/utils/dist/core/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 

@@ -34,19 +34,19 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task InitializeAsync()
     {
-        _identityGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/shared/identity-generator/index.mjs?v={_cacheBuster}");
+        _identityGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/identity-generator/index.mjs?v={_cacheBuster}");
         if (_identityGeneratorModule == null)
         {
             throw new InvalidOperationException("Failed to initialize identity generator module");
         }
 
-        _passwordGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/shared/password-generator/index.mjs?v={_cacheBuster}");
+        _passwordGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/password-generator/index.mjs?v={_cacheBuster}");
         if (_passwordGeneratorModule == null)
         {
             throw new InvalidOperationException("Failed to initialize password generator module");
         }
 
-        _vaultSqlInteropModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/shared/vault-sql/index.mjs?v={_cacheBuster}");
+        _vaultSqlInteropModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/vault/index.mjs?v={_cacheBuster}");
         if (_vaultSqlInteropModule == null)
         {
             throw new InvalidOperationException("Failed to initialize vault SQL generator module");

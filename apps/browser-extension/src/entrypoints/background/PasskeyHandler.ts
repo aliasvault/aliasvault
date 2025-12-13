@@ -54,7 +54,7 @@ export async function handleGetWebAuthnSettings(data: any): Promise<WebAuthnSett
   const { hostname } = data || {};
   if (hostname) {
     // Extract base domain for matching
-    const baseDomain = extractRootDomain(extractDomain(hostname));
+    const baseDomain = await extractRootDomain(await extractDomain(hostname));
 
     // Check disabled sites
     const disabledSites = await storage.getItem(PASSKEY_DISABLED_SITES_KEY) as string[] ?? [];

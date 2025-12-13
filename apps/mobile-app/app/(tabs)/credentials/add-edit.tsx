@@ -11,10 +11,10 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Alert, Keyboard, Platform, ScrollView, KeyboardAvoidingView } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, Identity, IdentityHelperUtils, convertAgeRangeToBirthdateOptions } from '@/utils/dist/shared/identity-generator';
-import type { Attachment, Credential, TotpCode } from '@/utils/dist/shared/models/vault';
-import type { FaviconExtractModel } from '@/utils/dist/shared/models/webapi';
-import { CreatePasswordGenerator, PasswordGenerator } from '@/utils/dist/shared/password-generator';
+import { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, Identity, IdentityHelperUtils, convertAgeRangeToBirthdateOptions } from '@/utils/dist/core/identity-generator';
+import type { Attachment, Credential, TotpCode } from '@/utils/dist/core/models/vault';
+import type { FaviconExtractModel } from '@/utils/dist/core/models/webapi';
+import { CreatePasswordGenerator, PasswordGenerator } from '@/utils/dist/core/password-generator';
 import emitter from '@/utils/EventEmitter';
 import { extractServiceNameFromUrl } from '@/utils/UrlUtility';
 import { createCredentialSchema } from '@/utils/ValidationSchema';

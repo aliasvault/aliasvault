@@ -8,8 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ActivityIndicator, Alert, Share, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
-import type { Email } from '@/utils/dist/shared/models/webapi';
+import type { Credential } from '@/utils/dist/core/models/vault';
+import type { Email } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
 

@@ -5,8 +5,8 @@ import { Controller, Control, FieldValues, Path } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { View, TextInput, TextInputProps, StyleSheet, TouchableOpacity, Platform, Modal, ScrollView, Switch } from 'react-native';
 
-import type { PasswordSettings } from '@/utils/dist/shared/models/vault';
-import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
+import type { PasswordSettings } from '@/utils/dist/core/models/vault';
+import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
 
 import { useColors } from '@/hooks/useColorScheme';
 

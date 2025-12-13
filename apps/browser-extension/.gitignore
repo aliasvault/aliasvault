@@ -24,3 +24,9 @@ web-ext.config.ts
 *.njsproj
 *.sln
 *.sw?
+
+# Test related output files
+playwright-report
+tests/screenshots
+tests/test-results
+test-results

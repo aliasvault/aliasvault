@@ -75,7 +75,7 @@ public class BrowserExtensionPlaywrightTest : ClientPlaywrightTest
         try
         {
             // Try to find an element that's only visible when logged in
-            await extensionPopup.WaitForSelectorAsync("text=Credentials", new() { Timeout = 500 });
+            await extensionPopup.WaitForSelectorAsync("text=Vault", new() { Timeout = 500 });
 
             // If we get here, we're already logged in
             return extensionPopup;
@@ -108,7 +108,7 @@ public class BrowserExtensionPlaywrightTest : ClientPlaywrightTest
         // Wait for login to complete by waiting for expected text.
         if (waitForLogin)
         {
-            await extensionPopup.WaitForSelectorAsync("text=Credentials");
+            await extensionPopup.WaitForSelectorAsync("text=Vault");
         }
 
         return extensionPopup;

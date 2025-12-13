@@ -40,6 +40,114 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         Assert.That(pageContent, Does.Contain(serviceName));
     }
 
+    /// <summary>
+    /// Tests if the extension can unlock and access the vault when the server is offline.
+    /// This verifies the offline mode functionality where the vault is stored locally
+    /// and can be decrypted using stored encryption parameters.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Order(2)]
+    [Test]
+    public async Task ExtensionOfflineUnlockTest()
+    {
+        // Step 1: Create a credential via the client app
+        var serviceName = "Offline Test Credential";
+        await CreateCredentialEntry(new Dictionary<string, string>
+        {
+            { "service-name", serviceName },
+        });
+
+        // Step 2: Login to the extension (this stores vault and encryption params locally)
+        var extensionPopup = await LoginToExtension();
+
+        // Verify the credential is visible after login
+        await extensionPopup.WaitForSelectorAsync("text=" + serviceName);
+        var pageContent = await extensionPopup.TextContentAsync("body");
+        Assert.That(pageContent, Does.Contain(serviceName), "Credential should be visible after initial login");
+
+        // Step 3: Close the extension popup (simulates session end where encryption key is lost)
+        await extensionPopup.CloseAsync();
+
+        // Step 4: Block all API requests to simulate server being offline
+        // This intercepts all requests to the API and returns a network error
+        await Context.RouteAsync(
+            $"**{ApiBaseUrl.TrimEnd('/')}/**",
+            async route =>
+            {
+                await route.AbortAsync("connectionrefused");
+            });
+
+        // Also block the base API URL without trailing content
+        await Context.RouteAsync(
+            ApiBaseUrl.TrimEnd('/') + "/*",
+            async route =>
+            {
+                await route.AbortAsync("connectionrefused");
+            });
+
+        // Step 5: Open a new extension popup (simulating browser restart)
+        var extensionId = GetExtensionIdFromContext();
+        var offlineExtensionPopup = await Context.NewPageAsync();
+        await offlineExtensionPopup.GotoAsync($"chrome-extension://{extensionId}/popup.html");
+
+        // Step 6: Wait for the unlock page to appear (vault is locked, session expired)
+        // The extension should detect it has a local vault but no encryption key
+        await offlineExtensionPopup.WaitForSelectorAsync("text=Unlock", new() { Timeout = 10000 });
+
+        // Step 7: Enter password to unlock
+        await offlineExtensionPopup.FillAsync("input[type='password']", TestUserPassword);
+        await offlineExtensionPopup.ClickAsync("button:has-text('Unlock')");
+
+        // Step 8: Verify the vault is unlocked and credential is visible
+        // Wait for the credentials list to appear with our test credential
+        await offlineExtensionPopup.WaitForSelectorAsync("text=" + serviceName, new() { Timeout = 15000 });
+        var offlinePageContent = await offlineExtensionPopup.TextContentAsync("body");
+        Assert.That(offlinePageContent, Does.Contain(serviceName), "Credential should be visible after offline unlock");
+
+        // Step 9: Verify the offline indicator is shown
+        var offlineIndicator = await offlineExtensionPopup.QuerySelectorAsync("text=Offline");
+        Assert.That(offlineIndicator, Is.Not.Null, "Offline indicator should be visible when server is unavailable");
+
+        // Clean up: Unroute the API blocking
+        await Context.UnrouteAsync($"**{ApiBaseUrl.TrimEnd('/')}/**");
+        await Context.UnrouteAsync(ApiBaseUrl.TrimEnd('/') + "/*");
+
+        await offlineExtensionPopup.CloseAsync();
+    }
+
+    /// <summary>
+    /// Gets the extension ID from the browser context using reflection.
+    /// This is a helper method for tests that need to open the extension popup manually.
+    /// </summary>
+    /// <returns>The extension ID string.</returns>
+    private string GetExtensionIdFromContext()
+    {
+        // Use reflection to access the ServiceWorkers property
+        var serviceWorkersProperty = Context.GetType().GetProperty("ServiceWorkers");
+        var serviceWorkersEnumerable = serviceWorkersProperty?.GetValue(Context) as IEnumerable<object>;
+
+        if (serviceWorkersEnumerable == null)
+        {
+            throw new InvalidOperationException("Could not find extension service workers");
+        }
+
+        var serviceWorkers = serviceWorkersEnumerable.ToList();
+        if (serviceWorkers.Count == 0)
+        {
+            throw new InvalidOperationException("No extension service workers found");
+        }
+
+        // Get the first service worker's URL using reflection
+        var firstWorker = serviceWorkers[0];
+        var urlProperty = firstWorker.GetType().GetProperty("Url");
+        var url = urlProperty?.GetValue(firstWorker) as string;
+
+        var extensionId = url?.Split('/')[2]
+                          ?? throw new InvalidOperationException("Could not find extension service worker URL");
+
+        return extensionId;
+    }
+
     /*
     TODO: these tests no longer work because the extension popup is now a shadow root UI
     and this test can't access it directly. Need to rewrite these tests to be compatible with

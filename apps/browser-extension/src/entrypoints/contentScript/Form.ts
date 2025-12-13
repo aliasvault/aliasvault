@@ -2,7 +2,7 @@ import { sendMessage } from 'webext-bridge/content-script';
 
 import { openAutofillPopup } from '@/entrypoints/contentScript/Popup';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import type { Credential } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFiller } from '@/utils/formDetector/FormFiller';
 import { ClickValidator } from '@/utils/security/ClickValidator';

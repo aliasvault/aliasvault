@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, Alert, TextInput, Modal, TouchableOpacity, ScrollView } from 'react-native';
 
-import type { TotpCode } from '@/utils/dist/shared/models/vault';
+import type { TotpCode } from '@/utils/dist/core/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 

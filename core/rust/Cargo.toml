@@ -1,0 +1,57 @@
+[package]
+name = "aliasvault-core"
+version = "0.1.0"
+edition = "2021"
+description = "Cross-platform core library for AliasVault - provides shared merge logic for all platforms"
+license = "MIT"
+repository = "https://github.com/landhb/AliasVault"
+authors = ["AliasVault Team"]
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
+
+[lib]
+crate-type = ["lib", "cdylib", "staticlib"]
+name = "aliasvault_core"
+
+[features]
+default = []
+# Feature for UniFFI bindings (Swift/Kotlin)
+uniffi = ["dep:uniffi"]
+# Feature for WASM builds (browser extension)
+wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:console_error_panic_hook"]
+
+[dependencies]
+# Serialization - core dependency for JSON handling
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Date/time handling for LWW comparison
+chrono = { version = "0.4", features = ["serde"] }
+
+# Error handling
+thiserror = "1.0"
+
+# UniFFI for Swift/Kotlin bindings (optional)
+uniffi = { version = "0.28", optional = true }
+
+# WASM bindings (optional)
+wasm-bindgen = { version = "0.2", optional = true }
+serde-wasm-bindgen = { version = "0.6", optional = true }
+console_error_panic_hook = { version = "0.1", optional = true }
+
+[dev-dependencies]
+
+# Dev profile - fast compilation
+[profile.dev]
+opt-level = 0
+debug = false
+incremental = true
+
+# Release profile - optimized for size
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true

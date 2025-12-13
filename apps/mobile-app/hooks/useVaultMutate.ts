@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 import srp from 'secure-remote-password/client';
 
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
-import type { PasswordChangeInitiateResponse, Vault, VaultPasswordChangeRequest } from '@/utils/dist/shared/models/webapi';
+import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import type { PasswordChangeInitiateResponse, Vault, VaultPasswordChangeRequest } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useVaultSync } from '@/hooks/useVaultSync';

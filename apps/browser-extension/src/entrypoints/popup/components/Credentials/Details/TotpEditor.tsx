@@ -2,7 +2,7 @@ import  * as OTPAuth from 'otpauth';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { TotpCode } from '@/utils/dist/shared/models/vault';
+import type { TotpCode } from '@/utils/dist/core/models/vault';
 
 type TotpFormData = {
   name: string;
@@ -68,7 +68,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
       throw new Error(t('totp.errors.invalidSecretKey'));
     }
 
-    return { secretKey, name: name || 'Authenticator' };
+    return { secretKey, name: name || t('totp.defaultName') };
   };
 
   /**
@@ -125,7 +125,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
         Id: crypto.randomUUID().toUpperCase(),
         Name: name,
         SecretKey: secretKey,
-        CredentialId: '' // Will be set when saving the credential
+        ItemId: '' // Will be set when saving the item
       };
 
       // Add to the list

@@ -6,7 +6,7 @@ import { StyleSheet, View, ScrollView, RefreshControl, Animated , Platform } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
-import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
 

@@ -3,8 +3,8 @@ import { useTranslation } from 'react-i18next';
 
 import { FormInputCopyToClipboard } from '@/entrypoints/popup/components/Forms/FormInputCopyToClipboard';
 
-import { IdentityHelperUtils } from '@/utils/dist/shared/identity-generator';
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import { IdentityHelperUtils } from '@/utils/dist/core/identity-generator';
+import type { Credential } from '@/utils/dist/core/models/vault';
 
 type AliasBlockProps = {
   credential: Credential;
@@ -17,10 +17,9 @@ const AliasBlock: React.FC<AliasBlockProps> = ({ credential }) => {
   const { t } = useTranslation();
   const hasFirstName = Boolean(credential.Alias?.FirstName?.trim());
   const hasLastName = Boolean(credential.Alias?.LastName?.trim());
-  const hasNickName = Boolean(credential.Alias?.NickName?.trim());
   const hasBirthDate = IdentityHelperUtils.isValidBirthDate(credential.Alias?.BirthDate);
 
-  if (!hasFirstName && !hasLastName && !hasNickName && !hasBirthDate) {
+  if (!hasFirstName && !hasLastName && !hasBirthDate) {
     return null;
   }
 
@@ -53,13 +52,6 @@ const AliasBlock: React.FC<AliasBlockProps> = ({ credential }) => {
           id="birthDate"
           label={t('common.birthDate')}
           value={IdentityHelperUtils.normalizeBirthDateForDisplay(credential.Alias?.BirthDate)}
-        />
-      )}
-      {hasNickName && (
-        <FormInputCopyToClipboard
-          id="nickName"
-          label={t('common.nickname')}
-          value={credential.Alias?.NickName ?? ''}
         />
       )}
     </div>

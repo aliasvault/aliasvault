@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import srp from 'secure-remote-password/client';
 
-import type { DeleteAccountInitiateRequest, DeleteAccountInitiateResponse, DeleteAccountRequest } from '@/utils/dist/shared/models/webapi';
+import type { DeleteAccountInitiateRequest, DeleteAccountInitiateResponse, DeleteAccountRequest } from '@/utils/dist/core/models/webapi';
 
 import { useColors } from '@/hooks/useColorScheme';
 
