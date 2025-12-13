@@ -59,31 +59,31 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="UseDomainChooserButton" xml:space="preserve">
-    <value>Use domain chooser</value>
+    <value>Usar selector de dominio</value>
     <comment>Button to switch back to domain chooser</comment>
   </data>
   <data name="EnterCustomDomainButton" xml:space="preserve">
-    <value>Enter custom domain</value>
+    <value>Introduzca dominio personalizado</value>
     <comment>Button to switch to custom domain entry</comment>
   </data>
   <data name="SelectEmailDomainTitle" xml:space="preserve">
-    <value>Select Email Domain</value>
+    <value>Seleccionar dominio de correo</value>
     <comment>Title of domain selection popup</comment>
   </data>
   <data name="PrivateEmailTitle" xml:space="preserve">
-    <value>Private Email (AliasVault server)</value>
+    <value>Correo privado (servidor AliasVault)</value>
     <comment>Title for private email domains section</comment>
   </data>
   <data name="PrivateEmailDescription" xml:space="preserve">
-    <value>E2E encrypted, fully private.</value>
+    <value>E2E cifrado, totalmente privado.</value>
     <comment>Description of private email domains</comment>
   </data>
   <data name="PublicEmailTitle" xml:space="preserve">
-    <value>Public Temp Email Providers</value>
+    <value>Proveedores de Correo Temporal Públicos</value>
     <comment>Title for public email domains section</comment>
   </data>
   <data name="PublicEmailDescription" xml:space="preserve">
-    <value>Anonymous but limited privacy. Email content is readable by anyone that knows the address.</value>
+    <value>Privacidad anónima pero limitada. Contenido de correo electrónico puede ser leído por cualquiera que conozca la dirección.</value>
     <comment>Description of public email domains</comment>
   </data>
 </root>

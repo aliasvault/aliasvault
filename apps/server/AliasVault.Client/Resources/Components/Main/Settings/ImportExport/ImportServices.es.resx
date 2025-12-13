@@ -60,184 +60,184 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Import passwords from your 1Password vault</value>
+    <value>Importar contraseñas de 1Password</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>In order to import your 1Password vault, you need to export it as a CSV file. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export' (to CSV).</value>
+    <value>Para importar la bóveda de 1Password, necesita exportarla como un archivo CSV. Puede hacerlo iniciando sesión en su cuenta de 1Password en la aplicación de escritorio de 1Password 8 (Windows / MacOS / Linux), ir al menú 'Archivo' y seleccionar 'Exportar' (a CSV).</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Una vez que haya exportado el archivo, puede subirlo a continuación.</value>
     <comment>1Password export instructions part 2</comment>
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">
-    <value>Import passwords from your Bitwarden vault</value>
+    <value>Importar contraseñas de Bitwarden</value>
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Bitwarden vault, you need to export it as a CSV file. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault' (to CSV).</value>
+    <value>Para importar la bóveda de Bitwarden, necesita exportarla como un archivo CSV. Puede hacerlo iniciando sesión en su cuenta de Bitwarden, yendo al menú 'Herramientas' y seleccionando 'Exportar bóveda' (a CSV).</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Una vez que haya exportado el archivo, puede subirlo a continuación.</value>
     <comment>Bitwarden export instructions part 2</comment>
   </data>
   <!-- LastPass -->
   <data name="LastPassDescription" xml:space="preserve">
-    <value>Import passwords from your LastPass vault</value>
+    <value>Importar contraseñas de LastPass</value>
     <comment>Description for LastPass import service</comment>
   </data>
   <data name="LastPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your LastPass vault, you need to export it as a CSV file. You can do this by logging into your LastPass account, going to 'Advanced Options' in the left sidebar and selecting 'Export' > 'LastPass CSV File'.</value>
+    <value>Para importar la bóveda de LastPass necesitas exportarla como un archivo CSV. Puede hacerlo iniciando sesión en su cuenta LastPass, yendo a 'Opciones avanzadas' en la barra lateral izquierda y seleccionando 'Exportar' > 'Archivo CSV LastPass'.</value>
     <comment>LastPass export instructions part 1</comment>
   </data>
   <data name="LastPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Una vez que haya exportado el archivo, puede subirlo a continuación.</value>
     <comment>LastPass export instructions part 2</comment>
   </data>
   <!-- Chrome -->
   <data name="ChromeDescription" xml:space="preserve">
-    <value>Import passwords from your Chrome Password Manager</value>
+    <value>Importar contraseñas de administrador de contraseñas de Chrome</value>
     <comment>Description for Chrome import service</comment>
   </data>
   <data name="ChromeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Chrome Password Manager, you need to export it as a CSV file. You can do this by logging into your Chrome browser, going to the 'Settings' menu > 'Password and AutoFill' > 'Google Password Manager'. Then click on 'Export passwords'.</value>
+    <value>Para importar su gestor de contraseñas de Chrome, necesita exportarlo como un archivo CSV. Puede hacerlo iniciando sesión en su navegador Chrome, yendo al menú 'Configuración' > 'Contraseña y AutoCompletar' > 'Administrador de contraseñas de Chrome'. Luego haga clic en 'Exportar contraseñas'.</value>
     <comment>Chrome export instructions part 1</comment>
   </data>
   <data name="ChromeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Una vez que haya exportado el archivo, puede subirlo a continuación.</value>
     <comment>Chrome export instructions part 2</comment>
   </data>
   <!-- KeePass -->
   <data name="KeePassDescription" xml:space="preserve">
-    <value>Import passwords from KeePass</value>
+    <value>Importar contraseñas de KeePass</value>
     <comment>Description for KeePass import service</comment>
   </data>
   <data name="KeePassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your KeePass vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export' (to CSV).</value>
+    <value>Para importar la bóveda de KeePass es necesario exportarla como un archivo CSV. Puede hacerlo yendo al menú 'Archivo' y seleccionando 'Exportar' (a CSV).</value>
     <comment>KeePass export instructions part 1</comment>
   </data>
   <data name="KeePassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Una vez que haya exportado el archivo, puede subirlo a continuación.</value>
     <comment>KeePass export instructions part 2</comment>
   </data>
   <!-- Generic CSV -->
   <data name="GenericCsvDescription" xml:space="preserve">
-    <value>Import credentials using a template CSV format</value>
+    <value>Importar credenciales usando una plantilla CSV</value>
     <comment>Description for Generic CSV import service</comment>
   </data>
   <data name="GenericCsvInstructionsPart1" xml:space="preserve">
-    <value>Is the password manager you are using not supported? You can always import your credentials into AliasVault using a generic CSV template format instead.</value>
+    <value>¿Gestor de contraseñas incompatible? Siempre puede importar sus credenciales a AliasVault utilizando una plantilla con formato CSV.</value>
     <comment>Generic CSV instructions part 1</comment>
   </data>
   <data name="GenericCsvStep1" xml:space="preserve">
-    <value>Download the AliasVault Import CSV</value>
+    <value>Descargar el CSV de importación de AliasVault</value>
     <comment>Generic CSV step 1</comment>
   </data>
   <data name="GenericCsvStep2" xml:space="preserve">
-    <value>Open it in a spreadsheet program (Microsoft Excel, Google Sheets, etc.)</value>
+    <value>Abrirlo en un programa de hoja de cálculo (Microsoft Excel, Google Sheets, etc.)</value>
     <comment>Generic CSV step 2</comment>
   </data>
   <data name="GenericCsvStep3" xml:space="preserve">
-    <value>Fill in your credentials (replace the example data)</value>
+    <value>Rellena tus credenciales (reemplazar los datos de ejemplo)</value>
     <comment>Generic CSV step 3</comment>
   </data>
   <data name="GenericCsvStep4" xml:space="preserve">
-    <value>Save as CSV format and upload it below</value>
+    <value>Guardar como formato CSV y subirlo más abajo</value>
     <comment>Generic CSV step 4</comment>
   </data>
   <data name="GenericCsvTemplateDownloadError" xml:space="preserve">
-    <value>Failed to download CSV template. Please try again.</value>
+    <value>Error al descargar la plantilla CSV. Por favor, inténtalo de nuevo.</value>
     <comment>Error message for template download failure</comment>
   </data>
   <!-- Firefox -->
   <data name="FirefoxDescription" xml:space="preserve">
-    <value>Import passwords from your Firefox Password Manager</value>
+    <value>Importar contraseñas del administrador de contraseñas de Firefox</value>
     <comment>Description for Firefox import service</comment>
   </data>
   <data name="FirefoxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Firefox passwords, you need to export it as a CSV file. You can do this by opening your Firefox browser, going to menu > 'Passwords'. Then click on the menu icon in the top right corner and select 'Export passwords'.</value>
+    <value>Para importar tus contraseñas de Firefox, necesitas exportarlas como un archivo CSV. Puedes hacerlo abriendo tu navegador Firefox, yendo al menú > 'contraseñas'. Luego haga clic en el icono del menú en la esquina superior derecha y seleccione 'Exportar contraseñas'.</value>
     <comment>Firefox export instructions part 1</comment>
   </data>
   <data name="FirefoxInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Una vez que haya exportado el archivo, puede subirlo a continuación.</value>
     <comment>Firefox export instructions part 2</comment>
   </data>
   <!-- Dashlane -->
   <data name="DashlaneDescription" xml:space="preserve">
-    <value>Import passwords from your Dashlane account</value>
+    <value>Importar contraseñas de Dashlane</value>
     <comment>Description for Dashlane import service</comment>
   </data>
   <data name="DashlaneInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Dashlane passwords, you need to export it as a CSV file. You can do this by logging into your Dashlane account, going to the 'Account' > 'Settings' menu and selecting 'Export to CSV'.</value>
+    <value>Para importar sus contraseñas de Dashlane, necesita exportarlo como un archivo CSV. Puede hacerlo iniciando sesión en su cuenta de Dashlane, yendo al menú 'Cuenta' > 'Configuración' y seleccionando 'Exportar a CSV'.</value>
     <comment>Dashlane export instructions part 1</comment>
   </data>
   <data name="DashlaneInstructionsPart2" xml:space="preserve">
-    <value>Note: the .zip file you download will contain a "credentials.csv" file. You need to unzip the archive first, and then upload the "credentials.csv" CSV file below.</value>
+    <value>Nota: El archivo .zip que descargue contendrá un archivo "credentials.csv". Necesita descomprimir primero el archivo, y luego subir el archivo CSV "credentials.csv" a continuación.</value>
     <comment>Dashlane export instructions part 2</comment>
   </data>
   <!-- KeePassXC -->
   <data name="KeePassXCDescription" xml:space="preserve">
-    <value>Import passwords from KeePassXC</value>
+    <value>Importar contraseñas de KeePassXC</value>
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
-    <value>In order to import your KeePassXC vault, you need to export it as a CSV file. You can do this by going to the 'Database' menu and selecting 'Export' (CSV File).</value>
+    <value>Para importar la bóveda de KeePassXC, debe exportarla como un archivo CSV. Puede hacer esto yendo al menú 'Base de datos' y seleccionando 'Exportar' (Archivo CSV).</value>
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Una vez que haya exportado el archivo, puede subirlo a continuación.</value>
     <comment>KeePassXC export instructions part 2</comment>
   </data>
   <!-- Proton Pass -->
   <data name="ProtonPassDescription" xml:space="preserve">
-    <value>Import passwords from Proton Pass</value>
+    <value>Importar contraseñas de Proton Pass</value>
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Proton Pass passwords, you need to export it as a CSV file. You can do this by logging into Proton Pass (web), clicking on the 'Settings' menu > 'Export' > 'File format: CSV'. Then click on 'Export'.</value>
+    <value>Para importar las contraseñas de Proton Pass, necesita exportarlas como un archivo CSV. Puede hacerlo iniciando sesión en Proton Pass (web), haciendo clic en el menú 'Configuración' > 'Exportar' > 'Formato de archivo: CSV'. Luego haga clic en 'Exportar'.</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Una vez que haya exportado el archivo, puede subirlo a continuación.</value>
     <comment>Proton Pass export instructions part 2</comment>
   </data>
   <!-- Strongbox -->
   <data name="StrongboxDescription" xml:space="preserve">
-    <value>Import passwords from Strongbox</value>
+    <value>Importar contraseñas de Strongbox</value>
     <comment>Description for Strongbox import service</comment>
   </data>
   <data name="StrongboxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Strongbox vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export Database' (to CSV).</value>
+    <value>Para importar la bóveda de Strongbox, necesita exportarla como un archivo CSV. Puede hacerlo yendo al menú 'Archivo' y seleccionando 'Exportar base de datos' (a CSV).</value>
     <comment>Strongbox export instructions part 1</comment>
   </data>
   <data name="StrongboxInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Una vez que haya exportado el archivo, puede subirlo a continuación.</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
   <!-- AliasVault -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Import passwords from another AliasVault server or manual back-up</value>
+    <value>Importar contraseñas de otro servidor AliasVault o copia de seguridad manual</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>If you have a CSV file back-up of your AliasVault database (from a different AliasVault server), you can import it here.</value>
+    <value>Si tiene una copia de seguridad en un archivo CSV de su base de datos AliasVault (desde un servidor AliasVault diferente), puede importarla aquí.</value>
     <comment>AliasVault import instructions</comment>
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">
-    <value>Import passwords from Dropbox Passwords</value>
+    <value>Importar contraseñas de Dropbox</value>
     <comment>Description for Dropbox import service</comment>
   </data>
   <data name="DropboxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Dropbox Passwords, you need to export them as a CSV file. You can do this by opening Dropbox Passwords, going to 'Account' > 'Export' (to .CSV).</value>
+    <value>Para importar sus contraseñas de Dropbox, necesita exportarlas como un archivo CSV. Puede hacerlo abriendo Dropbox Passwords, yendo a 'Cuenta' > 'Exportar' (a .CSV).</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Una vez que haya exportado el archivo, puede subirlo a continuación.</value>
     <comment>Common instruction for file upload</comment>
   </data>
 </root>

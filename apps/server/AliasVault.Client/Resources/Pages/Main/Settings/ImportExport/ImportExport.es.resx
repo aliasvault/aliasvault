@@ -59,57 +59,57 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Import / Export</value>
+    <value>Importar / Exportar</value>
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>On this page you can import and export your vault.</value>
+    <value>En esta página puede importar y exportar su bóveda.</value>
     <comment>Page description</comment>
   </data>
   <data name="ImportSectionTitle" xml:space="preserve">
-    <value>Import passwords</value>
+    <value>Importar contraseñas</value>
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Select a service to import from. If you are using a service that is not listed here and would like to see it supported, please raise an issue on &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; or contact us.</value>
+    <value>Seleccione un servicio desde el que importar. Si estás usando un servicio que no aparece aquí y te gustaría verlo soportado, por favor plantea un problema en &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; o contáctanos.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Exportar bóveda</value>
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>If you want to export your AliasVault credentials to another AliasVault server (e.g. from cloud to self-hosted or vice-versa) or to another service altogether, you can export it here. Note that all exports are unencrypted so store it in a safe place and delete it when you no longer need it.</value>
+    <value>Si desea exportar sus credenciales de AliasVault a otro servidor AliasVault (p.e. de la nube a una instancia Self-hosted o viceversa) o a otro servicio en total, puedes exportarlo aquí. Tenga en cuenta que todas las exportaciones no están cifradas, así que guárdelas en un lugar seguro y borrarlas cuando ya no las necesites.</value>
     <comment>Export section description</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
-    <value>Export vault to unencrypted CSV file</value>
+    <value>Exportar bóveda a archivo CSV sin cifrar</value>
     <comment>Button to export as CSV</comment>
   </data>
   <data name="ExportSqliteButton" xml:space="preserve">
-    <value>Export vault to unencrypted SQLite file</value>
+    <value>Exportar bóveda a archivo SQLite sin cifrar</value>
     <comment>Button to export as SQLite</comment>
   </data>
   <data name="ExportConfirmTitle" xml:space="preserve">
-    <value>Export vault</value>
+    <value>Exportar bóveda</value>
     <comment>Export confirmation dialog title</comment>
   </data>
   <data name="ExportWarningMessage" xml:space="preserve">
-    <value>Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted computers and ensure you:
+    <value>Advertencia: Exportando su bóveda a un archivo no cifrado expondrá todas sus contraseñas e información sensible en texto plano. Solo haga esto en ordenadores de confianza y asegúrese de que:
 
-• Store the exported file in a secure location
-• Delete the file when you no longer need it
-• Never share the exported file with others
+• Almacene el archivo exportado en una ubicación segura
+• Elimine el archivo cuando ya no lo necesite
+• Nunca comparta el archivo exportado con otros
 
-Are you sure you want to continue with the export?</value>
+¿Está seguro de que desea continuar con la exportación?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Restablecer bóveda</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>This option allows you to completely empty your vault while keeping your account and email aliases. Use this if you want to start fresh after importing data from another password manager or if you want to clear all existing credentials to start over.</value>
+    <value>Esta opción le permite vaciar completamente su bóveda manteniendo su cuenta y alias de correo electrónico. Utilice esto si desea iniciar fresco después de importar datos de otro gestor de contraseñas o si desea borrar todas las credenciales existentes para empezar de nuevo.</value>
     <comment>Reset vault section description</comment>
   </data>
 </root>

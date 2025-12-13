@@ -59,47 +59,47 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="UpgradeVaultTitle" xml:space="preserve">
-    <value>Upgrade Vault</value>
+    <value>Actualizar bóveda</value>
     <comment>Title for vault upgrade process</comment>
   </data>
   <data name="UpgradeDescription" xml:space="preserve">
-    <value>AliasVault has been updated and your vault needs to be upgraded. This should only take a few seconds.</value>
+    <value>AliasVault ha sido actualizado y tu bóveda necesita ser actualizada. Esto solo debería tardar unos segundos.</value>
     <comment>Description of vault upgrade process</comment>
   </data>
   <data name="VersionInformationTitle" xml:space="preserve">
-    <value>Version Information</value>
+    <value>Información de versión</value>
     <comment>Title for version information section</comment>
   </data>
   <data name="UpgradeRequiredDescription" xml:space="preserve">
-    <value>An upgrade is required to support the following changes: {0}</value>
+    <value>Es necesario actualizar para soportar los siguientes cambios: {0}</value>
     <comment>Description of upgrade requirements with changes placeholder</comment>
   </data>
   <data name="NoDescriptionAvailable" xml:space="preserve">
-    <value>No description available for this version.</value>
+    <value>Ninguna descripción disponible para esta versión.</value>
     <comment>Fallback text when version description is not available</comment>
   </data>
   <data name="YourVaultLabel" xml:space="preserve">
-    <value>Your vault version:</value>
+    <value>Tu versión de bóveda:</value>
     <comment>Label for current vault version</comment>
   </data>
   <data name="NewVersionLabel" xml:space="preserve">
-    <value>New available version:</value>
+    <value>Nueva versión disponible:</value>
     <comment>Label for new vault version</comment>
   </data>
   <data name="StartUpgradeButton" xml:space="preserve">
-    <value>Start upgrade process</value>
+    <value>Iniciar proceso de actualización</value>
     <comment>Button text to start the upgrade process</comment>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
-    <value>Vault upgrade successful.</value>
+    <value>Actualización de bóveda correcta.</value>
     <comment>Success message after successful vault upgrade</comment>
   </data>
   <data name="UpgradeSuccessButSaveFailedError" xml:space="preserve">
-    <value>Database upgrade successful but failed to save to server. Please try again or contact support.</value>
+    <value>Actualización de la base de datos exitosa pero no se pudo guardar en el servidor. Por favor, inténtalo de nuevo o contacta con soporte.</value>
     <comment>Error message when upgrade succeeds but save fails</comment>
   </data>
   <data name="UpgradeFailedError" xml:space="preserve">
-    <value>Database upgrade failed. Please try again or contact support.</value>
+    <value>Error al actualizar la base de datos. Inténtalo de nuevo o contacta con soporte.</value>
     <comment>Error message when upgrade fails</comment>
   </data>
 </root>
