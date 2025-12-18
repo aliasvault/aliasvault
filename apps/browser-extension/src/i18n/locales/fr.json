@@ -244,7 +244,7 @@
   "totp": {
     "addCode": "Add 2FA Code",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "nameOptional": "Name (optional)",
+    "nameOptional": "Nom (facultatif)",
     "secretKey": "Secret Key",
     "saveToViewCode": "Save to view code",
     "errors": {
@@ -365,7 +365,7 @@
       "title": "Vault Unlock Method",
       "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
       "password": "Master Password",
-      "pin": "PIN Code",
+      "pin": "Code PIN",
       "pinDescription": "Unlock vault with PIN code",
       "setupPin": "Setup PIN Code",
       "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
