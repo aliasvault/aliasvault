@@ -1,7 +1,7 @@
 {
   "loading": {
     "title": "AliasVault wordt geladen",
-    "message": "De beveiligde omgeving wordt opgestart. AliasVault draait volledig in je browser, waardoor het laden de eerste keer iets langer kan duren.",
+    "message": "De beveiligde omgeving wordt gestart. AliasVault draait volledig in je browser, waardoor het laden de eerste keer iets langer kan duren.",
     "refreshText": "Als het laden vastloopt, kunt je op de onderstaande knop klikken om de pagina te vernieuwen.",
     "refreshButtonText": "Vernieuwen"
   },
