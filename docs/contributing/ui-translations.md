@@ -11,16 +11,18 @@ Help make AliasVault accessible to users worldwide by translating the user inter
 
 AliasVault is currently available in the following languages. See how complete each language is on the [Crowdin project page](https://crowdin.com/project/aliasvault). **Don't see your language?** Contact us and we'll add it so you can get started translating.
 
-- 🇬🇧 English
 - 🇨🇳 Chinese (Simplified)
 - 🇳🇱 Dutch
+- 🇬🇧 English
 - 🇫🇮 Finnish
+- 🇫🇷 French
 - 🇩🇪 German
 - 🇮🇱 Hebrew
 - 🇮🇹 Italian
 - 🇵🇱 Polish
 - 🇧🇷 Portuguese (Brazilian)
 - 🇷🇺 Russian
+- 🇪🇸 Spanish
 - 🇺🇦 Ukrainian
 
 ---
