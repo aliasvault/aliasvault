@@ -56,37 +56,37 @@
     "authCodeNote": "Remarque : si vous n'avez pas accès à votre appareil d'authentification, vous pouvez réinitialiser votre authentification 2FA avec un code de récupération en vous connectant via le site web.",
     "errors": {
       "credentialsRequired": "Le nom d'utilisateur et le mot de passe sont requis",
-      "invalidAuthCode": "Please enter a valid 6-digit authentication code",
+      "invalidAuthCode": "Veuillez entrer un code d'authentification à 6 chiffres valide",
       "incorrectPassword": "Mot de passe incorrect. Veuillez réessayer.",
-      "enterPassword": "Please enter your password",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "serverErrorSelfHosted": "Could not reach the API. For self-hosted instances, please verify the API endpoint is reachable by navigating to it in a browser: it should display 'OK'.",
-      "networkError": "Network request failed. Please check your internet connection and try again.",
-      "networkErrorSelfHosted": "Network request failed. Check your network connection and server availability. For self-hosted instances, please ensure you have a valid SSL certificate installed. Self-signed certificates are not supported on mobile devices for security reasons.",
-      "sessionExpired": "Your session has expired. Please login again.",
-      "httpError": "HTTP error: {{status}}"
+      "enterPassword": "Veuillez saisir votre mot de passe",
+      "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
+      "serverErrorSelfHosted": "Impossible d'atteindre l'API. Pour les instances auto-hébergées, veuillez vérifier que le point de terminaison de l'API est accessible en naviguant vers celui-ci dans un navigateur : il devrait afficher 'OK'.",
+      "networkError": "Erreur réseau. Vérifiez votre connexion et réessayez.",
+      "networkErrorSelfHosted": "La requête réseau a échoué. Vérifiez votre connexion réseau et la disponibilité du serveur. Pour les instances auto-hébergées, veuillez vous assurer que vous avez un certificat SSL valide. Les certificats auto-signés ne sont pas pris en charge pour des raisons de sécurité.",
+      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+      "httpError": "Erreur HTTP : {{status}}"
     },
-    "confirmLogout": "Are you sure you want to logout? You need to login again with your master password to access your vault.",
+    "confirmLogout": "Êtes-vous sûr de vouloir vous déconnecter ? Vous devez vous reconnecter avec votre mot de passe maître pour accéder à votre coffre.",
     "noAccountYet": "Pas encore de compte ?",
     "createNewVault": "Créer un nouveau coffre-fort",
     "connectingTo": "Connexion à",
     "loggedInAs": "Connecté en tant que"
   },
   "vault": {
-    "syncingVault": "Syncing vault",
-    "uploadingVaultToServer": "Uploading vault to server",
-    "savingChangesToVault": "Saving changes to vault",
-    "checkingForVaultUpdates": "Checking for vault updates",
-    "executingOperation": "Executing operation...",
-    "checkingVaultUpdates": "Checking vault updates",
-    "syncingUpdatedVault": "Syncing updated vault",
+    "syncingVault": "Synchronisation du coffre",
+    "uploadingVaultToServer": "Envoi du coffre sur le serveur",
+    "savingChangesToVault": "Enregistrement des modifications dans le coffre",
+    "checkingForVaultUpdates": "Vérification des mises à jour du coffre",
+    "executingOperation": "Exécution de l'opération...",
+    "checkingVaultUpdates": "Vérification des mises à jour du coffre",
+    "syncingUpdatedVault": "Synchronisation du coffre mis à jour",
     "errors": {
-      "failedToGetEncryptedDatabase": "Failed to get encrypted database",
-      "usernameNotFound": "Username not found",
-      "vaultOutdated": "Your vault is outdated. Please login on the AliasVault website and follow the steps.",
-      "failedToSyncVault": "Failed to sync vault",
-      "versionNotSupported": "This version of the AliasVault mobile app is not supported by the server anymore. Please update your app to the latest version.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "failedToGetEncryptedDatabase": "Impossible d'obtenir la base de données chiffrée",
+      "usernameNotFound": "Identifiant non trouvé",
+      "vaultOutdated": "Votre coffre est obsolète. Veuillez vous connecter sur le site AliasVault et suivre les étapes.",
+      "failedToSyncVault": "Échec de la synchronisation du coffre",
+      "versionNotSupported": "Cette version de l'application mobile AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre application vers la dernière version.",
+      "serverVersionNotSupported": "Le serveur AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette application mobile. Veuillez contacter le support si vous avez besoin d'aide.",
       "appOutdated": "Cette application est obsolète et ne peut pas être utilisée pour accéder à cette (nouvelle) version du coffre. Veuillez mettre à jour l'application AliasVault pour continuer.",
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons."
     }
@@ -155,74 +155,74 @@
     "credentialCreated": "Credential Created!",
     "credentialCreatedMessage": "Your new credential has been added to your vault and is ready to use.",
     "credentialDetails": "Credential Details",
-    "emailPreview": "Email Preview",
-    "switchBackToBrowser": "Switch back to your browser to continue.",
+    "emailPreview": "Aperçu de l'e-mail",
+    "switchBackToBrowser": "Passez à votre navigateur pour continuer.",
     "filters": {
-      "all": "(All) Credentials",
-      "passkeys": "Passkeys",
-      "aliases": "Aliases",
-      "userpass": "Passwords",
-      "attachments": "Attachments"
+      "all": "(Tous les) Identifiants de connexion",
+      "passkeys": "Clés d'accès",
+      "aliases": "Alias",
+      "userpass": "Mots de passe",
+      "attachments": "Pièces jointes"
     },
-    "twoFactorAuth": "Two-factor authentication",
-    "totpCode": "TOTP Code",
-    "attachments": "Attachments",
-    "deleteAttachment": "Delete",
-    "fileSavedTo": "File saved to",
-    "previewNotSupported": "Preview not supported",
-    "downloadToView": "Download the file to view it",
+    "twoFactorAuth": "Authentification à deux facteurs",
+    "totpCode": "Code à usage unique",
+    "attachments": "Pièces jointes",
+    "deleteAttachment": "Supprimer",
+    "fileSavedTo": "Fichier enregistré sous",
+    "previewNotSupported": "Aperçu non supporté",
+    "downloadToView": "Télécharger le fichier pour le voir",
     "unsavedChanges": {
-      "title": "Discard Changes?",
-      "message": "You have unsaved changes. Are you sure you want to discard them?",
-      "discard": "Discard"
+      "title": "Annuler les modifications?",
+      "message": "Vos modifications n'ont pas été enregistrées. Voulez-vous vraiment les ignorer ?",
+      "discard": "Ignorer"
     },
     "toasts": {
-      "credentialUpdated": "Credential updated successfully",
-      "credentialCreated": "Credential created successfully",
-      "credentialDeleted": "Credential deleted successfully",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
+      "credentialUpdated": "Identifiant mis à jour avec succès",
+      "credentialCreated": "Identifiant créé avec succès",
+      "credentialDeleted": "Identifiant supprimé avec succès",
+      "usernameCopied": "Nom d'utilisateur copié dans le presse-papiers",
+      "emailCopied": "E-mail copié dans le presse-papiers",
+      "passwordCopied": "Mot de passe copié dans le presse-papiers"
     },
-    "createNewAliasFor": "Create new alias for",
+    "createNewAliasFor": "Créer un nouvel alias pour",
     "errors": {
-      "loadFailed": "Failed to load credential",
-      "saveFailed": "Failed to save credential"
+      "loadFailed": "Échec du chargement de l'identifiant",
+      "saveFailed": "Échec de l'enregistrement de l'identifiant"
     },
     "contextMenu": {
-      "title": "Credential Options",
-      "edit": "Edit",
-      "delete": "Delete",
-      "copyUsername": "Copy Username",
-      "copyEmail": "Copy Email",
-      "copyPassword": "Copy Password"
+      "title": "Options de l'identifiant",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "copyUsername": "Copier le nom d'utilisateur",
+      "copyEmail": "Copier l'e-mail",
+      "copyPassword": "Copier le mot de passe"
     }
   },
   "passkeys": {
-    "passkey": "Passkey",
+    "passkey": "Clé d'identification",
     "site": "Site",
-    "displayName": "Display Name",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
-    "passkeyMarkedForDeletion": "Passkey marked for deletion",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+    "displayName": "Nom affiché",
+    "helpText": "Les clés d'accès sont créées sur le site Web lorsque vous y êtes invité. Elles ne peuvent pas être modifiées manuellement. Pour supprimer cette clé, vous pouvez la supprimer de cet identifiant.",
+    "passkeyMarkedForDeletion": "Clé d'accès marquée pour suppression",
+    "passkeyWillBeDeleted": "Cette clé d'accès sera supprimée lorsque vous enregistrerez cet identifiant."
   },
   "totp": {
-    "addCode": "Add 2FA Code",
-    "nameOptional": "Name (optional)",
-    "secretKey": "Secret Key",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
-    "saveToViewCode": "Save to view code",
+    "addCode": "Ajouter un code 2FA",
+    "nameOptional": "Nom (facultatif)",
+    "secretKey": "Clé secrète",
+    "instructions": "Entrez la clé secrète affichée par le site Web où vous souhaitez ajouter l'authentification à deux facteurs.",
+    "saveToViewCode": "Enregistrer pour afficher le code",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Format de clé secrète invalide."
     }
   },
   "settings": {
-    "title": "Settings",
-    "autofill": "Autofill & Passkeys",
+    "title": "Réglages",
+    "autofill": "Remplissage automatique et clés d'accès",
     "iosAutofillSettings": {
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "Vous pouvez configurer AliasVault pour fournir des fonctionnalités natives de saisie automatique du mot de passe et de clés d'accès dans iOS. Suivez les instructions ci-dessous pour l'activer.",
+      "passkeyNotice": "Les clés d'accès sont créées via iOS. Pour les stocker dans AliasVault, assurez-vous que le remplissage automatique ci-dessous est activé.",
+      "howToEnable": "Comment activer le remplissage automatique et les clés d'accès :",
       "step1": "1. Ouvrir les paramètres d'iOS via le bouton ci-dessous",
       "step2": "2. Aller dans « Général »",
       "step3": "3. Appuyer sur « Remplissage automatique et mots de passe »",
@@ -233,7 +233,7 @@
       "warningText": "Note : Vous devrez vous authentifier avec Face ID/Touch ID ou votre code d'accès lorsque vous utilisez le remplissage automatique."
     },
     "androidAutofillSettings": {
-      "warningTitle": "⚠️ Experimental Feature",
+      "warningTitle": "⚠️ Fonctionnalité expérimentale",
       "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
       "warningLink": "Read more about it here",
       "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
