@@ -493,7 +493,7 @@
     "status": {
       "unlockingVault": "Unlocking vault",
       "decryptingVault": "Decrypting vault",
-      "openingVaultReadOnly": "Opening vault in read-only mode",
+      "openingVaultReadOnly": "Ouvrir le coffre en mode lecture seule",
       "retryingConnection": "Retrying connection..."
     },
     "offline": {
