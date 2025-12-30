@@ -49,6 +49,9 @@
   <string name="passkey_replace_explanation">This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.</string>
   <string name="passkey_replacing">Replacing passkey…</string>
   <string name="passkey_checking_connection">Checking connection…</string>
+  <string name="passkey_retrieving">Retrieving passkey…</string>
+  <string name="passkey_verifying">Verifying…</string>
+  <string name="passkey_authenticating">Authenticating…</string>
 
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Connection Error</string>

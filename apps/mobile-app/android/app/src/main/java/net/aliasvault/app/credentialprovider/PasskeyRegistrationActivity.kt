@@ -135,11 +135,27 @@ class PasskeyRegistrationActivity : FragmentActivity() {
     }
 
     /**
+     * Update the loading message displayed to the user.
+     */
+    private fun updateLoadingMessage(messageResId: Int) {
+        runOnUiThread {
+            try {
+                findViewById<TextView>(R.id.loadingMessage)?.text = getString(messageResId)
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not update loading message", e)
+            }
+        }
+    }
+
+    /**
      * Verify origin on background thread and start unlock flow if successful.
      */
     private fun verifyOriginAndStartUnlock(callingAppInfo: CallingAppInfo?, savedInstanceState: Bundle?) {
         lifecycleScope.launch {
             try {
+                // Show verifying status to user (network call may happen)
+                updateLoadingMessage(R.string.passkey_verifying)
+
                 // Run origin verification on IO thread (asset links fetch requires network)
                 val originVerifier = OriginVerifier()
                 val originResult = withContext(Dispatchers.IO) {

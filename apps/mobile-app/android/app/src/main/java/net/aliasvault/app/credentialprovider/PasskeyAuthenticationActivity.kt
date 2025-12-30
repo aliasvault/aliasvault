@@ -115,6 +115,19 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
     }
 
     /**
+     * Update the loading message displayed to the user.
+     */
+    private fun updateLoadingMessage(messageResId: Int) {
+        runOnUiThread {
+            try {
+                findViewById<TextView>(R.id.loadingMessage)?.text = getString(messageResId)
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not update loading message", e)
+            }
+        }
+    }
+
+    /**
      * Process the passkey authentication request and generate assertion.
      * Called after authentication (biometric or PIN) succeeds and vault is unlocked.
      */
@@ -128,6 +141,9 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
 
         lifecycleScope.launch {
             try {
+                // Show retrieving status to user
+                updateLoadingMessage(R.string.passkey_retrieving)
+
                 // Extract passkey ID from intent
                 val passkeyIdString = intent.getStringExtra(
                     AliasVaultCredentialProviderService.EXTRA_PASSKEY_ID,
@@ -141,7 +157,7 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
 
                 val passkeyId = UUID.fromString(passkeyIdString.uppercase())
 
-                // Get database connection from vault (should be unlocked at this point)
+                // Get database connection from vault
                 val db = vaultStore.database
                 if (db == null) {
                     Log.e(TAG, "Database not available - vault may not be unlocked")
@@ -169,7 +185,10 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                     .filterIsInstance<androidx.credentials.GetPublicKeyCredentialOption>()
                     .firstOrNull()?.clientDataHash
 
-                // Verify origin of the calling app (may involve network call for asset links)
+                // Show verifying status to user
+                updateLoadingMessage(R.string.passkey_verifying)
+
+                // Verify origin of the calling app
                 val originVerifier = OriginVerifier()
                 val callingAppInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
                     providerRequest.callingAppInfo
@@ -177,7 +196,7 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                     null
                 }
 
-                // Run origin verification on IO thread (asset links fetch requires network)
+                // Run origin verification on IO thread
                 val originResult = withContext(Dispatchers.IO) {
                     originVerifier.verifyOrigin(
                         callingAppInfo = callingAppInfo,
@@ -200,6 +219,9 @@ class PasskeyAuthenticationActivity : FragmentActivity() {
                         return@launch
                     }
                 }
+
+                // Show authenticating status to user
+                updateLoadingMessage(R.string.passkey_authenticating)
 
                 // Determine clientDataHash and clientDataJson based on what caller provided
                 val clientDataHash: ByteArray

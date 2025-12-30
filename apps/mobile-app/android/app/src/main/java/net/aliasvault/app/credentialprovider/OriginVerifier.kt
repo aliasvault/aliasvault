@@ -1005,7 +1005,7 @@ class OriginVerifier {
             if (connection.responseCode != HttpURLConnection.HTTP_OK) {
                 Log.w(TAG, "Asset links not found for $rpId: ${connection.responseCode}")
                 return AssetLinksResult.Failure(
-                    "Cannot verify app authorization: $rpId does not provide asset links",
+                    "App is not authorized to access passkeys for $rpId",
                 )
             }
 
