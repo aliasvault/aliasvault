@@ -246,8 +246,11 @@ class PasskeyFormFragment : Fragment() {
             val requestObj = JSONObject(viewModel.requestJson)
             val challenge = requestObj.optString("challenge", "")
 
-            // Use origin from the request, or fallback to RP id
-            val requestOrigin = viewModel.origin ?: ("https://" + viewModel.rpId)
+            // Use the origin set by PasskeyRegistrationActivity
+            val requestOrigin = viewModel.origin
+                ?: throw net.aliasvault.app.exceptions.PasskeyOperationException(
+                    "Origin not available",
+                )
 
             // Extract PRF inputs if present
             val prfInputs = extractPrfInputs(requestObj)
@@ -438,8 +441,9 @@ class PasskeyFormFragment : Fragment() {
             val requestObj = JSONObject(viewModel.requestJson)
             val challenge = requestObj.optString("challenge", "")
 
-            // Use origin from the request
-            val requestOrigin = viewModel.origin ?: throw PasskeyOperationException("Origin not available")
+            // Use the origin set by PasskeyRegistrationActivity
+            val requestOrigin = viewModel.origin
+                ?: throw PasskeyOperationException("Origin not available")
 
             // Extract PRF inputs if present
             val prfInputs = extractPrfInputs(requestObj)

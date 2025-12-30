@@ -17,6 +17,9 @@ class PasskeyRegistrationViewModel : ViewModel() {
     /** The origin URL of the passkey request. */
     var origin: String? = null
 
+    /** Whether the caller is a privileged app (browser). */
+    var isPrivilegedCaller: Boolean = false
+
     /** The relying party identifier. */
     var rpId: String = ""
 

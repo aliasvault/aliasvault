@@ -1,14 +1,20 @@
 package net.aliasvault.app.credentialprovider
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.credentials.CreatePublicKeyCredentialRequest
+import androidx.credentials.provider.CallingAppInfo
 import androidx.credentials.provider.PendingIntentHandler
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import net.aliasvault.app.R
 import net.aliasvault.app.credentialprovider.models.PasskeyRegistrationViewModel
 import net.aliasvault.app.utils.Helpers
@@ -65,10 +71,9 @@ class PasskeyRegistrationActivity : FragmentActivity() {
                 return
             }
 
-            // Get requestJson, clientDataHash, and origin from the request
+            // Get requestJson, clientDataHash from the request
             viewModel.requestJson = createRequest.requestJson
             viewModel.clientDataHash = createRequest.clientDataHash
-            viewModel.origin = createRequest.origin
 
             // Parse request JSON to extract RP ID and user info
             val requestObj = JSONObject(viewModel.requestJson)
@@ -102,29 +107,18 @@ class PasskeyRegistrationActivity : FragmentActivity() {
                 null
             }
 
-            // Show loading screen while unlock is in progress
+            // Show loading screen while verification and unlock are in progress
             setContentView(R.layout.activity_loading)
 
-            // Initialize unlock coordinator
-            unlockCoordinator = UnlockCoordinator(
-                activity = this,
-                vaultStore = vaultStore,
-                onUnlocked = {
-                    // Vault unlocked successfully - proceed with passkey registration
-                    proceedWithPasskeyRegistration(savedInstanceState)
-                },
-                onCancelled = {
-                    // User cancelled unlock
-                    finish()
-                },
-                onError = { errorMessage ->
-                    // Error during unlock
-                    showError(errorMessage)
-                },
-            )
+            // Get calling app info for origin verification
+            val callingAppInfo = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                providerRequest.callingAppInfo
+            } else {
+                null
+            }
 
-            // Start the unlock flow
-            unlockCoordinator.startUnlockFlow()
+            // Verify origin and start unlock flow
+            verifyOriginAndStartUnlock(callingAppInfo, savedInstanceState)
         } catch (e: Exception) {
             Log.e(TAG, "Error in onCreate", e)
             finish()
@@ -137,6 +131,60 @@ class PasskeyRegistrationActivity : FragmentActivity() {
         // Delegate PIN unlock result to coordinator
         if (requestCode == UnlockCoordinator.REQUEST_CODE_PIN_UNLOCK) {
             unlockCoordinator.handlePinUnlockResult(resultCode, data)
+        }
+    }
+
+    /**
+     * Verify origin on background thread and start unlock flow if successful.
+     */
+    private fun verifyOriginAndStartUnlock(callingAppInfo: CallingAppInfo?, savedInstanceState: Bundle?) {
+        lifecycleScope.launch {
+            try {
+                // Run origin verification on IO thread (asset links fetch requires network)
+                val originVerifier = OriginVerifier()
+                val originResult = withContext(Dispatchers.IO) {
+                    originVerifier.verifyOrigin(
+                        callingAppInfo = callingAppInfo,
+                        requestedRpId = viewModel.rpId,
+                    )
+                }
+
+                when (originResult) {
+                    is OriginVerifier.OriginResult.Success -> {
+                        viewModel.origin = originResult.origin
+                        viewModel.isPrivilegedCaller = originResult.isPrivileged
+                        Log.d(TAG, "Origin verified: ${originResult.origin} (privileged: ${originResult.isPrivileged})")
+
+                        // Initialize unlock coordinator
+                        unlockCoordinator = UnlockCoordinator(
+                            activity = this@PasskeyRegistrationActivity,
+                            vaultStore = vaultStore,
+                            onUnlocked = {
+                                // Vault unlocked successfully - proceed with passkey registration
+                                proceedWithPasskeyRegistration(savedInstanceState)
+                            },
+                            onCancelled = {
+                                // User cancelled unlock
+                                finish()
+                            },
+                            onError = { errorMessage ->
+                                // Error during unlock
+                                showError(errorMessage)
+                            },
+                        )
+
+                        // Start the unlock flow
+                        unlockCoordinator.startUnlockFlow()
+                    }
+                    is OriginVerifier.OriginResult.Failure -> {
+                        Log.e(TAG, "Origin verification failed: ${originResult.reason}")
+                        showError("Security error: ${originResult.reason}")
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error verifying origin", e)
+                showError("Error verifying application: ${e.message}")
+            }
         }
     }
 
