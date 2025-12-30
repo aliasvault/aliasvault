@@ -333,9 +333,9 @@ PODS:
   - FBLazyVector (0.79.6)
   - fmt (11.0.2)
   - glog (0.3.5)
-  - hermes-engine (0.79.5):
-    - hermes-engine/Pre-built (= 0.79.5)
-  - hermes-engine/Pre-built (0.79.5)
+  - hermes-engine (0.79.6):
+    - hermes-engine/Pre-built (= 0.79.6)
+  - hermes-engine/Pre-built (0.79.6)
   - Macaw (0.9.10):
     - SWXMLHash
   - OpenSSL-Universal (3.3.3001)
@@ -2442,7 +2442,7 @@ PODS:
   - SQLite.swift (0.14.1):
     - SQLite.swift/standard (= 0.14.1)
   - SQLite.swift/standard (0.14.1)
-  - SwiftLint (0.59.1)
+  - SwiftLint (0.62.2)
   - SWXMLHash (7.0.2)
   - Yoga (0.0.0)
 
@@ -2795,8 +2795,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
 SPEC CHECKSUMS:
-  boost: 1dca942403ed9342f98334bf4c3621f011aa7946
-  DoubleConversion: f16ae600a246532c4020132d54af21d0ddb2a385
+  boost: 7e761d76ca2ce687f7cc98e698152abd03a18f90
+  DoubleConversion: cb417026b2400c8f53ae97020b2be961b59470cb
   EXConstants: 98bcf0f22b820f9b28f9fee55ff2daededadd2f8
   EXJSONUtils: 1d3e4590438c3ee593684186007028a14b3686cd
   EXManifests: 691a779b04e4f2c96da46fb9bef4f86174fefcb5
@@ -2826,9 +2826,9 @@ SPEC CHECKSUMS:
   EXUpdatesInterface: 7ff005b7af94ee63fa452ea7bb95d7a8ff40277a
   fast_float: 06eeec4fe712a76acc9376682e4808b05ce978b6
   FBLazyVector: 07309209b7b914451b8f822544a18e2a0a85afff
-  fmt: 01b82d4ca6470831d1cc0852a1af644be019e8f6
-  glog: 08b301085f15bcbb6ff8632a8ebaf239aae04e6a
-  hermes-engine: f03b0e06d3882d71e67e45b073bb827da1a21aae
+  fmt: a40bb5bd0294ea969aaaba240a927bd33d878cdd
+  glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
+  hermes-engine: 44bb6fe76a6eb400d3a992e2d0b21946ae999fa9
   Macaw: 7af8ea57aa2cab35b4a52a45e6f85eea753ea9ae
   OpenSSL-Universal: 6082b0bf950e5636fe0d78def171184e2b3899c2
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
@@ -2908,7 +2908,7 @@ SPEC CHECKSUMS:
   SignalArgon2: 1c24183835ca861e6af06631c18b1671cdf35571
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   SQLite.swift: 2992550ebf3c5b268bf4352603e3df87d2a4ed72
-  SwiftLint: 3d48e2fb2a3468fdaccf049e5e755df22fb40c2c
+  SwiftLint: f84fc7d844e9cde0dc4f5013af608a269e317aba
   SWXMLHash: dd733a457e9c4fe93b1538654057aefae4acb382
   Yoga: dc7c21200195acacb62fa920c588e7c2106de45e
 
