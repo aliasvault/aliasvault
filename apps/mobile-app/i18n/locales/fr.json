@@ -272,11 +272,11 @@
     "importSectionDescription": "Importez vos mots de passe depuis d'autres gestionnaires de mots de passe ou depuis un précédent export AliasVault.",
     "importWebNote": "Pour importer des informations d’identification à partir des gestionnaires de mots de passe existants, veuillez vous connecter à l’application Web. La fonction d’importation n’est actuellement disponible que sur la version web.",
     "exportSectionTitle": "Exporter",
-    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
-    "exportCsvButton": "Export vault to CSV file",
-    "exporting": "Exporting...",
-    "exportConfirmTitle": "Export Vault",
-    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "exportSectionDescription": "Exporter les données de votre coffre vers un fichier CSV. Ce fichier peut être utilisé comme une sauvegarde et peut également être importé dans d'autres gestionnaires de mots de passe.",
+    "exportCsvButton": "Exporter le coffre vers un fichier CSV",
+    "exporting": "Exportation en cours...",
+    "exportConfirmTitle": "Exporter le coffre",
+    "exportWarning": "Attention : L'exportation de votre coffre-fort vers un fichier non chiffré exposera tous vos mots de passe et informations sensibles en texte clair. Effectuez cette opération uniquement sur un appareil de confiance et veillez à : \n• Stocker le fichier exporté dans un emplacement sécurisé \n• Supprimer le fichier dès que vous n'en avez plus besoin \n• Ne jamais partager le fichier exporté avec d'autres personnes \n\nÊtes-vous sûr de vouloir poursuivre l'exportation ?",
     "security": "Sécurité",
     "appVersion": "Version de l'application {{version}} ({{url}})",
     "autoLockOptions": {
@@ -295,29 +295,29 @@
     "openSettings": "Ouvrir les paramètres",
     "vaultUnlockSettings": {
       "description": "Choisissez comment vous souhaitez déverrouiller votre coffre-fort.",
-      "biometrics": "Biometrics",
-      "faceId": "Face ID",
-      "touchId": "Touch ID",
+      "biometrics": "Biométrie",
+      "faceId": "Identification faciale (Face ID)",
+      "touchId": "Empreinte digitale",
       "faceIdTouchId": "Face ID / Touch ID",
       "biometricEnabled": "{{biometric}} est désormais activé avec succès",
       "biometricNotAvailable": "{{biometric}} non disponible",
       "biometricDisabledMessage": "{{biometric}} est désactivé pour AliasVault. Pour l'utiliser, veuillez d'abord l'activer dans les paramètres de votre appareil.",
-      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
+      "biometricHelp": "Utilisez la biométrie pour déverrouiller votre coffre, qui est sécurisé par l’ {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} n'est pas disponible. Appuyez pour ouvrir les paramètres et/ou allez dans les paramètres de votre appareil pour l'activer et le configurer.",
-      "pin": "PIN Code",
-      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
-      "pinEnabled": "PIN unlock enabled successfully",
-      "pinDisabled": "PIN unlock has been disabled",
-      "setupPin": "Setup PIN",
-      "enterNewPin": "Enter New PIN",
-      "enterNewPinDescription": "Choose a PIN to unlock your vault",
-      "confirmPin": "Confirm PIN",
-      "confirmPinDescription": "Re-enter your PIN to confirm",
-      "pinMismatch": "PINs do not match. Please try again.",
-      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
+      "pin": "Code PIN",
+      "pinDescription": "Utilisez un code PIN personnalisé pour déverrouiller votre coffre plus rapidement.",
+      "pinEnabled": "Déverrouillage par code PIN activé avec succès",
+      "pinDisabled": "Déverrouillage par code PIN désactivé",
+      "setupPin": "Configurer le code PIN",
+      "enterNewPin": "Entrer le nouveau code PIN",
+      "enterNewPinDescription": "Entrez votre code PIN pour déverrouiller votre coffre",
+      "confirmPin": "Confirmer le code PIN",
+      "confirmPinDescription": "Entrez à nouveau votre code PIN pour confirmer",
+      "pinMismatch": "Les codes PIN ne correspondent pas. Veuillez réessayer.",
+      "pinLocked": "Code PIN verrouillé après trop de tentatives infructueuses. Veuillez utiliser votre mot de passe principal.",
       "passwordHelp": "Saisissez à nouveau votre mot de passe maître complet pour déverrouiller votre coffre. Ceci est toujours activé comme option de repli.",
       "keystoreIOS": "Trousseau iOS",
-      "keystoreAndroid": "Android Keystore"
+      "keystoreAndroid": "KeyStore Android"
     },
     "autoLockSettings": {
       "description": "Choisissez combien de temps l'application peut rester en arrière-plan avant de nécessiter une ré-authentification. Vous devrez utiliser Face ID ou saisir votre mot de passe pour déverrouiller le coffre à nouveau."
@@ -328,8 +328,8 @@
       "languageDescription": "Définissez la langue qui sera utilisée pour générer de nouvelles identités.",
       "genderSection": "Genre",
       "genderDescription": "Définissez la préférence de genre pour la génération de nouvelles identités.",
-      "ageRangeSection": "Age Range",
-      "ageRangeDescription": "Set the age range for generating new identities.",
+      "ageRangeSection": "Tranches d'âges",
+      "ageRangeDescription": "Définir la tranche d'âge pour la génération de nouvelles identités.",
       "genderOptions": {
         "random": "Aléatoire",
         "male": "Homme",
@@ -337,7 +337,7 @@
       }
     },
     "passwordGeneratorSettings": {
-      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "description": "Configurez les paramètres par défaut utilisés lors de la génération de nouveaux mots de passe. Ces paramètres seront appliqués à tous les nouveaux mots de passe, sauf si vous les modifiez pour des entrées spécifiques.",
       "preview": "Aperçu"
     },
     "securitySettings": {
@@ -383,10 +383,10 @@
         "time": "Heure",
         "ipAddress": "Adresse IP",
         "client": "Client",
-        "failedToLoad": "Failed to load auth logs"
+        "failedToLoad": "Impossible de charger les journaux d'authentification"
       },
       "deleteAccount": {
-        "headerText": "Deleting your account will immediately and permanently delete all of your data.",
+        "headerText": "La suppression de votre compte supprimera immédiatement et définitivement toutes vos données.",
         "warningText": "Warning: This action cannot be undone. All your data will be permanently deleted.",
         "finalWarning": "Final warning: Enter your password to permanently delete your account.",
         "warningVaults": "All encrypted vaults which includes all of your credentials will be permanently deleted",
