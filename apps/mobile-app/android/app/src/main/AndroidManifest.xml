@@ -40,13 +40,13 @@
     <!-- Passkey Authentication Activity -->
     <activity
         android:name=".credentialprovider.PasskeyAuthenticationActivity"
-        android:exported="true"
+        android:exported="false"
         android:theme="@style/PasskeyRegistrationTheme" />
 
     <!-- Passkey Registration Activity -->
     <activity
         android:name=".credentialprovider.PasskeyRegistrationActivity"
-        android:exported="true"
+        android:exported="false"
         android:theme="@style/PasskeyRegistrationTheme"
         android:windowSoftInputMode="adjustResize"
         android:fitsSystemWindows="true" />
