@@ -43,6 +43,9 @@
   <string name="passkey_replace_explanation">Questo sostituirà la passkey esistente con una nuova. Si prega di notare che la vecchia passkey sarà sovrascritta e non sarà più accessibile. Se si desidera invece creare una passkey separata, tornare alla schermata precedente.</string>
   <string name="passkey_replacing">Sostituzione passkey…</string>
   <string name="passkey_checking_connection">Controllo connessione…</string>
+  <string name="passkey_retrieving">Recupero passkey…</string>
+  <string name="passkey_verifying">Verifica…</string>
+  <string name="passkey_authenticating">Autenticazione…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Errore Di Connessione</string>
   <string name="connection_error_message">Non è possibile effettuare alcuna connessione al server. Controlla la tua connessione internet e prova a creare nuovamente la passkey.</string>

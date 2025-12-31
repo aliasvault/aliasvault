@@ -43,6 +43,9 @@
   <string name="passkey_replace_explanation">Esto reemplazará la llave de acceso existente con una nueva. Tenga en cuenta que su llave de acceso antigua será sobrescrita y ya no será accesible. Si desea crear una llave de acceso separada en su lugar, vuelva a la pantalla anterior.</string>
   <string name="passkey_replacing">Reemplazando llave de acceso…</string>
   <string name="passkey_checking_connection">Comprobando la conexión…</string>
+  <string name="passkey_retrieving">Recuperando llave…</string>
+  <string name="passkey_verifying">Verificando…</string>
+  <string name="passkey_authenticating">Autenticando…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Error de conexión</string>
   <string name="connection_error_message">No se puede establecer conexión con el servidor. Por favor, compruebe su conexión a Internet e intente crear la llave de acceso de nuevo.</string>

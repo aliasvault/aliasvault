@@ -43,6 +43,9 @@
   <string name="passkey_replace_explanation">Dit zal de bestaande passkey vervangen door een nieuwe. Houd er rekening mee dat je oude passkey wordt overschreven en niet langer toegankelijk is. Als je in plaats hiervan een aparte passkey wilt maken, ga dan terug naar het vorige scherm.</string>
   <string name="passkey_replacing">Passkey vervangen…</string>
   <string name="passkey_checking_connection">Verbinding controleren…</string>
+  <string name="passkey_retrieving">Passkey ophalen…</string>
+  <string name="passkey_verifying">Verifiëren…</string>
+  <string name="passkey_authenticating">Authenticeren…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Verbindingsfout</string>
   <string name="connection_error_message">Er kan geen verbinding met de server worden gemaakt. Controleer je internetverbinding en probeer het opnieuw.</string>

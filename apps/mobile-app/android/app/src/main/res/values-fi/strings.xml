@@ -43,6 +43,9 @@
   <string name="passkey_replace_explanation">Tämä korvaa olemassa olevan todennusavaimen uudella todennusavaimella. Ole hyvä ja ota huomioon, että vanha todennusavaimesi on korvattu eikä enää käytettävissä. Jos haluat luoda erillisen todennusavaimen sen sijaan, mene takaisin edelliseen ruutuun.</string>
   <string name="passkey_replacing">Korvataan todennusavainta...</string>
   <string name="passkey_checking_connection">Tarkistetaan yhteyttä</string>
+  <string name="passkey_retrieving">Noudetaan todennusavainta...</string>
+  <string name="passkey_verifying">Tarkistetaan…</string>
+  <string name="passkey_authenticating">Todennetaan…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Yhteysvirhe</string>
   <string name="connection_error_message">Yhteyttä palvelimeen ei voida luoda. Tarkista internet-yhteytesi ja yritä luoda todennusavain uudelleen.</string>
