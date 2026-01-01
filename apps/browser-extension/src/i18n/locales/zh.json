@@ -31,7 +31,7 @@
     "loggedIn": "已登录",
     "loginWithMobile": "使用移动应用登录",
     "unlockWithMobile": "使用移动应用解锁",
-    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
+    "scanQrCode": "使用 AliasVault 移动端应用扫描该二维码，即可登录并解锁您的密码库。",
     "errors": {
       "invalidCode": "请输入有效的6位动态验证码。",
       "serverError": "无法连接到AliasVault服务器。请稍后重试，若问题依旧，请联系支持人员。",
@@ -39,7 +39,7 @@
       "accountLocked": "由于多次尝试失败，账户已暂时锁定。",
       "networkError": "网络错误。请检查您的连接后重试。",
       "sessionExpired": "您的会话已过期。请重新登录。",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "mobileLoginRequestExpired": "移动端登录请求超时。请重新加载页面后重试。"
     }
   },
   "menu": {
@@ -243,7 +243,7 @@
   },
   "totp": {
     "addCode": "添加两步验证码",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
+    "instructions": "输入要添加两步验证的网站显示的密钥。",
     "nameOptional": "名称（可选）",
     "secretKey": "密钥",
     "saveToViewCode": "保存以查看验证码",
@@ -346,14 +346,14 @@
     "contextMenuDescription": "右键点击输入字段即可访问 AliasVault 选项",
     "selectLanguage": "选择语言",
     "serverConfiguration": "服务器配置",
-    "serverConfigurationDescription": "Configure the AliasVault server URL for self-hosted instances",
+    "serverConfigurationDescription": "为自托管实例配置 AliasVault 服务器 URL",
     "customApiUrl": "API URL",
     "customClientUrl": "客户端 URL",
-    "apiUrlHint": "The API endpoint URL (usually client URL + /api)",
-    "clientUrlHint": "The web interface URL of your self-hosted instance",
-    "autofillSettingsDescription": "Enable or disable the autofill popup on web pages",
-    "autofillEnabledDescription": "Autofill suggestions will appear on login forms",
-    "autofillDisabledDescription": "Autofill suggestions are disabled globally",
+    "apiUrlHint": "API 端点 URL（通常为客户端 URL + /api）",
+    "clientUrlHint": "您自托管实例的 Web 界面 URL",
+    "autofillSettingsDescription": "启用或禁用网页上的自动填充弹出窗口",
+    "autofillEnabledDescription": "自动填充建议将显示在登录表单上",
+    "autofillDisabledDescription": "自动填充建议已全局禁用",
     "languageSettings": "语言",
     "validation": {
       "apiUrlRequired": "API URL 为必填项",
@@ -363,33 +363,33 @@
     },
     "unlockMethod": {
       "title": "密码库解锁方式",
-      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
+      "introText": "选择您解锁密码库的方式。您可以使用主密码（始终可用），也可以设置 PIN 码以便快捷访问。PIN 码输入错误 3 次后，您需要使用主密码。",
       "password": "主密码",
       "pin": "PIN 码",
       "pinDescription": "使用 PIN 码解锁密码库",
       "setupPin": "设置 PIN 码",
-      "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
+      "enterNewPinDescription": "请输入至少 6 位数的 PIN 码",
       "confirmPin": "确认 PIN",
       "confirmPinDescription": "再次输入您的 PIN 以确认",
       "invalidPinFormat": "PIN 格式无效",
       "pinMismatch": "PIN 不一致",
-      "incorrectPin": "Incorrect PIN. {{attemptsRemaining}} attempts remaining.",
-      "incorrectPinSingular": "Incorrect PIN. 1 attempt remaining.",
-      "enableSuccess": "PIN unlock enabled successfully!",
-      "pinLocked": "PIN unlock has been disabled. Please use your master password to unlock your vault.",
-      "pinSecurityWarning": "PIN unlock in the browser extension can be less secure than your master password, as PINs typically have lower entropy and may be brute-forced if your device is compromised. Use it only on devices you fully trust."
+      "incorrectPin": "PIN 码错误，剩余 {{attemptsRemaining}} 次尝试。",
+      "incorrectPinSingular": "PIN 码错误，剩余 1 次尝试。",
+      "enableSuccess": "PIN 码解锁已成功启用！",
+      "pinLocked": "PIN 码解锁已禁用，请使用您的主密码解锁您的密码库。",
+      "pinSecurityWarning": "浏览器扩展中的 PIN 码解锁可能不如您的主密码安全，因为 PIN 码的熵值通常较低，若您的设备遭到入侵，则可能被暴力破解。请仅在您完全信任的设备上使用该方式。"
     }
   },
   "passkeys": {
     "passkey": "通行密钥",
     "site": "网站",
     "displayName": "名称",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
+    "helpText": "通行密钥会在网站提示时自动生成，无法手动编辑。要移除此通行密钥，您可以在此凭据中进行删除。要替换或创建新的通行密钥，请访问网站并按照其提示操作。",
     "passkeyMarkedForDeletion": "通行密钥已标记为删除",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
+    "passkeyWillBeDeleted": "保存此凭据后，此通行密钥将被删除。",
     "bypass": {
       "title": "使用浏览器通行密钥",
-      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
+      "description": "对于 {{origin}}，您希望使用浏览器的密码提供程序多长时间？",
       "thisTimeOnly": "仅一次",
       "alwaysForSite": "始终为此网站"
     },
