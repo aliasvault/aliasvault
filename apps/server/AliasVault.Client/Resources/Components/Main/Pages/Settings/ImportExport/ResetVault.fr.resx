@@ -99,43 +99,43 @@
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>Final warning: You are about to permanently delete all your credentials!</value>
+    <value>Dernier avertissement: vous êtes sur le point de supprimer définitivement tous vos identifiants!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
-    <value>This deletion is irreversible and cannot be undone</value>
+    <value>Cette suppression est irréversible et ne peut pas être annulée</value>
     <comment>Reset vault final step irreversible note</comment>
   </data>
   <data name="ResetVaultEnterPasswordLabel" xml:space="preserve">
-    <value>Enter your password to confirm</value>
+    <value>Entrer votre mot de passe pour confirmer</value>
     <comment>Reset vault password confirmation label</comment>
   </data>
   <data name="ResetVaultConfirmButton" xml:space="preserve">
-    <value>Reset my vault</value>
+    <value>Réinitialiser mon coffre</value>
     <comment>Reset vault final confirmation button</comment>
   </data>
   <data name="ResetVaultUsernameRequired" xml:space="preserve">
-    <value>Username is required.</value>
+    <value>Nom d’utilisateur requis.</value>
     <comment>Reset vault username required error</comment>
   </data>
   <data name="ResetVaultUsernameDoesNotMatch" xml:space="preserve">
-    <value>The username you entered does not match your account username.</value>
+    <value>Le nom d'utilisateur que vous avez entré ne correspond pas à votre nom d'utilisateur.</value>
     <comment>Reset vault username mismatch error</comment>
   </data>
   <data name="ResetVaultPasswordIncorrect" xml:space="preserve">
-    <value>The password you entered is incorrect.</value>
+    <value>Le mot de passe saisi est incorrect.</value>
     <comment>Reset vault password incorrect error</comment>
   </data>
   <data name="ResetVaultProgressMessage" xml:space="preserve">
-    <value>Resetting vault...</value>
+    <value>Réinitialisation du coffre...</value>
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>Your vault has been successfully reset. All credentials have been deleted and you can now start fresh.</value>
+    <value>Votre coffre a été réinitialisé avec succès. Tous les identifiants ont été supprimés et vous pouvez maintenant démarrer à nouveau.</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">
-    <value>An error occurred while resetting your vault. Please try again.</value>
+    <value>Une erreur s'est produite lors de la réinitialisation de votre coffre. Veuillez réessayer.</value>
     <comment>Reset vault error message</comment>
   </data>
 </root>
