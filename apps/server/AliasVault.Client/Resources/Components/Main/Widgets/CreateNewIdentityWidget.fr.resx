@@ -79,7 +79,7 @@
     <comment>Placeholder text for service name field</comment>
   </data>
   <data name="ServiceUrlLabel" xml:space="preserve">
-    <value>URL du Service</value>
+    <value>URL du service</value>
     <comment>Label for service URL field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
