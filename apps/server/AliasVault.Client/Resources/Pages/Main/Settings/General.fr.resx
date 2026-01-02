@@ -71,11 +71,11 @@
   </data>
   <!-- Alias Settings Section -->
   <data name="AliasSettingsTitle">
-    <value>Identity Generator Settings</value>
+    <value>Paramètres du Générateur d'identité</value>
     <comment>Title for identity generator settings section</comment>
   </data>
   <data name="AliasGenerationLanguageLabel">
-    <value>Language</value>
+    <value>Langue</value>
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
@@ -83,7 +83,7 @@
     <comment>Description for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Gender</value>
+    <value>Genre</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
@@ -103,11 +103,11 @@
     <comment>Female gender option</comment>
   </data>
   <data name="AliasGenerationAgeRangeLabel">
-    <value>Age range</value>
+    <value>Tranche d'âge</value>
     <comment>Label for alias generation age range setting</comment>
   </data>
   <data name="AliasGenerationAgeRangeDescription">
-    <value>Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.</value>
+    <value>Définissez la plage d'âge par défaut pour la génération de nouvelles identités. Cela affecte la date de naissance assignée à l'identité générée.</value>
     <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
