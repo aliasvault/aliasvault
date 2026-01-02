@@ -41,7 +41,7 @@
     private AdminUser user = default!;
 
     [SupplyParameterFromForm]
-    private InputModel Input { get; set; } = new();
+    private InputModel Input { get; set; } = default!;
 
     [SupplyParameterFromQuery]
     private string? ReturnUrl { get; set; }
@@ -52,6 +52,7 @@
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
     {
+        Input ??= new();
         await base.OnInitializedAsync();
 
         // Ensure the user has gone through the username & password screen first

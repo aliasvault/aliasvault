@@ -69,11 +69,16 @@ else
 @code {
     [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
 
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = default!;
 
     [SupplyParameterFromQuery] private string? ReturnUrl { get; set; }
 
     private bool IsAdminConfigured { get; set; } = true;
+
+    protected override void OnInitialized()
+    {
+        Input ??= new();
+    }
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
