@@ -71,31 +71,31 @@
     <comment>Breadcrumb for reset vault</comment>
   </data>
   <data name="ResetVaultPleaseNote" xml:space="preserve">
-    <value>Please note:</value>
+    <value>Veuillez noter:</value>
     <comment>Reset vault please note prefix</comment>
   </data>
   <data name="ResetVaultCredentialsDeletedNote" xml:space="preserve">
-    <value>All encrypted credentials in your vault will be permanently deleted</value>
+    <value>Tous les identifiants chiffrés dans votre coffre seront définitivement supprimés</value>
     <comment>Reset vault note about credentials being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
-    <value>Your email aliases will be preserved and can be re-used after resetting your vault</value>
+    <value>Vos alias de messagerie seront conservés et pourront être réutilisés après la réinitialisation de votre coffre</value>
     <comment>Reset vault note about email aliases being kept</comment>
   </data>
   <data name="ResetVaultSettingsKeptNote" xml:space="preserve">
-    <value>Your account settings and preferences will be preserved</value>
+    <value>Les paramètres et préférences de votre compte seront préservés</value>
     <comment>Reset vault note about settings being kept</comment>
   </data>
   <data name="ResetVaultIrreversibleNote" xml:space="preserve">
-    <value>This action cannot be undone</value>
+    <value>Cette action ne peut pas être annulée</value>
     <comment>Reset vault note about action being irreversible</comment>
   </data>
   <data name="ResetVaultConfirmUsernameLabel" xml:space="preserve">
-    <value>To continue, please type your username to confirm</value>
+    <value>Pour continuer, veuillez entrer votre nom d'utilisateur pour confirmer</value>
     <comment>Reset vault username confirmation label</comment>
   </data>
   <data name="ResetVaultContinueButton" xml:space="preserve">
-    <value>Continue with vault reset</value>
+    <value>Continuer avec la réinitialisation du coffre</value>
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
