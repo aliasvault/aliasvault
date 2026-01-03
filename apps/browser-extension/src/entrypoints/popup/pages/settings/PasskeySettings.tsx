@@ -49,7 +49,7 @@ const PasskeySettings: React.FC = () => {
   const loadSettings = useCallback(async () : Promise<void> => {
     const tab = await getCurrentTab();
     const hostname = new URL(tab.url ?? '').hostname;
-    const baseDomain = extractRootDomain(extractDomain(hostname));
+    const baseDomain = await extractRootDomain(await extractDomain(hostname));
 
     // Load settings from local storage
     const disabledUrls = await storage.getItem(PASSKEY_DISABLED_SITES_KEY) as string[] ?? [];

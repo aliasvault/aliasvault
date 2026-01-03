@@ -9,8 +9,8 @@ import { StyleSheet, View, Text, SafeAreaView, TextInput, ActivityIndicator, Ani
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import ConversionUtility from '@/utils/ConversionUtility';
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
-import type { LoginResponse } from '@/utils/dist/shared/models/webapi';
+import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import type { LoginResponse } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { SrpUtility } from '@/utils/SrpUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
@@ -163,8 +163,7 @@ export default function LoginScreen() : React.ReactNode {
     };
 
     /*
-     * Set auth tokens, store encryption key and key derivation params.
-     * Note: We don't call initializeDatabase here anymore - instead, syncVault will download
+     * Store auth tokens and encryption credentials. syncVault will download
      * the vault and store it (including metadata) through native code.
      */
     await authContext.setAuthTokens(ConversionUtility.normalizeUsername(credentials.username), token, refreshToken);
@@ -172,12 +171,8 @@ export default function LoginScreen() : React.ReactNode {
     await dbContext.storeEncryptionKeyDerivationParams(encryptionKeyDerivationParams);
 
     let checkSuccess = true;
-    /**
-     * After setting auth tokens, execute a server status check immediately
-     * which takes care of certain sanity checks such as ensuring client/server
-     * compatibility. This also downloads the vault and stores it (including metadata)
-     * through native code.
-     */
+
+    // Sync vault from server (downloads, stores, and validates compatibility)
     await syncVault({
       /**
        * Update login status during sync.
@@ -235,7 +230,7 @@ export default function LoginScreen() : React.ReactNode {
     setPasswordHashBase64(null);
     setInitiateLoginResponse(null);
     setLoginStatus(null);
-    router.replace('/(tabs)/credentials');
+    router.replace('/(tabs)/items');
     setIsLoading(false);
   };
 

@@ -16,6 +16,9 @@ class TestStorageProvider : StorageProvider {
     private var username: String? = null
     private var offlineMode: Boolean = false
     private var serverVersion: String? = null
+    private var isDirty: Boolean = false
+    private var mutationSequence: Int = 0
+    private var isSyncing: Boolean = false
 
     override fun getEncryptedDatabaseFile(): File = tempFile
 
@@ -100,4 +103,38 @@ class TestStorageProvider : StorageProvider {
     override fun clearServerVersion() {
         serverVersion = null
     }
+
+    // region Sync State
+
+    override fun setIsDirty(isDirty: Boolean) {
+        this.isDirty = isDirty
+    }
+
+    override fun getIsDirty(): Boolean {
+        return isDirty
+    }
+
+    override fun getMutationSequence(): Int {
+        return mutationSequence
+    }
+
+    override fun setMutationSequence(sequence: Int) {
+        mutationSequence = sequence
+    }
+
+    override fun setIsSyncing(isSyncing: Boolean) {
+        this.isSyncing = isSyncing
+    }
+
+    override fun getIsSyncing(): Boolean {
+        return isSyncing
+    }
+
+    override fun clearSyncState() {
+        isDirty = false
+        mutationSequence = 0
+        isSyncing = false
+    }
+
+    // endregion
 }

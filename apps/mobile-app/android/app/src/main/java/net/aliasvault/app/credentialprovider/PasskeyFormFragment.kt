@@ -214,12 +214,11 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_checking_connection))
             }
 
-            try {
-                vaultStore.syncVault(webApiService)
-            } catch (e: Exception) {
+            val syncResult = vaultStore.syncVaultWithServer(webApiService)
+            if (!syncResult.success && !syncResult.wasOffline) {
                 // Server connectivity check failed - show appropriate error dialog
                 withContext(Dispatchers.Main) {
-                    showSyncErrorAlert(e)
+                    showSyncErrorAlert(Exception(syncResult.error ?: "Sync failed"))
                 }
                 return@withContext
             }
@@ -409,12 +408,11 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_checking_connection))
             }
 
-            try {
-                vaultStore.syncVault(webApiService)
-            } catch (e: Exception) {
+            val syncResult = vaultStore.syncVaultWithServer(webApiService)
+            if (!syncResult.success && !syncResult.wasOffline) {
                 // Server connectivity check failed - show appropriate error dialog
                 withContext(Dispatchers.Main) {
-                    showSyncErrorAlert(e)
+                    showSyncErrorAlert(Exception(syncResult.error ?: "Sync failed"))
                 }
                 return@withContext
             }

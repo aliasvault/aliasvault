@@ -663,9 +663,9 @@ sealed class VaultPasskeyError(message: String) : Exception(message) {
     class PasskeyNotFound(message: String) : VaultPasskeyError(message)
 
     /**
-     * Error indicating credential was not found.
+     * Error indicating item was not found.
      */
-    class CredentialNotFound(message: String) : VaultPasskeyError(message)
+    class ItemNotFound(message: String) : VaultPasskeyError(message)
 
     /**
      * Error indicating a database operation failure.

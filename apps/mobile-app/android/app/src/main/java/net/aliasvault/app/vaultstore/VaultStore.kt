@@ -280,9 +280,16 @@ class VaultStore(
 
     /**
      * Commit a SQL transaction on the vault.
+     * This also atomically marks the vault as dirty and increments the mutation sequence
+     * for proper sync tracking.
      */
     fun commitTransaction() {
         databaseComponent.commitTransaction()
+
+        // Atomically mark vault as dirty and increment mutation sequence
+        // This ensures sync can properly detect local changes
+        metadata.setIsDirty(true)
+        metadata.incrementMutationSequence()
     }
 
     /**
@@ -446,10 +453,117 @@ class VaultStore(
     }
 
     /**
-     * Sync the vault with the server.
+     * Get the sync state.
      */
-    suspend fun syncVault(webApiService: net.aliasvault.app.webapi.WebApiService): Boolean {
-        return sync.syncVault(webApiService)
+    fun getSyncState(): net.aliasvault.app.vaultstore.models.SyncState {
+        return metadata.getSyncState()
+    }
+
+    /**
+     * Set the isDirty flag.
+     */
+    fun setIsDirty(isDirty: Boolean) {
+        metadata.setIsDirty(isDirty)
+    }
+
+    /**
+     * Set the isSyncing flag.
+     */
+    fun setIsSyncing(isSyncing: Boolean) {
+        metadata.setIsSyncing(isSyncing)
+    }
+
+    /**
+     * Store encrypted vault with sync state atomically.
+     * Two modes:
+     * 1. markDirty=true: Local mutation - always succeeds, increments mutation sequence
+     * 2. expectedMutationSeq provided: Sync operation - only succeeds if no mutations happened
+     */
+    fun storeEncryptedVaultWithSyncState(
+        encryptedVault: String,
+        markDirty: Boolean = false,
+        serverRevision: Int? = null,
+        expectedMutationSeq: Int? = null,
+    ): StoreVaultResult {
+        var mutationSequence = metadata.getMutationSequence()
+
+        // Race detection for sync operations
+        if (expectedMutationSeq != null && expectedMutationSeq != mutationSequence) {
+            return StoreVaultResult(success = false, mutationSequence = mutationSequence)
+        }
+
+        if (markDirty) {
+            mutationSequence += 1
+        }
+
+        // Store vault
+        databaseComponent.storeEncryptedDatabase(encryptedVault)
+
+        if (markDirty) {
+            metadata.setMutationSequence(mutationSequence)
+            metadata.setIsDirty(true)
+        }
+
+        if (serverRevision != null) {
+            metadata.setVaultRevisionNumber(serverRevision)
+        }
+
+        return StoreVaultResult(success = true, mutationSequence = mutationSequence)
+    }
+
+    /**
+     * Mark the vault as clean after successful sync.
+     */
+    fun markVaultClean(mutationSeqAtStart: Int, newServerRevision: Int): Boolean {
+        return metadata.markVaultClean(mutationSeqAtStart, newServerRevision)
+    }
+
+    /**
+     * Persist the in-memory vault to storage and mark as dirty.
+     * Combines getting the encrypted database and storing it with dirty flag in one call.
+     * This is used after local mutations to persist changes.
+     */
+    fun markVaultDirty() {
+        val encryptedVault = databaseComponent.getEncryptedDatabase()
+        storeEncryptedVaultWithSyncState(
+            encryptedVault = encryptedVault,
+            markDirty = true,
+            serverRevision = null,
+            expectedMutationSeq = null,
+        )
+    }
+
+    /**
+     * Upload the vault to the server.
+     */
+    suspend fun uploadVault(webApiService: net.aliasvault.app.webapi.WebApiService): VaultUploadResult {
+        return mutate.uploadVault(webApiService)
+    }
+
+    /**
+     * Fetch the server vault (encrypted blob).
+     */
+    suspend fun fetchServerVault(webApiService: net.aliasvault.app.webapi.WebApiService): VaultResponse {
+        return sync.fetchServerVault(webApiService)
+    }
+
+    /**
+     * Check vault version including sync state.
+     */
+    suspend fun checkVaultVersion(webApiService: net.aliasvault.app.webapi.WebApiService): VaultVersionCheckResult {
+        return sync.checkVaultVersion(webApiService)
+    }
+
+    /**
+     * Unified vault sync method that handles all sync scenarios.
+     */
+    suspend fun syncVaultWithServer(webApiService: net.aliasvault.app.webapi.WebApiService): VaultSyncResult {
+        val result = sync.syncVaultWithServer(webApiService, mutate)
+        // Re-unlock vault if it was unlocked before sync and action was download/merge
+        if (result.success && (result.action == SyncAction.DOWNLOADED || result.action == SyncAction.MERGED) && isVaultUnlocked()) {
+            unlockVault()
+        }
+        return result
     }
 
     // endregion

@@ -5,16 +5,16 @@ import { sendMessage } from 'webext-bridge/popup';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import type { TotpCode } from '@/utils/dist/shared/models/vault';
+import type { TotpCode } from '@/utils/dist/core/models/vault';
 
 type TotpBlockProps = {
-  credentialId: string;
+  itemId: string;
 }
 
 /**
- * This component shows TOTP codes for a credential.
+ * This component shows TOTP codes for an item.
  */
-const TotpBlock: React.FC<TotpBlockProps> = ({ credentialId }) => {
+const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
   const { t } = useTranslation();
   const [totpCodes, setTotpCodes] = useState<TotpCode[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,15 +84,15 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ credentialId }) => {
 
   useEffect(() => {
     /**
-     * Loads the TOTP codes for the credential.
+     * Loads the TOTP codes for the item.
      */
     const loadTotpCodes = async (): Promise<void> => {
-      if (!dbContext?.sqliteClient) {
+      if (!dbContext?.sqliteClient || !itemId) {
         return;
       }
 
       try {
-        const codes = dbContext.sqliteClient.getTotpCodesForCredential(credentialId);
+        const codes = dbContext.sqliteClient.settings.getTotpCodesForItem(itemId);
         setTotpCodes(codes);
       } catch (error) {
         console.error('Error loading TOTP codes:', error);
@@ -102,7 +102,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ credentialId }) => {
     };
 
     loadTotpCodes();
-  }, [credentialId, dbContext?.sqliteClient]);
+  }, [itemId, dbContext?.sqliteClient]);
 
   useEffect(() => {
     /**

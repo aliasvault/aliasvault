@@ -89,14 +89,6 @@
     [vaultManager setAutoLockTimeout:timeout resolver:resolve rejecter:reject];
 }
 
-- (void)clearClipboardAfterDelay:(double)delayInSeconds resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager clearClipboardAfterDelay:delayInSeconds resolver:resolve rejecter:reject];
-}
-
-- (void)storeDatabase:(NSString *)base64EncryptedDb resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager storeDatabase:base64EncryptedDb resolver:resolve rejecter:reject];
-}
-
 - (void)storeMetadata:(NSString *)metadata resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager storeMetadata:metadata resolver:resolve rejecter:reject];
 }
@@ -125,14 +117,6 @@
     [vaultManager getEncryptedDatabase:resolve rejecter:reject];
 }
 
-- (void)getCurrentVaultRevisionNumber:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager getCurrentVaultRevisionNumber:resolve rejecter:reject];
-}
-
-- (void)setCurrentVaultRevisionNumber:(double)revisionNumber resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager setCurrentVaultRevisionNumber:revisionNumber resolver:resolve rejecter:reject];
-}
-
 - (void)deriveKeyFromPassword:(NSString *)password salt:(NSString *)salt encryptionType:(NSString *)encryptionType encryptionSettings:(NSString *)encryptionSettings resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager deriveKeyFromPassword:password salt:salt encryptionType:encryptionType encryptionSettings:encryptionSettings resolver:resolve rejecter:reject];
 }
@@ -154,16 +138,6 @@
 }
 
 // MARK: - Android-specific methods (stubs for iOS)
-
-- (void)canScheduleExactAlarms:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    // Only used by Android, return true.
-    resolve(@(YES));
-}
-
-- (void)requestExactAlarmPermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    // Only used by Android, return true.
-    resolve(@"Not applicable on iOS");
-}
 
 - (void)isIgnoringBatteryOptimizations:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     // Only used by Android, return true.
@@ -247,18 +221,20 @@
     [vaultManager getOfflineMode:resolve rejecter:reject];
 }
 
-// MARK: - Vault Sync and Mutate
+// MARK: - Vault Sync
 
-- (void)isNewVaultVersionAvailable:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager isNewVaultVersionAvailable:resolve rejecter:reject];
+- (void)syncVaultWithServer:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager syncVaultWithServer:resolve rejecter:reject];
 }
 
-- (void)downloadVault:(double)newRevision resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager downloadVault:newRevision resolver:resolve rejecter:reject];
+// MARK: - Sync State Management
+
+- (void)getSyncState:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getSyncState:resolve rejecter:reject];
 }
 
-- (void)mutateVault:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager mutateVault:resolve rejecter:reject];
+- (void)markVaultClean:(double)mutationSeqAtStart newServerRevision:(double)newServerRevision resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager markVaultClean:(NSInteger)mutationSeqAtStart newServerRevision:(NSInteger)newServerRevision resolver:resolve rejecter:reject];
 }
 
 // MARK: - PIN Unlock

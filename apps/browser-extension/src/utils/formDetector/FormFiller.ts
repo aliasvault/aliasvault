@@ -1,5 +1,5 @@
-import { Gender, IdentityHelperUtils } from "@/utils/dist/shared/identity-generator";
-import type { Credential } from "@/utils/dist/shared/models/vault";
+import { Gender, IdentityHelperUtils } from "@/utils/dist/core/identity-generator";
+import type { Credential } from "@/utils/dist/core/models/vault";
 import { CombinedDateOptionPatterns, CombinedGenderOptionPatterns } from "@/utils/formDetector/FieldPatterns";
 import { FormFields } from "@/utils/formDetector/types/FormFields";
 import { ClickValidator } from "@/utils/security/ClickValidator";

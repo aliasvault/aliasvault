@@ -150,4 +150,53 @@ class AndroidStorageProvider(private val context: Context) : StorageProvider {
             remove("server_version")
         }
     }
+
+    // region Sync State
+
+    override fun setIsDirty(isDirty: Boolean) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            putBoolean("is_dirty", isDirty)
+        }
+    }
+
+    override fun getIsDirty(): Boolean {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean("is_dirty", false)
+    }
+
+    override fun getMutationSequence(): Int {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getInt("mutation_sequence", 0)
+    }
+
+    override fun setMutationSequence(sequence: Int) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            putInt("mutation_sequence", sequence)
+        }
+    }
+
+    override fun setIsSyncing(isSyncing: Boolean) {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            putBoolean("is_syncing", isSyncing)
+        }
+    }
+
+    override fun getIsSyncing(): Boolean {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        return sharedPreferences.getBoolean("is_syncing", false)
+    }
+
+    override fun clearSyncState() {
+        val sharedPreferences = context.getSharedPreferences("aliasvault", Context.MODE_PRIVATE)
+        sharedPreferences.edit {
+            remove("is_dirty")
+            remove("mutation_sequence")
+            remove("is_syncing")
+        }
+    }
+
+    // endregion
 }

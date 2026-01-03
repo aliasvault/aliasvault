@@ -2,7 +2,7 @@ import { Buffer } from 'buffer';
 
 import { MobileLoginErrorCode } from '@/entrypoints/popup/types/MobileLoginErrorCode';
 
-import type { LoginResponse, MobileLoginInitiateResponse, MobileLoginPollResponse } from '@/utils/dist/shared/models/webapi';
+import type { LoginResponse, MobileLoginInitiateResponse, MobileLoginPollResponse } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 import type { WebApiService } from '@/utils/WebApiService';

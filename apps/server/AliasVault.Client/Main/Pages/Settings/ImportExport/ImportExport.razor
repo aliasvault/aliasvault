@@ -1,6 +1,6 @@
 ﻿@page "/settings/import-export"
 @inherits MainBase
-@inject CredentialService CredentialService
+@inject ItemService ItemService
 @inject ILogger<ImportExport> Logger
 @inject ConfirmModalService ConfirmModalService
 @using Microsoft.Extensions.Localization
@@ -123,9 +123,9 @@
     {
         try
         {
-            var credentials = await CredentialService.LoadAllAsync();
+            var items = await ItemService.LoadAllAsync();
 
-            var csvBytes = CredentialCsvService.ExportCredentialsToCsv(credentials);
+            var csvBytes = ItemCsvService.ExportItemsToCsv(items);
 
             // Create a memory stream from the byte array.
             using (MemoryStream memoryStream = new MemoryStream(csvBytes))

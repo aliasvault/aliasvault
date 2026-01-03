@@ -18,7 +18,7 @@ public class CredentialIdentityStore {
     /// Save credentials into the native iOS credential store.
     /// - Parameters:
     ///   - credentials: The credentials to register
-    public func saveCredentialIdentities(_ credentials: [Credential]) async throws {
+    public func saveCredentialIdentities(_ credentials: [AutofillCredential]) async throws {
         var allIdentities: [ASCredentialIdentity] = []
 
         let state = await storeState()
@@ -77,25 +77,25 @@ public class CredentialIdentityStore {
     }
 
     /// Create password credential identities from credentials
-    private func createPasswordIdentities(from credentials: [Credential]) -> [ASPasswordCredentialIdentity] {
+    private func createPasswordIdentities(from credentials: [AutofillCredential]) -> [ASPasswordCredentialIdentity] {
         return credentials.compactMap { credential in
-            guard credential.passkeys?.isEmpty == true else {
-                // Skip if this record is a passkey as it will be saved in the createPasskeyIdentities method
+            guard !credential.hasPasskeys else {
+                // Skip if this record has passkeys as they will be saved in createPasskeyIdentities
                 return nil
             }
 
-            guard let password = credential.password, !password.value.isEmpty else {
-                // Skip credentials with no password (e.g. applies when this record is a passkey)
+            guard credential.hasPassword else {
+                // Skip credentials with no password
                 return nil
             }
 
-            guard let urlString = credential.service.url,
+            guard let urlString = credential.serviceUrl,
                   let url = URL(string: urlString),
                   let host = url.host else {
                 return nil
             }
 
-            let identifier = CredentialHelpers.usernameOrEmail(credential: credential)
+            let identifier = credential.identifier
             guard !identifier.isEmpty else {
                 return nil // Skip credentials with no identifier
             }
@@ -111,7 +111,7 @@ public class CredentialIdentityStore {
     }
 
     /// Create passkey credential identities from credentials
-    private func createPasskeyIdentities(from credentials: [Credential]) -> [ASPasskeyCredentialIdentity] {
+    private func createPasskeyIdentities(from credentials: [AutofillCredential]) -> [ASPasskeyCredentialIdentity] {
         return credentials.flatMap { credential -> [ASPasskeyCredentialIdentity] in
             guard let passkeys = credential.passkeys else {
                 return []
@@ -120,8 +120,8 @@ public class CredentialIdentityStore {
             return passkeys.filter { !($0.isDeleted) }
                 .compactMap { passkey in
                     // Get the userName for display in iOS AutoFill UI
-                    // Passkeys don't store userName in the database, so we use the credential's username or email
-                    let userName = passkey.userName ?? CredentialHelpers.usernameOrEmail(credential: credential)
+                    // Passkeys may store userName, otherwise use the credential's identifier
+                    let userName = passkey.userName ?? credential.identifier
 
                     // Convert passkey.Id to bytes for credentialID
                     let credentialId = try? PasskeyHelper.guidToBytes(passkey.id.uuidString)

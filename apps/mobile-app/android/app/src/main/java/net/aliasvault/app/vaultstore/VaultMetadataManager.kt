@@ -140,6 +140,105 @@ class VaultMetadataManager(
 
     // endregion
 
+    // region Sync State Management
+
+    /**
+     * Set the dirty flag indicating local changes need to be synced.
+     */
+    fun setIsDirty(isDirty: Boolean) {
+        storageProvider.setIsDirty(isDirty)
+    }
+
+    /**
+     * Get the dirty flag.
+     */
+    fun getIsDirty(): Boolean {
+        return storageProvider.getIsDirty()
+    }
+
+    /**
+     * Get the current mutation sequence number.
+     */
+    fun getMutationSequence(): Int {
+        return storageProvider.getMutationSequence()
+    }
+
+    /**
+     * Set the mutation sequence number.
+     */
+    fun setMutationSequence(sequence: Int) {
+        storageProvider.setMutationSequence(sequence)
+    }
+
+    /**
+     * Increment the mutation sequence and return the new value.
+     */
+    fun incrementMutationSequence(): Int {
+        val current = getMutationSequence()
+        val newValue = current + 1
+        setMutationSequence(newValue)
+        return newValue
+    }
+
+    /**
+     * Set the syncing flag.
+     */
+    fun setIsSyncing(isSyncing: Boolean) {
+        storageProvider.setIsSyncing(isSyncing)
+    }
+
+    /**
+     * Get the syncing flag.
+     */
+    fun getIsSyncing(): Boolean {
+        return storageProvider.getIsSyncing()
+    }
+
+    /**
+     * Get the complete sync state.
+     */
+    fun getSyncState(): SyncState {
+        return SyncState(
+            isDirty = getIsDirty(),
+            mutationSequence = getMutationSequence(),
+            serverRevision = getVaultRevisionNumber(),
+            isSyncing = getIsSyncing(),
+        )
+    }
+
+    /**
+     * Mark the vault as clean after successful sync.
+     * Only clears dirty flag if no mutations happened during sync.
+     *
+     * @param mutationSeqAtStart The mutation sequence when sync started
+     * @param newServerRevision The new server revision after successful upload
+     * @return Whether the dirty flag was cleared
+     */
+    fun markVaultClean(mutationSeqAtStart: Int, newServerRevision: Int): Boolean {
+        val currentMutationSeq = getMutationSequence()
+
+        // Always update server revision
+        setVaultRevisionNumber(newServerRevision)
+
+        if (currentMutationSeq == mutationSeqAtStart) {
+            // No mutations during sync - safe to mark as clean
+            setIsDirty(false)
+            return true
+        }
+
+        // Mutations happened during sync - keep dirty
+        return false
+    }
+
+    /**
+     * Clear all sync state (used on logout).
+     */
+    fun clearSyncState() {
+        storageProvider.clearSyncState()
+    }
+
+    // endregion
+
     // region Internal Helpers
 
     /**

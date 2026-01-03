@@ -1,17 +1,18 @@
 import { sendMessage } from 'webext-bridge/content-script';
 
-import { fillCredential } from '@/entrypoints/contentScript/Form';
+import { fillItem } from '@/entrypoints/contentScript/Form';
 
-import { DISABLED_SITES_KEY, TEMPORARY_DISABLED_SITES_KEY, GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, VAULT_LOCKED_DISMISS_UNTIL_KEY, AUTOFILL_MATCHING_MODE_KEY, CUSTOM_EMAIL_HISTORY_KEY, CUSTOM_USERNAME_HISTORY_KEY } from '@/utils/Constants';
+import { DISABLED_SITES_KEY, TEMPORARY_DISABLED_SITES_KEY, GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, VAULT_LOCKED_DISMISS_UNTIL_KEY, AUTOFILL_MATCHING_MODE_KEY, CUSTOM_EMAIL_HISTORY_KEY, CUSTOM_USERNAME_HISTORY_KEY, PLACEHOLDER_ICON_SVG } from '@/utils/Constants';
 import { AutofillMatchingMode } from '@/utils/credentialMatcher/CredentialMatcher';
-import { CreateIdentityGenerator } from '@/utils/dist/shared/identity-generator';
-import type { Credential } from '@/utils/dist/shared/models/vault';
-import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/shared/password-generator';
+import { CreateIdentityGenerator, IdentityHelperUtils } from '@/utils/dist/core/identity-generator';
+import type { Item, ItemField } from '@/utils/dist/core/models/vault';
+import { ItemTypes, FieldKey, createSystemField } from '@/utils/dist/core/models/vault';
+import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/core/password-generator';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
-import { CredentialsResponse } from '@/utils/types/messaging/CredentialsResponse';
 import { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
+import { ItemsResponse } from '@/utils/types/messaging/ItemsResponse';
 import { PasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettingsResponse';
 import { StringResponse } from '@/utils/types/messaging/StringResponse';
 
@@ -52,14 +53,14 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
     // Load autofill matching mode setting to send to background for filtering
     const matchingMode = await storage.getItem(AUTOFILL_MATCHING_MODE_KEY) as AutofillMatchingMode ?? AutofillMatchingMode.DEFAULT;
 
-    const response = await sendMessage('GET_FILTERED_CREDENTIALS', {
+    const response = await sendMessage('GET_FILTERED_ITEMS', {
       currentUrl: window.location.href,
       pageTitle: document.title,
       matchingMode: matchingMode
-    }, 'background') as CredentialsResponse;
+    }, 'background') as ItemsResponse;
 
     if (response.success) {
-      await createAutofillPopup(input, response.credentials, container);
+      await createAutofillPopup(input, response.items, container);
     } else {
       await createVaultLockedPopup(input, container);
     }
@@ -123,27 +124,27 @@ export function createLoadingPopup(input: HTMLInputElement, message: string, roo
 }
 
 /**
- * Update the credential list content in the popup.
+ * Update the item list content in the popup.
  *
- * @param credentials - The credentials to display.
- * @param credentialList - The credential list element.
- * @param input - The input element that triggered the popup. Required when filling credentials to know which form to fill.
+ * @param items - The items to display.
+ * @param itemList - The item list element.
+ * @param input - The input element that triggered the popup. Required when filling items to know which form to fill.
  */
-export function updatePopupContent(credentials: Credential[], credentialList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string) : void {
-  if (!credentialList) {
-    credentialList = document.getElementById('aliasvault-credential-list') as HTMLElement;
+export function updatePopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string) : void {
+  if (!itemList) {
+    itemList = document.getElementById('aliasvault-credential-list') as HTMLElement;
   }
 
-  if (!credentialList) {
+  if (!itemList) {
     return;
   }
 
   // Clear existing content
-  credentialList.innerHTML = '';
+  itemList.innerHTML = '';
 
-  // Add credentials using the shared function
-  const credentialElements = createCredentialList(credentials, input, rootContainer, noMatchesText);
-  credentialElements.forEach(element => credentialList.appendChild(element));
+  // Add items using the shared function
+  const itemElements = createItemList(items, input, rootContainer, noMatchesText);
+  itemElements.forEach(element => itemList.appendChild(element));
 }
 
 /**
@@ -169,7 +170,7 @@ export function removeExistingPopup(container: HTMLElement) : void {
 /**
  * Create auto-fill popup
  */
-export async function createAutofillPopup(input: HTMLInputElement, credentials: Credential[] | undefined, rootContainer: HTMLElement) : Promise<void> {
+export async function createAutofillPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement) : Promise<void> {
   // Get all translations first
   const newText = await t('content.new');
   const searchPlaceholder = await t('content.searchVault');
@@ -189,12 +190,12 @@ export async function createAutofillPopup(input: HTMLInputElement, credentials: 
   credentialList.className = 'av-credential-list';
   popup.appendChild(credentialList);
 
-  // Add initial credentials (already filtered by background script for performance)
-  if (!credentials) {
-    credentials = [];
+  // Add initial items (already filtered by background script for performance)
+  if (!items) {
+    items = [];
   }
 
-  updatePopupContent(credentials, credentialList, input, rootContainer, noMatchesText);
+  updatePopupContent(items, credentialList, input, rootContainer, noMatchesText);
 
   // Add divider
   const divider = document.createElement('div');
@@ -242,24 +243,37 @@ export async function createAutofillPopup(input: HTMLInputElement, credentials: 
       const response = await sendMessage('GET_DEFAULT_EMAIL_DOMAIN', {}, 'background') as StringResponse;
       const domain = response.value;
 
-      let credential: Credential;
+      let newItem: Item;
+      const currentDateTime = new Date().toISOString();
 
       if (result.isCustomCredential) {
-        // Create custom credential with information provided by user in popup.
+        // Create custom item with information provided by user in popup.
         const faviconBytes = await getFaviconBytes(document);
-        credential = {
+        const serviceUrl = getValidServiceUrl();
+
+        // Build fields using factory - only include non-empty values
+        const fields: ItemField[] = [];
+        if (serviceUrl) {
+          fields.push(createSystemField(FieldKey.LoginUrl, { value: serviceUrl }));
+        }
+        if (result.customUsername) {
+          fields.push(createSystemField(FieldKey.LoginUsername, { value: result.customUsername }));
+        }
+        if (result.customEmail) {
+          fields.push(createSystemField(FieldKey.LoginEmail, { value: result.customEmail }));
+        }
+        if (result.customPassword) {
+          fields.push(createSystemField(FieldKey.LoginPassword, { value: result.customPassword }));
+        }
+
+        newItem = {
           Id: '',
-          ServiceName: result.serviceName ?? '',
-          ServiceUrl: getValidServiceUrl(),
+          Name: result.serviceName ?? '',
+          ItemType: ItemTypes.Login,
           Logo: faviconBytes ?? undefined,
-          Username: result.customUsername,
-          Password: result.customPassword ?? '',
-          Alias: {
-            NickName: result.customUsername ?? '',
-            // TODO: once birthdate is made nullable in datamodel refactor, remove this.
-            BirthDate: '0001-01-01 00:00:00',
-            Email: result.customEmail ?? ''
-          }
+          Fields: fields,
+          CreatedAt: currentDateTime,
+          UpdatedAt: currentDateTime
         };
       } else {
         // Generate new random identity using identity generator.
@@ -283,37 +297,43 @@ export async function createAutofillPopup(input: HTMLInputElement, credentials: 
 
         // Extract favicon from page and get the bytes
         const faviconBytes = await getFaviconBytes(document);
+        const serviceUrl = getValidServiceUrl();
 
-        credential = {
+        const fields: ItemField[] = [];
+        if (serviceUrl) {
+          fields.push(createSystemField(FieldKey.LoginUrl, { value: serviceUrl }));
+        }
+        fields.push(createSystemField(FieldKey.LoginUsername, { value: identity.nickName }));
+        fields.push(createSystemField(FieldKey.LoginEmail, { value: `${identity.emailPrefix}@${domain}` }));
+        fields.push(createSystemField(FieldKey.LoginPassword, { value: password }));
+        fields.push(createSystemField(FieldKey.AliasFirstName, { value: identity.firstName }));
+        fields.push(createSystemField(FieldKey.AliasLastName, { value: identity.lastName }));
+        fields.push(createSystemField(FieldKey.AliasBirthdate, { value: IdentityHelperUtils.normalizeBirthDate(identity.birthDate.toISOString()) }));
+        fields.push(createSystemField(FieldKey.AliasGender, { value: identity.gender }));
+
+        newItem = {
           Id: '',
-          ServiceName: result.serviceName ?? '',
-          ServiceUrl: getValidServiceUrl(),
+          Name: result.serviceName ?? '',
+          ItemType: ItemTypes.Alias,
           Logo: faviconBytes ?? undefined,
-          Username: identity.nickName,
-          Password: password,
-          Alias: {
-            FirstName: identity.firstName,
-            LastName: identity.lastName,
-            NickName: identity.nickName,
-            BirthDate: identity.birthDate.toISOString(),
-            Gender: identity.gender,
-            Email: `${identity.emailPrefix}@${domain}`
-          }
+          Fields: fields,
+          CreatedAt: currentDateTime,
+          UpdatedAt: currentDateTime
         };
       }
 
-      // Create identity in background.
-      await sendMessage('CREATE_IDENTITY', {
-        credential: JSON.parse(JSON.stringify(credential))
+      // Create item in background.
+      await sendMessage('CREATE_ITEM', {
+        item: JSON.parse(JSON.stringify(newItem))
       }, 'background');
 
       // Close popup.
       removeExistingPopup(rootContainer);
 
-      // Fill the form with the new identity immediately.
-      fillCredential(credential, input);
+      // Fill the form with the new item immediately.
+      fillItem(newItem, input);
     } catch (error) {
-      console.error('Error creating identity:', error);
+      console.error('Error creating item:', error);
       loadingPopup.innerHTML = `
         <div style="padding: 16px; color: #ef4444;">
           ${failedText}
@@ -339,7 +359,7 @@ export async function createAutofillPopup(input: HTMLInputElement, credentials: 
   // Handle search input.
   let searchTimeout: NodeJS.Timeout | null = null;
   searchInput.addEventListener('input', async () => {
-    await handleSearchInput(searchInput, credentials, rootContainer, searchTimeout, credentialList, input, noMatchesText);
+    await handleSearchInput(searchInput, items, rootContainer, searchTimeout, credentialList, input, noMatchesText);
   });
 
   // Close button
@@ -547,18 +567,18 @@ export async function createVaultLockedPopup(input: HTMLInputElement, rootContai
 
 /**
  * Handle popup search input - searches entire vault when user types.
- * When empty, shows the initially URL-filtered credentials.
- * When user types, searches ALL credentials in vault (not just the pre-filtered set).
+ * When empty, shows the initially URL-filtered items.
+ * When user types, searches ALL items in vault (not just the pre-filtered set).
  *
  * @param searchInput - The search input element
- * @param initialCredentials - The initially URL-filtered credentials to show when search is empty
+ * @param initialItems - The initially URL-filtered items to show when search is empty
  * @param rootContainer - The root container element
  * @param searchTimeout - Timeout for debouncing search
- * @param credentialList - The credential list element to update
+ * @param itemList - The item list element to update
  * @param input - The input field that triggered the popup
  * @param noMatchesText - Text to show when no matches found
  */
-async function handleSearchInput(searchInput: HTMLInputElement, initialCredentials: Credential[], rootContainer: HTMLElement, searchTimeout: NodeJS.Timeout | null, credentialList: HTMLElement | null, input: HTMLInputElement, noMatchesText?: string) : Promise<void> {
+async function handleSearchInput(searchInput: HTMLInputElement, initialItems: Item[], rootContainer: HTMLElement, searchTimeout: NodeJS.Timeout | null, itemList: HTMLElement | null, input: HTMLInputElement, noMatchesText?: string) : Promise<void> {
   if (searchTimeout) {
     clearTimeout(searchTimeout);
   }
@@ -566,48 +586,52 @@ async function handleSearchInput(searchInput: HTMLInputElement, initialCredentia
   const searchTerm = searchInput.value.trim();
 
   if (searchTerm === '') {
-    // If search is empty, show the initially URL-filtered credentials
-    updatePopupContent(initialCredentials, credentialList, input, rootContainer, noMatchesText);
+    // If search is empty, show the initially URL-filtered items
+    updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText);
   } else {
     // Search in full vault with search term
-    const response = await sendMessage('GET_SEARCH_CREDENTIALS', {
+    const response = await sendMessage('GET_SEARCH_ITEMS', {
       searchTerm: searchTerm
-    }, 'background') as CredentialsResponse;
+    }, 'background') as ItemsResponse;
 
-    if (response.success && response.credentials) {
-      updatePopupContent(response.credentials, credentialList, input, rootContainer, noMatchesText);
+    if (response.success && response.items) {
+      updatePopupContent(response.items, itemList, input, rootContainer, noMatchesText);
     } else {
-      // On error, fallback to showing initial filtered credentials
-      updatePopupContent(initialCredentials, credentialList, input, rootContainer, noMatchesText);
+      // On error, fallback to showing initial filtered items
+      updatePopupContent(initialItems, itemList, input, rootContainer, noMatchesText);
     }
   }
 }
 
 /**
- * Create credential list content for popup
+ * Create item list content for popup
  *
- * @param credentials - The credentials to display.
- * @param input - The input element that triggered the popup. Required when filling credentials to know which form to fill.
+ * @param items - The items to display.
+ * @param input - The input element that triggered the popup. Required when filling items to know which form to fill.
  */
-function createCredentialList(credentials: Credential[], input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string): HTMLElement[] {
+function createItemList(items: Item[], input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string): HTMLElement[] {
   const elements: HTMLElement[] = [];
 
-  if (credentials.length > 0) {
-    credentials.forEach(cred => {
-      const item = document.createElement('div');
-      item.className = 'av-credential-item';
+  if (items.length > 0) {
+    items.forEach(item => {
+      const itemElement = document.createElement('div');
+      itemElement.className = 'av-credential-item';
 
-      // Create container for credential info (logo + username)
-      const credentialInfo = document.createElement('div');
-      credentialInfo.className = 'av-credential-info';
+      // Create container for item info (logo + username)
+      const itemInfo = document.createElement('div');
+      itemInfo.className = 'av-credential-info';
 
-      const imgElement = document.createElement('img');
-      imgElement.className = 'av-credential-logo';
-      imgElement.src = SqliteClient.imgSrcFromBytes(cred.Logo);
-
-      credentialInfo.appendChild(imgElement);
-      const credTextContainer = document.createElement('div');
-      credTextContainer.className = 'av-credential-text';
+      const logoSrc = SqliteClient.imgSrcFromBytes(item.Logo);
+      const logoContainer = document.createElement('div');
+      logoContainer.className = 'av-credential-logo';
+      if (logoSrc) {
+        logoContainer.innerHTML = `<img src="${logoSrc}" alt="" style="width:100%;height:100%;">`;
+      } else {
+        logoContainer.innerHTML = PLACEHOLDER_ICON_SVG;
+      }
+      itemInfo.appendChild(logoContainer);
+      const itemTextContainer = document.createElement('div');
+      itemTextContainer.className = 'av-credential-text';
 
       // Service name (primary text) with passkey indicator
       const serviceName = document.createElement('div');
@@ -620,11 +644,11 @@ function createCredentialList(credentials: Credential[], input: HTMLInputElement
       serviceNameContainer.style.gap = '4px';
 
       const serviceNameText = document.createElement('span');
-      serviceNameText.textContent = cred.ServiceName;
+      serviceNameText.textContent = item.Name || '';
       serviceNameContainer.appendChild(serviceNameText);
 
-      // Add passkey indicator if credential has a passkey
-      if (cred.HasPasskey) {
+      // Add passkey indicator if item has a passkey
+      if (item.HasPasskey) {
         const passkeyIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         passkeyIcon.setAttribute('class', 'av-passkey-icon');
         passkeyIcon.setAttribute('viewBox', '0 0 24 24');
@@ -648,25 +672,36 @@ function createCredentialList(credentials: Credential[], input: HTMLInputElement
 
       serviceName.appendChild(serviceNameContainer);
 
-      // Details container (secondary text)
+      // Details container (secondary text) - extract from fields
       const detailsContainer = document.createElement('div');
       detailsContainer.className = 'av-service-details';
 
+      // Get field values using helper function
+      const firstName = item.Fields.find(f => f.FieldKey === FieldKey.AliasFirstName)?.Value;
+      const lastName = item.Fields.find(f => f.FieldKey === FieldKey.AliasLastName)?.Value;
+      const username = item.Fields.find(f => f.FieldKey === FieldKey.LoginUsername)?.Value;
+      const email = item.Fields.find(f => f.FieldKey === FieldKey.LoginEmail)?.Value;
+
       // Combine full name (if available) and username or email
-      const details = [];
-      if (cred.Alias?.FirstName && cred.Alias?.LastName) {
-        details.push(`${cred.Alias.FirstName} ${cred.Alias.LastName}`);
+      const details: string[] = [];
+      const firstNameStr = Array.isArray(firstName) ? firstName[0] : firstName;
+      const lastNameStr = Array.isArray(lastName) ? lastName[0] : lastName;
+      const usernameStr = Array.isArray(username) ? username[0] : username;
+      const emailStr = Array.isArray(email) ? email[0] : email;
+
+      if (firstNameStr && lastNameStr) {
+        details.push(`${firstNameStr} ${lastNameStr}`);
       }
-      if (cred.Username) {
-        details.push(cred.Username);
-      } else if (cred.Alias?.Email) {
-        details.push(cred.Alias.Email);
+      if (usernameStr) {
+        details.push(usernameStr);
+      } else if (emailStr) {
+        details.push(emailStr);
       }
       detailsContainer.textContent = details.join(' · ');
 
-      credTextContainer.appendChild(serviceName);
-      credTextContainer.appendChild(detailsContainer);
-      credentialInfo.appendChild(credTextContainer);
+      itemTextContainer.appendChild(serviceName);
+      itemTextContainer.appendChild(detailsContainer);
+      itemInfo.appendChild(itemTextContainer);
 
       // Add popout icon
       const popoutIcon = document.createElement('div');
@@ -681,21 +716,21 @@ function createCredentialList(credentials: Credential[], input: HTMLInputElement
 
       // Handle popout click with security validation
       addReliableClickHandler(popoutIcon, (e) => {
-        e.stopPropagation(); // Prevent credential fill
-        sendMessage('OPEN_POPUP_WITH_CREDENTIAL', { credentialId: cred.Id }, 'background');
+        e.stopPropagation(); // Prevent item fill
+        sendMessage('OPEN_POPUP_WITH_ITEM', { itemId: item.Id }, 'background');
         removeExistingPopup(rootContainer);
       });
 
-      item.appendChild(credentialInfo);
-      item.appendChild(popoutIcon);
+      itemElement.appendChild(itemInfo);
+      itemElement.appendChild(popoutIcon);
 
-      // Update click handler to only trigger on credentialInfo with security validation
-      addReliableClickHandler(credentialInfo, () => {
-        fillCredential(cred, input);
+      // Update click handler to only trigger on itemInfo with security validation
+      addReliableClickHandler(itemInfo, () => {
+        fillItem(item, input);
         removeExistingPopup(rootContainer);
       });
 
-      elements.push(item);
+      elements.push(itemElement);
     });
   } else {
     const noMatches = document.createElement('div');
@@ -814,15 +849,15 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       const manualUsernamePasswordSubtextDropdown = await t('content.manualCredentialDescriptionDropdown');
 
       // Get all translated strings first
-      const serviceNameText = await t('content.serviceName');
+      const serviceNameText = await t('common.serviceName');
       const enterServiceNameText = await t('content.enterServiceName');
-      const cancelText = await t('content.cancel');
+      const cancelText = await t('common.cancel');
       const createAndSaveAliasText = await t('content.createAndSaveAlias');
-      const emailText = await t('content.email');
+      const emailText = await t('common.email');
       const enterEmailAddressText = await t('content.enterEmailAddress');
-      const usernameText = await t('content.username');
+      const usernameText = await t('common.username');
       const enterUsernameText = await t('content.enterUsername');
-      const passwordText = await t('content.password');
+      const passwordText = await t('common.password');
       const generateNewPasswordText = await t('content.generateNewPassword');
       const togglePasswordVisibilityText = await t('content.togglePasswordVisibility');
       const createAndSaveCredentialText = await t('content.createAndSaveCredential');

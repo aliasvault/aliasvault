@@ -5,8 +5,8 @@ import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Alert, TouchableOpacity, Switch, Platform } from 'react-native';
 
-import type { PasswordSettings } from '@/utils/dist/shared/models/vault';
-import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
+import type { PasswordSettings } from '@/utils/dist/core/models/vault';
+import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';

@@ -10,6 +10,7 @@ import {
   PASSKEY_DISABLED_SITES_KEY
 } from '@/utils/Constants';
 import { extractDomain, extractRootDomain } from '@/utils/credentialMatcher/CredentialMatcher';
+import type { PasskeyWithItem } from '@/utils/db/mappers/PasskeyMapper';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type {
@@ -54,7 +55,7 @@ export async function handleGetWebAuthnSettings(data: any): Promise<WebAuthnSett
   const { hostname } = data || {};
   if (hostname) {
     // Extract base domain for matching
-    const baseDomain = extractRootDomain(extractDomain(hostname));
+    const baseDomain = await extractRootDomain(await extractDomain(hostname));
 
     // Check disabled sites
     const disabledSites = await storage.getItem(PASSKEY_DISABLED_SITES_KEY) as string[] ?? [];
@@ -232,7 +233,7 @@ async function checkForMatchingPasskeys(publicKey: any, origin: string): Promise
     const rpId = publicKey.rpId || new URL(origin).hostname;
 
     // Get passkeys for this rpId
-    const passkeys = sqliteClient.getPasskeysByRpId(rpId);
+    const passkeys = sqliteClient.passkeys.getByRpId(rpId);
 
     // If allowCredentials is specified, filter by those specific credentials
     if (publicKey.allowCredentials && publicKey.allowCredentials.length > 0) {
@@ -249,7 +250,7 @@ async function checkForMatchingPasskeys(publicKey: any, origin: string): Promise
       );
 
       // Check if we have any of the allowed credentials
-      const matchingPasskeys = passkeys.filter(pk => allowedGuids.has(pk.Id));
+      const matchingPasskeys = passkeys.filter((pk: PasskeyWithItem) => allowedGuids.has(pk.Id));
       return matchingPasskeys.length > 0;
     }
 

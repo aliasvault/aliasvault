@@ -63,13 +63,13 @@ public class Passkey : SyncableEntity
     public byte[]? AdditionalData { get; set; }
 
     /// <summary>
-    /// Gets or sets the credential ID.
+    /// Gets or sets the item ID.
     /// </summary>
-    public Guid CredentialId { get; set; }
+    public Guid ItemId { get; set; }
 
     /// <summary>
-    /// Gets or sets the credential object.
+    /// Gets or sets the item object.
     /// </summary>
-    [ForeignKey("CredentialId")]
-    public virtual Credential Credential { get; set; } = null!;
+    [ForeignKey("ItemId")]
+    public virtual Item Item { get; set; } = null!;
 }

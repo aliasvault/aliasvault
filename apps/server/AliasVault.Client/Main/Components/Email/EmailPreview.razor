@@ -44,7 +44,7 @@
                     <p><span class="font-medium">@Localizer["DateLabel"]</span> @Email.DateSystem</p>
                     @if (!string.IsNullOrEmpty(CredentialName) && CredentialId != Guid.Empty)
                     {
-                        <p><span class="font-medium">@Localizer["CredentialLabel"]</span>
+                        <p><span class="font-medium">@Localizer["ItemLabel"]</span>
                             <button @onclick="@(() => OnCredentialClick.InvokeAsync(CredentialId))"
                                     class="text-blue-600 hover:underline dark:text-blue-400 cursor-pointer">
                                 @CredentialName
@@ -53,7 +53,7 @@
                     }
                     else
                     {
-                        <p><span class="font-medium">@Localizer["CredentialLabel"]</span> <span class="text-gray-400 dark:text-gray-500">@Localizer["NoneValue"]</span></p>
+                        <p><span class="font-medium">@Localizer["ItemLabel"]</span> <span class="text-gray-400 dark:text-gray-500">@Localizer["NoneValue"]</span></p>
                     }
                 </div>
             </div>

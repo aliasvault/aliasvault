@@ -7,6 +7,7 @@ type HeaderButtonProps = {
   title: string;
   iconType: HeaderIconType;
   variant?: 'default' | 'primary' | 'danger';
+  id?: string;
 };
 
 /**
@@ -16,7 +17,8 @@ const HeaderButton: React.FC<HeaderButtonProps> = ({
   onClick,
   title,
   iconType,
-  variant = 'default'
+  variant = 'default',
+  id
 }) => {
   const colorClasses = {
     default: 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700',
@@ -26,6 +28,7 @@ const HeaderButton: React.FC<HeaderButtonProps> = ({
 
   return (
     <button
+      id={id}
       onClick={onClick}
       className={`p-2 rounded-lg ${colorClasses[variant]}`}
       title={title}

@@ -1,0 +1,172 @@
+@using AliasVault.Client.Main.Utilities
+@using AliasClientDb.Models
+@using Microsoft.Extensions.Localization
+
+@* FieldBlock component - renders a single field based on its type *@
+@switch (Field.FieldType)
+{
+    case FieldType.Password:
+    case FieldType.Hidden:
+        <div class="col-span-6">
+            <CopyPastePasswordFormRow
+                Id="@GetFieldId()"
+                Label="@GetLabel()"
+                Value="@(Field.Value ?? string.Empty)" />
+        </div>
+        break;
+    case FieldType.TextArea:
+        <div class="col-span-6">
+            @if (!HideLabel)
+            {
+                <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@GetLabel()</label>
+            }
+            <div class="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white whitespace-pre-wrap text-sm">
+                @RenderTextWithLinks(Field.Value ?? string.Empty)
+            </div>
+        </div>
+        break;
+    case FieldType.URL:
+        <div class="col-span-6">
+            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@GetLabel()</label>
+            @if (!string.IsNullOrEmpty(Field.Value))
+            {
+                @if (Field.Value.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || Field.Value.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                {
+                    <a href="@Field.Value" target="_blank" rel="noopener noreferrer" class="text-blue-600 dark:text-blue-400 hover:underline break-all">
+                        @Field.Value
+                    </a>
+                }
+                else
+                {
+                    <span class="text-gray-700 dark:text-gray-300 break-all">@Field.Value</span>
+                }
+            }
+        </div>
+        break;
+    case FieldType.Date:
+        <div class="@(FullWidth ? "col-span-6" : "col-span-6 sm:col-span-3")">
+            <CopyPasteFormRow
+                Id="@GetFieldId()"
+                Label="@GetLabel()"
+                Value="@(Field.Value ?? string.Empty)" />
+        </div>
+        break;
+    default:
+        @* Text, Email, Phone, Number - use standard copy/paste row *@
+        <div class="@(FullWidth ? "col-span-6" : "col-span-6 sm:col-span-3")">
+            <CopyPasteFormRow
+                Id="@GetFieldId()"
+                Label="@GetLabel()"
+                Value="@(Field.Value ?? string.Empty)" />
+        </div>
+        break;
+}
+
+@code {
+    [Inject]
+    private IStringLocalizerFactory LocalizerFactory { get; set; } = default!;
+
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Fields.FieldBlock", "AliasVault.Client");
+
+    /// <summary>
+    /// Gets or sets the display field to render.
+    /// </summary>
+    [Parameter]
+    public required DisplayField Field { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the field should span full width.
+    /// </summary>
+    [Parameter]
+    public bool FullWidth { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to hide the label (useful when section header already shows the label).
+    /// </summary>
+    [Parameter]
+    public bool HideLabel { get; set; }
+
+    /// <summary>
+    /// Gets the label for the field.
+    /// </summary>
+    private string GetLabel()
+    {
+        // For custom fields, use the Label property directly
+        if (Field.IsCustomField)
+        {
+            return !string.IsNullOrEmpty(Field.Label) ? Field.Label : FormatFieldName(Field.FieldKey);
+        }
+
+        // Try to get localized label for system field
+        if (!string.IsNullOrEmpty(Field.FieldKey))
+        {
+            // Convert field key to localization key format
+            // e.g., "login.username" -> "FieldLabel_login_username"
+            var localizationKey = "FieldLabel_" + Field.FieldKey.Replace(".", "_");
+            var localizedLabel = Localizer[localizationKey];
+
+            // If the localized string is different from the key, return it
+            if (localizedLabel.ResourceNotFound == false)
+            {
+                return localizedLabel.Value;
+            }
+
+            // Fallback: convert field key to readable format
+            // e.g., "login.username" -> "Username"
+            var parts = Field.FieldKey.Split('.');
+            if (parts.Length > 1)
+            {
+                return FormatFieldName(parts[1]);
+            }
+        }
+
+        return FormatFieldName(Field.FieldKey);
+    }
+
+    /// <summary>
+    /// Formats a field name to be human-readable.
+    /// </summary>
+    private static string FormatFieldName(string fieldName)
+    {
+        if (string.IsNullOrEmpty(fieldName))
+        {
+            return string.Empty;
+        }
+
+        // Convert snake_case to Title Case
+        var words = fieldName.Split('_');
+        return string.Join(" ", words.Select(w =>
+            string.IsNullOrEmpty(w) ? string.Empty :
+            char.ToUpperInvariant(w[0]) + w[1..]));
+    }
+
+    /// <summary>
+    /// Gets a unique ID for the field.
+    /// </summary>
+    private string GetFieldId()
+    {
+        return !string.IsNullOrEmpty(Field.FieldKey)
+            ? Field.FieldKey.Replace(".", "-")
+            : Field.FieldDefinitionId ?? Guid.NewGuid().ToString();
+    }
+
+    /// <summary>
+    /// Renders text with clickable links.
+    /// </summary>
+    private MarkupString RenderTextWithLinks(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+        {
+            return new MarkupString(string.Empty);
+        }
+
+        // Simple URL regex pattern
+        var urlPattern = @"(https?://[^\s<>""]+)";
+        var result = System.Text.RegularExpressions.Regex.Replace(
+            System.Web.HttpUtility.HtmlEncode(text),
+            urlPattern,
+            "<a href=\"$1\" target=\"_blank\" rel=\"noopener noreferrer\" class=\"text-blue-600 dark:text-blue-400 hover:underline\">$1</a>");
+
+        return new MarkupString(result);
+    }
+}

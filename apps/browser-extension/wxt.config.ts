@@ -40,7 +40,8 @@ export default defineConfig({
         resources: [
           "webauthn.js",
           "src/sql-wasm.wasm",
-          "src/argon2.wasm"
+          "src/argon2.wasm",
+          "src/aliasvault_core_bg.wasm"
         ],
         matches: ["<all_urls>"]
       }]
@@ -59,6 +60,10 @@ export default defineConfig({
           },
           {
             src: 'node_modules/sql.js/dist/sql-wasm.wasm',
+            dest: 'src'
+          },
+          {
+            src: 'src/utils/dist/core/rust/aliasvault_core_bg.wasm',
             dest: 'src'
           }
         ]

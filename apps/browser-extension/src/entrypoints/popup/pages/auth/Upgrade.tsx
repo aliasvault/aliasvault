@@ -16,8 +16,8 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { VaultVersion } from '@/utils/dist/shared/vault-sql';
-import { VaultSqlGenerator } from '@/utils/dist/shared/vault-sql';
+import type { VaultVersion } from '@/utils/dist/core/vault';
+import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 
 /**
  * Upgrade page for handling vault version upgrades.
@@ -36,7 +36,7 @@ const Upgrade: React.FC = () => {
   const [showVersionInfo, setShowVersionInfo] = useState(false);
   const { setIsInitialLoading } = useLoading();
   const webApi = useWebApi();
-  const { executeVaultMutation, isLoading: isVaultMutationLoading, syncStatus } = useVaultMutate();
+  const { executeVaultMutationAsync } = useVaultMutate();
   const { syncVault } = useVaultSync();
   const navigate = useNavigate();
 
@@ -70,10 +70,11 @@ const Upgrade: React.FC = () => {
         setCurrentVersion(current);
         setLatestVersion(latest);
       }
-      setIsInitialLoading(false);
     } catch (error) {
       console.error('Failed to load version information:', error);
       setError(t('upgrade.alerts.unableToGetVersionInfo'));
+    } finally {
+      setIsInitialLoading(false);
     }
   }, [sqliteClient, setIsInitialLoading, t]);
 
@@ -112,7 +113,7 @@ const Upgrade: React.FC = () => {
     setError(null);
 
     try {
-      // Get upgrade SQL commands from vault-sql shared library
+      // Get upgrade SQL commands from vault library
       const vaultSqlGenerator = new VaultSqlGenerator();
       const upgradeResult = vaultSqlGenerator.getUpgradeVaultSql(currentVersion.revision, latestVersion.revision);
 
@@ -127,7 +128,7 @@ const Upgrade: React.FC = () => {
       }
 
       // Use the useVaultMutate hook to handle the upgrade and vault upload
-      await executeVaultMutation(async () => {
+      await executeVaultMutationAsync(async () => {
         // Begin transaction
         sqliteClient.beginTransaction();
 
@@ -146,23 +147,9 @@ const Upgrade: React.FC = () => {
 
         // Commit transaction
         sqliteClient.commitTransaction();
-      }, {
-        skipSyncCheck: true, // Skip sync check during upgrade to prevent loop
-        /**
-         * Handle successful upgrade completion.
-         */
-        onSuccess: () => {
-          void handleUpgradeSuccess();
-        },
-        /**
-         * Handle upgrade error.
-         */
-        onError: (error: Error) => {
-          console.error('Upgrade failed:', error);
-          setError(error.message);
-        }
       });
-      console.debug('executeVaultMutation done?');
+
+      await handleUpgradeSuccess();
     } catch (error) {
       console.error('Upgrade failed:', error);
       setError(error instanceof Error ? error.message : t('common.errors.unknownError'));
@@ -182,8 +169,8 @@ const Upgrade: React.FC = () => {
          * Handle successful sync completion.
          */
         onSuccess: () => {
-          // Navigate to credentials page
-          navigate('/credentials');
+          // Navigate to items page
+          navigate('/items');
         },
         /**
          * Handle sync error.
@@ -191,14 +178,14 @@ const Upgrade: React.FC = () => {
          */
         onError: (error: string) => {
           console.error('Sync error after upgrade:', error);
-          // Still navigate to credentials even if sync fails
-          navigate('/credentials');
+          // Still navigate to items even if sync fails
+          navigate('/items');
         }
       });
     } catch (error) {
       console.error('Error during post-upgrade sync:', error);
-      // Navigate to credentials even if sync fails
-      navigate('/credentials');
+      // Navigate to items even if sync fails
+      navigate('/items');
     }
   };
 
@@ -219,11 +206,11 @@ const Upgrade: React.FC = () => {
   return (
     <div>
       {/* Full loading screen overlay */}
-      {(isLoading || isVaultMutationLoading) && (
+      {isLoading && (
         <div className="fixed inset-0 flex flex-col justify-center items-center bg-white dark:bg-gray-900 bg-opacity-90 dark:bg-opacity-90 z-50">
           <LoadingSpinner />
           <div className="text-sm text-gray-500 mt-2">
-            {syncStatus || t('upgrade.upgrading')}
+            {t('upgrade.upgrading')}
           </div>
         </div>
       )}
@@ -315,15 +302,15 @@ const Upgrade: React.FC = () => {
             id="upgrade-button"
             onClick={handleUpgrade}
           >
-            {isLoading || isVaultMutationLoading ? (syncStatus || t('upgrade.upgrading')) : t('upgrade.upgrade')}
+            {isLoading ? t('upgrade.upgrading') : t('upgrade.upgrade')}
           </Button>
           <button
             type="button"
             onClick={handleLogout}
             className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 text-sm font-medium py-2"
-            disabled={isLoading || isVaultMutationLoading}
+            disabled={isLoading}
           >
-            {t('upgrade.logout')}
+            {t('common.logout')}
           </button>
         </div>
       </form>

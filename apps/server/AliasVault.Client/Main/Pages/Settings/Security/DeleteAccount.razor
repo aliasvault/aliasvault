@@ -171,18 +171,22 @@
                 return;
             }
 
+            // Use srpIdentity from server response if available, otherwise fall back to username.
+            // Note: the fallback can be removed in the future after 0.27.0+ is deployed.
+            var srpIdentity = loginResponse.SrpIdentity ?? username;
+
             // Verify password using SRP
             var passwordHash = await Encryption.DeriveKeyFromPasswordAsync(_passwordModel.Password, loginResponse.Salt, loginResponse.EncryptionType, loginResponse.EncryptionSettings);
             var passwordHashString = BitConverter.ToString(passwordHash).Replace("-", string.Empty);
 
             ClientEphemeral = Srp.GenerateEphemeralClient();
-            var privateKey = Srp.DerivePrivateKey(loginResponse.Salt, username, passwordHashString);
+            var privateKey = Srp.DerivePrivateKey(loginResponse.Salt, srpIdentity, passwordHashString);
             ClientSession = Srp.DeriveSessionClient(
                 privateKey,
                 ClientEphemeral.Secret,
                 loginResponse.ServerEphemeral,
                 loginResponse.Salt,
-                username);
+                srpIdentity);
 
             // Send final delete request with SRP proof.
             result = await Http.PostAsJsonAsync("v1/Auth/delete-account/confirm", new DeleteAccountRequest(username, ClientEphemeral.Public, ClientSession.Proof));

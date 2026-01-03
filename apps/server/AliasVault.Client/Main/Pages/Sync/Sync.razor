@@ -27,14 +27,6 @@
     {
         <PendingMigrations />
     }
-    else if (CurrentDbState.Status == DbServiceState.DatabaseStatus.MergeFailed)
-    {
-        <ErrorVaultMerge message="@CurrentDbState.Message" />
-    }
-    else if (CurrentDbState.Status == DbServiceState.DatabaseStatus.MergeRequired)
-    {
-        <Merging />
-    }
     else if (CurrentDbState.Status == DbServiceState.DatabaseStatus.Creating)
     {
         <Creating />

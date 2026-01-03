@@ -3,7 +3,7 @@ import XCTest
 @testable import VaultModels
 
 final class CredentialMatcherTests: XCTestCase {
-    private var testCredentials: [Credential] = []
+    private var testCredentials: [AutofillCredential] = []
 
     override func setUp() {
         super.setUp()
@@ -22,7 +22,7 @@ final class CredentialMatcherTests: XCTestCase {
         let matches = CredentialMatcher.filterCredentials(testCredentials, searchText: "www.coolblue.nl")
 
         XCTAssertEqual(matches.count, 1)
-        XCTAssertEqual(matches.first?.service.name, "Coolblue")
+        XCTAssertEqual(matches.first?.serviceName, "Coolblue")
     }
 
     // [#2] - Base URL with path match
@@ -30,7 +30,7 @@ final class CredentialMatcherTests: XCTestCase {
         let matches = CredentialMatcher.filterCredentials(testCredentials, searchText: "https://gmail.com/signin")
 
         XCTAssertEqual(matches.count, 1)
-        XCTAssertEqual(matches.first?.service.name, "Gmail")
+        XCTAssertEqual(matches.first?.serviceName, "Gmail")
     }
 
     // [#3] - Root domain with subdomain match
@@ -38,7 +38,7 @@ final class CredentialMatcherTests: XCTestCase {
         let matches = CredentialMatcher.filterCredentials(testCredentials, searchText: "https://mail.google.com")
 
         XCTAssertEqual(matches.count, 1)
-        XCTAssertEqual(matches.first?.service.name, "Google")
+        XCTAssertEqual(matches.first?.serviceName, "Google")
     }
 
     // [#4] - No matches for non-existent domain
@@ -53,7 +53,7 @@ final class CredentialMatcherTests: XCTestCase {
         let matches = CredentialMatcher.filterCredentials(testCredentials, searchText: "https://www.dumpert.nl")
 
         XCTAssertEqual(matches.count, 1)
-        XCTAssertEqual(matches.first?.service.name, "Dumpert")
+        XCTAssertEqual(matches.first?.serviceName, "Dumpert")
     }
 
     // [#6] - Full URL stored matches partial URL search
@@ -61,7 +61,7 @@ final class CredentialMatcherTests: XCTestCase {
         let matches = CredentialMatcher.filterCredentials(testCredentials, searchText: "coolblue.nl")
 
         XCTAssertEqual(matches.count, 1)
-        XCTAssertTrue(matches.contains { $0.service.name == "Coolblue" })
+        XCTAssertTrue(matches.contains { $0.serviceName == "Coolblue" })
     }
 
     // [#7] - Protocol variations (http/https/none) match
@@ -74,9 +74,9 @@ final class CredentialMatcherTests: XCTestCase {
         XCTAssertEqual(httpsMatches.count, 1)
         XCTAssertEqual(httpMatches.count, 1)
         XCTAssertEqual(noProtocolMatches.count, 1)
-        XCTAssertEqual(httpsMatches.first?.service.name, "GitHub")
-        XCTAssertEqual(httpMatches.first?.service.name, "GitHub")
-        XCTAssertEqual(noProtocolMatches.first?.service.name, "GitHub")
+        XCTAssertEqual(httpsMatches.first?.serviceName, "GitHub")
+        XCTAssertEqual(httpMatches.first?.serviceName, "GitHub")
+        XCTAssertEqual(noProtocolMatches.first?.serviceName, "GitHub")
     }
 
     // [#8] - WWW prefix variations match
@@ -87,8 +87,8 @@ final class CredentialMatcherTests: XCTestCase {
 
         XCTAssertEqual(withWww.count, 1)
         XCTAssertEqual(withoutWww.count, 1)
-        XCTAssertEqual(withWww.first?.service.name, "Dumpert")
-        XCTAssertEqual(withoutWww.first?.service.name, "Dumpert")
+        XCTAssertEqual(withWww.first?.serviceName, "Dumpert")
+        XCTAssertEqual(withoutWww.first?.serviceName, "Dumpert")
     }
 
     // [#9] - Subdomain matching
@@ -99,11 +99,11 @@ final class CredentialMatcherTests: XCTestCase {
         let noSubdomain = CredentialMatcher.filterCredentials(testCredentials, searchText: "https://example.com")
 
         XCTAssertEqual(appSubdomain.count, 1)
-        XCTAssertEqual(appSubdomain.first?.service.name, "Subdomain Example")
+        XCTAssertEqual(appSubdomain.first?.serviceName, "Subdomain Example")
         XCTAssertEqual(wwwSubdomain.count, 1)
-        XCTAssertEqual(wwwSubdomain.first?.service.name, "Subdomain Example")
+        XCTAssertEqual(wwwSubdomain.first?.serviceName, "Subdomain Example")
         XCTAssertEqual(noSubdomain.count, 1)
-        XCTAssertEqual(noSubdomain.first?.service.name, "Subdomain Example")
+        XCTAssertEqual(noSubdomain.first?.serviceName, "Subdomain Example")
     }
 
     // [#10] - Paths and query strings ignored
@@ -114,11 +114,11 @@ final class CredentialMatcherTests: XCTestCase {
         let withFragment = CredentialMatcher.filterCredentials(testCredentials, searchText: "https://gmail.com#inbox")
 
         XCTAssertEqual(withPath.count, 1)
-        XCTAssertEqual(withPath.first?.service.name, "GitHub")
+        XCTAssertEqual(withPath.first?.serviceName, "GitHub")
         XCTAssertEqual(withQuery.count, 1)
-        XCTAssertEqual(withQuery.first?.service.name, "Stack Overflow")
+        XCTAssertEqual(withQuery.first?.serviceName, "Stack Overflow")
         XCTAssertEqual(withFragment.count, 1)
-        XCTAssertEqual(withFragment.first?.service.name, "Gmail")
+        XCTAssertEqual(withFragment.first?.serviceName, "Gmail")
     }
 
     // [#11] - Complex URL variations
@@ -127,7 +127,7 @@ final class CredentialMatcherTests: XCTestCase {
         let matches = CredentialMatcher.filterCredentials(testCredentials, searchText: "https://www.coolblue.nl/product/12345?ref=google")
 
         XCTAssertEqual(matches.count, 1)
-        XCTAssertTrue(matches.contains { $0.service.name == "Coolblue" })
+        XCTAssertTrue(matches.contains { $0.serviceName == "Coolblue" })
     }
 
     // [#12] - Priority ordering
@@ -135,7 +135,7 @@ final class CredentialMatcherTests: XCTestCase {
         let matches = CredentialMatcher.filterCredentials(testCredentials, searchText: "coolblue.nl")
 
         XCTAssertEqual(matches.count, 1)
-        XCTAssertEqual(matches.first?.service.name, "Coolblue")
+        XCTAssertEqual(matches.first?.serviceName, "Coolblue")
     }
 
     // [#13] - Title-only matching
@@ -143,7 +143,7 @@ final class CredentialMatcherTests: XCTestCase {
         let matches = CredentialMatcher.filterCredentials(testCredentials, searchText: "newyorktimes")
 
         XCTAssertEqual(matches.count, 1)
-        XCTAssertEqual(matches.first?.service.name, "Title Only newyorktimes")
+        XCTAssertEqual(matches.first?.serviceName, "Title Only newyorktimes")
     }
 
     // [#14] - Domain name part matching
@@ -158,7 +158,7 @@ final class CredentialMatcherTests: XCTestCase {
         let matches = CredentialMatcher.filterCredentials(testCredentials, searchText: "com.coolblue.app")
 
         XCTAssertEqual(matches.count, 1)
-        XCTAssertEqual(matches.first?.service.name, "Coolblue App")
+        XCTAssertEqual(matches.first?.serviceName, "Coolblue App")
     }
 
     // [#16] - Invalid URL handling
@@ -186,7 +186,7 @@ final class CredentialMatcherTests: XCTestCase {
 
         // Should match "Coolblue" even though it's followed by a comma and description
         XCTAssertEqual(matches.count, 1)
-        XCTAssertEqual(matches.first?.service.name, "Reddit")
+        XCTAssertEqual(matches.first?.serviceName, "Reddit")
     }
 
     // [#20] - Test multi-part TLDs like .com.au don't match incorrectly
@@ -202,17 +202,17 @@ final class CredentialMatcherTests: XCTestCase {
         // Test that blabla.blabla.com.au doesn't match other .com.au sites
         let blablaMatches = CredentialMatcher.filterCredentials(australianCredentials, searchText: "https://blabla.blabla.com.au")
         XCTAssertEqual(blablaMatches.count, 1, "Should only match the exact domain, not all .com.au sites")
-        XCTAssertEqual(blablaMatches.first?.service.name, "BlaBla AU")
+        XCTAssertEqual(blablaMatches.first?.serviceName, "BlaBla AU")
 
         // Test that example.com.au doesn't match blabla.blabla.com.au
         let exampleMatches = CredentialMatcher.filterCredentials(australianCredentials, searchText: "https://example.com.au")
         XCTAssertEqual(exampleMatches.count, 1, "Should only match example.com.au")
-        XCTAssertEqual(exampleMatches.first?.service.name, "Example Site AU")
+        XCTAssertEqual(exampleMatches.first?.serviceName, "Example Site AU")
 
         // Test that .co.uk domains work correctly too
         let ukMatches = CredentialMatcher.filterCredentials(australianCredentials, searchText: "https://example.co.uk")
         XCTAssertEqual(ukMatches.count, 1, "Should only match the .co.uk domain")
-        XCTAssertEqual(ukMatches.first?.service.name, "UK Site")
+        XCTAssertEqual(ukMatches.first?.serviceName, "UK Site")
     }
 
     // [#20] - Test reversed domain (app package name) doesn't match on TLD
@@ -228,7 +228,7 @@ final class CredentialMatcherTests: XCTestCase {
 
         // Should only match Marktplaats, not Dumpert (even though both have "nl")
         XCTAssertEqual(matches.count, 1, "Should only match Marktplaats, not Dumpert")
-        XCTAssertEqual(matches.first?.service.name, "Marktplaats.nl")
+        XCTAssertEqual(matches.first?.serviceName, "Marktplaats.nl")
     }
 
     // [#21] - Test app package names are properly detected and handled
@@ -243,17 +243,17 @@ final class CredentialMatcherTests: XCTestCase {
         // Test com.google.android package matches
         let googleMatches = CredentialMatcher.filterCredentials(packageCredentials, searchText: "com.google.android.googlequicksearchbox")
         XCTAssertEqual(googleMatches.count, 1)
-        XCTAssertEqual(googleMatches.first?.service.name, "Google App")
+        XCTAssertEqual(googleMatches.first?.serviceName, "Google App")
 
         // Test com.facebook package matches
         let facebookMatches = CredentialMatcher.filterCredentials(packageCredentials, searchText: "com.facebook.katana")
         XCTAssertEqual(facebookMatches.count, 1)
-        XCTAssertEqual(facebookMatches.first?.service.name, "Facebook")
+        XCTAssertEqual(facebookMatches.first?.serviceName, "Facebook")
 
         // Test that web domain doesn't match package name
         let webMatches = CredentialMatcher.filterCredentials(packageCredentials, searchText: "https://example.com")
         XCTAssertEqual(webMatches.count, 1)
-        XCTAssertEqual(webMatches.first?.service.name, "Generic Site")
+        XCTAssertEqual(webMatches.first?.serviceName, "Generic Site")
     }
 
     // MARK: - Shared Test Data
@@ -262,7 +262,7 @@ final class CredentialMatcherTests: XCTestCase {
      * Creates the shared test credential dataset used across all platforms.
      * This ensures consistent testing across Browser Extension, iOS, and Android.
      */
-    private func createSharedTestCredentials() -> [Credential] {
+    private func createSharedTestCredentials() -> [AutofillCredential] {
         return [
             createTestCredential(serviceName: "Gmail", serviceUrl: "https://gmail.com", username: "user@gmail.com"),
             createTestCredential(serviceName: "Google", serviceUrl: "https://google.com", username: "user@google.com"),
@@ -286,35 +286,25 @@ final class CredentialMatcherTests: XCTestCase {
      * @param serviceName The name of the service
      * @param serviceUrl The URL of the service
      * @param username The username for the service
-     * @returns A test credential matching the iOS Credential type
+     * @returns A test credential matching the iOS AutofillCredential type
      */
     private func createTestCredential(
         serviceName: String,
         serviceUrl: String,
         username: String
-    ) -> Credential {
-        return Credential(
+    ) -> AutofillCredential {
+        return AutofillCredential(
             id: UUID(),
-            alias: nil, service: Service(
-                id: UUID(),
-                name: serviceName,
-                url: serviceUrl,
-                logo: nil,
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
+            serviceName: serviceName,
+            serviceUrl: serviceUrl,
+            logo: nil,
             username: username,
-            notes: nil, password: Password(
-                id: UUID(), credentialId: UUID(),
-                value: "password123",
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
+            email: nil,
+            password: "password123",
+            notes: nil,
+            passkeys: nil,
             createdAt: Date(),
-            updatedAt: Date(),
-            isDeleted: false
+            updatedAt: Date()
         )
     }
 }

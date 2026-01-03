@@ -8,7 +8,7 @@
 namespace AliasVault.E2ETests.Tests.Client.Shard1;
 
 /// <summary>
-/// End-to-end tests for the credential management.
+/// End-to-end tests for the item management.
 /// </summary>
 [TestFixture]
 [Category("ClientTests")]
@@ -16,22 +16,22 @@ namespace AliasVault.E2ETests.Tests.Client.Shard1;
 public class CredentialTests : ClientPlaywrightTest
 {
     /// <summary>
-    /// Test if the credential listing index page works.
+    /// Test if the item listing index page works.
     /// </summary>
     /// <returns>Async task.</returns>
     [Test]
     public async Task CredentialListingTest()
     {
-        await NavigateUsingBlazorRouter("credentials");
-        await WaitForUrlAsync("credentials", "AliasVault");
+        await NavigateUsingBlazorRouter("items");
+        await WaitForUrlAsync("items", "AliasVault");
 
         // Check if the expected content is present.
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain("Find all of your credentials below"), "No index content after logging in.");
+        Assert.That(pageContent, Does.Contain("Find all of your items below"), "No index content after logging in.");
     }
 
     /// <summary>
-    /// Test if creating a new credential entry works.
+    /// Test if creating a new item entry works.
     /// </summary>
     /// <returns>Async task.</returns>
     [Test]
@@ -39,26 +39,26 @@ public class CredentialTests : ClientPlaywrightTest
     {
         // Create a new alias with service name = "Test Service".
         var serviceName = "Test Service";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName },
         });
 
         // Check that the service name is present in the content.
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain(serviceName), "Created credential service name does not appear on alias page.");
+        Assert.That(pageContent, Does.Contain(serviceName), "Created item service name does not appear on alias page.");
     }
 
     /// <summary>
-    /// Test if creating a new credential entry works with quick create widget.
+    /// Test if creating a new item entry works with quick create widget.
     /// </summary>
     /// <returns>Async task.</returns>
     [Test]
     public async Task CreateCredentialWidgetTest()
     {
         // Navigate to homepage
-        await NavigateUsingBlazorRouter("credentials");
-        await WaitForUrlAsync("credentials", "Credentials");
+        await NavigateUsingBlazorRouter("items");
+        await WaitForUrlAsync("items", "Vault");
 
         // Create a new alias with service name = "Test Service".
         var serviceName = "Test Service Widget";
@@ -75,53 +75,53 @@ public class CredentialTests : ClientPlaywrightTest
         var submitButton = Page.Locator("button[id='quickIdentitySubmit']");
         await submitButton.ClickAsync();
 
-        await WaitForUrlAsync("credentials/**", "View credential");
+        await WaitForUrlAsync("items/**", "View item");
 
         // Check that the service name is present in the content.
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain(serviceName), "Created credential service name does not appear on alias page.");
+        Assert.That(pageContent, Does.Contain(serviceName), "Created item service name does not appear on alias page.");
     }
 
     /// <summary>
-    /// Test if editing a created credential entry works.
+    /// Test if editing a created item entry works.
     /// </summary>
     /// <returns>Async task.</returns>
     [Test]
     public async Task EditCredentialTest()
     {
-        var serviceNameBefore = "Credential service before";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        var serviceNameBefore = "Item service before";
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceNameBefore },
         });
 
         // Check that the service name is present in the content.
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain(serviceNameBefore), "Created credential service name does not appear on login page.");
+        Assert.That(pageContent, Does.Contain(serviceNameBefore), "Created item service name does not appear on login page.");
 
         // Click the edit button.
         var editButton = Page.Locator("text=Edit").First;
         await editButton.ClickAsync();
-        await WaitForUrlAsync("edit", "Save Credential");
+        await WaitForUrlAsync("edit", "Save Item");
 
-        var serviceNameAfter = "Credential service after";
+        var serviceNameAfter = "Item service after";
         await InputHelper.FillInputFields(
             fieldValues: new Dictionary<string, string>
             {
                 { "service-name", serviceNameAfter },
             });
 
-        var submitButton = Page.Locator("text=Save Credential").First;
+        var submitButton = Page.Locator("text=Save Item").First;
         await submitButton.ClickAsync();
-        await WaitForUrlAsync("credentials/**", "Delete");
+        await WaitForUrlAsync("items/**", "Delete");
 
         pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain("Credential updated"), "Credential update confirmation message not shown.");
-        Assert.That(pageContent, Does.Contain(serviceNameAfter), "Credential not updated correctly.");
+        Assert.That(pageContent, Does.Contain("Item updated"), "Item update confirmation message not shown.");
+        Assert.That(pageContent, Does.Contain(serviceNameAfter), "Item not updated correctly.");
     }
 
     /// <summary>
-    /// Test if generating a new identity on the create new credential screen works.
+    /// Test if generating a new identity on the create new item screen works.
     /// </summary>
     /// <returns>Async task.</returns>
     [Test]
@@ -130,8 +130,19 @@ public class CredentialTests : ClientPlaywrightTest
         // Create a new alias with service name = "Test Service".
         var serviceName = "Test Service";
 
-        await NavigateUsingBlazorRouter("credentials/create");
-        await WaitForUrlAsync("credentials/create", "Add credentials");
+        await NavigateUsingBlazorRouter("items/create");
+        await WaitForUrlAsync("items/create", "Add Item");
+
+        // First, switch item type to "Alias" by clicking the type selector dropdown
+        // The default type is "Login", we need to change it to "Alias" to see the identity fields
+        var typeSelector = Page.Locator("text=Creating Login").First;
+        await typeSelector.ClickAsync();
+        await Task.Delay(100);
+
+        // Select "Alias" from the dropdown
+        var aliasOption = Page.Locator($"id=itemTypeSelector_Alias").First;
+        await aliasOption.ClickAsync();
+        await Task.Delay(200);
 
         await InputHelper.FillInputFields(
             fieldValues: new Dictionary<string, string>
@@ -148,9 +159,22 @@ public class CredentialTests : ClientPlaywrightTest
         var username = await Page.InputValueAsync("#username");
         Assert.That(username, Is.Not.Null.And.Not.Empty, "Username not generated before alias is generated.");
 
-        // 2. Then generate a new identity.
+        // 2. Then generate a new identity using the "Generate Random Alias" button.
+        // Note: When switching to Alias type, an alias is auto-generated, so we may need to clear first
         var generateButton = Page.Locator("text=Generate Random Alias");
-        Assert.That(generateButton, Is.Not.Null, "Generate button not found.");
+        if (await generateButton.CountAsync() == 0)
+        {
+            // If alias was auto-generated, there's a "Clear Alias Fields" button instead - click it first
+            var clearButton = Page.Locator("text=Clear Alias Fields");
+            if (await clearButton.CountAsync() > 0)
+            {
+                await clearButton.First.ClickAsync();
+                await Task.Delay(100);
+            }
+        }
+
+        generateButton = Page.Locator("text=Generate Random Alias");
+        Assert.That(await generateButton.CountAsync(), Is.GreaterThan(0), "Generate Random Alias button not found.");
         await generateButton.First.ClickAsync();
 
         // Wait for the identity fields to be filled.

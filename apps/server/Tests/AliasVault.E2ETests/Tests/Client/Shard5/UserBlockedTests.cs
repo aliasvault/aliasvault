@@ -67,8 +67,8 @@ public class UserBlockedTests : ClientPlaywrightTest
         await Logout();
         await Login();
 
-        // Wait for the index page to load which should show "Credentials" in the top menu.
-        await WaitForUrlAsync("**", "Credentials");
+        // Wait for the page to load after login.
+        await WaitForUrlAsync("**", WelcomeMessage);
 
         // First navigate to a test page to verify we're logged in
         await NavigateUsingBlazorRouter("test/1");

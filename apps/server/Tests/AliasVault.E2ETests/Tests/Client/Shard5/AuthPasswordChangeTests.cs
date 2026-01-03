@@ -27,15 +27,15 @@ public class AuthPasswordChangeTests : ClientPlaywrightTest
         // Advance time by 1 second manually to ensure the new vault is created in the future.
         ApiTimeProvider.AdvanceBy(TimeSpan.FromSeconds(1));
 
-        var serviceNameBefore = "Credential service before";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        var serviceNameBefore = "Item service before";
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceNameBefore },
         });
 
         // Check that the service name is present in the content.
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain(serviceNameBefore), "Created credential service name does not appear on login page.");
+        Assert.That(pageContent, Does.Contain(serviceNameBefore), "Created item service name does not appear on login page.");
 
         // Attempt to change password.
         await NavigateUsingBlazorRouter("settings/security/change-password");
@@ -73,11 +73,11 @@ public class AuthPasswordChangeTests : ClientPlaywrightTest
         await Logout();
         await Login();
 
-        // Wait for the credentials page to load again.
-        await WaitForUrlAsync("credentials**", serviceNameBefore);
+        // Wait for the items page to load again.
+        await WaitForUrlAsync("items**", serviceNameBefore);
 
         // Check if the service name is still present in the content.
         pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain(serviceNameBefore), "Created credential service name does not appear on login page after hard page reload. Check if the database is correctly persisted and then loaded from the server.");
+        Assert.That(pageContent, Does.Contain(serviceNameBefore), "Created item service name does not appear on login page after hard page reload. Check if the database is correctly persisted and then loaded from the server.");
     }
 }

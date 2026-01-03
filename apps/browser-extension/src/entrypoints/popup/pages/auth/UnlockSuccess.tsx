@@ -11,7 +11,7 @@ const UnlockSuccess: React.FC = () => {
   const { t } = useTranslation();
 
   /**
-   * Handle browsing vault contents - navigate to credentials page and reset mode parameter
+   * Handle browsing vault contents - navigate to items page and reset mode parameter
    */
   const handleBrowseVaultContents = (): void => {
     // Remove mode=inline from URL before navigating
@@ -19,8 +19,8 @@ const UnlockSuccess: React.FC = () => {
     url.searchParams.delete('mode');
     window.history.replaceState({}, '', url);
 
-    // Navigate to credentials page
-    navigate('/credentials');
+    // Navigate to items page
+    navigate('/items');
   };
 
   return (

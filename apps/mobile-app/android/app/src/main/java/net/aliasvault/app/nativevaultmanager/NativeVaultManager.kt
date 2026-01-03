@@ -23,7 +23,6 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.aliasvault.app.qrscanner.QRScannerActivity
 import net.aliasvault.app.vaultstore.VaultStore
-import net.aliasvault.app.vaultstore.VaultSyncError
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 import net.aliasvault.app.webapi.WebApiService
@@ -184,22 +183,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Store the encrypted database.
-     * @param base64EncryptedDb The encrypted database as a base64 encoded string
-     * @param promise The promise to resolve
-     */
-    @ReactMethod
-    override fun storeDatabase(base64EncryptedDb: String, promise: Promise) {
-        try {
-            vaultStore.storeEncryptedDatabase(base64EncryptedDb)
-            promise.resolve(null)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error storing database", e)
-            promise.reject("ERR_STORE_DB", "Failed to store database: ${e.message}", e)
-        }
-    }
-
-    /**
      * Store the metadata.
      * @param metadata The metadata as a string
      * @param promise The promise to resolve
@@ -337,37 +320,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         } catch (e: Exception) {
             Log.e(TAG, "Error getting encrypted database", e)
             promise.reject("ERR_GET_DB", "Failed to get encrypted database: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Get the current vault revision number.
-     * @param promise The promise to resolve
-     */
-    @ReactMethod
-    override fun getCurrentVaultRevisionNumber(promise: Promise) {
-        try {
-            val revision = vaultStore.getVaultRevisionNumber()
-            promise.resolve(revision)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error getting vault revision", e)
-            promise.reject("ERR_GET_REVISION", "Failed to get vault revision: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Set the current vault revision number.
-     * @param revisionNumber The revision number
-     * @param promise The promise to resolve
-     */
-    @ReactMethod
-    override fun setCurrentVaultRevisionNumber(revisionNumber: Double, promise: Promise?) {
-        try {
-            vaultStore.setVaultRevisionNumber(revisionNumber.toInt())
-            promise?.resolve(null)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error setting vault revision", e)
-            promise?.reject("ERR_SET_REVISION", "Failed to set vault revision: ${e.message}", e)
         }
     }
 
@@ -551,10 +503,9 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     /**
      * Clear clipboard after a delay.
      * @param delayInSeconds The delay in seconds after which to clear the clipboard
-     * @param promise The promise to resolve
+     * @param promise Optional promise to resolve (for internal calls)
      */
-    @ReactMethod
-    override fun clearClipboardAfterDelay(delayInSeconds: Double, promise: Promise?) {
+    private fun clearClipboardAfterDelay(delayInSeconds: Double, promise: Promise?) {
         Log.d(TAG, "Scheduling clipboard clear after $delayInSeconds seconds")
 
         if (delayInSeconds <= 0) {
@@ -706,59 +657,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         } catch (e: Exception) {
             Log.e(TAG, "Error copying to clipboard", e)
             promise?.reject("ERR_CLIPBOARD", "Failed to copy to clipboard: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Check if the app can schedule exact alarms.
-     * @param promise The promise to resolve with boolean result
-     */
-    @ReactMethod
-    override fun canScheduleExactAlarms(promise: Promise?) {
-        try {
-            val canSchedule = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                val alarmManager = reactApplicationContext.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
-                alarmManager.canScheduleExactAlarms()
-            } else {
-                true // Pre-Android 12 doesn't require permission
-            }
-            Log.d(TAG, "Can schedule exact alarms: $canSchedule")
-            promise?.resolve(canSchedule)
-        } catch (e: Exception) {
-            Log.e(TAG, "Error checking exact alarm permission", e)
-            promise?.reject("ERR_EXACT_ALARM_CHECK", "Failed to check exact alarm permission: ${e.message}", e)
-        }
-    }
-
-    /**
-     * Request exact alarm permission by opening system settings.
-     * @param promise The promise to resolve
-     */
-    @ReactMethod
-    override fun requestExactAlarmPermission(promise: Promise?) {
-        try {
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                val alarmManager = reactApplicationContext.getSystemService(android.content.Context.ALARM_SERVICE) as android.app.AlarmManager
-
-                if (!alarmManager.canScheduleExactAlarms()) {
-                    val intent = Intent().apply {
-                        action = Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM
-                        data = Uri.parse("package:${reactApplicationContext.packageName}")
-                        flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                    }
-                    reactApplicationContext.startActivity(intent)
-                    promise?.resolve("Permission request sent - user will be taken to settings")
-                } else {
-                    Log.d(TAG, "Exact alarm permission already granted")
-                    promise?.resolve("Permission already granted")
-                }
-            } else {
-                Log.d(TAG, "Exact alarm permission not required on this Android version")
-                promise?.resolve("Permission not required on this Android version")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error requesting exact alarm permission", e)
-            promise?.reject("ERR_EXACT_ALARM_REQUEST", "Failed to request exact alarm permission: ${e.message}", e)
         }
     }
 
@@ -1243,94 +1141,32 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     // MARK: - Vault Sync and Mutate
 
     /**
-     * Check if a new vault version is available on the server.
-     * @param promise The promise to resolve with object containing isNewVersionAvailable and newRevision.
+     * Unified vault sync method that handles all sync scenarios.
+     * @param promise The promise to resolve with VaultSyncResult.
      */
     @ReactMethod
-    override fun isNewVaultVersionAvailable(promise: Promise) {
+    fun syncVaultWithServer(promise: Promise) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val result = vaultStore.isNewVaultVersionAvailable(webApiService)
-                val resultMap = Arguments.createMap()
-                resultMap.putBoolean("isNewVersionAvailable", result["isNewVersionAvailable"] as Boolean)
-                val newRevision = result["newRevision"] as? Int
-                if (newRevision != null) {
-                    resultMap.putInt("newRevision", newRevision)
-                } else {
-                    resultMap.putNull("newRevision")
+                val result = vaultStore.syncVaultWithServer(webApiService)
+                val resultMap = Arguments.createMap().apply {
+                    putBoolean("success", result.success)
+                    putString("action", result.action.value)
+                    putInt("newRevision", result.newRevision)
+                    putBoolean("wasOffline", result.wasOffline)
+                    if (result.error != null) {
+                        putString("error", result.error)
+                    } else {
+                        putNull("error")
+                    }
                 }
-
                 withContext(Dispatchers.Main) {
                     promise.resolve(resultMap)
                 }
-            } catch (e: VaultSyncError) {
-                withContext(Dispatchers.Main) {
-                    Log.e(TAG, "Vault sync error checking vault version", e)
-                    // Map VaultSyncError to proper error codes for React Native
-                    promise.reject(e.code, e.message, e)
-                }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Log.e(TAG, "Error checking vault version", e)
-                    // Fallback for unknown errors
-                    promise.reject("VAULT_CHECK_VERSION_ERROR", "Failed to check vault version: ${e.message}", e)
-                }
-            }
-        }
-    }
-
-    /**
-     * Download and store the vault from the server.
-     * @param newRevision The new revision number to download.
-     * @param promise The promise to resolve.
-     */
-    @ReactMethod
-    override fun downloadVault(newRevision: Double, promise: Promise) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val success = vaultStore.downloadVault(webApiService, newRevision.toInt())
-                withContext(Dispatchers.Main) {
-                    promise.resolve(success)
-                }
-            } catch (e: VaultSyncError) {
-                withContext(Dispatchers.Main) {
-                    Log.e(TAG, "Vault sync error downloading vault", e)
-                    // Map VaultSyncError to proper error codes for React Native
-                    promise.reject(e.code, e.message, e)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Log.e(TAG, "Error downloading vault", e)
-                    // Fallback for unknown errors
-                    promise.reject("VAULT_DOWNLOAD_ERROR", "Failed to download vault: ${e.message}", e)
-                }
-            }
-        }
-    }
-
-    /**
-     * Mutate vault (upload changes to server).
-     * @param promise The promise to resolve.
-     */
-    @ReactMethod
-    override fun mutateVault(promise: Promise) {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val success = vaultStore.mutateVault(webApiService)
-                withContext(Dispatchers.Main) {
-                    promise.resolve(success)
-                }
-            } catch (e: VaultSyncError) {
-                withContext(Dispatchers.Main) {
-                    Log.e(TAG, "Vault sync error mutating vault", e)
-                    // Map VaultSyncError to proper error codes for React Native
-                    promise.reject(e.code, e.message, e)
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Log.e(TAG, "Error mutating vault", e)
-                    // Fallback for unknown errors
-                    promise.reject("VAULT_MUTATE_ERROR", "Failed to mutate vault: ${e.message}", e)
+                    Log.e(TAG, "Error syncing vault with server", e)
+                    promise.reject("VAULT_SYNC_ERROR", "Failed to sync vault: ${e.message}", e)
                 }
             }
         }
@@ -1525,6 +1361,50 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                 Log.e(TAG, "Authentication failed", e)
                 promise.reject("AUTH_ERROR", "Authentication failed: ${e.message}", e)
             }
+        }
+    }
+
+    // MARK: - Sync State Management
+
+    /**
+     * Get the sync state (isDirty, mutationSequence, serverRevision, isSyncing).
+     * @param promise The promise to resolve.
+     */
+    @ReactMethod
+    fun getSyncState(promise: Promise) {
+        try {
+            val syncState = vaultStore.getSyncState()
+            val result = Arguments.createMap()
+            result.putBoolean("isDirty", syncState.isDirty)
+            result.putInt("mutationSequence", syncState.mutationSequence)
+            result.putInt("serverRevision", syncState.serverRevision)
+            result.putBoolean("isSyncing", syncState.isSyncing)
+            promise.resolve(result)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error getting sync state", e)
+            promise.reject("ERR_GET_SYNC_STATE", "Failed to get sync state: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Mark the vault as clean after successful sync.
+     * Only clears dirty flag if no mutations happened during sync.
+     *
+     * @param mutationSeqAtStart The mutation sequence when sync started.
+     * @param newServerRevision The new server revision after successful upload.
+     * @param promise The promise to resolve with boolean indicating if dirty flag was cleared.
+     */
+    @ReactMethod
+    fun markVaultClean(mutationSeqAtStart: Double, newServerRevision: Double, promise: Promise) {
+        try {
+            val cleared = vaultStore.markVaultClean(
+                mutationSeqAtStart = mutationSeqAtStart.toInt(),
+                newServerRevision = newServerRevision.toInt(),
+            )
+            promise.resolve(cleared)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error marking vault clean", e)
+            promise.reject("ERR_MARK_VAULT_CLEAN", "Failed to mark vault clean: ${e.message}", e)
         }
     }
 }

@@ -33,6 +33,11 @@ export const Colors = {
     black: '#000000',
     modalBackground: 'rgba(0, 0, 0, 0.5)',
     success: '#10B981',
+    successBackground: '#dcfce7',
+    warning: '#d97706',
+    warningBackground: '#fef3c7',
+    info: '#2563eb',
+    infoBackground: '#dbeafe',
     destructive: '#EF4444',
   },
   dark: {
@@ -64,6 +69,11 @@ export const Colors = {
     black: '#000000',
     modalBackground: 'rgba(88, 88, 88, 0.5)',
     success: '#10B981',
+    successBackground: '#1a3d2b',
+    warning: '#f59e0b',
+    warningBackground: '#422006',
+    info: '#3b82f6',
+    infoBackground: '#1e3a5f',
     destructive: '#EF4444',
   },
 } as const;

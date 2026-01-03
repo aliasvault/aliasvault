@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity, Alert, RefreshControl, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import type { RefreshToken } from '@/utils/dist/shared/models/webapi';
+import type { RefreshToken } from '@/utils/dist/core/models/webapi';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';

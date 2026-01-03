@@ -8,6 +8,7 @@
 namespace AliasVault.UnitTests.Utilities;
 
 using AliasClientDb;
+using AliasClientDb.Models;
 using AliasVault.ImportExport;
 using AliasVault.ImportExport.Importers;
 using AliasVault.UnitTests.Common;
@@ -18,56 +19,38 @@ using AliasVault.UnitTests.Common;
 public class ImportExportTests
 {
     /// <summary>
-    /// Test case for importing credentials from CSV and ensuring all values are present.
+    /// Test case for importing items from CSV and ensuring all values are present.
     /// </summary>
     /// <returns>Async task.</returns>
     [Test]
-    public async Task ImportCredentialsFromCsv()
+    public async Task ImportItemsFromCsv()
     {
         // Arrange
-        var credential = new Credential
+        var item = new Item
         {
             Id = new Guid("00000000-0000-0000-0000-000000000001"),
-            Username = "testuser",
-            Notes = "Test notes",
+            Name = "Test Service",
+            ItemType = "Login",
             CreatedAt = DateTime.Now,
             UpdatedAt = DateTime.Now,
-            AliasId = new Guid("00000000-0000-0000-0000-000000000002"),
-            Alias = new Alias
-            {
-                Id = new Guid("00000000-0000-0000-0000-000000000002"),
-                Gender = "Male",
-                FirstName = "John",
-                LastName = "Doe",
-                NickName = "JD",
-                BirthDate = new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc),
-                Email = "johndoe",
-                CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-            },
-            ServiceId = new Guid("00000000-0000-0000-0000-000000000003"),
-            Service = new Service
-            {
-                Id = new Guid("00000000-0000-0000-0000-000000000003"),
-                Name = "Test Service",
-                Url = "https://testservice.com",
-            },
-            Passwords =
-            [
-                new Password
-                {
-                    Value = "password123",
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now,
-                },
-            ],
         };
 
-        var csvContent = CredentialCsvService.ExportCredentialsToCsv([credential]);
+        // Add field values
+        AddFieldValue(item, FieldKey.LoginUsername, "testuser");
+        AddFieldValue(item, FieldKey.NotesContent, "Test notes");
+        AddFieldValue(item, FieldKey.LoginUrl, "https://testservice.com");
+        AddFieldValue(item, FieldKey.LoginPassword, "password123");
+        AddFieldValue(item, FieldKey.LoginEmail, "johndoe");
+        AddFieldValue(item, FieldKey.AliasGender, "Male");
+        AddFieldValue(item, FieldKey.AliasFirstName, "John");
+        AddFieldValue(item, FieldKey.AliasLastName, "Doe");
+        AddFieldValue(item, FieldKey.AliasBirthdate, "1990-01-01");
+
+        var csvContent = ItemCsvService.ExportItemsToCsv([item]);
         var csvString = System.Text.Encoding.Default.GetString(csvContent);
 
         // Act
-        var importedCredentials = await CredentialCsvService.ImportCredentialsFromCsv(csvString);
+        var importedCredentials = await ItemCsvService.ImportItemsFromCsv(csvString);
 
         // Assert
         Assert.That(importedCredentials, Has.Count.EqualTo(1));
@@ -76,20 +59,19 @@ public class ImportExportTests
 
         Assert.Multiple(() =>
         {
-            Assert.That(importedCredential.ServiceName, Is.EqualTo(credential.Service.Name));
-            Assert.That(importedCredential.ServiceUrl, Is.EqualTo(credential.Service.Url));
-            Assert.That(importedCredential.Username, Is.EqualTo(credential.Username));
-            Assert.That(importedCredential.Notes, Is.EqualTo(credential.Notes));
-            Assert.That(importedCredential.CreatedAt?.Date, Is.EqualTo(credential.CreatedAt.Date));
-            Assert.That(importedCredential.UpdatedAt?.Date, Is.EqualTo(credential.UpdatedAt.Date));
-            Assert.That(importedCredential.Alias!.Gender, Is.EqualTo(credential.Alias!.Gender));
-            Assert.That(importedCredential.Alias!.FirstName, Is.EqualTo(credential.Alias!.FirstName));
-            Assert.That(importedCredential.Alias!.LastName, Is.EqualTo(credential.Alias!.LastName));
-            Assert.That(importedCredential.Alias!.NickName, Is.EqualTo(credential.Alias!.NickName));
-            Assert.That(importedCredential.Alias!.BirthDate, Is.EqualTo(credential.Alias!.BirthDate));
-            Assert.That(importedCredential.Alias!.CreatedAt?.Date, Is.EqualTo(credential.Alias!.CreatedAt.Date));
-            Assert.That(importedCredential.Alias!.UpdatedAt?.Date, Is.EqualTo(credential.Alias!.UpdatedAt.Date));
-            Assert.That(importedCredential.Password, Is.EqualTo(credential.Passwords.First().Value));
+            Assert.That(importedCredential.ServiceName, Is.EqualTo(item.Name));
+            Assert.That(importedCredential.ServiceUrl, Is.EqualTo("https://testservice.com"));
+            Assert.That(importedCredential.Username, Is.EqualTo("testuser"));
+            Assert.That(importedCredential.Notes, Is.EqualTo("Test notes"));
+            Assert.That(importedCredential.CreatedAt?.Date, Is.EqualTo(item.CreatedAt.Date));
+            Assert.That(importedCredential.UpdatedAt?.Date, Is.EqualTo(item.UpdatedAt.Date));
+            Assert.That(importedCredential.Alias!.Gender, Is.EqualTo("Male"));
+            Assert.That(importedCredential.Alias!.FirstName, Is.EqualTo("John"));
+            Assert.That(importedCredential.Alias!.LastName, Is.EqualTo("Doe"));
+            Assert.That(importedCredential.Alias!.BirthDate, Is.EqualTo(new DateTime(1990, 1, 1, 0, 0, 0, DateTimeKind.Utc)));
+            Assert.That(importedCredential.Alias!.CreatedAt?.Date, Is.EqualTo(item.CreatedAt.Date));
+            Assert.That(importedCredential.Alias!.UpdatedAt?.Date, Is.EqualTo(item.UpdatedAt.Date));
+            Assert.That(importedCredential.Password, Is.EqualTo("password123"));
         });
     }
 
@@ -110,7 +92,7 @@ public class ImportExportTests
         Assert.That(importedCredentials, Has.Count.EqualTo(8));
 
         // There is one entry which has an invalid TOTP code ("! in the secret), we ensure this logic does not throw a fatal error.
-        var convertedCredentials = BaseImporter.ConvertToCredential(importedCredentials);
+        var convertedItems = BaseImporter.ConvertToItem(importedCredentials);
 
         // Test specific entries
         var tutaNotaCredential = importedCredentials.First(c => c.ServiceName == "TutaNota");
@@ -694,7 +676,7 @@ public class ImportExportTests
         var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceStringAsync("AliasVault.UnitTests.TestData.Exports.aliasvault_mobile_app_export.csv");
 
         // Act
-        var importedCredentials = await CredentialCsvService.ImportCredentialsFromCsv(fileContent);
+        var importedCredentials = await ItemCsvService.ImportItemsFromCsv(fileContent);
 
         // Assert
         Assert.That(importedCredentials, Has.Count.EqualTo(3));
@@ -774,5 +756,25 @@ public class ImportExportTests
         // Verify it has example data
         Assert.That(template, Does.Contain("your.email@gmail.com"));
         Assert.That(template, Does.Contain("your_totp_secret_here"));
+    }
+
+    /// <summary>
+    /// Helper method to add a field value to an item.
+    /// </summary>
+    /// <param name="item">The item to add the field value to.</param>
+    /// <param name="fieldKey">The field key.</param>
+    /// <param name="value">The field value.</param>
+    private static void AddFieldValue(Item item, string fieldKey, string value)
+    {
+        item.FieldValues.Add(new FieldValue
+        {
+            Id = Guid.NewGuid(),
+            ItemId = item.Id,
+            FieldKey = fieldKey,
+            Value = value,
+            Weight = 0,
+            CreatedAt = item.CreatedAt,
+            UpdatedAt = item.UpdatedAt,
+        });
     }
 }

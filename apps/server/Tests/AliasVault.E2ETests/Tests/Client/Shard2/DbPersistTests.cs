@@ -18,7 +18,7 @@ using Microsoft.EntityFrameworkCore;
 public class DbPersistTests : ClientPlaywrightTest
 {
     /// <summary>
-    /// Test if a created credential is still present after a hard page refresh which causes
+    /// Test if a created item is still present after a hard page refresh which causes
     /// the database to be loaded fresh from the remote server. This is to ensure that the
     /// database is correctly persisted and then loaded from the server.
     /// </summary>
@@ -27,25 +27,25 @@ public class DbPersistTests : ClientPlaywrightTest
     [Order(1)]
     public async Task DbPersistCredentialTest()
     {
-        var serviceNameBefore = "Credential service before";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        var serviceNameBefore = "Item service before";
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceNameBefore },
         });
 
         // Check that the service name is present in the content.
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain(serviceNameBefore), "Created credential service name does not appear on login page.");
+        Assert.That(pageContent, Does.Contain(serviceNameBefore), "Created item service name does not appear on login page.");
 
         // Refresh page so the database gets dropped then unlock the vault again which will refetch the database from the server.
         await RefreshPageAndUnlockVault();
 
-        // Wait for the credentials page to load again.
-        await WaitForUrlAsync("credentials/**", serviceNameBefore);
+        // Wait for the items page to load again.
+        await WaitForUrlAsync("items/**", serviceNameBefore);
 
         // Check if the service name is still present in the content.
         pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain(serviceNameBefore), "Created credential service name does not appear on login page after hard page reload. Check if the database is correctly persisted and then loaded from the server.");
+        Assert.That(pageContent, Does.Contain(serviceNameBefore), "Created item service name does not appear on login page after hard page reload. Check if the database is correctly persisted and then loaded from the server.");
     }
 
     /// <summary>
@@ -57,16 +57,16 @@ public class DbPersistTests : ClientPlaywrightTest
     public async Task VaultRevisionNumberIncrementTest()
     {
         // Assert that the vault revision number is 2 in the server database.
-        // Account registration will create a new vault with revision number 1, first credential save will increment to 2.
-        // Note: for this we expect the previous test to have run first and created a first credential.
+        // Account registration will create a new vault with revision number 1, first item save will increment to 2.
+        // Note: for this we expect the previous test to have run first and created a first item.
         var firstUpdateVault = await ApiDbContext.Vaults.OrderByDescending(x => x.RevisionNumber).FirstAsync();
-        Assert.That(firstUpdateVault.RevisionNumber, Is.EqualTo(2), "Vault revision number is not at 2 after creating the first credential in a new vault.");
+        Assert.That(firstUpdateVault.RevisionNumber, Is.EqualTo(2), "Vault revision number is not at 2 after creating the first item in a new vault.");
 
-        // Create a new credential which will trigger a vault save to the server.
-        await CreateCredentialEntry();
+        // Create a new item which will trigger a vault save to the server.
+        await CreateItemEntry();
 
         // Assert that the vault revision number is now 3 in the server database.
         var secondUpdateVault = await ApiDbContext.Vaults.OrderByDescending(x => x.RevisionNumber).FirstAsync();
-        Assert.That(secondUpdateVault.RevisionNumber, Is.EqualTo(3), "Vault revision number is not 3 after the second credential save.");
+        Assert.That(secondUpdateVault.RevisionNumber, Is.EqualTo(3), "Vault revision number is not 3 after the second item save.");
     }
 }

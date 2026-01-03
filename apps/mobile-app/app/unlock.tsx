@@ -20,7 +20,6 @@ import { Avatar } from '@/components/ui/Avatar';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
-import { useNavigation } from '@/context/NavigationContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
@@ -29,7 +28,6 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
 export default function UnlockScreen() : React.ReactNode {
   const { isLoggedIn, username, isBiometricsEnabled, getBiometricDisplayName, getEncryptionKeyDerivationParams, logout } = useApp();
   const dbContext = useDb();
-  const navigation = useNavigation();
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isBiometricsAvailable, setIsBiometricsAvailable] = useState(false);
@@ -130,10 +128,10 @@ export default function UnlockScreen() : React.ReactNode {
         }
 
         /*
-         * Navigate using centralized navigation logic
-         * This ensures we handle pending deep links and return URLs correctly
+         * Navigate to reinitialize which will sync vault with server
+         * and then navigate to the appropriate destination.
          */
-        navigation.navigateAfterUnlock();
+        router.replace('/reinitialize');
       } else {
         Alert.alert(
           t('common.error'),

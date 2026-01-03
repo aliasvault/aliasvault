@@ -41,6 +41,10 @@ public class UserRegistrationService(HttpClient httpClient, AuthenticationStateP
             var client = new SrpClient();
             var salt = client.GenerateSalt();
 
+            // Generate a random GUID for SRP identity. This is used for all SRP operations,
+            // is set during registration, and never changes.
+            var srpIdentity = Guid.NewGuid().ToString();
+
             string encryptionType = Defaults.EncryptionType;
             string encryptionSettings = Defaults.EncryptionSettings;
             if (config.CryptographyOverrideType is not null && config.CryptographyOverrideSettings is not null)
@@ -51,9 +55,9 @@ public class UserRegistrationService(HttpClient httpClient, AuthenticationStateP
 
             var passwordHash = await Encryption.DeriveKeyFromPasswordAsync(password, salt, encryptionType, encryptionSettings);
             var passwordHashString = BitConverter.ToString(passwordHash).Replace("-", string.Empty);
-            var srpSignup = Srp.PasswordChangeAsync(client, salt, username, passwordHashString);
+            var srpSignup = Srp.PasswordChangeAsync(client, salt, srpIdentity, passwordHashString);
 
-            var registerRequest = new RegisterRequest(srpSignup.Username, srpSignup.Salt, srpSignup.Verifier, encryptionType, encryptionSettings);
+            var registerRequest = new RegisterRequest(username, srpSignup.Salt, srpSignup.Verifier, encryptionType, encryptionSettings, srpIdentity);
             var result = await httpClient.PostAsJsonAsync("v1/Auth/register", registerRequest);
             var responseContent = await result.Content.ReadAsStringAsync();
 

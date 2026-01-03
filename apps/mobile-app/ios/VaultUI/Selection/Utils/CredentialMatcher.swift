@@ -11,6 +11,7 @@ import VaultModels
 /// 3. PRIORITY 3: Service Name Fallback (only for credentials without URLs - anti-phishing)
 /// 4. PRIORITY 4: Text/Word Matching (non-URL search)
 public class CredentialMatcher {
+    // swiftlint:disable function_body_length
 
     /// Common top-level domains (TLDs) used for app package name detection.
     /// When a search string starts with one of these TLDs followed by a dot (e.g., "com.coolblue.app"),
@@ -251,7 +252,7 @@ public class CredentialMatcher {
     /// **Security Note**: Priority 3 only searches credentials with no service URL defined.
     /// This prevents phishing attacks where a malicious site might match credentials
     /// intended for a legitimate site.
-    public static func filterCredentials(_ credentials: [Credential], searchText: String) -> [Credential] {
+    public static func filterCredentials(_ credentials: [AutofillCredential], searchText: String) -> [AutofillCredential] {
         // Early return for empty search
         if searchText.isEmpty {
             return credentials
@@ -264,7 +265,7 @@ public class CredentialMatcher {
         if isAppPackageName(searchText) {
             // Perform exact string match on service URL field
             let packageMatches = credentials.filter { credential in
-                guard let serviceUrl = credential.service.url, !serviceUrl.isEmpty else { return false }
+                guard let serviceUrl = credential.serviceUrl, !serviceUrl.isEmpty else { return false }
                 return searchText == serviceUrl
             }
 
@@ -284,7 +285,7 @@ public class CredentialMatcher {
         if !searchDomain.isEmpty {
             // Valid domain extracted - perform domain matching
             let domainMatches = credentials.filter { credential in
-                guard let serviceUrl = credential.service.url, !serviceUrl.isEmpty else { return false }
+                guard let serviceUrl = credential.serviceUrl, !serviceUrl.isEmpty else { return false }
                 return domainsMatch(searchText, serviceUrl)
             }
 
@@ -303,10 +304,10 @@ public class CredentialMatcher {
 
             let nameMatches = credentials.filter { credential in
                 // SECURITY: Skip credentials that have a URL defined
-                guard credential.service.url?.isEmpty != false else { return false }
+                guard credential.serviceUrl?.isEmpty != false else { return false }
 
                 // Search in ServiceName and Notes using substring contains
-                let serviceNameMatch = credential.service.name?.lowercased().contains(domainWithoutExtension) ?? false
+                let serviceNameMatch = credential.serviceName?.lowercased().contains(domainWithoutExtension) ?? false
                 let notesMatch = credential.notes?.lowercased().contains(domainWithoutExtension) ?? false
                 return serviceNameMatch || notesMatch
             }
@@ -325,7 +326,7 @@ public class CredentialMatcher {
             // If no meaningful words after extraction, fall back to simple substring contains
             let lowercasedSearch = searchText.lowercased()
             return credentials.filter { credential in
-                (credential.service.name?.lowercased().contains(lowercasedSearch) ?? false) ||
+                (credential.serviceName?.lowercased().contains(lowercasedSearch) ?? false) ||
                     (credential.username?.lowercased().contains(lowercasedSearch) ?? false) ||
                     (credential.notes?.lowercased().contains(lowercasedSearch) ?? false)
             }
@@ -333,7 +334,7 @@ public class CredentialMatcher {
 
         // Match using extracted words - exact word matching only
         return credentials.filter { credential in
-            let serviceNameWords = credential.service.name.map { extractWords(from: $0) } ?? []
+            let serviceNameWords = credential.serviceName.map { extractWords(from: $0) } ?? []
             let usernameWords = credential.username.map { extractWords(from: $0) } ?? []
             let notesWords = credential.notes.map { extractWords(from: $0) } ?? []
 
@@ -345,4 +346,5 @@ public class CredentialMatcher {
             }
         }
     }
+    // swiftlint:enable function_body_length
 }

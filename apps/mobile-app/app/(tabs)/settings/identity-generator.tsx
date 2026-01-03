@@ -4,7 +4,7 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Alert, TouchableOpacity } from 'react-native';
 
-import { getAvailableAgeRanges, IAgeRangeOption, getAvailableLanguages, ILanguageOption } from '@/utils/dist/shared/identity-generator';
+import { getAvailableAgeRanges, IAgeRangeOption, getAvailableLanguages, ILanguageOption } from '@/utils/dist/core/identity-generator';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';

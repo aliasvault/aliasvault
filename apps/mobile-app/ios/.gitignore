@@ -28,3 +28,10 @@ project.xcworkspace
 
 # CocoaPods
 /Pods/
+
+# Generated Rust Core (built from /core/rust via Scripts/build-rust-core.sh)
+/Frameworks/
+/VaultStoreKit/RustCore/Generated/
+/VaultStoreKit/RustCore/lib/
+/VaultStoreKit/RustCore/include/
+/VaultStoreKit/RustCore/.rust-core-checksum

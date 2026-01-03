@@ -11,7 +11,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import ConversionUtility from '@/entrypoints/popup/utils/ConversionUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { EmailAttachment, Email } from '@/utils/dist/shared/models/webapi';
+import type { EmailAttachment, Email } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -60,7 +60,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         const response = await webApi.get<Email>(`Email/${id}`);
 
         // Decrypt email locally using public/private key pairs
-        const encryptionKeys = dbContext.sqliteClient.getAllEncryptionKeys();
+        const encryptionKeys = dbContext.sqliteClient.settings.getAllEncryptionKeys();
         const decryptedEmail = await EncryptionUtility.decryptEmail(response, encryptionKeys);
         setEmail(decryptedEmail);
       } catch (err) {
@@ -111,7 +111,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
       }
 
       // Get encryption keys for decryption
-      const encryptionKeys = dbContext.sqliteClient.getAllEncryptionKeys();
+      const encryptionKeys = dbContext.sqliteClient.settings.getAllEncryptionKeys();
 
       // Decrypt the attachment using raw bytes
       const decryptedBytes = await EncryptionUtility.decryptAttachment(encryptedBytes, email, encryptionKeys);
@@ -263,7 +263,7 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         {email.attachments && email.attachments.length > 0 && (
           <div className="p-6 border-t border-gray-200 dark:border-gray-700">
             <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-              {t('emails.attachments')}
+              {t('common.attachments')}
             </h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {email.attachments.map((attachment) => (

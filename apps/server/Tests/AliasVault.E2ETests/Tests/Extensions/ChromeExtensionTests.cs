@@ -7,8 +7,6 @@
 
 namespace AliasVault.E2ETests.Tests.Extensions;
 
-using Microsoft.EntityFrameworkCore;
-
 /// <summary>
 /// End-to-end tests for the Chrome extension.
 /// </summary>
@@ -18,7 +16,7 @@ using Microsoft.EntityFrameworkCore;
 public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
 {
     /// <summary>
-    /// Tests if the extension can load a vault and a previously created credential entry is present.
+    /// Tests if the extension can load a vault created by the Blazor web app and a previously created item entry is present.
     /// </summary>
     /// <returns>Async task.</returns>
     [Order(1)]
@@ -27,7 +25,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
     {
         // Create a new alias with service name = "Test Service".
         var serviceName = "Test Service";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName },
         });
@@ -35,9 +33,42 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         var extensionPopup = await LoginToExtension();
 
         // Assert extension loaded vault successfully and service name is present.
-        await extensionPopup.WaitForSelectorAsync("text=" + serviceName);
+        await extensionPopup.WaitForSelectorAsync("text=" + serviceName, new() { Timeout = 15000 });
         var pageContent = await extensionPopup.TextContentAsync("body");
         Assert.That(pageContent, Does.Contain(serviceName));
+    }
+
+    /// <summary>
+    /// Gets the extension ID from the browser context using reflection.
+    /// This is a helper method for tests that need to open the extension popup manually.
+    /// </summary>
+    /// <returns>The extension ID string.</returns>
+    private string GetExtensionIdFromContext()
+    {
+        // Use reflection to access the ServiceWorkers property
+        var serviceWorkersProperty = Context.GetType().GetProperty("ServiceWorkers");
+        var serviceWorkersEnumerable = serviceWorkersProperty?.GetValue(Context) as IEnumerable<object>;
+
+        if (serviceWorkersEnumerable == null)
+        {
+            throw new InvalidOperationException("Could not find extension service workers");
+        }
+
+        var serviceWorkers = serviceWorkersEnumerable.ToList();
+        if (serviceWorkers.Count == 0)
+        {
+            throw new InvalidOperationException("No extension service workers found");
+        }
+
+        // Get the first service worker's URL using reflection
+        var firstWorker = serviceWorkers[0];
+        var urlProperty = firstWorker.GetType().GetProperty("Url");
+        var url = urlProperty?.GetValue(firstWorker) as string;
+
+        var extensionId = url?.Split('/')[2]
+                          ?? throw new InvalidOperationException("Could not find extension service worker URL");
+
+        return extensionId;
     }
 
     /*
@@ -126,8 +157,8 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         // Refresh the vault via the refresh button to get the latest vault that browser extension just uploaded
         await Page.ClickAsync("button[id='vault-refresh-btn']");
 
-        // Navigate to the credentials page explicitly in case we were stuck on the welcome screen.
-        await Page.ClickAsync("a[href='/credentials']");
+        // Navigate to the items page explicitly in case we were stuck on the welcome screen.
+        await Page.ClickAsync("a[href='/items']");
 
         // Wait for credentials page to load and verify the new credential appears
         await Page.WaitForSelectorAsync("text=" + serviceName);
@@ -260,7 +291,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
     {
         // Create a credential to display
         var serviceName = "Test Popup Display";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName },
         });

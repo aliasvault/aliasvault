@@ -14,7 +14,7 @@ protocol CredentialProviderDelegate: AnyObject {
 
 protocol PasskeyProviderDelegate: AnyObject {
     func setupPasskeyView(vaultStore: VaultStore, rpId: String, clientDataHash: Data) throws -> UIViewController
-    func handlePasskeySelection(credential: Credential, clientDataHash: Data, rpId: String)
+    func handlePasskeySelection(credential: AutofillCredential, clientDataHash: Data, rpId: String)
 }
 
 /**
@@ -450,7 +450,7 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
             print("Credential identity store is empty, performing initial sync")
 
             // Get all credentials from the vault (already unlocked)
-            let credentials = try vaultStore.getAllCredentials()
+            let credentials = try vaultStore.getAllAutofillCredentials()
 
             // Save credentials to the iOS credential identity store
             try await CredentialIdentityStore.shared.saveCredentialIdentities(credentials)

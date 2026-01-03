@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using AliasVault.Client.Services.JsInterop.Models;
 using AliasVault.Shared.Core;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>
@@ -34,19 +35,19 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task InitializeAsync()
     {
-        _identityGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/shared/identity-generator/index.mjs?v={_cacheBuster}");
+        _identityGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/identity-generator/index.mjs?v={_cacheBuster}");
         if (_identityGeneratorModule == null)
         {
             throw new InvalidOperationException("Failed to initialize identity generator module");
         }
 
-        _passwordGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/shared/password-generator/index.mjs?v={_cacheBuster}");
+        _passwordGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/password-generator/index.mjs?v={_cacheBuster}");
         if (_passwordGeneratorModule == null)
         {
             throw new InvalidOperationException("Failed to initialize password generator module");
         }
 
-        _vaultSqlInteropModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/shared/vault-sql/index.mjs?v={_cacheBuster}");
+        _vaultSqlInteropModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/vault/index.mjs?v={_cacheBuster}");
         if (_vaultSqlInteropModule == null)
         {
             throw new InvalidOperationException("Failed to initialize vault SQL generator module");
@@ -101,6 +102,14 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     /// <returns>Task.</returns>
     public async Task FocusElementById(string elementId) =>
         await jsRuntime.InvokeVoidAsync("focusElement", elementId);
+
+    /// <summary>
+    /// Focus an element by its ID and select all its text.
+    /// </summary>
+    /// <param name="elementId">The element ID to focus and select.</param>
+    /// <returns>Task.</returns>
+    public async Task FocusAndSelectElementById(string elementId) =>
+        await jsRuntime.InvokeVoidAsync("focusAndSelectElement", elementId);
 
     /// <summary>
     /// Blur (defocus) an element by its ID.
@@ -322,6 +331,25 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     {
         await jsRuntime.InvokeVoidAsync("window.scrollTo", 0, 0);
     }
+
+    /// <summary>
+    /// Sets up an IntersectionObserver for infinite scrolling.
+    /// </summary>
+    /// <typeparam name="TComponent">Component type.</typeparam>
+    /// <param name="element">The sentinel element to observe.</param>
+    /// <param name="objRef">DotNetObjectReference.</param>
+    /// <returns>Task.</returns>
+    public async Task SetupInfiniteScroll<TComponent>(ElementReference element, DotNetObjectReference<TComponent> objRef)
+        where TComponent : class =>
+        await jsRuntime.InvokeVoidAsync("window.setupInfiniteScroll", element, objRef);
+
+    /// <summary>
+    /// Tears down the IntersectionObserver for infinite scrolling.
+    /// </summary>
+    /// <param name="element">The sentinel element that was observed.</param>
+    /// <returns>Task.</returns>
+    public async Task TeardownInfiniteScroll(ElementReference element) =>
+        await jsRuntime.InvokeVoidAsync("window.teardownInfiniteScroll", element);
 
     /// <summary>
     /// Registers a visibility callback which is invoked when the visibility of component changes in client.

@@ -1,0 +1,247 @@
+@using Microsoft.Extensions.Localization
+
+@* FormModal component - generic modal for displaying forms and content *@
+@if (IsOpen)
+{
+    <div class="fixed inset-0 z-50 overflow-y-auto">
+        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+            @* Background overlay *@
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75" @onclick="HandleOverlayClick"></div>
+
+            @* Modal panel *@
+            <div @ref="ModalElement" @onkeydown="HandleKeyDown" tabindex="0" class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full @GetMaxWidthClass() dark:bg-gray-800">
+                <div class="bg-white px-4 pb-4 pt-5 sm:p-6 dark:bg-gray-800">
+                    <div class="sm:flex sm:items-start">
+                        @if (Icon != null)
+                        {
+                            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full @IconBackgroundClass sm:mx-0 sm:h-10 sm:w-10">
+                                @Icon
+                            </div>
+                        }
+                        <div class="@(Icon != null ? "mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left" : "") flex-1">
+                            @if (!string.IsNullOrEmpty(Title))
+                            {
+                                <h3 class="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
+                                    @Title
+                                </h3>
+                            }
+                            <div class="@(string.IsNullOrEmpty(Title) ? "" : "mt-4")">
+                                @ChildContent
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @if (FooterContent != null)
+                {
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2 dark:bg-gray-800/50">
+                        @FooterContent
+                    </div>
+                }
+                else if (ShowDefaultFooter)
+                {
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 gap-2 dark:bg-gray-800/50">
+                        <button
+                            type="button"
+                            @onclick="HandleConfirm"
+                            disabled="@(IsLoading || ConfirmDisabled)"
+                            class="inline-flex w-full justify-center rounded-md @ConfirmButtonClass px-3 py-2 text-sm font-semibold text-white shadow-sm sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed">
+                            @if (IsLoading)
+                            {
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            }
+                            @ConfirmText
+                        </button>
+                        <button
+                            type="button"
+                            @onclick="HandleCancel"
+                            class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600">
+                            @CancelText
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Inject]
+    private IStringLocalizerFactory LocalizerFactory { get; set; } = default!;
+
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
+
+    private ElementReference ModalElement;
+
+    /// <summary>
+    /// Gets or sets whether the modal is open.
+    /// </summary>
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// Gets or sets the modal title.
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the optional icon to display in the header.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? Icon { get; set; }
+
+    /// <summary>
+    /// Gets or sets the CSS class for the icon background.
+    /// Defaults to orange theme.
+    /// </summary>
+    [Parameter]
+    public string IconBackgroundClass { get; set; } = "bg-orange-100 dark:bg-orange-900/30";
+
+    /// <summary>
+    /// Gets or sets the main content of the modal.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the footer content of the modal.
+    /// If not provided, default confirm/cancel buttons are shown (if ShowDefaultFooter is true).
+    /// </summary>
+    [Parameter]
+    public RenderFragment? FooterContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to show the default footer with confirm/cancel buttons.
+    /// </summary>
+    [Parameter]
+    public bool ShowDefaultFooter { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the confirm button text.
+    /// </summary>
+    [Parameter]
+    public string? ConfirmText { get; set; }
+
+    /// <summary>
+    /// Gets or sets the cancel button text.
+    /// </summary>
+    [Parameter]
+    public string? CancelText { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the confirm button is disabled.
+    /// </summary>
+    [Parameter]
+    public bool ConfirmDisabled { get; set; }
+
+    /// <summary>
+    /// Gets or sets the CSS class for the confirm button.
+    /// </summary>
+    [Parameter]
+    public string ConfirmButtonClass { get; set; } = "bg-orange-600 hover:bg-orange-500 dark:bg-orange-700 dark:hover:bg-orange-600";
+
+    /// <summary>
+    /// Gets or sets whether the modal is in a loading state.
+    /// </summary>
+    [Parameter]
+    public bool IsLoading { get; set; }
+
+    /// <summary>
+    /// Gets or sets the max width class for the modal.
+    /// Options: sm, md, lg, xl, 2xl. Defaults to lg.
+    /// </summary>
+    [Parameter]
+    public string MaxWidth { get; set; } = "lg";
+
+    /// <summary>
+    /// Gets or sets whether to close the modal when clicking the overlay.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnOverlayClick { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether to close the modal when pressing Escape.
+    /// </summary>
+    [Parameter]
+    public bool CloseOnEscape { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets whether to submit the form when pressing Enter.
+    /// </summary>
+    [Parameter]
+    public bool SubmitOnEnter { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the close callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    /// <summary>
+    /// Gets or sets the confirm callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnConfirm { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Set default button texts if not provided
+        if (string.IsNullOrEmpty(ConfirmText))
+        {
+            ConfirmText = SharedLocalizer["Confirm"];
+        }
+
+        if (string.IsNullOrEmpty(CancelText))
+        {
+            CancelText = SharedLocalizer["Cancel"];
+        }
+    }
+
+    private string GetMaxWidthClass()
+    {
+        return MaxWidth switch
+        {
+            "sm" => "sm:max-w-sm",
+            "md" => "sm:max-w-md",
+            "lg" => "sm:max-w-lg",
+            "xl" => "sm:max-w-xl",
+            "2xl" => "sm:max-w-2xl",
+            _ => "sm:max-w-lg"
+        };
+    }
+
+    private async Task HandleOverlayClick()
+    {
+        if (CloseOnOverlayClick)
+        {
+            await OnClose.InvokeAsync();
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape" && CloseOnEscape)
+        {
+            await OnClose.InvokeAsync();
+        }
+        else if (e.Key == "Enter" && SubmitOnEnter && !ConfirmDisabled && !IsLoading)
+        {
+            await HandleConfirm();
+        }
+    }
+
+    private async Task HandleConfirm()
+    {
+        await OnConfirm.InvokeAsync();
+    }
+
+    private async Task HandleCancel()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 
-import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/shared/models/metadata';
-import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
+import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/core/models/metadata';
 import SqliteClient from '@/utils/SqliteClient';
 
 import NativeVaultManager from '@/specs/NativeVaultManager';
@@ -10,9 +9,15 @@ type DbContextType = {
   sqliteClient: SqliteClient | null;
   dbInitialized: boolean;
   dbAvailable: boolean;
+  // Sync state tracking
+  isDirty: boolean;
+  isSyncing: boolean;
+  isOffline: boolean;
+  setIsSyncing: (syncing: boolean) => void;
+  setIsOffline: (offline: boolean) => Promise<void>;
+  refreshSyncState: () => Promise<void>;
   storeEncryptionKey: (derivedKey: string) => Promise<void>;
   storeEncryptionKeyDerivationParams: (keyDerivationParams: EncryptionKeyDerivationParams) => Promise<void>;
-  initializeDatabase: (vaultResponse: VaultResponse) => Promise<void>;
   hasPendingMigrations: () => Promise<boolean>;
   clearDatabase: () => void;
   getVaultMetadata: () => Promise<VaultMetadata | null>;
@@ -42,6 +47,21 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * Database availability state. If true, the database is available. If false, the database is not available and needs to be unlocked or retrieved again from the API.
    */
   const [dbAvailable, setDbAvailable] = useState(false);
+
+  /**
+   * Sync state tracking - isDirty indicates local changes not yet uploaded to server.
+   */
+  const [isDirty, setIsDirty] = useState(false);
+
+  /**
+   * Sync state tracking - isSyncing indicates a sync operation is in progress.
+   */
+  const [isSyncing, setIsSyncingState] = useState(false);
+
+  /**
+   * Offline mode state - indicates network is unavailable.
+   */
+  const [isOffline, setIsOfflineState] = useState(false);
 
   /**
    * Unlock the vault in the native module which will decrypt the database using the stored encryption key
@@ -79,32 +99,6 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const storeEncryptionKeyDerivationParams = useCallback(async (keyDerivationParams: EncryptionKeyDerivationParams) => {
     await sqliteClient.storeEncryptionKeyDerivationParams(keyDerivationParams);
   }, [sqliteClient]);
-
-  /**
-   * Initialize the database in the native module.
-   * This is called during initial login/registration to set up the vault.
-   * Note: During sync operations, metadata is stored automatically by native VaultSync.
-   *
-   * @param vaultResponse The vault response from the API
-   */
-  const initializeDatabase = useCallback(async (vaultResponse: VaultResponse) => {
-    const metadata: VaultMetadata = {
-      publicEmailDomains: vaultResponse.vault.publicEmailDomainList ?? [],
-      privateEmailDomains: vaultResponse.vault.privateEmailDomainList ?? [],
-      hiddenPrivateEmailDomains: vaultResponse.vault.hiddenPrivateEmailDomainList ?? [],
-      vaultRevisionNumber: vaultResponse.vault.currentRevisionNumber,
-    };
-
-    // Store the encrypted database and metadata (metadata is stored in plain text in UserDefaults)
-    await sqliteClient.storeEncryptedDatabase(vaultResponse.vault.blob);
-    await sqliteClient.storeMetadata(JSON.stringify(metadata));
-
-    // Unlock the vault to make it available for queries
-    await unlockVault();
-
-    setDbInitialized(true);
-    setDbAvailable(true);
-  }, [sqliteClient, unlockVault]);
 
   /**
    * Check if there are any pending migrations. This method also checks if the current vault version is known to the client.
@@ -171,6 +165,47 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, []);
 
   /**
+   * Refresh sync state from native layer. Call this after mutations or sync operations.
+   */
+  const refreshSyncState = useCallback(async (): Promise<void> => {
+    try {
+      const syncState = await NativeVaultManager.getSyncState();
+      setIsDirty(syncState.isDirty);
+      // Also refresh offline mode from native
+      const offline = await NativeVaultManager.getOfflineMode();
+      setIsOfflineState(offline);
+    } catch (error) {
+      console.error('Failed to refresh sync state:', error);
+    }
+  }, []);
+
+  /**
+   * Refresh sync state when database becomes available.
+   * This ensures isDirty is populated from native storage on app boot,
+   * so ServerSyncIndicator shows pending changes from previous sessions.
+   */
+  useEffect(() : void => {
+    if (dbAvailable) {
+      void refreshSyncState();
+    }
+  }, [dbAvailable, refreshSyncState]);
+
+  /**
+   * Set syncing state - exposed for use by sync hooks.
+   */
+  const setIsSyncing = useCallback((syncing: boolean): void => {
+    setIsSyncingState(syncing);
+  }, []);
+
+  /**
+   * Set offline mode and persist to native layer.
+   */
+  const setIsOffline = useCallback(async (offline: boolean): Promise<void> => {
+    setIsOfflineState(offline);
+    await NativeVaultManager.setOfflineMode(offline);
+  }, []);
+
+  /**
    * Get the current vault metadata directly from SQLite client
    */
   const getVaultMetadata = useCallback(async () : Promise<VaultMetadata | null> => {
@@ -205,7 +240,13 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     sqliteClient,
     dbInitialized,
     dbAvailable,
-    initializeDatabase,
+    // Sync state
+    isDirty,
+    isSyncing,
+    isOffline,
+    setIsSyncing,
+    setIsOffline,
+    refreshSyncState,
     hasPendingMigrations,
     clearDatabase,
     getVaultMetadata,
@@ -215,7 +256,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     storeEncryptionKeyDerivationParams,
     checkStoredVault,
     setDatabaseAvailable,
-  }), [sqliteClient, dbInitialized, dbAvailable, initializeDatabase, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, unlockVault, storeEncryptionKey, storeEncryptionKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isDirty, isSyncing, isOffline, setIsSyncing, setIsOffline, refreshSyncState, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, unlockVault, storeEncryptionKey, storeEncryptionKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
 
   return (
     <DbContext.Provider value={contextValue}>
