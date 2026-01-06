@@ -43,9 +43,9 @@
   <string name="passkey_replace_explanation">Существующий ключ доступа будет заменен на новый. Обратите внимание, что старый ключ будет перезаписан и станет недоступен. Если вы хотите создать отдельный ключ доступа, вернитесь на предыдущий экран.</string>
   <string name="passkey_replacing">Замена ключа доступа…</string>
   <string name="passkey_checking_connection">Проверка соединения…</string>
-  <string name="passkey_retrieving">Retrieving passkey…</string>
-  <string name="passkey_verifying">Verifying…</string>
-  <string name="passkey_authenticating">Authenticating…</string>
+  <string name="passkey_retrieving">Получение ключа доступа…</string>
+  <string name="passkey_verifying">Проверка…</string>
+  <string name="passkey_authenticating">Аутентификация…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Ошибка подключения</string>
   <string name="connection_error_message">Не удалось подключиться к серверу. Проверьте интернет-соединение и попробуйте создать ключ доступа снова.</string>
