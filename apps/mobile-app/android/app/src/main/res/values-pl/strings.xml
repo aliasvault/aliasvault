@@ -43,9 +43,9 @@
   <string name="passkey_replace_explanation">Spowoduje to zastąpienie dotychczasowego klucza dostępu nowym. Należy pamiętać, że stare klucz zostanie nadpisany i nie będzie już dostępny. Jeśli chcesz utworzyć nowy klucz dostępu, wróć do poprzedniego ekranu.</string>
   <string name="passkey_replacing">Zastępowanie klucza dostępu…</string>
   <string name="passkey_checking_connection">Sprawdzanie połączenia…</string>
-  <string name="passkey_retrieving">Retrieving passkey…</string>
-  <string name="passkey_verifying">Verifying…</string>
-  <string name="passkey_authenticating">Authenticating…</string>
+  <string name="passkey_retrieving">Pobieranie klucza dostępu…</string>
+  <string name="passkey_verifying">Weryfikacja…</string>
+  <string name="passkey_authenticating">Uwierzytelnianie…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Błąd połączenia</string>
   <string name="connection_error_message">Nie można nawiązać połączenia z serwerem. Sprawdź połączenie internetowe i spróbuj ponownie utworzyć klucz dostępu.</string>
