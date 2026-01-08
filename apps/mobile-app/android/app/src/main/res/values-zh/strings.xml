@@ -36,19 +36,19 @@
   <string name="passkey_creation_failed">创建通行密钥失败</string>
   <string name="passkey_retry_button">重试</string>
   <string name="passkey_info_icon">信息图标</string>
-  <string name="passkey_create_explanation">This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.</string>
+  <string name="passkey_create_explanation">这将创建一个新的通行密钥并将其存储在您的密码库中。它将自动同步到您所有使用 AliasVault 的设备。</string>
   <string name="passkey_create_new_button">创建新通行密钥</string>
   <string name="passkey_select_to_replace">或者替换现有的通行密钥：</string>
   <string name="passkey_replace_button">替换通行密钥</string>
-  <string name="passkey_replace_explanation">This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.</string>
+  <string name="passkey_replace_explanation">这将用新的通行密钥替换现有通行密钥。请注意，您的旧通行密钥将被覆盖且无法再访问。若您希望单独创建一个通行密钥，请返回到上一屏幕。</string>
   <string name="passkey_replacing">正在替换通行密钥…</string>
   <string name="passkey_checking_connection">检查连接中…</string>
-  <string name="passkey_retrieving">Retrieving passkey…</string>
-  <string name="passkey_verifying">Verifying…</string>
-  <string name="passkey_authenticating">Authenticating…</string>
+  <string name="passkey_retrieving">正在检索通行密钥…</string>
+  <string name="passkey_verifying">验证中…</string>
+  <string name="passkey_authenticating">认证中…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">连接错误</string>
-  <string name="connection_error_message">No connection to the server can be made. Please check your internet connection and try creating the passkey again.</string>
+  <string name="connection_error_message">无法连接到服务器。请检查您的互联网连接，然后重试创建通行密钥。</string>
   <string name="session_expired_title">会话已过期</string>
   <string name="session_expired_message">您的会话已过期，请重新登录。</string>
   <string name="password_changed_title">密码已更改</string>
@@ -58,12 +58,12 @@
   <string name="server_unavailable_title">服务器不可用</string>
   <string name="server_unavailable_message">服务器目前不可用，请稍后重试。</string>
   <string name="network_error_title">网络错误</string>
-  <string name="network_error_message">A network error occurred. Please check your connection and try again.</string>
+  <string name="network_error_message">网络发生错误，请检查您的连接后重试。</string>
   <string name="server_version_not_supported_title">服务器需要更新</string>
-  <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
+  <string name="server_version_not_supported_message">服务器版本过旧，请联系您的管理员更新服务器。</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_unlock_method_required">Please enable biometric or PIN authentication in the main AliasVault app in order to continue</string>
-  <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
+  <string name="error_unlock_method_required">请在 AliasVault 主应用中启用生物识别或 PIN 码认证以继续</string>
+  <string name="error_unlock_vault_first">请先在 AliasVault 应用中解锁密码库</string>
   <string name="error_vault_decrypt_failed">解密密码库失败</string>
   <string name="error_biometric_cancelled">已取消生物识别认证</string>
   <string name="error_encryption_key_failed">检索加密密钥失败</string>

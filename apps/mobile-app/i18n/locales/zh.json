@@ -75,7 +75,7 @@
   "vault": {
     "syncingVault": "正在同步密码库",
     "uploadingVaultToServer": "正在向服务器上传密码库",
-    "savingChangesToVault": "正在保存至密码库",
+    "savingChangesToVault": "正在保存对密码库的更改",
     "checkingForVaultUpdates": "检查密码库更新中",
     "executingOperation": "执行操作中…",
     "checkingVaultUpdates": "检查密码库更新",
@@ -210,7 +210,7 @@
     "addCode": "添加两步验证码",
     "nameOptional": "名称（可选）",
     "secretKey": "密钥",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
+    "instructions": "输入要添加两步验证的网站显示的密钥。",
     "saveToViewCode": "保存以查看验证码",
     "errors": {
       "invalidSecretKey": "密钥格式无效。"
@@ -418,12 +418,12 @@
       "cameraPermissionMessage": "请允许访问相机以扫描二维码。",
       "mobileLogin": {
         "confirmTitle": "确认登录请求",
-        "confirmSubtitle": "Re-authenticate to approve login on another device.",
-        "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
-        "successDescription": "The remote device has been successfully logged in.",
-        "requestExpired": "This login request has expired. Please generate a new QR code.",
+        "confirmSubtitle": "重新认证以批准在另一台设备上登录。",
+        "confirmMessage": "您即将使用您的账户在远程设备上登录。该设备将拥有对您密码库的完全访问权限。请仅在您信任该设备的情况下继续。",
+        "successDescription": "远程设备已成功登录。",
+        "requestExpired": "此登录请求已过期，请生成新的二维码。",
         "authenticationFailed": "认证失败，请重试。",
-        "noAuthMethodEnabled": "Biometric or PIN unlock needs to be enabled to unlock with mobile"
+        "noAuthMethodEnabled": "需要启用生物识别或 PIN 码解锁才能使用移动设备解锁"
       }
     }
   },

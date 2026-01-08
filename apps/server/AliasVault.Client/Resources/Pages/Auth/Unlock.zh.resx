@@ -63,7 +63,7 @@
     <comment>Message shown while WebAuthn authentication is in progress</comment>
   </data>
   <data name="QuickUnlockDescription" xml:space="preserve">
-    <value>Quickly unlock your vault using your passkey. Or login with your password as a fallback.</value>
+    <value>使用通行密钥快速解锁您的密码库。或者使用密码作为备用方式登录。</value>
     <comment>Description explaining WebAuthn unlock options</comment>
   </data>
   <data name="UnlockWithWebAuthn" xml:space="preserve">

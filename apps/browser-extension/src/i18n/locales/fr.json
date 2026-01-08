@@ -185,7 +185,7 @@
     "totpSecretPlaceholder": "Entrez le mot de passe à usage unique",
     "welcomeTitle": "Bienvenue dans AliasVault !",
     "welcomeDescription": "Pour utiliser l'extension de navigateur AliasVault : accédez à un site web et utilisez la fenêtre de saisie automatique AliasVault pour créer un nouvel identifiant.",
-    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noPasskeysFound": "Aucune clé d'accès n'a encore été créée. Les clés d'accès sont créés en visitant un site Web qui propose des clés d'accès comme méthode d'authentification.",
     "noAttachmentsFound": "Aucun identifiant avec des pièces jointes trouvé",
     "noMatchingCredentials": "Aucun identifiant correspondant trouvé",
     "createdAt": "Créé",
@@ -194,11 +194,11 @@
     "deleteCredentialTitle": "Supprimer les identifiants",
     "deleteCredentialConfirm": "Êtes-vous sûr de vouloir supprimer ces identifiants ? Cette action est irréversible.",
     "filters": {
-      "all": "(All) Credentials",
-      "passkeys": "Passkeys",
-      "aliases": "Aliases",
-      "userpass": "Passwords",
-      "attachments": "Attachments"
+      "all": "(Tous) Identifiants",
+      "passkeys": "Clés d'accès",
+      "aliases": "Alias",
+      "userpass": "Mots de passe",
+      "attachments": "Pièces jointes"
     },
     "randomAlias": "Alias aléatoire",
     "manual": "Manuel",
@@ -242,13 +242,13 @@
     "enterEmailPrefix": "Entrez le préfixe de l'email"
   },
   "totp": {
-    "addCode": "Add 2FA Code",
-    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
+    "addCode": "Ajouter un code 2FA",
+    "instructions": "Entrez la clé secrète affichée par le site Web où vous souhaitez ajouter l'authentification à deux facteurs.",
     "nameOptional": "Nom (facultatif)",
-    "secretKey": "Secret Key",
-    "saveToViewCode": "Save to view code",
+    "secretKey": "Clé secrète",
+    "saveToViewCode": "Enregistrer pour afficher le code",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Format de clé secrète invalide."
     }
   },
   "emails": {
@@ -290,7 +290,7 @@
     "openWebApp": "Ouvrir l’application web",
     "loggedIn": "Connecté(e)",
     "logout": "Se déconnecter",
-    "lock": "Lock",
+    "lock": "Verrouiller",
     "globalSettings": "Paramètres généraux",
     "autofillPopup": "Remplissage automatique de la popup",
     "activeOnAllSites": "Activé sur tous les sites (sauf si désactivé ci-dessous)",
@@ -339,22 +339,22 @@
     "autofillSettings": "Paramètres du remplissage automatique",
     "clipboardSettings": "Paramètres du presse-papiers",
     "contextMenuSettings": "Paramètres du menu contextuel",
-    "passkeySettings": "Passkey Settings",
+    "passkeySettings": "Paramètres de la clé d'accès",
     "contextMenu": "Menu contextuel",
     "contextMenuEnabled": "Le menu contextuel est activé",
     "contextMenuDisabled": "Le menu contextuel est désactivé",
     "contextMenuDescription": "Faites un clic droit sur les champs de saisie pour accéder aux options d'AliasVault",
     "selectLanguage": "Sélectionner une langue",
-    "serverConfiguration": "Server Configuration",
-    "serverConfigurationDescription": "Configure the AliasVault server URL for self-hosted instances",
-    "customApiUrl": "API URL",
-    "customClientUrl": "Client URL",
-    "apiUrlHint": "The API endpoint URL (usually client URL + /api)",
-    "clientUrlHint": "The web interface URL of your self-hosted instance",
-    "autofillSettingsDescription": "Enable or disable the autofill popup on web pages",
-    "autofillEnabledDescription": "Autofill suggestions will appear on login forms",
-    "autofillDisabledDescription": "Autofill suggestions are disabled globally",
-    "languageSettings": "Language",
+    "serverConfiguration": "Configuration du serveur",
+    "serverConfigurationDescription": "Configurer l'URL du serveur AliasVault pour les instances auto-hébergées",
+    "customApiUrl": "URL de l'API",
+    "customClientUrl": "URL du client",
+    "apiUrlHint": "L'URL du point de terminaison de l'API (généralement l'URL du client + /api)",
+    "clientUrlHint": "L'URL de l'interface web de votre instance auto-hébergée",
+    "autofillSettingsDescription": "Activer ou désactiver la popup de saisie automatique sur les pages web",
+    "autofillEnabledDescription": "Les suggestions de saisie automatique apparaîtront dans les formulaires de connexion",
+    "autofillDisabledDescription": "Les suggestions de saisie automatique sont désactivées globalement",
+    "languageSettings": "Langue",
     "validation": {
       "apiUrlRequired": "L'URL de l'API est requise",
       "apiUrlInvalid": "Veuillez entrer une URL d'API valide",
@@ -362,59 +362,59 @@
       "clientUrlInvalid": "Veuillez entrer une URL de client valide"
     },
     "unlockMethod": {
-      "title": "Vault Unlock Method",
-      "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
-      "password": "Master Password",
+      "title": "Méthode de déverrouillage du coffre",
+      "introText": "Choisissez comment vous voulez déverrouiller votre coffre. Vous pouvez utiliser votre mot de passe principal (toujours disponible) ou configurer un code PIN pour un accès rapide. Après 3 tentatives de PIN échouées, vous devrez utiliser votre mot de passe maître.",
+      "password": "Mot de passe maître",
       "pin": "Code PIN",
-      "pinDescription": "Unlock vault with PIN code",
-      "setupPin": "Setup PIN Code",
-      "enterNewPinDescription": "Enter a PIN code consisting of minimum 6 digits",
-      "confirmPin": "Confirm PIN",
-      "confirmPinDescription": "Enter your PIN again to confirm",
-      "invalidPinFormat": "Invalid PIN format",
-      "pinMismatch": "PINs do not match",
-      "incorrectPin": "Incorrect PIN. {{attemptsRemaining}} attempts remaining.",
-      "incorrectPinSingular": "Incorrect PIN. 1 attempt remaining.",
-      "enableSuccess": "PIN unlock enabled successfully!",
-      "pinLocked": "PIN unlock has been disabled. Please use your master password to unlock your vault.",
-      "pinSecurityWarning": "PIN unlock in the browser extension can be less secure than your master password, as PINs typically have lower entropy and may be brute-forced if your device is compromised. Use it only on devices you fully trust."
+      "pinDescription": "Déverrouiller le coffre avec le code PIN",
+      "setupPin": "Configurer le code PIN",
+      "enterNewPinDescription": "Entrez un code PIN composé d'au moins 6 chiffres",
+      "confirmPin": "Confirmer le code PIN",
+      "confirmPinDescription": "Saisissez à nouveau votre code PIN pour confirmer",
+      "invalidPinFormat": "Format de code PIN invalide",
+      "pinMismatch": "Les codes PIN ne correspondent pas",
+      "incorrectPin": "Code PIN incorrect, {{attemptsRemaining}} tentatives restantes.",
+      "incorrectPinSingular": "Code PIN incorrect. 1 tentative restante.",
+      "enableSuccess": "Déverrouillage par code PIN activé avec succès!",
+      "pinLocked": "Le déverrouillage par code PIN a été désactivé. Veuillez utiliser votre mot de passe maître pour déverrouiller votre coffre.",
+      "pinSecurityWarning": "Le déverrouillage par code PIN dans l'extension du navigateur peut être moins sécurisé que votre mot de passe principal, car les codes PIN ont généralement une entropie plus faible et peuvent être trouvés par brute force si votre appareil est compromis. Ne l'utilisez que sur les appareils de confiance totale."
     }
   },
   "passkeys": {
-    "passkey": "Passkey",
+    "passkey": "Clé d'accès",
     "site": "Site",
-    "displayName": "Name",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
-    "passkeyMarkedForDeletion": "Passkey marked for deletion",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
+    "displayName": "Nom",
+    "helpText": "Les clés d'accès sont créées sur le site Web lorsque vous y êtes invité. Elles ne peuvent pas être modifiées manuellement. Pour supprimer cette clé d'accès, vous pouvez la supprimer de cet identifiant. Pour remplacer cette clé d'accès ou en créer une nouvelle, visitez le site Web et suivez ses instructions.",
+    "passkeyMarkedForDeletion": "Clé d'accès marquée pour suppression",
+    "passkeyWillBeDeleted": "Cette clé d'accès sera supprimée lorsque vous enregistrerez cet identifiant.",
     "bypass": {
-      "title": "Use Browser Passkey",
-      "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
-      "thisTimeOnly": "This time only",
-      "alwaysForSite": "Always for this site"
+      "title": "Utiliser la clé d'accès du navigateur",
+      "description": "Combien de temps souhaitez-vous utiliser le fournisseur de clé d'accès du navigateur pour {{origin}}?",
+      "thisTimeOnly": "Cette fois seulement",
+      "alwaysForSite": "Toujours pour ce site"
     },
     "authenticate": {
-      "title": "Sign in with Passkey",
-      "signInFor": "Sign in with passkey for",
-      "selectPasskey": "Select a passkey to sign in:",
-      "noPasskeysFound": "No passkeys found for this site",
-      "useBrowserPasskey": "Use Browser Passkey"
+      "title": "Se connecter avec une clé d’accès",
+      "signInFor": "Se connecter avec une clé d’accès pour",
+      "selectPasskey": "Sélectionnez une clé d'accès pour vous connecter:",
+      "noPasskeysFound": "Aucune clé d'accès trouvée pour ce site",
+      "useBrowserPasskey": "Utiliser la clé d'accès du navigateur"
     },
     "create": {
-      "title": "Create Passkey",
-      "createFor": "Create a new passkey for",
-      "titleLabel": "Title",
-      "titlePlaceholder": "Enter a name for this passkey",
-      "createButton": "Create Passkey",
-      "useBrowserPasskey": "Use Browser Passkey",
-      "selectPasskeyToReplace": "Select a passkey to replace:",
-      "createNewPasskey": "Create New Passkey",
-      "replacingPasskey": "Replacing passkey: {{displayName}}",
-      "confirmReplace": "Confirm Replace"
+      "title": "Créer une clé d'accès",
+      "createFor": "Créer une nouvelle clé d'accès pour",
+      "titleLabel": "Titre",
+      "titlePlaceholder": "Entrez un nom pour cette clé d'accès",
+      "createButton": "Créer clé d'accès",
+      "useBrowserPasskey": "Utiliser la clé d'accès du navigateur",
+      "selectPasskeyToReplace": "Sélectionnez une clé d'accès à remplacer:",
+      "createNewPasskey": "Créer une nouvelle clé d'accès",
+      "replacingPasskey": "Remplacement de la clé d'accès : {{displayName}}",
+      "confirmReplace": "Confirmer le remplacement"
     },
     "settings": {
-      "passkeyProvider": "Passkey Provider",
-      "passkeyProviderOn": "Passkey Provider on "
+      "passkeyProvider": "Fournisseur de clés d'accès",
+      "passkeyProviderOn": "Fournisseur de clé d'accès activé "
     }
   },
   "upgrade": {

@@ -107,7 +107,7 @@
     <comment>Label for alias generation age range setting</comment>
   </data>
   <data name="AliasGenerationAgeRangeDescription">
-    <value>Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.</value>
+    <value>设置生成新身份的默认年龄范围。这将影响分配给已生成身份的出生日期。</value>
     <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->

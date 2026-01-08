@@ -272,11 +272,11 @@
     "importSectionDescription": "Importez vos mots de passe depuis d'autres gestionnaires de mots de passe ou depuis un précédent export AliasVault.",
     "importWebNote": "Pour importer des informations d’identification à partir des gestionnaires de mots de passe existants, veuillez vous connecter à l’application Web. La fonction d’importation n’est actuellement disponible que sur la version web.",
     "exportSectionTitle": "Exporter",
-    "exportSectionDescription": "Export your vault data to a CSV file. This file can be used as a back-up and can also be imported into other password managers.",
-    "exportCsvButton": "Export vault to CSV file",
-    "exporting": "Exporting...",
-    "exportConfirmTitle": "Export Vault",
-    "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "exportSectionDescription": "Exporter les données de votre coffre vers un fichier CSV. Ce fichier peut être utilisé comme une sauvegarde et peut également être importé dans d'autres gestionnaires de mots de passe.",
+    "exportCsvButton": "Exporter le coffre vers un fichier CSV",
+    "exporting": "Exportation en cours...",
+    "exportConfirmTitle": "Exporter le coffre",
+    "exportWarning": "Attention : L'exportation de votre coffre-fort vers un fichier non chiffré exposera tous vos mots de passe et informations sensibles en texte clair. Effectuez cette opération uniquement sur un appareil de confiance et veillez à : \n• Stocker le fichier exporté dans un emplacement sécurisé \n• Supprimer le fichier dès que vous n'en avez plus besoin \n• Ne jamais partager le fichier exporté avec d'autres personnes \n\nÊtes-vous sûr de vouloir poursuivre l'exportation ?",
     "security": "Sécurité",
     "appVersion": "Version de l'application {{version}} ({{url}})",
     "autoLockOptions": {
@@ -295,29 +295,29 @@
     "openSettings": "Ouvrir les paramètres",
     "vaultUnlockSettings": {
       "description": "Choisissez comment vous souhaitez déverrouiller votre coffre-fort.",
-      "biometrics": "Biometrics",
-      "faceId": "Face ID",
-      "touchId": "Touch ID",
+      "biometrics": "Biométrie",
+      "faceId": "Identification faciale (Face ID)",
+      "touchId": "Empreinte digitale",
       "faceIdTouchId": "Face ID / Touch ID",
       "biometricEnabled": "{{biometric}} est désormais activé avec succès",
       "biometricNotAvailable": "{{biometric}} non disponible",
       "biometricDisabledMessage": "{{biometric}} est désactivé pour AliasVault. Pour l'utiliser, veuillez d'abord l'activer dans les paramètres de votre appareil.",
-      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
+      "biometricHelp": "Utilisez la biométrie pour déverrouiller votre coffre, qui est sécurisé par l’ {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} n'est pas disponible. Appuyez pour ouvrir les paramètres et/ou allez dans les paramètres de votre appareil pour l'activer et le configurer.",
-      "pin": "PIN Code",
-      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
-      "pinEnabled": "PIN unlock enabled successfully",
-      "pinDisabled": "PIN unlock has been disabled",
-      "setupPin": "Setup PIN",
-      "enterNewPin": "Enter New PIN",
-      "enterNewPinDescription": "Choose a PIN to unlock your vault",
-      "confirmPin": "Confirm PIN",
-      "confirmPinDescription": "Re-enter your PIN to confirm",
-      "pinMismatch": "PINs do not match. Please try again.",
-      "pinLocked": "PIN locked after too many failed attempts. Please use your master password.",
+      "pin": "Code PIN",
+      "pinDescription": "Utilisez un code PIN personnalisé pour déverrouiller votre coffre plus rapidement.",
+      "pinEnabled": "Déverrouillage par code PIN activé avec succès",
+      "pinDisabled": "Déverrouillage par code PIN désactivé",
+      "setupPin": "Configurer le code PIN",
+      "enterNewPin": "Entrer le nouveau code PIN",
+      "enterNewPinDescription": "Entrez votre code PIN pour déverrouiller votre coffre",
+      "confirmPin": "Confirmer le code PIN",
+      "confirmPinDescription": "Entrez à nouveau votre code PIN pour confirmer",
+      "pinMismatch": "Les codes PIN ne correspondent pas. Veuillez réessayer.",
+      "pinLocked": "Code PIN verrouillé après trop de tentatives infructueuses. Veuillez utiliser votre mot de passe principal.",
       "passwordHelp": "Saisissez à nouveau votre mot de passe maître complet pour déverrouiller votre coffre. Ceci est toujours activé comme option de repli.",
       "keystoreIOS": "Trousseau iOS",
-      "keystoreAndroid": "Android Keystore"
+      "keystoreAndroid": "KeyStore Android"
     },
     "autoLockSettings": {
       "description": "Choisissez combien de temps l'application peut rester en arrière-plan avant de nécessiter une ré-authentification. Vous devrez utiliser Face ID ou saisir votre mot de passe pour déverrouiller le coffre à nouveau."
@@ -328,8 +328,8 @@
       "languageDescription": "Définissez la langue qui sera utilisée pour générer de nouvelles identités.",
       "genderSection": "Genre",
       "genderDescription": "Définissez la préférence de genre pour la génération de nouvelles identités.",
-      "ageRangeSection": "Age Range",
-      "ageRangeDescription": "Set the age range for generating new identities.",
+      "ageRangeSection": "Tranches d'âges",
+      "ageRangeDescription": "Définir la tranche d'âge pour la génération de nouvelles identités.",
       "genderOptions": {
         "random": "Aléatoire",
         "male": "Homme",
@@ -337,7 +337,7 @@
       }
     },
     "passwordGeneratorSettings": {
-      "description": "Configure the default settings used when generating new passwords. These settings will be used for all new passwords unless overridden for specific entries.",
+      "description": "Configurez les paramètres par défaut utilisés lors de la génération de nouveaux mots de passe. Ces paramètres seront appliqués à tous les nouveaux mots de passe, sauf si vous les modifiez pour des entrées spécifiques.",
       "preview": "Aperçu"
     },
     "securitySettings": {
@@ -383,23 +383,23 @@
         "time": "Heure",
         "ipAddress": "Adresse IP",
         "client": "Client",
-        "failedToLoad": "Failed to load auth logs"
+        "failedToLoad": "Impossible de charger les journaux d'authentification"
       },
       "deleteAccount": {
-        "headerText": "Deleting your account will immediately and permanently delete all of your data.",
-        "warningText": "Warning: This action cannot be undone. All your data will be permanently deleted.",
-        "finalWarning": "Final warning: Enter your password to permanently delete your account.",
-        "warningVaults": "All encrypted vaults which includes all of your credentials will be permanently deleted",
-        "warningAliases": "Your email aliases will be orphaned and cannot be claimed by other users",
-        "warningRecovery": "Your account cannot be recovered after deletion",
-        "irreversibleWarning": "Account deletion is irreversible and cannot be undone. Pressing the button below will delete your account immediately and permanently.",
-        "enterUsername": "Enter your username to continue",
-        "password": "Password",
-        "enterPassword": "Enter password",
-        "deleteAccount": "Delete Account",
-        "confirmationMessage": "Are you absolutely sure you want to delete your account? This action cannot be undone.",
-        "usernameDoesNotMatch": "Username does not match",
-        "verifyingPassword": "Verifying password...",
+        "headerText": "La suppression de votre compte supprimera immédiatement et définitivement toutes vos données.",
+        "warningText": "Attention : cette action est irréversible. Toutes vos données seront définitivement supprimées.",
+        "finalWarning": "Dernier avertissement : Entrez votre mot de passe pour supprimer définitivement votre compte.",
+        "warningVaults": "Tous les coffres cryptés qui incluent tous vos identifiants seront définitivement supprimés",
+        "warningAliases": "Vos alias d'email seront orphelins et ne pourront pas être réclamés par d'autres utilisateurs",
+        "warningRecovery": "Votre compte ne peut pas être récupéré après suppression",
+        "irreversibleWarning": "La suppression du compte est irréversible et ne peut pas être annulée. Appuyer sur le bouton ci-dessous supprimera votre compte immédiatement et définitivement.",
+        "enterUsername": "Entrez votre nom d'utilisateur pour continuer",
+        "password": "Mot de passe",
+        "enterPassword": "Entrez le mot de passe",
+        "deleteAccount": "Supprimer le compte",
+        "confirmationMessage": "Voulez-vous vraiment supprimer votre compte ? Cette action est irréversible.",
+        "usernameDoesNotMatch": "Le nom d'utilisateur ne correspond pas",
+        "verifyingPassword": "Vérification du mot de passe...",
         "currentPasswordIncorrect": "Le mot de passe actuel est incorrect",
         "initiatingDeletion": "Initialisation de la suppression du compte",
         "verifyingWithServer": "Vérification par le serveur",
@@ -410,20 +410,20 @@
       }
     },
     "qrScanner": {
-      "title": "QR Code Scanner",
-      "scanningMessage": "Scan AliasVault QR code",
-      "invalidQrCode": "Invalid QR Code",
-      "notAliasVaultQr": "This is not a valid AliasVault QR code. Please scan a QR code generated by AliasVault.",
-      "cameraPermissionTitle": "Camera Permission Required",
+      "title": "Scanner de QR Code",
+      "scanningMessage": "Scanner le QR code AliasVault",
+      "invalidQrCode": "QR Code invalide",
+      "notAliasVaultQr": "Ce n'est pas un code QR d'AliasVault valide. Veuillez scanner un code QR généré par AliasVault.",
+      "cameraPermissionTitle": "Autorisation d'accès à l'appareil photo requise",
       "cameraPermissionMessage": "Veuillez autoriser l'accès à l'appareil photo pour scanner les QR codes.",
       "mobileLogin": {
-        "confirmTitle": "Confirm Login Request",
-        "confirmSubtitle": "Re-authenticate to approve login on another device.",
-        "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
-        "successDescription": "The remote device has been successfully logged in.",
-        "requestExpired": "This login request has expired. Please generate a new QR code.",
-        "authenticationFailed": "Authentication failed. Please try again.",
-        "noAuthMethodEnabled": "Biometric or PIN unlock needs to be enabled to unlock with mobile"
+        "confirmTitle": "Confirmer la demande de connexion",
+        "confirmSubtitle": "Se ré-authentifier pour approuver la connexion sur un autre appareil.",
+        "confirmMessage": "Vous êtes sur le point de vous connecter sur un appareil distant avec votre compte. Cet autre appareil aura un accès complet à votre coffre. Ne procédez que si vous faites confiance à cet appareil.",
+        "successDescription": "L'appareil distant a été connecté avec succès.",
+        "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR.",
+        "authenticationFailed": "Échec de l'authentification. Veuillez ré-essayer.",
+        "noAuthMethodEnabled": "Le déverrouillage par biométrie ou par code PIN doit être activé pour déverrouiller avec le mobile"
       }
     }
   },
@@ -448,19 +448,19 @@
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour charger vos e-mails.",
     "emptyMessage": "Vous n'avez pas encore reçu d'e-mails sur vos adresses e-mail privées. Quand vous recevez un nouvel e-mail, il apparaîtra ici.",
     "time": {
-      "justNow": "just now",
-      "minutesAgo_single": "{{count}} min ago",
-      "minutesAgo_plural": "{{count}} mins ago",
-      "hoursAgo_single": "{{count}} hr ago",
-      "hoursAgo_plural": "{{count}} hrs ago",
-      "yesterday": "yesterday"
+      "justNow": "à l'instant",
+      "minutesAgo_single": "Il y a {{count}} minute",
+      "minutesAgo_plural": "Il y a {{count}} minutes",
+      "hoursAgo_single": "Il y a {{count}} heure",
+      "hoursAgo_plural": "Il y a {{count}} heures",
+      "yesterday": "hier"
     }
   },
   "validation": {
-    "required": "This field is required",
-    "serviceNameRequired": "Service name is required",
-    "invalidDateFormat": "Date must be in YYYY-MM-DD format",
-    "invalidEmailFormat": "Invalid email format"
+    "required": "Ce champ est requis",
+    "serviceNameRequired": "Le nom du service est requis",
+    "invalidDateFormat": "La date doit être au format AAAA-MM-JJ",
+    "invalidEmailFormat": "Format d'email invalide"
   },
   "apiErrors": {
     "CLAIM_DOES_NOT_MATCH_USER": "L'adresse e-mail choisie est déjà utilisée. Veuillez modifier l'adresse e-mail en modifiant ces identifiants.",
@@ -491,72 +491,72 @@
   },
   "app": {
     "status": {
-      "unlockingVault": "Unlocking vault",
-      "decryptingVault": "Decrypting vault",
+      "unlockingVault": "Déverrouillage du coffre",
+      "decryptingVault": "Décryptage du coffre",
       "openingVaultReadOnly": "Ouvrir le coffre en mode lecture seule",
-      "retryingConnection": "Retrying connection..."
+      "retryingConnection": "Tentative de reconnexion..."
     },
     "offline": {
-      "banner": "Offline mode (read-only)",
+      "banner": "Mode hors ligne (lecture seule)",
       "backOnline": "Retour en ligne",
-      "stillOffline": "Still offline"
+      "stillOffline": "Toujours hors-ligne"
     },
     "alerts": {
-      "syncIssue": "No Connection",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault in read-only mode or retry the connection?",
-      "openLocalVault": "Open Local Vault",
-      "retrySync": "Retry Sync"
+      "syncIssue": "Pas de connexion",
+      "syncIssueMessage": "Le serveur AliasVault n'a pas pu être atteint et votre coffre n'a pas pu être synchronisé. Voulez-vous ouvrir votre coffre local en mode lecture seule ou réessayer la connexion ?",
+      "openLocalVault": "Ouvrir le coffre local",
+      "retrySync": "Réessayer la synchronisation"
     },
     "navigation": {
-      "login": "Login",
-      "loginSettings": "Login Settings"
+      "login": "Se connecter",
+      "loginSettings": "Paramètres de connexion"
     },
     "notFound": {
-      "title": "Page not found",
-      "message": "This page has been moved or deleted.",
-      "goHome": "Go back to the start"
+      "title": "Page non trouvée",
+      "message": "Cette page a été déplacée ou supprimée.",
+      "goHome": "Revenir au début"
     },
     "appName": "AliasVault",
     "reinitialize": {
-      "vaultAutoLockedMessage": "Vault auto-locked after timeout.",
-      "attemptingToUnlockMessage": "Attempting to unlock."
+      "vaultAutoLockedMessage": "Coffre-fort verrouillé automatiquement après expiration du délai.",
+      "attemptingToUnlockMessage": "Tentative de déverrouillage."
     },
     "loginSettings": {
-      "title": "API Connection",
+      "title": "Connexion API",
       "aliasvaultNet": "Aliasvault.net",
-      "selfHosted": "Self-hosted",
-      "customApiUrl": "Custom API URL",
+      "selfHosted": "Auto-hébergé",
+      "customApiUrl": "URL de l’API personnalisée",
       "customApiUrlPlaceholder": "https://my-aliasvault-instance.com/api",
-      "version": "Version: {{version}}"
+      "version": "Version : {{version}}"
     }
   },
   "upgrade": {
-    "title": "Upgrade Vault",
-    "subtitle": "AliasVault has updated and your vault needs to be upgraded. This should only take a few seconds.",
-    "versionInformation": "Version Information",
-    "yourVault": "Your vault version:",
-    "newVersion": "New available version:",
-    "upgrade": "Upgrade",
-    "upgrading": "Upgrading...",
-    "logout": "Logout",
-    "whatsNew": "What's New",
-    "whatsNewDescription": "An upgrade is required to support the following changes:",
-    "noDescriptionAvailable": "No description available for this version.",
+    "title": "Mettre à niveau le coffre",
+    "subtitle": "AliasVault a été mis à jour et votre coffre doit être mis à niveau. Cela ne devrait prendre que quelques secondes.",
+    "versionInformation": "Informations de version",
+    "yourVault": "Version de votre coffre:",
+    "newVersion": "Nouvelle version disponible :",
+    "upgrade": "Mettre à jour",
+    "upgrading": "Mise à jour...",
+    "logout": "Déconnexion",
+    "whatsNew": "Nouveautés",
+    "whatsNewDescription": "Une mise à jour est nécessaire pour prendre en charge les modifications suivantes:",
+    "noDescriptionAvailable": "Aucune description disponible pour cette version.",
     "status": {
-      "preparingUpgrade": "Preparing upgrade...",
-      "vaultAlreadyUpToDate": "Vault is already up to date",
-      "startingDatabaseTransaction": "Starting database transaction...",
-      "applyingDatabaseMigrations": "Applying database migrations...",
-      "applyingMigration": "Applying migration {{current}} of {{total}}...",
-      "committingChanges": "Committing changes..."
+      "preparingUpgrade": "Préparation de la mise à jour...",
+      "vaultAlreadyUpToDate": "Le coffre est déjà à jour",
+      "startingDatabaseTransaction": "Démarrage de la transaction de base de données...",
+      "applyingDatabaseMigrations": "Application des migrations de base de données...",
+      "applyingMigration": "Application de la migration {{current}} sur {{total}}...",
+      "committingChanges": "Application des modifications..."
     },
     "alerts": {
-      "unableToGetVersionInfo": "Unable to get version information. Please try again.",
-      "selfHostedServer": "Self-Hosted Server",
-      "selfHostedWarning": "If you're using a self-hosted server, make sure to also update your self-hosted instance as otherwise logging in to the web client will stop working.",
-      "continueUpgrade": "Continue Upgrade",
-      "upgradeFailed": "Upgrade Failed",
-      "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
+      "unableToGetVersionInfo": "Impossible d'obtenir les informations de version. Veuillez réessayer.",
+      "selfHostedServer": "Serveur auto-hébergé",
+      "selfHostedWarning": "Si vous utilisez un serveur auto-hébergé, assurez-vous également de mettre à jour votre instance auto-hébergée, sinon la connexion au client web cessera de fonctionner.",
+      "continueUpgrade": "Continuer la mise à jour",
+      "upgradeFailed": "Échec de la mise à jour",
+      "failedToApplyMigration": "Impossible d'appliquer la migration ({{current}} sur {{total}})"
     }
   }
 }
