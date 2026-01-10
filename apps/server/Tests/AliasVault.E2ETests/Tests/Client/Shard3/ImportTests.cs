@@ -8,7 +8,7 @@
 namespace AliasVault.E2ETests.Tests.Client.Shard3;
 
 /// <summary>
-/// End-to-end tests for importing credentials from various password managers.
+/// End-to-end tests for importing items from various password managers.
 /// </summary>
 [Parallelizable(ParallelScope.Self)]
 [Category("ClientTests")]
@@ -16,7 +16,7 @@ namespace AliasVault.E2ETests.Tests.Client.Shard3;
 public class ImportTests : ClientPlaywrightTest
 {
     /// <summary>
-    /// Test that importing credentials from Bitwarden CSV works correctly.
+    /// Test that importing items from Bitwarden CSV works correctly.
     /// </summary>
     /// <returns>Async task.</returns>
     [Test]
@@ -51,20 +51,20 @@ public class ImportTests : ClientPlaywrightTest
         // Wait for Import button to be visible.
         await Page.WaitForSelectorAsync("button:has-text('Import')");
 
-        // Click Import button to import the credentials.
+        // Click Import button to import the items.
         await Page.ClickAsync("button:has-text('Import')");
         await Page.WaitForSelectorAsync("text=Successfully imported");
 
-        // Navigate to credentials page to verify imported credentials.
-        await NavigateUsingBlazorRouter("credentials");
-        await WaitForUrlAsync("credentials", "Find all of your credentials");
+        // Navigate to items page to verify imported items.
+        await NavigateUsingBlazorRouter("items");
+        await WaitForUrlAsync("items", "Find all of your items");
 
-        // Verify that expected credentials from the Bitwarden CSV are present.
+        // Verify that expected items from the Bitwarden CSV are present.
         var pageContent = await Page.TextContentAsync("body");
         Assert.Multiple(() =>
         {
-            Assert.That(pageContent, Does.Contain("TutaNota"), "TutaNota credential not imported");
-            Assert.That(pageContent, Does.Contain("Aliasvault.net"), "Aliasvault.net credential not imported");
+            Assert.That(pageContent, Does.Contain("TutaNota"), "TutaNota item not imported");
+            Assert.That(pageContent, Does.Contain("Aliasvault.net"), "Aliasvault.net item not imported");
         });
     }
 }

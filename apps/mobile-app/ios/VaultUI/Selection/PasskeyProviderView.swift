@@ -111,7 +111,7 @@ public struct PasskeyProviderView: View {
 // MARK: - Passkey Credential Card
 
 private struct PasskeyCredentialCard: View {
-    let credential: Credential
+    let credential: AutofillCredential
     let rpId: String?
     let action: () -> Void
 
@@ -126,7 +126,7 @@ private struct PasskeyCredentialCard: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     // Service logo (favicon) or fallback to passkey icon
-                    if let logo = credential.service.logo, !logo.isEmpty,
+                    if let logo = credential.logo, !logo.isEmpty,
                        let uiImage = UIImage(data: logo) {
                         Image(uiImage: uiImage)
                             .resizable()
@@ -148,22 +148,19 @@ private struct PasskeyCredentialCard: View {
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(credential.service.name ?? credential.service.url ?? "-")
+                        Text(credential.serviceName ?? credential.serviceUrl ?? "-")
                             .font(.headline)
                             .foregroundColor(colors.text)
 
-                        if let username = credential.username, !username.isEmpty {
-                            Text(username)
-                                .font(.subheadline)
-                                .foregroundColor(colors.textMuted)
-                        } else if let email = credential.alias?.email {
-                            Text(email)
+                        let identifier = credential.identifier
+                        if !identifier.isEmpty {
+                            Text(identifier)
                                 .font(.subheadline)
                                 .foregroundColor(colors.textMuted)
                         }
 
-                        // Show passkey count
-                        if let passkeys = credential.passkeys, !passkeys.isEmpty {
+                        // Show passkey indicator
+                        if credential.hasPasskey {
                             Text(String(localized: "passkey", bundle: locBundle))
                                 .font(.caption)
                                 .foregroundColor(colors.primary)
@@ -187,21 +184,21 @@ private struct PasskeyCredentialCard: View {
 // MARK: - ViewModel
 
 public class PasskeyProviderViewModel: ObservableObject {
-    @Published var credentials: [Credential] = []
-    @Published var filteredCredentials: [Credential] = []
+    @Published var credentials: [AutofillCredential] = []
+    @Published var filteredCredentials: [AutofillCredential] = []
     @Published var searchText = ""
     @Published var isLoading = true
     @Published var showError = false
     @Published var errorMessage = ""
     @Published public var rpId: String?
 
-    private let loader: () async throws -> [Credential]
-    private let selectionHandler: (Credential) -> Void
+    private let loader: () async throws -> [AutofillCredential]
+    private let selectionHandler: (AutofillCredential) -> Void
     private let cancelHandler: () -> Void
 
     public init(
-        loader: @escaping () async throws -> [Credential],
-        selectionHandler: @escaping (Credential) -> Void,
+        loader: @escaping () async throws -> [AutofillCredential],
+        selectionHandler: @escaping (AutofillCredential) -> Void,
         cancelHandler: @escaping () -> Void,
         rpId: String? = nil
     ) {
@@ -256,16 +253,16 @@ public class PasskeyProviderViewModel: ObservableObject {
         filteredCredentials = credentials.filter { credential in
             // Prepare searchable fields including passkey rpIds
             var searchableFields = [
-                credential.service.name?.lowercased() ?? "",
-                credential.service.url?.lowercased() ?? "",
+                credential.serviceName?.lowercased() ?? "",
+                credential.serviceUrl?.lowercased() ?? "",
                 credential.username?.lowercased() ?? "",
-                credential.alias?.email?.lowercased() ?? "",
+                credential.email?.lowercased() ?? "",
                 credential.notes?.lowercased() ?? ""
             ]
 
-            // Add passkey rpIds to searchable fields
-            if let passkeys = credential.passkeys {
-                searchableFields.append(contentsOf: passkeys.map { $0.rpId.lowercased() })
+            // Add passkey rpId to searchable fields
+            if let passkey = credential.passkey {
+                searchableFields.append(passkey.rpId.lowercased())
             }
 
             // All search words must be found (each in at least one field)
@@ -277,7 +274,7 @@ public class PasskeyProviderViewModel: ObservableObject {
         }
     }
 
-    func selectCredential(_ credential: Credential) {
+    func selectCredential(_ credential: AutofillCredential) {
         selectionHandler(credential)
     }
 
@@ -309,7 +306,7 @@ public class PasskeyProviderViewModel: ObservableObject {
 #Preview("Light Mode - With Passkeys") {
     let mockPasskey1 = Passkey(
         id: UUID(),
-        parentCredentialId: UUID(),
+        parentItemId: UUID(),
         rpId: "github.com",
         userHandle: Data(),
         userName: "user@example.com",
@@ -324,7 +321,7 @@ public class PasskeyProviderViewModel: ObservableObject {
 
     let mockPasskey2 = Passkey(
         id: UUID(),
-        parentCredentialId: UUID(),
+        parentItemId: UUID(),
         rpId: "google.com",
         userHandle: Data(),
         userName: "johndoe@gmail.com",
@@ -337,82 +334,32 @@ public class PasskeyProviderViewModel: ObservableObject {
         isDeleted: false
     )
 
-    let mockCredentials = [
-        Credential(
+    let mockCredentials: [AutofillCredential] = [
+        AutofillCredential(
             id: UUID(),
-            alias: Alias(
-                id: UUID(),
-                gender: "Not specified",
-                firstName: "John",
-                lastName: "Doe",
-                nickName: "JD",
-                birthDate: Date(),
-                email: "user@example.com",
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
-            service: Service(
-                id: UUID(),
-                name: "GitHub",
-                url: "https://github.com",
-                logo: nil,
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
+            serviceName: "GitHub",
+            serviceUrl: "https://github.com",
+            logo: nil,
             username: "johndoe",
+            email: "user@example.com",
+            password: "password123",
             notes: nil,
-            password: Password(
-                id: UUID(),
-                credentialId: UUID(),
-                value: "password123",
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
-            passkeys: [mockPasskey1],
+            passkey: mockPasskey1,
             createdAt: Date(),
-            updatedAt: Date(),
-            isDeleted: false
+            updatedAt: Date()
         ),
-        Credential(
+        AutofillCredential(
             id: UUID(),
-            alias: Alias(
-                id: UUID(),
-                gender: "Not specified",
-                firstName: "John",
-                lastName: "Doe",
-                nickName: "JD",
-                birthDate: Date(),
-                email: "johndoe@gmail.com",
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
-            service: Service(
-                id: UUID(),
-                name: "Google",
-                url: "https://google.com",
-                logo: nil,
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
+            serviceName: "Google",
+            serviceUrl: "https://google.com",
+            logo: nil,
             username: nil,
+            email: "johndoe@gmail.com",
+            password: "password456",
             notes: nil,
-            password: Password(
-                id: UUID(),
-                credentialId: UUID(),
-                value: "password456",
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
-            passkeys: [mockPasskey2],
+            passkey: mockPasskey2,
             createdAt: Date(),
-            updatedAt: Date(),
-            isDeleted: false
+            updatedAt: Date()
         )
     ]
 
@@ -433,7 +380,7 @@ public class PasskeyProviderViewModel: ObservableObject {
 #Preview("Dark Mode - With Passkeys") {
     let mockPasskey = Passkey(
         id: UUID(),
-        parentCredentialId: UUID(),
+        parentItemId: UUID(),
         rpId: "github.com",
         userHandle: Data(),
         userName: "user@example.com",
@@ -446,37 +393,19 @@ public class PasskeyProviderViewModel: ObservableObject {
         isDeleted: false
     )
 
-    let mockCredentials = [
-        Credential(
+    let mockCredentials: [AutofillCredential] = [
+        AutofillCredential(
             id: UUID(),
-            alias: Alias(
-                id: UUID(),
-                gender: "Not specified",
-                firstName: "John",
-                lastName: "Doe",
-                nickName: "JD",
-                birthDate: Date(),
-                email: "user@example.com",
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
-            service: Service(
-                id: UUID(),
-                name: "GitHub",
-                url: "https://github.com",
-                logo: nil,
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
+            serviceName: "GitHub",
+            serviceUrl: "https://github.com",
+            logo: nil,
             username: "johndoe",
-            notes: nil,
+            email: "user@example.com",
             password: nil,
-            passkeys: [mockPasskey],
+            notes: nil,
+            passkey: mockPasskey,
             createdAt: Date(),
-            updatedAt: Date(),
-            isDeleted: false
+            updatedAt: Date()
         )
     ]
 

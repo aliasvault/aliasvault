@@ -3,16 +3,16 @@ import { useTranslation } from 'react-i18next';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import type { Attachment } from '@/utils/dist/shared/models/vault';
+import type { Attachment } from '@/utils/dist/core/models/vault';
 
 type AttachmentBlockProps = {
-  credentialId: string;
+  itemId: string;
 }
 
 /**
- * This component shows attachments for a credential.
+ * This component shows attachments for an item.
  */
-const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ credentialId }) => {
+const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ itemId }) => {
   const { t } = useTranslation();
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,15 +49,15 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ credentialId }) => {
 
   useEffect(() => {
     /**
-     * Loads the attachments for the credential.
+     * Loads the attachments for the item.
      */
     const loadAttachments = async (): Promise<void> => {
-      if (!dbContext?.sqliteClient) {
+      if (!dbContext?.sqliteClient || !itemId) {
         return;
       }
 
       try {
-        const attachmentList = dbContext.sqliteClient.getAttachmentsForCredential(credentialId);
+        const attachmentList = dbContext.sqliteClient.settings.getAttachmentsForItem(itemId);
         setAttachments(attachmentList);
       } catch (error) {
         console.error('Error loading attachments:', error);
@@ -67,7 +67,7 @@ const AttachmentBlock: React.FC<AttachmentBlockProps> = ({ credentialId }) => {
     };
 
     loadAttachments();
-  }, [credentialId, dbContext?.sqliteClient]);
+  }, [itemId, dbContext?.sqliteClient]);
 
   if (loading) {
     return (

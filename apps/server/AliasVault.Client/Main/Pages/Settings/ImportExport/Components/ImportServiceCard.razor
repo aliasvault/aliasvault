@@ -1,5 +1,5 @@
 @inject ILogger<ImportServiceCard> Logger
-@inject CredentialService CredentialService
+@inject ItemService ItemService
 @inject DbService DbService
 @inject NavigationManager NavigationManager
 @inject GlobalNotificationService GlobalNotificationService
@@ -9,6 +9,8 @@
 @using AliasVault.ImportExport.Importers
 @using AliasVault.ImportExport.Models
 @using AliasVault.Shared.Models.WebApi.Favicon
+@using AliasClientDb
+@using AliasClientDb.Models
 
 <div @onclick="OpenImportModal" class="flex flex-col p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
     <div class="flex items-center">
@@ -436,14 +438,14 @@
     }
 
     /// <summary>
-    /// Imports the credentials to the database.
+    /// Imports the items to the database.
     /// </summary>
     private async Task ImportCredentialsToDatabase()
     {
-        var credentials = BaseImporter.ConvertToCredential(ImportedCredentials);
-        foreach (var credential in credentials)
+        var items = BaseImporter.ConvertToItem(ImportedCredentials);
+        foreach (var item in items)
         {
-            await ProcessSingleCredential(credential);
+            await ProcessSingleItem(item);
             await Task.Delay(2); // Small delay to avoid blocking the UI thread
         }
 
@@ -451,7 +453,7 @@
         if (success)
         {
             GlobalNotificationService.AddSuccessMessage($"Successfully imported {ImportedCredentials.Count} credentials.");
-            NavigationManager.NavigateTo("/credentials");
+            NavigationManager.NavigateTo("/items");
         }
         else
         {
@@ -460,16 +462,30 @@
     }
 
     /// <summary>
-    /// Processes a single credential.
+    /// Processes a single item.
     /// </summary>
-    /// <param name="credential">The credential to process.</param>
-    private async Task ProcessSingleCredential(Credential credential)
+    /// <param name="item">The item to process.</param>
+    private async Task ProcessSingleItem(Item item)
     {
-        if (!string.IsNullOrEmpty(credential.Service.Url) && ExtractedFavicons.TryGetValue(credential.Service.Url, out var favicon))
+        var url = ItemService.GetFieldValue(item, FieldKey.LoginUrl);
+        if (!string.IsNullOrEmpty(url) && ExtractedFavicons.TryGetValue(url, out var favicon))
         {
-            credential.Service.Logo = favicon;
+            // Store favicon in Logo entity
+            var logo = new Logo
+            {
+                Id = Guid.NewGuid(),
+                Source = new Uri(url).Host,
+                FileData = favicon,
+                MimeType = "image/png",
+                FetchedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            var context = await DbService.GetDbContextAsync();
+            context.Logos.Add(logo);
+            item.LogoId = logo.Id;
         }
-        await CredentialService.InsertEntryAsync(credential, false, false);
+        await ItemService.InsertEntryAsync(item, false, false);
     }
 
     /// <summary>
@@ -533,12 +549,14 @@
     /// </summary>
     private async Task DetectAndRemoveDuplicates()
     {
-        var existingCredentials = await CredentialService.LoadAllAsync();
+        var existingItems = await ItemService.LoadAllAsync();
         var duplicates = ImportedCredentials.Where(imported =>
-            existingCredentials.Any(existing =>
-                existing.Service.Name != null && existing.Service.Name.Equals(imported.ServiceName, StringComparison.OrdinalIgnoreCase) &&
-                existing.Username != null && existing.Username.Equals(imported.Username, StringComparison.OrdinalIgnoreCase) &&
-                existing.Passwords.Any(p => p.Value != null && p.Value.Equals(imported.Password, StringComparison.OrdinalIgnoreCase))
+            existingItems.Any(existing =>
+                existing.Name != null && existing.Name.Equals(imported.ServiceName, StringComparison.OrdinalIgnoreCase) &&
+                ItemService.GetFieldValue(existing, FieldKey.LoginUsername) != null &&
+                ItemService.GetFieldValue(existing, FieldKey.LoginUsername)!.Equals(imported.Username, StringComparison.OrdinalIgnoreCase) &&
+                ItemService.GetFieldValue(existing, FieldKey.LoginPassword) != null &&
+                ItemService.GetFieldValue(existing, FieldKey.LoginPassword)!.Equals(imported.Password, StringComparison.OrdinalIgnoreCase)
             )).ToList();
 
         DuplicateCredentialsCount = duplicates.Count;

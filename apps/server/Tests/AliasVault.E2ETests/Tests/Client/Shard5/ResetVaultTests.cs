@@ -28,21 +28,21 @@ public class ResetVaultTests : ClientPlaywrightTest
     {
         await CompleteTutorial();
 
-        // Create three random credential entries.
+        // Create three random item entries.
         for (var i = 0; i < 3; i++)
         {
             // Advance time by 1 second manually to ensure the new vault is created in the future.
             ApiTimeProvider.AdvanceBy(TimeSpan.FromSeconds(1));
 
-            var randomServiceName = $"Credential service {i}";
-            await CreateCredentialEntry(new Dictionary<string, string>
+            var randomServiceName = $"Item service {i}";
+            await CreateItemEntry(new Dictionary<string, string>
             {
                 { "service-name", randomServiceName },
             });
 
              // Check that the service names are present in the content.
             var pageContent = await Page.TextContentAsync("body");
-            Assert.That(pageContent, Does.Contain(randomServiceName), "Created credential service name does not appear after creation.");
+            Assert.That(pageContent, Does.Contain(randomServiceName), "Created item service name does not appear after creation.");
         }
 
         // Attempt to reset vault.
@@ -69,24 +69,24 @@ public class ResetVaultTests : ClientPlaywrightTest
         await resetVaultButton.ClickAsync();
 
         // Wait for success message.
-        await WaitForUrlAsync("credentials", "successfully reset");
+        await WaitForUrlAsync("items", "successfully reset");
 
-        // Check API that the latest vault has no credentials.
+        // Check API that the latest vault has no items.
         var latestVault = await ApiDbContext.Vaults.Where(x => x.User.UserName == TestUserUsername).OrderByDescending(x => x.CreatedAt).FirstAsync();
-        Assert.That(latestVault.CredentialsCount, Is.EqualTo(0), "Latest vault should have no credentials after reset.");
+        Assert.That(latestVault.CredentialsCount, Is.EqualTo(0), "Latest vault should have no items after reset.");
 
-        // Create a new credential entry.
-        var serviceName = "Credential service after reset";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        // Create a new item entry.
+        var serviceName = "Item service after reset";
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName },
         });
 
-        // Check that the now latest vault has one credential, and only one active claimed alias.
+        // Check that the now latest vault has one item, and only one active claimed alias.
         latestVault = await ApiDbContext.Vaults.Where(x => x.User.UserName == TestUserUsername).OrderByDescending(x => x.CreatedAt).FirstAsync();
         Assert.Multiple(() =>
         {
-            Assert.That(latestVault.CredentialsCount, Is.EqualTo(1), "Latest vault should have one credential after reset.");
+            Assert.That(latestVault.CredentialsCount, Is.EqualTo(1), "Latest vault should have one item after reset.");
             Assert.That(latestVault.EmailClaimsCount, Is.EqualTo(1), "Latest vault should have (only) one active claimed alias after reset.");
         });
     }

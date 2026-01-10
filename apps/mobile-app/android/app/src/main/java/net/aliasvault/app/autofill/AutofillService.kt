@@ -27,9 +27,10 @@ import android.widget.RemoteViews
 import net.aliasvault.app.MainActivity
 import net.aliasvault.app.R
 import net.aliasvault.app.autofill.models.FieldType
-import net.aliasvault.app.autofill.utils.CredentialMatcher
 import net.aliasvault.app.autofill.utils.FieldFinder
 import net.aliasvault.app.autofill.utils.ImageUtils
+import net.aliasvault.app.autofill.utils.RustCredentialMatcher
+import net.aliasvault.app.utils.ItemTypeIcon
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.interfaces.CredentialOperationCallback
 import net.aliasvault.app.vaultstore.models.Credential
@@ -150,7 +151,7 @@ class AutofillService : AutofillService() {
 
                             // Filter credentials based on app/website info
                             val filteredByApp = if (appInfo != null) {
-                                CredentialMatcher.filterCredentialsByAppInfo(result, appInfo)
+                                RustCredentialMatcher.filterCredentialsByAppInfo(result, appInfo)
                             } else {
                                 result
                             }
@@ -250,12 +251,8 @@ class AutofillService : AutofillService() {
      * @return The dataset
      */
     private fun createCredentialDataset(fieldFinder: FieldFinder, credential: Credential): Dataset {
-        // Choose layout based on whether we have a logo
-        val layoutId = if (credential.service.logo != null) {
-            R.layout.autofill_dataset_item_icon
-        } else {
-            R.layout.autofill_dataset_item
-        }
+        // Always use icon layout (will show logo or placeholder icon)
+        val layoutId = R.layout.autofill_dataset_item_icon
 
         // Create presentation for this credential using our custom layout
         val presentation = RemoteViews(packageName, layoutId)
@@ -366,13 +363,21 @@ class AutofillService : AutofillService() {
             presentationDisplayValue,
         )
 
-        // Set the logo if available
+        // Set the logo if available, otherwise use placeholder icon
         val logoBytes = credential.service.logo
-        if (logoBytes != null) {
-            val bitmap = ImageUtils.bytesToBitmap(logoBytes)
-            if (bitmap != null) {
-                presentation.setImageViewBitmap(R.id.icon, bitmap)
-            }
+        val bitmap = if (logoBytes != null) {
+            ImageUtils.bytesToBitmap(logoBytes)
+        } else {
+            // Use placeholder key icon for Login/Alias items
+            ItemTypeIcon.getIcon(
+                context = this@AutofillService,
+                itemType = ItemTypeIcon.ItemType.LOGIN,
+                size = 96,
+            )
+        }
+
+        if (bitmap != null) {
+            presentation.setImageViewBitmap(R.id.icon, bitmap)
         }
 
         return dataSetBuilder.build()

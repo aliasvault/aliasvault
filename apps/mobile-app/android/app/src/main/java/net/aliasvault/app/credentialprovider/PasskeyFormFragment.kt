@@ -214,12 +214,11 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_checking_connection))
             }
 
-            try {
-                vaultStore.syncVault(webApiService)
-            } catch (e: Exception) {
+            val syncResult = vaultStore.syncVaultWithServer(webApiService)
+            if (!syncResult.success && !syncResult.wasOffline) {
                 // Server connectivity check failed - show appropriate error dialog
                 withContext(Dispatchers.Main) {
-                    showSyncErrorAlert(e)
+                    showSyncErrorAlert(Exception(syncResult.error ?: "Sync failed"))
                 }
                 return@withContext
             }
@@ -272,7 +271,7 @@ class PasskeyFormFragment : Fragment() {
             val now = Date()
             val passkey = Passkey(
                 id = passkeyId,
-                parentCredentialId = UUID.randomUUID(), // Will be set by createCredentialWithPasskey
+                parentItemId = UUID.randomUUID(), // Will be set by createItemWithPasskey
                 rpId = viewModel.rpId,
                 userHandle = viewModel.userId,
                 userName = viewModel.userName,
@@ -290,7 +289,7 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_saving))
             }
 
-            vaultStore.createCredentialWithPasskey(
+            vaultStore.createItemWithPasskey(
                 rpId = viewModel.rpId,
                 userName = viewModel.userName,
                 displayName = displayName,
@@ -409,12 +408,11 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_checking_connection))
             }
 
-            try {
-                vaultStore.syncVault(webApiService)
-            } catch (e: Exception) {
+            val syncResult = vaultStore.syncVaultWithServer(webApiService)
+            if (!syncResult.success && !syncResult.wasOffline) {
                 // Server connectivity check failed - show appropriate error dialog
                 withContext(Dispatchers.Main) {
-                    showSyncErrorAlert(e)
+                    showSyncErrorAlert(Exception(syncResult.error ?: "Sync failed"))
                 }
                 return@withContext
             }
@@ -465,7 +463,7 @@ class PasskeyFormFragment : Fragment() {
             val now = Date()
             val newPasskey = Passkey(
                 id = newPasskeyId,
-                parentCredentialId = passkeyToReplace.passkey.parentCredentialId,
+                parentItemId = passkeyToReplace.passkey.parentItemId,
                 rpId = viewModel.rpId,
                 userHandle = viewModel.userId,
                 userName = viewModel.userName,

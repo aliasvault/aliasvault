@@ -40,17 +40,6 @@ public sealed class DbServiceState
         Creating,
 
         /// <summary>
-        /// Database requires a merge because of multiple vaults with the same revision number.
-        /// This happens when multiple clients have made changes to the same vault without syncing in between.
-        /// </summary>
-        MergeRequired,
-
-        /// <summary>
-        /// Database merge failed.
-        /// </summary>
-        MergeFailed,
-
-        /// <summary>
         /// Database failed to decrypt. No data is accessible.
         /// </summary>
         DecryptionFailed,
@@ -74,6 +63,12 @@ public sealed class DbServiceState
         /// Database is saving to server.
         /// </summary>
         SavingToServer,
+
+        /// <summary>
+        /// Database has local changes pending background sync to server.
+        /// Used for non-blocking mutations where UI doesn't wait for server sync.
+        /// </summary>
+        BackgroundSyncPending,
     }
 
     /// <summary>
@@ -156,7 +151,7 @@ public sealed class DbServiceState
         /// <returns>Bool.</returns>
         public bool IsInitialized()
         {
-            return Status is DatabaseStatus.Ready or DatabaseStatus.SavingToServer;
+            return Status is DatabaseStatus.Ready or DatabaseStatus.SavingToServer or DatabaseStatus.BackgroundSyncPending;
         }
     }
 }

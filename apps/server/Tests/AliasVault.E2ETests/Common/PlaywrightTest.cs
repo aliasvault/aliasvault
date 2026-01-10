@@ -174,7 +174,7 @@ public abstract class PlaywrightTest
             .First
             .WaitForAsync(new LocatorWaitForOptions
             {
-                Timeout = 20000,
+                Timeout = TestDefaults.DefaultTimeout,
                 State = WaitForSelectorState.Attached,
             });
     }
@@ -198,6 +198,33 @@ public abstract class PlaywrightTest
         var playwright = await Playwright.CreateAsync();
         Browser = await playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions { Headless = headless });
         Context = await Browser.NewContextAsync();
+
+        // Set up console message logging to help debug CI issues
+        Context.Console += (_, msg) =>
+        {
+            var type = msg.Type;
+            var text = msg.Text;
+
+            var logMessage = $"[CONTEXT CONSOLE {type.ToUpper()}] {text}";
+
+            // Write to multiple outputs to ensure visibility
+            Console.WriteLine(logMessage);
+            TestContext.Progress.WriteLine(logMessage);
+
+            if (type == "error")
+            {
+                Console.Error.WriteLine(logMessage);
+            }
+        };
+
+        // Log failed requests to help identify network issues
+        Context.RequestFailed += (_, request) =>
+        {
+            var failureMessage = $"[REQUEST FAILED] {request.Failure} - {request.Url}";
+            Console.WriteLine(failureMessage);
+            Console.Error.WriteLine(failureMessage);
+            TestContext.Progress.WriteLine(failureMessage);
+        };
     }
 
     /// <summary>

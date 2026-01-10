@@ -4,10 +4,10 @@
 @inject IStringLocalizerFactory LocalizerFactory
 
 <div class="ms-1 items-center flex">
-    <SmallLoadingIndicator Title="@SharedLocalizer["SyncVaultData"]" Spinning="@Loading">
-        @if (!Loading)
+    <SmallLoadingIndicator Title="@GetStatusTitle()" Spinning="@IsSyncing">
+        @if (!IsSyncing)
         {
-            <button class="absolute p-2 hover:bg-gray-200 rounded-2xl" id="vault-refresh-btn" @onclick="OnRefreshClick">
+            <button class="absolute p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-2xl" id="vault-refresh-btn" @onclick="OnRefreshClick">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
                     <path fill-rule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clip-rule="evenodd" />
                 </svg>
@@ -19,9 +19,7 @@
 @code {
     private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
 
-    private bool Loading { get; set; } = false;
-    private string LoadingIndicatorMessage { get; set; } = "";
-    private bool DatabaseLoading { get; set; } = false;
+    private bool IsSyncing { get; set; }
 
     /// <summary>
     /// Dispose method.
@@ -36,8 +34,7 @@
     {
         await base.OnInitializedAsync();
         DbService.GetState().StateChanged += OnDatabaseStateChanged;
-
-        UpdateLoadingIndicatorMessage();
+        UpdateSyncState();
     }
 
     /// <summary>
@@ -50,37 +47,50 @@
 
     private async void OnDatabaseStateChanged(object? sender, DbServiceState.DatabaseState newState)
     {
+        await InvokeAsync(() =>
+        {
+            UpdateSyncState();
+            StateHasChanged();
+        });
+
+        // Show loading indicator for at least 0.5 seconds when syncing to server
+        if (newState.Status is DbServiceState.DatabaseStatus.SavingToServer or DbServiceState.DatabaseStatus.BackgroundSyncPending)
+        {
+            await ShowSyncIndicatorAsync();
+        }
+    }
+
+    private void UpdateSyncState()
+    {
+        var currentStatus = DbService.GetState().CurrentState.Status;
+        IsSyncing = currentStatus is DbServiceState.DatabaseStatus.SavingToServer
+            or DbServiceState.DatabaseStatus.BackgroundSyncPending
+            or DbServiceState.DatabaseStatus.Loading;
+    }
+
+    private string GetStatusTitle()
+    {
+        var currentStatus = DbService.GetState().CurrentState.Status;
+        return currentStatus switch
+        {
+            DbServiceState.DatabaseStatus.BackgroundSyncPending => SharedLocalizer["SyncingChanges"],
+            DbServiceState.DatabaseStatus.SavingToServer => SharedLocalizer["SyncVaultData"],
+            DbServiceState.DatabaseStatus.Loading => SharedLocalizer["LoadingVault"],
+            _ => SharedLocalizer["SyncVaultData"],
+        };
+    }
+
+    private async Task ShowSyncIndicatorAsync()
+    {
+        IsSyncing = true;
         await InvokeAsync(StateHasChanged);
-
-        UpdateLoadingIndicatorMessage();
-
-        if (newState.Status == DbServiceState.DatabaseStatus.SavingToServer)
-        {
-            // Show loading indicator for at least 0.5 seconds even if the save operation is faster.
-            await ShowLoadingIndicatorAsync();
-        }
-    }
-
-    private void UpdateLoadingIndicatorMessage()
-    {
-        var currentState = DbService.GetState().CurrentState;
-
-        var message = currentState.Status.ToString();
-        if (currentState.Message != string.Empty)
-        {
-            message = currentState.Message;
-        }
-
-        LoadingIndicatorMessage = "Vault status: " + message + " - " + currentState.LastUpdated;
-        StateHasChanged();
-    }
-
-    private async Task ShowLoadingIndicatorAsync()
-    {
-        Loading = true;
-        StateHasChanged();
         await Task.Delay(800);
-        Loading = false;
-        StateHasChanged();
+
+        // Only hide if we're back to ready state
+        if (DbService.GetState().CurrentState.Status == DbServiceState.DatabaseStatus.Ready)
+        {
+            IsSyncing = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 }

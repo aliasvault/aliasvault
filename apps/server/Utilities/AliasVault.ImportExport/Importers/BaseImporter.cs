@@ -8,6 +8,7 @@
 namespace AliasVault.ImportExport.Importers;
 
 using AliasClientDb;
+using AliasClientDb.Models;
 using AliasVault.ImportExport.Models;
 using AliasVault.TotpGenerator;
 using CsvHelper;
@@ -138,68 +139,111 @@ public static class BaseImporter
         return decoded;
     }
     /// <summary>
-    /// Converts a list of imported credentials to a list of AliasVault credentials.
+    /// Converts a list of imported credentials to a list of AliasVault Items.
     /// </summary>
     /// <param name="importedCredentials">The list of imported credentials.</param>
-    /// <returns>The list of AliasVault credentials.</returns>
-    public static List<Credential> ConvertToCredential(List<ImportedCredential> importedCredentials)
+    /// <returns>The list of AliasVault Items.</returns>
+    public static List<Item> ConvertToItem(List<ImportedCredential> importedCredentials)
     {
-        var credentials = new List<Credential>();
+        var items = new List<Item>();
 
-        // Convert imported credentials to AliasVault relational DB format.
+        // Convert imported credentials to AliasVault field-based Item format.
         foreach (var importedCredential in importedCredentials)
         {
-            var credential = new Credential
+            var currentDateTime = DateTime.UtcNow;
+            var createdAt = importedCredential.CreatedAt ?? currentDateTime;
+            var updatedAt = importedCredential.UpdatedAt ?? currentDateTime;
+
+            // Determine if this is an Alias item type (has alias identity data)
+            var hasAliasData = importedCredential.Alias != null &&
+                (!string.IsNullOrEmpty(importedCredential.Alias.FirstName) ||
+                 !string.IsNullOrEmpty(importedCredential.Alias.LastName) ||
+                 !string.IsNullOrEmpty(importedCredential.Alias.Gender) ||
+                 importedCredential.Alias.BirthDate.HasValue);
+
+            var item = new Item
             {
-                Service = new Service { Name = importedCredential.ServiceName, Url = importedCredential.ServiceUrl },
-                Username = importedCredential.Username,
-                Passwords = [new() { Value = importedCredential.Password }],
-                Notes = importedCredential.Notes,
-                CreatedAt = importedCredential.CreatedAt ?? DateTime.UtcNow,
-                UpdatedAt = importedCredential.UpdatedAt ?? DateTime.UtcNow,
-                Alias = new Alias
-                {
-                    FirstName = importedCredential.Alias?.FirstName,
-                    LastName = importedCredential.Alias?.LastName,
-                    Gender = importedCredential.Alias?.Gender,
-                    // TODO: birth date should be made nullable in client DB as it's not always available.
-                    BirthDate = importedCredential.Alias?.BirthDate ?? DateTime.MinValue,
-                    Email = importedCredential.Email,
-                    NickName = importedCredential.Alias?.NickName,
-                    CreatedAt = importedCredential.CreatedAt ?? DateTime.UtcNow,
-                    UpdatedAt = importedCredential.UpdatedAt ?? DateTime.UtcNow,
-                }
+                Id = Guid.NewGuid(),
+                Name = importedCredential.ServiceName ?? string.Empty,
+                ItemType = hasAliasData ? "Alias" : "Login",
+                CreatedAt = createdAt,
+                UpdatedAt = updatedAt,
             };
 
+            // Add field values for non-empty fields
+            AddFieldValueIfNotEmpty(item, FieldKey.LoginUrl, importedCredential.ServiceUrl, createdAt, updatedAt);
+            AddFieldValueIfNotEmpty(item, FieldKey.LoginUsername, importedCredential.Username, createdAt, updatedAt);
+            AddFieldValueIfNotEmpty(item, FieldKey.LoginPassword, importedCredential.Password, createdAt, updatedAt);
+            AddFieldValueIfNotEmpty(item, FieldKey.LoginEmail, importedCredential.Email, createdAt, updatedAt);
+            AddFieldValueIfNotEmpty(item, FieldKey.NotesContent, importedCredential.Notes, createdAt, updatedAt);
+
+            // Add alias fields if present
+            if (importedCredential.Alias != null)
+            {
+                AddFieldValueIfNotEmpty(item, FieldKey.AliasFirstName, importedCredential.Alias.FirstName, createdAt, updatedAt);
+                AddFieldValueIfNotEmpty(item, FieldKey.AliasLastName, importedCredential.Alias.LastName, createdAt, updatedAt);
+                AddFieldValueIfNotEmpty(item, FieldKey.AliasGender, importedCredential.Alias.Gender, createdAt, updatedAt);
+
+                if (importedCredential.Alias.BirthDate.HasValue && importedCredential.Alias.BirthDate.Value != DateTime.MinValue)
+                {
+                    AddFieldValueIfNotEmpty(item, FieldKey.AliasBirthdate, importedCredential.Alias.BirthDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), createdAt, updatedAt);
+                }
+            }
+
+            // Add TOTP codes if present
             if (!string.IsNullOrEmpty(importedCredential.TwoFactorSecret))
             {
-                // Sanitize the secret key by converting from potential URI to secret key and name.
                 try
                 {
                     var (secretKey, name) = TotpHelper.SanitizeSecretKey(importedCredential.TwoFactorSecret);
 
-                    credential.TotpCodes = new List<TotpCode>
+                    item.TotpCodes.Add(new TotpCode
                     {
-                        new()
-                        {
-                            Name = name ?? "Authenticator",
-                            SecretKey = secretKey,
-                            CreatedAt = importedCredential.CreatedAt ?? DateTime.UtcNow,
-                            UpdatedAt = importedCredential.UpdatedAt ?? DateTime.UtcNow,
-                        }
-                    };
+                        Id = Guid.NewGuid(),
+                        Name = name ?? "Authenticator",
+                        SecretKey = secretKey,
+                        CreatedAt = createdAt,
+                        UpdatedAt = updatedAt,
+                    });
                 }
                 catch (Exception ex)
                 {
-                    // 2FA extraction failed, log the error and continue with the next credential
+                    // 2FA extraction failed, log the error and continue with the next item
                     // so the import doesn't fail due to failed 2FA extraction.
                     Console.WriteLine($"Error importing TOTP code: {ex.Message}");
                 }
             }
 
-            credentials.Add(credential);
+            items.Add(item);
         }
 
-        return credentials;
+        return items;
+    }
+
+    /// <summary>
+    /// Adds a field value to an item if the value is not empty.
+    /// </summary>
+    /// <param name="item">The item to add the field value to.</param>
+    /// <param name="fieldKey">The field key.</param>
+    /// <param name="value">The field value.</param>
+    /// <param name="createdAt">The created timestamp.</param>
+    /// <param name="updatedAt">The updated timestamp.</param>
+    private static void AddFieldValueIfNotEmpty(Item item, string fieldKey, string? value, DateTime createdAt, DateTime updatedAt)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return;
+        }
+
+        item.FieldValues.Add(new FieldValue
+        {
+            Id = Guid.NewGuid(),
+            ItemId = item.Id,
+            FieldKey = fieldKey,
+            Value = value,
+            Weight = 0,
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt,
+        });
     }
 }

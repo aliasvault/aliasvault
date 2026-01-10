@@ -23,8 +23,6 @@
 "password" = "Password";
 "credentials_load_error" = "Failed to load credentials. Please open the AliasVault app to check for updates.";
 "no_credential_selected" = "No credential selected.";
-"retrieving_credential" = "Retrieving credential";
-"retrieving_passkey" = "Retrieving passkey";
 
 /* Context menu strings */
 "copy_username" = "Copy Username";

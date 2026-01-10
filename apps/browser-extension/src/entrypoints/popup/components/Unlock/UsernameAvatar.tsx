@@ -22,7 +22,7 @@ const UsernameAvatar: React.FC = () => {
         {username}
       </p>
       <p className="text-sm text-gray-500 dark:text-gray-400">
-        {t('auth.loggedIn')}
+        {t('common.loggedIn')}
       </p>
     </div>
   );

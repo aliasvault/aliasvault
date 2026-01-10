@@ -5,6 +5,8 @@ import VaultUtils
 
 /// Extension for the VaultStore class to handle query management
 extension VaultStore {
+    // MARK: - Core Database Operations (DatabaseClient Protocol)
+
     /// Execute a SELECT query on the database
     public func executeQuery(_ query: String, params: [Binding?]) throws -> [[String: Any]] {
         guard let dbConnection = self.dbConnection else {
@@ -118,7 +120,7 @@ extension VaultStore {
         // If you have your own transaction management, ensure it's committed before calling this.
         // Optional: give SQLite time to resolve locks
         try? dbConnection.execute("PRAGMA busy_timeout=5000")
-        
+
         // End any lingering transaction (no-op if none).
        _ = try? dbConnection.execute("END")
 
@@ -135,7 +137,7 @@ extension VaultStore {
         // Run VACUUM INTO to create a compact, faithful copy of the current DB.
         // Must be executed with no active transaction and no attached target needed.
         // This preserves schema, indexes, triggers, views, pragmas like page_size, auto_vacuum, encoding, user_version, etc.
-        // Retry VACUUM INTO a few times if we hit “statements in progress”
+        // Retry VACUUM INTO a few times if we hit "statements in progress"
         var lastError: Error?
         for attempt in 1...5 {
             do {
@@ -173,6 +175,7 @@ extension VaultStore {
 
     /// Commit a transaction on the database. This is required for all database operations that modify the database.
     /// Committing a transaction will also trigger a persist from the in-memory database to the encrypted database file.
+    /// It also atomically marks the vault as dirty and increments the mutation sequence for proper sync tracking.
     public func commitTransaction() throws {
         guard let dbConnection = self.dbConnection else {
             throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
@@ -180,6 +183,11 @@ extension VaultStore {
 
         try dbConnection.execute("COMMIT")
         try persistDatabaseToEncryptedStorage()
+
+        // Atomically mark vault as dirty and increment mutation sequence
+        // This ensures sync can properly detect local changes
+        setIsDirty(true)
+        _ = incrementMutationSequence()
     }
 
     /// Rollback a transaction on the database on error.
@@ -190,198 +198,109 @@ extension VaultStore {
         try dbConnection.execute("ROLLBACK")
     }
 
-    // swiftlint:disable function_body_length
-    /// Get all credentials from the database.
-    public func getAllCredentials() throws -> [Credential] {
-        guard let dbConnection = self.dbConnection else {
-            throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
-        }
+    // MARK: - Items (Using Repository Pattern)
 
-        let query = """
-            WITH LatestPasswords AS (
-                SELECT
-                    p.Id as password_id,
-                    p.CredentialId,
-                    p.Value,
-                    p.CreatedAt,
-                    p.UpdatedAt,
-                    p.IsDeleted,
-                    ROW_NUMBER() OVER (PARTITION BY p.CredentialId ORDER BY p.CreatedAt DESC) as rn
-                FROM Passwords p
-                WHERE p.IsDeleted = 0
-            )
-            SELECT
-                c.Id,
-                c.AliasId,
-                c.Username,
-                c.Notes,
-                c.CreatedAt,
-                c.UpdatedAt,
-                c.IsDeleted,
-                s.Id as service_id,
-                s.Name as service_name,
-                s.Url as service_url,
-                s.Logo as service_logo,
-                s.CreatedAt as service_created_at,
-                s.UpdatedAt as service_updated_at,
-                s.IsDeleted as service_is_deleted,
-                lp.password_id,
-                lp.Value as password_value,
-                lp.CreatedAt as password_created_at,
-                lp.UpdatedAt as password_updated_at,
-                lp.IsDeleted as password_is_deleted,
-                a.Id as alias_id,
-                a.Gender as alias_gender,
-                a.FirstName as alias_first_name,
-                a.LastName as alias_last_name,
-                a.NickName as alias_nick_name,
-                a.BirthDate as alias_birth_date,
-                a.Email as alias_email,
-                a.CreatedAt as alias_created_at,
-                a.UpdatedAt as alias_updated_at,
-                a.IsDeleted as alias_is_deleted
-            FROM Credentials c
-            LEFT JOIN Services s ON s.Id = c.ServiceId AND s.IsDeleted = 0
-            LEFT JOIN LatestPasswords lp ON lp.CredentialId = c.Id AND lp.rn = 1
-            LEFT JOIN Aliases a ON a.Id = c.AliasId AND a.IsDeleted = 0
-            WHERE c.IsDeleted = 0
-            ORDER BY c.CreatedAt DESC
-        """
-
-        var result: [Credential] = []
-        for row in try dbConnection.prepare(query) {
-            guard let idString = row[0] as? String else {
-                continue
-            }
-
-            let createdAtString = row[4] as? String
-            let updatedAtString = row[5] as? String
-
-            guard let createdAtString = createdAtString,
-                let updatedAtString = updatedAtString else {
-                continue
-            }
-
-            guard let createdAt = DateHelpers.parseDateString(createdAtString),
-                let updatedAt = DateHelpers.parseDateString(updatedAtString) else {
-                continue
-            }
-
-            guard let isDeletedInt64 = row[6] as? Int64 else { continue }
-            let isDeleted = isDeletedInt64 == 1
-
-            guard let serviceId = row[7] as? String,
-                let serviceCreatedAtString = row[11] as? String,
-                let serviceUpdatedAtString = row[12] as? String,
-                let serviceIsDeletedInt64 = row[13] as? Int64,
-                let serviceCreatedAt = DateHelpers.parseDateString(serviceCreatedAtString),
-                let serviceUpdatedAt = DateHelpers.parseDateString(serviceUpdatedAtString) else {
-                continue
-            }
-
-            let serviceIsDeleted = serviceIsDeletedInt64 == 1
-
-            let service = Service(
-                id: UUID(uuidString: serviceId)!,
-                name: row[8] as? String,
-                url: row[9] as? String,
-                logo: (row[10] as? SQLite.Blob).map { Data($0.bytes) },
-                createdAt: serviceCreatedAt,
-                updatedAt: serviceUpdatedAt,
-                isDeleted: serviceIsDeleted
-            )
-
-            var alias: Alias?
-            if let aliasIdString = row[19] as? String,
-                let aliasCreatedAtString = row[26] as? String,
-                let aliasUpdatedAtString = row[27] as? String,
-                let aliasIsDeletedInt64 = row[28] as? Int64,
-                let aliasCreatedAt = DateHelpers.parseDateString(aliasCreatedAtString),
-                let aliasUpdatedAt = DateHelpers.parseDateString(aliasUpdatedAtString) {
-
-                let aliasIsDeleted = aliasIsDeletedInt64 == 1
-
-                let aliasBirthDate: Date
-                if let aliasBirthDateString = row[24] as? String,
-                   let parsedBirthDate = DateHelpers.parseDateString(aliasBirthDateString) {
-                    aliasBirthDate = parsedBirthDate
-                } else {
-                    // Use 0001-01-01 00:00 as the default date if birthDate is null
-                    var dateComponents = DateComponents()
-                    dateComponents.year = 1
-                    dateComponents.month = 1
-                    dateComponents.day = 1
-                    dateComponents.hour = 0
-                    dateComponents.minute = 0
-                    dateComponents.second = 0
-                    aliasBirthDate = Calendar(identifier: .gregorian).date(from: dateComponents)!
-                }
-
-                alias = Alias(
-                    id: UUID(uuidString: aliasIdString)!,
-                    gender: row[20] as? String,
-                    firstName: row[21] as? String,
-                    lastName: row[22] as? String,
-                    nickName: row[23] as? String,
-                    birthDate: aliasBirthDate,
-                    email: row[25] as? String,
-                    createdAt: aliasCreatedAt,
-                    updatedAt: aliasUpdatedAt,
-                    isDeleted: aliasIsDeleted
-                )
-            }
-
-            var password: Password?
-            if let passwordIdString = row[14] as? String,
-            let passwordValue = row[15] as? String,
-            let passwordCreatedAtString = row[16] as? String,
-            let passwordUpdatedAtString = row[17] as? String,
-            let passwordIsDeletedInt64 = row[18] as? Int64,
-            let passwordCreatedAt = DateHelpers.parseDateString(passwordCreatedAtString),
-            let passwordUpdatedAt = DateHelpers.parseDateString(passwordUpdatedAtString) {
-
-                let passwordIsDeleted = passwordIsDeletedInt64 == 1
-
-                password = Password(
-                    id: UUID(uuidString: passwordIdString)!,
-                    credentialId: UUID(uuidString: idString)!,
-                    value: passwordValue,
-                    createdAt: passwordCreatedAt,
-                    updatedAt: passwordUpdatedAt,
-                    isDeleted: passwordIsDeleted
-                )
-            }
-
-            // Load passkeys for this credential
-            let passkeys = try getPasskeys(forCredentialId: UUID(uuidString: idString)!)
-
-            let credential = Credential(
-                id: UUID(uuidString: idString)!,
-                alias: alias,
-                service: service,
-                username: row[2] as? String,
-                notes: row[3] as? String,
-                password: password,
-                passkeys: passkeys,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                isDeleted: isDeleted
-            )
-            result.append(credential)
-        }
-
-        return result
+    /// Get all items from the database using the new field-based model.
+    /// Delegates to ItemRepository for the actual query logic.
+    public func getAllItems() throws -> [Item] {
+        return try itemRepository.getAll()
     }
-    // swiftlint:enable function_body_length
 
-    /// Get all credentials that have passkeys by filtering the result of getAllCredentials.
-    public func getAllCredentialsWithPasskeys() throws -> [Credential] {
-        var credentials = try getAllCredentials()
+    /// Get a single item by ID.
+    /// - Parameter itemId: The UUID of the item to fetch
+    /// - Returns: Item object or nil if not found
+    public func getItemById(_ itemId: UUID) throws -> Item? {
+        return try itemRepository.getById(itemId.uuidString.uppercased())
+    }
 
-        // Filter to only include credentials that actually have passkeys
+    /// Get all items that have passkeys.
+    public func getAllItemsWithPasskeys() throws -> [Item] {
+        return try getAllItems().filter { $0.hasPasskey }
+    }
+
+    /// Get all unique email addresses from items.
+    /// - Returns: Array of email addresses
+    public func getAllItemEmailAddresses() throws -> [String] {
+        return try itemRepository.getAllEmailAddresses()
+    }
+
+    /// Get recently deleted items (in trash).
+    /// - Returns: Array of items
+    public func getRecentlyDeletedItems() throws -> [Item] {
+        return try itemRepository.getRecentlyDeleted()
+    }
+
+    /// Get count of items in trash.
+    /// - Returns: Number of items in trash
+    public func getRecentlyDeletedCount() throws -> Int {
+        return try itemRepository.getRecentlyDeletedCount()
+    }
+
+    /// Move an item to trash.
+    /// - Parameter itemId: The UUID of the item to trash
+    /// - Returns: Number of rows affected
+    @discardableResult
+    public func trashItem(_ itemId: UUID) throws -> Int {
+        return try itemRepository.trash(itemId.uuidString.uppercased())
+    }
+
+    /// Restore an item from trash.
+    /// - Parameter itemId: The UUID of the item to restore
+    /// - Returns: Number of rows affected
+    @discardableResult
+    public func restoreItem(_ itemId: UUID) throws -> Int {
+        return try itemRepository.restore(itemId.uuidString.uppercased())
+    }
+
+    /// Permanently delete an item.
+    /// - Parameter itemId: The UUID of the item to permanently delete
+    /// - Returns: Number of rows affected
+    @discardableResult
+    public func permanentlyDeleteItem(_ itemId: UUID) throws -> Int {
+        return try itemRepository.permanentlyDelete(itemId.uuidString.uppercased())
+    }
+
+    /// Create a new item.
+    /// - Parameter item: The item to create
+    /// - Returns: The ID of the created item
+    @discardableResult
+    public func createItem(_ item: Item) throws -> String {
+        return try itemRepository.create(item)
+    }
+
+    /// Update an existing item.
+    /// - Parameter item: The item to update
+    /// - Returns: Number of rows affected
+    @discardableResult
+    public func updateItem(_ item: Item) throws -> Int {
+        return try itemRepository.update(item)
+    }
+
+    // MARK: - Autofill Credentials
+
+    /// Get all items for autofill from the database.
+    /// This method converts Items to AutofillCredential for iOS Autofill extension.
+    public func getAllAutofillCredentials() throws -> [AutofillCredential] {
+        let items = try getAllItems()
+        return items.compactMap { convertItemToAutofillCredential($0) }
+    }
+
+    /// Convert an Item to an AutofillCredential for iOS Autofill.
+    private func convertItemToAutofillCredential(_ item: Item) -> AutofillCredential? {
+        // Load passkey for this item (gets first non-deleted passkey)
+        let passkeys = try? getPasskeys(forItemId: item.id)
+        let passkey = passkeys?.first
+
+        return AutofillCredential(from: item, passkey: passkey)
+    }
+
+    /// Get all items that have passkeys for passkey autofill.
+    public func getAllAutofillCredentialsWithPasskeys() throws -> [AutofillCredential] {
+        var credentials = try getAllAutofillCredentials()
+
+        // Filter to only include credentials that actually have a passkey
         credentials = credentials.filter { credential in
-            guard let passkeys = credential.passkeys else { return false }
-            return !passkeys.isEmpty
+            return credential.hasPasskey
         }
 
         return credentials

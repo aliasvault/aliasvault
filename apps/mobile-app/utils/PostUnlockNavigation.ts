@@ -51,8 +51,8 @@ export class PostUnlockNavigation {
       return;
     }
 
-    // Priority 2: Default navigation to credentials
-    router.replace('/(tabs)/credentials');
+    // Priority 2: Default navigation to items
+    router.replace('/(tabs)/items');
   }
 
   /**
@@ -67,13 +67,13 @@ export class PostUnlockNavigation {
     const params = returnUrl.params || {};
 
     // Check if this is a detail route (has a sub-page after the tab)
-    const isCredentialRoute = normalizedPath.includes('/(tabs)/credentials/');
+    const isItemRoute = normalizedPath.includes('/(tabs)/items/');
     const isSettingsRoute = normalizedPath.includes('/(tabs)/settings/') &&
                            !normalizedPath.endsWith('/(tabs)/settings');
 
-    if (isCredentialRoute) {
-      // Navigate to credentials tab first, then push detail page
-      router.replace('/(tabs)/credentials');
+    if (isItemRoute) {
+      // Navigate to items tab first, then push detail page
+      router.replace('/(tabs)/items');
       setTimeout(() => {
         const queryParams = new URLSearchParams(params as Record<string, string>).toString();
         const targetUrl = queryParams ? `${normalizedPath}?${queryParams}` : normalizedPath;
@@ -102,7 +102,7 @@ export class PostUnlockNavigation {
    *
    * Supports:
    * - Action-based URLs: aliasvault://open/mobile-unlock/[id]
-   * - Direct routes: aliasvault://credentials/[id], aliasvault://settings/[page]
+   * - Direct routes: aliasvault://items/[id], aliasvault://settings/[page]
    */
   private static normalizeDeepLinkPath(urlOrPath: string): string {
     // Remove all URL schemes first
@@ -116,8 +116,8 @@ export class PostUnlockNavigation {
       return path;
     }
 
-    // Handle credential paths
-    if (path.startsWith('credentials/') || path.includes('/credentials/')) {
+    // Handle item paths
+    if (path.startsWith('items/') || path.includes('/items/')) {
       if (!path.startsWith('/')) {
         path = `/${path}`;
       }

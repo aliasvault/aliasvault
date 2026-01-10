@@ -6,7 +6,7 @@ import { StyleSheet, View, ScrollView, RefreshControl, Animated , Platform } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
-import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
 
@@ -60,8 +60,8 @@ export default function EmailsScreen() : React.ReactNode {
         return;
       }
 
-      // Get unique email addresses from all credentials
-      const emailAddresses = await dbContext.sqliteClient.getAllEmailAddresses();
+      // Get unique email addresses from all items
+      const emailAddresses = await dbContext.sqliteClient.items.getAllEmailAddresses();
 
       try {
         // For now we only show the latest 50 emails. No pagination.

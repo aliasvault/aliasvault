@@ -12,11 +12,43 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v4
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
         cache-dependency-path: apps/browser-extension/package-lock.json
+
+    - name: Setup Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: wasm32-unknown-unknown
+
+    - name: Cache Rust dependencies
+      uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: core/rust
+
+    - name: Install wasm-pack
+      shell: bash
+      run: cargo install wasm-pack --locked
+
+    - name: Build core libraries
+      shell: bash
+      run: |
+        cd ./core
+        chmod +x build-and-distribute.sh
+        ./build-and-distribute.sh
+
+    - name: Verify core library distribution
+      shell: bash
+      run: |
+        # Verify critical rust WASM files exist
+        if [ ! -f "apps/browser-extension/src/utils/dist/core/rust/aliasvault_core_bg.wasm" ]; then
+          echo "Error: Rust WASM files not found in browser extension"
+          exit 1
+        fi
+        echo "Core library distribution verified"
 
     - name: Install dependencies
       run: npm ci

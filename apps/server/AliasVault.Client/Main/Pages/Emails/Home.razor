@@ -302,14 +302,19 @@ else
                 if (mailbox?.Mails != null)
                 {
                     var context = await DbService.GetDbContextAsync();
-                    var credentialLookup = await context.Credentials
-                        .Include(x => x.Service)
-                        .Include(x => x.Alias)
-                        .Where(x => x.Alias.Email != null)
-                        .GroupBy(x => x.Alias.Email!.ToLower())
+                    var credentialLookup = await context.Items
+                        .Include(x => x.FieldValues)
+                        .Where(x => !x.IsDeleted && x.DeletedAt == null)
+                        .Where(x => x.FieldValues.Any(fv => fv.FieldKey == AliasClientDb.Models.FieldKey.LoginEmail && fv.Value != null && !fv.IsDeleted))
+                        .Select(x => new {
+                            x.Id,
+                            x.Name,
+                            Email = x.FieldValues.FirstOrDefault(fv => fv.FieldKey == AliasClientDb.Models.FieldKey.LoginEmail && !fv.IsDeleted)!.Value!.ToLower()
+                        })
+                        .GroupBy(x => x.Email)
                         .ToDictionaryAsync(
                             g => g.Key,
-                            g => new { Id = g.First().Id, ServiceName = g.First().Service.Name ?? "Unknown" }
+                            g => new { Id = g.First().Id, ServiceName = g.First().Name ?? "Unknown" }
                         );
 
                     List<MailboxEmailApiModel> decryptedEmailList;
@@ -595,7 +600,7 @@ else
     /// </summary>
     private void NavigateToCredential(Guid credentialId)
     {
-        NavigationManager.NavigateTo($"/credentials/{credentialId}");
+        NavigationManager.NavigateTo($"/items/{credentialId}");
     }
 
     /// <summary>

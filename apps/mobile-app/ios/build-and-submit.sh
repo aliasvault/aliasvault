@@ -13,6 +13,22 @@ EXPORT_PLIST="$PWD/exportOptions.plist"
 API_KEY_PATH="$HOME/APPSTORE_CONNECT_FASTLANE.json"
 
 # ------------------------------------------
+# Build core libraries if needed
+# ------------------------------------------
+
+CORE_DIR="../../../core"
+MOBILE_CORE_DIST="../utils/dist/core"
+
+if [ ! -d "$MOBILE_CORE_DIST/models" ] || [ ! -d "$MOBILE_CORE_DIST/vault" ]; then
+  echo "Building core libraries..."
+  pushd "$CORE_DIR" > /dev/null
+  chmod +x build-and-distribute.sh
+  ./build-and-distribute.sh
+  popd > /dev/null
+  echo "Core libraries built successfully"
+fi
+
+# ------------------------------------------
 
 if [ ! -f "$API_KEY_PATH" ]; then
   echo "❌ API key file '$API_KEY_PATH' does not exist. Please provide the App Store Connect API key at this path."

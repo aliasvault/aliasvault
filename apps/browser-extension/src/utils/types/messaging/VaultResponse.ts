@@ -4,5 +4,5 @@ export type VaultResponse = {
     publicEmailDomains?: string[],
     privateEmailDomains?: string[],
     hiddenPrivateEmailDomains?: string[],
-    vaultRevisionNumber?: number
+    serverRevision?: number
 };

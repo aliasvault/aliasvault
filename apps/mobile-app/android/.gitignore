@@ -14,3 +14,8 @@ local.properties
 
 # Bundle artifacts
 *.jsbundle
+
+# Android Kotlin bindings (built by: cd core/rust && ./build.sh --android)
+app/src/main/java/net/aliasvault/app/rustcore/uniffi/
+app/src/main/java/uniffi
+app/src/main/jniLibs/

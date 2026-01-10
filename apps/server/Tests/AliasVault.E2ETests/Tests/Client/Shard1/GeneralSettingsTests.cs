@@ -33,11 +33,11 @@ public class GeneralSettingsTests : ClientPlaywrightTest
         var defaultEmailDomainField = Page.Locator("select[id='defaultEmailDomain']");
         await defaultEmailDomainField.SelectOptionAsync("example2.tld");
 
-        // Go to new credential create page and assert that the default email domain is visible on the page.
-        await NavigateUsingBlazorRouter("credentials/create");
-        await WaitForUrlAsync("credentials/create", "Add credentials");
+        // Go to new item create page and assert that the default email domain is visible on the page.
+        await NavigateUsingBlazorRouter("items/create");
+        await WaitForUrlAsync("items/create", "Add Item");
 
         var defaultEmailDomainText = await Page.TextContentAsync("body");
-        Assert.That(defaultEmailDomainText, Does.Contain("example2.tld"), "Default email domain not visible on add credentials page.");
+        Assert.That(defaultEmailDomainText, Does.Contain("example2.tld"), "Default email domain not visible on add item page.");
     }
 }

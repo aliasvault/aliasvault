@@ -6,10 +6,9 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import { AppInfo } from '@/utils/AppInfo';
-import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-
-import { storage } from '#imports';
+import { getItemWithFallback } from '@/utils/StorageUtility';
 
 type EmailPreviewProps = {
   email: string;
@@ -56,7 +55,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
    */
   const isPublicDomain = async (emailAddress: string): Promise<boolean> => {
     // Get metadata from storage
-    const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[] ?? [];
+    const publicEmailDomains = await getItemWithFallback<string[]>('local:publicEmailDomains') ?? [];
     return publicEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
   };
 
@@ -65,7 +64,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
    */
   const isPrivateDomain = async (emailAddress: string): Promise<boolean> => {
     // Get metadata from storage
-    const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[] ?? [];
+    const privateEmailDomains = await getItemWithFallback<string[]>('local:privateEmailDomains') ?? [];
     return privateEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
   };
 
@@ -98,7 +97,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
           });
 
           if (!response.ok) {
-            setError(t('emails.errors.emailLoadError'));
+            setError(t('common.errors.unknownError'));
             return;
           }
 
@@ -141,7 +140,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
                 // Loop through all emails and decrypt them locally
                 const decryptedEmails: MailboxEmail[] = await EncryptionUtility.decryptEmailList(
                   allMails,
-                  dbContext.sqliteClient!.getAllEncryptionKeys()
+                  dbContext.sqliteClient!.settings.getAllEncryptionKeys()
                 );
 
                 if (loading && decryptedEmails.length > 0) {
@@ -165,13 +164,13 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
               return;
             }
           } catch {
-            setError(t('emails.errors.emailLoadError'));
+            setError(t('common.errors.unknownError'));
             return;
           }
         }
       } catch (err) {
         console.error('Error loading emails:', err);
-        setError(t('emails.errors.emailUnexpectedError'));
+        setError(t('common.errors.unknownError'));
       }
       setLoading(false);
     };

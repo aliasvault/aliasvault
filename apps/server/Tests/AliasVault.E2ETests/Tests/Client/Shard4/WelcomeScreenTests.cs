@@ -41,13 +41,13 @@ public class WelcomeScreenTests : ClientPlaywrightTest
         var getStartedButton = await WaitForAndGetElement("button:has-text('Get started')");
         await getStartedButton.ClickAsync();
 
-        // Wait for the credentials page to load with the placeholder text.
-        await WaitForUrlAsync("credentials", "No credentials yet");
+        // Wait for the items page to load with the placeholder text.
+        await WaitForUrlAsync("items", "No items yet");
 
-        // Verify that after hard reloading the page, the credentials page is still loaded with the placeholder text
+        // Verify that after hard reloading the page, the items page is still loaded with the placeholder text
         // and the tutorial is no longer shown.
         await RefreshPageAndUnlockVault();
-        await WaitForUrlAsync("credentials", "No credentials yet");
+        await WaitForUrlAsync("items", "No items yet");
 
         // Verify that the welcome screen is no longer shown.
         var pageContent = await Page.TextContentAsync("body");

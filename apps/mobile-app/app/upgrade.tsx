@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, Alert, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
 
-import type { VaultVersion } from '@/utils/dist/shared/vault-sql';
-import { VaultSqlGenerator } from '@/utils/dist/shared/vault-sql';
+import type { VaultVersion } from '@/utils/dist/core/vault';
+import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -134,7 +134,7 @@ export default function UpgradeScreen() : React.ReactNode {
     setUpgradeStatus(t('upgrade.status.preparingUpgrade'));
 
     try {
-      // Get upgrade SQL commands from vault-sql shared library
+      // Get upgrade SQL commands from vault library
       const vaultSqlGenerator = new VaultSqlGenerator();
       const upgradeResult = vaultSqlGenerator.getUpgradeVaultSql(currentVersion.revision, latestVersion.revision);
 
@@ -230,24 +230,24 @@ export default function UpgradeScreen() : React.ReactNode {
          */
         onStatus: (message) => setUpgradeStatus(message),
         /**
-         * Handle successful vault sync and navigate to credentials.
+         * Handle successful vault sync and navigate to items.
          */
         onSuccess: () => {
-          router.replace('/(tabs)/credentials');
+          router.replace('/(tabs)/items');
         },
         /**
-         * Handle sync error and still navigate to credentials.
+         * Handle sync error and still navigate to items.
          */
         onError: (error) => {
           console.error('Sync error after upgrade:', error);
-          // Still navigate to credentials even if sync fails
-          router.replace('/(tabs)/credentials');
+          // Still navigate to items even if sync fails
+          router.replace('/(tabs)/items');
         }
       });
     } catch (error) {
       console.error('Error during post-upgrade flow:', error);
-      // Navigate to credentials anyway
-      router.replace('/(tabs)/credentials');
+      // Navigate to items anyway
+      router.replace('/(tabs)/items');
     }
   };
 

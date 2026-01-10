@@ -25,13 +25,19 @@ public class AttachmentTests : ClientPlaywrightTest
     {
         // Create a new alias with service name = "Test Service".
         var serviceName = "Test Service";
-        await CreateCredentialEntry(
+        await CreateItemEntry(
             new Dictionary<string, string>
             {
                 { "service-name", serviceName },
             },
             async () =>
             {
+                // Add the attachments section via the + menu
+                await AddFieldSectionAsync("Attachments");
+
+                // Wait for the file input to appear
+                await Page.WaitForSelectorAsync("input[type='file']");
+
                 // Upload file.
                 var fileInput = Page.Locator("input[type='file']");
                 var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceBytesAsync("AliasVault.E2ETests.TestData.TestAttachment.txt");
@@ -82,7 +88,7 @@ public class AttachmentTests : ClientPlaywrightTest
         // Create a new alias with service name = "Test Service".
         var serviceName = "Test Service";
         var initialUsername = "initialuser";
-        await CreateCredentialEntry(
+        await CreateItemEntry(
             new Dictionary<string, string>
             {
                 { "service-name", serviceName },
@@ -90,6 +96,12 @@ public class AttachmentTests : ClientPlaywrightTest
             },
             async () =>
             {
+                // Add the attachments section via the + menu
+                await AddFieldSectionAsync("Attachments");
+
+                // Wait for the file input to appear
+                await Page.WaitForSelectorAsync("input[type='file']");
+
                 // Upload file.
                 var fileInput = Page.Locator("input[type='file']");
                 var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceBytesAsync("AliasVault.E2ETests.TestData.TestAttachment.txt");
@@ -112,13 +124,13 @@ public class AttachmentTests : ClientPlaywrightTest
 
         // Update the credential
         var updatedUsername = "updateduser";
-        await UpdateCredentialEntry(serviceName, new Dictionary<string, string>
+        await UpdateItemEntry(serviceName, new Dictionary<string, string>
         {
             { "username", updatedUsername },
         });
 
-        // Check that the updated username and attachment name still appear on the alias page.
-        var usernameElement = await Page.QuerySelectorAsync("#username");
+        // Check that the updated username and attachment name still appear on the item page.
+        var usernameElement = await Page.QuerySelectorAsync("#login-username");
         Assert.That(usernameElement, Is.Not.Null, "Username element not found.");
         Assert.That(await usernameElement.InputValueAsync(), Is.EqualTo(updatedUsername), "Updated username does not appear on alias page.");
 
@@ -154,13 +166,19 @@ public class AttachmentTests : ClientPlaywrightTest
     {
         // Create a new alias with service name = "Test Service for Deletion".
         var serviceName = "Test Service for Deletion";
-        await CreateCredentialEntry(
+        await CreateItemEntry(
             new Dictionary<string, string>
             {
                 { "service-name", serviceName },
             },
             async () =>
             {
+                // Add the attachments section via the + menu
+                await AddFieldSectionAsync("Attachments");
+
+                // Wait for the file input to appear
+                await Page.WaitForSelectorAsync("input[type='file']");
+
                 // Upload file.
                 var fileInput = Page.Locator("input[type='file']");
                 var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceBytesAsync("AliasVault.E2ETests.TestData.TestAttachment.txt");
@@ -183,7 +201,7 @@ public class AttachmentTests : ClientPlaywrightTest
 
         // Click the edit button
         await Page.ClickAsync("text=Edit");
-        await WaitForUrlAsync("credentials/**/edit", "Edit the existing credential");
+        await WaitForUrlAsync("items/**/edit", "Edit the existing item");
 
         // Find and click the delete button for the attachment
         var deleteButton = Page.Locator("button:has-text('Delete')").First;
@@ -194,9 +212,9 @@ public class AttachmentTests : ClientPlaywrightTest
         Assert.That(pageContent, Does.Not.Contain("TestAttachment.txt"), "Deleted attachment name still appears on edit page.");
 
         // Save the credential
-        var saveButton = Page.Locator("text=Save Credential").First;
+        var saveButton = Page.Locator("text=Save Item").First;
         await saveButton.ClickAsync();
-        await WaitForUrlAsync("credentials/**", "Credential updated successfully");
+        await WaitForUrlAsync("items/**", "Item updated successfully");
 
         // Check that the attachment name does not appear on the view page
         pageContent = await Page.TextContentAsync("body");
@@ -215,13 +233,19 @@ public class AttachmentTests : ClientPlaywrightTest
         var serviceName = "Test Service Multiple Attachments";
         var attachmentNames = new[] { "Attachment1.txt", "Attachment2.txt", "Attachment3.txt" };
 
-        await CreateCredentialEntry(
+        await CreateItemEntry(
             new Dictionary<string, string>
             {
                 { "service-name", serviceName },
             },
             async () =>
             {
+                // Add the attachments section via the + menu
+                await AddFieldSectionAsync("Attachments");
+
+                // Wait for the file input to appear
+                await Page.WaitForSelectorAsync("input[type='file']");
+
                 var fileInput = Page.Locator("input[type='file']");
                 var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceBytesAsync("AliasVault.E2ETests.TestData.TestAttachment.txt");
 
@@ -275,7 +299,7 @@ public class AttachmentTests : ClientPlaywrightTest
     {
         // Create a new empty alias with service name = "Test Service Add Multiple Attachments".
         var serviceName = "Test Service Add Multiple Attachments";
-        await CreateCredentialEntry(
+        await CreateItemEntry(
             new Dictionary<string, string>
             {
                 { "service-name", serviceName },
@@ -283,7 +307,13 @@ public class AttachmentTests : ClientPlaywrightTest
 
         // Edit the credential
         await Page.ClickAsync("text=Edit");
-        await WaitForUrlAsync("credentials/**/edit", "Edit the existing credential");
+        await WaitForUrlAsync("items/**/edit", "Edit the existing item");
+
+        // Add the attachments section via the + menu
+        await AddFieldSectionAsync("Attachments");
+
+        // Wait for the file input to appear
+        await Page.WaitForSelectorAsync("input[type='file']");
 
         var attachmentNames = new[] { "Attachment1.txt", "Attachment2.txt", "Attachment3.txt" };
         var fileInput = Page.Locator("input[type='file']");
@@ -305,9 +335,9 @@ public class AttachmentTests : ClientPlaywrightTest
         }
 
         // Save the updated credential
-        var saveButton = Page.Locator("text=Save Credential").First;
+        var saveButton = Page.Locator("text=Save Item").First;
         await saveButton.ClickAsync();
-        await WaitForUrlAsync("credentials/**", "Credential updated successfully");
+        await WaitForUrlAsync("items/**", "Item updated successfully");
 
         // Check that all attachment names appear on the alias page.
         var pageContent = await Page.TextContentAsync("body");
@@ -345,13 +375,19 @@ public class AttachmentTests : ClientPlaywrightTest
         var serviceName = "Test Service Multiple Attachments Simultaneous";
         var attachmentNames = new[] { "Attachment1.txt", "Attachment2.txt", "Attachment3.txt" };
 
-        await CreateCredentialEntry(
+        await CreateItemEntry(
             new Dictionary<string, string>
             {
                 { "service-name", serviceName },
             },
             async () =>
             {
+                // Add the attachments section via the + menu
+                await AddFieldSectionAsync("Attachments");
+
+                // Wait for the file input to appear
+                await Page.WaitForSelectorAsync("input[type='file']");
+
                 var fileInput = Page.Locator("input[type='file']");
                 var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceBytesAsync("AliasVault.E2ETests.TestData.TestAttachment.txt");
 

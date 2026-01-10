@@ -1,30 +1,98 @@
 import initSqlJs, { Database } from 'sql.js';
 
-import * as dateFormatter from '@/utils/dateFormatter';
-import type { Credential, EncryptionKey, PasswordSettings, TotpCode, Passkey } from '@/utils/dist/shared/models/vault';
-import type { Attachment } from '@/utils/dist/shared/models/vault';
-import type { VaultVersion } from '@/utils/dist/shared/vault-sql';
-import { VaultSqlGenerator, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/shared/vault-sql';
+import type { VaultVersion } from '@/utils/dist/core/vault';
+import { VaultSqlGenerator, checkVersionCompatibility, extractVersionFromMigrationId } from '@/utils/dist/core/vault';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { t } from '@/i18n/StandaloneI18n';
 
-import { storage } from '#imports';
+import {
+  ItemRepository,
+  PasskeyRepository,
+  FolderRepository,
+  SettingsRepository,
+  LogoRepository
+} from './db';
+
+import type { IDatabaseClient, SqliteBindValue } from './db/BaseRepository';
 
 /**
- * Placeholder base64 image for credentials without a logo.
+ * Core SQLite database client.
+ * Provides low-level database operations and exposes repositories for domain-specific operations.
  */
-const placeholderBase64 = 'UklGRjoEAABXRUJQVlA4IC4EAAAwFwCdASqAAIAAPpFCm0olo6Ihp5IraLASCWUA0eb/0s56RrLtCnYfLPiBshdXWMx8j1Ez65f169iA4xUDBTEV6ylMQeCIj2b7RngGi7gKZ9WjKdSoy9R8JcgOmjCMlDmLG20KhNo/i/Dc/Ah5GAvGfm8kfniV3AkR6fxN6eKwjDc6xrDgSfS48G5uGV6WzQt24YAVlLSK9BMwndzfHnePK1KFchFrL7O3ulB8cGNCeomu4o+l0SrS/JKblJ4WTzj0DAD++lCUEouSfgRKdiV2TiYCD+H+l3tANKSPQFPQuzi7rbvxqGeRmXB9kDwURaoSTTpYjA9REMUi9uA6aV7PWtBNXgUzMLowYMZeos6Xvyhb34GmufswMHA5ZyYpxzjTphOak4ZjNOiz8aScO5ygiTx99SqwX/uL+HSeVOSraHw8IymrMwm+jLxqN8BS8dGcItLlm/ioulqH2j4V8glDgSut+ExkxiD7m8TGPrrjCQNJbRDzpOFsyCyfBZupvp8QjGKW2KGziSZeIWes4aTB9tRmeEBhnUrmTDZQuXcc67Fg82KHrSfaeeOEq6jjuUjQ8wUnzM4Zz3dhrwSyslVz/WvnKqYkr4V/TTXPFF5EjF4rM1bHZ8bK63EfTnK41+n3n4gEFoYP4mXkNH0hntnYcdTqiE7Gn+q0BpRRxnkpBSZlA6Wa70jpW0FGqkw5e591A5/H+OV+60WAo+4Mi+NlsKrvLZ9EiVaPnoEFZlJQx1fA777AJ2MjXJ4KSsrWDWJi1lE8yPs8V6XvcC0chDTYt8456sKXAagCZyY+fzQriFMaddXyKQdG8qBqcdYjAsiIcjzaRFBBoOK9sU+sFY7N6B6+xtrlu3c37rQKkI3O2EoiJOris54EjJ5OFuumA0M6riNUuBf/MEPFBVx1JRcUEs+upEBsCnwYski7FT3TTqHrx7v5AjgFN97xhPTkmVpu6sxRnWBi1fxIRp8eWZeFM6mUcGgVk1WeVb1yhdV9hoMo2TsNEPE0tHo/wvuSJSzbZo7wibeXM9v/rRfKcx7X93rfiXVnyQ9f/5CaAQ4lxedPp/6uzLtOS4FyL0bCNeZ6L5w+AiuyWCTDFIYaUzhwfG+/YTQpWyeZCdQIKzhV+3GeXI2cxoP0ER/DlOKymf1gm+zRU3sqf1lBVQ0y+mK/Awl9bS3uaaQmI0FUyUwHUKP7PKuXnO+LcwDv4OfPT6hph8smc1EtMe5ib/apar/qZ9dyaEaElALJ1KKxnHziuvVl8atk1fINSQh7OtXDyqbPw9o/nGIpTnv5iFmwmWJLis2oyEgPkJqyx0vYI8rjkVEzKc8eQavAJBYSpjMwM193Swt+yJyjvaGYWPnqExxKiNarpB2WSO7soCAZXhS1uEYHryrK47BH6W1dRiruqT0xpLih3MXiwU3VDwAAAA==';
-
-/**
- * Client for interacting with the SQLite database.
- */
-export class SqliteClient {
+export class SqliteClient implements IDatabaseClient {
   private db: Database | null = null;
   private isInTransaction: boolean = false;
 
+  // Lazy-initialized repositories
+  private _items: ItemRepository | null = null;
+  private _passkeys: PasskeyRepository | null = null;
+  private _folders: FolderRepository | null = null;
+  private _settings: SettingsRepository | null = null;
+  private _logos: LogoRepository | null = null;
+
   /**
-   * Initialize the SQLite database from a base64 string
+   * Repository for Item CRUD operations.
+   */
+  public get items(): ItemRepository {
+    if (!this._items) {
+      this._items = new ItemRepository(this, this.logos);
+    }
+    return this._items;
+  }
+
+  /**
+   * Repository for Passkey operations.
+   */
+  public get passkeys(): PasskeyRepository {
+    if (!this._passkeys) {
+      this._passkeys = new PasskeyRepository(this);
+    }
+    return this._passkeys;
+  }
+
+  /**
+   * Repository for Folder operations.
+   */
+  public get folders(): FolderRepository {
+    if (!this._folders) {
+      this._folders = new FolderRepository(this);
+    }
+    return this._folders;
+  }
+
+  /**
+   * Repository for Settings and auxiliary data operations.
+   */
+  public get settings(): SettingsRepository {
+    if (!this._settings) {
+      this._settings = new SettingsRepository(this);
+    }
+    return this._settings;
+  }
+
+  /**
+   * Repository for Logo management operations.
+   */
+  public get logos(): LogoRepository {
+    if (!this._logos) {
+      this._logos = new LogoRepository(this);
+    }
+    return this._logos;
+  }
+
+  // ===== IDatabaseClient Implementation =====
+
+  /**
+   * Get the underlying database instance.
+   */
+  public getDb(): Database | null {
+    return this.db;
+  }
+
+  /**
+   * Initialize the SQLite database from a base64 string.
+   * @param base64String - Base64 encoded SQLite database
    */
   public async initializeFromBase64(base64String: string): Promise<void> {
     try {
@@ -35,18 +103,25 @@ export class SqliteClient {
         bytes[i] = binaryString.charCodeAt(i);
       }
 
-      // Initialize SQL.js with the WASM file from the local file system.
+      // Initialize SQL.js with the WASM file
       const SQL = await initSqlJs({
         /**
          * Locates SQL.js files from the local file system.
          * @param file - The name of the file to locate
          * @returns The complete URL path to the file
          */
-        locateFile: (file: string) => `src/${file}`
+        locateFile: (file: string): string => `src/${file}`
       });
 
       // Create database from the binary data
       this.db = new SQL.Database(bytes);
+
+      // Reset repository instances when database changes
+      this._items = null;
+      this._passkeys = null;
+      this._folders = null;
+      this._settings = null;
+      this._logos = null;
     } catch (error) {
       console.error('Error initializing SQLite database:', error);
       throw error;
@@ -54,7 +129,7 @@ export class SqliteClient {
   }
 
   /**
-   * Begin a new transaction
+   * Begin a new transaction.
    */
   public beginTransaction(): void {
     if (!this.db) {
@@ -75,7 +150,7 @@ export class SqliteClient {
   }
 
   /**
-   * Commit the current transaction and persist changes to the vault
+   * Commit the current transaction.
    */
   public async commitTransaction(): Promise<void> {
     if (!this.db) {
@@ -96,7 +171,7 @@ export class SqliteClient {
   }
 
   /**
-   * Rollback the current transaction
+   * Rollback the current transaction.
    */
   public rollbackTransaction(): void {
     if (!this.db) {
@@ -117,7 +192,7 @@ export class SqliteClient {
   }
 
   /**
-   * Export the SQLite database to a base64 string
+   * Export the SQLite database to a base64 string.
    * @returns Base64 encoded string of the database
    */
   public exportToBase64(): string {
@@ -126,13 +201,11 @@ export class SqliteClient {
     }
 
     try {
-      // Execute vacuum command to free up space before exporting (because of potential temp tables etc.)
+      // Vacuum to free up space before exporting
       this.db.run('VACUUM');
 
-      // Export database to Uint8Array
       const binaryArray = this.db.export();
 
-      // Convert Uint8Array to base64 string
       let binaryString = '';
       for (let i = 0; i < binaryArray.length; i++) {
         binaryString += String.fromCharCode(binaryArray[i]);
@@ -145,9 +218,12 @@ export class SqliteClient {
   }
 
   /**
-   * Execute a SELECT query
+   * Execute a SELECT query.
+   * @param query - SQL query string
+   * @param params - Query parameters
+   * @returns Array of result objects
    */
-  public executeQuery<T>(query: string, params: (string | number | null | Uint8Array)[] = []): T[] {
+  public executeQuery<T>(query: string, params: SqliteBindValue[] = []): T[] {
     if (!this.db) {
       throw new Error('Database not initialized');
     }
@@ -158,8 +234,7 @@ export class SqliteClient {
 
       const results: T[] = [];
       while (stmt.step()) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        results.push(stmt.getAsObject() as any);
+        results.push(stmt.getAsObject() as T);
       }
       stmt.free();
 
@@ -171,9 +246,12 @@ export class SqliteClient {
   }
 
   /**
-   * Execute an INSERT, UPDATE, or DELETE query
+   * Execute an INSERT, UPDATE, or DELETE query.
+   * @param query - SQL query string
+   * @param params - Query parameters
+   * @returns Number of rows affected
    */
-  public executeUpdate(query: string, params: (string | number | null | Uint8Array)[] = []): number {
+  public executeUpdate(query: string, params: SqliteBindValue[] = []): number {
     if (!this.db) {
       throw new Error('Database not initialized');
     }
@@ -192,6 +270,37 @@ export class SqliteClient {
   }
 
   /**
+   * Execute raw SQL command(s).
+   * @param query - SQL command(s) to execute (may contain multiple statements separated by semicolons)
+   */
+  public executeRaw(query: string): void {
+    if (!this.db) {
+      throw new Error('Database not initialized');
+    }
+
+    try {
+      const statements = query.split(';');
+
+      for (const statement of statements) {
+        const trimmedStatement = statement.trim();
+
+        // Skip empty statements and transaction control statements
+        if (trimmedStatement.length === 0 ||
+            trimmedStatement.toUpperCase().startsWith('BEGIN TRANSACTION') ||
+            trimmedStatement.toUpperCase().startsWith('COMMIT') ||
+            trimmedStatement.toUpperCase().startsWith('ROLLBACK')) {
+          continue;
+        }
+
+        this.db.run(trimmedStatement);
+      }
+    } catch (error) {
+      console.error('Error executing raw SQL:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Close the database connection and free resources.
    */
   public close(): void {
@@ -202,459 +311,8 @@ export class SqliteClient {
   }
 
   /**
-   * Fetch a single credential with its associated service information.
-   * @param credentialId - The ID of the credential to fetch.
-   * @returns Credential object with service details or null if not found.
-   */
-  public getCredentialById(credentialId: string): Credential | null {
-    const query = `
-        SELECT DISTINCT
-            c.Id,
-            c.Username,
-            c.Notes,
-            c.ServiceId,
-            s.Name as ServiceName,
-            s.Url as ServiceUrl,
-            s.Logo as Logo,
-            a.FirstName,
-            a.LastName,
-            a.NickName,
-            a.BirthDate,
-            a.Gender,
-            a.Email,
-            p.Value as Password,
-            CASE
-                WHEN EXISTS (
-                    SELECT 1 FROM Passkeys pk
-                    WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0
-                ) THEN 1
-                ELSE 0
-            END as HasPasskey,
-            (SELECT pk.RpId FROM Passkeys pk WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyRpId,
-            (SELECT pk.DisplayName FROM Passkeys pk WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0 LIMIT 1) as PasskeyDisplayName
-        FROM Credentials c
-        LEFT JOIN Services s ON c.ServiceId = s.Id
-        LEFT JOIN Aliases a ON c.AliasId = a.Id
-        LEFT JOIN Passwords p ON p.CredentialId = c.Id
-        WHERE c.IsDeleted = 0
-        AND c.Id = ?`;
-
-    const results = this.executeQuery(query, [credentialId]);
-
-    if (results.length === 0) {
-      return null;
-    }
-
-    // Convert the first row to a Credential object
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const row = results[0] as any;
-    return {
-      Id: row.Id,
-      Username: row.Username,
-      Password: row.Password,
-      ServiceName: row.ServiceName,
-      ServiceUrl: row.ServiceUrl,
-      Logo: row.Logo,
-      Notes: row.Notes,
-      HasPasskey: row.HasPasskey === 1,
-      PasskeyRpId: row.PasskeyRpId,
-      PasskeyDisplayName: row.PasskeyDisplayName,
-      Alias: {
-        FirstName: row.FirstName,
-        LastName: row.LastName,
-        NickName: row.NickName,
-        BirthDate: row.BirthDate,
-        Gender: row.Gender,
-        Email: row.Email
-      },
-    };
-  }
-
-  /**
-   * Fetch all credentials with their associated service information.
-   * @returns Array of Credential objects with service details.
-   */
-  public getAllCredentials(): Credential[] {
-    const query = `
-            SELECT DISTINCT
-                c.Id,
-                c.Username,
-                c.Notes,
-                c.ServiceId,
-                s.Name as ServiceName,
-                s.Url as ServiceUrl,
-                s.Logo as Logo,
-                a.FirstName,
-                a.LastName,
-                a.NickName,
-                a.BirthDate,
-                a.Gender,
-                a.Email,
-                p.Value as Password,
-                CASE
-                    WHEN EXISTS (
-                        SELECT 1 FROM Passkeys pk
-                        WHERE pk.CredentialId = c.Id AND pk.IsDeleted = 0
-                    ) THEN 1
-                    ELSE 0
-                END as HasPasskey,
-                CASE
-                    WHEN EXISTS (
-                        SELECT 1 FROM Attachments att
-                        WHERE att.CredentialId = c.Id AND att.IsDeleted = 0
-                    ) THEN 1
-                    ELSE 0
-                END as HasAttachment
-            FROM Credentials c
-            LEFT JOIN Services s ON c.ServiceId = s.Id
-            LEFT JOIN Aliases a ON c.AliasId = a.Id
-            LEFT JOIN Passwords p ON p.CredentialId = c.Id
-            WHERE c.IsDeleted = 0
-            ORDER BY c.CreatedAt DESC`;
-
-    const results = this.executeQuery(query);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return results.map((row: any) => ({
-      Id: row.Id,
-      Username: row.Username,
-      Password: row.Password,
-      ServiceName: row.ServiceName,
-      ServiceUrl: row.ServiceUrl,
-      Logo: row.Logo,
-      Notes: row.Notes,
-      HasPasskey: row.HasPasskey === 1,
-      HasAttachment: row.HasAttachment === 1,
-      Alias: {
-        FirstName: row.FirstName,
-        LastName: row.LastName,
-        NickName: row.NickName,
-        BirthDate: row.BirthDate,
-        Gender: row.Gender,
-        Email: row.Email
-      }
-    }));
-  }
-
-  /**
-   * Fetch all unique email addresses from all credentials.
-   * @returns Array of email addresses.
-   */
-  public getAllEmailAddresses(): string[] {
-    const query = `
-      SELECT DISTINCT
-        a.Email
-      FROM Credentials c
-      LEFT JOIN Aliases a ON c.AliasId = a.Id
-      WHERE a.Email IS NOT NULL AND a.Email != '' AND c.IsDeleted = 0
-    `;
-
-    const results = this.executeQuery(query);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return results.map((row: any) => row.Email);
-  }
-
-  /**
-   * Fetch all encryption keys.
-   */
-  public getAllEncryptionKeys(): EncryptionKey[] {
-    return this.executeQuery<EncryptionKey>(`SELECT
-                x.PublicKey,
-                x.PrivateKey,
-                x.IsPrimary
-            FROM EncryptionKeys x`);
-  }
-
-  /**
-   * Get setting from database for a given key.
-   * Returns default value (empty string by default) if setting is not found.
-   */
-  public getSetting(key: string, defaultValue: string = ''): string {
-    const results = this.executeQuery<{ Value: string }>(`SELECT
-                s.Value
-            FROM Settings s
-            WHERE s.Key = ?`, [key]);
-
-    return results.length > 0 ? results[0].Value : defaultValue;
-  }
-
-  /**
-   * Get the default email domain from the database.
-   * @param privateEmailDomains - Array of private email domains
-   * @param publicEmailDomains - Array of public email domains
-   * @param hiddenPrivateEmailDomains - Array of hidden private email domains (optional)
-   * @returns The default email domain or null if no valid domain is found
-   */
-  public async getDefaultEmailDomain(): Promise<string | null> {
-    const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[] ?? [];
-    const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[] ?? [];
-    const hiddenPrivateEmailDomains = await storage.getItem('session:hiddenPrivateEmailDomains') as string[] ?? [];
-
-    const defaultEmailDomain = this.getSetting('DefaultEmailDomain');
-
-    /**
-     * Check if a domain is valid (not disabled, not hidden, and exists in domain lists).
-     */
-    const isValidDomain = (domain: string): boolean => {
-      return Boolean(domain &&
-        domain !== 'DISABLED.TLD' &&
-        domain !== '' &&
-        !hiddenPrivateEmailDomains.includes(domain) &&
-        (privateEmailDomains.includes(domain) || publicEmailDomains.includes(domain)));
-    };
-
-    // First check if the default domain that is configured in the vault is still valid.
-    if (defaultEmailDomain && isValidDomain(defaultEmailDomain)) {
-      return defaultEmailDomain;
-    }
-
-    // If default domain is not valid, fall back to first available private domain (excluding hidden ones).
-    const firstPrivate = privateEmailDomains.find(isValidDomain);
-    if (firstPrivate) {
-      return firstPrivate;
-    }
-
-    // Return first valid public domain if no private domains are available.
-    const firstPublic = publicEmailDomains.find(isValidDomain);
-    if (firstPublic) {
-      return firstPublic;
-    }
-
-    // Return null if no valid domains are found
-    return null;
-  }
-
-  /**
-   * Get the default identity language from the database.
-   * Returns the stored override value if set, otherwise returns empty string to indicate no explicit preference.
-   * Use getEffectiveIdentityLanguage() to get the language with smart defaults based on UI language.
-   */
-  public getDefaultIdentityLanguage(): string {
-    return this.getSetting('DefaultIdentityLanguage');
-  }
-
-  /**
-   * Get the effective identity generator language to use.
-   * If user has explicitly set a language preference, use that.
-   * Otherwise, intelligently match the UI language to an available identity generator language.
-   * Falls back to "en" if no match is found.
-   */
-  public async getEffectiveIdentityLanguage(): Promise<string> {
-    const explicitLanguage = this.getDefaultIdentityLanguage();
-
-    // If user has explicitly set a language preference, use it
-    if (explicitLanguage) {
-      return explicitLanguage;
-    }
-
-    // Otherwise, try to match UI language to an identity generator language
-    const { mapUiLanguageToIdentityLanguage } = await import('@/utils/dist/shared/identity-generator');
-    const { default: i18n } = await import('@/i18n/i18n');
-
-    const uiLanguage = i18n.language;
-    const mappedLanguage = mapUiLanguageToIdentityLanguage(uiLanguage);
-
-    // Return the mapped language, or fall back to "en" if no match found
-    return mappedLanguage ?? 'en';
-  }
-
-  /**
-   * Get the default identity gender preference from the database.
-   */
-  public getDefaultIdentityGender(): string {
-    return this.getSetting('DefaultIdentityGender', 'random');
-  }
-
-  /**
-   * Get the default identity age range from the database.
-   */
-  public getDefaultIdentityAgeRange(): string {
-    return this.getSetting('DefaultIdentityAgeRange', 'random');
-  }
-
-  /**
-   * Get the password settings from the database.
-   */
-  public getPasswordSettings(): PasswordSettings {
-    const settingsJson = this.getSetting('PasswordGenerationSettings');
-
-    // Default settings if none found or parsing fails
-    const defaultSettings: PasswordSettings = {
-      Length: 18,
-      UseLowercase: true,
-      UseUppercase: true,
-      UseNumbers: true,
-      UseSpecialChars: true,
-      UseNonAmbiguousChars: false
-    };
-
-    try {
-      if (settingsJson) {
-        return { ...defaultSettings, ...JSON.parse(settingsJson) };
-      }
-    } catch (error) {
-      console.warn('Failed to parse password settings:', error);
-    }
-
-    return defaultSettings;
-  }
-
-  /**
-   * Create a new credential with associated entities
-   * @param credential The credential object to insert
-   * @param attachments The attachments to insert
-   * @returns The ID of the created credential
-   */
-  public async createCredential(credential: Credential, attachments: Attachment[], totpCodes: TotpCode[] = []): Promise<string> {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    try {
-      this.beginTransaction();
-
-      // 1. Insert Service
-      let logoData = null;
-      try {
-        if (credential.Logo) {
-          // Handle object-like array conversion
-          if (typeof credential.Logo === 'object' && !ArrayBuffer.isView(credential.Logo)) {
-            const values = Object.values(credential.Logo);
-            logoData = new Uint8Array(values);
-          // Handle existing array types
-          } else if (Array.isArray(credential.Logo) || credential.Logo instanceof ArrayBuffer || credential.Logo instanceof Uint8Array) {
-            logoData = new Uint8Array(credential.Logo);
-          }
-        }
-      } catch (error) {
-        console.warn('Failed to convert logo to Uint8Array:', error);
-        logoData = null;
-      }
-
-      const serviceQuery = `
-                INSERT INTO Services (Id, Name, Url, Logo, CreatedAt, UpdatedAt, IsDeleted)
-                VALUES (?, ?, ?, ?, ?, ?, ?)`;
-      const serviceId = crypto.randomUUID().toUpperCase();
-      const currentDateTime = dateFormatter.now();
-      this.executeUpdate(serviceQuery, [
-        serviceId,
-        credential.ServiceName,
-        credential.ServiceUrl ?? null,
-        logoData,
-        currentDateTime,
-        currentDateTime,
-        0
-      ]);
-
-      // 2. Insert Alias
-      const aliasQuery = `
-                INSERT INTO Aliases (Id, FirstName, LastName, NickName, BirthDate, Gender, Email, CreatedAt, UpdatedAt, IsDeleted)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-      const aliasId = crypto.randomUUID().toUpperCase();
-      this.executeUpdate(aliasQuery, [
-        aliasId,
-        credential.Alias.FirstName ?? null,
-        credential.Alias.LastName ?? null,
-        credential.Alias.NickName ?? null,
-        credential.Alias.BirthDate ?? null,
-        credential.Alias.Gender ?? null,
-        credential.Alias.Email ?? null,
-        currentDateTime,
-        currentDateTime,
-        0
-      ]);
-
-      // 3. Insert Credential
-      const credentialQuery = `
-                INSERT INTO Credentials (Id, Username, Notes, ServiceId, AliasId, CreatedAt, UpdatedAt, IsDeleted)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
-      const credentialId = crypto.randomUUID().toUpperCase();
-      this.executeUpdate(credentialQuery, [
-        credentialId,
-        credential.Username ?? null,
-        credential.Notes ?? null,
-        serviceId,
-        aliasId,
-        currentDateTime,
-        currentDateTime,
-        0
-      ]);
-
-      // 4. Insert Password
-      if (credential.Password) {
-        const passwordQuery = `
-                    INSERT INTO Passwords (Id, Value, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
-                    VALUES (?, ?, ?, ?, ?, ?)`;
-        const passwordId = crypto.randomUUID().toUpperCase();
-        this.executeUpdate(passwordQuery, [
-          passwordId,
-          credential.Password,
-          credentialId,
-          currentDateTime,
-          currentDateTime,
-          0
-        ]);
-      }
-
-      // 5. Insert Attachment
-      if (attachments) {
-        for (const attachment of attachments) {
-          const attachmentQuery = `
-            INSERT INTO Attachments (Id, Filename, Blob, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
-          const attachmentId = crypto.randomUUID().toUpperCase();
-          this.executeUpdate(attachmentQuery, [
-            attachmentId,
-            attachment.Filename,
-            attachment.Blob as Uint8Array,
-            credentialId,
-            currentDateTime,
-            currentDateTime,
-            0
-          ]);
-        }
-      }
-
-      // 6. Insert TOTP codes
-      if (totpCodes) {
-        for (const totpCode of totpCodes) {
-          // Skip deleted codes
-          if (totpCode.IsDeleted) {
-            continue;
-          }
-
-          const totpCodeQuery = `
-            INSERT INTO TotpCodes (Id, Name, SecretKey, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`;
-
-          this.executeUpdate(totpCodeQuery, [
-            totpCode.Id || crypto.randomUUID().toUpperCase(),
-            totpCode.Name,
-            totpCode.SecretKey,
-            credentialId,
-            currentDateTime,
-            currentDateTime,
-            0
-          ]);
-        }
-      }
-
-      await this.commitTransaction();
-      return credentialId;
-
-    } catch (error) {
-      this.rollbackTransaction();
-      console.error('Error creating credential:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Get the current database version from the migrations history.
-   * Returns the semantic version (e.g., "1.4.1") from the latest migration.
-   * Uses semantic versioning to allow backwards-compatible minor/patch versions.
+   * @returns The database version information
    */
   public async getDatabaseVersion(): Promise<VaultVersion> {
     if (!this.db) {
@@ -662,7 +320,6 @@ export class SqliteClient {
     }
 
     try {
-      // Query the migrations history table for the latest migration
       const results = this.executeQuery<{ MigrationId: string }>(`
         SELECT MigrationId
         FROM __EFMigrationsHistory
@@ -673,7 +330,6 @@ export class SqliteClient {
         throw new Error('No migrations found in the database.');
       }
 
-      // Extract version from migration ID (e.g., "20240917191243_1.4.1-RenameAttachmentsPlural" -> "1.4.1")
       const migrationId = results[0].MigrationId;
       const databaseVersion = extractVersionFromMigrationId(migrationId);
 
@@ -681,7 +337,6 @@ export class SqliteClient {
         throw new Error('Could not extract version from migration ID');
       }
 
-      // Check version compatibility using semantic versioning
       const compatibilityResult = checkVersionCompatibility(databaseVersion);
 
       if (!compatibilityResult.isCompatible) {
@@ -689,23 +344,16 @@ export class SqliteClient {
         throw new VaultVersionIncompatibleError(errorMessage);
       }
 
-      // If the version is known, return the full version info
       if (compatibilityResult.isKnownVersion && compatibilityResult.clientVersion) {
         return compatibilityResult.clientVersion;
       }
 
-      /*
-       * Version is unknown but compatible (same major version).
-       * Create a VaultVersion object with the actual database version but use the latest client's revision number.
-       * This allows older clients to work with newer backwards-compatible database versions.
-       */
       const vaultSqlGenerator = new VaultSqlGenerator();
       const latestClientVersion = vaultSqlGenerator.getLatestVersion();
 
-      // Return a version object with the actual database version string but the latest known revision
       return {
         revision: latestClientVersion.revision,
-        version: databaseVersion, // Use the actual database version (e.g., "1.7.0")
+        version: databaseVersion,
         description: `Unknown version ${databaseVersion} (backwards compatible)`,
         releaseVersion: latestClientVersion.releaseVersion,
         compatibleUpToVersion: latestClientVersion.compatibleUpToVersion
@@ -717,7 +365,7 @@ export class SqliteClient {
   }
 
   /**
-   * Get the latest available database version
+   * Get the latest available database version.
    * @returns The latest VaultVersion
    */
   public async getLatestDatabaseVersion(): Promise<VaultVersion> {
@@ -727,8 +375,8 @@ export class SqliteClient {
   }
 
   /**
-   * Check if there are pending migrations
-   * @returns True if there are pending migrations, false otherwise
+   * Check if there are pending migrations.
+   * @returns True if there are pending migrations
    */
   public async hasPendingMigrations(): Promise<boolean> {
     try {
@@ -743,449 +391,75 @@ export class SqliteClient {
   }
 
   /**
-   * Get TOTP codes for a credential
-   * @param credentialId - The ID of the credential to get TOTP codes for
-   * @returns Array of TotpCode objects
-   */
-  public getTotpCodesForCredential(credentialId: string): TotpCode[] {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    try {
-      /*
-       * Check if TotpCodes table exists (for backward compatibility).
-       * TODO: whenever the browser extension has a minimum client DB version of 1.5.0+,
-       * we can remove this check as the TotpCodes table then is guaranteed to exist.
-       */
-      if (!this.tableExists('TotpCodes')) {
-        return [];
-      }
-
-      const query = `
-        SELECT
-          Id,
-          Name,
-          SecretKey,
-          CredentialId
-        FROM TotpCodes
-        WHERE CredentialId = ? AND IsDeleted = 0`;
-
-      return this.executeQuery<TotpCode>(query, [credentialId]);
-    } catch (error) {
-      console.error('Error getting TOTP codes:', error);
-      // Return empty array instead of throwing to be robust
-      return [];
-    }
-  }
-
-  /**
-   * Get attachments for a specific credential
-   * @param credentialId - The ID of the credential
-   * @returns Array of attachments for the credential
-   */
-  public getAttachmentsForCredential(credentialId: string): Attachment[] {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    try {
-      if (!this.tableExists('Attachments')) {
-        return [];
-      }
-
-      const query = `
-        SELECT
-          Id,
-          Filename,
-          Blob,
-          CredentialId,
-          CreatedAt,
-          UpdatedAt,
-          IsDeleted
-        FROM Attachments
-        WHERE CredentialId = ? AND IsDeleted = 0`;
-      return this.executeQuery<Attachment>(query, [credentialId]);
-    } catch (error) {
-      console.error('Error getting attachments:', error);
-      return [];
-    }
-  }
-
-  /**
-   * Delete a credential by ID
-   * @param credentialId - The ID of the credential to delete
-   * @returns The number of rows deleted
-   */
-  public async deleteCredentialById(credentialId: string): Promise<number> {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    try {
-      this.beginTransaction();
-
-      const currentDateTime = dateFormatter.now();
-
-      // Update the credential, alias, and service to be deleted
-      const query = `
-        UPDATE Credentials
-        SET IsDeleted = 1,
-            UpdatedAt = ?
-        WHERE Id = ?`;
-
-      const aliasQuery = `
-        UPDATE Aliases
-        SET IsDeleted = 1,
-            UpdatedAt = ?
-        WHERE Id = (
-          SELECT AliasId
-          FROM Credentials
-          WHERE Id = ?
-        )`;
-
-      const serviceQuery = `
-        UPDATE Services
-        SET IsDeleted = 1,
-            UpdatedAt = ?
-        WHERE Id = (
-          SELECT ServiceId
-          FROM Credentials
-          WHERE Id = ?
-        )`;
-
-      const passkeyQuery = `
-        UPDATE Passkeys
-        SET IsDeleted = 1,
-            UpdatedAt = ?
-        WHERE CredentialId = ?`;
-
-      const results = this.executeUpdate(query, [currentDateTime, credentialId]);
-      this.executeUpdate(aliasQuery, [currentDateTime, credentialId]);
-      this.executeUpdate(serviceQuery, [currentDateTime, credentialId]);
-      this.executeUpdate(passkeyQuery, [currentDateTime, credentialId]);
-
-      await this.commitTransaction();
-      return results;
-    } catch (error) {
-      this.rollbackTransaction();
-      console.error('Error deleting credential:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update an existing credential with associated entities
-   * @param credential The credential object to update
-   * @param originalAttachmentIds The IDs of the original attachments
-   * @param attachments The attachments to update
-   * @returns The number of rows modified
-   */
-  public async updateCredentialById(credential: Credential, originalAttachmentIds: string[], attachments: Attachment[], originalTotpCodeIds: string[] = [], totpCodes: TotpCode[] = []): Promise<number> {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    try {
-      this.beginTransaction();
-      const currentDateTime = dateFormatter.now();
-
-      // Get existing credential to compare changes
-      const existingCredential = this.getCredentialById(credential.Id);
-      if (!existingCredential) {
-        throw new Error('Credential not found');
-      }
-
-      // 1. Update Service
-      const serviceQuery = `
-        UPDATE Services
-        SET Name = ?,
-            Url = ?,
-            Logo = COALESCE(?, Logo),
-            UpdatedAt = ?
-        WHERE Id = (
-          SELECT ServiceId
-          FROM Credentials
-          WHERE Id = ?
-        )`;
-
-      let logoData = null;
-      try {
-        if (credential.Logo) {
-          // Handle object-like array conversion
-          if (typeof credential.Logo === 'object' && !ArrayBuffer.isView(credential.Logo)) {
-            const values = Object.values(credential.Logo);
-            logoData = new Uint8Array(values);
-          // Handle existing array types
-          } else if (Array.isArray(credential.Logo) || credential.Logo instanceof ArrayBuffer || credential.Logo instanceof Uint8Array) {
-            logoData = new Uint8Array(credential.Logo);
-          }
-        }
-      } catch (error) {
-        console.warn('Failed to convert logo to Uint8Array:', error);
-        logoData = null;
-      }
-
-      this.executeUpdate(serviceQuery, [
-        credential.ServiceName,
-        credential.ServiceUrl ?? null,
-        logoData,
-        currentDateTime,
-        credential.Id
-      ]);
-
-      // 2. Update Alias
-      const aliasQuery = `
-        UPDATE Aliases
-        SET FirstName = ?,
-            LastName = ?,
-            NickName = ?,
-            BirthDate = ?,
-            Gender = ?,
-            Email = ?,
-            UpdatedAt = ?
-        WHERE Id = (
-          SELECT AliasId
-          FROM Credentials
-          WHERE Id = ?
-        )`;
-
-      // Only update BirthDate if it's actually different (accounting for format differences)
-      let birthDate = credential.Alias.BirthDate;
-      if (birthDate && existingCredential.Alias.BirthDate) {
-        const newDate = new Date(birthDate);
-        const existingDate = new Date(existingCredential.Alias.BirthDate);
-        if (newDate.getTime() === existingDate.getTime()) {
-          birthDate = existingCredential.Alias.BirthDate;
-        }
-      }
-
-      this.executeUpdate(aliasQuery, [
-        credential.Alias.FirstName ?? null,
-        credential.Alias.LastName ?? null,
-        credential.Alias.NickName ?? null,
-        birthDate ?? null,
-        credential.Alias.Gender ?? null,
-        credential.Alias.Email ?? null,
-        currentDateTime,
-        credential.Id
-      ]);
-
-      // 3. Update Credential
-      const credentialQuery = `
-        UPDATE Credentials
-        SET Username = ?,
-            Notes = ?,
-            UpdatedAt = ?
-        WHERE Id = ?`;
-
-      this.executeUpdate(credentialQuery, [
-        credential.Username ?? null,
-        credential.Notes ?? null,
-        currentDateTime,
-        credential.Id
-      ]);
-
-      // 4. Update Password if changed
-      if (credential.Password !== existingCredential.Password) {
-        // Check if a password record already exists for this credential, if not, then create one.
-        const passwordRecordExistsQuery = `
-          SELECT Id
-          FROM Passwords
-          WHERE CredentialId = ?`;
-        const passwordResults = this.executeQuery(passwordRecordExistsQuery, [credential.Id]);
-
-        if (passwordResults.length === 0) {
-          // Create a new password record
-          const passwordQuery = `
-            INSERT INTO Passwords (Id, Value, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
-            VALUES (?, ?, ?, ?, ?, ?)`;
-
-          this.executeUpdate(passwordQuery, [
-            crypto.randomUUID().toUpperCase(),
-            credential.Password,
-            credential.Id,
-            currentDateTime,
-            currentDateTime,
-            0
-          ]);
-        } else {
-          // Update the existing password record
-          const passwordQuery = `
-            UPDATE Passwords
-            SET Value = ?, UpdatedAt = ?
-            WHERE CredentialId = ?`;
-
-          this.executeUpdate(passwordQuery, [
-            credential.Password,
-            currentDateTime,
-            credential.Id
-          ]);
-        }
-      }
-
-      // 5. Handle Attachments
-      if (attachments) {
-        // Get current attachment IDs to track what needs to be deleted
-        const currentAttachmentIds = attachments.map(a => a.Id);
-
-        // Delete attachments that were removed (in originalAttachmentIds but not in current attachments)
-        const attachmentsToDelete = originalAttachmentIds.filter(id => !currentAttachmentIds.includes(id));
-        for (const attachmentId of attachmentsToDelete) {
-          const deleteQuery = `
-            UPDATE Attachments
-            SET IsDeleted = 1,
-                UpdatedAt = ?
-            WHERE Id = ?`;
-          this.executeUpdate(deleteQuery, [currentDateTime, attachmentId]);
-        }
-
-        // Process each attachment
-        for (const attachment of attachments) {
-          const isExistingAttachment = originalAttachmentIds.includes(attachment.Id);
-
-          if (!isExistingAttachment) {
-            // Insert new attachment
-            const insertQuery = `
-              INSERT INTO Attachments (Id, Filename, Blob, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
-              VALUES (?, ?, ?, ?, ?, ?, ?)`;
-            this.executeUpdate(insertQuery, [
-              attachment.Id,
-              attachment.Filename,
-              attachment.Blob as Uint8Array,
-              credential.Id,
-              currentDateTime,
-              currentDateTime,
-              0
-            ]);
-          }
-        }
-      }
-
-      // 6. Handle TOTP codes
-      if (totpCodes) {
-        // Get current TOTP code IDs (excluding deleted ones)
-        const currentTotpCodeIds = totpCodes
-          .filter(tc => !tc.IsDeleted)
-          .map(tc => tc.Id);
-
-        // Mark TOTP codes as deleted that were removed
-        const totpCodesToDelete = originalTotpCodeIds.filter(id => !currentTotpCodeIds.includes(id));
-        for (const totpCodeId of totpCodesToDelete) {
-          const deleteQuery = `
-            UPDATE TotpCodes
-            SET IsDeleted = 1,
-                UpdatedAt = ?
-            WHERE Id = ?`;
-          this.executeUpdate(deleteQuery, [currentDateTime, totpCodeId]);
-        }
-
-        // Handle TOTP codes marked for deletion in the array
-        const markedForDeletion = totpCodes.filter(tc => tc.IsDeleted && originalTotpCodeIds.includes(tc.Id));
-        for (const totpCode of markedForDeletion) {
-          const deleteQuery = `
-            UPDATE TotpCodes
-            SET IsDeleted = 1,
-                UpdatedAt = ?
-            WHERE Id = ?`;
-          this.executeUpdate(deleteQuery, [currentDateTime, totpCode.Id]);
-        }
-
-        // Process each TOTP code
-        for (const totpCode of totpCodes) {
-          // Skip deleted codes
-          if (totpCode.IsDeleted) {
-            continue;
-          }
-
-          const isExistingTotpCode = originalTotpCodeIds.includes(totpCode.Id);
-
-          if (!isExistingTotpCode) {
-            // Insert new TOTP code
-            const insertQuery = `
-              INSERT INTO TotpCodes (Id, Name, SecretKey, CredentialId, CreatedAt, UpdatedAt, IsDeleted)
-              VALUES (?, ?, ?, ?, ?, ?, ?)`;
-            this.executeUpdate(insertQuery, [
-              totpCode.Id || crypto.randomUUID().toUpperCase(),
-              totpCode.Name,
-              totpCode.SecretKey,
-              credential.Id,
-              currentDateTime,
-              currentDateTime,
-              0
-            ]);
-          } else {
-            // Update existing TOTP code
-            const updateQuery = `
-              UPDATE TotpCodes
-              SET Name = ?,
-                  SecretKey = ?,
-                  UpdatedAt = ?
-              WHERE Id = ?`;
-            this.executeUpdate(updateQuery, [
-              totpCode.Name,
-              totpCode.SecretKey,
-              currentDateTime,
-              totpCode.Id
-            ]);
-          }
-        }
-      }
-
-      await this.commitTransaction();
-      return 1;
-
-    } catch (error) {
-      this.rollbackTransaction();
-      console.error('Error updating credential:', error);
-      throw error;
-    }
-  }
-
-  /**
    * Convert binary data to a base64 encoded image source.
+   * @param bytes - Binary image data
+   * @returns Data URL for the image, or null if no valid image data
    */
-  public static imgSrcFromBytes(bytes: Uint8Array<ArrayBufferLike> | number[] | undefined): string {
-    // Handle base64 image data
-    if (bytes) {
-      try {
-        const logoBytes = this.toUint8Array(bytes);
-        const base64Logo = this.base64Encode(logoBytes);
-        // Detect image type from first few bytes
-        const mimeType = this.detectMimeType(logoBytes);
-        return `data:${mimeType};base64,${base64Logo}`;
-      } catch (error) {
-        console.error('Error setting logo:', error);
-        return `data:image/x-icon;base64,${placeholderBase64}`;
+  public static imgSrcFromBytes(bytes: Uint8Array<ArrayBufferLike> | number[] | undefined): string | null {
+    if (!bytes || (Array.isArray(bytes) && bytes.length === 0) || (bytes instanceof Uint8Array && bytes.length === 0)) {
+      return null;
+    }
+
+    try {
+      const logoBytes = this.toUint8Array(bytes);
+      const base64Logo = this.base64Encode(logoBytes);
+      if (!base64Logo) {
+        return null;
       }
-    } else {
-      return `data:image/x-icon;base64,${placeholderBase64}`;
+      const mimeType = this.detectMimeType(logoBytes);
+      return `data:${mimeType};base64,${base64Logo}`;
+    } catch (error) {
+      console.error('Error setting logo:', error);
+      return null;
     }
   }
 
   /**
-   * Detect MIME type from file signature (magic numbers)
+   * Extract and normalize source domain from a URL string.
+   * @param urlString - The URL to extract the domain from
+   * @returns The normalized source domain (e.g., 'github.com'), or 'unknown' if extraction fails
+   */
+  public static extractSourceFromUrl(urlString: string | undefined | null): string {
+    if (!urlString) {
+      return 'unknown';
+    }
+
+    try {
+      const url = new URL(urlString.startsWith('http') ? urlString : `https://${urlString}`);
+      return url.hostname.toLowerCase().replace(/^www\./, '');
+    } catch {
+      return 'unknown';
+    }
+  }
+
+  /**
+   * Detect MIME type from file signature (magic numbers).
+   * @param bytes - Binary data to analyze
+   * @returns MIME type string
    */
   private static detectMimeType(bytes: Uint8Array): string {
     /**
      * Check if the file is an SVG file.
+     * @returns True if the file is an SVG
      */
-    const isSvg = () : boolean => {
+    const isSvg = (): boolean => {
       const header = new TextDecoder().decode(bytes.slice(0, 5)).toLowerCase();
       return header.includes('<?xml') || header.includes('<svg');
     };
 
     /**
      * Check if the file is an ICO file.
+     * @returns True if the file is an ICO
      */
-    const isIco = () : boolean => {
+    const isIco = (): boolean => {
       return bytes[0] === 0x00 && bytes[1] === 0x00 && bytes[2] === 0x01 && bytes[3] === 0x00;
     };
 
     /**
-     * Check if the file is an PNG file.
+     * Check if the file is a PNG file.
+     * @returns True if the file is a PNG
      */
-    const isPng = () : boolean => {
+    const isPng = (): boolean => {
       return bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
     };
 
@@ -1203,9 +477,11 @@ export class SqliteClient {
   }
 
   /**
-   * Convert various binary data formats to Uint8Array
+   * Convert various binary data formats to Uint8Array.
+   * @param buffer - Binary data in various formats
+   * @returns Normalized Uint8Array
    */
-  private static toUint8Array(buffer: Uint8Array | number[] | {[key: number]: number}): Uint8Array {
+  private static toUint8Array(buffer: Uint8Array | number[] | { [key: number]: number }): Uint8Array {
     if (buffer instanceof Uint8Array) {
       return buffer;
     }
@@ -1225,386 +501,16 @@ export class SqliteClient {
 
   /**
    * Base64 encode binary data.
+   * @param buffer - Binary data to encode
+   * @returns Base64 encoded string or null on error
    */
-  private static base64Encode(buffer: Uint8Array | number[] | {[key: number]: number}): string | null {
+  private static base64Encode(buffer: Uint8Array | number[] | { [key: number]: number }): string | null {
     try {
       const arr = Array.from(this.toUint8Array(buffer));
       return btoa(arr.reduce((data, byte) => data + String.fromCharCode(byte), ''));
     } catch (error) {
       console.error('Error encoding to base64:', error);
       return null;
-    }
-  }
-
-  /**
-   * Check if a table exists in the database
-   * @param tableName - The name of the table to check
-   * @returns True if the table exists, false otherwise
-   */
-  private tableExists(tableName: string): boolean {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    try {
-      const query = `
-        SELECT name FROM sqlite_master
-        WHERE type='table' AND name=?`;
-
-      const results = this.executeQuery(query, [tableName]);
-      return results.length > 0;
-    } catch (error) {
-      console.error(`Error checking if table ${tableName} exists:`, error);
-      return false;
-    }
-  }
-
-  /**
-   * Execute raw SQL command
-   * @param query - The SQL command to execute
-   */
-  public executeRaw(query: string): void {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    try {
-      // Split the query by semicolons to handle multiple statements
-      const statements = query.split(';');
-
-      for (const statement of statements) {
-        const trimmedStatement = statement.trim();
-
-        // Skip empty statements and transaction control statements (handled externally)
-        if (trimmedStatement.length === 0 ||
-            trimmedStatement.toUpperCase().startsWith('BEGIN TRANSACTION') ||
-            trimmedStatement.toUpperCase().startsWith('COMMIT') ||
-            trimmedStatement.toUpperCase().startsWith('ROLLBACK')) {
-          continue;
-        }
-
-        this.db.run(trimmedStatement);
-      }
-    } catch (error) {
-      console.error('Error executing raw SQL:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Get all passkeys for a specific relying party (rpId)
-   * @param rpId - The relying party identifier (domain)
-   * @returns Array of passkey objects with credential info
-   */
-  public getPasskeysByRpId(rpId: string): Array<Passkey & { Username?: string | null; ServiceName?: string | null }> {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    const query = `
-      SELECT
-        p.Id,
-        p.CredentialId,
-        p.RpId,
-        p.UserHandle,
-        p.PublicKey,
-        p.PrivateKey,
-        p.DisplayName,
-        p.PrfKey,
-        p.AdditionalData,
-        p.CreatedAt,
-        p.UpdatedAt,
-        p.IsDeleted,
-        c.Username,
-        s.Name as ServiceName
-      FROM Passkeys p
-      LEFT JOIN Credentials c ON p.CredentialId = c.Id
-      LEFT JOIN Services s ON c.ServiceId = s.Id
-      WHERE p.RpId = ? AND p.IsDeleted = 0
-      ORDER BY p.CreatedAt DESC
-    `;
-
-    const results = this.executeQuery(query, [rpId]);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return results.map((row: any) => ({
-      Id: row.Id,
-      CredentialId: row.CredentialId,
-      RpId: row.RpId,
-      UserHandle: row.UserHandle,
-      PublicKey: row.PublicKey,
-      PrivateKey: row.PrivateKey,
-      DisplayName: row.DisplayName,
-      PrfKey: row.PrfKey,
-      AdditionalData: row.AdditionalData,
-      CreatedAt: row.CreatedAt,
-      UpdatedAt: row.UpdatedAt,
-      IsDeleted: row.IsDeleted,
-      Username: row.Username,
-      ServiceName: row.ServiceName
-    }));
-  }
-
-  /**
-   * Get a passkey by its ID
-   * @param passkeyId - The passkey ID
-   * @returns The passkey object or null if not found
-   */
-  public getPasskeyById(passkeyId: string): (Passkey & { Username?: string | null; ServiceName?: string | null }) | null {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    const query = `
-      SELECT
-        p.Id,
-        p.CredentialId,
-        p.RpId,
-        p.UserHandle,
-        p.PublicKey,
-        p.PrivateKey,
-        p.DisplayName,
-        p.PrfKey,
-        p.AdditionalData,
-        p.CreatedAt,
-        p.UpdatedAt,
-        p.IsDeleted,
-        c.Username,
-        s.Name as ServiceName
-      FROM Passkeys p
-      LEFT JOIN Credentials c ON p.CredentialId = c.Id
-      LEFT JOIN Services s ON c.ServiceId = s.Id
-      WHERE p.Id = ? AND p.IsDeleted = 0
-    `;
-
-    const results = this.executeQuery(query, [passkeyId]);
-
-    if (results.length === 0) {
-      return null;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const row: any = results[0];
-    return {
-      Id: row.Id,
-      CredentialId: row.CredentialId,
-      RpId: row.RpId,
-      UserHandle: row.UserHandle,
-      PublicKey: row.PublicKey,
-      PrivateKey: row.PrivateKey,
-      DisplayName: row.DisplayName,
-      PrfKey: row.PrfKey,
-      AdditionalData: row.AdditionalData,
-      CreatedAt: row.CreatedAt,
-      UpdatedAt: row.UpdatedAt,
-      IsDeleted: row.IsDeleted,
-      Username: row.Username,
-      ServiceName: row.ServiceName
-    };
-  }
-
-  /**
-   * Get all passkeys for a specific credential
-   * @param credentialId - The credential ID
-   * @returns Array of passkey objects
-   */
-  public getPasskeysByCredentialId(credentialId: string): Passkey[] {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    const query = `
-      SELECT
-        p.Id,
-        p.CredentialId,
-        p.RpId,
-        p.UserHandle,
-        p.PublicKey,
-        p.PrivateKey,
-        p.DisplayName,
-        p.PrfKey,
-        p.AdditionalData,
-        p.CreatedAt,
-        p.UpdatedAt,
-        p.IsDeleted
-      FROM Passkeys p
-      WHERE p.CredentialId = ? AND p.IsDeleted = 0
-      ORDER BY p.CreatedAt DESC
-    `;
-
-    const results = this.executeQuery(query, [credentialId]);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return results.map((row: any) => ({
-      Id: row.Id,
-      CredentialId: row.CredentialId,
-      RpId: row.RpId,
-      UserHandle: row.UserHandle,
-      PublicKey: row.PublicKey,
-      PrivateKey: row.PrivateKey,
-      DisplayName: row.DisplayName,
-      PrfKey: row.PrfKey,
-      AdditionalData: row.AdditionalData,
-      CreatedAt: row.CreatedAt,
-      UpdatedAt: row.UpdatedAt,
-      IsDeleted: row.IsDeleted
-    }));
-  }
-
-  /**
-   * Create a new passkey linked to a credential
-   * @param passkey - The passkey object to create
-   */
-  public async createPasskey(passkey: Omit<Passkey, 'CreatedAt' | 'UpdatedAt' | 'IsDeleted'>): Promise<void> {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    try {
-      this.beginTransaction();
-
-      const currentDateTime = dateFormatter.now();
-
-      const query = `
-        INSERT INTO Passkeys (
-          Id, CredentialId, RpId, UserHandle, PublicKey, PrivateKey,
-          PrfKey, DisplayName, AdditionalData, CreatedAt, UpdatedAt, IsDeleted
-        )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-
-      // Convert PrfKey to Uint8Array if it's a number array
-      let prfKeyData: Uint8Array | null = null;
-      if (passkey.PrfKey) {
-        prfKeyData = passkey.PrfKey instanceof Uint8Array ? passkey.PrfKey : new Uint8Array(passkey.PrfKey);
-      }
-
-      // Convert UserHandle to Uint8Array if it's a number array
-      let userHandleData: Uint8Array | null = null;
-      if (passkey.UserHandle) {
-        userHandleData = passkey.UserHandle instanceof Uint8Array ? passkey.UserHandle : new Uint8Array(passkey.UserHandle);
-      }
-
-      this.executeUpdate(query, [
-        passkey.Id,
-        passkey.CredentialId,
-        passkey.RpId,
-        userHandleData,
-        passkey.PublicKey,
-        passkey.PrivateKey,
-        prfKeyData,
-        passkey.DisplayName,
-        passkey.AdditionalData ?? null,
-        currentDateTime,
-        currentDateTime,
-        0
-      ]);
-
-      await this.commitTransaction();
-    } catch (error) {
-      this.rollbackTransaction();
-      console.error('Error creating passkey:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Delete a passkey by its ID (soft delete)
-   * @param passkeyId - The ID of the passkey to delete
-   * @returns The number of rows updated
-   */
-  public async deletePasskeyById(passkeyId: string): Promise<number> {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    try {
-      this.beginTransaction();
-
-      const currentDateTime = dateFormatter.now();
-
-      const query = `
-        UPDATE Passkeys
-        SET IsDeleted = 1,
-            UpdatedAt = ?
-        WHERE Id = ?
-      `;
-
-      const result = this.executeUpdate(query, [currentDateTime, passkeyId]);
-
-      await this.commitTransaction();
-      return result;
-    } catch (error) {
-      this.rollbackTransaction();
-      console.error('Error deleting passkey:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Delete all passkeys for a specific credential (soft delete)
-   * @param credentialId - The ID of the credential
-   * @returns The number of rows updated
-   */
-  public async deletePasskeysByCredentialId(credentialId: string): Promise<number> {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    try {
-      this.beginTransaction();
-
-      const currentDateTime = dateFormatter.now();
-
-      const query = `
-        UPDATE Passkeys
-        SET IsDeleted = 1,
-            UpdatedAt = ?
-        WHERE CredentialId = ?
-      `;
-
-      const result = this.executeUpdate(query, [currentDateTime, credentialId]);
-
-      await this.commitTransaction();
-      return result;
-    } catch (error) {
-      this.rollbackTransaction();
-      console.error('Error deleting passkeys for credential:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Update a passkey's display name
-   * @param passkeyId - The ID of the passkey to update
-   * @param displayName - The new display name
-   * @returns The number of rows updated
-   */
-  public async updatePasskeyDisplayName(passkeyId: string, displayName: string): Promise<number> {
-    if (!this.db) {
-      throw new Error('Database not initialized');
-    }
-
-    try {
-      this.beginTransaction();
-
-      const currentDateTime = dateFormatter.now();
-
-      const query = `
-        UPDATE Passkeys
-        SET DisplayName = ?,
-            UpdatedAt = ?
-        WHERE Id = ?
-      `;
-
-      const result = this.executeUpdate(query, [displayName, currentDateTime, passkeyId]);
-
-      await this.commitTransaction();
-      return result;
-    } catch (error) {
-      this.rollbackTransaction();
-      console.error('Error updating passkey display name:', error);
-      throw error;
     }
   }
 }

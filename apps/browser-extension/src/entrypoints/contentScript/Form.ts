@@ -2,7 +2,8 @@ import { sendMessage } from 'webext-bridge/content-script';
 
 import { openAutofillPopup } from '@/entrypoints/contentScript/Popup';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import type { Item } from '@/utils/dist/core/models/vault';
+import { itemToCredential } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFiller } from '@/utils/formDetector/FormFiller';
 import { ClickValidator } from '@/utils/security/ClickValidator';
@@ -85,12 +86,13 @@ export function validateInputField(element: Element | null): { isValid: boolean;
 }
 
 /**
- * Fill credential into current form.
+ * Fill item into current form.
+ * Converts the Item to Credential format for FormFiller compatibility.
  *
- * @param credential - The credential to fill.
- * @param input - The input element that triggered the popup. Required when filling credentials to know which form to fill.
+ * @param item - The item to fill.
+ * @param input - The input element that triggered the popup. Required when filling items to know which form to fill.
  */
-export async function fillCredential(credential: Credential, input: HTMLInputElement): Promise<void> {
+export async function fillItem(item: Item, input: HTMLInputElement): Promise<void> {
   // Set debounce time to 300ms to prevent the popup from being shown again within 300ms because of autofill events.
   hidePopupFor(300);
 
@@ -107,6 +109,8 @@ export async function fillCredential(credential: Credential, input: HTMLInputEle
     return;
   }
 
+  // Convert Item to Credential for FormFiller compatibility
+  const credential = itemToCredential(item);
   const formFiller = new FormFiller(form, triggerInputEvents);
   await formFiller.fillFields(credential);
 }

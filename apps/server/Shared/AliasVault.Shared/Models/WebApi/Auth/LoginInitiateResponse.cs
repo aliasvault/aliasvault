@@ -21,12 +21,14 @@ public class LoginInitiateResponse
     /// <param name="serverEphemeral">Server ephemeral.</param>
     /// <param name="encryptionType">Encryption type.</param>
     /// <param name="encryptionSettings">Encryption settings.</param>
-    public LoginInitiateResponse(string salt, string serverEphemeral, string encryptionType, string encryptionSettings)
+    /// <param name="srpIdentity">The SRP identity to use for authentication (optional for backward compatibility).</param>
+    public LoginInitiateResponse(string salt, string serverEphemeral, string encryptionType, string encryptionSettings, string? srpIdentity = null)
     {
         Salt = salt;
         ServerEphemeral = serverEphemeral;
         EncryptionType = encryptionType;
         EncryptionSettings = encryptionSettings;
+        SrpIdentity = srpIdentity;
     }
 
     /// <summary>
@@ -52,4 +54,12 @@ public class LoginInitiateResponse
     /// </summary>
     [JsonPropertyName("encryptionSettings")]
     public string EncryptionSettings { get; set; }
+
+    /// <summary>
+    /// Gets or sets the SRP identity to use for authentication. This is a fixed value that doesn't change
+    /// even if the display username is updated. Clients should use this value (instead of the typed username)
+    /// for all SRP operations.
+    /// </summary>
+    [JsonPropertyName("srpIdentity")]
+    public string? SrpIdentity { get; set; }
 }

@@ -96,25 +96,6 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
             });
         }
 
-        // Check if there are no other vaults with the same revision number.
-        // If there are, return a merge required status.
-        // NOTE: a vault merge is no longer allowed by the API as of 0.20.0, updates with the same revision number are now rejected.
-        // So the logic below can be removed later, together with the local merge logic in the WASM client.
-        // We do probably want to still keep this until the datamodel has been updated to accomodate improved offline mode which might warrant
-        // a new and improved merge logic. So we keep this here for reference purposes for now.
-        var duplicateRevisionCount = await context.Vaults
-            .Where(x => x.UserId == user.Id && x.RevisionNumber == vault.RevisionNumber)
-            .CountAsync();
-
-        if (duplicateRevisionCount > 1)
-        {
-            return Ok(new Shared.Models.WebApi.Vault.VaultGetResponse
-            {
-                Status = VaultStatus.MergeRequired,
-                Vault = null,
-            });
-        }
-
         // Get dynamic list of private email domains from config.
         var privateEmailDomainList = config.PrivateEmailDomains;
         var hiddenPrivateEmailDomainList = config.HiddenPrivateEmailDomains;
@@ -140,43 +121,6 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 CreatedAt = vault.CreatedAt,
                 UpdatedAt = vault.UpdatedAt,
             },
-        });
-    }
-
-    /// <summary>
-    /// Returns a list of vaults that should be merged by the client.
-    /// </summary>
-    /// <param name="currentRevisionNumber">Current revision number of the local vault.</param>
-    /// <returns>List of vaults to merge that are newer than the provided current revision number.</returns>
-    [HttpGet("merge")]
-    public async Task<IActionResult> GetVaultsToMerge([FromQuery] long currentRevisionNumber)
-    {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-
-        var user = await GetCurrentUserAsync();
-        if (user == null)
-        {
-            return Unauthorized();
-        }
-
-        // Logic to retrieve vault for the user.
-        var vaultsToMerge = await context.Vaults
-            .Where(x => x.UserId == user.Id && x.RevisionNumber > currentRevisionNumber)
-            .OrderByDescending(x => x.UpdatedAt)
-            .ToListAsync();
-
-        return Ok(new Shared.Models.WebApi.Vault.VaultMergeResponse
-        {
-            Vaults = vaultsToMerge.Select(x => new Shared.Models.WebApi.Vault.Vault
-            {
-                Username = user.UserName!,
-                Blob = x.VaultBlob,
-                Version = x.Version,
-                CurrentRevisionNumber = x.RevisionNumber,
-                CredentialsCount = 0,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt,
-            }).ToList(),
         });
     }
 

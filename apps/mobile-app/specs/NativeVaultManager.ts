@@ -4,19 +4,43 @@ import type { TurboModule } from 'react-native';
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export interface Spec extends TurboModule {
-  // Basic credential operations
-  clearVault(): Promise<void>;
+  // WebAPI configuration and token management
+  setApiUrl(url: string): Promise<void>;
+  getApiUrl(): Promise<string>;
+  setAuthTokens(accessToken: string, refreshToken: string): Promise<void>;
+  getAccessToken(): Promise<string | null>;
+  clearAuthTokens(): Promise<void>;
+  revokeTokens(): Promise<void>;
+
+  // WebAPI request execution
+  executeWebApiRequest(method: string, endpoint: string, body: string | null, headers: string, requiresAuth: boolean): Promise<string>;
 
   // Vault state management
   isVaultUnlocked(): Promise<boolean>;
   getVaultMetadata(): Promise<string>;
   unlockVault(): Promise<boolean>;
+  clearVault(): Promise<void>;
+
+  // Vault sync - single method handles all sync logic including merge
+  // Returns detailed result about what action was taken
+  syncVaultWithServer(): Promise<{ success: boolean; action: 'uploaded' | 'downloaded' | 'merged' | 'already_in_sync' | 'error'; newRevision: number; wasOffline: boolean; error: string | null }>;
+
+  // Sync state management (kept for local mutation tracking)
+  getSyncState(): Promise<{isDirty: boolean; mutationSequence: number; serverRevision: number; isSyncing: boolean}>;
+  markVaultClean(mutationSeqAtStart: number, newServerRevision: number): Promise<boolean>;
+
+  // Vault SQL operations
+  executeQuery(query: string, params: (string | number | null)[]): Promise<string[]>;
+  executeUpdate(query: string, params:(string | number | null)[]): Promise<number>;
+  executeRaw(query: string): Promise<void>;
+  beginTransaction(): Promise<void>;
+  commitTransaction(): Promise<void>;
+  rollbackTransaction(): Promise<void>;
 
   // Cryptography operations
   deriveKeyFromPassword(password: string, salt: string, encryptionType: string, encryptionSettings: string): Promise<string>;
 
-  // Database operations
-  storeDatabase(base64EncryptedDb: string): Promise<void>;
+  // Database/encryption key operations
   storeMetadata(metadata: string): Promise<void>;
   setAuthMethods(authMethods: string[]): Promise<void>;
   storeEncryptionKey(base64EncryptionKey: string): Promise<void>;
@@ -24,16 +48,6 @@ export interface Spec extends TurboModule {
   getEncryptionKeyDerivationParams(): Promise<string | null>;
   hasEncryptedDatabase(): Promise<boolean>;
   getEncryptedDatabase(): Promise<string | null>;
-  getCurrentVaultRevisionNumber(): Promise<number>;
-  setCurrentVaultRevisionNumber(revisionNumber: number): Promise<void>;
-
-  // SQL operations
-  executeQuery(query: string, params: (string | number | null)[]): Promise<string[]>;
-  executeUpdate(query: string, params:(string | number | null)[]): Promise<number>;
-  executeRaw(query: string): Promise<void>;
-  beginTransaction(): Promise<void>;
-  commitTransaction(): Promise<void>;
-  rollbackTransaction(): Promise<void>;
 
   // Auto-lock settings
   setAutoLockTimeout(timeout: number): Promise<void>;
@@ -44,12 +58,7 @@ export interface Spec extends TurboModule {
   setAutofillShowSearchText(showSearchText: boolean): Promise<void>;
 
   // Clipboard management
-  clearClipboardAfterDelay(delayInSeconds: number): Promise<void>;
   copyToClipboardWithExpiration(text: string, expirationSeconds: number): Promise<void>;
-
-  // Exact alarm permission management
-  canScheduleExactAlarms(): Promise<boolean>;
-  requestExactAlarmPermission(): Promise<string>;
 
   // Battery optimization management
   isIgnoringBatteryOptimizations(): Promise<boolean>;
@@ -58,23 +67,6 @@ export interface Spec extends TurboModule {
   // Credential identity management
   registerCredentialIdentities(): Promise<void>;
   removeCredentialIdentities(): Promise<void>;
-
-  // WebAPI configuration and token management
-  setApiUrl(url: string): Promise<void>;
-  getApiUrl(): Promise<string>;
-  setAuthTokens(accessToken: string, refreshToken: string): Promise<void>;
-  getAccessToken(): Promise<string | null>;
-  clearAuthTokens(): Promise<void>;
-  revokeTokens(): Promise<void>;
-
-  // WebAPI request execution
-  executeWebApiRequest(
-    method: string,
-    endpoint: string,
-    body: string | null,
-    headers: string,
-    requiresAuth: boolean
-  ): Promise<string>;
 
   // Username management
   setUsername(username: string): Promise<void>;
@@ -87,11 +79,6 @@ export interface Spec extends TurboModule {
 
   // Server version management
   isServerVersionGreaterThanOrEqualTo(targetVersion: string): Promise<boolean>;
-
-  // Vault sync and mutate
-  isNewVaultVersionAvailable(): Promise<{ isNewVersionAvailable: boolean; newRevision: number | null }>;
-  downloadVault(newRevision: number): Promise<boolean>;
-  mutateVault(): Promise<boolean>;
 
   // PIN unlock methods
   isPinEnabled(): Promise<boolean>;

@@ -29,8 +29,8 @@ export default function ActionHandler() : null {
     const pathArray = Array.isArray(pathSegments) ? pathSegments : pathSegments ? [pathSegments] : [];
 
     if (pathArray.length === 0) {
-      // No action specified, go to credentials
-      router.replace('/(tabs)/credentials');
+      // No action specified, go to items
+      router.replace('/(tabs)/items');
       setHasNavigated(true);
       return;
     }
@@ -56,9 +56,9 @@ export default function ActionHandler() : null {
       }
 
       default:
-        // Unknown action, log and go to credentials
+        // Unknown action, log and go to items
         console.warn('[ActionHandler] Unknown action:', action);
-        router.replace('/(tabs)/credentials');
+        router.replace('/(tabs)/items');
         setHasNavigated(true);
         break;
     }

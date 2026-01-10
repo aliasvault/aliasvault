@@ -15,7 +15,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
     func setupPasskeyView(vaultStore: VaultStore, rpId: String, clientDataHash: Data) throws -> UIViewController {
         let viewModel = PasskeyProviderViewModel(
             loader: {
-                return try vaultStore.getAllCredentialsWithPasskeys()
+                return try vaultStore.getAllAutofillCredentialsWithPasskeys()
             },
             selectionHandler: { credential in
                 // For passkey authentication, we assume the data is available
@@ -326,15 +326,14 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                 // Step 1: Check server connectivity by syncing vault before creating passkey
                 viewModel.setLoading(true, message: NSLocalizedString("vault_syncing", comment: "Checking connection..."))
 
-                do {
-                    try _ = await vaultStore.syncVault(using: webApiService)
-                } catch {
+                let syncResult = await vaultStore.syncVaultWithServer(using: webApiService)
+                if !syncResult.success && !syncResult.wasOffline {
                     // Server connectivity check failed
                     viewModel.setLoading(false)
 
                     // Show appropriate error dialog based on error type
                     await MainActor.run {
-                        self.showSyncErrorAlert(error: error)
+                        self.showSyncErrorAlert(error: VaultSyncError.unknownError(message: syncResult.error ?? "Sync failed"))
                     }
                     return
                 }
@@ -348,8 +347,8 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                 }
 
                 // Step 3: Create passkey credentials
-                // Generate new credential ID (UUID that will be used as the passkey ID)
-                let passkeyId = UUID()
+                let itemId = UUID()  // Item ID that will contain the passkey
+                let passkeyId = UUID()  // Passkey credential ID
                 let credentialId = try PasskeyHelper.guidToBytes(passkeyId.uuidString)
 
                 // Create the passkey using PasskeyAuthenticator
@@ -365,11 +364,11 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                     prfInputs: prfInputs
                 )
 
-                // Create a Passkey model object
+                // Create a Passkey model object with correct parentItemId
                 let now = Date()
                 let passkey = Passkey(
                     id: passkeyId,
-                    parentCredentialId: UUID(), // Will be set by createCredentialWithPasskey
+                    parentItemId: itemId,  // Link to the Item that will be created
                     rpId: rpId,
                     userHandle: userId,
                     userName: userName,
@@ -383,9 +382,6 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                 )
 
                 // Step 4: Store credential with passkey in database
-                // Begin transaction
-                try vaultStore.beginTransaction()
-
                 // Check if we're replacing an existing passkey
                 if let oldPasskeyId = viewModel.selectedPasskeyToReplace {
                     // Replace existing passkey
@@ -396,9 +392,9 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                         logo: logo
                     )
                 } else {
-                    // Store credential with passkey and logo in database
-                    // Use viewModel.displayName as the title (Service.name)
-                    _ = try vaultStore.createCredentialWithPasskey(
+                    // Store item with passkey and logo in database
+                    // Use viewModel.displayName as the title (Item.name)
+                    _ = try vaultStore.createItemWithPasskey(
                         rpId: rpId,
                         userName: userName,
                         displayName: viewModel.displayName,
@@ -406,9 +402,6 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                         logo: logo
                     )
                 }
-
-                // Commit transaction to persist the data
-                try vaultStore.commitTransaction()
 
                 // Step 5: Upload vault changes to server
                 viewModel.setLoading(true, message: NSLocalizedString("creating_passkey", comment: "Uploading vault..."))
@@ -419,7 +412,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
                 }
 
                 // Step 6: Update the IdentityStore with the new credential (async call)
-                let credentials = try vaultStore.getAllCredentials()
+                let credentials = try vaultStore.getAllAutofillCredentials()
                 try await CredentialIdentityStore.shared.saveCredentialIdentities(credentials)
 
                 // Step 7: Create the ASPasskeyRegistrationCredential to return to the system
@@ -543,11 +536,11 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
     /**
      * Handle passkey credential selection from picker
      */
-    internal func handlePasskeySelection(credential: Credential, clientDataHash: Data, rpId: String) {
+    internal func handlePasskeySelection(credential: AutofillCredential, clientDataHash: Data, rpId: String) {
         do {
-            // Get the first matching passkey for the RP ID
-            guard let passkeys = credential.passkeys,
-                  let passkey = passkeys.first(where: { $0.rpId.lowercased() == rpId.lowercased() }) else {
+            // Get the passkey and verify it matches the RP ID
+            guard let passkey = credential.passkey,
+                  passkey.rpId.lowercased() == rpId.lowercased() else {
                 extensionContext.cancelRequest(withError: NSError(
                     domain: ASExtensionErrorDomain,
                     code: ASExtensionError.credentialIdentityNotFound.rawValue

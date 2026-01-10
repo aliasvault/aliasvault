@@ -26,15 +26,15 @@ public class SearchTests : ClientPlaywrightTest
         var serviceName1 = "Test Service 1";
         var serviceName2 = "Test Service 2";
         var serviceName3 = "Entirely different name";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
            { "service-name", serviceName1 },
         });
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
            { "service-name", serviceName2 },
         });
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName3 },
         });

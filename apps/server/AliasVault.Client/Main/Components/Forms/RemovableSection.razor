@@ -1,0 +1,55 @@
+@using Microsoft.Extensions.Localization
+
+@inject IStringLocalizerFactory LocalizerFactory
+
+<div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <h3 class="mb-4 text-xl font-semibold dark:text-white">@Title</h3>
+    }
+    <div class="grid gap-6">
+        @ChildContent
+    </div>
+    @if (CanRemove)
+    {
+        <button type="button" @onclick="HandleRemove" @onclick:preventDefault="true"
+                class="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors" title="@SharedLocalizer["Delete"]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    }
+</div>
+
+@code {
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
+
+    /// <summary>
+    /// Gets or sets the section title.
+    /// </summary>
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets whether the section can be removed.
+    /// </summary>
+    [Parameter]
+    public bool CanRemove { get; set; }
+
+    /// <summary>
+    /// Gets or sets the child content to render inside the section.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback when the remove button is clicked.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnRemove { get; set; }
+
+    private async Task HandleRemove()
+    {
+        await OnRemove.InvokeAsync();
+    }
+}

@@ -20,7 +20,7 @@
     "type": "modules",
     "jsSrcsDir": "specs",
     "android": {
-      "javaPackageName": "net.aliasvault.nativevaultmanager"
+      "javaPackageName": "net.aliasvault.app.nativevaultmanager"
     },
     "ios": {
       "modulesProvider": {

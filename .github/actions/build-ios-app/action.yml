@@ -17,11 +17,36 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/setup-node@v4
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
       with:
         node-version: '20'
         cache: 'npm'
         cache-dependency-path: apps/mobile-app/package-lock.json
+
+    - name: Build core libraries
+      shell: bash
+      run: |
+        cd ./core
+        chmod +x build-and-distribute.sh
+        ./build-and-distribute.sh
+
+    - name: Verify core library distribution
+      shell: bash
+      run: |
+        TARGET_DIRS=(
+          "apps/mobile-app/utils/dist/core/identity-generator"
+          "apps/mobile-app/utils/dist/core/password-generator"
+          "apps/mobile-app/utils/dist/core/models"
+          "apps/mobile-app/utils/dist/core/vault"
+        )
+        for dir in "${TARGET_DIRS[@]}"; do
+          if [ ! -d "$dir" ]; then
+            echo "Error: Directory $dir does not exist"
+            exit 1
+          fi
+        done
+        echo "Core library distribution verified"
 
     - name: Install dependencies
       run: npm ci

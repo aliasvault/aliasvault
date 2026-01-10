@@ -63,27 +63,27 @@ const PasskeyAuthenticate: React.FC = () => {
 
             // Get passkeys for this rpId from the vault
             const rpId = data.publicKey.rpId || new URL(data.origin).hostname;
-            const passkeys = dbContext.sqliteClient!.getPasskeysByRpId(rpId);
+            const passkeys = dbContext.sqliteClient!.passkeys.getByRpId(rpId);
 
             // Filter by allowCredentials if specified
             let filteredPasskeys = passkeys;
             if (data.publicKey.allowCredentials && data.publicKey.allowCredentials.length > 0) {
               // Convert the RP's base64url credential IDs to GUIDs for comparison
               const allowedGuids = new Set(
-                data.publicKey.allowCredentials.map(c => {
+                data.publicKey.allowCredentials.map((c: { id: string }) => {
                   try {
                     return PasskeyHelper.base64urlToGuid(c.id);
                   } catch (e) {
                     console.warn('Failed to convert credential ID to GUID:', c.id, e);
                     return null;
                   }
-                }).filter((id): id is string => id !== null)
+                }).filter((id: string | null): id is string => id !== null)
               );
-              filteredPasskeys = passkeys.filter(pk => allowedGuids.has(pk.Id));
+              filteredPasskeys = passkeys.filter((pk: { Id: string }) => allowedGuids.has(pk.Id));
             }
 
             // Map to display format
-            setAvailablePasskeys(filteredPasskeys.map(pk => ({
+            setAvailablePasskeys(filteredPasskeys.map((pk: { Id: string; DisplayName: string; ServiceName?: string | null; RpId: string; Username?: string | null }) => ({
               id: pk.Id,
               displayName: pk.DisplayName,
               serviceName: pk.ServiceName,
@@ -147,7 +147,7 @@ const PasskeyAuthenticate: React.FC = () => {
 
     try {
       // Get the stored passkey from vault
-      const storedPasskey = dbContext.sqliteClient.getPasskeyById(passkeyId);
+      const storedPasskey = dbContext.sqliteClient.passkeys.getById(passkeyId);
       if (!storedPasskey) {
         throw new Error(t('common.errors.unknownError'));
       }
@@ -317,7 +317,7 @@ const PasskeyAuthenticate: React.FC = () => {
     if (choice === 'always') {
       // Add to permanent disabled list
       const hostname = new URL(request.origin).hostname;
-      const baseDomain = extractRootDomain(extractDomain(hostname));
+      const baseDomain = await extractRootDomain(await extractDomain(hostname));
 
       const disabledSites = await storage.getItem(PASSKEY_DISABLED_SITES_KEY) as string[] ?? [];
       if (!disabledSites.includes(baseDomain)) {
@@ -365,13 +365,12 @@ const PasskeyAuthenticate: React.FC = () => {
 
   return (
     <>
-      {showBypassDialog && request && (
-        <PasskeyBypassDialog
-          origin={new URL(request.origin).hostname}
-          onChoice={handleBypassChoice}
-          onCancel={() => setShowBypassDialog(false)}
-        />
-      )}
+      <PasskeyBypassDialog
+        isOpen={showBypassDialog && !!request}
+        origin={request ? new URL(request.origin).hostname : ''}
+        onChoice={handleBypassChoice}
+        onCancel={() => setShowBypassDialog(false)}
+      />
 
       <div className="space-y-6">
         <div className="text-center">
@@ -433,7 +432,7 @@ const PasskeyAuthenticate: React.FC = () => {
             variant="secondary"
             onClick={handleFallback}
           >
-            {t('passkeys.authenticate.useBrowserPasskey')}
+            {t('passkeys.useBrowserPasskey')}
           </Button>
 
           <Button

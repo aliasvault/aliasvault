@@ -16,12 +16,14 @@ import Login from '@/entrypoints/popup/pages/auth/Login';
 import Unlock from '@/entrypoints/popup/pages/auth/Unlock';
 import UnlockSuccess from '@/entrypoints/popup/pages/auth/UnlockSuccess';
 import Upgrade from '@/entrypoints/popup/pages/auth/Upgrade';
-import CredentialAddEdit from '@/entrypoints/popup/pages/credentials/CredentialAddEdit';
-import CredentialDetails from '@/entrypoints/popup/pages/credentials/CredentialDetails';
-import CredentialsList from '@/entrypoints/popup/pages/credentials/CredentialsList';
 import EmailDetails from '@/entrypoints/popup/pages/emails/EmailDetails';
 import EmailsList from '@/entrypoints/popup/pages/emails/EmailsList';
 import Index from '@/entrypoints/popup/pages/Index';
+import ItemAddEdit from '@/entrypoints/popup/pages/items/ItemAddEdit';
+import ItemDetails from '@/entrypoints/popup/pages/items/ItemDetails';
+import ItemsList from '@/entrypoints/popup/pages/items/ItemsList';
+import ItemTypeSelector from '@/entrypoints/popup/pages/items/ItemTypeSelector';
+import RecentlyDeleted from '@/entrypoints/popup/pages/items/RecentlyDeleted';
 import PasskeyAuthenticate from '@/entrypoints/popup/pages/passkeys/PasskeyAuthenticate';
 import PasskeyCreate from '@/entrypoints/popup/pages/passkeys/PasskeyCreate';
 import Reinitialize from '@/entrypoints/popup/pages/Reinitialize';
@@ -181,11 +183,14 @@ const App: React.FC = () => {
     { path: '/unlock', element: <Unlock />, showBackButton: false, layout: LayoutType.AUTH },
     { path: '/unlock-success', element: <UnlockSuccess />, showBackButton: false },
     { path: '/upgrade', element: <Upgrade />, showBackButton: false },
-    { path: '/auth-settings', element: <AuthSettings />, showBackButton: true, title: t('settings.title') },
-    { path: '/credentials', element: <CredentialsList />, showBackButton: false },
-    { path: '/credentials/add', element: <CredentialAddEdit />, showBackButton: true, title: t('credentials.addCredential') },
-    { path: '/credentials/:id', element: <CredentialDetails />, showBackButton: true, title: t('credentials.credentialDetails') },
-    { path: '/credentials/:id/edit', element: <CredentialAddEdit />, showBackButton: true, title: t('credentials.editCredential') },
+    { path: '/auth-settings', element: <AuthSettings />, showBackButton: true, title: t('common.settings') },
+    { path: '/items', element: <ItemsList />, showBackButton: false },
+    { path: '/items/folder/:folderId', element: <ItemsList />, showBackButton: true, title: t('items.title') },
+    { path: '/items/select-type', element: <ItemTypeSelector />, showBackButton: true, title: t('itemTypes.selectType') },
+    { path: '/items/add', element: <ItemAddEdit />, showBackButton: true, title: t('items.addItem') },
+    { path: '/items/deleted', element: <RecentlyDeleted />, showBackButton: true, title: t('recentlyDeleted.title') },
+    { path: '/items/:id', element: <ItemDetails />, showBackButton: true, title: t('items.itemDetails') },
+    { path: '/items/:id/edit', element: <ItemAddEdit />, showBackButton: true, title: t('items.editItem') },
     { path: '/passkeys/create', element: <PasskeyCreate />, layout: LayoutType.PASSKEY },
     { path: '/passkeys/authenticate', element: <PasskeyAuthenticate />, layout: LayoutType.PASSKEY },
     { path: '/emails', element: <EmailsList />, showBackButton: false },

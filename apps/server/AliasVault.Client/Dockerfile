@@ -1,6 +1,24 @@
 ﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 WORKDIR /app
 
+# ============================================
+# Stage: Build core libraries
+# ============================================
+FROM node:20-slim AS core-builder
+
+WORKDIR /src
+
+# Copy core library source files
+COPY core/ ./core/
+
+# Build core libraries
+RUN cd ./core && \
+    chmod +x build-and-distribute.sh && \
+    ./build-and-distribute.sh
+
+# ============================================
+# Stage: Build .NET application
+# ============================================
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG TARGETARCH
 ARG BUILD_CONFIGURATION=Release
@@ -20,6 +38,10 @@ RUN dotnet workload install wasm-tools
 
 # Copy all project files
 COPY apps/server /src
+
+# Copy built core libraries from core-builder stage
+COPY --from=core-builder /src/core/ /src-core/
+RUN cp -r /src-core/apps/server/AliasVault.Client/wwwroot/js/dist/core/* /src/AliasVault.Client/wwwroot/js/dist/core/ 2>/dev/null || true
 
 # Build the Client project
 WORKDIR "/src/AliasVault.Client"

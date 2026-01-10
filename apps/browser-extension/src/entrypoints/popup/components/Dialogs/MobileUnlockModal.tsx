@@ -2,6 +2,7 @@ import QRCode from 'qrcode';
 import React, { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 import { MobileLoginErrorCode } from '@/entrypoints/popup/types/MobileLoginErrorCode';
 import { MobileLoginUtility } from '@/entrypoints/popup/utils/MobileLoginUtility';
 
@@ -170,74 +171,50 @@ const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!isOpen) {
-    return null;
-  }
-
   const title = mode === 'unlock' ? t('auth.unlockWithMobile') : t('auth.loginWithMobile');
   const description = t('auth.scanQrCode');
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      {/* Backdrop */}
-      <div className="fixed inset-0 bg-black bg-opacity-80 transition-opacity" onClick={handleClose} />
+    <ModalWrapper
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={title}
+      showHeaderBorder={false}
+      bodyClassName="px-6 pb-6"
+    >
+      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+        {description}
+      </p>
 
-      {/* Modal */}
-      <div className="fixed inset-0 flex items-center justify-center p-4">
-        <div className="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-6 pb-6 pt-5 text-left shadow-xl transition-all w-full max-w-md">
-          {/* Close button */}
-          <button
-            type="button"
-            className="absolute right-4 top-4 text-gray-400 hover:text-gray-500 focus:outline-none"
-            onClick={handleClose}
-          >
-            <span className="sr-only">{t('common.close')}</span>
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 rounded text-red-700 dark:text-red-400 text-sm">
+          {getErrorMessage(error)}
+        </div>
+      )}
 
-          {/* Content */}
-          <div className="mt-3">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-              {title}
-            </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-              {description}
-            </p>
-
-            {error && (
-              <div className="mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 rounded text-red-700 dark:text-red-400 text-sm">
-                {getErrorMessage(error)}
-              </div>
-            )}
-
-            {qrCodeUrl && (
-              <div className="flex flex-col items-center mb-4">
-                <img src={qrCodeUrl} alt="QR Code" className="border-4 border-gray-200 dark:border-gray-600 rounded mb-3" />
-                <div className="text-gray-700 dark:text-gray-300 text-sm font-medium">
-                  {formatTime(timeRemaining)}
-                </div>
-              </div>
-            )}
-
-            {!qrCodeUrl && !error && (
-              <div className="flex justify-center py-8">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={handleClose}
-              className="mt-4 w-full inline-flex justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
-            >
-              {t('common.cancel')}
-            </button>
+      {qrCodeUrl && (
+        <div className="flex flex-col items-center mb-4">
+          <img src={qrCodeUrl} alt="QR Code" className="border-4 border-gray-200 dark:border-gray-600 rounded mb-3" />
+          <div className="text-gray-700 dark:text-gray-300 text-sm font-medium">
+            {formatTime(timeRemaining)}
           </div>
         </div>
-      </div>
-    </div>
+      )}
+
+      {!qrCodeUrl && !error && (
+        <div className="flex justify-center py-8">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={handleClose}
+        className="mt-4 w-full inline-flex justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500"
+      >
+        {t('common.cancel')}
+      </button>
+    </ModalWrapper>
   );
 };
 

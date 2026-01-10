@@ -74,9 +74,9 @@
     <value>Please note:</value>
     <comment>Reset vault please note prefix</comment>
   </data>
-  <data name="ResetVaultCredentialsDeletedNote" xml:space="preserve">
-    <value>All encrypted credentials in your vault will be permanently deleted</value>
-    <comment>Reset vault note about credentials being deleted</comment>
+  <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
+    <value>All encrypted items in your vault will be permanently deleted</value>
+    <comment>Reset vault note about items being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
     <value>Your email aliases will be preserved and can be re-used after resetting your vault</value>
@@ -99,7 +99,7 @@
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>Final warning: You are about to permanently delete all your credentials!</value>
+    <value>Final warning: You are about to permanently delete all your items!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
@@ -131,7 +131,7 @@
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>Your vault has been successfully reset. All credentials have been deleted and you can now start fresh.</value>
+    <value>Your vault has been successfully reset. All items have been deleted and you can now start fresh.</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">

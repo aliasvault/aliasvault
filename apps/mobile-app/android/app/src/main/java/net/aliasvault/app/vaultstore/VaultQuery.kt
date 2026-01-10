@@ -6,6 +6,10 @@ import net.aliasvault.app.utils.DateHelpers
 import net.aliasvault.app.vaultstore.interfaces.CredentialOperationCallback
 import net.aliasvault.app.vaultstore.models.Alias
 import net.aliasvault.app.vaultstore.models.Credential
+import net.aliasvault.app.vaultstore.models.FieldKey
+import net.aliasvault.app.vaultstore.models.FieldType
+import net.aliasvault.app.vaultstore.models.Item
+import net.aliasvault.app.vaultstore.models.ItemField
 import net.aliasvault.app.vaultstore.models.Password
 import net.aliasvault.app.vaultstore.models.Service
 import java.util.Calendar
@@ -157,134 +161,281 @@ class VaultQuery(
 
     // endregion
 
-    // region Credential Operations
+    // region Item Operations (New Field-Based Model)
 
     /**
-     * Get all credentials from the vault.
+     * Get all items from the vault using the new field-based model.
      */
-    fun getAllCredentials(): List<Credential> {
+    @Suppress("LongMethod", "NestedBlockDepth")
+    fun getAllItems(): List<Item> {
         if (database.dbConnection == null) {
             error("Database not initialized")
         }
 
-        val query = """
-            WITH LatestPasswords AS (
-                SELECT
-                    p.Id as password_id,
-                    p.CredentialId,
-                    p.Value,
-                    p.CreatedAt,
-                    p.UpdatedAt,
-                    p.IsDeleted,
-                    ROW_NUMBER() OVER (PARTITION BY p.CredentialId ORDER BY p.CreatedAt DESC) as rn
-                FROM Passwords p
-                WHERE p.IsDeleted = 0
-            )
-            SELECT
-                c.Id,
-                c.AliasId,
-                c.Username,
-                c.Notes,
-                c.CreatedAt,
-                c.UpdatedAt,
-                c.IsDeleted,
-                s.Id as service_id,
-                s.Name as service_name,
-                s.Url as service_url,
-                s.Logo as service_logo,
-                s.CreatedAt as service_created_at,
-                s.UpdatedAt as service_updated_at,
-                s.IsDeleted as service_is_deleted,
-                lp.password_id,
-                lp.Value as password_value,
-                lp.CreatedAt as password_created_at,
-                lp.UpdatedAt as password_updated_at,
-                lp.IsDeleted as password_is_deleted,
-                a.Id as alias_id,
-                a.Gender as alias_gender,
-                a.FirstName as alias_first_name,
-                a.LastName as alias_last_name,
-                a.NickName as alias_nick_name,
-                a.BirthDate as alias_birth_date,
-                a.Email as alias_email,
-                a.CreatedAt as alias_created_at,
-                a.UpdatedAt as alias_updated_at,
-                a.IsDeleted as alias_is_deleted
-            FROM Credentials c
-            LEFT JOIN Services s ON s.Id = c.ServiceId AND s.IsDeleted = 0
-            LEFT JOIN LatestPasswords lp ON lp.CredentialId = c.Id AND lp.rn = 1
-            LEFT JOIN Aliases a ON a.Id = c.AliasId AND a.IsDeleted = 0
-            WHERE c.IsDeleted = 0
-            ORDER BY c.CreatedAt DESC
+        val itemQuery = """
+            SELECT DISTINCT
+              i.Id,
+              i.Name,
+              i.ItemType,
+              i.FolderId,
+              f.Name as FolderPath,
+              l.FileData as Logo,
+              CASE WHEN EXISTS (SELECT 1 FROM Passkeys pk WHERE pk.ItemId = i.Id AND pk.IsDeleted = 0) THEN 1 ELSE 0 END as HasPasskey,
+              CASE WHEN EXISTS (SELECT 1 FROM Attachments att WHERE att.ItemId = i.Id AND att.IsDeleted = 0) THEN 1 ELSE 0 END as HasAttachment,
+              CASE WHEN EXISTS (SELECT 1 FROM TotpCodes tc WHERE tc.ItemId = i.Id AND tc.IsDeleted = 0) THEN 1 ELSE 0 END as HasTotp,
+              i.CreatedAt,
+              i.UpdatedAt
+            FROM Items i
+            LEFT JOIN Logos l ON i.LogoId = l.Id
+            LEFT JOIN Folders f ON i.FolderId = f.Id
+            WHERE i.IsDeleted = 0 AND i.DeletedAt IS NULL
+            ORDER BY i.CreatedAt DESC
         """
 
-        val result = mutableListOf<Credential>()
-        val cursor = database.dbConnection?.query(query)
+        val items = mutableListOf<Item>()
+        val itemIds = mutableListOf<String>()
 
-        cursor?.use {
-            while (it.moveToNext()) {
+        database.dbConnection?.query(itemQuery)?.use { cursor ->
+            while (cursor.moveToNext()) {
                 try {
-                    val id = UUID.fromString(it.getString(0))
-                    val isDeleted = it.getInt(6) == 1
+                    val idString = cursor.getString(0)
+                    val name = if (cursor.isNull(1)) null else cursor.getString(1)
+                    val itemType = cursor.getString(2)
+                    val folderId = if (cursor.isNull(3)) null else cursor.getString(3)
+                    val folderPath = if (cursor.isNull(4)) null else cursor.getString(4)
+                    val logo = if (cursor.isNull(5)) null else cursor.getBlob(5)
+                    val hasPasskey = cursor.getInt(6) == 1
+                    val hasAttachment = cursor.getInt(7) == 1
+                    val hasTotp = cursor.getInt(8) == 1
+                    val createdAt = DateHelpers.parseDateString(cursor.getString(9)) ?: MIN_DATE
+                    val updatedAt = DateHelpers.parseDateString(cursor.getString(10)) ?: MIN_DATE
 
-                    val serviceId = UUID.fromString(it.getString(7))
-                    val service = Service(
-                        id = serviceId,
-                        name = it.getString(8),
-                        url = it.getString(9),
-                        logo = it.getBlob(10),
-                        createdAt = DateHelpers.parseDateString(it.getString(11)) ?: MIN_DATE,
-                        updatedAt = DateHelpers.parseDateString(it.getString(12)) ?: MIN_DATE,
-                        isDeleted = it.getInt(13) == 1,
+                    val item = Item(
+                        id = UUID.fromString(idString),
+                        name = name,
+                        itemType = itemType,
+                        logo = logo,
+                        folderId = folderId?.let { UUID.fromString(it) },
+                        folderPath = folderPath,
+                        fields = emptyList(), // Will be populated below
+                        hasPasskey = hasPasskey,
+                        hasAttachment = hasAttachment,
+                        hasTotp = hasTotp,
+                        createdAt = createdAt,
+                        updatedAt = updatedAt,
                     )
-
-                    var password: Password? = null
-                    if (!it.isNull(14)) {
-                        password = Password(
-                            id = UUID.fromString(it.getString(14)),
-                            credentialId = id,
-                            value = it.getString(15),
-                            createdAt = DateHelpers.parseDateString(it.getString(16)) ?: MIN_DATE,
-                            updatedAt = DateHelpers.parseDateString(it.getString(17)) ?: MIN_DATE,
-                            isDeleted = it.getInt(18) == 1,
-                        )
-                    }
-
-                    var alias: Alias? = null
-                    if (!it.isNull(19)) {
-                        alias = Alias(
-                            id = UUID.fromString(it.getString(19)),
-                            gender = it.getString(20),
-                            firstName = it.getString(21),
-                            lastName = it.getString(22),
-                            nickName = it.getString(23),
-                            birthDate = DateHelpers.parseDateString(it.getString(24)) ?: MIN_DATE,
-                            email = it.getString(25),
-                            createdAt = DateHelpers.parseDateString(it.getString(26)) ?: MIN_DATE,
-                            updatedAt = DateHelpers.parseDateString(it.getString(27)) ?: MIN_DATE,
-                            isDeleted = it.getInt(28) == 1,
-                        )
-                    }
-
-                    val credential = Credential(
-                        id = id,
-                        alias = alias,
-                        service = service,
-                        username = it.getString(2),
-                        notes = it.getString(3),
-                        password = password,
-                        createdAt = DateHelpers.parseDateString(it.getString(4)) ?: MIN_DATE,
-                        updatedAt = DateHelpers.parseDateString(it.getString(5)) ?: MIN_DATE,
-                        isDeleted = isDeleted,
-                    )
-                    result.add(credential)
+                    items.add(item)
+                    itemIds.add(idString)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error parsing credential row", e)
+                    Log.e(TAG, "Error parsing item row", e)
                 }
             }
         }
 
-        return result
+        // If no items, return empty list
+        if (items.isEmpty()) {
+            return emptyList()
+        }
+
+        // Get all field values for these items
+        val placeholders = itemIds.joinToString(",") { "?" }
+        val fieldQuery = """
+            SELECT
+              fv.ItemId,
+              fv.FieldKey,
+              fv.FieldDefinitionId,
+              fd.Label as CustomLabel,
+              fd.FieldType as CustomFieldType,
+              fd.IsHidden as CustomIsHidden,
+              fd.EnableHistory as CustomEnableHistory,
+              fv.Value,
+              fv.Weight as DisplayOrder
+            FROM FieldValues fv
+            LEFT JOIN FieldDefinitions fd ON fv.FieldDefinitionId = fd.Id
+            WHERE fv.ItemId IN ($placeholders)
+              AND fv.IsDeleted = 0
+            ORDER BY fv.ItemId, fv.Weight
+        """
+
+        // Build a map of itemId -> [ItemField]
+        val fieldsByItemId = mutableMapOf<String, MutableList<ItemField>>()
+
+        database.dbConnection?.query(fieldQuery, itemIds.toTypedArray())?.use { cursor ->
+            while (cursor.moveToNext()) {
+                try {
+                    val itemIdString = cursor.getString(0)
+                    val fieldKey = if (cursor.isNull(1)) null else cursor.getString(1)
+                    val fieldDefinitionId = if (cursor.isNull(2)) null else cursor.getString(2)
+                    val customLabel = if (cursor.isNull(3)) null else cursor.getString(3)
+                    val customFieldType = if (cursor.isNull(4)) null else cursor.getString(4)
+                    val customIsHidden = if (cursor.isNull(5)) false else cursor.getInt(5) == 1
+                    val customEnableHistory = if (cursor.isNull(6)) false else cursor.getInt(6) == 1
+                    val value = if (cursor.isNull(7)) "" else cursor.getString(7)
+                    val displayOrder = if (cursor.isNull(8)) 0 else cursor.getInt(8)
+
+                    // Determine if this is a custom field
+                    val isCustomField = fieldDefinitionId != null && fieldKey == null
+
+                    // Resolve the effective field key
+                    val effectiveFieldKey = fieldKey ?: fieldDefinitionId ?: ""
+
+                    // Resolve field metadata
+                    val metadata = resolveFieldMetadata(
+                        fieldKey = effectiveFieldKey,
+                        customLabel = customLabel,
+                        customFieldType = customFieldType,
+                        customIsHidden = customIsHidden,
+                        customEnableHistory = customEnableHistory,
+                        isCustomField = isCustomField,
+                    )
+
+                    val field = ItemField(
+                        fieldKey = effectiveFieldKey,
+                        label = metadata.label,
+                        fieldType = metadata.fieldType,
+                        value = value,
+                        isHidden = metadata.isHidden,
+                        displayOrder = displayOrder,
+                        isCustomField = isCustomField,
+                        enableHistory = metadata.enableHistory,
+                    )
+
+                    fieldsByItemId.getOrPut(itemIdString) { mutableListOf() }.add(field)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error parsing field row", e)
+                }
+            }
+        }
+
+        // Assign fields to items
+        return items.map { item ->
+            val fields = fieldsByItemId[item.id.toString().uppercase()] ?: emptyList()
+            item.copy(fields = fields)
+        }
+    }
+
+    /**
+     * Helper class to hold resolved field metadata.
+     */
+    private data class FieldMetadata(
+        val label: String,
+        val fieldType: String,
+        val isHidden: Boolean,
+        val enableHistory: Boolean,
+    )
+
+    /**
+     * Resolve field metadata for system fields and custom fields.
+     */
+    @Suppress("CyclomaticComplexMethod", "LongParameterList")
+    // LongParameterList suppressed: All parameters are needed to determine field metadata
+    private fun resolveFieldMetadata(
+        fieldKey: String,
+        customLabel: String?,
+        customFieldType: String?,
+        customIsHidden: Boolean,
+        customEnableHistory: Boolean,
+        isCustomField: Boolean,
+    ): FieldMetadata {
+        if (isCustomField) {
+            return FieldMetadata(
+                label = customLabel ?: fieldKey,
+                fieldType = customFieldType ?: FieldType.TEXT,
+                isHidden = customIsHidden,
+                enableHistory = customEnableHistory,
+            )
+        }
+
+        // System field metadata based on FieldKey constants
+        return when (fieldKey) {
+            FieldKey.LOGIN_USERNAME -> FieldMetadata("Username", FieldType.TEXT, false, false)
+            FieldKey.LOGIN_PASSWORD -> FieldMetadata("Password", FieldType.PASSWORD, true, true)
+            FieldKey.LOGIN_EMAIL -> FieldMetadata("Email", FieldType.EMAIL, false, false)
+            FieldKey.LOGIN_URL -> FieldMetadata("URL", FieldType.U_R_L, false, false)
+            FieldKey.CARD_NUMBER -> FieldMetadata("Card Number", FieldType.TEXT, true, false)
+            FieldKey.CARD_CARDHOLDER_NAME -> FieldMetadata("Cardholder Name", FieldType.TEXT, false, false)
+            FieldKey.CARD_EXPIRY_MONTH -> FieldMetadata("Expiry Month", FieldType.TEXT, false, false)
+            FieldKey.CARD_EXPIRY_YEAR -> FieldMetadata("Expiry Year", FieldType.TEXT, false, false)
+            FieldKey.CARD_CVV -> FieldMetadata("CVV", FieldType.PASSWORD, true, false)
+            FieldKey.CARD_PIN -> FieldMetadata("PIN", FieldType.PASSWORD, true, false)
+            FieldKey.ALIAS_FIRST_NAME -> FieldMetadata("First Name", FieldType.TEXT, false, false)
+            FieldKey.ALIAS_LAST_NAME -> FieldMetadata("Last Name", FieldType.TEXT, false, false)
+            FieldKey.ALIAS_GENDER -> FieldMetadata("Gender", FieldType.TEXT, false, false)
+            FieldKey.ALIAS_BIRTHDATE -> FieldMetadata("Birth Date", FieldType.DATE, false, false)
+            FieldKey.NOTES_CONTENT -> FieldMetadata("Notes", FieldType.TEXT_AREA, false, false)
+            else -> FieldMetadata(fieldKey, FieldType.TEXT, false, false)
+        }
+    }
+
+    // endregion
+
+    // region Legacy Credential Operations (Compatibility Layer)
+
+    /**
+     * Get all credentials from the vault.
+     * This method converts the new Items model back to the legacy Credential model for compatibility.
+     */
+    fun getAllCredentials(): List<Credential> {
+        val items = getAllItems()
+        return items.mapNotNull { convertItemToCredential(it) }
+    }
+
+    /**
+     * Convert an Item to the legacy Credential format.
+     */
+    private fun convertItemToCredential(item: Item): Credential? {
+        // Create a Service from the item
+        val service = Service(
+            id = item.id,
+            name = item.name,
+            url = item.url,
+            logo = item.logo,
+            createdAt = item.createdAt,
+            updatedAt = item.updatedAt,
+            isDeleted = false,
+        )
+
+        // Create an Alias if the item has alias fields
+        var alias: Alias? = null
+        if (item.firstName != null || item.lastName != null || item.email != null) {
+            alias = Alias(
+                id = item.id,
+                gender = item.getFieldValue(FieldKey.ALIAS_GENDER),
+                firstName = item.firstName,
+                lastName = item.lastName,
+                nickName = null,
+                birthDate = MIN_DATE, // TODO: Parse birthdate from field value
+                email = item.email,
+                createdAt = item.createdAt,
+                updatedAt = item.updatedAt,
+                isDeleted = false,
+            )
+        }
+
+        // Create a Password if the item has a password field
+        var password: Password? = null
+        item.password?.let { passwordValue ->
+            password = Password(
+                id = UUID.randomUUID(),
+                credentialId = item.id,
+                value = passwordValue,
+                createdAt = item.createdAt,
+                updatedAt = item.updatedAt,
+                isDeleted = false,
+            )
+        }
+
+        return Credential(
+            id = item.id,
+            alias = alias,
+            service = service,
+            username = item.username,
+            notes = item.getFieldValue("login.notes"),
+            password = password,
+            createdAt = item.createdAt,
+            updatedAt = item.updatedAt,
+            isDeleted = false,
+        )
     }
 
     /**

@@ -10,6 +10,7 @@ import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.BiometricAuthCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
 import net.aliasvault.app.vaultstore.models.Credential
+import net.aliasvault.app.vaultstore.models.StoreVaultResult
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
 import kotlin.coroutines.resume
 
@@ -27,9 +28,10 @@ import kotlin.coroutines.resume
  * - VaultMutate: Handles vault mutation (uploading changes)
  * - VaultCache: Handles cache and storage clearing
  *
- * @param storageProvider The storage provider
- * @param keystoreProvider The keystore provider
+ * @param storageProvider The storage provider.
+ * @param keystoreProvider The keystore provider.
  */
+@Suppress("TooManyFunctions") // This is a facade class that delegates to specialized components
 class VaultStore(
     private val storageProvider: StorageProvider,
     private val keystoreProvider: KeystoreProvider,
@@ -71,10 +73,10 @@ class VaultStore(
     private val query = VaultQuery(databaseComponent)
     internal val metadata = VaultMetadataManager(storageProvider)
     private val auth = VaultAuth(storageProvider) { cache.clearCache() }
-    private val sync = VaultSync(databaseComponent, metadata, crypto)
+    private val sync = VaultSync(databaseComponent, metadata, crypto, storageProvider)
     private val mutate = VaultMutate(databaseComponent, query, metadata)
     private val cache = VaultCache(crypto, databaseComponent, keystoreProvider, storageProvider)
-    private val passkey = VaultPasskey(databaseComponent)
+    private val passkey = VaultPasskey(databaseComponent, query)
     private val pin by lazy {
         val androidProvider = storageProvider as net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
         // Use reflection to access private context field
@@ -280,9 +282,16 @@ class VaultStore(
 
     /**
      * Commit a SQL transaction on the vault.
+     * This also atomically marks the vault as dirty and increments the mutation sequence
+     * for proper sync tracking.
      */
     fun commitTransaction() {
         databaseComponent.commitTransaction()
+
+        // Atomically mark vault as dirty and increment mutation sequence
+        // This ensures sync can properly detect local changes
+        metadata.setIsDirty(true)
+        metadata.incrementMutationSequence()
     }
 
     /**
@@ -446,10 +455,117 @@ class VaultStore(
     }
 
     /**
-     * Sync the vault with the server.
+     * Get the sync state.
      */
-    suspend fun syncVault(webApiService: net.aliasvault.app.webapi.WebApiService): Boolean {
-        return sync.syncVault(webApiService)
+    fun getSyncState(): net.aliasvault.app.vaultstore.models.SyncState {
+        return metadata.getSyncState()
+    }
+
+    /**
+     * Set the isDirty flag.
+     */
+    fun setIsDirty(isDirty: Boolean) {
+        metadata.setIsDirty(isDirty)
+    }
+
+    /**
+     * Set the isSyncing flag.
+     */
+    fun setIsSyncing(isSyncing: Boolean) {
+        metadata.setIsSyncing(isSyncing)
+    }
+
+    /**
+     * Store encrypted vault with sync state atomically.
+     * Two modes:
+     * 1. markDirty=true: Local mutation - always succeeds, increments mutation sequence
+     * 2. expectedMutationSeq provided: Sync operation - only succeeds if no mutations happened
+     */
+    fun storeEncryptedVaultWithSyncState(
+        encryptedVault: String,
+        markDirty: Boolean = false,
+        serverRevision: Int? = null,
+        expectedMutationSeq: Int? = null,
+    ): StoreVaultResult {
+        var mutationSequence = metadata.getMutationSequence()
+
+        // Race detection for sync operations
+        if (expectedMutationSeq != null && expectedMutationSeq != mutationSequence) {
+            return StoreVaultResult(success = false, mutationSequence = mutationSequence)
+        }
+
+        if (markDirty) {
+            mutationSequence += 1
+        }
+
+        // Store vault
+        databaseComponent.storeEncryptedDatabase(encryptedVault)
+
+        if (markDirty) {
+            metadata.setMutationSequence(mutationSequence)
+            metadata.setIsDirty(true)
+        }
+
+        if (serverRevision != null) {
+            metadata.setVaultRevisionNumber(serverRevision)
+        }
+
+        return StoreVaultResult(success = true, mutationSequence = mutationSequence)
+    }
+
+    /**
+     * Mark the vault as clean after successful sync.
+     */
+    fun markVaultClean(mutationSeqAtStart: Int, newServerRevision: Int): Boolean {
+        return metadata.markVaultClean(mutationSeqAtStart, newServerRevision)
+    }
+
+    /**
+     * Persist the in-memory vault to storage and mark as dirty.
+     * Combines getting the encrypted database and storing it with dirty flag in one call.
+     * This is used after local mutations to persist changes.
+     */
+    fun markVaultDirty() {
+        val encryptedVault = databaseComponent.getEncryptedDatabase()
+        storeEncryptedVaultWithSyncState(
+            encryptedVault = encryptedVault,
+            markDirty = true,
+            serverRevision = null,
+            expectedMutationSeq = null,
+        )
+    }
+
+    /**
+     * Upload the vault to the server.
+     */
+    suspend fun uploadVault(webApiService: net.aliasvault.app.webapi.WebApiService): VaultUploadResult {
+        return mutate.uploadVault(webApiService)
+    }
+
+    /**
+     * Fetch the server vault (encrypted blob).
+     */
+    suspend fun fetchServerVault(webApiService: net.aliasvault.app.webapi.WebApiService): VaultResponse {
+        return sync.fetchServerVault(webApiService)
+    }
+
+    /**
+     * Check vault version including sync state.
+     */
+    suspend fun checkVaultVersion(webApiService: net.aliasvault.app.webapi.WebApiService): VaultVersionCheckResult {
+        return sync.checkVaultVersion(webApiService)
+    }
+
+    /**
+     * Unified vault sync method that handles all sync scenarios.
+     */
+    suspend fun syncVaultWithServer(webApiService: net.aliasvault.app.webapi.WebApiService): VaultSyncResult {
+        val result = sync.syncVaultWithServer(webApiService, mutate)
+        // Re-unlock vault if it was unlocked before sync and action was download/merge
+        if (result.success && (result.action == SyncAction.DOWNLOADED || result.action == SyncAction.MERGED) && isVaultUnlocked()) {
+            unlockVault()
+        }
+        return result
     }
 
     // endregion
@@ -475,14 +591,14 @@ class VaultStore(
     }
 
     /**
-     * Get all passkeys for a credential.
+     * Get all passkeys for an item.
      */
     @Suppress("UnusedParameter")
-    fun getPasskeysForCredential(
-        credentialId: java.util.UUID,
+    fun getPasskeysForItem(
+        itemId: java.util.UUID,
         db: io.requery.android.database.sqlite.SQLiteDatabase,
     ): List<net.aliasvault.app.vaultstore.models.Passkey> {
-        return passkey.getPasskeysForCredential(credentialId)
+        return passkey.getPasskeysForItem(itemId)
     }
 
     /**
@@ -506,10 +622,10 @@ class VaultStore(
     }
 
     /**
-     * Get all passkeys with their associated credentials in a single query.
+     * Get all passkeys with their associated items in a single query.
      */
-    fun getAllPasskeysWithCredentials(): List<PasskeyWithCredential> {
-        return passkey.getAllPasskeysWithCredentials()
+    fun getAllPasskeysWithItems(): List<PasskeyWithItem> {
+        return passkey.getAllPasskeysWithItems()
     }
 
     /**
@@ -532,16 +648,16 @@ class VaultStore(
     }
 
     /**
-     * Create a credential with a passkey.
+     * Create an item with a passkey.
      */
-    fun createCredentialWithPasskey(
+    fun createItemWithPasskey(
         rpId: String,
         userName: String?,
         displayName: String,
         passkeyObj: net.aliasvault.app.vaultstore.models.Passkey,
         logo: ByteArray? = null,
-    ): net.aliasvault.app.vaultstore.models.Credential {
-        return passkey.createCredentialWithPasskey(rpId, userName, displayName, passkeyObj, logo)
+    ): net.aliasvault.app.vaultstore.models.Item {
+        return passkey.createItemWithPasskey(rpId, userName, displayName, passkeyObj, logo)
     }
 
     /**

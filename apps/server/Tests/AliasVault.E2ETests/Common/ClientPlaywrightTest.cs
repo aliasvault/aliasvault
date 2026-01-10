@@ -146,6 +146,33 @@ public class ClientPlaywrightTest : PlaywrightTest
         Page = await Context.NewPageAsync();
         InputHelper = new(Page);
 
+        // Set up page-level console logging (in addition to context-level)
+        Page.Console += (_, msg) =>
+        {
+            var type = msg.Type;
+            var text = msg.Text;
+
+            // Log all console messages to both Console and TestContext
+            var logMessage = $"[PAGE CONSOLE {type.ToUpper()}] {text}";
+            Console.WriteLine(logMessage);
+            TestContext.Progress.WriteLine(logMessage);
+
+            // Also write to stderr for errors to ensure visibility
+            if (type == "error")
+            {
+                Console.Error.WriteLine(logMessage);
+            }
+        };
+
+        // Log page errors
+        Page.PageError += (_, error) =>
+        {
+            var errorMessage = $"[PAGE EXCEPTION] {error}";
+            Console.WriteLine(errorMessage);
+            Console.Error.WriteLine(errorMessage);
+            TestContext.Progress.WriteLine(errorMessage);
+        };
+
         // Check that we get redirected to /user/start when accessing the root URL and not authenticated.
         await Page.GotoAsync(AppBaseUrl);
         await WaitForUrlAsync("user/start");
@@ -186,23 +213,23 @@ public class ClientPlaywrightTest : PlaywrightTest
     }
 
     /// <summary>
-    /// Create new credential entry.
+    /// Create new item entry.
     /// </summary>
     /// <param name="formValues">Dictionary with html element ids and values to input as field value.</param>
     /// <param name="customLogic">Optional custom logic to execute after filling input fields.</param>
-    /// <param name="checkForSuccess">Whether to check for success message after creating credential entry.</param>
+    /// <param name="checkForSuccess">Whether to check for success message after creating item entry.</param>
     /// <returns>Async task.</returns>
-    protected async Task CreateCredentialEntry(Dictionary<string, string>? formValues = null, Func<Task>? customLogic = null, bool checkForSuccess = true)
+    protected async Task CreateItemEntry(Dictionary<string, string>? formValues = null, Func<Task>? customLogic = null, bool checkForSuccess = true)
     {
-        // Advance the time by 1 second to ensure the credential is created with a unique timestamp.
-        // This is required for certain tests that check for the latest credential and/or latest vault.
+        // Advance the time by 1 second to ensure the item is created with a unique timestamp.
+        // This is required for certain tests that check for the latest item and/or latest vault.
         ApiTimeProvider.AdvanceBy(TimeSpan.FromSeconds(1));
 
-        await NavigateUsingBlazorRouter("credentials/create");
-        await WaitForUrlAsync("credentials/create", "Add credentials");
+        await NavigateUsingBlazorRouter("items/create");
+        await WaitForUrlAsync("items/create", "Add Item");
 
-        // Check if a button with text "Generate Random Identity" appears
-        var generateButton = Page.Locator("text=Generate Random Identity");
+        // Check if a button with text "Generate Random Alias" appears
+        var generateButton = Page.Locator("text=Generate Random Alias");
         Assert.That(generateButton, Is.Not.Null, "Generate button not found.");
 
         // Fill all input fields with specified values and remaining empty fields with random data.
@@ -215,83 +242,97 @@ public class ClientPlaywrightTest : PlaywrightTest
             await customLogic();
         }
 
-        var submitButton = Page.Locator("text=Save Credential").First;
+        var submitButton = Page.Locator("text=Save Item").First;
         await submitButton.ClickAsync();
 
         if (checkForSuccess)
         {
-            await WaitForUrlAsync("credentials/**", "Credential created successfully");
+            await WaitForUrlAsync("items/**", "Item created successfully");
 
-            // Check if the credential was created
+            // Check if the item was created
             var pageContent = await Page.TextContentAsync("body");
-            Assert.That(pageContent, Does.Contain("View credential"), "Credential not created.");
+            Assert.That(pageContent, Does.Contain("View item"), "Item not created.");
         }
     }
 
     /// <summary>
-    /// Update existing credential entry.
+    /// Update existing item entry.
     /// </summary>
-    /// <param name="credentialName">Name of the credential to update.</param>
+    /// <param name="itemName">Name of the item to update.</param>
     /// <param name="formValues">Dictionary with html element ids and values to input as field value.</param>
     /// <returns>Async task.</returns>
-    protected async Task UpdateCredentialEntry(string credentialName, Dictionary<string, string>? formValues = null)
+    protected async Task UpdateItemEntry(string itemName, Dictionary<string, string>? formValues = null)
     {
-        // Advance the time by 1 second to ensure the credential is created with a unique timestamp.
-        // This is required for certain tests that check for the latest credential and/or latest vault.
+        // Advance the time by 1 second to ensure the item is created with a unique timestamp.
+        // This is required for certain tests that check for the latest item and/or latest vault.
         ApiTimeProvider.AdvanceBy(TimeSpan.FromSeconds(1));
 
-        await NavigateUsingBlazorRouter("credentials");
-        await WaitForUrlAsync("credentials", "Find all of your credentials");
-        await Page.ClickAsync("text=" + credentialName);
+        await NavigateUsingBlazorRouter("items");
+        await WaitForUrlAsync("items", "Find all of your items");
+        await Page.ClickAsync("text=" + itemName);
 
-        // Wait for the credential details page to load.
-        await WaitForUrlAsync("credentials/**", "Edit");
+        // Wait for the item details page to load.
+        await WaitForUrlAsync("items/**", "Edit");
         await Page.ClickAsync("text=Edit");
 
-        // Wait for the edit credential page to load.
-        await WaitForUrlAsync("credentials/**/edit", "Edit the existing credential");
+        // Wait for the edit item page to load.
+        await WaitForUrlAsync("items/**/edit", "Edit the existing item");
 
         // Fill all input fields with specified values and remaining empty fields with random data.
         await InputHelper.FillInputFields(formValues);
 
-        var submitButton = Page.Locator("text=Save Credential").First;
+        var submitButton = Page.Locator("text=Save Item").First;
         await submitButton.ClickAsync();
-        await WaitForUrlAsync("credentials/**", "Credential updated successfully");
+        await WaitForUrlAsync("items/**", "Item updated successfully");
 
-        // Check if the credential was created
+        // Check if the item was updated
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain("Credential updated successfully"), "Credential not updated successfully.");
+        Assert.That(pageContent, Does.Contain("Item updated successfully"), "Item not updated successfully.");
     }
 
     /// <summary>
-    /// Update existing credential entry.
+    /// Delete existing item entry.
     /// </summary>
-    /// <param name="credentialName">Name of the credential to update.</param>
+    /// <param name="itemName">Name of the item to delete.</param>
     /// <returns>Async task.</returns>
-    protected async Task DeleteCredentialEntry(string credentialName)
+    protected async Task DeleteItemEntry(string itemName)
     {
-        // Advance the time by 1 second to ensure the credential is created with a unique timestamp.
-        // This is required for certain tests that check for the latest credential and/or latest vault.
+        // Advance the time by 1 second to ensure the item is created with a unique timestamp.
+        // This is required for certain tests that check for the latest item and/or latest vault.
         ApiTimeProvider.AdvanceBy(TimeSpan.FromSeconds(1));
 
-        await NavigateUsingBlazorRouter("credentials");
-        await WaitForUrlAsync("credentials", "Find all of your credentials");
-        await Page.ClickAsync("text=" + credentialName);
+        await NavigateUsingBlazorRouter("items");
+        await WaitForUrlAsync("items", "Find all of your items");
+        await Page.ClickAsync("text=" + itemName);
 
-        // Wait for the credential details page to load.
-        await WaitForUrlAsync("credentials/**", "Delete");
+        // Wait for the item details page to load.
+        await WaitForUrlAsync("items/**", "Delete");
         await Page.ClickAsync("text=Delete");
 
-        // Wait for the delete credential page to load.
-        await WaitForUrlAsync("credentials/**/delete", "You can delete the credential below");
+        // Wait for the delete item page to load.
+        await WaitForUrlAsync("items/**/delete", "You can delete the item below");
 
         var submitButton = Page.Locator("text=Yes, I'm sure").First;
         await submitButton.ClickAsync();
-        await WaitForUrlAsync("credentials", "Find all of your credentials");
+        await WaitForUrlAsync("items", "Find all of your items");
 
-        // Assert that the credential with specified name is no longer found on the page.
+        // Assert that the item with specified name is no longer found on the page.
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Not.Contain(credentialName), "Credential not deleted successfully.");
+        Assert.That(pageContent, Does.Not.Contain(itemName), "Item not deleted successfully.");
+    }
+
+    /// <summary>
+    /// Add a field section to the current item add/edit form via the "+" menu.
+    /// This clicks the add field button and selects the specified option.
+    /// </summary>
+    /// <param name="fieldName">The name of the field/section to add (e.g., "Attachments", "Two-Factor Authentication").</param>
+    /// <returns>Async task.</returns>
+    protected async Task AddFieldSectionAsync(string fieldName)
+    {
+        var addFieldButton = Page.Locator("button.w-full.border-dashed").First;
+        await addFieldButton.ClickAsync();
+        var fieldOption = Page.Locator($"button:has-text('{fieldName}')").First;
+        await fieldOption.ClickAsync();
     }
 
     /// <summary>
@@ -410,7 +451,7 @@ public class ClientPlaywrightTest : PlaywrightTest
 
     /// <summary>
     /// Complete the tutorial shown after registration. This is required for certain tests that rely on the tutorial being completed
-    /// so it shows the empty credential list instead of redirecting to the tutorial welcome page.
+    /// so it shows the empty item list instead of redirecting to the tutorial welcome page.
     /// </summary>
     /// <returns>Async task.</returns>
     protected async Task CompleteTutorial()
@@ -436,7 +477,7 @@ public class ClientPlaywrightTest : PlaywrightTest
         var getStartedButton = Page.Locator("text=Get Started");
         await getStartedButton.ClickAsync();
 
-        // Wait for "Find all of your credentials below" message to appear.
-        await WaitForUrlAsync("welcome**", "Find all of your credentials below");
+        // Wait for "Find all of your items below" message to appear.
+        await WaitForUrlAsync("items**", "Find all of your items below");
     }
 }

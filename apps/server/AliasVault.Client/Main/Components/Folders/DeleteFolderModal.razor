@@ -1,0 +1,154 @@
+@using AliasVault.Client.Main.Components.Layout
+@using Microsoft.Extensions.Localization
+
+@* DeleteFolderModal component - modal with two delete options for a folder *@
+<FormModal
+    IsOpen="IsOpen"
+    Title="@Localizer["DeleteFolderTitle"]"
+    IconBackgroundClass="bg-red-100 dark:bg-red-900/30"
+    ShowDefaultFooter="false"
+    OnClose="HandleClose">
+    <Icon>
+        <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+        </svg>
+    </Icon>
+    <ChildContent>
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+            @string.Format(Localizer["DeleteFolderDescription"].Value, FolderName)
+        </p>
+    </ChildContent>
+    <FooterContent>
+        <div class="w-full space-y-2">
+            @* Option 1: Delete folder, keep items *@
+            <button
+                type="button"
+                @onclick="HandleDeleteFolderOnly"
+                disabled="@IsDeleting"
+                class="w-full flex items-center gap-3 p-3 rounded-lg border border-orange-200 bg-orange-50 hover:bg-orange-100 dark:border-orange-800 dark:bg-orange-900/20 dark:hover:bg-orange-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/40">
+                    <svg class="w-5 h-5 text-orange-600 dark:text-orange-400" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/>
+                    </svg>
+                </div>
+                <div class="flex-1 text-left">
+                    <div class="font-medium text-orange-700 dark:text-orange-300">@Localizer["DeleteFolderOnlyTitle"]</div>
+                    <div class="text-sm text-orange-600/80 dark:text-orange-400/80">@Localizer["DeleteFolderOnlyDescription"]</div>
+                </div>
+            </button>
+
+            @* Option 2: Delete folder and contents - only show if folder has items *@
+            @if (ItemCount > 0)
+            {
+                <button
+                    type="button"
+                    @onclick="HandleDeleteFolderAndContents"
+                    disabled="@IsDeleting"
+                    class="w-full flex items-center gap-3 p-3 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 dark:border-red-800 dark:bg-red-900/20 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                    <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-full bg-red-100 dark:bg-red-900/40">
+                        <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6" />
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        </svg>
+                    </div>
+                    <div class="flex-1 text-left">
+                        <div class="font-medium text-red-700 dark:text-red-300">@Localizer["DeleteFolderAndContentsTitle"]</div>
+                        <div class="text-sm text-red-600/80 dark:text-red-400/80">@string.Format(Localizer["DeleteFolderAndContentsDescription"].Value, ItemCount)</div>
+                    </div>
+                </button>
+            }
+
+            @* Cancel button *@
+            <button
+                type="button"
+                @onclick="HandleClose"
+                class="w-full mt-2 inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-gray-600">
+                @Localizer["CancelButton"]
+            </button>
+        </div>
+    </FooterContent>
+</FormModal>
+
+@code {
+    [Inject]
+    private IStringLocalizerFactory LocalizerFactory { get; set; } = default!;
+
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Folders.DeleteFolderModal", "AliasVault.Client");
+
+    /// <summary>
+    /// Gets or sets whether the modal is open.
+    /// </summary>
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// Gets or sets the folder name to display.
+    /// </summary>
+    [Parameter]
+    public string FolderName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the number of items in the folder.
+    /// </summary>
+    [Parameter]
+    public int ItemCount { get; set; }
+
+    /// <summary>
+    /// Gets or sets the close callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback for deleting folder only (keeping items).
+    /// </summary>
+    [Parameter]
+    public EventCallback OnDeleteFolderOnly { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback for deleting folder and its contents.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnDeleteFolderAndContents { get; set; }
+
+    private bool IsDeleting { get; set; }
+
+    private async Task HandleClose()
+    {
+        await OnClose.InvokeAsync();
+    }
+
+    private async Task HandleDeleteFolderOnly()
+    {
+        IsDeleting = true;
+        StateHasChanged();
+
+        try
+        {
+            await OnDeleteFolderOnly.InvokeAsync();
+            await OnClose.InvokeAsync();
+        }
+        finally
+        {
+            IsDeleting = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleDeleteFolderAndContents()
+    {
+        IsDeleting = true;
+        StateHasChanged();
+
+        try
+        {
+            await OnDeleteFolderAndContents.InvokeAsync();
+            await OnClose.InvokeAsync();
+        }
+        finally
+        {
+            IsDeleting = false;
+            StateHasChanged();
+        }
+    }
+}

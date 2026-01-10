@@ -5,6 +5,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from '@/entrypoints/popup/components/Logo';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 
+import ServerSyncIndicator from './ServerSyncIndicator';
+
 /**
  * Header props.
  */
@@ -53,9 +55,9 @@ const Header: React.FC<HeaderProps> = ({
       return;
     }
 
-    // If logged in, navigate to credentials.
+    // If logged in, navigate to items.
     if (app.isLoggedIn) {
-      navigate('/credentials');
+      navigate('/items');
     } else {
       // If not logged in, navigate to index.
       navigate('/');
@@ -103,6 +105,9 @@ const Header: React.FC<HeaderProps> = ({
         )}
 
         <div className="flex-grow" />
+
+        {/* Server sync indicator */}
+        <ServerSyncIndicator />
 
         <div className="flex items-center gap-2">
           {!app.isLoggedIn ? (

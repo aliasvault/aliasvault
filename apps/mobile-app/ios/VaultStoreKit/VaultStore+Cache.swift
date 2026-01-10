@@ -34,6 +34,12 @@ extension VaultStore {
         self.userDefaults.removeObject(forKey: VaultConstants.authMethodsKey)
         self.userDefaults.removeObject(forKey: VaultConstants.autoLockTimeoutKey)
         self.userDefaults.removeObject(forKey: VaultConstants.encryptionKeyDerivationParamsKey)
+
+        // Clear sync state
+        self.userDefaults.removeObject(forKey: VaultConstants.isDirtyKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.mutationSequenceKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.isSyncingKey)
+
         self.userDefaults.synchronize()
         print("Cleared UserDefaults")
 

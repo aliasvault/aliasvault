@@ -14,7 +14,7 @@ import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/Boo
 
 import { t } from '@/i18n/StandaloneI18n';
 
-import { defineContentScript, createShadowRootUi } from '#imports';
+import { defineContentScript, createShadowRootUi, storage } from '#imports';
 
 export default defineContentScript({
   matches: ['<all_urls>'],
@@ -37,12 +37,12 @@ export default defineContentScript({
     // Wait for 750ms to give the host page time to load and to increase the chance that the body is available and ready.
     await new Promise(resolve => setTimeout(resolve, 750));
 
-    // Create a shadow root UI for isolation
+    // Create a shadow root UI for isolation (use 'open' mode in E2E tests for testability)
     const ui = await createShadowRootUi(ctx, {
       name: 'aliasvault-ui',
       position: 'inline',
       anchor: 'body',
-      mode: 'closed',
+      mode: await storage.getItem('local:e2eTestMode') === true ? 'open' : 'closed',
       /**
        * Handle mount.
        */

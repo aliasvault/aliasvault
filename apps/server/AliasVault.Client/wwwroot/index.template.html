@@ -31,6 +31,9 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" sizes="500x500" href="img/icon-500.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="img/icon-192.png" />
+    <!-- Preload Rust WASM module for faster initialization -->
+    <link rel="preload" href="/wasm/aliasvault_core_bg.wasm" as="fetch" type="application/wasm" crossorigin />
+    <link rel="modulepreload" href="/wasm/aliasvault_core.js" />
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900" av-disable="true">
@@ -335,6 +338,13 @@
 
     <script src="js/crypto.js?v=@CacheBuster" async></script>
     <script src="js/utilities.js?v=@CacheBuster" async></script>
+    <script src="js/rustCoreInterop.js?v=@CacheBuster"></script>
+    <script>
+        // Start WASM initialization early (non-blocking)
+        if (typeof window.rustCoreIsAvailable === 'function') {
+            window.rustCoreIsAvailable().catch(() => {});
+        }
+    </script>
     <script src="_framework/blazor.webassembly.js?v=@CacheBuster" async></script>
     <script src="lib/qrcode.min.js?v=@CacheBuster" defer></script>
     <script>

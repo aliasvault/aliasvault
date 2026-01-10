@@ -26,14 +26,9 @@ struct UnlockCoordinatorView: View {
                 // Show PIN unlock view
                 PinUnlockView(viewModel: pinViewModel)
             } else {
-                // Show loading while attempting biometric unlock
-                VStack {
-                    ProgressView()
-                        .progressViewStyle(CircularProgressViewStyle())
-                        .scaleEffect(1.5)
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color(UIColor.systemBackground))
+                // Transparent for biometric unlock - Face ID appears with no background
+                Color.clear
+                    .ignoresSafeArea()
             }
         }
         .onAppear {
@@ -113,6 +108,8 @@ class UnlockCoordinator: ObservableObject {
     }
 
     private func attemptBiometricUnlock() async {
+        // Trigger Face ID immediately without showing loading spinner
+        // This prevents any UI freeze or jarring animation
         do {
             // Attempt to unlock with biometric
             try vaultStore.unlockVault()
@@ -121,6 +118,7 @@ class UnlockCoordinator: ObservableObject {
             onUnlocked()
         } catch {
             print("Biometric unlock failed: \(error)")
+
             // If biometric fails, check if PIN is available as fallback
             if vaultStore.isPinEnabled() {
                 createPinViewModel()

@@ -1,0 +1,24 @@
+@using AliasVault.Client.Main.Models
+
+@* FolderPill component - displays a folder as a compact clickable pill *@
+<button @onclick="OnClick" class="inline-flex items-center gap-2 px-5 py-2.5 text-sm rounded-lg bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600/50 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-1 dark:focus:ring-offset-gray-800">
+    <svg class="w-4 h-4 text-orange-500 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/>
+    </svg>
+    <span class="text-gray-700 dark:text-gray-300 truncate max-w-[150px]" title="@Folder.Name">@Folder.Name</span>
+    <span class="text-gray-400 dark:text-gray-500 text-xs">@Folder.ItemCount</span>
+</button>
+
+@code {
+    /// <summary>
+    /// Gets or sets the folder to display.
+    /// </summary>
+    [Parameter]
+    public required FolderWithCount Folder { get; set; }
+
+    /// <summary>
+    /// Gets or sets the click callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClick { get; set; }
+}

@@ -23,12 +23,12 @@ export function handleOpenPopup() : Promise<BoolResponse> {
 }
 
 /**
- * Handle opening the popup with a credential.
+ * Handle opening the popup with an item.
  */
-export function handlePopupWithCredential(message: any) : Promise<BoolResponse> {
+export function handlePopupWithItem(message: any) : Promise<BoolResponse> {
   return (async () : Promise<BoolResponse> => {
     browser.windows.create({
-      url: browser.runtime.getURL(`/popup.html?expanded=true#/credentials/${message.credentialId}`),
+      url: browser.runtime.getURL(`/popup.html?expanded=true#/items/${message.itemId}`),
       type: 'popup',
       width: 400,
       height: 600,
@@ -39,7 +39,7 @@ export function handlePopupWithCredential(message: any) : Promise<BoolResponse> 
 }
 
 /**
- * Handle opening the popup on create credential page with prefilled service name.
+ * Handle opening the popup on create item page with prefilled service name.
  */
 export function handleOpenPopupCreateCredential(message: any) : Promise<BoolResponse> {
   return (async () : Promise<BoolResponse> => {
@@ -59,13 +59,13 @@ export function handleOpenPopupCreateCredential(message: any) : Promise<BoolResp
       }
     }
 
-    // Set a localStorage flag to skip restoring previously persisted form values as we want to start fresh with this explicit create credential request.
+    // Set a localStorage flag to skip restoring previously persisted form values as we want to start fresh with this explicit create item request.
     await browser.storage.local.set({ [SKIP_FORM_RESTORE_KEY]: true });
 
     const urlParams = new URLSearchParams();
     urlParams.set('expanded', 'true');
     if (serviceName) {
-      urlParams.set('serviceName', serviceName);
+      urlParams.set('name', serviceName);
     }
     if (serviceUrl) {
       urlParams.set('serviceUrl', serviceUrl);
@@ -73,9 +73,11 @@ export function handleOpenPopupCreateCredential(message: any) : Promise<BoolResp
     if (message.currentUrl) {
       urlParams.set('currentUrl', message.currentUrl);
     }
+    // Default to Login type for quick create from content script
+    urlParams.set('type', 'Login');
 
     browser.windows.create({
-      url: browser.runtime.getURL(`/popup.html?${urlParams.toString()}#/credentials/add`),
+      url: browser.runtime.getURL(`/popup.html?${urlParams.toString()}#/items/add`),
       type: 'popup',
       width: 400,
       height: 600,

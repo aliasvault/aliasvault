@@ -1,14 +1,11 @@
 package net.aliasvault.app.vaultstore
 
-import android.content.ContentValues
-import android.database.Cursor
 import android.util.Log
 import net.aliasvault.app.utils.DateHelpers
-import net.aliasvault.app.vaultstore.models.Alias
-import net.aliasvault.app.vaultstore.models.Credential
+import net.aliasvault.app.vaultstore.models.FieldKey
+import net.aliasvault.app.vaultstore.models.Item
 import net.aliasvault.app.vaultstore.models.Passkey
-import net.aliasvault.app.vaultstore.models.Service
-import net.aliasvault.app.vaultstore.passkey.PasskeyHelper
+import net.aliasvault.app.vaultstore.repositories.PasskeyRepository
 import java.util.Calendar
 import java.util.Date
 import java.util.TimeZone
@@ -17,15 +14,13 @@ import java.util.UUID
 /**
  * Handles passkey operations for the vault.
  * This class uses composition to organize passkey-specific functionality.
- *
- * This is a Kotlin port of the iOS Swift implementation:
- * - Reference: apps/mobile-app/ios/VaultStoreKit/VaultStore+Passkey.swift
- *
+ * *
  * IMPORTANT: Keep all implementations synchronized. Changes to the public interface must be
  * reflected in all ports. Method names, parameters, and behavior should remain consistent.
  */
 class VaultPasskey(
     private val database: VaultDatabase,
+    private val query: VaultQuery,
 ) {
     companion object {
         private const val TAG = "VaultPasskey"
@@ -44,98 +39,33 @@ class VaultPasskey(
         }.time
     }
 
+    private val passkeyRepository = PasskeyRepository(database)
+
     // region Passkey Queries
 
     /**
-     * Get a passkey by its credential ID (the WebAuthn credential ID, not the parent Credential UUID).
+     * Get a passkey by its credential ID (the WebAuthn credential ID, not the parent Item UUID).
      */
     fun getPasskeyByCredentialId(credentialId: ByteArray): Passkey? {
-        val db = database.dbConnection ?: return null
-
-        // Convert credentialId bytes to UUID string for lookup
-        val credentialIdString = try {
-            PasskeyHelper.bytesToGuid(credentialId)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to convert credentialId bytes to UUID string", e)
-            return null
-        }
-
-        val query = """
-            SELECT Id, CredentialId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey,
-                   DisplayName, CreatedAt, UpdatedAt, IsDeleted
-            FROM Passkeys
-            WHERE Id = ? AND IsDeleted = 0
-            LIMIT 1
-        """.trimIndent()
-
-        val cursor = db.query(query, arrayOf(credentialIdString.uppercase()))
-        cursor.use {
-            if (it.moveToFirst()) {
-                return parsePasskeyRow(it)
-            }
-        }
-
-        return null
+        return passkeyRepository.getByCredentialId(credentialId)
     }
 
     /**
-     * Get all passkeys for a credential.
+     * Get all passkeys for an item.
      */
-    fun getPasskeysForCredential(credentialId: UUID): List<Passkey> {
-        val db = database.dbConnection ?: return emptyList()
-
-        val query = """
-            SELECT Id, CredentialId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey,
-                   DisplayName, CreatedAt, UpdatedAt, IsDeleted
-            FROM Passkeys
-            WHERE CredentialId = ? AND IsDeleted = 0
-            ORDER BY CreatedAt DESC
-        """.trimIndent()
-
-        val passkeys = mutableListOf<Passkey>()
-        val cursor = db.query(query, arrayOf(credentialId.toString().uppercase()))
-
-        cursor.use {
-            while (it.moveToNext()) {
-                parsePasskeyRow(it)?.let { passkey ->
-                    passkeys.add(passkey)
-                }
-            }
-        }
-
-        return passkeys
+    fun getPasskeysForItem(itemId: UUID): List<Passkey> {
+        return passkeyRepository.getForItem(itemId)
     }
 
     /**
      * Get all passkeys for a specific relying party identifier (RP ID).
      */
     fun getPasskeysForRpId(rpId: String): List<Passkey> {
-        val db = database.dbConnection ?: return emptyList()
-
-        val query = """
-            SELECT Id, CredentialId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey,
-                   DisplayName, CreatedAt, UpdatedAt, IsDeleted
-            FROM Passkeys
-            WHERE RpId = ? AND IsDeleted = 0
-            ORDER BY CreatedAt DESC
-        """.trimIndent()
-
-        val passkeys = mutableListOf<Passkey>()
-        val cursor = db.query(query, arrayOf(rpId))
-
-        cursor.use {
-            while (it.moveToNext()) {
-                parsePasskeyRow(it)?.let { passkey ->
-                    passkeys.add(passkey)
-                }
-            }
-        }
-
-        return passkeys
+        return passkeyRepository.getForRpId(rpId)
     }
 
     /**
-     * Get passkeys with credential info for a specific rpId and optionally username.
+     * Get passkeys with item info for a specific rpId and optionally username.
      * Used for finding existing passkeys that might be replaced during registration.
      */
     fun getPasskeysWithCredentialInfo(
@@ -145,29 +75,33 @@ class VaultPasskey(
     ): List<PasskeyWithCredentialInfo> {
         val db = database.dbConnection ?: return emptyList()
 
+        // Query passkeys with associated item data using the new schema
         val query = """
-            SELECT p.Id, p.CredentialId, p.RpId, p.UserHandle, p.PublicKey, p.PrivateKey, p.PrfKey,
+            SELECT p.Id, p.ItemId, p.RpId, p.UserHandle, p.PublicKey, p.PrivateKey, p.PrfKey,
                    p.DisplayName, p.CreatedAt, p.UpdatedAt, p.IsDeleted,
-                   c.Username, s.Name
+                   i.Name,
+                   fv_username.Value as Username
             FROM Passkeys p
-            JOIN Credentials c ON p.CredentialId = c.Id
-            JOIN Services s ON c.ServiceId = s.Id
-            WHERE p.RpId = ? AND p.IsDeleted = 0 AND c.IsDeleted = 0
+            INNER JOIN Items i ON p.ItemId = i.Id
+            LEFT JOIN FieldValues fv_username ON fv_username.ItemId = i.Id
+                AND fv_username.FieldKey = ?
+                AND fv_username.IsDeleted = 0
+            WHERE p.RpId = ? AND p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
             ORDER BY p.CreatedAt DESC
         """.trimIndent()
 
         val results = mutableListOf<PasskeyWithCredentialInfo>()
-        val cursor = db.query(query, arrayOf(rpId))
+        val cursor = db.query(query, arrayOf(FieldKey.LOGIN_USERNAME, rpId))
 
         cursor.use {
             while (it.moveToNext()) {
                 val passkey = parsePasskeyRow(it) ?: continue
-                val credUsername = if (!it.isNull(11)) it.getString(11) else null
-                val serviceName = if (!it.isNull(12)) it.getString(12) else null
+                val itemName = if (!it.isNull(11)) it.getString(11) else null
+                val itemUsername = if (!it.isNull(12)) it.getString(12) else null
 
                 // Filter by username or userId if provided
                 var matches = true
-                if (userName != null && credUsername != userName) {
+                if (userName != null && itemUsername != userName) {
                     matches = false
                 }
                 if (userId != null && passkey.userHandle != null && !userId.contentEquals(passkey.userHandle)) {
@@ -178,8 +112,8 @@ class VaultPasskey(
                     results.add(
                         PasskeyWithCredentialInfo(
                             passkey = passkey,
-                            serviceName = serviceName,
-                            username = credUsername,
+                            serviceName = itemName,
+                            username = itemUsername,
                         ),
                     )
                 }
@@ -190,27 +124,34 @@ class VaultPasskey(
     }
 
     /**
-     * Get all passkeys with their associated credentials in a single query.
-     * This is much more efficient than calling getPasskeysForCredential() for each credential.
-     * Uses a JOIN to get passkeys and their credentials in one database query.
+     * Get all passkeys with their associated items in a single query.
+     * This is much more efficient than calling getPasskeysForItem() for each item.
+     * Uses a JOIN to get passkeys and their items in one database query.
      */
-    fun getAllPasskeysWithCredentials(): List<PasskeyWithCredential> {
+    fun getAllPasskeysWithItems(): List<PasskeyWithItem> {
         val db = database.dbConnection ?: return emptyList()
 
         val query = """
             SELECT
-                p.Id, p.CredentialId, p.RpId, p.UserHandle, p.PublicKey, p.PrivateKey, p.PrfKey,
+                p.Id, p.ItemId, p.RpId, p.UserHandle, p.PublicKey, p.PrivateKey, p.PrfKey,
                 p.DisplayName, p.CreatedAt as PasskeyCreatedAt, p.UpdatedAt as PasskeyUpdatedAt, p.IsDeleted as PasskeyIsDeleted,
-                c.Id as CredId, c.Username, s.Name as ServiceName, c.CreatedAt as CredCreatedAt, c.UpdatedAt as CredUpdatedAt
+                i.Id as ItemId, i.Name, i.CreatedAt as ItemCreatedAt, i.UpdatedAt as ItemUpdatedAt,
+                fv_username.Value as Username,
+                fv_email.Value as Email
             FROM Passkeys p
-            INNER JOIN Credentials c ON p.CredentialId = c.Id
-            INNER JOIN Services s ON c.ServiceId = s.Id
-            WHERE p.IsDeleted = 0 AND c.IsDeleted = 0
+            INNER JOIN Items i ON p.ItemId = i.Id
+            LEFT JOIN FieldValues fv_username ON fv_username.ItemId = i.Id
+                AND fv_username.FieldKey = ?
+                AND fv_username.IsDeleted = 0
+            LEFT JOIN FieldValues fv_email ON fv_email.ItemId = i.Id
+                AND fv_email.FieldKey = ?
+                AND fv_email.IsDeleted = 0
+            WHERE p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
             ORDER BY p.CreatedAt DESC
         """.trimIndent()
 
-        val results = mutableListOf<PasskeyWithCredential>()
-        val cursor = db.query(query)
+        val results = mutableListOf<PasskeyWithItem>()
+        val cursor = db.query(query, arrayOf(FieldKey.LOGIN_USERNAME, FieldKey.LOGIN_EMAIL))
 
         cursor.use {
             while (it.moveToNext()) {
@@ -218,35 +159,38 @@ class VaultPasskey(
                     // Parse passkey (columns 0-10)
                     val passkey = parsePasskeyRowFromJoin(it) ?: continue
 
-                    // Parse credential info (columns 11-15)
-                    val credentialId = UUID.fromString(it.getString(11))
-                    val username = if (!it.isNull(12)) it.getString(12) else null
-                    val serviceName = if (!it.isNull(13)) it.getString(13) else null
+                    // Parse item info (columns 11-15)
+                    val itemId = UUID.fromString(it.getString(11))
+                    val itemName = if (!it.isNull(12)) it.getString(12) else null
+                    val itemCreatedAt = DateHelpers.parseDateString(it.getString(13)) ?: MIN_DATE
+                    val itemUpdatedAt = DateHelpers.parseDateString(it.getString(14)) ?: MIN_DATE
 
-                    // Create a minimal Credential object with the data we have
-                    val credential = Credential(
-                        id = credentialId,
-                        username = username,
-                        service = Service(
-                            id = UUID.randomUUID(),
-                            name = serviceName,
-                            url = null,
-                            logo = null,
-                            createdAt = Date(),
-                            updatedAt = Date(),
-                            isDeleted = false,
-                        ),
-                        alias = null,
-                        notes = null,
-                        password = null,
-                        createdAt = DateHelpers.parseDateString(it.getString(14)) ?: MIN_DATE,
-                        updatedAt = DateHelpers.parseDateString(it.getString(15)) ?: MIN_DATE,
-                        isDeleted = false,
+                    @Suppress("UNUSED_VARIABLE") // Username field loaded for potential future use
+                    val username = if (!it.isNull(15)) it.getString(15) else null
+
+                    @Suppress("UNUSED_VARIABLE") // Email field loaded for potential future use
+                    val email = if (!it.isNull(16)) it.getString(16) else null
+
+                    // Create a minimal Item object with the data we have
+                    // Full items should be loaded via query.getAllItems() when needed
+                    val item = Item(
+                        id = itemId,
+                        name = itemName,
+                        itemType = "Login",
+                        logo = null,
+                        folderId = null,
+                        folderPath = null,
+                        fields = emptyList(), // Not loading all fields for performance
+                        hasPasskey = true,
+                        hasAttachment = false,
+                        hasTotp = false,
+                        createdAt = itemCreatedAt,
+                        updatedAt = itemUpdatedAt,
                     )
 
-                    results.add(PasskeyWithCredential(passkey, credential))
+                    results.add(PasskeyWithItem(passkey, item))
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error parsing passkey with credential row", e)
+                    Log.e(TAG, "Error parsing passkey with item row", e)
                 }
             }
         }
@@ -258,24 +202,7 @@ class VaultPasskey(
      * Get a passkey by its ID.
      */
     fun getPasskeyById(passkeyId: UUID): Passkey? {
-        val db = database.dbConnection ?: return null
-
-        val query = """
-            SELECT Id, CredentialId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey,
-                   DisplayName, CreatedAt, UpdatedAt, IsDeleted
-            FROM Passkeys
-            WHERE Id = ? AND IsDeleted = 0
-            LIMIT 1
-        """.trimIndent()
-
-        val cursor = db.query(query, arrayOf(passkeyId.toString().uppercase()))
-        cursor.use {
-            if (it.moveToFirst()) {
-                return parsePasskeyRow(it)
-            }
-        }
-
-        return null
+        return passkeyRepository.getById(passkeyId)
     }
 
     // endregion
@@ -283,173 +210,23 @@ class VaultPasskey(
     // region Passkey Storage
 
     /**
-     * Insert a new passkey into the database.
+     * Create a new item with an associated passkey.
      */
-    fun insertPasskey(passkey: Passkey) {
-        val db = database.dbConnection ?: error("Vault not unlocked")
-
-        val insert = """
-            INSERT INTO Passkeys (Id, CredentialId, RpId, UserHandle, PublicKey, PrivateKey, PrfKey,
-                                 DisplayName, CreatedAt, UpdatedAt, IsDeleted)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """.trimIndent()
-
-        val publicKeyString = String(passkey.publicKey, Charsets.UTF_8)
-        val privateKeyString = String(passkey.privateKey, Charsets.UTF_8)
-
-        val statement = db.compileStatement(insert)
-        statement.use {
-            it.bindString(1, passkey.id.toString().uppercase())
-            it.bindString(2, passkey.parentCredentialId.toString().uppercase())
-            it.bindString(3, passkey.rpId)
-            if (passkey.userHandle != null) {
-                it.bindBlob(4, passkey.userHandle)
-            } else {
-                it.bindNull(4)
-            }
-            it.bindString(5, publicKeyString)
-            it.bindString(6, privateKeyString)
-            if (passkey.prfKey != null) {
-                it.bindBlob(7, passkey.prfKey)
-            } else {
-                it.bindNull(7)
-            }
-            it.bindString(8, passkey.displayName)
-            it.bindString(9, DateHelpers.toStandardFormat(passkey.createdAt))
-            it.bindString(10, DateHelpers.toStandardFormat(passkey.updatedAt))
-            it.bindLong(11, if (passkey.isDeleted) 1 else 0)
-            it.executeInsert()
-        }
-    }
-
-    /**
-     * Create a new credential with an associated passkey.
-     */
-    fun createCredentialWithPasskey(
+    fun createItemWithPasskey(
         rpId: String,
         userName: String?,
         displayName: String,
         passkey: Passkey,
         logo: ByteArray? = null,
-    ): Credential {
-        val db = database.dbConnection ?: error("Vault not unlocked")
+    ): Item {
+        return passkeyRepository.createItemWithPasskey(rpId, userName, displayName, passkey, logo)
+    }
 
-        db.beginTransaction()
-        try {
-            val credentialId = passkey.parentCredentialId
-            val now = Date()
-            val timestamp = DateHelpers.toStandardFormat(now)
-
-            // Create a minimal service for the RP
-            val serviceId = UUID.randomUUID()
-
-            val serviceValues = ContentValues().apply {
-                put("Id", serviceId.toString().uppercase())
-                put("Name", displayName)
-                put("Url", "https://$rpId")
-                if (logo != null) {
-                    put("Logo", logo)
-                } else {
-                    putNull("Logo")
-                }
-                put("CreatedAt", timestamp)
-                put("UpdatedAt", timestamp)
-                put("IsDeleted", 0)
-            }
-            db.insert("Services", null, serviceValues)
-
-            // Create a minimal alias with empty fields and default birthdate
-            // TODO: when birthdate field is made optional, this can be removed
-            val aliasId = UUID.randomUUID()
-            val aliasInsert = """
-                INSERT INTO Aliases (Id, FirstName, LastName, NickName, BirthDate, Gender, Email,
-                                    CreatedAt, UpdatedAt, IsDeleted)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """.trimIndent()
-
-            val aliasStatement = db.compileStatement(aliasInsert)
-            aliasStatement.use {
-                it.bindString(1, aliasId.toString().uppercase())
-                it.bindString(2, "")
-                it.bindString(3, "")
-                it.bindString(4, "")
-                it.bindString(5, DateHelpers.toStandardFormat(MIN_DATE))
-                it.bindString(6, "")
-                it.bindString(7, "")
-                it.bindString(8, timestamp)
-                it.bindString(9, timestamp)
-                it.bindLong(10, 0)
-                it.executeInsert()
-            }
-
-            // Create the credential with the alias
-            val credentialInsert = """
-                INSERT INTO Credentials (Id, ServiceId, AliasId, Username, Notes, CreatedAt, UpdatedAt, IsDeleted)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            """.trimIndent()
-
-            val credentialStatement = db.compileStatement(credentialInsert)
-            credentialStatement.use {
-                it.bindString(1, credentialId.toString().uppercase())
-                it.bindString(2, serviceId.toString().uppercase())
-                it.bindString(3, aliasId.toString().uppercase())
-                if (userName != null) {
-                    it.bindString(4, userName)
-                } else {
-                    it.bindNull(4)
-                }
-                it.bindNull(5) // Notes
-                it.bindString(6, timestamp)
-                it.bindString(7, timestamp)
-                it.bindLong(8, 0)
-                it.executeInsert()
-            }
-
-            // Insert the passkey
-            insertPasskey(passkey)
-
-            // Commit transaction
-            database.commitTransaction()
-
-            // Return the credential
-            val service = Service(
-                id = serviceId,
-                name = displayName,
-                url = "https://$rpId",
-                logo = logo,
-                createdAt = now,
-                updatedAt = now,
-                isDeleted = false,
-            )
-
-            val alias = Alias(
-                id = aliasId,
-                gender = "",
-                firstName = "",
-                lastName = "",
-                nickName = "",
-                birthDate = MIN_DATE,
-                email = "",
-                createdAt = now,
-                updatedAt = now,
-                isDeleted = false,
-            )
-
-            return Credential(
-                id = credentialId,
-                alias = alias,
-                service = service,
-                username = userName,
-                notes = null,
-                password = null,
-                createdAt = now,
-                updatedAt = now,
-                isDeleted = false,
-            )
-        } catch (e: Exception) {
-            db.endTransaction()
-            throw e
-        }
+    /**
+     * Insert a new passkey into the database.
+     */
+    fun insertPasskey(passkey: Passkey) {
+        passkeyRepository.insert(passkey)
     }
 
     /**
@@ -461,70 +238,7 @@ class VaultPasskey(
         displayName: String,
         logo: ByteArray? = null,
     ) {
-        val db = database.dbConnection ?: error("Vault not unlocked")
-
-        val now = Date()
-        val timestamp = DateHelpers.toStandardFormat(now)
-
-        // Get the old passkey to find its credential
-        val oldPasskey = getPasskeyById(oldPasskeyId)
-            ?: throw VaultPasskeyError.PasskeyNotFound("Passkey not found: $oldPasskeyId")
-
-        val credentialId = oldPasskey.parentCredentialId
-
-        // Update the credential's service with new logo if provided
-        if (logo != null) {
-            val credQuery = """
-                SELECT ServiceId FROM Credentials WHERE Id = ? LIMIT 1
-            """.trimIndent()
-
-            val cursor = db.query(credQuery, arrayOf(credentialId.toString().uppercase()))
-            cursor.use {
-                if (it.moveToFirst()) {
-                    val serviceId = it.getString(0)
-
-                    val serviceUpdate = """
-                        UPDATE Services
-                        SET Logo = ?, Name = ?, UpdatedAt = ?
-                        WHERE Id = ?
-                    """.trimIndent()
-
-                    val updateStatement = db.compileStatement(serviceUpdate)
-                    updateStatement.use { stmt ->
-                        stmt.bindBlob(1, logo)
-                        stmt.bindString(2, displayName)
-                        stmt.bindString(3, timestamp)
-                        stmt.bindString(4, serviceId)
-                        stmt.executeUpdateDelete()
-                    }
-                }
-            }
-        }
-
-        // Delete the old passkey
-        val deleteQuery = """
-            UPDATE Passkeys
-            SET IsDeleted = 1, UpdatedAt = ?
-            WHERE Id = ?
-        """.trimIndent()
-
-        val deleteStatement = db.compileStatement(deleteQuery)
-        deleteStatement.use {
-            it.bindString(1, timestamp)
-            it.bindString(2, oldPasskeyId.toString().uppercase())
-            it.executeUpdateDelete()
-        }
-
-        // Create the new passkey with the same credential ID
-        val updatedPasskey = newPasskey.copy(
-            parentCredentialId = credentialId,
-            displayName = displayName,
-            createdAt = now,
-            updatedAt = now,
-            isDeleted = false,
-        )
-
-        insertPasskey(updatedPasskey)
+        passkeyRepository.replace(oldPasskeyId, newPasskey, displayName, logo)
     }
 
     // endregion
@@ -534,10 +248,10 @@ class VaultPasskey(
     /**
      * Parse a passkey row from database query.
      */
-    private fun parsePasskeyRow(cursor: Cursor): Passkey? {
+    private fun parsePasskeyRow(cursor: android.database.Cursor): Passkey? {
         try {
             val idString = cursor.getString(0)
-            val parentCredentialIdString = cursor.getString(1)
+            val itemIdString = cursor.getString(1)
             val rpId = cursor.getString(2)
             val userHandle = if (!cursor.isNull(3)) cursor.getBlob(3) else null
             val publicKeyString = cursor.getString(4)
@@ -549,7 +263,7 @@ class VaultPasskey(
             val isDeleted = cursor.getInt(10) == 1
 
             val id = UUID.fromString(idString)
-            val parentCredentialId = UUID.fromString(parentCredentialIdString)
+            val itemId = UUID.fromString(itemIdString)
 
             val createdAt = DateHelpers.parseDateString(createdAtString) ?: MIN_DATE
             val updatedAt = DateHelpers.parseDateString(updatedAtString) ?: MIN_DATE
@@ -559,7 +273,7 @@ class VaultPasskey(
 
             return Passkey(
                 id = id,
-                parentCredentialId = parentCredentialId,
+                parentItemId = itemId, // Note: field name still parentItemId but refers to ItemId
                 rpId = rpId,
                 userHandle = userHandle,
                 userName = null,
@@ -580,10 +294,10 @@ class VaultPasskey(
     /**
      * Parse a passkey row from a JOIN query.
      */
-    private fun parsePasskeyRowFromJoin(cursor: Cursor): Passkey? {
+    private fun parsePasskeyRowFromJoin(cursor: android.database.Cursor): Passkey? {
         try {
             val idString = cursor.getString(0)
-            val parentCredentialIdString = cursor.getString(1)
+            val itemIdString = cursor.getString(1)
             val rpId = cursor.getString(2)
             val userHandle = if (!cursor.isNull(3)) cursor.getBlob(3) else null
             val publicKeyString = cursor.getString(4)
@@ -595,7 +309,7 @@ class VaultPasskey(
             val isDeleted = cursor.getInt(10) == 1
 
             val id = UUID.fromString(idString)
-            val parentCredentialId = UUID.fromString(parentCredentialIdString)
+            val itemId = UUID.fromString(itemIdString)
 
             val createdAt = DateHelpers.parseDateString(createdAtString) ?: MIN_DATE
             val updatedAt = DateHelpers.parseDateString(updatedAtString) ?: MIN_DATE
@@ -605,7 +319,7 @@ class VaultPasskey(
 
             return Passkey(
                 id = id,
-                parentCredentialId = parentCredentialId,
+                parentItemId = itemId, // Note: field name still parentItemId but refers to ItemId
                 rpId = rpId,
                 userHandle = userHandle,
                 userName = null,
@@ -627,25 +341,27 @@ class VaultPasskey(
 }
 
 /**
- * Data class to hold passkey with credential info.
+ * Data class to hold passkey with item info.
+ *
+ * @property passkey The passkey.
+ * @property serviceName The service name from the item.
+ * @property username The username from the item.
  */
 data class PasskeyWithCredentialInfo(
-    /** The passkey. */
     val passkey: Passkey,
-    /** The service name from the credential. */
     val serviceName: String?,
-    /** The username from the credential. */
     val username: String?,
 )
 
 /**
- * Data class to hold passkey with its associated credential.
+ * Data class to hold passkey with its associated item.
+ *
+ * @property passkey The passkey.
+ * @property item The item this passkey belongs to.
  */
-data class PasskeyWithCredential(
-    /** The passkey. */
+data class PasskeyWithItem(
     val passkey: Passkey,
-    /** The credential this passkey belongs to. */
-    val credential: Credential,
+    val item: Item,
 )
 
 /**
@@ -663,9 +379,9 @@ sealed class VaultPasskeyError(message: String) : Exception(message) {
     class PasskeyNotFound(message: String) : VaultPasskeyError(message)
 
     /**
-     * Error indicating credential was not found.
+     * Error indicating item was not found.
      */
-    class CredentialNotFound(message: String) : VaultPasskeyError(message)
+    class ItemNotFound(message: String) : VaultPasskeyError(message)
 
     /**
      * Error indicating a database operation failure.
