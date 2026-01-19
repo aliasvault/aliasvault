@@ -9,11 +9,11 @@
 "title" = "Название";
 "unknown_error" = "Произошла неизвестная ошибка";
 
-"loading_credentials" = "Загрузка учетных данных...";
-"no_credentials_found" = "Учетные данные не найдены";
-"no_credentials_match" = "Нет учетных данных, совпадающих с вашим запросом";
-"create_new_credential" = "Создать новые учетные данные";
-"select_credential" = "Выбрать учетные данные";
+"loading_items" = "Loading items...";
+"no_items_found" = "No items found";
+"no_items_match" = "No existing items match your search";
+"create_new_item" = "Create New Item";
+"select_item" = "Select Item";
 "select_text_to_insert" = "Выбрать текст для вставки";
 "choose_username" = "Выберите имя пользователя";
 "select_text_to_insert_message" = "Выберите текст для вставки в выделенное поле ввода";
@@ -21,10 +21,8 @@
 "username_prefix" = "Имя пользователя: ";
 "email_prefix" = "Электронная почта: ";
 "password" = "Пароль";
-"credentials_load_error" = "Не удалось загрузить учетные данные. Пожалуйста, откройте приложение AliasVault, чтобы проверить наличие обновлений.";
-"no_credential_selected" = "Учетные данные не выбраны.";
-"retrieving_credential" = "Получение учетных данных";
-"retrieving_passkey" = "Получение ключа доступа";
+"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
+"no_item_selected" = "No item selected.";
 
 /* Context menu strings */
 "copy_username" = "Скопировать имя пользователя";
@@ -36,7 +34,7 @@
 "email_copied" = "Email скопирован";
 
 /* Search bar */
-"search_credentials" = "Поиск учетных данных...";
+"search_items" = "Search items...";
 
 /* Passkey registration */
 "create_passkey_title" = "Создать новый ключ доступа";
@@ -54,10 +52,14 @@
 /* Passkey replacement */
 "create_new_passkey" = "Создать новый ключ доступа";
 "select_passkey_to_replace" = "Или замените существующий ключ доступа";
-"confirm_replace" = "Заменить ключ доступа";
-"replace_passkey_title" = "Замена ключа доступа";
+"replace_passkey" = "Заменить ключ доступа";
 "replace_passkey_explanation" = "Существующий ключ доступа будет заменен на новый. Обратите внимание, что старый ключ будет перезаписан и станет недоступен. Если вы хотите создать отдельный ключ доступа, вернитесь на предыдущий экран.";
 "create_passkey_explanation" = "Будет создан новый ключ доступа, который сохранится в вашем хранилище. Он будет автоматически синхронизирован со всеми вашими устройствами, на которых используется AliasVault.";
+
+/* Passkey merge with existing item */
+"passkey_add_to_existing" = "Or, add passkey to an existing item";
+"add_passkey" = "Add Passkey";
+"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
 "unlock_vault" = "Разблокировать хранилище";
