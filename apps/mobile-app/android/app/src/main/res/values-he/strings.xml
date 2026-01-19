@@ -22,7 +22,7 @@
   <string name="passkey_registration_title">Create Passkey</string>
   <string name="create_passkey_title">Create New Passkey</string>
   <string name="create_passkey_subtitle">Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.</string>
-  <string name="replace_passkey_title">Replace Passkey</string>
+  <string name="replace_passkey">Replace Passkey</string>
   <string name="passkey_display_name_label">Passkey Name</string>
   <string name="passkey_display_name_hint">Enter a name for this passkey</string>
   <string name="passkey_website_label">אתר</string>
@@ -39,9 +39,12 @@
   <string name="passkey_create_explanation">This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.</string>
   <string name="passkey_create_new_button">Create New Passkey</string>
   <string name="passkey_select_to_replace">Or, replace an existing passkey:</string>
-  <string name="passkey_replace_button">Replace Passkey</string>
+  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
   <string name="passkey_replace_explanation">This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.</string>
+  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
   <string name="passkey_replacing">Replacing passkey…</string>
+  <string name="add_passkey">Add Passkey</string>
+  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
   <string name="passkey_checking_connection">החיבור נבדק…</string>
   <string name="passkey_retrieving">Retrieving passkey…</string>
   <string name="passkey_verifying">Verifying…</string>
