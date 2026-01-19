@@ -72,7 +72,7 @@
   </data>
   <!-- Form labels -->
   <data name="ServiceNameLabel">
-    <value>Name</value>
+    <value>Имя</value>
     <comment>Label for item name input</comment>
   </data>
   <data name="ServiceUrlLabel">
