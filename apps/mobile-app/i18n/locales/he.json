@@ -20,7 +20,9 @@
     "notice": "לתשומת ליבך",
     "enabled": "פעיל",
     "disabled": "כבוי",
-    "twoFactorAuthentication": "Two-Factor Authentication",
+    "twoFactorAuthentication": "Two-factor authentication",
+    "add": "Add",
+    "attachments": "Attachments",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
@@ -72,6 +74,11 @@
     "connectingTo": "מתבצעת התחברות אל",
     "loggedInAs": "נכנסת בתור"
   },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
+  },
   "vault": {
     "syncingVault": "הכספת מסתנכרת",
     "uploadingVaultToServer": "הכספת נשלחת לשרת",
@@ -80,6 +87,8 @@
     "executingOperation": "הפעולה רצה…",
     "checkingVaultUpdates": "מתבצעת בדיקה לשינויים בכספת",
     "syncingUpdatedVault": "הכספת העדכנית מסתנכרת",
+    "mergingVault": "Merging vault changes",
+    "uploadingChanges": "Uploading changes",
     "errors": {
       "failedToGetEncryptedDatabase": "משיכת מסד הנתונים המוצפן נכשלה",
       "usernameNotFound": "שם המשתמש לא נמצא",
@@ -88,7 +97,8 @@
       "versionNotSupported": "הגרסה הזאת של היישומון של AliasVault לניידים לא נתמכת עוד על ידי השרת. נא לעדכן את היישומון שלך לגרסה העדכנית ביותר.",
       "serverVersionNotSupported": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש ביישומון הזה לנייד. נא ליצור קשר עם התמיכה לקבלת עזרה.",
       "appOutdated": "היישום הזה לא עדכני ואי אפשר להשתמש בו כדי לגשת לגרסת הכספת (החדשה יותר) הזאת. נא לעדכן את יישום AliasVault כדי להמשיך.",
-      "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע."
+      "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע.",
+      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
     }
   },
   "credentials": {
@@ -164,7 +174,6 @@
       "userpass": "סיסמאות",
       "attachments": "Attachments"
     },
-    "twoFactorAuth": "אימות דו־שלבי",
     "totpCode": "קוד חד־פעמי זמני",
     "attachments": "צרופות",
     "deleteAttachment": "מחיקה",
@@ -429,8 +438,210 @@
   },
   "navigation": {
     "credentials": "פרטי גישה",
+    "vault": "Vault",
     "emails": "הודעות דוא״ל",
     "settings": "הגדרות"
+  },
+  "itemTypes": {
+    "creating": "Creating",
+    "editing": "Editing",
+    "login": {
+      "title": "Login"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Credit Card",
+      "cardInformation": "Card Information"
+    },
+    "note": {
+      "title": "Note"
+    },
+    "addField": "Add Field",
+    "addCustomField": "Add Custom Field",
+    "customFields": "Custom Fields",
+    "fieldLabel": "Field Label",
+    "fieldType": "Field Type",
+    "enterFieldName": "Enter field name",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden",
+      "email": "Email",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "Date",
+      "textArea": "Text Area"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Username",
+    "login.password": "Password",
+    "login.email": "Email",
+    "login.url": "URL",
+    "alias.first_name": "First Name",
+    "alias.last_name": "Last Name",
+    "alias.gender": "Gender",
+    "alias.birthdate": "Birth Date",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN",
+    "notes.content": "Notes"
+  },
+  "items": {
+    "title": "Items",
+    "addItem": "Add Item",
+    "editItem": "Edit Item",
+    "deleteItem": "Delete Item",
+    "itemDetails": "Item Details",
+    "itemCreated": "Item Created",
+    "emailPreview": "Email Preview",
+    "untitled": "Untitled",
+    "name": "Name",
+    "namePlaceholder": "e.g., Google, Amazon",
+    "url": "URL",
+    "urlPlaceholder": "e.g., https://google.com",
+    "service": "Service",
+    "serviceName": "Service Name",
+    "serviceUrl": "Service URL",
+    "loginCredentials": "Login credentials",
+    "username": "Username",
+    "email": "Email",
+    "alias": "Alias",
+    "metadata": "Metadata",
+    "firstName": "First Name",
+    "lastName": "Last Name",
+    "nickName": "Nick Name",
+    "fullName": "Full Name",
+    "gender": "Gender",
+    "birthDate": "Birth Date",
+    "birthDatePlaceholder": "YYYY-MM-DD",
+    "notes": "Notes",
+    "randomAlias": "Random Alias",
+    "manual": "Manual",
+    "generateRandomAlias": "Generate Random Alias",
+    "clearAliasFields": "Clear Alias Fields",
+    "enterFullEmail": "Enter full email address",
+    "enterEmailPrefix": "Enter email prefix",
+    "useDomainChooser": "Use domain chooser",
+    "enterCustomDomain": "Enter custom domain",
+    "selectEmailDomain": "Select Email Domain",
+    "privateEmailTitle": "Private Email",
+    "privateEmailAliasVaultServer": "AliasVault server",
+    "privateEmailDescription": "E2E encrypted, fully private.",
+    "publicEmailTitle": "Public Temp Email Providers",
+    "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
+    "searchPlaceholder": "Search vault...",
+    "noMatchingItems": "No matching items found",
+    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "recentEmails": "Recent emails",
+    "loadingEmails": "Loading emails...",
+    "noEmailsYet": "No emails received yet.",
+    "offlineEmailsMessage": "You are offline. Please connect to the internet to load your emails.",
+    "emailLoadError": "An error occurred while loading emails. Please try again later.",
+    "emailUnexpectedError": "An unexpected error occurred while loading emails. Please try again later.",
+    "password": "Password",
+    "passwordLength": "Password Length",
+    "changePasswordComplexity": "Password Settings",
+    "includeLowercase": "Lowercase (a-z)",
+    "includeUppercase": "Uppercase (A-Z)",
+    "includeNumbers": "Numbers (0-9)",
+    "includeSpecialChars": "Special Characters (!@#)",
+    "avoidAmbiguousChars": "Avoid Ambiguous Characters",
+    "deletingItem": "Deleting item...",
+    "errorLoadingItems": "Error loading items",
+    "vaultSyncFailed": "Vault sync failed",
+    "vaultSyncedSuccessfully": "Vault synced successfully",
+    "vaultUpToDate": "Vault is up-to-date",
+    "offlineMessage": "You are offline. Please connect to the internet to sync your vault.",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "switchBackToBrowser": "Switch back to your browser to continue.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords",
+      "attachments": "Attachments"
+    },
+    "totpCode": "TOTP Code",
+    "attachments": "Attachments",
+    "deleteAttachment": "Delete",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
+    "unsavedChanges": {
+      "title": "Discard Changes?",
+      "message": "You have unsaved changes. Are you sure you want to discard them?",
+      "discard": "Discard"
+    },
+    "toasts": {
+      "itemUpdated": "Item updated successfully",
+      "itemCreated": "Item created successfully",
+      "itemDeleted": "Item deleted successfully",
+      "usernameCopied": "Username copied to clipboard",
+      "emailCopied": "Email copied to clipboard",
+      "passwordCopied": "Password copied to clipboard"
+    },
+    "createNewAliasFor": "Create new alias for",
+    "errors": {
+      "loadFailed": "Failed to load item",
+      "saveFailed": "Failed to save item"
+    },
+    "contextMenu": {
+      "title": "Item Options",
+      "edit": "Edit",
+      "delete": "Delete",
+      "copyUsername": "Copy Username",
+      "copyEmail": "Copy Email",
+      "copyPassword": "Copy Password"
+    },
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available",
+    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "folders": {
+      "folder": "Folder",
+      "newFolder": "New Folder",
+      "createFolder": "Create Folder",
+      "editFolder": "Edit Folder",
+      "folderName": "Folder Name",
+      "folderNamePlaceholder": "e.g., Work, Personal",
+      "folderNameRequired": "Folder name is required",
+      "deleteFolder": "Delete Folder",
+      "deleteFolderKeepItems": "Delete folder only",
+      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderAndItems": "Delete folder and all items",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "noFolder": "No Folder",
+      "selectFolder": "Select Folder"
+    },
+    "recentlyDeleted": {
+      "title": "Recently Deleted",
+      "noItems": "No deleted items",
+      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
+      "emptyAll": "Empty All",
+      "daysRemaining": "{{count}} day remaining",
+      "daysRemaining_plural": "{{count}} days remaining",
+      "expiringSoon": "Expiring soon",
+      "confirmDeleteTitle": "Delete Permanently?",
+      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "itemRestored": "Item restored",
+      "itemDeleted": "Item permanently deleted",
+      "allItemsDeleted": "All items permanently deleted"
+    }
   },
   "emails": {
     "title": "הודעות דוא״ל",
@@ -489,6 +700,16 @@
     "INTERNAL_SERVER_ERROR": "שגיאת שרת פנימית.",
     "VAULT_ERROR": "הכספת המקומית אינה עדכנית. נא לסנכרן את הכספת שלך על ידי ריענון העמוד ולנסות שוב."
   },
+  "sync": {
+    "offline": "Offline",
+    "offlineWithPending": "Offline (pending)",
+    "syncing": "Syncing...",
+    "pending": "Pending sync",
+    "retrySync": "Tap to retry",
+    "backOnline": "Back online",
+    "stillOffline": "Still offline",
+    "syncFailed": "Sync failed"
+  },
   "app": {
     "status": {
       "unlockingVault": "שחרור נעילת כספת",
@@ -497,13 +718,13 @@
       "retryingConnection": "מתבצע ניסיון להתחבר מחדש…"
     },
     "offline": {
-      "banner": "מצב בלתי מקוון (קריאה בלבד)",
+      "banner": "Offline - changes will sync when online",
       "backOnline": "להתחבר בחזרה",
       "stillOffline": "עדיין בלתי מקוון"
     },
     "alerts": {
       "syncIssue": "אין חיבור",
-      "syncIssueMessage": "לא ניתן לגשת לשרת ה־AliasVault ולא ניתן לסנכרן את הכספת שלך. לפתוח את הכספת המקומית במצב קריאה בלבד או לנסות להתחבר שוב?",
+      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "פתיחת כספת מקומית",
       "retrySync": "לנסות לסנכרן מחדש"
     },
