@@ -22,7 +22,7 @@
   <string name="passkey_registration_title">创建通行密钥</string>
   <string name="create_passkey_title">创建新通行密钥</string>
   <string name="create_passkey_subtitle">为此网站注册一个新的通行密钥。它将安全地存储在您的密码库中，并通过 AliasVault 在您的设备间自动同步。</string>
-  <string name="replace_passkey_title">替换通行密钥</string>
+  <string name="replace_passkey">替换通行密钥</string>
   <string name="passkey_display_name_label">通行密钥名称</string>
   <string name="passkey_display_name_hint">输入此通行密钥的名称</string>
   <string name="passkey_website_label">网站</string>
@@ -39,9 +39,12 @@
   <string name="passkey_create_explanation">这将创建一个新的通行密钥并将其存储在您的密码库中。它将自动同步到您所有使用 AliasVault 的设备。</string>
   <string name="passkey_create_new_button">创建新通行密钥</string>
   <string name="passkey_select_to_replace">或者替换现有的通行密钥：</string>
-  <string name="passkey_replace_button">替换通行密钥</string>
+  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
   <string name="passkey_replace_explanation">这将用新的通行密钥替换现有通行密钥。请注意，您的旧通行密钥将被覆盖且无法再访问。若您希望单独创建一个通行密钥，请返回到上一屏幕。</string>
+  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
   <string name="passkey_replacing">正在替换通行密钥…</string>
+  <string name="add_passkey">Add Passkey</string>
+  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
   <string name="passkey_checking_connection">检查连接中…</string>
   <string name="passkey_retrieving">正在检索通行密钥…</string>
   <string name="passkey_verifying">验证中…</string>
