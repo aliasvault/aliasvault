@@ -62,10 +62,6 @@
     <value>Двухфакторная аутентификация</value>
     <comment>Section title for 2FA codes</comment>
   </data>
-  <data name="AddTotpCodeButton" xml:space="preserve">
-    <value>Добавить TOTP код</value>
-    <comment>Button text to add new TOTP code</comment>
-  </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
     <value>Добавить двухфакторный код аутентификации</value>
     <comment>Description for adding TOTP codes</comment>
