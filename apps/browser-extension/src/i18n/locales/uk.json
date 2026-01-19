@@ -3,7 +3,6 @@
     "loginTitle": "Увійти до AliasVault",
     "username": "Ім'я користувача або електронна пошта",
     "usernamePlaceholder": "ім'я / name@company.com",
-    "password": "Пароль",
     "passwordPlaceholder": "Введіть ваш пароль",
     "rememberMe": "Запам'ятати мене",
     "loginButton": "Увійти",
@@ -20,7 +19,6 @@
     "enterPinToUnlock": "Введіть свій ПІН-код, щоб розблокувати сховище",
     "useMasterPassword": "Використовуйте головний пароль",
     "unlockTitle": "Розблокувати своє сховище",
-    "logout": "Вийти",
     "logoutConfirm": "Ви впевнені, що хочете вийти?",
     "unlockSuccessTitle": "Ваше сховище успішно розблоковано",
     "unlockSuccessDescription": "Тепер ви можете використовувати автозаповнення форм входу у вашому браузері.",
@@ -28,7 +26,6 @@
     "browseVault": "Переглянути вміст сховища",
     "connectingTo": "Підключення до",
     "switchAccounts": "Змінити обліковий запис?",
-    "loggedIn": "Вхід виконано",
     "loginWithMobile": "Увійти за допомогою мобільного додатку",
     "unlockWithMobile": "Розблокувати за допомогою мобільного додатку",
     "scanQrCode": "Проскануйте цей QR-код за допомогою мобільного додатка AliasVault, щоб увійти та розблокувати сховище.",
@@ -36,16 +33,13 @@
       "invalidCode": "Будь ласка, введіть дійсний 6-значний код автентифікації.",
       "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "wrongPassword": "Невірний пароль. Будь ласка, спробуйте ще раз.",
-      "accountLocked": "Обліковий запис тимчасово заблоковано через занадто багато невдалих спроб.",
-      "networkError": "Помилка мережі. Будь ласка, перевірте з’єднання та спробуйте ще раз.",
       "sessionExpired": "Час сеансу закінчився. Будь ласка, увійдіть знову.",
       "mobileLoginRequestExpired": "Час очікування запиту на вхід у мобільний додаток закінчився. Перезавантажте сторінку та спробуйте ще раз."
     }
   },
   "menu": {
-    "credentials": "Облікові дані",
-    "emails": "Електронні адреси",
-    "settings": "Налаштування"
+    "vault": "Vault",
+    "emails": "Електронні адреси"
   },
   "common": {
     "loading": "Завантаження даних...",
@@ -56,10 +50,15 @@
     "back": "Назад",
     "next": "Далі",
     "use": "Використовувати",
+    "add": "Add",
     "delete": "Видалити",
+    "undo": "Undo",
     "save": "Save",
+    "saving": "Saving...",
+    "create": "Create",
     "or": "Або",
     "close": "Закрити",
+    "logout": "Logout",
     "copied": "Скопійовано!",
     "openInNewWindow": "Відкрити у новому вікні",
     "enabled": "Увімкнено",
@@ -75,25 +74,25 @@
     "loadingAttachments": "Завантаження вкладень...",
     "settings": "Налаштування",
     "recentEmails": "Останні електронні листи",
-    "loginCredentials": "Облікові дані для входу",
+    "credentials": "Credentials",
+    "customFields": "Custom",
     "twoFactorAuthentication": "Двофакторна автентифікація",
     "alias": "Псевдонім",
     "notes": "Нотатки",
-    "fullName": "Повне ім'я",
-    "firstName": "Ім’я",
-    "lastName": "Прізвище",
-    "birthDate": "Дата народження",
-    "nickname": "Нікнейм",
     "email": "Електронна пошта",
     "username": "Ім'я користувача",
     "password": "Пароль",
+    "serviceName": "Service Name",
+    "loggedIn": "Logged in",
     "syncingVault": "Синхронізація сховища",
-    "savingChangesToVault": "Збереження змін у сховищі",
-    "uploadingVaultToServer": "Завантаження сховища на сервер",
     "checkingVaultUpdates": "Перевірка оновлень сховища",
     "syncingUpdatedVault": "Синхронізація оновленого сховища",
-    "executingOperation": "Виконання операції...",
     "loadMore": "Завантажити ще",
+    "offline": "Offline",
+    "offlineMode": "Operating in offline mode",
+    "pendingSync": "Syncing...",
+    "mergingVaultChanges": "Merging vault changes...",
+    "uploadingVault": "Uploading vault...",
     "errors": {
       "serverNotAvailable": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
       "clientVersionNotSupported": "Ця версія розширення браузера AliasVault більше не підтримується сервером. Будь ласка, оновіть розширення браузера до останньої версії.",
@@ -104,7 +103,10 @@
       "unknownErrorTryAgain": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
       "vaultNotAvailable": "Сховище недоступне",
       "vaultIsLocked": "Сховище заблоковано",
-      "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз."
+      "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз.",
+      "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
@@ -135,15 +137,10 @@
   "content": {
     "or": "або",
     "new": "Новий",
-    "cancel": "Скасувати",
     "vaultLocked": "AliasVault заблоковано.",
     "creatingNewAlias": "Створення нового псевдоніму...",
     "noMatchesFound": "Збігів не знайдено",
     "searchVault": "Пошук сховища...",
-    "serviceName": "Назва служби",
-    "email": "Електронна пошта",
-    "username": "Ім'я користувача",
-    "password": "Пароль",
     "enterServiceName": "Введіть назву служби",
     "enterEmailAddress": "Введіть електронну адресу",
     "enterUsername": "Введіть ім'я користувача",
@@ -171,42 +168,6 @@
     "dismissPopup": "Закрити спливаюче вікно"
   },
   "credentials": {
-    "title": "Облікові дані",
-    "addCredential": "Додати облікові дані",
-    "editCredential": "Редагувати облікові дані",
-    "deleteCredential": "Видалити облікові дані",
-    "credentialDetails": "Відомості про облікові дані",
-    "serviceName": "Назва сервісу",
-    "notes": "Нотатки",
-    "totp": "Двофакторна аутентифікація",
-    "totpCode": "Код TOTP",
-    "copyTotp": "Копіювати TOTP",
-    "totpSecret": "Секрет TOTP",
-    "totpSecretPlaceholder": "Введіть секретний ключ TOTP",
-    "welcomeTitle": "Ласкаво просимо до AliasVult!",
-    "welcomeDescription": "Щоб скористатися розширенням браузера AliasVault: перейдіть на вебсайт і скористайтеся спливаючим вікном автозаповнення AliasVault, щоб створити нові облікові дані.",
-    "noPasskeysFound": "Ключі доступу ще не створено. Ключі доступу створюються під час відвідування вебсайту, який пропонує ключі доступу як спосіб автентифікації.",
-    "noAttachmentsFound": "Не знайдено облікових даних із вкладеннями",
-    "noMatchingCredentials": "Не знайдено відповідних облікових даних",
-    "createdAt": "Створено",
-    "updatedAt": "Останнє оновлення",
-    "saveCredential": "Зберегти облікові дані",
-    "deleteCredentialTitle": "Видалити облікові дані",
-    "deleteCredentialConfirm": "Ви впевнені, що хочете видалити ці облікові дані? Цю дію неможливо скасувати.",
-    "filters": {
-      "all": "(Усі) Облікові дані",
-      "passkeys": "Ключі доступу",
-      "aliases": "Псевдоніми",
-      "userpass": "Паролі",
-      "attachments": "Вкладення"
-    },
-    "randomAlias": "Випадковий псевдонім",
-    "manual": "Посібник",
-    "service": "Служба",
-    "serviceUrl": "URL-адреса сервісу",
-    "loginCredentials": "Дані для входу",
-    "generateRandomUsername": "Згенерувати випадкове ім'я користувача",
-    "generateRandomPassword": "Згенерувати випадковий пароль",
     "changePasswordComplexity": "Зміна складності пароля",
     "passwordLength": "Довжина пароля",
     "includeLowercase": "Включити малі літери",
@@ -214,32 +175,108 @@
     "includeNumbers": "Включити числа",
     "includeSpecialChars": "Включити спеціальні символи",
     "avoidAmbiguousChars": "Уникайте неоднозначних символів (o, 0 тощо)",
-    "generateNewPreview": "Згенерувати новий попередній перегляд",
-    "generateRandomAlias": "Генерувати випадковий псевдонім",
-    "clearAliasFields": "Очистити поля псевдоніма",
-    "alias": "Псевдонім",
-    "firstName": "Ім’я",
-    "lastName": "Прізвище",
-    "nickName": "Нікнейм",
-    "gender": "Стать",
-    "birthDate": "Дата народження",
-    "birthDatePlaceholder": "РРРР-ММ-ДД",
-    "metadata": "Метадані",
-    "validation": {
-      "required": "Це поле обов'язкове",
-      "serviceNameRequired": "Назва служби обов'язкова",
-      "invalidEmail": "Недійсний формат електронної пошти",
-      "invalidDateFormat": "Дата має бути у форматі РРРР-ММ-ДД"
-    },
     "privateEmailTitle": "Приватна електронна адреса",
     "privateEmailAliasVaultServer": "Сервер AliasVault",
     "privateEmailDescription": "Наскрізне шифрування, повністю конфіденційно.",
     "publicEmailTitle": "Публічні тимчасові постачальники електронної пошти",
     "publicEmailDescription": "Анонімність, але обмежена конфіденційність. Зміст електронного листа може прочитати будь-хто, хто знає адресу.",
-    "useDomainChooser": "Використовувати засіб вибору домену",
-    "enterCustomDomain": "Введіть користувацький домен",
-    "enterFullEmail": "Введіть повну електронну адресу",
-    "enterEmailPrefix": "Введіть префікс електронної адреси"
+    "generateRandomUsername": "Згенерувати випадкове ім'я користувача",
+    "generateRandomPassword": "Згенерувати випадковий пароль",
+    "generateNewPreview": "Згенерувати новий попередній перегляд",
+    "generateRandomAlias": "Генерувати випадковий псевдонім",
+    "validation": {
+      "required": "Це поле обов'язкове"
+    },
+    "tags": "Tags"
+  },
+  "items": {
+    "title": "Items",
+    "itemName": "Name",
+    "loginCredentials": "Login Credentials",
+    "cardInformation": "Card Information",
+    "addItem": "Add Item",
+    "addNewItem": "Add new item",
+    "saveItem": "Save Item",
+    "itemDetails": "Item Details",
+    "editItem": "Edit Item",
+    "untitled": "Untitled",
+    "newFolder": "New Folder",
+    "createFolder": "Create Folder",
+    "editFolder": "Edit Folder",
+    "folderName": "Folder Name",
+    "folderNameRequired": "Folder name is required",
+    "folder": "Folder",
+    "welcomeTitle": "Welcome to AliasVault!",
+    "welcomeDescription": "To use the AliasVault browser extension: navigate to a website and use the AliasVault autofill popup to create a new credential.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "noMatchingItems": "No matching items found",
+    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
+    "deleteFolder": "Delete Folder",
+    "deleteFolderKeepItems": "Delete folder only",
+    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderAndItems": "Delete folder and all items",
+    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Passkeys"
+    },
+    "deleteItemTitle": "Delete Item",
+    "deleteItemConfirm": "Are you sure you want to delete this item?",
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available"
+  },
+  "itemTypes": {
+    "selectType": "Add New Item",
+    "typeLabel": "Item Type",
+    "creating": "Creating",
+    "editing": "Editing",
+    "regenerateAlias": "Regenerate alias",
+    "addCustomField": "Add custom field",
+    "fieldLabel": "Field Label",
+    "enterFieldName": "Enter field name",
+    "fieldType": "Field Type",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden (masked text)",
+      "email": "Email",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "Date",
+      "textArea": "Text Area"
+    },
+    "login": {
+      "title": "Login"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Credit Card"
+    },
+    "note": {
+      "title": "Secure Note"
+    }
+  },
+  "fieldLabels": {
+    "login.url": "Website URL",
+    "login.username": "Username",
+    "login.password": "Password",
+    "alias.first_name": "First Name",
+    "alias.last_name": "Last Name",
+    "alias.gender": "Gender",
+    "alias.birthdate": "Birthdate",
+    "login.email": "Email",
+    "notes.content": "Notes",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN"
   },
   "totp": {
     "addCode": "Add 2FA Code",
@@ -247,9 +284,15 @@
     "nameOptional": "Name (optional)",
     "secretKey": "Secret Key",
     "saveToViewCode": "Save to view code",
+    "defaultName": "Authenticator",
     "errors": {
       "invalidSecretKey": "Invalid secret key format."
     }
+  },
+  "attachmentUploader": {
+    "uploading": "Uploading...",
+    "uploadSuccess": "Files uploaded successfully.",
+    "deleteSuccess": "Attachment deleted successfully."
   },
   "emails": {
     "title": "Електронні листи",
@@ -259,7 +302,6 @@
     "to": "До",
     "date": "Дата",
     "emailContent": "Вміст електронного листа",
-    "attachments": "Вкладення",
     "emailNotFound": "Електронний лист не знайдено",
     "noEmails": "Електронних листів не знайдено",
     "noEmailsDescription": "Ви ще не отримували жодних листів на свої приватні адреси електронної пошти. Коли ви отримаєте новий лист, він з’явиться тут.",
@@ -271,25 +313,17 @@
       "hoursAgo_plural": "{{count}} годин тому",
       "yesterday": "учора"
     },
-    "errors": {
-      "emailLoadError": "Під час завантаження електронних листів сталася помилка. Спробуйте ще раз пізніше.",
-      "emailUnexpectedError": "Під час завантаження електронних листів сталася неочікувана помилка. Спробуйте ще раз пізніше."
-    },
     "apiErrors": {
       "CLAIM_DOES_NOT_MATCH_USER": "Поточна вибрана електронна адреса вже використовується. Змініть електронну адресу, відредагувавши ці облікові дані.",
       "CLAIM_DOES_NOT_EXIST": "Під час спроби завантажити електронні листи сталася помилка. Спробуйте відредагувати та зберегти запис облікових даних, щоб синхронізувати базу даних, а потім повторіть спробу."
     }
   },
   "settings": {
-    "title": "Налаштування",
     "serverUrl": "URL-адреса сервера",
     "language": "Мова",
     "autofillEnabled": "Увімкнути автозаповнення",
     "version": "Версія",
-    "openInNewWindow": "Відкрити у новому вікні",
     "openWebApp": "Відкрити веб додаток",
-    "loggedIn": "Вхід виконано",
-    "logout": "Вийти",
     "lock": "Заблокувати",
     "globalSettings": "Глобальні налаштування",
     "autofillPopup": "Спливаюче вікно автозаповнення",
@@ -383,12 +417,11 @@
   "passkeys": {
     "passkey": "Passkey",
     "site": "Site",
-    "displayName": "Name",
     "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential. To replace this passkey or create a new one, visit the website and follow its prompts.",
     "passkeyMarkedForDeletion": "Passkey marked for deletion",
     "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential.",
+    "useBrowserPasskey": "Use Browser Passkey",
     "bypass": {
-      "title": "Use Browser Passkey",
       "description": "How long would you like to use the browser's passkey provider for {{origin}}?",
       "thisTimeOnly": "This time only",
       "alwaysForSite": "Always for this site"
@@ -397,8 +430,7 @@
       "title": "Sign in with Passkey",
       "signInFor": "Sign in with passkey for",
       "selectPasskey": "Select a passkey to sign in:",
-      "noPasskeysFound": "No passkeys found for this site",
-      "useBrowserPasskey": "Use Browser Passkey"
+      "noPasskeysFound": "No passkeys found for this site"
     },
     "create": {
       "title": "Create Passkey",
@@ -406,16 +438,35 @@
       "titleLabel": "Title",
       "titlePlaceholder": "Enter a name for this passkey",
       "createButton": "Create Passkey",
-      "useBrowserPasskey": "Use Browser Passkey",
       "selectPasskeyToReplace": "Select a passkey to replace:",
       "createNewPasskey": "Create New Passkey",
       "replacingPasskey": "Replacing passkey: {{displayName}}",
-      "confirmReplace": "Confirm Replace"
+      "confirmReplace": "Confirm Replace",
+      "selectExistingLogin": "Add to existing login:",
+      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
+      "attachingToCredential": "Adding passkey to: {{serviceName}}",
+      "attachPasskey": "Add Passkey"
     },
     "settings": {
       "passkeyProvider": "Passkey Provider",
       "passkeyProviderOn": "Passkey Provider on "
     }
+  },
+  "recentlyDeleted": {
+    "title": "Recently Deleted",
+    "noItems": "No deleted items",
+    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+    "restore": "Restore",
+    "deletePermanently": "Delete Permanently",
+    "emptyAll": "Empty All",
+    "daysRemaining": "{{count}} day remaining",
+    "daysRemaining_plural": "{{count}} days remaining",
+    "expiringSoon": "Expiring soon",
+    "confirmDeleteTitle": "Delete Permanently?",
+    "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+    "confirmEmptyAllTitle": "Empty Recently Deleted?",
+    "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
   },
   "upgrade": {
     "title": "Оновлення сховища",
@@ -425,7 +476,6 @@
     "newVersion": "New available version:",
     "upgrade": "Оновлення сховища",
     "upgrading": "Оновлення...",
-    "logout": "Вихід",
     "whatsNew": "Що нового",
     "whatsNewDescription": "Для підтримки таких змін потрібне оновлення:",
     "noDescriptionAvailable": "Для цієї версії немає опису.",
@@ -437,5 +487,10 @@
       "upgradeFailed": "Помилка оновлення",
       "failedToApplyMigration": "Не вдалося застосувати міграцію ({{current}} з {{total}})"
     }
+  },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
   }
 }
