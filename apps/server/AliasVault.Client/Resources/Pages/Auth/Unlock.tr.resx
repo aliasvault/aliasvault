@@ -83,7 +83,7 @@
     <comment>Label for password input field</comment>
   </data>
   <data name="UnlockButton" xml:space="preserve">
-    <value>Unlock</value>
+    <value>Kilidi aç</value>
     <comment>Button text for unlock submission</comment>
   </data>
   <data name="SwitchAccountsText" xml:space="preserve">
