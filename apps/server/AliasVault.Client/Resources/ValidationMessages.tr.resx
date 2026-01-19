@@ -60,32 +60,32 @@
   </resheader>
   <!-- Password validation messages -->
   <data name="PasswordMinLength" xml:space="preserve">
-    <value>The new password must be at least 10 characters long.</value>
+    <value>Yeni parola en az 10 karakter uzunluğunda olmalıdır.</value>
     <comment>Error message for password minimum length validation</comment>
   </data>
   <data name="PasswordsDoNotMatch" xml:space="preserve">
-    <value>The new passwords do not match.</value>
+    <value>Yeni parolalar eşleşmiyor.</value>
     <comment>Error message when password confirmation doesn't match</comment>
   </data>
   <data name="PasswordMinLengthGeneric" xml:space="preserve">
-    <value>Password must be at least 10 characters long.</value>
+    <value>Parola en az 10 karakter uzunluğunda olmalıdır.</value>
     <comment>Generic error message for password minimum length validation</comment>
   </data>
   <data name="PasswordsDoNotMatchGeneric" xml:space="preserve">
-    <value>Passwords do not match.</value>
+    <value>Parolalar eşleşmiyor.</value>
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <!-- Required field validation messages -->
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>Kullanıcı adı gereklidir</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="PasswordRequired" xml:space="preserve">
-    <value>Password is required</value>
+    <value>Parola gerekli</value>
     <comment>Error message when password is required</comment>
   </data>
   <data name="SecretKeyRequired" xml:space="preserve">
-    <value>Secret key is required</value>
+    <value>Gizli anahtar gereklidir</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ServiceNameRequired" xml:space="preserve">
@@ -93,12 +93,12 @@
     <comment>Error message when service name is required</comment>
   </data>
   <data name="FieldRequired" xml:space="preserve">
-    <value>This field is required</value>
+    <value>Bu alan zorunludur</value>
     <comment>Generic error message when a field is required</comment>
   </data>
   <!-- Terms and conditions -->
   <data name="MustAcceptTerms" xml:space="preserve">
-    <value>You must accept the terms and conditions.</value>
+    <value>Şart ve koşulları kabul etmeniz gerekmektedir.</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
 </root>
