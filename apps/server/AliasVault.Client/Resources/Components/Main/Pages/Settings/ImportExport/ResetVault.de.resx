@@ -74,9 +74,9 @@
     <value>Bitte beachte:</value>
     <comment>Reset vault please note prefix</comment>
   </data>
-  <data name="ResetVaultCredentialsDeletedNote" xml:space="preserve">
-    <value>Alle in Deinem Tresor verschlüsselten Zugangsdaten werden unwiderruflich gelöscht.</value>
-    <comment>Reset vault note about credentials being deleted</comment>
+  <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
+    <value>All encrypted items in your vault will be permanently deleted</value>
+    <comment>Reset vault note about items being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
     <value>Deine E-Mail-Aliase werden erhalten und können nach dem Zurücksetzen Deines Tresors wiederverwendet werden.</value>
@@ -99,7 +99,7 @@
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>Achtung: Du bist dabei, alle Deine Zugangsdaten unwiderruflich zu löschen.</value>
+    <value>Final warning: You are about to permanently delete all your items!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
@@ -131,7 +131,7 @@
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>Dein Tresor wurde erfolgreich zurückgesetzt. Alle Zugangsdaten wurden gelöscht und Du kannst jetzt neu anfangen.</value>
+    <value>Your vault has been successfully reset. All items have been deleted and you can now start fresh.</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">
