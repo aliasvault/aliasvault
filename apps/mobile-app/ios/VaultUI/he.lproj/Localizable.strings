@@ -9,11 +9,11 @@
 "title" = "כותרת";
 "unknown_error" = "אירעה שגיאה לא ידועה";
 
-"loading_credentials" = "פרטי הגישה נטענים…";
-"no_credentials_found" = "לא נמצאו פרטי גישה";
-"no_credentials_match" = "אין פרטי גישה קיימים שעונים לחיפוש שלך";
-"create_new_credential" = "יצירת פרטי גישה חדשים";
-"select_credential" = "בחירת פרטי גישה";
+"loading_items" = "Loading items...";
+"no_items_found" = "No items found";
+"no_items_match" = "No existing items match your search";
+"create_new_item" = "Create New Item";
+"select_item" = "Select Item";
 "select_text_to_insert" = "נא לבחור טקסט להוספה";
 "choose_username" = "נא לבחור שם משתמש";
 "select_text_to_insert_message" = "נא לבחור טקסט למילוי בשדה הקלט שעליו המיקוד";
@@ -21,10 +21,8 @@
 "username_prefix" = "שם משתמש: ";
 "email_prefix" = "דוא״ל: ";
 "password" = "סיסמה";
-"credentials_load_error" = "טעינת פרטי הגישה נכשלה. נא לפתוח את יישום AliasVault כדי לבדוק אם אפשר לעדכן אותו.";
-"no_credential_selected" = "לא נבחרו פרטי גישה.";
-"retrieving_credential" = "פרטי הגישה מתקבלים";
-"retrieving_passkey" = "Retrieving passkey";
+"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
+"no_item_selected" = "No item selected.";
 
 /* Context menu strings */
 "copy_username" = "העתקת שם משתמש";
@@ -36,7 +34,7 @@
 "email_copied" = "כתובת הדוא״ל הועתקה";
 
 /* Search bar */
-"search_credentials" = "חיפוש פרטי גישה…";
+"search_items" = "Search items...";
 
 /* Passkey registration */
 "create_passkey_title" = "Create New Passkey";
@@ -54,10 +52,14 @@
 /* Passkey replacement */
 "create_new_passkey" = "Create New Passkey";
 "select_passkey_to_replace" = "Or, replace an existing passkey";
-"confirm_replace" = "Replace Passkey";
-"replace_passkey_title" = "Replace Passkey";
+"replace_passkey" = "Replace Passkey";
 "replace_passkey_explanation" = "This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.";
 "create_passkey_explanation" = "This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.";
+
+/* Passkey merge with existing item */
+"passkey_add_to_existing" = "Or, add passkey to an existing item";
+"add_passkey" = "Add Passkey";
+"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
 "unlock_vault" = "שחרור נעילת כספת";
