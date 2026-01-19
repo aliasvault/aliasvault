@@ -186,7 +186,7 @@
     <comment>Filter option to show only Login items</comment>
   </data>
   <data name="FilterAliasOption" xml:space="preserve">
-    <value>Aliases</value>
+    <value>Aliase</value>
     <comment>Filter option to show only Alias items</comment>
   </data>
   <data name="FilterCreditCardOption" xml:space="preserve">
@@ -194,7 +194,7 @@
     <comment>Filter option to show only Credit Card items</comment>
   </data>
   <data name="FilterNoteOption" xml:space="preserve">
-    <value>Notes</value>
+    <value>Notizen</value>
     <comment>Filter option to show only Note items</comment>
   </data>
   <!-- Folder Management -->
@@ -211,7 +211,7 @@
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">
-    <value>Back</value>
+    <value>Zurück</value>
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
