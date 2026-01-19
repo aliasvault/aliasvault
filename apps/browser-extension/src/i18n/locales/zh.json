@@ -3,7 +3,6 @@
     "loginTitle": "登录到 AliasVault",
     "username": "用户名或电子邮箱",
     "usernamePlaceholder": "姓名 / name@company.com",
-    "password": "密码",
     "passwordPlaceholder": "输入您的密码",
     "rememberMe": "记住我",
     "loginButton": "登录",
@@ -20,7 +19,6 @@
     "enterPinToUnlock": "输入您的 PIN 以解锁密码库",
     "useMasterPassword": "使用主密码",
     "unlockTitle": "解锁您的密码库",
-    "logout": "退出登录",
     "logoutConfirm": "确定要退出登录吗？",
     "unlockSuccessTitle": "您的密码库已成功解锁",
     "unlockSuccessDescription": "现在您可以在浏览器的登录表单中使用自动填充功能了。",
@@ -28,7 +26,6 @@
     "browseVault": "浏览密码库内容",
     "connectingTo": "正在连接",
     "switchAccounts": "切换账户？",
-    "loggedIn": "已登录",
     "loginWithMobile": "使用移动应用登录",
     "unlockWithMobile": "使用移动应用解锁",
     "scanQrCode": "使用 AliasVault 移动端应用扫描该二维码，即可登录并解锁您的密码库。",
@@ -36,16 +33,13 @@
       "invalidCode": "请输入有效的6位动态验证码。",
       "serverError": "无法连接到AliasVault服务器。请稍后重试，若问题依旧，请联系支持人员。",
       "wrongPassword": "密码不正确。请重试。",
-      "accountLocked": "由于多次尝试失败，账户已暂时锁定。",
-      "networkError": "网络错误。请检查您的连接后重试。",
       "sessionExpired": "您的会话已过期。请重新登录。",
       "mobileLoginRequestExpired": "移动端登录请求超时。请重新加载页面后重试。"
     }
   },
   "menu": {
-    "credentials": "凭据",
-    "emails": "电子邮件",
-    "settings": "设置"
+    "vault": "Vault",
+    "emails": "电子邮件"
   },
   "common": {
     "loading": "加载中…",
@@ -56,10 +50,15 @@
     "back": "返回",
     "next": "下一步",
     "use": "使用",
+    "add": "Add",
     "delete": "删除",
+    "undo": "撤销",
     "save": "保存",
+    "saving": "Saving...",
+    "create": "创建",
     "or": "或",
     "close": "关闭",
+    "logout": "登出",
     "copied": "已复制！",
     "openInNewWindow": "在新窗口中打开",
     "enabled": "启用",
@@ -75,25 +74,25 @@
     "loadingAttachments": "加载附件中…",
     "settings": "设置",
     "recentEmails": "近期电子邮件",
-    "loginCredentials": "登录凭据",
+    "credentials": "凭据",
+    "customFields": "Custom",
     "twoFactorAuthentication": "双因素认证（2FA）",
     "alias": "别名",
     "notes": "备注",
-    "fullName": "全名",
-    "firstName": "名",
-    "lastName": "姓",
-    "birthDate": "出生日期",
-    "nickname": "昵称",
     "email": "电子邮箱",
     "username": "用户名",
     "password": "密码",
+    "serviceName": "服务名称",
+    "loggedIn": "已登录",
     "syncingVault": "正在同步密码库",
-    "savingChangesToVault": "正在保存对密码库的更改",
-    "uploadingVaultToServer": "正在将密码库上传到服务器",
     "checkingVaultUpdates": "检查密码库更新中",
     "syncingUpdatedVault": "同步更新后的密码库",
-    "executingOperation": "执行操作中…",
     "loadMore": "加载更多",
+    "offline": "Offline",
+    "offlineMode": "Operating in offline mode",
+    "pendingSync": "Syncing...",
+    "mergingVaultChanges": "Merging vault changes...",
+    "uploadingVault": "Uploading vault...",
     "errors": {
       "serverNotAvailable": "AliasVault服务器不可用。请稍后重试，若问题持续请联系支持人员。",
       "clientVersionNotSupported": "此版本的AliasVault浏览器扩展已不被服务器支持。请将浏览器扩展更新到最新版本。",
@@ -104,7 +103,10 @@
       "unknownErrorTryAgain": "发生未知错误，请重试。",
       "vaultNotAvailable": "密码库不可用",
       "vaultIsLocked": "密码库已锁定",
-      "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。"
+      "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。",
+      "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "发生未知错误。请重试。",
@@ -135,15 +137,10 @@
   "content": {
     "or": "或",
     "new": "新建",
-    "cancel": "取消",
     "vaultLocked": "AliasVault已锁定。",
     "creatingNewAlias": "正在创建新别名…",
     "noMatchesFound": "未找到匹配项",
     "searchVault": "搜索密码库…",
-    "serviceName": "服务名称",
-    "email": "电子邮箱",
-    "username": "用户名",
-    "password": "密码",
     "enterServiceName": "输入服务名称",
     "enterEmailAddress": "输入邮箱地址",
     "enterUsername": "输入用户名",
@@ -171,42 +168,6 @@
     "dismissPopup": "关闭弹窗"
   },
   "credentials": {
-    "title": "凭据",
-    "addCredential": "添加凭据",
-    "editCredential": "编辑凭据",
-    "deleteCredential": "删除凭据",
-    "credentialDetails": "凭据详情",
-    "serviceName": "服务名称",
-    "notes": "备注",
-    "totp": "双因素认证（2FA）",
-    "totpCode": "TOTP验证码",
-    "copyTotp": "复制 TOTP",
-    "totpSecret": "TOTP密钥",
-    "totpSecretPlaceholder": "输入TOTP密钥",
-    "welcomeTitle": "欢迎使用AliasVault！",
-    "welcomeDescription": "要使用AliasVault浏览器扩展：导航到某个网站，使用AliasVault自动填充弹窗创建新凭据。",
-    "noPasskeysFound": "尚未创建通行密钥。访问以通行密钥为认证方式的网站才能创建通行密钥。",
-    "noAttachmentsFound": "未找到带有附件的凭据",
-    "noMatchingCredentials": "未找到匹配的凭据",
-    "createdAt": "创建时间",
-    "updatedAt": "最后更新时间",
-    "saveCredential": "保存凭据",
-    "deleteCredentialTitle": "删除凭据",
-    "deleteCredentialConfirm": "确定要删除此凭据吗？此操作无法撤销。",
-    "filters": {
-      "all": "（所有）凭据",
-      "passkeys": "通行密钥",
-      "aliases": "别名",
-      "userpass": "密码",
-      "attachments": "附件"
-    },
-    "randomAlias": "随机别名",
-    "manual": "手动",
-    "service": "服务",
-    "serviceUrl": "服务 URL",
-    "loginCredentials": "登录凭据",
-    "generateRandomUsername": "生成随机用户名",
-    "generateRandomPassword": "生成随机密码",
     "changePasswordComplexity": "修改密码复杂度",
     "passwordLength": "密码长度",
     "includeLowercase": "包含小写字母",
@@ -214,32 +175,108 @@
     "includeNumbers": "包含数字",
     "includeSpecialChars": "包含特殊字符",
     "avoidAmbiguousChars": "避免易混淆字符（o、0 等）",
-    "generateNewPreview": "生成新预览",
-    "generateRandomAlias": "生成随机别名",
-    "clearAliasFields": "清除别名字段",
-    "alias": "别名",
-    "firstName": "名",
-    "lastName": "姓",
-    "nickName": "昵称",
-    "gender": "性别",
-    "birthDate": "出生日期",
-    "birthDatePlaceholder": "YYYY-MM-DD",
-    "metadata": "元数据",
-    "validation": {
-      "required": "此字段为必填项",
-      "serviceNameRequired": "服务名称为必填项",
-      "invalidEmail": "电子邮箱格式无效",
-      "invalidDateFormat": "日期必须采用 YYYY-MM-DD 格式"
-    },
     "privateEmailTitle": "私人电子邮箱",
     "privateEmailAliasVaultServer": "AliasVault服务器",
     "privateEmailDescription": "端到端加密，完全私密。",
     "publicEmailTitle": "公开临时邮箱供应商",
     "publicEmailDescription": "匿名但隐私有限。任何知晓该邮箱地址的人均可查看邮件内容。",
-    "useDomainChooser": "使用域名选择器",
-    "enterCustomDomain": "输入自定义域名",
-    "enterFullEmail": "输入验证邮箱地址",
-    "enterEmailPrefix": "输入邮箱前缀"
+    "generateRandomUsername": "生成随机用户名",
+    "generateRandomPassword": "生成随机密码",
+    "generateNewPreview": "生成新预览",
+    "generateRandomAlias": "生成随机别名",
+    "validation": {
+      "required": "此字段为必填项"
+    },
+    "tags": "标签"
+  },
+  "items": {
+    "title": "Items",
+    "itemName": "名称",
+    "loginCredentials": "登录凭据",
+    "cardInformation": "Card Information",
+    "addItem": "Add Item",
+    "addNewItem": "Add new item",
+    "saveItem": "Save Item",
+    "itemDetails": "Item Details",
+    "editItem": "Edit Item",
+    "untitled": "Untitled",
+    "newFolder": "New Folder",
+    "createFolder": "创建文件夹",
+    "editFolder": "Edit Folder",
+    "folderName": "Folder Name",
+    "folderNameRequired": "Folder name is required",
+    "folder": "文件夹",
+    "welcomeTitle": "欢迎使用AliasVault！",
+    "welcomeDescription": "要使用AliasVault浏览器扩展：导航到某个网站，使用AliasVault自动填充弹窗创建新凭据。",
+    "noPasskeysFound": "尚未创建通行密钥。访问以通行密钥为认证方式的网站才能创建通行密钥。",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "noMatchingItems": "No matching items found",
+    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
+    "deleteFolder": "Delete Folder",
+    "deleteFolderKeepItems": "Delete folder only",
+    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderAndItems": "Delete folder and all items",
+    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "通行密钥"
+    },
+    "deleteItemTitle": "删除项目",
+    "deleteItemConfirm": "您确定要删除此项目吗？",
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available"
+  },
+  "itemTypes": {
+    "selectType": "Add New Item",
+    "typeLabel": "Item Type",
+    "creating": "Creating",
+    "editing": "Editing",
+    "regenerateAlias": "Regenerate alias",
+    "addCustomField": "Add custom field",
+    "fieldLabel": "Field Label",
+    "enterFieldName": "Enter field name",
+    "fieldType": "Field Type",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden (masked text)",
+      "email": "电子邮件",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "日期",
+      "textArea": "Text Area"
+    },
+    "login": {
+      "title": "登录"
+    },
+    "alias": {
+      "title": "别名"
+    },
+    "creditCard": {
+      "title": "Credit Card"
+    },
+    "note": {
+      "title": "Secure Note"
+    }
+  },
+  "fieldLabels": {
+    "login.url": "Website URL",
+    "login.username": "用户名",
+    "login.password": "密码",
+    "alias.first_name": "名",
+    "alias.last_name": "姓",
+    "alias.gender": "性别",
+    "alias.birthdate": "出生日期",
+    "login.email": "电子邮件",
+    "notes.content": "备注",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN"
   },
   "totp": {
     "addCode": "添加两步验证码",
@@ -247,9 +284,15 @@
     "nameOptional": "名称（可选）",
     "secretKey": "密钥",
     "saveToViewCode": "保存以查看验证码",
+    "defaultName": "Authenticator",
     "errors": {
       "invalidSecretKey": "密钥格式无效。"
     }
+  },
+  "attachmentUploader": {
+    "uploading": "Uploading...",
+    "uploadSuccess": "Files uploaded successfully.",
+    "deleteSuccess": "Attachment deleted successfully."
   },
   "emails": {
     "title": "邮件",
@@ -259,7 +302,6 @@
     "to": "收件人",
     "date": "日期",
     "emailContent": "邮件内容",
-    "attachments": "附件",
     "emailNotFound": "未找到邮件",
     "noEmails": "未找到邮件",
     "noEmailsDescription": "您的私人邮箱地址尚未收到任何邮件。当您收到新邮件时，会显示在这里。",
@@ -271,25 +313,17 @@
       "hoursAgo_plural": "{{count}}小时前",
       "yesterday": "昨天"
     },
-    "errors": {
-      "emailLoadError": "加载邮件时发生错误。请稍后重试。",
-      "emailUnexpectedError": "加载邮件时发生意外错误。请稍后重试。"
-    },
     "apiErrors": {
       "CLAIM_DOES_NOT_MATCH_USER": "当前选择的邮箱地址已被使用。请通过编辑此凭据修改邮箱地址。",
       "CLAIM_DOES_NOT_EXIST": "加载邮件时发生错误。请尝试编辑并保存凭据条目以同步数据库，然后重试。"
     }
   },
   "settings": {
-    "title": "设置",
     "serverUrl": "服务器 URL",
     "language": "语言",
     "autofillEnabled": "启用自动填充",
     "version": "版本",
-    "openInNewWindow": "在新窗口中打开",
     "openWebApp": "打开网页应用",
-    "loggedIn": "已登录",
-    "logout": "退出登录",
     "lock": "锁定",
     "globalSettings": "全局设置",
     "autofillPopup": "自动填充弹窗",
@@ -383,12 +417,11 @@
   "passkeys": {
     "passkey": "通行密钥",
     "site": "网站",
-    "displayName": "名称",
     "helpText": "通行密钥会在网站提示时自动生成，无法手动编辑。要移除此通行密钥，您可以在此凭据中进行删除。要替换或创建新的通行密钥，请访问网站并按照其提示操作。",
     "passkeyMarkedForDeletion": "通行密钥已标记为删除",
     "passkeyWillBeDeleted": "保存此凭据后，此通行密钥将被删除。",
+    "useBrowserPasskey": "使用浏览器通行密钥",
     "bypass": {
-      "title": "使用浏览器通行密钥",
       "description": "对于 {{origin}}，您希望使用浏览器的密码提供程序多长时间？",
       "thisTimeOnly": "仅一次",
       "alwaysForSite": "始终为此网站"
@@ -397,8 +430,7 @@
       "title": "使用通行密钥登录",
       "signInFor": "使用通行密钥登录或",
       "selectPasskey": "选择要登录的通行密钥：",
-      "noPasskeysFound": "未找到此网站的通行密钥",
-      "useBrowserPasskey": "使用浏览器通行密钥"
+      "noPasskeysFound": "未找到此网站的通行密钥"
     },
     "create": {
       "title": "创建通行密钥",
@@ -406,16 +438,35 @@
       "titleLabel": "标题",
       "titlePlaceholder": "输入此通行密钥的名称",
       "createButton": "创建通行密钥",
-      "useBrowserPasskey": "使用浏览器通行密钥",
       "selectPasskeyToReplace": "选择要替换的通行密钥：",
       "createNewPasskey": "创建新通行密钥",
       "replacingPasskey": "替换通行密钥：{{displayName}}",
-      "confirmReplace": "确认替换"
+      "confirmReplace": "确认替换",
+      "selectExistingLogin": "Add to existing login:",
+      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
+      "attachingToCredential": "Adding passkey to: {{serviceName}}",
+      "attachPasskey": "Add Passkey"
     },
     "settings": {
       "passkeyProvider": "通行密钥提供程序",
       "passkeyProviderOn": "通行密钥提供程序于"
     }
+  },
+  "recentlyDeleted": {
+    "title": "Recently Deleted",
+    "noItems": "No deleted items",
+    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+    "restore": "Restore",
+    "deletePermanently": "Delete Permanently",
+    "emptyAll": "Empty All",
+    "daysRemaining": "{{count}} day remaining",
+    "daysRemaining_plural": "{{count}} days remaining",
+    "expiringSoon": "Expiring soon",
+    "confirmDeleteTitle": "Delete Permanently?",
+    "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+    "confirmEmptyAllTitle": "Empty Recently Deleted?",
+    "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
   },
   "upgrade": {
     "title": "升级密码库",
@@ -425,7 +476,6 @@
     "newVersion": "新可用版本：",
     "upgrade": "升级密码库",
     "upgrading": "升级中…",
-    "logout": "退出登录",
     "whatsNew": "新功能",
     "whatsNewDescription": "需要升级才能支持以下更改：",
     "noDescriptionAvailable": "此版本无可用说明。",
@@ -437,5 +487,10 @@
       "upgradeFailed": "升级失败",
       "failedToApplyMigration": "应用迁移失败（{{current}} / {{total}}）"
     }
+  },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
   }
 }
