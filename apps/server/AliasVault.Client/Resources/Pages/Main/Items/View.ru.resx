@@ -124,7 +124,7 @@
     <comment>Placeholder for items without a name</comment>
   </data>
   <data name="NotesSection">
-    <value>Notes</value>
+    <value>Примечание</value>
     <comment>Section header for notes</comment>
   </data>
   <data name="CardSection">
