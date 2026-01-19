@@ -75,7 +75,7 @@
     <comment>Label for name field</comment>
   </data>
   <data name="WebsiteUrlLabel" xml:space="preserve">
-    <value>Website URL</value>
+    <value>URL веб-сайта</value>
     <comment>Label for website URL field</comment>
   </data>
   <data name="NamePlaceholderLogin" xml:space="preserve">
@@ -87,11 +87,11 @@
     <comment>Placeholder text for alias name field</comment>
   </data>
   <data name="NamePlaceholderCard" xml:space="preserve">
-    <value>E.g. Mastercard</value>
+    <value>Например, Mastercard</value>
     <comment>Placeholder text for card name field</comment>
   </data>
   <data name="NamePlaceholderNote" xml:space="preserve">
-    <value>E.g. Passport Details</value>
+    <value>Например: Данные паспорта</value>
     <comment>Placeholder text for note name field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
@@ -123,11 +123,11 @@
     <comment>Alias item type label</comment>
   </data>
   <data name="TypeCard" xml:space="preserve">
-    <value>Card</value>
+    <value>Карта</value>
     <comment>Credit card item type label (short)</comment>
   </data>
   <data name="TypeNote" xml:space="preserve">
-    <value>Note</value>
+    <value>Заметка</value>
     <comment>Note item type label</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
