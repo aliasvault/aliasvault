@@ -9,11 +9,11 @@
 "title" = "Título";
 "unknown_error" = "Se produjo un error desconocido";
 
-"loading_credentials" = "Cargando credenciales...";
-"no_credentials_found" = "No se encontraron credenciales";
-"no_credentials_match" = "No hay credenciales existentes que coincidan con su búsqueda";
-"create_new_credential" = "Crear nueva credencial";
-"select_credential" = "Seleccionar credencial";
+"loading_items" = "Loading items...";
+"no_items_found" = "No items found";
+"no_items_match" = "No existing items match your search";
+"create_new_item" = "Create New Item";
+"select_item" = "Select Item";
 "select_text_to_insert" = "Seleccionar texto a insertar";
 "choose_username" = "Escoge un nombre de usuario";
 "select_text_to_insert_message" = "Seleccione el texto a insertar en el campo de entrada resaltado";
@@ -21,10 +21,8 @@
 "username_prefix" = "Usuario: ";
 "email_prefix" = "Email: ";
 "password" = "Contraseña";
-"credentials_load_error" = "Error al cargar las credenciales. Por favor, abre la aplicación AliasVault para buscar actualizaciones.";
-"no_credential_selected" = "Ninguna credencial seleccionada.";
-"retrieving_credential" = "Recuperar credencial";
-"retrieving_passkey" = "Recuperando llave";
+"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
+"no_item_selected" = "No item selected.";
 
 /* Context menu strings */
 "copy_username" = "Copiar nombre de usuario";
@@ -36,7 +34,7 @@
 "email_copied" = "Email copiado";
 
 /* Search bar */
-"search_credentials" = "Buscar credenciales...";
+"search_items" = "Search items...";
 
 /* Passkey registration */
 "create_passkey_title" = "Crear Nueva llave";
@@ -54,10 +52,14 @@
 /* Passkey replacement */
 "create_new_passkey" = "Crear nueva llave de acceso";
 "select_passkey_to_replace" = "O, reemplazar una llave de acceso existente";
-"confirm_replace" = "Reemplazar llave de acceso";
-"replace_passkey_title" = "Reemplazar llave de acceso";
+"replace_passkey" = "Reemplazar llave de acceso";
 "replace_passkey_explanation" = "Esto reemplazará la llave de acceso existente con una nueva. Tenga en cuenta que su llave de acceso antigua será sobrescrita y ya no será accesible. Si desea crear una llave de acceso separada en su lugar, vuelva a la pantalla anterior.";
 "create_passkey_explanation" = "Esto crea una nueva llave de acceso y la almacena en tu bóveda. Se sincronizará automáticamente en todos tus dispositivos que utilicen AliasVault.";
+
+/* Passkey merge with existing item */
+"passkey_add_to_existing" = "Or, add passkey to an existing item";
+"add_passkey" = "Add Passkey";
+"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
 "unlock_vault" = "Desbloquear bóveda";
