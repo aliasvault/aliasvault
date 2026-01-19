@@ -70,13 +70,13 @@
     <value>Data:</value>
     <comment>Email date field label</comment>
   </data>
-  <data name="CredentialLabel" xml:space="preserve">
-    <value>Credenziali:</value>
-    <comment>Email credential field label</comment>
+  <data name="ItemLabel" xml:space="preserve">
+    <value>Item:</value>
+    <comment>Email item field label</comment>
   </data>
   <data name="NoneValue" xml:space="preserve">
     <value>Vuoto</value>
-    <comment>No credential assigned value</comment>
+    <comment>No item assigned value</comment>
   </data>
   <data name="AttachmentsLabel" xml:space="preserve">
     <value>Allegati:</value>
