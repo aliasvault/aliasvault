@@ -3,7 +3,6 @@
     "loginTitle": "Accedi ad AliasVaultriem",
     "username": "Nome utente o mail",
     "usernamePlaceholder": "nome / nome@azienda.com",
-    "password": "Password",
     "passwordPlaceholder": "Inserisci la tua password",
     "rememberMe": "Ricordati di me",
     "loginButton": "Accedi",
@@ -20,7 +19,6 @@
     "enterPinToUnlock": "Inserisci il PIN per sbloccare la cassaforte",
     "useMasterPassword": "Usa La Password Principale",
     "unlockTitle": "Sblocca la tua cassaforte",
-    "logout": "Disconnetti",
     "logoutConfirm": "Sei sicuro di volerti disconnettere?",
     "unlockSuccessTitle": "La cassaforte è stata sbloccata con successo",
     "unlockSuccessDescription": "Ora puoi usare l'auto-riempimento nei moduli di accesso nel tuo browser.",
@@ -28,7 +26,6 @@
     "browseVault": "Sfoglia i contenuti della cassaforte",
     "connectingTo": "Connessione a",
     "switchAccounts": "Cambia account",
-    "loggedIn": "Accesso effettuato",
     "loginWithMobile": "Accedi con l'App Mobile",
     "unlockWithMobile": "Sblocca con l'App Mobile",
     "scanQrCode": "Scansiona questo codice QR con l'app mobile di AliasVault per accedere e sbloccare la cassaforte.",
@@ -36,16 +33,13 @@
       "invalidCode": "Inserisci un codice di autenticazione a 6 cifre valido.",
       "serverError": "Impossibile connettersi al server di AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
       "wrongPassword": "Password non corretta. Riprova nuovamente.",
-      "accountLocked": "Account temporaneamente bloccato a causa di troppi tentativi falliti.",
-      "networkError": "Errore di rete: Controlla la tua connessione e riprova.",
       "sessionExpired": "La tua sessione è scaduta. Effettua di nuovo il login.",
       "mobileLoginRequestExpired": "Richiesta di accesso mobile scaduta. Per favore ricarica la pagina e riprova."
     }
   },
   "menu": {
-    "credentials": "Credenziali",
-    "emails": "E-Mail",
-    "settings": "Impostazioni"
+    "vault": "Vault",
+    "emails": "E-Mail"
   },
   "common": {
     "loading": "Caricamento in corso...",
@@ -56,10 +50,15 @@
     "back": "Indietro",
     "next": "Avanti",
     "use": "Usa",
+    "add": "Add",
     "delete": "Elimina",
+    "undo": "Annulla",
     "save": "Salva",
+    "saving": "Saving...",
+    "create": "Creare",
     "or": "O",
     "close": "Chiudi",
+    "logout": "Esci",
     "copied": "Copiato!",
     "openInNewWindow": "Apri in una nuova finestra",
     "enabled": "Abilitato",
@@ -75,25 +74,25 @@
     "loadingAttachments": "Caricamento allegati in corso...",
     "settings": "Impostazioni",
     "recentEmails": "E-mail recenti",
-    "loginCredentials": "Credenziali di accesso",
+    "credentials": "Credenziali",
+    "customFields": "Custom",
     "twoFactorAuthentication": "Autenticazione a due fattori",
     "alias": "Alias",
     "notes": "Note",
-    "fullName": "Nome completo",
-    "firstName": "Nome",
-    "lastName": "Cognome",
-    "birthDate": "Data di nascita",
-    "nickname": "Soprannome",
     "email": "E-mail",
     "username": "Nome utente",
     "password": "Password",
+    "serviceName": "Nome Servizio",
+    "loggedIn": "Accesso effettuato",
     "syncingVault": "Sincronizzazione cassaforte",
-    "savingChangesToVault": "Salvataggio modifiche cassaforte",
-    "uploadingVaultToServer": "Caricamento cassaforte sul server",
     "checkingVaultUpdates": "Controllo aggiornamenti cassaforte",
     "syncingUpdatedVault": "Sincronizzazione cassaforte aggiornata",
-    "executingOperation": "Esecuzione operazione...",
     "loadMore": "Carica altro",
+    "offline": "Offline",
+    "offlineMode": "Operating in offline mode",
+    "pendingSync": "Syncing...",
+    "mergingVaultChanges": "Merging vault changes...",
+    "uploadingVault": "Uploading vault...",
     "errors": {
       "serverNotAvailable": "Il server di AliasVault non è disponibile. Riprova più tardi o contatta il supporto se il problema persiste.",
       "clientVersionNotSupported": "Questa versione dell'estensione del browser AliasVault non è più supportata dal server. Aggiorna l'estensione alla versione più recente.",
@@ -104,7 +103,10 @@
       "unknownErrorTryAgain": "Si è verificato un errore sconosciuto. Riprova.",
       "vaultNotAvailable": "Cassaforte non disponibile",
       "vaultIsLocked": "La cassaforte è bloccata",
-      "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza."
+      "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza.",
+      "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Si è verificato un errore sconosciuto. Riprova.",
@@ -135,15 +137,10 @@
   "content": {
     "or": "o",
     "new": "Nuovo",
-    "cancel": "Annulla",
     "vaultLocked": "AliasVault è bloccato.",
     "creatingNewAlias": "Creazione nuovo alias...",
     "noMatchesFound": "Nessun risultato trovato",
     "searchVault": "Cerca nella cassaforte...",
-    "serviceName": "Nome servizio",
-    "email": "E-mail",
-    "username": "Nome utente",
-    "password": "Password",
     "enterServiceName": "Inserisci nome servizio",
     "enterEmailAddress": "Inserisci indirizzo email",
     "enterUsername": "Inserisci nome utente",
@@ -171,42 +168,6 @@
     "dismissPopup": "Chiudi finestra"
   },
   "credentials": {
-    "title": "Credenziali",
-    "addCredential": "Aggiungi credenziali",
-    "editCredential": "Modifica credenziali",
-    "deleteCredential": "Elimina credenziali",
-    "credentialDetails": "Dettagli credenziali",
-    "serviceName": "Nome servizio",
-    "notes": "Note",
-    "totp": "Autenticazione a due fattori",
-    "totpCode": "Codice TOTP",
-    "copyTotp": "Copia TOTP",
-    "totpSecret": "Segreto TOTP",
-    "totpSecretPlaceholder": "Inserisci chiave segreta TOTP",
-    "welcomeTitle": "Benvenuto in AliasVault!",
-    "welcomeDescription": "Per usare l'estensione browser AliasVault: naviga su un sito e usa la finestra di compilazione automatica per creare una nuova credenziale.",
-    "noPasskeysFound": "Non sono state ancora create chiavi di accesso. Le passkey vengono create visitando un sito web che offre le chiavi di accesso come metodo di autenticazione.",
-    "noAttachmentsFound": "Non sono state trovate credenziali con allegati",
-    "noMatchingCredentials": "Nessuna credenziale corrispondente trovata",
-    "createdAt": "Creato",
-    "updatedAt": "Ultimo aggiornamento",
-    "saveCredential": "Salva credenziale",
-    "deleteCredentialTitle": "Elimina credenziale",
-    "deleteCredentialConfirm": "Sei sicuro di voler eliminare queste credenziali? Questa azione non può essere annullata.",
-    "filters": {
-      "all": "(Tutte) Credenziali",
-      "passkeys": "Passkey",
-      "aliases": "Alias",
-      "userpass": "Password",
-      "attachments": "Allegati"
-    },
-    "randomAlias": "Alias casuale",
-    "manual": "Manuale",
-    "service": "Servizio",
-    "serviceUrl": "URL del servizio",
-    "loginCredentials": "Credenziali di accesso",
-    "generateRandomUsername": "Genera nome utente casuale",
-    "generateRandomPassword": "Genera password casuale",
     "changePasswordComplexity": "Modifica complessità password",
     "passwordLength": "Lunghezza password",
     "includeLowercase": "Includi lettere minuscole",
@@ -214,32 +175,108 @@
     "includeNumbers": "Includi numeri",
     "includeSpecialChars": "Includi caratteri speciali",
     "avoidAmbiguousChars": "Evita caratteri ambigui (o, 0, ecc.)",
-    "generateNewPreview": "Genera nuova anteprima",
-    "generateRandomAlias": "Genera alias casuale",
-    "clearAliasFields": "Cancella Campi Alias",
-    "alias": "Alias",
-    "firstName": "Nome",
-    "lastName": "Cognome",
-    "nickName": "Soprannome",
-    "gender": "Genere",
-    "birthDate": "Data di nascita",
-    "birthDatePlaceholder": "AAAA-MM-GG",
-    "metadata": "Metadati",
-    "validation": {
-      "required": "Questo campo è obbligatorio",
-      "serviceNameRequired": "Il nome del servizio è obbligatorio",
-      "invalidEmail": "Formato email non valido",
-      "invalidDateFormat": "La data deve essere nel formato AAAA-MM-GG"
-    },
     "privateEmailTitle": "Email privata",
     "privateEmailAliasVaultServer": "Server AliasVault",
     "privateEmailDescription": "E2E crittografato, completamente privato.",
     "publicEmailTitle": "Fornitori Pubblici di Email Temporanee",
     "publicEmailDescription": "Anonimi ma con privacy ridotta. Accessibile a chiunque conosca l'indirizzo.",
-    "useDomainChooser": "Usa selettore di dominio",
-    "enterCustomDomain": "Inserisci un dominio personalizzato",
-    "enterFullEmail": "Inserisci l'indirizzo email completo",
-    "enterEmailPrefix": "Inserisci prefisso email"
+    "generateRandomUsername": "Genera nome utente casuale",
+    "generateRandomPassword": "Genera password casuale",
+    "generateNewPreview": "Genera nuova anteprima",
+    "generateRandomAlias": "Genera alias casuale",
+    "validation": {
+      "required": "Questo campo è obbligatorio"
+    },
+    "tags": "Tag"
+  },
+  "items": {
+    "title": "Items",
+    "itemName": "Nome",
+    "loginCredentials": "Credenziali di accesso",
+    "cardInformation": "Card Information",
+    "addItem": "Add Item",
+    "addNewItem": "Add new item",
+    "saveItem": "Save Item",
+    "itemDetails": "Item Details",
+    "editItem": "Edit Item",
+    "untitled": "Untitled",
+    "newFolder": "New Folder",
+    "createFolder": "Crea cartella",
+    "editFolder": "Edit Folder",
+    "folderName": "Folder Name",
+    "folderNameRequired": "Folder name is required",
+    "folder": "Cartella",
+    "welcomeTitle": "Benvenuto in AliasVault!",
+    "welcomeDescription": "Per usare l'estensione browser AliasVault: naviga su un sito e usa la finestra di compilazione automatica per creare una nuova credenziale.",
+    "noPasskeysFound": "Non sono state ancora create passkey. Le passkey vengono create visitando un sito web che offre le passkey come metodo di autenticazione.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "noMatchingItems": "No matching items found",
+    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
+    "deleteFolder": "Delete Folder",
+    "deleteFolderKeepItems": "Delete folder only",
+    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderAndItems": "Delete folder and all items",
+    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Passkey"
+    },
+    "deleteItemTitle": "Elimina elemento",
+    "deleteItemConfirm": "Sei sicuro di voler rimuovere questo elemento?",
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available"
+  },
+  "itemTypes": {
+    "selectType": "Add New Item",
+    "typeLabel": "Item Type",
+    "creating": "Creating",
+    "editing": "Editing",
+    "regenerateAlias": "Regenerate alias",
+    "addCustomField": "Add custom field",
+    "fieldLabel": "Field Label",
+    "enterFieldName": "Enter field name",
+    "fieldType": "Field Type",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden (masked text)",
+      "email": "Email",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "Data",
+      "textArea": "Text Area"
+    },
+    "login": {
+      "title": "Accesso"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Credit Card"
+    },
+    "note": {
+      "title": "Secure Note"
+    }
+  },
+  "fieldLabels": {
+    "login.url": "Website URL",
+    "login.username": "Nome Utente",
+    "login.password": "Password",
+    "alias.first_name": "Nome",
+    "alias.last_name": "Cognome",
+    "alias.gender": "Genere",
+    "alias.birthdate": "Data di nascita",
+    "login.email": "Email",
+    "notes.content": "Note",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN"
   },
   "totp": {
     "addCode": "Aggiungi Codice 2FA",
@@ -247,9 +284,15 @@
     "nameOptional": "Nome (facoltativo)",
     "secretKey": "Chiave segreta",
     "saveToViewCode": "Salva per visualizzare il codice",
+    "defaultName": "Authenticator",
     "errors": {
       "invalidSecretKey": "Formato chiave segreta non valido."
     }
+  },
+  "attachmentUploader": {
+    "uploading": "Uploading...",
+    "uploadSuccess": "Files uploaded successfully.",
+    "deleteSuccess": "Attachment deleted successfully."
   },
   "emails": {
     "title": "Email",
@@ -259,7 +302,6 @@
     "to": "A",
     "date": "Data",
     "emailContent": "Contenuto email",
-    "attachments": "Allegati",
     "emailNotFound": "Email non trovata",
     "noEmails": "Nessuna email trovata",
     "noEmailsDescription": "Non hai ancora ricevuto email ai tuoi indirizzi email privati. Quando ne riceverai una nuova, apparirà qui.",
@@ -271,25 +313,17 @@
       "hoursAgo_plural": "{{count}} ore fa",
       "yesterday": "ieri"
     },
-    "errors": {
-      "emailLoadError": "Si è verificato un errore durante il caricamento delle email. Riprova più tardi.",
-      "emailUnexpectedError": "Si è verificato un errore imprevisto durante il caricamento delle email. Riprova più tardi."
-    },
     "apiErrors": {
       "CLAIM_DOES_NOT_MATCH_USER": "L'indirizzo email attualmente scelto è già in uso. Cambia l'indirizzo modificando queste credenziali.",
       "CLAIM_DOES_NOT_EXIST": "Si è verificato un errore durante il caricamento delle email. Prova a modificare e salvare le credenziali per sincronizzare il database, poi riprova."
     }
   },
   "settings": {
-    "title": "Impostazioni",
     "serverUrl": "URL del server",
     "language": "Lingua",
     "autofillEnabled": "Abilita compilazione automatica",
     "version": "Versione",
-    "openInNewWindow": "Apri in una nuova finestra",
     "openWebApp": "Apri app web",
-    "loggedIn": "Accesso effettuato",
-    "logout": "Disconnetti",
     "lock": "Blocca",
     "globalSettings": "Impostazioni globali",
     "autofillPopup": "Popup compilazione automatica",
@@ -383,12 +417,11 @@
   "passkeys": {
     "passkey": "Passkey",
     "site": "Sito",
-    "displayName": "Nome",
     "helpText": "Le chiavi di accesso vengono create sul sito web quando richiesto. Non possono essere modificate manualmente. Per rimuovere questa chiave di accesso, è possibile eliminarla da questa credenziale. Per sostituire questa passkey o crearne una nuova, visitare il sito web e seguire i relativi suggerimenti.",
     "passkeyMarkedForDeletion": "Passkey contrassegnata per l'eliminazione",
     "passkeyWillBeDeleted": "Questa passkey verrà eliminata quando si salva questa credenziale.",
+    "useBrowserPasskey": "Usa Browser Passkey",
     "bypass": {
-      "title": "Usa Browser Passkey",
       "description": "Per quanto tempo vorresti usare il provider di chiavi di accesso del browser per {{origin}}?",
       "thisTimeOnly": "Solo questa volta",
       "alwaysForSite": "Sempre per questo sito"
@@ -397,8 +430,7 @@
       "title": "Accedi con Passkey",
       "signInFor": "Accedi con passkey per",
       "selectPasskey": "Selezionare una passkey per accedere:",
-      "noPasskeysFound": "Nessuna passkey trovata per questo sito",
-      "useBrowserPasskey": "Usa Browser Passkey"
+      "noPasskeysFound": "Nessuna passkey trovata per questo sito"
     },
     "create": {
       "title": "Crea Passkey",
@@ -406,16 +438,35 @@
       "titleLabel": "Titolo",
       "titlePlaceholder": "Inserisci un nome per questa passkey",
       "createButton": "Crea Passkey",
-      "useBrowserPasskey": "Usa Browser Passkey",
       "selectPasskeyToReplace": "Selezionare una chiave di accesso da sostituire:",
       "createNewPasskey": "Crea Nuova Passkey",
       "replacingPasskey": "Sostituzione passkey: {{displayName}}",
-      "confirmReplace": "Conferma la sostituzione"
+      "confirmReplace": "Conferma la sostituzione",
+      "selectExistingLogin": "Add to existing login:",
+      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
+      "attachingToCredential": "Adding passkey to: {{serviceName}}",
+      "attachPasskey": "Add Passkey"
     },
     "settings": {
       "passkeyProvider": "Provider Passkey",
       "passkeyProviderOn": "Passkey Provider attivo"
     }
+  },
+  "recentlyDeleted": {
+    "title": "Recently Deleted",
+    "noItems": "No deleted items",
+    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+    "restore": "Restore",
+    "deletePermanently": "Delete Permanently",
+    "emptyAll": "Empty All",
+    "daysRemaining": "{{count}} day remaining",
+    "daysRemaining_plural": "{{count}} days remaining",
+    "expiringSoon": "Expiring soon",
+    "confirmDeleteTitle": "Delete Permanently?",
+    "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+    "confirmEmptyAllTitle": "Empty Recently Deleted?",
+    "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
   },
   "upgrade": {
     "title": "Aggiorna Cassaforte",
@@ -425,7 +476,6 @@
     "newVersion": "Nuova versione disponibile:",
     "upgrade": "Aggiorna cassaforte",
     "upgrading": "Aggiornamento in corso...",
-    "logout": "Disconnetti",
     "whatsNew": "Novità",
     "whatsNewDescription": "È richiesto un aggiornamento per supportare le seguenti modifiche:",
     "noDescriptionAvailable": "Nessuna descrizione disponibile per questa versione.",
@@ -437,5 +487,10 @@
       "upgradeFailed": "Aggiornamento non riuscito",
       "failedToApplyMigration": "Impossibile eseguire la migrazione ({{current}} di {{total}})"
     }
+  },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
   }
 }
