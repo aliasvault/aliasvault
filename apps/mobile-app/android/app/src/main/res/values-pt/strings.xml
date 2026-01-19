@@ -22,7 +22,7 @@
   <string name="passkey_registration_title">Criar Passkey</string>
   <string name="create_passkey_title">Criar Nova Passkey</string>
   <string name="create_passkey_subtitle">Registre uma nova passkey para este website. Ela será armazenada com segurança no seu cofre e sincronizada automaticamente nos seus dispositivos com AliasVault.</string>
-  <string name="replace_passkey_title">Substituir Passkey</string>
+  <string name="replace_passkey">Substituir Passkey</string>
   <string name="passkey_display_name_label">Nome da Passkey</string>
   <string name="passkey_display_name_hint">Digite um nome para esta passkey</string>
   <string name="passkey_website_label">Website</string>
@@ -39,9 +39,12 @@
   <string name="passkey_create_explanation">Isto cria uma nova passkey e a salva no seu cofre. Ela será automaticamente sincronizada em todos os seus dispositivos que utilizam AliasVault.</string>
   <string name="passkey_create_new_button">Criar Nova Passkey</string>
   <string name="passkey_select_to_replace">Ou, substituir passkey existente:</string>
-  <string name="passkey_replace_button">Substituir Passkey</string>
+  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
   <string name="passkey_replace_explanation">Isto irá substituir a passkey existente com uma nova. Por favor, saiba que sua passkey anterior será sobrescrita e não será mais acessível. Se você deseja criar uma passkey separadamente, volte à tela anterior.</string>
+  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
   <string name="passkey_replacing">Substituindo passkey…</string>
+  <string name="add_passkey">Add Passkey</string>
+  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
   <string name="passkey_checking_connection">Verificando conexão…</string>
   <string name="passkey_retrieving">Recuperando passkey…</string>
   <string name="passkey_verifying">Verificando…</string>
