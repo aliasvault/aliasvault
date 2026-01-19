@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="UseDomainChooserButton" xml:space="preserve">
-    <value>Use domain chooser</value>
+    <value>Alan adı seçiciyi kullan</value>
     <comment>Button to switch back to domain chooser</comment>
   </data>
   <data name="EnterCustomDomainButton" xml:space="preserve">
-    <value>Enter custom domain</value>
+    <value>Özel alan adı girin</value>
     <comment>Button to switch to custom domain entry</comment>
   </data>
   <data name="SelectEmailDomainTitle" xml:space="preserve">
-    <value>Select Email Domain</value>
+    <value>E-posta Alan Adını Seç</value>
     <comment>Title of domain selection popup</comment>
   </data>
   <data name="PrivateEmailTitle" xml:space="preserve">
@@ -75,15 +75,15 @@
     <comment>Title for private email domains section</comment>
   </data>
   <data name="PrivateEmailDescription" xml:space="preserve">
-    <value>E2E encrypted, fully private.</value>
+    <value>Uçtan uca şifreli, tamamen özel.</value>
     <comment>Description of private email domains</comment>
   </data>
   <data name="PublicEmailTitle" xml:space="preserve">
-    <value>Public Temp Email Providers</value>
+    <value>Herkese Açık Geçici E-Posta Sağlayıcıları</value>
     <comment>Title for public email domains section</comment>
   </data>
   <data name="PublicEmailDescription" xml:space="preserve">
-    <value>Anonymous but limited privacy. Email content is readable by anyone that knows the address.</value>
+    <value>Anonim ama mahremiyeti sınırlı. E-posta içeriği, adresi bilen herkes tarafından okunabilir.</value>
     <comment>Description of public email domains</comment>
   </data>
 </root>
