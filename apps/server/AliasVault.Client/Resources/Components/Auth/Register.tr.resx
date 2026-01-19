@@ -110,7 +110,7 @@
   </data>
   <!-- Placeholders -->
   <data name="UsernamePlaceholder" xml:space="preserve">
-    <value>name / name@company.com</value>
+    <value>isim / isim@sirket.com</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
