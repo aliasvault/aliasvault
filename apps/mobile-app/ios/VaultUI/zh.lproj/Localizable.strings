@@ -9,11 +9,11 @@
 "title" = "标题";
 "unknown_error" = "发生未知错误";
 
-"loading_credentials" = "加载凭据中…";
-"no_credentials_found" = "未找到凭据";
-"no_credentials_match" = "未找到符合搜索条件的凭据";
-"create_new_credential" = "创建新凭据";
-"select_credential" = "选择凭据";
+"loading_items" = "Loading items...";
+"no_items_found" = "No items found";
+"no_items_match" = "No existing items match your search";
+"create_new_item" = "Create New Item";
+"select_item" = "Select Item";
 "select_text_to_insert" = "选择要插入的文本";
 "choose_username" = "选择用户名";
 "select_text_to_insert_message" = "选择要插入到聚焦输入字段的文本";
@@ -21,10 +21,8 @@
 "username_prefix" = "用户名：";
 "email_prefix" = "电子邮箱：";
 "password" = "密码";
-"credentials_load_error" = "加载凭据失败，请打开 AliasVault 应用检查更新。";
-"no_credential_selected" = "未选择凭据。";
-"retrieving_credential" = "检索凭据中";
-"retrieving_passkey" = "检索通行密钥中";
+"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
+"no_item_selected" = "No item selected.";
 
 /* Context menu strings */
 "copy_username" = "复制用户名";
@@ -36,7 +34,7 @@
 "email_copied" = "电子邮箱已复制";
 
 /* Search bar */
-"search_credentials" = "搜索凭据…";
+"search_items" = "Search items...";
 
 /* Passkey registration */
 "create_passkey_title" = "创建新通行密钥";
@@ -54,10 +52,14 @@
 /* Passkey replacement */
 "create_new_passkey" = "创建新通行密钥";
 "select_passkey_to_replace" = "或者替换现有的通行密钥";
-"confirm_replace" = "替换通行密钥";
-"replace_passkey_title" = "替换通行密钥";
+"replace_passkey" = "替换通行密钥";
 "replace_passkey_explanation" = "这将用新的通行密钥替换现有通行密钥。请注意，您的旧通行密钥将被覆盖且无法再访问。若您希望单独创建一个通行密钥，请返回到上一屏幕。";
 "create_passkey_explanation" = "这将创建一个新的通行密钥并将其存储在您的密码库中。它将自动同步到您所有使用 AliasVault 的设备。";
+
+/* Passkey merge with existing item */
+"passkey_add_to_existing" = "Or, add passkey to an existing item";
+"add_passkey" = "Add Passkey";
+"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
 "unlock_vault" = "解锁密码库";
