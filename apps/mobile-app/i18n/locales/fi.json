@@ -21,7 +21,7 @@
     "enabled": "Otettu käyttöön",
     "disabled": "Pois käytöstä",
     "twoFactorAuthentication": "Kaksivaiheinen tunnistautuminen",
-    "add": "Add",
+    "add": "Lisää",
     "attachments": "Liitteet",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
@@ -75,9 +75,9 @@
     "loggedInAs": "Sisäänkirjautuneena käyttäjänä"
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Synkronoimattomat muutokset",
+    "unsyncedChangesWarning": "Sinulla on synkronoimattomia muutoksia, jotka menetetään, jos kirjaudut ulos nyt. Oletko varma, että haluat jatkaa?",
+    "logoutAnyway": "Kirjaudu ulos joka tapauksessa"
   },
   "vault": {
     "syncingVault": "Synkronoidaan holvia",
@@ -87,8 +87,8 @@
     "executingOperation": "Suoritetaan toimintoa...",
     "checkingVaultUpdates": "Tarkistetaan holvin päivitysten varalta",
     "syncingUpdatedVault": "Synkronoidaan päivitettyä holvia",
-    "mergingVault": "Merging vault changes",
-    "uploadingChanges": "Uploading changes",
+    "mergingVault": "Yhdistetään holvin muutoksia",
+    "uploadingChanges": "Siirretään muutoksia",
     "errors": {
       "failedToGetEncryptedDatabase": "Salatun tietokannan haku epäonnistui",
       "usernameNotFound": "Käyttäjänimeä ei löytynyt",
@@ -98,7 +98,7 @@
       "serverVersionNotSupported": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta tätä mobiilisovellusta voi käyttää. Ota yhteyttä tukeen, jos tarvitset apua.",
       "appOutdated": "Tämä sovellus on vanhentunut, eikä sillä voi käyttää tätä (uudempaa) holviversiota. Päivitä AliasVault-sovellus jatkaaksesi.",
       "passwordChanged": "Salasanasi on muuttunut viimeisimmän sisäänkirjautumisesi jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
+      "passwordChangeRequiresOnline": "Salasanan vaihto vaatii internetyhteyden. Yritä uudelleen, kun olet verkossa."
     }
   },
   "credentials": {
@@ -438,13 +438,13 @@
   },
   "navigation": {
     "credentials": "Käyttäjätunnukset",
-    "vault": "Vault",
+    "vault": "Holvi",
     "emails": "Sähköpostit",
     "settings": "Asetukset"
   },
   "itemTypes": {
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Luodaan",
+    "editing": "Muokaataan",
     "login": {
       "title": "Kirjaudu sisään"
     },
@@ -452,27 +452,27 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card",
-      "cardInformation": "Card Information"
+      "title": "Luottokortti",
+      "cardInformation": "Korttitiedot"
     },
     "note": {
       "title": "Muistiinpanot"
     },
-    "addField": "Add Field",
-    "addCustomField": "Add Custom Field",
-    "customFields": "Custom Fields",
-    "fieldLabel": "Field Label",
-    "fieldType": "Field Type",
-    "enterFieldName": "Enter field name",
+    "addField": "Lisää kenttä",
+    "addCustomField": "Lisää räätälöity kenttä",
+    "customFields": "Räätälöidyt kentät",
+    "fieldLabel": "Kentän otsikko",
+    "fieldType": "Kentän tyyppi",
+    "enterFieldName": "Anna kentän nimi",
     "fieldTypes": {
-      "text": "Text",
-      "hidden": "Hidden",
+      "text": "Teksti",
+      "hidden": "Piilotettu",
       "email": "Sähköposti",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Puhelin",
+      "number": "Numero",
       "date": "Päivämäärä",
-      "textArea": "Text Area"
+      "textArea": "Tekstialue"
     }
   },
   "fieldLabels": {
@@ -484,27 +484,27 @@
     "alias.last_name": "Sukunimi",
     "alias.gender": "Sukupuoli",
     "alias.birthdate": "Syntymäpäivä",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
+    "card.cardholder_name": "Kortinhaltijan nimi",
+    "card.number": "Kortin numero",
+    "card.expiry_month": "Vanhenemiskuukausi",
+    "card.expiry_year": "Vanhenemisvuosi",
     "card.cvv": "CVV",
-    "card.pin": "PIN",
+    "card.pin": "PIN-koodi",
     "notes.content": "Huomautukset"
   },
   "items": {
-    "title": "Items",
-    "addItem": "Add Item",
-    "editItem": "Edit Item",
+    "title": "Tiedot",
+    "addItem": "Lisää tieto",
+    "editItem": "Muokkaa tietoa",
     "deleteItem": "Poista kohde",
-    "itemDetails": "Item Details",
-    "itemCreated": "Item Created",
+    "itemDetails": "Näytä yksityiskohdat",
+    "itemCreated": "Tieto luotu",
     "emailPreview": "Sähköpostin esikatselu",
-    "untitled": "Untitled",
+    "untitled": "Nimetön",
     "name": "Nimi",
-    "namePlaceholder": "e.g., Google, Amazon",
+    "namePlaceholder": "esim. Google, Amazon",
     "url": "URL",
-    "urlPlaceholder": "e.g., https://google.com",
+    "urlPlaceholder": "esim. https://google.com",
     "service": "Palvelu",
     "serviceName": "Palvelun nimi",
     "serviceUrl": "Palvelun URL-osoite",
@@ -536,11 +536,11 @@
     "publicEmailTitle": "Julkiset väliaikaisten sähköpostiosoitteiden tarjoajat (PTEP)",
     "publicEmailDescription": "Anonyymi, mutta rajoitettu yksityisyys. Sähköpostin sisällön voi lukea kuka tahansa, joka tietää osoitteen.",
     "searchPlaceholder": "Etsitään holvia...",
-    "noMatchingItems": "No matching items found",
-    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noMatchingItems": "Vastaavia tietoja ei löytynyt",
+    "noItemsFound": "Tietoja ei löytynyt. Luo sellainen aloittaaksesi. Vinkki: voit myös kirjautua AliasVaultin web-sovellukseen tuodaksesi käyttäjätietoja muista salasananhallintalaitteista.",
     "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
+    "noAttachmentsFound": "Liitteitä sisältäviä tietoja ei löytynyt",
+    "noItemsOfTypeFound": "No {{type}} tietoja ei löydy",
     "recentEmails": "Viimeaikaiset sähköpostit",
     "loadingEmails": "Ladataan sähköposteja...",
     "noEmailsYet": "Sähköposteja ei ole vielä vastaanotettu.",
@@ -555,16 +555,16 @@
     "includeNumbers": "Numerot (0-9)",
     "includeSpecialChars": "Erikoismerkit (!@#)",
     "avoidAmbiguousChars": "Vältä epäselviä merkkejä",
-    "deletingItem": "Deleting item...",
-    "errorLoadingItems": "Error loading items",
+    "deletingItem": "Poistetaan tieto...",
+    "errorLoadingItems": "Virhe ladattaessa tietoja",
     "vaultSyncFailed": "Holvin synkronointi epäonnistui",
     "vaultSyncedSuccessfully": "Holvi synkronoitu",
     "vaultUpToDate": "Holvi on ajan tasalla",
     "offlineMessage": "Olet ei-verkkotilassa. Yhdistä internetiin synkronoidaksesi holvisi.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "itemCreatedMessage": "Uusi tietosi on lisätty holviisi ja valmis käytettäväksi.",
     "switchBackToBrowser": "Siirry takaisin selaimeen jatkaaksesi.",
     "filters": {
-      "all": "(All) Items",
+      "all": "(Kaikki) tiedot",
       "passkeys": "Sala-avaimet",
       "aliases": "Aliakset",
       "userpass": "Salasanat",
