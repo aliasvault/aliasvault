@@ -178,7 +178,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, use the delete button below. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>Ключи доступа создаются через расширение браузера или мобильные приложения по запросу веб-сайта. Их нельзя редактировать или создавать вручную через веб-приложение. Чтобы удалить этот ключ доступа, воспользуйтесь кнопкой удаления ниже. Чтобы заменить или создать новый ключ, перейдите на веб-сайт и следуйте его инструкциям.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="DeletePasskeyButton">
@@ -190,7 +190,7 @@
     <comment>Header when passkey is marked for deletion</comment>
   </data>
   <data name="PasskeyWillBeDeleted">
-    <value>This passkey will be deleted when you save this item.</value>
+    <value>Этот ключ доступа будет удален после сохранения записи.</value>
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">
@@ -207,19 +207,19 @@
     <comment>Label for cardholder name input</comment>
   </data>
   <data name="CardNumberLabel">
-    <value>Card Number</value>
+    <value>Номер карты</value>
     <comment>Label for card number input</comment>
   </data>
   <data name="ExpiryMonthLabel">
-    <value>Expiry Month</value>
+    <value>Месяц окончания</value>
     <comment>Label for expiry month input</comment>
   </data>
   <data name="ExpiryYearLabel">
-    <value>Expiry Year</value>
+    <value>Год окончания</value>
     <comment>Label for expiry year input</comment>
   </data>
   <data name="CardCvvLabel">
-    <value>CVV</value>
+    <value>CVV-код</value>
     <comment>Label for CVV input</comment>
   </data>
   <data name="CardPinLabel">
