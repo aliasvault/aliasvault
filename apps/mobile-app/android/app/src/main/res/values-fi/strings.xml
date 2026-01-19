@@ -22,7 +22,7 @@
   <string name="passkey_registration_title">Luo todennusavain</string>
   <string name="create_passkey_title">Luo uusi todennusavain</string>
   <string name="create_passkey_subtitle">Rekisteröi uusi todennusavain tälle sivustolle. Se tallennetaan turvallisesti holveen ja synkronoidaan automaattisesti eri laitteissa AliasVaultin kanssa.</string>
-  <string name="replace_passkey_title">Korvaa todennusavain</string>
+  <string name="replace_passkey">Korvaa sala-avain</string>
   <string name="passkey_display_name_label">Todennusavaimen nimi</string>
   <string name="passkey_display_name_hint">Anne nimi tälle todennusavaimelle</string>
   <string name="passkey_website_label">Verkkosivusto</string>
@@ -39,9 +39,12 @@
   <string name="passkey_create_explanation">Tämä luo uuden todennusavaimen ja tallentaa sen holviisi. Se synkronoidaan automaattisesti kaikkiin laitteisiin, jotka käyttävät AliasVaultia.</string>
   <string name="passkey_create_new_button">Luo uusi todennusavain, Passkey</string>
   <string name="passkey_select_to_replace">Tai korvaa olemassa oleva todennusavain:</string>
-  <string name="passkey_replace_button">Korvaa todennusavain</string>
+  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
   <string name="passkey_replace_explanation">Tämä korvaa olemassa olevan todennusavaimen uudella todennusavaimella. Ole hyvä ja ota huomioon, että vanha todennusavaimesi on korvattu eikä enää käytettävissä. Jos haluat luoda erillisen todennusavaimen sen sijaan, mene takaisin edelliseen ruutuun.</string>
+  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
   <string name="passkey_replacing">Korvataan todennusavainta...</string>
+  <string name="add_passkey">Add Passkey</string>
+  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
   <string name="passkey_checking_connection">Tarkistetaan yhteyttä</string>
   <string name="passkey_retrieving">Noudetaan todennusavainta...</string>
   <string name="passkey_verifying">Tarkistetaan…</string>
