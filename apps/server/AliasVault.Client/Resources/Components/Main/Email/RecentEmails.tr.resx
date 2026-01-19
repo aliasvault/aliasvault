@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EmailSectionTitle" xml:space="preserve">
-    <value>Email</value>
+    <value>E-Posta</value>
     <comment>Section title for email panel</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
@@ -67,11 +67,11 @@
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="SubjectColumn" xml:space="preserve">
-    <value>Subject</value>
+    <value>Konu</value>
     <comment>Table column header for email subject</comment>
   </data>
   <data name="DateColumn" xml:space="preserve">
-    <value>Date</value>
+    <value>Tarih</value>
     <comment>Table column header for email date</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
@@ -87,7 +87,7 @@
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">
-    <value>Load more</value>
+    <value>Daha fazla yükle</value>
     <comment>Button text to load more emails</comment>
   </data>
 </root>
