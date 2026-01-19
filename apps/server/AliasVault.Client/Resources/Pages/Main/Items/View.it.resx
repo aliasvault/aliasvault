@@ -19,20 +19,20 @@
       </xsd:complexType>
     </xsd:element>
   </xsd:schema>
-  <data name="ViewCredentialsPageTitle">
-    <value>Visualizza credenziali</value>
-    <comment>Page title for viewing credentials</comment>
+  <data name="ViewItemPageTitle">
+    <value>View item</value>
+    <comment>Page title for viewing an item</comment>
   </data>
-  <data name="ViewCredentialTitle">
-    <value>Visualizza credenziali</value>
-    <comment>Page header title for viewing a credential</comment>
+  <data name="ViewItemTitle">
+    <value>View item</value>
+    <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
     <value>Modifica</value>
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
-    <value>Modifica credenziali</value>
+    <value>Edit item</value>
     <comment>Text for edit button on desktop</comment>
   </data>
   <data name="DeleteButtonMobile">
@@ -40,20 +40,20 @@
     <comment>Text for delete button on mobile</comment>
   </data>
   <data name="DeleteButtonDesktop">
-    <value>Elimina credenziali</value>
+    <value>Delete item</value>
     <comment>Text for delete button on desktop</comment>
   </data>
-  <data name="LoginCredentialsSection">
-    <value>Credenziali di accesso</value>
-    <comment>Section header for login credentials</comment>
+  <data name="LoginDetailsSection">
+    <value>Login details</value>
+    <comment>Section header for login details</comment>
   </data>
-  <data name="GeneratedCredentialsDescription">
-    <value>Qui sotto puoi visualizzare e copiare le credenziali generate per questo account. Tutte le email inviate all'indirizzo mostrato appariranno automaticamente in questa pagina.</value>
-    <comment>Description for generated credentials with email support</comment>
+  <data name="GeneratedItemDescription">
+    <value>Below you can view and copy the generated details for this item. Any emails sent to the shown address will automatically appear on this page.</value>
+    <comment>Description for generated item with email support</comment>
   </data>
-  <data name="StoredCredentialsDescription">
-    <value>Qui di seguito puoi visualizzare e copiare le credenziali di accesso memorizzate per questo account.</value>
-    <comment>Description for stored credentials without email support</comment>
+  <data name="StoredItemDescription">
+    <value>Below you can view and copy the stored login details for this item.</value>
+    <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
     <value>Email</value>
@@ -91,13 +91,13 @@
     <value>Soprannome</value>
     <comment>Label for nickname field</comment>
   </data>
-  <data name="ViewCredentialBreadcrumb">
-    <value>Visualizza credenziali</value>
-    <comment>Breadcrumb text for view credential page</comment>
+  <data name="ViewItemBreadcrumb">
+    <value>View item</value>
+    <comment>Breadcrumb text for view item page</comment>
   </data>
-  <data name="CredentialNotFoundError">
-    <value>Questa credenziale non esiste (più). Per favore riprova.</value>
-    <comment>Error message when credential is not found</comment>
+  <data name="ItemNotFoundError">
+    <value>This item does not exist (anymore). Please try again.</value>
+    <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
     <value>Passkey</value>
@@ -116,7 +116,23 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Le passkey vengono create attraverso l'estensione del browser o applicazioni mobili quando richiesto da un sito web. Non possono essere modificate manualmente o creati tramite l'app web. Per rimuovere questa passkey, è possibile eliminarla da questa credenziale. Per sostituire o creare una nuova passkey, visitare il sito web e seguire i relativi suggerimenti.</value>
+    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, edit this item and delete the passkey. To replace or create a new passkey, visit the website and follow its prompts.</value>
     <comment>Help text explaining how passkeys work</comment>
+  </data>
+  <data name="Untitled">
+    <value>Untitled</value>
+    <comment>Placeholder for items without a name</comment>
+  </data>
+  <data name="NotesSection">
+    <value>Note</value>
+    <comment>Section header for notes</comment>
+  </data>
+  <data name="CardSection">
+    <value>Card Details</value>
+    <comment>Section header for credit card details</comment>
+  </data>
+  <data name="CustomFieldsSection">
+    <value>Custom Fields</value>
+    <comment>Section header for custom fields</comment>
   </data>
 </root>
