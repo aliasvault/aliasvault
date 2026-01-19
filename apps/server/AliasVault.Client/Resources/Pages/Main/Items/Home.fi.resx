@@ -60,11 +60,11 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Vault</value>
+    <value>Holvi</value>
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Find all of your items below.</value>
+    <value>Etsi kaikkia tietojasi alta.</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -98,11 +98,11 @@
   </data>
   <!-- Empty State -->
   <data name="NoItemsTitle" xml:space="preserve">
-    <value>No items yet</value>
+    <value>Ei tietoja vielä. </value>
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Create your first item using the</value>
+    <value>Luo ensimmäinen tietosi käyttäen</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
@@ -122,7 +122,7 @@
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>If you previously used a different password manager, you can import your items from it.</value>
+    <value>Jos olet aiemmin käyttänyt toista salasananhallintaa, voit tuoda siitä tiedot.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
