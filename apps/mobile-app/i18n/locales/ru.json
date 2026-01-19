@@ -701,11 +701,11 @@
     "VAULT_ERROR": "Локальное хранилище не обновлено. Пожалуйста, синхронизируйте ваше хранилище, обновив страницу, и повторите попытку."
   },
   "sync": {
-    "offline": "Offline",
-    "offlineWithPending": "Offline (pending)",
-    "syncing": "Syncing...",
-    "pending": "Pending sync",
-    "retrySync": "Tap to retry",
+    "offline": "Офлайн",
+    "offlineWithPending": "Офлайн (ожидание)",
+    "syncing": "Синхронизация...",
+    "pending": "Ожидание синхронизации",
+    "retrySync": "Нажмите, чтобы повторить",
     "backOnline": "Восстановить подключение",
     "stillOffline": "Нет подключения",
     "syncFailed": "Sync failed"
@@ -724,7 +724,7 @@
     },
     "alerts": {
       "syncIssue": "Нет соединения",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
+      "syncIssueMessage": "Не удалось связаться с сервером AliasVault, поэтому ваше хранилище не было синхронизировано. Хотите открыть локальное хранилище или повторить попытку подключения?",
       "openLocalVault": "Откройте локальное хранилище",
       "retrySync": "Повторить попытку синхронизации"
     },
