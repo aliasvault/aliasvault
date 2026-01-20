@@ -686,33 +686,24 @@ const ItemsList: React.FC = () => {
         </>
       ) : filteredItems.length === 0 && folders.length === 0 ? (
         <div className="text-gray-500 dark:text-gray-400 space-y-2 mb-10">
-          <p>
-            {filterType === 'passkeys'
-              ? t('items.noPasskeysFound')
-              : filterType === 'attachments'
-                ? t('items.noAttachmentsFound')
-                : isItemTypeFilter(filterType)
-                  ? t('items.noItemsOfTypeFound', { type: getFilterTitle() })
-                  : t('items.noMatchingItems')
-            }
-          </p>
-          {/* Show help text and delete button when inside an empty folder */}
+          {/* Show filter/search-specific messages only when actively filtering or searching */}
+          {(filterType !== 'all' || searchTerm) && (
+            <p>
+              {filterType === 'passkeys'
+                ? t('items.noPasskeysFound')
+                : filterType === 'attachments'
+                  ? t('items.noAttachmentsFound')
+                  : isItemTypeFilter(filterType)
+                    ? t('items.noItemsOfTypeFound', { type: getFilterTitle() })
+                    : t('items.noMatchingItems')
+              }
+            </p>
+          )}
+          {/* Show help text when inside an empty folder */}
           {currentFolderId && (
-            <>
-              <p className="text-sm">
-                {t('items.emptyFolderHint')}
-              </p>
-              <button
-                onClick={() => setShowDeleteFolderModal(true)}
-                className="inline-flex items-center gap-2 px-3 py-2 mt-4 text-sm text-red-600 dark:text-red-400 border border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <polyline points="3 6 5 6 21 6" />
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                </svg>
-                {t('items.deleteFolder')}
-              </button>
-            </>
+            <p className="text-sm">
+              {t('items.emptyFolderHint')}
+            </p>
           )}
         </div>
       ) : (
