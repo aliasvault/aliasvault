@@ -29,7 +29,7 @@
     <comment>Option to add attachments section</comment>
   </data>
   <data name="AddCustomField">
-    <value>Add Custom Field</value>
+    <value>Ajouter un champ personnalisé</value>
     <comment>Option to add a custom field</comment>
   </data>
   <!-- Field labels -->
