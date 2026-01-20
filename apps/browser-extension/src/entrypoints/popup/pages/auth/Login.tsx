@@ -77,13 +77,11 @@ const Login: React.FC = () => {
             `preserving local vault and will upload to server`
           );
 
-          // Keep the existing vault - it will be uploaded via sync flow
-          vaultToLoad = existingVault;
-
           /*
            * Don't overwrite the vault - it will be uploaded via sync flow
            * Just update metadata and load existing vault
            */
+          vaultToLoad = existingVault;
           await sendMessage('STORE_VAULT_METADATA', {
             publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
             privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,

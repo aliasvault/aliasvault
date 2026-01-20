@@ -40,7 +40,6 @@ let cachedVaultBlob: string | null = null;
 export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, isVaultLocked: boolean, hasPendingMigrations: boolean, error?: string }> {
   const username = await storage.getItem('local:username');
   const accessToken = await storage.getItem('local:accessToken');
-  // Check local: storage for persistent vault (survives browser close)
   const vaultData = await storage.getItem('local:encryptedVault');
   const encryptionKey = await handleGetEncryptionKey();
 
@@ -201,9 +200,8 @@ export async function handleGetVault(
   try {
     const encryptionKey = await handleGetEncryptionKey();
 
-    // Read from local: storage for persistent vault access
     const encryptedVault = await storage.getItem('local:encryptedVault') as string;
-    // Use fallback for keys migrated from session: to local: in v0.26.0
+    // TODO: the fallback mechanism can be removed some period of time after 0.27.0 is released.
     const publicEmailDomains = await getItemWithFallback<string[]>('local:publicEmailDomains');
     const privateEmailDomains = await getItemWithFallback<string[]>('local:privateEmailDomains');
     const hiddenPrivateEmailDomains = await getItemWithFallback<string[]>('local:hiddenPrivateEmailDomains') ?? [];
