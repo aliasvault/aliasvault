@@ -39,12 +39,12 @@
   <string name="passkey_create_explanation">Cela crée une nouvelle clé d\'accès et la stocke dans votre coffre. Elle sera automatiquement synchronisée sur tous vos appareils qui utilisent AliasVault.</string>
   <string name="passkey_create_new_button">Créer une nouvelle clé d\'accès</string>
   <string name="passkey_select_to_replace">Ou, remplacer une clé d\'accès existante :</string>
-  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
+  <string name="passkey_add_to_existing">Ou, ajouter la clé d\'accès à un élément existant :</string>
   <string name="passkey_replace_explanation">Cela remplacera la clé d\'accès existante par une nouvelle. Veuillez noter que votre ancienne clé d\'accès sera écrasée et ne sera plus accessible. Si vous souhaitez créer une clé d\'accès séparée, revenez à l\'écran précédent.</string>
-  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
+  <string name="passkey_merge_explanation">Ceci va ajouter une clé d\'accès à votre élément existant. Votre mot de passe et d\'autres données seront préservées.</string>
   <string name="passkey_replacing">Remplacement de la clé d\'accès…</string>
-  <string name="add_passkey">Add Passkey</string>
-  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
+  <string name="add_passkey">Ajouter une clé d\'accès</string>
+  <string name="add_passkey_subtitle">Ajout de la clé d\'accès à l\'élément existant</string>
   <string name="passkey_checking_connection">Vérification de la connexion…</string>
   <string name="passkey_retrieving">Récupération de la clé d\'accès…</string>
   <string name="passkey_verifying">Vérification…</string>
