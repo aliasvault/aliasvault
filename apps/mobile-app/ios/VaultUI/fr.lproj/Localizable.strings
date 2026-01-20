@@ -9,11 +9,11 @@
 "title" = "Titre";
 "unknown_error" = "Une erreur inconnue s'est produite";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"select_item" = "Select Item";
+"loading_items" = "Chargement des éléments...";
+"no_items_found" = "Aucun élément trouvé";
+"no_items_match" = "Aucun identifiant existant ne correspond à votre recherche";
+"create_new_item" = "Créer un nouvel élément";
+"select_item" = "Sélectionner un élément";
 "select_text_to_insert" = "Sélectionner le texte à insérer";
 "choose_username" = "Choisissez un nom d'utilisateur";
 "select_text_to_insert_message" = "Sélectionnez le texte à insérer dans le champ de saisie ciblé";
@@ -21,8 +21,8 @@
 "username_prefix" = "Nom d'utilisateur: ";
 "email_prefix" = "E-mail: ";
 "password" = "Mot de passe";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"items_load_error" = "Impossible de charger les éléments. Veuillez ouvrir l'application AliasVault pour vérifier les mises à jour.";
+"no_item_selected" = "Aucune entrée sélectionnée.";
 
 /* Context menu strings */
 "copy_username" = "Copier le nom d'utilisateur";
@@ -34,7 +34,7 @@
 "email_copied" = "E-mail copié";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "Rechercher des éléments...";
 
 /* Passkey registration */
 "create_passkey_title" = "Créer une nouvelle clé d'accès";
@@ -57,9 +57,9 @@
 "create_passkey_explanation" = "Cela crée une nouvelle clé d'accès et la stocke dans votre coffre. Elle sera automatiquement synchronisée sur tous vos appareils qui utilisent AliasVault.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"passkey_add_to_existing" = "Ou, ajouter la clé d'accès à un élément existant";
+"add_passkey" = "Ajouter une clé d'accès";
+"merge_passkey_explanation" = "Ceci va ajouter une clé d'accès à votre élément existant. Votre mot de passe et d'autres données seront préservées.";
 
 /* PIN Unlock */
 "unlock_vault" = "Déverrouiller le coffre";
