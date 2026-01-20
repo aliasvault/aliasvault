@@ -313,7 +313,7 @@
     <comment>Status text when background sync is in progress</comment>
   </data>
   <data name="LoadingVault" xml:space="preserve">
-    <value>Loading vault...</value>
+    <value>Ładowanie sejfu...</value>
     <comment>Status text when vault is being loaded</comment>
   </data>
 </root>
