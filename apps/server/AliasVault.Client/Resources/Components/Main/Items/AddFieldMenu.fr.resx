@@ -66,19 +66,19 @@
     <comment>Birth date field label</comment>
   </data>
   <data name="FieldCardNumber">
-    <value>Card Number</value>
+    <value>Numéro de la carte</value>
     <comment>Card number field label</comment>
   </data>
   <data name="FieldCardCardholderName">
-    <value>Cardholder Name</value>
+    <value>Nom du titulaire de la carte</value>
     <comment>Cardholder name field label</comment>
   </data>
   <data name="FieldCardExpiryMonth">
-    <value>Expiry Month</value>
+    <value>Mois d'expiration</value>
     <comment>Expiry month field label</comment>
   </data>
   <data name="FieldCardExpiryYear">
-    <value>Expiry Year</value>
+    <value>Année d'expiration</value>
     <comment>Expiry year field label</comment>
   </data>
   <data name="FieldCardCvv">
@@ -95,23 +95,23 @@
   </data>
   <!-- Custom field modal -->
   <data name="FieldLabel">
-    <value>Field Label</value>
+    <value>Étiquette du champ</value>
     <comment>Label for field label input</comment>
   </data>
   <data name="EnterFieldName">
-    <value>Enter field name</value>
+    <value>Entrez le nom du champ</value>
     <comment>Placeholder for field name input</comment>
   </data>
   <data name="FieldType">
-    <value>Field Type</value>
+    <value>Type de champ</value>
     <comment>Label for field type selector</comment>
   </data>
   <data name="FieldTypeText">
-    <value>Text</value>
+    <value>Texte</value>
     <comment>Text field type option</comment>
   </data>
   <data name="FieldTypeHidden">
-    <value>Hidden</value>
+    <value>Masqué</value>
     <comment>Hidden field type option</comment>
   </data>
   <data name="FieldTypeEmail">
@@ -123,11 +123,11 @@
     <comment>URL field type option</comment>
   </data>
   <data name="FieldTypePhone">
-    <value>Phone</value>
+    <value>Téléphone</value>
     <comment>Phone field type option</comment>
   </data>
   <data name="FieldTypeNumber">
-    <value>Number</value>
+    <value>Numéro</value>
     <comment>Number field type option</comment>
   </data>
   <data name="FieldTypeDate">
@@ -135,12 +135,12 @@
     <comment>Date field type option</comment>
   </data>
   <data name="FieldTypeTextArea">
-    <value>Text Area</value>
+    <value>Zone de texte</value>
     <comment>Text area field type option</comment>
   </data>
   <!-- Buttons -->
   <data name="Add">
-    <value>Add</value>
+    <value>Ajouter</value>
     <comment>Add button text</comment>
   </data>
   <data name="Cancel">
@@ -149,7 +149,7 @@
   </data>
   <!-- Default field label -->
   <data name="DefaultFieldLabel">
-    <value>Field {0}</value>
+    <value>Champ {0}</value>
     <comment>Default label for custom field, {0} is the field number</comment>
   </data>
 </root>
