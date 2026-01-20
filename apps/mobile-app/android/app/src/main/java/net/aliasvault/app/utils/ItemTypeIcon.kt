@@ -1,19 +1,21 @@
 package net.aliasvault.app.utils
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Path
-import android.graphics.RectF
-import android.graphics.Typeface
+import android.util.Log
+import com.caverock.androidsvg.SVG
+import net.aliasvault.app.vaultstore.models.ItemTypeIcons
 
 /**
  * Item type icon helper - provides bitmap-based icons for different item types.
- * Matches the design from browser extension and iOS implementations.
+ * Uses SVG definitions from the auto-generated ItemTypeIcons.
  */
 object ItemTypeIcon {
+    private const val TAG = "ItemTypeIcon"
+    private const val DEFAULT_SIZE_DP = 24
+    private const val RENDER_SCALE_FACTOR = 4
 
     /**
      * Item type enumeration matching the database model.
@@ -88,19 +90,13 @@ object ItemTypeIcon {
         }
     }
 
-    // AliasVault color scheme
-    private const val COLOR_PRIMARY = "#f49541"
-    private const val COLOR_DARK = "#d68338"
-    private const val COLOR_LIGHT = "#ffe096"
-    private const val COLOR_LIGHTER = "#fbcb74"
-
     /**
      * Get the appropriate icon bitmap for an item type.
      *
      * @param context Android context.
      * @param itemType The item type (Login, Alias, CreditCard, Note).
      * @param cardNumber Optional card number for credit card brand detection.
-     * @param size Icon size in pixels (default 96).
+     * @param size Icon size in pixels (default uses density-aware sizing).
      * @return Bitmap icon.
      */
     @Suppress("UNUSED_PARAMETER") // Context reserved for future use (loading drawable resources)
@@ -108,284 +104,94 @@ object ItemTypeIcon {
         context: Context,
         itemType: String,
         cardNumber: String? = null,
-        size: Int = 96,
+        size: Int? = null,
     ): Bitmap {
-        return when (itemType) {
-            ItemType.NOTE -> createNoteIcon(size)
+        val svgString = when (itemType) {
+            ItemType.NOTE -> ItemTypeIcons.NOTE
             ItemType.CREDIT_CARD -> {
                 val brand = CardBrand.detect(cardNumber)
-                getCardIcon(brand, size)
+                getCardSvg(brand)
             }
-            ItemType.LOGIN, ItemType.ALIAS -> createPlaceholderIcon(size)
-            else -> createPlaceholderIcon(size)
+            ItemType.LOGIN, ItemType.ALIAS -> ItemTypeIcons.PLACEHOLDER
+            else -> ItemTypeIcons.PLACEHOLDER
         }
+
+        return svgToBitmap(svgString, size) ?: createFallbackBitmap(size)
     }
 
     /**
      * Get the appropriate icon for a credit card brand.
      *
      * @param brand The credit card brand.
-     * @param size Icon size in pixels (default 96).
+     * @param size Icon size in pixels (default uses density-aware sizing).
      * @return Bitmap icon.
      */
-    fun getCardIcon(brand: CardBrand, size: Int = 96): Bitmap {
+    fun getCardIcon(brand: CardBrand, size: Int? = null): Bitmap {
+        val svgString = getCardSvg(brand)
+        return svgToBitmap(svgString, size) ?: createFallbackBitmap(size)
+    }
+
+    /**
+     * Get the SVG string for a credit card brand.
+     *
+     * @param brand The credit card brand.
+     * @return SVG string.
+     */
+    private fun getCardSvg(brand: CardBrand): String {
         return when (brand) {
-            CardBrand.VISA -> createVisaIcon(size)
-            CardBrand.MASTERCARD -> createMastercardIcon(size)
-            CardBrand.AMEX -> createAmexIcon(size)
-            CardBrand.DISCOVER -> createDiscoverIcon(size)
-            CardBrand.GENERIC -> createCreditCardIcon(size)
+            CardBrand.VISA -> ItemTypeIcons.VISA
+            CardBrand.MASTERCARD -> ItemTypeIcons.MASTERCARD
+            CardBrand.AMEX -> ItemTypeIcons.AMEX
+            CardBrand.DISCOVER -> ItemTypeIcons.DISCOVER
+            CardBrand.GENERIC -> ItemTypeIcons.CREDIT_CARD
         }
     }
 
     /**
-     * Create generic credit card icon.
+     * Convert SVG string to a bitmap.
      *
-     * @param size Icon size in pixels.
-     * @return Bitmap icon.
+     * @param svgString The SVG string to render.
+     * @param size Optional target size in pixels.
+     * @return The rendered bitmap, or null on error.
      */
-    private fun createCreditCardIcon(size: Int): Bitmap {
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private fun svgToBitmap(svgString: String, size: Int?): Bitmap? {
+        return try {
+            val svg = SVG.getFromString(svgString)
 
-        val scale = size / 32f
+            // Use provided size or calculate from density
+            val targetSizePx = size ?: run {
+                val density = Resources.getSystem().displayMetrics.density
+                (DEFAULT_SIZE_DP * density).toInt()
+            }
+            val renderSize = targetSizePx * RENDER_SCALE_FACTOR
 
-        // Card background
-        paint.color = Color.parseColor(COLOR_PRIMARY)
-        canvas.drawRoundRect(
-            RectF(2 * scale, 6 * scale, 30 * scale, 26 * scale),
-            3 * scale,
-            3 * scale,
-            paint,
-        )
+            svg.setDocumentWidth(renderSize.toFloat())
+            svg.setDocumentHeight(renderSize.toFloat())
 
-        // Magnetic stripe
-        paint.color = Color.parseColor(COLOR_DARK)
-        canvas.drawRect(2 * scale, 11 * scale, 30 * scale, 15 * scale, paint)
+            // Create bitmap & canvas at larger size
+            val largeBitmap = Bitmap.createBitmap(renderSize, renderSize, Bitmap.Config.ARGB_8888)
+            val canvas = Canvas(largeBitmap)
+            svg.renderToCanvas(canvas)
 
-        // Chip
-        paint.color = Color.parseColor(COLOR_LIGHT)
-        canvas.drawRoundRect(
-            RectF(5 * scale, 18 * scale, 13 * scale, 20 * scale),
-            1 * scale,
-            1 * scale,
-            paint,
-        )
-
-        // Number line
-        paint.color = Color.parseColor(COLOR_LIGHTER)
-        canvas.drawRoundRect(
-            RectF(5 * scale, 22 * scale, 10 * scale, 23.5f * scale),
-            0.75f * scale,
-            0.75f * scale,
-            paint,
-        )
-
-        return bitmap
+            // Scale down to target size with better quality
+            Bitmap.createScaledBitmap(largeBitmap, targetSizePx, targetSizePx, true)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error rendering SVG to bitmap", e)
+            null
+        }
     }
 
     /**
-     * Create Visa icon.
+     * Create a simple fallback bitmap when SVG rendering fails.
      *
-     * @param size Icon size in pixels.
-     * @return Bitmap icon.
+     * @param size Optional target size in pixels.
+     * @return A simple colored bitmap.
      */
-    private fun createVisaIcon(size: Int): Bitmap {
-        val bitmap = createCreditCardIcon(size)
-        val canvas = Canvas(bitmap)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        paint.color = Color.parseColor(COLOR_LIGHT)
-        paint.textSize = 6 * (size / 32f)
-        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-
-        canvas.drawText("VISA", 8 * (size / 32f), 18 * (size / 32f), paint)
-
-        return bitmap
-    }
-
-    /**
-     * Create Mastercard icon.
-     *
-     * @param size Icon size in pixels.
-     * @return Bitmap icon.
-     */
-    private fun createMastercardIcon(size: Int): Bitmap {
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-        val scale = size / 32f
-
-        // Card background
-        paint.color = Color.parseColor(COLOR_PRIMARY)
-        canvas.drawRoundRect(
-            RectF(2 * scale, 6 * scale, 30 * scale, 26 * scale),
-            3 * scale,
-            3 * scale,
-            paint,
-        )
-
-        // Left circle
-        paint.color = Color.parseColor(COLOR_DARK)
-        canvas.drawCircle(13 * scale, 16 * scale, 5 * scale, paint)
-
-        // Right circle
-        paint.color = Color.parseColor(COLOR_LIGHT)
-        canvas.drawCircle(19 * scale, 16 * scale, 5 * scale, paint)
-
-        // Overlap (simplified)
-        paint.color = Color.parseColor(COLOR_LIGHTER)
-        val path = Path()
-        path.addCircle(16 * scale, 16 * scale, 3.5f * scale, Path.Direction.CW)
-        canvas.drawPath(path, paint)
-
-        return bitmap
-    }
-
-    /**
-     * Create Amex icon.
-     *
-     * @param size Icon size in pixels.
-     * @return Bitmap icon.
-     */
-    private fun createAmexIcon(size: Int): Bitmap {
-        val bitmap = createCreditCardIcon(size)
-        val canvas = Canvas(bitmap)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        paint.color = Color.parseColor(COLOR_LIGHT)
-        paint.textSize = 8 * (size / 32f)
-        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        paint.textAlign = Paint.Align.CENTER
-
-        canvas.drawText("AMEX", 16 * (size / 32f), 18 * (size / 32f), paint)
-
-        return bitmap
-    }
-
-    /**
-     * Create Discover icon.
-     *
-     * @param size Icon size in pixels.
-     * @return Bitmap icon.
-     */
-    private fun createDiscoverIcon(size: Int): Bitmap {
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-        val scale = size / 32f
-
-        // Card background
-        paint.color = Color.parseColor(COLOR_PRIMARY)
-        canvas.drawRoundRect(
-            RectF(2 * scale, 6 * scale, 30 * scale, 26 * scale),
-            3 * scale,
-            3 * scale,
-            paint,
-        )
-
-        // Circle logo
-        paint.color = Color.parseColor(COLOR_LIGHT)
-        canvas.drawCircle(20 * scale, 16 * scale, 4 * scale, paint)
-
-        // "DI" text
-        paint.textSize = 6 * scale
-        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText("D", 7 * scale, 17 * scale, paint)
-
-        return bitmap
-    }
-
-    /**
-     * Create note/document icon.
-     *
-     * @param size Icon size in pixels.
-     * @return Bitmap icon.
-     */
-    private fun createNoteIcon(size: Int): Bitmap {
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-        val scale = size / 32f
-
-        // Document body
-        paint.color = Color.parseColor(COLOR_PRIMARY)
-        val path = Path()
-        path.moveTo(8 * scale, 4 * scale)
-        path.lineTo(19 * scale, 4 * scale)
-        path.lineTo(26 * scale, 11 * scale)
-        path.lineTo(26 * scale, 26 * scale)
-        path.lineTo(8 * scale, 26 * scale)
-        path.close()
-        canvas.drawPath(path, paint)
-
-        // Folded corner
-        paint.color = Color.parseColor(COLOR_DARK)
-        val cornerPath = Path()
-        cornerPath.moveTo(19 * scale, 4 * scale)
-        cornerPath.lineTo(19 * scale, 11 * scale)
-        cornerPath.lineTo(26 * scale, 11 * scale)
-        cornerPath.close()
-        canvas.drawPath(cornerPath, paint)
-
-        // Text lines
-        paint.color = Color.parseColor(COLOR_LIGHT)
-        canvas.drawRoundRect(
-            RectF(10 * scale, 14 * scale, 22 * scale, 15.5f * scale),
-            0.75f * scale,
-            0.75f * scale,
-            paint,
-        )
-        canvas.drawRoundRect(
-            RectF(10 * scale, 18 * scale, 20 * scale, 19.5f * scale),
-            0.75f * scale,
-            0.75f * scale,
-            paint,
-        )
-        canvas.drawRoundRect(
-            RectF(10 * scale, 22 * scale, 18 * scale, 23.5f * scale),
-            0.75f * scale,
-            0.75f * scale,
-            paint,
-        )
-
-        return bitmap
-    }
-
-    /**
-     * Create placeholder key icon for Login/Alias.
-     *
-     * @param size Icon size in pixels.
-     * @return Bitmap icon.
-     */
-    private fun createPlaceholderIcon(size: Int): Bitmap {
-        val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bitmap)
-        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-        paint.color = Color.parseColor(COLOR_PRIMARY)
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 2.5f * (size / 32f)
-        paint.strokeCap = Paint.Cap.ROUND
-
-        val scale = size / 32f
-
-        // Key bow (circular head)
-        canvas.drawCircle(10 * scale, 10 * scale, 6.5f * scale, paint)
-
-        // Key hole in bow
-        paint.strokeWidth = 2 * scale
-        canvas.drawCircle(10 * scale, 10 * scale, 2.5f * scale, paint)
-
-        // Key shaft - diagonal
-        paint.strokeWidth = 2.5f * scale
-        canvas.drawLine(15 * scale, 15 * scale, 27 * scale, 27 * scale, paint)
-
-        // Key teeth - perpendicular to shaft
-        canvas.drawLine(19 * scale, 19 * scale, 23 * scale, 15 * scale, paint)
-        canvas.drawLine(24 * scale, 24 * scale, 28 * scale, 20 * scale, paint)
-
-        return bitmap
+    private fun createFallbackBitmap(size: Int?): Bitmap {
+        val targetSizePx = size ?: run {
+            val density = Resources.getSystem().displayMetrics.density
+            (DEFAULT_SIZE_DP * density).toInt()
+        }
+        return Bitmap.createBitmap(targetSizePx, targetSizePx, Bitmap.Config.ARGB_8888)
     }
 }
