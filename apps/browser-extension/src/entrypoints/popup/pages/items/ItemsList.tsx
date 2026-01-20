@@ -542,7 +542,7 @@ const ItemsList: React.FC = () => {
                 className="fixed inset-0 z-10"
                 onClick={() => setShowFilterMenu(false)}
               />
-              <div className="absolute left-0 mt-2 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-20">
+              <div className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-20">
                 <div className="py-1">
                   {/* All items filter */}
                   <button
