@@ -14,9 +14,3 @@ export const PENDING_REDIRECT_URL_KEY = 'session:pendingRedirectUrl';
 export const CUSTOM_EMAIL_HISTORY_KEY = 'local:aliasvault_custom_email_history';
 export const CUSTOM_USERNAME_HISTORY_KEY = 'local:aliasvault_custom_username_history';
 export const SKIP_FORM_RESTORE_KEY = 'local:aliasvault_skip_form_restore';
-
-/**
- * Placeholder SVG for items without a logo (key icon).
- * Used by both ItemIcon.tsx (React) and Popup.ts (content script).
- */
-export const PLACEHOLDER_ICON_SVG = `<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="10" cy="10" r="6.5" stroke="#f49541" stroke-width="2.5"/><circle cx="10" cy="10" r="2.5" stroke="#f49541" stroke-width="2"/><path d="M15 15L27 27" stroke="#f49541" stroke-width="2.5" stroke-linecap="round"/><path d="M19 19L23 15" stroke="#f49541" stroke-width="2.5" stroke-linecap="round"/><path d="M24 24L28 20" stroke="#f49541" stroke-width="2.5" stroke-linecap="round"/></svg>`;

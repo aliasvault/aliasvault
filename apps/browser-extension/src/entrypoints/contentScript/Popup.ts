@@ -2,8 +2,9 @@ import { sendMessage } from 'webext-bridge/content-script';
 
 import { fillItem } from '@/entrypoints/contentScript/Form';
 
-import { DISABLED_SITES_KEY, TEMPORARY_DISABLED_SITES_KEY, GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, VAULT_LOCKED_DISMISS_UNTIL_KEY, AUTOFILL_MATCHING_MODE_KEY, CUSTOM_EMAIL_HISTORY_KEY, CUSTOM_USERNAME_HISTORY_KEY, PLACEHOLDER_ICON_SVG } from '@/utils/Constants';
+import { DISABLED_SITES_KEY, TEMPORARY_DISABLED_SITES_KEY, GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, VAULT_LOCKED_DISMISS_UNTIL_KEY, AUTOFILL_MATCHING_MODE_KEY, CUSTOM_EMAIL_HISTORY_KEY, CUSTOM_USERNAME_HISTORY_KEY } from '@/utils/Constants';
 import { CreateIdentityGenerator, IdentityHelperUtils } from '@/utils/dist/core/identity-generator';
+import { ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
 import type { Item, ItemField } from '@/utils/dist/core/models/vault';
 import { ItemTypes, FieldKey, createSystemField } from '@/utils/dist/core/models/vault';
 import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/core/password-generator';
@@ -627,7 +628,7 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
       if (logoSrc) {
         logoContainer.innerHTML = `<img src="${logoSrc}" alt="" style="width:100%;height:100%;">`;
       } else {
-        logoContainer.innerHTML = PLACEHOLDER_ICON_SVG;
+        logoContainer.innerHTML = ItemTypeIconSvgs.Placeholder;
       }
       itemInfo.appendChild(logoContainer);
       const itemTextContainer = document.createElement('div');
