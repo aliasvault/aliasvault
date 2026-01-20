@@ -38,7 +38,7 @@
     }
   },
   "menu": {
-    "vault": "Vault",
+    "vault": "Coffre-fort",
     "emails": "Emails"
   },
   "common": {
@@ -50,11 +50,11 @@
     "back": "Retour",
     "next": "Suivant",
     "use": "Utiliser",
-    "add": "Add",
+    "add": "Ajouter",
     "delete": "Supprimer",
     "undo": "Annuler",
     "save": "Sauvegarder",
-    "saving": "Saving...",
+    "saving": "Sauvegarde...",
     "create": "Créer",
     "or": "Ou",
     "close": "Fermer",
@@ -75,7 +75,7 @@
     "settings": "Réglages",
     "recentEmails": "Emails récents",
     "credentials": "Identifiants",
-    "customFields": "Custom",
+    "customFields": "Personnalisé",
     "twoFactorAuthentication": "Authentification à double facteur",
     "alias": "Alias",
     "notes": "Notes",
@@ -88,11 +88,11 @@
     "checkingVaultUpdates": "Vérification des mises à jour du coffre",
     "syncingUpdatedVault": "Synchronisation du coffre mis à jour",
     "loadMore": "Voir plus",
-    "offline": "Offline",
-    "offlineMode": "Operating in offline mode",
-    "pendingSync": "Syncing...",
-    "mergingVaultChanges": "Merging vault changes...",
-    "uploadingVault": "Uploading vault...",
+    "offline": "Hors ligne",
+    "offlineMode": "Fonctionnement en mode hors ligne",
+    "pendingSync": "Synchronisation...",
+    "mergingVaultChanges": "Fusion des modifications du coffre...",
+    "uploadingVault": "Envoi du coffre...",
     "errors": {
       "serverNotAvailable": "Le serveur d'AliasVault n'est pas disponible. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
       "clientVersionNotSupported": "Cette version de l'extension de navigateur AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre extension de navigateur à la dernière version.",
@@ -104,9 +104,9 @@
       "vaultNotAvailable": "Coffre non disponible",
       "vaultIsLocked": "Le coffre est verrouillé",
       "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité.",
-      "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again.",
-      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
+      "syncConflictMaxRetries": "Impossible de synchroniser le coffre après plusieurs tentatives. Veuillez réessayer plus tard.",
+      "mergeFailed": "Impossible de fusionner les modifications du coffre. Veuillez réessayer.",
+      "legacyMergeRequired": "Fusion du coffre requise. Veuillez vous connecter via l'application web pour fusionner les mises à jour en attente dans votre coffre."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Une erreur inconnue s'est produite. Merci de réessayer.",
@@ -190,21 +190,21 @@
     "tags": "Mots-clés"
   },
   "items": {
-    "title": "Items",
+    "title": "Éléments",
     "itemName": "Nom",
     "loginCredentials": "Identifiants de connexion",
-    "cardInformation": "Card Information",
-    "addItem": "Add Item",
-    "addNewItem": "Add new item",
-    "saveItem": "Save Item",
-    "itemDetails": "Item Details",
-    "editItem": "Edit Item",
+    "cardInformation": "Informations de la carte",
+    "addItem": "Ajouter un élément",
+    "addNewItem": "Ajouter un nouvel élément",
+    "saveItem": "Enregistrer l'élément",
+    "itemDetails": "Détails de l’élément",
+    "editItem": "Editer l'élément",
     "untitled": "Untitled",
-    "newFolder": "New Folder",
+    "newFolder": "Nouveau dossier",
     "createFolder": "Nouveau dossier",
-    "editFolder": "Edit Folder",
-    "folderName": "Folder Name",
-    "folderNameRequired": "Folder name is required",
+    "editFolder": "Éditer le dossier",
+    "folderName": "Nom du dossier",
+    "folderNameRequired": "Le nom du dossier est requis",
     "folder": "Dossier",
     "welcomeTitle": "Bienvenue dans AliasVault !",
     "welcomeDescription": "Pour utiliser l'extension de navigateur AliasVault : accédez à un site web et utilisez la fenêtre de saisie automatique AliasVault pour créer un nouvel identifiant.",
@@ -458,15 +458,15 @@
     "noItemsDescription": "Les éléments que vous supprimez apparaîtront ici pendant 30 jours avant d'être définitivement supprimés.",
     "description": "Ces éléments seront définitivement supprimés après 30 jours. Vous pouvez les restaurer ou les supprimer immédiatement.",
     "restore": "Restaurer",
-    "deletePermanently": "Delete Permanently",
-    "emptyAll": "Empty All",
-    "daysRemaining": "{{count}} day remaining",
-    "daysRemaining_plural": "{{count}} days remaining",
-    "expiringSoon": "Expiring soon",
-    "confirmDeleteTitle": "Delete Permanently?",
-    "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
-    "confirmEmptyAllTitle": "Empty Recently Deleted?",
-    "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
+    "deletePermanently": "Supprimer définitivement",
+    "emptyAll": "Vider tout",
+    "daysRemaining": "{{count}} jour restant",
+    "daysRemaining_plural": "{{count}} jours restants",
+    "expiringSoon": "Expirant bientôt",
+    "confirmDeleteTitle": "Supprimer définitivement?",
+    "confirmDeleteMessage": "Cet élément sera définitivement supprimé et ne pourra pas être récupéré.",
+    "confirmEmptyAllTitle": "Vider récemment supprimé ?",
+    "confirmEmptyAllMessage": "Tous les {{count}} éléments seront définitivement supprimés et ne pourront pas être récupérés."
   },
   "upgrade": {
     "title": "Mettre à niveau le coffre",
@@ -489,8 +489,8 @@
     }
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Changements non synchronisés",
+    "unsyncedChangesWarning": "Vous avez des modifications non synchronisées qui seront perdues si vous vous déconnectez maintenant. Êtes-vous sûr de vouloir continuer ?",
+    "logoutAnyway": "Se déconnecter quand même"
   }
 }
