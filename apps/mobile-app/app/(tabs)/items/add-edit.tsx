@@ -471,8 +471,8 @@ export default function AddEditItemScreen(): React.ReactNode {
       console.error('Error loading item:', err);
       Toast.show({
         type: 'error',
-        text1: t('items.errors.loadFailed'),
-        text2: t('auth.errors.enterPassword')
+        text1: t('common.error'),
+        text2: t('common.errors.unknownErrorTryAgain')
       });
     }
   }, [id, dbContext.sqliteClient, t]);
@@ -849,7 +849,7 @@ export default function AddEditItemScreen(): React.ReactNode {
     } catch (error) {
       Toast.show({
         type: 'error',
-        text1: t('items.errors.saveFailed'),
+        text1: t('common.error'),
         text2: error instanceof Error ? error.message : t('common.errors.unknownError'),
         position: 'bottom'
       });
