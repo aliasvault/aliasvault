@@ -2,14 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 
+import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
+import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
 import {
   TotpBlock,
   AttachmentBlock,
   FieldBlock,
   PasskeyBlock
-} from '@/entrypoints/popup/components/Credentials/Details';
-import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
-import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+} from '@/entrypoints/popup/components/Items/Details';
 import ItemIcon from '@/entrypoints/popup/components/Items/ItemIcon';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsContext';

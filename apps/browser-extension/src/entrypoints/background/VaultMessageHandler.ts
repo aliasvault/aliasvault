@@ -344,7 +344,7 @@ export async function handleGetFilteredItems(
     const sqliteClient = await createVaultSqliteClient();
     const allItems = sqliteClient.items.getAll();
 
-    const { filterItems, AutofillMatchingMode } = await import('@/utils/credentialMatcher/CredentialMatcher');
+    const { filterItems, AutofillMatchingMode } = await import('@/utils/itemMatcher/ItemMatcher');
 
     // Parse matching mode from string
     let matchingMode = AutofillMatchingMode.DEFAULT;

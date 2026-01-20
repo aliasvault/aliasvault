@@ -11,7 +11,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 
 import { PASSKEY_DISABLED_SITES_KEY } from '@/utils/Constants';
-import { extractDomain, extractRootDomain } from '@/utils/credentialMatcher/CredentialMatcher';
+import { extractDomain, extractRootDomain } from '@/utils/itemMatcher/ItemMatcher';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { GetRequest, PasskeyGetCredentialResponse, PendingPasskeyGetRequest, StoredPasskeyRecord } from '@/utils/passkey/types';

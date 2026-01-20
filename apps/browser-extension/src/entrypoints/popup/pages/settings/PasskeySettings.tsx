@@ -7,7 +7,7 @@ import {
   PASSKEY_PROVIDER_ENABLED_KEY,
   PASSKEY_DISABLED_SITES_KEY
 } from '@/utils/Constants';
-import { extractDomain, extractRootDomain } from '@/utils/credentialMatcher/CredentialMatcher';
+import { extractDomain, extractRootDomain } from '@/utils/itemMatcher/ItemMatcher';
 
 import { storage, browser } from "#imports";
 

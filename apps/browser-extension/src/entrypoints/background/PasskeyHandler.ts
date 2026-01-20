@@ -9,9 +9,9 @@ import {
   PASSKEY_PROVIDER_ENABLED_KEY,
   PASSKEY_DISABLED_SITES_KEY
 } from '@/utils/Constants';
-import { extractDomain, extractRootDomain } from '@/utils/credentialMatcher/CredentialMatcher';
 import type { PasskeyWithItem } from '@/utils/db/mappers/PasskeyMapper';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { extractDomain, extractRootDomain } from '@/utils/itemMatcher/ItemMatcher';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type {
   PasskeyPopupResponse,

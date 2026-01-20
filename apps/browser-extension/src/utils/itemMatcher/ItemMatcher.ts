@@ -3,10 +3,10 @@
  */
 import { browser } from 'wxt/browser';
 
-import type { Credential, Item } from '@/utils/dist/core/models/vault';
+import type { Item } from '@/utils/dist/core/models/vault';
 import { FieldKey } from '@/utils/dist/core/models/vault';
 import init, {
-  filterCredentials as wasmFilterCredentials,
+  filterCredentials as wasmFilterItems,
   extractDomain as wasmExtractDomain,
   extractRootDomain as wasmExtractRootDomain
 } from '@/utils/dist/core/rust/aliasvault_core.js';
@@ -46,7 +46,7 @@ function getFieldValue(item: Item, fieldKey: string): string | undefined {
 
 /**
  * Filter items by URL/title. Returns max 3 matches.
- * Uses the same Rust WASM filtering logic but maps Item fields to the expected structure.
+ * Uses Rust WASM filtering logic, mapping Item fields to the expected structure.
  */
 export async function filterItems(
   items: Item[],
@@ -57,7 +57,7 @@ export async function filterItems(
   await ensureInit();
 
   // Map Items to the format expected by the WASM filter
-  const result = wasmFilterCredentials({
+  const result = wasmFilterItems({
     credentials: items.map(item => ({
       Id: item.Id,
       ServiceName: item.Name ?? '',
@@ -87,32 +87,4 @@ export async function extractDomain(url: string): Promise<string> {
 export async function extractRootDomain(domain: string): Promise<string> {
   await ensureInit();
   return wasmExtractRootDomain(domain);
-}
-
-/**
- * Filter credentials by URL/title. Returns max 3 matches.
- * Uses the same Rust WASM filtering logic with the Credential type.
- */
-export async function filterCredentials(
-  credentials: Credential[],
-  currentUrl: string,
-  pageTitle: string,
-  matchingMode: AutofillMatchingMode = AutofillMatchingMode.DEFAULT
-): Promise<Credential[]> {
-  await ensureInit();
-
-  const result = wasmFilterCredentials({
-    credentials: credentials.map(cred => ({
-      Id: cred.Id,
-      ServiceName: cred.ServiceName ?? '',
-      ServiceUrl: cred.ServiceUrl
-    })),
-    current_url: currentUrl,
-    page_title: pageTitle,
-    matching_mode: matchingMode
-  }) as { matched_ids: string[] };
-
-  return result.matched_ids
-    .map(id => credentials.find(cred => cred.Id === id))
-    .filter((cred): cred is Credential => cred !== undefined);
 }

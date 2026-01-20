@@ -2,9 +2,6 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
-import AttachmentUploader from '@/entrypoints/popup/components/Credentials/Details/AttachmentUploader';
-import PasskeyEditor from '@/entrypoints/popup/components/Credentials/Details/PasskeyEditor';
-import TotpEditor from '@/entrypoints/popup/components/Credentials/Details/TotpEditor';
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import AddFieldMenu, { type OptionalSection } from '@/entrypoints/popup/components/Forms/AddFieldMenu';
 import EditableFieldLabel from '@/entrypoints/popup/components/Forms/EditableFieldLabel';
@@ -16,6 +13,9 @@ import PasswordField from '@/entrypoints/popup/components/Forms/PasswordField';
 import UsernameField from '@/entrypoints/popup/components/Forms/UsernameField';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
 import { HeaderIconType } from '@/entrypoints/popup/components/Icons/HeaderIcons';
+import AttachmentUploader from '@/entrypoints/popup/components/Items/Details/AttachmentUploader';
+import PasskeyEditor from '@/entrypoints/popup/components/Items/Details/PasskeyEditor';
+import TotpEditor from '@/entrypoints/popup/components/Items/Details/TotpEditor';
 import ItemNameInput from '@/entrypoints/popup/components/Items/ItemNameInput';
 import ItemTypeSelector from '@/entrypoints/popup/components/Items/ItemTypeSelector';
 import LoadingSpinner from '@/entrypoints/popup/components/LoadingSpinner';

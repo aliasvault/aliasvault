@@ -9,7 +9,7 @@ import {
   TEMPORARY_DISABLED_SITES_KEY,
   AUTOFILL_MATCHING_MODE_KEY
 } from '@/utils/Constants';
-import { AutofillMatchingMode } from '@/utils/credentialMatcher/CredentialMatcher';
+import { AutofillMatchingMode } from '@/utils/itemMatcher/ItemMatcher';
 
 import { storage, browser } from "#imports";
 
