@@ -122,7 +122,7 @@
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>If you previously used a different password manager, you can import your items from it.</value>
+    <value>Si vous avez précédemment utilisé un gestionnaire de mots de passe différent, vous pouvez importer vos éléments à partir de celui-ci.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
@@ -131,7 +131,7 @@
   </data>
   <!-- Error Messages -->
   <data name="FailedToLoadItemsMessage" xml:space="preserve">
-    <value>Failed to load items.</value>
+    <value>Impossible de charger les éléments.</value>
     <comment>Error message when items fail to load</comment>
   </data>
   <!-- Filter Options -->
@@ -140,7 +140,7 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>(All) Items</value>
+    <value>(Tous) Éléments</value>
     <comment>Filter option to show all items</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
@@ -160,7 +160,7 @@
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>Supprimé récemment</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
@@ -169,20 +169,20 @@
     <comment>Empty state message when no passkeys are found</comment>
   </data>
   <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>No items with attachments found.</value>
+    <value>Aucun élément avec pièces jointes trouvé.</value>
     <comment>Empty state message when no items with attachments are found</comment>
   </data>
   <data name="NoItemsFound" xml:space="preserve">
-    <value>No items match the selected filter.</value>
+    <value>Aucun identifiant ne correspond au filtre sélectionné.</value>
     <comment>Empty state message when no items match the filter</comment>
   </data>
   <data name="EmptyFolderMessage" xml:space="preserve">
-    <value>This folder is empty.</value>
+    <value>Ce dossier est vide.</value>
     <comment>Empty state message when folder has no items</comment>
   </data>
   <!-- Item Type Filters -->
   <data name="FilterLoginOption" xml:space="preserve">
-    <value>Logins</value>
+    <value>Identifiants</value>
     <comment>Filter option to show only Login items</comment>
   </data>
   <data name="FilterAliasOption" xml:space="preserve">
@@ -190,7 +190,7 @@
     <comment>Filter option to show only Alias items</comment>
   </data>
   <data name="FilterCreditCardOption" xml:space="preserve">
-    <value>Credit Cards</value>
+    <value>Cartes de crédit</value>
     <comment>Filter option to show only Credit Card items</comment>
   </data>
   <data name="FilterNoteOption" xml:space="preserve">
@@ -199,15 +199,15 @@
   </data>
   <!-- Folder Management -->
   <data name="NewFolder" xml:space="preserve">
-    <value>New Folder</value>
+    <value>Nouveau dossier</value>
     <comment>Button text for creating a new folder</comment>
   </data>
   <data name="EditFolder" xml:space="preserve">
-    <value>Edit Folder</value>
+    <value>Éditer le dossier</value>
     <comment>Button text for editing a folder</comment>
   </data>
   <data name="DeleteFolder" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>Supprimer le dossier</value>
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">
@@ -215,16 +215,16 @@
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
-    <value>Failed to create folder.</value>
+    <value>Impossible de créer le dossier.</value>
     <comment>Error message when folder creation fails</comment>
   </data>
   <data name="FailedToDeleteFolder" xml:space="preserve">
-    <value>Failed to delete folder.</value>
+    <value>Impossible de supprimer le dossier.</value>
     <comment>Error message when folder deletion fails</comment>
   </data>
   <!-- Infinite Scroll -->
   <data name="LoadingMore" xml:space="preserve">
-    <value>Loading more...</value>
+    <value>Chargement...</value>
     <comment>Text shown when loading more items during infinite scroll</comment>
   </data>
 </root>
