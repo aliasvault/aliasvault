@@ -34,6 +34,13 @@ If getting `node` errors in Android studio, close and re-open Android Studio fro
 open -a "Android Studio"
 ```
 
+## Test on real device
+In order to test on a real device in debug mode, make sure to forward the port 8081 from local dev machine to phone. Without this an error regarding expo bundler can appear.
+
+```bash
+adb reverse tcp:8081 tcp:8081
+```
+
 ## Unit tests
 The Android project contains unit tests that test the `VaultStore` native Kotlin implementation. The `VaultStore` logic is responsible for handling vault encryption/decryption, contains the SQLite client and acts as a proxy for all queries made by the React Native and autofill components.
 
