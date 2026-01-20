@@ -60,11 +60,11 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Vault</value>
+    <value>Coffre-fort</value>
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Find all of your items below.</value>
+    <value>Trouvez tous vos éléments ci-dessous.</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -98,11 +98,11 @@
   </data>
   <!-- Empty State -->
   <data name="NoItemsTitle" xml:space="preserve">
-    <value>No items yet</value>
+    <value>Pas encore d'éléments</value>
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Create your first item using the</value>
+    <value>Créez votre premier élément en utilisant le</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
