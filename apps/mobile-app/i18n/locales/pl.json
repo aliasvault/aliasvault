@@ -21,7 +21,7 @@
     "enabled": "Włączone",
     "disabled": "Wyłączone",
     "twoFactorAuthentication": "Weryfikacja dwuetapowa (2FA)",
-    "add": "Add",
+    "add": "Dodaj",
     "attachments": "Załączniki",
     "deleteItemConfirmTitle": "Usuń element",
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
@@ -75,9 +75,9 @@
     "loggedInAs": "Zalogowano jako"
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Zmiany niesynchronizowane",
+    "unsyncedChangesWarning": "Masz niezsynchronizowane zmiany, które zostaną utracone, jeśli się teraz wylogujesz. Czy na pewno chcesz kontynuować?",
+    "logoutAnyway": "Wyloguj się mimo wszystko"
   },
   "vault": {
     "syncingVault": "Synchronizacja sejfu",
@@ -87,8 +87,8 @@
     "executingOperation": "Wykonuję operację...",
     "checkingVaultUpdates": "Sprawdzanie aktualizacji sejfu",
     "syncingUpdatedVault": "Synchronizacja zaktualizowanego sejfu",
-    "mergingVault": "Merging vault changes",
-    "uploadingChanges": "Uploading changes",
+    "mergingVault": "Łączenie zmian w skarbcu",
+    "uploadingChanges": "Przesyłanie zmian",
     "errors": {
       "failedToGetEncryptedDatabase": "Nie udało się pobrać zaszyfrowanej bazy danych",
       "usernameNotFound": "Nazwa użytkownika nie została znaleziona",
@@ -98,7 +98,7 @@
       "serverVersionNotSupported": "Aby korzystać z tej aplikacji mobilnej, serwer AliasVault musi zostać zaktualizowany do nowszej wersji. Jeśli potrzebujesz pomocy, skontaktuj się z działem pomocy technicznej.",
       "appOutdated": "Ta aplikacja jest nieaktualna i nie można jej używać do uzyskania dostępu do tej (nowszej) wersji sejfu. Aby kontynuować, zaktualizuj aplikację AliasVault.",
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się.",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
+      "passwordChangeRequiresOnline": "Zmiana hasła wymaga połączenia z Internetem. Spróbuj ponownie, gdy będziesz online."
     }
   },
   "credentials": {
@@ -438,13 +438,13 @@
   },
   "navigation": {
     "credentials": "Dane logowania",
-    "vault": "Vault",
+    "vault": "Sejf",
     "emails": "Wiadomości e-mail",
     "settings": "Ustawienia"
   },
   "itemTypes": {
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Tworzenie",
+    "editing": "Edycja",
     "login": {
       "title": "Zaloguj się"
     },
@@ -452,57 +452,57 @@
       "title": "Tożsamość (Alias)"
     },
     "creditCard": {
-      "title": "Credit Card",
-      "cardInformation": "Card Information"
+      "title": "Karta kredytowa",
+      "cardInformation": "Informacje o karcie"
     },
     "note": {
-      "title": "Note"
+      "title": "Uwaga"
     },
-    "addField": "Add Field",
-    "addCustomField": "Add Custom Field",
-    "customFields": "Custom Fields",
-    "fieldLabel": "Field Label",
-    "fieldType": "Field Type",
-    "enterFieldName": "Enter field name",
+    "addField": "Dodaj pole",
+    "addCustomField": "Dodaj pole niestandardowe",
+    "customFields": "Pola niestandardowe",
+    "fieldLabel": "Etykieta pola",
+    "fieldType": "Typ pola",
+    "enterFieldName": "Wprowadź nazwę pola",
     "fieldTypes": {
-      "text": "Text",
-      "hidden": "Hidden",
+      "text": "Tekst",
+      "hidden": "Ukryte",
       "email": "Skrzynka odbiorcza",
-      "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "url": "adres URL",
+      "phone": "Telefon",
+      "number": "Numer",
       "date": "Data",
-      "textArea": "Text Area"
+      "textArea": "Obszar tekst"
     }
   },
   "fieldLabels": {
     "login.username": "Nazwa użytkownika",
     "login.password": "Hasło",
     "login.email": "Skrzynka odbiorcza",
-    "login.url": "URL",
+    "login.url": "adres URL",
     "alias.first_name": "Imię",
     "alias.last_name": "Nazwisko",
     "alias.gender": "Płeć",
     "alias.birthdate": "Data urodzenia",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
+    "card.cardholder_name": "Imię i nazwisko posiadacza karty",
+    "card.number": "Numer karty",
+    "card.expiry_month": "Miesiąc wygaśnięcia",
+    "card.expiry_year": "Rok wygaśnięcia",
     "card.cvv": "CVV",
-    "card.pin": "PIN",
+    "card.pin": "Kod PIN",
     "notes.content": "Notatki"
   },
   "items": {
     "title": "Items",
-    "addItem": "Add Item",
-    "editItem": "Edit Item",
+    "addItem": "Dodaj element",
+    "editItem": "Edytuj element",
     "deleteItem": "Usuń element",
-    "itemDetails": "Item Details",
-    "itemCreated": "Item Created",
+    "itemDetails": "Szczegóły produktu",
+    "itemCreated": "Element utworzony",
     "emailPreview": "Podgląd wiadomości e-mail",
-    "untitled": "Untitled",
+    "untitled": "Bez tytułu",
     "name": "Nazwa",
-    "namePlaceholder": "e.g., Google, Amazon",
+    "namePlaceholder": "np. Google, Amazon",
     "url": "URL",
     "urlPlaceholder": "e.g., https://google.com",
     "service": "Usługa",
