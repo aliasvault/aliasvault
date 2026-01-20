@@ -842,9 +842,15 @@ const ItemAddEdit: React.FC = () => {
 
   /**
    * Handle adding 2FA section.
+   * Also opens the TOTP add form directly since the user's intent is to add a code.
    */
   const handleAdd2FA = useCallback((): void => {
     setShow2FA(true);
+    // Auto-open the add form since user intends to add a TOTP code
+    setTotpEditorState({
+      isAddFormVisible: true,
+      formData: { name: '', secretKey: '' }
+    });
   }, []);
 
   /**

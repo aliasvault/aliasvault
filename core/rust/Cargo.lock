@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "aliasvault-core"
-version = "0.1.0"
+version = "0.26.0"
 dependencies = [
  "argon2",
  "chrono",

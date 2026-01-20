@@ -211,15 +211,18 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
             <h4 className="text-lg font-medium text-gray-900 dark:text-white">
               {t('totp.addCode')}
             </h4>
-            <button
-              type="button"
-              onClick={hideAddForm}
-              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-            >
-              <svg className="w-3 h-3" fill="none" viewBox="0 0 14 14">
-                <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-              </svg>
-            </button>
+            {/* Only show close button if there are existing TOTP codes */}
+            {hasActiveTotpCodes && (
+              <button
+                type="button"
+                onClick={hideAddForm}
+                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+              >
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 14 14">
+                  <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+              </button>
+            )}
           </div>
 
           <p className="mb-4 text-sm text-gray-500 dark:text-gray-400">
