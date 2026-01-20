@@ -1,32 +1,54 @@
 import SwiftUI
 import Macaw
+import VaultModels
 
 /// Item logo view - displays logos or type-based icons for items
 public struct ItemLogoView: View {
 
-    private let placeholderImageBase64 = "UklGRjoEAABXRUJQVlA4IC4EAAAwFwCdASqAAIAAPpFCm0olo6Ihp5IraLASCWUA0eb/0s56RrLtCnYfLPiBshdXWMx8j1Ez65f169iA4xUDBTEV6ylMQeCIj2b7RngGi7gKZ9WjKdSoy9R8JcgOmjCMlDmLG20KhNo/i/Dc/Ah5GAvGfm8kfniV3AkR6fxN6eKwjDc6xrDgSfS48G5uGV6WzQt24YAVlLSK9BMwndzfHnePK1KFchFrL7O3ulB8cGNCeomu4o+l0SrS/JKblJ4WTzj0DAD++lCUEouSfgRKdiV2TiYCD+H+l3tANKSPQFPQuzi7rbvxqGeRmXB9kDwURaoSTTpYjA9REMUi9uA6aV7PWtBNXgUzMLowYMZeos6Xvyhb34GmufswMHA5ZyYpxzjTphOak4ZjNOiz8aScO5ygiTx99SqwX/uL+HSeVOSraHw8IymrMwm+jLxqN8BS8dGcItLlm/ioulqH2j4V8glDgSut+ExkxiD7m8TGPrrjCQNJbRDzpOFsyCyfBZupvp8QjGKW2KGziSZeIWes4aTB9tRmeEBhnUrmTDZQuXcc67Fg82KHrSfaeeOEq6jjuUjQ8wUnzM4Zz3dhrwSyslVz/WvnKqYkr4V/TTXPFF5EjF4rM1bHZ8bK63EfTnK41+n3n4gEFoYP4mXkNH0hntnYcdTqiE7Gn+q0BpRRxnkpBSZlA6Wa70jpW0FGqkw5e591A5/H+OV+60WAo+4Mi+NlsKrvLZ9EiVaPnoEFZlJQx1fA777AJ2MjXJ4KSsrWDWJi1lE8yPs8V6XvcC0chDTYt8456sKXAagCZyY+fzQriFMaddXyKQdG8qBqcdYjAsiIcjzaRFBBoOK9sU+sFY7N6B6+xtrlu3c37rQKkI3O2EoiJOris54EjJ5OFuumA0M6riNUuBf/MEPFBVx1JRcUEs+upEBsCnwYski7FT3TTqHrx7v5AjgFN97xhPTkmVpu6sxRnWBi1fxIRp8eWZeFM6mUcGgVk1WeVb1yhdV9hoMo2TsNEPE0tHo/wvuSJSzbZo7wibeXM9v/rRfKcx7X93rfiXVnyQ9f/5CaAQ4lxedPp/6uzLtOS4FyL0bCNeZ6L5w+AiuyWCTDFIYaUzhwfG+/YTQpWyeZCdQIKzhV+3GeXI2cxoP0ER/DlOKymf1gm+zRU3sqf1lBVQ0y+mK/Awl9bS3uaaQmI0FUyUwHUKP7PKuXnO+LcwDv4OfPT6hph8smc1EtMe5ib/apar/qZ9dyaEaElALJ1KKxnHziuvVl8atk1fINSQh7OtXDyqbPw9o/nGIpTnv5iFmwmWJLis2oyEgPkJqyx0vYI8rjkVEzKc8eQavAJBYSpjMwM193Swt+yJyjvaGYWPnqExxKiNarpB2WSO7soCAZXhS1uEYHryrK47BH6W1dRiruqT0xpLih3MXiwU3VDwAAAA==" // swiftlint:disable:this line_length
+    /// Credit card brand type for local detection
+    private enum CardBrand {
+        case visa
+        case mastercard
+        case amex
+        case discover
+        case generic
+
+        /// Detect credit card brand from card number using BIN prefixes
+        static func detect(from cardNumber: String?) -> CardBrand {
+            guard let cardNumber = cardNumber else { return .generic }
+
+            let cleaned = cardNumber.replacingOccurrences(of: "[\\s-]", with: "", options: .regularExpression)
+            guard cleaned.range(of: "^\\d{4,}", options: .regularExpression) != nil else { return .generic }
+
+            if cleaned.hasPrefix("4") { return .visa }
+            if cleaned.range(of: "^5[1-5]", options: .regularExpression) != nil ||
+               cleaned.range(of: "^2[2-7]", options: .regularExpression) != nil { return .mastercard }
+            if cleaned.range(of: "^3[47]", options: .regularExpression) != nil { return .amex }
+            if cleaned.range(of: "^6(?:011|22|4[4-9]|5)", options: .regularExpression) != nil { return .discover }
+
+            return .generic
+        }
+
+        /// Get the SVG icon for this card brand from centralized definitions
+        var icon: String {
+            switch self {
+            case .visa: return ItemTypeIcons.visa
+            case .mastercard: return ItemTypeIcons.mastercard
+            case .amex: return ItemTypeIcons.amex
+            case .discover: return ItemTypeIcons.discover
+            case .generic: return ItemTypeIcons.creditCard
+            }
+        }
+    }
 
     let logoData: Data?
     let itemType: String?
     let cardNumber: String?
 
-    @Environment(\.colorScheme) private var colorScheme
-
     public init(logoData: Data?, itemType: String? = nil, cardNumber: String? = nil) {
         self.logoData = logoData
         self.itemType = itemType
         self.cardNumber = cardNumber
-    }
-
-    private var colors: ColorConstants.Colors.Type {
-        ColorConstants.colors(for: colorScheme)
-    }
-
-    private var placeholderImage: UIImage? {
-        if let data = Data(base64Encoded: placeholderImageBase64) {
-            return UIImage(data: data)
-        }
-        return nil
     }
 
     private func detectMimeType(_ data: Data) -> String {
@@ -92,20 +114,19 @@ public struct ItemLogoView: View {
     private func renderTypeBasedIcon(itemType: String) -> some View {
         Group {
             // For Note type, always show note icon
-            if itemType == ItemTypeIcon.ItemType.note.rawValue {
-                renderSVGIcon(svg: ItemTypeIcon.noteIcon)
+            if itemType == ItemType.note {
+                renderSVGIcon(svg: ItemTypeIcons.note)
             }
             // For CreditCard type, detect brand and show appropriate icon
-            else if itemType == ItemTypeIcon.ItemType.creditCard.rawValue {
-                let brand = ItemTypeIcon.CardBrand.detect(from: cardNumber)
-                let cardIcon = ItemTypeIcon.getCardIcon(for: brand)
-                renderSVGIcon(svg: cardIcon)
+            else if itemType == ItemType.creditCard {
+                let brand = CardBrand.detect(from: cardNumber)
+                renderSVGIcon(svg: brand.icon)
             }
             // For Login/Alias types, use Logo if available, otherwise placeholder
             else if let logoData = logoData, !logoData.isEmpty {
                 renderLogo(logoData: logoData)
             } else {
-                renderSVGIcon(svg: ItemTypeIcon.placeholderIcon)
+                renderSVGIcon(svg: ItemTypeIcons.placeholder)
             }
         }
     }
@@ -113,13 +134,15 @@ public struct ItemLogoView: View {
     /// Render an SVG icon from string
     private func renderSVGIcon(svg: String) -> some View {
         Group {
-            if let svgData = svg.data(using: .utf8),
-               let svgNode = try? SVGParser.parse(text: svg) {
+            if let svgNode = try? SVGParser.parse(text: svg) {
                 SVGImageView(node: svgNode)
                     .frame(width: 32, height: 32)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
             } else {
-                renderPlaceholder()
+                // Fallback if SVG can't be parsed - simple colored rectangle
+                RoundedRectangle(cornerRadius: 4)
+                    .fill(Color.gray.opacity(0.3))
+                    .frame(width: 32, height: 32)
             }
         }
     }
@@ -139,39 +162,16 @@ public struct ItemLogoView: View {
                     .aspectRatio(contentMode: .fit)
                     .frame(width: 32, height: 32)
                     .clipShape(RoundedRectangle(cornerRadius: 4))
-            } else if let placeholder = placeholderImage {
-                Image(uiImage: placeholder)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 32, height: 32)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
             } else {
+                // Logo data couldn't be decoded, use centralized placeholder
                 renderPlaceholder()
             }
         }
     }
 
-    /// Render fallback placeholder
+    /// Render fallback placeholder using centralized SVG icon
     private func renderPlaceholder() -> some View {
-        Group {
-            if let placeholder = placeholderImage {
-                Image(uiImage: placeholder)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 32, height: 32)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
-            } else {
-                // Ultimate fallback if placeholder fails to load
-                Circle()
-                    .fill(colors.accentBackground)
-                    .frame(width: 32, height: 32)
-                    .overlay(
-                        Circle()
-                            .stroke(colors.accentBorder, lineWidth: 1)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
-            }
-        }
+        renderSVGIcon(svg: ItemTypeIcons.placeholder)
     }
 }
 
