@@ -8,7 +8,7 @@ import Svg, { Circle, Path, Rect, Text as SvgText } from 'react-native-svg';
 export const PlaceholderIcon = ({ width = 32, height = 32 }: { width?: number; height?: number }): React.ReactElement => (
   <Svg width={width} height={height} viewBox="0 0 32 32" fill="none">
     <Circle cx="10" cy="10" r="6.5" stroke="#f49541" strokeWidth="2.5" />
-    <Circle cx="10" cy="10" r="2.5" stroke="#ff0000" strokeWidth="2" />
+    <Circle cx="10" cy="10" r="2.5" stroke="#f49541" strokeWidth="2" />
     <Path d="M15 15L27 27" stroke="#f49541" strokeWidth="2.5" strokeLinecap="round" />
     <Path d="M19 19L23 15" stroke="#f49541" strokeWidth="2.5" strokeLinecap="round" />
     <Path d="M24 24L28 20" stroke="#f49541" strokeWidth="2.5" strokeLinecap="round" />

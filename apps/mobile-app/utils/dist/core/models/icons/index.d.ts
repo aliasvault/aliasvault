@@ -23,7 +23,7 @@ declare const ItemTypeIconSvgs: {
      * Placeholder key icon for Login/Alias items without a logo.
      * Traditional key design with outline style.
      */
-    readonly Placeholder: "<svg viewBox=\"0 0 32 32\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"10\" cy=\"10\" r=\"6.5\" stroke=\"#f49541\" stroke-width=\"2.5\"/>\n  <circle cx=\"10\" cy=\"10\" r=\"2.5\" stroke=\"#ff0000\" stroke-width=\"2\"/>\n  <path d=\"M15 15L27 27\" stroke=\"#f49541\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n  <path d=\"M19 19L23 15\" stroke=\"#f49541\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n  <path d=\"M24 24L28 20\" stroke=\"#f49541\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n</svg>";
+    readonly Placeholder: "<svg viewBox=\"0 0 32 32\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\">\n  <circle cx=\"10\" cy=\"10\" r=\"6.5\" stroke=\"#f49541\" stroke-width=\"2.5\"/>\n  <circle cx=\"10\" cy=\"10\" r=\"2.5\" stroke=\"#f49541\" stroke-width=\"2\"/>\n  <path d=\"M15 15L27 27\" stroke=\"#f49541\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n  <path d=\"M19 19L23 15\" stroke=\"#f49541\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n  <path d=\"M24 24L28 20\" stroke=\"#f49541\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n</svg>";
     /**
      * Note/document icon with folded corner.
      * Used for Note item type.
