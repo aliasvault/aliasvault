@@ -209,44 +209,44 @@
     "welcomeTitle": "Bienvenue dans AliasVault !",
     "welcomeDescription": "Pour utiliser l'extension de navigateur AliasVault : accédez à un site web et utilisez la fenêtre de saisie automatique AliasVault pour créer un nouvel identifiant.",
     "noPasskeysFound": "Aucune clé d'accès n'a encore été créée. Les clés d'accès sont créés en visitant un site Web qui propose des clés d'accès comme méthode d'authentification.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
-    "noMatchingItems": "No matching items found",
-    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
-    "deleteFolder": "Delete Folder",
-    "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-    "deleteFolderAndItems": "Delete folder and all items",
-    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "noAttachmentsFound": "Aucun élément avec pièces jointes trouvé",
+    "noItemsOfTypeFound": "Aucun élément {{type}} trouvé",
+    "noMatchingItems": "Aucun élément correspondant trouvé",
+    "emptyFolderHint": "Ce dossier est vide. Pour déplacer des éléments vers ce dossier, éditez l'élément et appuyez sur l'icône du dossier dans le champ nom.",
+    "deleteFolder": "Supprimer le dossier",
+    "deleteFolderKeepItems": "Supprimer le dossier uniquement",
+    "deleteFolderKeepItemsDescription": "Les éléments seront déplacés dans la liste principale.",
+    "deleteFolderAndItems": "Supprimer le dossier et tous les éléments",
+    "deleteFolderAndItemsDescription": "{{count}} élément(s) vont être déplacés vers Récemment supprimés.",
     "filters": {
-      "all": "(All) Items",
+      "all": "(Tous) Éléments",
       "passkeys": "Clés d'accès"
     },
     "deleteItemTitle": "Supprimer l'élement",
     "deleteItemConfirm": "Êtes-vous certain de vouloir supprimer cet élément?",
-    "viewHistory": "View history",
-    "history": "History",
-    "noHistoryAvailable": "No history available"
+    "viewHistory": "Voir l'historique",
+    "history": "Historique",
+    "noHistoryAvailable": "Pas d'historique disponible"
   },
   "itemTypes": {
-    "selectType": "Add New Item",
-    "typeLabel": "Item Type",
-    "creating": "Creating",
-    "editing": "Editing",
-    "regenerateAlias": "Regenerate alias",
-    "addCustomField": "Add custom field",
-    "fieldLabel": "Field Label",
-    "enterFieldName": "Enter field name",
-    "fieldType": "Field Type",
+    "selectType": "Ajouter un nouvel élément",
+    "typeLabel": "Type d'élément",
+    "creating": "Création",
+    "editing": "Édition",
+    "regenerateAlias": "Régénérer l'alias",
+    "addCustomField": "Ajouter un champ personnalisé",
+    "fieldLabel": "Intitulé du champ",
+    "enterFieldName": "Entrez le nom du champ",
+    "fieldType": "Type de champ",
     "fieldTypes": {
-      "text": "Text",
-      "hidden": "Hidden (masked text)",
+      "text": "Texte",
+      "hidden": "Caché (texte masqué)",
       "email": "Email",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Téléphone",
+      "number": "Numéro",
       "date": "Date",
-      "textArea": "Text Area"
+      "textArea": "Zone de texte"
     },
     "login": {
       "title": "Se connecter"
@@ -255,14 +255,14 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card"
+      "title": "Carte de crédit"
     },
     "note": {
-      "title": "Secure Note"
+      "title": "Note sécurisée"
     }
   },
   "fieldLabels": {
-    "login.url": "Website URL",
+    "login.url": "URL du site",
     "login.username": "Username",
     "login.password": "Mot de passe",
     "alias.first_name": "Prénom",
@@ -271,10 +271,10 @@
     "alias.birthdate": "Date de naissance",
     "login.email": "Email",
     "notes.content": "Notes",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
+    "card.cardholder_name": "Nom du titulaire de la carte",
+    "card.number": "Numéro de la carte",
+    "card.expiry_month": "Mois d'expiration",
+    "card.expiry_year": "Année d'expiration",
     "card.cvv": "CVV",
     "card.pin": "PIN"
   },
@@ -284,15 +284,15 @@
     "nameOptional": "Nom (facultatif)",
     "secretKey": "Clé secrète",
     "saveToViewCode": "Enregistrer pour afficher le code",
-    "defaultName": "Authenticator",
+    "defaultName": "Authentificateur",
     "errors": {
       "invalidSecretKey": "Format de clé secrète invalide."
     }
   },
   "attachmentUploader": {
-    "uploading": "Uploading...",
-    "uploadSuccess": "Files uploaded successfully.",
-    "deleteSuccess": "Attachment deleted successfully."
+    "uploading": "Envoi...",
+    "uploadSuccess": "Fichiers envoyés avec succès.",
+    "deleteSuccess": "Pièce jointe supprimée avec succès."
   },
   "emails": {
     "title": "Emails",
@@ -442,10 +442,10 @@
       "createNewPasskey": "Créer une nouvelle clé d'accès",
       "replacingPasskey": "Remplacement de la clé d'accès : {{displayName}}",
       "confirmReplace": "Confirmer le remplacement",
-      "selectExistingLogin": "Add to existing login:",
-      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
-      "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "selectExistingLogin": "Ajouter à l'identifiant existant :",
+      "selectExistingLoginDescription": "Joindre cette clé d'accès à un identifiant de connexion existant pour ce site.",
+      "attachingToCredential": "Ajout de la clé d'accès à : {{serviceName}}",
+      "attachPasskey": "Ajouter une clé d'accès"
     },
     "settings": {
       "passkeyProvider": "Fournisseur de clés d'accès",
@@ -453,11 +453,11 @@
     }
   },
   "recentlyDeleted": {
-    "title": "Recently Deleted",
-    "noItems": "No deleted items",
-    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
-    "restore": "Restore",
+    "title": "Supprimé récemment",
+    "noItems": "Aucun élément supprimé",
+    "noItemsDescription": "Les éléments que vous supprimez apparaîtront ici pendant 30 jours avant d'être définitivement supprimés.",
+    "description": "Ces éléments seront définitivement supprimés après 30 jours. Vous pouvez les restaurer ou les supprimer immédiatement.",
+    "restore": "Restaurer",
     "deletePermanently": "Delete Permanently",
     "emptyAll": "Empty All",
     "daysRemaining": "{{count}} day remaining",
