@@ -21,7 +21,7 @@ echo "🔄 Generating platform-specific models (C#, Swift, Kotlin)..."
 node scripts/generate-field-keys.cjs
 
 dist_path="dist"
-files_to_copy=("webapi" "vault" "metadata")
+files_to_copy=("webapi" "vault" "metadata" "icons")
 
 for target in "${TARGETS[@]}"; do
   echo "📂 Copying $package_name → $target"

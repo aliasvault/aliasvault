@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Generates FieldKey, FieldType, ItemType constants and SystemFieldRegistry for C#, Swift, and Kotlin from TypeScript source.
+ * Generates FieldKey, FieldType, ItemType constants, SystemFieldRegistry, and ItemTypeIcons for C#, Swift, and Kotlin from TypeScript source.
  * All type definitions are dynamically extracted from the TypeScript source files.
  */
 
@@ -12,16 +12,21 @@ const REPO_ROOT = path.join(__dirname, '../../..');
 const TS_SOURCE = path.join(REPO_ROOT, 'core/models/src/vault/FieldKey.ts');
 const TS_ITEM_SOURCE = path.join(REPO_ROOT, 'core/models/src/vault/Item.ts');
 const TS_REGISTRY_SOURCE = path.join(REPO_ROOT, 'core/models/src/vault/SystemFieldRegistry.ts');
+const TS_ICONS_SOURCE = path.join(REPO_ROOT, 'core/models/src/icons/ItemTypeIcons.ts');
 const CS_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/FieldKey.cs');
 const CS_FIELD_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/FieldType.cs');
 const CS_ITEM_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/ItemType.cs');
 const CS_REGISTRY_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/SystemFieldRegistry.cs');
+const CS_ICONS_OUTPUT = path.join(REPO_ROOT, 'apps/server/Databases/AliasClientDb/Models/ItemTypeIcons.cs');
 const SWIFT_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/ios/VaultModels/FieldKey.swift');
 const SWIFT_FIELD_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/ios/VaultModels/FieldType.swift');
 const SWIFT_ITEM_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/ios/VaultModels/ItemType.swift');
+const SWIFT_ICONS_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/ios/VaultModels/ItemTypeIcons.swift');
 const KOTLIN_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models/FieldKey.kt');
 const KOTLIN_FIELD_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models/FieldType.kt');
 const KOTLIN_ITEM_TYPE_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models/ItemType.kt');
+const KOTLIN_ICONS_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/android/app/src/main/java/net/aliasvault/app/vaultstore/models/ItemTypeIcons.kt');
+const RN_ICONS_OUTPUT = path.join(REPO_ROOT, 'apps/mobile-app/components/items/ItemTypeIconComponents.tsx');
 
 /**
  * Parse the TypeScript FieldKey.ts file and extract constants
@@ -945,6 +950,328 @@ function ensureDir(filePath) {
   }
 }
 
+// ==================== ICON GENERATION ====================
+
+/**
+ * Parse ItemTypeIconSvgs from TypeScript source
+ */
+function parseItemTypeIconSvgs(tsContent) {
+  const icons = {};
+
+  // Find the ItemTypeIconSvgs constant
+  const startMatch = tsContent.match(/export const ItemTypeIconSvgs\s*=\s*\{/);
+  if (!startMatch) {
+    console.warn('Warning: Could not find ItemTypeIconSvgs in source');
+    return icons;
+  }
+
+  const startIdx = startMatch.index + startMatch[0].length;
+
+  // Find the closing brace by counting braces
+  let braceCount = 1;
+  let endIdx = startIdx;
+  while (braceCount > 0 && endIdx < tsContent.length) {
+    if (tsContent[endIdx] === '{') braceCount++;
+    if (tsContent[endIdx] === '}') braceCount--;
+    endIdx++;
+  }
+
+  const body = tsContent.slice(startIdx, endIdx - 1);
+
+  // Match each icon: IconName: `<svg...>`,
+  // Use a state machine to handle template literals with backticks
+  const lines = body.split('\n');
+  let currentIconName = null;
+  let currentSvg = '';
+  let inTemplateLiteral = false;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Skip JSDoc comments
+    if (trimmed.startsWith('/**') || trimmed.startsWith('*')) {
+      continue;
+    }
+
+    // Check for icon name start: IconName: `
+    const iconStartMatch = trimmed.match(/^(\w+):\s*`(.*)$/);
+    if (iconStartMatch && !inTemplateLiteral) {
+      currentIconName = iconStartMatch[1];
+      const rest = iconStartMatch[2];
+
+      // Check if it ends on the same line
+      if (rest.endsWith('`,') || rest.endsWith('`')) {
+        icons[currentIconName] = rest.replace(/`,?$/, '');
+        currentIconName = null;
+      } else {
+        currentSvg = rest + '\n';
+        inTemplateLiteral = true;
+      }
+      continue;
+    }
+
+    // Continue collecting SVG content
+    if (inTemplateLiteral && currentIconName) {
+      // Check if this line ends the template literal
+      if (trimmed.endsWith('`,') || trimmed === '`,' || trimmed === '`') {
+        currentSvg += line.replace(/\s*`,?$/, '');
+        icons[currentIconName] = currentSvg.trim();
+        currentIconName = null;
+        currentSvg = '';
+        inTemplateLiteral = false;
+      } else {
+        currentSvg += line + '\n';
+      }
+    }
+  }
+
+  return icons;
+}
+
+
+/**
+ * Generate C# ItemTypeIcons static class
+ */
+function generateCSharpIcons(icons) {
+  const header = `// <auto-generated />
+// This file is auto-generated from core/models/src/icons/ItemTypeIcons.ts
+// Do not edit this file directly. Run 'npm run generate:models' to regenerate.
+
+namespace AliasClientDb.Models;
+
+/// <summary>
+/// Centralized SVG icon definitions for item types.
+/// Single source of truth for all item type icons across platforms.
+/// </summary>
+public static class ItemTypeIcons
+{
+`;
+
+  const iconFields = Object.entries(icons)
+    .map(([name, svg]) => {
+      // Escape the SVG for C# string literal
+      const escapedSvg = svg.replace(/"/g, '\\"').replace(/\n/g, '\\n');
+      return `    /// <summary>${name} icon SVG.</summary>
+    public const string ${name} = "${escapedSvg}";`;
+    })
+    .join('\n\n');
+
+  const footer = `
+}
+`;
+
+  return header + iconFields + footer;
+}
+
+/**
+ * Generate Swift ItemTypeIcons struct
+ */
+function generateSwiftIcons(icons) {
+  const header = `// <auto-generated />
+// This file is auto-generated from core/models/src/icons/ItemTypeIcons.ts
+// Do not edit this file directly. Run 'npm run generate:models' to regenerate.
+// swiftlint:disable line_length
+
+import Foundation
+
+/// Centralized SVG icon definitions for item types.
+/// Single source of truth for all item type icons across platforms.
+public struct ItemTypeIcons {
+`;
+
+  const iconFields = Object.entries(icons)
+    .map(([name, svg]) => {
+      const swiftName = name.charAt(0).toLowerCase() + name.slice(1);
+      // Use triple-quoted string for multiline SVG
+      return `    /// ${name} icon SVG.
+    public static let ${swiftName} = """
+${svg}
+"""`;
+    })
+    .join('\n\n');
+
+  const footer = `
+}
+`;
+
+  return header + iconFields + footer;
+}
+
+/**
+ * Parse SVG string and convert to React Native SVG component JSX.
+ * Handles circle, rect, path, and text elements.
+ */
+function svgToReactNative(svgString, componentName) {
+  // Extract elements from SVG
+  const circleRegex = /<circle\s+([^>]+)\/>/g;
+  const rectRegex = /<rect\s+([^>]+)\/>/g;
+  const pathRegex = /<path\s+([^>]+)\/>/g;
+  const textRegex = /<text\s+([^>]+)>([^<]+)<\/text>/g;
+
+  const elements = [];
+
+  // Parse circles
+  let match;
+  while ((match = circleRegex.exec(svgString)) !== null) {
+    const attrs = parseAttributes(match[1]);
+    const props = Object.entries(attrs)
+      .map(([key, value]) => {
+        const rnKey = toReactNativeAttr(key);
+        return `${rnKey}="${value}"`;
+      })
+      .join(' ');
+    elements.push({ index: match.index, element: `<Circle ${props} />` });
+  }
+
+  // Parse rects
+  while ((match = rectRegex.exec(svgString)) !== null) {
+    const attrs = parseAttributes(match[1]);
+    const props = Object.entries(attrs)
+      .map(([key, value]) => {
+        const rnKey = toReactNativeAttr(key);
+        return `${rnKey}="${value}"`;
+      })
+      .join(' ');
+    elements.push({ index: match.index, element: `<Rect ${props} />` });
+  }
+
+  // Parse paths
+  while ((match = pathRegex.exec(svgString)) !== null) {
+    const attrs = parseAttributes(match[1]);
+    const props = Object.entries(attrs)
+      .map(([key, value]) => {
+        const rnKey = toReactNativeAttr(key);
+        return `${rnKey}="${value}"`;
+      })
+      .join(' ');
+    elements.push({ index: match.index, element: `<Path ${props} />` });
+  }
+
+  // Parse text elements
+  while ((match = textRegex.exec(svgString)) !== null) {
+    const attrs = parseAttributes(match[1]);
+    const textContent = match[2];
+    const props = Object.entries(attrs)
+      .map(([key, value]) => {
+        const rnKey = toReactNativeAttr(key);
+        return `${rnKey}="${value}"`;
+      })
+      .join(' ');
+    elements.push({ index: match.index, element: `<SvgText ${props}>${textContent}</SvgText>` });
+  }
+
+  // Sort elements by their original position in the SVG
+  elements.sort((a, b) => a.index - b.index);
+
+  const elementLines = elements.map(e => `    ${e.element}`).join('\n');
+
+  return `export const ${componentName}Icon = ({ width = 32, height = 32 }: { width?: number; height?: number }): React.ReactElement => (
+  <Svg width={width} height={height} viewBox="0 0 32 32" fill="none">
+${elementLines}
+  </Svg>
+);`;
+}
+
+/**
+ * Parse HTML/SVG attributes into an object.
+ */
+function parseAttributes(attrString) {
+  const attrs = {};
+  const attrRegex = /(\w+(?:-\w+)*)="([^"]+)"/g;
+  let match;
+  while ((match = attrRegex.exec(attrString)) !== null) {
+    attrs[match[1]] = match[2];
+  }
+  return attrs;
+}
+
+/**
+ * Convert SVG attribute names to React Native SVG attribute names.
+ */
+function toReactNativeAttr(attr) {
+  const mapping = {
+    'stroke-width': 'strokeWidth',
+    'stroke-linecap': 'strokeLinecap',
+    'stroke-linejoin': 'strokeLinejoin',
+    'fill-rule': 'fillRule',
+    'clip-rule': 'clipRule',
+    'text-anchor': 'textAnchor',
+    'font-size': 'fontSize',
+    'font-weight': 'fontWeight',
+    'font-family': 'fontFamily',
+  };
+  return mapping[attr] || attr;
+}
+
+/**
+ * Generate React Native SVG components from icons.
+ */
+function generateReactNativeIcons(icons) {
+  const header = `// <auto-generated />
+// This file is auto-generated from core/models/src/icons/ItemTypeIcons.ts
+// Do not edit this file directly. Run 'npm run generate:models' to regenerate.
+
+import React from 'react';
+import Svg, { Circle, Path, Rect, Text as SvgText } from 'react-native-svg';
+
+`;
+
+  const components = Object.entries(icons)
+    .map(([name, svg]) => svgToReactNative(svg, name))
+    .join('\n\n');
+
+  const iconMap = `
+/**
+ * Map of icon key to React Native SVG component.
+ */
+export const iconComponents = {
+${Object.keys(icons).map(name => `  ${name}: ${name}Icon,`).join('\n')}
+};
+
+export type IconKey = keyof typeof iconComponents;
+`;
+
+  return header + components + iconMap;
+}
+
+/**
+ * Generate Kotlin ItemTypeIcons object
+ */
+function generateKotlinIcons(icons) {
+  const header = `// <auto-generated />
+// This file is auto-generated from core/models/src/icons/ItemTypeIcons.ts
+// Do not edit this file directly. Run 'npm run generate:models' to regenerate.
+@file:Suppress("MaxLineLength")
+
+package net.aliasvault.app.vaultstore.models
+
+/**
+ * Centralized SVG icon definitions for item types.
+ * Single source of truth for all item type icons across platforms.
+ */
+object ItemTypeIcons {
+`;
+
+  const iconFields = Object.entries(icons)
+    .map(([name, svg]) => {
+      const kotlinName = name.replace(/([A-Z])/g, '_$1').toUpperCase().replace(/^_/, '');
+      // Use trimIndent for multiline string
+      return `    /**
+     * ${name} icon SVG.
+     */
+    val ${kotlinName} = """
+${svg}
+    """.trimIndent()`;
+    })
+    .join('\n\n');
+
+  const footer = `
+}
+`;
+
+  return header + iconFields + footer;
+}
+
 /**
  * Main execution
  */
@@ -1067,6 +1394,46 @@ function main() {
   const kotlinItemTypeContent = generateKotlinItemType(itemTypes);
   fs.writeFileSync(KOTLIN_ITEM_TYPE_OUTPUT, kotlinItemTypeContent, 'utf8');
   console.log(`Generated: ${KOTLIN_ITEM_TYPE_OUTPUT}`);
+
+  // ==================== ICON GENERATION ====================
+
+  // Read TypeScript ItemTypeIcons source
+  if (!fs.existsSync(TS_ICONS_SOURCE)) {
+    console.warn(`Warning: Icons source file not found: ${TS_ICONS_SOURCE}`);
+  } else {
+    const tsIconsContent = fs.readFileSync(TS_ICONS_SOURCE, 'utf8');
+    const iconSvgs = parseItemTypeIconSvgs(tsIconsContent);
+
+    if (Object.keys(iconSvgs).length === 0) {
+      console.warn('Warning: No icon SVGs found in source file');
+    } else {
+      console.log(`Parsed ${Object.keys(iconSvgs).length} icon SVGs: ${Object.keys(iconSvgs).join(', ')}`);
+
+      // Generate C# ItemTypeIcons
+      ensureDir(CS_ICONS_OUTPUT);
+      const csIconsContent = generateCSharpIcons(iconSvgs);
+      fs.writeFileSync(CS_ICONS_OUTPUT, csIconsContent, 'utf8');
+      console.log(`Generated: ${CS_ICONS_OUTPUT}`);
+
+      // Generate Swift ItemTypeIcons
+      ensureDir(SWIFT_ICONS_OUTPUT);
+      const swiftIconsContent = generateSwiftIcons(iconSvgs);
+      fs.writeFileSync(SWIFT_ICONS_OUTPUT, swiftIconsContent, 'utf8');
+      console.log(`Generated: ${SWIFT_ICONS_OUTPUT}`);
+
+      // Generate Kotlin ItemTypeIcons
+      ensureDir(KOTLIN_ICONS_OUTPUT);
+      const kotlinIconsContent = generateKotlinIcons(iconSvgs);
+      fs.writeFileSync(KOTLIN_ICONS_OUTPUT, kotlinIconsContent, 'utf8');
+      console.log(`Generated: ${KOTLIN_ICONS_OUTPUT}`);
+
+      // Generate React Native ItemTypeIcons components
+      ensureDir(RN_ICONS_OUTPUT);
+      const rnIconsContent = generateReactNativeIcons(iconSvgs);
+      fs.writeFileSync(RN_ICONS_OUTPUT, rnIconsContent, 'utf8');
+      console.log(`Generated: ${RN_ICONS_OUTPUT}`);
+    }
+  }
 
   console.log('\nCode generation complete!');
 }
