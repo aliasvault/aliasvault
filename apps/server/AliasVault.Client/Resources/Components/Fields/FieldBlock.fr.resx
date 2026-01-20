@@ -94,19 +94,19 @@
   </data>
   <!-- Card Field Labels -->
   <data name="FieldLabel_card_number" xml:space="preserve">
-    <value>Card Number</value>
+    <value>Numéro de la carte</value>
     <comment>Label for card number field</comment>
   </data>
   <data name="FieldLabel_card_cardholder_name" xml:space="preserve">
-    <value>Cardholder Name</value>
+    <value>Nom du titulaire de la carte</value>
     <comment>Label for cardholder name field</comment>
   </data>
   <data name="FieldLabel_card_expiry_month" xml:space="preserve">
-    <value>Expiry Month</value>
+    <value>Mois d'expiration</value>
     <comment>Label for expiry month field</comment>
   </data>
   <data name="FieldLabel_card_expiry_year" xml:space="preserve">
-    <value>Expiry Year</value>
+    <value>Année d'expiration</value>
     <comment>Label for expiry year field</comment>
   </data>
   <data name="FieldLabel_card_cvv" xml:space="preserve">
