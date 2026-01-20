@@ -4,8 +4,16 @@ name: Unit Tests
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/server/**'
+      - 'core/**'
+      - '.github/workflows/dotnet-unit-tests.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/server/**'
+      - 'core/**'
+      - '.github/workflows/dotnet-unit-tests.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

@@ -3,8 +3,20 @@ name: Browser Extension Build
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/browser-extension/**'
+      - 'core/**'
+      - '.github/workflows/browser-extension-build.yml'
+      - '.github/actions/build-browser-extension/**'
+      - '.github/actions/build-core-libraries/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/browser-extension/**'
+      - 'core/**'
+      - '.github/workflows/browser-extension-build.yml'
+      - '.github/actions/build-browser-extension/**'
+      - '.github/actions/build-core-libraries/**'
   workflow_dispatch:
 
 concurrency:

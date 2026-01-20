@@ -3,8 +3,20 @@ name: Docker Build Tests
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/server/**'
+      - 'dockerfiles/**'
+      - 'docker-compose.yml'
+      - 'install.sh'
+      - '.github/workflows/docker-build.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/server/**'
+      - 'dockerfiles/**'
+      - 'docker-compose.yml'
+      - 'install.sh'
+      - '.github/workflows/docker-build.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

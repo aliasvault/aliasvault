@@ -1,10 +1,19 @@
-name: iOS UI Tests
+# iOS native E2E tests
+name: E2E Tests - iOS
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-ios.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-ios.yml'
   workflow_dispatch:
 
 concurrency:
@@ -12,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ios-ui-tests:
+  ios-e2e-tests:
     if: false  # Temporarily disabled - will re-test in separate PR
     timeout-minutes: 60
     runs-on: macos-15
@@ -216,7 +225,7 @@ jobs:
         env:
           IDEFileSystemSynchronizedGroupsAreEnabled: NO
 
-      - name: Run iOS UI Tests
+      - name: Run iOS E2E Tests
         run: |
           cd ios
           xcodebuild test-without-building \
@@ -255,7 +264,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ios-ui-test-results
+          name: ios-e2e-test-results
           path: apps/mobile-app/ios/TestResults.xcresult
           retention-days: 14
 
@@ -263,7 +272,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ios-ui-test-attachments
+          name: ios-e2e-test-attachments
           path: /tmp/test-attachments/
           retention-days: 14
           if-no-files-found: ignore
@@ -272,7 +281,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: ios-ui-test-logs
+          name: ios-e2e-test-logs
           path: |
             /tmp/api-server.log
             /tmp/metro.log

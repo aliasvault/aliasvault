@@ -3,8 +3,20 @@ name: Mobile App Build
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/mobile-app-build.yml'
+      - '.github/actions/build-android-app/**'
+      - '.github/actions/build-ios-app/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/mobile-app-build.yml'
+      - '.github/actions/build-android-app/**'
+      - '.github/actions/build-ios-app/**'
   workflow_dispatch:
     inputs:
       build_android_signed:

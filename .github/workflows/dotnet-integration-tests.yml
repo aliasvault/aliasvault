@@ -4,8 +4,18 @@ name: Integration Tests
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/server/**'
+      - 'core/**'
+      - 'install.sh'
+      - '.github/workflows/dotnet-integration-tests.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/server/**'
+      - 'core/**'
+      - 'install.sh'
+      - '.github/workflows/dotnet-integration-tests.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

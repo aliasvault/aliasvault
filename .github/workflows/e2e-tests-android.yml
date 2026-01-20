@@ -1,10 +1,19 @@
-name: Android UI Tests
+# Android native E2E tests
+name: E2E Tests - Android
 
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-android.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-android.yml'
   workflow_dispatch:
 
 concurrency:
@@ -12,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  android-ui-tests:
+  android-e2e-tests:
     if: false  # Temporarily disabled - will re-test in separate PR
     timeout-minutes: 60
     runs-on: ubuntu-latest
@@ -179,7 +188,7 @@ jobs:
             sleep 2
           done
 
-      - name: Build and Run Android UI Tests
+      - name: Build and Run Android E2E Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
@@ -212,7 +221,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-ui-test-results
+          name: android-e2e-test-results
           path: apps/mobile-app/android/app/build/reports/androidTests/
           retention-days: 14
 
@@ -220,7 +229,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: android-ui-test-outputs
+          name: android-e2e-test-outputs
           path: apps/mobile-app/android/app/build/outputs/androidTest-results/
           retention-days: 14
 
@@ -228,7 +237,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: android-ui-test-logs
+          name: android-e2e-test-logs
           path: |
             /tmp/api-server.log
             /tmp/metro.log
