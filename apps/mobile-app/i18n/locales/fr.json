@@ -21,7 +21,7 @@
     "enabled": "Activé",
     "disabled": "Désactivé",
     "twoFactorAuthentication": "Authentification à double facteur",
-    "add": "Add",
+    "add": "Ajouter",
     "attachments": "Pièces jointes",
     "deleteItemConfirmTitle": "Supprimer l'élement",
     "deleteItemConfirmDescription": "Êtes-vous certain de vouloir supprimer cet élément?",
@@ -75,9 +75,9 @@
     "loggedInAs": "Connecté en tant que"
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Modifications non synchronisées",
+    "unsyncedChangesWarning": "Vous avez des modifications non synchronisées qui seront perdues si vous vous déconnectez maintenant. Êtes-vous sûr de vouloir continuer ?",
+    "logoutAnyway": "Se déconnecter quand même"
   },
   "vault": {
     "syncingVault": "Synchronisation du coffre",
@@ -87,8 +87,8 @@
     "executingOperation": "Exécution de l'opération...",
     "checkingVaultUpdates": "Vérification des mises à jour du coffre",
     "syncingUpdatedVault": "Synchronisation du coffre mis à jour",
-    "mergingVault": "Merging vault changes",
-    "uploadingChanges": "Uploading changes",
+    "mergingVault": "Fusion des modifications du coffre",
+    "uploadingChanges": "Envoi des modifications",
     "errors": {
       "failedToGetEncryptedDatabase": "Impossible d'obtenir la base de données chiffrée",
       "usernameNotFound": "Identifiant non trouvé",
@@ -98,7 +98,7 @@
       "serverVersionNotSupported": "Le serveur AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette application mobile. Veuillez contacter le support si vous avez besoin d'aide.",
       "appOutdated": "Cette application est obsolète et ne peut pas être utilisée pour accéder à cette (nouvelle) version du coffre. Veuillez mettre à jour l'application AliasVault pour continuer.",
       "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité.",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
+      "passwordChangeRequiresOnline": "Le changement de mot de passe nécessite une connexion internet. Veuillez réessayer une fois connecté."
     }
   },
   "credentials": {
@@ -438,13 +438,13 @@
   },
   "navigation": {
     "credentials": "Identifiants",
-    "vault": "Vault",
+    "vault": "Coffre-fort",
     "emails": "E-mails",
     "settings": "Paramètres"
   },
   "itemTypes": {
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Création",
+    "editing": "Édition",
     "login": {
       "title": "Se connecter"
     },
@@ -452,27 +452,27 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card",
-      "cardInformation": "Card Information"
+      "title": "Carte de crédit",
+      "cardInformation": "Informations de la carte"
     },
     "note": {
       "title": "Note"
     },
-    "addField": "Add Field",
-    "addCustomField": "Add Custom Field",
-    "customFields": "Custom Fields",
-    "fieldLabel": "Field Label",
-    "fieldType": "Field Type",
-    "enterFieldName": "Enter field name",
+    "addField": "Ajouter un champ",
+    "addCustomField": "Ajouter un champ personnalisé",
+    "customFields": "Champs Personnalisés",
+    "fieldLabel": "Étiquette du champ",
+    "fieldType": "Type de champ",
+    "enterFieldName": "Entrez le nom du champ",
     "fieldTypes": {
-      "text": "Text",
-      "hidden": "Hidden",
+      "text": "Texte",
+      "hidden": "Masqué",
       "email": "Email",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Téléphone",
+      "number": "Nombre",
       "date": "Date",
-      "textArea": "Text Area"
+      "textArea": "Zone de texte"
     }
   },
   "fieldLabels": {
@@ -484,27 +484,27 @@
     "alias.last_name": "Nom",
     "alias.gender": "Genre",
     "alias.birthdate": "Date de naissance",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
+    "card.cardholder_name": "Nom du titulaire de la carte",
+    "card.number": "Numéro de la carte",
+    "card.expiry_month": "Mois d'expiration",
+    "card.expiry_year": "Année d'expiration",
     "card.cvv": "CVV",
     "card.pin": "PIN",
     "notes.content": "Notes"
   },
   "items": {
-    "title": "Items",
-    "addItem": "Add Item",
-    "editItem": "Edit Item",
+    "title": "Éléments",
+    "addItem": "Ajouter un élément",
+    "editItem": "Modifier l'identifiant",
     "deleteItem": "Supprimer l'élement",
-    "itemDetails": "Item Details",
-    "itemCreated": "Item Created",
+    "itemDetails": "Informations détaillées",
+    "itemCreated": "Élément créé",
     "emailPreview": "Aperçu de l'e-mail",
     "untitled": "Untitled",
     "name": "Nom",
-    "namePlaceholder": "e.g., Google, Amazon",
+    "namePlaceholder": "ex: Google, Amazon",
     "url": "URL",
-    "urlPlaceholder": "e.g., https://google.com",
+    "urlPlaceholder": "ex: https://google.com",
     "service": "Service",
     "serviceName": "Nom du service",
     "serviceUrl": "URL du service",
@@ -536,11 +536,11 @@
     "publicEmailTitle": "Fournisseurs d'email public temporaires",
     "publicEmailDescription": "Anonyme mais confidentiel limitée. Le contenu des e-mails est lisible par toute personne qui connaît l'adresse.",
     "searchPlaceholder": "Rechercher dans le coffre...",
-    "noMatchingItems": "No matching items found",
-    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noMatchingItems": "Aucun élément correspondant trouvé",
+    "noItemsFound": "Aucun élément trouvé. Créez en un pour commencer. Astuce : vous pouvez également vous connecter à l'application Web AliasVault pour importer les identifiants depuis d'autres gestionnaires de mots de passe.",
     "noPasskeysFound": "Aucune clé d'accès n'a encore été créée. Les clés d'accès sont créés en visitant un site Web qui propose des clés d'accès comme méthode d'authentification.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
+    "noAttachmentsFound": "Aucun élément avec pièces jointes trouvé",
+    "noItemsOfTypeFound": "Aucun élément {{type}} trouvé",
     "recentEmails": "E-mails récents",
     "loadingEmails": "Chargement des e-mails...",
     "noEmailsYet": "Pas encore d'e-mails reçus.",
@@ -555,16 +555,16 @@
     "includeNumbers": "Nombres (0-9)",
     "includeSpecialChars": "Caractères spéciaux (!@#)",
     "avoidAmbiguousChars": "Éviter les caractères ambigus",
-    "deletingItem": "Deleting item...",
-    "errorLoadingItems": "Error loading items",
+    "deletingItem": "Suppression de l'élément...",
+    "errorLoadingItems": "Erreur lors du chargement des éléments",
     "vaultSyncFailed": "Échec de la synchronisation du coffre",
     "vaultSyncedSuccessfully": "Le coffre a été synchronisé avec succès",
     "vaultUpToDate": "Le coffre est à jour",
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour synchroniser votre coffre.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "itemCreatedMessage": "Votre nouvel élément a été ajouté à votre coffre et est prêt à être utilisé.",
     "switchBackToBrowser": "Passez à votre navigateur pour continuer.",
     "filters": {
-      "all": "(All) Items",
+      "all": "(Tous) Éléments",
       "passkeys": "Clés d'accès",
       "aliases": "Alias",
       "userpass": "Mots de passe",
