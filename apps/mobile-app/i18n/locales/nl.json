@@ -537,10 +537,10 @@
     "publicEmailDescription": "Anoniem maar beperkte privacy. E-mail inhoud is leesbaar door iedereen die het adres kent.",
     "searchPlaceholder": "Vault doorzoeken...",
     "noMatchingItems": "Geen items gevonden",
-    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noItemsFound": "Geen items gevonden. Maak er een aan om te beginnen. Tip: je kunt ook inloggen op de AliasVault webapp om items te importeren uit andere wachtwoord-managers.",
     "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
+    "noAttachmentsFound": "Geen items gevonden met bijlagen",
+    "noItemsOfTypeFound": "Geen {{type}} items gevonden",
     "recentEmails": "Recente e-mails",
     "loadingEmails": "E-mails laden...",
     "noEmailsYet": "Nog geen e-mails ontvangen.",
@@ -555,16 +555,16 @@
     "includeNumbers": "Cijfers (0-9)",
     "includeSpecialChars": "Speciale tekens (!@#)",
     "avoidAmbiguousChars": "Onduidelijke tekens vermijden",
-    "deletingItem": "Deleting item...",
-    "errorLoadingItems": "Error loading items",
+    "deletingItem": "Item verwijderen...",
+    "errorLoadingItems": "Fout bij het laden van items",
     "vaultSyncFailed": "Vault synchronisatie mislukt",
     "vaultSyncedSuccessfully": "Vault succesvol gesynchroniseerd",
     "vaultUpToDate": "Vault is up-to-date",
     "offlineMessage": "Je bent offline. Maak verbinding met het internet om je vault te synchroniseren.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "itemCreatedMessage": "Je nieuwe item is toegevoegd aan je vault en is klaar voor gebruik.",
     "switchBackToBrowser": "Schakel terug naar je browser om door te gaan.",
     "filters": {
-      "all": "(All) Items",
+      "all": "(Alle) Items",
       "passkeys": "Passkeys",
       "aliases": "Aliassen",
       "userpass": "Wachtwoorden",
@@ -582,17 +582,17 @@
       "discard": "Ongedaan maken"
     },
     "toasts": {
-      "itemUpdated": "Item updated successfully",
-      "itemCreated": "Item created successfully",
-      "itemDeleted": "Item deleted successfully",
+      "itemUpdated": "Item succesvol bijgewerkt",
+      "itemCreated": "Item succesvol aangemaakt",
+      "itemDeleted": "Item succesvol verwijderd",
       "usernameCopied": "Gebruikersnaam gekopieerd naar klembord",
       "emailCopied": "E-mail gekopieerd naar klembord",
       "passwordCopied": "Wachtwoord gekopieerd naar klembord"
     },
     "createNewAliasFor": "Nieuwe alias maken voor",
     "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
+      "loadFailed": "Fout bij laden van item",
+      "saveFailed": "Fout bij opslaan van item"
     },
     "contextMenu": {
       "title": "Item Options",
