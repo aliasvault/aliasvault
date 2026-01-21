@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>+ New</value>
+    <value>+ Nieuw</value>
     <comment>Text for the new item button</comment>
   </data>
   <data name="NewAliasButtonShort" xml:space="preserve">
@@ -87,11 +87,11 @@
     <comment>Placeholder text for alias name field</comment>
   </data>
   <data name="NamePlaceholderCard" xml:space="preserve">
-    <value>E.g. Mastercard</value>
+    <value>Bijv. Mastercard</value>
     <comment>Placeholder text for card name field</comment>
   </data>
   <data name="NamePlaceholderNote" xml:space="preserve">
-    <value>E.g. Passport Details</value>
+    <value>Bijv. Paspoort</value>
     <comment>Placeholder text for note name field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
@@ -103,15 +103,15 @@
     <comment>Continue button text for non-alias types</comment>
   </data>
   <data name="CreateNewLoginTitle" xml:space="preserve">
-    <value>Create New Login</value>
+    <value>Maak nieuwe login</value>
     <comment>Title for creating a new login item</comment>
   </data>
   <data name="CreateNewCreditCardTitle" xml:space="preserve">
-    <value>Create New Card</value>
+    <value>Maak nieuwe creditcard</value>
     <comment>Title for creating a new credit card item</comment>
   </data>
   <data name="CreateNewNoteTitle" xml:space="preserve">
-    <value>Create New Note</value>
+    <value>Maak nieuwe notitie</value>
     <comment>Title for creating a new note item</comment>
   </data>
   <data name="TypeLogin" xml:space="preserve">
@@ -123,7 +123,7 @@
     <comment>Alias item type label</comment>
   </data>
   <data name="TypeCard" xml:space="preserve">
-    <value>Card</value>
+    <value>Creditcard</value>
     <comment>Credit card item type label (short)</comment>
   </data>
   <data name="TypeNote" xml:space="preserve">
@@ -135,11 +135,11 @@
     <comment>Loading message while creating alias</comment>
   </data>
   <data name="CreateItemErrorMessage" xml:space="preserve">
-    <value>Error creating a new item. Please try again (later) or log-out and in again.</value>
+    <value>Fout bij het aanmaken van een nieuw item. Probeer het opnieuw (later) of log uit en in opnieuw.</value>
     <comment>Error message when item creation fails</comment>
   </data>
   <data name="ItemCreatedSuccessMessage" xml:space="preserve">
-    <value>Item created successfully.</value>
+    <value>Item succesvol aangemaakt.</value>
     <comment>Success message when item is created</comment>
   </data>
 </root>
