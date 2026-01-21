@@ -71,7 +71,7 @@
     <comment>Email date field label</comment>
   </data>
   <data name="ItemLabel" xml:space="preserve">
-    <value>Item:</value>
+    <value>Tieto:</value>
     <comment>Email item field label</comment>
   </data>
   <data name="NoneValue" xml:space="preserve">
