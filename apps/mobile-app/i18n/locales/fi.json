@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
-      "unknownError": "Tapahtui tuntematon virhe. Yritä uudelleen.",
+      "unknownError": "Tapahtui tuntematon virhe.",
       "unknownErrorTryAgain": "Tapahtui tuntematon virhe. Yritä uudelleen.",
       "serverVersionTooOld": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta se voi käyttää tätä ominaisuutta. Ota yhteyttä palvelimen ylläpitäjään jos tarvitset apua."
     }
@@ -209,8 +209,6 @@
   },
   "passkeys": {
     "passkey": "Todennusavain",
-    "site": "Sivusto",
-    "displayName": "Näyttönimi",
     "helpText": "Todennusavaimet, Passkey, luodaan sivustolle pyydettäessä. Niitä ei voi manuaalisesti muokata. Voit poistaa tämän todennusavaimen, voit poistaa sen tästä käyttäjätunnuksesta.",
     "passkeyMarkedForDeletion": "Todennusavain merkitty poistettavaksi",
     "passkeyWillBeDeleted": "Tämä todennusavain poistetaan, kun tallennat tämän käyttäjätiedon."
@@ -317,13 +315,6 @@
       "pinDescription": "Käytä mukautettua PIN-koodia avataksesi holvisi nopeammin.",
       "pinEnabled": "PIN-lukituksen avaus käytössä onnistuneesti",
       "pinDisabled": "PIN-lukituksen avaus on poistettu käytöstä",
-      "setupPin": "Aseta PIN-koodi",
-      "enterNewPin": "Syötä uusi PIN",
-      "enterNewPinDescription": "Valitse PIN-koodi avataksesi holvisi",
-      "confirmPin": "Vahvista PIN",
-      "confirmPinDescription": "Syötä PIN-koodi uudelleen vahvistaaksesi",
-      "pinMismatch": "PIN-koodit eivät täsmää. Yritä uudelleen.",
-      "pinLocked": "PIN-koodi on lukittu liian monen epäonnistuneen yrityksen jälkeen. Käytä pääsalasanaa.",
       "passwordHelp": "Syötä koko pääsalasanasi uudelleen avataksesi holvisi. Tämä on aina käytössä varamenettelynä.",
       "keystoreIOS": "iOS Avainketju",
       "keystoreAndroid": "Android Keystore"
@@ -421,23 +412,16 @@
     "qrScanner": {
       "title": "QR-koodiskanneri",
       "scanningMessage": "Skannaa AliasVault QR code",
-      "invalidQrCode": "Virheellinen QR-koodi",
-      "notAliasVaultQr": "Tämä ei ole kelvollinen AliasVault QR-koodi. Ole hyvä ja skannaa AliasVaultin luoma QR-koodi.",
-      "cameraPermissionTitle": "Kameran käyttöoikeus tarvitaan",
-      "cameraPermissionMessage": "Salli kameran käyttöoikeus skannata QR-koodeja.",
       "mobileLogin": {
         "confirmTitle": "Vahvista kirjautumispyyntö",
         "confirmSubtitle": "Tunnistaudu uudelleen hyväksyäksesi kirjautuminen toisella laitteella.",
         "confirmMessage": "Olet kirjautumamassa sisään etälaitteeseen, jossa on oma tilisi. Tällä toisella laitteella on täysi pääsy holviisi. Jatka vain, jos luotat tähän laitteeseen.",
         "successDescription": "Etälaite on onnistuneesti kirjautunut sisään.",
-        "requestExpired": "Tämä kirjautumispyyntö on vanhentunut. Luo uusi QR-koodi.",
-        "authenticationFailed": "Tunnistautuminen epäonnistui, yritä uudelleen!",
-        "noAuthMethodEnabled": "Biometrinen tai PIN-koodilla lukitus tulee ottaa käyttöön, jotta lukitus voidaan avata mobiililaitteella"
+        "requestExpired": "Tämä kirjautumispyyntö on vanhentunut. Luo uusi QR-koodi."
       }
     }
   },
   "navigation": {
-    "credentials": "Käyttäjätunnukset",
     "vault": "Holvi",
     "emails": "Sähköpostit",
     "settings": "Asetukset"
@@ -499,12 +483,11 @@
     "deleteItem": "Poista kohde",
     "itemDetails": "Näytä yksityiskohdat",
     "itemCreated": "Tieto luotu",
+    "itemCreatedMessage": "Uusi tietosi on lisätty holviisi ja valmis käytettäväksi.",
     "emailPreview": "Sähköpostin esikatselu",
     "untitled": "Nimetön",
     "name": "Nimi",
-    "namePlaceholder": "esim. Google, Amazon",
     "url": "URL",
-    "urlPlaceholder": "esim. https://google.com",
     "service": "Palvelu",
     "serviceName": "Palvelun nimi",
     "serviceUrl": "Palvelun URL-osoite",
@@ -561,7 +544,6 @@
     "vaultSyncedSuccessfully": "Holvi synkronoitu",
     "vaultUpToDate": "Holvi on ajan tasalla",
     "offlineMessage": "Olet ei-verkkotilassa. Yhdistä internetiin synkronoidaksesi holvisi.",
-    "itemCreatedMessage": "Uusi tietosi on lisätty holviisi ja valmis käytettäväksi.",
     "switchBackToBrowser": "Siirry takaisin selaimeen jatkaaksesi.",
     "filters": {
       "all": "(Kaikki) tiedot",
@@ -583,17 +565,13 @@
     },
     "toasts": {
       "itemUpdated": "Item updated successfully",
-      "itemCreated": "Item created successfully",
+      "itemCreated": "Tieto luotu onnistuneesti",
       "itemDeleted": "Item deleted successfully",
       "usernameCopied": "Käyttäjänimi kopioitu leikepöydälle",
       "emailCopied": "Sähköpostiosoite kopioitu leikepöydälle",
       "passwordCopied": "Salasana kopioitu leikepöydälle"
     },
     "createNewAliasFor": "Luo uusi alias kohteelle",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "Muokkaa",
@@ -702,7 +680,6 @@
   },
   "sync": {
     "offline": "Offline",
-    "offlineWithPending": "Offline (pending)",
     "syncing": "Syncing...",
     "pending": "Pending sync",
     "retrySync": "Tap to retry",
@@ -724,7 +701,6 @@
     },
     "alerts": {
       "syncIssue": "Ei yhteyttä",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Avaa paikallinen holvi",
       "retrySync": "Yritä synkronointia uudelleen"
     },
