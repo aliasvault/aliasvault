@@ -167,28 +167,6 @@
     "vaultUpgradeRequired": "需要升级密码库。",
     "dismissPopup": "关闭弹窗"
   },
-  "credentials": {
-    "changePasswordComplexity": "修改密码复杂度",
-    "passwordLength": "密码长度",
-    "includeLowercase": "包含小写字母",
-    "includeUppercase": "包含大写字母",
-    "includeNumbers": "包含数字",
-    "includeSpecialChars": "包含特殊字符",
-    "avoidAmbiguousChars": "避免易混淆字符（o、0 等）",
-    "privateEmailTitle": "私人电子邮箱",
-    "privateEmailAliasVaultServer": "AliasVault服务器",
-    "privateEmailDescription": "端到端加密，完全私密。",
-    "publicEmailTitle": "公开临时邮箱供应商",
-    "publicEmailDescription": "匿名但隐私有限。任何知晓该邮箱地址的人均可查看邮件内容。",
-    "generateRandomUsername": "生成随机用户名",
-    "generateRandomPassword": "生成随机密码",
-    "generateNewPreview": "生成新预览",
-    "generateRandomAlias": "生成随机别名",
-    "validation": {
-      "required": "此字段为必填项"
-    },
-    "tags": "标签"
-  },
   "items": {
     "title": "Items",
     "itemName": "名称",
@@ -226,7 +204,27 @@
     "deleteItemConfirm": "您确定要删除此项目吗？",
     "viewHistory": "View history",
     "history": "History",
-    "noHistoryAvailable": "No history available"
+    "noHistoryAvailable": "No history available",
+    "tags": "标签",
+    "changePasswordComplexity": "修改密码复杂度",
+    "passwordLength": "密码长度",
+    "includeLowercase": "包含小写字母",
+    "includeUppercase": "包含大写字母",
+    "includeNumbers": "包含数字",
+    "includeSpecialChars": "包含特殊字符",
+    "avoidAmbiguousChars": "避免易混淆字符（o、0 等）",
+    "privateEmailTitle": "私人邮箱",
+    "privateEmailAliasVaultServer": "AliasVault 服务器",
+    "privateEmailDescription": "端到端加密，完全私密。",
+    "publicEmailTitle": "公共临时电子邮箱提供商",
+    "publicEmailDescription": "匿名但隐私性有限，任何知晓其地址的人均可读取电子邮件内容。",
+    "generateRandomUsername": "生成随机用户名",
+    "generateRandomPassword": "生成随机密码",
+    "generateNewPreview": "生成新预览",
+    "generateRandomAlias": "生成随机别名",
+    "validation": {
+      "required": "此字段为必填项"
+    }
   },
   "itemTypes": {
     "selectType": "Add New Item",
@@ -460,8 +458,8 @@
     "restore": "Restore",
     "deletePermanently": "Delete Permanently",
     "emptyAll": "Empty All",
-    "daysRemaining": "{{count}} day remaining",
-    "daysRemaining_plural": "{{count}} days remaining",
+    "daysRemaining_one": "{{count}} day remaining",
+    "daysRemaining_other": "{{count}} days remaining",
     "expiringSoon": "Expiring soon",
     "confirmDeleteTitle": "Delete Permanently?",
     "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
