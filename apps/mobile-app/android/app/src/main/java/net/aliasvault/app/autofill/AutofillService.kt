@@ -380,12 +380,12 @@ class AutofillService : AutofillService() {
 
         val dataSetBuilder = Dataset.Builder(presentation)
 
-        // Get the app/website information to use as service URL
+        // Get the app/website information to use as item URL
         val appInfo = fieldFinder.getAppInfo()
         val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
 
         // Create deep link URL
-        val deepLinkUrl = "aliasvault://credentials/add-edit-page?serviceUrl=$encodedUrl"
+        val deepLinkUrl = "aliasvault://items/add-edit-page?itemUrl=$encodedUrl"
 
         // Add a click listener to open AliasVault app with deep link
         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -508,12 +508,12 @@ class AutofillService : AutofillService() {
 
         val dataSetBuilder = Dataset.Builder(presentation)
 
-        // Get the app/website information to use as service URL
+        // Get the app/website information to use as item URL
         val appInfo = fieldFinder.getAppInfo()
         val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
 
-        // Create deep link URL to credentials page with service URL
-        val deepLinkUrl = "aliasvault://credentials?serviceUrl=$encodedUrl"
+        // Create deep link URL to items page with item URL
+        val deepLinkUrl = "aliasvault://items?itemUrl=$encodedUrl"
 
         // Add a click listener to open AliasVault app with deep link
         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -553,10 +553,10 @@ class AutofillService : AutofillService() {
 
         val dataSetBuilder = Dataset.Builder(presentation)
 
-        // Create deep link URL to open the credentials page
+        // Create deep link URL to open the items page
         val appInfo = fieldFinder.getAppInfo()
         val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
-        val deepLinkUrl = "aliasvault://credentials?serviceUrl=$encodedUrl"
+        val deepLinkUrl = "aliasvault://items?itemUrl=$encodedUrl"
 
         // Add a click listener to open AliasVault app with deep link
         val intent = Intent(Intent.ACTION_VIEW).apply {
