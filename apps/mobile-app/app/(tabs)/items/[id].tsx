@@ -128,12 +128,47 @@ export default function ItemDetailsScreen() : React.ReactNode {
 
   // Extract URL fields for display
   const urlFields = item.Fields.filter(field => field.FieldType === FieldTypes.URL && field.Value);
-  const firstUrl = urlFields.length > 0
-    ? (Array.isArray(urlFields[0].Value) ? urlFields[0].Value[0] : urlFields[0].Value)
-    : null;
 
   // Get email for EmailPreview
   const email = getFieldValue(item, FieldKey.LoginEmail);
+
+  /**
+   * Render all URL values from URL fields.
+   */
+  const renderUrls = (): React.ReactNode => {
+    if (urlFields.length === 0) {
+      return null;
+    }
+
+    return (
+      <View style={styles.urlContainer}>
+        {urlFields.flatMap((urlField) => {
+          // Handle both single string and array of strings
+          const urlValues = Array.isArray(urlField.Value) ? urlField.Value : [urlField.Value];
+
+          return urlValues.map((urlValue, idx) => {
+            const isValidUrl = /^https?:\/\//i.test(urlValue);
+            const key = `${urlField.FieldKey}-${idx}`;
+
+            return isValidUrl ? (
+              <RobustPressable
+                key={key}
+                onPress={() => Linking.openURL(urlValue)}
+              >
+                <Text style={[styles.serviceUrl, { color: colors.primary }]}>
+                  {urlValue}
+                </Text>
+              </RobustPressable>
+            ) : (
+              <Text key={key} style={[styles.serviceUrl, { color: colors.textMuted }]}>
+                {urlValue}
+              </Text>
+            );
+          });
+        })}
+      </View>
+    );
+  };
 
   return (
     <ThemedContainer>
@@ -144,21 +179,7 @@ export default function ItemDetailsScreen() : React.ReactNode {
             <ThemedText type="title" style={styles.serviceName}>
               {item.Name}
             </ThemedText>
-            {firstUrl && (
-              /^https?:\/\//i.test(firstUrl) ? (
-                <RobustPressable
-                  onPress={() => Linking.openURL(firstUrl)}
-                >
-                  <Text style={[styles.serviceUrl, { color: colors.primary }]}>
-                    {firstUrl}
-                  </Text>
-                </RobustPressable>
-              ) : (
-                <Text style={styles.serviceUrl}>
-                  {firstUrl}
-                </Text>
-              )
-            )}
+            {renderUrls()}
           </View>
         </ThemedView>
         <EmailPreview email={email} />
@@ -207,5 +228,9 @@ const styles = StyleSheet.create({
   },
   serviceUrl: {
     fontSize: 14,
+  },
+  urlContainer: {
+    gap: 2,
+    marginTop: 2,
   },
 });
