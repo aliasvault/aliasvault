@@ -64,7 +64,7 @@
     <comment>Error message when item is not found during deletion</comment>
   </data>
   <data name="DeletingItemMessage">
-    <value>Deleting item...</value>
+    <value>Удаление записи...</value>
     <comment>Loading message while deleting item</comment>
   </data>
   <data name="DeleteSuccessMessage">
