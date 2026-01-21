@@ -19,20 +19,20 @@
       </xsd:complexType>
     </xsd:element>
   </xsd:schema>
-  <data name="ViewCredentialsPageTitle">
-    <value>Voir les identifiants</value>
-    <comment>Page title for viewing credentials</comment>
+  <data name="ViewItemPageTitle">
+    <value>Afficher l’élément</value>
+    <comment>Page title for viewing an item</comment>
   </data>
-  <data name="ViewCredentialTitle">
-    <value>Voir l'identifiant</value>
-    <comment>Page header title for viewing a credential</comment>
+  <data name="ViewItemTitle">
+    <value>Afficher l’élément</value>
+    <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
     <value>Modifier</value>
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
-    <value>Modifier l'identifiant</value>
+    <value>Editer l'élément</value>
     <comment>Text for edit button on desktop</comment>
   </data>
   <data name="DeleteButtonMobile">
@@ -40,20 +40,20 @@
     <comment>Text for delete button on mobile</comment>
   </data>
   <data name="DeleteButtonDesktop">
-    <value>Supprimer l'identifiant</value>
+    <value>Supprimer l'élement</value>
     <comment>Text for delete button on desktop</comment>
   </data>
-  <data name="LoginCredentialsSection">
-    <value>Identifiants de connexion</value>
-    <comment>Section header for login credentials</comment>
+  <data name="LoginDetailsSection">
+    <value>Infos de connexion</value>
+    <comment>Section header for login details</comment>
   </data>
-  <data name="GeneratedCredentialsDescription">
-    <value>Ci-dessous vous pouvez voir et copier les identifiants générés pour ce compte. Tous les emails envoyés à l'adresse affichée apparaîtront automatiquement sur cette page.</value>
-    <comment>Description for generated credentials with email support</comment>
+  <data name="GeneratedItemDescription">
+    <value>Ci-dessous vous pouvez voir et copier les détails générés pour cet élément. Tous les e-mails envoyés à l'adresse affichée apparaîtront automatiquement sur cette page.</value>
+    <comment>Description for generated item with email support</comment>
   </data>
-  <data name="StoredCredentialsDescription">
-    <value>Ci-dessous vous pouvez voir et copier les identifiants de connexion enregistrés pour ce compte.</value>
-    <comment>Description for stored credentials without email support</comment>
+  <data name="StoredItemDescription">
+    <value>Ci-dessous vous pouvez voir et copier les informations de connexion stockées pour cet élément.</value>
+    <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
     <value>Email</value>
@@ -91,13 +91,13 @@
     <value>Surnom</value>
     <comment>Label for nickname field</comment>
   </data>
-  <data name="ViewCredentialBreadcrumb">
-    <value>Voir l'identifiant</value>
-    <comment>Breadcrumb text for view credential page</comment>
+  <data name="ViewItemBreadcrumb">
+    <value>Afficher l’élément</value>
+    <comment>Breadcrumb text for view item page</comment>
   </data>
-  <data name="CredentialNotFoundError">
-    <value>Ce mot de passe n'existe plus. Veuillez réessayer.</value>
-    <comment>Error message when credential is not found</comment>
+  <data name="ItemNotFoundError">
+    <value>Cet élément n'existe plus. Veuillez réessayer.</value>
+    <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
     <value>Clé d'accès</value>
@@ -116,7 +116,23 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Les clés d'accès sont créées à partir de l'extension du navigateur ou des applications mobiles lorsque vous y êtes invité par un site Web. Elles ne peuvent pas être modifiées manuellement ou créées via l'application web. Pour supprimer cette clé d'accès, vous pouvez la supprimer de cet identifiant. Pour remplacer ou créer une nouvelle clé d'accès, visitez le site Web et suivez ses instructions.</value>
+    <value>Les clés d'accès sont créées à partir de l'extension du navigateur ou des applications mobiles lorsque vous y êtes invité par un site web. Elles ne peuvent pas être modifiées manuellement ou créées via l'application web. Pour supprimer cette clé d'accès, utilisez le bouton de suppression ci-dessous. Pour remplacer ou créer une nouvelle clé d'accès, visitez le site web et suivez ses instructions.</value>
     <comment>Help text explaining how passkeys work</comment>
+  </data>
+  <data name="Untitled">
+    <value>Untitled</value>
+    <comment>Placeholder for items without a name</comment>
+  </data>
+  <data name="NotesSection">
+    <value>Notes</value>
+    <comment>Section header for notes</comment>
+  </data>
+  <data name="CardSection">
+    <value>Détails de la carte</value>
+    <comment>Section header for credit card details</comment>
+  </data>
+  <data name="CustomFieldsSection">
+    <value>Champs Personnalisés</value>
+    <comment>Section header for custom fields</comment>
   </data>
 </root>

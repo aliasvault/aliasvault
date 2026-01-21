@@ -106,7 +106,7 @@
   </data>
   <!-- Navigation buttons -->
   <data name="ContinueButton">
-    <value>Continue</value>
+    <value>Devam</value>
     <comment>Continue button text</comment>
   </data>
   <data name="GetStartedButton">

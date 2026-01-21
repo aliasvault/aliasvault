@@ -20,7 +20,9 @@
     "notice": "Aviso",
     "enabled": "Habilitado",
     "disabled": "Desabilitado",
-    "twoFactorAuthentication": "Autenticação de Dois Fatores",
+    "twoFactorAuthentication": "Autenticação de dois fatores",
+    "add": "Adicionar",
+    "attachments": "Anexos",
     "deleteItemConfirmTitle": "Excluir Item",
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "errors": {
@@ -72,6 +74,11 @@
     "connectingTo": "Conectando à",
     "loggedInAs": "Logado como"
   },
+  "logout": {
+    "unsyncedChangesTitle": "Alterações Dessincronizadas",
+    "unsyncedChangesWarning": "Você tem alterações dessincronizadas que serão perdidas caso você saia da sua conta agora. Têm certeza que deseja continuar?",
+    "logoutAnyway": "Sair assim mesmo"
+  },
   "vault": {
     "syncingVault": "Sincronizando cofre",
     "uploadingVaultToServer": "Fazendo upload do cofre para o servidor",
@@ -80,6 +87,8 @@
     "executingOperation": "Realizando operação...",
     "checkingVaultUpdates": "Verificando atualizações do cofre",
     "syncingUpdatedVault": "Sincronizando cofre atualizado",
+    "mergingVault": "Integrando mudanças do cofre",
+    "uploadingChanges": "Enviando mudanças",
     "errors": {
       "failedToGetEncryptedDatabase": "Falha ao acessar dados criptografados",
       "usernameNotFound": "Usuário não encontrado",
@@ -88,7 +97,8 @@
       "versionNotSupported": "Esta versão do aplicativo AliasVault não é mais suportada pelo servidor. Por favor atualize seu aplicativo para a última versão.",
       "serverVersionNotSupported": "O servidor do AliasVault precisa ser atualizado para uma nova versão para poder utilizar o aplicativo móvel. Por favor, entre em contato com o suporte caso precise de ajuda.",
       "appOutdated": "Este aplicativo está desatualizado e não pode ser utilizado para acessar essa (nova) versão do cofre. Por favor, atualize seu aplicativo AliasVault para continuar.",
-      "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança."
+      "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança.",
+      "passwordChangeRequiresOnline": "Alteração de senhas requer uma conexão com a internet. Por favor, tente novamente quando estiver online."
     }
   },
   "credentials": {
@@ -164,7 +174,6 @@
       "userpass": "Senhas",
       "attachments": "Anexos"
     },
-    "twoFactorAuth": "Autenticação de dois fatores",
     "totpCode": "Código TOTP",
     "attachments": "Anexos",
     "deleteAttachment": "Excluir",
@@ -429,8 +438,210 @@
   },
   "navigation": {
     "credentials": "Credenciais",
+    "vault": "Cofre",
     "emails": "E-mails",
     "settings": "Configurações"
+  },
+  "itemTypes": {
+    "creating": "Criando",
+    "editing": "Editando",
+    "login": {
+      "title": "Login"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Cartão de Crédito",
+      "cardInformation": "Informações do Cartão"
+    },
+    "note": {
+      "title": "Nota"
+    },
+    "addField": "Adicionar Campo",
+    "addCustomField": "Adicionar Campo Personalizado",
+    "customFields": "Campos Personalizados",
+    "fieldLabel": "Nome do Campo",
+    "fieldType": "Tipo do Campo",
+    "enterFieldName": "Digite o nome do campo",
+    "fieldTypes": {
+      "text": "Texto",
+      "hidden": "Escondido",
+      "email": "E-mail",
+      "url": "URL",
+      "phone": "Telefone",
+      "number": "Número",
+      "date": "Data",
+      "textArea": "Área de Texto"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Nome de usuário",
+    "login.password": "Senha",
+    "login.email": "E-mail",
+    "login.url": "URL",
+    "alias.first_name": "Primeiro Nome",
+    "alias.last_name": "Sobrenome",
+    "alias.gender": "Gênero",
+    "alias.birthdate": "Data de Nascimento",
+    "card.cardholder_name": "Nome do Titular do Cartão",
+    "card.number": "Número do Cartão",
+    "card.expiry_month": "Mês de Expiração",
+    "card.expiry_year": "Ano de Expiração",
+    "card.cvv": "CVV",
+    "card.pin": "Senha",
+    "notes.content": "Notas"
+  },
+  "items": {
+    "title": "Itens",
+    "addItem": "Adicionar Item",
+    "editItem": "Editar Item",
+    "deleteItem": "Excluir Item",
+    "itemDetails": "Detalhes do Item",
+    "itemCreated": "Item Criado",
+    "emailPreview": "Prévia de E-mail",
+    "untitled": "Sem Título",
+    "name": "Nome",
+    "namePlaceholder": "ex.: Google, Amazon",
+    "url": "URL",
+    "urlPlaceholder": "ex.: https://google.com",
+    "service": "Serviço",
+    "serviceName": "Nome do Serviço",
+    "serviceUrl": "URL do Serviço",
+    "loginCredentials": "Crednciais de login",
+    "username": "Nome de usuário",
+    "email": "E-mail",
+    "alias": "Alias",
+    "metadata": "Metadados",
+    "firstName": "Primeiro Nome",
+    "lastName": "Sobrenome",
+    "nickName": "Apelido",
+    "fullName": "Nome Completo",
+    "gender": "Gênero",
+    "birthDate": "Data de Nascimento",
+    "birthDatePlaceholder": "AAAA-MM-DD",
+    "notes": "Notas",
+    "randomAlias": "Alias Aleatório",
+    "manual": "Manual",
+    "generateRandomAlias": "Gerar Alias Aleatório",
+    "clearAliasFields": "Limpar Campos de Alias",
+    "enterFullEmail": "Digite o endereço de e-mail completo",
+    "enterEmailPrefix": "Digite o prefixo do e-mail",
+    "useDomainChooser": "Utilizar seletor de domínio",
+    "enterCustomDomain": "Digitar domínio personalizado",
+    "selectEmailDomain": "Selecionar domínio de e-mail",
+    "privateEmailTitle": "E-mail Privado",
+    "privateEmailAliasVaultServer": "Servidor AliasVault",
+    "privateEmailDescription": "Criptografia E2E, totalmente privado.",
+    "publicEmailTitle": "Provedores Públicos de E-mail Temporário",
+    "publicEmailDescription": "Anônimo mas com privacidade limitada. Conteúdo do e-mail pode ser lido por qualquer um que souber o endereço.",
+    "searchPlaceholder": "Pesquisar cofre...",
+    "noMatchingItems": "Nenhum ítem correspondente encontrado",
+    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noPasskeysFound": "Nenhuma passkey foi criada ainda. Passkeys são veiadas visitando um website que ofereça passkey como método de autenticação.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "recentEmails": "E-mails recentes",
+    "loadingEmails": "Carregando e-mails...",
+    "noEmailsYet": "Nenhum e-mail recebido ainda.",
+    "offlineEmailsMessage": "Você está offline. Por favor conecte-se à internet para carregar seus e-mails.",
+    "emailLoadError": "Ocorreu um erro ao carregar os e-mails. Por favor, tente novamente mais tarde.",
+    "emailUnexpectedError": "Ocorreu um erro inesperado ao carregar e-mails. Por favor, tente novamente mais tarde.",
+    "password": "Senha",
+    "passwordLength": "Tamanho da Senha",
+    "changePasswordComplexity": "Configurações de Senha",
+    "includeLowercase": "Minúsculas (a-z)",
+    "includeUppercase": "Maiúsculas (A-Z)",
+    "includeNumbers": "Números (0-9)",
+    "includeSpecialChars": "Caracteres Especiais (!@#)",
+    "avoidAmbiguousChars": "Evitar Caracteres Ambíguos",
+    "deletingItem": "Deleting item...",
+    "errorLoadingItems": "Error loading items",
+    "vaultSyncFailed": "Sincronização do cofre falhou",
+    "vaultSyncedSuccessfully": "Cofre sincronizado com sucesso",
+    "vaultUpToDate": "Cofre está atualizado",
+    "offlineMessage": "Você está offline. Por favor conecte-se à internet para sincronizar seu cofre.",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "switchBackToBrowser": "Volte ao navegador para continuar.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Senhas",
+      "attachments": "Anexos"
+    },
+    "totpCode": "Código TOTP",
+    "attachments": "Anexos",
+    "deleteAttachment": "Excluir",
+    "fileSavedTo": "Arquivo salvo em",
+    "previewNotSupported": "Pré-visualização não suportada",
+    "downloadToView": "Baixe o arquivo para abri-lo",
+    "unsavedChanges": {
+      "title": "Descartar alterações?",
+      "message": "Você tem alterações pendentes. Tem certeza que deseja descartá-las?",
+      "discard": "Descartar"
+    },
+    "toasts": {
+      "itemUpdated": "Item updated successfully",
+      "itemCreated": "Item created successfully",
+      "itemDeleted": "Item deleted successfully",
+      "usernameCopied": "Nome de usuário copiado para a área de transferência",
+      "emailCopied": "E-mail copiado para a área de transferência",
+      "passwordCopied": "Senha copiada para a área de transferência"
+    },
+    "createNewAliasFor": "Criar novo alias para",
+    "errors": {
+      "loadFailed": "Failed to load item",
+      "saveFailed": "Failed to save item"
+    },
+    "contextMenu": {
+      "title": "Item Options",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "copyUsername": "Copiar Nome de Usuário",
+      "copyEmail": "Copiar E-mail",
+      "copyPassword": "Copiar Senha"
+    },
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available",
+    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "folders": {
+      "folder": "Pasta",
+      "newFolder": "New Folder",
+      "createFolder": "Criar Pasta",
+      "editFolder": "Edit Folder",
+      "folderName": "Folder Name",
+      "folderNamePlaceholder": "e.g., Work, Personal",
+      "folderNameRequired": "Folder name is required",
+      "deleteFolder": "Delete Folder",
+      "deleteFolderKeepItems": "Delete folder only",
+      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderAndItems": "Delete folder and all items",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "noFolder": "No Folder",
+      "selectFolder": "Selecionar Pasta"
+    },
+    "recentlyDeleted": {
+      "title": "Recently Deleted",
+      "noItems": "No deleted items",
+      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
+      "emptyAll": "Empty All",
+      "daysRemaining": "{{count}} day remaining",
+      "daysRemaining_plural": "{{count}} days remaining",
+      "expiringSoon": "Expiring soon",
+      "confirmDeleteTitle": "Delete Permanently?",
+      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "itemRestored": "Item restored",
+      "itemDeleted": "Item permanently deleted",
+      "allItemsDeleted": "All items permanently deleted"
+    }
   },
   "emails": {
     "title": "E-mails",
@@ -489,6 +700,16 @@
     "INTERNAL_SERVER_ERROR": "Erro interno do servidor.",
     "VAULT_ERROR": "O cofre local não está atualizado. Por favor sincronize seu cofre recarregando a página e tente novamente."
   },
+  "sync": {
+    "offline": "Offline",
+    "offlineWithPending": "Offline (pending)",
+    "syncing": "Syncing...",
+    "pending": "Pending sync",
+    "retrySync": "Tap to retry",
+    "backOnline": "Online novamente",
+    "stillOffline": "Ainda está offline",
+    "syncFailed": "Sync failed"
+  },
   "app": {
     "status": {
       "unlockingVault": "Desbloqueando cofre",
@@ -497,13 +718,13 @@
       "retryingConnection": "Reconectando..."
     },
     "offline": {
-      "banner": "Modo offline (apenas leitura)",
+      "banner": "Offline - changes will sync when online",
       "backOnline": "Online novamente",
       "stillOffline": "Ainda está offline"
     },
     "alerts": {
       "syncIssue": "Sem Conexão",
-      "syncIssueMessage": "Não foi possível conectar ao servidor do AliasVault e seu cofre não pôde ser sincronizado. Gostaria de abrir seu cofre local em modo de leitura ou tentar a conexão novamente?",
+      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Abrir Cofre Local",
       "retrySync": "Tentar Sincronizar Novamente"
     },

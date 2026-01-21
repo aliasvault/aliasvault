@@ -60,11 +60,11 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Käyttäjätunnukset</value>
-    <comment>Main credentials page title</comment>
+    <value>Holvi</value>
+    <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Etsi kaikki käyttäjätunnuksesi alta.</value>
+    <value>Etsi kaikkia tietojasi alta.</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -97,13 +97,13 @@
     <comment>Alphabetical sort option</comment>
   </data>
   <!-- Empty State -->
-  <data name="NoCredentialsTitle" xml:space="preserve">
-    <value>Ei käyttäjätunnuksia vielä</value>
-    <comment>Title when no credentials exist</comment>
+  <data name="NoItemsTitle" xml:space="preserve">
+    <value>Ei tietoja vielä. </value>
+    <comment>Title when no items exist</comment>
   </data>
-  <data name="CreateFirstCredentialText" xml:space="preserve">
-    <value>Luo ensimmäinen käyttäjätunnuksesi käyttäen</value>
-    <comment>Text explaining how to create first credential</comment>
+  <data name="CreateFirstItemText" xml:space="preserve">
+    <value>Luo ensimmäinen tietosi käyttäen</value>
+    <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
     <value>"+ Uusi Alias"</value>
@@ -121,8 +121,8 @@
     <value>tai</value>
     <comment>Separator text between options</comment>
   </data>
-  <data name="ImportCredentialsText" xml:space="preserve">
-    <value>Jos olet aiemmin käyttänyt toista salasananhallintaa, voit tuoda siitä käyttäjätunnuksesi.</value>
+  <data name="ImportItemsText" xml:space="preserve">
+    <value>Jos olet aiemmin käyttänyt toista salasananhallintaa, voit tuoda siitä tiedot.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
@@ -130,9 +130,9 @@
     <comment>Import button text</comment>
   </data>
   <!-- Error Messages -->
-  <data name="FailedToLoadCredentialsMessage" xml:space="preserve">
-    <value>Käyttäjätunnusten lataaminen epäonnistui.</value>
-    <comment>Error message when credentials fail to load</comment>
+  <data name="FailedToLoadItemsMessage" xml:space="preserve">
+    <value>Failed to load items.</value>
+    <comment>Error message when items fail to load</comment>
   </data>
   <!-- Filter Options -->
   <data name="FilterLabel" xml:space="preserve">
@@ -140,8 +140,8 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>(All) Käyttäjätunnukset</value>
-    <comment>Filter option to show all credentials</comment>
+    <value>(All) Items</value>
+    <comment>Filter option to show all items</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
     <value>Todennusavaimet</value>
@@ -157,7 +157,11 @@
   </data>
   <data name="FilterAttachmentsOption" xml:space="preserve">
     <value>Liitteet</value>
-    <comment>Filter option to show only credentials with attachments</comment>
+    <comment>Filter option to show only items with attachments</comment>
+  </data>
+  <data name="FilterRecentlyDeletedOption" xml:space="preserve">
+    <value>Recently Deleted</value>
+    <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
   <data name="NoPasskeysFound" xml:space="preserve">
@@ -165,11 +169,62 @@
     <comment>Empty state message when no passkeys are found</comment>
   </data>
   <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>Tunnuksia liitteiden kanssa ei löytynyt.</value>
-    <comment>Empty state message when no credentials with attachments are found</comment>
+    <value>No items with attachments found.</value>
+    <comment>Empty state message when no items with attachments are found</comment>
   </data>
-  <data name="NoCredentialsFound" xml:space="preserve">
-    <value>Valittuun suodattimeen ei löydy tunnuksia.</value>
-    <comment>Empty state message when no credentials match the filter</comment>
+  <data name="NoItemsFound" xml:space="preserve">
+    <value>No items match the selected filter.</value>
+    <comment>Empty state message when no items match the filter</comment>
+  </data>
+  <data name="EmptyFolderMessage" xml:space="preserve">
+    <value>This folder is empty.</value>
+    <comment>Empty state message when folder has no items</comment>
+  </data>
+  <!-- Item Type Filters -->
+  <data name="FilterLoginOption" xml:space="preserve">
+    <value>Logins</value>
+    <comment>Filter option to show only Login items</comment>
+  </data>
+  <data name="FilterAliasOption" xml:space="preserve">
+    <value>Aliakset</value>
+    <comment>Filter option to show only Alias items</comment>
+  </data>
+  <data name="FilterCreditCardOption" xml:space="preserve">
+    <value>Credit Cards</value>
+    <comment>Filter option to show only Credit Card items</comment>
+  </data>
+  <data name="FilterNoteOption" xml:space="preserve">
+    <value>Huomautukset</value>
+    <comment>Filter option to show only Note items</comment>
+  </data>
+  <!-- Folder Management -->
+  <data name="NewFolder" xml:space="preserve">
+    <value>New Folder</value>
+    <comment>Button text for creating a new folder</comment>
+  </data>
+  <data name="EditFolder" xml:space="preserve">
+    <value>Edit Folder</value>
+    <comment>Button text for editing a folder</comment>
+  </data>
+  <data name="DeleteFolder" xml:space="preserve">
+    <value>Delete Folder</value>
+    <comment>Button text for deleting a folder</comment>
+  </data>
+  <data name="BackToRoot" xml:space="preserve">
+    <value>Takaisin</value>
+    <comment>Button text for navigating back to root</comment>
+  </data>
+  <data name="FailedToCreateFolder" xml:space="preserve">
+    <value>Failed to create folder.</value>
+    <comment>Error message when folder creation fails</comment>
+  </data>
+  <data name="FailedToDeleteFolder" xml:space="preserve">
+    <value>Failed to delete folder.</value>
+    <comment>Error message when folder deletion fails</comment>
+  </data>
+  <!-- Infinite Scroll -->
+  <data name="LoadingMore" xml:space="preserve">
+    <value>Loading more...</value>
+    <comment>Text shown when loading more items during infinite scroll</comment>
   </data>
 </root>

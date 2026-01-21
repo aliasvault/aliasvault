@@ -21,6 +21,8 @@
     "enabled": "Otettu käyttöön",
     "disabled": "Pois käytöstä",
     "twoFactorAuthentication": "Kaksivaiheinen tunnistautuminen",
+    "add": "Lisää",
+    "attachments": "Liitteet",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
@@ -72,6 +74,11 @@
     "connectingTo": "Yhdistetään kohteeseen",
     "loggedInAs": "Sisäänkirjautuneena käyttäjänä"
   },
+  "logout": {
+    "unsyncedChangesTitle": "Synkronoimattomat muutokset",
+    "unsyncedChangesWarning": "Sinulla on synkronoimattomia muutoksia, jotka menetetään, jos kirjaudut ulos nyt. Oletko varma, että haluat jatkaa?",
+    "logoutAnyway": "Kirjaudu ulos joka tapauksessa"
+  },
   "vault": {
     "syncingVault": "Synkronoidaan holvia",
     "uploadingVaultToServer": "Ladataan ulospäin holvi palvelimelle",
@@ -80,6 +87,8 @@
     "executingOperation": "Suoritetaan toimintoa...",
     "checkingVaultUpdates": "Tarkistetaan holvin päivitysten varalta",
     "syncingUpdatedVault": "Synkronoidaan päivitettyä holvia",
+    "mergingVault": "Yhdistetään holvin muutoksia",
+    "uploadingChanges": "Siirretään muutoksia",
     "errors": {
       "failedToGetEncryptedDatabase": "Salatun tietokannan haku epäonnistui",
       "usernameNotFound": "Käyttäjänimeä ei löytynyt",
@@ -88,7 +97,8 @@
       "versionNotSupported": "Palvelin ei enää tue tätä AliasVault-mobiilisovelluksen versiota. Päivitä sovelluksesi uusimpaan versioon.",
       "serverVersionNotSupported": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta tätä mobiilisovellusta voi käyttää. Ota yhteyttä tukeen, jos tarvitset apua.",
       "appOutdated": "Tämä sovellus on vanhentunut, eikä sillä voi käyttää tätä (uudempaa) holviversiota. Päivitä AliasVault-sovellus jatkaaksesi.",
-      "passwordChanged": "Salasanasi on muuttunut viimeisimmän sisäänkirjautumisesi jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä."
+      "passwordChanged": "Salasanasi on muuttunut viimeisimmän sisäänkirjautumisesi jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
+      "passwordChangeRequiresOnline": "Salasanan vaihto vaatii internetyhteyden. Yritä uudelleen, kun olet verkossa."
     }
   },
   "credentials": {
@@ -164,7 +174,6 @@
       "userpass": "Salasanat",
       "attachments": "Liitteet"
     },
-    "twoFactorAuth": "Kaksivaiheinen todennus",
     "totpCode": "TOTP-koodi",
     "attachments": "Liitteet",
     "deleteAttachment": "Poista",
@@ -429,8 +438,210 @@
   },
   "navigation": {
     "credentials": "Käyttäjätunnukset",
+    "vault": "Holvi",
     "emails": "Sähköpostit",
     "settings": "Asetukset"
+  },
+  "itemTypes": {
+    "creating": "Luodaan",
+    "editing": "Muokaataan",
+    "login": {
+      "title": "Kirjaudu sisään"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Luottokortti",
+      "cardInformation": "Korttitiedot"
+    },
+    "note": {
+      "title": "Muistiinpanot"
+    },
+    "addField": "Lisää kenttä",
+    "addCustomField": "Lisää räätälöity kenttä",
+    "customFields": "Räätälöidyt kentät",
+    "fieldLabel": "Kentän otsikko",
+    "fieldType": "Kentän tyyppi",
+    "enterFieldName": "Anna kentän nimi",
+    "fieldTypes": {
+      "text": "Teksti",
+      "hidden": "Piilotettu",
+      "email": "Sähköposti",
+      "url": "URL",
+      "phone": "Puhelin",
+      "number": "Numero",
+      "date": "Päivämäärä",
+      "textArea": "Tekstialue"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Käyttäjänimi",
+    "login.password": "Salasana",
+    "login.email": "Sähköposti",
+    "login.url": "URL",
+    "alias.first_name": "Etunimi",
+    "alias.last_name": "Sukunimi",
+    "alias.gender": "Sukupuoli",
+    "alias.birthdate": "Syntymäpäivä",
+    "card.cardholder_name": "Kortinhaltijan nimi",
+    "card.number": "Kortin numero",
+    "card.expiry_month": "Vanhenemiskuukausi",
+    "card.expiry_year": "Vanhenemisvuosi",
+    "card.cvv": "CVV",
+    "card.pin": "PIN-koodi",
+    "notes.content": "Huomautukset"
+  },
+  "items": {
+    "title": "Tiedot",
+    "addItem": "Lisää tieto",
+    "editItem": "Muokkaa tietoa",
+    "deleteItem": "Poista kohde",
+    "itemDetails": "Näytä yksityiskohdat",
+    "itemCreated": "Tieto luotu",
+    "emailPreview": "Sähköpostin esikatselu",
+    "untitled": "Nimetön",
+    "name": "Nimi",
+    "namePlaceholder": "esim. Google, Amazon",
+    "url": "URL",
+    "urlPlaceholder": "esim. https://google.com",
+    "service": "Palvelu",
+    "serviceName": "Palvelun nimi",
+    "serviceUrl": "Palvelun URL-osoite",
+    "loginCredentials": "Sisäänkirjautumistunnistetiedot",
+    "username": "Käyttäjätunnus",
+    "email": "Sähköposti",
+    "alias": "Alias",
+    "metadata": "Metatiedot",
+    "firstName": "Etunimi",
+    "lastName": "Sukunimi",
+    "nickName": "Lempinimi",
+    "fullName": "Koko nimi",
+    "gender": "Sukupuoli",
+    "birthDate": "Syntymäpäivä",
+    "birthDatePlaceholder": "VVVV-KK-PP.",
+    "notes": "Huomautukset",
+    "randomAlias": "Sattumanvarainen alias",
+    "manual": "Käyttäjätunnus ja salasana",
+    "generateRandomAlias": "Luo sattumanvarainen alias",
+    "clearAliasFields": "Tyhjennä alias-kentät",
+    "enterFullEmail": "Syötä koko sähköpostiosoite",
+    "enterEmailPrefix": "Syötä sähköpostin etuliite",
+    "useDomainChooser": "Käytä verkkotunnuksen valitsijaa",
+    "enterCustomDomain": "Syötä mukautettu verkkotunnus",
+    "selectEmailDomain": "Valitse sähköpostiverkkotunnus",
+    "privateEmailTitle": "Yksityinen sähköposti",
+    "privateEmailAliasVaultServer": "AliasVault-palvelin",
+    "privateEmailDescription": "Päästä päähän (E2E) salattu, täysin yksityinen.",
+    "publicEmailTitle": "Julkiset väliaikaisten sähköpostiosoitteiden tarjoajat (PTEP)",
+    "publicEmailDescription": "Anonyymi, mutta rajoitettu yksityisyys. Sähköpostin sisällön voi lukea kuka tahansa, joka tietää osoitteen.",
+    "searchPlaceholder": "Etsitään holvia...",
+    "noMatchingItems": "Vastaavia tietoja ei löytynyt",
+    "noItemsFound": "Tietoja ei löytynyt. Luo sellainen aloittaaksesi. Vinkki: voit myös kirjautua AliasVaultin web-sovellukseen tuodaksesi käyttäjätietoja muista salasananhallintalaitteista.",
+    "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
+    "noAttachmentsFound": "Liitteitä sisältäviä tietoja ei löytynyt",
+    "noItemsOfTypeFound": "No {{type}} tietoja ei löydy",
+    "recentEmails": "Viimeaikaiset sähköpostit",
+    "loadingEmails": "Ladataan sähköposteja...",
+    "noEmailsYet": "Sähköposteja ei ole vielä vastaanotettu.",
+    "offlineEmailsMessage": "Olet ei-verkkotilassa. Yhdistä internetiin ladataksesi sähköpostisi.",
+    "emailLoadError": "Sähköpostien lataamisessa tapahtui virhe. Yritä myöhemmin uudelleen.",
+    "emailUnexpectedError": "Odottamaton virhe sähköpostien lataamisen aikana. Yritä myöhemmin uudelleen.",
+    "password": "Salasana",
+    "passwordLength": "Salasanan pituus",
+    "changePasswordComplexity": "Salasana-asetukset",
+    "includeLowercase": "Pienet kirjaimet (a-ö)",
+    "includeUppercase": "Isot kirjaimet  (A-Ö)",
+    "includeNumbers": "Numerot (0-9)",
+    "includeSpecialChars": "Erikoismerkit (!@#)",
+    "avoidAmbiguousChars": "Vältä epäselviä merkkejä",
+    "deletingItem": "Poistetaan tieto...",
+    "errorLoadingItems": "Virhe ladattaessa tietoja",
+    "vaultSyncFailed": "Holvin synkronointi epäonnistui",
+    "vaultSyncedSuccessfully": "Holvi synkronoitu",
+    "vaultUpToDate": "Holvi on ajan tasalla",
+    "offlineMessage": "Olet ei-verkkotilassa. Yhdistä internetiin synkronoidaksesi holvisi.",
+    "itemCreatedMessage": "Uusi tietosi on lisätty holviisi ja valmis käytettäväksi.",
+    "switchBackToBrowser": "Siirry takaisin selaimeen jatkaaksesi.",
+    "filters": {
+      "all": "(Kaikki) tiedot",
+      "passkeys": "Sala-avaimet",
+      "aliases": "Aliakset",
+      "userpass": "Salasanat",
+      "attachments": "Liitteet"
+    },
+    "totpCode": "TOTP-koodi",
+    "attachments": "Liitteet",
+    "deleteAttachment": "Poista",
+    "fileSavedTo": "Tiedosto tallennettu kohteeseen",
+    "previewNotSupported": "Esikatselua ei tuettu",
+    "downloadToView": "Lataa tiedosto nähdäksesi sen",
+    "unsavedChanges": {
+      "title": "Hylkää muutokset",
+      "message": "Sinulla on tallentamattomia muutoksia. Haluatko varmasti hylätä ne?",
+      "discard": "Hylkää"
+    },
+    "toasts": {
+      "itemUpdated": "Item updated successfully",
+      "itemCreated": "Item created successfully",
+      "itemDeleted": "Item deleted successfully",
+      "usernameCopied": "Käyttäjänimi kopioitu leikepöydälle",
+      "emailCopied": "Sähköpostiosoite kopioitu leikepöydälle",
+      "passwordCopied": "Salasana kopioitu leikepöydälle"
+    },
+    "createNewAliasFor": "Luo uusi alias kohteelle",
+    "errors": {
+      "loadFailed": "Failed to load item",
+      "saveFailed": "Failed to save item"
+    },
+    "contextMenu": {
+      "title": "Item Options",
+      "edit": "Muokkaa",
+      "delete": "Poista",
+      "copyUsername": "Kopioi käyttäjänimi",
+      "copyEmail": "Kopioi sähköposti",
+      "copyPassword": "Kopioi salasana"
+    },
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available",
+    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "folders": {
+      "folder": "Kansio",
+      "newFolder": "New Folder",
+      "createFolder": "Luo kansio",
+      "editFolder": "Edit Folder",
+      "folderName": "Folder Name",
+      "folderNamePlaceholder": "e.g., Work, Personal",
+      "folderNameRequired": "Folder name is required",
+      "deleteFolder": "Delete Folder",
+      "deleteFolderKeepItems": "Delete folder only",
+      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderAndItems": "Delete folder and all items",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "noFolder": "No Folder",
+      "selectFolder": "Valitse kansio"
+    },
+    "recentlyDeleted": {
+      "title": "Recently Deleted",
+      "noItems": "No deleted items",
+      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
+      "emptyAll": "Empty All",
+      "daysRemaining": "{{count}} day remaining",
+      "daysRemaining_plural": "{{count}} days remaining",
+      "expiringSoon": "Expiring soon",
+      "confirmDeleteTitle": "Delete Permanently?",
+      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "itemRestored": "Item restored",
+      "itemDeleted": "Item permanently deleted",
+      "allItemsDeleted": "All items permanently deleted"
+    }
   },
   "emails": {
     "title": "Sähköpostit",
@@ -489,6 +700,16 @@
     "INTERNAL_SERVER_ERROR": "Sisäinen palvelinvirhe.",
     "VAULT_ERROR": "Paikallinen holvi ei ole ajan tasalla. Synkronoi holvisi päivittämällä sivu ja yritä uudelleen."
   },
+  "sync": {
+    "offline": "Offline",
+    "offlineWithPending": "Offline (pending)",
+    "syncing": "Syncing...",
+    "pending": "Pending sync",
+    "retrySync": "Tap to retry",
+    "backOnline": "Takaisin linjoilla!",
+    "stillOffline": "Yhä offline-tilassa",
+    "syncFailed": "Sync failed"
+  },
   "app": {
     "status": {
       "unlockingVault": "Avataan holvia",
@@ -497,13 +718,13 @@
       "retryingConnection": "Yritetään yhdistää uudelleen..."
     },
     "offline": {
-      "banner": "Offline-tila (vain luku)",
+      "banner": "Offline - changes will sync when online",
       "backOnline": "Takaisin linjoilla!",
       "stillOffline": "Yhä offline-tilassa"
     },
     "alerts": {
       "syncIssue": "Ei yhteyttä",
-      "syncIssueMessage": "AliasVault-palvelimeen ei saada yhteyttä ja holviasi ei voida synkronoida. Haluatko avata paikallisen holvisi vain luku-tilassa vai haluatko kokeilla yhteyttä uudelleen?",
+      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Avaa paikallinen holvi",
       "retrySync": "Yritä synkronointia uudelleen"
     },

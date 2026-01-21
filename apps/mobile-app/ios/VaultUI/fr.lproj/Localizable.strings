@@ -9,11 +9,11 @@
 "title" = "Titre";
 "unknown_error" = "Une erreur inconnue s'est produite";
 
-"loading_credentials" = "Chargement des identifiants...";
-"no_credentials_found" = "Aucun identifiant trouvé";
-"no_credentials_match" = "Aucun identifiant existant ne correspond à votre recherche";
-"create_new_credential" = "Créer un nouvel identifiant";
-"select_credential" = "Sélectionner l’identifiant";
+"loading_items" = "Chargement des éléments...";
+"no_items_found" = "Aucun élément trouvé";
+"no_items_match" = "Aucun identifiant existant ne correspond à votre recherche";
+"create_new_item" = "Créer un nouvel élément";
+"select_item" = "Sélectionner un élément";
 "select_text_to_insert" = "Sélectionner le texte à insérer";
 "choose_username" = "Choisissez un nom d'utilisateur";
 "select_text_to_insert_message" = "Sélectionnez le texte à insérer dans le champ de saisie ciblé";
@@ -21,10 +21,8 @@
 "username_prefix" = "Nom d'utilisateur: ";
 "email_prefix" = "E-mail: ";
 "password" = "Mot de passe";
-"credentials_load_error" = "Échec du chargement des identifiants. Veuillez ouvrir l'application AliasVault pour vérifier les mises à jour.";
-"no_credential_selected" = "Aucun identifiant sélectionné.";
-"retrieving_credential" = "Récupération de l'identifiant";
-"retrieving_passkey" = "Récupération de la clé d'accès";
+"items_load_error" = "Impossible de charger les éléments. Veuillez ouvrir l'application AliasVault pour vérifier les mises à jour.";
+"no_item_selected" = "Aucune entrée sélectionnée.";
 
 /* Context menu strings */
 "copy_username" = "Copier le nom d'utilisateur";
@@ -36,7 +34,7 @@
 "email_copied" = "E-mail copié";
 
 /* Search bar */
-"search_credentials" = "Rechercher des identifiants...";
+"search_items" = "Rechercher des éléments...";
 
 /* Passkey registration */
 "create_passkey_title" = "Créer une nouvelle clé d'accès";
@@ -54,10 +52,14 @@
 /* Passkey replacement */
 "create_new_passkey" = "Créer une nouvelle clé d'accès";
 "select_passkey_to_replace" = "Ou, remplacer une clé d'accès existante";
-"confirm_replace" = "Remplacer la clé d'accès";
-"replace_passkey_title" = "Remplacer la clé d'accès";
+"replace_passkey" = "Remplacer la clé d'accès";
 "replace_passkey_explanation" = "Cela remplacera la clé d'accès existante par une nouvelle. Veuillez noter que votre ancienne clé d'accès sera écrasée et ne sera plus accessible. Si vous souhaitez créer une clé d'accès séparée, revenez à l'écran précédent.";
 "create_passkey_explanation" = "Cela crée une nouvelle clé d'accès et la stocke dans votre coffre. Elle sera automatiquement synchronisée sur tous vos appareils qui utilisent AliasVault.";
+
+/* Passkey merge with existing item */
+"passkey_add_to_existing" = "Ou, ajouter la clé d'accès à un élément existant";
+"add_passkey" = "Ajouter une clé d'accès";
+"merge_passkey_explanation" = "Ceci va ajouter une clé d'accès à votre élément existant. Votre mot de passe et d'autres données seront préservées.";
 
 /* PIN Unlock */
 "unlock_vault" = "Déverrouiller le coffre";

@@ -74,9 +74,9 @@
     <value>Veuillez noter:</value>
     <comment>Reset vault please note prefix</comment>
   </data>
-  <data name="ResetVaultCredentialsDeletedNote" xml:space="preserve">
-    <value>Tous les identifiants chiffrés dans votre coffre seront définitivement supprimés</value>
-    <comment>Reset vault note about credentials being deleted</comment>
+  <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
+    <value>Tous les éléments chiffrés de votre coffre seront définitivement supprimés</value>
+    <comment>Reset vault note about items being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
     <value>Vos alias de messagerie seront conservés et pourront être réutilisés après la réinitialisation de votre coffre</value>
@@ -99,7 +99,7 @@
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>Dernier avertissement: vous êtes sur le point de supprimer définitivement tous vos identifiants!</value>
+    <value>Dernier avertissement: vous êtes sur le point de supprimer définitivement tous vos éléments!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
@@ -131,7 +131,7 @@
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>Votre coffre a été réinitialisé avec succès. Tous les identifiants ont été supprimés et vous pouvez maintenant démarrer à nouveau.</value>
+    <value>Votre coffre a été réinitialisé avec succès. Tous les éléments ont été supprimés et vous pouvez maintenant recommencer.</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">

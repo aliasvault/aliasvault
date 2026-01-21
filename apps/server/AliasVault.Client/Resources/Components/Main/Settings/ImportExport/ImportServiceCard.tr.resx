@@ -71,15 +71,15 @@
     <comment>Text for file upload instruction. {0} is placeholder for service name</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
-    <value>Cancel</value>
+    <value>İptal</value>
     <comment>Cancel button text</comment>
   </data>
   <data name="BackButton" xml:space="preserve">
-    <value>Back</value>
+    <value>Geri</value>
     <comment>Back button text</comment>
   </data>
   <data name="NextButton" xml:space="preserve">
-    <value>Next</value>
+    <value>İleri</value>
     <comment>Next button text</comment>
   </data>
   <data name="ImportButton" xml:space="preserve">

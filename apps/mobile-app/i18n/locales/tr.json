@@ -1,7 +1,7 @@
 {
   "common": {
     "cancel": "İptal",
-    "close": "Close",
+    "close": "Kapat",
     "delete": "Sil",
     "save": "Kaydet",
     "yes": "Onayla",
@@ -15,12 +15,14 @@
     "copied": "Panoya kopyalandı",
     "loadMore": "Daha fazla yükle",
     "use": "Kullan",
-    "confirm": "Confirm",
-    "next": "Next",
+    "confirm": "Onayla",
+    "next": "İleri",
     "notice": "Notice",
     "enabled": "Enabled",
     "disabled": "Disabled",
-    "twoFactorAuthentication": "Two-Factor Authentication",
+    "twoFactorAuthentication": "İki faktörlü kimlik doğrulama",
+    "add": "Add",
+    "attachments": "Ekler",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
@@ -72,6 +74,11 @@
     "connectingTo": "Bağlanıyor",
     "loggedInAs": "Şu olarak oturum açıldı:"
   },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
+  },
   "vault": {
     "syncingVault": "Kasa senkronize ediliyor",
     "uploadingVaultToServer": "Kasa sunucuya yükleniyor",
@@ -80,15 +87,18 @@
     "executingOperation": "İşlem yürütülüyor…",
     "checkingVaultUpdates": "Kasa güncellemeleri kontrol ediliyor",
     "syncingUpdatedVault": "Güncellenmiş kasa senkronize ediliyor",
+    "mergingVault": "Merging vault changes",
+    "uploadingChanges": "Uploading changes",
     "errors": {
       "failedToGetEncryptedDatabase": "Şifrelenmiş veritabanı alınamadı",
       "usernameNotFound": "Kullanıcı adı bulunamadı",
       "vaultOutdated": "Kasınız güncel değil. Lütfen AliasVault web sitesinden giriş yapın ve gerekli adımları izleyin.",
       "failedToSyncVault": "Kasa senkronize edilemedi",
       "versionNotSupported": "AliasVault mobil uygulamasının bu sürümü artık sunucu tarafından desteklenmiyor. Lütfen uygulamanızı en son sürüme güncelleyin.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "serverVersionNotSupported": "Bu mobil uygulamayı kullanabilmek için AliasVault sunucusunun daha yeni bir sürüme güncellenmesi gerekiyor. Yardıma ihtiyacınız olursa lütfen destek ile iletişime geçin.",
       "appOutdated": "This app is outdated and cannot be used to access this (newer) vault version. Please update the AliasVault app to continue.",
-      "passwordChanged": "Parolanız, en son giriş yaptığınızdan bu yana değişti. Güvenlik nedeniyle lütfen tekrar giriş yapın."
+      "passwordChanged": "Parolanız, en son giriş yaptığınızdan bu yana değişti. Güvenlik nedeniyle lütfen tekrar giriş yapın.",
+      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
     }
   },
   "credentials": {
@@ -162,9 +172,8 @@
       "passkeys": "Passkeys",
       "aliases": "Aliases",
       "userpass": "Passwords",
-      "attachments": "Attachments"
+      "attachments": "Ekler"
     },
-    "twoFactorAuth": "İki faktörlü kimlik doğrulama",
     "totpCode": "TOTP Kodu",
     "attachments": "Ekler",
     "deleteAttachment": "Sil",
@@ -429,8 +438,210 @@
   },
   "navigation": {
     "credentials": "Kimlik Bilgileri",
+    "vault": "Vault",
     "emails": "E-postalar",
     "settings": "Ayarlar"
+  },
+  "itemTypes": {
+    "creating": "Creating",
+    "editing": "Editing",
+    "login": {
+      "title": "Login"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Credit Card",
+      "cardInformation": "Card Information"
+    },
+    "note": {
+      "title": "Note"
+    },
+    "addField": "Add Field",
+    "addCustomField": "Add Custom Field",
+    "customFields": "Custom Fields",
+    "fieldLabel": "Field Label",
+    "fieldType": "Field Type",
+    "enterFieldName": "Enter field name",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden",
+      "email": "E-Posta",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "Tarih",
+      "textArea": "Text Area"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Kullanıcı Adı",
+    "login.password": "Parola",
+    "login.email": "E-Posta",
+    "login.url": "URL",
+    "alias.first_name": "Adı",
+    "alias.last_name": "Soyadı",
+    "alias.gender": "Cinsiyet",
+    "alias.birthdate": "Doğum Tarihi",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN",
+    "notes.content": "Notlar"
+  },
+  "items": {
+    "title": "Items",
+    "addItem": "Add Item",
+    "editItem": "Edit Item",
+    "deleteItem": "Delete Item",
+    "itemDetails": "Item Details",
+    "itemCreated": "Item Created",
+    "emailPreview": "E-posta Önizleme",
+    "untitled": "Untitled",
+    "name": "Ad",
+    "namePlaceholder": "e.g., Google, Amazon",
+    "url": "URL",
+    "urlPlaceholder": "e.g., https://google.com",
+    "service": "Hizmet",
+    "serviceName": "Hizmet Adı",
+    "serviceUrl": "Hizmet URL'i",
+    "loginCredentials": "Giriş bilgileri",
+    "username": "Kullanıcı Adı",
+    "email": "E-Posta",
+    "alias": "Alias",
+    "metadata": "Meta veri",
+    "firstName": "Adı",
+    "lastName": "Soyadı",
+    "nickName": "Kullanıcı Adı",
+    "fullName": "Ad Soyad",
+    "gender": "Cinsiyet",
+    "birthDate": "Doğum Tarihi",
+    "birthDatePlaceholder": "YYYY-AA-GG",
+    "notes": "Notlar",
+    "randomAlias": "Random Alias",
+    "manual": "Manual",
+    "generateRandomAlias": "Generate Random Alias",
+    "clearAliasFields": "Clear Alias Fields",
+    "enterFullEmail": "E-posta adresinizi girin",
+    "enterEmailPrefix": "E-posta önekini girin",
+    "useDomainChooser": "Alan adı seçiciyi kullan",
+    "enterCustomDomain": "Özel alan adı girin",
+    "selectEmailDomain": "E-posta Alan Adını Seç",
+    "privateEmailTitle": "Özel E-posta",
+    "privateEmailAliasVaultServer": "AliasVault sunucusu",
+    "privateEmailDescription": "Uçtan uca şifreli, tamamen özel.",
+    "publicEmailTitle": "Herkese Açık Geçici E-Posta Sağlayıcıları",
+    "publicEmailDescription": "Anonim ama mahremiyeti sınırlı. E-posta içeriği, adresi bilen herkes tarafından okunabilir.",
+    "searchPlaceholder": "Search vault...",
+    "noMatchingItems": "No matching items found",
+    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "recentEmails": "Son e-postalar",
+    "loadingEmails": "E-postalar yükleniyor…",
+    "noEmailsYet": "Henüz e-posta alınmadı.",
+    "offlineEmailsMessage": "Çevrimdışısınız. E-postalarınızı yüklemek için lütfen internet bağlantısı sağlayın.",
+    "emailLoadError": "E-postalar yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+    "emailUnexpectedError": "E-postalar yüklenirken bir hata oluştu. Lütfen daha sonra tekrar deneyin.",
+    "password": "Parola",
+    "passwordLength": "Parola Uzunluğu",
+    "changePasswordComplexity": "Parola Ayarları",
+    "includeLowercase": "Küçük harf (a-z)",
+    "includeUppercase": "Büyük harf (A-Z)",
+    "includeNumbers": "Rakamlar (0-9)",
+    "includeSpecialChars": "Özel Karakterler (!@#)",
+    "avoidAmbiguousChars": "Belirsiz Karakterler Kullanma",
+    "deletingItem": "Deleting item...",
+    "errorLoadingItems": "Error loading items",
+    "vaultSyncFailed": "Kasa senkronizasyonu başarısız oldu",
+    "vaultSyncedSuccessfully": "Kasa başarıyla senkronize edildi",
+    "vaultUpToDate": "Kasa güncel",
+    "offlineMessage": "Çevrimdışısınız. E-postalarınızı yüklemek için lütfen internet bağlantısı sağlayın.",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "switchBackToBrowser": "Tarayıcınıza geri dönerek devam edin.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Passwords",
+      "attachments": "Ekler"
+    },
+    "totpCode": "TOTP Kodu",
+    "attachments": "Ekler",
+    "deleteAttachment": "Sil",
+    "fileSavedTo": "File saved to",
+    "previewNotSupported": "Preview not supported",
+    "downloadToView": "Download the file to view it",
+    "unsavedChanges": {
+      "title": "Discard Changes?",
+      "message": "You have unsaved changes. Are you sure you want to discard them?",
+      "discard": "Discard"
+    },
+    "toasts": {
+      "itemUpdated": "Item updated successfully",
+      "itemCreated": "Item created successfully",
+      "itemDeleted": "Item deleted successfully",
+      "usernameCopied": "Username copied to clipboard",
+      "emailCopied": "Email copied to clipboard",
+      "passwordCopied": "Password copied to clipboard"
+    },
+    "createNewAliasFor": "Create new alias for",
+    "errors": {
+      "loadFailed": "Failed to load item",
+      "saveFailed": "Failed to save item"
+    },
+    "contextMenu": {
+      "title": "Item Options",
+      "edit": "Düzenle",
+      "delete": "Sil",
+      "copyUsername": "Kullanıcı Adını Kopyala",
+      "copyEmail": "E-postayı Kopyala",
+      "copyPassword": "Parolayı Kopyala"
+    },
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available",
+    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "folders": {
+      "folder": "Folder",
+      "newFolder": "New Folder",
+      "createFolder": "Create Folder",
+      "editFolder": "Edit Folder",
+      "folderName": "Folder Name",
+      "folderNamePlaceholder": "e.g., Work, Personal",
+      "folderNameRequired": "Folder name is required",
+      "deleteFolder": "Delete Folder",
+      "deleteFolderKeepItems": "Delete folder only",
+      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderAndItems": "Delete folder and all items",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "noFolder": "No Folder",
+      "selectFolder": "Select Folder"
+    },
+    "recentlyDeleted": {
+      "title": "Recently Deleted",
+      "noItems": "No deleted items",
+      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
+      "emptyAll": "Empty All",
+      "daysRemaining": "{{count}} day remaining",
+      "daysRemaining_plural": "{{count}} days remaining",
+      "expiringSoon": "Expiring soon",
+      "confirmDeleteTitle": "Delete Permanently?",
+      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "itemRestored": "Item restored",
+      "itemDeleted": "Item permanently deleted",
+      "allItemsDeleted": "All items permanently deleted"
+    }
   },
   "emails": {
     "title": "E-postalar",
@@ -474,7 +685,7 @@
     "REFRESH_TOKEN_REQUIRED": "Refresh token is required.",
     "INVALID_REFRESH_TOKEN": "Invalid refresh token.",
     "PUBLIC_REGISTRATION_DISABLED": "New account registration is currently disabled on this server. Please contact the administrator.",
-    "USERNAME_REQUIRED": "Username is required.",
+    "USERNAME_REQUIRED": "Kullanıcı adı gereklidir.",
     "USERNAME_ALREADY_IN_USE": "Username is already in use.",
     "USERNAME_AVAILABLE": "Username is available.",
     "USERNAME_MISMATCH": "Username does not match the current user.",
@@ -489,6 +700,16 @@
     "INTERNAL_SERVER_ERROR": "Internal server error.",
     "VAULT_ERROR": "The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again."
   },
+  "sync": {
+    "offline": "Offline",
+    "offlineWithPending": "Offline (pending)",
+    "syncing": "Syncing...",
+    "pending": "Pending sync",
+    "retrySync": "Tap to retry",
+    "backOnline": "Back online",
+    "stillOffline": "Still offline",
+    "syncFailed": "Sync failed"
+  },
   "app": {
     "status": {
       "unlockingVault": "Unlocking vault",
@@ -497,13 +718,13 @@
       "retryingConnection": "Retrying connection..."
     },
     "offline": {
-      "banner": "Offline mode (read-only)",
+      "banner": "Offline - changes will sync when online",
       "backOnline": "Back online",
       "stillOffline": "Still offline"
     },
     "alerts": {
       "syncIssue": "No Connection",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault in read-only mode or retry the connection?",
+      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Open Local Vault",
       "retrySync": "Retry Sync"
     },
@@ -538,7 +759,7 @@
     "newVersion": "New available version:",
     "upgrade": "Upgrade",
     "upgrading": "Upgrading...",
-    "logout": "Logout",
+    "logout": "Çıkış yap",
     "whatsNew": "What's New",
     "whatsNewDescription": "An upgrade is required to support the following changes:",
     "noDescriptionAvailable": "No description available for this version.",

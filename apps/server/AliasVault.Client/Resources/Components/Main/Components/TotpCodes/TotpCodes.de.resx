@@ -62,10 +62,6 @@
     <value>Zwei-Faktor-Authentifizierung</value>
     <comment>Section title for 2FA codes</comment>
   </data>
-  <data name="AddTotpCodeButton" xml:space="preserve">
-    <value>TOTP-Code hinzufügen</value>
-    <comment>Button text to add new TOTP code</comment>
-  </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
     <value>Zwei-Faktor-Authentifizierungscode hinzufügen</value>
     <comment>Description for adding TOTP codes</comment>

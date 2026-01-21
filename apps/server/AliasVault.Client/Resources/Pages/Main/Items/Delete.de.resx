@@ -19,29 +19,25 @@
       </xsd:complexType>
     </xsd:element>
   </xsd:schema>
-  <data name="DeleteCredentialPageTitle">
-    <value>Zugang löschen</value>
-    <comment>Page title for deleting credentials</comment>
+  <data name="DeleteItemPageTitle">
+    <value>Delete item</value>
+    <comment>Page title for deleting items</comment>
   </data>
-  <data name="DeleteCredentialTitle">
-    <value>Zugang löschen</value>
-    <comment>Page header title for deleting credential</comment>
+  <data name="DeleteItemTitle">
+    <value>Delete item</value>
+    <comment>Page header title for deleting item</comment>
   </data>
-  <data name="DeleteCredentialDescription">
-    <value>Du kannst folgende Zugangsdaten löschen</value>
-    <comment>Page description for deleting credential</comment>
+  <data name="DeleteItemDescription">
+    <value>You can delete the item below.</value>
+    <comment>Page description for deleting item</comment>
   </data>
-  <data name="DeleteWarningMessage">
-    <value>Hinweis: Das Entfernen dieses Zugangs ist endgültig und kann nicht rückgängig gemacht werden.</value>
-    <comment>Warning message about permanent deletion</comment>
-  </data>
-  <data name="CredentialEntrySection">
-    <value>Zungangseintrag</value>
-    <comment>Section header for credential details</comment>
+  <data name="ItemEntrySection">
+    <value>Item entry</value>
+    <comment>Section header for item details</comment>
   </data>
   <data name="IdLabel">
     <value>ID</value>
-    <comment>Label for credential ID field</comment>
+    <comment>Label for item ID field</comment>
   </data>
   <data name="ServiceNameLabel">
     <value>Name des Dienstes</value>
@@ -55,25 +51,25 @@
     <value>Nein, abbrechen</value>
     <comment>Cancel button text</comment>
   </data>
-  <data name="ViewCredentialBreadcrumb">
-    <value>Zugangsdaten anzeigen</value>
-    <comment>Breadcrumb text for view credential page</comment>
+  <data name="ViewItemBreadcrumb">
+    <value>View item</value>
+    <comment>Breadcrumb text for view item page</comment>
   </data>
-  <data name="DeleteCredentialBreadcrumb">
-    <value>Zugang löschen</value>
-    <comment>Breadcrumb text for delete credential page</comment>
+  <data name="DeleteItemBreadcrumb">
+    <value>Delete item</value>
+    <comment>Breadcrumb text for delete item page</comment>
   </data>
-  <data name="DeleteCredentialNotFoundError">
-    <value>Fehler beim Löschen. Zugangs konnte nicht gefunden werden.</value>
-    <comment>Error message when credential is not found during deletion</comment>
+  <data name="DeleteItemNotFoundError">
+    <value>Error deleting. Item not found.</value>
+    <comment>Error message when item is not found during deletion</comment>
   </data>
-  <data name="DeletingCredentialMessage">
-    <value>Zugang wird gelöscht...</value>
-    <comment>Loading message while deleting credential</comment>
+  <data name="DeletingItemMessage">
+    <value>Deleting item...</value>
+    <comment>Loading message while deleting item</comment>
   </data>
   <data name="DeleteSuccessMessage">
-    <value>Zugang erfolgreich gelöscht.</value>
-    <comment>Success message after credential deletion</comment>
+    <value>Item successfully deleted.</value>
+    <comment>Success message after item deletion</comment>
   </data>
   <data name="DeleteDatabaseError">
     <value>Fehler beim Speichern der Datenbank.</value>

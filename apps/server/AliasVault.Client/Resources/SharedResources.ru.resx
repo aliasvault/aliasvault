@@ -308,4 +308,12 @@
     <value>Синхронизировать хранилище</value>
     <comment>Tooltip text for sync vault data button</comment>
   </data>
+  <data name="SyncingChanges" xml:space="preserve">
+    <value>Синхронизация изменений...</value>
+    <comment>Status text when background sync is in progress</comment>
+  </data>
+  <data name="LoadingVault" xml:space="preserve">
+    <value>Загрузка хранилища...</value>
+    <comment>Status text when vault is being loaded</comment>
+  </data>
 </root>

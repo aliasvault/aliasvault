@@ -9,11 +9,11 @@
 "title" = "Titel";
 "unknown_error" = "Ein unbekannter Fehler ist aufgetreten";
 
-"loading_credentials" = "Zugangsdaten werden geladen...";
-"no_credentials_found" = "Keine Zugangsdaten gefunden";
-"no_credentials_match" = "Keine existierenden Zugangsdaten stimmen mit Deiner Suche überein";
-"create_new_credential" = "Neuen Zugang erstellen";
-"select_credential" = "Zugang auswählen";
+"loading_items" = "Loading items...";
+"no_items_found" = "No items found";
+"no_items_match" = "No existing items match your search";
+"create_new_item" = "Create New Item";
+"select_item" = "Select Item";
 "select_text_to_insert" = "Text zum Einfügen auswählen";
 "choose_username" = "Wähle Deinen Benutzernamen";
 "select_text_to_insert_message" = "Text zum Einfügen in das fokussierte Eingabefeld auswählen";
@@ -21,10 +21,8 @@
 "username_prefix" = "Benutzername: ";
 "email_prefix" = "E-Mail-Adresse: ";
 "password" = "Passwort";
-"credentials_load_error" = "Fehler beim Laden der Zugangsdaten. Bitte öffne die AliasVault-App, um nach Updates zu suchen.";
-"no_credential_selected" = "Kein Zugang ausgewählt.";
-"retrieving_credential" = "Zugang wird abgerufen";
-"retrieving_passkey" = "Passkey wird abgerufen";
+"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
+"no_item_selected" = "No item selected.";
 
 /* Context menu strings */
 "copy_username" = "Benutzername kopieren";
@@ -36,7 +34,7 @@
 "email_copied" = "E-Mail-Adresse kopiert";
 
 /* Search bar */
-"search_credentials" = "Zugangsdaten suchen...";
+"search_items" = "Search items...";
 
 /* Passkey registration */
 "create_passkey_title" = "Neuen Passkey erstellen";
@@ -54,10 +52,14 @@
 /* Passkey replacement */
 "create_new_passkey" = "Neuen Passkey erstellen";
 "select_passkey_to_replace" = "Oder ersetze einen bestehenden Passkey";
-"confirm_replace" = "Passkey ersetzen";
-"replace_passkey_title" = "Passkey ersetzen";
+"replace_passkey" = "Passkey ersetzen";
 "replace_passkey_explanation" = "Dies wird den bestehenden Passkey durch einen neuen ersetzen. Bitte beachte, dass Dein alter Passkey überschrieben wird und nicht mehr zugänglich ist. Wenn Du stattdessen einen separaten Passkey erstellen möchtest, gehe zurück zum vorherigen Schritt.";
 "create_passkey_explanation" = "Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf allen Geräten synchronisiert, die AliasVault verwenden.";
+
+/* Passkey merge with existing item */
+"passkey_add_to_existing" = "Or, add passkey to an existing item";
+"add_passkey" = "Add Passkey";
+"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
 "unlock_vault" = "Tresor entsperren";

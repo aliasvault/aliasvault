@@ -9,11 +9,11 @@
 "title" = "Titel";
 "unknown_error" = "Er is een onbekende fout opgetreden";
 
-"loading_credentials" = "Credentials laden...";
-"no_credentials_found" = "Geen credentials gevonden";
-"no_credentials_match" = "Er zijn geen credentials gevonden die overeenkomen met je zoekopdracht";
-"create_new_credential" = "Nieuwe credential aanmaken";
-"select_credential" = "Selecteer credential";
+"loading_items" = "Loading items...";
+"no_items_found" = "No items found";
+"no_items_match" = "No existing items match your search";
+"create_new_item" = "Create New Item";
+"select_item" = "Select Item";
 "select_text_to_insert" = "Selecteer tekst om in te voegen";
 "choose_username" = "Kies gebruikersnaam";
 "select_text_to_insert_message" = "Selecteer de tekst om in te voegen";
@@ -21,10 +21,8 @@
 "username_prefix" = "Gebruikersnaam: ";
 "email_prefix" = "E-mail: ";
 "password" = "Wachtwoord";
-"credentials_load_error" = "Laden van credentials mislukt. Open de AliasVault app om te controleren op updates.";
-"no_credential_selected" = "Geen credential geselecteerd.";
-"retrieving_credential" = "Credential ophalen";
-"retrieving_passkey" = "Passkey ophalen";
+"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
+"no_item_selected" = "No item selected.";
 
 /* Context menu strings */
 "copy_username" = "Kopieer gebruikersnaam";
@@ -36,7 +34,7 @@
 "email_copied" = "E-mail gekopieerd";
 
 /* Search bar */
-"search_credentials" = "Zoek credentials...";
+"search_items" = "Search items...";
 
 /* Passkey registration */
 "create_passkey_title" = "Passkey aanmaken";
@@ -54,10 +52,14 @@
 /* Passkey replacement */
 "create_new_passkey" = "Nieuwe passkey aanmaken";
 "select_passkey_to_replace" = "Of vervang een bestaande passkey";
-"confirm_replace" = "Passkey vervangen";
-"replace_passkey_title" = "Passkey vervangen";
+"replace_passkey" = "Passkey vervangen";
 "replace_passkey_explanation" = "Dit zal de bestaande passkey vervangen door een nieuwe. Houd er rekening mee dat je oude passkey wordt overschreven en niet langer toegankelijk is. Als je in plaats hiervan een aparte passkey wilt maken, ga dan terug naar het vorige scherm.";
 "create_passkey_explanation" = "Dit maakt een nieuwe passkey aan en slaat deze op in je vault. De passkey wordt automatisch gesynchroniseerd naar je andere apparaten.";
+
+/* Passkey merge with existing item */
+"passkey_add_to_existing" = "Or, add passkey to an existing item";
+"add_passkey" = "Add Passkey";
+"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
 "unlock_vault" = "Vault ontgrendelen";

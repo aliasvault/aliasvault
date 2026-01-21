@@ -20,12 +20,12 @@
     </xsd:element>
   </xsd:schema>
   <!-- Main navigation links -->
-  <data name="CredentialsNav">
-    <value>Credentials</value>
-    <comment>Main navigation link for credentials section</comment>
+  <data name="VaultNav">
+    <value>Vault</value>
+    <comment>Main navigation link for vault section</comment>
   </data>
   <data name="EmailsNav">
-    <value>Emails</value>
+    <value>E-postalar</value>
     <comment>Main navigation link for emails section</comment>
   </data>
   <!-- Settings menu items -->

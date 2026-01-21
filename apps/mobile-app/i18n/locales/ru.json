@@ -21,6 +21,8 @@
     "enabled": "Включено",
     "disabled": "Отключено",
     "twoFactorAuthentication": "Двухфакторная аутентификация",
+    "add": "Добавить",
+    "attachments": "Вложения",
     "deleteItemConfirmTitle": "Удалить элемент",
     "deleteItemConfirmDescription": "Вы уверены, что хотите удалить этот элемент?",
     "errors": {
@@ -72,6 +74,11 @@
     "connectingTo": "Подключение к",
     "loggedInAs": "Вход выполнен как"
   },
+  "logout": {
+    "unsyncedChangesTitle": "Несинхронизированные изменения",
+    "unsyncedChangesWarning": "У вас есть несинхронизированные изменения, которые будут потеряны, если вы выйдете из аккаунта сейчас. Вы уверены, что хотите продолжить?",
+    "logoutAnyway": "Все равно выйти"
+  },
   "vault": {
     "syncingVault": "Синхронизация хранилища",
     "uploadingVaultToServer": "Загрузка хранилища на сервер",
@@ -80,6 +87,8 @@
     "executingOperation": "Выполнение операций...",
     "checkingVaultUpdates": "Проверка обновлений хранилища",
     "syncingUpdatedVault": "Синхронизация обновленного хранилища",
+    "mergingVault": "Объединение изменений в хранилище",
+    "uploadingChanges": "Загрузка изменений",
     "errors": {
       "failedToGetEncryptedDatabase": "Не удалось получить зашифрованную базу данных",
       "usernameNotFound": "Имя пользователя не найдено",
@@ -88,7 +97,8 @@
       "versionNotSupported": "Эта версия мобильного приложения AliasVault больше не поддерживается сервером. Пожалуйста, обновите ваше приложение до последней версии.",
       "serverVersionNotSupported": "Для использования этого мобильного приложения необходимо обновить сервер AliasVault до новой версии. Если вам нужна помощь, обратитесь в службу поддержки.",
       "appOutdated": "Это приложение устарело и не может быть использовано для доступа к этой (более новой) версии хранилища. Пожалуйста, обновите приложение AliasVault, чтобы продолжить.",
-      "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности."
+      "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности.",
+      "passwordChangeRequiresOnline": "Для смены пароля требуется подключение к интернету. Повторите попытку, когда будете в сети."
     }
   },
   "credentials": {
@@ -164,7 +174,6 @@
       "userpass": "Пароли",
       "attachments": "Вложения"
     },
-    "twoFactorAuth": "Двухфакторная аутентификация",
     "totpCode": "TOTP код",
     "attachments": "Вложения",
     "deleteAttachment": "Удалить",
@@ -429,8 +438,210 @@
   },
   "navigation": {
     "credentials": "Учетные данные",
+    "vault": "Хранилище",
     "emails": "Письма",
     "settings": "Настройки"
+  },
+  "itemTypes": {
+    "creating": "Создание",
+    "editing": "Редактирование",
+    "login": {
+      "title": "Логин"
+    },
+    "alias": {
+      "title": "Псевдоним"
+    },
+    "creditCard": {
+      "title": "Банковская карта",
+      "cardInformation": "Данные карты"
+    },
+    "note": {
+      "title": "Заметка"
+    },
+    "addField": "Добавить поле",
+    "addCustomField": "Добавить своё поле",
+    "customFields": "Пользовательские поля",
+    "fieldLabel": "Название поля",
+    "fieldType": "Тип поля",
+    "enterFieldName": "Введите название поля",
+    "fieldTypes": {
+      "text": "Текст",
+      "hidden": "Скрытое",
+      "email": "Почта",
+      "url": "URL",
+      "phone": "Телефон",
+      "number": "Номер",
+      "date": "Дата",
+      "textArea": "Текстовая область"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Логин",
+    "login.password": "Пароль",
+    "login.email": "Почта",
+    "login.url": "URL",
+    "alias.first_name": "Имя",
+    "alias.last_name": "Фамилия",
+    "alias.gender": "Пол",
+    "alias.birthdate": "Дата рождения",
+    "card.cardholder_name": "Имя держателя карты",
+    "card.number": "Номер карты",
+    "card.expiry_month": "Месяц окончания",
+    "card.expiry_year": "Год окончания",
+    "card.cvv": "CVV-код",
+    "card.pin": "PIN",
+    "notes.content": "Примечание"
+  },
+  "items": {
+    "title": "Записи",
+    "addItem": "Добавить запись",
+    "editItem": "Редактировать запись",
+    "deleteItem": "Удалить элемент",
+    "itemDetails": "Детали записи",
+    "itemCreated": "Запись создана",
+    "emailPreview": "Предварительный просмотр электронной почты",
+    "untitled": "Без названия",
+    "name": "Имя",
+    "namePlaceholder": "например, Google, Amazon",
+    "url": "URL",
+    "urlPlaceholder": "например, https://google.com",
+    "service": "Сервис",
+    "serviceName": "Название сервиса",
+    "serviceUrl": "URL сервиса",
+    "loginCredentials": "Данные для авторизации",
+    "username": "Логин",
+    "email": "Почта",
+    "alias": "Псевдоним",
+    "metadata": "Метаданные",
+    "firstName": "Имя",
+    "lastName": "Фамилия",
+    "nickName": "Никнейм",
+    "fullName": "Полное имя",
+    "gender": "Пол",
+    "birthDate": "Дата рождения",
+    "birthDatePlaceholder": "ГГГГ-ММ-ДД",
+    "notes": "Примечание",
+    "randomAlias": "Случайный псевдоним",
+    "manual": "Инструкция",
+    "generateRandomAlias": "Сгенерировать псевдоним",
+    "clearAliasFields": "Очистить поля псевдонима",
+    "enterFullEmail": "Введите полный адрес электронной почты",
+    "enterEmailPrefix": "Введите префикс электронной почты",
+    "useDomainChooser": "Использовать средство выбора домена",
+    "enterCustomDomain": "Ввести пользовательский домен",
+    "selectEmailDomain": "Выбрать домен электронной почты",
+    "privateEmailTitle": "Личная электронная почта",
+    "privateEmailAliasVaultServer": "Сервер AliasVault",
+    "privateEmailDescription": "Шифрование E2E, полностью приватный.",
+    "publicEmailTitle": "Общедоступные временные поставщики электронной почты",
+    "publicEmailDescription": "Анонимность, но ограниченная конфиденциальность. Содержимое письма может прочитать любой, кому известен адрес.",
+    "searchPlaceholder": "Поиск хранилища...",
+    "noMatchingItems": "Совпадений не найдено",
+    "noItemsFound": "Ничего не найдено. Создайте запись, чтобы начать работу. Совет: вы также можете войти в веб-приложение AliasVault, чтобы импортировать учетные данные из других менеджеров паролей.",
+    "noPasskeysFound": "Ключи доступа еще не созданы. Ключи доступа создаются при посещении веб-сайта, который предлагает их в качестве метода аутентификации.",
+    "noAttachmentsFound": "Элементы с вложениями не найдены",
+    "noItemsOfTypeFound": "Элементы типа «{{type}}» не найдены",
+    "recentEmails": "Последние письма",
+    "loadingEmails": "Загрузка писем...",
+    "noEmailsYet": "Писем пока не поступало.",
+    "offlineEmailsMessage": "Вы не в сети. Пожалуйста, подключитесь к Интернету, чтобы загрузить свои электронные письма.",
+    "emailLoadError": "Произошла ошибка при загрузке писем. Пожалуйста, повторите попытку позже.",
+    "emailUnexpectedError": "При загрузке писем произошла непредвиденная ошибка. Пожалуйста, повторите попытку позже.",
+    "password": "Пароль",
+    "passwordLength": "Длина пароля",
+    "changePasswordComplexity": "Настройки пароля",
+    "includeLowercase": "Строчные буквы (a-z)",
+    "includeUppercase": "Заглавные буквы (A-Z)",
+    "includeNumbers": "Цифры (0-9)",
+    "includeSpecialChars": "Специальные символы (!@#)",
+    "avoidAmbiguousChars": "Избегать двусмысленных символов",
+    "deletingItem": "Удаление записи...",
+    "errorLoadingItems": "Ошибка загрузки элементов",
+    "vaultSyncFailed": "Сбой синхронизации хранилища",
+    "vaultSyncedSuccessfully": "Хранилище успешно синхронизировано",
+    "vaultUpToDate": "Хранилище актуально",
+    "offlineMessage": "Вы не в сети. Пожалуйста, подключитесь к Интернету, чтобы синхронизировать ваше хранилище.",
+    "itemCreatedMessage": "Ваша новая запись добавлена в хранилище и готова к использованию.",
+    "switchBackToBrowser": "Вернитесь в свой браузер, чтобы продолжить.",
+    "filters": {
+      "all": "(Все) Записи",
+      "passkeys": "Ключи доступа",
+      "aliases": "Псевдонимы",
+      "userpass": "Пароли",
+      "attachments": "Вложения"
+    },
+    "totpCode": "TOTP код",
+    "attachments": "Вложения",
+    "deleteAttachment": "Удалить",
+    "fileSavedTo": "Файл сохранен в",
+    "previewNotSupported": "Предварительный просмотр не поддерживается",
+    "downloadToView": "Скачайте файл, чтобы просмотреть его",
+    "unsavedChanges": {
+      "title": "Отменить изменения?",
+      "message": "Все несохраненные изменения будут утеряны. Продолжить?",
+      "discard": "Отменить"
+    },
+    "toasts": {
+      "itemUpdated": "Запись успешно обновлена",
+      "itemCreated": "Запись успешно создана",
+      "itemDeleted": "Запись успешно удалена",
+      "usernameCopied": "Имя пользователя скопировано в буфер обмена",
+      "emailCopied": "Email скопирован в буфер обмена",
+      "passwordCopied": "Пароль скопирован в буфер обмена"
+    },
+    "createNewAliasFor": "Создайте новый псевдоним для",
+    "errors": {
+      "loadFailed": "Не удалось загрузить запись",
+      "saveFailed": "Не удалось сохранить запись"
+    },
+    "contextMenu": {
+      "title": "Параметры записи",
+      "edit": "Редактировать",
+      "delete": "Удалить",
+      "copyUsername": "Скопировать имя пользователя",
+      "copyEmail": "Скопировать Email",
+      "copyPassword": "Скопировать пароль"
+    },
+    "viewHistory": "Посмотреть историю",
+    "history": "История",
+    "noHistoryAvailable": "История пока пуста",
+    "deleteConfirm": "Вы уверены, что хотите удалить эту запись? Это действие нельзя отменить.",
+    "folders": {
+      "folder": "Папка",
+      "newFolder": "Новая папка",
+      "createFolder": "Создать папку",
+      "editFolder": "Изменить папку",
+      "folderName": "Название папки",
+      "folderNamePlaceholder": "например, Работа, Личное",
+      "folderNameRequired": "Название папки обязательно",
+      "deleteFolder": "Delete Folder",
+      "deleteFolderKeepItems": "Delete folder only",
+      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderAndItems": "Delete folder and all items",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "noFolder": "No Folder",
+      "selectFolder": "Выбрать папку"
+    },
+    "recentlyDeleted": {
+      "title": "Recently Deleted",
+      "noItems": "No deleted items",
+      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
+      "emptyAll": "Empty All",
+      "daysRemaining": "{{count}} day remaining",
+      "daysRemaining_plural": "{{count}} days remaining",
+      "expiringSoon": "Expiring soon",
+      "confirmDeleteTitle": "Delete Permanently?",
+      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "itemRestored": "Item restored",
+      "itemDeleted": "Item permanently deleted",
+      "allItemsDeleted": "All items permanently deleted"
+    }
   },
   "emails": {
     "title": "Письма",
@@ -489,6 +700,16 @@
     "INTERNAL_SERVER_ERROR": "Внутренняя ошибка сервера.",
     "VAULT_ERROR": "Локальное хранилище не обновлено. Пожалуйста, синхронизируйте ваше хранилище, обновив страницу, и повторите попытку."
   },
+  "sync": {
+    "offline": "Офлайн",
+    "offlineWithPending": "Офлайн (ожидание)",
+    "syncing": "Синхронизация...",
+    "pending": "Ожидание синхронизации",
+    "retrySync": "Нажмите, чтобы повторить",
+    "backOnline": "Восстановить подключение",
+    "stillOffline": "Нет подключения",
+    "syncFailed": "Sync failed"
+  },
   "app": {
     "status": {
       "unlockingVault": "Разблокировка хранилища",
@@ -497,13 +718,13 @@
       "retryingConnection": "Повторная попытка подключения..."
     },
     "offline": {
-      "banner": "Офлайн режим (только для чтения)",
+      "banner": "Offline - changes will sync when online",
       "backOnline": "Восстановить подключение",
       "stillOffline": "Нет подключения"
     },
     "alerts": {
       "syncIssue": "Нет соединения",
-      "syncIssueMessage": "Не удалось связаться с сервером AliasVault, и не удалось синхронизировать ваше хранилище. Хотите ли вы открыть свое локальное хранилище в режиме только для чтения или повторить попытку подключения?",
+      "syncIssueMessage": "Не удалось связаться с сервером AliasVault, поэтому ваше хранилище не было синхронизировано. Хотите открыть локальное хранилище или повторить попытку подключения?",
       "openLocalVault": "Откройте локальное хранилище",
       "retrySync": "Повторить попытку синхронизации"
     },

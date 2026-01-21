@@ -20,7 +20,9 @@
     "notice": "Uwaga",
     "enabled": "Włączone",
     "disabled": "Wyłączone",
-    "twoFactorAuthentication": "Uwierzytelnianie dwuskładnikowe",
+    "twoFactorAuthentication": "Weryfikacja dwuetapowa (2FA)",
+    "add": "Dodaj",
+    "attachments": "Załączniki",
     "deleteItemConfirmTitle": "Usuń element",
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
     "errors": {
@@ -72,6 +74,11 @@
     "connectingTo": "Łączenie z",
     "loggedInAs": "Zalogowano jako"
   },
+  "logout": {
+    "unsyncedChangesTitle": "Zmiany niesynchronizowane",
+    "unsyncedChangesWarning": "Masz niezsynchronizowane zmiany, które zostaną utracone, jeśli się teraz wylogujesz. Czy na pewno chcesz kontynuować?",
+    "logoutAnyway": "Wyloguj się mimo wszystko"
+  },
   "vault": {
     "syncingVault": "Synchronizacja sejfu",
     "uploadingVaultToServer": "Przesyłanie zawartości sejfu na serwer",
@@ -80,6 +87,8 @@
     "executingOperation": "Wykonuję operację...",
     "checkingVaultUpdates": "Sprawdzanie aktualizacji sejfu",
     "syncingUpdatedVault": "Synchronizacja zaktualizowanego sejfu",
+    "mergingVault": "Łączenie zmian w skarbcu",
+    "uploadingChanges": "Przesyłanie zmian",
     "errors": {
       "failedToGetEncryptedDatabase": "Nie udało się pobrać zaszyfrowanej bazy danych",
       "usernameNotFound": "Nazwa użytkownika nie została znaleziona",
@@ -88,7 +97,8 @@
       "versionNotSupported": "Ta wersja aplikacji mobilnej AliasVault nie jest już obsługiwana przez serwer. Zaktualizuj aplikację do najnowszej wersji.",
       "serverVersionNotSupported": "Aby korzystać z tej aplikacji mobilnej, serwer AliasVault musi zostać zaktualizowany do nowszej wersji. Jeśli potrzebujesz pomocy, skontaktuj się z działem pomocy technicznej.",
       "appOutdated": "Ta aplikacja jest nieaktualna i nie można jej używać do uzyskania dostępu do tej (nowszej) wersji sejfu. Aby kontynuować, zaktualizuj aplikację AliasVault.",
-      "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się."
+      "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się.",
+      "passwordChangeRequiresOnline": "Zmiana hasła wymaga połączenia z Internetem. Spróbuj ponownie, gdy będziesz online."
     }
   },
   "credentials": {
@@ -164,7 +174,6 @@
       "userpass": "Hasła",
       "attachments": "Załączniki"
     },
-    "twoFactorAuth": "Weryfikacja dwuetapowa (2FA)",
     "totpCode": "Kod TOTP",
     "attachments": "Załączniki",
     "deleteAttachment": "Usuń",
@@ -429,8 +438,210 @@
   },
   "navigation": {
     "credentials": "Dane logowania",
+    "vault": "Sejf",
     "emails": "Wiadomości e-mail",
     "settings": "Ustawienia"
+  },
+  "itemTypes": {
+    "creating": "Tworzenie",
+    "editing": "Edycja",
+    "login": {
+      "title": "Zaloguj się"
+    },
+    "alias": {
+      "title": "Tożsamość (Alias)"
+    },
+    "creditCard": {
+      "title": "Karta kredytowa",
+      "cardInformation": "Informacje o karcie"
+    },
+    "note": {
+      "title": "Uwaga"
+    },
+    "addField": "Dodaj pole",
+    "addCustomField": "Dodaj pole niestandardowe",
+    "customFields": "Pola niestandardowe",
+    "fieldLabel": "Etykieta pola",
+    "fieldType": "Typ pola",
+    "enterFieldName": "Wprowadź nazwę pola",
+    "fieldTypes": {
+      "text": "Tekst",
+      "hidden": "Ukryte",
+      "email": "Skrzynka odbiorcza",
+      "url": "adres URL",
+      "phone": "Telefon",
+      "number": "Numer",
+      "date": "Data",
+      "textArea": "Obszar tekst"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Nazwa użytkownika",
+    "login.password": "Hasło",
+    "login.email": "Skrzynka odbiorcza",
+    "login.url": "adres URL",
+    "alias.first_name": "Imię",
+    "alias.last_name": "Nazwisko",
+    "alias.gender": "Płeć",
+    "alias.birthdate": "Data urodzenia",
+    "card.cardholder_name": "Imię i nazwisko posiadacza karty",
+    "card.number": "Numer karty",
+    "card.expiry_month": "Miesiąc wygaśnięcia",
+    "card.expiry_year": "Rok wygaśnięcia",
+    "card.cvv": "CVV",
+    "card.pin": "Kod PIN",
+    "notes.content": "Notatki"
+  },
+  "items": {
+    "title": "Items",
+    "addItem": "Dodaj element",
+    "editItem": "Edytuj element",
+    "deleteItem": "Usuń element",
+    "itemDetails": "Szczegóły produktu",
+    "itemCreated": "Element utworzony",
+    "emailPreview": "Podgląd wiadomości e-mail",
+    "untitled": "Bez tytułu",
+    "name": "Nazwa",
+    "namePlaceholder": "np. Google, Amazon",
+    "url": "adres URL",
+    "urlPlaceholder": "e.g., https://google.com",
+    "service": "Usługa",
+    "serviceName": "Nazwa usługi",
+    "serviceUrl": "Adres URL usługi",
+    "loginCredentials": "Dane logowania",
+    "username": "Nazwa użytkownika",
+    "email": "Skrzynka odbiorcza",
+    "alias": "Tożsamość (Alias)",
+    "metadata": "Metadane",
+    "firstName": "Imię",
+    "lastName": "Nazwisko",
+    "nickName": "Pseudonim",
+    "fullName": "Imię i nazwisko",
+    "gender": "Płeć",
+    "birthDate": "Data urodzenia",
+    "birthDatePlaceholder": "RRRR-MM-DD",
+    "notes": "Notatki",
+    "randomAlias": "Losowy alias",
+    "manual": "Ręcznie",
+    "generateRandomAlias": "Generuj losowy tożsamość",
+    "clearAliasFields": "Wyczyść pola aliasu",
+    "enterFullEmail": "Wprowadź adres e-mail",
+    "enterEmailPrefix": "Wprowadź prefiks adresu e-mail",
+    "useDomainChooser": "Użyj selektora domen",
+    "enterCustomDomain": "Wprowadź własną domenę",
+    "selectEmailDomain": "Wybierz domenę poczty e-mail",
+    "privateEmailTitle": "Prywatny adres e-mail",
+    "privateEmailAliasVaultServer": "Serwer AliasVault",
+    "privateEmailDescription": "Szyfrowane E2E, w pełni prywatne.",
+    "publicEmailTitle": "Publiczni dostawcy tymczasowych adresów e-mail",
+    "publicEmailDescription": "Anonimowe, ale ograniczają prywatność. Treść wiadomości e-mail jest dostępna dla każdego, kto zna adres.",
+    "searchPlaceholder": "Wyszukaj w sejfie...",
+    "noMatchingItems": "Nie znaleziono pasujących elementów",
+    "noItemsFound": "Nie znaleziono żadnych elementów. Utwórz jeden, aby rozpocząć. Wskazówka: możesz również zalogować się do aplikacji internetowej AliasVault, aby zaimportować dane uwierzytelniające z innych menedżerów haseł.",
+    "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
+    "noAttachmentsFound": "Nie znaleziono żadnych elementów z załącznikami.",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "recentEmails": "Ostatnie wiadomości e-mail",
+    "loadingEmails": "Ładowanie wiadomości e-mail...",
+    "noEmailsYet": "Nie otrzymano jeszcze żadnych wiadomości e-mail.",
+    "offlineEmailsMessage": "Jesteś offline. Połącz się z Internetem, aby załadować wiadomości e-mail.",
+    "emailLoadError": "Wystąpił błąd podczas ładowania wiadomości e-mail. Spróbuj ponownie później.",
+    "emailUnexpectedError": "Podczas ładowania wiadomości e-mail wystąpił nieoczekiwany błąd. Spróbuj ponownie później.",
+    "password": "Hasło",
+    "passwordLength": "Długość hasła",
+    "changePasswordComplexity": "Ustawienia hasła",
+    "includeLowercase": "Małe litery (a-z)",
+    "includeUppercase": "Duże litery (a-z)",
+    "includeNumbers": "Liczby (0-9)",
+    "includeSpecialChars": "Znaki specjalne (!@#)",
+    "avoidAmbiguousChars": "Unikaj niejednoznacznych znaków",
+    "deletingItem": "Usuwanie elementu...",
+    "errorLoadingItems": "Błąd podczas ładowania elementów",
+    "vaultSyncFailed": "Nie udało się zsynchronizować sejfu",
+    "vaultSyncedSuccessfully": "Synchronizacja sejfu zakończona sukcesem",
+    "vaultUpToDate": "Sejf jest aktualny",
+    "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby zsynchronizować swój sejf.",
+    "itemCreatedMessage": "Twój nowy przedmiot został dodany do skarbca i jest gotowy do użycia.",
+    "switchBackToBrowser": "Wróć do przeglądarki, aby kontynuować.",
+    "filters": {
+      "all": "(Wszystkie) pozycje",
+      "passkeys": "Klucze dostępu",
+      "aliases": "Aliasy",
+      "userpass": "Hasła",
+      "attachments": "Załączniki"
+    },
+    "totpCode": "Kod TOTP",
+    "attachments": "Załaczniki",
+    "deleteAttachment": "Usuń",
+    "fileSavedTo": "Plik zapisany w\n",
+    "previewNotSupported": "Podgląd nie jest obsługiwany",
+    "downloadToView": "Pobierz plik, aby go wyświetlić",
+    "unsavedChanges": {
+      "title": "Odrzucić zmiany?",
+      "message": "Masz niezapisane zmiany. Czy na pewno chcesz je odrzucić?",
+      "discard": "Odrzuć"
+    },
+    "toasts": {
+      "itemUpdated": "Element zaktualizowany pomyślnie",
+      "itemCreated": "Element utworzony pomyślnie",
+      "itemDeleted": "Element został pomyślnie usunięty",
+      "usernameCopied": "Nazwa użytkownika skopiowana do schowka",
+      "emailCopied": "Wiadomość e-mail skopiowana do schowka",
+      "passwordCopied": "Hasło skopiowane do schowka"
+    },
+    "createNewAliasFor": "Utwórz nowy alias dla",
+    "errors": {
+      "loadFailed": "Nie udało się załadować elementu",
+      "saveFailed": "Nie udało się zapisać elementu"
+    },
+    "contextMenu": {
+      "title": "Item Options",
+      "edit": "Edytuj",
+      "delete": "Usuń",
+      "copyUsername": "Skopiuj nazwę użytkownika",
+      "copyEmail": "Skopiuj adres e-mail",
+      "copyPassword": "Skopiuj hasło"
+    },
+    "viewHistory": "View history",
+    "history": "Historia",
+    "noHistoryAvailable": "No history available",
+    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "folders": {
+      "folder": "Katalog",
+      "newFolder": "Nowy folder",
+      "createFolder": "Utwórz folder",
+      "editFolder": "Edytuj folder",
+      "folderName": "Nazwa folderu",
+      "folderNamePlaceholder": "np. Praca, Osobiste",
+      "folderNameRequired": "Nazwa folderu jest wymagana",
+      "deleteFolder": "Usuń folder",
+      "deleteFolderKeepItems": "Usuń tylko folder",
+      "deleteFolderKeepItemsDescription": "Elementy zostaną przeniesione z powrotem do listy głównej.",
+      "deleteFolderAndItems": "Usuń folder i wszystkie elementy",
+      "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
+      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "noFolder": "No Folder",
+      "selectFolder": "Wybierz folder"
+    },
+    "recentlyDeleted": {
+      "title": "Recently Deleted",
+      "noItems": "No deleted items",
+      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
+      "emptyAll": "Empty All",
+      "daysRemaining": "{{count}} day remaining",
+      "daysRemaining_plural": "{{count}} days remaining",
+      "expiringSoon": "Expiring soon",
+      "confirmDeleteTitle": "Delete Permanently?",
+      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "itemRestored": "Item restored",
+      "itemDeleted": "Item permanently deleted",
+      "allItemsDeleted": "All items permanently deleted"
+    }
   },
   "emails": {
     "title": "Wiadomości e-mail",
@@ -489,6 +700,16 @@
     "INTERNAL_SERVER_ERROR": "Wystąpił wewnętrzny błąd serwera.",
     "VAULT_ERROR": "Lokalny sejf nie jest aktualny. Zsynchronizuj sejf, odświeżając stronę, i spróbuj ponownie."
   },
+  "sync": {
+    "offline": "Offline",
+    "offlineWithPending": "Offline (pending)",
+    "syncing": "Syncing...",
+    "pending": "Pending sync",
+    "retrySync": "Tap to retry",
+    "backOnline": "Ponownie online",
+    "stillOffline": "Wciąż offline",
+    "syncFailed": "Sync failed"
+  },
   "app": {
     "status": {
       "unlockingVault": "Odblokowanie sejfu",
@@ -497,13 +718,13 @@
       "retryingConnection": "Ponowne nawiązywanie połączenia..."
     },
     "offline": {
-      "banner": "Tryb offline (tylko do odczytu)",
+      "banner": "Offline - changes will sync when online",
       "backOnline": "Ponownie online",
       "stillOffline": "Wciąż offline"
     },
     "alerts": {
       "syncIssue": "Brak połączenia",
-      "syncIssueMessage": "Nie można nawiązać połączenia z serwerem AliasVault i nie można zsynchronizować sejfu. Czy chcesz otworzyć lokalny sejf w trybie tylko do odczytu lub ponowić próbę połączenia?",
+      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Otwórz lokalny sejf",
       "retrySync": "Ponów synchronizację"
     },

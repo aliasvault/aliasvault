@@ -20,43 +20,43 @@
     </xsd:element>
   </xsd:schema>
   <!-- Page titles and descriptions -->
-  <data name="AddCredentialTitle">
-    <value>Aggiungi credenziale</value>
-    <comment>Title for adding a new credential</comment>
+  <data name="AddItemTitle">
+    <value>Add Item</value>
+    <comment>Title for adding a new item</comment>
   </data>
-  <data name="EditCredentialTitle">
-    <value>Modifica credenziale</value>
-    <comment>Title for editing an existing credential</comment>
+  <data name="EditItemTitle">
+    <value>Edit Item</value>
+    <comment>Title for editing an existing item</comment>
   </data>
-  <data name="AddCredentialDescription">
-    <value>Crea una nuova credenziale sotto.</value>
-    <comment>Description for adding a new credential</comment>
+  <data name="AddItemDescription">
+    <value>Create a new item below.</value>
+    <comment>Description for adding a new item</comment>
   </data>
-  <data name="EditCredentialDescription">
-    <value>Modifica le credenziali esistenti sotto.</value>
-    <comment>Description for editing an existing credential</comment>
+  <data name="EditItemDescription">
+    <value>Edit the existing item below.</value>
+    <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
-  <data name="ViewCredentialBreadcrumb">
-    <value>Visualizza credenziale</value>
-    <comment>Breadcrumb text for viewing a credential</comment>
+  <data name="ViewItemBreadcrumb">
+    <value>View item</value>
+    <comment>Breadcrumb text for viewing an item</comment>
   </data>
-  <data name="EditCredentialBreadcrumb">
-    <value>Modifica credenziale</value>
-    <comment>Breadcrumb text for editing a credential</comment>
+  <data name="EditItemBreadcrumb">
+    <value>Edit item</value>
+    <comment>Breadcrumb text for editing an item</comment>
   </data>
-  <data name="AddNewCredentialBreadcrumb">
-    <value>Aggiungi nuova credenziale</value>
-    <comment>Breadcrumb text for adding a new credential</comment>
+  <data name="AddNewItemBreadcrumb">
+    <value>Add new item</value>
+    <comment>Breadcrumb text for adding a new item</comment>
   </data>
   <!-- Section headers -->
   <data name="ServiceSectionHeader">
-    <value>Servizio</value>
-    <comment>Header for the service information section</comment>
+    <value>Item</value>
+    <comment>Header for the item information section</comment>
   </data>
-  <data name="LoginCredentialsSectionHeader">
-    <value>Credenziali di accesso</value>
-    <comment>Header for the login credentials section</comment>
+  <data name="LoginDetailsSectionHeader">
+    <value>Login details</value>
+    <comment>Header for the login details section</comment>
   </data>
   <data name="AliasSectionHeader">
     <value>Alias</value>
@@ -72,12 +72,12 @@
   </data>
   <!-- Form labels -->
   <data name="ServiceNameLabel">
-    <value>Nome Servizio</value>
-    <comment>Label for service name input</comment>
+    <value>Nome</value>
+    <comment>Label for item name input</comment>
   </data>
   <data name="ServiceUrlLabel">
-    <value>URL servizio</value>
-    <comment>Label for service URL input</comment>
+    <value>Website URL</value>
+    <comment>Label for website URL input</comment>
   </data>
   <data name="EmailLabel">
     <value>Email</value>
@@ -129,9 +129,9 @@
     <value>Cancella Campi Alias</value>
     <comment>Button text for clearing alias fields</comment>
   </data>
-  <data name="SaveCredentialButton">
-    <value>Salva Credenziali</value>
-    <comment>Button text for saving a credential</comment>
+  <data name="SaveItemButton">
+    <value>Save Item</value>
+    <comment>Button text for saving an item</comment>
   </data>
   <data name="CancelButton">
     <value>Annulla</value>
@@ -143,22 +143,22 @@
     <comment>Loading message when saving vault</comment>
   </data>
   <!-- Error messages -->
-  <data name="CredentialNotExistError">
-    <value>Questa credenziale non esistono (più). Per favore, riprova.</value>
-    <comment>Error message when credential doesn't exist</comment>
+  <data name="ItemNotExistError">
+    <value>This item does not exist (anymore). Please try again.</value>
+    <comment>Error message when item doesn't exist</comment>
   </data>
-  <data name="ErrorSavingCredentials">
-    <value>Errore durante il salvataggio delle credenziali. Per favore riprova.</value>
-    <comment>Error message when saving credentials fails</comment>
+  <data name="ErrorSavingItem">
+    <value>Error saving item. Please try again.</value>
+    <comment>Error message when saving item fails</comment>
   </data>
   <!-- Success messages -->
-  <data name="CredentialUpdatedSuccess">
-    <value>Credenziali salvate con successo.</value>
-    <comment>Success message when credential is updated</comment>
+  <data name="ItemUpdatedSuccess">
+    <value>Item updated successfully.</value>
+    <comment>Success message when item is updated</comment>
   </data>
-  <data name="CredentialCreatedSuccess">
-    <value>Credenziale creata con successo.</value>
-    <comment>Success message when credential is created</comment>
+  <data name="ItemCreatedSuccess">
+    <value>Item created successfully.</value>
+    <comment>Success message when item is created</comment>
   </data>
   <!-- Passkey labels -->
   <data name="PasskeySectionHeader">
@@ -178,7 +178,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Le passkey vengono create attraverso l'estensione del browser o applicazioni mobili quando richiesto da un sito web. Non possono essere modificate manualmente o creati tramite l'app web. Per rimuovere questa passkey, è possibile eliminarla da questa credenziale. Per sostituire o creare una nuova passkey, visitare il sito web e seguire i relativi suggerimenti.</value>
+    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, use the delete button below. To replace or create a new passkey, visit the website and follow its prompts.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="DeletePasskeyButton">
@@ -190,11 +190,53 @@
     <comment>Header when passkey is marked for deletion</comment>
   </data>
   <data name="PasskeyWillBeDeleted">
-    <value>Questa chiave di accesso verrà eliminata quando si salva questa credenziale.</value>
+    <value>This passkey will be deleted when you save this item.</value>
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">
     <value>Annulla</value>
     <comment>Button to undo passkey deletion</comment>
+  </data>
+  <!-- Card section fields -->
+  <data name="CardDetailsSectionHeader">
+    <value>Card Details</value>
+    <comment>Header for the credit card details section</comment>
+  </data>
+  <data name="CardholderNameLabel">
+    <value>Cardholder Name</value>
+    <comment>Label for cardholder name input</comment>
+  </data>
+  <data name="CardNumberLabel">
+    <value>Card Number</value>
+    <comment>Label for card number input</comment>
+  </data>
+  <data name="ExpiryMonthLabel">
+    <value>Expiry Month</value>
+    <comment>Label for expiry month input</comment>
+  </data>
+  <data name="ExpiryYearLabel">
+    <value>Expiry Year</value>
+    <comment>Label for expiry year input</comment>
+  </data>
+  <data name="CardCvvLabel">
+    <value>CVV</value>
+    <comment>Label for CVV input</comment>
+  </data>
+  <data name="CardPinLabel">
+    <value>PIN</value>
+    <comment>Label for PIN input</comment>
+  </data>
+  <!-- Custom fields section -->
+  <data name="CustomFieldsSectionHeader">
+    <value>Custom Fields</value>
+    <comment>Header for the custom fields section</comment>
+  </data>
+  <data name="RemoveField">
+    <value>Remove field</value>
+    <comment>Tooltip for removing a field</comment>
+  </data>
+  <data name="AddEmailField">
+    <value>Add Email</value>
+    <comment>Button text for adding email field</comment>
   </data>
 </root>

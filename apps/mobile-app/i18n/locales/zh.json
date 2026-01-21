@@ -20,7 +20,9 @@
     "notice": "注意",
     "enabled": "启用",
     "disabled": "禁用",
-    "twoFactorAuthentication": "两步验证",
+    "twoFactorAuthentication": "双因素认证（2FA）",
+    "add": "Add",
+    "attachments": "附件",
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
     "errors": {
@@ -72,6 +74,11 @@
     "connectingTo": "正在连接到",
     "loggedInAs": "已登录为"
   },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
+  },
   "vault": {
     "syncingVault": "正在同步密码库",
     "uploadingVaultToServer": "正在向服务器上传密码库",
@@ -80,6 +87,8 @@
     "executingOperation": "执行操作中…",
     "checkingVaultUpdates": "检查密码库更新",
     "syncingUpdatedVault": "同步更新后的密码库",
+    "mergingVault": "Merging vault changes",
+    "uploadingChanges": "Uploading changes",
     "errors": {
       "failedToGetEncryptedDatabase": "获取加密数据库失败",
       "usernameNotFound": "未找到用户名",
@@ -88,7 +97,8 @@
       "versionNotSupported": "此版本的AliasVault移动应用已不再被服务器支持。请将应用更新至最新版本。",
       "serverVersionNotSupported": "AliasVault 服务器需要更新到更高版本才能使用此移动应用。如需帮助，请联系支持人员。",
       "appOutdated": "此应用已过时，无法用于访问新版本的密码库。请更新 AliasVault 应用以继续。",
-      "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。"
+      "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。",
+      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
     }
   },
   "credentials": {
@@ -164,7 +174,6 @@
       "userpass": "密码",
       "attachments": "附件"
     },
-    "twoFactorAuth": "两步验证",
     "totpCode": "TOTP 验证码",
     "attachments": "附件",
     "deleteAttachment": "删除",
@@ -429,8 +438,210 @@
   },
   "navigation": {
     "credentials": "凭据",
+    "vault": "Vault",
     "emails": "邮件",
     "settings": "设置"
+  },
+  "itemTypes": {
+    "creating": "Creating",
+    "editing": "Editing",
+    "login": {
+      "title": "登录"
+    },
+    "alias": {
+      "title": "别名"
+    },
+    "creditCard": {
+      "title": "Credit Card",
+      "cardInformation": "Card Information"
+    },
+    "note": {
+      "title": "注意"
+    },
+    "addField": "Add Field",
+    "addCustomField": "Add Custom Field",
+    "customFields": "Custom Fields",
+    "fieldLabel": "Field Label",
+    "fieldType": "Field Type",
+    "enterFieldName": "Enter field name",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden",
+      "email": "电子邮件",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "日期",
+      "textArea": "Text Area"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "用户名",
+    "login.password": "密码",
+    "login.email": "电子邮件",
+    "login.url": "URL",
+    "alias.first_name": "名",
+    "alias.last_name": "姓",
+    "alias.gender": "性别",
+    "alias.birthdate": "出生日期",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN",
+    "notes.content": "备注"
+  },
+  "items": {
+    "title": "Items",
+    "addItem": "Add Item",
+    "editItem": "Edit Item",
+    "deleteItem": "删除项目",
+    "itemDetails": "Item Details",
+    "itemCreated": "Item Created",
+    "emailPreview": "电子邮件预览",
+    "untitled": "Untitled",
+    "name": "名称",
+    "namePlaceholder": "e.g., Google, Amazon",
+    "url": "URL",
+    "urlPlaceholder": "e.g., https://google.com",
+    "service": "服务",
+    "serviceName": "服务名称",
+    "serviceUrl": "服务 URL",
+    "loginCredentials": "登录凭据",
+    "username": "用户名",
+    "email": "电子邮件",
+    "alias": "别名",
+    "metadata": "元数据",
+    "firstName": "名",
+    "lastName": "姓",
+    "nickName": "昵称",
+    "fullName": "全名",
+    "gender": "性别",
+    "birthDate": "出生日期",
+    "birthDatePlaceholder": "YYYY-MM-DD",
+    "notes": "备注",
+    "randomAlias": "随机别名",
+    "manual": "手动输入",
+    "generateRandomAlias": "生成随机别名",
+    "clearAliasFields": "清除别名字段",
+    "enterFullEmail": "输入验证邮箱地址",
+    "enterEmailPrefix": "输入电子邮箱前缀",
+    "useDomainChooser": "使用域选择器",
+    "enterCustomDomain": "输入自定义域",
+    "selectEmailDomain": "选择电子邮箱域",
+    "privateEmailTitle": "私人邮箱",
+    "privateEmailAliasVaultServer": "AliasVault 服务器",
+    "privateEmailDescription": "端到端加密，完全私密。",
+    "publicEmailTitle": "公共临时电子邮箱提供商",
+    "publicEmailDescription": "匿名但隐私性有限，任何知晓其地址的人均可读取电子邮件内容。",
+    "searchPlaceholder": "搜索密码库…",
+    "noMatchingItems": "No matching items found",
+    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noPasskeysFound": "尚未创建通行密钥。访问以通行密钥为认证方式的网站才能创建通行密钥。",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "recentEmails": "近期电子邮件",
+    "loadingEmails": "加载电子邮件中…",
+    "noEmailsYet": "尚未收到电子邮件。",
+    "offlineEmailsMessage": "您处于离线状态，请连接互联网以加载电子邮件。",
+    "emailLoadError": "加载电子邮件时出错，请稍后重试。",
+    "emailUnexpectedError": "加载电子邮件时发生意外错误，请稍后重试。",
+    "password": "密码",
+    "passwordLength": "密码长度",
+    "changePasswordComplexity": "密码设置",
+    "includeLowercase": "小写字母（a-z）",
+    "includeUppercase": "大写字母（A-Z）",
+    "includeNumbers": "数字（0-9）",
+    "includeSpecialChars": "特殊字符（!@#）",
+    "avoidAmbiguousChars": "避免使用歧义字符",
+    "deletingItem": "Deleting item...",
+    "errorLoadingItems": "Error loading items",
+    "vaultSyncFailed": "密码库同步失败",
+    "vaultSyncedSuccessfully": "密码库同步成功",
+    "vaultUpToDate": "密码库已为最新",
+    "offlineMessage": "您处于离线状态，请连接互联网以同步密码库。",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "switchBackToBrowser": "切换回浏览器以继续。",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "通行密钥",
+      "aliases": "别名",
+      "userpass": "密码",
+      "attachments": "附件"
+    },
+    "totpCode": "TOTP 验证码",
+    "attachments": "附件",
+    "deleteAttachment": "删除",
+    "fileSavedTo": "文件已保存至",
+    "previewNotSupported": "不支持预览",
+    "downloadToView": "下载文件即可查看",
+    "unsavedChanges": {
+      "title": "舍弃更改？",
+      "message": "您有未保存的更改，确定要舍弃这些更改吗？",
+      "discard": "舍弃"
+    },
+    "toasts": {
+      "itemUpdated": "Item updated successfully",
+      "itemCreated": "Item created successfully",
+      "itemDeleted": "Item deleted successfully",
+      "usernameCopied": "用户名已复制到剪贴板",
+      "emailCopied": "电子邮箱已复制到剪贴板",
+      "passwordCopied": "密码已复制到剪贴板"
+    },
+    "createNewAliasFor": "创建新别名",
+    "errors": {
+      "loadFailed": "Failed to load item",
+      "saveFailed": "Failed to save item"
+    },
+    "contextMenu": {
+      "title": "Item Options",
+      "edit": "编辑",
+      "delete": "删除",
+      "copyUsername": "复制用户名",
+      "copyEmail": "复制电子邮箱",
+      "copyPassword": "复制密码"
+    },
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available",
+    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "folders": {
+      "folder": "文件夹",
+      "newFolder": "New Folder",
+      "createFolder": "创建文件夹",
+      "editFolder": "Edit Folder",
+      "folderName": "Folder Name",
+      "folderNamePlaceholder": "e.g., Work, Personal",
+      "folderNameRequired": "Folder name is required",
+      "deleteFolder": "Delete Folder",
+      "deleteFolderKeepItems": "Delete folder only",
+      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderAndItems": "Delete folder and all items",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "noFolder": "No Folder",
+      "selectFolder": "选择文件夹"
+    },
+    "recentlyDeleted": {
+      "title": "Recently Deleted",
+      "noItems": "No deleted items",
+      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
+      "emptyAll": "Empty All",
+      "daysRemaining": "{{count}} day remaining",
+      "daysRemaining_plural": "{{count}} days remaining",
+      "expiringSoon": "Expiring soon",
+      "confirmDeleteTitle": "Delete Permanently?",
+      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "itemRestored": "Item restored",
+      "itemDeleted": "Item permanently deleted",
+      "allItemsDeleted": "All items permanently deleted"
+    }
   },
   "emails": {
     "title": "邮件",
@@ -489,6 +700,16 @@
     "INTERNAL_SERVER_ERROR": "服务器内部错误。",
     "VAULT_ERROR": "本地密码库不是最新版本。请刷新页面同步密码库后重试。"
   },
+  "sync": {
+    "offline": "Offline",
+    "offlineWithPending": "Offline (pending)",
+    "syncing": "Syncing...",
+    "pending": "Pending sync",
+    "retrySync": "Tap to retry",
+    "backOnline": "已在线",
+    "stillOffline": "依旧处于离线状态",
+    "syncFailed": "Sync failed"
+  },
   "app": {
     "status": {
       "unlockingVault": "解锁密码库",
@@ -497,13 +718,13 @@
       "retryingConnection": "正在重试连接…"
     },
     "offline": {
-      "banner": "离线模式 (只读)",
+      "banner": "Offline - changes will sync when online",
       "backOnline": "已在线",
       "stillOffline": "依旧处于离线状态"
     },
     "alerts": {
       "syncIssue": "无连接",
-      "syncIssueMessage": "无法连接到AliasVault服务器，您的密码库无法同步。您想以只读模式打开本地密码库还是重试连接？",
+      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "打开本地密码库",
       "retrySync": "重试同步"
     },

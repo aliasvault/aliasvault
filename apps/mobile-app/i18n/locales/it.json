@@ -21,6 +21,8 @@
     "enabled": "Abilitato",
     "disabled": "Disabilitato",
     "twoFactorAuthentication": "Autenticazione a due fattori",
+    "add": "Add",
+    "attachments": "Allegati",
     "deleteItemConfirmTitle": "Elimina elemento",
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "errors": {
@@ -72,6 +74,11 @@
     "connectingTo": "Connessione a",
     "loggedInAs": "Accesso effettuato come"
   },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
+  },
   "vault": {
     "syncingVault": "Sincronizzazione cassaforte",
     "uploadingVaultToServer": "Caricamento cassaforte sul server",
@@ -80,6 +87,8 @@
     "executingOperation": "Esecuzione operazione...",
     "checkingVaultUpdates": "Verifica aggiornamenti cassaforte",
     "syncingUpdatedVault": "Sincronizzazione cassaforte aggiornata",
+    "mergingVault": "Merging vault changes",
+    "uploadingChanges": "Uploading changes",
     "errors": {
       "failedToGetEncryptedDatabase": "Recupero del database crittografato non riuscito",
       "usernameNotFound": "Nome utente non trovato",
@@ -88,7 +97,8 @@
       "versionNotSupported": "Questa versione dell'app AliasVault non è più supportata dal server. Aggiorna l'app all'ultima versione.",
       "serverVersionNotSupported": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa app mobile. Se hai bisogno di aiuto, contatta il supporto.",
       "appOutdated": "Questa applicazione è obsoleta e non può essere utilizzata per accedere a questa (nuova) versione della cassaforte. Si prega di aggiornare l'app AliasVault per continuare.",
-      "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza."
+      "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza.",
+      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
     }
   },
   "credentials": {
@@ -164,7 +174,6 @@
       "userpass": "Password",
       "attachments": "Allegati"
     },
-    "twoFactorAuth": "Autenticazione a due fattori",
     "totpCode": "Codice TOTP",
     "attachments": "Allegati",
     "deleteAttachment": "Elimina",
@@ -429,8 +438,210 @@
   },
   "navigation": {
     "credentials": "Credenziali",
+    "vault": "Vault",
     "emails": "Email",
     "settings": "Impostazioni"
+  },
+  "itemTypes": {
+    "creating": "Creating",
+    "editing": "Editing",
+    "login": {
+      "title": "Accesso"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Credit Card",
+      "cardInformation": "Card Information"
+    },
+    "note": {
+      "title": "Nota"
+    },
+    "addField": "Add Field",
+    "addCustomField": "Add Custom Field",
+    "customFields": "Custom Fields",
+    "fieldLabel": "Field Label",
+    "fieldType": "Field Type",
+    "enterFieldName": "Enter field name",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden",
+      "email": "Email",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "Data",
+      "textArea": "Text Area"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Nome Utente",
+    "login.password": "Password",
+    "login.email": "Email",
+    "login.url": "URL",
+    "alias.first_name": "Nome",
+    "alias.last_name": "Cognome",
+    "alias.gender": "Genere",
+    "alias.birthdate": "Data di nascita",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN",
+    "notes.content": "Note"
+  },
+  "items": {
+    "title": "Items",
+    "addItem": "Add Item",
+    "editItem": "Edit Item",
+    "deleteItem": "Elimina elemento",
+    "itemDetails": "Item Details",
+    "itemCreated": "Item Created",
+    "emailPreview": "Anteprima email",
+    "untitled": "Untitled",
+    "name": "Nome",
+    "namePlaceholder": "e.g., Google, Amazon",
+    "url": "URL",
+    "urlPlaceholder": "e.g., https://google.com",
+    "service": "Servizio",
+    "serviceName": "Nome Servizio",
+    "serviceUrl": "URL servizio",
+    "loginCredentials": "Credenziali di accesso",
+    "username": "Nome Utente",
+    "email": "Email",
+    "alias": "Alias",
+    "metadata": "Metadati",
+    "firstName": "Nome",
+    "lastName": "Cognome",
+    "nickName": "Soprannome",
+    "fullName": "Nome completo",
+    "gender": "Genere",
+    "birthDate": "Data di nascita",
+    "birthDatePlaceholder": "AAAA-MM-GG",
+    "notes": "Note",
+    "randomAlias": "Alias casuale",
+    "manual": "Manuale",
+    "generateRandomAlias": "Genera Alias Casuale",
+    "clearAliasFields": "Cancella Campi Alias",
+    "enterFullEmail": "Inserisci l'indirizzo email completo",
+    "enterEmailPrefix": "Inserisci prefisso email",
+    "useDomainChooser": "Usa selettore di dominio",
+    "enterCustomDomain": "Inserisci un dominio personalizzato",
+    "selectEmailDomain": "Seleziona Dominio Email",
+    "privateEmailTitle": "Email privata",
+    "privateEmailAliasVaultServer": "Server AliasVault",
+    "privateEmailDescription": "E2E crittografato, completamente privato.",
+    "publicEmailTitle": "Fornitori Pubblici di Email Temporanee",
+    "publicEmailDescription": "Anonimi ma con privacy ridotta. Accessibile a chiunque conosca l'indirizzo.",
+    "searchPlaceholder": "Ricerca cassaforte ...",
+    "noMatchingItems": "No matching items found",
+    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noPasskeysFound": "Non sono state ancora create passkey. Le passkey vengono create visitando un sito web che offre le passkey come metodo di autenticazione.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "recentEmails": "Email recenti",
+    "loadingEmails": "Caricamento email...",
+    "noEmailsYet": "Nessuna email ricevuta.",
+    "offlineEmailsMessage": "Sei offline. Collegati a internet per caricare le email.",
+    "emailLoadError": "Si è verificato un errore durante il caricamento delle email. Riprova più tardi.",
+    "emailUnexpectedError": "Si è verificato un errore imprevisto durante il caricamento delle email. Riprova più tardi.",
+    "password": "Password",
+    "passwordLength": "Lunghezza password",
+    "changePasswordComplexity": "Impostazioni Password",
+    "includeLowercase": "Lettere minuscole (a-z)",
+    "includeUppercase": "Lettere maiuscole (A-Z)",
+    "includeNumbers": "Numeri (0-9)",
+    "includeSpecialChars": "Caratteri speciali (!@#)",
+    "avoidAmbiguousChars": "Evita caratteri ambigui",
+    "deletingItem": "Deleting item...",
+    "errorLoadingItems": "Error loading items",
+    "vaultSyncFailed": "Sincronizzazione cassaforte fallita",
+    "vaultSyncedSuccessfully": "Cassaforte sincronizzata con successo",
+    "vaultUpToDate": "Cassaforte aggiornata",
+    "offlineMessage": "Sei offline. Collegati a internet per sincronizzare la cassaforte.",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "switchBackToBrowser": "Torna al browser per continuare.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Passkey",
+      "aliases": "Alias",
+      "userpass": "Password",
+      "attachments": "Allegati"
+    },
+    "totpCode": "Codice TOTP",
+    "attachments": "Allegati",
+    "deleteAttachment": "Elimina",
+    "fileSavedTo": "File salvato in",
+    "previewNotSupported": "Anteprima non supportata",
+    "downloadToView": "Scarica il file per visualizzarlo",
+    "unsavedChanges": {
+      "title": "Annullare le modifiche?",
+      "message": "Sono presenti modifiche non salvate. \nSei sicuro di volerli scartare?",
+      "discard": "Scarta"
+    },
+    "toasts": {
+      "itemUpdated": "Item updated successfully",
+      "itemCreated": "Item created successfully",
+      "itemDeleted": "Item deleted successfully",
+      "usernameCopied": "Nome utente copiato negli appunti",
+      "emailCopied": "Email copiata negli appunti",
+      "passwordCopied": "Password copiata negli appunti"
+    },
+    "createNewAliasFor": "Crea un nuovo alias per",
+    "errors": {
+      "loadFailed": "Failed to load item",
+      "saveFailed": "Failed to save item"
+    },
+    "contextMenu": {
+      "title": "Item Options",
+      "edit": "Modifica",
+      "delete": "Elimina",
+      "copyUsername": "Copia Nome Utente",
+      "copyEmail": "Copia E-mail",
+      "copyPassword": "Copia Password"
+    },
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available",
+    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "folders": {
+      "folder": "Cartella",
+      "newFolder": "New Folder",
+      "createFolder": "Crea cartella",
+      "editFolder": "Edit Folder",
+      "folderName": "Folder Name",
+      "folderNamePlaceholder": "e.g., Work, Personal",
+      "folderNameRequired": "Folder name is required",
+      "deleteFolder": "Delete Folder",
+      "deleteFolderKeepItems": "Delete folder only",
+      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderAndItems": "Delete folder and all items",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "noFolder": "No Folder",
+      "selectFolder": "Seleziona cartella"
+    },
+    "recentlyDeleted": {
+      "title": "Recently Deleted",
+      "noItems": "No deleted items",
+      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
+      "emptyAll": "Empty All",
+      "daysRemaining": "{{count}} day remaining",
+      "daysRemaining_plural": "{{count}} days remaining",
+      "expiringSoon": "Expiring soon",
+      "confirmDeleteTitle": "Delete Permanently?",
+      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "itemRestored": "Item restored",
+      "itemDeleted": "Item permanently deleted",
+      "allItemsDeleted": "All items permanently deleted"
+    }
   },
   "emails": {
     "title": "Email",
@@ -489,6 +700,16 @@
     "INTERNAL_SERVER_ERROR": "Errore interno del server.",
     "VAULT_ERROR": "La cassaforte locale non è aggiornata. Sincronizzala ricaricando la pagina e riprova."
   },
+  "sync": {
+    "offline": "Offline",
+    "offlineWithPending": "Offline (pending)",
+    "syncing": "Syncing...",
+    "pending": "Pending sync",
+    "retrySync": "Tap to retry",
+    "backOnline": "Torna online",
+    "stillOffline": "Ancora offline",
+    "syncFailed": "Sync failed"
+  },
   "app": {
     "status": {
       "unlockingVault": "Sblocco cassaforte in corso",
@@ -497,13 +718,13 @@
       "retryingConnection": "Riprovando la connessione..."
     },
     "offline": {
-      "banner": "Modalità offline (sola lettura)",
+      "banner": "Offline - changes will sync when online",
       "backOnline": "Torna online",
       "stillOffline": "Ancora offline"
     },
     "alerts": {
       "syncIssue": "Nessuna Connessione",
-      "syncIssueMessage": "Impossibile raggiungere il server AliasVault e sincronizzare la cassaforte. Vuoi aprire la cassaforte locale in sola lettura o ritentare la connessione?",
+      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Apri cassaforte locale",
       "retrySync": "Riprova sincronizzazione"
     },

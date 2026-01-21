@@ -308,4 +308,12 @@
     <value>Vault synchroniseren</value>
     <comment>Tooltip text for sync vault data button</comment>
   </data>
+  <data name="SyncingChanges" xml:space="preserve">
+    <value>Wijzigingen synchroniseren...</value>
+    <comment>Status text when background sync is in progress</comment>
+  </data>
+  <data name="LoadingVault" xml:space="preserve">
+    <value>Vault laden...</value>
+    <comment>Status text when vault is being loaded</comment>
+  </data>
 </root>

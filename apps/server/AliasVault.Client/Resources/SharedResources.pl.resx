@@ -308,4 +308,12 @@
     <value>Synchronizacja danych z sejfu</value>
     <comment>Tooltip text for sync vault data button</comment>
   </data>
+  <data name="SyncingChanges" xml:space="preserve">
+    <value>Synchronizacja zmian...</value>
+    <comment>Status text when background sync is in progress</comment>
+  </data>
+  <data name="LoadingVault" xml:space="preserve">
+    <value>Ładowanie sejfu...</value>
+    <comment>Status text when vault is being loaded</comment>
+  </data>
 </root>

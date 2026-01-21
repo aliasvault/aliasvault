@@ -74,9 +74,9 @@
     <value>Por favor, observe:</value>
     <comment>Reset vault please note prefix</comment>
   </data>
-  <data name="ResetVaultCredentialsDeletedNote" xml:space="preserve">
-    <value>Todas as credenciais criptografadas no seu cofre serão excluídas permanentemente</value>
-    <comment>Reset vault note about credentials being deleted</comment>
+  <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
+    <value>All encrypted items in your vault will be permanently deleted</value>
+    <comment>Reset vault note about items being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
     <value>Seus aliases de e-mail serão preservados e podem ser reutilizados após resetar seu cofre</value>
@@ -99,7 +99,7 @@
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>Último aviso: Você está prestes a excluir permanentemente todas as suas credenciais!</value>
+    <value>Final warning: You are about to permanently delete all your items!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
@@ -131,7 +131,7 @@
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>Seu cofre foi resetado com sucesso. Todas as credenciais foram deletadas e você agora pode começar do zero.</value>
+    <value>Your vault has been successfully reset. All items have been deleted and you can now start fresh.</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">

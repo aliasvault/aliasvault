@@ -20,7 +20,9 @@
     "notice": "Notification",
     "enabled": "Activé",
     "disabled": "Désactivé",
-    "twoFactorAuthentication": "Authentification à deux facteurs",
+    "twoFactorAuthentication": "Authentification à double facteur",
+    "add": "Ajouter",
+    "attachments": "Pièces jointes",
     "deleteItemConfirmTitle": "Supprimer l'élement",
     "deleteItemConfirmDescription": "Êtes-vous certain de vouloir supprimer cet élément?",
     "errors": {
@@ -72,6 +74,11 @@
     "connectingTo": "Connexion à",
     "loggedInAs": "Connecté en tant que"
   },
+  "logout": {
+    "unsyncedChangesTitle": "Modifications non synchronisées",
+    "unsyncedChangesWarning": "Vous avez des modifications non synchronisées qui seront perdues si vous vous déconnectez maintenant. Êtes-vous sûr de vouloir continuer ?",
+    "logoutAnyway": "Se déconnecter quand même"
+  },
   "vault": {
     "syncingVault": "Synchronisation du coffre",
     "uploadingVaultToServer": "Envoi du coffre sur le serveur",
@@ -80,6 +87,8 @@
     "executingOperation": "Exécution de l'opération...",
     "checkingVaultUpdates": "Vérification des mises à jour du coffre",
     "syncingUpdatedVault": "Synchronisation du coffre mis à jour",
+    "mergingVault": "Fusion des modifications du coffre",
+    "uploadingChanges": "Envoi des modifications",
     "errors": {
       "failedToGetEncryptedDatabase": "Impossible d'obtenir la base de données chiffrée",
       "usernameNotFound": "Identifiant non trouvé",
@@ -88,7 +97,8 @@
       "versionNotSupported": "Cette version de l'application mobile AliasVault n'est plus prise en charge par le serveur. Veuillez mettre à jour votre application vers la dernière version.",
       "serverVersionNotSupported": "Le serveur AliasVault doit être mis à jour vers une version plus récente afin d'utiliser cette application mobile. Veuillez contacter le support si vous avez besoin d'aide.",
       "appOutdated": "Cette application est obsolète et ne peut pas être utilisée pour accéder à cette (nouvelle) version du coffre. Veuillez mettre à jour l'application AliasVault pour continuer.",
-      "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité."
+      "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité.",
+      "passwordChangeRequiresOnline": "Le changement de mot de passe nécessite une connexion internet. Veuillez réessayer une fois connecté."
     }
   },
   "credentials": {
@@ -164,7 +174,6 @@
       "userpass": "Mots de passe",
       "attachments": "Pièces jointes"
     },
-    "twoFactorAuth": "Authentification à deux facteurs",
     "totpCode": "Code à usage unique",
     "attachments": "Pièces jointes",
     "deleteAttachment": "Supprimer",
@@ -429,8 +438,210 @@
   },
   "navigation": {
     "credentials": "Identifiants",
+    "vault": "Coffre-fort",
     "emails": "E-mails",
     "settings": "Paramètres"
+  },
+  "itemTypes": {
+    "creating": "Création",
+    "editing": "Édition",
+    "login": {
+      "title": "Se connecter"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Carte de crédit",
+      "cardInformation": "Informations de la carte"
+    },
+    "note": {
+      "title": "Note"
+    },
+    "addField": "Ajouter un champ",
+    "addCustomField": "Ajouter un champ personnalisé",
+    "customFields": "Champs Personnalisés",
+    "fieldLabel": "Étiquette du champ",
+    "fieldType": "Type de champ",
+    "enterFieldName": "Entrez le nom du champ",
+    "fieldTypes": {
+      "text": "Texte",
+      "hidden": "Masqué",
+      "email": "Email",
+      "url": "URL",
+      "phone": "Téléphone",
+      "number": "Nombre",
+      "date": "Date",
+      "textArea": "Zone de texte"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Username",
+    "login.password": "Mot de passe",
+    "login.email": "Email",
+    "login.url": "URL",
+    "alias.first_name": "Prénom",
+    "alias.last_name": "Nom",
+    "alias.gender": "Genre",
+    "alias.birthdate": "Date de naissance",
+    "card.cardholder_name": "Nom du titulaire de la carte",
+    "card.number": "Numéro de la carte",
+    "card.expiry_month": "Mois d'expiration",
+    "card.expiry_year": "Année d'expiration",
+    "card.cvv": "CVV",
+    "card.pin": "PIN",
+    "notes.content": "Notes"
+  },
+  "items": {
+    "title": "Éléments",
+    "addItem": "Ajouter un élément",
+    "editItem": "Modifier l'identifiant",
+    "deleteItem": "Supprimer l'élement",
+    "itemDetails": "Informations détaillées",
+    "itemCreated": "Élément créé",
+    "emailPreview": "Aperçu de l'e-mail",
+    "untitled": "Untitled",
+    "name": "Nom",
+    "namePlaceholder": "ex: Google, Amazon",
+    "url": "URL",
+    "urlPlaceholder": "ex: https://google.com",
+    "service": "Service",
+    "serviceName": "Nom du service",
+    "serviceUrl": "URL du service",
+    "loginCredentials": "Identifiants de connexion",
+    "username": "Nom d'utilisateur",
+    "email": "Email",
+    "alias": "Alias",
+    "metadata": "Métadonnées",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "nickName": "Surnom",
+    "fullName": "Nom complet",
+    "gender": "Genre",
+    "birthDate": "Date de naissance",
+    "birthDatePlaceholder": "AAAA-MM-JJ",
+    "notes": "Notes",
+    "randomAlias": "Alias aléatoire",
+    "manual": "Manuel",
+    "generateRandomAlias": "Générer un alias aléatoire",
+    "clearAliasFields": "Effacer les champs d'alias",
+    "enterFullEmail": "Entrez l'adresse email complète",
+    "enterEmailPrefix": "Entrez le préfixe de l'email",
+    "useDomainChooser": "Utiliser le sélecteur de domaine",
+    "enterCustomDomain": "Entrez le domaine personnalisé",
+    "selectEmailDomain": "Sélectionner un domaine de messagerie",
+    "privateEmailTitle": "E-mail privé",
+    "privateEmailAliasVaultServer": "Serveur AliasVault",
+    "privateEmailDescription": "E2E chiffré, entièrement privé.",
+    "publicEmailTitle": "Fournisseurs d'email public temporaires",
+    "publicEmailDescription": "Anonyme mais confidentiel limitée. Le contenu des e-mails est lisible par toute personne qui connaît l'adresse.",
+    "searchPlaceholder": "Rechercher dans le coffre...",
+    "noMatchingItems": "Aucun élément correspondant trouvé",
+    "noItemsFound": "Aucun élément trouvé. Créez en un pour commencer. Astuce : vous pouvez également vous connecter à l'application Web AliasVault pour importer les identifiants depuis d'autres gestionnaires de mots de passe.",
+    "noPasskeysFound": "Aucune clé d'accès n'a encore été créée. Les clés d'accès sont créés en visitant un site Web qui propose des clés d'accès comme méthode d'authentification.",
+    "noAttachmentsFound": "Aucun élément avec pièces jointes trouvé",
+    "noItemsOfTypeFound": "Aucun élément {{type}} trouvé",
+    "recentEmails": "E-mails récents",
+    "loadingEmails": "Chargement des e-mails...",
+    "noEmailsYet": "Pas encore d'e-mails reçus.",
+    "offlineEmailsMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour charger vos e-mails.",
+    "emailLoadError": "Une erreur s'est produite lors du chargement des e-mails. Veuillez réessayer plus tard.",
+    "emailUnexpectedError": "Une erreur inattendue s'est produite lors du chargement des e-mails. Veuillez réessayer plus tard.",
+    "password": "Mot de passe",
+    "passwordLength": "Longueur du mot de passe",
+    "changePasswordComplexity": "Paramètres du mot de passe",
+    "includeLowercase": "Minuscules (a-z)",
+    "includeUppercase": "Majuscules (A-Z)",
+    "includeNumbers": "Nombres (0-9)",
+    "includeSpecialChars": "Caractères spéciaux (!@#)",
+    "avoidAmbiguousChars": "Éviter les caractères ambigus",
+    "deletingItem": "Suppression de l'élément...",
+    "errorLoadingItems": "Erreur lors du chargement des éléments",
+    "vaultSyncFailed": "Échec de la synchronisation du coffre",
+    "vaultSyncedSuccessfully": "Le coffre a été synchronisé avec succès",
+    "vaultUpToDate": "Le coffre est à jour",
+    "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour synchroniser votre coffre.",
+    "itemCreatedMessage": "Votre nouvel élément a été ajouté à votre coffre et est prêt à être utilisé.",
+    "switchBackToBrowser": "Passez à votre navigateur pour continuer.",
+    "filters": {
+      "all": "(Tous) Éléments",
+      "passkeys": "Clés d'accès",
+      "aliases": "Alias",
+      "userpass": "Mots de passe",
+      "attachments": "Pièces jointes"
+    },
+    "totpCode": "Code à usage unique",
+    "attachments": "Pièces jointes",
+    "deleteAttachment": "Supprimer",
+    "fileSavedTo": "Fichier enregistré sous",
+    "previewNotSupported": "Aperçu non supporté",
+    "downloadToView": "Télécharger le fichier pour le voir",
+    "unsavedChanges": {
+      "title": "Annuler les modifications?",
+      "message": "Vos modifications n'ont pas été enregistrées. Voulez-vous vraiment les ignorer ?",
+      "discard": "Ignorer"
+    },
+    "toasts": {
+      "itemUpdated": "Élément mis à jour avec succès",
+      "itemCreated": "Élément créé avec succès",
+      "itemDeleted": "Élément supprimé avec succès",
+      "usernameCopied": "Nom d'utilisateur copié dans le presse-papiers",
+      "emailCopied": "E-mail copié dans le presse-papiers",
+      "passwordCopied": "Mot de passe copié dans le presse-papiers"
+    },
+    "createNewAliasFor": "Créer un nouvel alias pour",
+    "errors": {
+      "loadFailed": "Échec du chargement de l'élément",
+      "saveFailed": "Échec de l'enregistrement de l'élément"
+    },
+    "contextMenu": {
+      "title": "Options de l'élément",
+      "edit": "Modifier",
+      "delete": "Supprimer",
+      "copyUsername": "Copier le nom d'utilisateur",
+      "copyEmail": "Copier l'e-mail",
+      "copyPassword": "Copier le mot de passe"
+    },
+    "viewHistory": "Voir l'historique",
+    "history": "Historique",
+    "noHistoryAvailable": "Pas d'historique disponible",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet élément ? Cette action ne peut pas être annulée.",
+    "folders": {
+      "folder": "Dossier",
+      "newFolder": "Nouveau dossier",
+      "createFolder": "Nouveau dossier",
+      "editFolder": "Éditer un dossier",
+      "folderName": "Nom du dossier",
+      "folderNamePlaceholder": "ex: travail, personnel",
+      "folderNameRequired": "Le nom du dossier est requis",
+      "deleteFolder": "Supprimer le dossier",
+      "deleteFolderKeepItems": "Supprimer le dossier uniquement",
+      "deleteFolderKeepItemsDescription": "Les éléments seront déplacés dans la liste principale.",
+      "deleteFolderAndItems": "Supprimer le dossier et tous les éléments",
+      "deleteFolderAndItemsDescription": "{{count}} élément(s) vont être déplacés vers Récemment supprimés.",
+      "emptyFolderHint": "Ce dossier est vide. Pour déplacer des éléments vers ce dossier, éditez l'élément et sélectionnez ce dossier.",
+      "noFolder": "Aucun dossier",
+      "selectFolder": "Sélectionner un dossier"
+    },
+    "recentlyDeleted": {
+      "title": "Supprimé récemment",
+      "noItems": "Aucun élément supprimé",
+      "noItemsDescription": "Les éléments que vous supprimez apparaîtront ici pendant 30 jours avant d'être définitivement supprimés.",
+      "description": "Ces éléments seront définitivement supprimés après 30 jours. Vous pouvez les restaurer ou les supprimer immédiatement.",
+      "restore": "Restaurer",
+      "deletePermanently": "Supprimer définitivement",
+      "emptyAll": "Tout vider",
+      "daysRemaining": "{{count}} jour restant",
+      "daysRemaining_plural": "{{count}} jours restants",
+      "expiringSoon": "Expirant bientôt",
+      "confirmDeleteTitle": "Supprimer définitivement?",
+      "confirmDeleteMessage": "Cet élément sera définitivement supprimé et ne pourra pas être récupéré.",
+      "confirmEmptyAllTitle": "Vider récemment supprimé ?",
+      "confirmEmptyAllMessage": "Les {{count}} éléments seront définitivement supprimés et ne pourront pas être récupérés.",
+      "itemRestored": "Élément restauré",
+      "itemDeleted": "Élément supprimé définitivement",
+      "allItemsDeleted": "Tous les éléments ont été définitivement supprimés"
+    }
   },
   "emails": {
     "title": "E-mails",
@@ -489,6 +700,16 @@
     "INTERNAL_SERVER_ERROR": "Erreur interne du serveur.",
     "VAULT_ERROR": "Le coffre-fort local n'est pas à jour. Veuillez synchroniser votre coffre-fort en rafraîchissant la page et réessayez."
   },
+  "sync": {
+    "offline": "Hors ligne",
+    "offlineWithPending": "Hors ligne (en attente)",
+    "syncing": "Synchronisation...",
+    "pending": "Synchronisation en attente",
+    "retrySync": "Appuyez pour réessayer",
+    "backOnline": "Retour en ligne",
+    "stillOffline": "Toujours hors-ligne",
+    "syncFailed": "Échec de la synchronisation"
+  },
   "app": {
     "status": {
       "unlockingVault": "Déverrouillage du coffre",
@@ -497,13 +718,13 @@
       "retryingConnection": "Tentative de reconnexion..."
     },
     "offline": {
-      "banner": "Mode hors ligne (lecture seule)",
+      "banner": "Hors ligne - les modifications seront synchronisées lorsque vous serez en ligne",
       "backOnline": "Retour en ligne",
       "stillOffline": "Toujours hors-ligne"
     },
     "alerts": {
       "syncIssue": "Pas de connexion",
-      "syncIssueMessage": "Le serveur AliasVault n'a pas pu être atteint et votre coffre n'a pas pu être synchronisé. Voulez-vous ouvrir votre coffre local en mode lecture seule ou réessayer la connexion ?",
+      "syncIssueMessage": "Le serveur AliasVault n'a pas pu être atteint et votre coffre n'a pas pu être synchronisé. Voulez-vous ouvrir votre coffre local ou réessayer la connexion ?",
       "openLocalVault": "Ouvrir le coffre local",
       "retrySync": "Réessayer la synchronisation"
     },

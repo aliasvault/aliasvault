@@ -21,6 +21,8 @@
     "enabled": "Aktiviert",
     "disabled": "Deaktiviert",
     "twoFactorAuthentication": "Zwei-Faktor-Authentifizierung",
+    "add": "Add",
+    "attachments": "Anhänge",
     "deleteItemConfirmTitle": "Eintrag löschen",
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
     "errors": {
@@ -72,6 +74,11 @@
     "connectingTo": "Verbinde zu",
     "loggedInAs": "Angemeldet als"
   },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
+  },
   "vault": {
     "syncingVault": "Tresor wird synchronisiert",
     "uploadingVaultToServer": "Tresor wird auf den Server hochgeladen",
@@ -80,6 +87,8 @@
     "executingOperation": "Vorgang wird ausgeführt...",
     "checkingVaultUpdates": "Prüfe auf Tresor-Updates",
     "syncingUpdatedVault": "Aktualisierter Tresor wird synchronisiert",
+    "mergingVault": "Merging vault changes",
+    "uploadingChanges": "Uploading changes",
     "errors": {
       "failedToGetEncryptedDatabase": "Fehler beim Abrufen der verschlüsselten Datenbank",
       "usernameNotFound": "Benutzername nicht gefunden",
@@ -88,7 +97,8 @@
       "versionNotSupported": "Diese Version der AliasVault-App wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine App auf die neueste Version.",
       "serverVersionNotSupported": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese mobile App nutzen zu können. Bitte kontaktiere den Support, falls Du Hilfe benötigst.",
       "appOutdated": "Diese App ist veraltet und kann nicht verwendet werden, um auf diesen Tresor zuzugreifen. Bitte aktualisiere die App, um fortzufahren.",
-      "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an."
+      "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an.",
+      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
     }
   },
   "credentials": {
@@ -164,7 +174,6 @@
       "userpass": "Passwörter",
       "attachments": "Anhänge"
     },
-    "twoFactorAuth": "Zwei-Faktor-Authentifizierung",
     "totpCode": "TOTP-Code",
     "attachments": "Anhänge",
     "deleteAttachment": "Löschen",
@@ -429,8 +438,210 @@
   },
   "navigation": {
     "credentials": "Zugangsdaten",
+    "vault": "Vault",
     "emails": "E-Mails",
     "settings": "Einstellungen"
+  },
+  "itemTypes": {
+    "creating": "Creating",
+    "editing": "Editing",
+    "login": {
+      "title": "Anmelden"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Credit Card",
+      "cardInformation": "Card Information"
+    },
+    "note": {
+      "title": "Beachte"
+    },
+    "addField": "Add Field",
+    "addCustomField": "Add Custom Field",
+    "customFields": "Custom Fields",
+    "fieldLabel": "Field Label",
+    "fieldType": "Field Type",
+    "enterFieldName": "Enter field name",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden",
+      "email": "E-Mail",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "Date",
+      "textArea": "Text Area"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Benutzername",
+    "login.password": "Passwort",
+    "login.email": "E-Mail",
+    "login.url": "URL",
+    "alias.first_name": "Vorname",
+    "alias.last_name": "Nachname",
+    "alias.gender": "Geschlecht",
+    "alias.birthdate": "Geburtsdatum",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN",
+    "notes.content": "Notizen"
+  },
+  "items": {
+    "title": "Items",
+    "addItem": "Add Item",
+    "editItem": "Edit Item",
+    "deleteItem": "Eintrag löschen",
+    "itemDetails": "Item Details",
+    "itemCreated": "Item Created",
+    "emailPreview": "E-Mail-Vorschau",
+    "untitled": "Untitled",
+    "name": "Name",
+    "namePlaceholder": "e.g., Google, Amazon",
+    "url": "URL",
+    "urlPlaceholder": "e.g., https://google.com",
+    "service": "Dienst",
+    "serviceName": "Name des Dienstes",
+    "serviceUrl": "URL des Dienstes",
+    "loginCredentials": "Anmeldeinformationen",
+    "username": "Username",
+    "email": "E-Mail",
+    "alias": "Alias",
+    "metadata": "Metadaten",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "nickName": "Spitzname",
+    "fullName": "Vor- und Nachname",
+    "gender": "Geschlecht",
+    "birthDate": "Geburtsdatum",
+    "birthDatePlaceholder": "JJJJ-MM-TT",
+    "notes": "Notizen",
+    "randomAlias": "Zufälliger Alias",
+    "manual": "Manuell",
+    "generateRandomAlias": "Zufälligen Alias generieren",
+    "clearAliasFields": "Alias-Felder löschen",
+    "enterFullEmail": "Vollständige E-Mail-Adresse eingeben",
+    "enterEmailPrefix": "E-Mail-Präfix eingeben",
+    "useDomainChooser": "Domain-Auswahl verwenden",
+    "enterCustomDomain": "Eigene Domain eingeben",
+    "selectEmailDomain": "E-Mail-Domain auswählen",
+    "privateEmailTitle": "Private E-Mail-Adresse",
+    "privateEmailAliasVaultServer": "AliasVault-Server",
+    "privateEmailDescription": "Ende-zu-Ende verschlüsselt, vollständig privat.",
+    "publicEmailTitle": "Öffentliche Temp-E-Mail-Anbieter",
+    "publicEmailDescription": "Anonyme, aber beschränkte Privatsphäre. E-Mail-Inhalt ist für jeden lesbar, der die Adresse kennt.",
+    "searchPlaceholder": "Tresor durchsuchen...",
+    "noMatchingItems": "No matching items found",
+    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "recentEmails": "Neueste E-Mails",
+    "loadingEmails": "E-Mails werden geladen...",
+    "noEmailsYet": "Bisher wurden noch keine E-Mails empfangen.",
+    "offlineEmailsMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deine E-Mails zu laden.",
+    "emailLoadError": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte versuche es später erneut.",
+    "emailUnexpectedError": "Beim Laden der E-Mails ist ein unerwarteter Fehler aufgetreten. Bitte versuche es später erneut.",
+    "password": "Passwort",
+    "passwordLength": "Passwortlänge",
+    "changePasswordComplexity": "Passworteinstellungen",
+    "includeLowercase": "Kleinbuchstaben (a-z)",
+    "includeUppercase": "Großbuchstaben (A-Z)",
+    "includeNumbers": "Zahlen (0-9)",
+    "includeSpecialChars": "Sonderzeichen (!@#)",
+    "avoidAmbiguousChars": "Mehrdeutige Zeichen vermeiden",
+    "deletingItem": "Deleting item...",
+    "errorLoadingItems": "Error loading items",
+    "vaultSyncFailed": "Synchronisation des Tresors fehlgeschlagen",
+    "vaultSyncedSuccessfully": "Tresor erfolgreich synchronisiert",
+    "vaultUpToDate": "Tresor ist auf dem neuesten Stand",
+    "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deinen Tresor zu synchronisieren.",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "switchBackToBrowser": "Wechsle zurück zu Deinem Browser, um fortzufahren",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Passkeys",
+      "aliases": "Aliase",
+      "userpass": "Passwörter",
+      "attachments": "Anhänge"
+    },
+    "totpCode": "TOTP-Code",
+    "attachments": "Anhänge",
+    "deleteAttachment": "Löschen",
+    "fileSavedTo": "Datei gespeichert unter",
+    "previewNotSupported": "Vorschau nicht unterstützt",
+    "downloadToView": "Lade die Datei herunterladen, um sie anzuzeigen",
+    "unsavedChanges": {
+      "title": "Änderungen verwerfen?",
+      "message": "Du hast ungespeicherte Änderungen. Bist Du Dir sicher, dass Du diese verwerfen möchtest?",
+      "discard": "Verwerfen"
+    },
+    "toasts": {
+      "itemUpdated": "Item updated successfully",
+      "itemCreated": "Item created successfully",
+      "itemDeleted": "Item deleted successfully",
+      "usernameCopied": "Nutzername in die Zwischenablage kopiert",
+      "emailCopied": "E-Mail in die Zwischenablage kopiert",
+      "passwordCopied": "Passwort in die Zwischenablage kopiert"
+    },
+    "createNewAliasFor": "Neuen Alias für",
+    "errors": {
+      "loadFailed": "Failed to load item",
+      "saveFailed": "Failed to save item"
+    },
+    "contextMenu": {
+      "title": "Item Options",
+      "edit": "Bearbeiten",
+      "delete": "Löschen",
+      "copyUsername": "Benutzername kopieren",
+      "copyEmail": "E-Mail-Adresse kopieren",
+      "copyPassword": "Passwort kopieren"
+    },
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available",
+    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "folders": {
+      "folder": "Ordner",
+      "newFolder": "New Folder",
+      "createFolder": "Ordner erstellen",
+      "editFolder": "Edit Folder",
+      "folderName": "Folder Name",
+      "folderNamePlaceholder": "e.g., Work, Personal",
+      "folderNameRequired": "Folder name is required",
+      "deleteFolder": "Delete Folder",
+      "deleteFolderKeepItems": "Delete folder only",
+      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderAndItems": "Delete folder and all items",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "noFolder": "No Folder",
+      "selectFolder": "Ordner auswählen"
+    },
+    "recentlyDeleted": {
+      "title": "Recently Deleted",
+      "noItems": "No deleted items",
+      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
+      "emptyAll": "Empty All",
+      "daysRemaining": "{{count}} day remaining",
+      "daysRemaining_plural": "{{count}} days remaining",
+      "expiringSoon": "Expiring soon",
+      "confirmDeleteTitle": "Delete Permanently?",
+      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "itemRestored": "Item restored",
+      "itemDeleted": "Item permanently deleted",
+      "allItemsDeleted": "All items permanently deleted"
+    }
   },
   "emails": {
     "title": "E-Mails",
@@ -489,6 +700,16 @@
     "INTERNAL_SERVER_ERROR": "Internal server error.",
     "VAULT_ERROR": "Der lokale Tresor ist nicht aktuell. Bitte synchronisiere Deinen Tresor, indem Du die Seite aktualisierst, und versuche es erneut."
   },
+  "sync": {
+    "offline": "Offline",
+    "offlineWithPending": "Offline (pending)",
+    "syncing": "Syncing...",
+    "pending": "Pending sync",
+    "retrySync": "Tap to retry",
+    "backOnline": "Wieder online",
+    "stillOffline": "Immer noch offline",
+    "syncFailed": "Sync failed"
+  },
   "app": {
     "status": {
       "unlockingVault": "Tresor wird entsperrt",
@@ -497,13 +718,13 @@
       "retryingConnection": "Verbindungsversuch wird wiederholt..."
     },
     "offline": {
-      "banner": "Offline-Modus (nur lesender Zugriff)",
+      "banner": "Offline - changes will sync when online",
       "backOnline": "Wieder online",
       "stillOffline": "Immer noch offline"
     },
     "alerts": {
       "syncIssue": "Keine Verbindung",
-      "syncIssueMessage": "Der AliasVault-Server konnte nicht erreicht werden und Dein Tresor konnte nicht synchronisiert werden. Möchtest Du Deinen lokalen Tresor im Lese-Modus öffnen oder die Verbindung erneut versuchen",
+      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Lokalen Tresor öffnen",
       "retrySync": "Synchronisierung erneut versuchen"
     },

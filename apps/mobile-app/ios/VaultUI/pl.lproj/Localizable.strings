@@ -9,11 +9,11 @@
 "title" = "Nazwa";
 "unknown_error" = "Wystąpił nieznany błąd";
 
-"loading_credentials" = "Ładowanie danych uwierzytelniających...";
-"no_credentials_found" = "Nie znaleziono danych logowania";
-"no_credentials_match" = "Nie znaleziono żadnych danych uwierzytelniających pasujących do Twojego wyszukiwania";
-"create_new_credential" = "Utwórz nowe dane logowania";
-"select_credential" = "Wybierz dane logowania";
+"loading_items" = "Loading items...";
+"no_items_found" = "No items found";
+"no_items_match" = "No existing items match your search";
+"create_new_item" = "Create New Item";
+"select_item" = "Select Item";
 "select_text_to_insert" = "Wybierz tekst do wstawienia";
 "choose_username" = "Wybierz nazwę użytkownika";
 "select_text_to_insert_message" = "Zaznacz tekst, który chcesz wstawić do aktywnego pola wprowadzania danych";
@@ -21,10 +21,8 @@
 "username_prefix" = "Nazwa użytkownika: ";
 "email_prefix" = "Adres e-mail: ";
 "password" = "Hasło";
-"credentials_load_error" = "Nie udało się załadować poświadczeń. Otwórz aplikację AliasVault, aby sprawdzić dostępność aktualizacji.";
-"no_credential_selected" = "Nie wybrano żadnych danych logowania.";
-"retrieving_credential" = "Pobieranie danych logowania";
-"retrieving_passkey" = "Pobieranie klucza dostępu";
+"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
+"no_item_selected" = "No item selected.";
 
 /* Context menu strings */
 "copy_username" = "Kopiuj nazwę użytkownika";
@@ -36,7 +34,7 @@
 "email_copied" = "Adres e-mail skopiowany";
 
 /* Search bar */
-"search_credentials" = "Wyszukaj dane logowania...";
+"search_items" = "Search items...";
 
 /* Passkey registration */
 "create_passkey_title" = "Utwórz nowy klucz dostępu";
@@ -54,10 +52,14 @@
 /* Passkey replacement */
 "create_new_passkey" = "Utwórz nowy klucz dostępu";
 "select_passkey_to_replace" = "Lub zastąp istniejący klucz dostępu";
-"confirm_replace" = "Zamień klucz dostępu";
-"replace_passkey_title" = "Zamień klucz dostępu";
+"replace_passkey" = "Zamień klucz dostępu";
 "replace_passkey_explanation" = "Spowoduje to zastąpienie dotychczasowego hasła nowym. Należy pamiętać, że stare hasło zostanie nadpisane i nie będzie już dostępne. Jeśli chcesz utworzyć osobne hasło, wróć do poprzedniego ekranu.";
 "create_passkey_explanation" = "Spowoduje to utworzenie nowego klucza dostępu i zapisanie go w sejfie. Zostanie on automatycznie zsynchronizowany na wszystkich urządzeniach korzystających z AliasVault.";
+
+/* Passkey merge with existing item */
+"passkey_add_to_existing" = "Or, add passkey to an existing item";
+"add_passkey" = "Add Passkey";
+"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
 "unlock_vault" = "Odblokuj sejf";

@@ -9,11 +9,11 @@
 "title" = "Otsikko";
 "unknown_error" = "Tapahtui tuntematon virhe";
 
-"loading_credentials" = "Ladataan tunnistetietoja...";
-"no_credentials_found" = "Tunnistetietoja ei löytynyt";
-"no_credentials_match" = "Hakusi ei vastaa olemassa olevia tunnistetietoja";
-"create_new_credential" = "Luo uusi tunnistetieto";
-"select_credential" = "Valitse tunnistetieto";
+"loading_items" = "Loading items...";
+"no_items_found" = "No items found";
+"no_items_match" = "No existing items match your search";
+"create_new_item" = "Create New Item";
+"select_item" = "Select Item";
 "select_text_to_insert" = "Valitse sisällytettävä teksti";
 "choose_username" = "Valitse käyttäjänimi";
 "select_text_to_insert_message" = "Valitse teksti, joka lisätään kohdistettuun syöttökenttään";
@@ -21,10 +21,8 @@
 "username_prefix" = "Käyttäjänimi: ";
 "email_prefix" = "Sähköposti: ";
 "password" = "Salasana";
-"credentials_load_error" = "Käyttäjätunnusten lataaminen epäonnistui. Ole hyvä ja avaa AliasVault-sovellus tarkistaaksesi päivitykset.";
-"no_credential_selected" = "Käyttäjätunnusta ei ole valittu.";
-"retrieving_credential" = "Haetaan käyttäjätunnusta";
-"retrieving_passkey" = "Noudetaan sala-avainta";
+"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
+"no_item_selected" = "No item selected.";
 
 /* Context menu strings */
 "copy_username" = "Kopioi käyttäjänimi";
@@ -36,7 +34,7 @@
 "email_copied" = "Sähköposti kopioitu";
 
 /* Search bar */
-"search_credentials" = "Etsi tunnistetietoja...";
+"search_items" = "Search items...";
 
 /* Passkey registration */
 "create_passkey_title" = "Luo uusi sala-avain";
@@ -54,10 +52,14 @@
 /* Passkey replacement */
 "create_new_passkey" = "Luo uusi sala-avain";
 "select_passkey_to_replace" = "Tai korvaa olemassa oleva sala-avain";
-"confirm_replace" = "Korvaa sala-avain";
-"replace_passkey_title" = "Korvaa sala-avain";
+"replace_passkey" = "Korvaa sala-avain";
 "replace_passkey_explanation" = "Tämä korvaa olemassa olevan todennusavaimen uudella todennusavaimella. Ole hyvä ja ota huomioon, että vanha todennusavaimesi on korvattu eikä enää käytettävissä. Jos haluat luoda erillisen todennusavaimen sen sijaan, mene takaisin edelliseen ruutuun.";
 "create_passkey_explanation" = "Tämä luo uuden todennusavaimen ja tallentaa sen holviisi. Se synkronoidaan automaattisesti kaikkiin laitteisiin, jotka käyttävät AliasVaultia.";
+
+/* Passkey merge with existing item */
+"passkey_add_to_existing" = "Or, add passkey to an existing item";
+"add_passkey" = "Add Passkey";
+"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
 "unlock_vault" = "Avaa holvin lukitus";

@@ -22,7 +22,7 @@
   <string name="passkey_registration_title">Passkey erstellen</string>
   <string name="create_passkey_title">Neuen Passkey erstellen</string>
   <string name="create_passkey_subtitle">Registriere einen neuen Passkey für diese Website. Er wird sicher in Deinem Tresor gespeichert und automatisch mit AliasVault synchronisiert.</string>
-  <string name="replace_passkey_title">Passkey ersetzen</string>
+  <string name="replace_passkey">Passkey ersetzen</string>
   <string name="passkey_display_name_label">Name des Passkeys</string>
   <string name="passkey_display_name_hint">Gib einen Namen für diesen Passkey ein</string>
   <string name="passkey_website_label">Webseite</string>
@@ -39,9 +39,12 @@
   <string name="passkey_create_explanation">Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf allen Geräten synchronisiert, die AliasVault verwenden.</string>
   <string name="passkey_create_new_button">Neuen Passkey erstellen</string>
   <string name="passkey_select_to_replace">Oder ersetze einen bestehenden Passkey:</string>
-  <string name="passkey_replace_button">Passkey ersetzen</string>
+  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
   <string name="passkey_replace_explanation">Dies wird den bestehenden Passkey durch einen neuen ersetzen. Bitte beachte, dass Dein alter Passkey überschrieben wird und nicht mehr zugänglich ist. Wenn Du stattdessen einen separaten Passkey erstellen möchtest, gehe zurück zum vorherigen Schritt.</string>
+  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
   <string name="passkey_replacing">Passkey ersetzen…</string>
+  <string name="add_passkey">Add Passkey</string>
+  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
   <string name="passkey_checking_connection">Verbindung wird überprüft…</string>
   <string name="passkey_retrieving">Passkey wird abgerufen…</string>
   <string name="passkey_verifying">Verifizierung läuft…</string>

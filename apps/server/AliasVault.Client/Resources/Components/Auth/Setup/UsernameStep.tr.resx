@@ -34,7 +34,7 @@
   </data>
   <!-- Form labels -->
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>Kullanıcı Adı</value>
     <comment>Label for username input field</comment>
   </data>
   <data name="UsernamePlaceholder">
@@ -51,7 +51,7 @@
     <comment>Message shown when username is available</comment>
   </data>
   <data name="UsernameRequiredError">
-    <value>Username is required.</value>
+    <value>Kullanıcı adı gereklidir.</value>
     <comment>Error message when username is empty</comment>
   </data>
   <data name="ServerCommunicationError">

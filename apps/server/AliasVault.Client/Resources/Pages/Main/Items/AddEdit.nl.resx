@@ -20,43 +20,43 @@
     </xsd:element>
   </xsd:schema>
   <!-- Page titles and descriptions -->
-  <data name="AddCredentialTitle">
-    <value>Credential toevoegen</value>
-    <comment>Title for adding a new credential</comment>
+  <data name="AddItemTitle">
+    <value>Add Item</value>
+    <comment>Title for adding a new item</comment>
   </data>
-  <data name="EditCredentialTitle">
-    <value>Credential bewerken</value>
-    <comment>Title for editing an existing credential</comment>
+  <data name="EditItemTitle">
+    <value>Edit Item</value>
+    <comment>Title for editing an existing item</comment>
   </data>
-  <data name="AddCredentialDescription">
-    <value>Maak hieronder nieuwe credentials aan.</value>
-    <comment>Description for adding a new credential</comment>
+  <data name="AddItemDescription">
+    <value>Create a new item below.</value>
+    <comment>Description for adding a new item</comment>
   </data>
-  <data name="EditCredentialDescription">
-    <value>Bewerk hieronder de bestaande credential.</value>
-    <comment>Description for editing an existing credential</comment>
+  <data name="EditItemDescription">
+    <value>Edit the existing item below.</value>
+    <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
-  <data name="ViewCredentialBreadcrumb">
-    <value>Credential bekijken</value>
-    <comment>Breadcrumb text for viewing a credential</comment>
+  <data name="ViewItemBreadcrumb">
+    <value>View item</value>
+    <comment>Breadcrumb text for viewing an item</comment>
   </data>
-  <data name="EditCredentialBreadcrumb">
-    <value>Credential bewerken</value>
-    <comment>Breadcrumb text for editing a credential</comment>
+  <data name="EditItemBreadcrumb">
+    <value>Edit item</value>
+    <comment>Breadcrumb text for editing an item</comment>
   </data>
-  <data name="AddNewCredentialBreadcrumb">
-    <value>Nieuwe credential toevoegen</value>
-    <comment>Breadcrumb text for adding a new credential</comment>
+  <data name="AddNewItemBreadcrumb">
+    <value>Add new item</value>
+    <comment>Breadcrumb text for adding a new item</comment>
   </data>
   <!-- Section headers -->
   <data name="ServiceSectionHeader">
-    <value>Credential</value>
-    <comment>Header for the service information section</comment>
+    <value>Item</value>
+    <comment>Header for the item information section</comment>
   </data>
-  <data name="LoginCredentialsSectionHeader">
-    <value>Logingegevens</value>
-    <comment>Header for the login credentials section</comment>
+  <data name="LoginDetailsSectionHeader">
+    <value>Login details</value>
+    <comment>Header for the login details section</comment>
   </data>
   <data name="AliasSectionHeader">
     <value>Alias</value>
@@ -72,12 +72,12 @@
   </data>
   <!-- Form labels -->
   <data name="ServiceNameLabel">
-    <value>Servicenaam</value>
-    <comment>Label for service name input</comment>
+    <value>Naam</value>
+    <comment>Label for item name input</comment>
   </data>
   <data name="ServiceUrlLabel">
     <value>Website URL</value>
-    <comment>Label for service URL input</comment>
+    <comment>Label for website URL input</comment>
   </data>
   <data name="EmailLabel">
     <value>E-mail</value>
@@ -129,9 +129,9 @@
     <value>Leeg alias velden</value>
     <comment>Button text for clearing alias fields</comment>
   </data>
-  <data name="SaveCredentialButton">
-    <value>Credential opslaan</value>
-    <comment>Button text for saving a credential</comment>
+  <data name="SaveItemButton">
+    <value>Save Item</value>
+    <comment>Button text for saving an item</comment>
   </data>
   <data name="CancelButton">
     <value>Annuleren</value>
@@ -143,22 +143,22 @@
     <comment>Loading message when saving vault</comment>
   </data>
   <!-- Error messages -->
-  <data name="CredentialNotExistError">
-    <value>Deze credential bestaat niet (meer). Probeer het opnieuw.</value>
-    <comment>Error message when credential doesn't exist</comment>
+  <data name="ItemNotExistError">
+    <value>This item does not exist (anymore). Please try again.</value>
+    <comment>Error message when item doesn't exist</comment>
   </data>
-  <data name="ErrorSavingCredentials">
-    <value>Fout bij het opslaan van de credentials. Probeer het opnieuw.</value>
-    <comment>Error message when saving credentials fails</comment>
+  <data name="ErrorSavingItem">
+    <value>Error saving item. Please try again.</value>
+    <comment>Error message when saving item fails</comment>
   </data>
   <!-- Success messages -->
-  <data name="CredentialUpdatedSuccess">
-    <value>Credential succesvol bijgewerkt.</value>
-    <comment>Success message when credential is updated</comment>
+  <data name="ItemUpdatedSuccess">
+    <value>Item updated successfully.</value>
+    <comment>Success message when item is updated</comment>
   </data>
-  <data name="CredentialCreatedSuccess">
-    <value>Credential succesvol aangemaakt.</value>
-    <comment>Success message when credential is created</comment>
+  <data name="ItemCreatedSuccess">
+    <value>Item created successfully.</value>
+    <comment>Success message when item is created</comment>
   </data>
   <!-- Passkey labels -->
   <data name="PasskeySectionHeader">
@@ -178,7 +178,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys worden gemaakt via de browserextensie of mobiele apps wanneer er door een website om wordt gevraagd. Ze kunnen niet handmatig worden bewerkt of aangemaakt via de web-app. Om deze passkey te verwijderen kun je deze verwijderen uit deze credential. Om een nieuwe passkey maken of te vervangen, bezoek de website in kwestie en volg de instructies.</value>
+    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, use the delete button below. To replace or create a new passkey, visit the website and follow its prompts.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="DeletePasskeyButton">
@@ -190,11 +190,53 @@
     <comment>Header when passkey is marked for deletion</comment>
   </data>
   <data name="PasskeyWillBeDeleted">
-    <value>Deze passkey zal worden verwijderd wanneer je deze credential opslaat.</value>
+    <value>This passkey will be deleted when you save this item.</value>
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">
     <value>Ongedaan maken</value>
     <comment>Button to undo passkey deletion</comment>
+  </data>
+  <!-- Card section fields -->
+  <data name="CardDetailsSectionHeader">
+    <value>Card Details</value>
+    <comment>Header for the credit card details section</comment>
+  </data>
+  <data name="CardholderNameLabel">
+    <value>Cardholder Name</value>
+    <comment>Label for cardholder name input</comment>
+  </data>
+  <data name="CardNumberLabel">
+    <value>Card Number</value>
+    <comment>Label for card number input</comment>
+  </data>
+  <data name="ExpiryMonthLabel">
+    <value>Expiry Month</value>
+    <comment>Label for expiry month input</comment>
+  </data>
+  <data name="ExpiryYearLabel">
+    <value>Expiry Year</value>
+    <comment>Label for expiry year input</comment>
+  </data>
+  <data name="CardCvvLabel">
+    <value>CVV</value>
+    <comment>Label for CVV input</comment>
+  </data>
+  <data name="CardPinLabel">
+    <value>PIN</value>
+    <comment>Label for PIN input</comment>
+  </data>
+  <!-- Custom fields section -->
+  <data name="CustomFieldsSectionHeader">
+    <value>Custom Fields</value>
+    <comment>Header for the custom fields section</comment>
+  </data>
+  <data name="RemoveField">
+    <value>Remove field</value>
+    <comment>Tooltip for removing a field</comment>
+  </data>
+  <data name="AddEmailField">
+    <value>Add Email</value>
+    <comment>Button text for adding email field</comment>
   </data>
 </root>

@@ -20,7 +20,9 @@
     "notice": "Nota",
     "enabled": "Activado",
     "disabled": "Desactivado",
-    "twoFactorAuthentication": "Autenticación de Doble Factor",
+    "twoFactorAuthentication": "Autenticación de doble factor",
+    "add": "Add",
+    "attachments": "Archivos adjuntos",
     "deleteItemConfirmTitle": "Eliminar elemento",
     "deleteItemConfirmDescription": "¿Está seguro de querer borrar este ítem?",
     "errors": {
@@ -72,6 +74,11 @@
     "connectingTo": "Conectando con",
     "loggedInAs": "Conectado como"
   },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
+  },
   "vault": {
     "syncingVault": "Sincronizando bóveda",
     "uploadingVaultToServer": "Subiendo bóveda al servidor",
@@ -80,6 +87,8 @@
     "executingOperation": "Ejecutando operación...",
     "checkingVaultUpdates": "Comprobando actualizaciones de bóveda",
     "syncingUpdatedVault": "Sincronizando bóveda actualizada",
+    "mergingVault": "Merging vault changes",
+    "uploadingChanges": "Uploading changes",
     "errors": {
       "failedToGetEncryptedDatabase": "Error al obtener la base de datos cifrada",
       "usernameNotFound": "Nombre de usuario no encontrado",
@@ -88,7 +97,8 @@
       "versionNotSupported": "El servidor ya no admite esta versión de la aplicación móvil AliasVault. Por favor, actualice su aplicación a la última versión.",
       "serverVersionNotSupported": "El servidor AliasVault necesita ser actualizado a una nueva versión para poder usar esta aplicación móvil. Contacte con soporte si necesita ayuda.",
       "appOutdated": "Esta aplicación está desactualizada y no se puede utilizar para acceder a esta versión (nueva) de la bóveda. Por favor, actualice la aplicación AliasVault para continuar.",
-      "passwordChanged": "Tu contraseña ha cambiado desde la última vez que iniciaste sesión. Por favor, inicia sesión de nuevo por razones de seguridad."
+      "passwordChanged": "Tu contraseña ha cambiado desde la última vez que iniciaste sesión. Por favor, inicia sesión de nuevo por razones de seguridad.",
+      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
     }
   },
   "credentials": {
@@ -164,7 +174,6 @@
       "userpass": "Contraseñas",
       "attachments": "Archivos adjuntos"
     },
-    "twoFactorAuth": "Autenticación de doble factor",
     "totpCode": "Código TOTP",
     "attachments": "Archivos adjuntos",
     "deleteAttachment": "Eliminar",
@@ -429,8 +438,210 @@
   },
   "navigation": {
     "credentials": "Credenciales",
+    "vault": "Vault",
     "emails": "Correos electrónicos",
     "settings": "Ajustes"
+  },
+  "itemTypes": {
+    "creating": "Creating",
+    "editing": "Editing",
+    "login": {
+      "title": "Iniciar sesión"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Credit Card",
+      "cardInformation": "Card Information"
+    },
+    "note": {
+      "title": "Note"
+    },
+    "addField": "Add Field",
+    "addCustomField": "Add Custom Field",
+    "customFields": "Custom Fields",
+    "fieldLabel": "Field Label",
+    "fieldType": "Field Type",
+    "enterFieldName": "Enter field name",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden",
+      "email": "Correo",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "Date",
+      "textArea": "Text Area"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Nombre de usuario",
+    "login.password": "Contraseña",
+    "login.email": "Correo",
+    "login.url": "URL",
+    "alias.first_name": "Nombre",
+    "alias.last_name": "Apellido",
+    "alias.gender": "Género",
+    "alias.birthdate": "Fecha de nacimiento",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN",
+    "notes.content": "Notas"
+  },
+  "items": {
+    "title": "Items",
+    "addItem": "Add Item",
+    "editItem": "Edit Item",
+    "deleteItem": "Eliminar elemento",
+    "itemDetails": "Item Details",
+    "itemCreated": "Item Created",
+    "emailPreview": "Vista previa de correo",
+    "untitled": "Untitled",
+    "name": "Nombre",
+    "namePlaceholder": "e.g., Google, Amazon",
+    "url": "URL",
+    "urlPlaceholder": "e.g., https://google.com",
+    "service": "Servicio",
+    "serviceName": "Nombre del servicio",
+    "serviceUrl": "URL del servicio",
+    "loginCredentials": "Credenciales de acceso",
+    "username": "Nombre de usuario",
+    "email": "Correo",
+    "alias": "Alias",
+    "metadata": "Metadatos",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "nickName": "Apodo",
+    "fullName": "Nombre completo",
+    "gender": "Género",
+    "birthDate": "Fecha de nacimiento",
+    "birthDatePlaceholder": "AAAA-MM-DD",
+    "notes": "Notas",
+    "randomAlias": "Alias aleatorio",
+    "manual": "Manual",
+    "generateRandomAlias": "Crear alias aleatorio",
+    "clearAliasFields": "Limpiar campos de alias",
+    "enterFullEmail": "Introduzca la dirección de correo completa",
+    "enterEmailPrefix": "Introduzca prefijo de correo",
+    "useDomainChooser": "Usar selector de dominio",
+    "enterCustomDomain": "Introduzca dominio personalizado",
+    "selectEmailDomain": "Seleccionar dominio de correo",
+    "privateEmailTitle": "Correo electrónico privado",
+    "privateEmailAliasVaultServer": "Servidor AliasVault",
+    "privateEmailDescription": "E2E cifrado, totalmente privado.",
+    "publicEmailTitle": "Proveedores de Correo Temporal Públicos",
+    "publicEmailDescription": "Privacidad anónima pero limitada. Contenido de correo electrónico puede ser leído por cualquiera que conozca la dirección.",
+    "searchPlaceholder": "Buscar bóveda...",
+    "noMatchingItems": "No matching items found",
+    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noPasskeysFound": "No se han creado llaves de acceso todavía. Las llaves se crean visitando un sitio web que ofrece llaves de acceso como método de autenticación.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "recentEmails": "Correos recientes",
+    "loadingEmails": "Cargando correos...",
+    "noEmailsYet": "No se han recibido correos todavía.",
+    "offlineEmailsMessage": "Está desconectado. Por favor, conéctese a Internet para cargar sus correos electrónicos.",
+    "emailLoadError": "Se ha producido un error al cargar los correos electrónicos. Por favor, inténtalo de nuevo más tarde.",
+    "emailUnexpectedError": "Se ha producido un error inesperado al cargar los correos electrónicos. Por favor, inténtalo de nuevo más tarde.",
+    "password": "Contraseña",
+    "passwordLength": "Longitud de contraseña",
+    "changePasswordComplexity": "Configuracion de contraseñas",
+    "includeLowercase": "Minúsculas (a-z)",
+    "includeUppercase": "Mayúsculas (A-Z)",
+    "includeNumbers": "Números (0-9)",
+    "includeSpecialChars": "Caracteres especiales (!@#)",
+    "avoidAmbiguousChars": "Evitar caracteres ambiguos",
+    "deletingItem": "Deleting item...",
+    "errorLoadingItems": "Error loading items",
+    "vaultSyncFailed": "Fallo al sincronizar la bóveda",
+    "vaultSyncedSuccessfully": "Bóveda sincronizada correctamente",
+    "vaultUpToDate": "La bóveda está actualizada",
+    "offlineMessage": "Estás desconectado. Por favor, conéctate a Internet para sincronizar tu bóveda.",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "switchBackToBrowser": "Vuelva a su navegador para continuar.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Llaves de acceso",
+      "aliases": "Aliases",
+      "userpass": "Contraseñas",
+      "attachments": "Archivos adjuntos"
+    },
+    "totpCode": "Código TOTP",
+    "attachments": "Archivos adjuntos",
+    "deleteAttachment": "Eliminar",
+    "fileSavedTo": "Archivo guardado en",
+    "previewNotSupported": "Vista previa no disponible",
+    "downloadToView": "Descargar el archivo para verlo",
+    "unsavedChanges": {
+      "title": "¿Descartar cambios?",
+      "message": "Tienes cambios sin guardar. ¿Seguro que quieres descartarlos?",
+      "discard": "Descartar"
+    },
+    "toasts": {
+      "itemUpdated": "Item updated successfully",
+      "itemCreated": "Item created successfully",
+      "itemDeleted": "Item deleted successfully",
+      "usernameCopied": "Nombre de usuario copiado al portapapeles",
+      "emailCopied": "Correo copiado al portapapeles",
+      "passwordCopied": "Contraseña copiada al portapapeles"
+    },
+    "createNewAliasFor": "Crear nuevo alias para",
+    "errors": {
+      "loadFailed": "Failed to load item",
+      "saveFailed": "Failed to save item"
+    },
+    "contextMenu": {
+      "title": "Item Options",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "copyUsername": "Copiar nombre de usuario",
+      "copyEmail": "Copiar correo",
+      "copyPassword": "Copiar Contraseña"
+    },
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available",
+    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "folders": {
+      "folder": "Folder",
+      "newFolder": "New Folder",
+      "createFolder": "Create Folder",
+      "editFolder": "Edit Folder",
+      "folderName": "Folder Name",
+      "folderNamePlaceholder": "e.g., Work, Personal",
+      "folderNameRequired": "Folder name is required",
+      "deleteFolder": "Delete Folder",
+      "deleteFolderKeepItems": "Delete folder only",
+      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderAndItems": "Delete folder and all items",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "noFolder": "No Folder",
+      "selectFolder": "Select Folder"
+    },
+    "recentlyDeleted": {
+      "title": "Recently Deleted",
+      "noItems": "No deleted items",
+      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
+      "emptyAll": "Empty All",
+      "daysRemaining": "{{count}} day remaining",
+      "daysRemaining_plural": "{{count}} days remaining",
+      "expiringSoon": "Expiring soon",
+      "confirmDeleteTitle": "Delete Permanently?",
+      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "itemRestored": "Item restored",
+      "itemDeleted": "Item permanently deleted",
+      "allItemsDeleted": "All items permanently deleted"
+    }
   },
   "emails": {
     "title": "Correos electrónicos",
@@ -489,6 +700,16 @@
     "INTERNAL_SERVER_ERROR": "Error interno del servidor.",
     "VAULT_ERROR": "La bóveda local no está actualizada. Por favor, sincronice su bóveda actualizando la página e inténtelo de nuevo."
   },
+  "sync": {
+    "offline": "Offline",
+    "offlineWithPending": "Offline (pending)",
+    "syncing": "Syncing...",
+    "pending": "Pending sync",
+    "retrySync": "Tap to retry",
+    "backOnline": "Vuelves a estar conectado",
+    "stillOffline": "Aún sin conexión",
+    "syncFailed": "Sync failed"
+  },
   "app": {
     "status": {
       "unlockingVault": "Desbloqueando bóveda",
@@ -497,13 +718,13 @@
       "retryingConnection": "Reintentando la conexión..."
     },
     "offline": {
-      "banner": "Modo sin conexión (solo lectura)",
+      "banner": "Offline - changes will sync when online",
       "backOnline": "Vuelves a estar conectado",
       "stillOffline": "Aún sin conexión"
     },
     "alerts": {
       "syncIssue": "Sin conexión",
-      "syncIssueMessage": "El servidor AliasVault no pudo ser alcanzado y su bóveda no pudo ser sincronizado. ¿Quieres abrir tu bóveda local en modo de sólo lectura o reintentar la conexión?",
+      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Abrir bóveda local",
       "retrySync": "Reintentar sincronización"
     },

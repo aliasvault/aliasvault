@@ -62,10 +62,6 @@
     <value>Kaksivaiheinen todennus</value>
     <comment>Section title for 2FA codes</comment>
   </data>
-  <data name="AddTotpCodeButton" xml:space="preserve">
-    <value>Lisää TOTP-koodi</value>
-    <comment>Button text to add new TOTP code</comment>
-  </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
     <value>Lisää kaksivaiheinen todennuskoodi</value>
     <comment>Description for adding TOTP codes</comment>

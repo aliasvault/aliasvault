@@ -62,10 +62,6 @@
     <value>אימות דו־שלבי</value>
     <comment>Section title for 2FA codes</comment>
   </data>
-  <data name="AddTotpCodeButton" xml:space="preserve">
-    <value>הוספת קוד חד־פעמי זמני</value>
-    <comment>Button text to add new TOTP code</comment>
-  </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
     <value>הוספת קוד מאמת אימות דו־שלבי</value>
     <comment>Description for adding TOTP codes</comment>

@@ -3,7 +3,6 @@
     "loginTitle": "Bei AliasVault anmelden",
     "username": "Benutzername oder E-Mail-Adresse",
     "usernamePlaceholder": "Name / name@unternehmen.com",
-    "password": "Passwort",
     "passwordPlaceholder": "Gib Dein Passwort ein",
     "rememberMe": "Angemeldet bleiben",
     "loginButton": "Anmelden",
@@ -20,7 +19,6 @@
     "enterPinToUnlock": "Bitte gib Deine PIN zum Entsperren des Tresors ein",
     "useMasterPassword": "Master-Passwort benutzen",
     "unlockTitle": "Entsperre Deinen Tresor",
-    "logout": "Abmelden",
     "logoutConfirm": "Bist Du sicher, dass Du Dich abmelden möchtest?",
     "unlockSuccessTitle": "Ihr Tresor wurde erfolgreich entsperrt",
     "unlockSuccessDescription": "Du kannst jetzt die Autofill-Funktion in Anmeldeformularen in Deinem Browser nutzen.",
@@ -28,7 +26,6 @@
     "browseVault": "Tresor durchsuchen",
     "connectingTo": "Verbinde zu",
     "switchAccounts": "Konto wechseln?",
-    "loggedIn": "Angemeldet",
     "loginWithMobile": "Mit mobiler App anmelden",
     "unlockWithMobile": "Mit mobiler App entsperren",
     "scanQrCode": "Scanne diesen QR-Code mit Deiner AliasVault-App, um Dich anzumelden und Deinen Tresor zu entsperren.",
@@ -36,16 +33,13 @@
       "invalidCode": "Bitte gib einen gültigen 6-stelligen Sicherheits-Code ein.",
       "serverError": "Der AliasVault-Server konnte nicht erreicht werden. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "wrongPassword": "Falsches Passwort. Bitte versuche es erneut.",
-      "accountLocked": "Das Konto wurde wegen zu vieler fehlgeschlagener Anmeldeversuche vorübergehend gesperrt.",
-      "networkError": "Netzwerkfehler. Bitte überprüfe Deine Verbindung und versuche es erneut.",
       "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde Dich erneut an.",
       "mobileLoginRequestExpired": "Zeitüberschreitung für mobile Anmeldeanforderungen. Bitte lade die Seite neu und versuche es erneut."
     }
   },
   "menu": {
-    "credentials": "Zugangsdaten",
-    "emails": "E-Mails",
-    "settings": "Einstellungen"
+    "vault": "Vault",
+    "emails": "E-Mails"
   },
   "common": {
     "loading": "Laden...",
@@ -56,10 +50,15 @@
     "back": "Zurück",
     "next": "Weiter",
     "use": "Benutzen",
+    "add": "Add",
     "delete": "Löschen",
+    "undo": "Rückgängig machen",
     "save": "Speichern",
+    "saving": "Saving...",
+    "create": "Erstellen",
     "or": "Oder",
     "close": "Schließen",
+    "logout": "Abmelden",
     "copied": "Kopiert!",
     "openInNewWindow": "In neuem Fenster öffnen",
     "enabled": "Aktiviert",
@@ -75,25 +74,25 @@
     "loadingAttachments": "Anhänge werden geladen...",
     "settings": "Einstellungen",
     "recentEmails": "Neueste E-Mails",
-    "loginCredentials": "Zugangsdaten",
+    "credentials": "Zugangsdaten",
+    "customFields": "Custom",
     "twoFactorAuthentication": "Zwei-Faktor-Authentifizierung",
     "alias": "Alias",
     "notes": "Notizen",
-    "fullName": "Vor- und Nachname",
-    "firstName": "Vorname",
-    "lastName": "Nachname",
-    "birthDate": "Geburtsdatum",
-    "nickname": "Spitzname",
     "email": "E-Mail-Adresse",
     "username": "Benutzername",
     "password": "Passwort",
+    "serviceName": "Name des Dienstes",
+    "loggedIn": "Angemeldet",
     "syncingVault": "Tresor wird synchronisiert",
-    "savingChangesToVault": "Änderungen werden gespeichert",
-    "uploadingVaultToServer": "Tresor wird auf den Server hochgeladen",
     "checkingVaultUpdates": "Prüfe auf Tresor-Updates",
     "syncingUpdatedVault": "Aktualisierter Tresor wird synchronisiert",
-    "executingOperation": "Vorgang wird ausgeführt...",
     "loadMore": "Mehr laden",
+    "offline": "Offline",
+    "offlineMode": "Operating in offline mode",
+    "pendingSync": "Syncing...",
+    "mergingVaultChanges": "Merging vault changes...",
+    "uploadingVault": "Uploading vault...",
     "errors": {
       "serverNotAvailable": "Der AliasVault-Server konnte nicht erreicht werden. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
       "clientVersionNotSupported": "Diese Version der AliasVault-Browser-Erweiterung wird vom Server nicht mehr unterstützt. Bitte aktualisiere Deine Browser-Erweiterung auf die neueste Version.",
@@ -104,7 +103,10 @@
       "unknownErrorTryAgain": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
       "vaultNotAvailable": "Tresor nicht verfügbar",
       "vaultIsLocked": "Der Tresor ist gesperrt.",
-      "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an."
+      "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an.",
+      "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
@@ -135,15 +137,10 @@
   "content": {
     "or": "oder",
     "new": "Neu",
-    "cancel": "Abbrechen",
     "vaultLocked": "AliasVault ist gesperrt.",
     "creatingNewAlias": "Neuen Alias erstellen...",
     "noMatchesFound": "Keine Treffer gefunden",
     "searchVault": "Tresor durchsuchen...",
-    "serviceName": "Name des Dienstes",
-    "email": "E-Mail-Adresse",
-    "username": "Benutzername",
-    "password": "Passwort",
     "enterServiceName": "Name des Dienstes eingeben",
     "enterEmailAddress": "E-Mail-Adresse eingeben",
     "enterUsername": "Benutzername eingeben",
@@ -171,42 +168,6 @@
     "dismissPopup": "Popup schliessen"
   },
   "credentials": {
-    "title": "Zugangsdaten",
-    "addCredential": "Zugang hinzufügen",
-    "editCredential": "Zugang bearbeiten",
-    "deleteCredential": "Zugang löschen",
-    "credentialDetails": "Details zum Zugang",
-    "serviceName": "Name des Dienstes",
-    "notes": "Notizen",
-    "totp": "Zwei-Faktor-Authentifizierung",
-    "totpCode": "TOTP-Code",
-    "copyTotp": "TOTP kopieren",
-    "totpSecret": "TOTP-Geheimcode",
-    "totpSecretPlaceholder": "TOTP-Geheimcode eingeben",
-    "welcomeTitle": "Willkommen bei AliasVault!",
-    "welcomeDescription": "Du möchtest die AliasVault-Browser-Erweiterung verwenden? Navigiere zu einer Website und verwende das AliasVault-Popup-Fenster um einen neuen Zugang zu erstellen.",
-    "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
-    "noAttachmentsFound": "Es wurden keine Zugangsdaten mit Anhang gefunden",
-    "noMatchingCredentials": "Keine passenden Zugangsdaten gefunden",
-    "createdAt": "Erstellt",
-    "updatedAt": "Zuletzt aktualisiert",
-    "saveCredential": "Zugang speichern",
-    "deleteCredentialTitle": "Zugang löschen",
-    "deleteCredentialConfirm": "Bist Du sicher, dass Du diesen Zugang löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
-    "filters": {
-      "all": "(Alle) Zugangsdaten",
-      "passkeys": "Passkeys",
-      "aliases": "Aliase",
-      "userpass": "Passwörter",
-      "attachments": "Anhänge"
-    },
-    "randomAlias": "Zufälliger Alias",
-    "manual": "Manuell",
-    "service": "Dienst",
-    "serviceUrl": "URL des Dienstes",
-    "loginCredentials": "Zugangsdaten",
-    "generateRandomUsername": "Zufälligen Benutzernamen generieren",
-    "generateRandomPassword": "Zufälliges Passwort generieren",
     "changePasswordComplexity": "Komplexität des Passworts ändern",
     "passwordLength": "Passwortlänge",
     "includeLowercase": "Kleinbuchstaben (a-z)",
@@ -214,32 +175,108 @@
     "includeNumbers": "Ziffern (0-9)",
     "includeSpecialChars": "Sonderzeichen (!@#$%^&*)",
     "avoidAmbiguousChars": "Mehrdeutige Zeichen (1, l, I, 0, O, etc.) vermeiden",
-    "generateNewPreview": "Neue Vorschau erstellen",
-    "generateRandomAlias": "Zufälligen Alias generieren",
-    "clearAliasFields": "Alias-Felder löschen",
-    "alias": "Alias",
-    "firstName": "Vorname",
-    "lastName": "Nachname",
-    "nickName": "Spitzname",
-    "gender": "Geschlecht",
-    "birthDate": "Geburtsdatum",
-    "birthDatePlaceholder": "JJJJ-MM-TT",
-    "metadata": "Metadaten",
-    "validation": {
-      "required": "Dieses Feld ist ein Pflichtfeld",
-      "serviceNameRequired": "Name des Dienstes ist erforderlich",
-      "invalidEmail": "Ungültiges E-Mail-Format",
-      "invalidDateFormat": "Bitte gib das Datum im Format JJJJ-MM-TT ein."
-    },
     "privateEmailTitle": "Private E-Mail-Adresse",
     "privateEmailAliasVaultServer": "AliasVault-Server",
     "privateEmailDescription": "Ende-zu-Ende verschlüsselt, vollständig privat.",
     "publicEmailTitle": "Öffentliche Temp-E-Mail-Anbieter",
     "publicEmailDescription": "Anonyme, aber beschränkte Privatsphäre. E-Mail-Inhalt ist für jeden lesbar, der die Adresse kennt.",
-    "useDomainChooser": "Domain-Auswahl verwenden",
-    "enterCustomDomain": "Eigene Domain eingeben",
-    "enterFullEmail": "Vollständige E-Mail-Adresse eingeben",
-    "enterEmailPrefix": "E-Mail-Präfix eingeben"
+    "generateRandomUsername": "Zufälligen Benutzernamen generieren",
+    "generateRandomPassword": "Zufälliges Passwort generieren",
+    "generateNewPreview": "Neue Vorschau erstellen",
+    "generateRandomAlias": "Zufälligen Alias generieren",
+    "validation": {
+      "required": "Dieses Feld ist ein Pflichtfeld"
+    },
+    "tags": "Schlagwörter"
+  },
+  "items": {
+    "title": "Items",
+    "itemName": "Name",
+    "loginCredentials": "Zugangsdaten",
+    "cardInformation": "Card Information",
+    "addItem": "Add Item",
+    "addNewItem": "Add new item",
+    "saveItem": "Save Item",
+    "itemDetails": "Item Details",
+    "editItem": "Edit Item",
+    "untitled": "Untitled",
+    "newFolder": "New Folder",
+    "createFolder": "Ordner erstellen",
+    "editFolder": "Edit Folder",
+    "folderName": "Folder Name",
+    "folderNameRequired": "Folder name is required",
+    "folder": "Ordner",
+    "welcomeTitle": "Welcome to AliasVault!",
+    "welcomeDescription": "Du möchtest die AliasVault-Browser-Erweiterung verwenden? Navigiere zu einer Website und verwende das AliasVault-Popup-Fenster um einen neuen Zugang zu erstellen.",
+    "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "noMatchingItems": "No matching items found",
+    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
+    "deleteFolder": "Delete Folder",
+    "deleteFolderKeepItems": "Delete folder only",
+    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderAndItems": "Delete folder and all items",
+    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Passkeys"
+    },
+    "deleteItemTitle": "Eintrag löschen",
+    "deleteItemConfirm": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available"
+  },
+  "itemTypes": {
+    "selectType": "Add New Item",
+    "typeLabel": "Item Type",
+    "creating": "Creating",
+    "editing": "Editing",
+    "regenerateAlias": "Regenerate alias",
+    "addCustomField": "Add custom field",
+    "fieldLabel": "Field Label",
+    "enterFieldName": "Enter field name",
+    "fieldType": "Field Type",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden (masked text)",
+      "email": "E-Mail",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "Date",
+      "textArea": "Text Area"
+    },
+    "login": {
+      "title": "Anmelden"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Credit Card"
+    },
+    "note": {
+      "title": "Secure Note"
+    }
+  },
+  "fieldLabels": {
+    "login.url": "Website URL",
+    "login.username": "Username",
+    "login.password": "Passwort",
+    "alias.first_name": "Vorname",
+    "alias.last_name": "Nachname",
+    "alias.gender": "Geschlecht",
+    "alias.birthdate": "Geburtsdatum",
+    "login.email": "E-Mail",
+    "notes.content": "Notizen",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN"
   },
   "totp": {
     "addCode": "2FA-Code hinzufügen",
@@ -247,9 +284,15 @@
     "nameOptional": "Name (optional)",
     "secretKey": "Secret-Key",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
+    "defaultName": "Authenticator",
     "errors": {
       "invalidSecretKey": "Ungültiges Format des Secret-Key"
     }
+  },
+  "attachmentUploader": {
+    "uploading": "Uploading...",
+    "uploadSuccess": "Files uploaded successfully.",
+    "deleteSuccess": "Attachment deleted successfully."
   },
   "emails": {
     "title": "E-Mails",
@@ -259,7 +302,6 @@
     "to": "An",
     "date": "Datum",
     "emailContent": "Inhalt der E-Mail",
-    "attachments": "Anhänge",
     "emailNotFound": "E-Mail nicht gefunden",
     "noEmails": "Keine E-Mails gefunden",
     "noEmailsDescription": "Du hast bisher keine E-Mails an Deine privaten E-Mail-Adressen erhalten. Neue E-Mails werden hier angezeigt, sobald sie eintreffen.",
@@ -271,25 +313,17 @@
       "hoursAgo_plural": "vor {{count}} Stunden",
       "yesterday": "gestern"
     },
-    "errors": {
-      "emailLoadError": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte versuche es später erneut.",
-      "emailUnexpectedError": "Beim Laden der E-Mails ist ein unerwarteter Fehler aufgetreten. Bitte versuche es später erneut."
-    },
     "apiErrors": {
       "CLAIM_DOES_NOT_MATCH_USER": "Die aktuell gewählte E-Mail-Adresse wird bereits verwendet. Bitte ändere die E-Mail-Adresse, indem Du diese Zugangsdaten bearbeitest.",
       "CLAIM_DOES_NOT_EXIST": "Beim Laden der E-Mails ist ein Fehler aufgetreten. Bitte bearbeite und speichere den Eintrag, um die Datenbank zu synchronisieren, und versuche es dann erneut."
     }
   },
   "settings": {
-    "title": "Einstellungen",
     "serverUrl": "URL des Servers",
     "language": "Sprache",
     "autofillEnabled": "Autofill aktivieren",
     "version": "Version",
-    "openInNewWindow": "In neuem Fenster öffnen",
     "openWebApp": "Web-App öffnen",
-    "loggedIn": "Angemeldet",
-    "logout": "Abmelden",
     "lock": "Sperren",
     "globalSettings": "Allgemeine Einstellungen",
     "autofillPopup": "Autofill-Popup",
@@ -383,12 +417,11 @@
   "passkeys": {
     "passkey": "Passkey",
     "site": "Seite",
-    "displayName": "Name",
     "helpText": "Passkeys werden auf der Webseite erzeugt. Sie können nicht manuell erstellt oder bearbeitet werden. Um diesen Passkey zu entfernen, kannst Du ihn von diesem Zugang löschen. Um einen Passkey zu ersetzen oder neu zu erstellen, rufe die entsprechende Webseite auf und folge den dortigen Anweisungen.",
     "passkeyMarkedForDeletion": "Passkey zum Löschen vorgemerkt",
     "passkeyWillBeDeleted": "Dieser Passkey wird gelöscht, wenn Du den Zugang speicherst.",
+    "useBrowserPasskey": "Browser-Passkey verwenden",
     "bypass": {
-      "title": "Browser-Passkey verwenden",
       "description": "Wie lange möchtest Du den Passkey-Anbieter des Browsers für {{origin}} verwenden?",
       "thisTimeOnly": "Nur dieses Mal",
       "alwaysForSite": "Für diese Seite immer"
@@ -397,8 +430,7 @@
       "title": "Mit Passkey anmelden",
       "signInFor": "Mit Passkey anmelden für",
       "selectPasskey": "Wähle einen Passkey zum Anmelden aus:",
-      "noPasskeysFound": "Kein Passkey für diese Seite gefunden",
-      "useBrowserPasskey": "Browser-Passkey verwenden"
+      "noPasskeysFound": "Kein Passkey für diese Seite gefunden"
     },
     "create": {
       "title": "Passkey erstellen",
@@ -406,16 +438,35 @@
       "titleLabel": "Titel",
       "titlePlaceholder": "Gib einen Namen für diesen Passkey ein",
       "createButton": "Passkey erstellen",
-      "useBrowserPasskey": "Browser-Passkey verwenden",
       "selectPasskeyToReplace": "Wähle einen Passkey zum Ersetzen:",
       "createNewPasskey": "Neuen Passkey erstellen",
       "replacingPasskey": "Ersetzen des Passkeys: {{displayName}}",
-      "confirmReplace": "Ersetzen bestätigen"
+      "confirmReplace": "Ersetzen bestätigen",
+      "selectExistingLogin": "Add to existing login:",
+      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
+      "attachingToCredential": "Adding passkey to: {{serviceName}}",
+      "attachPasskey": "Add Passkey"
     },
     "settings": {
       "passkeyProvider": "Passkey-Anbieter",
       "passkeyProviderOn": "Passkey-Anbieter an "
     }
+  },
+  "recentlyDeleted": {
+    "title": "Recently Deleted",
+    "noItems": "No deleted items",
+    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+    "restore": "Restore",
+    "deletePermanently": "Delete Permanently",
+    "emptyAll": "Empty All",
+    "daysRemaining": "{{count}} day remaining",
+    "daysRemaining_plural": "{{count}} days remaining",
+    "expiringSoon": "Expiring soon",
+    "confirmDeleteTitle": "Delete Permanently?",
+    "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+    "confirmEmptyAllTitle": "Empty Recently Deleted?",
+    "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
   },
   "upgrade": {
     "title": "Tresor aktualisieren",
@@ -425,7 +476,6 @@
     "newVersion": "Neue verfügbare Version:",
     "upgrade": "Tresor aktualisieren",
     "upgrading": "Aktualisieren...",
-    "logout": "Abmelden",
     "whatsNew": "Neu in dieser Version",
     "whatsNewDescription": "Eine Aktualisierung ist erforderlich, um die folgenden Änderungen zu unterstützen:",
     "noDescriptionAvailable": "Für diese Version ist keine Beschreibung vorhanden.",
@@ -437,5 +487,10 @@
       "upgradeFailed": "Aktualisierung fehlgeschlagen",
       "failedToApplyMigration": "Migration fehlgeschlagen ({{current}} von {{total}})"
     }
+  },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
   }
 }

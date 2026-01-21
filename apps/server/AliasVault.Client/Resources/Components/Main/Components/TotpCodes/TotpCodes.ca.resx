@@ -62,10 +62,6 @@
     <value>Two-factor authentication</value>
     <comment>Section title for 2FA codes</comment>
   </data>
-  <data name="AddTotpCodeButton" xml:space="preserve">
-    <value>Add TOTP Code</value>
-    <comment>Button text to add new TOTP code</comment>
-  </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
     <value>Add a two-factor authenticator code</value>
     <comment>Description for adding TOTP codes</comment>

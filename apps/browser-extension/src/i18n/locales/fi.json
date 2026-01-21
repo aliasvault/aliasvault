@@ -3,7 +3,6 @@
     "loginTitle": "Kirjaudu sisään AliasVaultiin",
     "username": "Käyttäjänimi tai sähköposti",
     "usernamePlaceholder": "nimi / nimi@yritys.fi",
-    "password": "Salasana",
     "passwordPlaceholder": "Syötä salasanasi",
     "rememberMe": "Muista minut",
     "loginButton": "Kirjaudu sisään",
@@ -20,7 +19,6 @@
     "enterPinToUnlock": "Syötä PIN-koodi avataksesi holvisi",
     "useMasterPassword": "Käytä pääsalasanaa",
     "unlockTitle": "Avaa holvisi lukitus",
-    "logout": "Uloskirjautuminen",
     "logoutConfirm": "Oletko varma, että haluat kirjautua ulos?",
     "unlockSuccessTitle": "Holvisi lukitus on avattu",
     "unlockSuccessDescription": "Voit nyt käyttää automaattista täyttöä sisäänkirjautumislomakkeissa selaimessasi.",
@@ -28,7 +26,6 @@
     "browseVault": "Selaa holvin sisältöä",
     "connectingTo": "Yhdistetään kohteeseen",
     "switchAccounts": "Vaihdetaanko tiliä?",
-    "loggedIn": "Sisäänkirjautuneena",
     "loginWithMobile": "Kirjaudu sisään mobiilisovelluksella",
     "unlockWithMobile": "Avaa käyttämällä mobiilisovellusta",
     "scanQrCode": "Skannaa tämä QR-koodi AliasVault-mobiilisovelluksellasi kirjautuaksesi sisään ja avataksesi holvisi.",
@@ -36,16 +33,13 @@
       "invalidCode": "Syötä kelvollinen 6-numeroinen tunnistautumiskoodi.",
       "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
       "wrongPassword": "Virheellinen salasana. Yritä uudelleen.",
-      "accountLocked": "Tili tilapäisesti lukittu liian monen epäonnistuneen yrityksen vuoksi.",
-      "networkError": "Verkkovirhe: tarkista yhteytesi ja yritä uudelleen.",
       "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
       "mobileLoginRequestExpired": "Mobiilikirjautumispyyntö aikakatkaistiin. Lataa sivu uudelleen ja yritä uudelleen."
     }
   },
   "menu": {
-    "credentials": "Tunnistetiedot",
-    "emails": "Sähköpostit",
-    "settings": "Asetukset"
+    "vault": "Vault",
+    "emails": "Sähköpostit"
   },
   "common": {
     "loading": "Ladataan...",
@@ -56,10 +50,15 @@
     "back": "Takaisin",
     "next": "Seuraava",
     "use": "Käytä",
+    "add": "Add",
     "delete": "Poista",
+    "undo": "Kumoa",
     "save": "Tallenna",
+    "saving": "Saving...",
+    "create": "Luo",
     "or": "Tai",
     "close": "Sulje",
+    "logout": "Uloskirjautuminen",
     "copied": "Kopioitu!",
     "openInNewWindow": "Avaa uudessa ikkunassa",
     "enabled": "Otettu käyttöön",
@@ -75,25 +74,25 @@
     "loadingAttachments": "Ladataan liitteitä...",
     "settings": "Asetukset",
     "recentEmails": "Viimeaikaiset sähköpostit",
-    "loginCredentials": "Sisäänkirjautumistunnistetiedot",
+    "credentials": "Tunnistetiedot",
+    "customFields": "Custom",
     "twoFactorAuthentication": "Kaksivaiheinen tunnistautuminen",
     "alias": "Alias",
     "notes": "Huomautukset",
-    "fullName": "Koko nimi",
-    "firstName": "Etunimi",
-    "lastName": "Sukunimi",
-    "birthDate": "Syntymäpäivä",
-    "nickname": "Lempinimi",
     "email": "Sähköposti",
     "username": "Käyttäjänimi",
     "password": "Salasana",
+    "serviceName": "Palvelun nimi",
+    "loggedIn": "Sisäänkirjautuneena",
     "syncingVault": "Synkronoidaan holvia",
-    "savingChangesToVault": "Tallennetaan muutoksia holviin",
-    "uploadingVaultToServer": "Ladataan holvi palvelimelle",
     "checkingVaultUpdates": "Tarkistetaan holvin päivitysten varalta",
     "syncingUpdatedVault": "Synkronoidaan päivitettyä holvia",
-    "executingOperation": "Suoritetaan toimintoa...",
     "loadMore": "Lataa lisää",
+    "offline": "Offline",
+    "offlineMode": "Operating in offline mode",
+    "pendingSync": "Syncing...",
+    "mergingVaultChanges": "Merging vault changes...",
+    "uploadingVault": "Uploading vault...",
     "errors": {
       "serverNotAvailable": "AliasVault-palvelin ei ole käytettävissä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
       "clientVersionNotSupported": "Palvelin ei enää tue tätä AliasVault-selainlaajennuksen versiota. Päivitä selaimen laajennus uusimpaan versioon.",
@@ -104,7 +103,10 @@
       "unknownErrorTryAgain": "Tapahtui tuntematon virhe. Yritä uudelleen.",
       "vaultNotAvailable": "Holvi ei käytettävissä",
       "vaultIsLocked": "Holvi on lukittu",
-      "passwordChanged": "Salasanasi on muuttunut edellisen sisäänkirjautumisen jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä."
+      "passwordChanged": "Salasanasi on muuttunut edellisen sisäänkirjautumisen jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
+      "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Tapahtui tuntematon virhe. Yritä uudelleen.",
@@ -135,15 +137,10 @@
   "content": {
     "or": "tai",
     "new": "Uusi",
-    "cancel": "Peruuta",
     "vaultLocked": "AliasVault on lukittu.",
     "creatingNewAlias": "Luodaan uutta aliasta...",
     "noMatchesFound": "Osumia ei löytynyt",
     "searchVault": "Etsi holvi...",
-    "serviceName": "Palvelun nimi",
-    "email": "Sähköposti",
-    "username": "Käyttäjänimi",
-    "password": "Salasana",
     "enterServiceName": "Syötä palvelun nimi",
     "enterEmailAddress": "Syötä sähköpostiosoite",
     "enterUsername": "Syötä käyttäjänimi",
@@ -171,42 +168,6 @@
     "dismissPopup": "Hylkää ponnahdusikkuna"
   },
   "credentials": {
-    "title": "Tunnistetiedot",
-    "addCredential": "Lisää tunnistetieto",
-    "editCredential": "Muokkaa tunnistetietoa",
-    "deleteCredential": "Poista tunnistetieto",
-    "credentialDetails": "Tunnistetietojen yksityiskohdat",
-    "serviceName": "Palvelun nimi",
-    "notes": "Huomautukset",
-    "totp": "Kaksivaiheinen tunnistautuminen",
-    "totpCode": "TOTP-koodi",
-    "copyTotp": "Kopioi TOTP-koodi",
-    "totpSecret": "TOTP-salaisuus",
-    "totpSecretPlaceholder": "Syötä TOTP-salainen avain",
-    "welcomeTitle": "Tervetuloa AliasVaultiin!",
-    "welcomeDescription": "Käyttääksesi AliasVault-selainlaajennusta, siirry jollekin verkkosivustolle ja käytä AliasVaultin automaattisen täytön ponnahdusikkunaa luodaksesi uuden tunnistetiedon.",
-    "noPasskeysFound": "Todennusavaimia,  Passkey ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
-    "noAttachmentsFound": "Tunnuksia liitteiden kanssa ei löytynyt",
-    "noMatchingCredentials": "Vastaavia tunnistetietoja ei löytynyt",
-    "createdAt": "Luotu",
-    "updatedAt": "Viimeksi päivitetty",
-    "saveCredential": "Tallenna tunnistetieto",
-    "deleteCredentialTitle": "Poista tunnistetieto",
-    "deleteCredentialConfirm": "Oletko varma, että haluat poistaa tämän tunnistetiedon? Tätä toimintoa ei voi perua.",
-    "filters": {
-      "all": "(All) Käyttäjätunnukset",
-      "passkeys": "Sala-avaimet",
-      "aliases": "Aliakset",
-      "userpass": "Salasanat",
-      "attachments": "Liitteet"
-    },
-    "randomAlias": "Sattumanvarainen alias",
-    "manual": "Käyttöopas",
-    "service": "Palvelu",
-    "serviceUrl": "Palvelun URL-osoite",
-    "loginCredentials": "Sisäänkirjautumistunnistetiedot",
-    "generateRandomUsername": "Luo sattumanvarainen käyttäjänimi",
-    "generateRandomPassword": "Luo sattumanvarainen salasana",
     "changePasswordComplexity": "Muuta salasanan monimutkaisuutta",
     "passwordLength": "Salasanan pituus",
     "includeLowercase": "Sisällytä pienet kirjaimet",
@@ -214,32 +175,108 @@
     "includeNumbers": "Sisällytä numerot",
     "includeSpecialChars": "Sisällytä erikoismerkit",
     "avoidAmbiguousChars": "Vältä epäselviä merkkejä (o, 0, jne.)",
-    "generateNewPreview": "Luo uusi esikatselu",
-    "generateRandomAlias": "Luo sattumanvarainen alias",
-    "clearAliasFields": "Tyhjennä alias-kentät",
-    "alias": "Alias",
-    "firstName": "Etunimi",
-    "lastName": "Sukunimi",
-    "nickName": "Lempinimi",
-    "gender": "Sukupuoli",
-    "birthDate": "Syntymäpäivä",
-    "birthDatePlaceholder": "VVVV-KK-PP.",
-    "metadata": "Metatiedot",
-    "validation": {
-      "required": "Tämä kenttä on pakollinen.",
-      "serviceNameRequired": "Palvelun nimi on pakollinen",
-      "invalidEmail": "Virheellinen sähköpostiosoitteen muoto",
-      "invalidDateFormat": "Päivämäärän on oltava muodossa VVVV-KK-PP."
-    },
     "privateEmailTitle": "Yksityinen sähköposti",
     "privateEmailAliasVaultServer": "AliasVault-palvelin",
     "privateEmailDescription": "Päästä päähän (E2E) salattu, täysin yksityinen.",
     "publicEmailTitle": "Julkiset väliaikaisten sähköpostiosoitteiden tarjoajat (PTEP)",
     "publicEmailDescription": "Anonyymi, mutta rajoitettu yksityisyys. Sähköpostin sisällön voi lukea kuka tahansa, joka tietää osoitteen.",
-    "useDomainChooser": "Käytä verkkotunnuksen valitsijaa",
-    "enterCustomDomain": "Syötä mukautettu verkkotunnus",
-    "enterFullEmail": "Syötä koko sähköpostiosoite",
-    "enterEmailPrefix": "Syötä sähköpostin etuliite"
+    "generateRandomUsername": "Luo sattumanvarainen käyttäjänimi",
+    "generateRandomPassword": "Luo sattumanvarainen salasana",
+    "generateNewPreview": "Luo uusi esikatselu",
+    "generateRandomAlias": "Luo sattumanvarainen alias",
+    "validation": {
+      "required": "Tämä kenttä on pakollinen."
+    },
+    "tags": "Tunnisteet"
+  },
+  "items": {
+    "title": "Items",
+    "itemName": "Nimi",
+    "loginCredentials": "Sisäänkirjautumistunnistetiedot",
+    "cardInformation": "Card Information",
+    "addItem": "Add Item",
+    "addNewItem": "Add new item",
+    "saveItem": "Save Item",
+    "itemDetails": "Item Details",
+    "editItem": "Edit Item",
+    "untitled": "Untitled",
+    "newFolder": "New Folder",
+    "createFolder": "Luo kansio",
+    "editFolder": "Edit Folder",
+    "folderName": "Folder Name",
+    "folderNameRequired": "Folder name is required",
+    "folder": "Kansio",
+    "welcomeTitle": "Tervetuloa AliasVaultiin!",
+    "welcomeDescription": "Käyttääksesi AliasVault-selainlaajennusta, siirry jollekin verkkosivustolle ja käytä AliasVaultin automaattisen täytön ponnahdusikkunaa luodaksesi uuden tunnistetiedon.",
+    "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "noMatchingItems": "No matching items found",
+    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
+    "deleteFolder": "Delete Folder",
+    "deleteFolderKeepItems": "Delete folder only",
+    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderAndItems": "Delete folder and all items",
+    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Sala-avaimet"
+    },
+    "deleteItemTitle": "Poista kohde",
+    "deleteItemConfirm": "Haluatko varmasti poistaa tämän kohteen?",
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available"
+  },
+  "itemTypes": {
+    "selectType": "Add New Item",
+    "typeLabel": "Item Type",
+    "creating": "Creating",
+    "editing": "Editing",
+    "regenerateAlias": "Regenerate alias",
+    "addCustomField": "Add custom field",
+    "fieldLabel": "Field Label",
+    "enterFieldName": "Enter field name",
+    "fieldType": "Field Type",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden (masked text)",
+      "email": "Sähköposti",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "Päivämäärä",
+      "textArea": "Text Area"
+    },
+    "login": {
+      "title": "Kirjaudu sisään"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Credit Card"
+    },
+    "note": {
+      "title": "Secure Note"
+    }
+  },
+  "fieldLabels": {
+    "login.url": "Website URL",
+    "login.username": "Käyttäjänimi",
+    "login.password": "Salasana",
+    "alias.first_name": "Etunimi",
+    "alias.last_name": "Sukunimi",
+    "alias.gender": "Sukupuoli",
+    "alias.birthdate": "Syntymäpäivä",
+    "login.email": "Sähköposti",
+    "notes.content": "Huomautukset",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN"
   },
   "totp": {
     "addCode": "Lisää 2FA TOTP -koodi",
@@ -247,9 +284,15 @@
     "nameOptional": "Nimi (valinnainen)",
     "secretKey": "Salainen avain",
     "saveToViewCode": "Tallenna nähdäksesi koodin",
+    "defaultName": "Authenticator",
     "errors": {
       "invalidSecretKey": "Virheellinen salatun avaimen muoto."
     }
+  },
+  "attachmentUploader": {
+    "uploading": "Uploading...",
+    "uploadSuccess": "Files uploaded successfully.",
+    "deleteSuccess": "Attachment deleted successfully."
   },
   "emails": {
     "title": "Sähköpostit",
@@ -259,7 +302,6 @@
     "to": "Vastaanottaja",
     "date": "Päivämäärä",
     "emailContent": "Sähköpostin sisältö",
-    "attachments": "Liitteet",
     "emailNotFound": "Sähköpostia ei löytynyt",
     "noEmails": "Sähköposteja ei löytynyt",
     "noEmailsDescription": "Et ole vielä vastaanottanut sähköposteja yksityisissä sähköpostiosoitteissasi. Kun saat uuden sähköpostiviestin, se näkyy täällä.",
@@ -271,25 +313,17 @@
       "hoursAgo_plural": "{{count}} tuntia sitten",
       "yesterday": "eilen"
     },
-    "errors": {
-      "emailLoadError": "Sähköpostien lataamisessa tapahtui virhe. Yritä myöhemmin uudelleen.",
-      "emailUnexpectedError": "Odottamaton virhe sähköpostien lataamisen aikana. Yritä myöhemmin uudelleen."
-    },
     "apiErrors": {
       "CLAIM_DOES_NOT_MATCH_USER": "Nykyinen valittu sähköpostiosoite on jo käytössä. Vaihda sähköpostiosoite muokkaamalla tätä tunnistetietoa.",
       "CLAIM_DOES_NOT_EXIST": "Tapahtui virhe ladattaessa sähköposteja. Yritä muokata ja tallentaa tunnistetiedot synkronoidaksesi tietokannan, ja yritä sitten uudelleen."
     }
   },
   "settings": {
-    "title": "Asetukset",
     "serverUrl": "Palvelimen URL-osoite",
     "language": "Kieli",
     "autofillEnabled": "Ota automaattinen täyttö käyttöön",
     "version": "Versio",
-    "openInNewWindow": "Avaa uudessa ikkunassa",
     "openWebApp": "Avaa verkkosovellus",
-    "loggedIn": "Sisäänkirjautuneena",
-    "logout": "Uloskirjautuminen",
     "lock": "Lukitse",
     "globalSettings": "Yleisesti pätevät asetukset",
     "autofillPopup": "Automaattisen täytön ponnahdusikkuna",
@@ -383,12 +417,11 @@
   "passkeys": {
     "passkey": "Sala-avain",
     "site": "Sivusto",
-    "displayName": "Nimi",
     "helpText": "Todennusavaimet, Passkeys, luodaan sivustolle pyydettäessä. Niitä ei voi manuaalisesti muokata. Voit poistaa tämän salasanan, voit poistaa sen tästä käyttäjätunnuksesta. Voit korvata tämän salasanan tai luoda uuden, käy verkkosivuilla ja seuraa sen kehotuksia.",
     "passkeyMarkedForDeletion": "Todennusavain merkitty poistettavaksi",
     "passkeyWillBeDeleted": "Tämä todennusavain poistetaan, kun tallennat tämän käyttäjätiedon.",
+    "useBrowserPasskey": "Käytä selaimen sala-avainta",
     "bypass": {
-      "title": "Käytä selaimen sala-avainta",
       "description": "Kuinka kauan haluat käyttää selaimen todennusavaimen tarjoajaa {{origin}}?",
       "thisTimeOnly": "Vain tällä kertaa",
       "alwaysForSite": "Aina tällä sivustolla"
@@ -397,8 +430,7 @@
       "title": "Kirjaudu sisään todennusavaimella",
       "signInFor": "Kirjaudu sisään todennusavaimella saadaksesi",
       "selectPasskey": "Valitse todennusavain jolla kirjaudutaan",
-      "noPasskeysFound": "Tällä sivustolla ei löytynyt todennusavaimia",
-      "useBrowserPasskey": "Käytä selaimen todennusavainta"
+      "noPasskeysFound": "Tällä sivustolla ei löytynyt todennusavaimia"
     },
     "create": {
       "title": "Luo Passkey, todennusavain",
@@ -406,16 +438,35 @@
       "titleLabel": "Otsikko",
       "titlePlaceholder": "Anna nimi tälle todennusavaimelle",
       "createButton": "Luo todennusavain, Passkey",
-      "useBrowserPasskey": "Käytä selaimen sala-avainta",
       "selectPasskeyToReplace": "Valitse todennusavain, johon korvataan",
       "createNewPasskey": "Luo uusi sala-avain",
       "replacingPasskey": "Korvaava todennusavain: {{displayName}}",
-      "confirmReplace": "Vahvista korvaaminen"
+      "confirmReplace": "Vahvista korvaaminen",
+      "selectExistingLogin": "Add to existing login:",
+      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
+      "attachingToCredential": "Adding passkey to: {{serviceName}}",
+      "attachPasskey": "Add Passkey"
     },
     "settings": {
       "passkeyProvider": "Todennusavaimen toimittaja",
       "passkeyProviderOn": "Todennusavaimen toimittaja käytössä "
     }
+  },
+  "recentlyDeleted": {
+    "title": "Recently Deleted",
+    "noItems": "No deleted items",
+    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+    "restore": "Restore",
+    "deletePermanently": "Delete Permanently",
+    "emptyAll": "Empty All",
+    "daysRemaining": "{{count}} day remaining",
+    "daysRemaining_plural": "{{count}} days remaining",
+    "expiringSoon": "Expiring soon",
+    "confirmDeleteTitle": "Delete Permanently?",
+    "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+    "confirmEmptyAllTitle": "Empty Recently Deleted?",
+    "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
   },
   "upgrade": {
     "title": "Päivitä holvi",
@@ -425,7 +476,6 @@
     "newVersion": "Uusi saatavilla oleva versio:",
     "upgrade": "Päivitä holvi",
     "upgrading": "Päivitetään...",
-    "logout": "Uloskirjautuminen",
     "whatsNew": "Mitä uutta?",
     "whatsNewDescription": "Päivitys vaaditaan seuraavien muutosten tukemiseksi:",
     "noDescriptionAvailable": "Tälle versiolle ei ole saatavilla kuvausta.",
@@ -437,5 +487,10 @@
       "upgradeFailed": "Päivitys epäonnistui",
       "failedToApplyMigration": "Siirron käyttöönotto epäonnistui ({{current}} / {{total}})"
     }
+  },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
   }
 }

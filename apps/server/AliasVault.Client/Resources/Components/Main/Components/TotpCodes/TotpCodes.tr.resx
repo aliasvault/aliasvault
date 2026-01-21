@@ -59,12 +59,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
+    <value>İki faktörlü kimlik doğrulama</value>
     <comment>Section title for 2FA codes</comment>
-  </data>
-  <data name="AddTotpCodeButton" xml:space="preserve">
-    <value>Add TOTP Code</value>
-    <comment>Button text to add new TOTP code</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
     <value>Add a two-factor authenticator code</value>
@@ -95,7 +91,7 @@
     <comment>Placeholder text for secret key input</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">
-    <value>Save</value>
+    <value>Kaydet</value>
     <comment>Save button text</comment>
   </data>
   <data name="SaveToViewCodeMessage" xml:space="preserve">

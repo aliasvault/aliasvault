@@ -20,9 +20,9 @@
     </xsd:element>
   </xsd:schema>
   <!-- Main navigation links -->
-  <data name="CredentialsNav">
-    <value>Учетные данные</value>
-    <comment>Main navigation link for credentials section</comment>
+  <data name="VaultNav">
+    <value>Хранилище</value>
+    <comment>Main navigation link for vault section</comment>
   </data>
   <data name="EmailsNav">
     <value>Почта</value>

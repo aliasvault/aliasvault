@@ -74,9 +74,9 @@
     <value>请注意：</value>
     <comment>Reset vault please note prefix</comment>
   </data>
-  <data name="ResetVaultCredentialsDeletedNote" xml:space="preserve">
-    <value>您密码库中的所有加密凭据都将被永久删除</value>
-    <comment>Reset vault note about credentials being deleted</comment>
+  <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
+    <value>All encrypted items in your vault will be permanently deleted</value>
+    <comment>Reset vault note about items being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
     <value>您的电子邮件别名将得到保留，并可在重置密码库后重新使用</value>
@@ -99,7 +99,7 @@
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>最终警告：您即将永久删除您的所有凭据！</value>
+    <value>Final warning: You are about to permanently delete all your items!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
@@ -131,7 +131,7 @@
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>您的密码库已成功重置。所有凭据均已删除，您现在可以重新开始了。</value>
+    <value>Your vault has been successfully reset. All items have been deleted and you can now start fresh.</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">
