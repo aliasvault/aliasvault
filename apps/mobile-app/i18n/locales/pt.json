@@ -76,8 +76,8 @@
   },
   "logout": {
     "unsyncedChangesTitle": "Alterações Dessincronizadas",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesWarning": "Você tem alterações dessincronizadas que serão perdidas caso você saia da sua conta agora. Têm certeza que deseja continuar?",
+    "logoutAnyway": "Sair assim mesmo"
   },
   "vault": {
     "syncingVault": "Sincronizando cofre",
@@ -87,8 +87,8 @@
     "executingOperation": "Realizando operação...",
     "checkingVaultUpdates": "Verificando atualizações do cofre",
     "syncingUpdatedVault": "Sincronizando cofre atualizado",
-    "mergingVault": "Merging vault changes",
-    "uploadingChanges": "Uploading changes",
+    "mergingVault": "Integrando mudanças do cofre",
+    "uploadingChanges": "Enviando mudanças",
     "errors": {
       "failedToGetEncryptedDatabase": "Falha ao acessar dados criptografados",
       "usernameNotFound": "Usuário não encontrado",
@@ -98,7 +98,7 @@
       "serverVersionNotSupported": "O servidor do AliasVault precisa ser atualizado para uma nova versão para poder utilizar o aplicativo móvel. Por favor, entre em contato com o suporte caso precise de ajuda.",
       "appOutdated": "Este aplicativo está desatualizado e não pode ser utilizado para acessar essa (nova) versão do cofre. Por favor, atualize seu aplicativo AliasVault para continuar.",
       "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança.",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
+      "passwordChangeRequiresOnline": "Alteração de senhas requer uma conexão com a internet. Por favor, tente novamente quando estiver online."
     }
   },
   "credentials": {
@@ -438,13 +438,13 @@
   },
   "navigation": {
     "credentials": "Credenciais",
-    "vault": "Vault",
+    "vault": "Cofre",
     "emails": "E-mails",
     "settings": "Configurações"
   },
   "itemTypes": {
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Criando",
+    "editing": "Editando",
     "login": {
       "title": "Login"
     },
@@ -452,17 +452,17 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card",
-      "cardInformation": "Card Information"
+      "title": "Cartão de Crédito",
+      "cardInformation": "Informações do Cartão"
     },
     "note": {
-      "title": "Note"
+      "title": "Nota"
     },
-    "addField": "Add Field",
-    "addCustomField": "Add Custom Field",
-    "customFields": "Custom Fields",
+    "addField": "Adicionar Campo",
+    "addCustomField": "Adicionar Campo Personalizado",
+    "customFields": "Campos Personalizados",
     "fieldLabel": "Field Label",
-    "fieldType": "Field Type",
+    "fieldType": "Tipo do Campo",
     "enterFieldName": "Enter field name",
     "fieldTypes": {
       "text": "Text",
