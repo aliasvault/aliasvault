@@ -680,12 +680,12 @@
   },
   "sync": {
     "offline": "Offline",
-    "syncing": "Syncing...",
-    "pending": "Pending sync",
-    "retrySync": "Tap to retry",
+    "syncing": "Sincronizzazione...",
+    "pending": "In attesa di sincronizzazione…",
+    "retrySync": "Tocca per riprovare",
     "backOnline": "Torna online",
     "stillOffline": "Ancora offline",
-    "syncFailed": "Sync failed"
+    "syncFailed": "Sincronizzazione non riuscita"
   },
   "app": {
     "status": {
@@ -695,7 +695,7 @@
       "retryingConnection": "Riprovando la connessione..."
     },
     "offline": {
-      "banner": "Offline - changes will sync when online",
+      "banner": "Offline - le modifiche si sincronizzeranno quando sarai online",
       "backOnline": "Torna online",
       "stillOffline": "Ancora offline"
     },
