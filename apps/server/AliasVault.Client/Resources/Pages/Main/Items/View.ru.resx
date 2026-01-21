@@ -120,7 +120,7 @@
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="Untitled">
-    <value>Untitled</value>
+    <value>Без названия</value>
     <comment>Placeholder for items without a name</comment>
   </data>
   <data name="NotesSection">
@@ -132,7 +132,7 @@
     <comment>Section header for credit card details</comment>
   </data>
   <data name="CustomFieldsSection">
-    <value>Custom Fields</value>
+    <value>Пользовательские поля</value>
     <comment>Section header for custom fields</comment>
   </data>
 </root>
