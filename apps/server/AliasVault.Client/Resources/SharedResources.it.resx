@@ -309,11 +309,11 @@
     <comment>Tooltip text for sync vault data button</comment>
   </data>
   <data name="SyncingChanges" xml:space="preserve">
-    <value>Syncing changes...</value>
+    <value>Sincronizzazione cambiamenti...</value>
     <comment>Status text when background sync is in progress</comment>
   </data>
   <data name="LoadingVault" xml:space="preserve">
-    <value>Loading vault...</value>
+    <value>Caricamento cassaforte...</value>
     <comment>Status text when vault is being loaded</comment>
   </data>
 </root>
