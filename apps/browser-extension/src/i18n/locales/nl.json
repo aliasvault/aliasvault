@@ -54,7 +54,7 @@
     "delete": "Verwijderen",
     "undo": "Ongedaan maken",
     "save": "Opslaan",
-    "saving": "Saving...",
+    "saving": "Opslaan...",
     "create": "Aanmaken",
     "or": "Of",
     "close": "Sluiten",
@@ -89,10 +89,10 @@
     "syncingUpdatedVault": "Bijgewerkte vault synchroniseren",
     "loadMore": "Laad meer",
     "offline": "Offline",
-    "offlineMode": "Operating in offline mode",
-    "pendingSync": "Syncing...",
-    "mergingVaultChanges": "Merging vault changes...",
-    "uploadingVault": "Uploading vault...",
+    "offlineMode": "Offline modus",
+    "pendingSync": "Synchroniseren...",
+    "mergingVaultChanges": "Vault wijzigingen mergen...",
+    "uploadingVault": "Vault opslaan...",
     "errors": {
       "serverNotAvailable": "De AliasVault server is niet beschikbaar. Probeer het later opnieuw of neem contact op met de ondersteuning als het probleem aanhoudt.",
       "clientVersionNotSupported": "Deze versie van de AliasVault browserextensie wordt niet meer ondersteund door de server. Update je browserextensie naar de nieuwste versie.",
@@ -104,9 +104,8 @@
       "vaultNotAvailable": "Vault niet beschikbaar",
       "vaultIsLocked": "Vault is vergrendeld",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in.",
-      "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again.",
-      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
+      "syncConflictMaxRetries": "Kan de vault niet synchroniseren na meerdere pogingen. Probeer het later opnieuw.",
+      "mergeFailed": "Samenvoegen vault wijzigingen mislukt. Probeer het opnieuw."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
@@ -167,7 +166,45 @@
     "vaultUpgradeRequired": "Update is vereist.",
     "dismissPopup": "Pop-up sluiten"
   },
-  "credentials": {
+  "items": {
+    "title": "Items",
+    "itemName": "Naam",
+    "loginCredentials": "Inloggegevens",
+    "cardInformation": "Kaartgegevens",
+    "addItem": "Item toevoegen",
+    "addNewItem": "Nieuw item toevoegen",
+    "saveItem": "Item opslaan",
+    "itemDetails": "Item details",
+    "editItem": "Item bewerken",
+    "untitled": "Naamloos",
+    "newFolder": "Nieuwe map",
+    "createFolder": "Map aanmaken",
+    "editFolder": "Map bewerken",
+    "folderName": "Mapnaam",
+    "folderNameRequired": "Mapnaam is verplicht",
+    "folder": "Map",
+    "welcomeTitle": "Welkom bij AliasVault!",
+    "welcomeDescription": "Om de AliasVault browser extensie te gebruiken: navigeer naar een website en gebruik de AliasVault autofill popup om nieuwe credentials aan te maken.",
+    "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
+    "noAttachmentsFound": "Geen items gevonden met bijlagen",
+    "noItemsOfTypeFound": "Geen {{type}} items gevonden",
+    "noMatchingItems": "Geen items gevonden",
+    "emptyFolderHint": "Deze map is leeg. Om items naar deze map te verplaatsen, wijzig het item en selecteer deze map.",
+    "deleteFolder": "Map verwijderen",
+    "deleteFolderKeepItems": "Verwijder alleen map",
+    "deleteFolderKeepItemsDescription": "Items zullen terug worden verplaatst naar de hoofdlijst.",
+    "deleteFolderAndItems": "Verwijder map en alle items",
+    "deleteFolderAndItemsDescription": "{{count}} item(s) zullen worden verplaatst naar recent verwijderd.",
+    "filters": {
+      "all": "(Alle) Items",
+      "passkeys": "Passkeys"
+    },
+    "deleteItemTitle": "Verwijder item",
+    "deleteItemConfirm": "Weet je zeker dat je dit item wilt verwijderen?",
+    "viewHistory": "Toon geschiedenis",
+    "history": "Geschiedenis",
+    "noHistoryAvailable": "Nog geen geschiedenis",
+    "tags": "Labels",
     "changePasswordComplexity": "Wijzig wachtwoord complexiteit",
     "passwordLength": "Wachtwoordlengte",
     "includeLowercase": "Inclusief kleine letters",
@@ -183,70 +220,30 @@
     "generateRandomUsername": "Gebruikersnaam genereren",
     "generateRandomPassword": "Wachtwoord genereren",
     "generateNewPreview": "Genereer nieuw voorbeeld",
-    "generateRandomAlias": "Alias genereren",
+    "generateRandomAlias": "Genereer willekeurige alias",
     "validation": {
       "required": "Dit veld is verplicht"
-    },
-    "tags": "Labels"
-  },
-  "items": {
-    "title": "Items",
-    "itemName": "Naam",
-    "loginCredentials": "Inloggegevens",
-    "cardInformation": "Card Information",
-    "addItem": "Add Item",
-    "addNewItem": "Add new item",
-    "saveItem": "Save Item",
-    "itemDetails": "Item Details",
-    "editItem": "Edit Item",
-    "untitled": "Naamloos",
-    "newFolder": "New Folder",
-    "createFolder": "Map aanmaken",
-    "editFolder": "Edit Folder",
-    "folderName": "Folder Name",
-    "folderNameRequired": "Folder name is required",
-    "folder": "Map",
-    "welcomeTitle": "Welkom bij AliasVault!",
-    "welcomeDescription": "Om de AliasVault browser extensie te gebruiken: navigeer naar een website en gebruik de AliasVault autofill popup om nieuwe credentials aan te maken.",
-    "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
-    "noMatchingItems": "No matching items found",
-    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
-    "deleteFolder": "Delete Folder",
-    "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-    "deleteFolderAndItems": "Delete folder and all items",
-    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
-    "filters": {
-      "all": "(All) Items",
-      "passkeys": "Passkeys"
-    },
-    "deleteItemTitle": "Verwijder item",
-    "deleteItemConfirm": "Weet je zeker dat je dit item wilt verwijderen?",
-    "viewHistory": "View history",
-    "history": "History",
-    "noHistoryAvailable": "No history available"
+    }
   },
   "itemTypes": {
-    "selectType": "Add New Item",
-    "typeLabel": "Item Type",
-    "creating": "Creating",
-    "editing": "Editing",
-    "regenerateAlias": "Regenerate alias",
-    "addCustomField": "Add custom field",
-    "fieldLabel": "Field Label",
-    "enterFieldName": "Enter field name",
-    "fieldType": "Field Type",
+    "selectType": "Nieuw item toevoegen",
+    "typeLabel": "Itemtype",
+    "creating": "Aanmaken",
+    "editing": "Bewerken",
+    "regenerateAlias": "Alias opnieuw genereren",
+    "addCustomField": "Voeg eigen veld toe",
+    "fieldLabel": "Veldlabel",
+    "enterFieldName": "Voer de veldnaam in",
+    "fieldType": "Veldtype",
     "fieldTypes": {
-      "text": "Text",
-      "hidden": "Hidden (masked text)",
+      "text": "Tekst",
+      "hidden": "Verborgen (gemaskeerde tekst)",
       "email": "E-mail",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Telefoon",
+      "number": "Nummer",
       "date": "Datum",
-      "textArea": "Text Area"
+      "textArea": "Tekstvak"
     },
     "login": {
       "title": "Login"
@@ -255,10 +252,10 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card"
+      "title": "Creditcard"
     },
     "note": {
-      "title": "Secure Note"
+      "title": "Veilige notitie"
     }
   },
   "fieldLabels": {
@@ -271,12 +268,12 @@
     "alias.birthdate": "Geboortedatum",
     "login.email": "E-mail",
     "notes.content": "Notities",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
+    "card.cardholder_name": "Naam kaarthouder",
+    "card.number": "Kaartnummer",
+    "card.expiry_month": "Vervalmaand",
+    "card.expiry_year": "Vervaljaar",
     "card.cvv": "CVV",
-    "card.pin": "PIN"
+    "card.pin": "Pincode"
   },
   "totp": {
     "addCode": "2FA-code toevoegen",
@@ -290,9 +287,9 @@
     }
   },
   "attachmentUploader": {
-    "uploading": "Uploading...",
-    "uploadSuccess": "Files uploaded successfully.",
-    "deleteSuccess": "Attachment deleted successfully."
+    "uploading": "Uploaden...",
+    "uploadSuccess": "Bestand succesvol geüpload.",
+    "deleteSuccess": "Bijlage is succesvol verwijderd."
   },
   "emails": {
     "title": "E-mails",
@@ -442,10 +439,10 @@
       "createNewPasskey": "Passkey aanmaken",
       "replacingPasskey": "Passkey vervangen: {{displayName}}",
       "confirmReplace": "Bevestig vervanging",
-      "selectExistingLogin": "Add to existing login:",
-      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
-      "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "selectExistingLogin": "Toevoegen aan bestaande login:",
+      "selectExistingLoginDescription": "Deze passkey toevoegen aan een bestaande inloggegevens voor deze site.",
+      "attachingToCredential": "Passkey toevoegen aan: {{serviceName}}",
+      "attachPasskey": "Passkey toevoegen"
     },
     "settings": {
       "passkeyProvider": "Passkey provider",
@@ -453,20 +450,20 @@
     }
   },
   "recentlyDeleted": {
-    "title": "Recently Deleted",
-    "noItems": "No deleted items",
-    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
-    "restore": "Restore",
-    "deletePermanently": "Delete Permanently",
-    "emptyAll": "Empty All",
-    "daysRemaining": "{{count}} day remaining",
-    "daysRemaining_plural": "{{count}} days remaining",
-    "expiringSoon": "Expiring soon",
-    "confirmDeleteTitle": "Delete Permanently?",
-    "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
-    "confirmEmptyAllTitle": "Empty Recently Deleted?",
-    "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
+    "title": "Recent verwijderd",
+    "noItems": "Geen verwijderde items",
+    "noItemsDescription": "Items die je verwijdert verschijnen hier gedurende 30 dagen voordat ze definitief verwijderd worden.",
+    "description": "Deze items zullen na 30 dagen permanent verwijderd worden. Je kunt ze herstellen of ze direct verwijderen.",
+    "restore": "Herstel",
+    "deletePermanently": "Permanent verwijderen",
+    "emptyAll": "Alles verwijderen",
+    "daysRemaining_one": "{{count}} dag resterend",
+    "daysRemaining_other": "{{count}} dagen resterend",
+    "expiringSoon": "Vervalt binnenkort",
+    "confirmDeleteTitle": "Permanent verwijderen?",
+    "confirmDeleteMessage": "Dit item zal permanent worden verwijderd en kan niet worden hersteld.",
+    "confirmEmptyAllTitle": "Recent verwijderd leegmaken?",
+    "confirmEmptyAllMessage": "Alle {{count}} items zullen permanent worden verwijderd en kunnen niet worden hersteld."
   },
   "upgrade": {
     "title": "Vault upgraden",
@@ -489,8 +486,8 @@
     }
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Niet-gesynchroniseerde wijzigingen",
+    "unsyncedChangesWarning": "Er zijn niet gesynchroniseerde wijzigingen die verloren zullen gaan als je nu uitlogt. Weet je zeker dat je wilt doorgaan?",
+    "logoutAnyway": "Toch uitloggen"
   }
 }
