@@ -29,7 +29,7 @@
     <comment>Alias item type name</comment>
   </data>
   <data name="TypeCreditCard">
-    <value>Credit Card</value>
+    <value>Банковская карта</value>
     <comment>Credit Card item type name</comment>
   </data>
   <data name="TypeNote">
@@ -38,11 +38,11 @@
   </data>
   <!-- Status text -->
   <data name="Creating">
-    <value>Creating</value>
+    <value>Создание</value>
     <comment>Status text when creating a new item</comment>
   </data>
   <data name="Editing">
-    <value>Editing</value>
+    <value>Редактирование</value>
     <comment>Status text when editing an existing item</comment>
   </data>
   <!-- Buttons -->
