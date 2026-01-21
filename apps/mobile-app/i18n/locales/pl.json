@@ -209,8 +209,6 @@
   },
   "passkeys": {
     "passkey": "Klucz dostępu",
-    "site": "Strona internetowa",
-    "displayName": "Nazwa wyświetlana",
     "helpText": "Klucze dostępu są tworzone na stronie internetowej po wyświetleniu monitu. Nie można ich edytować ręcznie. Aby usunąć ten klucz dostępu, można go usunąć z tych poświadczeń.",
     "passkeyMarkedForDeletion": "Klucz dostępu oznaczony do usunięcia",
     "passkeyWillBeDeleted": "Ten klucz dostępu zostanie usunięty po zapisaniu tych danych."
@@ -317,13 +315,6 @@
       "pinDescription": "Użyj niestandardowego kodu PIN, aby szybciej odblokować sejf.",
       "pinEnabled": "Odblokowanie za pomocą kodu PIN zakończone sukcesem",
       "pinDisabled": "Ustaw kod PIN",
-      "setupPin": "Ustaw kod PIN",
-      "enterNewPin": "Wprowadź nowy kod PIN",
-      "enterNewPinDescription": "Wybierz kod PIN, aby odblokować sejf",
-      "confirmPin": "Potwierdź kod PIN",
-      "confirmPinDescription": "Wprowadź ponownie swój kod PIN, aby potwierdzić",
-      "pinMismatch": "Kody PIN nie pasują. Spróbuj jeszcze raz.",
-      "pinLocked": "PIN zablokowany po zbyt wielu nieudanych próbach. Użyj hasła głównego.",
       "passwordHelp": "Wymaga wprowadzenia hasło głównego, aby odblokować sejf. Ta opcja jest zawsze włączona jako opcja awaryjna.",
       "keystoreIOS": "iOS Keychain",
       "keystoreAndroid": "Android Keystore"
@@ -421,23 +412,16 @@
     "qrScanner": {
       "title": "Skaner kodów QR",
       "scanningMessage": "Zeskanuj kod QR AliasVault",
-      "invalidQrCode": "Nieprawidłowy kod QR",
-      "notAliasVaultQr": "To nie jest prawidłowy kod QR AliasVault. Proszę zeskanować kod QR wygenerowany przez AliasVault.",
-      "cameraPermissionTitle": "Wymagane pozwolenie na dostęp do aparatu",
-      "cameraPermissionMessage": "Proszę zezwolić na dostęp do aparatu w celu skanowania kodów QR.",
       "mobileLogin": {
         "confirmTitle": "Potwierdź prośbę o zalogowanie",
         "confirmSubtitle": "Ponownie uwierzytelnij się, aby zatwierdzić logowanie na innym urządzeniu.",
         "confirmMessage": "Zamierzasz zalogować się na zdalnym urządzeniu przy użyciu swojego konta. To urządzenie będzie miało pełny dostęp do Twojego sejfu. Kontynuuj tylko wtedy, gdy ufasz temu urządzeniu.",
         "successDescription": "Udało się zalogować do urządzenia zdalnego.",
-        "requestExpired": "To żądanie logowania wygasło. Wygeneruj nowy kod QR.",
-        "authenticationFailed": "Uwierzytelnianie nie powiodło się. Spróbuj ponownie.",
-        "noAuthMethodEnabled": "Aby odblokować urządzenie za pomocą telefonu komórkowego, należy włączyć funkcję odblokowywania za pomocą danych biometrycznych lub kodu PIN"
+        "requestExpired": "To żądanie logowania wygasło. Wygeneruj nowy kod QR."
       }
     }
   },
   "navigation": {
-    "credentials": "Dane logowania",
     "vault": "Sejf",
     "emails": "Wiadomości e-mail",
     "settings": "Ustawienia"
@@ -499,12 +483,11 @@
     "deleteItem": "Usuń element",
     "itemDetails": "Szczegóły produktu",
     "itemCreated": "Element utworzony",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "emailPreview": "Podgląd wiadomości e-mail",
     "untitled": "Bez tytułu",
     "name": "Nazwa",
-    "namePlaceholder": "np. Google, Amazon",
     "url": "adres URL",
-    "urlPlaceholder": "e.g., https://google.com",
     "service": "Usługa",
     "serviceName": "Nazwa usługi",
     "serviceUrl": "Adres URL usługi",
