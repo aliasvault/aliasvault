@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
     "errors": {
-      "unknownError": "发生未知错误，请重试。",
+      "unknownError": "发生未知错误.",
       "unknownErrorTryAgain": "发生未知错误，请重试。",
       "serverVersionTooOld": "AliasVault 服务器需要更新到更高版本才能使用此功能。如需帮助，请联系服务器管理员。"
     }
@@ -209,8 +209,6 @@
   },
   "passkeys": {
     "passkey": "通行密钥",
-    "site": "网站",
-    "displayName": "显示名",
     "helpText": "通行密钥是在网站提示时创建的，无法手动编辑。要移除此通行密钥，您可以在此凭据中进行删除。",
     "passkeyMarkedForDeletion": "通行密钥已标记为删除",
     "passkeyWillBeDeleted": "保存此凭据后，此通行密钥将被删除。"
@@ -317,13 +315,6 @@
       "pinDescription": "使用自定义 PIN 码快速解锁密码库。",
       "pinEnabled": "PIN 解锁已成功启用",
       "pinDisabled": "PIN 解锁已禁用",
-      "setupPin": "设置 PIN",
-      "enterNewPin": "输入新的 PIN",
-      "enterNewPinDescription": "选择一个 PIN 以解锁保险库",
-      "confirmPin": "确认 PIN",
-      "confirmPinDescription": "重新输入您的 PIN 以确认",
-      "pinMismatch": "PIN 不匹配，请重试。",
-      "pinLocked": "PIN 因多次尝试失败而被锁定，请使用您的主密码。",
       "passwordHelp": "重新输入完整主密码以解锁密码库。这始终作为备用选项启用。",
       "keystoreIOS": "iOS 钥匙串",
       "keystoreAndroid": "Android 密钥库"
@@ -421,23 +412,16 @@
     "qrScanner": {
       "title": "二维码扫描工具",
       "scanningMessage": "扫描 AliasVault 二维码",
-      "invalidQrCode": "二维码无效",
-      "notAliasVaultQr": "这不是有效的 AliasVault 二维码，请扫描由 AliasVault 生成的二维码。",
-      "cameraPermissionTitle": "需要相机权限",
-      "cameraPermissionMessage": "请允许访问相机以扫描二维码。",
       "mobileLogin": {
         "confirmTitle": "确认登录请求",
         "confirmSubtitle": "重新认证以批准在另一台设备上登录。",
         "confirmMessage": "您即将使用您的账户在远程设备上登录。该设备将拥有对您密码库的完全访问权限。请仅在您信任该设备的情况下继续。",
         "successDescription": "远程设备已成功登录。",
-        "requestExpired": "此登录请求已过期，请生成新的二维码。",
-        "authenticationFailed": "认证失败，请重试。",
-        "noAuthMethodEnabled": "需要启用生物识别或 PIN 码解锁才能使用移动设备解锁"
+        "requestExpired": "此登录请求已过期，请生成新的二维码。"
       }
     }
   },
   "navigation": {
-    "credentials": "凭据",
     "vault": "Vault",
     "emails": "邮件",
     "settings": "设置"
@@ -499,12 +483,11 @@
     "deleteItem": "删除项目",
     "itemDetails": "Item Details",
     "itemCreated": "Item Created",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "emailPreview": "电子邮件预览",
     "untitled": "Untitled",
     "name": "名称",
-    "namePlaceholder": "e.g., Google, Amazon",
     "url": "URL",
-    "urlPlaceholder": "e.g., https://google.com",
     "service": "服务",
     "serviceName": "服务名称",
     "serviceUrl": "服务 URL",
@@ -561,7 +544,6 @@
     "vaultSyncedSuccessfully": "密码库同步成功",
     "vaultUpToDate": "密码库已为最新",
     "offlineMessage": "您处于离线状态，请连接互联网以同步密码库。",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "switchBackToBrowser": "切换回浏览器以继续。",
     "filters": {
       "all": "(All) Items",
@@ -590,10 +572,6 @@
       "passwordCopied": "密码已复制到剪贴板"
     },
     "createNewAliasFor": "创建新别名",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "编辑",
@@ -702,7 +680,6 @@
   },
   "sync": {
     "offline": "Offline",
-    "offlineWithPending": "Offline (pending)",
     "syncing": "Syncing...",
     "pending": "Pending sync",
     "retrySync": "Tap to retry",
@@ -724,7 +701,6 @@
     },
     "alerts": {
       "syncIssue": "无连接",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "打开本地密码库",
       "retrySync": "重试同步"
     },
