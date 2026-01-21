@@ -75,7 +75,7 @@
     <comment>Description for delete folder only option</comment>
   </data>
   <data name="DeleteFolderAndContentsTitle" xml:space="preserve">
-    <value>Delete folder and contents</value>
+    <value>Usuń folder i wszystkie elementy</value>
     <comment>Title for delete folder and contents option</comment>
   </data>
   <data name="DeleteFolderAndContentsDescription" xml:space="preserve">
