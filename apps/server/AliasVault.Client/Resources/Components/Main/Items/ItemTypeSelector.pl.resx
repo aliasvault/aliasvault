@@ -29,25 +29,25 @@
     <comment>Alias item type name</comment>
   </data>
   <data name="TypeCreditCard">
-    <value>Credit Card</value>
+    <value>Karta płatnicza</value>
     <comment>Credit Card item type name</comment>
   </data>
   <data name="TypeNote">
-    <value>Secure Note</value>
+    <value>Bezpieczna notatka</value>
     <comment>Secure Note item type name</comment>
   </data>
   <!-- Status text -->
   <data name="Creating">
-    <value>Creating</value>
+    <value>Tworzenie</value>
     <comment>Status text when creating a new item</comment>
   </data>
   <data name="Editing">
-    <value>Editing</value>
+    <value>Edytowanie</value>
     <comment>Status text when editing an existing item</comment>
   </data>
   <!-- Buttons -->
   <data name="RegenerateAlias">
-    <value>Regenerate Alias</value>
+    <value>Ponownie wygeneruj alias</value>
     <comment>Tooltip for regenerate alias button</comment>
   </data>
 </root>
