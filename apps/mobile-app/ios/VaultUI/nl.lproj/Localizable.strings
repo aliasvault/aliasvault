@@ -9,11 +9,11 @@
 "title" = "Titel";
 "unknown_error" = "Er is een onbekende fout opgetreden";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"select_item" = "Select Item";
+"loading_items" = "Items laden...";
+"no_items_found" = "Geen items gevonden";
+"no_items_match" = "Er zijn geen items gevonden die overeenkomen met je zoekopdracht";
+"create_new_item" = "Maak nieuw item";
+"select_item" = "Item selecteren";
 "select_text_to_insert" = "Selecteer tekst om in te voegen";
 "choose_username" = "Kies gebruikersnaam";
 "select_text_to_insert_message" = "Selecteer de tekst om in te voegen";
@@ -21,8 +21,8 @@
 "username_prefix" = "Gebruikersnaam: ";
 "email_prefix" = "E-mail: ";
 "password" = "Wachtwoord";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"items_load_error" = "Laden van items mislukt. Open de AliasVault app om te controleren op updates.";
+"no_item_selected" = "Geen item geselecteerd.";
 
 /* Context menu strings */
 "copy_username" = "Kopieer gebruikersnaam";
@@ -34,7 +34,7 @@
 "email_copied" = "E-mail gekopieerd";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "Zoek items...";
 
 /* Passkey registration */
 "create_passkey_title" = "Passkey aanmaken";
@@ -57,9 +57,9 @@
 "create_passkey_explanation" = "Dit maakt een nieuwe passkey aan en slaat deze op in je vault. De passkey wordt automatisch gesynchroniseerd naar je andere apparaten.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"passkey_add_to_existing" = "Of, voeg passkey toe aan een bestaand item";
+"add_passkey" = "Passkey toevoegen";
+"merge_passkey_explanation" = "Dit zal een passkey toevoegen aan je bestaande item. Je wachtwoord en andere gegevens zullen worden bewaard.";
 
 /* PIN Unlock */
 "unlock_vault" = "Vault ontgrendelen";
