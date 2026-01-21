@@ -138,7 +138,7 @@
     <comment>Error message when restore fails</comment>
   </data>
   <data name="Deleting" xml:space="preserve">
-    <value>Deleting item...</value>
+    <value>Item verwijderen...</value>
     <comment>Loading message while deleting</comment>
   </data>
   <data name="DeleteSuccess" xml:space="preserve">
