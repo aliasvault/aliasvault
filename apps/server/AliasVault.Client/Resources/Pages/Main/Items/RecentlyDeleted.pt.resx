@@ -81,7 +81,7 @@
     <comment>Description when no deleted items exist</comment>
   </data>
   <data name="Untitled" xml:space="preserve">
-    <value>Untitled</value>
+    <value>Sem Título</value>
     <comment>Fallback name for items without a name</comment>
   </data>
   <!-- Days Remaining -->
