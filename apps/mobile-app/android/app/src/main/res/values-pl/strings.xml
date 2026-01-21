@@ -39,12 +39,12 @@
   <string name="passkey_create_explanation">Spowoduje to utworzenie nowego klucza dostępu i zapisanie go w sejfie. Zostanie on automatycznie zsynchronizowany na wszystkich urządzeniach korzystających z AliasVault.</string>
   <string name="passkey_create_new_button">Utwórz nowy klucz dostępu</string>
   <string name="passkey_select_to_replace">Lub zastąp istniejący klucz dostępu:</string>
-  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
+  <string name="passkey_add_to_existing">Lub dodaj klucz dostępu do istniejącego elementu:</string>
   <string name="passkey_replace_explanation">Spowoduje to zastąpienie dotychczasowego klucza dostępu nowym. Należy pamiętać, że stare klucz zostanie nadpisany i nie będzie już dostępny. Jeśli chcesz utworzyć nowy klucz dostępu, wróć do poprzedniego ekranu.</string>
-  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
+  <string name="passkey_merge_explanation">Spowoduje to dodanie klucza dostępu do istniejącego elementu. Twoje hasło i inne dane zostaną zachowane.</string>
   <string name="passkey_replacing">Zastępowanie klucza dostępu…</string>
   <string name="add_passkey">Dodaj klucz dostępu</string>
-  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
+  <string name="add_passkey_subtitle">Dodawanie klucza dostępu do istniejącego elementu</string>
   <string name="passkey_checking_connection">Sprawdzanie połączenia…</string>
   <string name="passkey_retrieving">Pobieranie klucza dostępu…</string>
   <string name="passkey_verifying">Weryfikacja…</string>
