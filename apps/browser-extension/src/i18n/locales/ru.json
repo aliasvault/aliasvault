@@ -38,7 +38,7 @@
     }
   },
   "menu": {
-    "vault": "Vault",
+    "vault": "Хранилище",
     "emails": "Почта"
   },
   "common": {
@@ -50,7 +50,7 @@
     "back": "Назад",
     "next": "Далее",
     "use": "Использовать",
-    "add": "Add",
+    "add": "Добавить",
     "delete": "Удалить",
     "undo": "Отменить",
     "save": "Сохранить",
@@ -88,10 +88,10 @@
     "checkingVaultUpdates": "Проверка наличия обновлений в хранилище",
     "syncingUpdatedVault": "Синхронизация обновленного хранилища",
     "loadMore": "Загрузить ещё",
-    "offline": "Offline",
+    "offline": "Офлайн",
     "offlineMode": "Operating in offline mode",
-    "pendingSync": "Syncing...",
-    "mergingVaultChanges": "Merging vault changes...",
+    "pendingSync": "Синхронизация...",
+    "mergingVaultChanges": "Объединение изменений в хранилище...",
     "uploadingVault": "Uploading vault...",
     "errors": {
       "serverNotAvailable": "Сервер AliasVault недоступен. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
@@ -105,8 +105,7 @@
       "vaultIsLocked": "Хранилище заблокировано",
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again.",
-      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
+      "mergeFailed": "Failed to merge vault changes. Please try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Произошла неизвестная ошибка. Пожалуйста, попробуйте снова.",
@@ -167,7 +166,45 @@
     "vaultUpgradeRequired": "Требуется обновление хранилища.",
     "dismissPopup": "Закрыть окно"
   },
-  "credentials": {
+  "items": {
+    "title": "Записи",
+    "itemName": "Имя",
+    "loginCredentials": "Учетные данные для авторизации",
+    "cardInformation": "Данные карты",
+    "addItem": "Добавить запись",
+    "addNewItem": "Add new item",
+    "saveItem": "Save Item",
+    "itemDetails": "Детали записи",
+    "editItem": "Редактировать запись",
+    "untitled": "Без названия",
+    "newFolder": "Новая папка",
+    "createFolder": "Создать папку",
+    "editFolder": "Изменить папку",
+    "folderName": "Название папки",
+    "folderNameRequired": "Название папки обязательно",
+    "folder": "Папка",
+    "welcomeTitle": "Добро пожаловать в AliasVault!",
+    "welcomeDescription": "Чтобы использовать браузерное расширение AliasVault: перейдите на сайт и используйте всплывающее окно автозаполнения AliasVault для создания новых учетных данных.",
+    "noPasskeysFound": "Ключи доступа еще не созданы. Ключи доступа создаются при посещении веб-сайта, который предлагает их в качестве метода аутентификации.",
+    "noAttachmentsFound": "Элементы с вложениями не найдены",
+    "noItemsOfTypeFound": "Элементы типа «{{type}}» не найдены",
+    "noMatchingItems": "Совпадений не найдено",
+    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
+    "deleteFolder": "Delete Folder",
+    "deleteFolderKeepItems": "Delete folder only",
+    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderAndItems": "Delete folder and all items",
+    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "filters": {
+      "all": "(Все) Записи",
+      "passkeys": "Ключи доступа"
+    },
+    "deleteItemTitle": "Удалить элемент",
+    "deleteItemConfirm": "Вы уверены, что хотите удалить этот элемент?",
+    "viewHistory": "Посмотреть историю",
+    "history": "История",
+    "noHistoryAvailable": "История пока пуста",
+    "tags": "Теги",
     "changePasswordComplexity": "Изменить сложность пароля",
     "passwordLength": "Длина пароля",
     "includeLowercase": "Включить строчные буквы",
@@ -183,70 +220,30 @@
     "generateRandomUsername": "Сгенерировать случайное имя пользователя",
     "generateRandomPassword": "Сгенерировать случайный пароль",
     "generateNewPreview": "Создать новый предварительный просмотр",
-    "generateRandomAlias": "Сгенерировать случайный псевдоним",
+    "generateRandomAlias": "Сгенерировать псевдоним",
     "validation": {
       "required": "Это поле является обязательным"
-    },
-    "tags": "Теги"
-  },
-  "items": {
-    "title": "Items",
-    "itemName": "Имя",
-    "loginCredentials": "Учетные данные для авторизации",
-    "cardInformation": "Card Information",
-    "addItem": "Add Item",
-    "addNewItem": "Add new item",
-    "saveItem": "Save Item",
-    "itemDetails": "Item Details",
-    "editItem": "Edit Item",
-    "untitled": "Untitled",
-    "newFolder": "New Folder",
-    "createFolder": "Создать папку",
-    "editFolder": "Edit Folder",
-    "folderName": "Folder Name",
-    "folderNameRequired": "Folder name is required",
-    "folder": "Папка",
-    "welcomeTitle": "Добро пожаловать в AliasVault!",
-    "welcomeDescription": "Чтобы использовать браузерное расширение AliasVault: перейдите на сайт и используйте всплывающее окно автозаполнения AliasVault для создания новых учетных данных.",
-    "noPasskeysFound": "Ключи доступа еще не созданы. Ключи доступа создаются при посещении веб-сайта, который предлагает их в качестве метода аутентификации.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
-    "noMatchingItems": "No matching items found",
-    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
-    "deleteFolder": "Delete Folder",
-    "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-    "deleteFolderAndItems": "Delete folder and all items",
-    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
-    "filters": {
-      "all": "(All) Items",
-      "passkeys": "Ключи доступа"
-    },
-    "deleteItemTitle": "Удалить элемент",
-    "deleteItemConfirm": "Вы уверены, что хотите удалить этот элемент?",
-    "viewHistory": "View history",
-    "history": "History",
-    "noHistoryAvailable": "No history available"
+    }
   },
   "itemTypes": {
     "selectType": "Add New Item",
     "typeLabel": "Item Type",
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Создание",
+    "editing": "Редактирование",
     "regenerateAlias": "Regenerate alias",
     "addCustomField": "Add custom field",
-    "fieldLabel": "Field Label",
-    "enterFieldName": "Enter field name",
-    "fieldType": "Field Type",
+    "fieldLabel": "Название поля",
+    "enterFieldName": "Введите название поля",
+    "fieldType": "Тип поля",
     "fieldTypes": {
-      "text": "Text",
+      "text": "Текст",
       "hidden": "Hidden (masked text)",
       "email": "Почта",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Телефон",
+      "number": "Номер",
       "date": "Дата",
-      "textArea": "Text Area"
+      "textArea": "Текстовая область"
     },
     "login": {
       "title": "Логин"
@@ -255,14 +252,14 @@
       "title": "Псевдоним"
     },
     "creditCard": {
-      "title": "Credit Card"
+      "title": "Банковская карта"
     },
     "note": {
       "title": "Secure Note"
     }
   },
   "fieldLabels": {
-    "login.url": "Website URL",
+    "login.url": "URL веб-сайта",
     "login.username": "Логин",
     "login.password": "Пароль",
     "alias.first_name": "Имя",
@@ -271,11 +268,11 @@
     "alias.birthdate": "Дата рождения",
     "login.email": "Почта",
     "notes.content": "Примечание",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
-    "card.cvv": "CVV",
+    "card.cardholder_name": "Имя держателя карты",
+    "card.number": "Номер карты",
+    "card.expiry_month": "Месяц окончания",
+    "card.expiry_year": "Год окончания",
+    "card.cvv": "CVV-код",
     "card.pin": "PIN"
   },
   "totp": {
@@ -460,8 +457,8 @@
     "restore": "Restore",
     "deletePermanently": "Delete Permanently",
     "emptyAll": "Empty All",
-    "daysRemaining": "{{count}} day remaining",
-    "daysRemaining_plural": "{{count}} days remaining",
+    "daysRemaining_one": "{{count}} day remaining",
+    "daysRemaining_other": "{{count}} days remaining",
     "expiringSoon": "Expiring soon",
     "confirmDeleteTitle": "Delete Permanently?",
     "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
@@ -489,8 +486,8 @@
     }
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Несинхронизированные изменения",
+    "unsyncedChangesWarning": "У вас есть несинхронизированные изменения, которые будут потеряны, если вы выйдете из аккаунта сейчас. Вы уверены, что хотите продолжить?",
+    "logoutAnyway": "Все равно выйти"
   }
 }
