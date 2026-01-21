@@ -38,7 +38,7 @@
     }
   },
   "menu": {
-    "vault": "Vault",
+    "vault": "Cofre",
     "emails": "E-mails"
   },
   "common": {
@@ -50,7 +50,7 @@
     "back": "Voltar",
     "next": "Próximo",
     "use": "Utilizar",
-    "add": "Add",
+    "add": "Adicionar",
     "delete": "Excluir",
     "undo": "Desfazer",
     "save": "Salvar",
@@ -91,7 +91,7 @@
     "offline": "Offline",
     "offlineMode": "Operating in offline mode",
     "pendingSync": "Syncing...",
-    "mergingVaultChanges": "Merging vault changes...",
+    "mergingVaultChanges": "Integrando mudanças do cofre...",
     "uploadingVault": "Uploading vault...",
     "errors": {
       "serverNotAvailable": "O servidor AliasVault não está disponível. Por favor, tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
@@ -105,8 +105,7 @@
       "vaultIsLocked": "O cofre está bloqueado",
       "passwordChanged": "Sua senha mudou desde o último login. Por favor, realize login novamente por questões de segurança.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again.",
-      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
+      "mergeFailed": "Failed to merge vault changes. Please try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Um erro desconhecido ocorreu. Por favor, tente novamente.",
@@ -167,7 +166,45 @@
     "vaultUpgradeRequired": "Atualização de cofre necessária.",
     "dismissPopup": "Ignorar pop-up"
   },
-  "credentials": {
+  "items": {
+    "title": "Itens",
+    "itemName": "Nome",
+    "loginCredentials": "Credenciais de Login",
+    "cardInformation": "Informações do Cartão",
+    "addItem": "Adicionar Item",
+    "addNewItem": "Add new item",
+    "saveItem": "Save Item",
+    "itemDetails": "Detalhes do Item",
+    "editItem": "Editar Item",
+    "untitled": "Sem Título",
+    "newFolder": "New Folder",
+    "createFolder": "Criar Pasta",
+    "editFolder": "Edit Folder",
+    "folderName": "Folder Name",
+    "folderNameRequired": "Folder name is required",
+    "folder": "Pasta",
+    "welcomeTitle": "Boas-vindas ao AliasVault!",
+    "welcomeDescription": "Para utilizar a extensão de navegador do AliasVault: navegue para um site e utilize o pop-up de preenchimento automático do AliasVault para criar uma nova credencial.",
+    "noPasskeysFound": "Nenhuma passkey foi criada ainda. Passkeys são veiadas visitando um website que ofereça passkey como método de autenticação.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "noMatchingItems": "Nenhum ítem correspondente encontrado",
+    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
+    "deleteFolder": "Delete Folder",
+    "deleteFolderKeepItems": "Delete folder only",
+    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderAndItems": "Delete folder and all items",
+    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Passkeys"
+    },
+    "deleteItemTitle": "Excluir Item",
+    "deleteItemConfirm": "Tem certeza que deseja excluir este item?",
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available",
+    "tags": "Tags",
     "changePasswordComplexity": "Alterar complexidade de senha",
     "passwordLength": "Tamanho da senha",
     "includeLowercase": "Incluir letras minúsculas",
@@ -186,67 +223,27 @@
     "generateRandomAlias": "Gerar Alias Aleatório",
     "validation": {
       "required": "Este campo é obrigatório"
-    },
-    "tags": "Tags"
-  },
-  "items": {
-    "title": "Items",
-    "itemName": "Nome",
-    "loginCredentials": "Credenciais de Login",
-    "cardInformation": "Card Information",
-    "addItem": "Add Item",
-    "addNewItem": "Add new item",
-    "saveItem": "Save Item",
-    "itemDetails": "Item Details",
-    "editItem": "Edit Item",
-    "untitled": "Untitled",
-    "newFolder": "New Folder",
-    "createFolder": "Criar Pasta",
-    "editFolder": "Edit Folder",
-    "folderName": "Folder Name",
-    "folderNameRequired": "Folder name is required",
-    "folder": "Pasta",
-    "welcomeTitle": "Boas-vindas ao AliasVault!",
-    "welcomeDescription": "Para utilizar a extensão de navegador do AliasVault: navegue para um site e utilize o pop-up de preenchimento automático do AliasVault para criar uma nova credencial.",
-    "noPasskeysFound": "Nenhuma passkey foi criada ainda. Passkeys são veiadas visitando um website que ofereça passkey como método de autenticação.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
-    "noMatchingItems": "No matching items found",
-    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
-    "deleteFolder": "Delete Folder",
-    "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-    "deleteFolderAndItems": "Delete folder and all items",
-    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
-    "filters": {
-      "all": "(All) Items",
-      "passkeys": "Passkeys"
-    },
-    "deleteItemTitle": "Excluir Item",
-    "deleteItemConfirm": "Tem certeza que deseja excluir este item?",
-    "viewHistory": "View history",
-    "history": "History",
-    "noHistoryAvailable": "No history available"
+    }
   },
   "itemTypes": {
     "selectType": "Add New Item",
     "typeLabel": "Item Type",
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Criando",
+    "editing": "Editando",
     "regenerateAlias": "Regenerate alias",
     "addCustomField": "Add custom field",
-    "fieldLabel": "Field Label",
-    "enterFieldName": "Enter field name",
-    "fieldType": "Field Type",
+    "fieldLabel": "Nome do Campo",
+    "enterFieldName": "Digite o nome do campo",
+    "fieldType": "Tipo do Campo",
     "fieldTypes": {
-      "text": "Text",
+      "text": "Texto",
       "hidden": "Hidden (masked text)",
       "email": "E-mail",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Telefone",
+      "number": "Número",
       "date": "Data",
-      "textArea": "Text Area"
+      "textArea": "Área de Texto"
     },
     "login": {
       "title": "Login"
@@ -255,7 +252,7 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card"
+      "title": "Cartão de Crédito"
     },
     "note": {
       "title": "Secure Note"
@@ -271,12 +268,12 @@
     "alias.birthdate": "Data de nascimento",
     "login.email": "E-mail",
     "notes.content": "Notas",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
+    "card.cardholder_name": "Nome do Titular do Cartão",
+    "card.number": "Número do Cartão",
+    "card.expiry_month": "Mês de Expiração",
+    "card.expiry_year": "Ano de Expiração",
     "card.cvv": "CVV",
-    "card.pin": "PIN"
+    "card.pin": "Senha"
   },
   "totp": {
     "addCode": "Adicionar Código de Autenticação de Dois Fatores",
@@ -460,8 +457,8 @@
     "restore": "Restore",
     "deletePermanently": "Delete Permanently",
     "emptyAll": "Empty All",
-    "daysRemaining": "{{count}} day remaining",
-    "daysRemaining_plural": "{{count}} days remaining",
+    "daysRemaining_one": "{{count}} day remaining",
+    "daysRemaining_other": "{{count}} days remaining",
     "expiringSoon": "Expiring soon",
     "confirmDeleteTitle": "Delete Permanently?",
     "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
@@ -489,8 +486,8 @@
     }
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Alterações Dessincronizadas",
+    "unsyncedChangesWarning": "Você tem alterações dessincronizadas que serão perdidas caso você saia da sua conta agora. Têm certeza que deseja continuar?",
+    "logoutAnyway": "Sair assim mesmo"
   }
 }
