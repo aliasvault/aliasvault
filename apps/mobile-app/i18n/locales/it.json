@@ -21,12 +21,12 @@
     "enabled": "Abilitato",
     "disabled": "Disabilitato",
     "twoFactorAuthentication": "Autenticazione a due fattori",
-    "add": "Add",
+    "add": "Aggiungi",
     "attachments": "Allegati",
     "deleteItemConfirmTitle": "Elimina elemento",
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "errors": {
-      "unknownError": "Si è verificato un errore sconosciuto. Riprova.",
+      "unknownError": "Si è verificato un errore sconosciuto.",
       "unknownErrorTryAgain": "Si è verificato un errore sconosciuto. Riprova.",
       "serverVersionTooOld": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa funzione. Se hai bisogno di aiuto, contatta il supporto."
     }
@@ -75,9 +75,9 @@
     "loggedInAs": "Accesso effettuato come"
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Modifiche non Sincronizzate",
+    "unsyncedChangesWarning": "Hai delle modifiche non sincronizzate che andranno perse se ti disconnetti ora. Sei sicuro di voler continuare?",
+    "logoutAnyway": "Esci comunque"
   },
   "vault": {
     "syncingVault": "Sincronizzazione cassaforte",
@@ -87,8 +87,8 @@
     "executingOperation": "Esecuzione operazione...",
     "checkingVaultUpdates": "Verifica aggiornamenti cassaforte",
     "syncingUpdatedVault": "Sincronizzazione cassaforte aggiornata",
-    "mergingVault": "Merging vault changes",
-    "uploadingChanges": "Uploading changes",
+    "mergingVault": "Sincronizzzazione modifiche della cassaforte",
+    "uploadingChanges": "Caricamento modifiche…",
     "errors": {
       "failedToGetEncryptedDatabase": "Recupero del database crittografato non riuscito",
       "usernameNotFound": "Nome utente non trovato",
@@ -98,7 +98,7 @@
       "serverVersionNotSupported": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa app mobile. Se hai bisogno di aiuto, contatta il supporto.",
       "appOutdated": "Questa applicazione è obsoleta e non può essere utilizzata per accedere a questa (nuova) versione della cassaforte. Si prega di aggiornare l'app AliasVault per continuare.",
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza.",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
+      "passwordChangeRequiresOnline": "La modifica della password richiede una connessione internet. Per favore riprova quando sei online."
     }
   },
   "credentials": {
@@ -209,8 +209,6 @@
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "Sito",
-    "displayName": "Mostra nome",
     "helpText": "Le passkey vengono create sul sito web quando richiesto. Non possono essere modificate manualmente. Per rimuovere questa passkey , è possibile eliminarla da questa credenziale.",
     "passkeyMarkedForDeletion": "Passkey contrassegnata per l'eliminazione",
     "passkeyWillBeDeleted": "Questa passkey verrà eliminata quando si salva questa credenziale."
@@ -317,13 +315,6 @@
       "pinDescription": "Usa un codice PIN personalizzato per sbloccare la cassaforte più rapidamente.",
       "pinEnabled": "Sblocco PIN abilitato correttamente",
       "pinDisabled": "Lo sblocco PIN è stato disabilitato",
-      "setupPin": "Configurare PIN",
-      "enterNewPin": "Inserisci Nuovo PIN",
-      "enterNewPinDescription": "Scegli un PIN per sbloccare la cassaforte",
-      "confirmPin": "Conferma PIN",
-      "confirmPinDescription": "Reinserisci il tuo PIN per confermare.",
-      "pinMismatch": "I PIN non corrispondono. Riprova.",
-      "pinLocked": "PIN bloccato dopo troppi tentativi falliti. Si prega di utilizzare la password principale.",
       "passwordHelp": "Reinserisci la password principale per sbloccare la cassaforte. Sempre abilitato come opzione di fallback.",
       "keystoreIOS": "Keychain iOS",
       "keystoreAndroid": "Keystore Android"
@@ -421,30 +412,23 @@
     "qrScanner": {
       "title": "Scanner codice QR",
       "scanningMessage": "Scansiona AliasVault QR code",
-      "invalidQrCode": "Codice QR non valido",
-      "notAliasVaultQr": "Questo non è un codice QR AliasVault valido. Scansiona un codice QR generato da AliasVault.",
-      "cameraPermissionTitle": "Permesso Fotocamera Richiesto",
-      "cameraPermissionMessage": "Consenti alla fotocamera di eseguire la scansione dei codici QR.",
       "mobileLogin": {
         "confirmTitle": "Conferma Richiesta Di Accesso",
         "confirmSubtitle": "Ri-autenticazione per approvare il login su un altro dispositivo.",
         "confirmMessage": "Stai per accedere a un dispositivo remoto con il tuo account. Questo altro dispositivo avrà pieno accesso alla tua cassaforte. Procedi solo se ti fidi di questo dispositivo.",
         "successDescription": "Il dispositivo remoto è stato loggato con successo.",
-        "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR.",
-        "authenticationFailed": "Autenticazione fallita. Riprova.",
-        "noAuthMethodEnabled": "È necessario abilitare lo sblocco biometrico o PIN per sbloccare con dispositivi mobili"
+        "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR."
       }
     }
   },
   "navigation": {
-    "credentials": "Credenziali",
-    "vault": "Vault",
+    "vault": "Cassaforte",
     "emails": "Email",
     "settings": "Impostazioni"
   },
   "itemTypes": {
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Creazione in corso",
+    "editing": "Modifica",
     "login": {
       "title": "Accesso"
     },
@@ -452,27 +436,27 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card",
-      "cardInformation": "Card Information"
+      "title": "Carta Di Credito",
+      "cardInformation": "Informazioni della Carta"
     },
     "note": {
       "title": "Nota"
     },
-    "addField": "Add Field",
-    "addCustomField": "Add Custom Field",
-    "customFields": "Custom Fields",
-    "fieldLabel": "Field Label",
-    "fieldType": "Field Type",
-    "enterFieldName": "Enter field name",
+    "addField": "Aggiungi Campo",
+    "addCustomField": "Aggiungi Campo Personalizzato",
+    "customFields": "Campi Personalizzati",
+    "fieldLabel": "Etichetta del Campo",
+    "fieldType": "Tipo di Campo",
+    "enterFieldName": "Inserisci il nome del campo",
     "fieldTypes": {
-      "text": "Text",
-      "hidden": "Hidden",
+      "text": "Testo",
+      "hidden": "Nascosto",
       "email": "Email",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Telefono",
+      "number": "Numero",
       "date": "Data",
-      "textArea": "Text Area"
+      "textArea": "Area di Testo"
     }
   },
   "fieldLabels": {
@@ -484,27 +468,26 @@
     "alias.last_name": "Cognome",
     "alias.gender": "Genere",
     "alias.birthdate": "Data di nascita",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
+    "card.cardholder_name": "Nome del titolare della carta",
+    "card.number": "Numero della Carta",
+    "card.expiry_month": "Mese di Scadenza",
+    "card.expiry_year": "Anno di Scadenza",
     "card.cvv": "CVV",
     "card.pin": "PIN",
     "notes.content": "Note"
   },
   "items": {
-    "title": "Items",
-    "addItem": "Add Item",
-    "editItem": "Edit Item",
+    "title": "Elementi",
+    "addItem": "Aggiungi Elemento",
+    "editItem": "Modifica Elemento",
     "deleteItem": "Elimina elemento",
-    "itemDetails": "Item Details",
-    "itemCreated": "Item Created",
+    "itemDetails": "Dettagli Elemento",
+    "itemCreated": "Elemento Creato",
+    "itemCreatedMessage": "La tua nuova credenziale è stata aggiunta alla cassaforte ed è pronta per l'uso.",
     "emailPreview": "Anteprima email",
-    "untitled": "Untitled",
+    "untitled": "Senza titolo",
     "name": "Nome",
-    "namePlaceholder": "e.g., Google, Amazon",
     "url": "URL",
-    "urlPlaceholder": "e.g., https://google.com",
     "service": "Servizio",
     "serviceName": "Nome Servizio",
     "serviceUrl": "URL servizio",
@@ -536,11 +519,11 @@
     "publicEmailTitle": "Fornitori Pubblici di Email Temporanee",
     "publicEmailDescription": "Anonimi ma con privacy ridotta. Accessibile a chiunque conosca l'indirizzo.",
     "searchPlaceholder": "Ricerca cassaforte ...",
-    "noMatchingItems": "No matching items found",
-    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "noMatchingItems": "Nessun elemento corrispondente trovato",
+    "noItemsFound": "Nessuna credenziale trovata. Creane una per iniziare. Consiglio: puoi anche accedere al sito AliasVault per importare credenziali da altri gestori password.",
     "noPasskeysFound": "Non sono state ancora create passkey. Le passkey vengono create visitando un sito web che offre le passkey come metodo di autenticazione.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
+    "noAttachmentsFound": "Nessun elemento con allegati trovato",
+    "noItemsOfTypeFound": "Nessun elemento {{type}} trovato",
     "recentEmails": "Email recenti",
     "loadingEmails": "Caricamento email...",
     "noEmailsYet": "Nessuna email ricevuta.",
@@ -555,16 +538,15 @@
     "includeNumbers": "Numeri (0-9)",
     "includeSpecialChars": "Caratteri speciali (!@#)",
     "avoidAmbiguousChars": "Evita caratteri ambigui",
-    "deletingItem": "Deleting item...",
-    "errorLoadingItems": "Error loading items",
+    "deletingItem": "Eliminazione elemento...",
+    "errorLoadingItems": "Errore durante il caricamento degli elementi",
     "vaultSyncFailed": "Sincronizzazione cassaforte fallita",
     "vaultSyncedSuccessfully": "Cassaforte sincronizzata con successo",
     "vaultUpToDate": "Cassaforte aggiornata",
     "offlineMessage": "Sei offline. Collegati a internet per sincronizzare la cassaforte.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "switchBackToBrowser": "Torna al browser per continuare.",
     "filters": {
-      "all": "(All) Items",
+      "all": "(Tutti) Elementi",
       "passkeys": "Passkey",
       "aliases": "Alias",
       "userpass": "Password",
@@ -582,65 +564,61 @@
       "discard": "Scarta"
     },
     "toasts": {
-      "itemUpdated": "Item updated successfully",
-      "itemCreated": "Item created successfully",
-      "itemDeleted": "Item deleted successfully",
+      "itemUpdated": "Elemento aggiornato correttamente",
+      "itemCreated": "Elemento creato correttamente",
+      "itemDeleted": "Elemento eliminato correttamente",
       "usernameCopied": "Nome utente copiato negli appunti",
       "emailCopied": "Email copiata negli appunti",
       "passwordCopied": "Password copiata negli appunti"
     },
     "createNewAliasFor": "Crea un nuovo alias per",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
-      "title": "Item Options",
+      "title": "Opzioni Elemento",
       "edit": "Modifica",
       "delete": "Elimina",
       "copyUsername": "Copia Nome Utente",
       "copyEmail": "Copia E-mail",
       "copyPassword": "Copia Password"
     },
-    "viewHistory": "View history",
-    "history": "History",
-    "noHistoryAvailable": "No history available",
-    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "viewHistory": "Visualizza cronologia",
+    "history": "Cronologia",
+    "noHistoryAvailable": "Nessuna cronologia disponibile",
+    "deleteConfirm": "Sei sicuro di voler eliminare questo elemento? Questa azione non può essere annullata.",
     "folders": {
       "folder": "Cartella",
-      "newFolder": "New Folder",
+      "newFolder": "Nuova Cartella",
       "createFolder": "Crea cartella",
-      "editFolder": "Edit Folder",
-      "folderName": "Folder Name",
-      "folderNamePlaceholder": "e.g., Work, Personal",
-      "folderNameRequired": "Folder name is required",
-      "deleteFolder": "Delete Folder",
-      "deleteFolderKeepItems": "Delete folder only",
-      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-      "deleteFolderAndItems": "Delete folder and all items",
-      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
-      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
-      "noFolder": "No Folder",
+      "editFolder": "Modifica Cartella",
+      "folderName": "Nome Cartella",
+      "folderNamePlaceholder": "Ad esempio, Lavoro, Personale",
+      "folderNameRequired": "Il nome della cartella è obbligatorio",
+      "deleteFolder": "Elimina Cartella",
+      "deleteFolderKeepItems": "Elimina solo la cartella",
+      "deleteFolderKeepItemsDescription": "Gli elementi verranno spostati nella lista principale.",
+      "deleteFolderAndItems": "Elimina cartella e tutti gli elementi",
+      "deleteFolderAndItemsDescription": "{{count}} oggetto(i) verrà spostato in Eliminato Recentemente.",
+      "emptyFolderHint": "Questa cartella è vuota. Per spostare gli elementi in questa cartella, modificare l'elemento e toccare l'icona della cartella nel campo nome.",
+      "noFolder": "Nessuna cartella",
       "selectFolder": "Seleziona cartella"
     },
     "recentlyDeleted": {
-      "title": "Recently Deleted",
-      "noItems": "No deleted items",
-      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
-      "restore": "Restore",
-      "deletePermanently": "Delete Permanently",
-      "emptyAll": "Empty All",
-      "daysRemaining": "{{count}} day remaining",
-      "daysRemaining_plural": "{{count}} days remaining",
-      "expiringSoon": "Expiring soon",
-      "confirmDeleteTitle": "Delete Permanently?",
-      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
-      "confirmEmptyAllTitle": "Empty Recently Deleted?",
-      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
-      "itemRestored": "Item restored",
-      "itemDeleted": "Item permanently deleted",
-      "allItemsDeleted": "All items permanently deleted"
+      "title": "Eliminato di Recente",
+      "noItems": "Nessun elemento eliminato",
+      "noItemsDescription": "Gli elementi cancellati appariranno qui per 30 giorni prima di essere rimossi definitivamente.",
+      "description": "Questi elementi verranno eliminati definitivamente dopo 30 giorni. È possibile ripristinarli o eliminarli immediatamente.",
+      "restore": "Ripristina",
+      "deletePermanently": "Elimina Definitivamente",
+      "emptyAll": "Svuota Tutto",
+      "daysRemaining": "{{count}} giorno rimanente",
+      "daysRemaining_plural": "{{count}} giorni rimanenti",
+      "expiringSoon": "In scadenza a breve",
+      "confirmDeleteTitle": "Elimina definitivamente?",
+      "confirmDeleteMessage": "Questo elemento verrà eliminato definitivamente e non può essere recuperato.",
+      "confirmEmptyAllTitle": "Svuotare \"Eliminati di recente\"?",
+      "confirmEmptyAllMessage": "Questi {{count}} elementi verranno eliminati permanentemente e non potranno essere recuperati.",
+      "itemRestored": "Elemento ripristinato",
+      "itemDeleted": "Elemento eliminato definitivamente",
+      "allItemsDeleted": "Tutti gli elementi sono stati eliminati definitivamente"
     }
   },
   "emails": {
@@ -702,7 +680,6 @@
   },
   "sync": {
     "offline": "Offline",
-    "offlineWithPending": "Offline (pending)",
     "syncing": "Syncing...",
     "pending": "Pending sync",
     "retrySync": "Tap to retry",
@@ -724,7 +701,6 @@
     },
     "alerts": {
       "syncIssue": "Nessuna Connessione",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Apri cassaforte locale",
       "retrySync": "Riprova sincronizzazione"
     },
