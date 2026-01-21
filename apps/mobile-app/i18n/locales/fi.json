@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
-      "unknownError": "Tapahtui tuntematon virhe. Yritä uudelleen.",
+      "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "Tapahtui tuntematon virhe. Yritä uudelleen.",
       "serverVersionTooOld": "AliasVault-palvelin on päivitettävä uudempaan versioon, jotta se voi käyttää tätä ominaisuutta. Ota yhteyttä palvelimen ylläpitäjään jos tarvitset apua."
     }
@@ -561,7 +561,6 @@
     "vaultSyncedSuccessfully": "Holvi synkronoitu",
     "vaultUpToDate": "Holvi on ajan tasalla",
     "offlineMessage": "Olet ei-verkkotilassa. Yhdistä internetiin synkronoidaksesi holvisi.",
-    "itemCreatedMessage": "Uusi tietosi on lisätty holviisi ja valmis käytettäväksi.",
     "switchBackToBrowser": "Siirry takaisin selaimeen jatkaaksesi.",
     "filters": {
       "all": "(Kaikki) tiedot",
@@ -590,10 +589,6 @@
       "passwordCopied": "Salasana kopioitu leikepöydälle"
     },
     "createNewAliasFor": "Luo uusi alias kohteelle",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "Muokkaa",
