@@ -9,11 +9,11 @@
 "title" = "Titolo";
 "unknown_error" = "Si è verificato un errore sconosciuto";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"select_item" = "Select Item";
+"loading_items" = "Caricamento elementi...";
+"no_items_found" = "Nessun elemento trovato";
+"no_items_match" = "Nessun elemento esistente corrisponde alla tua ricerca";
+"create_new_item" = "Crea Nuovo Elemento";
+"select_item" = "Seleziona Elemento";
 "select_text_to_insert" = "Seleziona il testo da inserire";
 "choose_username" = "Scegli nome utente";
 "select_text_to_insert_message" = "Selezionare il testo da inserire nel campo evidenziato";
@@ -21,8 +21,8 @@
 "username_prefix" = "Nome utente: ";
 "email_prefix" = "E-mail: ";
 "password" = "Password";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"items_load_error" = "Il caricamento degli elementi non è andato a buon fine. Si prega di aprire l'app AliasVault per controllare gli aggiornamenti.";
+"no_item_selected" = "Nessun elemento selezionato.";
 
 /* Context menu strings */
 "copy_username" = "Copia Nome Utente";
@@ -34,7 +34,7 @@
 "email_copied" = "Email copiata";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "Ricerca elementi...";
 
 /* Passkey registration */
 "create_passkey_title" = "Crea Nuova Passkey";
@@ -57,9 +57,9 @@
 "create_passkey_explanation" = "Questo crea una nuova passkey e la memorizza nella tua cassaforte. Sarà sincronizzata automaticamente su tutti i tuoi dispositivi che usano AliasVault.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"passkey_add_to_existing" = "Oppure, aggiungi passkey a un elemento esistente";
+"add_passkey" = "Aggiungi Passkey";
+"merge_passkey_explanation" = "Questo aggiungerà una passkey al tuo elemento esistente. La tua password e altri dati saranno preservati.";
 
 /* PIN Unlock */
 "unlock_vault" = "Sblocca Cassaforte";
