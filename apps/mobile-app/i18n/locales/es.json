@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Eliminar elemento",
     "deleteItemConfirmDescription": "¿Está seguro de querer borrar este ítem?",
     "errors": {
-      "unknownError": "Se ha producido un error desconocido. Por favor, inténtelo de nuevo.",
+      "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "Se ha producido un error desconocido. Por favor, inténtelo de nuevo.",
       "serverVersionTooOld": "El servidor AliasVault necesita ser actualizado a una versión más reciente para poder utilizar esta característica. Por favor, contacte con el administrador del servidor si necesita ayuda."
     }
@@ -561,7 +561,6 @@
     "vaultSyncedSuccessfully": "Bóveda sincronizada correctamente",
     "vaultUpToDate": "La bóveda está actualizada",
     "offlineMessage": "Estás desconectado. Por favor, conéctate a Internet para sincronizar tu bóveda.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "switchBackToBrowser": "Vuelva a su navegador para continuar.",
     "filters": {
       "all": "(All) Items",
@@ -590,10 +589,6 @@
       "passwordCopied": "Contraseña copiada al portapapeles"
     },
     "createNewAliasFor": "Crear nuevo alias para",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "Editar",
