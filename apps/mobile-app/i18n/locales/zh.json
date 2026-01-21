@@ -21,7 +21,7 @@
     "enabled": "启用",
     "disabled": "禁用",
     "twoFactorAuthentication": "双因素认证（2FA）",
-    "add": "Add",
+    "add": "添加",
     "attachments": "附件",
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
@@ -75,9 +75,9 @@
     "loggedInAs": "已登录为"
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "未同步的更改",
+    "unsyncedChangesWarning": "您有更改尚未同步，若您现在退出登录，这些更改将会丢失。您确定要继续吗？",
+    "logoutAnyway": "仍要退出登录"
   },
   "vault": {
     "syncingVault": "正在同步密码库",
@@ -87,8 +87,8 @@
     "executingOperation": "执行操作中…",
     "checkingVaultUpdates": "检查密码库更新",
     "syncingUpdatedVault": "同步更新后的密码库",
-    "mergingVault": "Merging vault changes",
-    "uploadingChanges": "Uploading changes",
+    "mergingVault": "正在合并密码库更改",
+    "uploadingChanges": "正在上传更改",
     "errors": {
       "failedToGetEncryptedDatabase": "获取加密数据库失败",
       "usernameNotFound": "未找到用户名",
@@ -98,7 +98,7 @@
       "serverVersionNotSupported": "AliasVault 服务器需要更新到更高版本才能使用此移动应用。如需帮助，请联系支持人员。",
       "appOutdated": "此应用已过时，无法用于访问新版本的密码库。请更新 AliasVault 应用以继续。",
       "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
+      "passwordChangeRequiresOnline": "更改密码需要联网，请联网后重试。"
     }
   },
   "credentials": {
@@ -422,13 +422,13 @@
     }
   },
   "navigation": {
-    "vault": "Vault",
+    "vault": "密码库",
     "emails": "邮件",
     "settings": "设置"
   },
   "itemTypes": {
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "创建",
+    "editing": "编辑",
     "login": {
       "title": "登录"
     },
@@ -436,27 +436,27 @@
       "title": "别名"
     },
     "creditCard": {
-      "title": "Credit Card",
-      "cardInformation": "Card Information"
+      "title": "信用卡",
+      "cardInformation": "卡信息"
     },
     "note": {
       "title": "注意"
     },
-    "addField": "Add Field",
-    "addCustomField": "Add Custom Field",
-    "customFields": "Custom Fields",
-    "fieldLabel": "Field Label",
-    "fieldType": "Field Type",
-    "enterFieldName": "Enter field name",
+    "addField": "添加字段",
+    "addCustomField": "添加自定义字段",
+    "customFields": "自定义字段",
+    "fieldLabel": "字段标签",
+    "fieldType": "字段类型",
+    "enterFieldName": "输入字段名称",
     "fieldTypes": {
-      "text": "Text",
-      "hidden": "Hidden",
+      "text": "文本",
+      "hidden": "隐藏",
       "email": "电子邮件",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "手机",
+      "number": "号码",
       "date": "日期",
-      "textArea": "Text Area"
+      "textArea": "文本区域"
     }
   },
   "fieldLabels": {
@@ -468,9 +468,9 @@
     "alias.last_name": "姓",
     "alias.gender": "性别",
     "alias.birthdate": "出生日期",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
+    "card.cardholder_name": "持卡人姓名",
+    "card.number": "卡号",
+    "card.expiry_month": "到期月份",
     "card.expiry_year": "Expiry Year",
     "card.cvv": "CVV",
     "card.pin": "PIN",
@@ -483,7 +483,7 @@
     "deleteItem": "删除项目",
     "itemDetails": "Item Details",
     "itemCreated": "Item Created",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "itemCreatedMessage": "新项目已添加到您的密码库并可供使用。",
     "emailPreview": "电子邮件预览",
     "untitled": "Untitled",
     "name": "名称",
