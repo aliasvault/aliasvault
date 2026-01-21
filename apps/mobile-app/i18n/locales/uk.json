@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
-      "unknownError": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
+      "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
       "serverVersionTooOld": "Сервер AliasVault потрібно оновити до новішої версії, щоб використовувати цю функцію. Будь ласка, зверніться до адміністратора серверу, якщо вам потрібна допомога."
     }
@@ -209,8 +209,6 @@
   },
   "passkeys": {
     "passkey": "Ключ доступу",
-    "site": "Вебсайт",
-    "displayName": "Показуване ім'я",
     "helpText": "Ключі доступу створюються на сайті за запитом. Їх не можна редагувати вручну. Щоб видалити цей ключ доступу, ви можете видалити його з цих облікових даних.",
     "passkeyMarkedForDeletion": "Ключ доступу позначено для видалення",
     "passkeyWillBeDeleted": "Цей ключ доступу буде видалено, коли ви збережете ці облікові дані."
@@ -317,13 +315,6 @@
       "pinDescription": "Використовуйте власний PIN-код, щоб швидше розблокувати сховище.",
       "pinEnabled": "Розблокування PIN-кодом успішно ввімкнено",
       "pinDisabled": "Розблокування PIN-кодом вимкнено",
-      "setupPin": "Налаштування PIN-коду",
-      "enterNewPin": "Введіть новий PIN-код",
-      "enterNewPinDescription": "Виберіть PIN-код, щоб розблокувати сховище",
-      "confirmPin": "Підтвердити ПІН-код",
-      "confirmPinDescription": "Введіть PIN-код ще раз для підтвердження",
-      "pinMismatch": "PIN-коди не збігаються. Спробуйте ще раз.",
-      "pinLocked": "PIN-код заблоковано після занадто великої кількості невдалих спроб. Будь ласка, використовуйте свій головний пароль.",
       "passwordHelp": "Ще раз введіть свій головний пароль, щоб розблокувати сховище. Це завжди ввімкнено як резервний варіант.",
       "keystoreIOS": "Сховище ключів iOS",
       "keystoreAndroid": "Сховище ключів Android"
@@ -421,23 +412,16 @@
     "qrScanner": {
       "title": "Сканер QR-коду",
       "scanningMessage": "Проскануйте QR-код AliasVault",
-      "invalidQrCode": "Недійсний QR-код",
-      "notAliasVaultQr": "Це недійсний QR-код AliasVault. Проскануйте QR-код, створений AliasVault.",
-      "cameraPermissionTitle": "Потрібен дозвіл на доступ до камери",
-      "cameraPermissionMessage": "Будь ласка, надайте доступ до камери для сканування QR-кодів.",
       "mobileLogin": {
         "confirmTitle": "Підтвердити запит на вхід",
         "confirmSubtitle": "Повторно пройдіть автентифікацію, щоб підтвердити вхід на іншому пристрої.",
         "confirmMessage": "Ви збираєтеся ввійти на віддаленому пристрої за допомогою свого облікового запису. Цей інший пристрій матиме повний доступ до вашого сховища. Продовжуйте, лише якщо ви довіряєте цьому пристрою.",
         "successDescription": "Віддалений пристрій успішно ввійшов у систему.",
-        "requestExpired": "Термін дії цього запиту на вхід минув. Будь ласка, згенеруйте новий QR-код.",
-        "authenticationFailed": "Помилка автентифікації. Спробуйте ще раз.",
-        "noAuthMethodEnabled": "Для розблокування за допомогою мобільного телефону потрібно ввімкнути біометричне розблокування або ПІН-код"
+        "requestExpired": "Термін дії цього запиту на вхід минув. Будь ласка, згенеруйте новий QR-код."
       }
     }
   },
   "navigation": {
-    "credentials": "Облікові дані",
     "vault": "Vault",
     "emails": "Електронні листи",
     "settings": "Налаштування"
@@ -499,12 +483,11 @@
     "deleteItem": "Delete Item",
     "itemDetails": "Item Details",
     "itemCreated": "Item Created",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "emailPreview": "Email Preview",
     "untitled": "Untitled",
     "name": "Name",
-    "namePlaceholder": "e.g., Google, Amazon",
     "url": "URL",
-    "urlPlaceholder": "e.g., https://google.com",
     "service": "Service",
     "serviceName": "Service Name",
     "serviceUrl": "Service URL",
@@ -561,7 +544,6 @@
     "vaultSyncedSuccessfully": "Vault synced successfully",
     "vaultUpToDate": "Vault is up-to-date",
     "offlineMessage": "You are offline. Please connect to the internet to sync your vault.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "switchBackToBrowser": "Switch back to your browser to continue.",
     "filters": {
       "all": "(All) Items",
@@ -590,10 +572,6 @@
       "passwordCopied": "Password copied to clipboard"
     },
     "createNewAliasFor": "Create new alias for",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "Edit",
@@ -702,7 +680,6 @@
   },
   "sync": {
     "offline": "Offline",
-    "offlineWithPending": "Offline (pending)",
     "syncing": "Syncing...",
     "pending": "Pending sync",
     "retrySync": "Tap to retry",
@@ -724,7 +701,6 @@
     },
     "alerts": {
       "syncIssue": "Відсутнє з'єднання",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Відкрити локальне сховище",
       "retrySync": "Повторити синхронізацію"
     },
