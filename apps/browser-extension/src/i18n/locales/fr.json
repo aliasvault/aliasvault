@@ -167,28 +167,6 @@
     "vaultUpgradeRequired": "Mise à niveau du coffre requise.",
     "dismissPopup": "Fermer"
   },
-  "credentials": {
-    "changePasswordComplexity": "Changer la complexité du mot de passe",
-    "passwordLength": "Longueur du mot de passe",
-    "includeLowercase": "Inclure les lettres minuscules",
-    "includeUppercase": "Inclure les lettres majuscules",
-    "includeNumbers": "Inclure des chiffres",
-    "includeSpecialChars": "Inclure des caractères spéciaux",
-    "avoidAmbiguousChars": "Éviter les caractères ambigus (o, 0, etc.)",
-    "privateEmailTitle": "Email privé",
-    "privateEmailAliasVaultServer": "Serveur AliasVault",
-    "privateEmailDescription": "Chiffrement bout en bout, entièrement privé.",
-    "publicEmailTitle": "Fournisseurs d'email public temporaires",
-    "publicEmailDescription": "Anonyme mais confidentialité limitée. Le contenu de l'email est lisible par toute personne qui connaît l'adresse.",
-    "generateRandomUsername": "Générer un nom d'utilisateur aléatoire",
-    "generateRandomPassword": "Générer un mot de passe aléatoire",
-    "generateNewPreview": "Générer un nouvel aperçu",
-    "generateRandomAlias": "Créer un alias aléatoire",
-    "validation": {
-      "required": "Ce champ est obligatoire"
-    },
-    "tags": "Mots-clés"
-  },
   "items": {
     "title": "Éléments",
     "itemName": "Nom",
@@ -226,7 +204,27 @@
     "deleteItemConfirm": "Êtes-vous certain de vouloir supprimer cet élément?",
     "viewHistory": "Voir l'historique",
     "history": "Historique",
-    "noHistoryAvailable": "Pas d'historique disponible"
+    "noHistoryAvailable": "Pas d'historique disponible",
+    "tags": "Mots-clés",
+    "changePasswordComplexity": "Changer la complexité du mot de passe",
+    "passwordLength": "Longueur du mot de passe",
+    "includeLowercase": "Inclure les lettres minuscules",
+    "includeUppercase": "Inclure les lettres majuscules",
+    "includeNumbers": "Inclure des chiffres",
+    "includeSpecialChars": "Inclure des caractères spéciaux",
+    "avoidAmbiguousChars": "Éviter les caractères ambigus (o, 0, etc.)",
+    "privateEmailTitle": "E-mail privé",
+    "privateEmailAliasVaultServer": "Serveur AliasVault",
+    "privateEmailDescription": "E2E chiffré, entièrement privé.",
+    "publicEmailTitle": "Fournisseurs d'email public temporaires",
+    "publicEmailDescription": "Anonyme mais confidentiel limitée. Le contenu des e-mails est lisible par toute personne qui connaît l'adresse.",
+    "generateRandomUsername": "Générer un nom d'utilisateur aléatoire",
+    "generateRandomPassword": "Générer un mot de passe aléatoire",
+    "generateNewPreview": "Générer un nouvel aperçu",
+    "generateRandomAlias": "Générer un alias aléatoire",
+    "validation": {
+      "required": "Ce champ est requis"
+    }
   },
   "itemTypes": {
     "selectType": "Ajouter un nouvel élément",
@@ -460,8 +458,8 @@
     "restore": "Restaurer",
     "deletePermanently": "Supprimer définitivement",
     "emptyAll": "Vider tout",
-    "daysRemaining": "{{count}} jour restant",
-    "daysRemaining_plural": "{{count}} jours restants",
+    "daysRemaining_one": "{{count}} jour restant",
+    "daysRemaining_other": "{{count}} jours restants",
     "expiringSoon": "Expirant bientôt",
     "confirmDeleteTitle": "Supprimer définitivement?",
     "confirmDeleteMessage": "Cet élément sera définitivement supprimé et ne pourra pas être récupéré.",
