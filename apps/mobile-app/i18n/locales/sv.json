@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
-      "unknownError": "An unknown error occurred. Please try again.",
+      "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "An unknown error occurred. Please try again.",
       "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help."
     }
@@ -561,7 +561,6 @@
     "vaultSyncedSuccessfully": "Vault synced successfully",
     "vaultUpToDate": "Vault is up-to-date",
     "offlineMessage": "You are offline. Please connect to the internet to sync your vault.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "switchBackToBrowser": "Switch back to your browser to continue.",
     "filters": {
       "all": "(All) Items",
@@ -590,10 +589,6 @@
       "passwordCopied": "Password copied to clipboard"
     },
     "createNewAliasFor": "Create new alias for",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "Edit",
