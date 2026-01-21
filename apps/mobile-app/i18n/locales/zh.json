@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
     "errors": {
-      "unknownError": "发生未知错误，请重试。",
+      "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "发生未知错误，请重试。",
       "serverVersionTooOld": "AliasVault 服务器需要更新到更高版本才能使用此功能。如需帮助，请联系服务器管理员。"
     }
@@ -561,7 +561,6 @@
     "vaultSyncedSuccessfully": "密码库同步成功",
     "vaultUpToDate": "密码库已为最新",
     "offlineMessage": "您处于离线状态，请连接互联网以同步密码库。",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "switchBackToBrowser": "切换回浏览器以继续。",
     "filters": {
       "all": "(All) Items",
@@ -590,10 +589,6 @@
       "passwordCopied": "密码已复制到剪贴板"
     },
     "createNewAliasFor": "创建新别名",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "编辑",
