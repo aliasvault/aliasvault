@@ -20,11 +20,11 @@
     </xsd:element>
   </xsd:schema>
   <data name="ViewItemPageTitle">
-    <value>View item</value>
+    <value>Pokaż element</value>
     <comment>Page title for viewing an item</comment>
   </data>
   <data name="ViewItemTitle">
-    <value>View item</value>
+    <value>Pokaż element</value>
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
@@ -32,7 +32,7 @@
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
-    <value>Edit item</value>
+    <value>Edytuj element</value>
     <comment>Text for edit button on desktop</comment>
   </data>
   <data name="DeleteButtonMobile">
@@ -40,19 +40,19 @@
     <comment>Text for delete button on mobile</comment>
   </data>
   <data name="DeleteButtonDesktop">
-    <value>Delete item</value>
+    <value>Usuń element</value>
     <comment>Text for delete button on desktop</comment>
   </data>
   <data name="LoginDetailsSection">
-    <value>Login details</value>
+    <value>Szczegóły logowania</value>
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
-    <value>Below you can view and copy the generated details for this item. Any emails sent to the shown address will automatically appear on this page.</value>
+    <value>Poniżej możesz wyświetlić i skopiować wygenerowane dane logowania do tego konta. Wszelkie wiadomości e-mail wysłane na podany adres będą automatycznie wyświetlane na tej stronie.</value>
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
-    <value>Below you can view and copy the stored login details for this item.</value>
+    <value>Poniżej możesz wyświetlić i skopiować zapisane dane logowania do tego konta.</value>
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
@@ -92,11 +92,11 @@
     <comment>Label for nickname field</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Pokaż element</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">
-    <value>This item does not exist (anymore). Please try again.</value>
+    <value>Dane logowania nie istnieją (już). Spróbuj ponownie.</value>
     <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
@@ -116,11 +116,11 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, edit this item and delete the passkey. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>Klucze dostępu są tworzone za pomocą rozszerzenia przeglądarki lub aplikacji mobilnych po wyświetleniu monitu przez witrynę internetową. Nie można ich ręcznie edytować ani tworzyć za pomocą aplikacji internetowej. Aby usunąć ten klucz dostępu, można go usunąć z tych danych logowania. Aby zastąpić lub utworzyć nowy klucz dostępu, należy odwiedzić witrynę internetową i postępować zgodnie z wyświetlanymi wskazówkami.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="Untitled">
-    <value>Untitled</value>
+    <value>Bez nazwy</value>
     <comment>Placeholder for items without a name</comment>
   </data>
   <data name="NotesSection">
@@ -128,11 +128,11 @@
     <comment>Section header for notes</comment>
   </data>
   <data name="CardSection">
-    <value>Card Details</value>
+    <value>Dane karty</value>
     <comment>Section header for credit card details</comment>
   </data>
   <data name="CustomFieldsSection">
-    <value>Custom Fields</value>
+    <value>Pola niestandardowe</value>
     <comment>Section header for custom fields</comment>
   </data>
 </root>
