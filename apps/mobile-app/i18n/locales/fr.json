@@ -209,8 +209,6 @@
   },
   "passkeys": {
     "passkey": "Clé d'identification",
-    "site": "Site",
-    "displayName": "Nom affiché",
     "helpText": "Les clés d'accès sont créées sur le site Web lorsque vous y êtes invité. Elles ne peuvent pas être modifiées manuellement. Pour supprimer cette clé, vous pouvez la supprimer de cet identifiant.",
     "passkeyMarkedForDeletion": "Clé d'accès marquée pour suppression",
     "passkeyWillBeDeleted": "Cette clé d'accès sera supprimée lorsque vous enregistrerez cet identifiant."
@@ -317,13 +315,6 @@
       "pinDescription": "Utilisez un code PIN personnalisé pour déverrouiller votre coffre plus rapidement.",
       "pinEnabled": "Déverrouillage par code PIN activé avec succès",
       "pinDisabled": "Déverrouillage par code PIN désactivé",
-      "setupPin": "Configurer le code PIN",
-      "enterNewPin": "Entrer le nouveau code PIN",
-      "enterNewPinDescription": "Entrez votre code PIN pour déverrouiller votre coffre",
-      "confirmPin": "Confirmer le code PIN",
-      "confirmPinDescription": "Entrez à nouveau votre code PIN pour confirmer",
-      "pinMismatch": "Les codes PIN ne correspondent pas. Veuillez réessayer.",
-      "pinLocked": "Code PIN verrouillé après trop de tentatives infructueuses. Veuillez utiliser votre mot de passe principal.",
       "passwordHelp": "Saisissez à nouveau votre mot de passe maître complet pour déverrouiller votre coffre. Ceci est toujours activé comme option de repli.",
       "keystoreIOS": "Trousseau iOS",
       "keystoreAndroid": "KeyStore Android"
@@ -421,23 +412,16 @@
     "qrScanner": {
       "title": "Scanner de QR Code",
       "scanningMessage": "Scanner le QR code AliasVault",
-      "invalidQrCode": "QR Code invalide",
-      "notAliasVaultQr": "Ce n'est pas un code QR d'AliasVault valide. Veuillez scanner un code QR généré par AliasVault.",
-      "cameraPermissionTitle": "Autorisation d'accès à l'appareil photo requise",
-      "cameraPermissionMessage": "Veuillez autoriser l'accès à l'appareil photo pour scanner les QR codes.",
       "mobileLogin": {
         "confirmTitle": "Confirmer la demande de connexion",
         "confirmSubtitle": "Se ré-authentifier pour approuver la connexion sur un autre appareil.",
         "confirmMessage": "Vous êtes sur le point de vous connecter sur un appareil distant avec votre compte. Cet autre appareil aura un accès complet à votre coffre. Ne procédez que si vous faites confiance à cet appareil.",
         "successDescription": "L'appareil distant a été connecté avec succès.",
-        "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR.",
-        "authenticationFailed": "Échec de l'authentification. Veuillez ré-essayer.",
-        "noAuthMethodEnabled": "Le déverrouillage par biométrie ou par code PIN doit être activé pour déverrouiller avec le mobile"
+        "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR."
       }
     }
   },
   "navigation": {
-    "credentials": "Identifiants",
     "vault": "Coffre-fort",
     "emails": "E-mails",
     "settings": "Paramètres"
@@ -499,12 +483,11 @@
     "deleteItem": "Supprimer l'élement",
     "itemDetails": "Informations détaillées",
     "itemCreated": "Élément créé",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "emailPreview": "Aperçu de l'e-mail",
     "untitled": "Untitled",
     "name": "Nom",
-    "namePlaceholder": "ex: Google, Amazon",
     "url": "URL",
-    "urlPlaceholder": "ex: https://google.com",
     "service": "Service",
     "serviceName": "Nom du service",
     "serviceUrl": "URL du service",
