@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Eintrag löschen",
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
     "errors": {
-      "unknownError": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
+      "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
       "serverVersionTooOld": "Der AliasVault-Server muss auf eine neuere Version aktualisiert werden, um diese Funktion nutzen zu können. Bitte kontaktiere den Administrator des Servers, falls Du Hilfe benötigst."
     }
@@ -561,7 +561,6 @@
     "vaultSyncedSuccessfully": "Tresor erfolgreich synchronisiert",
     "vaultUpToDate": "Tresor ist auf dem neuesten Stand",
     "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deinen Tresor zu synchronisieren.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "switchBackToBrowser": "Wechsle zurück zu Deinem Browser, um fortzufahren",
     "filters": {
       "all": "(All) Items",
@@ -590,10 +589,6 @@
       "passwordCopied": "Passwort in die Zwischenablage kopiert"
     },
     "createNewAliasFor": "Neuen Alias für",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "Bearbeiten",
