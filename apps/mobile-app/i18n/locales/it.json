@@ -209,8 +209,6 @@
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "Sito",
-    "displayName": "Mostra nome",
     "helpText": "Le passkey vengono create sul sito web quando richiesto. Non possono essere modificate manualmente. Per rimuovere questa passkey , è possibile eliminarla da questa credenziale.",
     "passkeyMarkedForDeletion": "Passkey contrassegnata per l'eliminazione",
     "passkeyWillBeDeleted": "Questa passkey verrà eliminata quando si salva questa credenziale."
@@ -317,13 +315,6 @@
       "pinDescription": "Usa un codice PIN personalizzato per sbloccare la cassaforte più rapidamente.",
       "pinEnabled": "Sblocco PIN abilitato correttamente",
       "pinDisabled": "Lo sblocco PIN è stato disabilitato",
-      "setupPin": "Configurare PIN",
-      "enterNewPin": "Inserisci Nuovo PIN",
-      "enterNewPinDescription": "Scegli un PIN per sbloccare la cassaforte",
-      "confirmPin": "Conferma PIN",
-      "confirmPinDescription": "Reinserisci il tuo PIN per confermare.",
-      "pinMismatch": "I PIN non corrispondono. Riprova.",
-      "pinLocked": "PIN bloccato dopo troppi tentativi falliti. Si prega di utilizzare la password principale.",
       "passwordHelp": "Reinserisci la password principale per sbloccare la cassaforte. Sempre abilitato come opzione di fallback.",
       "keystoreIOS": "Keychain iOS",
       "keystoreAndroid": "Keystore Android"
@@ -421,23 +412,16 @@
     "qrScanner": {
       "title": "Scanner codice QR",
       "scanningMessage": "Scansiona AliasVault QR code",
-      "invalidQrCode": "Codice QR non valido",
-      "notAliasVaultQr": "Questo non è un codice QR AliasVault valido. Scansiona un codice QR generato da AliasVault.",
-      "cameraPermissionTitle": "Permesso Fotocamera Richiesto",
-      "cameraPermissionMessage": "Consenti alla fotocamera di eseguire la scansione dei codici QR.",
       "mobileLogin": {
         "confirmTitle": "Conferma Richiesta Di Accesso",
         "confirmSubtitle": "Ri-autenticazione per approvare il login su un altro dispositivo.",
         "confirmMessage": "Stai per accedere a un dispositivo remoto con il tuo account. Questo altro dispositivo avrà pieno accesso alla tua cassaforte. Procedi solo se ti fidi di questo dispositivo.",
         "successDescription": "Il dispositivo remoto è stato loggato con successo.",
-        "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR.",
-        "authenticationFailed": "Autenticazione fallita. Riprova.",
-        "noAuthMethodEnabled": "È necessario abilitare lo sblocco biometrico o PIN per sbloccare con dispositivi mobili"
+        "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR."
       }
     }
   },
   "navigation": {
-    "credentials": "Credenziali",
     "vault": "Vault",
     "emails": "Email",
     "settings": "Impostazioni"
@@ -499,12 +483,11 @@
     "deleteItem": "Elimina elemento",
     "itemDetails": "Item Details",
     "itemCreated": "Item Created",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "emailPreview": "Anteprima email",
     "untitled": "Untitled",
     "name": "Nome",
-    "namePlaceholder": "e.g., Google, Amazon",
     "url": "URL",
-    "urlPlaceholder": "e.g., https://google.com",
     "service": "Servizio",
     "serviceName": "Nome Servizio",
     "serviceUrl": "URL servizio",
