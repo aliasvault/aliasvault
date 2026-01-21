@@ -38,7 +38,7 @@
     }
   },
   "menu": {
-    "vault": "Vault",
+    "vault": "Holvi",
     "emails": "Sähköpostit"
   },
   "common": {
@@ -50,7 +50,7 @@
     "back": "Takaisin",
     "next": "Seuraava",
     "use": "Käytä",
-    "add": "Add",
+    "add": "Lisää",
     "delete": "Poista",
     "undo": "Kumoa",
     "save": "Tallenna",
@@ -91,7 +91,7 @@
     "offline": "Offline",
     "offlineMode": "Operating in offline mode",
     "pendingSync": "Syncing...",
-    "mergingVaultChanges": "Merging vault changes...",
+    "mergingVaultChanges": "Yhdistetään holvin muutoksia...",
     "uploadingVault": "Uploading vault...",
     "errors": {
       "serverNotAvailable": "AliasVault-palvelin ei ole käytettävissä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
@@ -105,8 +105,7 @@
       "vaultIsLocked": "Holvi on lukittu",
       "passwordChanged": "Salasanasi on muuttunut edellisen sisäänkirjautumisen jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again.",
-      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
+      "mergeFailed": "Failed to merge vault changes. Please try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Tapahtui tuntematon virhe. Yritä uudelleen.",
@@ -167,7 +166,45 @@
     "vaultUpgradeRequired": "Holvin päivitys vaaditaan.",
     "dismissPopup": "Hylkää ponnahdusikkuna"
   },
-  "credentials": {
+  "items": {
+    "title": "Tiedot",
+    "itemName": "Nimi",
+    "loginCredentials": "Sisäänkirjautumistunnistetiedot",
+    "cardInformation": "Korttitiedot",
+    "addItem": "Lisää tieto",
+    "addNewItem": "Lisää uusi tieto",
+    "saveItem": "Tallenna tieto",
+    "itemDetails": "Näytä yksityiskohdat",
+    "editItem": "Muokkaa tietoa",
+    "untitled": "Nimetön",
+    "newFolder": "New Folder",
+    "createFolder": "Luo kansio",
+    "editFolder": "Edit Folder",
+    "folderName": "Folder Name",
+    "folderNameRequired": "Folder name is required",
+    "folder": "Kansio",
+    "welcomeTitle": "Tervetuloa AliasVaultiin!",
+    "welcomeDescription": "Käyttääksesi AliasVault-selainlaajennusta, siirry jollekin verkkosivustolle ja käytä AliasVaultin automaattisen täytön ponnahdusikkunaa luodaksesi uuden tunnistetiedon.",
+    "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
+    "noAttachmentsFound": "Liitteitä sisältäviä tietoja ei löytynyt",
+    "noItemsOfTypeFound": "No {{type}} tietoja ei löydy",
+    "noMatchingItems": "Vastaavia tietoja ei löytynyt",
+    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
+    "deleteFolder": "Delete Folder",
+    "deleteFolderKeepItems": "Delete folder only",
+    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderAndItems": "Delete folder and all items",
+    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "filters": {
+      "all": "(Kaikki) tiedot",
+      "passkeys": "Sala-avaimet"
+    },
+    "deleteItemTitle": "Poista kohde",
+    "deleteItemConfirm": "Haluatko varmasti poistaa tämän kohteen?",
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available",
+    "tags": "Tunnisteet",
     "changePasswordComplexity": "Muuta salasanan monimutkaisuutta",
     "passwordLength": "Salasanan pituus",
     "includeLowercase": "Sisällytä pienet kirjaimet",
@@ -185,68 +222,28 @@
     "generateNewPreview": "Luo uusi esikatselu",
     "generateRandomAlias": "Luo sattumanvarainen alias",
     "validation": {
-      "required": "Tämä kenttä on pakollinen."
-    },
-    "tags": "Tunnisteet"
-  },
-  "items": {
-    "title": "Items",
-    "itemName": "Nimi",
-    "loginCredentials": "Sisäänkirjautumistunnistetiedot",
-    "cardInformation": "Card Information",
-    "addItem": "Add Item",
-    "addNewItem": "Add new item",
-    "saveItem": "Save Item",
-    "itemDetails": "Item Details",
-    "editItem": "Edit Item",
-    "untitled": "Untitled",
-    "newFolder": "New Folder",
-    "createFolder": "Luo kansio",
-    "editFolder": "Edit Folder",
-    "folderName": "Folder Name",
-    "folderNameRequired": "Folder name is required",
-    "folder": "Kansio",
-    "welcomeTitle": "Tervetuloa AliasVaultiin!",
-    "welcomeDescription": "Käyttääksesi AliasVault-selainlaajennusta, siirry jollekin verkkosivustolle ja käytä AliasVaultin automaattisen täytön ponnahdusikkunaa luodaksesi uuden tunnistetiedon.",
-    "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
-    "noMatchingItems": "No matching items found",
-    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
-    "deleteFolder": "Delete Folder",
-    "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-    "deleteFolderAndItems": "Delete folder and all items",
-    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
-    "filters": {
-      "all": "(All) Items",
-      "passkeys": "Sala-avaimet"
-    },
-    "deleteItemTitle": "Poista kohde",
-    "deleteItemConfirm": "Haluatko varmasti poistaa tämän kohteen?",
-    "viewHistory": "View history",
-    "history": "History",
-    "noHistoryAvailable": "No history available"
+      "required": "Tämä kenttä on pakollinen"
+    }
   },
   "itemTypes": {
     "selectType": "Add New Item",
     "typeLabel": "Item Type",
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Luodaan",
+    "editing": "Muokaataan",
     "regenerateAlias": "Regenerate alias",
     "addCustomField": "Add custom field",
-    "fieldLabel": "Field Label",
-    "enterFieldName": "Enter field name",
-    "fieldType": "Field Type",
+    "fieldLabel": "Kentän otsikko",
+    "enterFieldName": "Anna kentän nimi",
+    "fieldType": "Kentän tyyppi",
     "fieldTypes": {
-      "text": "Text",
+      "text": "Teksti",
       "hidden": "Hidden (masked text)",
       "email": "Sähköposti",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Puhelin",
+      "number": "Numero",
       "date": "Päivämäärä",
-      "textArea": "Text Area"
+      "textArea": "Tekstialue"
     },
     "login": {
       "title": "Kirjaudu sisään"
@@ -255,14 +252,14 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card"
+      "title": "Luottokortti"
     },
     "note": {
       "title": "Secure Note"
     }
   },
   "fieldLabels": {
-    "login.url": "Website URL",
+    "login.url": "Web-sivuston URL-osoite",
     "login.username": "Käyttäjänimi",
     "login.password": "Salasana",
     "alias.first_name": "Etunimi",
@@ -271,12 +268,12 @@
     "alias.birthdate": "Syntymäpäivä",
     "login.email": "Sähköposti",
     "notes.content": "Huomautukset",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
+    "card.cardholder_name": "Kortinhaltijan nimi",
+    "card.number": "Kortin numero",
+    "card.expiry_month": "Vanhenemiskuukausi",
+    "card.expiry_year": "Vanhenemisvuosi",
     "card.cvv": "CVV",
-    "card.pin": "PIN"
+    "card.pin": "PIN-koodi"
   },
   "totp": {
     "addCode": "Lisää 2FA TOTP -koodi",
@@ -460,8 +457,8 @@
     "restore": "Restore",
     "deletePermanently": "Delete Permanently",
     "emptyAll": "Empty All",
-    "daysRemaining": "{{count}} day remaining",
-    "daysRemaining_plural": "{{count}} days remaining",
+    "daysRemaining_one": "{{count}} day remaining",
+    "daysRemaining_other": "{{count}} days remaining",
     "expiringSoon": "Expiring soon",
     "confirmDeleteTitle": "Delete Permanently?",
     "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
@@ -489,8 +486,8 @@
     }
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Synkronoimattomat muutokset",
+    "unsyncedChangesWarning": "Sinulla on synkronoimattomia muutoksia, jotka menetetään, jos kirjaudut ulos nyt. Oletko varma, että haluat jatkaa?",
+    "logoutAnyway": "Kirjaudu ulos joka tapauksessa"
   }
 }
