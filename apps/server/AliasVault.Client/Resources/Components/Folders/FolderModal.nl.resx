@@ -63,19 +63,19 @@
     <comment>Title for create folder modal</comment>
   </data>
   <data name="EditFolderTitle" xml:space="preserve">
-    <value>Edit Folder</value>
+    <value>Map bewerken</value>
     <comment>Title for edit folder modal</comment>
   </data>
   <data name="FolderNameLabel" xml:space="preserve">
-    <value>Folder Name</value>
+    <value>Mapnaam</value>
     <comment>Label for folder name input</comment>
   </data>
   <data name="FolderNamePlaceholder" xml:space="preserve">
-    <value>Enter folder name</value>
+    <value>Voer mapnaam in</value>
     <comment>Placeholder for folder name input</comment>
   </data>
   <data name="FolderNameRequired" xml:space="preserve">
-    <value>Folder name is required</value>
+    <value>Mapnaam is verplicht</value>
     <comment>Error message when folder name is empty</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
