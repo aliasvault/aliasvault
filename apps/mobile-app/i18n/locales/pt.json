@@ -21,7 +21,7 @@
     "enabled": "Habilitado",
     "disabled": "Desabilitado",
     "twoFactorAuthentication": "Autenticação de dois fatores",
-    "add": "Add",
+    "add": "Adicionar",
     "attachments": "Anexos",
     "deleteItemConfirmTitle": "Excluir Item",
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
@@ -75,7 +75,7 @@
     "loggedInAs": "Logado como"
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesTitle": "Alterações Dessincronizadas",
     "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
     "logoutAnyway": "Log out anyway"
   },
