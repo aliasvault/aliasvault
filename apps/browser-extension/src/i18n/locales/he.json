@@ -105,8 +105,7 @@
       "vaultIsLocked": "הכספת נעולה",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again.",
-      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
+      "mergeFailed": "Failed to merge vault changes. Please try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
@@ -167,28 +166,6 @@
     "vaultUpgradeRequired": "יש לשדרג את הכספת.",
     "dismissPopup": "התעלמות מחלונית"
   },
-  "credentials": {
-    "changePasswordComplexity": "החלפת מורכבת הסיסמה",
-    "passwordLength": "אורך הסיסמה",
-    "includeLowercase": "לכלול אותיות קטנות",
-    "includeUppercase": "לכלול אותיות גדולות",
-    "includeNumbers": "לכלול מספרים",
-    "includeSpecialChars": "לכלול תווים מיוחדים",
-    "avoidAmbiguousChars": "עדיף להימנע מאותיות וספרות שדומים זה לזה (o,‏ 0 וכו׳)",
-    "privateEmailTitle": "כתובת דוא״ל פרטית",
-    "privateEmailAliasVaultServer": "שרת AliasVault",
-    "privateEmailDescription": "הצפנה מקצה לקצה, פרטיות מלאה.",
-    "publicEmailTitle": "ספקי תיבת דוא״ל זמנית ציבוריים",
-    "publicEmailDescription": "פרטיות אלמונית אך מוגבלת. תוכן הדוא״ל נגיש לכל מי שיודע את הכתובת.",
-    "generateRandomUsername": "יצירת שם משתמש אקראי",
-    "generateRandomPassword": "יצירת סיסמה אקראית",
-    "generateNewPreview": "יצירת תצוגה מקדימה חדשה",
-    "generateRandomAlias": "יצירת כינוי אקראי",
-    "validation": {
-      "required": "שדה חובה"
-    },
-    "tags": "תגיות"
-  },
   "items": {
     "title": "Items",
     "itemName": "שם",
@@ -226,7 +203,27 @@
     "deleteItemConfirm": "Are you sure you want to delete this item?",
     "viewHistory": "View history",
     "history": "History",
-    "noHistoryAvailable": "No history available"
+    "noHistoryAvailable": "No history available",
+    "tags": "תגיות",
+    "changePasswordComplexity": "החלפת מורכבת הסיסמה",
+    "passwordLength": "אורך הסיסמה",
+    "includeLowercase": "לכלול אותיות קטנות",
+    "includeUppercase": "לכלול אותיות גדולות",
+    "includeNumbers": "לכלול מספרים",
+    "includeSpecialChars": "לכלול תווים מיוחדים",
+    "avoidAmbiguousChars": "עדיף להימנע מאותיות וספרות שדומים זה לזה (o,‏ 0 וכו׳)",
+    "privateEmailTitle": "כתובת דוא״ל פרטית",
+    "privateEmailAliasVaultServer": "שרת AliasVault",
+    "privateEmailDescription": "הצפנה מקצה לקצה, פרטיות מלאה.",
+    "publicEmailTitle": "ספקי תיבת דוא״ל זמנית ציבוריים",
+    "publicEmailDescription": "פרטיות אלמונית אך מוגבלת. תוכן הדוא״ל נגיש לכל מי שיודע את הכתובת.",
+    "generateRandomUsername": "יצירת שם משתמש אקראי",
+    "generateRandomPassword": "יצירת סיסמה אקראית",
+    "generateNewPreview": "יצירת תצוגה מקדימה חדשה",
+    "generateRandomAlias": "יצירת כינוי אקראי",
+    "validation": {
+      "required": "שדה חובה"
+    }
   },
   "itemTypes": {
     "selectType": "Add New Item",
@@ -460,8 +457,8 @@
     "restore": "Restore",
     "deletePermanently": "Delete Permanently",
     "emptyAll": "Empty All",
-    "daysRemaining": "{{count}} day remaining",
-    "daysRemaining_plural": "{{count}} days remaining",
+    "daysRemaining_one": "{{count}} day remaining",
+    "daysRemaining_other": "{{count}} days remaining",
     "expiringSoon": "Expiring soon",
     "confirmDeleteTitle": "Delete Permanently?",
     "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
