@@ -1,5 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -77,12 +77,11 @@ export default function ItemsScreen(): React.ReactNode {
   const flatListRef = useRef<Animated.FlatList<Item | null>>(null);
   const [isTabFocused, setIsTabFocused] = useState(false);
   const router = useRouter();
-  const { serviceUrl: serviceUrlParam } = useLocalSearchParams<{ serviceUrl?: string }>();
+  const { itemUrl } = useLocalSearchParams<{ itemUrl?: string }>();
   const [itemsList, setItemsList] = useState<Item[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useMinDurationLoading(false, 200);
   const [refreshing, setRefreshing] = useMinDurationLoading(false, 200);
-  const [serviceUrl, setServiceUrl] = useState<string | null>(null);
   const { executeVaultMutation } = useVaultMutate();
   const [showFolderModal, setShowFolderModal] = useState(false);
 
@@ -99,6 +98,14 @@ export default function ItemsScreen(): React.ReactNode {
 
   const isAuthenticated = authContext.isLoggedIn;
   const isDatabaseAvailable = dbContext.dbAvailable;
+
+  // Handle deep link itemUrl parameter - populate search field
+  useEffect(() => {
+    if (itemUrl) {
+      const decodedUrl = decodeURIComponent(itemUrl);
+      setSearchQuery(decodedUrl);
+    }
+  }, [itemUrl]);
 
   /**
    * Get folders with item counts for display.
@@ -383,19 +390,22 @@ export default function ItemsScreen(): React.ReactNode {
 
   /**
    * Handle FAB press - navigate to add item screen.
+   * If there's a search query, pass it as itemUrl (if URL) or itemName (if not).
    */
   const handleAddItem = useCallback(() => {
-    router.push('/(tabs)/items/add-edit');
+    const trimmedQuery = searchQuery.trim();
+    if (trimmedQuery) {
+      const isUrl = /^https?:\/\//i.test(trimmedQuery);
+      if (isUrl) {
+        router.push(`/(tabs)/items/add-edit?itemUrl=${encodeURIComponent(trimmedQuery)}`);
+      } else {
+        router.push(`/(tabs)/items/add-edit?itemName=${encodeURIComponent(trimmedQuery)}`);
+      }
+    } else {
+      router.push('/(tabs)/items/add-edit');
+    }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, [router]);
-
-  // Handle deep link parameters
-  useFocusEffect(
-    useCallback(() => {
-      const currentServiceUrl = serviceUrlParam ? decodeURIComponent(serviceUrlParam) : null;
-      setServiceUrl(currentServiceUrl);
-    }, [serviceUrlParam])
-  );
+  }, [router, searchQuery]);
 
   const styles = StyleSheet.create({
     container: {
@@ -528,26 +538,6 @@ export default function ItemsScreen(): React.ReactNode {
     clearButtonText: {
       color: colors.textMuted,
       fontSize: 20,
-    },
-    // Service URL styles
-    serviceUrlContainer: {
-      backgroundColor: colors.accentBackground,
-      borderColor: colors.accentBorder,
-      borderRadius: 8,
-      borderWidth: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      marginBottom: 12,
-      padding: 12,
-    },
-    serviceUrlText: {
-      color: colors.text,
-      flex: 1,
-      fontSize: 14,
-    },
-    serviceUrlDismiss: {
-      padding: 4,
     },
     // Empty state styles
     emptyText: {
@@ -734,19 +724,6 @@ export default function ItemsScreen(): React.ReactNode {
               color={colors.text}
             />
           </TouchableOpacity>
-        )}
-
-        {/* Service URL notice */}
-        {serviceUrl && (
-          <View style={styles.serviceUrlContainer}>
-            <MaterialIcons name="link" size={18} color={colors.textMuted} />
-            <Text style={styles.serviceUrlText} numberOfLines={1}>
-              {serviceUrl}
-            </Text>
-            <TouchableOpacity style={styles.serviceUrlDismiss} onPress={() => setServiceUrl(null)}>
-              <MaterialIcons name="close" size={18} color={colors.textMuted} />
-            </TouchableOpacity>
-          </View>
         )}
 
         {/* Filter menu */}

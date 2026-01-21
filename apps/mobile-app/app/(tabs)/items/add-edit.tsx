@@ -60,9 +60,10 @@ type CustomFieldDefinition = {
  * Add or edit an item screen.
  */
 export default function AddEditItemScreen(): React.ReactNode {
-  const { id, serviceUrl, itemType: itemTypeParam } = useLocalSearchParams<{
+  const { id, itemUrl, itemName, itemType: itemTypeParam } = useLocalSearchParams<{
     id: string;
-    serviceUrl?: string;
+    itemUrl?: string;
+    itemName?: string;
     itemType?: string;
   }>();
   const router = useRouter();
@@ -500,12 +501,17 @@ export default function AddEditItemScreen(): React.ReactNode {
       } else {
         // Create mode - initialize new item
         let serviceName = '';
-        let itemUrl = '';
+        let decodedItemUrl = '';
 
-        if (serviceUrl) {
-          const decodedUrl = decodeURIComponent(serviceUrl);
-          serviceName = extractServiceNameFromUrl(decodedUrl);
-          itemUrl = decodedUrl;
+        // Handle itemUrl param (URL passed from search or deep link)
+        if (itemUrl) {
+          decodedItemUrl = decodeURIComponent(itemUrl);
+          serviceName = extractServiceNameFromUrl(decodedItemUrl);
+        }
+
+        // Handle itemName param (non-URL search query)
+        if (itemName) {
+          serviceName = decodeURIComponent(itemName);
         }
 
         // Determine effective type from URL param or default
@@ -526,10 +532,10 @@ export default function AddEditItemScreen(): React.ReactNode {
         setItem(newItem);
 
         // Set URL in field values if provided
-        if (itemUrl) {
+        if (decodedItemUrl) {
           setFieldValues(prev => ({
             ...prev,
-            'login.url': itemUrl
+            'login.url': decodedItemUrl
           }));
         }
 
@@ -541,7 +547,7 @@ export default function AddEditItemScreen(): React.ReactNode {
     };
 
     initializeComponent();
-  }, [id, isEditMode, serviceUrl, itemTypeParam, loadExistingItem, router, t, dbContext.sqliteClient]);
+  }, [id, isEditMode, itemUrl, itemName, itemTypeParam, loadExistingItem, router, t, dbContext.sqliteClient]);
 
   /**
    * Auto-generate alias when alias fields are shown by default in create mode.
@@ -824,7 +830,7 @@ export default function AddEditItemScreen(): React.ReactNode {
       setIsSaveDisabled(false);
 
       // Navigate immediately - sync continues in background
-      if (serviceUrl && !isEditMode) {
+      if (itemUrl && !isEditMode) {
         router.replace('/items/autofill-item-created');
       } else {
         router.dismiss();
@@ -857,7 +863,7 @@ export default function AddEditItemScreen(): React.ReactNode {
       setIsSaving(false);
       setIsSaveDisabled(false);
     }
-  }, [isEditMode, id, serviceUrl, router, executeVaultMutation, dbContext.sqliteClient, webApi, isSaveDisabled, item, fieldValues, applicableSystemFields, customFields, t, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion]);
+  }, [isEditMode, id, itemUrl, router, executeVaultMutation, dbContext.sqliteClient, webApi, isSaveDisabled, item, fieldValues, applicableSystemFields, customFields, t, originalAttachmentIds, attachments, originalTotpCodeIds, totpCodes, passkeyIdsMarkedForDeletion]);
 
   /**
    * Handle the delete button press.
