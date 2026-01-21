@@ -39,12 +39,12 @@
   <string name="passkey_create_explanation">Dit maakt een nieuwe passkey aan en slaat deze op in je vault. De passkey wordt automatisch gesynchroniseerd naar je andere apparaten.</string>
   <string name="passkey_create_new_button">Passkey aanmaken</string>
   <string name="passkey_select_to_replace">Of vervang een bestaande passkey:</string>
-  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
+  <string name="passkey_add_to_existing">Of, voeg passkey toe aan een bestaand item:</string>
   <string name="passkey_replace_explanation">Dit zal de bestaande passkey vervangen door een nieuwe. Houd er rekening mee dat je oude passkey wordt overschreven en niet langer toegankelijk is. Als je in plaats hiervan een aparte passkey wilt maken, ga dan terug naar het vorige scherm.</string>
-  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
+  <string name="passkey_merge_explanation">Dit zal een passkey toevoegen aan je bestaande item. Je wachtwoord en andere gegevens zullen worden bewaard.</string>
   <string name="passkey_replacing">Passkey vervangen…</string>
-  <string name="add_passkey">Add Passkey</string>
-  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
+  <string name="add_passkey">Passkey toevoegen</string>
+  <string name="add_passkey_subtitle">Passkey toevoegen aan bestaand item</string>
   <string name="passkey_checking_connection">Verbinding controleren…</string>
   <string name="passkey_retrieving">Passkey ophalen…</string>
   <string name="passkey_verifying">Verifiëren…</string>
