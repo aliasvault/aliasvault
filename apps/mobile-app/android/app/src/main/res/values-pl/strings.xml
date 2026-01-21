@@ -43,7 +43,7 @@
   <string name="passkey_replace_explanation">Spowoduje to zastąpienie dotychczasowego klucza dostępu nowym. Należy pamiętać, że stare klucz zostanie nadpisany i nie będzie już dostępny. Jeśli chcesz utworzyć nowy klucz dostępu, wróć do poprzedniego ekranu.</string>
   <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
   <string name="passkey_replacing">Zastępowanie klucza dostępu…</string>
-  <string name="add_passkey">Add Passkey</string>
+  <string name="add_passkey">Dodaj klucz dostępu</string>
   <string name="add_passkey_subtitle">Adding passkey to existing item</string>
   <string name="passkey_checking_connection">Sprawdzanie połączenia…</string>
   <string name="passkey_retrieving">Pobieranie klucza dostępu…</string>
