@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Supprimer l'élement",
     "deleteItemConfirmDescription": "Êtes-vous certain de vouloir supprimer cet élément?",
     "errors": {
-      "unknownError": "Une erreur inconnue s'est produite. Merci de réessayer.",
+      "unknownError": "Une erreur inconnue s'est produite.",
       "unknownErrorTryAgain": "Une erreur inconnue s'est produite. Merci de réessayer.",
       "serverVersionTooOld": "Le serveur AliasVault doit être mis à jour vers une version plus récente pour pouvoir utiliser cette fonctionnalité. Veuillez contacter l'administrateur du serveur si vous avez besoin d'aide."
     }
@@ -561,7 +561,6 @@
     "vaultSyncedSuccessfully": "Le coffre a été synchronisé avec succès",
     "vaultUpToDate": "Le coffre est à jour",
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour synchroniser votre coffre.",
-    "itemCreatedMessage": "Votre nouvel élément a été ajouté à votre coffre et est prêt à être utilisé.",
     "switchBackToBrowser": "Passez à votre navigateur pour continuer.",
     "filters": {
       "all": "(Tous) Éléments",
@@ -590,10 +589,6 @@
       "passwordCopied": "Mot de passe copié dans le presse-papiers"
     },
     "createNewAliasFor": "Créer un nouvel alias pour",
-    "errors": {
-      "loadFailed": "Échec du chargement de l'élément",
-      "saveFailed": "Échec de l'enregistrement de l'élément"
-    },
     "contextMenu": {
       "title": "Options de l'élément",
       "edit": "Modifier",
