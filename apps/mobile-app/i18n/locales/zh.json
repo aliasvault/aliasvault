@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
     "errors": {
-      "unknownError": "发生未知错误.",
+      "unknownError": "发生未知错误。",
       "unknownErrorTryAgain": "发生未知错误，请重试。",
       "serverVersionTooOld": "AliasVault 服务器需要更新到更高版本才能使用此功能。如需帮助，请联系服务器管理员。"
     }
