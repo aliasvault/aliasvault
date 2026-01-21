@@ -132,7 +132,7 @@
     <comment>Section header for credit card details</comment>
   </data>
   <data name="CustomFieldsSection">
-    <value>Custom Fields</value>
+    <value>Extra velden</value>
     <comment>Section header for custom fields</comment>
   </data>
 </root>
