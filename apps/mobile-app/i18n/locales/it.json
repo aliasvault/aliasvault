@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Elimina elemento",
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "errors": {
-      "unknownError": "Si è verificato un errore sconosciuto. Riprova.",
+      "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "Si è verificato un errore sconosciuto. Riprova.",
       "serverVersionTooOld": "Il server AliasVault deve essere aggiornato a una versione più recente per poter utilizzare questa funzione. Se hai bisogno di aiuto, contatta il supporto."
     }
@@ -561,7 +561,6 @@
     "vaultSyncedSuccessfully": "Cassaforte sincronizzata con successo",
     "vaultUpToDate": "Cassaforte aggiornata",
     "offlineMessage": "Sei offline. Collegati a internet per sincronizzare la cassaforte.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "switchBackToBrowser": "Torna al browser per continuare.",
     "filters": {
       "all": "(All) Items",
@@ -590,10 +589,6 @@
       "passwordCopied": "Password copiata negli appunti"
     },
     "createNewAliasFor": "Crea un nuovo alias per",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "Modifica",
