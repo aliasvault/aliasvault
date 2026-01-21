@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Usuń element",
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
     "errors": {
-      "unknownError": "Wystąpił nieznany błąd. Spróbuj ponownie.",
+      "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "Wystąpił nieznany błąd. Spróbuj ponownie.",
       "serverVersionTooOld": "Aby korzystać z tej funkcji, serwer AliasVault musi zostać zaktualizowany do nowszej wersji. Jeśli potrzebujesz pomocy, skontaktuj się z administratorem serwera."
     }
@@ -561,7 +561,6 @@
     "vaultSyncedSuccessfully": "Synchronizacja sejfu zakończona sukcesem",
     "vaultUpToDate": "Sejf jest aktualny",
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby zsynchronizować swój sejf.",
-    "itemCreatedMessage": "Twój nowy przedmiot został dodany do skarbca i jest gotowy do użycia.",
     "switchBackToBrowser": "Wróć do przeglądarki, aby kontynuować.",
     "filters": {
       "all": "(Wszystkie) pozycje",
@@ -590,10 +589,6 @@
       "passwordCopied": "Hasło skopiowane do schowka"
     },
     "createNewAliasFor": "Utwórz nowy alias dla",
-    "errors": {
-      "loadFailed": "Nie udało się załadować elementu",
-      "saveFailed": "Nie udało się zapisać elementu"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "Edytuj",
@@ -619,28 +614,28 @@
       "deleteFolderKeepItemsDescription": "Elementy zostaną przeniesione z powrotem do listy głównej.",
       "deleteFolderAndItems": "Usuń folder i wszystkie elementy",
       "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
-      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
-      "noFolder": "No Folder",
+      "emptyFolderHint": "Ten folder jest pusty. Aby przenieść elementy do tego folderu, edytuj element i wybierz ten folder.",
+      "noFolder": "Brak folderu",
       "selectFolder": "Wybierz folder"
     },
     "recentlyDeleted": {
-      "title": "Recently Deleted",
-      "noItems": "No deleted items",
-      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
-      "restore": "Restore",
-      "deletePermanently": "Delete Permanently",
-      "emptyAll": "Empty All",
+      "title": "Ostatnio usunięte",
+      "noItems": "Brak usuniętych elementów",
+      "noItemsDescription": "Usunięte elementy pojawią się tutaj na 30 dni zanim zostaną trwale usunięte.",
+      "description": "Te elementy zostaną trwale usunięte po 30 dniach. Możesz je przywrócić lub natychmiast usunąć.",
+      "restore": "Przywróć",
+      "deletePermanently": "Usuń bezpowrotnie",
+      "emptyAll": "Opróżnij wszystkie",
       "daysRemaining": "{{count}} day remaining",
       "daysRemaining_plural": "{{count}} days remaining",
-      "expiringSoon": "Expiring soon",
-      "confirmDeleteTitle": "Delete Permanently?",
-      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
-      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "expiringSoon": "Wkrótce wygasa",
+      "confirmDeleteTitle": "Usuń bezpowrotnie?",
+      "confirmDeleteMessage": "Ten element zostanie trwale usunięty i nie będzie można go odzyskać.",
+      "confirmEmptyAllTitle": "Opróżnij ostatnio usunięte?",
       "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
-      "itemRestored": "Item restored",
-      "itemDeleted": "Item permanently deleted",
-      "allItemsDeleted": "All items permanently deleted"
+      "itemRestored": "Element został przywrócony",
+      "itemDeleted": "Element został trwale usunięty",
+      "allItemsDeleted": "Wszystkie elementy zostały trwale usunięte"
     }
   },
   "emails": {
@@ -701,14 +696,14 @@
     "VAULT_ERROR": "Lokalny sejf nie jest aktualny. Zsynchronizuj sejf, odświeżając stronę, i spróbuj ponownie."
   },
   "sync": {
-    "offline": "Offline",
-    "offlineWithPending": "Offline (pending)",
-    "syncing": "Syncing...",
-    "pending": "Pending sync",
-    "retrySync": "Tap to retry",
+    "offline": "Jesteś w trybie offline",
+    "offlineWithPending": "Offline (oczekujący)",
+    "syncing": "Trwa synchronizacja...",
+    "pending": "Oczekuje na synchronizację",
+    "retrySync": "Dotknij, aby ponowić próbę",
     "backOnline": "Ponownie online",
     "stillOffline": "Wciąż offline",
-    "syncFailed": "Sync failed"
+    "syncFailed": "Synchronizacja nieudana"
   },
   "app": {
     "status": {
@@ -718,13 +713,13 @@
       "retryingConnection": "Ponowne nawiązywanie połączenia..."
     },
     "offline": {
-      "banner": "Offline - changes will sync when online",
+      "banner": "Offline - zmiany będą synchronizowane w trybie online",
       "backOnline": "Ponownie online",
       "stillOffline": "Wciąż offline"
     },
     "alerts": {
       "syncIssue": "Brak połączenia",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
+      "syncIssueMessage": "Nie można uzyskać dostępu do serwera AliasVault i nie można zsynchronizować twojego sejfu. Czy chcesz otworzyć lokalny sejf czy ponowić połączenie?",
       "openLocalVault": "Otwórz lokalny sejf",
       "retrySync": "Ponów synchronizację"
     },
