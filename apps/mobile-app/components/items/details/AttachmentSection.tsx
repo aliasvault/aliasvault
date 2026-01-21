@@ -107,7 +107,7 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
       } else {
         Alert.alert(
           t('common.success'),
-          `${t('credentials.fileSavedTo')}: ${filePath}`
+          `${t('items.fileSavedTo')}: ${filePath}`
         );
       }
     } catch (error) {
@@ -236,7 +236,7 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="subtitle">
-        {t('credentials.attachments')}
+        {t('items.attachments')}
       </ThemedText>
       {attachments.map(attachment => (
         <TouchableOpacity

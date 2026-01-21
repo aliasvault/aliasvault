@@ -273,7 +273,7 @@ export function ItemCard({ item, onItemDelete }: ItemCardProps): React.ReactNode
 
   return (
     <ContextMenu
-      title={t('credentials.contextMenu.title')}
+      title={t('items.contextMenu.title')}
       actions={getMenuActions()}
       onPress={handleContextMenuAction}
       previewBackgroundColor={colors.accentBackground}

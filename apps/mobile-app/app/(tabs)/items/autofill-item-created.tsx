@@ -104,13 +104,13 @@ export default function AutofillCredentialCreatedScreen() : React.ReactNode {
           />
         </View>
 
-        <ThemedText style={styles.title}>{t('credentials.credentialCreated')}</ThemedText>
+        <ThemedText style={styles.title}>{t('items.itemCreated')}</ThemedText>
 
         <ThemedText style={styles.message}>
-          {t('credentials.credentialCreatedMessage')}
+          {t('items.itemCreatedMessage')}
         </ThemedText>
         <ThemedText style={[styles.message, styles.boldMessage]}>
-          {t('credentials.switchBackToBrowser')}
+          {t('items.switchBackToBrowser')}
         </ThemedText>
       </ThemedView>
     </ThemedSafeAreaView>

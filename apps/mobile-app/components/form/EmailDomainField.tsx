@@ -367,7 +367,7 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
           style={styles.textInput}
           value={isCustomDomain ? value : localPart}
           onChangeText={handleLocalPartChange}
-          placeholder={isCustomDomain ? t('credentials.enterFullEmail') : t('credentials.enterEmailPrefix')}
+          placeholder={isCustomDomain ? t('items.enterFullEmail') : t('items.enterEmailPrefix')}
           placeholderTextColor={colors.textMuted}
           autoCapitalize="none"
           autoCorrect={false}
@@ -394,8 +394,8 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       <TouchableOpacity style={styles.toggleButton} onPress={toggleCustomDomain}>
         <Text style={styles.toggleButtonText}>
           {isCustomDomain
-            ? t('credentials.useDomainChooser')
-            : t('credentials.enterCustomDomain')}
+            ? t('items.useDomainChooser')
+            : t('items.enterCustomDomain')}
         </Text>
       </TouchableOpacity>
 
@@ -412,7 +412,7 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
           <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalHeader}>
               <ThemedText style={styles.modalTitle}>
-                {t('credentials.selectEmailDomain')}
+                {t('items.selectEmailDomain')}
               </ThemedText>
               <TouchableOpacity
                 style={styles.modalCloseButton}
@@ -427,14 +427,14 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
                 <View style={styles.domainSection}>
                   <View style={styles.domainSectionHeader}>
                     <Text style={styles.domainSectionTitle}>
-                      {t('credentials.privateEmailTitle')}
+                      {t('items.privateEmailTitle')}
                     </Text>
                     <Text style={styles.domainSectionSubtitle}>
-                      ({t('credentials.privateEmailAliasVaultServer')})
+                      ({t('items.privateEmailAliasVaultServer')})
                     </Text>
                   </View>
                   <Text style={styles.domainSectionDescription}>
-                    {t('credentials.privateEmailDescription')}
+                    {t('items.privateEmailDescription')}
                   </Text>
                   <View style={styles.domainList}>
                     {privateEmailDomains.filter(domain => !hiddenPrivateEmailDomains.includes(domain)).map((domain) => (
@@ -462,10 +462,10 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
 
               <View style={styles.domainSection}>
                 <Text style={styles.domainSectionTitle}>
-                  {t('credentials.publicEmailTitle')}
+                  {t('items.publicEmailTitle')}
                 </Text>
                 <Text style={styles.domainSectionDescription}>
-                  {t('credentials.publicEmailDescription')}
+                  {t('items.publicEmailDescription')}
                 </Text>
                 <View style={styles.domainList}>
                   {PUBLIC_EMAIL_DOMAINS.map((domain) => (

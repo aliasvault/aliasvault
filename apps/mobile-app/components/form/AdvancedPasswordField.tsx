@@ -427,7 +427,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
 
       <View style={styles.sliderContainer}>
         <View style={styles.sliderHeader}>
-          <ThemedText style={styles.sliderLabel}>{t('credentials.passwordLength')}</ThemedText>
+          <ThemedText style={styles.sliderLabel}>{t('items.passwordLength')}</ThemedText>
           <View style={styles.sliderValueContainer}>
             <ThemedText style={styles.sliderValue}>{sliderValue}</ThemedText>
             <TouchableOpacity
@@ -464,7 +464,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <ThemedText style={styles.modalTitle}>{t('credentials.changePasswordComplexity')}</ThemedText>
+              <ThemedText style={styles.modalTitle}>{t('items.changePasswordComplexity')}</ThemedText>
               <TouchableOpacity
                 style={styles.closeButton}
                 onPress={() => setShowSettingsModal(false)}
@@ -494,7 +494,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
 
               <View style={styles.settingsSection}>
                 <View style={styles.settingItem}>
-                  <ThemedText style={styles.settingLabel}>{t('credentials.includeLowercase')}</ThemedText>
+                  <ThemedText style={styles.settingLabel}>{t('items.includeLowercase')}</ThemedText>
                   <Switch
                     value={currentSettings?.UseLowercase ?? true}
                     onValueChange={(settingValue) => updateSetting('UseLowercase', settingValue)}
@@ -504,7 +504,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
                 </View>
 
                 <View style={styles.settingItem}>
-                  <ThemedText style={styles.settingLabel}>{t('credentials.includeUppercase')}</ThemedText>
+                  <ThemedText style={styles.settingLabel}>{t('items.includeUppercase')}</ThemedText>
                   <Switch
                     value={currentSettings?.UseUppercase ?? true}
                     onValueChange={(settingValue) => updateSetting('UseUppercase', settingValue)}
@@ -514,7 +514,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
                 </View>
 
                 <View style={styles.settingItem}>
-                  <ThemedText style={styles.settingLabel}>{t('credentials.includeNumbers')}</ThemedText>
+                  <ThemedText style={styles.settingLabel}>{t('items.includeNumbers')}</ThemedText>
                   <Switch
                     value={currentSettings?.UseNumbers ?? true}
                     onValueChange={(settingValue) => updateSetting('UseNumbers', settingValue)}
@@ -524,7 +524,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
                 </View>
 
                 <View style={styles.settingItem}>
-                  <ThemedText style={styles.settingLabel}>{t('credentials.includeSpecialChars')}</ThemedText>
+                  <ThemedText style={styles.settingLabel}>{t('items.includeSpecialChars')}</ThemedText>
                   <Switch
                     value={currentSettings?.UseSpecialChars ?? true}
                     onValueChange={(settingValue) => updateSetting('UseSpecialChars', settingValue)}
@@ -534,7 +534,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
                 </View>
 
                 <View style={styles.settingItem}>
-                  <ThemedText style={styles.settingLabel}>{t('credentials.avoidAmbiguousChars')}</ThemedText>
+                  <ThemedText style={styles.settingLabel}>{t('items.avoidAmbiguousChars')}</ThemedText>
                   <Switch
                     value={currentSettings?.UseNonAmbiguousChars ?? false}
                     onValueChange={(settingValue) => updateSetting('UseNonAmbiguousChars', settingValue)}

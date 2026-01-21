@@ -340,7 +340,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
 
           <View style={[styles.option, styles.optionLast]}>
             <View style={styles.optionHeader}>
-              <ThemedText style={styles.optionText}>{t('credentials.password')}</ThemedText>
+              <ThemedText style={styles.optionText}>{t('items.password')}</ThemedText>
               <Switch
                 value={true}
                 disabled={true}

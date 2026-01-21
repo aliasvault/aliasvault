@@ -30,28 +30,28 @@ export const AliasDetails: React.FC<AliasDetailsProps> = ({ item }) : React.Reac
 
   return (
     <ThemedView style={styles.section}>
-      <ThemedText type="subtitle">{t('credentials.alias')}</ThemedText>
+      <ThemedText type="subtitle">{t('items.alias')}</ThemedText>
       {hasName && (
         <FormInputCopyToClipboard
-          label={t('credentials.fullName')}
+          label={t('items.fullName')}
           value={fullName}
         />
       )}
       {firstName && (
         <FormInputCopyToClipboard
-          label={t('credentials.firstName')}
+          label={t('items.firstName')}
           value={firstName}
         />
       )}
       {lastName && (
         <FormInputCopyToClipboard
-          label={t('credentials.lastName')}
+          label={t('items.lastName')}
           value={lastName}
         />
       )}
       {IdentityHelperUtils.isValidBirthDate(birthDate) && (
         <FormInputCopyToClipboard
-          label={t('credentials.birthDate')}
+          label={t('items.birthDate')}
           value={IdentityHelperUtils.normalizeBirthDate(birthDate!)}
         />
       )}

@@ -229,7 +229,7 @@ export const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
                 onPress={() => deleteAttachment(attachment)}
               >
                 <ThemedText style={styles.deleteButtonText}>
-                  {t('credentials.deleteAttachment')}
+                  {t('items.deleteAttachment')}
                 </ThemedText>
               </TouchableOpacity>
             </View>

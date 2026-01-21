@@ -205,7 +205,7 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
           <View style={styles.codeContainer}>
             <View>
               <ThemedText style={styles.label}>
-                {t('credentials.totpCode')}
+                {t('items.totpCode')}
               </ThemedText>
               <ThemedText style={styles.code}>
                 {currentCodes[totpCode.Id]}

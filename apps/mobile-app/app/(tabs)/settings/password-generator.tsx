@@ -337,7 +337,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
         <View style={styles.settingsContainer}>
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
-              <ThemedText style={styles.sliderLabel}>{t('credentials.passwordLength')}</ThemedText>
+              <ThemedText style={styles.sliderLabel}>{t('items.passwordLength')}</ThemedText>
               <ThemedText style={styles.sliderValue}>{sliderValue ?? 0}</ThemedText>
             </View>
             <Slider
@@ -358,7 +358,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
 
         <View style={styles.settingsContainer}>
           <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('credentials.includeLowercase')}</ThemedText>
+            <ThemedText style={styles.settingLabel}>{t('items.includeLowercase')}</ThemedText>
             <Switch
               value={settings.UseLowercase}
               onValueChange={(value) => updateSetting('UseLowercase', value)}
@@ -368,7 +368,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           </View>
 
           <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('credentials.includeUppercase')}</ThemedText>
+            <ThemedText style={styles.settingLabel}>{t('items.includeUppercase')}</ThemedText>
             <Switch
               value={settings.UseUppercase}
               onValueChange={(value) => updateSetting('UseUppercase', value)}
@@ -378,7 +378,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           </View>
 
           <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('credentials.includeNumbers')}</ThemedText>
+            <ThemedText style={styles.settingLabel}>{t('items.includeNumbers')}</ThemedText>
             <Switch
               value={settings.UseNumbers}
               onValueChange={(value) => updateSetting('UseNumbers', value)}
@@ -388,7 +388,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           </View>
 
           <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('credentials.includeSpecialChars')}</ThemedText>
+            <ThemedText style={styles.settingLabel}>{t('items.includeSpecialChars')}</ThemedText>
             <Switch
               value={settings.UseSpecialChars}
               onValueChange={(value) => updateSetting('UseSpecialChars', value)}
@@ -398,7 +398,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           </View>
 
           <View style={[styles.settingItem, styles.settingItemLast]}>
-            <ThemedText style={styles.settingLabel}>{t('credentials.avoidAmbiguousChars')}</ThemedText>
+            <ThemedText style={styles.settingLabel}>{t('items.avoidAmbiguousChars')}</ThemedText>
             <Switch
               value={settings.UseNonAmbiguousChars}
               onValueChange={(value) => updateSetting('UseNonAmbiguousChars', value)}

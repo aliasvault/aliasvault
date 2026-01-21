@@ -67,7 +67,7 @@ export function ServiceUrlNotice({ serviceUrl, onDismiss }: IServiceUrlNoticePro
       >
         <MaterialIcons name="add-circle" size={20} color={colors.primary} />
         <ThemedText style={styles.text}>
-          {t('credentials.createNewAliasFor')} &ldquo;{serviceName}&rdquo;?
+          {t('items.createNewAliasFor')} &ldquo;{serviceName}&rdquo;?
         </ThemedText>
       </TouchableOpacity>
       <TouchableOpacity

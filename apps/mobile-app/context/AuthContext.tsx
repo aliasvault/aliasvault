@@ -322,10 +322,10 @@ export const AuthProvider: React.FC<{
       }
 
       // Fallback to password
-      return 'credentials.password';
+      return 'items.password';
     } catch (error) {
       console.error('Failed to get auth method display key:', error);
-      return 'credentials.password';
+      return 'items.password';
     }
   }, [getEnabledAuthMethods, getBiometricDisplayName, isBiometricsEnabledOnDevice]);
 

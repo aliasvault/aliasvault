@@ -107,7 +107,7 @@ export const NotesSection: React.FC<NotesSectionProps> = ({ item }) : React.Reac
 
   return (
     <ThemedView style={styles.section}>
-      <ThemedText type="subtitle">{t('credentials.notes')}</ThemedText>
+      <ThemedText type="subtitle">{t('items.notes')}</ThemedText>
       <View style={styles.notesContainer}>
         {parts.map((part, index) => {
           if (part.type === 'url') {

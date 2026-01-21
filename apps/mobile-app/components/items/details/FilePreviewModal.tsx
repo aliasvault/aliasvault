@@ -116,7 +116,7 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
       } else {
         Alert.alert(
           t('common.success'),
-          `${t('credentials.fileSavedTo')}: ${filePath}`
+          `${t('items.fileSavedTo')}: ${filePath}`
         );
       }
     } catch (error) {
@@ -252,10 +252,10 @@ export const FilePreviewModal: React.FC<FilePreviewModalProps> = ({
       <View style={styles.unsupportedContainer}>
         <Ionicons name="document-outline" size={80} color={colors.text} />
         <ThemedText style={styles.unsupportedText}>
-          {t('credentials.previewNotSupported')}
+          {t('items.previewNotSupported')}
         </ThemedText>
         <ThemedText style={styles.unsupportedSubtext}>
-          {t('credentials.downloadToView')}
+          {t('items.downloadToView')}
         </ThemedText>
       </View>
     );

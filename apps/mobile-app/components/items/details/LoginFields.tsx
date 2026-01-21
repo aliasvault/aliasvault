@@ -94,7 +94,7 @@ export const LoginFields: React.FC<LoginFieldsProps> = ({ item }) : React.ReactN
 
   return (
     <ThemedView style={styles.section}>
-      <ThemedText type="subtitle">{t('credentials.loginCredentials')}</ThemedText>
+      <ThemedText type="subtitle">{t('items.loginCredentials')}</ThemedText>
 
       {/* Render login fields using FieldBlock */}
       {sortedLoginFields.map((field: ItemField) => (
