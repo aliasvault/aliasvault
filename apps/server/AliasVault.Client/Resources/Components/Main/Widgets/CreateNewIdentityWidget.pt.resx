@@ -127,7 +127,7 @@
     <comment>Credit card item type label (short)</comment>
   </data>
   <data name="TypeNote" xml:space="preserve">
-    <value>Note</value>
+    <value>Nota</value>
     <comment>Note item type label</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
