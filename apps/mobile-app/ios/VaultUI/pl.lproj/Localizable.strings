@@ -58,7 +58,7 @@
 
 /* Passkey merge with existing item */
 "passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
+"add_passkey" = "Dodaj klucz dostępu";
 "merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
