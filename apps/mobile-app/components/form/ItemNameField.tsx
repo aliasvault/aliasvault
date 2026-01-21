@@ -6,6 +6,8 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   ScrollView,
 } from 'react-native';
@@ -204,76 +206,82 @@ export const ItemNameField = forwardRef<ItemNameFieldRef, IItemNameFieldProps>((
         animationType="fade"
         onRequestClose={() => setShowModal(false)}
       >
-        <View style={styles.backdrop}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.title}>{t('items.folders.selectFolder')}</Text>
+        <TouchableWithoutFeedback onPress={() => setShowModal(false)}>
+          <View style={styles.backdrop}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContainer}>
+                <Text style={styles.title}>{t('items.folders.selectFolder')}</Text>
 
-            <RobustPressable
-              style={styles.closeButton}
-              onPress={() => setShowModal(false)}
-            >
-              <MaterialIcons name="close" size={24} color={colors.textMuted} />
-            </RobustPressable>
-
-            <ScrollView style={styles.optionsList}>
-              {/* No folder option */}
-              <RobustPressable
-                style={[
-                  styles.folderOption,
-                  !selectedFolderId && styles.folderOptionActive,
-                ]}
-                onPress={() => handleSelectFolder(null)}
-              >
-                <MaterialIcons
-                  name="folder-open"
-                  size={22}
-                  color={!selectedFolderId ? colors.tint : colors.textMuted}
-                />
-                <Text
-                  style={[
-                    styles.folderOptionText,
-                    !selectedFolderId && styles.folderOptionTextActive,
-                  ]}
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setShowModal(false)}
                 >
-                  {t('items.folders.noFolder')}
-                </Text>
-                {!selectedFolderId && (
-                  <MaterialIcons name="check" size={20} color={colors.tint} />
-                )}
-              </RobustPressable>
+                  <MaterialIcons name="close" size={24} color={colors.textMuted} />
+                </TouchableOpacity>
 
-              {/* Folder options */}
-              {folders.map(folder => (
-                <RobustPressable
-                  key={folder.Id}
-                  style={[
-                    styles.folderOption,
-                    selectedFolderId === folder.Id && styles.folderOptionActive,
-                  ]}
-                  onPress={() => handleSelectFolder(folder.Id)}
-                >
-                  <MaterialIcons
-                    name="folder"
-                    size={22}
-                    color={selectedFolderId === folder.Id ? colors.tint : colors.textMuted}
-                  />
-                  <Text
+                <ScrollView style={styles.optionsList}>
+                  {/* No folder option */}
+                  <TouchableOpacity
                     style={[
-                      styles.folderOptionText,
-                      selectedFolderId === folder.Id && styles.folderOptionTextActive,
+                      styles.folderOption,
+                      !selectedFolderId && styles.folderOptionActive,
                     ]}
-                    numberOfLines={1}
+                    onPress={() => handleSelectFolder(null)}
+                    activeOpacity={0.7}
                   >
-                    {folder.Name}
-                  </Text>
-                  {selectedFolderId === folder.Id && (
-                    <MaterialIcons name="check" size={20} color={colors.tint} />
-                  )}
-                </RobustPressable>
-              ))}
-            </ScrollView>
+                    <MaterialIcons
+                      name="folder-open"
+                      size={22}
+                      color={!selectedFolderId ? colors.tint : colors.textMuted}
+                    />
+                    <Text
+                      style={[
+                        styles.folderOptionText,
+                        !selectedFolderId && styles.folderOptionTextActive,
+                      ]}
+                    >
+                      {t('items.folders.noFolder')}
+                    </Text>
+                    {!selectedFolderId && (
+                      <MaterialIcons name="check" size={20} color={colors.tint} />
+                    )}
+                  </TouchableOpacity>
+
+                  {/* Folder options */}
+                  {folders.map(folder => (
+                    <TouchableOpacity
+                      key={folder.Id}
+                      style={[
+                        styles.folderOption,
+                        selectedFolderId === folder.Id && styles.folderOptionActive,
+                      ]}
+                      onPress={() => handleSelectFolder(folder.Id)}
+                      activeOpacity={0.7}
+                    >
+                      <MaterialIcons
+                        name="folder"
+                        size={22}
+                        color={selectedFolderId === folder.Id ? colors.tint : colors.textMuted}
+                      />
+                      <Text
+                        style={[
+                          styles.folderOptionText,
+                          selectedFolderId === folder.Id && styles.folderOptionTextActive,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {folder.Name}
+                      </Text>
+                      {selectedFolderId === folder.Id && (
+                        <MaterialIcons name="check" size={20} color={colors.tint} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );

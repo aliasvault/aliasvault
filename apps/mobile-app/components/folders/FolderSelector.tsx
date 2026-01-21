@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
   ScrollView,
 } from 'react-native';
@@ -156,76 +157,80 @@ export const FolderSelector: React.FC<IFolderSelectorProps> = ({
         animationType="fade"
         onRequestClose={() => setShowModal(false)}
       >
-        <View style={styles.backdrop}>
-          <View style={styles.container}>
-            <Text style={styles.title}>{t('items.folders.selectFolder')}</Text>
+        <TouchableWithoutFeedback onPress={() => setShowModal(false)}>
+          <View style={styles.backdrop}>
+            <TouchableWithoutFeedback>
+              <View style={styles.container}>
+                <Text style={styles.title}>{t('items.folders.selectFolder')}</Text>
 
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setShowModal(false)}
-            >
-              <MaterialIcons name="close" size={24} color={colors.textMuted} />
-            </TouchableOpacity>
-
-            <ScrollView style={styles.optionsList}>
-              {/* No folder option */}
-              <TouchableOpacity
-                style={[
-                  styles.folderOption,
-                  !selectedFolderId && styles.folderOptionActive,
-                ]}
-                onPress={() => handleSelectFolder(null)}
-              >
-                <MaterialIcons
-                  name="folder-open"
-                  size={22}
-                  color={!selectedFolderId ? colors.tint : colors.textMuted}
-                />
-                <Text
-                  style={[
-                    styles.folderOptionText,
-                    !selectedFolderId && styles.folderOptionTextActive,
-                  ]}
-                >
-                  {t('items.folders.noFolder')}
-                </Text>
-                {!selectedFolderId && (
-                  <MaterialIcons name="check" size={20} color={colors.tint} />
-                )}
-              </TouchableOpacity>
-
-              {/* Folder options */}
-              {folders.map(folder => (
                 <TouchableOpacity
-                  key={folder.Id}
-                  style={[
-                    styles.folderOption,
-                    selectedFolderId === folder.Id && styles.folderOptionActive,
-                  ]}
-                  onPress={() => handleSelectFolder(folder.Id)}
+                  style={styles.closeButton}
+                  onPress={() => setShowModal(false)}
                 >
-                  <MaterialIcons
-                    name="folder"
-                    size={22}
-                    color={selectedFolderId === folder.Id ? colors.tint : colors.textMuted}
-                  />
-                  <Text
-                    style={[
-                      styles.folderOptionText,
-                      selectedFolderId === folder.Id && styles.folderOptionTextActive,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {folder.Name}
-                  </Text>
-                  {selectedFolderId === folder.Id && (
-                    <MaterialIcons name="check" size={20} color={colors.tint} />
-                  )}
+                  <MaterialIcons name="close" size={24} color={colors.textMuted} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+
+                <ScrollView style={styles.optionsList}>
+                  {/* No folder option */}
+                  <TouchableOpacity
+                    style={[
+                      styles.folderOption,
+                      !selectedFolderId && styles.folderOptionActive,
+                    ]}
+                    onPress={() => handleSelectFolder(null)}
+                  >
+                    <MaterialIcons
+                      name="folder-open"
+                      size={22}
+                      color={!selectedFolderId ? colors.tint : colors.textMuted}
+                    />
+                    <Text
+                      style={[
+                        styles.folderOptionText,
+                        !selectedFolderId && styles.folderOptionTextActive,
+                      ]}
+                    >
+                      {t('items.folders.noFolder')}
+                    </Text>
+                    {!selectedFolderId && (
+                      <MaterialIcons name="check" size={20} color={colors.tint} />
+                    )}
+                  </TouchableOpacity>
+
+                  {/* Folder options */}
+                  {folders.map(folder => (
+                    <TouchableOpacity
+                      key={folder.Id}
+                      style={[
+                        styles.folderOption,
+                        selectedFolderId === folder.Id && styles.folderOptionActive,
+                      ]}
+                      onPress={() => handleSelectFolder(folder.Id)}
+                    >
+                      <MaterialIcons
+                        name="folder"
+                        size={22}
+                        color={selectedFolderId === folder.Id ? colors.tint : colors.textMuted}
+                      />
+                      <Text
+                        style={[
+                          styles.folderOptionText,
+                          selectedFolderId === folder.Id && styles.folderOptionTextActive,
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {folder.Name}
+                      </Text>
+                      {selectedFolderId === folder.Id && (
+                        <MaterialIcons name="check" size={20} color={colors.tint} />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
     </View>
   );
