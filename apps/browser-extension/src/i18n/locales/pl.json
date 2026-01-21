@@ -38,7 +38,7 @@
     }
   },
   "menu": {
-    "vault": "Vault",
+    "vault": "Sejf",
     "emails": "Skrzynka odbiorcza"
   },
   "common": {
@@ -50,11 +50,11 @@
     "back": "Powrót",
     "next": "Dalej",
     "use": "Użyj",
-    "add": "Add",
+    "add": "Dodaj",
     "delete": "Usuń",
     "undo": "Cofnij",
     "save": "Zapisz",
-    "saving": "Saving...",
+    "saving": "Zapisywanie...",
     "create": "Utwórz",
     "or": "lub",
     "close": "Zamknąć",
@@ -75,7 +75,7 @@
     "settings": "Ustawienia",
     "recentEmails": "Ostatnie wiadomości e-mail",
     "credentials": "Dane logowania",
-    "customFields": "Custom",
+    "customFields": "Niestandardowe",
     "twoFactorAuthentication": "Weryfikacja dwuetapowa (2FA)",
     "alias": "Alias",
     "notes": "Notatki",
@@ -88,11 +88,11 @@
     "checkingVaultUpdates": "Sprawdzanie aktualizacji sejfu",
     "syncingUpdatedVault": "Synchronizacja zaktualizowanego sejfu",
     "loadMore": "Załaduj więcej",
-    "offline": "Offline",
-    "offlineMode": "Operating in offline mode",
-    "pendingSync": "Syncing...",
-    "mergingVaultChanges": "Merging vault changes...",
-    "uploadingVault": "Uploading vault...",
+    "offline": "Jesteś w trybie offline",
+    "offlineMode": "Praca w trybie offline",
+    "pendingSync": "Synchronizowanie...",
+    "mergingVaultChanges": "Łączenie zmian w sejfie...",
+    "uploadingVault": "Ładowanie sejfu...",
     "errors": {
       "serverNotAvailable": "Serwer AliasVault jest niedostępny. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
       "clientVersionNotSupported": "Ta wersja rozszerzenia przeglądarki AliasVault nie jest już obsługiwana przez serwer. Zaktualizuj rozszerzenie przeglądarki do najnowszej wersji.",
@@ -104,9 +104,8 @@
       "vaultNotAvailable": "Sejf niedostępny",
       "vaultIsLocked": "Sejf jest zablokowany",
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się.",
-      "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again.",
-      "legacyMergeRequired": "Vault merge required. Please login via the web app to merge the pending updates to your vault."
+      "syncConflictMaxRetries": "Nie można zsynchronizować sejfu po wielu próbach. Spróbuj ponownie później.",
+      "mergeFailed": "Failed to merge vault changes. Please try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Wystąpił nieznany błąd. Spróbuj ponownie.",
@@ -167,7 +166,45 @@
     "vaultUpgradeRequired": "Wymagana aktualizacja sejfu.",
     "dismissPopup": "Zamknij wyskakujące okienko"
   },
-  "credentials": {
+  "items": {
+    "title": "Items",
+    "itemName": "Nazwa",
+    "loginCredentials": "Dane logowania",
+    "cardInformation": "Informacje o karcie",
+    "addItem": "Dodaj element",
+    "addNewItem": "Add new item",
+    "saveItem": "Save Item",
+    "itemDetails": "Szczegóły produktu",
+    "editItem": "Edytuj element",
+    "untitled": "Bez tytułu",
+    "newFolder": "Nowy folder",
+    "createFolder": "Utwórz folder",
+    "editFolder": "Edytuj folder",
+    "folderName": "Nazwa folderu",
+    "folderNameRequired": "Nazwa folderu jest wymagana",
+    "folder": "Katalog",
+    "welcomeTitle": "Witamy w AliasVault!",
+    "welcomeDescription": "Aby skorzystać z rozszerzenia przeglądarki AliasVault - przejdź do strony internetowej i użyj okienka autozupelniania, aby utworzyć nowa tożsamość.",
+    "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
+    "noAttachmentsFound": "Nie znaleziono żadnych elementów z załącznikami.",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "noMatchingItems": "Nie znaleziono pasujących elementów",
+    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
+    "deleteFolder": "Usuń folder",
+    "deleteFolderKeepItems": "Usuń tylko folder",
+    "deleteFolderKeepItemsDescription": "Elementy zostaną przeniesione z powrotem do listy głównej.",
+    "deleteFolderAndItems": "Usuń folder i wszystkie elementy",
+    "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
+    "filters": {
+      "all": "(Wszystkie) pozycje",
+      "passkeys": "Klucze dostępu"
+    },
+    "deleteItemTitle": "Usuń element",
+    "deleteItemConfirm": "Czy na pewno chcesz usunąć ten element?",
+    "viewHistory": "View history",
+    "history": "Historia",
+    "noHistoryAvailable": "No history available",
+    "tags": "Znaczniki",
     "changePasswordComplexity": "Zmień komplikację hasła",
     "passwordLength": "Długość hasła",
     "includeLowercase": "Uwzględnij małe litery",
@@ -175,78 +212,38 @@
     "includeNumbers": "Uwzględnij numery",
     "includeSpecialChars": "Uwzględnij znaki specjalne",
     "avoidAmbiguousChars": "Unikaj dwuznacznych znaków (o, 0, itp.)",
-    "privateEmailTitle": "Prywatny e-mail",
+    "privateEmailTitle": "Prywatny adres e-mail",
     "privateEmailAliasVaultServer": "Serwer AliasVault",
-    "privateEmailDescription": "E2E zaszyfrowane, w pełni prywatne.",
-    "publicEmailTitle": "Publiczni dostawcy poczty tymczasowej",
-    "publicEmailDescription": "Anonimowa, ale ograniczona prywatność. Treści e-mail są czytelne dla każdego, kto zna adres.",
+    "privateEmailDescription": "Szyfrowane E2E, w pełni prywatne.",
+    "publicEmailTitle": "Publiczni dostawcy tymczasowych adresów e-mail",
+    "publicEmailDescription": "Anonimowe, ale ograniczają prywatność. Treść wiadomości e-mail jest dostępna dla każdego, kto zna adres.",
     "generateRandomUsername": "Wygeneruj losową nazwę użytkownika",
     "generateRandomPassword": "Wygeneruj losowe hasło",
     "generateNewPreview": "Utwórz nowy podgląd",
-    "generateRandomAlias": "Utwórz losowy alias",
+    "generateRandomAlias": "Generuj losowy tożsamość",
     "validation": {
       "required": "To pole jest wymagane"
-    },
-    "tags": "Znaczniki"
-  },
-  "items": {
-    "title": "Items",
-    "itemName": "Nazwa",
-    "loginCredentials": "Dane logowania",
-    "cardInformation": "Card Information",
-    "addItem": "Add Item",
-    "addNewItem": "Add new item",
-    "saveItem": "Save Item",
-    "itemDetails": "Item Details",
-    "editItem": "Edit Item",
-    "untitled": "Untitled",
-    "newFolder": "New Folder",
-    "createFolder": "Utwórz folder",
-    "editFolder": "Edit Folder",
-    "folderName": "Folder Name",
-    "folderNameRequired": "Folder name is required",
-    "folder": "Katalog",
-    "welcomeTitle": "Witamy w AliasVault!",
-    "welcomeDescription": "Aby skorzystać z rozszerzenia przeglądarki AliasVault - przejdź do strony internetowej i użyj okienka autozupelniania, aby utworzyć nowa tożsamość.",
-    "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
-    "noMatchingItems": "No matching items found",
-    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
-    "deleteFolder": "Delete Folder",
-    "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-    "deleteFolderAndItems": "Delete folder and all items",
-    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
-    "filters": {
-      "all": "(All) Items",
-      "passkeys": "Klucze dostępu"
-    },
-    "deleteItemTitle": "Usuń element",
-    "deleteItemConfirm": "Czy na pewno chcesz usunąć ten element?",
-    "viewHistory": "View history",
-    "history": "History",
-    "noHistoryAvailable": "No history available"
+    }
   },
   "itemTypes": {
     "selectType": "Add New Item",
     "typeLabel": "Item Type",
-    "creating": "Creating",
-    "editing": "Editing",
-    "regenerateAlias": "Regenerate alias",
-    "addCustomField": "Add custom field",
-    "fieldLabel": "Field Label",
-    "enterFieldName": "Enter field name",
-    "fieldType": "Field Type",
+    "creating": "Tworzenie",
+    "editing": "Edytowanie",
+    "regenerateAlias": "Ponownie wygeneruj alias",
+    "addCustomField": "Dodaj pole niestandardowe",
+    "fieldLabel": "Etykieta pola",
+    "enterFieldName": "Wprowadź nazwę pola",
+    "fieldType": "Typ pola",
     "fieldTypes": {
-      "text": "Text",
-      "hidden": "Hidden (masked text)",
+      "text": "Tekst",
+      "hidden": "Ukryty (zamaskowany tekst)",
       "email": "Skrzynka odbiorcza",
-      "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "url": "adres URL",
+      "phone": "Numer telefonu",
+      "number": "Numer",
       "date": "Data",
-      "textArea": "Text Area"
+      "textArea": "Obszar tekst"
     },
     "login": {
       "title": "Zaloguj się"
@@ -255,14 +252,14 @@
       "title": "Tożsamość (Alias)"
     },
     "creditCard": {
-      "title": "Credit Card"
+      "title": "Karta płatnicza"
     },
     "note": {
-      "title": "Secure Note"
+      "title": "Bezpieczna notatka"
     }
   },
   "fieldLabels": {
-    "login.url": "Website URL",
+    "login.url": "URL strony internetowej",
     "login.username": "Nazwa użytkownika",
     "login.password": "Hasło",
     "alias.first_name": "Imię",
@@ -271,12 +268,12 @@
     "alias.birthdate": "Data urodzenia",
     "login.email": "Skrzynka odbiorcza",
     "notes.content": "Notatki",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
-    "card.cvv": "CVV",
-    "card.pin": "PIN"
+    "card.cardholder_name": "Imię i nazwisko posiadacza karty",
+    "card.number": "Numer karty",
+    "card.expiry_month": "Miesiąc wygaśnięcia",
+    "card.expiry_year": "Rok wygaśnięcia",
+    "card.cvv": "Kod CVV",
+    "card.pin": "Kod PIN"
   },
   "totp": {
     "addCode": "Dodaj kod 2FA",
@@ -284,15 +281,15 @@
     "nameOptional": "Nazwa (opcjonalnie)",
     "secretKey": "Tajny klucz",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
-    "defaultName": "Authenticator",
+    "defaultName": "Uwierzytelnianie",
     "errors": {
       "invalidSecretKey": "Nieprawidłowy format tajnego klucza."
     }
   },
   "attachmentUploader": {
-    "uploading": "Uploading...",
-    "uploadSuccess": "Files uploaded successfully.",
-    "deleteSuccess": "Attachment deleted successfully."
+    "uploading": "Przesyłanie...",
+    "uploadSuccess": "Plik został przesłany pomyślnie.",
+    "deleteSuccess": "Element został pomyślnie usunięty."
   },
   "emails": {
     "title": "Skrzynka odbiorcza",
@@ -442,10 +439,10 @@
       "createNewPasskey": "Utwórz nowy klucz dostępu",
       "replacingPasskey": "Zamiana klucza dostępu: {{displayName}}",
       "confirmReplace": "Potwierdź zamianę",
-      "selectExistingLogin": "Add to existing login:",
+      "selectExistingLogin": "Dodaj do istniejącego loginu:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
       "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachPasskey": "Dodaj klucz dostępu"
     },
     "settings": {
       "passkeyProvider": "Dostawca klucza dostępu",
@@ -453,19 +450,19 @@
     }
   },
   "recentlyDeleted": {
-    "title": "Recently Deleted",
-    "noItems": "No deleted items",
-    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
-    "restore": "Restore",
-    "deletePermanently": "Delete Permanently",
-    "emptyAll": "Empty All",
-    "daysRemaining": "{{count}} day remaining",
-    "daysRemaining_plural": "{{count}} days remaining",
-    "expiringSoon": "Expiring soon",
-    "confirmDeleteTitle": "Delete Permanently?",
-    "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
-    "confirmEmptyAllTitle": "Empty Recently Deleted?",
+    "title": "Ostatnio usunięte",
+    "noItems": "Brak usuniętych elementów",
+    "noItemsDescription": "Usunięte elementy pojawią się tutaj na 30 dni, zanim zostaną trwale usunięte.",
+    "description": "Te elementy zostaną trwale usunięte po 30 dniach. Możesz je przywrócić lub natychmiast usunąć.",
+    "restore": "Przywróć",
+    "deletePermanently": "Usuń bezpowrotnie",
+    "emptyAll": "Opróżnij wszystkie",
+    "daysRemaining_one": "{{count}} day remaining",
+    "daysRemaining_other": "{{count}} days remaining",
+    "expiringSoon": "Wkrótce wygasa",
+    "confirmDeleteTitle": "Usunąć trwale?",
+    "confirmDeleteMessage": "Ten element zostanie trwale usunięty i nie będzie można go odzyskać.",
+    "confirmEmptyAllTitle": "Opróżnij ostatnio usunięte?",
     "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
   },
   "upgrade": {
@@ -489,8 +486,8 @@
     }
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Zmiany niesynchronizowane",
+    "unsyncedChangesWarning": "Masz niezsynchronizowane zmiany, które zostaną utracone, jeśli się teraz wylogujesz. Czy na pewno chcesz kontynuować?",
+    "logoutAnyway": "Wyloguj się mimo wszystko"
   }
 }
