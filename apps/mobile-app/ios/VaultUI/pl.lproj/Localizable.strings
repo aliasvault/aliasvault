@@ -9,8 +9,8 @@
 "title" = "Nazwa";
 "unknown_error" = "Wystąpił nieznany błąd";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
+"loading_items" = "Ładowanie elementów...";
+"no_items_found" = "Nic nie znaleziono";
 "no_items_match" = "No existing items match your search";
 "create_new_item" = "Create New Item";
 "select_item" = "Select Item";
