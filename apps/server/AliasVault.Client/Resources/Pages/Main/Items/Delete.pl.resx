@@ -20,15 +20,15 @@
     </xsd:element>
   </xsd:schema>
   <data name="DeleteItemPageTitle">
-    <value>Delete item</value>
+    <value>Usuń element</value>
     <comment>Page title for deleting items</comment>
   </data>
   <data name="DeleteItemTitle">
-    <value>Delete item</value>
+    <value>Usuń element</value>
     <comment>Page header title for deleting item</comment>
   </data>
   <data name="DeleteItemDescription">
-    <value>You can delete the item below.</value>
+    <value>Możesz usunąć poniższe dane logowania.</value>
     <comment>Page description for deleting item</comment>
   </data>
   <data name="ItemEntrySection">
@@ -52,23 +52,23 @@
     <comment>Cancel button text</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Pokaż element</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="DeleteItemBreadcrumb">
-    <value>Delete item</value>
+    <value>Usuń element</value>
     <comment>Breadcrumb text for delete item page</comment>
   </data>
   <data name="DeleteItemNotFoundError">
-    <value>Error deleting. Item not found.</value>
+    <value>Błąd podczas usuwania. Nie znaleziono danych logowania.</value>
     <comment>Error message when item is not found during deletion</comment>
   </data>
   <data name="DeletingItemMessage">
-    <value>Deleting item...</value>
+    <value>Usuwanie elementu...</value>
     <comment>Loading message while deleting item</comment>
   </data>
   <data name="DeleteSuccessMessage">
-    <value>Item successfully deleted.</value>
+    <value>Element został pomyślnie usunięty.</value>
     <comment>Success message after item deletion</comment>
   </data>
   <data name="DeleteDatabaseError">
