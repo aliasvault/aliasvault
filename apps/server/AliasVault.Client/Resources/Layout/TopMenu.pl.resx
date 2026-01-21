@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Main navigation links -->
   <data name="VaultNav">
-    <value>Vault</value>
+    <value>Sejf</value>
     <comment>Main navigation link for vault section</comment>
   </data>
   <data name="EmailsNav">
