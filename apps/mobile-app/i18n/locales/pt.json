@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Excluir Item",
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "errors": {
-      "unknownError": "Ocorreu um erro desconhecido. Por favor, tente novamente.",
+      "unknownError": "Ocorreu um erro desconhecido.",
       "unknownErrorTryAgain": "Ocorreu um erro desconhecido. Por favor, tente novamente.",
       "serverVersionTooOld": "O servidor do AliasVault deve ser atualizado para uma versão mais recente para utilizar esta função. Por favor, entre em contato com o administrador do servidor se precisar de ajuda."
     }
@@ -209,8 +209,6 @@
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "Site",
-    "displayName": "Nome de Exibição",
     "helpText": "Passkeys são criadas no website quanto solicitado. Elas não podem ser editadas manualmente. Para remover esta passkey, você pode excluí-la desta credencial.",
     "passkeyMarkedForDeletion": "Passkey marcada para ser excluída",
     "passkeyWillBeDeleted": "Esta passkey será excluída quando você salvar esta credencial."
@@ -317,13 +315,6 @@
       "pinDescription": "Utilize um código PIN para desbloquear seu cofre mais rapidamente.",
       "pinEnabled": "Desbloqueio por PIN habilitado com sucesso",
       "pinDisabled": "Desbloqueio por PIN foi desabilitado",
-      "setupPin": "Configurar PIN",
-      "enterNewPin": "Digite o Novo PIN",
-      "enterNewPinDescription": "Escolha um PIN para desbloquear seu cofre",
-      "confirmPin": "Confirme o PIN",
-      "confirmPinDescription": "Digite seu PIN novamente para confirmar",
-      "pinMismatch": "PINs não correspondem. Por favor, tente novamente.",
-      "pinLocked": "PIN bloqueado após muitas tentativas incorretas. Por favor, utilize sua senha mestre.",
       "passwordHelp": "Re-digite sua senha mestre para desbloquear seu cofre. Isso sempre estará disponível como uma opção alternativa.",
       "keystoreIOS": "iOS Keychain",
       "keystoreAndroid": "Android Keystore"
@@ -421,23 +412,16 @@
     "qrScanner": {
       "title": "Escaneador de Código QR",
       "scanningMessage": "Escanear código QR do AliasVault",
-      "invalidQrCode": "Código QR Inválido",
-      "notAliasVaultQr": "Este não é um código QR válido do AliasVault. Por favor, escaneie o código QR gerado pelo AliasVault.",
-      "cameraPermissionTitle": "Permissões de Câmera Necessárias",
-      "cameraPermissionMessage": "Por favor, autorize o acesso à câmera para escanear o código QR.",
       "mobileLogin": {
         "confirmTitle": "Confirmar Requisição de Login",
         "confirmSubtitle": "Autentique novamente para aprovar login em outros dispositivos.",
         "confirmMessage": "Você está prestes a fazer login em um dispositivo remoto com sua conta. Este outro dispositivo terá acesso total ao seu cofre. Proceda apenas se você confia neste dispositivo.",
         "successDescription": "O login no dispositivo remoto foi feito com sucesso.",
-        "requestExpired": "Esta requisição de login expirou. Por favor, gere um novo código QR.",
-        "authenticationFailed": "Autenticação falhou. Por favor, tente novamente.",
-        "noAuthMethodEnabled": "Desbloqueio por biometria ou PIN deve ser ativado para desbloquear com o dispositivo móvel"
+        "requestExpired": "Esta requisição de login expirou. Por favor, gere um novo código QR."
       }
     }
   },
   "navigation": {
-    "credentials": "Credenciais",
     "vault": "Cofre",
     "emails": "E-mails",
     "settings": "Configurações"
@@ -499,12 +483,11 @@
     "deleteItem": "Excluir Item",
     "itemDetails": "Detalhes do Item",
     "itemCreated": "Item Criado",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "emailPreview": "Prévia de E-mail",
     "untitled": "Sem Título",
     "name": "Nome",
-    "namePlaceholder": "ex.: Google, Amazon",
     "url": "URL",
-    "urlPlaceholder": "ex.: https://google.com",
     "service": "Serviço",
     "serviceName": "Nome do Serviço",
     "serviceUrl": "URL do Serviço",
@@ -561,7 +544,6 @@
     "vaultSyncedSuccessfully": "Cofre sincronizado com sucesso",
     "vaultUpToDate": "Cofre está atualizado",
     "offlineMessage": "Você está offline. Por favor conecte-se à internet para sincronizar seu cofre.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "switchBackToBrowser": "Volte ao navegador para continuar.",
     "filters": {
       "all": "(All) Items",
@@ -590,10 +572,6 @@
       "passwordCopied": "Senha copiada para a área de transferência"
     },
     "createNewAliasFor": "Criar novo alias para",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "Editar",
@@ -702,7 +680,6 @@
   },
   "sync": {
     "offline": "Offline",
-    "offlineWithPending": "Offline (pending)",
     "syncing": "Syncing...",
     "pending": "Pending sync",
     "retrySync": "Tap to retry",
@@ -724,7 +701,6 @@
     },
     "alerts": {
       "syncIssue": "Sem Conexão",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Abrir Cofre Local",
       "retrySync": "Tentar Sincronizar Novamente"
     },
