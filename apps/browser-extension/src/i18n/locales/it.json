@@ -167,28 +167,6 @@
     "vaultUpgradeRequired": "Aggiornamento della cassaforte richiesto.",
     "dismissPopup": "Chiudi finestra"
   },
-  "credentials": {
-    "changePasswordComplexity": "Modifica complessità password",
-    "passwordLength": "Lunghezza password",
-    "includeLowercase": "Includi lettere minuscole",
-    "includeUppercase": "Includi lettere maiuscole",
-    "includeNumbers": "Includi numeri",
-    "includeSpecialChars": "Includi caratteri speciali",
-    "avoidAmbiguousChars": "Evita caratteri ambigui (o, 0, ecc.)",
-    "privateEmailTitle": "Email privata",
-    "privateEmailAliasVaultServer": "Server AliasVault",
-    "privateEmailDescription": "E2E crittografato, completamente privato.",
-    "publicEmailTitle": "Fornitori Pubblici di Email Temporanee",
-    "publicEmailDescription": "Anonimi ma con privacy ridotta. Accessibile a chiunque conosca l'indirizzo.",
-    "generateRandomUsername": "Genera nome utente casuale",
-    "generateRandomPassword": "Genera password casuale",
-    "generateNewPreview": "Genera nuova anteprima",
-    "generateRandomAlias": "Genera alias casuale",
-    "validation": {
-      "required": "Questo campo è obbligatorio"
-    },
-    "tags": "Tag"
-  },
   "items": {
     "title": "Items",
     "itemName": "Nome",
@@ -226,7 +204,27 @@
     "deleteItemConfirm": "Sei sicuro di voler rimuovere questo elemento?",
     "viewHistory": "View history",
     "history": "History",
-    "noHistoryAvailable": "No history available"
+    "noHistoryAvailable": "No history available",
+    "tags": "Tags",
+    "changePasswordComplexity": "Change password complexity",
+    "passwordLength": "Password length",
+    "includeLowercase": "Include lowercase letters",
+    "includeUppercase": "Include uppercase letters",
+    "includeNumbers": "Include numbers",
+    "includeSpecialChars": "Include special characters",
+    "avoidAmbiguousChars": "Avoid ambiguous characters (o, 0, etc.)",
+    "privateEmailTitle": "Private Email",
+    "privateEmailAliasVaultServer": "AliasVault server",
+    "privateEmailDescription": "E2E encrypted, fully private.",
+    "publicEmailTitle": "Public Temp Email Providers",
+    "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
+    "generateRandomUsername": "Generate random username",
+    "generateRandomPassword": "Generate random password",
+    "generateNewPreview": "Generate new preview",
+    "generateRandomAlias": "Generate Random Alias",
+    "validation": {
+      "required": "This field is required"
+    }
   },
   "itemTypes": {
     "selectType": "Add New Item",
@@ -460,8 +458,8 @@
     "restore": "Restore",
     "deletePermanently": "Delete Permanently",
     "emptyAll": "Empty All",
-    "daysRemaining": "{{count}} day remaining",
-    "daysRemaining_plural": "{{count}} days remaining",
+    "daysRemaining_one": "{{count}} day remaining",
+    "daysRemaining_other": "{{count}} days remaining",
     "expiringSoon": "Expiring soon",
     "confirmDeleteTitle": "Delete Permanently?",
     "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
