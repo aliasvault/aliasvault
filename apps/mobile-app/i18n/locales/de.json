@@ -209,8 +209,6 @@
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "Seite",
-    "displayName": "Anzeigename",
     "helpText": "Passkeys werden auf der Webseite erzeugt, wenn sie aufgefordert werden. Sie können nicht manuell bearbeitet werden. Um diesen Passkey zu entfernen, kannst Du ihn aus diesem Zugang löschen.",
     "passkeyMarkedForDeletion": "Passkey zum Löschen vorgemerkt",
     "passkeyWillBeDeleted": "Dieser Passkey wird gelöscht, wenn Du den Zugang speicherst."
@@ -317,13 +315,6 @@
       "pinDescription": "Benutze einen eigenen PIN-Code, um Deinen Tresor schneller zu entsperren.",
       "pinEnabled": "PIN-Sperre erfolgreich aktiviert",
       "pinDisabled": "PIN-Sperre wurde deaktiviert",
-      "setupPin": "PIN einrichten",
-      "enterNewPin": "Neue PIN eingeben",
-      "enterNewPinDescription": "Wähle eine PIN zum Entsperren des Tresors",
-      "confirmPin": "PIN bestätigen",
-      "confirmPinDescription": "Zur Bestätigung PIN erneut eingeben",
-      "pinMismatch": "PINs stimmen nicht überein. Bitte versuche es erneut.",
-      "pinLocked": "Die PIN wurde nach zu vielen fehlgeschlagenen Versuchen gesperrt. Bitte verwende Dein Master-Passwort.",
       "passwordHelp": "Gib Dein vollständiges Master-Passwort erneut ein, um Deinen Tresor zu entsperren. Diese Option ist immer als Fallback-Option aktiviert.",
       "keystoreIOS": "iCloud-Schlüsselbund",
       "keystoreAndroid": "Android-Schlüsselspeicher"
@@ -421,23 +412,16 @@
     "qrScanner": {
       "title": "QR-Code-Scanner",
       "scanningMessage": "Scanne den AliasVault-QR-Code",
-      "invalidQrCode": "Ungültiger QR-Code",
-      "notAliasVaultQr": "Dies ist kein gültiger AliasVault-QR-Code. Bitte scanne einen von AliasVault generierten QR-Code.",
-      "cameraPermissionTitle": "Kameraberechtigung erforderlich",
-      "cameraPermissionMessage": "Bitte erlaube AliasVault den Zugriff auf die Kamera, um QR-Codes zu scannen.",
       "mobileLogin": {
         "confirmTitle": "Anmeldeanfrage bestätigen",
         "confirmSubtitle": "Authentifizieren Dich erneut, um die Anmeldung auf einem anderen Gerät zu genehmigen.",
         "confirmMessage": "Du bist dabei, Dich mit Deinem Konto auf einem anderen Gerät anzumelden. Dieses Gerät wird vollen Zugriff auf Deinen Tresor haben. Fahre nur fort, wenn Du diesem Gerät vertraust.",
         "successDescription": "Das andere Gerät wurde erfolgreich angemeldet.",
-        "requestExpired": "Diese Anmeldeanfrage ist abgelaufen. Bitte generiere einen neuen QR-Code.",
-        "authenticationFailed": "Authentifizierung fehlgeschlagen. Bitte versuche es erneut.",
-        "noAuthMethodEnabled": "Biometrische Authentifizierung oder PIN-Sperre muss aktiviert sein, um mit Deinem Smartphone zu entsperren"
+        "requestExpired": "Diese Anmeldeanfrage ist abgelaufen. Bitte generiere einen neuen QR-Code."
       }
     }
   },
   "navigation": {
-    "credentials": "Zugangsdaten",
     "vault": "Vault",
     "emails": "E-Mails",
     "settings": "Einstellungen"
@@ -499,12 +483,11 @@
     "deleteItem": "Eintrag löschen",
     "itemDetails": "Item Details",
     "itemCreated": "Item Created",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "emailPreview": "E-Mail-Vorschau",
     "untitled": "Untitled",
     "name": "Name",
-    "namePlaceholder": "e.g., Google, Amazon",
     "url": "URL",
-    "urlPlaceholder": "e.g., https://google.com",
     "service": "Dienst",
     "serviceName": "Name des Dienstes",
     "serviceUrl": "URL des Dienstes",
