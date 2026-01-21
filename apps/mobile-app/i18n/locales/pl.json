@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Usuń element",
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
     "errors": {
-      "unknownError": "Wystąpił nieznany błąd. Spróbuj ponownie.",
+      "unknownError": "Wystąpił nieznany błąd.",
       "unknownErrorTryAgain": "Wystąpił nieznany błąd. Spróbuj ponownie.",
       "serverVersionTooOld": "Aby korzystać z tej funkcji, serwer AliasVault musi zostać zaktualizowany do nowszej wersji. Jeśli potrzebujesz pomocy, skontaktuj się z administratorem serwera."
     }
@@ -209,8 +209,6 @@
   },
   "passkeys": {
     "passkey": "Klucz dostępu",
-    "site": "Strona internetowa",
-    "displayName": "Nazwa wyświetlana",
     "helpText": "Klucze dostępu są tworzone na stronie internetowej po wyświetleniu monitu. Nie można ich edytować ręcznie. Aby usunąć ten klucz dostępu, można go usunąć z tych poświadczeń.",
     "passkeyMarkedForDeletion": "Klucz dostępu oznaczony do usunięcia",
     "passkeyWillBeDeleted": "Ten klucz dostępu zostanie usunięty po zapisaniu tych danych."
@@ -317,13 +315,6 @@
       "pinDescription": "Użyj niestandardowego kodu PIN, aby szybciej odblokować sejf.",
       "pinEnabled": "Odblokowanie za pomocą kodu PIN zakończone sukcesem",
       "pinDisabled": "Ustaw kod PIN",
-      "setupPin": "Ustaw kod PIN",
-      "enterNewPin": "Wprowadź nowy kod PIN",
-      "enterNewPinDescription": "Wybierz kod PIN, aby odblokować sejf",
-      "confirmPin": "Potwierdź kod PIN",
-      "confirmPinDescription": "Wprowadź ponownie swój kod PIN, aby potwierdzić",
-      "pinMismatch": "Kody PIN nie pasują. Spróbuj jeszcze raz.",
-      "pinLocked": "PIN zablokowany po zbyt wielu nieudanych próbach. Użyj hasła głównego.",
       "passwordHelp": "Wymaga wprowadzenia hasło głównego, aby odblokować sejf. Ta opcja jest zawsze włączona jako opcja awaryjna.",
       "keystoreIOS": "iOS Keychain",
       "keystoreAndroid": "Android Keystore"
@@ -421,23 +412,16 @@
     "qrScanner": {
       "title": "Skaner kodów QR",
       "scanningMessage": "Zeskanuj kod QR AliasVault",
-      "invalidQrCode": "Nieprawidłowy kod QR",
-      "notAliasVaultQr": "To nie jest prawidłowy kod QR AliasVault. Proszę zeskanować kod QR wygenerowany przez AliasVault.",
-      "cameraPermissionTitle": "Wymagane pozwolenie na dostęp do aparatu",
-      "cameraPermissionMessage": "Proszę zezwolić na dostęp do aparatu w celu skanowania kodów QR.",
       "mobileLogin": {
         "confirmTitle": "Potwierdź prośbę o zalogowanie",
         "confirmSubtitle": "Ponownie uwierzytelnij się, aby zatwierdzić logowanie na innym urządzeniu.",
         "confirmMessage": "Zamierzasz zalogować się na zdalnym urządzeniu przy użyciu swojego konta. To urządzenie będzie miało pełny dostęp do Twojego sejfu. Kontynuuj tylko wtedy, gdy ufasz temu urządzeniu.",
         "successDescription": "Udało się zalogować do urządzenia zdalnego.",
-        "requestExpired": "To żądanie logowania wygasło. Wygeneruj nowy kod QR.",
-        "authenticationFailed": "Uwierzytelnianie nie powiodło się. Spróbuj ponownie.",
-        "noAuthMethodEnabled": "Aby odblokować urządzenie za pomocą telefonu komórkowego, należy włączyć funkcję odblokowywania za pomocą danych biometrycznych lub kodu PIN"
+        "requestExpired": "To żądanie logowania wygasło. Wygeneruj nowy kod QR."
       }
     }
   },
   "navigation": {
-    "credentials": "Dane logowania",
     "vault": "Sejf",
     "emails": "Wiadomości e-mail",
     "settings": "Ustawienia"
@@ -488,23 +472,22 @@
     "card.number": "Numer karty",
     "card.expiry_month": "Miesiąc wygaśnięcia",
     "card.expiry_year": "Rok wygaśnięcia",
-    "card.cvv": "CVV",
+    "card.cvv": "Kod CVV",
     "card.pin": "Kod PIN",
     "notes.content": "Notatki"
   },
   "items": {
-    "title": "Items",
+    "title": "Elementy",
     "addItem": "Dodaj element",
     "editItem": "Edytuj element",
     "deleteItem": "Usuń element",
     "itemDetails": "Szczegóły produktu",
     "itemCreated": "Element utworzony",
+    "itemCreatedMessage": "Twój nowy przedmiot został dodany do skarbca i jest gotowy do użycia.",
     "emailPreview": "Podgląd wiadomości e-mail",
     "untitled": "Bez tytułu",
     "name": "Nazwa",
-    "namePlaceholder": "np. Google, Amazon",
     "url": "adres URL",
-    "urlPlaceholder": "e.g., https://google.com",
     "service": "Usługa",
     "serviceName": "Nazwa usługi",
     "serviceUrl": "Adres URL usługi",
@@ -561,7 +544,6 @@
     "vaultSyncedSuccessfully": "Synchronizacja sejfu zakończona sukcesem",
     "vaultUpToDate": "Sejf jest aktualny",
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby zsynchronizować swój sejf.",
-    "itemCreatedMessage": "Twój nowy przedmiot został dodany do skarbca i jest gotowy do użycia.",
     "switchBackToBrowser": "Wróć do przeglądarki, aby kontynuować.",
     "filters": {
       "all": "(Wszystkie) pozycje",
@@ -590,22 +572,18 @@
       "passwordCopied": "Hasło skopiowane do schowka"
     },
     "createNewAliasFor": "Utwórz nowy alias dla",
-    "errors": {
-      "loadFailed": "Nie udało się załadować elementu",
-      "saveFailed": "Nie udało się zapisać elementu"
-    },
     "contextMenu": {
-      "title": "Item Options",
+      "title": "Opcje elementu",
       "edit": "Edytuj",
       "delete": "Usuń",
       "copyUsername": "Skopiuj nazwę użytkownika",
       "copyEmail": "Skopiuj adres e-mail",
       "copyPassword": "Skopiuj hasło"
     },
-    "viewHistory": "View history",
+    "viewHistory": "Pokaż historię",
     "history": "Historia",
-    "noHistoryAvailable": "No history available",
-    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "noHistoryAvailable": "Brak dostępnej historii",
+    "deleteConfirm": "Czy na pewno chcesz usunąć ten produkt? Tej akcji nie można cofnąć.",
     "folders": {
       "folder": "Katalog",
       "newFolder": "Nowy folder",
@@ -619,28 +597,28 @@
       "deleteFolderKeepItemsDescription": "Elementy zostaną przeniesione z powrotem do listy głównej.",
       "deleteFolderAndItems": "Usuń folder i wszystkie elementy",
       "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
-      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
-      "noFolder": "No Folder",
+      "emptyFolderHint": "Ten folder jest pusty. Aby przenieść elementy do tego folderu, edytuj element i wybierz ten folder.",
+      "noFolder": "Brak folderu",
       "selectFolder": "Wybierz folder"
     },
     "recentlyDeleted": {
-      "title": "Recently Deleted",
-      "noItems": "No deleted items",
-      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
-      "restore": "Restore",
-      "deletePermanently": "Delete Permanently",
-      "emptyAll": "Empty All",
+      "title": "Ostatnio usunięte",
+      "noItems": "Brak usuniętych elementów",
+      "noItemsDescription": "Usunięte elementy pojawią się tutaj na 30 dni zanim zostaną trwale usunięte.",
+      "description": "Te elementy zostaną trwale usunięte po 30 dniach. Możesz je przywrócić lub natychmiast usunąć.",
+      "restore": "Przywróć",
+      "deletePermanently": "Usuń bezpowrotnie",
+      "emptyAll": "Opróżnij wszystkie",
       "daysRemaining": "{{count}} day remaining",
       "daysRemaining_plural": "{{count}} days remaining",
-      "expiringSoon": "Expiring soon",
-      "confirmDeleteTitle": "Delete Permanently?",
-      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
-      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "expiringSoon": "Wkrótce wygasa",
+      "confirmDeleteTitle": "Usuń bezpowrotnie?",
+      "confirmDeleteMessage": "Ten element zostanie trwale usunięty i nie będzie można go odzyskać.",
+      "confirmEmptyAllTitle": "Opróżnij ostatnio usunięte?",
       "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
-      "itemRestored": "Item restored",
-      "itemDeleted": "Item permanently deleted",
-      "allItemsDeleted": "All items permanently deleted"
+      "itemRestored": "Element został przywrócony",
+      "itemDeleted": "Element został trwale usunięty",
+      "allItemsDeleted": "Wszystkie elementy zostały trwale usunięte"
     }
   },
   "emails": {
@@ -701,14 +679,13 @@
     "VAULT_ERROR": "Lokalny sejf nie jest aktualny. Zsynchronizuj sejf, odświeżając stronę, i spróbuj ponownie."
   },
   "sync": {
-    "offline": "Offline",
-    "offlineWithPending": "Offline (pending)",
-    "syncing": "Syncing...",
-    "pending": "Pending sync",
-    "retrySync": "Tap to retry",
+    "offline": "Jesteś w trybie offline",
+    "syncing": "Trwa synchronizacja...",
+    "pending": "Oczekuje na synchronizację",
+    "retrySync": "Dotknij, aby ponowić próbę",
     "backOnline": "Ponownie online",
     "stillOffline": "Wciąż offline",
-    "syncFailed": "Sync failed"
+    "syncFailed": "Synchronizacja nieudana"
   },
   "app": {
     "status": {
@@ -718,13 +695,12 @@
       "retryingConnection": "Ponowne nawiązywanie połączenia..."
     },
     "offline": {
-      "banner": "Offline - changes will sync when online",
+      "banner": "Offline - zmiany będą synchronizowane w trybie online",
       "backOnline": "Ponownie online",
       "stillOffline": "Wciąż offline"
     },
     "alerts": {
       "syncIssue": "Brak połączenia",
-      "syncIssueMessage": "The AliasVault server could not be reached and your vault could not be synced. Would you like to open your local vault or retry the connection?",
       "openLocalVault": "Otwórz lokalny sejf",
       "retrySync": "Ponów synchronizację"
     },
