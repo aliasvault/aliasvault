@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
-      "unknownError": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
+      "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
       "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help."
     }
@@ -561,7 +561,6 @@
     "vaultSyncedSuccessfully": "הכספת סונכרנה בהצלחה",
     "vaultUpToDate": "הכספת עדכנית",
     "offlineMessage": "החיבור שלך מנותק. נא להתחבר לאינטרנט כדי לסנכרן את הכספת שלך.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "switchBackToBrowser": "יש לחזור לדפדפן שלך כדי להמשיך.",
     "filters": {
       "all": "(All) Items",
@@ -590,10 +589,6 @@
       "passwordCopied": "הסיסמה הועתקה ללוח הגזירים"
     },
     "createNewAliasFor": "יצירת כינוי חדש עבור",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "עריכה",
