@@ -75,7 +75,7 @@
     <comment>Label for name field</comment>
   </data>
   <data name="WebsiteUrlLabel" xml:space="preserve">
-    <value>Website URL</value>
+    <value>Web-sivuston URL-osoite</value>
     <comment>Label for website URL field</comment>
   </data>
   <data name="NamePlaceholderLogin" xml:space="preserve">
