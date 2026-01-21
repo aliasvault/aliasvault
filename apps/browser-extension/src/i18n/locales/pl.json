@@ -105,7 +105,7 @@
       "vaultIsLocked": "Sejf jest zablokowany",
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się.",
       "syncConflictMaxRetries": "Nie można zsynchronizować sejfu po wielu próbach. Spróbuj ponownie później.",
-      "mergeFailed": "Failed to merge vault changes. Please try again."
+      "mergeFailed": "Nie udało się scalić zmian w sejfie. Spróbuj ponownie."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Wystąpił nieznany błąd. Spróbuj ponownie.",
@@ -167,13 +167,13 @@
     "dismissPopup": "Zamknij wyskakujące okienko"
   },
   "items": {
-    "title": "Items",
+    "title": "Elementy",
     "itemName": "Nazwa",
     "loginCredentials": "Dane logowania",
     "cardInformation": "Informacje o karcie",
     "addItem": "Dodaj element",
-    "addNewItem": "Add new item",
-    "saveItem": "Save Item",
+    "addNewItem": "Dodaj nowy element",
+    "saveItem": "Zapisz element",
     "itemDetails": "Szczegóły produktu",
     "editItem": "Edytuj element",
     "untitled": "Bez tytułu",
@@ -201,9 +201,9 @@
     },
     "deleteItemTitle": "Usuń element",
     "deleteItemConfirm": "Czy na pewno chcesz usunąć ten element?",
-    "viewHistory": "View history",
+    "viewHistory": "Pokaż historię",
     "history": "Historia",
-    "noHistoryAvailable": "No history available",
+    "noHistoryAvailable": "Brak dostępnej historii",
     "tags": "Znaczniki",
     "changePasswordComplexity": "Zmień komplikację hasła",
     "passwordLength": "Długość hasła",
@@ -226,8 +226,8 @@
     }
   },
   "itemTypes": {
-    "selectType": "Add New Item",
-    "typeLabel": "Item Type",
+    "selectType": "Dodaj nowy element",
+    "typeLabel": "Typ elementu",
     "creating": "Tworzenie",
     "editing": "Edytowanie",
     "regenerateAlias": "Ponownie wygeneruj alias",
@@ -463,7 +463,7 @@
     "confirmDeleteTitle": "Usunąć trwale?",
     "confirmDeleteMessage": "Ten element zostanie trwale usunięty i nie będzie można go odzyskać.",
     "confirmEmptyAllTitle": "Opróżnij ostatnio usunięte?",
-    "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
+    "confirmEmptyAllMessage": "Wszystkie elementy {{count}} zostaną trwale usunięte i nie mogą zostać odzyskane."
   },
   "upgrade": {
     "title": "Aktualizacja sejfu",
