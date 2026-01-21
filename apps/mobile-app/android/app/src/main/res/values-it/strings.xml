@@ -39,12 +39,12 @@
   <string name="passkey_create_explanation">Questo crea una nuova passkey e la memorizza nella tua cassaforte. Sarà sincronizzata automaticamente su tutti i tuoi dispositivi che usano AliasVault.</string>
   <string name="passkey_create_new_button">Crea Nuova Passkey</string>
   <string name="passkey_select_to_replace">Oppure, sostituire un passkey esistente:</string>
-  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
+  <string name="passkey_add_to_existing">Oppure, aggiungi passkey a un elemento esistente:</string>
   <string name="passkey_replace_explanation">Questo sostituirà la passkey esistente con una nuova. Si prega di notare che la vecchia passkey sarà sovrascritta e non sarà più accessibile. Se si desidera invece creare una passkey separata, tornare alla schermata precedente.</string>
-  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
+  <string name="passkey_merge_explanation">Questo aggiungerà una passkey al tuo elemento esistente. La tua password e altri dati saranno preservati.</string>
   <string name="passkey_replacing">Sostituzione passkey…</string>
-  <string name="add_passkey">Add Passkey</string>
-  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
+  <string name="add_passkey">Aggiungi Passkey</string>
+  <string name="add_passkey_subtitle">Aggiunta passkey all\'elemento esistente</string>
   <string name="passkey_checking_connection">Controllo connessione…</string>
   <string name="passkey_retrieving">Recupero passkey…</string>
   <string name="passkey_verifying">Verifica…</string>
