@@ -167,28 +167,6 @@
     "vaultUpgradeRequired": "Vault upgrade required.",
     "dismissPopup": "Dismiss popup"
   },
-  "credentials": {
-    "changePasswordComplexity": "Change password complexity",
-    "passwordLength": "Password length",
-    "includeLowercase": "Include lowercase letters",
-    "includeUppercase": "Include uppercase letters",
-    "includeNumbers": "Include numbers",
-    "includeSpecialChars": "Include special characters",
-    "avoidAmbiguousChars": "Avoid ambiguous characters (o, 0, etc.)",
-    "privateEmailTitle": "Private Email",
-    "privateEmailAliasVaultServer": "AliasVault server",
-    "privateEmailDescription": "E2E encrypted, fully private.",
-    "publicEmailTitle": "Public Temp Email Providers",
-    "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
-    "generateRandomUsername": "Generate random username",
-    "generateRandomPassword": "Generate random password",
-    "generateNewPreview": "Generate new preview",
-    "generateRandomAlias": "Generate Random Alias",
-    "validation": {
-      "required": "This field is required"
-    },
-    "tags": "Tags"
-  },
   "items": {
     "title": "Items",
     "itemName": "Name",
@@ -226,7 +204,27 @@
     "deleteItemConfirm": "Are you sure you want to delete this item?",
     "viewHistory": "View history",
     "history": "History",
-    "noHistoryAvailable": "No history available"
+    "noHistoryAvailable": "No history available",
+    "tags": "Tags",
+    "changePasswordComplexity": "Change password complexity",
+    "passwordLength": "Password length",
+    "includeLowercase": "Include lowercase letters",
+    "includeUppercase": "Include uppercase letters",
+    "includeNumbers": "Include numbers",
+    "includeSpecialChars": "Include special characters",
+    "avoidAmbiguousChars": "Avoid ambiguous characters (o, 0, etc.)",
+    "privateEmailTitle": "Private Email",
+    "privateEmailAliasVaultServer": "AliasVault server",
+    "privateEmailDescription": "E2E encrypted, fully private.",
+    "publicEmailTitle": "Public Temp Email Providers",
+    "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
+    "generateRandomUsername": "Generate random username",
+    "generateRandomPassword": "Generate random password",
+    "generateNewPreview": "Generate new preview",
+    "generateRandomAlias": "Generate Random Alias",
+    "validation": {
+      "required": "This field is required"
+    }
   },
   "itemTypes": {
     "selectType": "Add New Item",

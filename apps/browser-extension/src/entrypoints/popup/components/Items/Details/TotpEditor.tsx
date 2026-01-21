@@ -112,7 +112,7 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
 
     // Validate required fields
     if (!formData.secretKey) {
-      setFormError(t('credentials.validation.required'));
+      setFormError(t('items.validation.required'));
       return;
     }
 

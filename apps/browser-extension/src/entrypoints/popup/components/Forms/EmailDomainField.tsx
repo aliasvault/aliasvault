@@ -359,10 +359,10 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
               {showPrivateDomains && (
                 <div className="mb-4">
                   <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                    {t('credentials.privateEmailTitle')} <span className="text-gray-500 dark:text-gray-400">({t('credentials.privateEmailAliasVaultServer')})</span>
+                    {t('items.privateEmailTitle')} <span className="text-gray-500 dark:text-gray-400">({t('items.privateEmailAliasVaultServer')})</span>
                   </h4>
                   <p className="text-gray-500 dark:text-gray-400 mb-3">
-                    {t('credentials.privateEmailDescription')}
+                    {t('items.privateEmailDescription')}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {privateEmailDomains
@@ -387,10 +387,10 @@ const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
 
               <div className={showPrivateDomains ? 'border-t border-gray-200 dark:border-gray-600 pt-4' : ''}>
                 <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                  {t('credentials.publicEmailTitle')}
+                  {t('items.publicEmailTitle')}
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                  {t('credentials.publicEmailDescription')}
+                  {t('items.publicEmailDescription')}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {publicEmailDomains.map((domain) => (

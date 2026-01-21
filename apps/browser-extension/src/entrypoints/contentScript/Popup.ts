@@ -862,8 +862,8 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       const generateNewPasswordText = await t('content.generateNewPassword');
       const togglePasswordVisibilityText = await t('content.togglePasswordVisibility');
       const createAndSaveCredentialText = await t('content.createAndSaveCredential');
-      const passwordLengthText = await t('credentials.passwordLength');
-      const changePasswordComplexityText = await t('credentials.changePasswordComplexity');
+      const passwordLengthText = await t('items.passwordLength');
+      const changePasswordComplexityText = await t('items.changePasswordComplexity');
 
       const suggestedNamesHtml = await getSuggestedNamesHtml(suggestedNames, suggestedNames[0] ?? '');
 
@@ -1278,13 +1278,13 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
        */
       const showPasswordConfigDialog = async (): Promise<void> => {
         // Get all translations first
-        const changePasswordComplexityText = await t('credentials.changePasswordComplexity');
-        const generateNewPreviewText = await t('credentials.generateNewPreview');
-        const includeLowercaseText = await t('credentials.includeLowercase');
-        const includeUppercaseText = await t('credentials.includeUppercase');
-        const includeNumbersText = await t('credentials.includeNumbers');
-        const includeSpecialCharsText = await t('credentials.includeSpecialChars');
-        const avoidAmbiguousCharsText = await t('credentials.avoidAmbiguousChars');
+        const changePasswordComplexityText = await t('items.changePasswordComplexity');
+        const generateNewPreviewText = await t('items.generateNewPreview');
+        const includeLowercaseText = await t('items.includeLowercase');
+        const includeUppercaseText = await t('items.includeUppercase');
+        const includeNumbersText = await t('items.includeNumbers');
+        const includeSpecialCharsText = await t('items.includeSpecialChars');
+        const avoidAmbiguousCharsText = await t('items.avoidAmbiguousChars');
         const useText = await t('common.use');
 
         // Create dialog overlay

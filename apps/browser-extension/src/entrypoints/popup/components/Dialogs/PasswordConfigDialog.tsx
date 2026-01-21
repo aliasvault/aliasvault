@@ -67,7 +67,7 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
     <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
-      title={t('credentials.changePasswordComplexity')}
+      title={t('items.changePasswordComplexity')}
       maxWidth="max-w-lg"
       footer={
         <div className="flex justify-end">
@@ -98,7 +98,7 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
               type="button"
               onClick={handleRefreshPreview}
               className="px-3 py-2 text-sm text-gray-500 dark:text-white bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-lg dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
-              title={t('credentials.generateNewPreview')}
+              title={t('items.generateNewPreview')}
             >
               <svg className="w-4 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -119,7 +119,7 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
                   ? 'bg-primary-600 text-white hover:bg-primary-700'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
               }`}
-              title={t('credentials.includeLowercase')}
+              title={t('items.includeLowercase')}
             >
               <span className="font-mono text-base">a-z</span>
             </button>
@@ -133,7 +133,7 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
                   ? 'bg-primary-600 text-white hover:bg-primary-700'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
               }`}
-              title={t('credentials.includeUppercase')}
+              title={t('items.includeUppercase')}
             >
               <span className="font-mono text-base">A-Z</span>
             </button>
@@ -147,7 +147,7 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
                   ? 'bg-primary-600 text-white hover:bg-primary-700'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
               }`}
-              title={t('credentials.includeNumbers')}
+              title={t('items.includeNumbers')}
             >
               <span className="font-mono text-base">0-9</span>
             </button>
@@ -161,7 +161,7 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
                   ? 'bg-primary-600 text-white hover:bg-primary-700'
                   : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
               }`}
-              title={t('credentials.includeSpecialChars')}
+              title={t('items.includeSpecialChars')}
             >
               <span className="font-mono text-base">!@#</span>
             </button>
@@ -177,7 +177,7 @@ const PasswordConfigDialog: React.FC<IPasswordConfigDialogProps> = ({
               className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded dark:bg-gray-700 dark:border-gray-600"
             />
             <label htmlFor="use-non-ambiguous" className="ml-2 text-sm text-gray-700 dark:text-gray-300">
-              {t('credentials.avoidAmbiguousChars')}
+              {t('items.avoidAmbiguousChars')}
             </label>
           </div>
         </div>

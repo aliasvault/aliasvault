@@ -1142,7 +1142,7 @@ const ItemAddEdit: React.FC = () => {
             type="button"
             onClick={handleGenerateAlias}
             className="p-1.5 text-gray-400 hover:text-primary-500 focus:outline-none"
-            title={t('credentials.generateRandomAlias')}
+            title={t('items.generateRandomAlias')}
           >
             <svg className='w-4 h-4' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M23 4v6h-6"/>

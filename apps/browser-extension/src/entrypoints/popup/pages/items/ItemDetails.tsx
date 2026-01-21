@@ -269,7 +269,7 @@ const ItemDetails: React.FC = (): React.ReactElement => {
       {item.Tags && item.Tags.length > 0 && (
         <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            {t('credentials.tags')}
+            {t('items.tags')}
           </label>
           <div className="flex flex-wrap gap-2">
             {item.Tags.map((tag) => (
