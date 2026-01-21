@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Excluir Item",
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "errors": {
-      "unknownError": "Ocorreu um erro desconhecido. Por favor, tente novamente.",
+      "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "Ocorreu um erro desconhecido. Por favor, tente novamente.",
       "serverVersionTooOld": "O servidor do AliasVault deve ser atualizado para uma versão mais recente para utilizar esta função. Por favor, entre em contato com o administrador do servidor se precisar de ajuda."
     }
@@ -561,7 +561,6 @@
     "vaultSyncedSuccessfully": "Cofre sincronizado com sucesso",
     "vaultUpToDate": "Cofre está atualizado",
     "offlineMessage": "Você está offline. Por favor conecte-se à internet para sincronizar seu cofre.",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "switchBackToBrowser": "Volte ao navegador para continuar.",
     "filters": {
       "all": "(All) Items",
@@ -590,10 +589,6 @@
       "passwordCopied": "Senha copiada para a área de transferência"
     },
     "createNewAliasFor": "Criar novo alias para",
-    "errors": {
-      "loadFailed": "Failed to load item",
-      "saveFailed": "Failed to save item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "Editar",
