@@ -209,8 +209,6 @@
   },
   "passkeys": {
     "passkey": "Llave de acceso",
-    "site": "Sitio",
-    "displayName": "Mostrar nombre",
     "helpText": "Las llaves de acceso se crean en el sitio web cuando se le solicite. No pueden ser editadas manualmente. Para eliminar esta llave, puede eliminarla de esta credencial.",
     "passkeyMarkedForDeletion": "Llave de acceso marcada para eliminar",
     "passkeyWillBeDeleted": "Esta llave de acceso se eliminará cuando guarde esta credencial."
@@ -317,13 +315,6 @@
       "pinDescription": "Usa un código PIN personalizado para desbloquear tu bóveda más rápidamente.",
       "pinEnabled": "Desbloqueo de PIN activado correctamente",
       "pinDisabled": "El desbloqueo PIN ha sido desactivado",
-      "setupPin": "Configurar PIN",
-      "enterNewPin": "Introduzca nuevo PIN",
-      "enterNewPinDescription": "Elija un PIN para desbloquear su bóveda",
-      "confirmPin": "Confirmar PIN",
-      "confirmPinDescription": "Vuelva a introducir su PIN para confirmar",
-      "pinMismatch": "Los PIN no coinciden. Por favor, inténtalo de nuevo.",
-      "pinLocked": "PIN bloqueado después de demasiados intentos fallidos. Por favor, utilice su contraseña maestra.",
       "passwordHelp": "Vuelva a introducir su contraseña maestra para desbloquear su bóveda. Esto siempre está habilitado como opción de retroceso.",
       "keystoreIOS": "Llavero iOS",
       "keystoreAndroid": "Almacén de claves de Android"
@@ -421,23 +412,16 @@
     "qrScanner": {
       "title": "Lector de códigos QR",
       "scanningMessage": "Escanear código QR de AliasVault",
-      "invalidQrCode": "Código QR no válido",
-      "notAliasVaultQr": "Este no es un código QR de AliasVault válido. Por favor, escanee un código QR generado por AliasVault.",
-      "cameraPermissionTitle": "Permiso de cámara requerido",
-      "cameraPermissionMessage": "Por favor, permite el acceso a la cámara para escanear códigos QR.",
       "mobileLogin": {
         "confirmTitle": "Confirmar solicitud de acceso",
         "confirmSubtitle": "Volver a autenticar para aprobar el inicio de sesión en otro dispositivo.",
         "confirmMessage": "Estás a punto de iniciar sesión en un dispositivo remoto con tu cuenta. Este otro dispositivo tendrá acceso completo a su bóveda. Sólo proceda si confía en este dispositivo.",
         "successDescription": "El dispositivo remoto se ha conectado correctamente.",
-        "requestExpired": "Esta solicitud de inicio de sesión ha caducado. Por favor, genere un nuevo código QR.",
-        "authenticationFailed": "La autenticación ha fallado. Por favor inténtelo otra vez.",
-        "noAuthMethodEnabled": "El desbloqueo biométrico o PIN tiene que ser habilitado para desbloquear con móvil"
+        "requestExpired": "Esta solicitud de inicio de sesión ha caducado. Por favor, genere un nuevo código QR."
       }
     }
   },
   "navigation": {
-    "credentials": "Credenciales",
     "vault": "Vault",
     "emails": "Correos electrónicos",
     "settings": "Ajustes"
@@ -499,12 +483,11 @@
     "deleteItem": "Eliminar elemento",
     "itemDetails": "Item Details",
     "itemCreated": "Item Created",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
     "emailPreview": "Vista previa de correo",
     "untitled": "Untitled",
     "name": "Nombre",
-    "namePlaceholder": "e.g., Google, Amazon",
     "url": "URL",
-    "urlPlaceholder": "e.g., https://google.com",
     "service": "Servicio",
     "serviceName": "Nombre del servicio",
     "serviceUrl": "URL del servicio",
