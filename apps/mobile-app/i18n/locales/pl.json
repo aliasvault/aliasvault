@@ -523,7 +523,7 @@
     "noItemsFound": "Nie znaleziono żadnych elementów. Utwórz jeden, aby rozpocząć. Wskazówka: możesz również zalogować się do aplikacji internetowej AliasVault, aby zaimportować dane uwierzytelniające z innych menedżerów haseł.",
     "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
     "noAttachmentsFound": "Nie znaleziono żadnych elementów z załącznikami.",
-    "noItemsOfTypeFound": "No {{type}} items found",
+    "noItemsOfTypeFound": "Nie znaleziono elementów {{type}}",
     "recentEmails": "Ostatnie wiadomości e-mail",
     "loadingEmails": "Ładowanie wiadomości e-mail...",
     "noEmailsYet": "Nie otrzymano jeszcze żadnych wiadomości e-mail.",
@@ -615,7 +615,7 @@
       "confirmDeleteTitle": "Usuń bezpowrotnie?",
       "confirmDeleteMessage": "Ten element zostanie trwale usunięty i nie będzie można go odzyskać.",
       "confirmEmptyAllTitle": "Opróżnij ostatnio usunięte?",
-      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllMessage": "Wszystkie elementy {{count}} zostaną trwale usunięte i nie mogą zostać odzyskane.",
       "itemRestored": "Element został przywrócony",
       "itemDeleted": "Element został trwale usunięty",
       "allItemsDeleted": "Wszystkie elementy zostały trwale usunięte"
