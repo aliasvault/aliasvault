@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Verwijder item",
     "deleteItemConfirmDescription": "Weet je zeker dat je dit item wilt verwijderen?",
     "errors": {
-      "unknownError": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
+      "unknownError": "An unknown error occurred.",
       "unknownErrorTryAgain": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
       "serverVersionTooOld": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze functie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt."
     }
@@ -561,7 +561,6 @@
     "vaultSyncedSuccessfully": "Vault succesvol gesynchroniseerd",
     "vaultUpToDate": "Vault is up-to-date",
     "offlineMessage": "Je bent offline. Maak verbinding met het internet om je vault te synchroniseren.",
-    "itemCreatedMessage": "Je nieuwe item is toegevoegd aan je vault en is klaar voor gebruik.",
     "switchBackToBrowser": "Schakel terug naar je browser om door te gaan.",
     "filters": {
       "all": "(Alle) Items",
@@ -590,10 +589,6 @@
       "passwordCopied": "Wachtwoord gekopieerd naar klembord"
     },
     "createNewAliasFor": "Nieuwe alias maken voor",
-    "errors": {
-      "loadFailed": "Fout bij laden van item",
-      "saveFailed": "Fout bij opslaan van item"
-    },
     "contextMenu": {
       "title": "Item Options",
       "edit": "Bewerken",
