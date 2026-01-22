@@ -20,11 +20,11 @@
     </xsd:element>
   </xsd:schema>
   <data name="ViewItemPageTitle">
-    <value>View item</value>
+    <value>查看项目</value>
     <comment>Page title for viewing an item</comment>
   </data>
   <data name="ViewItemTitle">
-    <value>View item</value>
+    <value>查看项目</value>
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
@@ -32,7 +32,7 @@
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
-    <value>Edit item</value>
+    <value>编辑项目</value>
     <comment>Text for edit button on desktop</comment>
   </data>
   <data name="DeleteButtonMobile">
@@ -40,19 +40,19 @@
     <comment>Text for delete button on mobile</comment>
   </data>
   <data name="DeleteButtonDesktop">
-    <value>Delete item</value>
+    <value>删除项目</value>
     <comment>Text for delete button on desktop</comment>
   </data>
   <data name="LoginDetailsSection">
-    <value>Login details</value>
+    <value>登录详情</value>
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
-    <value>Below you can view and copy the generated details for this item. Any emails sent to the shown address will automatically appear on this page.</value>
+    <value>您可以在下方查看和复制此项目的详情。发送到所示地址的任何电子邮件都将自动显示在此页面上。</value>
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
-    <value>Below you can view and copy the stored login details for this item.</value>
+    <value>您可以在下方查看和复制此项目已保存的登录详情。</value>
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
@@ -92,11 +92,11 @@
     <comment>Label for nickname field</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>查看项目</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">
-    <value>This item does not exist (anymore). Please try again.</value>
+    <value>此项目不存在，请重试。</value>
     <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
@@ -116,11 +116,11 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, edit this item and delete the passkey. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>通行密钥是在网站提示时通过浏览器扩展或移动应用创建的，无法通过网页应用手动编辑或创建。要移除此通行密钥，请编辑此项目，然后删除通行密钥。要替换或创建新的通行密钥，请访问网站并按照其提示操作。</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="Untitled">
-    <value>Untitled</value>
+    <value>无标题</value>
     <comment>Placeholder for items without a name</comment>
   </data>
   <data name="NotesSection">
@@ -128,11 +128,11 @@
     <comment>Section header for notes</comment>
   </data>
   <data name="CardSection">
-    <value>Card Details</value>
+    <value>卡详情</value>
     <comment>Section header for credit card details</comment>
   </data>
   <data name="CustomFieldsSection">
-    <value>Custom Fields</value>
+    <value>自定义字段</value>
     <comment>Section header for custom fields</comment>
   </data>
 </root>
