@@ -21,46 +21,46 @@
   </xsd:schema>
   <!-- Assistant messages -->
   <data name="GreatNowLetsSetupUsername">
-    <value>Great! Now, let's set up your username for AliasVault.</value>
+    <value>Minunat! Acum, să configurăm numele de utilizator pentru AliasVault.</value>
     <comment>Assistant message about setting up username</comment>
   </data>
   <data name="EnterUsernameInstructions">
-    <value>Please enter a username you'd like to use. This can be your email address or any unique name you prefer.</value>
+    <value>Te rugăm să introduci un nume de utilizator pe care dorești să îl folosești. Acesta poate fi adresa ta de e-mail sau orice nume unic preferi.</value>
     <comment>Instructions for entering username</comment>
   </data>
   <data name="RememberUsernameNote">
-    <value>Remember: This is what you'll use to log in later, so make sure it's something you'll remember!</value>
+    <value>Reține: Acesta este numele pe care îl vei folosi ulterior pentru autentificare, deci asigură-te că este ceva ce îți vei aminti!</value>
     <comment>Important note about remembering username</comment>
   </data>
   <!-- Form labels -->
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>Nume utilizator</value>
     <comment>Label for username input field</comment>
   </data>
   <data name="UsernamePlaceholder">
-    <value>Enter your desired username or email</value>
+    <value>Introdu numele de utilizator sau e-mailul dorit</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <!-- Validation messages -->
   <data name="ValidatingUsernameMessage">
-    <value>Validating username...</value>
+    <value>Se validează numele de utilizator...</value>
     <comment>Message shown while validating username</comment>
   </data>
   <data name="UsernameAvailableMessage">
-    <value>Username is available!</value>
+    <value>Numele de utilizator este disponibil!</value>
     <comment>Message shown when username is available</comment>
   </data>
   <data name="UsernameRequiredError">
-    <value>Username is required.</value>
+    <value>Numele de utilizator este obligatoriu.</value>
     <comment>Error message when username is empty</comment>
   </data>
   <data name="ServerCommunicationError">
-    <value>An error occurred during communication with the AliasVault server.</value>
+    <value>A apărut o eroare în timpul comunicării cu serverul AliasVault.</value>
     <comment>Error message for server communication issues</comment>
   </data>
   <!-- Alt text -->
   <data name="AssistantAvatarAlt">
-    <value>AliasVault Assistant</value>
+    <value>Asistent AliasVault</value>
     <comment>Alt text for assistant avatar image</comment>
   </data>
 </root>
