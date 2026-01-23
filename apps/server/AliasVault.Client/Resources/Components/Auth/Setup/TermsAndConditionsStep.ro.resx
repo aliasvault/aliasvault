@@ -21,32 +21,32 @@
   </xsd:schema>
   <!-- Instructions -->
   <data name="PleaseReadAndAgree">
-    <value>Please read and agree to the following terms and conditions before proceeding.</value>
+    <value>Te rugăm să citești și să accepți următorii termeni și condiții înainte de a continua.</value>
     <comment>Instructions to read and agree to terms</comment>
   </data>
   <!-- Terms and Conditions title -->
   <data name="TermsAndConditionsTitle">
-    <value>Terms and Conditions</value>
+    <value>Termeni și Condiții</value>
     <comment>Title for the terms and conditions section</comment>
   </data>
   <!-- Terms content -->
   <data name="TermsContent">
-    <value>AliasVault is designed to enhance your online security and protect your privacy. With AliasVault, you can create unique identities and email aliases for your various online accounts, helping you maintain control over your personal information and reduce the risk of identity theft.
+    <value>AliasVault este conceput pentru a-ți spori securitatea online și pentru a-ți proteja confidențialitatea. Cu AliasVault, poți crea identități unice și alias-uri de e-mail pentru diversele tale conturi online, ajutându-te să menții controlul asupra informațiilor tale personale și să reduci riscul de furt de identitate.
 
-By using AliasVault, you agree to the following terms:
+Prin utilizarea AliasVault, ești de acord cu următorii termeni:
 
-1. You will not use AliasVault for any illegal purposes, including but not limited to fraud, identity theft, or impersonating real individuals.
+1. Nu vei folosi AliasVault în scopuri ilegale, inclusiv, dar fără a se limita la fraudă, furt de identitate sau impersonarea unor persoane reale.
 
-2. You are responsible for maintaining the confidentiality of your account and any aliases created through AliasVault.
+2. Ești responsabil pentru menținerea confidențialității contului tău și a oricăror alias-uri create prin AliasVault.
 
-3. AliasVault reserves the right to terminate your account if we suspect any misuse or violation of these terms.
+3. AliasVault își rezervă dreptul de a-ți închide contul dacă suspectăm orice utilizare abuzivă sau încălcare a acestor termeni.
 
-4. You understand that while AliasVault enhances your privacy, no system is completely foolproof, and you use the service at your own risk.</value>
+4. Înțelegi că, deși AliasVault îți îmbunătățește confidențialitatea, niciun sistem nu este complet infailibil și utilizezi serviciul pe propriul risc.</value>
     <comment>Full terms and conditions content</comment>
   </data>
   <!-- Agreement checkbox -->
   <data name="AgreementCheckboxLabel">
-    <value>I have read and agree to the Terms and Conditions</value>
+    <value>Am citit și sunt de acord cu Termenii și Condițiile</value>
     <comment>Label for the agreement checkbox</comment>
   </data>
 </root>
