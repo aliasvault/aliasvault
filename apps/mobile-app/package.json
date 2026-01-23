@@ -56,7 +56,7 @@
     "expo-web-browser": "~14.2.0",
     "fbemitter": "^3.0.0",
     "i18next": "^25.3.2",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "otpauth": "^9.4.0",
     "react": "19.0.0",
     "react-hook-form": "^7.56.1",
