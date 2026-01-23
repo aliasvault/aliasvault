@@ -96,7 +96,7 @@
     "errors": {
       "serverNotAvailable": "Serverul AliasVault nu este disponibil. Te rugăm să încerci mai târziu sau să contactezi asistența.",
       "clientVersionNotSupported": "Această versiune a extensiei AliasVault nu mai este suportată de server. Te rugăm să actualizezi extensia la ultima versiune.",
-      "browserExtensionOutdated": "Această extensie de browser este învechită și nu poate fi folosită pentru a accesa seiful. Te rugăm să o actualizezi.",
+      "browserExtensionOutdated": "Versiune extensie incompatibilă. Pentru a accesa seiful, te rugăm să actualizezi extensia AliasVault la ultima versiune disponibilă.",
       "serverVersionNotSupported": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a folosi această extensie. Contactează asistența pentru ajutor.",
       "serverVersionTooOld": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a folosi această funcție. Contactează administratorul serverului.",
       "unknownError": "A apărut o eroare necunoscută",
@@ -304,15 +304,15 @@
     "noEmailsDescription": "Nu ai primit încă niciun mesaj pe adresele tale private. Mesajele noi vor apărea aici.",
     "dateFormat": {
       "justNow": "acum",
-      "minutesAgo_single": "acum {{count}} min",
-      "minutesAgo_plural": "acum {{count}} min",
-      "hoursAgo_single": "acum {{count}} oră",
-      "hoursAgo_plural": "acum {{count}} ore",
+      "minutesAgo_single": "{{count}} minut în urmă",
+      "minutesAgo_plural": "{{count}} minute în urmă",
+      "hoursAgo_single": "{{count}} oră în urmă",
+      "hoursAgo_plural": "{{count}} ore în urmă",
       "yesterday": "ieri"
     },
     "apiErrors": {
       "CLAIM_DOES_NOT_MATCH_USER": "Adresa de e-mail selectată este deja folosită. Te rugăm să o schimbi editând aceste credențiale.",
-      "CLAIM_DOES_NOT_EXIST": "An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again."
+      "CLAIM_DOES_NOT_EXIST": "A apărut o eroare la încărcarea e-mailurilor. Încercați să editați și să salvați înregistrarea credențialelor pentru a sincroniza baza de date, apoi încercați din nou."
     }
   },
   "settings": {
