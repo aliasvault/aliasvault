@@ -1,25 +1,25 @@
 {
   "loading": {
-    "title": "AliasVault is loading",
-    "message": "Initializing secure environment. AliasVault prioritizes your privacy by running entirely in your browser. The first load might take a short while.",
-    "refreshText": "If loading seems stuck, you can click the button below to refresh the page.",
-    "refreshButtonText": "Refresh Page"
+    "title": "AliasVault se încarcă",
+    "message": "Se inițializează mediul securizat. AliasVault prioritizează confidențialitatea ta rulând integral în browser. Prima încărcare ar putea dura puțin.",
+    "refreshText": "Dacă încărcarea pare blocată, poți apăsa butonul de mai jos pentru a reporni pagina.",
+    "refreshButtonText": "Repornește pagina"
   },
   "errors": {
-    "unhandledError": "An unhandled error has occurred. Please try reloading the page. If the issue persists, please contact support.",
-    "webAssemblyError": "AliasVault requires WebAssembly, which this browser does not support. Try using a more modern browser that supports WebAssembly.",
-    "reloadPageText": "Reload Page"
+    "unhandledError": "A apărut o eroare neprevăzută. Te rugăm să încerci să repornești pagina. Dacă problema persistă, contactează asistența.",
+    "webAssemblyError": "AliasVault necesită WebAssembly, care nu este suportat de acest browser. Încearcă să folosești un browser mai modern.",
+    "reloadPageText": "Repornește pagina"
   },
   "quotes": {
     "security": [
-      "Your identity is your most valuable asset. Protect it like one.",
-      "In the digital world, a strong password is your first line of defense.",
-      "Security is not a product, but a process.",
-      "The weakest link in the security chain is the human element.",
-      "Security is always excessive until it's not enough.",
-      "Trust, but verify - especially online.",
-      "Your data is only as secure as your weakest password.",
-      "The most secure password is the one you can't remember."
+      "Identitatea ta este cel mai valoros bun al tău. Protejeaz-o ca atare.",
+      "În lumea digitală, o parolă puternică este prima ta linie de apărare.",
+      "Securitatea nu este un produs, ci un proces.",
+      "Cea mai slabă verigă din lanțul securității este elementul uman.",
+      "Securitatea pare întotdeauna excesivă, până când devine insuficientă.",
+      "Ai încredere, dar verifică – mai ales online.",
+      "Datele tale sunt la fel de sigure ca cea mai slabă parolă a ta.",
+      "Cea mai sigură parolă este cea pe care nu o poți ține minte."
     ]
   }
 }
