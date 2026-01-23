@@ -59,23 +59,23 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CopyrightText" xml:space="preserve">
-    <value>All rights reserved.</value>
+    <value>Toate drepturile rezervate.</value>
     <comment>Copyright text in footer</comment>
   </data>
   <data name="TipCreateShortcut" xml:space="preserve">
-    <value>Tip: Use the g+c (go create) keyboard shortcut to quickly create a new alias.</value>
+    <value>Sfat: Folosește shortcut-ul g+c (go create) pentru a crea rapid un alias nou.</value>
     <comment>Tip about keyboard shortcut for creating aliases</comment>
   </data>
   <data name="TipFindShortcut" xml:space="preserve">
-    <value>Tip: Use the g+f (go find) keyboard shortcut to focus the search field.</value>
+    <value>Sfat: Folosește shortcut-ul g+f (go find) pentru a accesa rapid câmpul de căutare.</value>
     <comment>Tip about keyboard shortcut for search</comment>
   </data>
   <data name="TipHomeShortcut" xml:space="preserve">
-    <value>Tip: Use the g+h (go home) keyboard shortcut to go to the homepage.</value>
+    <value>Sfat: Folosește shortcut-ul g+h (go home) pentru a reveni la pagina principală.</value>
     <comment>Tip about keyboard shortcut for home</comment>
   </data>
   <data name="TipLockShortcut" xml:space="preserve">
-    <value>Tip: Use the g+l (go lock) keyboard shortcut to lock the vault.</value>
+    <value>Sfat: Folosește shortcut-ul g+l (go lock) pentru a bloca seiful.</value>
     <comment>Tip about keyboard shortcut for locking vault</comment>
   </data>
 </root>
