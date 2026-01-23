@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Type names -->
   <data name="TypeLogin">
-    <value>Login</value>
+    <value>Autentificare</value>
     <comment>Login item type name</comment>
   </data>
   <data name="TypeAlias">
@@ -29,25 +29,25 @@
     <comment>Alias item type name</comment>
   </data>
   <data name="TypeCreditCard">
-    <value>Credit Card</value>
+    <value>Card de credit</value>
     <comment>Credit Card item type name</comment>
   </data>
   <data name="TypeNote">
-    <value>Secure Note</value>
+    <value>Notă securizată</value>
     <comment>Secure Note item type name</comment>
   </data>
   <!-- Status text -->
   <data name="Creating">
-    <value>Creating</value>
+    <value>Se creează</value>
     <comment>Status text when creating a new item</comment>
   </data>
   <data name="Editing">
-    <value>Editing</value>
+    <value>Editare</value>
     <comment>Status text when editing an existing item</comment>
   </data>
   <!-- Buttons -->
   <data name="RegenerateAlias">
-    <value>Regenerate Alias</value>
+    <value>Regenerează aliasul</value>
     <comment>Tooltip for regenerate alias button</comment>
   </data>
 </root>
