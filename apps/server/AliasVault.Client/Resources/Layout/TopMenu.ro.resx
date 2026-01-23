@@ -21,20 +21,20 @@
   </xsd:schema>
   <!-- Main navigation links -->
   <data name="VaultNav">
-    <value>Vault</value>
+    <value>Seif</value>
     <comment>Main navigation link for vault section</comment>
   </data>
   <data name="EmailsNav">
-    <value>Emails</value>
+    <value>E-mailuri</value>
     <comment>Main navigation link for emails section</comment>
   </data>
   <!-- Settings menu items -->
   <data name="GeneralSettingsNav">
-    <value>General settings</value>
+    <value>Setări generale</value>
     <comment>Navigation link for general settings</comment>
   </data>
   <data name="SecuritySettingsNav">
-    <value>Security settings</value>
+    <value>Setări de securitate</value>
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="ImportExportNav">
@@ -42,30 +42,30 @@
     <comment>Navigation link for import/export settings</comment>
   </data>
   <data name="ExtensionsAppsNav">
-    <value>Extensions &amp; Apps</value>
+    <value>Extensii și Aplicații</value>
     <comment>Navigation link for extensions and apps settings</comment>
   </data>
   <!-- Menu actions -->
   <data name="EnableLightMode">
-    <value>Switch to light mode</value>
+    <value>Comută la modul luminos</value>
     <comment>Button text for switching to light theme</comment>
   </data>
   <data name="EnableDarkMode">
-    <value>Switch to dark mode</value>
+    <value>Comută la modul întunecat</value>
     <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
-    <value>Log out</value>
+    <value>Deconectare</value>
     <comment>Button text for logging out</comment>
   </data>
   <!-- Accessibility labels -->
   <data name="OpenMenuLabel">
-    <value>Open menu</value>
+    <value>Deschide meniul</value>
     <comment>Screen reader label for mobile menu button</comment>
   </data>
   <!-- Status labels -->
   <data name="NewLabel">
-    <value>NEW</value>
+    <value>NOU</value>
     <comment>Label for new features or menu items</comment>
   </data>
   <data name="BetaLabel">
