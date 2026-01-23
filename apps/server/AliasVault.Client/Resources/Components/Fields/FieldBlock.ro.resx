@@ -60,15 +60,15 @@
   </resheader>
   <!-- Login Field Labels -->
   <data name="FieldLabel_login_username" xml:space="preserve">
-    <value>Username</value>
+    <value>Nume utilizator</value>
     <comment>Label for username field</comment>
   </data>
   <data name="FieldLabel_login_password" xml:space="preserve">
-    <value>Password</value>
+    <value>Parolă</value>
     <comment>Label for password field</comment>
   </data>
   <data name="FieldLabel_login_email" xml:space="preserve">
-    <value>Email</value>
+    <value>E-mail</value>
     <comment>Label for email field</comment>
   </data>
   <data name="FieldLabel_login_url" xml:space="preserve">
@@ -77,36 +77,36 @@
   </data>
   <!-- Alias Field Labels -->
   <data name="FieldLabel_alias_first_name" xml:space="preserve">
-    <value>First Name</value>
+    <value>Prenume</value>
     <comment>Label for first name field</comment>
   </data>
   <data name="FieldLabel_alias_last_name" xml:space="preserve">
-    <value>Last Name</value>
+    <value>Nume</value>
     <comment>Label for last name field</comment>
   </data>
   <data name="FieldLabel_alias_gender" xml:space="preserve">
-    <value>Gender</value>
+    <value>Gen</value>
     <comment>Label for gender field</comment>
   </data>
   <data name="FieldLabel_alias_birthdate" xml:space="preserve">
-    <value>Birth Date</value>
+    <value>Data nașterii</value>
     <comment>Label for birthdate field</comment>
   </data>
   <!-- Card Field Labels -->
   <data name="FieldLabel_card_number" xml:space="preserve">
-    <value>Card Number</value>
+    <value>Număr Card</value>
     <comment>Label for card number field</comment>
   </data>
   <data name="FieldLabel_card_cardholder_name" xml:space="preserve">
-    <value>Cardholder Name</value>
+    <value>Nume Titular</value>
     <comment>Label for cardholder name field</comment>
   </data>
   <data name="FieldLabel_card_expiry_month" xml:space="preserve">
-    <value>Expiry Month</value>
+    <value>Lună expirare</value>
     <comment>Label for expiry month field</comment>
   </data>
   <data name="FieldLabel_card_expiry_year" xml:space="preserve">
-    <value>Expiry Year</value>
+    <value>An expirare</value>
     <comment>Label for expiry year field</comment>
   </data>
   <data name="FieldLabel_card_cvv" xml:space="preserve">
@@ -119,7 +119,7 @@
   </data>
   <!-- Notes Field Labels -->
   <data name="FieldLabel_notes_content" xml:space="preserve">
-    <value>Notes</value>
+    <value>Note</value>
     <comment>Label for notes content field</comment>
   </data>
 </root>
