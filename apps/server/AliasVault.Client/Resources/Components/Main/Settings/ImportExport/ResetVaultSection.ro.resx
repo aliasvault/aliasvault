@@ -63,7 +63,7 @@
     <comment>Reset vault section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Această opțiune vă permite să vă goliți complet seiful, păstrând în același timp contul și aliasurile de e-mail. Utilizați această opțiune dacă doriți să o luați de la capăt după importarea datelor dintr-un alt manager de parole sau dacă doriți să ștergeți toate credențialele existente pentru a o lua de la capăt.</value>
+    <value>Această opțiune vă permite să goliți complet seiful, păstrând în același timp contul și aliasurile de e-mail. Folosiți această funcție dacă doriți să o luați de la capăt după importarea datelor dintr-un alt manager de parole sau dacă doriți să ștergeți toate datele de autentificare existente pentru a reîncepe de la început.</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ResetVaultButton" xml:space="preserve">
