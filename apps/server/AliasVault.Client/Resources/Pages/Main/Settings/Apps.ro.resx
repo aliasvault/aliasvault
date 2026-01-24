@@ -25,7 +25,7 @@
     <comment>Page title for extensions and apps</comment>
   </data>
   <data name="PageDescription">
-    <value>Instalați extensiile de browser și aplicațiile mobile pentru a vă accesa seiful de pe toate dispozitivele și pentru a completa automat credențialele pe site-urile web.</value>
+    <value>Instalează extensiile de browser și aplicațiile mobile pentru a-ți accesa seiful de pe toate dispozitivele și pentru a completa automat datele de autentificare pe site-uri.</value>
     <comment>Page description for extensions and apps</comment>
   </data>
   <data name="BreadcrumbTitle">
@@ -38,7 +38,7 @@
     <comment>Title for browser extensions section</comment>
   </data>
   <data name="BrowserExtensionsDescription">
-    <value>Extensia de browser AliasVault vă permite să completați automat credențialele existente pe orice site web. De asemenea, vă permite să generați aliasuri noi în timpul înregistrării, să accesați e-mailurile primite pe toate aliasurile dumneavoastră și să vă vizualizați identitățile.</value>
+    <value>Extensia de browser AliasVault îți permite să completezi automat datele de autentificare existente pe orice site. De asemenea, îți permite să generezi aliasuri noi în timpul înregistrării, să accesezi e-mailurile primite pe toate aliasurile tale și să îți vizualizezi aliasurile și identitățile.</value>
     <comment>Description for browser extensions</comment>
   </data>
   <data name="InstallButton">
