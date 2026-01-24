@@ -180,23 +180,6 @@
     <value>This folder is empty.</value>
     <comment>Empty state message when folder has no items</comment>
   </data>
-  <!-- Item Type Filters -->
-  <data name="FilterLoginOption" xml:space="preserve">
-    <value>Logins</value>
-    <comment>Filter option to show only Login items</comment>
-  </data>
-  <data name="FilterAliasOption" xml:space="preserve">
-    <value>别名</value>
-    <comment>Filter option to show only Alias items</comment>
-  </data>
-  <data name="FilterCreditCardOption" xml:space="preserve">
-    <value>Credit Cards</value>
-    <comment>Filter option to show only Credit Card items</comment>
-  </data>
-  <data name="FilterNoteOption" xml:space="preserve">
-    <value>备注</value>
-    <comment>Filter option to show only Note items</comment>
-  </data>
   <!-- Folder Management -->
   <data name="NewFolder" xml:space="preserve">
     <value>New Folder</value>
@@ -226,5 +209,14 @@
   <data name="LoadingMore" xml:space="preserve">
     <value>Loading more...</value>
     <comment>Text shown when loading more items during infinite scroll</comment>
+  </data>
+  <!-- Clear Filter -->
+  <data name="ClearFilter" xml:space="preserve">
+    <value>Clear filter</value>
+    <comment>Button text for clearing the active filter</comment>
+  </data>
+  <data name="FilteringBy" xml:space="preserve">
+    <value>Filtering by:</value>
+    <comment>Label shown when a filter is active</comment>
   </data>
 </root>
