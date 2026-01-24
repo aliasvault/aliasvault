@@ -59,47 +59,47 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Emails</value>
+    <value>Email-uri</value>
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>You can view all emails received by your private email addresses below.</value>
+    <value>Puteți vizualiza mai jos toate email-urile primite pe adresele dumneavoastră de email private.</value>
     <comment>Page description</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
-    <value>Auto-refresh enabled</value>
+    <value>Repornire automată activată</value>
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="RefreshButton" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Repornire</value>
     <comment>Refresh button text</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
-    <value>You are not using any private email addresses (yet). Create a new alias and use a private email address supported by AliasVault. All emails received by these private email addresses will show up here.</value>
+    <value>Nu utilizați nicio adresă de email privată (încă). Creați un alias nou și folosiți o adresă de email privată suportată de AliasVault. Toate email-urile primite pe aceste adrese private vor apărea aici.</value>
     <comment>Message when no email addresses are configured</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>No emails have been received yet.</value>
+    <value>Nu a fost primit niciun email încă.</value>
     <comment>Message when no emails are received</comment>
   </data>
   <data name="LoadingText" xml:space="preserve">
-    <value>Loading...</value>
+    <value>Se încarcă...</value>
     <comment>Loading indicator text</comment>
   </data>
   <data name="LoadMoreButtonText" xml:space="preserve">
-    <value>Load More ({0} remaining)</value>
+    <value>Încarcă mai multe ({0} rămase)</value>
     <comment>Load more button text with count. {0} is placeholder for number of remaining emails</comment>
   </data>
   <data name="ClaimDoesNotExistError" xml:space="preserve">
-    <value>An error occurred while trying to load the emails. Please try to edit and save any credential entry to synchronize the database, then try again.</value>
+    <value>A apărut o eroare la încercarea de a încărca email-urile. Vă rugăm să încercați să editați și să salvați orice intrare de credentiale pentru a sincroniza baza de date, apoi încercați din nou.</value>
     <comment>Error message when email claim does not exist</comment>
   </data>
   <data name="LoadEmailsFailedMessage" xml:space="preserve">
-    <value>Failed to load email: {0}</value>
+    <value>Încărcarea email-ului a eșuat: {0}</value>
     <comment>Error message when loading email fails. {0} is placeholder for error message</comment>
   </data>
   <data name="LoadMoreEmailsFailedMessage" xml:space="preserve">
-    <value>Failed to load more emails: {0}</value>
+    <value>Încărcarea mai multor email-uri a eșuat: {0}</value>
     <comment>Error message when loading more emails fails. {0} is placeholder for error message</comment>
   </data>
 </root>
