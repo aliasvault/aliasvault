@@ -9,11 +9,11 @@
 "title" = "Título";
 "unknown_error" = "Ocorreu um erro desconhecido";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"select_item" = "Select Item";
+"loading_items" = "Carregando itens...";
+"no_items_found" = "Nenhum item encontrado";
+"no_items_match" = "Nenhum item existente corresponde à sua pesquisa";
+"create_new_item" = "Criar Novo Item";
+"select_item" = "Selecionar Item";
 "select_text_to_insert" = "Selecione o Texto para Inserir";
 "choose_username" = "Escolher Nome de Usuário";
 "select_text_to_insert_message" = "Selecione o texto para inserir no campo selecionado";
@@ -21,8 +21,8 @@
 "username_prefix" = "Nome de Usuário: ";
 "email_prefix" = "E-mail: ";
 "password" = "Senha";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"items_load_error" = "Falha ao carregar itens. Por favor, abra o aplicativo AliasVault para verificar atualizações.";
+"no_item_selected" = "Nenhum item selecionado.";
 
 /* Context menu strings */
 "copy_username" = "Copiar Nome de Usuário";
@@ -34,7 +34,7 @@
 "email_copied" = "E-mail copiado";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "Pesquisar itens...";
 
 /* Passkey registration */
 "create_passkey_title" = "Criar Nova Passkey";
@@ -57,9 +57,9 @@
 "create_passkey_explanation" = "Isto cria uma nova passkey e a armazena no seu cofre. Ela será sincronizada automaticamente através de todos os seus dispositivos que utilizam o AliasVault.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"passkey_add_to_existing" = "Ou, adicione um passkey em um item existente";
+"add_passkey" = "Adicionar Passkey";
+"merge_passkey_explanation" = "Isto irá adicionar um passkey em seu item existente. Sua senha e outros dados serão preservados.";
 
 /* PIN Unlock */
 "unlock_vault" = "Desbloquear Cofre";
