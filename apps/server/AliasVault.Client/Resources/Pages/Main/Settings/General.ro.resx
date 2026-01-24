@@ -42,7 +42,7 @@
     <comment>Label for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescription">
-    <value>Setați domeniul de e-mail implicit care va fi utilizat la crearea de noi credențiale.</value>
+    <value>Setează domeniul de e-mail implicit care va fi utilizat la crearea noilor date de autentificare.</value>
     <comment>Description for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescriptionNote">
