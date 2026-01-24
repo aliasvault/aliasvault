@@ -122,4 +122,9 @@
     <value>Notas</value>
     <comment>Label for notes content field</comment>
   </data>
+  <!-- History -->
+  <data name="ViewHistory" xml:space="preserve">
+    <value>View history</value>
+    <comment>Tooltip for history icon button</comment>
+  </data>
 </root>
