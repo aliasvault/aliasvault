@@ -117,7 +117,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="REFRESH_TOKEN_REQUIRED" xml:space="preserve">
-    <value>Refresh Token-ul este necesar.</value>
+    <value>Este necesar un refresh token</value>
   </data>
   <data name="ACCOUNT_BLOCKED" xml:space="preserve">
     <value>Contul tău a fost dezactivat. Dacă crezi că este o greșeală, te rugăm să contactezi asistența.</value>
