@@ -86,7 +86,7 @@
     <comment>Header for note section</comment>
   </data>
   <data name="VaultsDeletedNote" xml:space="preserve">
-    <value>Toate seifurile criptate, inclusiv toate credențialele dumneavoastră, vor fi șterse definitiv</value>
+    <value>Toate seifurile criptate, care includ toate datele tale de autentificare, vor fi șterse definitiv</value>
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">
