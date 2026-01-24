@@ -125,11 +125,11 @@
   </data>
   <!-- Generic CSV -->
   <data name="GenericCsvDescription" xml:space="preserve">
-    <value>Importă credențiale folosind un format CSV șablon</value>
+    <value>Importați datele de autentificare folosind un șablon în format CSV</value>
     <comment>Description for Generic CSV import service</comment>
   </data>
   <data name="GenericCsvInstructionsPart1" xml:space="preserve">
-    <value>Managerul de parole pe care îl folosești nu este suportat? Poți oricând să imporți credențialele în AliasVault folosind în schimb un format șablon CSV generic.</value>
+    <value>Managerul de parole pe care îl folosiți nu este acceptat? Puteți oricând să vă importați datele de autentificare în AliasVault folosind, în schimb, un șablon CSV generic.</value>
     <comment>Generic CSV instructions part 1</comment>
   </data>
   <data name="GenericCsvStep1" xml:space="preserve">
@@ -141,7 +141,7 @@
     <comment>Generic CSV step 2</comment>
   </data>
   <data name="GenericCsvStep3" xml:space="preserve">
-    <value>Completează-ți credențialele (înlocuiește datele de exemplu)</value>
+    <value>Completați datele de autentificare (înlocuiți datele de exemplu)</value>
     <comment>Generic CSV step 3</comment>
   </data>
   <data name="GenericCsvStep4" xml:space="preserve">
