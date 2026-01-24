@@ -21,144 +21,144 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>General settings</value>
+    <value>Setări generale</value>
     <comment>Page title for general settings</comment>
   </data>
   <data name="PageDescription">
-    <value>Configure general AliasVault settings.</value>
+    <value>Configurați setările generale AliasVault.</value>
     <comment>Page description for general settings</comment>
   </data>
   <data name="BreadcrumbTitle">
-    <value>General settings</value>
+    <value>Setări generale</value>
     <comment>Breadcrumb title for general settings</comment>
   </data>
   <!-- Email Settings Section -->
   <data name="EmailSettingsTitle">
-    <value>Email Settings</value>
+    <value>Setări e-mail</value>
     <comment>Title for email settings section</comment>
   </data>
   <data name="DefaultEmailDomainLabel">
-    <value>Default email domain</value>
+    <value>Domeniu e-mail implicit</value>
     <comment>Label for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescription">
-    <value>Set the default email domain that will be used when creating new credentials.</value>
+    <value>Setați domeniul de e-mail implicit care va fi utilizat la crearea de noi credențiale.</value>
     <comment>Description for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescriptionNote">
-    <value>Note: Email received on private domains are end-to-end encrypted and can only be read by you, while email received on public domains can be read by anyone that knows the receiving email address.</value>
+    <value>Notă: E-mailurile primite pe domenii private sunt criptate end-to-end și pot fi citite doar de dumneavoastră, în timp ce e-mailurile primite pe domenii publice pot fi citite de oricine cunoaște adresa de e-mail de recepție.</value>
     <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
   </data>
   <data name="DefaultEmailDomainLearnMore">
-    <value>Learn more about the difference</value>
+    <value>Aflați mai multe despre diferențe</value>
     <comment>Link to documentation for default email domain setting</comment>
   </data>
   <data name="PrivateDomainsLabel">
-    <value>Private Domains</value>
+    <value>Domenii private</value>
     <comment>Label for private domains group</comment>
   </data>
   <data name="PrivateDomainsDisabledLabel">
-    <value>No private email domains configured</value>
+    <value>Niciun domeniu de e-mail privat configurat</value>
     <comment>Label for private domains group when no private email domains are configured</comment>
   </data>
   <data name="PublicDomainsLabel">
-    <value>Public Domains</value>
+    <value>Domenii publice</value>
     <comment>Label for public domains group</comment>
   </data>
   <data name="AutoEmailRefreshLabel">
-    <value>Auto refresh emails content when new ones arrive</value>
+    <value>Actualizare automată a conținutului e-mailurilor la sosirea unora noi</value>
     <comment>Label for auto email refresh setting</comment>
   </data>
   <!-- Alias Settings Section -->
   <data name="AliasSettingsTitle">
-    <value>Identity Generator Settings</value>
+    <value>Setări generator de identitate</value>
     <comment>Title for identity generator settings section</comment>
   </data>
   <data name="AliasGenerationLanguageLabel">
-    <value>Language</value>
+    <value>Limbă</value>
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
-    <value>Set the default language that will be used when generating new identities.</value>
+    <value>Setați limba implicită care va fi utilizată la generarea de noi identități.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Gender</value>
+    <value>Gen</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
-    <value>Set the default gender preference for generating new identities.</value>
+    <value>Setați preferința implicită de gen pentru generarea de noi identități.</value>
     <comment>Description for alias generation gender setting</comment>
   </data>
   <data name="RandomOption">
-    <value>Random</value>
+    <value>Aleatoriu</value>
     <comment>Random gender option</comment>
   </data>
   <data name="MaleOption">
-    <value>Male</value>
+    <value>Masculin</value>
     <comment>Male gender option</comment>
   </data>
   <data name="FemaleOption">
-    <value>Female</value>
+    <value>Feminin</value>
     <comment>Female gender option</comment>
   </data>
   <data name="AliasGenerationAgeRangeLabel">
-    <value>Age range</value>
+    <value>Interval de vârstă</value>
     <comment>Label for alias generation age range setting</comment>
   </data>
   <data name="AliasGenerationAgeRangeDescription">
-    <value>Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.</value>
+    <value>Setați intervalul de vârstă implicit pentru generarea de noi identități. Acest lucru afectează data nașterii atribuită identității generate.</value>
     <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
   <data name="ClipboardSettingsTitle">
-    <value>Clipboard Settings</value>
+    <value>Setări clipboard</value>
     <comment>Title for clipboard settings section</comment>
   </data>
   <data name="ClipboardClearSecondsLabel">
-    <value>Auto-clear clipboard after copying</value>
+    <value>Golire automată clipboard după copiere</value>
     <comment>Label for clipboard clear seconds setting</comment>
   </data>
   <data name="ClipboardClearSecondsDescription">
-    <value>Automatically clear clipboard contents after copying passwords or other sensitive data.</value>
+    <value>Goliți automat conținutul clipboard-ului după copierea parolelor sau a altor date sensibile.</value>
     <comment>Description for clipboard clear seconds setting</comment>
   </data>
   <data name="ClipboardClearDisabledOption">
-    <value>Disabled</value>
+    <value>Dezactivat</value>
     <comment>Option to disable clipboard clearing</comment>
   </data>
   <data name="ClipboardClear5SecondsOption">
-    <value>5 seconds</value>
+    <value>5 secunde</value>
     <comment>Option to clear clipboard after 5 seconds</comment>
   </data>
   <data name="ClipboardClear10SecondsOption">
-    <value>10 seconds</value>
+    <value>10 secunde</value>
     <comment>Option to clear clipboard after 10 seconds</comment>
   </data>
   <data name="ClipboardClear15SecondsOption">
-    <value>15 seconds</value>
+    <value>15 secunde</value>
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
   <data name="ClipboardClearLimitationNote">
-    <value>Note: clearing the clipboard in the web app is only possible when the tab is active. If the tab loses focus, the clipboard will be cleared when it comes back into focus.</value>
+    <value>Notă: golirea clipboard-ului în aplicația web este posibilă doar când fila este activă. Dacă fila își pierde focusul, clipboard-ul va fi golit la revenirea în focus.</value>
     <comment>Note explaining limitations of clipboard clearing feature</comment>
   </data>
   <!-- Password Settings Section -->
   <data name="PasswordSettingsTitle">
-    <value>Password Settings</value>
+    <value>Setări parolă</value>
     <comment>Title for password settings section</comment>
   </data>
   <!-- App Language Settings Section -->
   <data name="AppLanguageTitle">
-    <value>Application Language</value>
+    <value>Limba aplicației</value>
     <comment>Title for app language settings section</comment>
   </data>
   <data name="AppLanguageLabel">
-    <value>Language</value>
+    <value>Limbă</value>
     <comment>Label for app language setting</comment>
   </data>
   <data name="AppLanguageDescription">
-    <value>Set the language for the application interface.</value>
+    <value>Setați limba pentru interfața aplicației.</value>
     <comment>Description for app language setting</comment>
   </data>
 </root>
