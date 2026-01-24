@@ -114,8 +114,8 @@
       "USER_NOT_FOUND": "Utilizator sau parolă invalidă. Te rugăm să încerci din nou.",
       "INVALID_AUTHENTICATOR_CODE": "Cod de autentificare invalid. Te rugăm să încerci din nou.",
       "INVALID_RECOVERY_CODE": "Cod de recuperare invalid. Te rugăm să încerci din nou.",
-      "REFRESH_TOKEN_REQUIRED": "Este necesar un token de reîmprospătare.",
-      "INVALID_REFRESH_TOKEN": "Token de reîmprospătare invalid.",
+      "REFRESH_TOKEN_REQUIRED": "Este necesar un refresh token.",
+      "INVALID_REFRESH_TOKEN": "Refresh Token invalid.",
       "PUBLIC_REGISTRATION_DISABLED": "Înregistrarea conturilor noi este dezactivată pe acest server. Contactează administratorul.",
       "USERNAME_REQUIRED": "Numele de utilizator este obligatoriu.",
       "USERNAME_ALREADY_IN_USE": "Numele de utilizator este deja folosit.",
@@ -150,7 +150,7 @@
     "randomAlias": "Alias aleatoriu",
     "usernamePassword": "Utilizator/parolă",
     "createAndSaveAlias": "Creează și salvează alias",
-    "createAndSaveCredential": "Creează și salvează credențiale",
+    "createAndSaveCredential": "Creează și salvează datele de autentificare",
     "randomIdentityDescription": "Generează o identitate aleatorie cu o adresă de e-mail aleatorie accesibilă în AliasVault.",
     "randomIdentityDescriptionDropdown": "Identitate aleatorie cu e-mail aleatoriu",
     "manualCredentialDescription": "Specifică propria adresă de e-mail și numele de utilizator.",
@@ -184,7 +184,7 @@
     "folderNameRequired": "Numele folderului este obligatoriu",
     "folder": "Folder",
     "welcomeTitle": "Bun venit în AliasVault!",
-    "welcomeDescription": "Pentru a folosi extensia: navighează pe un site și folosește fereastra de autocompletare AliasVault pentru a crea noi credențiale.",
+    "welcomeDescription": "Pentru a utiliza extensia de browser AliasVault: navigați pe un site web și folosiți fereastra pop-up de completare automată AliasVault pentru a crea date de autentificare noi.",
     "noPasskeysFound": "Nu a fost creat niciun passkey încă. Passkey-urile sunt create vizitând site-uri care oferă această metodă de autentificare.",
     "noAttachmentsFound": "Nu s-au găsit elemente cu atașamente",
     "noItemsOfTypeFound": "Nu s-au găsit elemente de tip {{type}}",
@@ -311,8 +311,8 @@
       "yesterday": "ieri"
     },
     "apiErrors": {
-      "CLAIM_DOES_NOT_MATCH_USER": "Adresa de e-mail selectată este deja folosită. Te rugăm să o schimbi editând aceste credențiale.",
-      "CLAIM_DOES_NOT_EXIST": "A apărut o eroare la încărcarea e-mailurilor. Încercați să editați și să salvați înregistrarea credențialelor pentru a sincroniza baza de date, apoi încercați din nou."
+      "CLAIM_DOES_NOT_MATCH_USER": "Adresa de e-mail aleasă este deja utilizată. Te rugăm să schimbi adresa de e-mail prin editarea acestor date de autentificare.",
+      "CLAIM_DOES_NOT_EXIST": "A apărut o eroare la încărcarea e-mailurilor. Te rugăm să încerci să editezi și să salvezi datele de autentificare pentru a sincroniza baza de date, apoi reîncearcă."
     }
   },
   "settings": {
@@ -329,7 +329,7 @@
     "rightClickContextMenu": "Meniu contextual (clic dreapta)",
     "autofillMatching": "Potrivire Autocompletare",
     "autofillMatchingMode": "Mod potrivire autocompletare",
-    "autofillMatchingModeDescription": "Determină ce credențiale sunt considerate potrivite și afișate ca sugestii pentru un site.",
+    "autofillMatchingModeDescription": "Determină care date de autentificare sunt considerate potrivite și afișate ca sugestii în fereastra de completare automată pentru un anumit site web.",
     "autofillMatchingDefault": "URL + subdomeniu + nume (wildcard)",
     "autofillMatchingUrlSubdomain": "URL + subdomeniu",
     "autofillMatchingUrlExact": "Doar domeniul exact al URL-ului",
@@ -416,7 +416,7 @@
     "site": "Site",
     "helpText": "Passkey-urile sunt create pe site-uri când este solicitat. Nu pot fi editate manual. Pentru a înlocui un passkey, vizitează site-ul respectiv.",
     "passkeyMarkedForDeletion": "Passkey marcat pentru ștergere",
-    "passkeyWillBeDeleted": "Acest passkey va fi șters când salvezi credențialele.",
+    "passkeyWillBeDeleted": "Acest passkey va fi șters atunci când salvezi aceste date de autentificare.",
     "useBrowserPasskey": "Folosește Passkey-ul Browserului",
     "bypass": {
       "description": "Cât timp dorești să folosești furnizorul de passkey al browserului pentru {{origin}}?",
@@ -440,7 +440,7 @@
       "replacingPasskey": "Se înlocuiește passkey-ul: {{displayName}}",
       "confirmReplace": "Confirmă Înlocuirea",
       "selectExistingLogin": "Adaugă la o autentificare existentă:",
-      "selectExistingLoginDescription": "Atașează acest passkey unor credențiale existente pentru acest site.",
+      "selectExistingLoginDescription": "Atașează acest passkey unor date de autentificare existente pentru acest site.",
       "attachingToCredential": "Se adaugă passkey-ul la: {{serviceName}}",
       "attachPasskey": "Adaugă Passkey"
     },
