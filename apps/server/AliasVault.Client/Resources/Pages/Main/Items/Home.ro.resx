@@ -212,11 +212,11 @@
   </data>
   <!-- Clear Filter -->
   <data name="ClearFilter" xml:space="preserve">
-    <value>Clear filter</value>
+    <value>Șterge filtrul</value>
     <comment>Button text for clearing the active filter</comment>
   </data>
   <data name="FilteringBy" xml:space="preserve">
-    <value>Filtering by:</value>
+    <value>Filtrare după:</value>
     <comment>Label shown when a filter is active</comment>
   </data>
 </root>
