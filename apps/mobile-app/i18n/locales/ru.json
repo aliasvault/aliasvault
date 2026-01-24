@@ -594,31 +594,31 @@
       "folderNameRequired": "Название папки обязательно",
       "deleteFolder": "Удалить папку",
       "deleteFolderKeepItems": "Удалить только папку",
-      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-      "deleteFolderAndItems": "Delete folder and all items",
+      "deleteFolderKeepItemsDescription": "Элементы будут перемещены обратно в основной список.",
+      "deleteFolderAndItems": "Удалить папку и все элементы",
       "deleteFolderAndItemsDescription": "{{count}} объект(ов) будет перемещено в раздел «Недавно удалённые».",
       "emptyFolderHint": "Эта папка пуста. Чтобы переместить сюда элементы, отредактируйте нужный элемент и выберите эту папку.",
-      "noFolder": "No Folder",
+      "noFolder": "Нет папок",
       "selectFolder": "Выбрать папку"
     },
     "recentlyDeleted": {
-      "title": "Recently Deleted",
-      "noItems": "No deleted items",
-      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
-      "restore": "Restore",
-      "deletePermanently": "Delete Permanently",
-      "emptyAll": "Empty All",
+      "title": "Недавно удаленные",
+      "noItems": "Нет удаленных элементов",
+      "noItemsDescription": "Удаленные элементы будут храниться здесь 30 дней, после чего они будут удалены безвозвратно.",
+      "description": "Эти элементы будут безвозвратно удалены через 30 дней. Вы можете восстановить их или удалить немедленно.",
+      "restore": "Восстановить",
+      "deletePermanently": "Удалить безвозвратно",
+      "emptyAll": "Очистить все",
       "daysRemaining": "Остался {{count}} день",
       "daysRemaining_plural": "Осталось {{count}} дней",
-      "expiringSoon": "Expiring soon",
-      "confirmDeleteTitle": "Delete Permanently?",
-      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
-      "confirmEmptyAllTitle": "Empty Recently Deleted?",
-      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
-      "itemRestored": "Item restored",
-      "itemDeleted": "Item permanently deleted",
-      "allItemsDeleted": "All items permanently deleted"
+      "expiringSoon": "Скоро будут удалены",
+      "confirmDeleteTitle": "Удалить безвозвратно?",
+      "confirmDeleteMessage": "Этот элемент будет удален навсегда без возможности восстановления.",
+      "confirmEmptyAllTitle": "Очистить «Недавно удалённые»?",
+      "confirmEmptyAllMessage": "Все элементы {{count}} будут удалены навсегда без возможности восстановления.",
+      "itemRestored": "Элемент восстановлен",
+      "itemDeleted": "Объект удален навсегда",
+      "allItemsDeleted": "Все элементы удалены навсегда"
     }
   },
   "emails": {
@@ -685,7 +685,7 @@
     "retrySync": "Нажмите, чтобы повторить",
     "backOnline": "Восстановить подключение",
     "stillOffline": "Нет подключения",
-    "syncFailed": "Sync failed"
+    "syncFailed": "Ошибка синхронизации"
   },
   "app": {
     "status": {
@@ -695,7 +695,7 @@
       "retryingConnection": "Повторная попытка подключения..."
     },
     "offline": {
-      "banner": "Offline - changes will sync when online",
+      "banner": "Офлайн — изменения синхронизируются при подключении",
       "backOnline": "Восстановить подключение",
       "stillOffline": "Нет подключения"
     },
