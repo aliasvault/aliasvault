@@ -60,171 +60,171 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Vault</value>
+    <value>Seif</value>
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Find all of your items below.</value>
+    <value>Găsiți toate elementele dumneavoastră mai jos.</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
   <data name="ViewModeLabel" xml:space="preserve">
-    <value>View Mode</value>
+    <value>Mod vizualizare</value>
     <comment>Label for view mode dropdown</comment>
   </data>
   <data name="GridViewOption" xml:space="preserve">
-    <value>Grid View</value>
+    <value>Vizualizare grilă</value>
     <comment>Grid view option in dropdown</comment>
   </data>
   <data name="TableViewOption" xml:space="preserve">
-    <value>Table View</value>
+    <value>Vizualizare tabel</value>
     <comment>Table view option in dropdown</comment>
   </data>
   <data name="SortOrderLabel" xml:space="preserve">
-    <value>Sort Order</value>
+    <value>Ordine sortare</value>
     <comment>Label for sort order dropdown</comment>
   </data>
   <data name="OldestFirstOption" xml:space="preserve">
-    <value>Oldest First</value>
+    <value>Cele mai vechi</value>
     <comment>Oldest first sort option</comment>
   </data>
   <data name="NewestFirstOption" xml:space="preserve">
-    <value>Newest First</value>
+    <value>Cele mai noi</value>
     <comment>Newest first sort option</comment>
   </data>
   <data name="AlphabeticalOption" xml:space="preserve">
-    <value>Alphabetical</value>
+    <value>Alfabetic</value>
     <comment>Alphabetical sort option</comment>
   </data>
   <!-- Empty State -->
   <data name="NoItemsTitle" xml:space="preserve">
-    <value>No items yet</value>
+    <value>Niciun element încă</value>
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Create your first item using the</value>
+    <value>Creați primul element folosind butonul</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>"+ New Alias"</value>
+    <value>„+ Alias nou”</value>
     <comment>Text reference to the New Alias button (desktop)</comment>
   </data>
   <data name="NewAliasButtonTextMobile" xml:space="preserve">
-    <value>"+"</value>
+    <value>„+”</value>
     <comment>Text reference to the New Alias button (mobile)</comment>
   </data>
   <data name="ButtonLocationText" xml:space="preserve">
-    <value>button in the top right corner.</value>
+    <value>din colțul din dreapta sus.</value>
     <comment>Text describing button location</comment>
   </data>
   <data name="OrText" xml:space="preserve">
-    <value>or</value>
+    <value>sau</value>
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>If you previously used a different password manager, you can import your items from it.</value>
+    <value>Dacă ați folosit anterior un alt manager de parole, vă puteți importa elementele din acesta.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
-    <value>Import from KeePass, Bitwarden, Chrome, Firefox...</value>
+    <value>Importă din KeePass, Bitwarden, Chrome, Firefox...</value>
     <comment>Import button text</comment>
   </data>
   <!-- Error Messages -->
   <data name="FailedToLoadItemsMessage" xml:space="preserve">
-    <value>Failed to load items.</value>
+    <value>Încărcarea elementelor a eșuat.</value>
     <comment>Error message when items fail to load</comment>
   </data>
   <!-- Filter Options -->
   <data name="FilterLabel" xml:space="preserve">
-    <value>Filter</value>
+    <value>Filtrează</value>
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>(All) Items</value>
+    <value>(Toate) elementele</value>
     <comment>Filter option to show all items</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
-    <value>Passkeys</value>
+    <value>Passkey-uri</value>
     <comment>Filter option to show only passkeys</comment>
   </data>
   <data name="FilterAliasesOption" xml:space="preserve">
-    <value>Aliases</value>
+    <value>Alias-uri</value>
     <comment>Filter option to show only aliases</comment>
   </data>
   <data name="FilterUserpassOption" xml:space="preserve">
-    <value>Passwords</value>
+    <value>Parole</value>
     <comment>Filter option to show only username/passwords</comment>
   </data>
   <data name="FilterAttachmentsOption" xml:space="preserve">
-    <value>Attachments</value>
+    <value>Atașamente</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>Șterse recent</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
   <data name="NoPasskeysFound" xml:space="preserve">
-    <value>No passkeys have been created yet. Passkeys are added through the browser extension or mobile apps when visiting a website that supports passkeys and offers passkey authentication.</value>
+    <value>Nu a fost creat încă niciun passkey. Passkey-urile sunt adăugate prin extensia de browser sau aplicațiile mobile atunci când vizitați un site web care acceptă passkey-uri și oferă autentificare prin passkey.</value>
     <comment>Empty state message when no passkeys are found</comment>
   </data>
   <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>No items with attachments found.</value>
+    <value>Nu au fost găsite elemente cu atașamente.</value>
     <comment>Empty state message when no items with attachments are found</comment>
   </data>
   <data name="NoItemsFound" xml:space="preserve">
-    <value>No items match the selected filter.</value>
+    <value>Niciun element nu corespunde filtrului selectat.</value>
     <comment>Empty state message when no items match the filter</comment>
   </data>
   <data name="EmptyFolderMessage" xml:space="preserve">
-    <value>This folder is empty.</value>
+    <value>Acest dosar este gol.</value>
     <comment>Empty state message when folder has no items</comment>
   </data>
   <!-- Item Type Filters -->
   <data name="FilterLoginOption" xml:space="preserve">
-    <value>Logins</value>
+    <value>Autentificări</value>
     <comment>Filter option to show only Login items</comment>
   </data>
   <data name="FilterAliasOption" xml:space="preserve">
-    <value>Aliases</value>
+    <value>Alias-uri</value>
     <comment>Filter option to show only Alias items</comment>
   </data>
   <data name="FilterCreditCardOption" xml:space="preserve">
-    <value>Credit Cards</value>
+    <value>Carduri de credit</value>
     <comment>Filter option to show only Credit Card items</comment>
   </data>
   <data name="FilterNoteOption" xml:space="preserve">
-    <value>Notes</value>
+    <value>Note</value>
     <comment>Filter option to show only Note items</comment>
   </data>
   <!-- Folder Management -->
   <data name="NewFolder" xml:space="preserve">
-    <value>New Folder</value>
+    <value>Dosar nou</value>
     <comment>Button text for creating a new folder</comment>
   </data>
   <data name="EditFolder" xml:space="preserve">
-    <value>Edit Folder</value>
+    <value>Editează dosarul</value>
     <comment>Button text for editing a folder</comment>
   </data>
   <data name="DeleteFolder" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>Șterge dosarul</value>
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">
-    <value>Back</value>
+    <value>Înapoi</value>
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
-    <value>Failed to create folder.</value>
+    <value>Crearea dosarului a eșuat.</value>
     <comment>Error message when folder creation fails</comment>
   </data>
   <data name="FailedToDeleteFolder" xml:space="preserve">
-    <value>Failed to delete folder.</value>
+    <value>Ștergerea dosarului a eșuat.</value>
     <comment>Error message when folder deletion fails</comment>
   </data>
   <!-- Infinite Scroll -->
   <data name="LoadingMore" xml:space="preserve">
-    <value>Loading more...</value>
+    <value>Se încarcă mai multe...</value>
     <comment>Text shown when loading more items during infinite scroll</comment>
   </data>
 </root>
