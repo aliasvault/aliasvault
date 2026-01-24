@@ -55,7 +55,7 @@
     <comment>Header for the item information section</comment>
   </data>
   <data name="LoginDetailsSectionHeader">
-    <value>Detalii credentiale</value>
+    <value>Detalii de autentificare</value>
     <comment>Header for the login details section</comment>
   </data>
   <data name="AliasSectionHeader">
