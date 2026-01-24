@@ -13,6 +13,7 @@ import itTranslations from './locales/it.json';
 import nlTranslations from './locales/nl.json';
 import plTranslations from './locales/pl.json';
 import ptTranslations from './locales/pt.json';
+import roTranslations from './locales/ro.json';
 import ruTranslations from './locales/ru.json';
 import ukTranslations from './locales/uk.json';
 import zhTranslations from './locales/zh.json';
@@ -51,6 +52,9 @@ export const LANGUAGE_RESOURCES = {
   },
   pt: {
     translation: ptTranslations
+  },
+  ro: {
+    translation: roTranslations
   },
   ru: {
     translation: ruTranslations
@@ -127,6 +131,12 @@ export const AVAILABLE_LANGUAGES: ILanguageConfig[] = [
     name: 'Portuguese Brazilian',
     nativeName: 'Português Brasileiro',
     flag: '🇧🇷'
+  },
+  {
+    code: 'ro',
+    name: 'Romanian',
+    nativeName: 'Română',
+    flag: '🇷🇴'
   },
   {
     code: 'ru',

@@ -40,6 +40,7 @@ public class LanguageService(
         new LanguageConfig("nl", "Nederlands", "🇳🇱"),
         new LanguageConfig("pl", "Polski", "🇵🇱"),
         new LanguageConfig("pt", "Português Brasileiro", "🇧🇷"),
+        new LanguageConfig("ro", "Română", "🇷🇴"),
         new LanguageConfig("ru", "Русский", "🇷🇺"),
         new LanguageConfig("uk", "Українська", "🇺🇦"),
         new LanguageConfig("zh", "简体中文", "🇨🇳"),
