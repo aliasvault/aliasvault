@@ -59,27 +59,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeleteFolderTitle" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>Excluir Pasta</value>
     <comment>Title for delete folder modal</comment>
   </data>
   <data name="DeleteFolderDescription" xml:space="preserve">
-    <value>How would you like to delete the folder "{0}"?</value>
+    <value>Como você prefere excluir a pasta "{0}"?</value>
     <comment>Description for delete folder modal. {0} is the folder name.</comment>
   </data>
   <data name="DeleteFolderOnlyTitle" xml:space="preserve">
-    <value>Delete folder only</value>
+    <value>Excluir apenas a pasta</value>
     <comment>Title for delete folder only option</comment>
   </data>
   <data name="DeleteFolderOnlyDescription" xml:space="preserve">
-    <value>Items in this folder will be moved to root</value>
+    <value>Itens nesta pasta serão movidos para a pasta principal</value>
     <comment>Description for delete folder only option</comment>
   </data>
   <data name="DeleteFolderAndContentsTitle" xml:space="preserve">
-    <value>Delete folder and contents</value>
+    <value>Excluir pasta e conteúdo</value>
     <comment>Title for delete folder and contents option</comment>
   </data>
   <data name="DeleteFolderAndContentsDescription" xml:space="preserve">
-    <value>Move {0} item(s) to trash</value>
+    <value>Mover {0} item(ns) para a lixeira</value>
     <comment>Description for delete folder and contents option. {0} is item count.</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
