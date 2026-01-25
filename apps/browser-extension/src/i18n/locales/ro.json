@@ -194,6 +194,7 @@
     "clearSearch": "Șterge căutarea",
     "clearFilter": "Șterge filtrul",
     "emptyFolderHint": "Acest folder este gol. Pentru a muta elemente aici, editează elementul și apasă pe pictograma folderului din câmpul de nume.",
+    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
     "deleteFolder": "Șterge folder",
     "deleteFolderKeepItems": "Șterge doar folderul",
     "deleteFolderKeepItemsDescription": "Elementele vor fi mutate înapoi în lista principală.",
@@ -293,7 +294,9 @@
   "attachmentUploader": {
     "uploading": "Se încarcă...",
     "uploadSuccess": "Fișiere încărcate cu succes.",
-    "deleteSuccess": "Atașament șters cu succes."
+    "deleteSuccess": "Atașament șters cu succes.",
+    "firefoxExpandRequired": "To upload files, use the expanded window.",
+    "openExpandedWindow": "Open Expanded Window"
   },
   "emails": {
     "title": "E-mailuri",
