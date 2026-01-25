@@ -419,6 +419,7 @@
     "noMatchingItemsSearch": "Nu s-au găsit elemente pentru „{{search}}”",
     "noMatchingItemsWithFilter": "Niciun element {{filter}} nu se potrivește cu „{{search}}”",
     "noItemsFound": "Nu s-a găsit nicio înregistrare. Creează una pentru a începe. Sfat: te poți autentifica în aplicația web AliasVault pentru a importa date de autentificare din alte managere de parole.",
+    "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
     "noPasskeysFound": "Nu a fost creat niciun passkey încă. Passkey-urile se creează vizitând un site care oferă passkey ca metodă de autentificare.",
     "noAttachmentsFound": "Nu s-au găsit elemente cu atașamente",
     "noItemsOfTypeFound": "Nu s-au găsit elemente de tipul {{type}}",
