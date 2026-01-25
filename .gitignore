@@ -446,3 +446,6 @@ apps/browser-extension/src/utils/dist/core/rust
 # Server .NET bindings (built by: cd core/rust && ./build.sh --server)
 apps/server/Utilities/AliasVault.RustCore/
 apps/server/AliasVault.Client/wwwroot/wasm
+
+# Client JS bundle (built by: npm run build:js in apps/server/AliasVault.Client)
+apps/server/AliasVault.Client/wwwroot/js/bundle.min.js

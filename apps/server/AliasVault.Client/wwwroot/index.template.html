@@ -31,7 +31,6 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" sizes="500x500" href="img/icon-500.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="img/icon-192.png" />
-    <!-- Preload Rust WASM module for faster initialization -->
     <link rel="preload" href="/wasm/aliasvault_core_bg.wasm?v=@CacheBuster" as="fetch" type="application/wasm" crossorigin />
     <link rel="modulepreload" href="/wasm/aliasvault_core.js?v=@CacheBuster" />
 </head>
@@ -143,13 +142,12 @@
     </div>
 
     <script>
-        // Pre-loading localization system with JSON loading
         let translations = {};
 
         function getCurrentLanguage() {
             return localStorage.getItem('blazorCulture') ||
                    localStorage.getItem('AppLanguage') ||
-                   (navigator.language.split('-')[0] === 'nl' ? 'nl' : 'en');
+                   'en';
         }
 
         async function loadTranslations() {
@@ -200,35 +198,22 @@
         }
 
         function localizeContent() {
-            // Localize main loading screen
-            const loadingTitle = document.getElementById('loading-title');
-            const loadingMessage = document.getElementById('loading-message');
-            if (loadingTitle) {
-                loadingTitle.textContent = getTranslation('loading.title');
-            }
-            if (loadingMessage) {
-                loadingMessage.textContent = getTranslation('loading.message');
-            }
+            // Localize loading screen
+            const localizations = [
+                { id: 'loading-title', key: 'loading.title' },
+                { id: 'loading-message', key: 'loading.message' },
+                { id: 'refresh-text', key: 'loading.refreshText' },
+                { id: 'refresh-button-text', key: 'loading.refreshButtonText' },
+                { id: 'unhandled-error-text', key: 'errors.unhandledError' },
+                { id: 'reload-page-text', key: 'errors.reloadPageText' }
+            ];
 
-            // Localize refresh button section
-            const refreshText = document.getElementById('refresh-text');
-            const refreshButtonText = document.getElementById('refresh-button-text');
-            if (refreshText) {
-                refreshText.textContent = getTranslation('loading.refreshText');
-            }
-            if (refreshButtonText) {
-                refreshButtonText.textContent = getTranslation('loading.refreshButtonText');
-            }
-
-            // Localize error section
-            const unhandledErrorText = document.getElementById('unhandled-error-text');
-            const reloadPageText = document.getElementById('reload-page-text');
-            if (unhandledErrorText) {
-                unhandledErrorText.textContent = getTranslation('errors.unhandledError');
-            }
-            if (reloadPageText) {
-                reloadPageText.textContent = getTranslation('errors.reloadPageText');
-            }
+            localizations.forEach(({ id, key }) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = getTranslation(key);
+                }
+            });
 
             // Set random security quote
             const securityQuotes = getTranslation('quotes.security');
@@ -241,13 +226,11 @@
             }
         }
 
-        // Initialize localization
         async function initializeLocalization() {
             await loadTranslations();
             localizeContent();
         }
 
-        // Apply localization immediately
         document.addEventListener('DOMContentLoaded', initializeLocalization);
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initializeLocalization);
@@ -260,6 +243,7 @@
             const minDisplayTime = 1000;
             const checkInterval = 500;
             const refreshButtonTimeout = 300000;
+            const scriptsCheckTimeout = 5000; // Check for blocked scripts after 5 seconds
 
             const appElement = document.getElementById('app');
             const refreshButton = document.getElementById('refresh-button');
@@ -305,54 +289,37 @@
             document.querySelector('.loading-progress-text').classList.add('hidden');
             document.querySelector('svg.animate-spin').classList.add('hidden');
         };
-
-        // Listen for unhandled errors
         window.addEventListener('error', function(event) {
             if (event.error && event.error.message && event.error.message.includes('WebAssembly')) {
                 showError(getTranslation('errors.webAssemblyError'));
             }
         });
-
-        // Listen for unhandled promise rejections
         window.addEventListener('unhandledrejection', function(event) {
             if (event.reason && event.reason.message && event.reason.message.includes('WebAssembly')) {
                 showError(getTranslation('errors.webAssemblyError'));
             }
         });
-
         window.addEventListener('load', manageLoadingScreen);
-    </script>
-
-    <script>
         window.blazorCulture = {
             get: function() {
                 return localStorage.getItem('blazorCulture') ||
                        localStorage.getItem('AppLanguage') ||
-                       (navigator.language.split('-')[0] === 'nl' ? 'nl' : 'en');
+                       'en';
             },
             set: function(culture) {
                 localStorage.setItem('blazorCulture', culture);
             }
         };
-    </script>
-
-    <script>window.__CACHE_BUSTER__ = '@CacheBuster';</script>
-    <script src="js/crypto.js?v=@CacheBuster" async></script>
-    <script src="js/utilities.js?v=@CacheBuster" async></script>
-    <script src="js/rustCoreInterop.js?v=@CacheBuster"></script>
-    <script>
-        // Start WASM initialization early (non-blocking)
+        window.__CACHE_BUSTER__ = '@CacheBuster';
         if (typeof window.rustCoreIsAvailable === 'function') {
             window.rustCoreIsAvailable().catch(() => {});
         }
-    </script>
-    <script src="_framework/blazor.webassembly.js?v=@CacheBuster" async></script>
-    <script src="lib/qrcode.min.js?v=@CacheBuster" defer></script>
-    <script>
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('service-worker.js');
         }
     </script>
+    <script src="js/bundle.min.js?v=@CacheBuster"></script>
+    <script src="_framework/blazor.webassembly.js?v=@CacheBuster" async></script>
 </body>
 
 </html>
