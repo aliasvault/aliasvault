@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Alias" xml:space="preserve">
-    <value>Alias</value>
+    <value>כינוי</value>
     <comment>Label for alias mode toggle</comment>
   </data>
   <data name="PrivateEmailTitle" xml:space="preserve">
-    <value>Private Email</value>
+    <value>כתובת דוא״ל פרטית</value>
     <comment>Title for private email domains section</comment>
   </data>
   <data name="PrivateEmailDescription" xml:space="preserve">
@@ -79,7 +79,7 @@
     <comment>Description of public email domains</comment>
   </data>
   <data name="PrivateEmailAliasVaultServer" xml:space="preserve">
-    <value>AliasVault server</value>
+    <value>שרת AliasVault</value>
     <comment>Subtitle for private email domains section</comment>
   </data>
 </root>
