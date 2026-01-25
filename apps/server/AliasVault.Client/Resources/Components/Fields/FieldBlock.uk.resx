@@ -60,36 +60,36 @@
   </resheader>
   <!-- Login Field Labels -->
   <data name="FieldLabel_login_username" xml:space="preserve">
-    <value>Username</value>
+    <value>Ім'я користувача</value>
     <comment>Label for username field</comment>
   </data>
   <data name="FieldLabel_login_password" xml:space="preserve">
-    <value>Password</value>
+    <value>Пароль</value>
     <comment>Label for password field</comment>
   </data>
   <data name="FieldLabel_login_email" xml:space="preserve">
-    <value>Email</value>
+    <value>Електронна пошта</value>
     <comment>Label for email field</comment>
   </data>
   <data name="FieldLabel_login_url" xml:space="preserve">
-    <value>Website</value>
+    <value>Вебсайт</value>
     <comment>Label for URL field</comment>
   </data>
   <!-- Alias Field Labels -->
   <data name="FieldLabel_alias_first_name" xml:space="preserve">
-    <value>First Name</value>
+    <value>Ім’я</value>
     <comment>Label for first name field</comment>
   </data>
   <data name="FieldLabel_alias_last_name" xml:space="preserve">
-    <value>Last Name</value>
+    <value>Прізвище</value>
     <comment>Label for last name field</comment>
   </data>
   <data name="FieldLabel_alias_gender" xml:space="preserve">
-    <value>Gender</value>
+    <value>Стать</value>
     <comment>Label for gender field</comment>
   </data>
   <data name="FieldLabel_alias_birthdate" xml:space="preserve">
-    <value>Birth Date</value>
+    <value>Дата народження</value>
     <comment>Label for birthdate field</comment>
   </data>
   <!-- Card Field Labels -->
@@ -119,7 +119,7 @@
   </data>
   <!-- Notes Field Labels -->
   <data name="FieldLabel_notes_content" xml:space="preserve">
-    <value>Notes</value>
+    <value>Нотатки</value>
     <comment>Label for notes content field</comment>
   </data>
   <!-- History -->
