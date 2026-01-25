@@ -55,7 +55,7 @@
     <comment>Header for the item information section</comment>
   </data>
   <data name="LoginDetailsSectionHeader">
-    <value>Login credentials</value>
+    <value>Sisäänkirjautumistunnistetiedot</value>
     <comment>Header for the login credentials section</comment>
   </data>
   <data name="AliasSectionHeader">
