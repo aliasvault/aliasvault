@@ -106,7 +106,7 @@
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>"+ New Alias"</value>
+    <value>"+ Новий псевдонім"</value>
     <comment>Text reference to the New Alias button (desktop)</comment>
   </data>
   <data name="NewAliasButtonTextMobile" xml:space="preserve">
@@ -118,7 +118,7 @@
     <comment>Text describing button location</comment>
   </data>
   <data name="OrText" xml:space="preserve">
-    <value>or</value>
+    <value>або</value>
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
@@ -144,19 +144,19 @@
     <comment>Filter option to show all items</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
-    <value>Passkeys</value>
+    <value>Ключі доступу</value>
     <comment>Filter option to show only passkeys</comment>
   </data>
   <data name="FilterAliasesOption" xml:space="preserve">
-    <value>Aliases</value>
+    <value>Псевдоніми</value>
     <comment>Filter option to show only aliases</comment>
   </data>
   <data name="FilterUserpassOption" xml:space="preserve">
-    <value>Passwords</value>
+    <value>Паролі</value>
     <comment>Filter option to show only username/passwords</comment>
   </data>
   <data name="FilterAttachmentsOption" xml:space="preserve">
-    <value>Attachments</value>
+    <value>Вкладення</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
@@ -194,7 +194,7 @@
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">
-    <value>Back</value>
+    <value>Назад</value>
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
