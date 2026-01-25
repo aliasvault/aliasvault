@@ -139,7 +139,7 @@
     <comment>Error message when item creation fails</comment>
   </data>
   <data name="ItemCreatedSuccessMessage" xml:space="preserve">
-    <value>Item created successfully.</value>
+    <value>项目创建成功.</value>
     <comment>Success message when item is created</comment>
   </data>
 </root>
