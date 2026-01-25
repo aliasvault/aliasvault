@@ -63,7 +63,7 @@
     <comment>Label for alias mode toggle</comment>
   </data>
   <data name="PrivateEmailTitle" xml:space="preserve">
-    <value>Private Email</value>
+    <value>Correo electrónico privado</value>
     <comment>Title for private email domains section</comment>
   </data>
   <data name="PrivateEmailDescription" xml:space="preserve">
@@ -79,7 +79,7 @@
     <comment>Description of public email domains</comment>
   </data>
   <data name="PrivateEmailAliasVaultServer" xml:space="preserve">
-    <value>AliasVault server</value>
+    <value>Servidor AliasVault</value>
     <comment>Subtitle for private email domains section</comment>
   </data>
 </root>
