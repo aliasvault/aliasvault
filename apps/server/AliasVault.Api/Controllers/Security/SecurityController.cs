@@ -102,6 +102,7 @@ public class SecurityController(IAliasServerDbContextFactory dbContextFactory, U
 
         var authLogs = await context.AuthLogs
             .Where(x => x.Username == user.UserName)
+            .Where(x => x.Timestamp >= user.CreatedAt)
             .Where(x => x.EventType != AuthEventType.TokenRefresh)
             .OrderByDescending(x => x.Timestamp)
             .Take(50)
