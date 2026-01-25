@@ -419,6 +419,7 @@
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "Nessuna credenziale trovata. Creane una per iniziare. Consiglio: puoi anche accedere al sito AliasVault per importare credenziali da altri gestori password.",
+    "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
     "noPasskeysFound": "Non sono state ancora create passkey. Le passkey vengono create visitando un sito web che offre le passkey come metodo di autenticazione.",
     "noAttachmentsFound": "Nessun elemento con allegati trovato",
     "noItemsOfTypeFound": "Nessun elemento {{type}} trovato",
