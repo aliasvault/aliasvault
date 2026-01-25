@@ -75,7 +75,7 @@
     "settings": "Asetukset",
     "recentEmails": "Viimeaikaiset sähköpostit",
     "credentials": "Tunnistetiedot",
-    "customFields": "Custom Fields",
+    "customFields": "Räätälöidyt kentät",
     "twoFactorAuthentication": "Kaksivaiheinen tunnistautuminen",
     "alias": "Alias",
     "notes": "Huomautukset",
@@ -306,7 +306,7 @@
     "emailNotFound": "Sähköpostia ei löytynyt",
     "noEmails": "Sähköposteja ei löytynyt",
     "noEmailsDescription": "Et ole vielä vastaanottanut sähköposteja yksityisissä sähköpostiosoitteissasi. Kun saat uuden sähköpostiviestin, se näkyy täällä.",
-    "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
+    "offlineMessage": "Olet offline-tilassa. Ole hyvä ja yhdistä internetiin ladataksesi sähköpostiosoitteesi.",
     "dateFormat": {
       "justNow": "juuri nyt",
       "minutesAgo_single": "{{count}} min sitten",
