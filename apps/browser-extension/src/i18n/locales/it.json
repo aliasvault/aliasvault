@@ -194,6 +194,7 @@
     "clearSearch": "Clear search",
     "clearFilter": "Clear filter",
     "emptyFolderHint": "Questa cartella è vuota. Per spostare gli elementi in questa cartella, modificare l'elemento e toccare l'icona della cartella nel campo nome.",
+    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
     "deleteFolder": "Elimina Cartella",
     "deleteFolderKeepItems": "Elimina solo la cartella",
     "deleteFolderKeepItemsDescription": "Gli elementi verranno spostati nella lista principale.",
@@ -293,7 +294,9 @@
   "attachmentUploader": {
     "uploading": "Caricamento...",
     "uploadSuccess": "File caricati correttamente",
-    "deleteSuccess": "Allegato eliminato con successo."
+    "deleteSuccess": "Allegato eliminato con successo.",
+    "firefoxExpandRequired": "To upload files, use the expanded window.",
+    "openExpandedWindow": "Open Expanded Window"
   },
   "emails": {
     "title": "Email",
