@@ -419,6 +419,7 @@
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
     "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
     "noAttachmentsFound": "No items with attachments found",
     "noItemsOfTypeFound": "No {{type}} items found",
