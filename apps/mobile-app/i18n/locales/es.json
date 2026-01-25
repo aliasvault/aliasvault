@@ -26,7 +26,7 @@
     "deleteItemConfirmTitle": "Eliminar elemento",
     "deleteItemConfirmDescription": "¿Está seguro de querer borrar este ítem?",
     "errors": {
-      "unknownError": "An unknown error occurred.",
+      "unknownError": "Se produjo un error desconocido.",
       "unknownErrorTryAgain": "Se ha producido un error desconocido. Por favor, inténtelo de nuevo.",
       "serverVersionTooOld": "El servidor AliasVault necesita ser actualizado a una versión más reciente para poder utilizar esta característica. Por favor, contacte con el administrador del servidor si necesita ayuda."
     }
@@ -382,7 +382,7 @@
     "untitled": "Untitled",
     "name": "Nombre",
     "url": "URL",
-    "itemName": "Name",
+    "itemName": "Nombre",
     "service": "Servicio",
     "serviceName": "Nombre del servicio",
     "serviceUrl": "URL del servicio",
