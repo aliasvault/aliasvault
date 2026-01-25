@@ -71,7 +71,7 @@
     <comment>Title of the create new alias popup</comment>
   </data>
   <data name="NameLabel" xml:space="preserve">
-    <value>Name</value>
+    <value>Назва</value>
     <comment>Label for name field</comment>
   </data>
   <data name="WebsiteUrlLabel" xml:space="preserve">
@@ -79,11 +79,11 @@
     <comment>Label for website URL field</comment>
   </data>
   <data name="NamePlaceholderLogin" xml:space="preserve">
-    <value>E.g. Facebook</value>
+    <value>Наприклад, Facebook</value>
     <comment>Placeholder text for login name field</comment>
   </data>
   <data name="NamePlaceholderAlias" xml:space="preserve">
-    <value>E.g. Facebook</value>
+    <value>Наприклад, Facebook</value>
     <comment>Placeholder text for alias name field</comment>
   </data>
   <data name="NamePlaceholderCard" xml:space="preserve">
@@ -99,7 +99,7 @@
     <comment>Create button text</comment>
   </data>
   <data name="ContinueButton" xml:space="preserve">
-    <value>Continue</value>
+    <value>Продовжити</value>
     <comment>Continue button text for non-alias types</comment>
   </data>
   <data name="CreateNewLoginTitle" xml:space="preserve">
@@ -115,11 +115,11 @@
     <comment>Title for creating a new note item</comment>
   </data>
   <data name="TypeLogin" xml:space="preserve">
-    <value>Login</value>
+    <value>Увійти</value>
     <comment>Login item type label</comment>
   </data>
   <data name="TypeAlias" xml:space="preserve">
-    <value>Alias</value>
+    <value>Псевдонім</value>
     <comment>Alias item type label</comment>
   </data>
   <data name="TypeCard" xml:space="preserve">
