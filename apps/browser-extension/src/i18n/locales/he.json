@@ -194,6 +194,7 @@
     "clearSearch": "Clear search",
     "clearFilter": "Clear filter",
     "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
+    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
     "deleteFolder": "Delete Folder",
     "deleteFolderKeepItems": "Delete folder only",
     "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
@@ -293,7 +294,9 @@
   "attachmentUploader": {
     "uploading": "Uploading...",
     "uploadSuccess": "Files uploaded successfully.",
-    "deleteSuccess": "Attachment deleted successfully."
+    "deleteSuccess": "Attachment deleted successfully.",
+    "firefoxExpandRequired": "To upload files, use the expanded window.",
+    "openExpandedWindow": "Open Expanded Window"
   },
   "emails": {
     "title": "הודעות דוא״ל",
