@@ -194,6 +194,7 @@
     "clearSearch": "Wis zoekopdracht",
     "clearFilter": "Wis filter",
     "emptyFolderHint": "Deze map is leeg. Om items naar deze map te verplaatsen, wijzig het item en selecteer deze map.",
+    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
     "deleteFolder": "Map verwijderen",
     "deleteFolderKeepItems": "Verwijder alleen map",
     "deleteFolderKeepItemsDescription": "Items zullen terug worden verplaatst naar de hoofdlijst.",
@@ -293,7 +294,9 @@
   "attachmentUploader": {
     "uploading": "Uploaden...",
     "uploadSuccess": "Bestand succesvol geüpload.",
-    "deleteSuccess": "Bijlage is succesvol verwijderd."
+    "deleteSuccess": "Bijlage is succesvol verwijderd.",
+    "firefoxExpandRequired": "To upload files, use the expanded window.",
+    "openExpandedWindow": "Open Expanded Window"
   },
   "emails": {
     "title": "E-mails",
