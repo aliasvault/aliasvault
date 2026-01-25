@@ -180,6 +180,10 @@
     <value>This folder is empty.</value>
     <comment>Empty state message when folder has no items</comment>
   </data>
+  <data name="AllItemsInFoldersMessage" xml:space="preserve">
+    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <comment>Empty state message when all items are in folders and none at root level</comment>
+  </data>
   <!-- Folder Management -->
   <data name="NewFolder" xml:space="preserve">
     <value>New Folder</value>
