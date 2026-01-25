@@ -419,6 +419,7 @@
     "noMatchingItemsSearch": "Nenhum item corresponde à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
     "noItemsFound": "Nenhum item encontrado. Crie um para iniciar. Dica: você também pode fazer login no aplicativo web do AliasVault para importar credenciais de outros gerenciadores de senhas.",
+    "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
     "noPasskeysFound": "Nenhuma passkey foi criada ainda. Passkeys são veiadas visitando um website que ofereça passkey como método de autenticação.",
     "noAttachmentsFound": "Nenhum item com anexos encontrado",
     "noItemsOfTypeFound": "Nenhum item do tipo {{type}} encontrado",
