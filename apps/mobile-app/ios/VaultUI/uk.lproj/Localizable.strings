@@ -1,37 +1,37 @@
 /* English localization strings for VaultUI */
-"error" = "Error";
-"cancel" = "Cancel";
-"back" = "Back";
-"next" = "Next";
-"edit" = "Edit";
-"website" = "Website";
-"username" = "Username";
-"title" = "Title";
-"unknown_error" = "An unknown error occurred";
+"error" = "Помилка";
+"cancel" = "Скасувати";
+"back" = "Назад";
+"next" = "Далі";
+"edit" = "Редагувати";
+"website" = "Вебсайт";
+"username" = "Ім'я користувача";
+"title" = "Заголовок";
+"unknown_error" = "Сталася невідома помилка";
 
 "loading_items" = "Loading items...";
 "no_items_found" = "No items found";
 "no_items_match" = "No existing items match your search";
 "create_new_item" = "Create New Item";
 "select_item" = "Select Item";
-"select_text_to_insert" = "Select Text to Insert";
-"choose_username" = "Choose Username";
-"select_text_to_insert_message" = "Select the text to insert into the focused input field";
-"choose_username_message" = "This website may require either your username or your email address to log in";
-"username_prefix" = "Username: ";
-"email_prefix" = "Email: ";
-"password" = "Password";
+"select_text_to_insert" = "Вибрати текст для вставки";
+"choose_username" = "Обрати ім'я користувача";
+"select_text_to_insert_message" = "Виберіть текст, який потрібно вставити в поле введення";
+"choose_username_message" = "Для входу на цей вебсайт може знадобитися ваше ім’я користувача або електронна адреса";
+"username_prefix" = "Ім'я користувача: ";
+"email_prefix" = "Електронна пошта: ";
+"password" = "Пароль";
 "items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
 "no_item_selected" = "No item selected.";
 
 /* Context menu strings */
-"copy_username" = "Copy Username";
-"copy_password" = "Copy Password";
-"copy_email" = "Copy Email";
-"view_details" = "View Details";
-"username_copied" = "Username copied";
-"password_copied" = "Password copied";
-"email_copied" = "Email copied";
+"copy_username" = "Копіювати ім'я користувача";
+"copy_password" = "Копіювати пароль";
+"copy_email" = "Копіювати електронну адресу";
+"view_details" = "Переглянути подробиці";
+"username_copied" = "Ім'я користувача скопійовано";
+"password_copied" = "Пароль скопійовано";
+"email_copied" = "Адреса ел. пошти скопійована";
 
 /* Search bar */
 "search_items" = "Search items...";
@@ -42,7 +42,7 @@
 "create_passkey_button_confirm" = "Create Passkey";
 
 /* Passkey provider */
-"passkey" = "Passkey";
+"passkey" = "Ключ доступу";
 "loading_passkeys" = "Loading passkeys...";
 "no_passkeys_found" = "No passkeys found";
 "no_passkeys_match" = "No existing passkeys match your search";
@@ -62,14 +62,14 @@
 "merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
+"unlock_vault" = "Розблокувати Vault";
+"enter_pin_to_unlock_vault" = "Введіть свій ПІН-код, щоб розблокувати сховище";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "Налаштування PIN-коду";
+"pin_setup_subtitle" = "Виберіть PIN-код, щоб розблокувати сховище";
+"pin_confirm_title" = "Підтвердити ПІН-код";
+"pin_confirm_subtitle" = "Введіть PIN-код ще раз для підтвердження";
+"pin_mismatch" = "PIN-коди не збігаються. Спробуйте ще раз.";
