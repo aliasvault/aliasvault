@@ -306,7 +306,7 @@
     "emailNotFound": "E-Mail nicht gefunden",
     "noEmails": "Keine E-Mails gefunden",
     "noEmailsDescription": "Du hast bisher keine E-Mails an Deine privaten E-Mail-Adressen erhalten. Neue E-Mails werden hier angezeigt, sobald sie eintreffen.",
-    "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
+    "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deine E-Mails zu laden.",
     "dateFormat": {
       "justNow": "gerade eben",
       "minutesAgo_single": "vor {{count}} Minute",
