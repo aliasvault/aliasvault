@@ -306,7 +306,7 @@
     "emailNotFound": "הודעת הדוא״ל לא נמצאה",
     "noEmails": "לא נמצאו הודעות דוא״ל",
     "noEmailsDescription": "לא קיבלת הודעות דוא״ל כלשהן לכתובות הדוא״ל הפרטיות שלך עדיין. כשמגיעה הודעה חדשה היא תופיע כאן.",
-    "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
+    "offlineMessage": "החיבור שלך מנותק. נא להתחבר לאינטרנט כדי לטעון את הודעות הדוא״ל שלך.",
     "dateFormat": {
       "justNow": "ממש הרגע",
       "minutesAgo_single": "לפני דקה",
