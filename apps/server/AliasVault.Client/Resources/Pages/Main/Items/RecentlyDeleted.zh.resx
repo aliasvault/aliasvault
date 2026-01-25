@@ -81,7 +81,7 @@
     <comment>Description when no deleted items exist</comment>
   </data>
   <data name="Untitled" xml:space="preserve">
-    <value>Untitled</value>
+    <value>无标题</value>
     <comment>Fallback name for items without a name</comment>
   </data>
   <!-- Days Remaining -->
@@ -138,7 +138,7 @@
     <comment>Error message when restore fails</comment>
   </data>
   <data name="Deleting" xml:space="preserve">
-    <value>Deleting item...</value>
+    <value>正在删除项目…</value>
     <comment>Loading message while deleting</comment>
   </data>
   <data name="DeleteSuccess" xml:space="preserve">
