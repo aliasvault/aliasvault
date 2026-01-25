@@ -55,7 +55,7 @@
     <comment>Header for the item information section</comment>
   </data>
   <data name="LoginDetailsSectionHeader">
-    <value>Login credentials</value>
+    <value>Облікові дані для входу</value>
     <comment>Header for the login credentials section</comment>
   </data>
   <data name="AliasSectionHeader">
@@ -72,7 +72,7 @@
   </data>
   <!-- Form labels -->
   <data name="ServiceNameLabel">
-    <value>Name</value>
+    <value>Назва</value>
     <comment>Label for item name input</comment>
   </data>
   <data name="ServiceUrlLabel">
