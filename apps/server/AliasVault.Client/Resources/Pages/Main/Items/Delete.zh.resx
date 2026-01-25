@@ -20,11 +20,11 @@
     </xsd:element>
   </xsd:schema>
   <data name="DeleteItemPageTitle">
-    <value>Delete item</value>
+    <value>删除项目</value>
     <comment>Page title for deleting items</comment>
   </data>
   <data name="DeleteItemTitle">
-    <value>Delete item</value>
+    <value>删除项目</value>
     <comment>Page header title for deleting item</comment>
   </data>
   <data name="DeleteItemDescription">
@@ -52,11 +52,11 @@
     <comment>Cancel button text</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>查看项目</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="DeleteItemBreadcrumb">
-    <value>Delete item</value>
+    <value>删除项目</value>
     <comment>Breadcrumb text for delete item page</comment>
   </data>
   <data name="DeleteItemNotFoundError">
@@ -64,7 +64,7 @@
     <comment>Error message when item is not found during deletion</comment>
   </data>
   <data name="DeletingItemMessage">
-    <value>Deleting item...</value>
+    <value>正在删除项目…</value>
     <comment>Loading message while deleting item</comment>
   </data>
   <data name="DeleteSuccessMessage">
