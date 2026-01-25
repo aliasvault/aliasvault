@@ -29,7 +29,7 @@
     <comment>Option to add attachments section</comment>
   </data>
   <data name="AddCustomField">
-    <value>Add Custom Field</value>
+    <value>添加自定义字段</value>
     <comment>Option to add a custom field</comment>
   </data>
   <!-- Field labels -->
@@ -66,19 +66,19 @@
     <comment>Birth date field label</comment>
   </data>
   <data name="FieldCardNumber">
-    <value>Card Number</value>
+    <value>卡号</value>
     <comment>Card number field label</comment>
   </data>
   <data name="FieldCardCardholderName">
-    <value>Cardholder Name</value>
+    <value>持卡人姓名</value>
     <comment>Cardholder name field label</comment>
   </data>
   <data name="FieldCardExpiryMonth">
-    <value>Expiry Month</value>
+    <value>到期月份</value>
     <comment>Expiry month field label</comment>
   </data>
   <data name="FieldCardExpiryYear">
-    <value>Expiry Year</value>
+    <value>到期年份</value>
     <comment>Expiry year field label</comment>
   </data>
   <data name="FieldCardCvv">
@@ -95,23 +95,23 @@
   </data>
   <!-- Custom field modal -->
   <data name="FieldLabel">
-    <value>Field Label</value>
+    <value>字段标签</value>
     <comment>Label for field label input</comment>
   </data>
   <data name="EnterFieldName">
-    <value>Enter field name</value>
+    <value>输入字段名称</value>
     <comment>Placeholder for field name input</comment>
   </data>
   <data name="FieldType">
-    <value>Field Type</value>
+    <value>字段类型</value>
     <comment>Label for field type selector</comment>
   </data>
   <data name="FieldTypeText">
-    <value>Text</value>
+    <value>文本</value>
     <comment>Text field type option</comment>
   </data>
   <data name="FieldTypeHidden">
-    <value>Hidden</value>
+    <value>隐藏</value>
     <comment>Hidden field type option</comment>
   </data>
   <data name="FieldTypeEmail">
@@ -123,11 +123,11 @@
     <comment>URL field type option</comment>
   </data>
   <data name="FieldTypePhone">
-    <value>Phone</value>
+    <value>手机</value>
     <comment>Phone field type option</comment>
   </data>
   <data name="FieldTypeNumber">
-    <value>Number</value>
+    <value>号码</value>
     <comment>Number field type option</comment>
   </data>
   <data name="FieldTypeDate">
@@ -135,12 +135,12 @@
     <comment>Date field type option</comment>
   </data>
   <data name="FieldTypeTextArea">
-    <value>Text Area</value>
+    <value>文本区域</value>
     <comment>Text area field type option</comment>
   </data>
   <!-- Buttons -->
   <data name="Add">
-    <value>Add</value>
+    <value>添加</value>
     <comment>Add button text</comment>
   </data>
   <data name="Cancel">
