@@ -39,8 +39,13 @@ WORKDIR /src
 # Create the debug directory
 RUN mkdir -p /src/msbuild-logs
 
-# Install Python which is required by the WebAssembly tools
-RUN apt-get update && apt-get install -y python3 && apt-get clean
+# Install Python (required by WebAssembly tools) and Node.js (required by JS bundler)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3 curl ca-certificates && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install the WebAssembly tools with correct dotnet version auto-detected from apps/server folder.
 WORKDIR /src/apps/server

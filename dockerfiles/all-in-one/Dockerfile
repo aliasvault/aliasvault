@@ -30,9 +30,12 @@ RUN cd ./core && \
 # ============================================
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-builder
 
-# Install Python (required for WASM compilation)
+# Install Python (required for WASM compilation) and Node.js (required by JS bundler)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3 python3-pip && \
+    apt-get install -y --no-install-recommends python3 python3-pip curl ca-certificates && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
