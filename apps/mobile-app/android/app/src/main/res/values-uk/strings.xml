@@ -4,10 +4,10 @@
   <string name="autofill_service_description" translatable="true">Автозаповнення AliasVault</string>
   <string name="aliasvault_icon">Піктограма AliasVault</string>
   <!-- Common strings -->
-  <string name="common_close">Close</string>
-  <string name="common_next">Next</string>
-  <string name="common_cancel">Cancel</string>
-  <string name="unknown_error">An unknown error occurred</string>
+  <string name="common_close">Закрити</string>
+  <string name="common_next">Далі</string>
+  <string name="common_cancel">Скасувати</string>
+  <string name="unknown_error">Сталася невідома помилка</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Не вдалося отримати, відкрийте додаток</string>
   <string name="autofill_no_match_found">Збігів не знайдено. Створити новий?</string>
@@ -25,13 +25,13 @@
   <string name="replace_passkey">Replace Passkey</string>
   <string name="passkey_display_name_label">Passkey Name</string>
   <string name="passkey_display_name_hint">Enter a name for this passkey</string>
-  <string name="passkey_website_label">Website</string>
+  <string name="passkey_website_label">Вебсайт</string>
   <string name="passkey_username_label">Username</string>
   <string name="passkey_create_button">Create Passkey</string>
   <string name="passkey_creating">Creating passkey…</string>
   <string name="passkey_saving">Saving to vault…</string>
   <string name="passkey_syncing">Syncing with server…</string>
-  <string name="passkey_error_title">Error</string>
+  <string name="passkey_error_title">Помилка</string>
   <string name="passkey_error_empty_name">Please enter a name for the passkey</string>
   <string name="passkey_creation_failed">Failed to create passkey</string>
   <string name="passkey_retry_button">Retry</string>
@@ -71,14 +71,14 @@
   <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
   <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
   <!-- PIN unlock -->
-  <string name="pin_unlock_vault">Unlock Vault</string>
-  <string name="pin_enter_to_unlock">Enter your PIN to unlock your vault</string>
+  <string name="pin_unlock_vault">Розблокувати Vault</string>
+  <string name="pin_enter_to_unlock">Введіть свій ПІН-код, щоб розблокувати сховище</string>
   <string name="pin_locked_max_attempts">PIN locked after too many failed attempts</string>
   <string name="pin_incorrect_attempts_remaining">Incorrect PIN. %d attempts remaining</string>
   <!-- PIN setup -->
-  <string name="pin_setup_title">Setup PIN</string>
-  <string name="pin_setup_description">Choose a PIN to unlock your vault</string>
-  <string name="pin_confirm_title">Confirm PIN</string>
-  <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
-  <string name="pin_mismatch">PINs do not match. Please try again.</string>
+  <string name="pin_setup_title">Налаштування PIN-коду</string>
+  <string name="pin_setup_description">Виберіть PIN-код, щоб розблокувати сховище</string>
+  <string name="pin_confirm_title">Підтвердити ПІН-код</string>
+  <string name="pin_confirm_description">Введіть PIN-код ще раз для підтвердження</string>
+  <string name="pin_mismatch">PIN-коди не збігаються. Спробуйте ще раз.</string>
 </resources>
