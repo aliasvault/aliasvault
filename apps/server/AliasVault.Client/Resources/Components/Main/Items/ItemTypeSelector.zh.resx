@@ -29,7 +29,7 @@
     <comment>Alias item type name</comment>
   </data>
   <data name="TypeCreditCard">
-    <value>Credit Card</value>
+    <value>信用卡</value>
     <comment>Credit Card item type name</comment>
   </data>
   <data name="TypeNote">
@@ -38,11 +38,11 @@
   </data>
   <!-- Status text -->
   <data name="Creating">
-    <value>Creating</value>
+    <value>创建</value>
     <comment>Status text when creating a new item</comment>
   </data>
   <data name="Editing">
-    <value>Editing</value>
+    <value>编辑</value>
     <comment>Status text when editing an existing item</comment>
   </data>
   <!-- Buttons -->
