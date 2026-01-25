@@ -63,11 +63,11 @@
     <comment>Title for create folder modal</comment>
   </data>
   <data name="EditFolderTitle" xml:space="preserve">
-    <value>Edit Folder</value>
+    <value>编辑文件夹</value>
     <comment>Title for edit folder modal</comment>
   </data>
   <data name="FolderNameLabel" xml:space="preserve">
-    <value>Folder Name</value>
+    <value>文件夹名称</value>
     <comment>Label for folder name input</comment>
   </data>
   <data name="FolderNamePlaceholder" xml:space="preserve">
