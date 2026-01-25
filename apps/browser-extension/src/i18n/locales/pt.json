@@ -194,6 +194,7 @@
     "clearSearch": "Limpar pesquisa",
     "clearFilter": "Limpar filtro",
     "emptyFolderHint": "Esta pasta está vazia. Para mover itens para esta pasta, edite o item e toque no ícone da pasta no campo de nome.",
+    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
     "deleteFolder": "Excluir Pasta",
     "deleteFolderKeepItems": "Excluir apenas a pasta",
     "deleteFolderKeepItemsDescription": "Itens serão movidos de volta para a lista principal.",
@@ -293,7 +294,9 @@
   "attachmentUploader": {
     "uploading": "Fazendo upload...",
     "uploadSuccess": "Arquivos enviados com sucesso.",
-    "deleteSuccess": "Anexo excluído com sucesso."
+    "deleteSuccess": "Anexo excluído com sucesso.",
+    "firefoxExpandRequired": "To upload files, use the expanded window.",
+    "openExpandedWindow": "Open Expanded Window"
   },
   "emails": {
     "title": "E-mails",
