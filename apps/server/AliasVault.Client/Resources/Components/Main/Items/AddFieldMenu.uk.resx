@@ -21,11 +21,11 @@
   </xsd:schema>
   <!-- Section options -->
   <data name="TwoFactorAuthentication">
-    <value>Two-Factor Authentication</value>
+    <value>Двофакторна аутентифікація</value>
     <comment>Option to add 2FA section</comment>
   </data>
   <data name="Attachments">
-    <value>Attachments</value>
+    <value>Вкладення</value>
     <comment>Option to add attachments section</comment>
   </data>
   <data name="AddCustomField">
@@ -38,11 +38,11 @@
     <comment>Username field label</comment>
   </data>
   <data name="FieldLoginPassword">
-    <value>Password</value>
+    <value>Пароль</value>
     <comment>Password field label</comment>
   </data>
   <data name="FieldLoginEmail">
-    <value>Email</value>
+    <value>Електронна пошта</value>
     <comment>Email field label</comment>
   </data>
   <data name="FieldLoginUrl">
@@ -50,19 +50,19 @@
     <comment>URL field label</comment>
   </data>
   <data name="FieldAliasFirstName">
-    <value>First Name</value>
+    <value>Ім’я</value>
     <comment>First name field label</comment>
   </data>
   <data name="FieldAliasLastName">
-    <value>Last Name</value>
+    <value>Прізвище</value>
     <comment>Last name field label</comment>
   </data>
   <data name="FieldAliasGender">
-    <value>Gender</value>
+    <value>Стать</value>
     <comment>Gender field label</comment>
   </data>
   <data name="FieldAliasBirthdate">
-    <value>Birth Date</value>
+    <value>Дата народження</value>
     <comment>Birth date field label</comment>
   </data>
   <data name="FieldCardNumber">
@@ -90,7 +90,7 @@
     <comment>PIN field label</comment>
   </data>
   <data name="FieldNotesContent">
-    <value>Notes</value>
+    <value>Нотатки</value>
     <comment>Notes field label</comment>
   </data>
   <!-- Custom field modal -->
@@ -115,7 +115,7 @@
     <comment>Hidden field type option</comment>
   </data>
   <data name="FieldTypeEmail">
-    <value>Email</value>
+    <value>Електронна пошта</value>
     <comment>Email field type option</comment>
   </data>
   <data name="FieldTypeUrl">
@@ -144,7 +144,7 @@
     <comment>Add button text</comment>
   </data>
   <data name="Cancel">
-    <value>Cancel</value>
+    <value>Скасувати</value>
     <comment>Cancel button text</comment>
   </data>
   <!-- Default field label -->
