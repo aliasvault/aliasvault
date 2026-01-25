@@ -21,11 +21,11 @@
   </xsd:schema>
   <!-- Page titles and descriptions -->
   <data name="AddItemTitle">
-    <value>Add Item</value>
+    <value>添加项目</value>
     <comment>Title for adding a new item</comment>
   </data>
   <data name="EditItemTitle">
-    <value>Edit Item</value>
+    <value>编辑项目</value>
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
@@ -38,11 +38,11 @@
   </data>
   <!-- Breadcrumb items -->
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>查看项目</value>
     <comment>Breadcrumb text for viewing an item</comment>
   </data>
   <data name="EditItemBreadcrumb">
-    <value>Edit item</value>
+    <value>编辑项目</value>
     <comment>Breadcrumb text for editing an item</comment>
   </data>
   <data name="AddNewItemBreadcrumb">
@@ -55,7 +55,7 @@
     <comment>Header for the item information section</comment>
   </data>
   <data name="LoginDetailsSectionHeader">
-    <value>Login credentials</value>
+    <value>登录凭据</value>
     <comment>Header for the login credentials section</comment>
   </data>
   <data name="AliasSectionHeader">
@@ -144,7 +144,7 @@
   </data>
   <!-- Error messages -->
   <data name="ItemNotExistError">
-    <value>This item does not exist (anymore). Please try again.</value>
+    <value>此项目不存在，请重试。</value>
     <comment>Error message when item doesn't exist</comment>
   </data>
   <data name="ErrorSavingItem">
@@ -153,11 +153,11 @@
   </data>
   <!-- Success messages -->
   <data name="ItemUpdatedSuccess">
-    <value>Item updated successfully.</value>
+    <value>项目更新成功.</value>
     <comment>Success message when item is updated</comment>
   </data>
   <data name="ItemCreatedSuccess">
-    <value>Item created successfully.</value>
+    <value>项目创建成功.</value>
     <comment>Success message when item is created</comment>
   </data>
   <!-- Passkey labels -->
@@ -199,23 +199,23 @@
   </data>
   <!-- Card section fields -->
   <data name="CardDetailsSectionHeader">
-    <value>Card Details</value>
+    <value>卡详情</value>
     <comment>Header for the credit card details section</comment>
   </data>
   <data name="CardholderNameLabel">
-    <value>Cardholder Name</value>
+    <value>持卡人姓名</value>
     <comment>Label for cardholder name input</comment>
   </data>
   <data name="CardNumberLabel">
-    <value>Card Number</value>
+    <value>卡号</value>
     <comment>Label for card number input</comment>
   </data>
   <data name="ExpiryMonthLabel">
-    <value>Expiry Month</value>
+    <value>到期月份</value>
     <comment>Label for expiry month input</comment>
   </data>
   <data name="ExpiryYearLabel">
-    <value>Expiry Year</value>
+    <value>到期年份</value>
     <comment>Label for expiry year input</comment>
   </data>
   <data name="CardCvvLabel">
@@ -228,7 +228,7 @@
   </data>
   <!-- Custom fields section -->
   <data name="CustomFieldsSectionHeader">
-    <value>Custom Fields</value>
+    <value>自定义字段</value>
     <comment>Header for the custom fields section</comment>
   </data>
   <data name="RemoveField">
