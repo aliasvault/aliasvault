@@ -21,11 +21,11 @@
   </xsd:schema>
   <!-- Type names -->
   <data name="TypeLogin">
-    <value>Login</value>
+    <value>Увійти</value>
     <comment>Login item type name</comment>
   </data>
   <data name="TypeAlias">
-    <value>Alias</value>
+    <value>Псевдонім</value>
     <comment>Alias item type name</comment>
   </data>
   <data name="TypeCreditCard">
