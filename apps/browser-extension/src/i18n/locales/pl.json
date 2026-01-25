@@ -194,6 +194,7 @@
     "clearSearch": "Clear search",
     "clearFilter": "Clear filter",
     "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
+    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
     "deleteFolder": "Usuń folder",
     "deleteFolderKeepItems": "Usuń tylko folder",
     "deleteFolderKeepItemsDescription": "Elementy zostaną przeniesione z powrotem do listy głównej.",
@@ -293,7 +294,9 @@
   "attachmentUploader": {
     "uploading": "Przesyłanie...",
     "uploadSuccess": "Plik został przesłany pomyślnie.",
-    "deleteSuccess": "Element został pomyślnie usunięty."
+    "deleteSuccess": "Element został pomyślnie usunięty.",
+    "firefoxExpandRequired": "To upload files, use the expanded window.",
+    "openExpandedWindow": "Open Expanded Window"
   },
   "emails": {
     "title": "Skrzynka odbiorcza",
