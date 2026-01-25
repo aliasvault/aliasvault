@@ -1370,6 +1370,7 @@ const ItemAddEdit: React.FC = () => {
         <AttachmentUploader
           attachments={attachments}
           onAttachmentsChange={setAttachments}
+          itemId={isEditMode ? id : undefined}
         />
       )}
 

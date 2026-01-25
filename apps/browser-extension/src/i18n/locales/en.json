@@ -294,7 +294,9 @@
   "attachmentUploader": {
     "uploading": "Uploading...",
     "uploadSuccess": "Files uploaded successfully.",
-    "deleteSuccess": "Attachment deleted successfully."
+    "deleteSuccess": "Attachment deleted successfully.",
+    "firefoxExpandRequired": "To upload files, use the expanded window.",
+    "openExpandedWindow": "Open Expanded Window"
   },
   "emails": {
     "title": "Emails",

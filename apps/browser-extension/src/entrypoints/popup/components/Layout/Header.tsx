@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 import Logo from '@/entrypoints/popup/components/Logo';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
+import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
 import ServerSyncIndicator from './ServerSyncIndicator';
 
@@ -40,6 +41,23 @@ const Header: React.FC<HeaderProps> = ({
   });
 
   /**
+   * Handle back button click.
+   * Uses browser history if available, otherwise falls back to returnTo parameter
+   * (used when opening expanded popup from Firefox narrow popup).
+   */
+  const handleBack = useCallback((): void => {
+    // Check if we have a returnTo path (set when opening expanded popup)
+    const returnPath = PopoutUtility.getReturnPath();
+
+    // If we're in an expanded popup with a returnTo path and no history, use it
+    if (returnPath && PopoutUtility.isPopup() && window.history.length <= 2) {
+      navigate(returnPath);
+    } else {
+      navigate(-1);
+    }
+  }, [navigate]);
+
+  /**
    * Handle settings.
    */
   const handleSettings = () : void => {
@@ -70,7 +88,7 @@ const Header: React.FC<HeaderProps> = ({
         {currentRoute?.showBackButton ? (
           <button
             id="back"
-            onClick={() => navigate(-1)}
+            onClick={handleBack}
             className="flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 pr-2 pt-1.5 pb-1.5 rounded-lg group"
           >
             <div className="flex items-center">

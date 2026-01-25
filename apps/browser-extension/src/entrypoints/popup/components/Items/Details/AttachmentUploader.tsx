@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
+
 import type { Attachment } from '@/utils/dist/core/models/vault';
 
 type AttachmentUploaderProps = {
   attachments: Attachment[];
   onAttachmentsChange: (attachments: Attachment[]) => void;
+  /** Item ID for edit mode - used to determine return path when opening expanded window */
+  itemId?: string;
 }
 
 /**
@@ -13,10 +17,14 @@ type AttachmentUploaderProps = {
  */
 const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
   attachments,
-  onAttachmentsChange
+  onAttachmentsChange,
+  itemId
 }) => {
   const { t } = useTranslation();
   const [statusMessage, setStatusMessage] = useState<string>('');
+
+  // Firefox requires popout for file uploads because it otherwise closes the popup when the native file dialog opens
+  const isFirefoxNarrowPopup = import.meta.env.FIREFOX && !PopoutUtility.isPopup();
 
   /**
    * Handles file selection and upload.
@@ -94,17 +102,40 @@ const AttachmentUploader: React.FC<AttachmentUploaderProps> = ({
       <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">{t('common.attachments')}</h2>
 
       <div className="space-y-4">
-        <div>
-          <input
-            type="file"
-            multiple
-            onChange={handleFileSelection}
-            className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-          />
-          {statusMessage && (
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{statusMessage}</p>
-          )}
-        </div>
+        {/* Firefox narrow popup: show message to use expanded window for file upload */}
+        {isFirefoxNarrowPopup ? (
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="mb-3">
+                {t('attachmentUploader.firefoxExpandRequired')}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  const returnTo = itemId ? `/items/${itemId}` : '/items';
+                  PopoutUtility.openInNewPopup(undefined, returnTo);
+                }}
+                className="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-md transition-colors"
+              >
+                {t('attachmentUploader.openExpandedWindow')}
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Standard file input for Chrome/Edge/Safari and expanded Firefox */
+          <div>
+            <input
+              type="file"
+              multiple
+              onChange={handleFileSelection}
+              className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+            />
+          </div>
+        )}
+
+        {statusMessage && (
+          <p className="text-sm text-gray-500 dark:text-gray-400">{statusMessage}</p>
+        )}
 
         {activeAttachments.length > 0 && (
           <div>

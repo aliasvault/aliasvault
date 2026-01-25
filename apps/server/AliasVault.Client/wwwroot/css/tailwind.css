@@ -2724,7 +2724,7 @@ video {
 
 .hover\:border-primary-500:hover {
   --tw-border-opacity: 1;
-  border-color: rgb(246 167 82 / var(--tw-border-opacity));
+  border-color: rgb(244 149 65 / var(--tw-border-opacity));
 }
 
 .hover\:border-gray-300:hover {
