@@ -419,6 +419,7 @@
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "Ничего не найдено. Создайте запись, чтобы начать работу. Совет: вы также можете войти в веб-приложение AliasVault, чтобы импортировать учетные данные из других менеджеров паролей.",
+    "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
     "noPasskeysFound": "Ключи доступа еще не созданы. Ключи доступа создаются при посещении веб-сайта, который предлагает их в качестве метода аутентификации.",
     "noAttachmentsFound": "Элементы с вложениями не найдены",
     "noItemsOfTypeFound": "Элементы типа «{{type}}» не найдены",
