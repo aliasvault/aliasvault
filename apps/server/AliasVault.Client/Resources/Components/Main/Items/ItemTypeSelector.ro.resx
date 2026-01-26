@@ -38,7 +38,7 @@
   </data>
   <!-- Status text -->
   <data name="Creating">
-    <value>Se creează</value>
+    <value>Creare</value>
     <comment>Status text when creating a new item</comment>
   </data>
   <data name="Editing">
