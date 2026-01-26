@@ -67,7 +67,7 @@
     <comment>Reset vault section description</comment>
   </data>
   <data name="ResetVaultButton" xml:space="preserve">
-    <value>Resetează seiful</value>
+    <value>Resetați seiful</value>
     <comment>Reset vault button</comment>
   </data>
 </root>
