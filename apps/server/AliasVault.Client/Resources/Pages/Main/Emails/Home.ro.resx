@@ -63,15 +63,15 @@
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Puteți vizualiza mai jos toate email-urile primite pe adresele dumneavoastră de email private.</value>
+    <value>Poți vizualiza mai jos toate e-mailurile primite pe adresele tale private.</value>
     <comment>Page description</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
-    <value>Repornire automată activată</value>
+    <value>Actualizare automată activată</value>
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="RefreshButton" xml:space="preserve">
-    <value>Repornire</value>
+    <value>Actualizați</value>
     <comment>Refresh button text</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
@@ -79,7 +79,7 @@
     <comment>Message when no email addresses are configured</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>Nu a fost primit niciun email încă.</value>
+    <value>Nu ai primit niciun e-mail încă.</value>
     <comment>Message when no emails are received</comment>
   </data>
   <data name="LoadingText" xml:space="preserve">
