@@ -64,7 +64,7 @@
       "serverError": "Conexiunea la serverul AliasVault a eșuat. Te rugăm să încerci mai târziu sau să contactezi asistența dacă problema persistă.",
       "serverErrorSelfHosted": "Nu s-a putut accesa API-ul. Pentru instanțele self-hosted, verifică dacă adresa API este accesibilă dintr-un browser: ar trebui să afișeze 'OK'.",
       "networkError": "Cererea de rețea a eșuat. Verifică conexiunea la internet și încearcă din nou.",
-      "networkErrorSelfHosted": "Cererea de rețea a eșuat. Verifică conexiunea și disponibilitatea serverului. Pentru instanțele self-hosted, asigură-te că ai un certificat SSL valid instalat. Certificatele self-signed nu sunt suportate pe dispozitivele mobile din motive de securitate.",
+      "networkErrorSelfHosted": "Solicitarea de rețea a eșuat. Verificați conexiunea și disponibilitatea serverului. Pentru instanțele self-hosted, asigurați-vă că aveți un certificat SSL valid instalat. Certificatele de tip „self-signed” nu sunt acceptate pe dispozitivele mobile din motive de securitate.",
       "sessionExpired": "Sesiunea a expirat. Te rugăm să te autentifici din nou.",
       "httpError": "Eroare HTTP: {{status}}"
     },
@@ -94,7 +94,7 @@
       "usernameNotFound": "Numele de utilizator nu a fost găsit",
       "vaultOutdated": "Seiful tău este învechit. Te rugăm să te autentifici pe site-ul AliasVault și să urmezi pașii indicați.",
       "failedToSyncVault": "Sincronizarea seifului a eșuat",
-      "versionNotSupported": "Această versiune a aplicației mobile AliasVault nu mai este suportată de server. Te rugăm să actualizezi aplicația la ultima versiune.",
+      "versionNotSupported": "Această versiune a aplicației mobile AliasVault nu mai este compatibilă cu serverul. Vă rugăm să actualizați aplicația la cea mai recentă versiune.",
       "serverVersionNotSupported": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a putea utiliza această aplicație mobilă. Contactează asistența dacă ai nevoie de ajutor.",
       "appOutdated": "Această versiune a aplicației este incompatibilă cu versiunea (mai nouă) a seifului. Te rugăm să actualizezi aplicația AliasVault pentru a continua.",
       "passwordChanged": "Parola ta a fost schimbată de la ultima autentificare. Te rugăm să te autentifici din nou din motive de securitate.",
@@ -127,15 +127,15 @@
       "step1": "1. Deschide Setările iOS prin butonul de mai jos",
       "step2": "2. Mergi la „General”",
       "step3": "3. Apasă pe „AutoFill & Passwords”",
-      "step4": "4. Activează „AliasVault”",
-      "step5": "5. Dezactivează alți furnizori de parole (ex. „iCloud Passwords”) pentru a evita conflictele",
+      "step4": "4. Activați „AliasVault”",
+      "step5": "5. Dezactivați alți furnizori de parole (ex. „iCloud Passwords”) pentru a evita conflictele",
       "openIosSettings": "Deschide Setări iOS",
       "alreadyConfigured": "Am configurat deja",
       "warningText": "Notă: Va trebui să te autentifici cu Face ID/Touch ID sau codul dispozitivului când folosești autocompletarea."
     },
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Funcție Experimentală",
-      "warningDescription": "Suportul pentru autocompletare și passkey pe Android este momentan în stare experimentală.",
+      "warningDescription": "Funcția de autocompletare și passkey pe Android este momentan în fază experimentală.",
       "warningLink": "Citește mai multe aici",
       "headerText": "Poți configura AliasVault pentru a oferi funcționalitate nativă de autocompletare a parolelor și passkey-urilor în Android. Urmează instrucțiunile de mai jos pentru a o activa.",
       "passkeyNotice": "Passkey-urile sunt create prin Android Credential Manager (Android 14+). Pentru a le stoca în AliasVault, asigură-te că Autocompletarea este activată.",
@@ -165,7 +165,7 @@
     "batteryOptimizationActive": "Optimizarea bateriei blochează sarcinile în fundal",
     "batteryOptimizationDisabled": "Ștergerea clipboard-ului în fundal este activată",
     "batteryOptimizationHelpDescription": "Optimizarea bateriei Android împiedică ștergerea fiabilă a clipboard-ului când aplicația este în fundal. Dezactivarea optimizării pentru AliasVault permite funcționarea corectă.",
-    "disableBatteryOptimization": "Dezactivează optimizarea bateriei",
+    "disableBatteryOptimization": "Dezactivați optimizarea bateriei",
     "identityGenerator": "Generator de Identitate",
     "passwordGenerator": "Generator de Parole",
     "importExport": "Import / Export",
@@ -219,11 +219,11 @@
     "identityGeneratorSettings": {
       "description": "Configurează limba și genul implicit pentru generarea de noi identități.",
       "languageSection": "Limbă",
-      "languageDescription": "Setează limba utilizată la generarea identităților.",
+      "languageDescription": "Setați limba care va fi utilizată la generarea noilor identități.",
       "genderSection": "Gen",
-      "genderDescription": "Setează preferința de gen pentru identități.",
+      "genderDescription": "Setați preferința de gen pentru generarea noilor identități.",
       "ageRangeSection": "Interval de vârstă",
-      "ageRangeDescription": "Setează intervalul de vârstă pentru identități.",
+      "ageRangeDescription": "Setați intervalul de vârstă pentru generarea noilor identități.",
       "genderOptions": {
         "random": "Aleatoriu",
         "male": "Masculin",
@@ -239,7 +239,7 @@
       "description": "Gestionează setările de securitate ale contului și seifului.",
       "changeMasterPassword": "Schimbă Parola Master",
       "activeSessionsTitle": "Sesiuni Active",
-      "recentAuthLogs": "Log-uri de Autentificare Recente",
+      "recentAuthLogs": "Autentificări recente",
       "deleteAccountTitle": "Șterge Contul",
       "changePassword": {
         "headerText": "Schimbarea parolei master modifică și cheile de criptare ale seifului. Se recomandă schimbarea periodică a parolei master.",
@@ -408,7 +408,7 @@
     "enterEmailPrefix": "Introdu prefixul email-ului",
     "useDomainChooser": "Folosește selectorul de domenii",
     "enterCustomDomain": "Introdu un domeniu personalizat",
-    "selectEmailDomain": "Selectează domeniul email-ului",
+    "selectEmailDomain": "Selectați domeniul de e-mail",
     "privateEmailTitle": "Email privat",
     "privateEmailAliasVaultServer": "Server AliasVault",
     "privateEmailDescription": "Criptat E2E, complet privat.",
@@ -457,7 +457,7 @@
     "attachments": "Atașamente",
     "deleteAttachment": "Șterge",
     "fileSavedTo": "Fișier salvat în",
-    "previewNotSupported": "Previzualizarea nu este suportată",
+    "previewNotSupported": "Previzualizarea nu este disponibilă",
     "downloadToView": "Descarcă fișierul pentru a-l vizualiza",
     "unsavedChanges": {
       "title": "Abandonezi modificările?",
@@ -499,9 +499,9 @@
       "deleteFolderKeepItemsDescription": "Elementele vor fi mutate în lista principală.",
       "deleteFolderAndItems": "Șterge dosarul și toate elementele",
       "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
-      "emptyFolderHint": "Acest dosar este gol. Pentru a muta elemente aici, editează elementul și selectează acest dosar.",
+      "emptyFolderHint": "Acest dosar este gol. Pentru a muta elemente aici, editați elementul și selectați acest dosar.",
       "noFolder": "Niciun dosar",
-      "selectFolder": "Selectează dosarul"
+      "selectFolder": "Selectați dosarul"
     },
     "recentlyDeleted": {
       "title": "Șterse Recent",
@@ -639,7 +639,7 @@
     "upgrading": "Se actualizează...",
     "logout": "Deconectare",
     "whatsNew": "Ce este nou",
-    "whatsNewDescription": "O actualizare este necesară pentru a suporta următoarele modificări:",
+    "whatsNewDescription": "Este necesară o actualizare pentru a implementa următoarele modificări:",
     "noDescriptionAvailable": "Nicio descriere disponibilă pentru această versiune.",
     "status": {
       "preparingUpgrade": "Se pregătește actualizarea...",
