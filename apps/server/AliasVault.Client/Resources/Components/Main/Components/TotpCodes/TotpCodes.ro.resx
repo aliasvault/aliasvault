@@ -63,7 +63,7 @@
     <comment>Section title for 2FA codes</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
-    <value>Adaugă un cod de autentificare cu doi factori</value>
+    <value>Adăugați un cod de autentificare cu doi factori</value>
     <comment>Description for adding TOTP codes</comment>
   </data>
   <data name="AddTotpCodeModalTitle" xml:space="preserve">
