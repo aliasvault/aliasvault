@@ -6,7 +6,7 @@
   <!-- Common strings -->
   <string name="common_close">Închide</string>
   <string name="common_next">Înainte</string>
-  <string name="common_cancel">Anulează</string>
+  <string name="common_cancel">Anulați</string>
   <string name="unknown_error">A apărut o eroare necunoscută</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Preluare eșuată, deschide aplicația</string>
@@ -16,7 +16,7 @@
   <!-- Biometric prompts -->
   <string name="biometric_store_key_title">Stocare cheie de criptare</string>
   <string name="biometric_store_key_subtitle">Autentifică-te pentru a stoca în siguranță cheia de criptare în Android Keystore. Acest lucru permite accesul securizat la seif.</string>
-  <string name="biometric_unlock_vault_title">Deblochează Seiful</string>
+  <string name="biometric_unlock_vault_title">Deblocați seiful</string>
   <string name="biometric_unlock_vault_subtitle">Autentifică-te pentru a accesa seiful</string>
   <!-- Passkey registration -->
   <string name="passkey_registration_title">Creează Passkey</string>
@@ -71,7 +71,7 @@
   <string name="error_biometric_cancelled">Autentificarea biometrică a fost anulată</string>
   <string name="error_encryption_key_failed">Preluarea cheii de criptare a eșuat</string>
   <!-- PIN unlock -->
-  <string name="pin_unlock_vault">Deblochează Seiful</string>
+  <string name="pin_unlock_vault">Deblocați seiful</string>
   <string name="pin_enter_to_unlock">Introdu PIN-ul pentru a debloca seiful</string>
   <string name="pin_locked_max_attempts">Cod PIN blocat după prea multe încercări eșuate</string>
   <string name="pin_incorrect_attempts_remaining">PIN incorect. %d încercări rămase</string>
