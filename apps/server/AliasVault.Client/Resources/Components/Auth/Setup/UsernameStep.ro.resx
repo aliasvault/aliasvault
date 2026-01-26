@@ -25,7 +25,7 @@
     <comment>Assistant message about setting up username</comment>
   </data>
   <data name="EnterUsernameInstructions">
-    <value>Te rugăm să introduci un nume de utilizator pe care dorești să îl folosești. Acesta poate fi adresa ta de e-mail sau orice nume unic preferi.</value>
+    <value>Vă rugăm să introduci un nume de utilizator pe care dorești să îl folosești. Acesta poate fi adresa ta de e-mail sau orice nume unic preferi.</value>
     <comment>Instructions for entering username</comment>
   </data>
   <data name="RememberUsernameNote">
