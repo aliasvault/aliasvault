@@ -79,11 +79,11 @@
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
-    <value>Adresa de e-mail aleasă este deja utilizată. Vă rugăm să schimbi adresa de e-mail prin editarea acestor date de autentificare.</value>
+    <value>Adresa de e-mail aleasă este deja utilizată. Schimbă adresa de e-mail prin editarea datelor tale de autentificare.</value>
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
-    <value>A apărut o eroare la încărcarea e-mailurilor. Vă rugăm să încerci să editezi și să salvezi datele de autentificare pentru a sincroniza baza de date, apoi reîncearcă.</value>
+    <value>A apărut o eroare la încărcarea e-mailurilor tale. Editează și salvează datele tale de autentificare pentru sincronizarea bazei de date, apoi reîncearcă.</value>
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">
