@@ -115,7 +115,7 @@
     <comment>Error message when attachment download fails</comment>
   </data>
   <data name="AttachmentDownloadError" xml:space="preserve">
-    <value>Eroare la descărcarea atașamentului</value>
+    <value>Eroare descărcare atașament</value>
     <comment>Error message for attachment download error</comment>
   </data>
 </root>
