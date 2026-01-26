@@ -126,7 +126,7 @@
     <value>刷新令牌无效</value>
   </data>
   <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
-    <value>当前服务器已禁用新账户注册功能，请联系管理员。</value>
+    <value>此服务器目前已禁用新账户注册，请联系管理员。</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
     <value>用户名或密码无效，请重试。</value>
@@ -144,7 +144,7 @@
     <value>用户名与当前用户不匹配。</value>
   </data>
   <data name="PASSWORD_MISMATCH" xml:space="preserve">
-    <value>提供的密码与当前密码不符。</value>
+    <value>提供的密码与您的当前密码不匹配。</value>
   </data>
   <data name="ACCOUNT_SUCCESSFULLY_DELETED" xml:space="preserve">
     <value>账户已成功删除。</value>
@@ -165,13 +165,13 @@
     <value>用户名无效，仅可包含字母或数字。</value>
   </data>
   <data name="PENDING_MIGRATIONS" xml:space="preserve">
-    <value>存在待执行的数据库迁移，请运行'dotnet ef database update'以应用变更。</value>
+    <value>存在待处理的数据库迁移。请运行“dotnet ef database update”命令来应用这些迁移。</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
     <value>内部服务器错误</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
-    <value>本地密码库未同步，请刷新页面同步后重试。</value>
+    <value>本地密码库不是最新的。请刷新页面同步密码库后重试。</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
     <value>发生未知错误，请重试。</value>
@@ -180,12 +180,12 @@
     <value>验证码无效，请重试。</value>
   </data>
   <data name="INVALID_RECOVERY_CODE" xml:space="preserve">
-    <value>恢复代码无效，请重试。</value>
+    <value>恢复码无效，请重试。</value>
   </data>
   <data name="VAULT_NOT_UP_TO_DATE" xml:space="preserve">
-    <value>您的密码库未同步，请先同步后重试。</value>
+    <value>您的密码库不是最新的。请同步您的密码库后重试。</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
-    <value>密码错误次数过多，账户已被锁定。30分钟后可再次尝试。</value>
+    <value>您输入错误密码的次数过多，账户已被锁定。您可以在 30 分钟后重试。</value>
   </data>
 </root>
