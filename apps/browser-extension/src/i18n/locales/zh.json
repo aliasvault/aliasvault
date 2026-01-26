@@ -54,7 +54,7 @@
     "delete": "删除",
     "undo": "撤销",
     "save": "保存",
-    "saving": "Saving...",
+    "saving": "保存中…",
     "create": "创建",
     "or": "或",
     "close": "关闭",
@@ -88,11 +88,11 @@
     "checkingVaultUpdates": "检查密码库更新中",
     "syncingUpdatedVault": "同步更新后的密码库",
     "loadMore": "加载更多",
-    "offline": "Offline",
-    "offlineMode": "Operating in offline mode",
-    "pendingSync": "Syncing...",
+    "offline": "离线",
+    "offlineMode": "正在离线模式运行",
+    "pendingSync": "同步中…",
     "mergingVaultChanges": "正在合并密码库更改...",
-    "uploadingVault": "Uploading vault...",
+    "uploadingVault": "正在上传密码库…",
     "errors": {
       "serverNotAvailable": "AliasVault服务器不可用。请稍后重试，若问题持续请联系支持人员。",
       "clientVersionNotSupported": "此版本的AliasVault浏览器扩展已不被服务器支持。请将浏览器扩展更新到最新版本。",
@@ -104,8 +104,8 @@
       "vaultNotAvailable": "密码库不可用",
       "vaultIsLocked": "密码库已锁定",
       "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。",
-      "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again."
+      "syncConflictMaxRetries": "多次尝试后仍无法同步密码库，请稍后重试。",
+      "mergeFailed": "合并密码库更改失败，请重试。"
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "发生未知错误。请重试。",
@@ -172,8 +172,8 @@
     "loginCredentials": "登录凭据",
     "cardInformation": "卡信息",
     "addItem": "添加项目",
-    "addNewItem": "Add new item",
-    "saveItem": "Save Item",
+    "addNewItem": "添加新项目",
+    "saveItem": "保存项目",
     "itemDetails": "项目详情",
     "editItem": "编辑项目",
     "untitled": "无标题",
@@ -181,7 +181,7 @@
     "createFolder": "创建文件夹",
     "editFolder": "编辑文件夹",
     "folderName": "文件夹名称",
-    "folderNameRequired": "Folder name is required",
+    "folderNameRequired": "文件夹名称为必填项",
     "folder": "文件夹",
     "welcomeTitle": "欢迎使用AliasVault！",
     "welcomeDescription": "要使用AliasVault浏览器扩展：导航到某个网站，使用AliasVault自动填充弹窗创建新凭据。",
@@ -189,17 +189,17 @@
     "noAttachmentsFound": "未找到带附件的项目",
     "noItemsOfTypeFound": "未找到 {{type}} 项目",
     "noMatchingItems": "未找到匹配的项目",
-    "noMatchingItemsSearch": "No items matching \"{{search}}\"",
-    "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
-    "clearSearch": "Clear search",
-    "clearFilter": "Clear filter",
+    "noMatchingItemsSearch": "未找到匹配“{{search}}”的项目",
+    "noMatchingItemsWithFilter": "未找到匹配“{{search}}”的 {{filter}} 项目",
+    "clearSearch": "清除搜索",
+    "clearFilter": "清除筛选器",
     "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
     "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
-    "deleteFolder": "Delete Folder",
-    "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-    "deleteFolderAndItems": "Delete folder and all items",
-    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "deleteFolder": "删除文件夹",
+    "deleteFolderKeepItems": "仅删除文件夹",
+    "deleteFolderKeepItemsDescription": "项目将被移回主列表。",
+    "deleteFolderAndItems": "删除文件夹和所有项目",
+    "deleteFolderAndItemsDescription": "{{count}} 个项目将被移至“近期删除”。",
     "filters": {
       "all": "（所有）项目",
       "passkeys": "通行密钥"
@@ -231,12 +231,12 @@
     }
   },
   "itemTypes": {
-    "selectType": "Add New Item",
-    "typeLabel": "Item Type",
+    "selectType": "添加新项目",
+    "typeLabel": "项目类型",
     "creating": "创建",
     "editing": "编辑",
-    "regenerateAlias": "Regenerate alias",
-    "addCustomField": "Add custom field",
+    "regenerateAlias": "重新生成别名",
+    "addCustomField": "添加自定义字段",
     "fieldLabel": "字段标签",
     "enterFieldName": "输入字段名称",
     "fieldType": "字段类型",
@@ -264,7 +264,7 @@
     }
   },
   "fieldLabels": {
-    "login.url": "Website URL",
+    "login.url": "网站 URL",
     "login.username": "用户名",
     "login.password": "密码",
     "alias.first_name": "名",
@@ -286,17 +286,17 @@
     "nameOptional": "名称（可选）",
     "secretKey": "密钥",
     "saveToViewCode": "保存以查看验证码",
-    "defaultName": "Authenticator",
+    "defaultName": "身份验证器",
     "errors": {
       "invalidSecretKey": "密钥格式无效。"
     }
   },
   "attachmentUploader": {
-    "uploading": "Uploading...",
-    "uploadSuccess": "Files uploaded successfully.",
-    "deleteSuccess": "Attachment deleted successfully.",
-    "firefoxExpandRequired": "To upload files, use the expanded window.",
-    "openExpandedWindow": "Open Expanded Window"
+    "uploading": "上传中…",
+    "uploadSuccess": "文件上传成功。",
+    "deleteSuccess": "附件删除成功。",
+    "firefoxExpandRequired": "要上传文件，请使用展开的窗口。",
+    "openExpandedWindow": "打开展开的窗口"
   },
   "emails": {
     "title": "邮件",
@@ -450,7 +450,7 @@
       "selectExistingLogin": "Add to existing login:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
       "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachPasskey": "添加通行密钥"
     },
     "settings": {
       "passkeyProvider": "通行密钥提供程序",
@@ -458,19 +458,19 @@
     }
   },
   "recentlyDeleted": {
-    "title": "Recently Deleted",
-    "noItems": "No deleted items",
+    "title": "近期删除",
+    "noItems": "没有删除的项目",
     "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
     "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
-    "restore": "Restore",
-    "deletePermanently": "Delete Permanently",
-    "emptyAll": "Empty All",
+    "restore": "还原",
+    "deletePermanently": "永久删除",
+    "emptyAll": "全部清空",
     "daysRemaining_one": "剩余 {{count}} 天",
     "daysRemaining_other": "剩余 {{count}} 天",
-    "expiringSoon": "Expiring soon",
-    "confirmDeleteTitle": "Delete Permanently?",
+    "expiringSoon": "即将到期",
+    "confirmDeleteTitle": "永久删除吗？",
     "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
-    "confirmEmptyAllTitle": "Empty Recently Deleted?",
+    "confirmEmptyAllTitle": "清空“近期删除”吗？",
     "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
   },
   "upgrade": {
