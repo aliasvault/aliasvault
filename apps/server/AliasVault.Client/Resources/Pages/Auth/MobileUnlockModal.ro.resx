@@ -63,7 +63,7 @@
     <comment>Page title for mobile unlock feature</comment>
   </data>
   <data name="UnlockTitle" xml:space="preserve">
-    <value>Deblocare folosind aplicația mobilă</value>
+    <value>Deblochează prin aplicația mobilă</value>
     <comment>Modal title for mobile unlock feature</comment>
   </data>
   <data name="ScanQrCodeDescription" xml:space="preserve">
