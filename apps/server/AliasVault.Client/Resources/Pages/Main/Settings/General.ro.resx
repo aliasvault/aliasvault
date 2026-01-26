@@ -38,15 +38,15 @@
     <comment>Title for email settings section</comment>
   </data>
   <data name="DefaultEmailDomainLabel">
-    <value>Domeniu e-mail implicit</value>
+    <value>Domeniu de e-mail implicit</value>
     <comment>Label for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescription">
-    <value>Setează domeniul de e-mail implicit care va fi utilizat la crearea noilor date de autentificare.</value>
+    <value>Setați domeniul de e-mail implicit care va fi utilizat la crearea noilor date de autentificare.</value>
     <comment>Description for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescriptionNote">
-    <value>Notă: E-mailurile primite pe domenii private sunt criptate end-to-end și pot fi citite doar de dumneavoastră, în timp ce e-mailurile primite pe domenii publice pot fi citite de oricine cunoaște adresa de e-mail de recepție.</value>
+    <value>Notă: E-mailurile primite pe domenii private sunt criptate end-to-end și pot fi citite doar de dumneavoastră, în timp ce e-mailurile primite pe domenii publice pot fi citite de oricine cunoaște adresa de e-mail respectivă.</value>
     <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
   </data>
   <data name="DefaultEmailDomainLearnMore">
@@ -66,7 +66,7 @@
     <comment>Label for public domains group</comment>
   </data>
   <data name="AutoEmailRefreshLabel">
-    <value>Actualizare automată a conținutului e-mailurilor la sosirea unora noi</value>
+    <value>Actualizare automată a conținutului la primirea e-mailurilor noi</value>
     <comment>Label for auto email refresh setting</comment>
   </data>
   <!-- Alias Settings Section -->
@@ -140,7 +140,7 @@
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
   <data name="ClipboardClearLimitationNote">
-    <value>Notă: golirea clipboard-ului în aplicația web este posibilă doar când fila este activă. Dacă fila își pierde focusul, clipboard-ul va fi golit la revenirea în focus.</value>
+    <value>Notă: golirea clipboard-ului în aplicația web este posibilă doar când tab-ul este activ. Dacă părăsiți tab-ul, clipboard-ul va fi golit automat în momentul în care reveniți.</value>
     <comment>Note explaining limitations of clipboard clearing feature</comment>
   </data>
   <!-- Password Settings Section -->
