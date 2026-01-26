@@ -1,24 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Data extraction rules for Android API 31+ (Android 12 and above).
-  Excludes sensitive credential identity data from cloud backups and device transfers.
+  Disables all cloud backups and device transfers.
 
-  The credential_identities file stores user metadata (usernames, email addresses, service names)
-  that should not leave the device, matching iOS ASCredentialIdentityStore behavior which
-  explicitly excludes its data from device backups.
-
-  Security rationale:
-  - Contains sensitive user information (though no passwords)
-  - Should remain device-local for privacy
-  - Can be re-synced from vault on new device
+  AliasVault is an end-to-end encrypted vault app. All app data — including the encrypted
+  vault database, Keystore-wrapped encryption keys, authentication tokens, and key derivation
+  parameters — is security-sensitive and device-bound. So backups are disabled entirely.
 -->
 <data-extraction-rules>
     <cloud-backup>
-        <!-- Exclude credential identity store from cloud backups -->
-        <exclude domain="sharedpref" path="credential_identities.xml"/>
+        <exclude domain="root" path="."/>
     </cloud-backup>
     <device-transfer>
-        <!-- Exclude credential identity store from device-to-device transfers -->
-        <exclude domain="sharedpref" path="credential_identities.xml"/>
+        <exclude domain="root" path="."/>
     </device-transfer>
 </data-extraction-rules>
