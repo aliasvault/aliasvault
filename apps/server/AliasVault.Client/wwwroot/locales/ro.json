@@ -3,12 +3,12 @@
     "title": "AliasVault se încarcă",
     "message": "Se inițializează mediul securizat. AliasVault prioritizează confidențialitatea ta rulând integral în browser. Prima încărcare ar putea dura puțin.",
     "refreshText": "Dacă încărcarea pare blocată, poți apăsa butonul de mai jos pentru a reporni pagina.",
-    "refreshButtonText": "Repornește pagina"
+    "refreshButtonText": "Reîmprospătați pagina"
   },
   "errors": {
-    "unhandledError": "A apărut o eroare neprevăzută. Te rugăm să încerci să repornești pagina. Dacă problema persistă, contactează asistența.",
+    "unhandledError": "A apărut o eroare neprevăzută. Se recomandă reîncărcarea paginii. Dacă problema persistă, contactați serviciul de asistență.",
     "webAssemblyError": "AliasVault necesită WebAssembly, care nu este compatibil cu acest browser. Încercați să folosiți un browser mai modern.",
-    "reloadPageText": "Repornește pagina"
+    "reloadPageText": "Reîncărcați pagina"
   },
   "quotes": {
     "security": [
