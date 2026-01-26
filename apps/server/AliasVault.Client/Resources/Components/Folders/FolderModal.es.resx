@@ -59,23 +59,23 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CreateFolderTitle" xml:space="preserve">
-    <value>Create Folder</value>
+    <value>Crear carpeta</value>
     <comment>Title for create folder modal</comment>
   </data>
   <data name="EditFolderTitle" xml:space="preserve">
-    <value>Edit Folder</value>
+    <value>Editar carpeta</value>
     <comment>Title for edit folder modal</comment>
   </data>
   <data name="FolderNameLabel" xml:space="preserve">
-    <value>Folder Name</value>
+    <value>Nombre de la carpeta</value>
     <comment>Label for folder name input</comment>
   </data>
   <data name="FolderNamePlaceholder" xml:space="preserve">
-    <value>Enter folder name</value>
+    <value>Introduzca nombre de carpeta</value>
     <comment>Placeholder for folder name input</comment>
   </data>
   <data name="FolderNameRequired" xml:space="preserve">
-    <value>Folder name is required</value>
+    <value>El nombre de la carpeta es obligatorio</value>
     <comment>Error message when folder name is empty</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
