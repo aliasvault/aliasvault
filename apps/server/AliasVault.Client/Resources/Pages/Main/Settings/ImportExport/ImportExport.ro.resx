@@ -67,7 +67,7 @@
     <comment>Page description</comment>
   </data>
   <data name="ImportSectionTitle" xml:space="preserve">
-    <value>Importă parole</value>
+    <value>Importați parole</value>
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
@@ -109,7 +109,7 @@ Sunteți sigur că doriți să continuați exportul?</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>Această opțiune vă permite să goliți complet seiful, păstrând în același timp contul și aliasurile de e-mail. Folosiți această funcție dacă doriți să o luați de la capăt după importarea datelor dintr-un alt manager de parole sau dacă doriți să ștergeți toate datele de autentificare existente pentru a reîncepe de la început.</value>
+    <value>Această opțiune vă permite să goliți complet seiful, păstrând în același timp contul și aliasurile de email. Folosiți-o dacă doriți să o luați de la început după un import dintr-un alt manager sau dacă doriți să ștergeți toate datele de autentificare pentru a reîncepe procesul.</value>
     <comment>Reset vault section description</comment>
   </data>
 </root>
