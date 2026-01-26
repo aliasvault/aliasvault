@@ -63,15 +63,15 @@
     <comment>Welcome title for new vault creation</comment>
   </data>
   <data name="CreatingDescription" xml:space="preserve">
-    <value>Noul dumneavoastră seif criptat este în curs de inițializare. Acest proces poate dura câteva momente. Vă rugăm să așteptați.</value>
+    <value>Noul dumneavoastră seif criptat este în curs de inițializare. Acest proces poate dura câteva momente. Așteaptă finalizarea.</value>
     <comment>Description for vault creation process</comment>
   </data>
   <data name="SaveFailedError" xml:space="preserve">
-    <value>Crearea seifului a reușit, dar salvarea pe server a eșuat. Vă rugăm să reporniți pagina sau să contactați asistența.</value>
+    <value>Crearea seifului a reușit, dar salvarea pe server a eșuat. Reîmprospătează pagina sau contactează asistența.</value>
     <comment>Error message when vault creation succeeds but save fails</comment>
   </data>
   <data name="CreationFailedError" xml:space="preserve">
-    <value>Crearea seifului a eșuat. Vă rugăm să încercați din nou sau să contactați asistența.</value>
+    <value>Crearea seifului a eșuat. Încearcă din nou sau contactează asistența.</value>
     <comment>Error message when vault creation fails</comment>
   </data>
 </root>
