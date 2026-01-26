@@ -32,7 +32,7 @@
   <string name="passkey_saving">Se salvează în seif…</string>
   <string name="passkey_syncing">Sincronizare cu serverul…</string>
   <string name="passkey_error_title">Eroare</string>
-  <string name="passkey_error_empty_name">Te rugăm să introduci un nume pentru passkey</string>
+  <string name="passkey_error_empty_name">Introdu un nume pentru passkey</string>
   <string name="passkey_creation_failed">Crearea passkey-ului a eșuat</string>
   <string name="passkey_retry_button">Reîncearcă</string>
   <string name="passkey_info_icon">Pictogramă informații</string>
@@ -40,7 +40,7 @@
   <string name="passkey_create_new_button">Creează Passkey Nou</string>
   <string name="passkey_select_to_replace">Sau înlocuiește un passkey existent:</string>
   <string name="passkey_add_to_existing">Sau adaugă passkey la un element existent:</string>
-  <string name="passkey_replace_explanation">Această acțiune va înlocui passkey-ul existent cu unul nou. Te rugăm să reții că vechiul passkey va fi suprascris și nu va mai putea fi accesat. Dacă dorești să creezi un passkey separat, revino la ecranul anterior.</string>
+  <string name="passkey_replace_explanation">Această acțiune va înlocui passkey-ul existent cu unul nou. Reține că vechiul passkey va fi suprascris și nu va mai putea fi accesat. Dacă dorești să creezi un passkey separat, revino la ecranul anterior.</string>
   <string name="passkey_merge_explanation">Această acțiune va adăuga un passkey la elementul tău existent. Parola și celelalte date vor fi păstrate.</string>
   <string name="passkey_replacing">Se înlocuiește passkey-ul…</string>
   <string name="add_passkey">Adaugă Passkey</string>
@@ -51,22 +51,22 @@
   <string name="passkey_authenticating">Autentificare…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Eroare de conexiune</string>
-  <string name="connection_error_message">Nu s-a putut stabili conexiunea cu serverul. Te rugăm să verifici conexiunea la internet și să încerci din nou crearea passkey-ului.</string>
+  <string name="connection_error_message">Nu s-a putut stabili conexiunea cu serverul. Verifică conexiunea la internet și încearcă din nou crearea passkey-ului.</string>
   <string name="session_expired_title">Sesiune expirată</string>
-  <string name="session_expired_message">Sesiunea ta a expirat. Te rugăm să te autentifici din nou.</string>
+  <string name="session_expired_message">Sesiunea ta a expirat. Autentifică-te din nou.</string>
   <string name="password_changed_title">Parolă schimbată</string>
-  <string name="password_changed_message">Parola ta a fost schimbată. Te rugăm să te autentifici din nou.</string>
+  <string name="password_changed_message">Parola ta a fost schimbată. Autentifică-te din nou.</string>
   <string name="version_not_supported_title">Actualizare necesară</string>
-  <string name="version_not_supported_message">Versiunea aplicației nu mai este compatibilă. Vă rugăm să instalați cea mai recentă actualizare.</string>
+  <string name="version_not_supported_message">Versiunea aplicației nu mai este compatibilă. Instalează cea mai recentă actualizare.</string>
   <string name="server_unavailable_title">Server indisponibil</string>
-  <string name="server_unavailable_message">Serverul este momentan indisponibil. Te rugăm să încerci din nou mai târziu.</string>
+  <string name="server_unavailable_message">Serverul este momentan indisponibil. Încearcă din nou mai târziu.</string>
   <string name="network_error_title">Eroare de rețea</string>
-  <string name="network_error_message">A apărut o eroare de rețea. Te rugăm să verifici conexiunea și să încerci din nou.</string>
+  <string name="network_error_message">A apărut o eroare de rețea. Verifică conexiunea și încearcă din nou.</string>
   <string name="server_version_not_supported_title">Actualizare server necesară</string>
-  <string name="server_version_not_supported_message">Versiunea serverului este incompatibilă. Te rugăm să contactezi administratorul pentru a actualiza serverul.</string>
+  <string name="server_version_not_supported_message">Versiunea serverului este incompatibilă. Contactează administratorul pentru a actualiza serverul.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_unlock_method_required">Te rugăm să activezi autentificarea biometrică sau PIN în aplicația principală AliasVault pentru a putea continua</string>
-  <string name="error_unlock_vault_first">Te rugăm să deblochezi mai întâi seiful în aplicația AliasVault</string>
+  <string name="error_unlock_method_required">Activează autentificarea biometrică sau PIN-ul în aplicația AliasVault pentru a continua</string>
+  <string name="error_unlock_vault_first">Deblochează mai întâi seiful în aplicația AliasVault</string>
   <string name="error_vault_decrypt_failed">Decriptarea seifului a eșuat</string>
   <string name="error_biometric_cancelled">Autentificarea biometrică a fost anulată</string>
   <string name="error_encryption_key_failed">Preluarea cheii de criptare a eșuat</string>
@@ -80,5 +80,5 @@
   <string name="pin_setup_description">Alege un cod PIN pentru a debloca seiful</string>
   <string name="pin_confirm_title">Confirmă PIN</string>
   <string name="pin_confirm_description">Introdu PIN-ul din nou pentru confirmare</string>
-  <string name="pin_mismatch">Codurile PIN nu se potrivesc. Te rugăm să încerci din nou.</string>
+  <string name="pin_mismatch">Codurile PIN nu se potrivesc. Încearcă din nou.</string>
 </resources>
