@@ -71,7 +71,7 @@
     <comment>Title for version information section</comment>
   </data>
   <data name="UpgradeRequiredDescription" xml:space="preserve">
-    <value>Este necesară o actualizare pentru a suporta următoarele modificări: {0}</value>
+    <value>Este necesară o actualizare pentru a permite următoarele modificări: {0}</value>
     <comment>Description of upgrade requirements with changes placeholder</comment>
   </data>
   <data name="NoDescriptionAvailable" xml:space="preserve">
