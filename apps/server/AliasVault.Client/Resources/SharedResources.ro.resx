@@ -171,7 +171,7 @@
     <comment>Button text to confirm an action</comment>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Repornește</value>
+    <value>Reîmprospătați</value>
     <comment>Button text to refresh content</comment>
   </data>
   <!-- Common form elements -->
@@ -209,15 +209,15 @@
   </data>
   <!-- Common error messages -->
   <data name="ErrorGeneric" xml:space="preserve">
-    <value>A apărut o eroare. Te rugăm să încerci din nou.</value>
+    <value>A apărut o eroare. Încercați din nou.</value>
     <comment>Generic error message</comment>
   </data>
   <data name="ErrorUnknown" xml:space="preserve">
-    <value>A apărut o eroare necunoscută. Te rugăm să încerci din nou.</value>
+    <value>A apărut o eroare necunoscută. Încercați din nou.</value>
     <comment>Generic unknown error message</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
-    <value>Te rugăm să corectezi erorile de mai jos.</value>
+    <value>Corectați erorile de mai jos.</value>
     <comment>Validation error message</comment>
   </data>
   <data name="ErrorRequired" xml:space="preserve">
@@ -225,7 +225,7 @@
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>Te rugăm să introduci o adresă de e-mail validă.</value>
+    <value>Introduceți o adresă de e-mail validă.</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">
