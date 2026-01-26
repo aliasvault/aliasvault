@@ -91,7 +91,7 @@
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
-    <value>S-au detectat {0} dosare</value>
+    <value>{0} dosar(e) detectate</value>
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
 </root>
