@@ -120,16 +120,16 @@
     <value>Este necesar un refresh token</value>
   </data>
   <data name="ACCOUNT_BLOCKED" xml:space="preserve">
-    <value>Contul tău a fost dezactivat. Dacă crezi că este o greșeală, te rugăm să contactezi asistența.</value>
+    <value>Contul tău a fost dezactivat. Dacă crezi că este o greșeală, contactează asistența.</value>
   </data>
   <data name="INVALID_REFRESH_TOKEN" xml:space="preserve">
     <value>Refresh Token invalid</value>
   </data>
   <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
-    <value>Înregistrarea de conturi noi este momentan dezactivată pe acest server. Te rugăm să contactezi administratorul.</value>
+    <value>Înregistrarea de conturi noi este momentan dezactivată pe acest server. Contactează administratorul.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
-    <value>Nume de utilizator sau parolă invalidă. Te rugăm să încerci din nou.</value>
+    <value>Nume de utilizator sau parolă invalidă. Încearcă din nou.</value>
   </data>
   <data name="USERNAME_REQUIRED" xml:space="preserve">
     <value>Numele de utilizator este obligatoriu.</value>
@@ -165,25 +165,25 @@
     <value>Numele de utilizator este invalid, poate conține doar litere sau cifre.</value>
   </data>
   <data name="PENDING_MIGRATIONS" xml:space="preserve">
-    <value>Există migrări în așteptare. Te rugăm să rulezi „dotnet ef database update” pentru a le aplica.</value>
+    <value>Există migrări în așteptare. Rulează „dotnet ef database update” pentru a le aplica.</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
     <value>Eroare internă de server</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
-    <value>Seiful local nu este actualizat. Te rugăm să sincronizezi seiful repornind pagina și să încerci din nou.</value>
+    <value>Seiful local nu este actualizat. Sincronizează seiful reîmprospătând pagina și încearcă din nou.</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
-    <value>A apărut o eroare necunoscută. Te rugăm să încerci din nou.</value>
+    <value>A apărut o eroare necunoscută. Încearcă din nou.</value>
   </data>
   <data name="INVALID_AUTHENTICATOR_CODE" xml:space="preserve">
-    <value>Cod de autentificare invalid. Te rugăm să încerci din nou.</value>
+    <value>Cod de autentificare invalid. Încearcă din nou.</value>
   </data>
   <data name="INVALID_RECOVERY_CODE" xml:space="preserve">
-    <value>Cod de recuperare invalid. Te rugăm să încerci din nou.</value>
+    <value>Cod de recuperare invalid. Încearcă din nou.</value>
   </data>
   <data name="VAULT_NOT_UP_TO_DATE" xml:space="preserve">
-    <value>Seiful tău nu este actualizat. Te rugăm să sincronizezi seiful și să încerci din nou.</value>
+    <value>Seiful tău nu este actualizat. Sincronizează seiful și încearcă din nou.</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
     <value>Ai introdus o parolă greșită de prea multe ori, iar contul tău a fost blocat. Poți încerca din nou peste 30 de minute.</value>
