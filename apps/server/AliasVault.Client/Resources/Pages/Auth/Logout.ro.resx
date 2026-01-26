@@ -63,7 +63,7 @@
     <comment>Title shown during logout process</comment>
   </data>
   <data name="LoggingOutDescription" xml:space="preserve">
-    <value>Datele dumneavoastră sunt securizate în timp ce sunteți deconectat. Vă rugăm așteptați.</value>
+    <value>Datele tale sunt securizate în timp ce ești în starea de deconectare. Așteaptă.</value>
     <comment>Description shown during logout process</comment>
   </data>
 </root>
