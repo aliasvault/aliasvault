@@ -576,9 +576,9 @@
     "USERNAME_TOO_LONG": "用户名过长：不能超过40个字符。",
     "USERNAME_INVALID_EMAIL": "电子邮箱地址无效。",
     "USERNAME_INVALID_CHARACTERS": "用户名无效，只能包含字母或数字。",
-    "VAULT_NOT_UP_TO_DATE": "您的密码库不是最新版本。请同步密码库后重试。",
+    "VAULT_NOT_UP_TO_DATE": "您的密码库不是最新的。请同步您的密码库后重试。",
     "INTERNAL_SERVER_ERROR": "服务器内部错误。",
-    "VAULT_ERROR": "本地密码库不是最新版本。请刷新页面同步密码库后重试。"
+    "VAULT_ERROR": "本地密码库不是最新的。请刷新页面同步密码库后重试。"
   },
   "sync": {
     "offline": "Offline",
