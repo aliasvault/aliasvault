@@ -67,7 +67,7 @@
     <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Dezactivează deblocarea prin Passkey</value>
+    <value>Dezactivați deblocarea prin Passkey</value>
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
@@ -75,11 +75,11 @@
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>Această funcționalitate este suportată în prezent de extensia de browser AliasVault și de aplicația iOS. Suportul pentru Android va fi disponibil în curând. Dacă întâmpini probleme, poți dezactiva această opțiune în orice moment.</value>
+    <value>Această funcționalitate este disponibilă momentan în extensia de browser AliasVault și în aplicația iOS. Compatibilitatea pentru Android va fi oferită în curând. Dacă întâmpinați probleme, puteți dezactiva această opțiune în orice moment.</value>
     <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Activează deblocarea prin Passkey</value>
+    <value>Activați deblocarea prin Passkey</value>
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
@@ -91,7 +91,7 @@
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Browserul tău actual nu suportă extensia WebAuthn PRF. Te rugăm să încerci din nou folosind un alt browser.</value>
+    <value>Browserul dumneavoastră actual nu este compatibil cu extensia WebAuthn PRF. Vă rugăm să încercați din nou folosind un alt browser.</value>
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
