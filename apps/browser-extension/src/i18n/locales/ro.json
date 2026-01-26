@@ -27,7 +27,7 @@
     "connectingTo": "Conectare la",
     "switchAccounts": "Comuți contul?",
     "loginWithMobile": "Autentificare prin aplicația mobilă",
-    "unlockWithMobile": "Deblocare prin aplicația mobilă",
+    "unlockWithMobile": "Deblochează folosind aplicația mobilă",
     "scanQrCode": "Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful.",
     "errors": {
       "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
@@ -114,8 +114,8 @@
       "USER_NOT_FOUND": "Utilizator sau parolă invalidă. Încearcă din nou.",
       "INVALID_AUTHENTICATOR_CODE": "Cod de autentificare invalid. Încearcă din nou.",
       "INVALID_RECOVERY_CODE": "Cod de recuperare invalid. Încearcă din nou.",
-      "REFRESH_TOKEN_REQUIRED": "Este necesar un refresh token.",
-      "INVALID_REFRESH_TOKEN": "Refresh Token invalid.",
+      "REFRESH_TOKEN_REQUIRED": "Este necesar un token de actualizare.",
+      "INVALID_REFRESH_TOKEN": "Token de actualizare nevalid.",
       "PUBLIC_REGISTRATION_DISABLED": "Înregistrarea conturilor noi este dezactivată pe acest server. Contactează administratorul.",
       "USERNAME_REQUIRED": "Numele de utilizator este obligatoriu.",
       "USERNAME_ALREADY_IN_USE": "Numele de utilizator este deja folosit.",
@@ -233,7 +233,7 @@
   "itemTypes": {
     "selectType": "Adaugă element nou",
     "typeLabel": "Tip element",
-    "creating": "Se creează",
+    "creating": "Creare",
     "editing": "Se editează",
     "regenerateAlias": "Regenerează alias",
     "addCustomField": "Adaugă câmp personalizat",
@@ -260,7 +260,7 @@
       "title": "Card de Credit"
     },
     "note": {
-      "title": "Notă Securizată"
+      "title": "Notă securizată"
     }
   },
   "fieldLabels": {
@@ -295,8 +295,8 @@
     "uploading": "Se încarcă...",
     "uploadSuccess": "Fișiere încărcate cu succes.",
     "deleteSuccess": "Atașament șters cu succes.",
-    "firefoxExpandRequired": "To upload files, use the expanded window.",
-    "openExpandedWindow": "Open Expanded Window"
+    "firefoxExpandRequired": "Pentru a încărca fișiere, folosește fereastra extinsă.",
+    "openExpandedWindow": "Deschide fereastra extinsă"
   },
   "emails": {
     "title": "E-mailuri",
@@ -352,8 +352,8 @@
     "useDefault": "Implicită",
     "light": "Luminoasă",
     "dark": "Întunecată",
-    "keyboardShortcuts": "Shortcuts Tastatură",
-    "configureKeyboardShortcuts": "Configurează shortcut-urile",
+    "keyboardShortcuts": "Comenzi rapide de tastatură",
+    "configureKeyboardShortcuts": "Configurează comenzile rapide de tastatură",
     "configure": "Configurează",
     "clipboardClearTimeout": "Golește clipboard-ul după copiere",
     "clipboardClearTimeoutDescription": "Golește automat clipboard-ul după copierea datelor sensibile",
@@ -414,9 +414,9 @@
       "pinMismatch": "PIN-urile nu se potrivesc",
       "incorrectPin": "PIN incorect. {{attemptsRemaining}} încercări rămase.",
       "incorrectPinSingular": "PIN incorect. 1 încercare rămasă.",
-      "enableSuccess": "Deblocarea cu PIN a fost activată!",
-      "pinLocked": "Deblocarea cu PIN a fost dezactivată. Folosește parola master.",
-      "pinSecurityWarning": "Deblocarea cu PIN în extensie poate fi mai puțin sigură decât parola master. Folosește-o doar pe dispozitive în care ai încredere deplină."
+      "enableSuccess": "Deblocarea prin PIN a fost activată!",
+      "pinLocked": "Deblocarea prin PIN a fost dezactivată. Folosește parola master.",
+      "pinSecurityWarning": "Deblocarea prin PIN în extensie poate fi mai puțin sigură decât parola master. Folosește-o doar pe dispozitive în care ai încredere deplină."
     }
   },
   "passkeys": {
