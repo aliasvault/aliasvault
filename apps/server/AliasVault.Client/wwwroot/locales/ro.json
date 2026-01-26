@@ -2,8 +2,8 @@
   "loading": {
     "title": "AliasVault se încarcă",
     "message": "Se inițializează mediul securizat. AliasVault prioritizează confidențialitatea ta rulând integral în browser. Prima încărcare ar putea dura puțin.",
-    "refreshText": "Dacă încărcarea pare blocată, poți apăsa butonul de mai jos pentru a reporni pagina.",
-    "refreshButtonText": "Reîmprospătați pagina"
+    "refreshText": "Dacă încărcarea pare blocată, puteți apăsa butonul de mai jos pentru a reîmprospăta pagina.",
+    "refreshButtonText": "Actualizați pagina"
   },
   "errors": {
     "unhandledError": "A apărut o eroare neprevăzută. Se recomandă reîncărcarea paginii. Dacă problema persistă, contactați serviciul de asistență.",
