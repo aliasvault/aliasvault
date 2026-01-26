@@ -91,7 +91,7 @@
     <comment>Load more button text with count. {0} is placeholder for number of remaining emails</comment>
   </data>
   <data name="ClaimDoesNotExistError" xml:space="preserve">
-    <value>A apărut o eroare la încărcarea e-mailurilor. Te rugăm să încerci să editezi și să salvezi oricare dintre datele de autentificare pentru a sincroniza baza de date, apoi reîncearcă.</value>
+    <value>A apărut o eroare la încărcarea e-mailurilor. Editează și salvează orice intrare pentru a sincroniza baza de date, apoi reîncearcă.</value>
     <comment>Error message when email claim does not exist</comment>
   </data>
   <data name="LoadEmailsFailedMessage" xml:space="preserve">
