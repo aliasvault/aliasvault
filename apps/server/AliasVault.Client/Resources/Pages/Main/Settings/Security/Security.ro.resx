@@ -67,7 +67,7 @@
     <comment>Description for the security settings page</comment>
   </data>
   <data name="RefreshButton" xml:space="preserve">
-    <value>Actualizare</value>
+    <value>Actualizați</value>
     <comment>Refresh button text</comment>
   </data>
   <data name="BreadcrumbTitle" xml:space="preserve">
