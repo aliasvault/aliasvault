@@ -15,7 +15,7 @@
   <string name="autofill_vault_locked">密码库已锁定</string>
   <!-- Biometric prompts -->
   <string name="biometric_store_key_title">存储加密密钥</string>
-  <string name="biometric_store_key_subtitle">请进行身份验证，以便将您的加密密钥安全存储至 Android 密钥库中，这将确保您能安全访问密码库。</string>
+  <string name="biometric_store_key_subtitle">进行认证即可将您的加密密钥安全存储至 Android 密钥库中，这将确保您能安全访问密码库。</string>
   <string name="biometric_unlock_vault_title">解锁密码库</string>
   <string name="biometric_unlock_vault_subtitle">请验证身份以访问您的密码库</string>
   <!-- Passkey registration -->
@@ -39,12 +39,12 @@
   <string name="passkey_create_explanation">这将创建一个新的通行密钥并将其存储在您的密码库中。它将自动同步到您所有使用 AliasVault 的设备。</string>
   <string name="passkey_create_new_button">创建新通行密钥</string>
   <string name="passkey_select_to_replace">或者替换现有的通行密钥：</string>
-  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
+  <string name="passkey_add_to_existing">或者将通行密钥添加到现有项目：</string>
   <string name="passkey_replace_explanation">这将用新的通行密钥替换现有通行密钥。请注意，您的旧通行密钥将被覆盖且无法再访问。若您希望单独创建一个通行密钥，请返回到上一屏幕。</string>
-  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
+  <string name="passkey_merge_explanation">这将为您的现有项目添加一个通行密钥。您的密码和其他数据将被保留。</string>
   <string name="passkey_replacing">正在替换通行密钥…</string>
-  <string name="add_passkey">Add Passkey</string>
-  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
+  <string name="add_passkey">添加通行密钥</string>
+  <string name="add_passkey_subtitle">将通行密钥添加到现有项目</string>
   <string name="passkey_checking_connection">检查连接中…</string>
   <string name="passkey_retrieving">正在检索通行密钥…</string>
   <string name="passkey_verifying">验证中…</string>
