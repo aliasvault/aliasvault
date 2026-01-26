@@ -39,12 +39,12 @@
   <string name="passkey_create_explanation">Esto crea una nueva llave de acceso y la almacena en tu bóveda. Se sincronizará automáticamente en todos tus dispositivos que utilicen AliasVault.</string>
   <string name="passkey_create_new_button">Crear nueva llave de acceso</string>
   <string name="passkey_select_to_replace">O, reemplazar una llave de acceso existente:</string>
-  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
+  <string name="passkey_add_to_existing">O, añadir llave de acceso a un elemento existente:</string>
   <string name="passkey_replace_explanation">Esto reemplazará la llave de acceso existente con una nueva. Tenga en cuenta que su llave de acceso antigua será sobrescrita y ya no será accesible. Si desea crear una llave de acceso separada en su lugar, vuelva a la pantalla anterior.</string>
-  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
+  <string name="passkey_merge_explanation">Esto añadirá una llave de acceso a su elemento existente. Su contraseña y otros datos se conservarán.</string>
   <string name="passkey_replacing">Reemplazando llave de acceso…</string>
-  <string name="add_passkey">Add Passkey</string>
-  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
+  <string name="add_passkey">Añadir llave de acceso</string>
+  <string name="add_passkey_subtitle">Añadiendo llave de acceso al elemento existente</string>
   <string name="passkey_checking_connection">Comprobando la conexión…</string>
   <string name="passkey_retrieving">Recuperando llave…</string>
   <string name="passkey_verifying">Verificando…</string>
