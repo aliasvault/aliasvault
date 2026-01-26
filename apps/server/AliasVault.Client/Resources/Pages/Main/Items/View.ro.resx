@@ -28,7 +28,7 @@
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
-    <value>Editare</value>
+    <value>Editați</value>
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
