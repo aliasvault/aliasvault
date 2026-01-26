@@ -419,7 +419,7 @@
     "noMatchingItemsSearch": "Geen items die overeenkomen met \"{{search}}\"",
     "noMatchingItemsWithFilter": "Geen {{filter}} items die overeenkomen met \"{{search}}\"",
     "noItemsFound": "Geen items gevonden. Maak er een aan om te beginnen. Tip: je kunt ook inloggen op de AliasVault webapp om items te importeren uit andere wachtwoord-managers.",
-    "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
+    "allItemsInFolders": "Al je items zijn georganiseerd in mappen. Tik op een map hierboven om je gegevens te bekijken, of gebruik de zoekopdracht om specifieke items te vinden.",
     "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
     "noAttachmentsFound": "Geen items gevonden met bijlagen",
     "noItemsOfTypeFound": "Geen {{type}} items gevonden",
