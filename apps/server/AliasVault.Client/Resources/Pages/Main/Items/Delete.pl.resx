@@ -32,7 +32,7 @@
     <comment>Page description for deleting item</comment>
   </data>
   <data name="ItemEntrySection">
-    <value>Item entry</value>
+    <value>Wpis pozycji</value>
     <comment>Section header for item details</comment>
   </data>
   <data name="IdLabel">
