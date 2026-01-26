@@ -78,7 +78,7 @@
   </data>
   <!-- Warning message -->
   <data name="WarningMessage" xml:space="preserve">
-    <value>Vă rugăm să rețineți: după dezactivarea autentificării cu doi factori, orice aplicație de autentificare configurată va înceta să funcționeze. Când veți dori să reactivați autentificarea cu doi factori, va trebui să configurați din nou aplicația.</value>
+    <value>Atenție: după dezactivarea autentificării cu doi factori, orice aplicație de autentificare configurată va înceta să funcționeze. Când veți dori să reactivați autentificarea cu doi factori, va trebui să configurați din nou aplicația.</value>
     <comment>Warning message about the consequences of disabling 2FA</comment>
   </data>
   <!-- Status message -->
