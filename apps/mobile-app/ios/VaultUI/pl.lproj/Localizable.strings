@@ -11,9 +11,9 @@
 
 "loading_items" = "Ładowanie elementów...";
 "no_items_found" = "Nic nie znaleziono";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"select_item" = "Select Item";
+"no_items_match" = "Żadne istniejące elementy nie pasują do Twojego wyszukiwania";
+"create_new_item" = "Stwórz nowy element";
+"select_item" = "Wybierz elementy";
 "select_text_to_insert" = "Wybierz tekst do wstawienia";
 "choose_username" = "Wybierz nazwę użytkownika";
 "select_text_to_insert_message" = "Zaznacz tekst, który chcesz wstawić do aktywnego pola wprowadzania danych";
@@ -21,8 +21,8 @@
 "username_prefix" = "Nazwa użytkownika: ";
 "email_prefix" = "Adres e-mail: ";
 "password" = "Hasło";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"items_load_error" = "Wystąpił błąd podczas ładowania danych logowania. Otwórz aplikację AliasVault, aby sprawdzić dostępność aktualizacji.";
+"no_item_selected" = "Nie wybrano elementu";
 
 /* Context menu strings */
 "copy_username" = "Kopiuj nazwę użytkownika";
@@ -34,7 +34,7 @@
 "email_copied" = "Adres e-mail skopiowany";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "Szukaj elementów...";
 
 /* Passkey registration */
 "create_passkey_title" = "Utwórz nowy klucz dostępu";
@@ -57,9 +57,9 @@
 "create_passkey_explanation" = "Spowoduje to utworzenie nowego klucza dostępu i zapisanie go w sejfie. Zostanie on automatycznie zsynchronizowany na wszystkich urządzeniach korzystających z AliasVault.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
+"passkey_add_to_existing" = "Lub dodaj klucz dostępu do istniejącego elementu";
 "add_passkey" = "Dodaj klucz dostępu";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"merge_passkey_explanation" = "Spowoduje to dodanie klucza dostępu do istniejącego elementu. Twoje hasło i inne dane zostaną zachowane.";
 
 /* PIN Unlock */
 "unlock_vault" = "Odblokuj sejf";
