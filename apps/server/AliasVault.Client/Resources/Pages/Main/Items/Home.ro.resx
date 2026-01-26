@@ -64,7 +64,7 @@
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Găsiți toate datele dumneavoastră mai jos.</value>
+    <value>Găsiți toate elementele dumneavoastră mai jos.</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -122,11 +122,11 @@
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>Dacă ați utilizat anterior un alt manager de parole, vă puteți importa datele din acesta.</value>
+    <value>Dacă ați utilizat anterior un alt manager de parole, vă puteți importa elementele din acesta.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
-    <value>Importă din KeePass, Bitwarden, Chrome, Firefox...</value>
+    <value>Importați din KeePass, Bitwarden, Chrome, Firefox...</value>
     <comment>Import button text</comment>
   </data>
   <!-- Error Messages -->
@@ -165,7 +165,7 @@
   </data>
   <!-- Filtered Empty States -->
   <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Nu a fost creat încă niciun passkey. Passkey-urile sunt adăugate prin extensia de browser sau aplicațiile mobile atunci când vizitați un site web care acceptă passkey-uri și oferă autentificare prin passkey.</value>
+    <value>Nu a fost creat încă niciun passkey. Passkey-urile sunt adăugate prin extensia de browser sau aplicațiile mobile atunci când vizitați un site web care acceptă și oferă autentificare prin passkey.</value>
     <comment>Empty state message when no passkeys are found</comment>
   </data>
   <data name="NoAttachmentsFound" xml:space="preserve">
