@@ -83,7 +83,7 @@
     <comment>Email attachments section header</comment>
   </data>
   <data name="SelectEmailMessage" xml:space="preserve">
-    <value>Selectează un e-mail pentru a-i vizualiza conținutul</value>
+    <value>Selectați un e-mail pentru a-i vizualiza conținutul</value>
     <comment>Empty state message when no email is selected</comment>
   </data>
   <data name="DeleteEmailTitle" xml:space="preserve">
