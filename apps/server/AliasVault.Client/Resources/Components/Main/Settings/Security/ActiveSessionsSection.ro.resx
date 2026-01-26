@@ -63,7 +63,7 @@
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Mai jos este o listă a dispozitivelor unde contul tău este conectat în prezent sau are o sesiune activă. Te poți deconecta de la oricare dintre aceste sesiuni aici.</value>
+    <value>Mai jos găsiți lista dispozitivelor pe care sunteți conectat în prezent sau unde aveți o sesiune activă. Te poți deconecta de la oricare dintre aceste sesiuni aici.</value>
     <comment>Description of active sessions</comment>
   </data>
   <data name="NoSessionsMessage" xml:space="preserve">
