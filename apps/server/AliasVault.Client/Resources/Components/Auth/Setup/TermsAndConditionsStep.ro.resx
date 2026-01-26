@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Instructions -->
   <data name="PleaseReadAndAgree">
-    <value>Vă rugăm să citești și să accepți următorii termeni și condiții înainte de a continua.</value>
+    <value>Citește și acceptă următorii termeni și condiții înainte de a continua.</value>
     <comment>Instructions to read and agree to terms</comment>
   </data>
   <!-- Terms and Conditions title -->
