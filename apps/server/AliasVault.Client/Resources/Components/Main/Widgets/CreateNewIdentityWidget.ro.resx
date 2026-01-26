@@ -135,7 +135,7 @@
     <comment>Loading message while creating alias</comment>
   </data>
   <data name="CreateItemErrorMessage" xml:space="preserve">
-    <value>Eroare la crearea elementului nou. Vă rugăm să încerci din nou (mai târziu) sau să te deconectezi și să te reconectezi.</value>
+    <value>Eroare la crearea noului tău element. Reîncearcă din nou (mai târziu) sau folosește deconectarea și reconectarea la contul tău.</value>
     <comment>Error message when item creation fails</comment>
   </data>
   <data name="ItemCreatedSuccessMessage" xml:space="preserve">
