@@ -144,11 +144,11 @@
   </data>
   <!-- Error messages -->
   <data name="ItemNotExistError">
-    <value>Acest element nu (mai) există. Vă rugăm să încercați din nou.</value>
+    <value>Acest element nu (mai) există. Încearcă din nou.</value>
     <comment>Error message when item doesn't exist</comment>
   </data>
   <data name="ErrorSavingItem">
-    <value>Eroare la salvarea elementului. Vă rugăm să încercați din nou.</value>
+    <value>Eroare la salvarea elementului. Încearcă din nou.</value>
     <comment>Error message when saving item fails</comment>
   </data>
   <!-- Success messages -->
