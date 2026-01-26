@@ -36,7 +36,7 @@
     <comment>Text for edit button on desktop</comment>
   </data>
   <data name="DeleteButtonMobile">
-    <value>Ștergere</value>
+    <value>Șterge</value>
     <comment>Text for delete button on mobile</comment>
   </data>
   <data name="DeleteButtonDesktop">
@@ -96,7 +96,7 @@
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">
-    <value>Acest element nu (mai) există. Vă rugăm să încercați din nou.</value>
+    <value>Acest element nu (mai) există. Încearcă din nou.</value>
     <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
