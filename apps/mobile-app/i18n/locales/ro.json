@@ -321,7 +321,7 @@
     "settings": "Setări"
   },
   "itemTypes": {
-    "creating": "Se creează",
+    "creating": "Creare",
     "editing": "Se editează",
     "login": {
       "title": "Autentificare"
@@ -562,8 +562,8 @@
     "USER_NOT_FOUND": "Numele de utilizator sau parola ta este invalidă. Reîncearcă din nou.",
     "INVALID_AUTHENTICATOR_CODE": "Codul de autentificare este invalid. Reîncearcă din nou.",
     "INVALID_RECOVERY_CODE": "Codul de recuperare este invalid. Reîncearcă din nou.",
-    "REFRESH_TOKEN_REQUIRED": "Este necesar un refresh token",
-    "INVALID_REFRESH_TOKEN": "Refresh Token invalid",
+    "REFRESH_TOKEN_REQUIRED": "Este necesar un token de actualizare.",
+    "INVALID_REFRESH_TOKEN": "Token de actualizare nevalid.",
     "PUBLIC_REGISTRATION_DISABLED": "Înregistrarea conturilor noi este momentan dezactivată pe acest server. Contactează administratorul.",
     "USERNAME_REQUIRED": "Numele de utilizator este obligatoriu.",
     "USERNAME_ALREADY_IN_USE": "Numele de utilizator este deja utilizat.",
@@ -578,7 +578,7 @@
     "USERNAME_INVALID_CHARACTERS": "Numele de utilizator este invalid; poate conține doar litere sau cifre.",
     "VAULT_NOT_UP_TO_DATE": "Seiful tău nu este la zi. Sincronizarea seifului tău este necesară înainte de a reîncerca.",
     "INTERNAL_SERVER_ERROR": "Eroare internă de server.",
-    "VAULT_ERROR": "Seiful tău local nu este la zi. Repornește pagina pentru sincronizarea seifului tău și reîncearcă."
+    "VAULT_ERROR": "Seiful tău local nu este la zi. Reîmprospătați pagina pentru sincronizarea seifului tău și reîncearcă."
   },
   "sync": {
     "offline": "Offline",
