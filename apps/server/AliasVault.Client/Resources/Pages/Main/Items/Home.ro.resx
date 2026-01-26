@@ -64,7 +64,7 @@
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Găsiți toate elementele dumneavoastră mai jos.</value>
+    <value>Găsește toate elementele tale mai jos.</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -102,11 +102,11 @@
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Creați primul element folosind butonul</value>
+    <value>Creează primul tău element folosind butonul</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>„+ Alias nou”</value>
+    <value>„+ Nou Alias”</value>
     <comment>Text reference to the New Alias button (desktop)</comment>
   </data>
   <data name="NewAliasButtonTextMobile" xml:space="preserve">
@@ -181,7 +181,7 @@
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <value>Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->
