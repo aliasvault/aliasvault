@@ -129,7 +129,7 @@
     <comment>Description for Generic CSV import service</comment>
   </data>
   <data name="GenericCsvInstructionsPart1" xml:space="preserve">
-    <value>Managerul de parole pe care îl folosiți nu este acceptat? Puteți oricând să importați datele în AliasVault folosind un șablon CSV generic.</value>
+    <value>Managerul de parole pe care îl folosiți nu este acceptat? Puteți oricând să importați parolele în AliasVault folosind un șablon CSV generic.</value>
     <comment>Generic CSV instructions part 1</comment>
   </data>
   <data name="GenericCsvStep1" xml:space="preserve">
@@ -149,7 +149,7 @@
     <comment>Generic CSV step 4</comment>
   </data>
   <data name="GenericCsvTemplateDownloadError" xml:space="preserve">
-    <value>Descărcarea șablonului CSV a eșuat. Vă rugăm să încercați din nou.</value>
+    <value>Descărcarea șablonului tău CSV a eșuat. Reîncearcă din nou.</value>
     <comment>Error message for template download failure</comment>
   </data>
   <!-- Firefox -->
