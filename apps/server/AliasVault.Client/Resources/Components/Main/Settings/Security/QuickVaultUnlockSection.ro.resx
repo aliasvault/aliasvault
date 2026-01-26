@@ -91,11 +91,11 @@
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Browserul dumneavoastră actual nu este compatibil cu extensia WebAuthn PRF. Vă rugăm să încercați din nou folosind un alt browser.</value>
+    <value>Browserul tău actual nu este compatibil cu extensia WebAuthn PRF. Reîncearcă folosind un alt browser.</value>
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
-    <value>A apărut o eroare la încercarea de activare a deblocării rapide a seifului. Vă rugăm să încerci din nou (mai târziu).</value>
+    <value>A apărut o eroare la încercarea de activare a deblocării rapide a seifului. Reîncearcă din nou (mai târziu).</value>
     <comment>Generic error message when enabling fails</comment>
   </data>
 </root>
