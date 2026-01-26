@@ -57,7 +57,7 @@
   <string name="password_changed_title">Parolă schimbată</string>
   <string name="password_changed_message">Parola ta a fost schimbată. Te rugăm să te autentifici din nou.</string>
   <string name="version_not_supported_title">Actualizare necesară</string>
-  <string name="version_not_supported_message">Versiunea aplicației tale nu mai este suportată. Te rugăm să actualizezi la ultima versiune.</string>
+  <string name="version_not_supported_message">Versiunea aplicației nu mai este compatibilă. Vă rugăm să instalați cea mai recentă actualizare.</string>
   <string name="server_unavailable_title">Server indisponibil</string>
   <string name="server_unavailable_message">Serverul este momentan indisponibil. Te rugăm să încerci din nou mai târziu.</string>
   <string name="network_error_title">Eroare de rețea</string>
