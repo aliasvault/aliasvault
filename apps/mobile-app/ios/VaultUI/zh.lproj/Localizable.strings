@@ -9,11 +9,11 @@
 "title" = "标题";
 "unknown_error" = "发生未知错误";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"select_item" = "Select Item";
+"loading_items" = "加载项目中…";
+"no_items_found" = "未找到项目";
+"no_items_match" = "未找到符合搜索条件的项目";
+"create_new_item" = "创建新项目";
+"select_item" = "选择项目";
 "select_text_to_insert" = "选择要插入的文本";
 "choose_username" = "选择用户名";
 "select_text_to_insert_message" = "选择要插入到聚焦输入字段的文本";
@@ -21,8 +21,8 @@
 "username_prefix" = "用户名：";
 "email_prefix" = "电子邮箱：";
 "password" = "密码";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"items_load_error" = "加载项目失败，请打开 AliasVault 应用检查更新。";
+"no_item_selected" = "未选择项目。";
 
 /* Context menu strings */
 "copy_username" = "复制用户名";
@@ -34,7 +34,7 @@
 "email_copied" = "电子邮箱已复制";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "搜索项目…";
 
 /* Passkey registration */
 "create_passkey_title" = "创建新通行密钥";
@@ -57,9 +57,9 @@
 "create_passkey_explanation" = "这将创建一个新的通行密钥并将其存储在您的密码库中。它将自动同步到您所有使用 AliasVault 的设备。";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"passkey_add_to_existing" = "或者将通行密钥添加到现有项目";
+"add_passkey" = "添加通行密钥";
+"merge_passkey_explanation" = "这将为您的现有项目添加一个通行密钥。您的密码和其他数据将被保留。";
 
 /* PIN Unlock */
 "unlock_vault" = "解锁密码库";
