@@ -181,7 +181,7 @@
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <value>Wszystkie Twoje elementy są uporządkowane w folderach. Kliknij folder powyżej, aby wyświetlić swoje dane logowania, lub skorzystaj z wyszukiwarki, aby znaleźć konkretne elementy.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->
@@ -216,11 +216,11 @@
   </data>
   <!-- Clear Filter -->
   <data name="ClearFilter" xml:space="preserve">
-    <value>Clear filter</value>
+    <value>Wyczyść filtr</value>
     <comment>Button text for clearing the active filter</comment>
   </data>
   <data name="FilteringBy" xml:space="preserve">
-    <value>Filtering by:</value>
+    <value>Filtrowanie według:</value>
     <comment>Label shown when a filter is active</comment>
   </data>
 </root>
