@@ -71,7 +71,7 @@
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>În mod implicit, repornirea paginii sau a filei AliasVault necesită reintroducerea parolei master. Cu un passkey, poți debloca seiful instantaneu. Când este activată, parola ta master este criptată local folosind extensia PRF a passkey-ului. Notă: deblocarea prin passkey va funcționa doar pe dispozitivul și browserul curent pe care este activată.</value>
+    <value>În mod implicit, reîncărcarea paginii sau a tab-ului AliasVault necesită reintroducerea parolei master. Cu un passkey, puteți debloca seiful instantaneu. Când este activată, parola dumneavoastră master este criptată local folosind extensia PRF a passkey-ului. Notă: deblocarea prin passkey va funcționa doar pe dispozitivul și browserul curent pe care este activată.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
