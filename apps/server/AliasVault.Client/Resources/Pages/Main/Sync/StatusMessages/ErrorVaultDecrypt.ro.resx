@@ -63,7 +63,7 @@
     <comment>Title for vault decryption error</comment>
   </data>
   <data name="ErrorDescription" xml:space="preserve">
-    <value>A apărut o eroare în timpul decriptării locale a seifului dumneavoastră. Datele nu sunt accesibile în acest moment. Vă rugăm să încercați din nou (mai târziu) sau să contactați asistența.</value>
+    <value>A apărut o eroare în timpul decriptării locale a seifului. Datele nu sunt accesibile în acest moment. Încearcă din nou (mai târziu) sau contactează asistența.</value>
     <comment>Description for vault decryption error</comment>
   </data>
 </root>
