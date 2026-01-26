@@ -82,7 +82,7 @@
   </data>
   <!-- Note sections -->
   <data name="PleaseNote" xml:space="preserve">
-    <value>Vă rugăm să rețineți:</value>
+    <value>Reține:</value>
     <comment>Header for note section</comment>
   </data>
   <data name="VaultsDeletedNote" xml:space="preserve">
@@ -90,7 +90,7 @@
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">
-    <value>Aliasurile dumneavoastră de e-mail vor rămâne vor rămâne fără proprietar și nu vor putea fi revendicate de alți utilizatori</value>
+    <value>Alias-urile tale de email vor rămâne fără proprietar și nu vor mai putea fi revendicate de alți utilizatori</value>
     <comment>Note about email aliases being orphaned</comment>
   </data>
   <data name="AccountCannotBeRecoveredNote" xml:space="preserve">
@@ -129,7 +129,7 @@
     <comment>Error message when username is not provided</comment>
   </data>
   <data name="UsernameDoesNotMatch" xml:space="preserve">
-    <value>Numele de utilizator introdus nu corespunde cu numele de utilizator actual. Vă rugăm să încercați din nou.</value>
+    <value>Numele de utilizator introdus nu corespunde cu numele de utilizator actual. Încearcă din nou.</value>
     <comment>Error message when username doesn't match</comment>
   </data>
   <data name="ErrorProcessingRequest" xml:space="preserve">
