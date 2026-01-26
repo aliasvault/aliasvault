@@ -2,7 +2,7 @@
   "auth": {
     "loginTitle": "Log in to AliasVault",
     "username": "Username or email",
-    "usernamePlaceholder": "name / name@company.com",
+    "usernamePlaceholder": "namn / namn@företag.com",
     "passwordPlaceholder": "Enter your password",
     "rememberMe": "Remember me",
     "loginButton": "Log in",
@@ -109,7 +109,7 @@
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "An unknown error occurred. Please try again.",
-      "ACCOUNT_LOCKED": "Account temporarily locked due to too many failed attempts. Please try again later.",
+      "ACCOUNT_LOCKED": "Kontot är tillfälligt låst på grund av för många misslyckade försök. Försök igen senare.",
       "ACCOUNT_BLOCKED": "Your account has been disabled. If you believe this is a mistake, please contact support.",
       "USER_NOT_FOUND": "Invalid username or password. Please try again.",
       "INVALID_AUTHENTICATOR_CODE": "Invalid authenticator code. Please try again.",
@@ -163,7 +163,7 @@
     "togglePasswordVisibility": "Toggle password visibility",
     "passwordCopiedToClipboard": "Password copied to clipboard",
     "openAliasVaultToUpgrade": "Open AliasVault to upgrade",
-    "vaultUpgradeRequired": "Vault upgrade required.",
+    "vaultUpgradeRequired": "Uppgradering av valv krävs.",
     "dismissPopup": "Dismiss popup"
   },
   "items": {
@@ -288,7 +288,7 @@
     "saveToViewCode": "Save to view code",
     "defaultName": "Authenticator",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Ogiltigt format för hemlig nyckel."
     }
   },
   "attachmentUploader": {
