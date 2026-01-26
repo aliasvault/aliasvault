@@ -21,7 +21,7 @@
     "enabled": "Activado",
     "disabled": "Desactivado",
     "twoFactorAuthentication": "Autenticación de doble factor",
-    "add": "Add",
+    "add": "Añadir",
     "attachments": "Archivos adjuntos",
     "deleteItemConfirmTitle": "Eliminar elemento",
     "deleteItemConfirmDescription": "¿Está seguro de querer borrar este ítem?",
@@ -75,9 +75,9 @@
     "loggedInAs": "Conectado como"
   },
   "logout": {
-    "unsyncedChangesTitle": "Unsynced Changes",
-    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
-    "logoutAnyway": "Log out anyway"
+    "unsyncedChangesTitle": "Cambios no sincronizados",
+    "unsyncedChangesWarning": "Tienes cambios no sincronizados que se perderán si te desconectas ahora. ¿Estás seguro de que quieres continuar?",
+    "logoutAnyway": "Cerrar sesión de todos modos"
   },
   "vault": {
     "syncingVault": "Sincronizando bóveda",
@@ -87,8 +87,8 @@
     "executingOperation": "Ejecutando operación...",
     "checkingVaultUpdates": "Comprobando actualizaciones de bóveda",
     "syncingUpdatedVault": "Sincronizando bóveda actualizada",
-    "mergingVault": "Merging vault changes",
-    "uploadingChanges": "Uploading changes",
+    "mergingVault": "Combinando cambios en la bóveda",
+    "uploadingChanges": "Subiendo cambios",
     "errors": {
       "failedToGetEncryptedDatabase": "Error al obtener la base de datos cifrada",
       "usernameNotFound": "Nombre de usuario no encontrado",
@@ -98,7 +98,7 @@
       "serverVersionNotSupported": "El servidor AliasVault necesita ser actualizado a una nueva versión para poder usar esta aplicación móvil. Contacte con soporte si necesita ayuda.",
       "appOutdated": "Esta aplicación está desactualizada y no se puede utilizar para acceder a esta versión (nueva) de la bóveda. Por favor, actualice la aplicación AliasVault para continuar.",
       "passwordChanged": "Tu contraseña ha cambiado desde la última vez que iniciaste sesión. Por favor, inicia sesión de nuevo por razones de seguridad.",
-      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
+      "passwordChangeRequiresOnline": "El cambio de contraseña requiere una conexión a Internet. Por favor, inténtalo de nuevo cuando esté conectado."
     }
   },
   "passkeys": {
@@ -316,13 +316,13 @@
     }
   },
   "navigation": {
-    "vault": "Vault",
+    "vault": "Bóveda",
     "emails": "Correos electrónicos",
     "settings": "Ajustes"
   },
   "itemTypes": {
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Creando",
+    "editing": "Editando",
     "login": {
       "title": "Iniciar sesión"
     },
@@ -330,27 +330,27 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card",
-      "cardInformation": "Card Information"
+      "title": "Tarjeta de crédito",
+      "cardInformation": "Información de la tarjeta"
     },
     "note": {
-      "title": "Note"
+      "title": "Notas"
     },
-    "addField": "Add Field",
-    "addCustomField": "Add Custom Field",
-    "customFields": "Custom Fields",
-    "fieldLabel": "Field Label",
-    "fieldType": "Field Type",
-    "enterFieldName": "Enter field name",
+    "addField": "Añadir campo",
+    "addCustomField": "Añadir campo personalizado",
+    "customFields": "Campos personalizados",
+    "fieldLabel": "Etiqueta del campo",
+    "fieldType": "Tipo de campo",
+    "enterFieldName": "Introduzca el nombre del campo",
     "fieldTypes": {
-      "text": "Text",
-      "hidden": "Hidden",
+      "text": "Texto",
+      "hidden": "Oculto",
       "email": "Correo",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Teléfono",
+      "number": "Número",
       "date": "Date",
-      "textArea": "Text Area"
+      "textArea": "Área de texto"
     }
   },
   "fieldLabels": {
@@ -362,22 +362,22 @@
     "alias.last_name": "Apellido",
     "alias.gender": "Género",
     "alias.birthdate": "Fecha de nacimiento",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
+    "card.cardholder_name": "Nombre titular",
+    "card.number": "Número de Tarjeta",
+    "card.expiry_month": "Mes de expiración",
+    "card.expiry_year": "Año de expiración",
     "card.cvv": "CVV",
     "card.pin": "PIN",
     "notes.content": "Notas"
   },
   "items": {
-    "title": "Items",
-    "addItem": "Add Item",
-    "editItem": "Edit Item",
+    "title": "Elementos",
+    "addItem": "Añadir elemento",
+    "editItem": "Editar elemento",
     "deleteItem": "Eliminar elemento",
-    "itemDetails": "Item Details",
-    "itemCreated": "Item Created",
-    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "itemDetails": "Detalles del artículo",
+    "itemCreated": "Elemento creado",
+    "itemCreatedMessage": "Tu nuevo elemento ha sido añadida a tu bóveda y está lista para usar.",
     "emailPreview": "Vista previa de correo",
     "untitled": "Untitled",
     "name": "Nombre",
@@ -387,7 +387,7 @@
     "serviceName": "Nombre del servicio",
     "serviceUrl": "URL del servicio",
     "loginCredentials": "Credenciales de acceso",
-    "cardInformation": "Card Information",
+    "cardInformation": "Información de la tarjeta",
     "username": "Nombre de usuario",
     "email": "Correo",
     "alias": "Alias",
@@ -415,16 +415,16 @@
     "publicEmailTitle": "Proveedores de Correo Temporal Públicos",
     "publicEmailDescription": "Privacidad anónima pero limitada. Contenido de correo electrónico puede ser leído por cualquiera que conozca la dirección.",
     "searchPlaceholder": "Buscar bóveda...",
-    "noMatchingItems": "No matching items found",
-    "noMatchingItemsSearch": "No items matching \"{{search}}\"",
-    "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
-    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
-    "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
+    "noMatchingItems": "No hay elementos coincidentes",
+    "noMatchingItemsSearch": "No hay elementos que coincidan con \"{{search}}\"",
+    "noMatchingItemsWithFilter": "No hay elementos {{filter}} que coincidan con \"{{search}}\"",
+    "noItemsFound": "No se han encontrado elementos. Crea una para empezar. Consejo: también puedes iniciar sesión en la aplicación web de AliasVault para importar credenciales de otros gestores de contraseñas.",
+    "allItemsInFolders": "Todos sus elementos están organizados en carpetas. Haga clic en una carpeta para ver sus credenciales o utilice la búsqueda para encontrar elementos específicos.",
     "noPasskeysFound": "No se han creado llaves de acceso todavía. Las llaves se crean visitando un sitio web que ofrece llaves de acceso como método de autenticación.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
-    "clearSearch": "Clear search",
-    "clearFilter": "Clear filter",
+    "noAttachmentsFound": "No hay elementos con archivos adjuntos",
+    "noItemsOfTypeFound": "No se encontraron elementos {{type}}",
+    "clearSearch": "Limpiar búsqueda",
+    "clearFilter": "Eliminar filtros",
     "recentEmails": "Correos recientes",
     "loadingEmails": "Cargando correos...",
     "noEmailsYet": "No se han recibido correos todavía.",
@@ -439,15 +439,15 @@
     "includeNumbers": "Números (0-9)",
     "includeSpecialChars": "Caracteres especiales (!@#)",
     "avoidAmbiguousChars": "Evitar caracteres ambiguos",
-    "deletingItem": "Deleting item...",
-    "errorLoadingItems": "Error loading items",
+    "deletingItem": "Eliminando elemento...",
+    "errorLoadingItems": "Error al cargar elementos",
     "vaultSyncFailed": "Fallo al sincronizar la bóveda",
     "vaultSyncedSuccessfully": "Bóveda sincronizada correctamente",
     "vaultUpToDate": "La bóveda está actualizada",
     "offlineMessage": "Estás desconectado. Por favor, conéctate a Internet para sincronizar tu bóveda.",
     "switchBackToBrowser": "Vuelva a su navegador para continuar.",
     "filters": {
-      "all": "(All) Items",
+      "all": "(Todos) Elementos",
       "passkeys": "Llaves de acceso",
       "aliases": "Aliases",
       "userpass": "Contraseñas",
@@ -465,62 +465,62 @@
       "discard": "Descartar"
     },
     "toasts": {
-      "itemUpdated": "Item updated successfully",
-      "itemCreated": "Item created successfully",
-      "itemDeleted": "Item deleted successfully",
+      "itemUpdated": "Elemento actualizado con éxito",
+      "itemCreated": "Elemento creado con éxito",
+      "itemDeleted": "Elemento eliminado con éxito",
       "usernameCopied": "Nombre de usuario copiado al portapapeles",
       "emailCopied": "Correo copiado al portapapeles",
       "passwordCopied": "Contraseña copiada al portapapeles"
     },
     "createNewAliasFor": "Crear nuevo alias para",
     "contextMenu": {
-      "title": "Item Options",
+      "title": "Opciones del elemento",
       "edit": "Editar",
       "delete": "Eliminar",
       "copyUsername": "Copiar nombre de usuario",
       "copyEmail": "Copiar correo",
       "copyPassword": "Copiar Contraseña"
     },
-    "viewHistory": "View history",
-    "history": "History",
-    "noHistoryAvailable": "No history available",
-    "deleteHistoryConfirm": "Are you sure you want to delete this history record?",
-    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "viewHistory": "Ver historial",
+    "history": "Historial",
+    "noHistoryAvailable": "Sin historial disponible",
+    "deleteHistoryConfirm": "¿Está seguro de que desea eliminar este registro del historial?",
+    "deleteConfirm": "¿Estás seguro de que quieres eliminar este elemento? Esta acción no se puede deshacer.",
     "folders": {
       "folder": "Folder",
-      "newFolder": "New Folder",
+      "newFolder": "Nueva carpeta",
       "createFolder": "Create Folder",
-      "editFolder": "Edit Folder",
-      "folderName": "Folder Name",
-      "folderNamePlaceholder": "e.g., Work, Personal",
-      "folderNameRequired": "Folder name is required",
-      "deleteFolder": "Delete Folder",
-      "deleteFolderKeepItems": "Delete folder only",
-      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-      "deleteFolderAndItems": "Delete folder and all items",
-      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
-      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
-      "noFolder": "No Folder",
+      "editFolder": "Editar carpeta",
+      "folderName": "Nombre de la carpeta",
+      "folderNamePlaceholder": "ej. Trabajo, Personal",
+      "folderNameRequired": "El nombre de la carpeta es obligatorio",
+      "deleteFolder": "Borrar carpeta",
+      "deleteFolderKeepItems": "Eliminar solo la carpeta",
+      "deleteFolderKeepItemsDescription": "Los elementos se moverán de nuevo a la lista principal.",
+      "deleteFolderAndItems": "Eliminar carpeta y todos los elementos",
+      "deleteFolderAndItemsDescription": "{{count}} elemento(s) serán movidos a Borrados Recientemente.",
+      "emptyFolderHint": "Esta carpeta está vacía. Para mover elementos a esta carpeta, edite el elemento y seleccione esta carpeta.",
+      "noFolder": "Ninguna carpeta",
       "selectFolder": "Select Folder"
     },
     "recentlyDeleted": {
-      "title": "Recently Deleted",
-      "noItems": "No deleted items",
-      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
-      "restore": "Restore",
-      "deletePermanently": "Delete Permanently",
-      "emptyAll": "Empty All",
-      "daysRemaining": "{{count}} day remaining",
-      "daysRemaining_plural": "{{count}} days remaining",
-      "expiringSoon": "Expiring soon",
-      "confirmDeleteTitle": "Delete Permanently?",
-      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
-      "confirmEmptyAllTitle": "Empty Recently Deleted?",
-      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
-      "itemRestored": "Item restored",
-      "itemDeleted": "Item permanently deleted",
-      "allItemsDeleted": "All items permanently deleted"
+      "title": "Eliminados recientemente",
+      "noItems": "No hay elementos eliminados",
+      "noItemsDescription": "Los elementos que elimines aparecerán aquí durante 30 días antes de ser eliminados permanentemente.",
+      "description": "Estos elementos se eliminarán permanentemente después de 30 días. Puede restaurarlos o eliminarlos inmediatamente.",
+      "restore": "Restaurar",
+      "deletePermanently": "Eliminar permanentemente",
+      "emptyAll": "Vaciar todo",
+      "daysRemaining": "{{count}} día restante",
+      "daysRemaining_plural": "{{count}} días restantes",
+      "expiringSoon": "Caduca pronto",
+      "confirmDeleteTitle": "¿Eliminar permanentemente?",
+      "confirmDeleteMessage": "Este elemento se eliminará permanentemente y no se puede recuperar.",
+      "confirmEmptyAllTitle": "¿Vaciar los recientemente eliminados?",
+      "confirmEmptyAllMessage": "Todos los elementos {{count}} se eliminarán permanentemente y no se podrán recuperar.",
+      "itemRestored": "Elemento restaurado",
+      "itemDeleted": "Elemento eliminado permanentemente",
+      "allItemsDeleted": "Todos los elementos eliminados permanentemente"
     }
   },
   "emails": {
@@ -581,13 +581,13 @@
     "VAULT_ERROR": "La bóveda local no está actualizada. Por favor, sincronice su bóveda actualizando la página e inténtelo de nuevo."
   },
   "sync": {
-    "offline": "Offline",
-    "syncing": "Syncing...",
-    "pending": "Pending sync",
-    "retrySync": "Tap to retry",
+    "offline": "Sin conexión",
+    "syncing": "Sincronizando...",
+    "pending": "Sincronización pendiente",
+    "retrySync": "Toca para reintentar",
     "backOnline": "Vuelves a estar conectado",
     "stillOffline": "Aún sin conexión",
-    "syncFailed": "Sync failed"
+    "syncFailed": "Sincronización fallida"
   },
   "app": {
     "status": {
@@ -597,7 +597,7 @@
       "retryingConnection": "Reintentando la conexión..."
     },
     "offline": {
-      "banner": "Offline - changes will sync when online",
+      "banner": "Sin conexión - los cambios se sincronizarán cuando estén en línea",
       "backOnline": "Vuelves a estar conectado",
       "stillOffline": "Aún sin conexión"
     },
