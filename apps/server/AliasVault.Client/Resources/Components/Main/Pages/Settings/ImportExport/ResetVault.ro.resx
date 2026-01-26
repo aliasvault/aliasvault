@@ -71,7 +71,7 @@
     <comment>Breadcrumb for reset vault</comment>
   </data>
   <data name="ResetVaultPleaseNote" xml:space="preserve">
-    <value>Vă rugăm să rețineți:</value>
+    <value>Reține:</value>
     <comment>Reset vault please note prefix</comment>
   </data>
   <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
@@ -135,7 +135,7 @@
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">
-    <value>A apărut o eroare la resetarea seifului. Vă rugăm să încercați din nou.</value>
+    <value>A apărut o eroare la resetarea seifului. Încearcă din nou.</value>
     <comment>Reset vault error message</comment>
   </data>
 </root>
