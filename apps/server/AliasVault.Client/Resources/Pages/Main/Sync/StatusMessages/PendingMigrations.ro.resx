@@ -95,11 +95,11 @@
     <comment>Success message after successful vault upgrade</comment>
   </data>
   <data name="UpgradeSuccessButSaveFailedError" xml:space="preserve">
-    <value>Actualizarea bazei de date a reușit, dar salvarea pe server a eșuat. Vă rugăm să încercați din nou sau să contactați asistența.</value>
+    <value>Actualizarea bazei de date a reușit, dar salvarea pe server a eșuat. Încearcă din nou sau contactează asistența.</value>
     <comment>Error message when upgrade succeeds but save fails</comment>
   </data>
   <data name="UpgradeFailedError" xml:space="preserve">
-    <value>Actualizarea bazei de date a eșuat. Vă rugăm să încercați din nou sau să contactați asistența.</value>
+    <value>Actualizarea bazei de date a eșuat. Încearcă din nou sau contactează asistența.</value>
     <comment>Error message when upgrade fails</comment>
   </data>
 </root>
