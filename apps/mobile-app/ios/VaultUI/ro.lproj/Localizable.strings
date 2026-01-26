@@ -21,7 +21,7 @@
 "username_prefix" = "Utilizator: ";
 "email_prefix" = "E-mail: ";
 "password" = "Parolă";
-"items_load_error" = "Încărcarea elementelor a eșuat. Această versiune poate fi incompatibilă. Te rugăm să deschizi aplicația AliasVault pentru actualizări.";
+"items_load_error" = "Încărcarea elementelor a eșuat. Această versiune poate fi incompatibilă. Deschide aplicația AliasVault pentru actualizări.";
 "no_item_selected" = "Niciun element selectat.";
 
 /* Context menu strings */
@@ -47,7 +47,7 @@
 "no_passkeys_found" = "Nu s-au găsit Passkey-uri";
 "no_passkeys_match" = "Niciun Passkey existent nu corespunde căutării tale";
 "select_passkey" = "Selectați passkey-ul";
-"passkeys_load_error" = "Încărcarea Passkey-urilor a eșuat. Această versiune poate fi incompatibilă. Te rugăm să deschizi aplicația AliasVault pentru actualizări.";
+"passkeys_load_error" = "Încărcarea passkey-urilor a eșuat. Această versiune poate fi incompatibilă. Deschide aplicația AliasVault pentru actualizări.";
 
 /* Passkey replacement */
 "create_new_passkey" = "Creează Passkey nou";
@@ -72,4 +72,4 @@
 "pin_setup_subtitle" = "Alege un PIN pentru a-ți debloca seiful";
 "pin_confirm_title" = "Confirmă PIN-ul";
 "pin_confirm_subtitle" = "Reintrodu PIN-ul pentru confirmare";
-"pin_mismatch" = "Codurile PIN nu coincid. Te rugăm să încerci din nou.";
+"pin_mismatch" = "Codurile PIN nu coincid. Încearcă din nou.";
