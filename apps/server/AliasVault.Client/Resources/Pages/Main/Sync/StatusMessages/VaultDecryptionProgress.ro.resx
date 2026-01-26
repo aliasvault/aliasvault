@@ -63,7 +63,7 @@
     <comment>Title for vault decryption progress</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Vă rugăm să așteptați în timp ce seiful este inițializat. Acest lucru poate dura câteva momente.</value>
+    <value>Așteaptă în timp ce seiful este inițializat. Acest lucru poate dura câteva momente.</value>
     <comment>Description for vault decryption progress</comment>
   </data>
 </root>
