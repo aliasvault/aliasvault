@@ -123,7 +123,7 @@
     <comment>Button text for saving changes</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Anulează</value>
+    <value>Anulați</value>
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Delete" xml:space="preserve">
@@ -293,7 +293,7 @@
     <comment>Divider text between options</comment>
   </data>
   <data name="LockVault" xml:space="preserve">
-    <value>Blochează seiful</value>
+    <value>Blocați seiful</value>
     <comment>Tooltip text for lock vault button</comment>
   </data>
   <data name="Home" xml:space="preserve">
