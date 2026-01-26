@@ -103,19 +103,19 @@
     <comment>Error message for unlock request processing</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
-    <value>Parola este incorectă. Vă rugăm să încercați să introduceți parola din nou sau să vă deconectați și să vă autentificați din nou.</value>
+    <value>Parola este incorectă. Reîncearcă introducerea parolei tale sau folosește deconectarea și reconectarea la contul tău.</value>
     <comment>Error message for incorrect password</comment>
   </data>
   <data name="SessionTimedOutError" xml:space="preserve">
-    <value>Sesiunea dumneavoastră a expirat. Vă rugăm să vă autentificați din nou.</value>
+    <value>Sesiunea dumneavoastră a expirat. Autentifică-te din nou.</value>
     <comment>Error message for session timeout</comment>
   </data>
   <data name="ConnectionFailedError" xml:space="preserve">
-    <value>Conexiunea cu serverele AliasVault a eșuat. Vă rugăm să încercați din nou (mai târziu).</value>
+    <value>Conexiunea cu serverele AliasVault a eșuat. Reîncearcă (mai târziu).</value>
     <comment>Error message for server connection failure</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Browserul dumneavoastră actual nu este compatibil cu extensia WebAuthn PRF. Vă rugăm să vă autentificați folosind parola.</value>
+    <value>Browserul actual este incompatibil cu WebAuthn PRF. Accesează contul folosind parola.</value>
     <comment>Error message when WebAuthn is not supported</comment>
   </data>
   <data name="GenericUnlockError" xml:space="preserve">
