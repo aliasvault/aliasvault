@@ -105,7 +105,7 @@ Sunteți sigur că doriți să continuați exportul?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>Resetează seiful</value>
+    <value>Resetați seiful</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
