@@ -48,7 +48,7 @@
     <comment>Confirmation button text</comment>
   </data>
   <data name="NoCancelButton">
-    <value>Nu, anulează</value>
+    <value>Nu, anulați</value>
     <comment>Cancel button text</comment>
   </data>
   <data name="ViewItemBreadcrumb">
