@@ -8,7 +8,7 @@
     "loginButton": "Autentificare",
     "noAccount": "Nu ai cont încă?",
     "createVault": "Creează un seif nou",
-    "twoFactorTitle": "Te rugăm să introduci codul de autentificare din aplicația ta de autentificare.",
+    "twoFactorTitle": "Introduceți codul de autentificare din aplicația ta de autentificare.",
     "authCode": "Cod de autentificare",
     "authCodePlaceholder": "Introdu codul din 6 cifre",
     "verify": "Verifică",
@@ -30,11 +30,11 @@
     "unlockWithMobile": "Deblocare prin aplicația mobilă",
     "scanQrCode": "Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful.",
     "errors": {
-      "invalidCode": "Te rugăm să introduci un cod de autentificare valid din 6 cifre.",
-      "serverError": "Conexiunea la serverul AliasVault a eșuat. Te rugăm să încerci mai târziu sau să contactezi asistența dacă problema persistă.",
-      "wrongPassword": "Parolă incorectă. Te rugăm să încerci din nou.",
-      "sessionExpired": "Sesiunea a expirat. Te rugăm să te autentifici din nou.",
-      "mobileLoginRequestExpired": "Cererea de autentificare mobilă a expirat. Te rugăm să reîncarci pagina și să încerci din nou."
+      "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
+      "serverError": "Conexiunea la serverul AliasVault a eșuat. Încearcă mai târziu sau contactează asistența dacă problema persistă.",
+      "wrongPassword": "Parolă incorectă. Încearcă din nou.",
+      "sessionExpired": "Sesiunea a expirat. Autentifică-te din nou.",
+      "mobileLoginRequestExpired": "Cererea de autentificare mobilă a expirat. Reîncarcă pagina și încearcă din nou."
     }
   },
   "menu": {
@@ -94,26 +94,26 @@
     "mergingVaultChanges": "Se îmbină modificările seifului...",
     "uploadingVault": "Se încarcă seiful...",
     "errors": {
-      "serverNotAvailable": "Serverul AliasVault nu este disponibil. Te rugăm să încerci mai târziu sau să contactezi asistența.",
-      "clientVersionNotSupported": "Această versiune a extensiei AliasVault nu mai este compatibilă cu serverul. Vă rugăm să actualizați extensia la cea mai recentă versiune.",
-      "browserExtensionOutdated": "Versiune extensie incompatibilă. Pentru a accesa seiful, te rugăm să actualizezi extensia AliasVault la ultima versiune disponibilă.",
+      "serverNotAvailable": "Serverul AliasVault nu este disponibil. Încearcă mai târziu sau contactează asistența.",
+      "clientVersionNotSupported": "Această versiune a extensiei AliasVault nu mai este compatibilă cu serverul. Actualizează extensia la cea mai recentă versiune.",
+      "browserExtensionOutdated": "Versiune extensie incompatibilă. Pentru a accesa seiful, actualizează extensia AliasVault la ultima versiune disponibilă.",
       "serverVersionNotSupported": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a folosi această extensie. Contactează asistența pentru ajutor.",
       "serverVersionTooOld": "Serverul AliasVault trebuie actualizat la o versiune mai nouă pentru a folosi această funcție. Contactează administratorul serverului.",
       "unknownError": "A apărut o eroare necunoscută",
-      "unknownErrorTryAgain": "A apărut o eroare necunoscută. Te rugăm să încerci din nou.",
+      "unknownErrorTryAgain": "A apărut o eroare necunoscută. Încearcă din nou.",
       "vaultNotAvailable": "Seiful nu este disponibil",
       "vaultIsLocked": "Seiful este blocat",
-      "passwordChanged": "Parola ta a fost schimbată de la ultima autentificare. Te rugăm să te autentifici din nou din motive de securitate.",
+      "passwordChanged": "Parola ta a fost schimbată de la ultima autentificare. Autentifică-te din nou din motive de securitate.",
       "syncConflictMaxRetries": "Sincronizarea seifului a eșuat după mai multe încercări. Reîncearcă mai târziu.",
-      "mergeFailed": "Îmbinarea modificărilor seifului a eșuat. Te rugăm să încerci din nou."
+      "mergeFailed": "Îmbinarea modificărilor seifului a eșuat. Încearcă din nou."
     },
     "apiErrors": {
-      "UNKNOWN_ERROR": "A apărut o eroare necunoscută. Te rugăm să încerci din nou.",
+      "UNKNOWN_ERROR": "A apărut o eroare necunoscută. Încearcă din nou.",
       "ACCOUNT_LOCKED": "Cont blocat temporar din cauza prea multor încercări eșuate. Reîncearcă mai târziu.",
       "ACCOUNT_BLOCKED": "Contul tău a fost dezactivat. Dacă crezi că este o greșeală, contactează asistența.",
-      "USER_NOT_FOUND": "Utilizator sau parolă invalidă. Te rugăm să încerci din nou.",
-      "INVALID_AUTHENTICATOR_CODE": "Cod de autentificare invalid. Te rugăm să încerci din nou.",
-      "INVALID_RECOVERY_CODE": "Cod de recuperare invalid. Te rugăm să încerci din nou.",
+      "USER_NOT_FOUND": "Utilizator sau parolă invalidă. Încearcă din nou.",
+      "INVALID_AUTHENTICATOR_CODE": "Cod de autentificare invalid. Încearcă din nou.",
+      "INVALID_RECOVERY_CODE": "Cod de recuperare invalid. Încearcă din nou.",
       "REFRESH_TOKEN_REQUIRED": "Este necesar un refresh token.",
       "INVALID_REFRESH_TOKEN": "Refresh Token invalid.",
       "PUBLIC_REGISTRATION_DISABLED": "Înregistrarea conturilor noi este dezactivată pe acest server. Contactează administratorul.",
@@ -128,9 +128,9 @@
       "USERNAME_TOO_LONG": "Nume prea lung: nu poate depăși 40 de caractere.",
       "USERNAME_INVALID_EMAIL": "Adresă de e-mail invalidă.",
       "USERNAME_INVALID_CHARACTERS": "Numele de utilizator este invalid, poate conține doar litere sau cifre.",
-      "VAULT_NOT_UP_TO_DATE": "Seiful nu este la zi. Te rugăm să sincronizezi seiful și să încerci din nou.",
+      "VAULT_NOT_UP_TO_DATE": "Seiful nu este la zi. Sincronizează seiful și încearcă din nou.",
       "INTERNAL_SERVER_ERROR": "Eroare internă de server.",
-      "VAULT_ERROR": "Seiful local nu este la zi. Te rugăm să sincronizezi seiful reîncărcând pagina."
+      "VAULT_ERROR": "Seiful local nu este la zi. Sincronizează seiful reîncărcând pagina."
     }
   },
   "content": {
@@ -155,7 +155,7 @@
     "randomIdentityDescriptionDropdown": "Identitate aleatorie cu e-mail aleatoriu",
     "manualCredentialDescription": "Specifică propria adresă de e-mail și numele de utilizator.",
     "manualCredentialDescriptionDropdown": "Utilizator și parolă manual",
-    "failedToCreateIdentity": "Eșec la crearea identității. Te rugăm să încerci din nou.",
+    "failedToCreateIdentity": "Eșec la crearea identității. Încearcă din nou.",
     "enterEmailAndOrUsername": "Introdu e-mail și/sau utilizator",
     "autofillWithAliasVault": "Autocompletare cu AliasVault",
     "generateRandomPassword": "Generează parolă aleatorie (copiază în clipboard)",
@@ -194,7 +194,7 @@
     "clearSearch": "Șterge căutarea",
     "clearFilter": "Șterge filtrul",
     "emptyFolderHint": "Acest folder este gol. Pentru a muta elemente aici, editează elementul și apasă pe pictograma folderului din câmpul de nume.",
-    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
+    "allItemsInFolders": "Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.",
     "deleteFolder": "Șterge folder",
     "deleteFolderKeepItems": "Șterge doar folderul",
     "deleteFolderKeepItemsDescription": "Elementele vor fi mutate înapoi în lista principală.",
@@ -309,7 +309,7 @@
     "emailNotFound": "E-mailul nu a fost găsit",
     "noEmails": "Niciun e-mail găsit",
     "noEmailsDescription": "Nu ai primit încă niciun mesaj pe adresele tale private. Mesajele noi vor apărea aici.",
-    "offlineMessage": "Sunteți offline. Vă rugăm să vă conectați la internet pentru a încărca e-mailurile.",
+    "offlineMessage": "Sunteți offline. Conectează-te la internet pentru a încărca e-mailurile.",
     "dateFormat": {
       "justNow": "acum",
       "minutesAgo_single": "{{count}} minut în urmă",
@@ -319,8 +319,8 @@
       "yesterday": "ieri"
     },
     "apiErrors": {
-      "CLAIM_DOES_NOT_MATCH_USER": "Adresa de e-mail aleasă este deja utilizată. Te rugăm să schimbi adresa de e-mail prin editarea acestor date de autentificare.",
-      "CLAIM_DOES_NOT_EXIST": "A apărut o eroare la încărcarea e-mailurilor. Te rugăm să încerci să editezi și să salvezi datele de autentificare pentru a sincroniza baza de date, apoi reîncearcă."
+      "CLAIM_DOES_NOT_MATCH_USER": "Adresa de e-mail aleasă este deja utilizată. Schimbă adresa de e-mail prin editarea acestor date de autentificare.",
+      "CLAIM_DOES_NOT_EXIST": "A apărut o eroare la încărcarea e-mailurilor. Editează și salvează datele de autentificare pentru a sincroniza baza de date, apoi încearcă din nou."
     }
   },
   "settings": {
