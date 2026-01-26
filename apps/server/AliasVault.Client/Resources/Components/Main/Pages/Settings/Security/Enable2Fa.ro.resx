@@ -87,7 +87,7 @@
     <comment>Placeholder text for verification code input</comment>
   </data>
   <data name="VerifyAndEnableButton" xml:space="preserve">
-    <value>Verifică și activează</value>
+    <value>Verificați și activați</value>
     <comment>Button text to verify and enable 2FA</comment>
   </data>
   <!-- Success and error messages -->
