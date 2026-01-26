@@ -28,7 +28,7 @@
     <comment>Help text explaining what can be searched</comment>
   </data>
   <data name="SearchTooShortMessage">
-    <value>Te rugăm să introduci mai multe caractere</value>
+    <value>Vă rugăm să introduci mai multe caractere</value>
     <comment>Message when search term is too short</comment>
   </data>
   <data name="SearchingForMessage">
