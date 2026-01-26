@@ -67,11 +67,11 @@
     <comment>Description explaining WebAuthn unlock options</comment>
   </data>
   <data name="UnlockWithWebAuthn" xml:space="preserve">
-    <value>Deblocare cu passkey</value>
+    <value>Deblochează prin passkey</value>
     <comment>Button text for WebAuthn unlock</comment>
   </data>
   <data name="UnlockWithPassword" xml:space="preserve">
-    <value>Deblocare cu parolă</value>
+    <value>Deblochează prin parolă</value>
     <comment>Button text for password unlock</comment>
   </data>
   <data name="EnterMasterPasswordDescription" xml:space="preserve">
@@ -83,7 +83,7 @@
     <comment>Label for password input field</comment>
   </data>
   <data name="UnlockButton" xml:space="preserve">
-    <value>Deblocare</value>
+    <value>Deblochează</value>
     <comment>Button text for unlock submission</comment>
   </data>
   <data name="SwitchAccountsText" xml:space="preserve">
@@ -123,7 +123,7 @@
     <comment>Generic error message for unlock failures</comment>
   </data>
   <data name="UnlockWithMobileButton" xml:space="preserve">
-    <value>Deblocare cu aplicația mobilă</value>
+    <value>Deblochează prin aplicația mobilă</value>
     <comment>Button text for unlocking with mobile app</comment>
   </data>
 </root>
