@@ -59,6 +59,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ErrorTimeout" xml:space="preserve">
-    <value>Cererea de autentificare mobilă a expirat. Te rugăm să repornești pagina și să încerci din nou.</value>
+    <value>Cererea de autentificare de pe dispozitivul mobil a expirat. Vă rugăm să reîncărcați pagina și să încercați din nou.</value>
   </data>
 </root>
