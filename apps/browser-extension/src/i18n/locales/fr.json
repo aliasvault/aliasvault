@@ -194,7 +194,7 @@
     "clearSearch": "Effacer la recherche",
     "clearFilter": "Effacer le filtre",
     "emptyFolderHint": "Ce dossier est vide. Pour déplacer des éléments vers ce dossier, éditez l'élément et appuyez sur l'icône du dossier dans le champ nom.",
-    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
+    "allItemsInFolders": "Tous vos éléments sont organisés dans des dossiers. Appuyez sur un dossier ci-dessus pour voir vos identifiants, ou utilisez la recherche pour trouver des éléments spécifiques.",
     "deleteFolder": "Supprimer le dossier",
     "deleteFolderKeepItems": "Supprimer le dossier uniquement",
     "deleteFolderKeepItemsDescription": "Les éléments seront déplacés dans la liste principale.",
@@ -295,8 +295,8 @@
     "uploading": "Envoi...",
     "uploadSuccess": "Fichiers envoyés avec succès.",
     "deleteSuccess": "Pièce jointe supprimée avec succès.",
-    "firefoxExpandRequired": "To upload files, use the expanded window.",
-    "openExpandedWindow": "Open Expanded Window"
+    "firefoxExpandRequired": "Pour envoyer des fichiers, utilisez la fenêtre étendue.",
+    "openExpandedWindow": "Ouvrir la fenêtre étendue"
   },
   "emails": {
     "title": "Emails",
