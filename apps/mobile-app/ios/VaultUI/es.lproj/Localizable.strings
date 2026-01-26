@@ -9,11 +9,11 @@
 "title" = "Título";
 "unknown_error" = "Se produjo un error desconocido";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"select_item" = "Select Item";
+"loading_items" = "Cargando ítems...";
+"no_items_found" = "No hay elementos";
+"no_items_match" = "Ningún elemento existente coincide con tu búsqueda";
+"create_new_item" = "Crear nuevo elemento";
+"select_item" = "Seleccionar Elemento";
 "select_text_to_insert" = "Seleccionar texto a insertar";
 "choose_username" = "Escoge un nombre de usuario";
 "select_text_to_insert_message" = "Seleccione el texto a insertar en el campo de entrada resaltado";
@@ -21,8 +21,8 @@
 "username_prefix" = "Usuario: ";
 "email_prefix" = "Email: ";
 "password" = "Contraseña";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"items_load_error" = "Error al cargar elementos. Por favor, abre la aplicación AliasVault para buscar actualizaciones.";
+"no_item_selected" = "Ningún elemento seleccionado.";
 
 /* Context menu strings */
 "copy_username" = "Copiar nombre de usuario";
@@ -34,7 +34,7 @@
 "email_copied" = "Email copiado";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "Buscar elementos...";
 
 /* Passkey registration */
 "create_passkey_title" = "Crear Nueva llave";
@@ -57,9 +57,9 @@
 "create_passkey_explanation" = "Esto crea una nueva llave de acceso y la almacena en tu bóveda. Se sincronizará automáticamente en todos tus dispositivos que utilicen AliasVault.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"passkey_add_to_existing" = "O, añadir llave de acceso a un elemento existente";
+"add_passkey" = "Añadir llave de acceso";
+"merge_passkey_explanation" = "Esto añadirá una llave de acceso a su elemento existente. Su contraseña y otros datos se conservarán.";
 
 /* PIN Unlock */
 "unlock_vault" = "Desbloquear bóveda";
