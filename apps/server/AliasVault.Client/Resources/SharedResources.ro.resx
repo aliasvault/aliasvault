@@ -171,7 +171,7 @@
     <comment>Button text to confirm an action</comment>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Reîmprospătați</value>
+    <value>Actualizați</value>
     <comment>Button text to refresh content</comment>
   </data>
   <!-- Common form elements -->
@@ -251,7 +251,7 @@
   </data>
   <!-- Loading screen messages -->
   <data name="RefreshPageText" xml:space="preserve">
-    <value>Dacă încărcarea pare blocată, poți face clic pe butonul de mai jos pentru a reporni pagina.</value>
+    <value>Dacă încărcarea pare blocată, puteți apăsa butonul de mai jos pentru a reîmprospăta pagina.</value>
     <comment>Text shown above refresh button on loading screen</comment>
   </data>
   <!-- Validation error messages for forms -->
