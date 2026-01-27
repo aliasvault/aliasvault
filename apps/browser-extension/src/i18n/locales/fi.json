@@ -82,6 +82,7 @@
     "email": "Sähköposti",
     "username": "Käyttäjänimi",
     "password": "Salasana",
+    "generate": "Generate",
     "serviceName": "Palvelun nimi",
     "loggedIn": "Sisäänkirjautuneena",
     "syncingVault": "Synkronoidaan holvia",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "Päästä päähän (E2E) salattu, täysin yksityinen.",
     "publicEmailTitle": "Julkiset väliaikaisten sähköpostiosoitteiden tarjoajat (PTEP)",
     "publicEmailDescription": "Anonyymi, mutta rajoitettu yksityisyys. Sähköpostin sisällön voi lukea kuka tahansa, joka tietää osoitteen.",
-    "generateRandomUsername": "Luo sattumanvarainen käyttäjänimi",
-    "generateRandomPassword": "Luo sattumanvarainen salasana",
-    "generateNewPreview": "Luo uusi esikatselu",
-    "generateRandomAlias": "Luo sattumanvarainen alias",
     "validation": {
       "required": "Tämä kenttä on pakollinen"
     }
