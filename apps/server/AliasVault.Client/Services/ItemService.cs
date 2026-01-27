@@ -680,6 +680,7 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
         context.TotpCodes.RemoveRange(context.TotpCodes);
         context.Passkeys.RemoveRange(context.Passkeys);
         context.Items.RemoveRange(context.Items);
+        context.Logos.RemoveRange(context.Logos);
         context.Folders.RemoveRange(context.Folders);
 
         // Save changes locally
