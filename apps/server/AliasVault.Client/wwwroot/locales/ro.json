@@ -6,7 +6,7 @@
     "refreshButtonText": "Actualizați pagina"
   },
   "errors": {
-    "unhandledError": "",
+    "unhandledError": "A apărut o eroare neprevăzută. Încearcă să reîncarci pagina. Dacă problema persistă, contactează serviciul de asistență.",
     "webAssemblyError": "AliasVault necesită WebAssembly, care nu este compatibil cu acest browser. Încercați să folosiți un browser mai modern.",
     "reloadPageText": "Reîncărcați pagina"
   },
