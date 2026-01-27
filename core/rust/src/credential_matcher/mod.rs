@@ -279,7 +279,49 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
                 }
             }
 
-            // No matches found in Priority 2 or Priority 3
+            // ═══════════════════════════════════════════════════════════════════════════
+            // PRIORITY 3b: URL Word / Item Name Fallback
+            // No domain or page title matches found - try matching words extracted
+            // from the current URL against item names for credentials without URLs.
+            // Same anti-phishing rule: only credentials with NO URLs are eligible.
+            // ═══════════════════════════════════════════════════════════════════════════
+            let url_words = extract_words(&current_url);
+
+            if !url_words.is_empty() {
+                let url_word_match_ids: Vec<String> = credentials
+                    .iter()
+                    .filter(|cred| {
+                        // SECURITY: Skip credentials that have URLs defined
+                        if !cred.item_urls.is_empty()
+                            && cred.item_urls.iter().any(|u| !u.is_empty())
+                        {
+                            return false;
+                        }
+
+                        if let Some(item_name) = &cred.item_name {
+                            let cred_name_words = extract_words(item_name);
+
+                            // Match only complete words, not substrings
+                            url_words.iter().any(|url_word| {
+                                cred_name_words.iter().any(|cred_word| url_word == cred_word)
+                            })
+                        } else {
+                            false
+                        }
+                    })
+                    .map(|cred| cred.id.clone())
+                    .take(3)
+                    .collect();
+
+                if !url_word_match_ids.is_empty() {
+                    return CredentialMatcherOutput {
+                        matched_ids: url_word_match_ids,
+                        matched_priority: 3,
+                    };
+                }
+            }
+
+            // No matches found in Priority 2, 3, or 3b
             return CredentialMatcherOutput {
                 matched_ids: vec![],
                 matched_priority: 0,

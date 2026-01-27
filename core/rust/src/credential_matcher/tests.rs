@@ -725,3 +725,35 @@ fn test_items_without_urls_not_matched_when_url_match_exists() {
     assert_eq!(matches.len(), 1, "Should only return URL match, not title matches");
     assert_eq!(matches[0].item_name.as_deref(), Some("blabla service"));
 }
+
+/// [#35] - Items WITHOUT URLs should match via URL-derived word matching on item name
+#[test]
+fn test_items_without_urls_matched_by_url_domain_words() {
+    let credentials = vec![
+        create_test_credential("Test Dumpert", "", "user@dumpert.nl"),
+        create_test_credential("Some Other Item", "", "user@other.com"),
+    ];
+
+    // When visiting dumpert.nl with no page title, the credential named "Test Dumpert"
+    // should still match because "dumpert" from the URL matches "dumpert" in the item name
+    let matches = filter(credentials, "https://www.dumpert.nl", "");
+
+    assert_eq!(matches.len(), 1, "Should match credential by URL-derived word against item name");
+    assert_eq!(matches[0].item_name.as_deref(), Some("Test Dumpert"));
+}
+
+/// [#36] - URL-derived word matching should NOT match credentials that have URLs defined
+#[test]
+fn test_url_word_matching_skips_credentials_with_urls() {
+    let credentials = vec![
+        // This credential HAS a URL (different domain) - should NOT match via name
+        create_test_credential("Test Dumpert", "https://other-site.com", "user@dumpert.nl"),
+        // This credential has NO URL - should match via name
+        create_test_credential("Dumpert Account", "", "user@dumpert.nl"),
+    ];
+
+    let matches = filter(credentials, "https://www.dumpert.nl", "");
+
+    assert_eq!(matches.len(), 1, "Should only match the credential without URLs");
+    assert_eq!(matches[0].item_name.as_deref(), Some("Dumpert Account"));
+}
