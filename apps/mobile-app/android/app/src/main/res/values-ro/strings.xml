@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">Autocompletare AliasVault</string>
+  <string name="autofill_service_description" translatable="true">Completare automată AliasVault</string>
   <string name="aliasvault_icon">Pictogramă AliasVault</string>
   <!-- Common strings -->
   <string name="common_close">Închide</string>
@@ -65,7 +65,7 @@
   <string name="server_version_not_supported_title">Actualizare server necesară</string>
   <string name="server_version_not_supported_message">Versiunea serverului este incompatibilă. Contactează administratorul pentru a actualiza serverul.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_unlock_method_required">Activează autentificarea biometrică sau PIN-ul în aplicația AliasVault pentru a continua</string>
+  <string name="error_unlock_method_required">Activează autentificarea biometrică sau deblocarea prin PIN în aplicația AliasVault pentru a continua</string>
   <string name="error_unlock_vault_first">Deblochează mai întâi seiful în aplicația AliasVault</string>
   <string name="error_vault_decrypt_failed">Decriptarea seifului a eșuat</string>
   <string name="error_biometric_cancelled">Autentificarea biometrică a fost anulată</string>
