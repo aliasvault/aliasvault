@@ -122,7 +122,7 @@
   </data>
   <!-- Button text -->
   <data name="GenerateRandomAliasButton">
-    <value>Generează alias aleatoriu</value>
+    <value>Generează un alias aleatoriu</value>
     <comment>Button text for generating a random alias</comment>
   </data>
   <data name="ClearAliasFieldsButton">
