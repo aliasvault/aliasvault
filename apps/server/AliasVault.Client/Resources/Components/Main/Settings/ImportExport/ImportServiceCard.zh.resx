@@ -87,11 +87,11 @@
     <comment>Import button text</comment>
   </data>
   <data name="ImportFoldersLabel" xml:space="preserve">
-    <value>Import folders (if available)</value>
+    <value>导入文件夹（如有）</value>
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
-    <value>{0} folder(s) detected</value>
+    <value>检测到 {0} 个文件夹</value>
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
 </root>
