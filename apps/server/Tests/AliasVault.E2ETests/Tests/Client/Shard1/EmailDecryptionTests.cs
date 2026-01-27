@@ -352,11 +352,83 @@ public class EmailDecryptionTests : ClientPlaywrightTest
     }
 
     /// <summary>
-    /// Test that when a user deletes an alias, the email claim gets disabled in the database.
+    /// Test that when two credentials share the same email address but with different casing
+    /// (e.g., "test1@example.tld" and "Test1@example.tld"), both email claims are created in a single
+    /// vault sync without causing a unique constraint violation (HTTP 500).
+    /// This simulates the scenario where a client creates two credentials offline and then syncs
+    /// them together, sending both case-variant email addresses to the server at the same time.
     /// </summary>
     /// <returns>Async task.</returns>
     [Test]
     [Order(5)]
+    public async Task EmailClaimCaseInsensitiveDuplicateTest()
+    {
+        // Step 1: Create credential A with lowercase email. This establishes the first credential
+        // and creates the email claim on the server during vault sync.
+        const string serviceName1 = "Case Test Service 1";
+        const string email1 = "casedupe@example.tld";
+        await CreateItemEntry(new Dictionary<string, string>
+        {
+            { "service-name", serviceName1 },
+            { "email", email1 },
+        });
+
+        // Assert that the claim was created on the server.
+        var claim = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email1);
+        Assert.That(claim, Is.Not.Null, "Initial claim for email address not found in database.");
+
+        // Step 2: Delete the email claim from the database directly.
+        // This simulates the scenario where both credentials were created while the API was down
+        // (offline mode) so no claim exists on the server yet. When the vault syncs, it will send
+        // both email addresses at once, and the server needs to handle the case-insensitive duplicates.
+        var claimToRemove = await ApiDbContext.UserEmailClaims.FirstAsync(x => x.Address == email1);
+        ApiDbContext.UserEmailClaims.Remove(claimToRemove);
+        await ApiDbContext.SaveChangesAsync();
+
+        // Verify claim is gone.
+        var claimAfterDelete = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email1);
+        Assert.That(claimAfterDelete, Is.Null, "Claim should have been removed from database.");
+
+        // Step 3: Create credential B with the same email but different casing (capital C).
+        // This triggers a vault sync that will send both "casedupe@example.tld" (from credential A
+        // still in local vault) and "Casedupe@example.tld" (from credential B) to the server.
+        // Without proper case-insensitive deduplication, this would cause a unique constraint violation
+        // when the server tries to insert both as "casedupe@example.tld".
+        const string serviceName2 = "Case Test Service 2";
+        const string email2 = "Casedupe@example.tld";
+        await CreateItemEntry(new Dictionary<string, string>
+        {
+            { "service-name", serviceName2 },
+            { "email", email2 },
+        });
+
+        // Step 4: Assert that the vault sync succeeded and no errors occurred.
+        // If the deduplication fails, the server would return HTTP 500 and the client
+        // would show an error or enter a retry loop.
+        // Note: CreateItemEntry already asserts "Item created successfully" and "View item" text,
+        // so if we reach here without exception, the vault sync succeeded.
+
+        // Step 5: Assert that exactly one email claim exists on the server (normalized to lowercase).
+        var claims = await ApiDbContext.UserEmailClaims.AsNoTracking()
+            .Where(x => x.Address == email1)
+            .ToListAsync();
+        Assert.That(claims, Has.Count.EqualTo(1), "Exactly one email claim should exist for the case-insensitive duplicate email address.");
+        Assert.That(claims[0].Address, Is.EqualTo(email1), "Email claim should be stored in lowercase.");
+        Assert.That(claims[0].Disabled, Is.False, "Email claim should not be disabled.");
+
+        // Step 6: Verify no duplicate claims exist with different casing.
+        var allClaims = await ApiDbContext.UserEmailClaims.AsNoTracking()
+            .Where(x => x.AddressLocal == "casedupe" && x.AddressDomain == "example.tld")
+            .ToListAsync();
+        Assert.That(allClaims, Has.Count.EqualTo(1), "No duplicate claims with different casing should exist.");
+    }
+
+    /// <summary>
+    /// Test that when a user deletes an alias, the email claim gets disabled in the database.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    [Order(6)]
     public async Task EmailClaimDeleteDisableTest()
     {
         // Create two credential which should automatically create claims on server during database sync.
