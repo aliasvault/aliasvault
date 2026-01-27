@@ -82,6 +82,7 @@
     "email": "E-Posta",
     "username": "Kullanıcı Adı",
     "password": "Parola",
+    "generate": "Generate",
     "serviceName": "Hizmet Adı",
     "loggedIn": "Logged in",
     "syncingVault": "Kasa senkronize ediliyor",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "Uçtan uca şifreli, tamamen özel.",
     "publicEmailTitle": "Herkese Açık Geçici E-Posta Sağlayıcıları",
     "publicEmailDescription": "Anonim ama mahremiyeti sınırlı. E-posta içeriği, adresi bilen herkes tarafından okunabilir.",
-    "generateRandomUsername": "Generate random username",
-    "generateRandomPassword": "Generate random password",
-    "generateNewPreview": "Generate new preview",
-    "generateRandomAlias": "Generate Random Alias",
     "validation": {
       "required": "Bu alan zorunludur"
     }
