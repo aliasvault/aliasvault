@@ -1,7 +1,7 @@
 import { Buffer } from 'buffer';
 
 import { Image, ImageStyle, StyleSheet, View } from 'react-native';
-import { SvgUri } from 'react-native-svg';
+import { SvgXml } from 'react-native-svg';
 
 import type { Item } from '@/utils/dist/core/models/vault';
 import {
@@ -123,7 +123,9 @@ function renderLogo(
   style?: ImageStyle
 ): React.ReactNode {
   /**
-   * Get the logo source.
+   * Get the logo source. For SVGs, returns the raw XML string so SvgXml can
+   * render it safely with fallback/onError support. For other formats, returns
+   * a data URI for the Image component.
    */
   const getLogoSource = (data: Uint8Array | number[] | string | null | undefined) : { type: 'image' | 'svg', source: string | number } => {
     if (!data) {
@@ -134,20 +136,22 @@ function renderLogo(
       // If logo is already a base64 string (from iOS SQLite query result)
       if (typeof data === 'string') {
         const mimeType = detectMimeTypeFromBase64(data);
-        return {
-          type: mimeType === 'image/svg+xml' ? 'svg' : 'image',
-          source: `data:${mimeType};base64,${data}`
-        };
+        if (mimeType === 'image/svg+xml') {
+          // Decode base64 to raw SVG XML for SvgXml component
+          return { type: 'svg', source: Buffer.from(data, 'base64').toString('utf-8') };
+        }
+        return { type: 'image', source: `data:${mimeType};base64,${data}` };
       }
 
       // Handle binary data (from Android or other sources)
       const logoBytes = toUint8Array(data);
-      const base64Logo = Buffer.from(logoBytes).toString('base64');
       const mimeType = detectMimeType(logoBytes);
-      return {
-        type: mimeType === 'image/svg+xml' ? 'svg' : 'image',
-        source: `data:${mimeType};base64,${base64Logo}`
-      };
+      if (mimeType === 'image/svg+xml') {
+        // Decode bytes to raw SVG XML for SvgXml component
+        return { type: 'svg', source: new TextDecoder().decode(logoBytes) };
+      }
+      const base64Logo = Buffer.from(logoBytes).toString('base64');
+      return { type: 'image', source: `data:${mimeType};base64,${base64Logo}` };
     } catch (error) {
       console.error('Error converting logo:', error);
       return { type: 'image', source: servicePlaceholder };
@@ -158,18 +162,47 @@ function renderLogo(
 
   if (logoSource.type === 'svg') {
     /*
-     * SVGs are not supported in React Native Image component,
-     * so we use SvgUri from react-native-svg.
+     * Use SvgXml instead of SvgUri to render SVG logos. SvgXml accepts raw XML
+     * and supports onError/fallback props, which lets us gracefully handle
+     * malformed SVGs that would otherwise crash the native renderer
+     * (e.g. zero-dimension SVGs triggering UIGraphicsBeginImageContext failures).
      */
+    console.log('logoSource', logoSource);
+    const svgWidth = Number(style?.width ?? styles.logo.width);
+    const svgHeight = Number(style?.height ?? styles.logo.height);
+
+    const svgXml = sanitizeSvg(logoSource.source as string, svgWidth, svgHeight);
+
+    // If sanitization failed (returned null), fall back to placeholder
+    if (!svgXml) {
+      return (
+        <Image
+          source={servicePlaceholder}
+          style={[styles.logo, style]}
+        />
+      );
+    }
+
+    const fallback = (
+      <Image
+        source={servicePlaceholder}
+        style={[styles.logo, style]}
+      />
+    );
+
     return (
-      <SvgUri
-        uri={logoSource.source as string}
-        width={Number(style?.width ?? styles.logo.width)}
-        height={Number(style?.height ?? styles.logo.height)}
+      <SvgXml
+        xml={svgXml}
+        width={svgWidth}
+        height={svgHeight}
+        onError={() => {
+          console.warn('SvgXml failed to render SVG logo');
+        }}
+        fallback={fallback}
         style={{
           borderRadius: styles.logo.borderRadius,
-          width: Number(style?.width ?? styles.logo.width),
-          height: Number(style?.height ?? styles.logo.height),
+          width: svgWidth,
+          height: svgHeight,
           marginLeft: Number(style?.marginLeft ?? 0),
           marginRight: Number(style?.marginRight ?? 0),
           marginTop: Number(style?.marginTop ?? 0),
@@ -186,6 +219,107 @@ function renderLogo(
       defaultSource={servicePlaceholder}
     />
   );
+}
+
+/**
+ * Sanitize SVG XML for react-native-svg compatibility.
+ *
+ * Addresses several crash vectors:
+ * 1. Zero/missing dimensions on the root <svg> tag cause iOS native renderer to crash
+ *    with: UIGraphicsBeginImageContext() failed to allocate CGBitmapContext: size={0, 0}.
+ * 2. Nested <svg> elements create nested Svg components with no layout dimensions,
+ *    triggering the same zero-size crash.
+ * 3. Namespaced elements (sodipodi:*, inkscape:*, metadata, rdf:*, cc:*, dc:*) are not
+ *    supported by react-native-svg and can cause parse/render failures.
+ *
+ * Returns null if the SVG is fundamentally broken and should not be rendered.
+ */
+function sanitizeSvg(xml: string, targetWidth: number, targetHeight: number): string | null {
+  try {
+    if (!xml || xml.trim().length === 0) {
+      return null;
+    }
+
+    let sanitized = xml;
+
+    // Remove unsupported namespaced elements and metadata that react-native-svg cannot handle.
+    // These include Inkscape/Sodipodi editor elements, RDF metadata, Creative Commons, etc.
+    // Use [\s\S] instead of . to match across newlines.
+    sanitized = sanitized.replace(/<sodipodi:[^>]*\/>/gi, '');
+    sanitized = sanitized.replace(/<sodipodi:[^>]*>[\s\S]*?<\/sodipodi:[^>]*>/gi, '');
+    sanitized = sanitized.replace(/<inkscape:[^>]*\/>/gi, '');
+    sanitized = sanitized.replace(/<inkscape:[^>]*>[\s\S]*?<\/inkscape:[^>]*>/gi, '');
+    sanitized = sanitized.replace(/<metadata[\s>][\s\S]*?<\/metadata>/gi, '');
+
+    // Replace nested <svg> elements (not the root) with <g> elements.
+    // Nested <svg> tags create nested Svg root components in react-native-svg
+    // that inherit no layout dimensions, causing the zero-size native crash.
+    // We preserve the first (root) <svg> and convert inner ones to <g>.
+    let isFirst = true;
+    sanitized = sanitized.replace(/<svg\b([^>]*)>/gi, (match, attrs) => {
+      if (isFirst) {
+        isFirst = false;
+        return match;
+      }
+      // Convert inner <svg> to <g>, preserving transform attribute if present
+      const transformMatch = (attrs as string).match(/\btransform\s*=\s*["'][^"']*["']/i);
+      const transform = transformMatch ? ` ${transformMatch[0]}` : '';
+      return `<g${transform}>`;
+    });
+    // Replace matching closing </svg> tags (all except the last one, which closes the root)
+    // Count remaining </svg> tags and replace all but the last with </g>
+    const closingTags: number[] = [];
+    const closingRegex = /<\/svg>/gi;
+    let closeMatch;
+    while ((closeMatch = closingRegex.exec(sanitized)) !== null) {
+      closingTags.push(closeMatch.index);
+    }
+    // Replace all closing </svg> except the last one (root) with </g>
+    if (closingTags.length > 1) {
+      for (let i = closingTags.length - 2; i >= 0; i--) {
+        const idx = closingTags[i];
+        sanitized = sanitized.substring(0, idx) + '</g>' + sanitized.substring(idx + 6);
+      }
+    }
+
+    // Ensure root <svg> has valid, non-zero dimensions
+    const svgTagMatch = sanitized.match(/<svg\b([^>]*)>/i);
+    if (!svgTagMatch) {
+      return null;
+    }
+
+    const attrs = svgTagMatch[1];
+    const widthMatch = attrs.match(/\bwidth\s*=\s*["']([^"']*)["']/i);
+    const heightMatch = attrs.match(/\bheight\s*=\s*["']([^"']*)["']/i);
+
+    const hasZeroWidth = widthMatch && (parseFloat(widthMatch[1]) === 0 || widthMatch[1].trim() === '');
+    const hasZeroHeight = heightMatch && (parseFloat(heightMatch[1]) === 0 || heightMatch[1].trim() === '');
+    const hasMissingWidth = !widthMatch;
+    const hasMissingHeight = !heightMatch;
+
+    if (hasZeroWidth || hasMissingWidth || hasZeroHeight || hasMissingHeight) {
+      let newAttrs = attrs;
+
+      if (hasZeroWidth && widthMatch) {
+        newAttrs = newAttrs.replace(widthMatch[0], `width="${targetWidth}"`);
+      } else if (hasMissingWidth) {
+        newAttrs = ` width="${targetWidth}"` + newAttrs;
+      }
+
+      if (hasZeroHeight && heightMatch) {
+        newAttrs = newAttrs.replace(heightMatch[0], `height="${targetHeight}"`);
+      } else if (hasMissingHeight) {
+        newAttrs = ` height="${targetHeight}"` + newAttrs;
+      }
+
+      sanitized = sanitized.replace(svgTagMatch[0], `<svg${newAttrs}>`);
+    }
+
+    return sanitized;
+  } catch (error) {
+    console.warn('Failed to sanitize SVG:', error);
+    return null;
+  }
 }
 
 /**
