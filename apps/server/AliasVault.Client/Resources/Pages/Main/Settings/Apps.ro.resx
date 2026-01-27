@@ -55,7 +55,7 @@
     <comment>Title for mobile apps section</comment>
   </data>
   <data name="MobileAppsDescription">
-    <value>Aplicația mobilă AliasVault vă permite să vă accesați aliasurile și identitățile de oriunde, să vizualizați și să gestionați e-mailurile primite și să generați aliasuri noi oricând. Datele dumneavoastră sunt protejate complet prin autentificarea biometrică a dispozitivului.</value>
+    <value>Aplicația mobilă AliasVault îți permite să îți accesezi aliasurile și identitățile de oriunde, să vizualizezi și să gestionezi e-mailurile primite și să generezi aliasuri noi oricând. Datele tale sunt protejate integral prin autentificare biometrică direct pe dispozitiv.</value>
     <comment>Description for mobile apps</comment>
   </data>
   <data name="DownloadButton">
