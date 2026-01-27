@@ -437,7 +437,7 @@
     "switchBackToBrowser": "Revino în browser pentru a continua.",
     "filters": {
       "all": "(Toate) Elementele",
-      "passkeys": "Passkey-uri",
+      "passkeys": "Passkeys",
       "attachments": "Atașamente"
     },
     "totpCode": "Cod TOTP",
