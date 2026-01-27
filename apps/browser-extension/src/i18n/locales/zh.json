@@ -82,6 +82,7 @@
     "email": "电子邮箱",
     "username": "用户名",
     "password": "密码",
+    "generate": "Generate",
     "serviceName": "服务名称",
     "loggedIn": "已登录",
     "syncingVault": "正在同步密码库",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "端到端加密，完全私密。",
     "publicEmailTitle": "公共临时电子邮箱提供商",
     "publicEmailDescription": "匿名但隐私性有限，任何知晓其地址的人均可读取电子邮件内容。",
-    "generateRandomUsername": "生成随机用户名",
-    "generateRandomPassword": "生成随机密码",
-    "generateNewPreview": "生成新预览",
-    "generateRandomAlias": "生成随机别名",
     "validation": {
       "required": "此字段为必填项"
     }
