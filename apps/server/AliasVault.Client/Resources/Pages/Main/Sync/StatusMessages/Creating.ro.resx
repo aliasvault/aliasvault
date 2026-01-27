@@ -63,7 +63,7 @@
     <comment>Welcome title for new vault creation</comment>
   </data>
   <data name="CreatingDescription" xml:space="preserve">
-    <value>Noul dumneavoastră seif criptat este în curs de inițializare. Acest proces poate dura câteva momente. Așteaptă finalizarea.</value>
+    <value>Noul tău seif criptat este în curs de inițializare. Acest proces poate dura câteva momente. Așteaptă finalizarea.</value>
     <comment>Description for vault creation process</comment>
   </data>
   <data name="SaveFailedError" xml:space="preserve">
