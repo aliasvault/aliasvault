@@ -126,7 +126,7 @@
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
-    <value>Importați din KeePass, Bitwarden, Chrome, Firefox...</value>
+    <value>Importă din KeePass, Bitwarden, Chrome, Firefox...</value>
     <comment>Import button text</comment>
   </data>
   <!-- Error Messages -->
