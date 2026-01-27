@@ -82,6 +82,7 @@
     "email": "E-post",
     "username": "Användarnamn",
     "password": "Lösenord",
+    "generate": "Generate",
     "serviceName": "Tjänstens namn",
     "loggedIn": "Inloggad",
     "syncingVault": "Synkroniserar valv",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "E2E encrypted, fully private.",
     "publicEmailTitle": "Offentliga Temp e-postleverantörer",
     "publicEmailDescription": "Anonym men begränsad integritet. E-postinnehåll kan läsas av alla som känner till adressen.",
-    "generateRandomUsername": "Generera slumpmässigt användarnamn",
-    "generateRandomPassword": "Generera slumpmässigt lösenord",
-    "generateNewPreview": "Generera ny förhandsgranskning",
-    "generateRandomAlias": "Generera slumpmässigt alias",
     "validation": {
       "required": "Detta fält är obligatoriskt"
     }
