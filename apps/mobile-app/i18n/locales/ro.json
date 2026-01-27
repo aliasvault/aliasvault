@@ -317,7 +317,7 @@
   },
   "navigation": {
     "vault": "Seif",
-    "emails": "Email-uri",
+    "emails": "E-mailuri",
     "settings": "Setări"
   },
   "itemTypes": {
@@ -415,12 +415,12 @@
     "noItemsOfTypeFound": "Nu s-au găsit elemente de tipul {{type}}",
     "clearSearch": "Șterge căutarea",
     "clearFilter": "Șterge filtrul",
-    "recentEmails": "Email-uri recente",
-    "loadingEmails": "Se încarcă email-urile...",
-    "noEmailsYet": "Nu a fost primit încă niciun e-mail.",
-    "offlineEmailsMessage": "Ești offline. Conectarea la internet este necesară pentru a încărca email-urile tale.",
-    "emailLoadError": "A apărut o eroare la încărcarea email-urilor tale. Reîncearcă mai târziu.",
-    "emailUnexpectedError": "A apărut o eroare neașteptată la încărcarea email-urilor tale. Reîncearcă mai târziu.",
+    "recentEmails": "E-mailuri recente",
+    "loadingEmails": "Se încarcă e-mailurile...",
+    "noEmailsYet": "Niciun e-mail primit încă.",
+    "offlineEmailsMessage": "Ești offline. Conectarea la internet este necesară pentru a încărca e-mailurile tale.",
+    "emailLoadError": "A apărut o eroare la încărcarea e-mailurile tale. Reîncearcă mai târziu.",
+    "emailUnexpectedError": "A apărut o eroare neașteptată la încărcarea e-mailurile tale. Reîncearcă mai târziu.",
     "password": "Parolă",
     "passwordLength": "Lungime parolă",
     "changePasswordComplexity": "Setări parolă",
@@ -511,7 +511,7 @@
     }
   },
   "emails": {
-    "title": "Email-uri",
+    "title": "E-mailuri",
     "emailDetails": "Detalii Email",
     "subject": "Subiect:",
     "date": "Data:",
@@ -523,7 +523,7 @@
     "emailNotFound": "Email-ul nu a fost găsit",
     "noPlainText": "Acest email nu conține text simplu.",
     "sizeKB": "KB",
-    "offlineMessage": "Ești offline. Conectarea la internet este necesară pentru a încărca email-urile tale.",
+    "offlineMessage": "Ești offline. Conectarea la internet este necesară pentru a încărca e-mailurile tale.",
     "emptyMessage": "Nu ai primit încă niciun e-mail pe adresele tale private. Atunci când vei primi un e-mail nou, acesta va apărea aici.",
     "time": {
       "justNow": "acum",
