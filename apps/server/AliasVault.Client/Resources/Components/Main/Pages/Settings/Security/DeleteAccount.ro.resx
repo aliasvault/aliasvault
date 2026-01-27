@@ -73,7 +73,7 @@
   </data>
   <!-- Warning messages -->
   <data name="PermanentActionWarning" xml:space="preserve">
-    <value>Avertisment: Această acțiune este permanentă și nu poate fi anulată. Toate datele dumneavoastră vor fi șterse definitiv.</value>
+    <value>Avertisment: Această acțiune este permanentă și ireversibilă. Toate datele tale vor fi șterse definitiv.</value>
     <comment>Warning message about permanent deletion</comment>
   </data>
   <data name="FinalWarning" xml:space="preserve">
