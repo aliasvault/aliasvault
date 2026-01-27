@@ -42,7 +42,7 @@
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>Seiful dumneavoastră a fost creat cu succes! Protejați-vă confidențialitatea online creând aliasuri unice pentru fiecare serviciu la care vă înregistrați. Să învățăm cum funcționează AliasVault și apoi să creăm primul dumneavoastră alias securizat.</value>
+    <value>Seiful dumneavoastră a fost creat cu succes! Protejați-vă confidențialitatea online creând aliasuri unice pentru fiecare serviciu la care vă înregistrați. Să învățăm cum funcționează AliasVault și apoi să creăm primul tău alias securizat.</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
@@ -59,11 +59,11 @@
     <comment>Second step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep3">
-    <value>E-mailurile primite apar în această aplicație și pot fi deschise în browserul dumneavoastră</value>
+    <value>E-mailurile primite apar în această aplicație și pot fi deschise în browser</value>
     <comment>Third step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep4">
-    <value>Adresa dumneavoastră reală de e-mail și alte informații personale rămân private</value>
+    <value>Adresa ta de e-mail reală și celelalte informații personale rămân private</value>
     <comment>Fourth step in how it works explanation</comment>
   </data>
   <!-- Tips step content -->
@@ -80,7 +80,7 @@
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>Autentificarea cu doi factori adaugă un strat suplimentar de securitate contului dumneavoastră. Aceasta presupune introducerea unui cod din aplicația de autentificare sau a unui cod de recuperare pentru a putea accesa seiful criptat.</value>
+    <value>Autentificarea cu doi factori adaugă un strat suplimentar de securitate contului tău. Aceasta necesită introducerea unui cod din aplicația de autentificare sau a unui cod de recuperare înainte ca seiful tău criptat să poată fi accesat.</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
@@ -97,7 +97,7 @@
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
-    <value>Acum că știți cum funcționează AliasVault, să creăm prima dumneavoastră identitate securizată!</value>
+    <value>Acum că știi cum funcționează AliasVault, să creăm prima ta identitate securizată!</value>
     <comment>Message encouraging user to create first identity</comment>
   </data>
   <data name="CreateFirstIdentityButton">
