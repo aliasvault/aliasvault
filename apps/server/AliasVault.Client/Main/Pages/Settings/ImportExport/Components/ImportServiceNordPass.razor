@@ -1,0 +1,25 @@
+@using AliasVault.ImportExport.Models
+@using AliasVault.ImportExport.Importers
+@using Microsoft.Extensions.Localization
+@inject NavigationManager NavigationManager
+@inject GlobalNotificationService GlobalNotificationService
+@inject IStringLocalizerFactory LocalizerFactory
+@inject ILogger<ImportServiceNordPass> Logger
+
+<ImportServiceCard
+    ServiceName="NordPass"
+    Description="@Localizer["NordPassDescription"]"
+    LogoUrl="img/importers/nordpass.svg"
+    ProcessFileCallback="ProcessFile">
+    <p class="text-gray-700 dark:text-gray-300 mb-4">@Localizer["NordPassInstructionsPart1"]</p>
+    <p class="text-gray-700 dark:text-gray-300 mb-4">@Localizer["NordPassInstructionsPart2"]</p>
+</ImportServiceCard>
+
+@code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Settings.ImportExport.ImportServices", "AliasVault.Client");
+
+    private static async Task<List<ImportedCredential>> ProcessFile(string fileContents)
+    {
+        return await NordPassImporter.ImportFromCsvAsync(fileContents);
+    }
+}

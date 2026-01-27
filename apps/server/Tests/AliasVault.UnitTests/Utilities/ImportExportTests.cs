@@ -668,6 +668,135 @@ public class ImportExportTests
     }
 
     /// <summary>
+    /// Test case for importing credentials from NordPass CSV and ensuring all values are present.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task ImportCredentialsFromNordPassCsv()
+    {
+        // Arrange
+        var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceStringAsync("AliasVault.UnitTests.TestData.Exports.nordpass.csv");
+
+        // Act
+        var importedCredentials = await NordPassImporter.ImportFromCsvAsync(fileContent);
+
+        // Assert - Should import 4 records (folder entry is skipped)
+        Assert.That(importedCredentials, Has.Count.EqualTo(4));
+
+        // Test regular password credential
+        var passwordCredential = importedCredentials.First(c => c.ServiceName == "Password title");
+        Assert.Multiple(() =>
+        {
+            Assert.That(passwordCredential.ServiceName, Is.EqualTo("Password title"));
+            Assert.That(passwordCredential.ServiceUrl, Is.EqualTo("http://google.nl"));
+            Assert.That(passwordCredential.Username, Is.EqualTo("email@example.tld"));
+            Assert.That(passwordCredential.Password, Is.EqualTo("password"));
+            Assert.That(passwordCredential.FolderPath, Is.EqualTo("Business"));
+            Assert.That(passwordCredential.ItemType, Is.EqualTo(ImportedItemType.Login));
+            Assert.That(passwordCredential.Notes, Does.Contain("[{\"type\":\"text\",\"label\":\"CustomFieldName1\",\"value\":\"Test\"}]"));
+        });
+
+        // Test secure note
+        var secureNote = importedCredentials.First(c => c.ServiceName == "SecureNote1");
+        Assert.Multiple(() =>
+        {
+            Assert.That(secureNote.ServiceName, Is.EqualTo("SecureNote1"));
+            Assert.That(secureNote.ServiceUrl, Is.Null);
+            Assert.That(secureNote.Username, Is.Empty);
+            Assert.That(secureNote.Password, Is.Empty);
+            Assert.That(secureNote.ItemType, Is.EqualTo(ImportedItemType.Note));
+            Assert.That(secureNote.Notes, Does.Contain("This is my secure note content"));
+            Assert.That(secureNote.Notes, Does.Contain("Test test"));
+        });
+
+        // Test credit card
+        var creditCard = importedCredentials.First(c => c.ServiceName == "Creditcard Visa");
+        Assert.Multiple(() =>
+        {
+            Assert.That(creditCard.ServiceName, Is.EqualTo("Creditcard Visa"));
+            Assert.That(creditCard.ItemType, Is.EqualTo(ImportedItemType.Creditcard));
+            Assert.That(creditCard.Creditcard, Is.Not.Null);
+            Assert.That(creditCard.Creditcard!.CardholderName, Is.EqualTo("Holdername"));
+            Assert.That(creditCard.Creditcard.Number, Is.EqualTo("1234123412341234123"));
+            Assert.That(creditCard.Creditcard.Cvv, Is.EqualTo("1231"));
+            Assert.That(creditCard.Creditcard.Pin, Is.EqualTo("1231"));
+            Assert.That(creditCard.Creditcard.ExpiryMonth, Is.EqualTo("12"));
+            Assert.That(creditCard.Creditcard.ExpiryYear, Is.EqualTo("28"));
+        });
+
+        // Test root item (no folder)
+        var rootItem = importedCredentials.First(c => c.ServiceName == "Root item");
+        Assert.Multiple(() =>
+        {
+            Assert.That(rootItem.ServiceName, Is.EqualTo("Root item"));
+            Assert.That(rootItem.Username, Is.EqualTo("rootuser"));
+            Assert.That(rootItem.Password, Is.EqualTo("rootpass"));
+            Assert.That(rootItem.FolderPath, Is.Null);
+            Assert.That(rootItem.ItemType, Is.EqualTo(ImportedItemType.Login));
+        });
+    }
+
+    /// <summary>
+    /// Test case for NordPass folder import.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task NordPassFolderImport()
+    {
+        // Arrange
+        var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceStringAsync("AliasVault.UnitTests.TestData.Exports.nordpass.csv");
+
+        // Act
+        var importedCredentials = await NordPassImporter.ImportFromCsvAsync(fileContent);
+
+        // Assert - verify folder path is extracted
+        var folderNames = BaseImporter.CollectUniqueFolderNames(importedCredentials);
+        Assert.That(folderNames, Does.Contain("Business"));
+
+        var credentialWithFolder = importedCredentials.First(c => c.FolderPath == "Business");
+        Assert.That(credentialWithFolder.ServiceName, Is.EqualTo("Password title"));
+    }
+
+    /// <summary>
+    /// Test case for NordPass credit card detection and parsing.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task NordPassCreditCardDetectionAndParsing()
+    {
+        // Arrange
+        var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceStringAsync("AliasVault.UnitTests.TestData.Exports.nordpass.csv");
+
+        // Act
+        var importedCredentials = await NordPassImporter.ImportFromCsvAsync(fileContent);
+
+        // Assert - verify credit card is detected and parsed
+        var creditCardCredential = importedCredentials.First(c => c.ServiceName == "Creditcard Visa");
+        Assert.That(creditCardCredential.ItemType, Is.EqualTo(ImportedItemType.Creditcard));
+        Assert.That(creditCardCredential.Creditcard, Is.Not.Null);
+        Assert.That(creditCardCredential.Creditcard!.CardholderName, Is.EqualTo("Holdername"));
+        Assert.That(creditCardCredential.Creditcard.Number, Is.EqualTo("1234123412341234123"));
+        Assert.That(creditCardCredential.Creditcard.Cvv, Is.EqualTo("1231"));
+        Assert.That(creditCardCredential.Creditcard.Pin, Is.EqualTo("1231"));
+        Assert.That(creditCardCredential.Creditcard.ExpiryMonth, Is.EqualTo("12"));
+        Assert.That(creditCardCredential.Creditcard.ExpiryYear, Is.EqualTo("28"));
+
+        // Convert to item and verify fields
+        var items = BaseImporter.ConvertToItem([creditCardCredential]);
+        var creditCardItem = items[0];
+        Assert.That(creditCardItem.ItemType, Is.EqualTo(ItemType.CreditCard));
+
+        var cardNumber = creditCardItem.FieldValues.FirstOrDefault(fv => fv.FieldKey == FieldKey.CardNumber);
+        Assert.That(cardNumber?.Value, Is.EqualTo("1234123412341234123"));
+
+        var cardholderName = creditCardItem.FieldValues.FirstOrDefault(fv => fv.FieldKey == FieldKey.CardCardholderName);
+        Assert.That(cardholderName?.Value, Is.EqualTo("Holdername"));
+
+        var cardPin = creditCardItem.FieldValues.FirstOrDefault(fv => fv.FieldKey == FieldKey.CardPin);
+        Assert.That(cardPin?.Value, Is.EqualTo("1231"));
+    }
+
+    /// <summary>
     /// Test case for importing credentials from AliasVault Mobile App CSV export and ensuring all values are present.
     /// </summary>
     /// <returns>Async task.</returns>
