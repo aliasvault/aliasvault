@@ -76,8 +76,39 @@ else
             return string.Empty;
         }
 
+        var mimeType = DetectMimeType(Logo);
         var base64 = Convert.ToBase64String(Logo);
-        return $"data:image/png;base64,{base64}";
+        return $"data:{mimeType};base64,{base64}";
+    }
+
+    /// <summary>
+    /// Detect MIME type from file signature (magic numbers).
+    /// </summary>
+    private static string DetectMimeType(byte[] bytes)
+    {
+        if (bytes.Length >= 5)
+        {
+            var header = System.Text.Encoding.UTF8.GetString(bytes, 0, 5).ToLowerInvariant();
+            if (header.Contains("<?xml") || header.Contains("<svg"))
+            {
+                return "image/svg+xml";
+            }
+        }
+
+        if (bytes.Length >= 4)
+        {
+            if (bytes[0] == 0x00 && bytes[1] == 0x00 && bytes[2] == 0x01 && bytes[3] == 0x00)
+            {
+                return "image/x-icon";
+            }
+
+            if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47)
+            {
+                return "image/png";
+            }
+        }
+
+        return "image/x-icon";
     }
 
     /// <summary>
