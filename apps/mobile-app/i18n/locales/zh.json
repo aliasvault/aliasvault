@@ -22,6 +22,7 @@
     "disabled": "禁用",
     "twoFactorAuthentication": "双因素认证（2FA）",
     "add": "添加",
+    "generate": "Generate",
     "attachments": "附件",
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
