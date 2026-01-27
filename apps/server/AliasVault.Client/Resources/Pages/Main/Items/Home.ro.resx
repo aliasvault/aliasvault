@@ -144,7 +144,7 @@
     <comment>Filter option to show all items</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
-    <value>Passkey-uri</value>
+    <value>Passkeys</value>
     <comment>Filter option to show only passkeys</comment>
   </data>
   <data name="FilterAliasesOption" xml:space="preserve">
