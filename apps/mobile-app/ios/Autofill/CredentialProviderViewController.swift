@@ -246,11 +246,30 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
         let hostingController: UIViewController
 
         if isPasskeyAuthenticationMode {
-            // Use passkey delegate to setup passkey view
-            guard let passkeyDelegate = passkeyDelegate else {
-                throw NSError(domain: "CredentialProviderViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Passkey delegate not set"])
+            // Check if we actually have any passkeys for the requested rpId.
+            // iOS may call the passkey prepareCredentialList override even when the user
+            // tapped "Passwords" on a site that supports WebAuthn (e.g. Gmail). If we have
+            // no matching passkeys, fall back to showing the password credential view instead.
+            let passkeyCredentials = try vaultStore.getAllAutofillCredentialsWithPasskeys()
+            let rpId = (initialRpId ?? "").lowercased()
+            let hasMatchingPasskeys = !rpId.isEmpty && passkeyCredentials.contains { credential in
+                credential.passkey?.rpId.lowercased() == rpId
             }
-            hostingController = try passkeyDelegate.setupPasskeyView(vaultStore: vaultStore, rpId: initialRpId ?? "", clientDataHash: clientDataHash ?? Data())
+
+            if hasMatchingPasskeys {
+                // Use passkey delegate to setup passkey view
+                guard let passkeyDelegate = passkeyDelegate else {
+                    throw NSError(domain: "CredentialProviderViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Passkey delegate not set"])
+                }
+                hostingController = try passkeyDelegate.setupPasskeyView(vaultStore: vaultStore, rpId: initialRpId ?? "", clientDataHash: clientDataHash ?? Data())
+            } else {
+                // No matching passkeys found - fall back to password credential view
+                // so the user can still pick a password credential for this site.
+                guard let credentialDelegate = credentialDelegate else {
+                    throw NSError(domain: "CredentialProviderViewController", code: -1, userInfo: [NSLocalizedDescriptionKey: "Credential delegate not set"])
+                }
+                hostingController = try credentialDelegate.setupCredentialView(vaultStore: vaultStore, serviceUrl: initialRpId)
+            }
         } else {
             // Use credential delegate to setup credential view
             guard let credentialDelegate = credentialDelegate else {

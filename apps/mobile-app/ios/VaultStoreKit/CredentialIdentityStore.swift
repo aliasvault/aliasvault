@@ -80,11 +80,6 @@ public class CredentialIdentityStore {
     /// Creates one identity per URL for multi-URL support (iOS matches by domain itself)
     private func createPasswordIdentities(from credentials: [AutofillCredential]) -> [ASPasswordCredentialIdentity] {
         return credentials.flatMap { credential -> [ASPasswordCredentialIdentity] in
-            guard !credential.hasPasskey else {
-                // Skip if this record has a passkey as they will be saved in createPasskeyIdentities
-                return []
-            }
-
             guard credential.hasPassword else {
                 // Skip credentials with no password
                 return []
