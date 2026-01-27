@@ -82,6 +82,7 @@
     "email": "E-mail",
     "username": "Nome de Usuário",
     "password": "Senha",
+    "generate": "Generate",
     "serviceName": "Nome do Serviço",
     "loggedIn": "Logado",
     "syncingVault": "Sincronizando cofre",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "Criptografia E2E, totalmente privado.",
     "publicEmailTitle": "Provedores Públicos de E-mail Temporário",
     "publicEmailDescription": "Anônimo mas com privacidade limitada. Conteúdo do e-mail pode ser lido por qualquer um que souber o endereço.",
-    "generateRandomUsername": "Gerar nome de usuário aleatório",
-    "generateRandomPassword": "Gerar senha aleatória",
-    "generateNewPreview": "Gerar nova prévia",
-    "generateRandomAlias": "Gerar Alias Aleatório",
     "validation": {
       "required": "Este campo é obrigatório"
     }
