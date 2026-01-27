@@ -1,7 +1,7 @@
 {
   "auth": {
     "loginTitle": "Autentificare în AliasVault",
-    "username": "Nume utilizator sau e-mail",
+    "username": "Numele de utilizator sau adresa de e-mail",
     "usernamePlaceholder": "nume / nume@companie.com",
     "passwordPlaceholder": "Introdu parola",
     "rememberMe": "Ține-mă minte",
@@ -82,6 +82,7 @@
     "email": "E-mail",
     "username": "Utilizator",
     "password": "Parolă",
+    "generate": "Generează",
     "serviceName": "Nume Serviciu",
     "loggedIn": "Autentificat",
     "syncingVault": "Se sincronizează seiful",
@@ -156,7 +157,7 @@
     "manualCredentialDescription": "Specifică propria adresă de e-mail și numele de utilizator.",
     "manualCredentialDescriptionDropdown": "Utilizator și parolă manual",
     "failedToCreateIdentity": "Eșec la crearea identității. Încearcă din nou.",
-    "enterEmailAndOrUsername": "Introdu e-mail și/sau utilizator",
+    "enterEmailAndOrUsername": "Introduceți adresa de e-mail și/sau numele de utilizator",
     "autofillWithAliasVault": "Autocompletare cu AliasVault",
     "generateRandomPassword": "Generează parolă aleatorie (copiază în clipboard)",
     "generateNewPassword": "Generează parolă nouă",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "Criptat E2E, complet privat.",
     "publicEmailTitle": "Furnizori Publici de E-mail Temporar",
     "publicEmailDescription": "Anonim, dar cu confidențialitate limitată. Conținutul poate fi citit de oricine cunoaște adresa.",
-    "generateRandomUsername": "Generează utilizator aleatoriu",
-    "generateRandomPassword": "Generează parolă aleatorie",
-    "generateNewPreview": "Generează previzualizare nouă",
-    "generateRandomAlias": "Generează Alias Aleatoriu",
     "validation": {
       "required": "Acest câmp este obligatoriu"
     }
