@@ -82,6 +82,7 @@
     "email": "E-Mail-Adresse",
     "username": "Benutzername",
     "password": "Passwort",
+    "generate": "Generate",
     "serviceName": "Name des Dienstes",
     "loggedIn": "Angemeldet",
     "syncingVault": "Tresor wird synchronisiert",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "Ende-zu-Ende verschlüsselt, vollständig privat.",
     "publicEmailTitle": "Öffentliche Temp-E-Mail-Anbieter",
     "publicEmailDescription": "Anonyme, aber beschränkte Privatsphäre. E-Mail-Inhalt ist für jeden lesbar, der die Adresse kennt.",
-    "generateRandomUsername": "Zufälligen Benutzernamen generieren",
-    "generateRandomPassword": "Zufälliges Passwort generieren",
-    "generateNewPreview": "Neue Vorschau erstellen",
-    "generateRandomAlias": "Zufälligen Alias generieren",
     "validation": {
       "required": "Dieses Feld ist ein Pflichtfeld"
     }
