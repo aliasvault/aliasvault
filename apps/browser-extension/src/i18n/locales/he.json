@@ -82,6 +82,7 @@
     "email": "דוא״ל",
     "username": "שם משתמש",
     "password": "סיסמה",
+    "generate": "Generate",
     "serviceName": "שם השירות",
     "loggedIn": "נכנסת",
     "syncingVault": "הכספת מסתנכרת",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "הצפנה מקצה לקצה, פרטיות מלאה.",
     "publicEmailTitle": "ספקי תיבת דוא״ל זמנית ציבוריים",
     "publicEmailDescription": "פרטיות אלמונית אך מוגבלת. תוכן הדוא״ל נגיש לכל מי שיודע את הכתובת.",
-    "generateRandomUsername": "יצירת שם משתמש אקראי",
-    "generateRandomPassword": "יצירת סיסמה אקראית",
-    "generateNewPreview": "יצירת תצוגה מקדימה חדשה",
-    "generateRandomAlias": "יצירת כינוי אקראי",
     "validation": {
       "required": "שדה חובה"
     }
