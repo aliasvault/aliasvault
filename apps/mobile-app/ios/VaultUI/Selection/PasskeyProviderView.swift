@@ -123,59 +123,45 @@ private struct PasskeyCredentialCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    // Service logo (favicon) or fallback to passkey icon
-                    if let logo = credential.logo, !logo.isEmpty,
-                       let uiImage = UIImage(data: logo) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 40, height: 40)
-                            .cornerRadius(8)
-                    } else {
-                        // Fallback to passkey icon when favicon is not available
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 8)
-                                .fill(colors.primary.opacity(0.1))
-                                .frame(width: 40, height: 40)
-                            Image(systemName: "key.fill")
-                                .font(.system(size: 20))
-                                .foregroundColor(colors.primary)
-                        }
-                        .frame(width: 40, height: 40)
-                        .padding()
+            HStack(spacing: 16) {
+                // Service logo or placeholder (consistent with password credential cards)
+                ItemLogoView(logoData: credential.logo)
+                    .frame(width: 32, height: 32)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(credential.serviceName ?? credential.serviceUrl ?? "-")
+                        .font(.headline)
+                        .foregroundColor(colors.text)
+
+                    let identifier = credential.identifier
+                    if !identifier.isEmpty {
+                        Text(identifier)
+                            .font(.subheadline)
+                            .foregroundColor(colors.textMuted)
                     }
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(credential.serviceName ?? credential.serviceUrl ?? "-")
-                            .font(.headline)
-                            .foregroundColor(colors.text)
-
-                        let identifier = credential.identifier
-                        if !identifier.isEmpty {
-                            Text(identifier)
-                                .font(.subheadline)
-                                .foregroundColor(colors.textMuted)
-                        }
-
-                        // Show passkey indicator
-                        if credential.hasPasskey {
-                            Text(String(localized: "passkey", bundle: locBundle))
-                                .font(.caption)
-                                .foregroundColor(colors.primary)
-                        }
+                    // Show passkey indicator
+                    if credential.hasPasskey {
+                        Text(String(localized: "passkey", bundle: locBundle))
+                            .font(.caption)
+                            .foregroundColor(colors.primary)
                     }
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(colors.textMuted)
                 }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .foregroundColor(colors.textMuted)
             }
-            .padding()
+            .padding(8)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 2)
             .background(colors.accentBackground)
-            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(colors.accentBorder, lineWidth: 1)
+            )
+            .cornerRadius(8)
         }
         .buttonStyle(PlainButtonStyle())
     }

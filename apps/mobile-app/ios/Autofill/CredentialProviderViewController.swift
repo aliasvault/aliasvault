@@ -70,10 +70,20 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
         super.viewWillAppear(animated)
 
         // Check if we're in quick return mode
-        // Don't show any UI - Face ID will appear immediately with no background
+        // Show branded background while Face ID appears
         if isQuickReturnMode {
-            // Make the view transparent so system UI shows through
-            view.backgroundColor = .clear
+            let brandedView = UIHostingController(rootView: BrandedBackgroundView())
+            addChild(brandedView)
+            view.addSubview(brandedView.view)
+            brandedView.view.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                brandedView.view.topAnchor.constraint(equalTo: view.topAnchor),
+                brandedView.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                brandedView.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                brandedView.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            ])
+            brandedView.didMove(toParent: self)
+            currentHostingController = brandedView
             return
         }
 

@@ -26,9 +26,8 @@ struct UnlockCoordinatorView: View {
                 // Show PIN unlock view
                 PinUnlockView(viewModel: pinViewModel)
             } else {
-                // Transparent for biometric unlock - Face ID appears with no background
-                Color.clear
-                    .ignoresSafeArea()
+                // Branded background for biometric unlock - shows logo while Face ID appears
+                BrandedBackgroundView()
             }
         }
         .onAppear {
