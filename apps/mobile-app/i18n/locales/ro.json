@@ -323,7 +323,7 @@
   },
   "itemTypes": {
     "creating": "Creare",
-    "editing": "Se editează",
+    "editing": "Editare",
     "login": {
       "title": "Autentificare"
     },
@@ -331,7 +331,7 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Card de Credit",
+      "title": "Card de credit",
       "cardInformation": "Informații Card"
     },
     "note": {
@@ -355,7 +355,7 @@
     }
   },
   "fieldLabels": {
-    "login.username": "Utilizator",
+    "login.username": "Nume utilizator",
     "login.password": "Parolă",
     "login.email": "Email",
     "login.url": "URL",
@@ -365,8 +365,8 @@
     "alias.birthdate": "Data nașterii",
     "card.cardholder_name": "Nume Titular",
     "card.number": "Număr Card",
-    "card.expiry_month": "Luna Expirării",
-    "card.expiry_year": "Anul Expirării",
+    "card.expiry_month": "Lună expirare",
+    "card.expiry_year": "An expirare",
     "card.cvv": "CVV",
     "card.pin": "PIN",
     "notes.content": "Note"
@@ -389,7 +389,7 @@
     "serviceUrl": "URL serviciu",
     "loginCredentials": "Date de autentificare",
     "cardInformation": "Informații card",
-    "username": "Utilizator",
+    "username": "Nume utilizator",
     "email": "Email",
     "alias": "Alias",
     "metadata": "Metadate",
@@ -427,7 +427,7 @@
     "clearFilter": "Șterge filtrul",
     "recentEmails": "Email-uri recente",
     "loadingEmails": "Se încarcă email-urile...",
-    "noEmailsYet": "Nu s-au primit email-uri încă.",
+    "noEmailsYet": "Nu a fost primit încă niciun e-mail.",
     "offlineEmailsMessage": "Ești offline. Conectarea la internet este necesară pentru a încărca email-urile tale.",
     "emailLoadError": "A apărut o eroare la încărcarea email-urilor tale. Reîncearcă mai târziu.",
     "emailUnexpectedError": "A apărut o eroare neașteptată la încărcarea email-urilor tale. Reîncearcă mai târziu.",
@@ -537,7 +537,7 @@
     "noPlainText": "Acest email nu conține text simplu.",
     "sizeKB": "KB",
     "offlineMessage": "Ești offline. Conectarea la internet este necesară pentru a încărca email-urile tale.",
-    "emptyMessage": "Nu ai primit încă niciun email pe adresele tale private. Când vei primi un email nou, acesta va apărea aici.",
+    "emptyMessage": "Nu ai primit încă niciun e-mail pe adresele tale private. Atunci când vei primi un e-mail nou, acesta va apărea aici.",
     "time": {
       "justNow": "acum",
       "minutesAgo_single": "{{count}} minut în urmă",
