@@ -64,7 +64,7 @@
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Find all of your items below.</value>
+    <value>在下方查找您的所有项目。</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -98,11 +98,11 @@
   </data>
   <!-- Empty State -->
   <data name="NoItemsTitle" xml:space="preserve">
-    <value>No items yet</value>
+    <value>暂无项目</value>
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Create your first item using the</value>
+    <value>使用以下方式创建您的第一个项目</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
@@ -122,7 +122,7 @@
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>If you previously used a different password manager, you can import your items from it.</value>
+    <value>若您先前使用过其他密码管理器，则可以从中导入您的项目。</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
@@ -131,7 +131,7 @@
   </data>
   <!-- Error Messages -->
   <data name="FailedToLoadItemsMessage" xml:space="preserve">
-    <value>Failed to load items.</value>
+    <value>加载项目失败。</value>
     <comment>Error message when items fail to load</comment>
   </data>
   <!-- Filter Options -->
@@ -160,7 +160,7 @@
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>近期删除</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
@@ -173,15 +173,15 @@
     <comment>Empty state message when no items with attachments are found</comment>
   </data>
   <data name="NoItemsFound" xml:space="preserve">
-    <value>No items match the selected filter.</value>
+    <value>没有项目符合所选筛选器。</value>
     <comment>Empty state message when no items match the filter</comment>
   </data>
   <data name="EmptyFolderMessage" xml:space="preserve">
-    <value>This folder is empty.</value>
+    <value>此文件夹为空。</value>
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <value>您的所有项目都已整理到文件夹中。点击上方文件夹即可查看您的凭据，或使用搜索查找特定的项目。</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->
@@ -194,7 +194,7 @@
     <comment>Button text for editing a folder</comment>
   </data>
   <data name="DeleteFolder" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>删除文件夹</value>
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">
@@ -202,25 +202,25 @@
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
-    <value>Failed to create folder.</value>
+    <value>创建文件夹失败。</value>
     <comment>Error message when folder creation fails</comment>
   </data>
   <data name="FailedToDeleteFolder" xml:space="preserve">
-    <value>Failed to delete folder.</value>
+    <value>删除文件夹失败。</value>
     <comment>Error message when folder deletion fails</comment>
   </data>
   <!-- Infinite Scroll -->
   <data name="LoadingMore" xml:space="preserve">
-    <value>Loading more...</value>
+    <value>加载中…</value>
     <comment>Text shown when loading more items during infinite scroll</comment>
   </data>
   <!-- Clear Filter -->
   <data name="ClearFilter" xml:space="preserve">
-    <value>Clear filter</value>
+    <value>清除筛选器</value>
     <comment>Button text for clearing the active filter</comment>
   </data>
   <data name="FilteringBy" xml:space="preserve">
-    <value>Filtering by:</value>
+    <value>筛选条件：</value>
     <comment>Label shown when a filter is active</comment>
   </data>
 </root>
