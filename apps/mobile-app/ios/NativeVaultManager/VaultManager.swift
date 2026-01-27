@@ -7,6 +7,7 @@ import SwiftUI
 import VaultUI
 import AVFoundation
 import RustCoreFramework
+import AuthenticationServices
 
 /**
  * This class is used as a bridge to allow React Native to interact with the VaultStoreKit class.
@@ -331,19 +332,20 @@ public class VaultManager: NSObject {
     func openAutofillSettingsPage(_ resolve: @escaping RCTPromiseResolveBlock,
                                  rejecter reject: @escaping RCTPromiseRejectBlock) {
         DispatchQueue.main.async {
-            // Open main Settings app (root page)
-            // Note: Direct deep-linking to AutoFill settings is not available in iOS
-            // User needs to navigate to: General > AutoFill & Passwords
-            if let settingsUrl = URL(string: "App-prefs:") {
-                UIApplication.shared.open(settingsUrl) { success in
-                    if success {
-                        resolve(nil)
+            // Open the AutoFill & Passwords settings page directly via ASSettingsHelper.
+            ASSettingsHelper.openCredentialProviderAppSettings { error in
+                if let error = error {
+                    // Fall back to opening the Settings app root.
+                    if let settingsUrl = URL(string: "App-prefs:") {
+                        UIApplication.shared.open(settingsUrl) { _ in
+                            resolve(nil)
+                        }
                     } else {
-                        reject("SETTINGS_ERROR", "Failed to open settings", nil)
+                        reject("SETTINGS_ERROR", "Failed to open settings: \(error.localizedDescription)", error)
                     }
+                } else {
+                    resolve(nil)
                 }
-            } else {
-                reject("SETTINGS_ERROR", "Cannot create settings URL", nil)
             }
         }
     }
