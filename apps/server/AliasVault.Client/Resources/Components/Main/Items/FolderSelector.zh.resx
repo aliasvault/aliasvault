@@ -20,7 +20,7 @@
     </xsd:element>
   </xsd:schema>
   <data name="NoFolder">
-    <value>No folder</value>
+    <value>无文件夹</value>
     <comment>Text shown when no folder is selected</comment>
   </data>
   <data name="SelectFolderTitle">
