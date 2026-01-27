@@ -203,7 +203,7 @@
     "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
     "filters": {
       "all": "(Toate) Elementele",
-      "passkeys": "Passkey-uri"
+      "passkeys": "Passkeys"
     },
     "deleteItemTitle": "Șterge element",
     "deleteItemConfirm": "Sigur vrei să ștergi acest element?",
