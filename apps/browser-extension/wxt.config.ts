@@ -6,6 +6,7 @@ export default defineConfig({
   manifest: ({ browser, manifestVersion, mode, command }) => {
     const permissions = [
       "storage",
+      "unlimitedStorage",
       "activeTab",
       "contextMenus",
       "scripting",

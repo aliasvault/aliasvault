@@ -210,7 +210,7 @@ export async function handleWebAuthnGet(data: any): Promise<any> {
 async function checkForMatchingPasskeys(publicKey: any, origin: string): Promise<boolean> {
   try {
     // Check if vault is unlocked
-    const encryptedVault = await storage.getItem('session:encryptedVault') as string;
+    const encryptedVault = await storage.getItem('local:encryptedVault') as string;
     const encryptionKey = await handleGetEncryptionKey();
 
     if (!encryptedVault || !encryptionKey) {
