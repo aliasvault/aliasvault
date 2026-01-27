@@ -922,13 +922,14 @@ class OriginVerifier {
         Log.d(TAG, "Native app detected, facetId: $facetId")
 
         // Verify the native app is authorized via Asset Links
-        val certFingerprint = getCertificateFingerprint(callingAppInfo)
-        if (certFingerprint == null) {
-            Log.e(TAG, "Failed to get certificate fingerprint for $packageName")
+        val certFingerprints = getAllCertificateFingerprints(callingAppInfo)
+        if (certFingerprints.isEmpty()) {
+            Log.e(TAG, "Failed to get certificate fingerprints for $packageName")
             return OriginResult.Failure("Cannot verify calling application signature")
         }
 
-        val assetLinksResult = verifyAssetLinks(requestedRpId, packageName, certFingerprint)
+        Log.d(TAG, "Certificate fingerprints for $packageName: $certFingerprints")
+        val assetLinksResult = verifyAssetLinks(requestedRpId, packageName, certFingerprints)
         if (assetLinksResult is AssetLinksResult.Failure) {
             Log.e(TAG, "Asset links verification failed for $packageName on $requestedRpId: ${assetLinksResult.reason}")
             return OriginResult.Failure(assetLinksResult.reason)
@@ -994,7 +995,7 @@ class OriginVerifier {
      * Verify that a native app is authorized for the given RP ID via Asset Links.
      * Fetches /.well-known/assetlinks.json and checks for get_login_creds permission.
      */
-    private fun verifyAssetLinks(rpId: String, packageName: String, certHash: String): AssetLinksResult {
+    private fun verifyAssetLinks(rpId: String, packageName: String, certHashes: List<String>): AssetLinksResult {
         return try {
             val assetLinksUrl = URL("https://$rpId/.well-known/assetlinks.json")
             val connection = assetLinksUrl.openConnection() as HttpURLConnection
@@ -1014,11 +1015,11 @@ class OriginVerifier {
             reader.close()
 
             val assetLinks = JSONArray(response)
-            val normalizedCertHash = certHash.replace(":", "").lowercase()
+            val normalizedCertHashes = certHashes.map { it.replace(":", "").lowercase() }.toSet()
 
             val found = (0 until assetLinks.length()).any { i ->
                 val link = assetLinks.getJSONObject(i)
-                isMatchingAssetLink(link, packageName, normalizedCertHash)
+                isMatchingAssetLink(link, packageName, normalizedCertHashes)
             }
 
             if (found) {
@@ -1038,11 +1039,11 @@ class OriginVerifier {
         }
     }
 
-    /** Check if an asset link entry matches the given package and certificate. */
+    /** Check if an asset link entry matches the given package and any of the certificate fingerprints. */
     private fun isMatchingAssetLink(
         link: org.json.JSONObject,
         packageName: String,
-        normalizedCertHash: String,
+        normalizedCertHashes: Set<String>,
     ): Boolean {
         val relation = link.optJSONArray("relation") ?: return false
         val target = link.optJSONObject("target") ?: return false
@@ -1057,25 +1058,39 @@ class OriginVerifier {
 
         val fingerprints = target.optJSONArray("sha256_cert_fingerprints") ?: return false
         return (0 until fingerprints.length()).any { j ->
-            fingerprints.getString(j).replace(":", "").lowercase() == normalizedCertHash
+            fingerprints.getString(j).replace(":", "").lowercase() in normalizedCertHashes
         }
     }
 
-    /** Get a human-readable certificate fingerprint. */
+    /**
+     * Get all certificate fingerprints for the calling app.
+     * Uses signing certificate history for apps with key rotation,
+     * falls back to apkContentsSigners for apps with multiple signers.
+     */
     @RequiresApi(Build.VERSION_CODES.P)
-    fun getCertificateFingerprint(callingAppInfo: CallingAppInfo): String? {
+    fun getAllCertificateFingerprints(callingAppInfo: CallingAppInfo): List<String> {
         return try {
-            val signers = callingAppInfo.signingInfo.apkContentsSigners
-            if (signers.isEmpty()) return null
+            val signingInfo = callingAppInfo.signingInfo
+            val certs = if (signingInfo.hasMultipleSigners()) {
+                signingInfo.apkContentsSigners.toList()
+            } else {
+                signingInfo.signingCertificateHistory?.toList() ?: signingInfo.apkContentsSigners.toList()
+            }
 
-            val cert = signers[0].toByteArray()
+            if (certs.isEmpty()) {
+                Log.e(TAG, "No signing certificates found for ${callingAppInfo.packageName}")
+                return emptyList()
+            }
+
             val md = MessageDigest.getInstance("SHA-256")
-            val certHash = md.digest(cert)
-
-            certHash.joinToString(":") { "%02X".format(it) }
+            certs.map { cert ->
+                md.reset()
+                val certHash = md.digest(cert.toByteArray())
+                certHash.joinToString(":") { "%02X".format(it) }
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Error getting certificate fingerprint", e)
-            null
+            Log.e(TAG, "Error getting certificate fingerprints", e)
+            emptyList()
         }
     }
 }
