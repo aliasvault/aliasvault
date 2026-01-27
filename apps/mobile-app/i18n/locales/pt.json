@@ -22,6 +22,7 @@
     "disabled": "Desabilitado",
     "twoFactorAuthentication": "Autenticação de dois fatores",
     "add": "Adicionar",
+    "generate": "Generate",
     "attachments": "Anexos",
     "deleteItemConfirmTitle": "Excluir Item",
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
