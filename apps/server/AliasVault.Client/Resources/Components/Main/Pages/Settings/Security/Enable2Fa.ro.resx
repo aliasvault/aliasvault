@@ -73,7 +73,7 @@
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>Activați autentificarea cu doi factori pentru a spori securitatea seifurilor dumneavoastră.</value>
+    <value>Activați autentificarea cu doi factori pentru a spori securitatea seifurilor dvs.</value>
     <comment>Description text explaining 2FA setup</comment>
   </data>
   <!-- Setup instructions -->
