@@ -126,6 +126,10 @@
     <value>Annuler</value>
     <comment>Button text for canceling an action</comment>
   </data>
+  <data name="Generate" xml:space="preserve">
+    <value>Générer</value>
+    <comment>Button tooltip for generating a random value</comment>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>Supprimer</value>
     <comment>Button text for deleting an item</comment>
