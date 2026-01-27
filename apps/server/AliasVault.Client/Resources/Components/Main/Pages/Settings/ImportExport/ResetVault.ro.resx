@@ -63,7 +63,7 @@
     <comment>Page title</comment>
   </data>
   <data name="BreadcrumbImportExport" xml:space="preserve">
-    <value>Import / Export</value>
+    <value>Importă / Exportă</value>
     <comment>Breadcrumb for import export</comment>
   </data>
   <data name="BreadcrumbResetVault" xml:space="preserve">
