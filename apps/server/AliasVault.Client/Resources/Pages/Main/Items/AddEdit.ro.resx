@@ -80,7 +80,7 @@
     <comment>Label for website URL input</comment>
   </data>
   <data name="EmailLabel">
-    <value>Email</value>
+    <value>E-mail</value>
     <comment>Label for email input</comment>
   </data>
   <data name="UsernameLabel">
@@ -236,7 +236,7 @@
     <comment>Tooltip for removing a field</comment>
   </data>
   <data name="AddEmailField">
-    <value>Adaugă Email</value>
+    <value>Adaugă E-mail</value>
     <comment>Button text for adding email field</comment>
   </data>
 </root>
