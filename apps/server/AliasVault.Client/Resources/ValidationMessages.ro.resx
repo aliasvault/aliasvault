@@ -77,23 +77,23 @@
   </data>
   <!-- Required field validation messages -->
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Numele de utilizator este necesar</value>
+    <value>Numele de utilizator este obligatoriu</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="PasswordRequired" xml:space="preserve">
-    <value>Parola este necesară</value>
+    <value>Parola este obligatorie</value>
     <comment>Error message when password is required</comment>
   </data>
   <data name="SecretKeyRequired" xml:space="preserve">
-    <value>Cheia secretă este necesară</value>
+    <value>Cheia secretă este obligatorie</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ServiceNameRequired" xml:space="preserve">
-    <value>Numele serviciului este necesar</value>
+    <value>Numele serviciului este obligatoriu</value>
     <comment>Error message when service name is required</comment>
   </data>
   <data name="FieldRequired" xml:space="preserve">
-    <value>Acest câmp este necesar</value>
+    <value>Acest câmp este obligatoriu</value>
     <comment>Generic error message when a field is required</comment>
   </data>
   <!-- Terms and conditions -->
