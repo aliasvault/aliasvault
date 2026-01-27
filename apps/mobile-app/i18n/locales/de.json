@@ -22,6 +22,7 @@
     "disabled": "Deaktiviert",
     "twoFactorAuthentication": "Zwei-Faktor-Authentifizierung",
     "add": "Add",
+    "generate": "Generate",
     "attachments": "Anhänge",
     "deleteItemConfirmTitle": "Eintrag löschen",
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
