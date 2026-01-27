@@ -1,7 +1,7 @@
 {
   "auth": {
     "loginTitle": "登录到 AliasVault",
-    "username": "用户名或电子邮箱",
+    "username": "用户名或邮箱",
     "usernamePlaceholder": "姓名 / name@company.com",
     "passwordPlaceholder": "输入您的密码",
     "rememberMe": "记住我",
@@ -39,7 +39,7 @@
   },
   "menu": {
     "vault": "密码库",
-    "emails": "电子邮件"
+    "emails": "邮件"
   },
   "common": {
     "loading": "加载中…",
@@ -73,16 +73,16 @@
     "attachments": "附件",
     "loadingAttachments": "加载附件中…",
     "settings": "设置",
-    "recentEmails": "近期电子邮件",
+    "recentEmails": "近期邮件",
     "credentials": "凭据",
     "customFields": "自定义字段",
     "twoFactorAuthentication": "双因素认证（2FA）",
     "alias": "别名",
     "notes": "备注",
-    "email": "电子邮箱",
+    "email": "邮箱",
     "username": "用户名",
     "password": "密码",
-    "generate": "Generate",
+    "generate": "生成",
     "serviceName": "服务名称",
     "loggedIn": "已登录",
     "syncingVault": "正在同步密码库",
@@ -194,8 +194,8 @@
     "noMatchingItemsWithFilter": "未找到匹配“{{search}}”的 {{filter}} 项目",
     "clearSearch": "清除搜索",
     "clearFilter": "清除筛选器",
-    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
-    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
+    "emptyFolderHint": "此文件夹为空。要将项目移动到此文件夹，请编辑该项目，然后点击名称字段中的文件夹图标。",
+    "allItemsInFolders": "您的所有项目都已整理到文件夹中。点击上方文件夹即可查看您的凭据，或使用搜索查找特定的项目。",
     "deleteFolder": "删除文件夹",
     "deleteFolderKeepItems": "仅删除文件夹",
     "deleteFolderKeepItemsDescription": "项目将被移回主列表。",
@@ -221,8 +221,8 @@
     "privateEmailTitle": "私人邮箱",
     "privateEmailAliasVaultServer": "AliasVault 服务器",
     "privateEmailDescription": "端到端加密，完全私密。",
-    "publicEmailTitle": "公共临时电子邮箱提供商",
-    "publicEmailDescription": "匿名但隐私性有限，任何知晓其地址的人均可读取电子邮件内容。",
+    "publicEmailTitle": "公共临时邮箱提供商",
+    "publicEmailDescription": "匿名但隐私性有限，任何知晓其地址的人均可读取邮件内容。",
     "validation": {
       "required": "此字段为必填项"
     }
@@ -239,8 +239,8 @@
     "fieldType": "字段类型",
     "fieldTypes": {
       "text": "文本",
-      "hidden": "Hidden (masked text)",
-      "email": "电子邮件",
+      "hidden": "隐藏（已遮挡文本）",
+      "email": "邮件",
       "url": "URL",
       "phone": "手机",
       "number": "号码",
@@ -257,7 +257,7 @@
       "title": "信用卡"
     },
     "note": {
-      "title": "Secure Note"
+      "title": "安全笔记"
     }
   },
   "fieldLabels": {
@@ -268,7 +268,7 @@
     "alias.last_name": "姓",
     "alias.gender": "性别",
     "alias.birthdate": "出生日期",
-    "login.email": "电子邮件",
+    "login.email": "邮件",
     "notes.content": "备注",
     "card.cardholder_name": "持卡人姓名",
     "card.number": "卡号",
@@ -444,9 +444,9 @@
       "createNewPasskey": "创建新通行密钥",
       "replacingPasskey": "替换通行密钥：{{displayName}}",
       "confirmReplace": "确认替换",
-      "selectExistingLogin": "Add to existing login:",
-      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
-      "attachingToCredential": "Adding passkey to: {{serviceName}}",
+      "selectExistingLogin": "添加到现有登录：",
+      "selectExistingLoginDescription": "将此通行密钥附加到此站点的现有登录凭据中。",
+      "attachingToCredential": "正在将通行密钥添加到：{{serviceName}}",
       "attachPasskey": "添加通行密钥"
     },
     "settings": {
@@ -457,8 +457,8 @@
   "recentlyDeleted": {
     "title": "近期删除",
     "noItems": "没有删除的项目",
-    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+    "noItemsDescription": "您删除的项目将在此处停留 30 天，随后永久移除。",
+    "description": "这些项目将在 30 天后永久删除。您可以立即还原或永久删除。",
     "restore": "还原",
     "deletePermanently": "永久删除",
     "emptyAll": "全部清空",
@@ -466,9 +466,9 @@
     "daysRemaining_other": "剩余 {{count}} 天",
     "expiringSoon": "即将到期",
     "confirmDeleteTitle": "永久删除吗？",
-    "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+    "confirmDeleteMessage": "此项目将被永久删除，且无法恢复。",
     "confirmEmptyAllTitle": "清空“近期删除”吗？",
-    "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
+    "confirmEmptyAllMessage": "所有 {{count}} 个项目将被永久删除，且无法恢复。"
   },
   "upgrade": {
     "title": "升级密码库",
