@@ -82,6 +82,7 @@
     "email": "E-mail",
     "username": "Nome utente",
     "password": "Password",
+    "generate": "Generate",
     "serviceName": "Nome Servizio",
     "loggedIn": "Accesso effettuato",
     "syncingVault": "Sincronizzazione cassaforte",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "E2E crittografato, completamente privato.",
     "publicEmailTitle": "Fornitori Pubblici di Email Temporanee",
     "publicEmailDescription": "Anonimi ma con privacy ridotta. Accessibile a chiunque conosca l'indirizzo.",
-    "generateRandomUsername": "Genera nome utente casuale",
-    "generateRandomPassword": "Genera password casuale",
-    "generateNewPreview": "Genera nuova anteprima",
-    "generateRandomAlias": "Genera Alias Casuale",
     "validation": {
       "required": "Campo obbligatorio"
     }
