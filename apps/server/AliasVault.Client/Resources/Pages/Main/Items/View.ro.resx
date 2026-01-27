@@ -44,7 +44,7 @@
     <comment>Text for delete button on desktop</comment>
   </data>
   <data name="LoginDetailsSection">
-    <value>Detalii de conectare</value>
+    <value>Date de autentificare</value>
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
@@ -52,7 +52,7 @@
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
-    <value>Mai jos puteți vizualiza și copia detaliile de conectare salvate pentru acest element.</value>
+    <value>Mai jos poți vizualiza și copia datele de autentificare salvate pentru acest element.</value>
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
