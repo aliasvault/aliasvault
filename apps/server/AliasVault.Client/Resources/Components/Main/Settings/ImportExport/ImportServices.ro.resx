@@ -60,7 +60,7 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Importați parolele din seiful 1Password</value>
+    <value>Importă parolele din 1Password</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
@@ -73,7 +73,7 @@
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">
-    <value>Importați parolele din seiful Bitwarden</value>
+    <value>Importă parolele din Bitwarden</value>
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
@@ -86,7 +86,7 @@
   </data>
   <!-- LastPass -->
   <data name="LastPassDescription" xml:space="preserve">
-    <value>Importați parolele din seiful LastPass</value>
+    <value>Importă parolele din LastPass</value>
     <comment>Description for LastPass import service</comment>
   </data>
   <data name="LastPassInstructionsPart1" xml:space="preserve">
@@ -99,7 +99,7 @@
   </data>
   <!-- Chrome -->
   <data name="ChromeDescription" xml:space="preserve">
-    <value>Importați parolele din managerul de parole Chrome</value>
+    <value>Importă parolele din managerul de parole Chrome</value>
     <comment>Description for Chrome import service</comment>
   </data>
   <data name="ChromeInstructionsPart1" xml:space="preserve">
@@ -112,7 +112,7 @@
   </data>
   <!-- KeePass -->
   <data name="KeePassDescription" xml:space="preserve">
-    <value>Importați parolele din seiful KeePass</value>
+    <value>Importă parolele din KeePass</value>
     <comment>Description for KeePass import service</comment>
   </data>
   <data name="KeePassInstructionsPart1" xml:space="preserve">
@@ -125,7 +125,7 @@
   </data>
   <!-- Generic CSV -->
   <data name="GenericCsvDescription" xml:space="preserve">
-    <value>Importați parolele folosind un șablon CSV</value>
+    <value>Importă parolele folosind un șablon CSV</value>
     <comment>Description for Generic CSV import service</comment>
   </data>
   <data name="GenericCsvInstructionsPart1" xml:space="preserve">
@@ -154,7 +154,7 @@
   </data>
   <!-- Firefox -->
   <data name="FirefoxDescription" xml:space="preserve">
-    <value>Importați parolele din managerul de parole Firefox</value>
+    <value>Importă parolele din managerul de parole Firefox</value>
     <comment>Description for Firefox import service</comment>
   </data>
   <data name="FirefoxInstructionsPart1" xml:space="preserve">
@@ -167,7 +167,7 @@
   </data>
   <!-- Dashlane -->
   <data name="DashlaneDescription" xml:space="preserve">
-    <value>Importați parolele din contul tău Dashlane</value>
+    <value>Importă parolele din contul tău Dashlane</value>
     <comment>Description for Dashlane import service</comment>
   </data>
   <data name="DashlaneInstructionsPart1" xml:space="preserve">
@@ -180,7 +180,7 @@
   </data>
   <!-- KeePassXC -->
   <data name="KeePassXCDescription" xml:space="preserve">
-    <value>Importați parolele din seiful KeePassXC</value>
+    <value>Importă parolele din KeePassXC</value>
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
@@ -193,7 +193,7 @@
   </data>
   <!-- Proton Pass -->
   <data name="ProtonPassDescription" xml:space="preserve">
-    <value>Importați parolele din seiful Proton Pass</value>
+    <value>Importă parolele din Proton Pass</value>
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
@@ -206,7 +206,7 @@
   </data>
   <!-- Strongbox -->
   <data name="StrongboxDescription" xml:space="preserve">
-    <value>Importați parolele din seiful Strongbox</value>
+    <value>Importă parolele din Strongbox</value>
     <comment>Description for Strongbox import service</comment>
   </data>
   <data name="StrongboxInstructionsPart1" xml:space="preserve">
@@ -219,7 +219,7 @@
   </data>
   <!-- AliasVault -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Importați parolele de pe un alt server AliasVault sau dintr-o copie de rezervă manuală</value>
+    <value>Importă parolele de pe un alt server AliasVault sau dintr-o copie de rezervă manuală</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
@@ -228,7 +228,7 @@
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">
-    <value>Importați parolele din seiful Dropbox Passwords</value>
+    <value>Importă parolele din Dropbox Passwords</value>
     <comment>Description for Dropbox import service</comment>
   </data>
   <data name="DropboxInstructionsPart1" xml:space="preserve">
