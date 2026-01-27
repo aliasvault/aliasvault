@@ -63,11 +63,11 @@
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Pe această pagină puteți importa și exporta seiful dumneavoastră.</value>
+    <value>Pe această pagină poți importa și exporta seiful tău.</value>
     <comment>Page description</comment>
   </data>
   <data name="ImportSectionTitle" xml:space="preserve">
-    <value>Importați parole</value>
+    <value>Importă parole</value>
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
@@ -109,7 +109,7 @@ Sunteți sigur că doriți să continuați exportul?</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>Această opțiune vă permite să goliți complet seiful, păstrând în același timp contul și aliasurile de email. Folosiți-o dacă doriți să o luați de la început după un import dintr-un alt manager sau dacă doriți să ștergeți toate datele de autentificare pentru a reîncepe procesul.</value>
+    <value>Această opțiune îți permite să golești complet seiful, păstrând în același timp contul și aliasurile de e-mail. Folosește-o dacă dorești să inițiezi o configurare nouă după un import din alt manager sau dacă vrei să ștergi toate datele de autentificare pentru a reîncepe procesul.</value>
     <comment>Reset vault section description</comment>
   </data>
 </root>
