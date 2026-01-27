@@ -79,7 +79,7 @@
     <comment>Description for password unlock form</comment>
   </data>
   <data name="YourPasswordLabel" xml:space="preserve">
-    <value>Parola dumneavoastră</value>
+    <value>Parola ta</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="UnlockButton" xml:space="preserve">
@@ -107,7 +107,7 @@
     <comment>Error message for incorrect password</comment>
   </data>
   <data name="SessionTimedOutError" xml:space="preserve">
-    <value>Sesiunea dumneavoastră a expirat. Autentifică-te din nou.</value>
+    <value>Sesiunea ta a expirat. Autentifică-te din nou.</value>
     <comment>Error message for session timeout</comment>
   </data>
   <data name="ConnectionFailedError" xml:space="preserve">
