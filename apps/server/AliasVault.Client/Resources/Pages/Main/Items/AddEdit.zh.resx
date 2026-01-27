@@ -29,7 +29,7 @@
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
-    <value>Create a new item below.</value>
+    <value>在下方创建新项目。</value>
     <comment>Description for adding a new item</comment>
   </data>
   <data name="EditItemDescription">
