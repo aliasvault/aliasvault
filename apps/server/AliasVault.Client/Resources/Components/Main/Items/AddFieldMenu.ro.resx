@@ -74,11 +74,11 @@
     <comment>Cardholder name field label</comment>
   </data>
   <data name="FieldCardExpiryMonth">
-    <value>Luna expirării</value>
+    <value>Lună expirare</value>
     <comment>Expiry month field label</comment>
   </data>
   <data name="FieldCardExpiryYear">
-    <value>Anul expirării</value>
+    <value>An expirare</value>
     <comment>Expiry year field label</comment>
   </data>
   <data name="FieldCardCvv">
