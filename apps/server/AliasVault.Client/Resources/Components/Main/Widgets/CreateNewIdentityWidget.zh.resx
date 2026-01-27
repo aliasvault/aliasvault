@@ -83,7 +83,7 @@
     <comment>Placeholder text for login name field</comment>
   </data>
   <data name="NamePlaceholderAlias" xml:space="preserve">
-    <value>例如 Facebook</value>
+    <value>如 Facebook</value>
     <comment>Placeholder text for alias name field</comment>
   </data>
   <data name="NamePlaceholderCard" xml:space="preserve">
@@ -127,7 +127,7 @@
     <comment>Credit card item type label (short)</comment>
   </data>
   <data name="TypeNote" xml:space="preserve">
-    <value>注意</value>
+    <value>备注</value>
     <comment>Note item type label</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
@@ -139,7 +139,7 @@
     <comment>Error message when item creation fails</comment>
   </data>
   <data name="ItemCreatedSuccessMessage" xml:space="preserve">
-    <value>项目创建成功.</value>
+    <value>项目创建成功。</value>
     <comment>Success message when item is created</comment>
   </data>
 </root>
