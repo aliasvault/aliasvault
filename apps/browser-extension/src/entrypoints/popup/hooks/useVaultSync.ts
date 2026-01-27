@@ -191,7 +191,13 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
                   // Server returned Outdated - another device uploaded. Re-sync.
                   return syncVault(options);
                 } else {
+                  /*
+                   * Upload failed (e.g. server returned 500). Report error to prevent
+                   * the caller from re-checking isDirty and looping immediately.
+                   */
                   console.error('Failed to upload merged vault:', uploadResponse.error);
+                  onError?.(uploadResponse.error ?? t('common.errors.unknownError'));
+                  return false;
                 }
 
                 // Store metadata and load merged vault into memory
@@ -279,7 +285,13 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
              */
             return syncVault(options);
           } else {
+            /*
+             * Upload failed (e.g. server returned 500). Report error to prevent
+             * the caller from re-checking isDirty and looping immediately.
+             */
             console.error('Failed to upload pending vault:', uploadResponse.error);
+            onError?.(uploadResponse.error ?? t('common.errors.unknownError'));
+            return false;
           }
 
           onSuccess?.(false);
