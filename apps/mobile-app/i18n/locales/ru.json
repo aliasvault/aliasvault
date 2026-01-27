@@ -22,6 +22,7 @@
     "disabled": "Отключено",
     "twoFactorAuthentication": "Двухфакторная аутентификация",
     "add": "Добавить",
+    "generate": "Generate",
     "attachments": "Вложения",
     "deleteItemConfirmTitle": "Удалить элемент",
     "deleteItemConfirmDescription": "Вы уверены, что хотите удалить этот элемент?",
