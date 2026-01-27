@@ -63,7 +63,7 @@
     <comment>Text shown when service logo is not available</comment>
   </data>
   <data name="ImportFromServiceTitle" xml:space="preserve">
-    <value>Import din {0}</value>
+    <value>Importă din {0}</value>
     <comment>Modal title for importing from a service. {0} is placeholder for service name</comment>
   </data>
   <data name="UploadExportFileText" xml:space="preserve">
