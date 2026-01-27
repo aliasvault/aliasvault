@@ -46,7 +46,7 @@
     <comment>Description for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescriptionNote">
-    <value>Notă: E-mailurile primite pe domenii private sunt criptate end-to-end și pot fi citite doar de dumneavoastră, în timp ce e-mailurile primite pe domenii publice pot fi citite de oricine cunoaște adresa de e-mail respectivă.</value>
+    <value>Notă: E-mailurile primite pe domenii private sunt criptate end-to-end și pot fi citite doar de tine, în timp ce e-mailurile primite pe domenii publice pot fi citite de oricine cunoaște adresa de e-mail respectivă.</value>
     <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
   </data>
   <data name="DefaultEmailDomainLearnMore">
