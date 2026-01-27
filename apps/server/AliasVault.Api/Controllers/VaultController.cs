@@ -358,6 +358,10 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     /// <returns>A task representing the asynchronous operation.</returns>
     private async Task UpdateUserEmailClaims(AliasServerDbContext context, AliasVaultUser user, List<string> newEmailAddresses)
     {
+        // Deduplicate email addresses to prevent unique constraint violations when
+        // multiple credentials share the same private email address.
+        newEmailAddresses = newEmailAddresses.Select(EmailHelper.SanitizeEmail).Distinct().ToList();
+
         // Get all existing user email claims.
         var userOwnedEmailClaims = await context.UserEmailClaims
             .Where(x => x.UserId == user.Id)
