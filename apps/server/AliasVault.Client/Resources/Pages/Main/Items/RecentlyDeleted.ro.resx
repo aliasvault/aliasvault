@@ -108,7 +108,7 @@
     <comment>Title for delete confirmation modal</comment>
   </data>
   <data name="ConfirmDeleteMessage" xml:space="preserve">
-    <value>Această acțiune nu poate fi anulată. Elementul va fi eliminat definitiv din seiful dumneavoastră.</value>
+    <value>Această acțiune este ireversibilă. Elementul va fi șters definitiv din seif.</value>
     <comment>Message in delete confirmation modal</comment>
   </data>
   <data name="DeletePermanently" xml:space="preserve">
