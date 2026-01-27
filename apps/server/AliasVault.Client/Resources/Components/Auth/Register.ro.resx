@@ -65,7 +65,7 @@
   </data>
   <!-- Form labels -->
   <data name="UsernameOrEmailLabel" xml:space="preserve">
-    <value>Nume de utilizator sau e-mail</value>
+    <value>Numele de utilizator sau e-mailul tău</value>
     <comment>Label for username/email input field</comment>
   </data>
   <data name="PasswordLabel" xml:space="preserve">
