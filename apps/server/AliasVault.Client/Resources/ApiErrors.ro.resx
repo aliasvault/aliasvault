@@ -129,7 +129,7 @@
     <value>Înregistrarea de conturi noi este momentan dezactivată pe acest server. Contactează administratorul.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
-    <value>Nume de utilizator sau parolă invalidă. Încearcă din nou.</value>
+    <value>Utilizator sau parolă invalidă. Încearcă din nou.</value>
   </data>
   <data name="USERNAME_REQUIRED" xml:space="preserve">
     <value>Numele de utilizator este obligatoriu.</value>
