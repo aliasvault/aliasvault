@@ -82,6 +82,7 @@
     "email": "Email",
     "username": "Username",
     "password": "Password",
+    "generate": "Generate",
     "serviceName": "Service Name",
     "loggedIn": "Logged in",
     "syncingVault": "Syncing vault",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "E2E encrypted, fully private.",
     "publicEmailTitle": "Public Temp Email Providers",
     "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
-    "generateRandomUsername": "Generate random username",
-    "generateRandomPassword": "Generate random password",
-    "generateNewPreview": "Generate new preview",
-    "generateRandomAlias": "Generate Random Alias",
     "validation": {
       "required": "This field is required"
     }
