@@ -82,6 +82,7 @@
     "email": "Adres e-mail",
     "username": "Nazwa użytkownika",
     "password": "Hasło",
+    "generate": "Generate",
     "serviceName": "Nazwa usługi",
     "loggedIn": "Zalogowano",
     "syncingVault": "Synchronizacja sejfu",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "Szyfrowane E2E, w pełni prywatne.",
     "publicEmailTitle": "Publiczni dostawcy tymczasowych adresów e-mail",
     "publicEmailDescription": "Anonimowe, ale ograniczają prywatność. Treść wiadomości e-mail jest dostępna dla każdego, kto zna adres.",
-    "generateRandomUsername": "Wygeneruj losową nazwę użytkownika",
-    "generateRandomPassword": "Wygeneruj losowe hasło",
-    "generateNewPreview": "Utwórz nowy podgląd",
-    "generateRandomAlias": "Generuj losowy tożsamość",
     "validation": {
       "required": "To pole jest wymagane"
     }
