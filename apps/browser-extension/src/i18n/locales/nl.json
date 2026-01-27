@@ -82,6 +82,7 @@
     "email": "E-mail",
     "username": "Gebruikersnaam",
     "password": "Wachtwoord",
+    "generate": "Generate",
     "serviceName": "Naam",
     "loggedIn": "Ingelogd",
     "syncingVault": "Vault synchroniseren",
@@ -222,10 +223,6 @@
     "privateEmailDescription": "E2E versleuteld, volledig privé.",
     "publicEmailTitle": "Publieke tijdelijke e-mailproviders",
     "publicEmailDescription": "Anoniem maar beperkte privacy. E-mail inhoud is leesbaar door iedereen die het adres kent.",
-    "generateRandomUsername": "Gebruikersnaam genereren",
-    "generateRandomPassword": "Wachtwoord genereren",
-    "generateNewPreview": "Genereer nieuw voorbeeld",
-    "generateRandomAlias": "Genereer willekeurige alias",
     "validation": {
       "required": "Dit veld is verplicht"
     }
