@@ -13,11 +13,11 @@
     "authCodePlaceholder": "Introdu codul din 6 cifre",
     "verify": "Verifică",
     "twoFactorNote": "Notă: dacă nu ai acces la dispozitivul de autentificare, poți reseta 2FA cu un cod de recuperare autentificându-te prin intermediul site-ului web.",
-    "masterPassword": "Parolă master",
+    "masterPassword": "Parolă principală",
     "unlockVault": "Deblocați",
     "unlockWithPin": "Deblochează cu PIN",
     "enterPinToUnlock": "Introdu codul PIN pentru a debloca seiful",
-    "useMasterPassword": "Folosește parola master",
+    "useMasterPassword": "Folosește parola principală",
     "unlockTitle": "Deblochează seiful",
     "logoutConfirm": "Sigur vrei să te deconectezi?",
     "unlockSuccessTitle": "Seiful a fost deblocat cu succes",
@@ -122,7 +122,7 @@
       "USERNAME_ALREADY_IN_USE": "Numele de utilizator este deja folosit.",
       "USERNAME_AVAILABLE": "Numele de utilizator este disponibil.",
       "USERNAME_MISMATCH": "Numele de utilizator nu se potrivește cu utilizatorul curent.",
-      "PASSWORD_MISMATCH": "Parola furnizată nu se potrivește cu parola curentă.",
+      "PASSWORD_MISMATCH": "Parola furnizată nu se potrivește cu parola ta curentă.",
       "ACCOUNT_SUCCESSFULLY_DELETED": "Cont șters cu succes.",
       "USERNAME_EMPTY_OR_WHITESPACE": "Numele de utilizator nu poate fi gol sau format doar din spații goale.",
       "USERNAME_TOO_SHORT": "Nume prea scurt: trebuie să aibă cel puțin 3 caractere.",
@@ -399,8 +399,8 @@
     },
     "unlockMethod": {
       "title": "Metodă deblocare seif",
-      "introText": "Alege cum dorești să deblochezi seiful. Poți folosi parola master sau un cod PIN pentru acces rapid. După 3 încercări eșuate ale PIN-ului, va trebui să folosești parola master.",
-      "password": "Parolă master",
+      "introText": "Alege cum dorești să îți deblochezi seiful. Poți folosi parola principală (întotdeauna disponibilă) sau poți configura un cod PIN pentru acces rapid. După 3 încercări eșuate ale PIN-ului, va trebui să folosești parola principală.",
+      "password": "Parolă principală",
       "pin": "Cod PIN",
       "pinDescription": "Deblochează seiful cu codul PIN",
       "setupPin": "Configurează Cod PIN",
@@ -412,8 +412,8 @@
       "incorrectPin": "PIN incorect. {{attemptsRemaining}} încercări rămase.",
       "incorrectPinSingular": "PIN incorect. 1 încercare rămasă.",
       "enableSuccess": "Deblocarea prin PIN a fost activată!",
-      "pinLocked": "Deblocarea prin PIN a fost dezactivată. Folosește parola master.",
-      "pinSecurityWarning": "Deblocarea prin PIN în extensie poate fi mai puțin sigură decât parola master. Folosește-o doar pe dispozitive în care ai încredere deplină."
+      "pinLocked": "Deblocarea prin PIN a fost dezactivată. Folosește parola principală.",
+      "pinSecurityWarning": "Deblocarea prin PIN în extensia de browser poate fi mai puțin sigură decât parola principală. PIN-urile au o entropie mai scăzută, fiind vulnerabile la atacuri de tip brute-force dacă dispozitivul este compromis. Folosește-o doar pe dispozitive în care ai încredere deplină."
     }
   },
   "passkeys": {
