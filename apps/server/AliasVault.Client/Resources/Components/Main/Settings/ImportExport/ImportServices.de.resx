@@ -203,7 +203,7 @@
     <comment>NordPass export instructions part 1</comment>
   </data>
   <data name="NordPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Sobald Du die Datei exportiert hast, kannst Du sie nachfolgend hochladen.</value>
     <comment>NordPass export instructions part 2</comment>
   </data>
   <!-- Proton Pass -->
