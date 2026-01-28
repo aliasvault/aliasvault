@@ -193,11 +193,11 @@
   </data>
   <!-- NordPass -->
   <data name="NordPassDescription" xml:space="preserve">
-    <value>Import passwords from NordPass</value>
+    <value>Importar senhas do NordPass</value>
     <comment>Description for NordPass import service</comment>
   </data>
   <data name="NordPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your NordPass passwords, you need to export them as a CSV file. You can do this by opening the NordPass app or web vault, going to 'Settings' > 'Export Items', and selecting the CSV format.</value>
+    <value>Para importar suas senhas do NordPass, você precisa exportá-las como um arquivo CSV. Você pode fazer isto abrindo o aplicativo ou a página web do seu cofre NordPass, indo em 'Configurações' > 'Exportar Itens', e selecionar o formato CSV.</value>
     <comment>NordPass export instructions part 1</comment>
   </data>
   <data name="NordPassInstructionsPart2" xml:space="preserve">
