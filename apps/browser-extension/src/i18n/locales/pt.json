@@ -82,7 +82,7 @@
     "email": "E-mail",
     "username": "Nome de Usuário",
     "password": "Senha",
-    "generate": "Generate",
+    "generate": "Gerar",
     "serviceName": "Nome do Serviço",
     "loggedIn": "Logado",
     "syncingVault": "Sincronizando cofre",
@@ -195,7 +195,7 @@
     "clearSearch": "Limpar pesquisa",
     "clearFilter": "Limpar filtro",
     "emptyFolderHint": "Esta pasta está vazia. Para mover itens para esta pasta, edite o item e toque no ícone da pasta no campo de nome.",
-    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
+    "allItemsInFolders": "Todos os seus itens estão organizados em pastas. Clique em uma pasta acima para ver suas credenciais, ou utilize a busca para encontrar itens específicos.",
     "deleteFolder": "Excluir Pasta",
     "deleteFolderKeepItems": "Excluir apenas a pasta",
     "deleteFolderKeepItemsDescription": "Itens serão movidos de volta para a lista principal.",
@@ -292,8 +292,8 @@
     "uploading": "Fazendo upload...",
     "uploadSuccess": "Arquivos enviados com sucesso.",
     "deleteSuccess": "Anexo excluído com sucesso.",
-    "firefoxExpandRequired": "To upload files, use the expanded window.",
-    "openExpandedWindow": "Open Expanded Window"
+    "firefoxExpandRequired": "Para fazer o upload dr arquivos, use a tela expandida.",
+    "openExpandedWindow": "Abrir Tela Expandida"
   },
   "emails": {
     "title": "E-mails",
