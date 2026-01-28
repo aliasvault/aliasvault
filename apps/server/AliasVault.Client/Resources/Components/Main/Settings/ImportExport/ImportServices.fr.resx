@@ -193,15 +193,15 @@
   </data>
   <!-- NordPass -->
   <data name="NordPassDescription" xml:space="preserve">
-    <value>Import passwords from NordPass</value>
+    <value>Importer des mots de passe depuis NordPass</value>
     <comment>Description for NordPass import service</comment>
   </data>
   <data name="NordPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your NordPass passwords, you need to export them as a CSV file. You can do this by opening the NordPass app or web vault, going to 'Settings' > 'Export Items', and selecting the CSV format.</value>
+    <value>Afin d'importer vos mots de passe NordPass, vous devez les exporter dans un fichier CSV. Vous pouvez le faire en ouvrant l'application NordPass ou le coffre web, en allant dans 'Paramètres' > 'Exporter les éléments' et en sélectionnant le format CSV.</value>
     <comment>NordPass export instructions part 1</comment>
   </data>
   <data name="NordPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Une fois que vous avez exporté le fichier, vous pouvez le charger ci-dessous.</value>
     <comment>NordPass export instructions part 2</comment>
   </data>
   <!-- Proton Pass -->
