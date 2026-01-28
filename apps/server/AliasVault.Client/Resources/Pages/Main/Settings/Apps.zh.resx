@@ -38,7 +38,7 @@
     <comment>Title for browser extensions section</comment>
   </data>
   <data name="BrowserExtensionsDescription">
-    <value>AliasVault浏览器扩展程序允许您在任何网站上自动填充现有凭据。它还允许您在注册过程中生成新的别名，访问所有别名收到的电子邮件，以及查看您的别名和身份。</value>
+    <value>AliasVault浏览器扩展程序允许您在任何网站上自动填充现有凭据。它还允许您在注册过程中生成新的别名，访问所有别名收到的邮件，以及查看您的别名和身份。</value>
     <comment>Description for browser extensions</comment>
   </data>
   <data name="InstallButton">
@@ -55,7 +55,7 @@
     <comment>Title for mobile apps section</comment>
   </data>
   <data name="MobileAppsDescription">
-    <value>AliasVault移动应用允许您随时随地访问您的别名和身份，查看和管理收到的电子邮件，并随时生成新的别名。您的数据通过设备上的生物识别认证得到全面保护。</value>
+    <value>AliasVault移动应用允许您随时随地访问您的别名和身份，查看和管理收到的邮件，并随时生成新的别名。您的数据通过设备上的生物识别认证得到全面保护。</value>
     <comment>Description for mobile apps</comment>
   </data>
   <data name="DownloadButton">
