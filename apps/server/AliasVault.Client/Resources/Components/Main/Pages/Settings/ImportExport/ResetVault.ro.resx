@@ -107,7 +107,7 @@
     <comment>Reset vault final step irreversible note</comment>
   </data>
   <data name="ResetVaultEnterPasswordLabel" xml:space="preserve">
-    <value>Introduceți parola pentru confirmare</value>
+    <value>Introdu parola pentru confirmare</value>
     <comment>Reset vault password confirmation label</comment>
   </data>
   <data name="ResetVaultConfirmButton" xml:space="preserve">
