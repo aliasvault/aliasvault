@@ -288,7 +288,7 @@ const Settings: React.FC = () => {
                   <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round"  d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
                   </svg>
-                  <span className="text-gray-900 dark:text-white">{t('settings.unlockMethod.title')}</span>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.unlockMethod.title')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"
@@ -320,7 +320,7 @@ const Settings: React.FC = () => {
                       d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
                     />
                   </svg>
-                  <span className="text-gray-900 dark:text-white">{t('settings.autoLockTimeout')}</span>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.autoLockTimeout')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"
@@ -352,7 +352,7 @@ const Settings: React.FC = () => {
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
                     />
                   </svg>
-                  <span className="text-gray-900 dark:text-white">{t('settings.autofillSettings')}</span>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.autofillSettings')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"
@@ -384,7 +384,7 @@ const Settings: React.FC = () => {
                       d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
                     />
                   </svg>
-                  <span className="text-gray-900 dark:text-white">{t('settings.passkeySettings')}</span>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.passkeySettings')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"
@@ -423,7 +423,7 @@ const Settings: React.FC = () => {
                       d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"
                     />
                   </svg>
-                  <span className="text-gray-900 dark:text-white">{t('settings.clipboardSettings')}</span>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.clipboardSettings')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"
@@ -455,7 +455,7 @@ const Settings: React.FC = () => {
                       d="M4 6h16M4 12h16m-7 6h7"
                     />
                   </svg>
-                  <span className="text-gray-900 dark:text-white">{t('settings.contextMenuSettings')}</span>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.contextMenuSettings')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"
@@ -487,7 +487,7 @@ const Settings: React.FC = () => {
                       d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"
                     />
                   </svg>
-                  <span className="text-gray-900 dark:text-white">{t('settings.language')}</span>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.language')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"
