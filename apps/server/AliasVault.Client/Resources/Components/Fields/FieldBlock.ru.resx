@@ -124,7 +124,7 @@
   </data>
   <!-- History -->
   <data name="ViewHistory" xml:space="preserve">
-    <value>View history</value>
+    <value>Посмотреть историю</value>
     <comment>Tooltip for history icon button</comment>
   </data>
 </root>
