@@ -70,7 +70,7 @@
     <comment>Card number field label</comment>
   </data>
   <data name="FieldCardCardholderName">
-    <value>Nume deținător card</value>
+    <value>Nume Titular</value>
     <comment>Cardholder name field label</comment>
   </data>
   <data name="FieldCardExpiryMonth">
