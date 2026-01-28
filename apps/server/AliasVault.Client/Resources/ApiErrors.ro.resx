@@ -144,7 +144,7 @@
     <value>Numele de utilizator nu coincide cu utilizatorul curent.</value>
   </data>
   <data name="PASSWORD_MISMATCH" xml:space="preserve">
-    <value>Parola furnizată nu coincide cu parola ta curentă.</value>
+    <value>Parola furnizată nu se potrivește cu parola ta curentă.</value>
   </data>
   <data name="ACCOUNT_SUCCESSFULLY_DELETED" xml:space="preserve">
     <value>Cont șters cu succes.</value>
