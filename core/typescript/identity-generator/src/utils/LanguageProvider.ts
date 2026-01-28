@@ -49,6 +49,12 @@ export function getAvailableLanguages(): ILanguageOption[] {
       label: 'Deutsch',
       flag: '🇩🇪',
       alternativeCodes: ['de-DE', 'de-AT', 'de-CH', 'de-LU', 'de-LI']
+    },
+    {
+      value: 'it',
+      label: 'Italiano',
+      flag: '🇮🇹',
+      alternativeCodes: ['it-IT', 'it-CH', 'it-SM', 'it-VA']
     }
   ];
 }

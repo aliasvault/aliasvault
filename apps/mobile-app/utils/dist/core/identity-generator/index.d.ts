@@ -149,6 +149,35 @@ declare class IdentityGeneratorDe extends IdentityGenerator {
 }
 
 /**
+ * Identity generator for Italian language using Italian dictionaries with decade-based firstname support.
+ * This implementation uses age-appropriate names based on birthdate.
+ */
+declare class IdentityGeneratorIt extends IdentityGenerator {
+    /**
+     * Get the male first names (generic fallback - empty as we use decade-based).
+     */
+    protected getFirstNamesMaleJson(): string[];
+    /**
+     * Get the female first names (generic fallback - empty as we use decade-based).
+     */
+    protected getFirstNamesFemaleJson(): string[];
+    /**
+     * Get the last names.
+     */
+    protected getLastNamesJson(): string[];
+    /**
+     * Get decade-based male first names.
+     * Each range covers a specific decade with names popular during that period.
+     */
+    protected getFirstNamesMaleByDecade(): IDecadeFirstnames[];
+    /**
+     * Get decade-based female first names.
+     * Each range covers a specific decade with names popular during that period.
+     */
+    protected getFirstNamesFemaleByDecade(): IDecadeFirstnames[];
+}
+
+/**
  * Helper utilities for identity generation that can be used by multiple client applications.
  */
 declare class IdentityHelperUtils {
@@ -275,7 +304,7 @@ declare function mapUiLanguageToIdentityLanguage(uiLanguageCode: string | null |
 /**
  * Creates a new identity generator based on the language.
  * Falls back to English if the requested language is not supported.
- * @param language - The language to use for generating the identity (e.g. "en", "nl", "de").
+ * @param language - The language to use for generating the identity (e.g. "en", "nl", "de", "it").
  * @returns A new identity generator instance.
  */
 declare const CreateIdentityGenerator: (language: string) => IdentityGenerator;
@@ -287,4 +316,4 @@ declare const CreateIdentityGenerator: (language: string) => IdentityGenerator;
  */
 declare const CreateUsernameEmailGenerator: () => UsernameEmailGenerator;
 
-export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type ILanguageOption, type Identity, IdentityGenerator, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorNl, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages, mapUiLanguageToIdentityLanguage };
+export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type ILanguageOption, type Identity, IdentityGenerator, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorIt, IdentityGeneratorNl, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages, mapUiLanguageToIdentityLanguage };

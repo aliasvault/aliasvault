@@ -3,6 +3,7 @@ export * from './types/Gender';
 export * from './implementations/IdentityGeneratorEn';
 export * from './implementations/IdentityGeneratorNl';
 export * from './implementations/IdentityGeneratorDe';
+export * from './implementations/IdentityGeneratorIt';
 export * from './implementations/base/IdentityGenerator';
 export * from './interfaces/IIdentityGenerator';
 export * from './utils/IdentityHelperUtils';
