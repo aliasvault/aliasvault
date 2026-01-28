@@ -68,7 +68,7 @@
     <comment>Label for password field</comment>
   </data>
   <data name="FieldLabel_login_email" xml:space="preserve">
-    <value>电子邮件</value>
+    <value>邮件</value>
     <comment>Label for email field</comment>
   </data>
   <data name="FieldLabel_login_url" xml:space="preserve">
