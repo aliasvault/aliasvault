@@ -172,6 +172,18 @@
         // If service not started and not starting, clicking should start it. Otherwise, stop it.
         if (service.CurrentStatus == "Started" || service.DesiredStatus == "Started")
         {
+            // Show confirmation modal before stopping a service.
+            var confirmed = await ConfirmModalService.ShowConfirmation(
+                "Stop " + service.DisplayName + "?",
+                "Are you sure you want to stop the " + service.DisplayName + " service?\n\nThe service will be unavailable until it is started again.",
+                "Stop service",
+                "Cancel");
+
+            if (!confirmed)
+            {
+                return;
+            }
+
             service.DesiredStatus = "Stopped";
         }
         else
