@@ -229,7 +229,7 @@
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>Introduceți o adresă de e-mail validă.</value>
+    <value>Introdu o adresă de e-mail validă.</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">
