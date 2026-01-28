@@ -51,7 +51,7 @@
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
-    <value>AliasVault 会生成一个包含安全私人电子邮件地址的随机身份</value>
+    <value>AliasVault 会生成一个包含安全私人邮件地址的随机身份</value>
     <comment>First step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep2">
@@ -59,11 +59,11 @@
     <comment>Second step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep3">
-    <value>收到的电子邮件会显示在本应用中，并可在浏览器中打开</value>
+    <value>收到的邮件会显示在本应用中，并可在浏览器中打开</value>
     <comment>Third step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep4">
-    <value>您的真实电子邮件地址和其他个人信息将保持私密</value>
+    <value>您的真实邮件地址和其他个人信息将保持私密</value>
     <comment>Fourth step in how it works explanation</comment>
   </data>
   <!-- Tips step content -->
