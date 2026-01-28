@@ -34,15 +34,15 @@
   </data>
   <!-- Email Settings Section -->
   <data name="EmailSettingsTitle">
-    <value>电子邮件设置</value>
+    <value>邮件设置</value>
     <comment>Title for email settings section</comment>
   </data>
   <data name="DefaultEmailDomainLabel">
-    <value>默认电子邮件域名</value>
+    <value>默认邮件域名</value>
     <comment>Label for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescription">
-    <value>设置创建新凭据时将使用的默认电子邮件域名。</value>
+    <value>设置创建新凭据时将使用的默认邮件域名。</value>
     <comment>Description for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescriptionNote">
@@ -58,7 +58,7 @@
     <comment>Label for private domains group</comment>
   </data>
   <data name="PrivateDomainsDisabledLabel">
-    <value>未配置私密电子邮件域</value>
+    <value>未配置私密邮件域</value>
     <comment>Label for private domains group when no private email domains are configured</comment>
   </data>
   <data name="PublicDomainsLabel">
