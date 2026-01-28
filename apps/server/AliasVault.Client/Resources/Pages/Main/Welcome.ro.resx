@@ -68,11 +68,11 @@
   </data>
   <!-- Tips step content -->
   <data name="MasterPasswordTipTitle">
-    <value>Păstrați parola master în siguranță</value>
+    <value>Păstrați parola principală în siguranță</value>
     <comment>Title for master password tip</comment>
   </data>
   <data name="MasterPasswordTipContent">
-    <value>Parola master este necesară pentru a vă decripta seiful. Nu o partajați niciodată și păstrați-o într-un loc sigur. Atenție: Dacă pierdeți parola master, datele nu mai pot fi recuperate – nici măcar de către echipa noastră.</value>
+    <value>Parola principală este necesară pentru a vă decripta seiful. Nu o partajați niciodată și păstrați-o într-un loc sigur. Atenție: Dacă pierdeți parola principală, datele nu mai pot fi recuperate – nici măcar de către echipa noastră.</value>
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
