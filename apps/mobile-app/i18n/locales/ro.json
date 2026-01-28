@@ -22,7 +22,7 @@
     "disabled": "Dezactivat",
     "twoFactorAuthentication": "Autentificare cu doi factori",
     "add": "Adaugă",
-    "generate": "Generate",
+    "generate": "Generează",
     "attachments": "Atașamente",
     "deleteItemConfirmTitle": "Șterge elementul",
     "deleteItemConfirmDescription": "Sigur dorești să ștergi acest element?",
@@ -51,7 +51,7 @@
     "enterPasswordPlaceholder": "Parolă",
     "enterAuthCode": "Introdu codul din 6 cifre",
     "usernamePlaceholder": "nume / nume@companie.com",
-    "passwordPlaceholder": "Introdu parola",
+    "passwordPlaceholder": "Introduceți parola",
     "enableBiometric": "Activezi {{biometric}}?",
     "biometricPrompt": "Dorești să utilizezi {{biometric}} pentru a debloca seiful?",
     "tryBiometricAgain": "Reîncearcă {{biometric}}",
@@ -70,7 +70,7 @@
       "httpError": "Eroare HTTP: {{status}}"
     },
     "confirmLogout": "Sigur dorești să te deconectezi? Va trebui să te autentifici din nou cu parola master pentru a accesa seiful.",
-    "noAccountYet": "Nu ai cont încă?",
+    "noAccountYet": "Nu ai încă un cont?",
     "createNewVault": "Creează un seif nou",
     "connectingTo": "Conectare la",
     "loggedInAs": "Autentificat ca"
@@ -238,16 +238,16 @@
     "securitySettings": {
       "title": "Securitate",
       "description": "Gestionează setările de securitate ale contului și seifului.",
-      "changeMasterPassword": "Schimbați parola master",
+      "changeMasterPassword": "Schimbă parola master",
       "activeSessionsTitle": "Sesiuni Active",
       "recentAuthLogs": "Autentificări recente",
       "deleteAccountTitle": "Șterge Contul",
       "changePassword": {
         "headerText": "Schimbarea parolei master modifică și cheile de criptare ale seifului. Se recomandă schimbarea periodică a parolei master.",
-        "currentPassword": "Parola Curentă",
-        "newPassword": "Parola Nouă",
-        "confirmNewPassword": "Confirmă Parola Nouă",
-        "enterCurrentPassword": "Introdu parola curentă",
+        "currentPassword": "Parolă actuală",
+        "newPassword": "Parolă nouă",
+        "confirmNewPassword": "Confirmă parola nouă",
+        "enterCurrentPassword": "Introdu parola actuală",
         "enterNewPassword": "Introdu parola nouă",
         "changePassword": "Schimbă Parola",
         "fillAllFields": "Completează toate câmpurile tale",
@@ -259,7 +259,7 @@
         "failedToChange": "Schimbarea parolei a eșuat. Încearcă din nou."
       },
       "activeSessions": {
-        "headerText": "Mai jos este lista dispozitivelor unde contul tău este autentificat. Te poți deconecta de pe oricare dintre ele aici.",
+        "headerText": "Mai jos găsiți lista dispozitivelor pe care sunteți conectat în prezent sau unde aveți o sesiune activă. Te poți deconecta de la oricare dintre aceste sesiuni aici.",
         "noSessions": "Nicio sesiune activă",
         "revoke": "Revocă",
         "revokeSession": "Revocă Sesiunea",
@@ -541,7 +541,7 @@
     "invalidEmailFormat": "Format e-mail invalid"
   },
   "apiErrors": {
-    "CLAIM_DOES_NOT_MATCH_USER": "Adresa de e-mail aleasă este deja utilizată. Modifică datele tale de autentificare pentru a continua.",
+    "CLAIM_DOES_NOT_MATCH_USER": "Adresa de e-mail aleasă este deja utilizată. Schimbă adresa de e-mail prin editarea datelor tale de autentificare.",
     "CLAIM_DOES_NOT_EXIST": "A apărut o eroare la încărcarea e-mailurilor tale. Editează și salvează datele tale de autentificare pentru a sincroniza baza de date, apoi reîncearcă.",
     "UNKNOWN_ERROR": "A apărut o eroare necunoscută. Reîncearcă din nou.",
     "ACCOUNT_LOCKED": "Contul tău este blocat temporar din cauza prea multor încercări eșuate. Reîncearcă mai târziu.",
