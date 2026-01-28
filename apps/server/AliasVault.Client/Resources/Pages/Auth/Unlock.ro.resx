@@ -75,7 +75,7 @@
     <comment>Button text for password unlock</comment>
   </data>
   <data name="EnterMasterPasswordDescription" xml:space="preserve">
-    <value>Introduceți parola master pentru a vă debloca seiful.</value>
+    <value>Introdu parola master pentru a vă debloca seiful.</value>
     <comment>Description for password unlock form</comment>
   </data>
   <data name="YourPasswordLabel" xml:space="preserve">
