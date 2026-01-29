@@ -38,11 +38,11 @@
   </data>
   <!-- Status text -->
   <data name="Creating">
-    <value>创建</value>
+    <value>创建中</value>
     <comment>Status text when creating a new item</comment>
   </data>
   <data name="Editing">
-    <value>编辑</value>
+    <value>编辑中</value>
     <comment>Status text when editing an existing item</comment>
   </data>
   <!-- Buttons -->
