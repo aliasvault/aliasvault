@@ -3,7 +3,7 @@
 - Aangepaste velden
 - Veld geschiedenis tracking
 - Recent verwijderde items
-- Volledige offline modus: bekijk en wijzig je vault complet offline, veranderingen syncen automatisch wanneer je weer online bent
+- Volledige offline modus: bekijk en wijzig je vault compleet offline, veranderingen syncen automatisch wanneer je weer online bent
 - Roemeense app taaloptie toegevoegd
 - Italiaanse identiteit generator taaloptie toegevoegd
 - Verbeterde autofill matching
