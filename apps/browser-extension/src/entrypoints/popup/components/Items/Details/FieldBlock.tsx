@@ -16,16 +16,68 @@ type FieldBlockProps = {
   hideLabel?: boolean;
 }
 
-/**
- * Convert URLs in text to clickable links (same as NotesBlock).
- */
-const convertUrlsToLinks = (text: string): string => {
-  const urlPattern = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/g;
+/** URL pattern for detecting links in text */
+const URL_PATTERN = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/g;
 
-  return text.replace(urlPattern, (url) => {
+/**
+ * Split text into parts, separating URLs from regular text.
+ */
+const splitTextAndUrls = (text: string): { type: 'text' | 'url'; content: string; href?: string }[] => {
+  const parts: { type: 'text' | 'url'; content: string; href?: string }[] = [];
+  let lastIndex = 0;
+  let match;
+
+  // Reset regex state
+  URL_PATTERN.lastIndex = 0;
+
+  while ((match = URL_PATTERN.exec(text)) !== null) {
+    // Add text before the URL
+    if (match.index > lastIndex) {
+      parts.push({ type: 'text', content: text.slice(lastIndex, match.index) });
+    }
+
+    // Add the URL
+    const url = match[0];
     const href = url.startsWith('http') ? url : `http://${url}`;
-    return `<a href="${href}" target="_blank" rel="noopener noreferrer" class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">${url}</a>`;
-  });
+    parts.push({ type: 'url', content: url, href });
+
+    lastIndex = match.index + url.length;
+  }
+
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push({ type: 'text', content: text.slice(lastIndex) });
+  }
+
+  return parts;
+};
+
+/**
+ * Render text with clickable links.
+ */
+const TextWithLinks: React.FC<{ text: string }> = ({ text }) => {
+  const parts = splitTextAndUrls(text);
+
+  return (
+    <>
+      {parts.map((part, index) => {
+        if (part.type === 'url') {
+          return (
+            <a
+              key={index}
+              href={part.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300"
+            >
+              {part.content}
+            </a>
+          );
+        }
+        return <React.Fragment key={index}>{part.content}</React.Fragment>;
+      })}
+    </>
+  );
 };
 
 /**
@@ -152,7 +204,7 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = fals
       );
 
     case FieldTypes.TextArea:
-      // Use NotesBlock-style rendering for multi-line text
+      // Use safe React rendering for multi-line text with clickable links
       return (
         <div>
           {!hideLabel && (
@@ -161,10 +213,9 @@ const FieldBlock: React.FC<FieldBlockProps> = ({ field, itemId, hideLabel = fals
             </label>
           )}
           <div className="p-4 bg-gray-50 rounded-lg dark:bg-gray-700">
-            <p
-              className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap"
-              dangerouslySetInnerHTML={{ __html: convertUrlsToLinks(value) }}
-            />
+            <p className="text-gray-900 dark:text-gray-100 whitespace-pre-wrap">
+              <TextWithLinks text={value} />
+            </p>
           </div>
         </div>
       );

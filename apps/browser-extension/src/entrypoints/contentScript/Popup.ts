@@ -32,6 +32,41 @@ let popupListeners = new WeakMap<HTMLElement, EventListener>();
 const clickValidator = ClickValidator.getInstance();
 
 /**
+ * Create a suggestion pill element using safe DOM methods.
+ */
+const createSuggestionPill = (value: string): HTMLElement => {
+  const pill = document.createElement('span');
+  pill.className = 'av-suggestion-pill';
+
+  const textSpan = document.createElement('span');
+  textSpan.className = 'av-suggestion-pill-text';
+  textSpan.dataset.value = value;
+  textSpan.textContent = value;
+
+  const deleteSpan = document.createElement('span');
+  deleteSpan.className = 'av-suggestion-pill-delete';
+  deleteSpan.dataset.value = value;
+  deleteSpan.title = 'Remove';
+  deleteSpan.textContent = '×';
+
+  pill.appendChild(textSpan);
+  pill.appendChild(deleteSpan);
+
+  return pill;
+};
+
+/**
+ * Create a suggested name element using safe DOM methods.
+ */
+const createSuggestedNameSpan = (name: string): HTMLElement => {
+  const span = document.createElement('span');
+  span.className = 'av-suggested-name';
+  span.dataset.name = name;
+  span.textContent = name;
+  return span;
+};
+
+/**
  * Open (or refresh) the autofill popup including check if vault is locked.
  */
 export function openAutofillPopup(input: HTMLInputElement, container: HTMLElement) : void {
@@ -865,8 +900,6 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       const passwordLengthText = await t('items.passwordLength');
       const changePasswordComplexityText = await t('items.changePasswordComplexity');
 
-      const suggestedNamesHtml = await getSuggestedNamesHtml(suggestedNames, suggestedNames[0] ?? '');
-
       // Create the main content
       popup.innerHTML = `
       <div class="av-create-popup-header">
@@ -925,7 +958,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
           class="av-create-popup-input"
           placeholder="${enterServiceNameText}"
         >
-        ${suggestedNames.length > 1 ? `<div class="av-suggested-names">${suggestedNamesHtml}</div>` : ''}
+        ${suggestedNames.length > 1 ? '<div class="av-suggested-names"></div>' : ''}
       </div>
 
       <div class="av-create-popup-mode av-create-popup-random-mode">
@@ -1029,6 +1062,12 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       const emailSuggestions = popup.querySelector('#email-suggestions') as HTMLElement;
       const usernameSuggestions = popup.querySelector('#username-suggestions') as HTMLElement;
 
+      // Populate suggested names
+      const suggestedNamesContainer = popup.querySelector('.av-suggested-names') as HTMLElement;
+      if (suggestedNamesContainer) {
+        await populateSuggestedNames(suggestedNamesContainer, suggestedNames, suggestedNames[0] ?? '');
+      }
+
       /**
        * Update history with new value (max 2 unique entries)
        */
@@ -1063,40 +1102,38 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       };
 
       /**
-       * Format suggestions HTML as pill-style buttons
+       * Update suggestions display using safe DOM methods.
        */
-      const formatSuggestionsHtml = async (history: string[], currentValue: string): Promise<string> => {
+      const updateSuggestions = (input: HTMLInputElement, suggestionsContainer: HTMLElement, history: string[]): void => {
+        const currentValue = input.value.trim();
+
         // Filter out the current value from history and limit to 2 items
         const filteredHistory = history
           .filter(item => item.toLowerCase() !== currentValue.toLowerCase())
           .slice(0, 2);
 
+        // Clear existing content
+        suggestionsContainer.textContent = '';
+
         if (filteredHistory.length === 0) {
-          return '';
+          suggestionsContainer.style.display = 'none';
+          return;
         }
 
-        // Build HTML with pill-style buttons
-        return filteredHistory.map(item =>
-          `<span class="av-suggestion-pill">
-            <span class="av-suggestion-pill-text" data-value="${item}">${item}</span>
-            <span class="av-suggestion-pill-delete" data-value="${item}" title="Remove">×</span>
-          </span>`
-        ).join(' ');
-      };
+        // Build pill elements
+        filteredHistory.forEach((item, index) => {
+          if (index > 0) {
+            suggestionsContainer.appendChild(document.createTextNode(' '));
+          }
+          suggestionsContainer.appendChild(createSuggestionPill(item));
+        });
 
-      /**
-       * Update suggestions display
-       */
-      const updateSuggestions = async (input: HTMLInputElement, suggestionsContainer: HTMLElement, history: string[]): Promise<void> => {
-        const currentValue = input.value.trim();
-        const html = await formatSuggestionsHtml(history, currentValue);
-        suggestionsContainer.innerHTML = html;
-        suggestionsContainer.style.display = html ? 'flex' : 'none';
+        suggestionsContainer.style.display = 'flex';
       };
 
       // Initial display of suggestions
-      await updateSuggestions(customEmail, emailSuggestions, emailHistory);
-      await updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
+      updateSuggestions(customEmail, emailSuggestions, emailHistory);
+      updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
 
       // Handle popout button click
       popoutBtn.addEventListener('click', (e) => {
@@ -1112,13 +1149,13 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       });
 
       // Handle email input
-      customEmail.addEventListener('input', async () => {
-        await updateSuggestions(customEmail, emailSuggestions, emailHistory);
+      customEmail.addEventListener('input', () => {
+        updateSuggestions(customEmail, emailSuggestions, emailHistory);
       });
 
       // Handle username input
-      customUsername.addEventListener('input', async () => {
-        await updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
+      customUsername.addEventListener('input', () => {
+        updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
       });
 
       // Handle suggestion clicks for email
@@ -1133,7 +1170,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
           if (value) {
             const updatedHistory = await removeFromHistory(value, CUSTOM_EMAIL_HISTORY_KEY);
             emailHistory.splice(0, emailHistory.length, ...updatedHistory);
-            await updateSuggestions(customEmail, emailSuggestions, emailHistory);
+            updateSuggestions(customEmail, emailSuggestions, emailHistory);
           }
         } else {
           // Check if pill or pill text was clicked
@@ -1143,7 +1180,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
             const value = textElement?.dataset.value;
             if (value) {
               customEmail.value = value;
-              await updateSuggestions(customEmail, emailSuggestions, emailHistory);
+              updateSuggestions(customEmail, emailSuggestions, emailHistory);
             }
           }
         }
@@ -1161,7 +1198,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
           if (value) {
             const updatedHistory = await removeFromHistory(value, CUSTOM_USERNAME_HISTORY_KEY);
             usernameHistory.splice(0, usernameHistory.length, ...updatedHistory);
-            await updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
+            updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
           }
         } else {
           // Check if pill or pill text was clicked
@@ -1171,7 +1208,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
             const value = textElement?.dataset.value;
             if (value) {
               customUsername.value = value;
-              await updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
+              updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
             }
           }
         }
@@ -1671,10 +1708,9 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
             customUsername.value = name;
 
             // Update the suggested names section
-            const suggestedNamesContainer = target.closest('.av-suggested-names');
+            const suggestedNamesContainer = target.closest('.av-suggested-names') as HTMLElement;
             if (suggestedNamesContainer) {
-            // Update the suggestions HTML using the helper function
-              suggestedNamesContainer.innerHTML = await getSuggestedNamesHtml(suggestedNames, name);
+              await populateSuggestedNames(suggestedNamesContainer, suggestedNames, name);
             }
           }
         }
@@ -1689,21 +1725,33 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
 }
 
 /**
- * Get suggested names HTML with current input value excluded
+ * Populate a suggested names container using safe DOM methods.
  */
-async function getSuggestedNamesHtml(suggestedNames: string[], currentValue: string): Promise<string> {
+async function populateSuggestedNames(container: HTMLElement, suggestedNames: string[], currentValue: string): Promise<void> {
   // Filter out the current value and create unique set of remaining suggestions
   const filteredSuggestions = [...new Set(suggestedNames.filter(n => n !== currentValue))];
 
+  // Clear existing content
+  container.textContent = '';
+
   if (filteredSuggestions.length === 0) {
-    return '';
+    return;
   }
 
   const orLabel = await t('content.or');
 
-  return `${orLabel} ${filteredSuggestions.map((name, index) =>
-    `<span class="av-suggested-name" data-name="${name}">${name}</span>${index < filteredSuggestions.length - 1 ? ', ' : ''}`
-  ).join('')}?`;
+  // Add "or" label as text node
+  container.appendChild(document.createTextNode(orLabel + ' '));
+
+  // Add each suggestion
+  filteredSuggestions.forEach((name, index) => {
+    container.appendChild(createSuggestedNameSpan(name));
+    if (index < filteredSuggestions.length - 1) {
+      container.appendChild(document.createTextNode(', '));
+    }
+  });
+
+  container.appendChild(document.createTextNode('?'));
 }
 
 /**
