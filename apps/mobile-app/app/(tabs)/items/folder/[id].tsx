@@ -362,6 +362,8 @@ export default function FolderViewScreen(): React.ReactNode {
     await executeVaultMutation(async () => {
       await dbContext.sqliteClient!.folders.delete(folderId);
     });
+    // Emit event to refresh the home screen folder list
+    emitter.emit('credentialChanged');
     router.back();
   }, [dbContext.sqliteClient, folderId, executeVaultMutation, router]);
 
@@ -376,6 +378,8 @@ export default function FolderViewScreen(): React.ReactNode {
     await executeVaultMutation(async () => {
       await dbContext.sqliteClient!.folders.deleteWithContents(folderId);
     });
+    // Emit event to refresh the home screen folder list
+    emitter.emit('credentialChanged');
     router.back();
   }, [dbContext.sqliteClient, folderId, executeVaultMutation, router]);
 
