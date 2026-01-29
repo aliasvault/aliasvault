@@ -71,27 +71,19 @@
   </data>
   <!-- Alias Settings Section -->
   <data name="AliasSettingsTitle">
-    <value>Настройки псевдонимов</value>
-    <comment>Title for alias settings section</comment>
+    <value>Настройки генератора личностей</value>
+    <comment>Title for identity generator settings section</comment>
   </data>
   <data name="AliasGenerationLanguageLabel">
-    <value>Язык псевдонима</value>
+    <value>Язык</value>
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
     <value>Задайте язык по умолчанию, который будет использоваться при создании новых личностей.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
-  <data name="EnglishOption">
-    <value>Английский</value>
-    <comment>English language option</comment>
-  </data>
-  <data name="DutchOption">
-    <value>Голландский</value>
-    <comment>Dutch language option</comment>
-  </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Пол при создании псевдонима</value>
+    <value>Пол</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
@@ -109,6 +101,14 @@
   <data name="FemaleOption">
     <value>Женский</value>
     <comment>Female gender option</comment>
+  </data>
+  <data name="AliasGenerationAgeRangeLabel">
+    <value>Возрастной диапазон</value>
+    <comment>Label for alias generation age range setting</comment>
+  </data>
+  <data name="AliasGenerationAgeRangeDescription">
+    <value>Установите диапазон возраста по умолчанию для создания новых личностей. Это влияет на дату рождения, назначаемую сгенерированной личности.</value>
+    <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
   <data name="ClipboardSettingsTitle">

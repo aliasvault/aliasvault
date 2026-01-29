@@ -59,36 +59,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Швидке розблокування сховища</value>
-    <comment>Title for quick vault unlock section</comment>
+    <value>Розблокування ключем доступу</value>
+    <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Ключ розшифрування сховища зберігається за допомогою ключа доступу. Це означає, що під час перезавантаження сторінки або вкладки AliasVault ви можете увійти за допомогою обличчя, відбитка пальця або вбудованих ключів безпеки браузера. Якщо ви хочете вимкнути швидке розблокування сховища, ви можете зробити це за допомогою кнопки нижче.</value>
-    <comment>Description when quick unlock is enabled</comment>
+    <value>Ваш головний пароль зашифровано за допомогою ключа доступу PRF та зберігається локально. Коли ви перезавантажите сторінку або вкладку AliasVault, ви зможете розблокувати сховище за допомогою ключа доступу. Якщо ви хочете вимкнути розблокування за допомогою ключа доступу, ви можете зробити це за допомогою кнопки нижче. Ваш головний пароль все ще працюватиме для розблокування сховища.</value>
+    <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Вимкнути швидке розблокування сховища</value>
-    <comment>Button to disable quick vault unlock</comment>
+    <value>Вимкнути розблокування кодом доступу</value>
+    <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>За замовчуванням, під час перезавантаження сторінки або вкладки AliasVault, вам буде запропоновано ще раз ввести головний пароль. Або ж ви можете використовувати ключ доступу браузера (або апаратний автентифікатор, такий як YubiKey) замість головного пароля. Це дозволить вам розблокувати сховище за допомогою обличчя, відбитка пальця або вбудованих ключів безпеки браузера. Це стосується лише поточного пристрою та браузера.</value>
-    <comment>Description when quick unlock is disabled</comment>
+    <value>За замовчуванням, перезавантаження сторінки або вкладки AliasVault вимагає повторного введення головного пароля. За допомогою ключа доступу ви можете миттєво розблокувати своє сховище. Після ввімкнення головний пароль шифрується локально за допомогою розширення PRF ключа доступу. Примітка: ключ доступу працюватиме лише на тому пристрої та в тому браузері, на якому його ввімкнено.</value>
+    <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>Зверніть увагу, що ця функція є експериментальною та може працювати не на всіх пристроях або в усіх браузерах. Для її роботи ваш браузер має підтримувати WebAuthn та розширення PRF. Якщо у вас виникнуть проблеми, ви можете будь-коли вимкнути цю функцію.</value>
-    <comment>Warning about experimental nature of the feature</comment>
+    <value>Ця функція наразі підтримується розширенням для браузера AliasVault та додатком для iOS. Підтримка Android з’явиться найближчим часом. Якщо у вас виникнуть проблеми, ви можете вимкнути цю функцію будь-коли.</value>
+    <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Увімкнути швидке розблокування сховища</value>
-    <comment>Button to enable quick vault unlock</comment>
+    <value>Увімкнути розблокування кодом доступу</value>
+    <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Швидке розблокування сховища успішно ввімкнено. Наступного разу, коли ваше сховище буде заблоковано, ви зможете розблокувати його за допомогою створеного ключа доступу.</value>
-    <comment>Success message when quick unlock is enabled</comment>
+    <value>Розблокування ключем доступу успішно ввімкнено. Наступного разу, коли ваше сховище буде заблоковано, ви зможете розблокувати його за допомогою створеного ключа доступу.</value>
+    <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Швидке розблокування сховища успішно вимкнено.</value>
-    <comment>Success message when quick unlock is disabled</comment>
+    <value>Розблокування ключем доступу успішно вимкнено.</value>
+    <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
     <value>Ваш поточний браузер не підтримує розширення WebAuthn PRF. Будь ласка, спробуйте ще раз в іншому браузері.</value>

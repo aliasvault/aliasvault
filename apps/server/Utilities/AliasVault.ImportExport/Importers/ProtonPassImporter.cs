@@ -36,11 +36,34 @@ public static class ProtonPassImporter
                 Password = record.Password,
                 Notes = record.Note,
                 TwoFactorSecret = record.Totp,
+                FolderPath = string.IsNullOrWhiteSpace(record.Vault) ? null : record.Vault,
+                ItemType = MapProtonPassType(record.Type),
             };
 
             credentials.Add(credential);
         }
 
         return credentials;
+    }
+
+    /// <summary>
+    /// Maps ProtonPass type values to ImportedItemType.
+    /// ProtonPass types: login, note, alias, creditCard.
+    /// </summary>
+    private static ImportedItemType? MapProtonPassType(string? protonPassType)
+    {
+        if (string.IsNullOrWhiteSpace(protonPassType))
+        {
+            return null;
+        }
+
+        return protonPassType.ToLowerInvariant() switch
+        {
+            "login" => ImportedItemType.Login,
+            "note" => ImportedItemType.Note,
+            "alias" => ImportedItemType.Login, // ProtonPass alias is email alias, not identity alias
+            "creditcard" => ImportedItemType.Creditcard,
+            _ => ImportedItemType.Login,
+        };
     }
 }

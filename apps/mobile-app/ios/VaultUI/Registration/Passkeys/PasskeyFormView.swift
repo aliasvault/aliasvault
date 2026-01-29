@@ -7,6 +7,7 @@ struct PasskeyFormView: View {
     @ObservedObject var viewModel: PasskeyRegistrationViewModel
     let isReplaceMode: Bool
     let replacingPasskeyId: UUID?
+    let mergingItemId: UUID?
 
     @Environment(\.colorScheme) private var colorScheme
     @FocusState private var isTitleFocused: Bool
@@ -14,6 +15,15 @@ struct PasskeyFormView: View {
     var replacingPasskey: PasskeyWithCredentialInfo? {
         guard let id = replacingPasskeyId else { return nil }
         return viewModel.existingPasskeys.first(where: { $0.id == id })
+    }
+
+    var mergingItem: ItemWithCredentialInfo? {
+        guard let id = mergingItemId else { return nil }
+        return viewModel.existingItemsWithoutPasskey.first(where: { $0.itemId == id })
+    }
+
+    var isMergeMode: Bool {
+        mergingItemId != nil
     }
 
     var isTitleValid: Bool {
@@ -32,7 +42,7 @@ struct PasskeyFormView: View {
                         // Notice section
                         if isReplaceMode {
                             // Warning and explanation for replacing
-                            if let passkey = replacingPasskey {
+                            if replacingPasskey != nil {
                                 VStack(spacing: 12) {
                                     HStack(spacing: 12) {
                                         Image(systemName: "info.circle.fill")
@@ -46,6 +56,23 @@ struct PasskeyFormView: View {
                                 .padding(.horizontal)
                                 .padding(.top, 8)
                             }
+                        } else if isMergeMode {
+                            // Explanation for merging with existing item
+                            VStack(spacing: 8) {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "info.circle.fill")
+                                        .foregroundColor(ColorConstants.Light.primary)
+                                    Text(String(localized: "merge_passkey_explanation", bundle: locBundle))
+                                        .font(.caption)
+                                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.textMuted : ColorConstants.Light.textMuted)
+                                        .fixedSize(horizontal: false, vertical: true)
+                                }
+                                .padding()
+                                .background(ColorConstants.Light.primary.opacity(0.1))
+                                .cornerRadius(8)
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 8)
                         } else {
                             // Informational notice for creating new
                             VStack(spacing: 8) {
@@ -95,9 +122,7 @@ struct PasskeyFormView: View {
                 }, label: {
                     HStack {
                         Image(systemName: "key.fill")
-                        Text(isReplaceMode
-                            ? String(localized: "confirm_replace", bundle: locBundle)
-                            : String(localized: "create_passkey_button_confirm", bundle: locBundle))
+                        Text(buttonText)
                     }
                     .padding()
                     .frame(maxWidth: .infinity)
@@ -120,12 +145,30 @@ struct PasskeyFormView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .principal) {
-                Text(isReplaceMode
-                    ? String(localized: "replace_passkey_title", bundle: locBundle)
-                    : String(localized: "create_passkey_title", bundle: locBundle))
+                Text(titleText)
                     .font(.headline)
                     .foregroundStyle(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
             }
+        }
+    }
+
+    private var buttonText: String {
+        if isReplaceMode {
+            return String(localized: "replace_passkey", bundle: locBundle)
+        } else if isMergeMode {
+            return String(localized: "add_passkey", bundle: locBundle)
+        } else {
+            return String(localized: "create_passkey_button_confirm", bundle: locBundle)
+        }
+    }
+
+    private var titleText: String {
+        if isReplaceMode {
+            return String(localized: "replace_passkey", bundle: locBundle)
+        } else if isMergeMode {
+            return String(localized: "add_passkey", bundle: locBundle)
+        } else {
+            return String(localized: "create_passkey_title", bundle: locBundle)
         }
     }
 }

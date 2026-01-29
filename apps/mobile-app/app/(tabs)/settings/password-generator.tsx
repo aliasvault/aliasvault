@@ -3,10 +3,10 @@ import Slider from '@react-native-community/slider';
 import { useFocusEffect } from 'expo-router';
 import { useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, Alert, TouchableOpacity, Switch, Platform } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Switch, Platform } from 'react-native';
 
-import type { PasswordSettings } from '@/utils/dist/shared/models/vault';
-import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
+import type { PasswordSettings } from '@/utils/dist/core/models/vault';
+import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -15,6 +15,7 @@ import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
+import { useDialog } from '@/context/DialogContext';
 
 /**
  * Password Generator Settings screen.
@@ -23,6 +24,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const dbContext = useDb();
+  const { showAlert } = useDialog();
   const { executeVaultMutation } = useVaultMutate();
 
   const [settings, setSettings] = useState<PasswordSettings | null>(null);
@@ -76,7 +78,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           console.debug('Settings loaded and initialized');
         } catch (error) {
           console.error('Error loading password generator settings:', error);
-          Alert.alert(t('common.error'), t('common.errors.unknownError'));
+          showAlert(t('common.error'), t('common.errors.unknownError'));
         }
       };
 
@@ -110,7 +112,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           console.error('Error saving password generator settings:', error);
         });
       };
-    }, [dbContext.sqliteClient, t, executeVaultMutation])
+    }, [dbContext.sqliteClient, showAlert, t, executeVaultMutation])
   );
 
   /**
@@ -337,7 +339,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
         <View style={styles.settingsContainer}>
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
-              <ThemedText style={styles.sliderLabel}>{t('credentials.passwordLength')}</ThemedText>
+              <ThemedText style={styles.sliderLabel}>{t('items.passwordLength')}</ThemedText>
               <ThemedText style={styles.sliderValue}>{sliderValue ?? 0}</ThemedText>
             </View>
             <Slider
@@ -358,7 +360,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
 
         <View style={styles.settingsContainer}>
           <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('credentials.includeLowercase')}</ThemedText>
+            <ThemedText style={styles.settingLabel}>{t('items.includeLowercase')}</ThemedText>
             <Switch
               value={settings.UseLowercase}
               onValueChange={(value) => updateSetting('UseLowercase', value)}
@@ -368,7 +370,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           </View>
 
           <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('credentials.includeUppercase')}</ThemedText>
+            <ThemedText style={styles.settingLabel}>{t('items.includeUppercase')}</ThemedText>
             <Switch
               value={settings.UseUppercase}
               onValueChange={(value) => updateSetting('UseUppercase', value)}
@@ -378,7 +380,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           </View>
 
           <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('credentials.includeNumbers')}</ThemedText>
+            <ThemedText style={styles.settingLabel}>{t('items.includeNumbers')}</ThemedText>
             <Switch
               value={settings.UseNumbers}
               onValueChange={(value) => updateSetting('UseNumbers', value)}
@@ -388,7 +390,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           </View>
 
           <View style={styles.settingItem}>
-            <ThemedText style={styles.settingLabel}>{t('credentials.includeSpecialChars')}</ThemedText>
+            <ThemedText style={styles.settingLabel}>{t('items.includeSpecialChars')}</ThemedText>
             <Switch
               value={settings.UseSpecialChars}
               onValueChange={(value) => updateSetting('UseSpecialChars', value)}
@@ -398,7 +400,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           </View>
 
           <View style={[styles.settingItem, styles.settingItemLast]}>
-            <ThemedText style={styles.settingLabel}>{t('credentials.avoidAmbiguousChars')}</ThemedText>
+            <ThemedText style={styles.settingLabel}>{t('items.avoidAmbiguousChars')}</ThemedText>
             <Switch
               value={settings.UseNonAmbiguousChars}
               onValueChange={(value) => updateSetting('UseNonAmbiguousChars', value)}

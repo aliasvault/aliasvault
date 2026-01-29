@@ -38,7 +38,7 @@ npm install
 npm run build:safari
 ```
 
-5. Open Xcode and open the `apps/browser-extension/safari-xcode/AliasVault/AliasVault.xcodeproj` file
+5. Open Xcode and open the `apps/browser-extension/safari-xcode/AliasVault.xcodeproj` file
 
 6. Run the project. This will open up the AliasVault MacOS wrapper app and automatically install the extension to your Safari Extensions list.
 

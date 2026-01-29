@@ -9,6 +9,14 @@
 			"path": "../apps/server"
 		},
 		{
+			"name": "server/Databases/AliasClientDb",
+			"path": "../apps/server/Databases/AliasClientDb"
+		},
+		{
+			"name": "server/Databases/AliasServerDb",
+			"path": "../apps/server/Databases/AliasServerDb"
+		},
+		{
 			"name": "browser-extension",
 			"path": "../apps/browser-extension"
 		},
@@ -20,10 +28,24 @@
 			"path": "../docs"
 		},
 		{
-			"path": "../shared"
-		}
+			"name": "core",
+			"path": "../core"
+		},
+		{
+			"name": "core/rust",
+			"path": "../core/rust"
+		},
+		{
+			"name": "core/models",
+			"path": "../core/models"
+		},
+		{
+			"name": "core/vault",
+			"path": "../core/vault"
+		},
 	],
 	"settings": {
-		"java.configuration.updateBuildConfiguration": "disabled"
+		"java.configuration.updateBuildConfiguration": "disabled",
+		"i18n-ally.keystyle": "nested"
 	}
 }

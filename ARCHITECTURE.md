@@ -2,12 +2,15 @@
 This document provides a high-level overview of the AliasVault architecture, focusing on the encryption algorithms used to ensure the security of user data.
 
 ## Overview
-AliasVault features a [zero-knowledge architecture](https://en.wikipedia.org/wiki/Zero-knowledge_service) and uses a combination of encryption algorithms to protect the data of its users.
+AliasVault implements zero-knowledge encryption using a combination of encryption algorithms to protect the privacy of its users.
 
-The basic premise is that the master password chosen by the user upon registration forms the basis for all encryption
-and decryption operations. This master password is never transmitted over the network and only resides on the client.
-All data is encrypted at rest and in transit. This ensures that even if the AliasVault servers are compromised,
-the user's data remains secure.
+The basic premise is that the master password chosen by the user upon registration forms the basis for all encryption and decryption operations. This master password is never transmitted over the network and only resides on the client.
+
+### What is Zero-Knowledge Encrypted
+- **Vault Data**: Your entire vault (passwords, usernames, notes, passkeys, email addresses, etc.) is fully encrypted client-side before being sent to the server. The server cannot decrypt any vault contents.
+- **Email Contents**: When emails are received by the server, their contents are immediately encrypted with your public key (from your vault) before being saved. Only you can decrypt and read these emails with your private key.
+
+This ensures that even if the AliasVault servers are compromised, vault contents and email messages remain secure and unreadable.
 
 ## Encryption algorithms
 The following encryption algorithms and standards are used by AliasVault:
@@ -20,6 +23,7 @@ The following encryption algorithms and standards are used by AliasVault:
 ### Additional Features
 - [RSA-OAEP](#rsa-oaep) - Email encryption
 - [Passkeys (WebAuthn)](#passkeys-webauthn) - Passwordless authentication
+- [Login with Mobile](#login-with-mobile) - Unlock vault in web app / browser extension via mobile app
 
 Below is a detailed explanation of each encryption algorithm and standard.
 
@@ -133,3 +137,31 @@ All implementations follow the WebAuthn Level 2 specification and use:
 - Eliminates phishing risks through cryptographic domain binding
 
 More information about WebAuthn can be found on the [WebAuthn specification](https://www.w3.org/TR/webauthn-2/) page.
+
+### Login with Mobile
+AliasVault provides a secure "Login with Mobile" feature that allows users to unlock their vault on web browsers or browser extensions by scanning a QR code with their authenticated mobile app. This convenient authentication method maintains zero-knowledge security through hybrid encryption.
+
+#### Implementation Details
+The mobile login system combines RSA-2048 asymmetric encryption with AES-256-GCM symmetric encryption:
+
+1. **Initiation**: Browser/extension client generates an RSA-2048 key pair locally and sends the public key to the server, which returns a unique request ID displayed as a QR code.
+
+2. **Authorization**: Mobile app scans the QR code, encrypts the user's vault decryption key with the RSA public key, and sends it to the server.
+
+3. **Retrieval**: Browser client polls the server for completion. When ready, the server:
+   - Generates fresh JWT tokens for the session
+   - Creates a random AES-256 symmetric key
+   - Encrypts tokens and username with the symmetric key
+   - Encrypts the symmetric key with the client's RSA public key
+   - Returns encrypted data and immediately purges it from the database
+
+4. **Decryption**: Client uses its RSA private key to decrypt the symmetric key, then uses the symmetric key to decrypt tokens and username, and the RSA private key to decrypt the vault decryption key.
+
+#### Security Properties
+- **Zero-Knowledge**: Server never accesses the vault decryption key in plaintext
+- **One-Time Use**: Requests cannot be retrieved twice; data is immediately cleared after retrieval
+- **Automatic Expiration**: Unfulfilled requests expire after 2 minutes client-side (3 minutes server-side); fulfilled but unretrieved requests auto-delete within 24 hours
+- **MITM Protection**: Only the client with the RSA private key can decrypt the response
+- **Limited Attack Surface**: Short timeout window minimizes QR code interception risks
+
+More information about the mobile login flow can be found in the [Architecture Documentation](https://docs.aliasvault.net/architecture/#6-login-with-mobile).

@@ -63,19 +63,19 @@
     <comment>Copyright text in footer</comment>
   </data>
   <data name="TipCreateShortcut" xml:space="preserve">
-    <value>Wskazówka: Użyj skrótu klawiaturowego g+c (go create), aby szybko utworzyć nowy alias.</value>
+    <value>Podpowiedź: Użyj skrótu klawiaturowego g+c (go create), aby szybko utworzyć nowy alias.</value>
     <comment>Tip about keyboard shortcut for creating aliases</comment>
   </data>
   <data name="TipFindShortcut" xml:space="preserve">
-    <value>Wskazówka: Użyj skrótu klawiaturowego g+f (go find), aby ustawić fokus na polu wyszukiwania.</value>
+    <value>Podpowiedź: Użyj skrótu klawiaturowego g+f (go find), aby ustawić fokus na polu wyszukiwania.</value>
     <comment>Tip about keyboard shortcut for search</comment>
   </data>
   <data name="TipHomeShortcut" xml:space="preserve">
-    <value>Wskazówka: Aby przejść do strony głównej, użyj skrótu klawiaturowego g+h (go home).</value>
+    <value>Podpowiedź: Aby przejść do strony głównej, użyj skrótu klawiaturowego g+h (go home).</value>
     <comment>Tip about keyboard shortcut for home</comment>
   </data>
   <data name="TipLockShortcut" xml:space="preserve">
-    <value>Wskazówka: Aby zablokować sejf, użyj skrótu klawiaturowego g+l (go lock).</value>
+    <value>Podpowiedź: Aby zablokować sejf, użyj skrótu klawiaturowego g+l (go lock).</value>
     <comment>Tip about keyboard shortcut for locking vault</comment>
   </data>
 </root>

@@ -3,10 +3,8 @@ import { Buffer } from 'buffer';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainerRef, ParamListBase } from '@react-navigation/native';
 import * as LocalAuthentication from 'expo-local-authentication';
-import { router, useGlobalSearchParams, usePathname } from 'expo-router';
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import { Alert, AppState, Platform } from 'react-native';
-
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import { Alert, Platform } from 'react-native';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useDb } from '@/context/DbContext';
@@ -28,14 +26,23 @@ type AuthContextType = {
   setAuthTokens: (username: string, accessToken: string, refreshToken: string) => Promise<void>;
   initializeAuth: () => Promise<{ isLoggedIn: boolean; enabledAuthMethods: AuthMethod[] }>;
   login: () => Promise<void>;
-  clearAuth: (errorMessage?: string) => Promise<void>;
+  /**
+   * Clear auth for user-initiated logout (e.g., user clicks logout button).
+   * Clears ALL data including vault - user explicitly chose to logout.
+   */
+  clearAuthUserInitiated: (errorMessage?: string) => Promise<void>;
+  /**
+   * Clear auth for forced logout (e.g., 401 error, token revocation).
+   * Preserves vault data for potential RPO recovery - user didn't choose to logout.
+   */
+  clearAuthForced: (errorMessage?: string) => Promise<void>;
   setAuthMethods: (methods: AuthMethod[]) => Promise<void>;
   getAuthMethodDisplayKey: () => Promise<string>;
   getAutoLockTimeout: () => Promise<number>;
   setAutoLockTimeout: (timeout: number) => Promise<void>;
   getClipboardClearTimeout: () => Promise<number>;
   setClipboardClearTimeout: (timeout: number) => Promise<void>;
-  getBiometricDisplayNameKey: () => Promise<string>;
+  getBiometricDisplayName: () => Promise<string>;
   isBiometricsEnabledOnDevice: () => Promise<boolean>;
   setOfflineMode: (isOffline: boolean) => void;
   verifyPassword: (password: string) => Promise<string | null>;
@@ -43,9 +50,6 @@ type AuthContextType = {
   // Autofill methods
   shouldShowAutofillReminder: boolean;
   markAutofillConfigured: () => Promise<void>;
-  // Return URL methods
-  returnUrl: { path: string; params?: object } | null;
-  setReturnUrl: (url: { path: string; params?: object } | null) => void;
 }
 
 const AUTOFILL_CONFIGURED_KEY = 'autofill_configured';
@@ -59,22 +63,15 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 /**
  * AuthProvider to provide the authentication state to the app that components can use.
  */
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
   const [username, setUsername] = useState<string | null>(null);
   const [shouldShowAutofillReminder, setShouldShowAutofillReminder] = useState(false);
-  const [returnUrl, setReturnUrl] = useState<{ path: string; params?: object } | null>(null);
   const [isOffline, setIsOffline] = useState(false);
-  const appState = useRef(AppState.currentState);
   const dbContext = useDb();
-  const pathname = usePathname();
-  const params = useGlobalSearchParams();
-  const lastRouteRef = useRef<{ path: string, params?: object }>({ path: pathname, params });
-
-  useEffect(() => {
-    lastRouteRef.current = { path: pathname, params };
-  }, [pathname, params]);
 
   /**
    * Get enabled auth methods from the native module
@@ -192,11 +189,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   /**
-   * Clear authentication data and tokens from storage.
-   * This is called by AppContext after revoking tokens on the server.
+   * Clear authentication data for forced logout (e.g., 401 error, token revocation).
+   * Preserves vault data for potential RPO recovery - user didn't choose to logout.
+   * The vault will be recovered on next login if the password hasn't changed.
+   *
+   * This is the base logout function. clearAuthUserInitiated builds on top of this.
    */
-  const clearAuth = useCallback(async (errorMessage?: string): Promise<void> => {
-    console.log('Clearing auth --- attempt');
+  const clearAuthForced = useCallback(async (errorMessage?: string): Promise<void> => {
     // Clear credential identity store (password and passkey autofill metadata)
     try {
       await NativeVaultManager.removeCredentialIdentities();
@@ -205,21 +204,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Non-fatal error - continue with logout
     }
 
-    // Clear from native layer
-    await NativeVaultManager.clearUsername();
+    // Clear PIN unlock data (if any)
+    try {
+      await NativeVaultManager.removeAndDisablePin();
+    } catch (error) {
+      console.error('Failed to remove PIN data:', error);
+      // Non-fatal error - continue with logout
+    }
+
+    // Clear auth tokens and session in native layer (preserves vault data)
     await NativeVaultManager.clearAuthTokens();
+    await NativeVaultManager.clearSession();
 
     // Clear from AsyncStorage (for backward compatibility)
     // TODO: Remove AsyncStorage cleanup in future version 0.25.0+
-    await AsyncStorage.removeItem('username');
-    await AsyncStorage.removeItem('accessToken');
-    await AsyncStorage.removeItem('refreshToken');
-    await AsyncStorage.removeItem('authMethods');
-
-    dbContext?.clearDatabase();
+    await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'authMethods']);
 
     if (errorMessage) {
-      // Show alert
       Alert.alert(
         i18n.t('common.error'),
         errorMessage,
@@ -227,9 +228,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
     }
 
-    setUsername(null);
     setIsLoggedIn(false);
-  }, [dbContext]);
+  }, []);
+
+  /**
+   * Clear authentication data for user-initiated logout (e.g., user clicks logout button).
+   * Clears ALL data including vault - user explicitly chose to logout.
+   *
+   * Builds on clearAuthForced by also clearing vault data and username.
+   */
+  const clearAuthUserInitiated = useCallback(async (errorMessage?: string): Promise<void> => {
+    // First, perform the base forced logout (clears session, tokens, PIN, credentials)
+    await clearAuthForced(errorMessage);
+
+    // Additionally clear username (forced logout preserves it for login prefill)
+    await NativeVaultManager.clearUsername();
+    await AsyncStorage.removeItem('username'); // TODO: Remove in 0.25.0+
+
+    // Clear ALL vault data - user explicitly chose to logout
+    dbContext?.clearDatabase();
+
+    setUsername(null);
+  }, [dbContext, clearAuthForced]);
 
   /**
    * Set the authentication methods and save them to storage
@@ -249,19 +269,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   /**
    * Get the appropriate biometric display name translation key based on device capabilities
    */
-  const getBiometricDisplayNameKey = useCallback(async (): Promise<string> => {
+  const getBiometricDisplayName = useCallback(async (): Promise<string> => {
     try {
       const hasBiometrics = await LocalAuthentication.hasHardwareAsync();
       const enrolled = await LocalAuthentication.isEnrolledAsync();
 
       // For Android, we use the term "Biometrics" for facial recognition and fingerprint.
       if (Platform.OS === 'android') {
-        return 'settings.vaultUnlockSettings.biometrics';
+        return i18n.t('settings.vaultUnlockSettings.biometrics');
       }
 
       // For iOS, we check if the device has explicit Face ID or Touch ID support.
       if (!hasBiometrics || !enrolled) {
-        return 'settings.vaultUnlockSettings.faceIdTouchId';
+        return i18n.t('settings.vaultUnlockSettings.faceIdTouchId');
       }
 
       const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
@@ -269,35 +289,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const hasTouchIDSupport = types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT);
 
       if (hasFaceIDSupport) {
-        return 'settings.vaultUnlockSettings.faceId';
+        return i18n.t('settings.vaultUnlockSettings.faceId');
       } else if (hasTouchIDSupport) {
-        return 'settings.vaultUnlockSettings.touchId';
+        return i18n.t('settings.vaultUnlockSettings.touchId');
       }
 
-      return 'settings.vaultUnlockSettings.faceIdTouchId';
+      return i18n.t('settings.vaultUnlockSettings.faceIdTouchId');
     } catch (error) {
       console.error('Failed to get biometric display name:', error);
-      return 'settings.vaultUnlockSettings.faceIdTouchId';
+      return i18n.t('settings.vaultUnlockSettings.faceIdTouchId');
     }
   }, []);
 
   /**
    * Get the display label translation key for the current auth method
-   * Prefers Face ID if enabled, otherwise falls back to Password
+   * Priority: Biometrics > PIN > Password
    */
   const getAuthMethodDisplayKey = useCallback(async (): Promise<string> => {
-    const methods = await getEnabledAuthMethods();
-    if (methods.includes('faceid')) {
-      try {
+    try {
+      // Check for biometrics first (highest priority)
+      const methods = await getEnabledAuthMethods();
+      if (methods.includes('faceid')) {
         if (await isBiometricsEnabledOnDevice()) {
-          return await getBiometricDisplayNameKey();
+          return await getBiometricDisplayName();
         }
-      } catch (error) {
-        console.error('Failed to check Face ID enrollment:', error);
       }
+
+      // Check for PIN (second priority)
+      const pinEnabled = await NativeVaultManager.isPinEnabled();
+      if (pinEnabled) {
+        return 'settings.vaultUnlockSettings.pin';
+      }
+
+      // Fallback to password
+      return 'items.password';
+    } catch (error) {
+      console.error('Failed to get auth method display key:', error);
+      return 'items.password';
     }
-    return 'credentials.password';
-  }, [getEnabledAuthMethods, getBiometricDisplayNameKey, isBiometricsEnabledOnDevice]);
+  }, [getEnabledAuthMethods, getBiometricDisplayName, isBiometricsEnabledOnDevice]);
 
   /**
    * Get the auto-lock timeout from the iOS credentials manager
@@ -343,18 +373,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await AsyncStorage.setItem(CLIPBOARD_TIMEOUT_KEY, timeout.toString());
     } catch (error) {
       console.error('Failed to set clipboard clear timeout:', error);
-    }
-  }, []);
-
-  /**
-   * Check if the vault is unlocked.
-   */
-  const isVaultUnlocked = useCallback(async (): Promise<boolean> => {
-    try {
-      return await NativeVaultManager.isVaultUnlocked();
-    } catch (error) {
-      console.error('Failed to check vault status:', error);
-      return false;
     }
   }, []);
 
@@ -408,46 +426,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return currentPasswordHashBase64;
   }, [dbContext, getEncryptionKeyDerivationParams]);
 
-  // Handle app state changes
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', async (nextAppState) => {
-      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
-        /**
-         * App coming to foreground
-         * Skip vault re-initialization checks during unlock, login, initialize, and reinitialize flows to prevent race conditions
-         * where the AppState listener fires during app initialization, especially on iOS release builds.
-         */
-        if (!pathname?.includes('unlock') && !pathname?.includes('login') && !pathname?.includes('initialize') && !pathname?.includes('reinitialize')) {
-          try {
-            // Check if vault is unlocked.
-            const isUnlocked = await isVaultUnlocked();
-            if (!isUnlocked) {
-              // Get current full URL including query params
-              const currentRoute = lastRouteRef.current;
-              if (currentRoute?.path) {
-                setReturnUrl({
-                  path: currentRoute.path,
-                  params: currentRoute.params
-                });
-              }
-
-              // Database connection failed, navigate to reinitialize flow
-              router.replace('/reinitialize');
-            }
-          } catch {
-            // Database query failed, navigate to reinitialize flow
-            router.replace('/reinitialize');
-          }
-        }
-      }
-      appState.current = nextAppState;
-    });
-
-    return (): void => {
-      subscription.remove();
-    };
-  }, [isVaultUnlocked, pathname]);
-
   /**
    * Load autofill state from storage
    */
@@ -482,14 +460,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isInitialized,
     username,
     shouldShowAutofillReminder,
-    returnUrl,
     isOffline,
     getEnabledAuthMethods,
     isBiometricsEnabled,
     setAuthTokens,
     initializeAuth,
     login,
-    clearAuth,
+    clearAuthUserInitiated,
+    clearAuthForced,
     setAuthMethods,
     getAuthMethodDisplayKey,
     isBiometricsEnabledOnDevice,
@@ -497,9 +475,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAutoLockTimeout,
     getClipboardClearTimeout,
     setClipboardClearTimeout,
-    getBiometricDisplayNameKey,
+    getBiometricDisplayName,
     markAutofillConfigured,
-    setReturnUrl,
     verifyPassword,
     getEncryptionKeyDerivationParams,
     setOfflineMode,
@@ -508,14 +485,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isInitialized,
     username,
     shouldShowAutofillReminder,
-    returnUrl,
     isOffline,
     getEnabledAuthMethods,
     isBiometricsEnabled,
     setAuthTokens,
     initializeAuth,
     login,
-    clearAuth,
+    clearAuthUserInitiated,
+    clearAuthForced,
     setAuthMethods,
     getAuthMethodDisplayKey,
     isBiometricsEnabledOnDevice,
@@ -523,9 +500,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setAutoLockTimeout,
     getClipboardClearTimeout,
     setClipboardClearTimeout,
-    getBiometricDisplayNameKey,
+    getBiometricDisplayName,
     markAutofillConfigured,
-    setReturnUrl,
     verifyPassword,
     getEncryptionKeyDerivationParams,
     setOfflineMode,

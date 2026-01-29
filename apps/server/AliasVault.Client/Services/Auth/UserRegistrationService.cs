@@ -9,12 +9,12 @@ namespace AliasVault.Client.Services.Auth;
 
 using System.Net.Http.Json;
 using System.Text.Json;
+using AliasVault.Client.Services.JsInterop.RustCore;
 using AliasVault.Client.Utilities;
 using AliasVault.Cryptography.Client;
 using AliasVault.Shared.Models.WebApi.Auth;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.Extensions.Localization;
-using SecureRemotePassword;
 
 /// <summary>
 /// Service responsible for handling user registration operations.
@@ -24,7 +24,8 @@ using SecureRemotePassword;
 /// <param name="authService">The service handling authentication operations.</param>
 /// <param name="config">The application configuration.</param>
 /// <param name="localizerFactory">The string localizer factory for localization.</param>
-public class UserRegistrationService(HttpClient httpClient, AuthenticationStateProvider authStateProvider, AuthService authService, Config config, IStringLocalizerFactory localizerFactory)
+/// <param name="rustCoreService">The Rust core service for secure authentication.</param>
+public class UserRegistrationService(HttpClient httpClient, AuthenticationStateProvider authStateProvider, AuthService authService, Config config, IStringLocalizerFactory localizerFactory, RustCoreService rustCoreService)
 {
     private readonly IStringLocalizer _apiErrorLocalizer = localizerFactory.Create("ApiErrors", "AliasVault.Client");
 
@@ -38,8 +39,9 @@ public class UserRegistrationService(HttpClient httpClient, AuthenticationStateP
     {
         try
         {
-            var client = new SrpClient();
-            var salt = client.GenerateSalt();
+            // Generate a random GUID for SRP identity. This is used for all SRP operations,
+            // is set during registration, and never changes.
+            var srpIdentity = Guid.NewGuid().ToString();
 
             string encryptionType = Defaults.EncryptionType;
             string encryptionSettings = Defaults.EncryptionSettings;
@@ -49,11 +51,17 @@ public class UserRegistrationService(HttpClient httpClient, AuthenticationStateP
                 encryptionSettings = config.CryptographyOverrideSettings;
             }
 
+            // Generate salt using Rust WASM
+            var salt = await rustCoreService.SrpGenerateSaltAsync();
+
             var passwordHash = await Encryption.DeriveKeyFromPasswordAsync(password, salt, encryptionType, encryptionSettings);
             var passwordHashString = BitConverter.ToString(passwordHash).Replace("-", string.Empty);
-            var srpSignup = Srp.PasswordChangeAsync(client, salt, username, passwordHashString);
 
-            var registerRequest = new RegisterRequest(srpSignup.Username, srpSignup.Salt, srpSignup.Verifier, encryptionType, encryptionSettings);
+            // Derive SRP private key and verifier using the same salt
+            var privateKey = await rustCoreService.SrpDerivePrivateKeyAsync(salt, srpIdentity, passwordHashString);
+            var srpVerifier = await rustCoreService.SrpDeriveVerifierAsync(privateKey);
+
+            var registerRequest = new RegisterRequest(username, salt, srpVerifier, encryptionType, encryptionSettings, srpIdentity);
             var result = await httpClient.PostAsJsonAsync("v1/Auth/register", registerRequest);
             var responseContent = await result.Content.ReadAsStringAsync();
 

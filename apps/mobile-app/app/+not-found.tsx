@@ -1,4 +1,5 @@
-import { Link, Stack } from 'expo-router';
+import { Link, Stack, usePathname, useGlobalSearchParams } from 'expo-router';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet } from 'react-native';
 
@@ -10,7 +11,17 @@ import { ThemedView } from '@/components/themed/ThemedView';
  */
 export default function NotFoundScreen() : React.ReactNode {
   const { t } = useTranslation();
-  
+  const pathname = usePathname();
+  const params = useGlobalSearchParams();
+
+  useEffect(() => {
+    console.error('[NotFound] 404 - Page not found:', {
+      pathname,
+      params,
+      timestamp: new Date().toISOString(),
+    });
+  }, [pathname, params]);
+
   return (
     <>
       <Stack.Screen options={{ title: t('app.notFound.title') }} />

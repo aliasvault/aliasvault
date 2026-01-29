@@ -2,50 +2,54 @@ import SwiftUI
 import VaultModels
 import VaultUtils
 
-/// Credential card view
-public struct CredentialCard: View {
-    let credential: Credential
+/// Autofill credential card view
+public struct AutofillCredentialCard: View {
+    let credential: AutofillCredential
     let action: () -> Void
     let onCopy: () -> Void
     @Environment(\.colorScheme) private var colorScheme
     @State private var showCopyToast = false
     @State private var copyToastMessage = ""
 
-    public init(credential: Credential, action: @escaping () -> Void, onCopy: @escaping () -> Void) {
+    public init(credential: AutofillCredential, action: @escaping () -> Void, onCopy: @escaping () -> Void) {
         self.credential = credential
         self.action = action
         self.onCopy = onCopy
+    }
+
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
     }
 
     public var body: some View {
         Button(action: action) {
             HStack(spacing: 16) {
                 // Service logo
-                ServiceLogoView(logoData: credential.service.logo)
+                ItemLogoView(logoData: credential.logo)
                     .frame(width: 32, height: 32)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(truncateText(credential.service.name ?? "Unknown", limit: 26))
+                    Text(truncateText(credential.serviceName ?? "Unknown", limit: 26))
                         .font(.headline)
-                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                        .foregroundColor(colors.text)
 
-                    Text(truncateText(CredentialHelpers.usernameOrEmail(credential: credential), limit: 26))
+                    Text(truncateText(credential.identifier, limit: 26))
                         .font(.subheadline)
-                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.textMuted : ColorConstants.Light.textMuted)
+                        .foregroundColor(colors.textMuted)
                 }
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.icon : ColorConstants.Light.icon)
+                    .foregroundColor(colors.icon)
             }
             .padding(8)
             .padding(.horizontal, 8)
             .padding(.vertical, 2)
-            .background(colorScheme == .dark ? ColorConstants.Dark.accentBackground : ColorConstants.Light.accentBackground)
+            .background(colors.accentBackground)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(colorScheme == .dark ? ColorConstants.Dark.accentBorder : ColorConstants.Light.accentBorder, lineWidth: 1)
+                    .stroke(colors.accentBorder, lineWidth: 1)
             )
             .cornerRadius(8)
         }
@@ -64,7 +68,7 @@ public struct CredentialCard: View {
                 })
             }
 
-            if let password = credential.password?.value, !password.isEmpty {
+            if let password = credential.password, !password.isEmpty {
                 Button(action: {
                     UIPasteboard.general.string = password
                     copyToastMessage = NSLocalizedString("password_copied", comment: "Password copied message")
@@ -78,7 +82,7 @@ public struct CredentialCard: View {
                 })
             }
 
-            if let email = credential.alias?.email, !email.isEmpty {
+            if let email = credential.email, !email.isEmpty {
                 Button(action: {
                     UIPasteboard.general.string = email
                     copyToastMessage = NSLocalizedString("email_copied", comment: "Email copied message")
@@ -93,13 +97,13 @@ public struct CredentialCard: View {
             }
 
             if (credential.username != nil && !credential.username!.isEmpty) ||
-               (credential.password?.value != nil && !credential.password!.value.isEmpty) ||
-               (credential.alias?.email != nil && !credential.alias!.email!.isEmpty) {
+               (credential.password != nil && !credential.password!.isEmpty) ||
+               (credential.email != nil && !credential.email!.isEmpty) {
                 Divider()
             }
 
             Button(action: {
-                if let url = URL(string: "net.aliasvault.app://credentials/\(credential.id.uuidString)") {
+                if let url = URL(string: "aliasvault://items/\(credential.id.uuidString)") {
                     UIApplication.shared.open(url)
                 }
             }, label: {
@@ -107,7 +111,7 @@ public struct CredentialCard: View {
             })
 
             Button(action: {
-                if let url = URL(string: "net.aliasvault.app://credentials/add-edit-page?id=\(credential.id.uuidString)") {
+                if let url = URL(string: "aliasvault://items/add-edit-page?id=\(credential.id.uuidString)") {
                     UIApplication.shared.open(url)
                 }
             }, label: {
@@ -152,43 +156,19 @@ public func truncateText(_ text: String?, limit: Int) -> String {
 }
 
 #Preview {
-    CredentialCard(
-        credential: Credential(
+    AutofillCredentialCard(
+        credential: AutofillCredential(
             id: UUID(),
-            alias: Alias(
-                id: UUID(),
-                gender: "Male",
-                firstName: "John",
-                lastName: "Doe",
-                nickName: "Johnny",
-                birthDate: Date(),
-                email: "john.doe@example.com",
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
-            service: Service(
-                id: UUID(),
-                name: "Example Service with a very long name bla bla bla",
-                url: "https://example.com",
-                logo: nil,
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
+            serviceName: "Example Service with a very long name bla bla bla",
+            serviceUrl: "https://example.com",
+            logo: nil,
             username: "usernameverylongverylongtextindeed",
+            email: "john.doe@example.com",
+            password: "securepassword123",
             notes: "Sample notes",
-            password: Password(
-                id: UUID(),
-                credentialId: UUID(),
-                value: "securepassword123",
-                createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
-            ),
+            passkey: nil,
             createdAt: Date(),
-            updatedAt: Date(),
-            isDeleted: false
+            updatedAt: Date()
         ),
         action: {},
         onCopy: {}

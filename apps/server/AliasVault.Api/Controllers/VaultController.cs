@@ -89,38 +89,16 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                     Blob = string.Empty,
                     Version = string.Empty,
                     CurrentRevisionNumber = 0,
-                    EncryptionPublicKey = string.Empty,
                     CredentialsCount = 0,
-                    EmailAddressList = [],
-                    PrivateEmailDomainList = [],
-                    PublicEmailDomainList = [],
                     CreatedAt = DateTime.MinValue,
                     UpdatedAt = DateTime.MinValue,
                 },
             });
         }
 
-        // Check if there are no other vaults with the same revision number.
-        // If there are, return a merge required status.
-        // NOTE: a vault merge is no longer allowed by the API as of 0.20.0, updates with the same revision number are now rejected.
-        // So the logic below can be removed later, together with the local merge logic in the WASM client.
-        // We do probably want to still keep this until the datamodel has been updated to accomodate improved offline mode which might warrant
-        // a new and improved merge logic. So we keep this here for reference purposes for now.
-        var duplicateRevisionCount = await context.Vaults
-            .Where(x => x.UserId == user.Id && x.RevisionNumber == vault.RevisionNumber)
-            .CountAsync();
-
-        if (duplicateRevisionCount > 1)
-        {
-            return Ok(new Shared.Models.WebApi.Vault.VaultGetResponse
-            {
-                Status = VaultStatus.MergeRequired,
-                Vault = null,
-            });
-        }
-
         // Get dynamic list of private email domains from config.
         var privateEmailDomainList = config.PrivateEmailDomains;
+        var hiddenPrivateEmailDomainList = config.HiddenPrivateEmailDomains;
 
         // Hardcoded list of public (SpamOK) email domains that are available to the client.
         var publicEmailDomainList = new List<string>(["spamok.com", "solarflarecorp.com", "spamok.nl", "3060.nl",
@@ -137,53 +115,12 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
                 CurrentRevisionNumber = vault.RevisionNumber,
                 EncryptionPublicKey = string.Empty,
                 CredentialsCount = 0,
-                EmailAddressList = [],
                 PrivateEmailDomainList = privateEmailDomainList,
+                HiddenPrivateEmailDomainList = hiddenPrivateEmailDomainList,
                 PublicEmailDomainList = publicEmailDomainList,
                 CreatedAt = vault.CreatedAt,
                 UpdatedAt = vault.UpdatedAt,
             },
-        });
-    }
-
-    /// <summary>
-    /// Returns a list of vaults that should be merged by the client.
-    /// </summary>
-    /// <param name="currentRevisionNumber">Current revision number of the local vault.</param>
-    /// <returns>List of vaults to merge that are newer than the provided current revision number.</returns>
-    [HttpGet("merge")]
-    public async Task<IActionResult> GetVaultsToMerge([FromQuery] long currentRevisionNumber)
-    {
-        await using var context = await dbContextFactory.CreateDbContextAsync();
-
-        var user = await GetCurrentUserAsync();
-        if (user == null)
-        {
-            return Unauthorized();
-        }
-
-        // Logic to retrieve vault for the user.
-        var vaultsToMerge = await context.Vaults
-            .Where(x => x.UserId == user.Id && x.RevisionNumber > currentRevisionNumber)
-            .OrderByDescending(x => x.UpdatedAt)
-            .ToListAsync();
-
-        return Ok(new Shared.Models.WebApi.Vault.VaultMergeResponse
-        {
-            Vaults = vaultsToMerge.Select(x => new Shared.Models.WebApi.Vault.Vault
-            {
-                Username = user.UserName!,
-                Blob = x.VaultBlob,
-                Version = x.Version,
-                CurrentRevisionNumber = x.RevisionNumber,
-                EncryptionPublicKey = string.Empty,
-                CredentialsCount = 0,
-                EmailAddressList = [],
-                PrivateEmailDomainList = [],
-                PublicEmailDomainList = [],
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt,
-            }).ToList(),
         });
     }
 
@@ -421,6 +358,10 @@ public class VaultController(ILogger<VaultController> logger, IAliasServerDbCont
     /// <returns>A task representing the asynchronous operation.</returns>
     private async Task UpdateUserEmailClaims(AliasServerDbContext context, AliasVaultUser user, List<string> newEmailAddresses)
     {
+        // Deduplicate email addresses to prevent unique constraint violations when
+        // multiple credentials share the same private email address.
+        newEmailAddresses = newEmailAddresses.Select(EmailHelper.SanitizeEmail).Distinct().ToList();
+
         // Get all existing user email claims.
         var userOwnedEmailClaims = await context.UserEmailClaims
             .Where(x => x.UserId == user.Id)

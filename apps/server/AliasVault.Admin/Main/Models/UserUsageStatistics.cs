@@ -18,14 +18,25 @@ public class UserUsageStatistics
     public int TotalCredentials { get; set; }
 
     /// <summary>
-    /// Gets or sets the total number of email claims (all-time).
+    /// Gets or sets the total number of active email claims (all-time).
     /// </summary>
-    public int TotalEmailClaims { get; set; }
+    public int TotalActiveEmailClaims { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total number of disabled email claims (all-time).
+    /// </summary>
+    public int TotalDisabledEmailClaims { get; set; }
 
     /// <summary>
     /// Gets or sets the total number of received emails (all-time).
     /// </summary>
     public int TotalReceivedEmails { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total number of emails received across all time (persistent counter).
+    /// This counter is never decremented, even when emails are deleted. Used for abuse detection.
+    /// </summary>
+    public int TotalEmailsReceivedPersistent { get; set; }
 
     /// <summary>
     /// Gets or sets the number of credentials created in the last 72 hours.

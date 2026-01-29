@@ -6,10 +6,9 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
 import { AppInfo } from '@/utils/AppInfo';
-import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { ApiErrorResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-
-import { storage } from '#imports';
+import { getItemWithFallback } from '@/utils/StorageUtility';
 
 type EmailPreviewProps = {
   email: string;
@@ -56,7 +55,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
    */
   const isPublicDomain = async (emailAddress: string): Promise<boolean> => {
     // Get metadata from storage
-    const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[] ?? [];
+    const publicEmailDomains = await getItemWithFallback<string[]>('local:publicEmailDomains') ?? [];
     return publicEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
   };
 
@@ -65,7 +64,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
    */
   const isPrivateDomain = async (emailAddress: string): Promise<boolean> => {
     // Get metadata from storage
-    const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[] ?? [];
+    const privateEmailDomains = await getItemWithFallback<string[]>('local:privateEmailDomains') ?? [];
     return privateEmailDomains.some(domain => emailAddress.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
   };
 
@@ -75,6 +74,12 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
      */
     const loadEmails = async (): Promise<void> => {
       try {
+        // Check if we are in offline mode
+        if (dbContext.isOffline) {
+          setLoading(false);
+          return;
+        }
+
         setError(null);
         const isPublic = await isPublicDomain(email);
         const isPrivate = await isPrivateDomain(email);
@@ -98,7 +103,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
           });
 
           if (!response.ok) {
-            setError(t('emails.errors.emailLoadError'));
+            setError(t('common.errors.unknownError'));
             return;
           }
 
@@ -141,7 +146,7 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
                 // Loop through all emails and decrypt them locally
                 const decryptedEmails: MailboxEmail[] = await EncryptionUtility.decryptEmailList(
                   allMails,
-                  dbContext.sqliteClient!.getAllEncryptionKeys()
+                  dbContext.sqliteClient!.settings.getAllEncryptionKeys()
                 );
 
                 if (loading && decryptedEmails.length > 0) {
@@ -157,21 +162,39 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
                   }
                   return prevEmails;
                 });
+
+                // Clear any previous error on successful load
+                setError(null);
               }
             } catch {
               // Try to parse as error response instead
               const apiErrorResponse = response as ApiErrorResponse;
+
+              /*
+               * Suppress errors while vault has unsynced changes (e.g., after item creation)
+               * The server may not know about newly created items/aliases yet
+               */
+              if (dbContext.shouldSuppressEmailErrors()) {
+                // Don't set error, keep loading state - will retry on next interval
+                return;
+              }
+
               setError(t('emails.apiErrors.' + apiErrorResponse?.code));
               return;
             }
           } catch {
-            setError(t('emails.errors.emailLoadError'));
+            // Suppress errors while vault has unsynced changes
+            if (dbContext.shouldSuppressEmailErrors()) {
+              return;
+            }
+
+            setError(t('common.errors.unknownError'));
             return;
           }
         }
       } catch (err) {
         console.error('Error loading emails:', err);
-        setError(t('emails.errors.emailUnexpectedError'));
+        setError(t('common.errors.unknownError'));
       }
       setLoading(false);
     };
@@ -185,6 +208,18 @@ export const EmailPreview: React.FC<EmailPreviewProps> = ({ email }) => {
   // Don't render anything if the domain is not supported
   if (!isSupportedDomain) {
     return null;
+  }
+
+  // Show offline message if in offline mode
+  if (dbContext.isOffline) {
+    return (
+      <div className="text-gray-500 dark:text-gray-400 mb-4">
+        <div className="flex items-center gap-2 mb-2">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">{t('common.recentEmails')}</h2>
+        </div>
+        <p className="text-sm">{t('emails.offlineMessage')}</p>
+      </div>
+    );
   }
 
   if (error) {

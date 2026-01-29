@@ -1,0 +1,291 @@
+@using AliasClientDb.Models
+@using AliasVault.Client.Main.Components.Layout
+@using AliasVault.Client.Services.JsInterop
+@using Microsoft.Extensions.Localization
+
+@inject IStringLocalizerFactory LocalizerFactory
+@inject JsInteropService JsInteropService
+
+<div class="relative">
+    <button type="button"
+            @onclick="ToggleMenu"
+            @onclick:preventDefault="true"
+            class="w-full px-4 py-2 border-2 border-dashed border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-md hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors flex items-center justify-center gap-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+    </button>
+
+    @if (IsOpen)
+    {
+        <div class="fixed inset-0 z-10 bg-black bg-opacity-50" @onclick="CloseMenu"></div>
+        <div class="absolute bottom-full left-0 right-0 mb-1 z-20 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg overflow-hidden max-h-64 overflow-y-auto">
+            @* Optional system fields that are not currently visible *@
+            @foreach (var field in OptionalSystemFields.Where(f => !VisibleFieldKeys.Contains(f.FieldKey)))
+            {
+                <button type="button"
+                        @onclick="() => HandleAddSystemField(field.FieldKey)"
+                        @onclick:preventDefault="true"
+                        class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 text-gray-700 dark:text-gray-300">
+                    <span class="text-gray-500 dark:text-gray-400">
+                        @GetFieldIcon(field.Category)
+                    </span>
+                    <span>@GetFieldLabel(field.FieldKey)</span>
+                </button>
+            }
+
+            @* Optional sections (2FA, Attachments) *@
+            @if (!Show2FA && HasLoginFields)
+            {
+                <button type="button"
+                        @onclick="HandleAdd2FA"
+                        @onclick:preventDefault="true"
+                        class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 text-gray-700 dark:text-gray-300">
+                    <span class="text-gray-500 dark:text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                    </span>
+                    <span>@Localizer["TwoFactorAuthentication"]</span>
+                </button>
+            }
+
+            @if (!ShowAttachments)
+            {
+                <button type="button"
+                        @onclick="HandleAddAttachments"
+                        @onclick:preventDefault="true"
+                        class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 text-gray-700 dark:text-gray-300">
+                    <span class="text-gray-500 dark:text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                    </span>
+                    <span>@Localizer["Attachments"]</span>
+                </button>
+            }
+
+            @* Custom field option - always available *@
+            <button type="button"
+                    @onclick="OpenCustomFieldModal"
+                    @onclick:preventDefault="true"
+                    class="w-full px-4 py-3 text-left hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-3 border-b border-gray-100 dark:border-gray-700 last:border-b-0 text-gray-700 dark:text-gray-300">
+                <span class="text-gray-500 dark:text-gray-400">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                </span>
+                <span>@Localizer["AddCustomField"]</span>
+            </button>
+        </div>
+    }
+</div>
+
+@* Custom Field Modal *@
+<FormModal
+    IsOpen="ShowCustomFieldModal"
+    Title="@Localizer["AddCustomField"]"
+    ConfirmText="@Localizer["Add"]"
+    CancelText="@Localizer["Cancel"]"
+    ConfirmButtonClass="bg-primary-600 hover:bg-primary-500 dark:bg-primary-700 dark:hover:bg-primary-600"
+    MaxWidth="md"
+    OnClose="CloseCustomFieldModal"
+    OnConfirm="HandleAddCustomField">
+    <Icon>
+        <svg class="h-6 w-6 text-primary-600 dark:text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+    </Icon>
+    <ChildContent>
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    @Localizer["FieldLabel"]
+                </label>
+                <input type="text"
+                       id="custom-field-label-input"
+                       @bind="CustomFieldLabel"
+                       class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white"
+                       placeholder="@Localizer["EnterFieldName"]" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    @Localizer["FieldType"]
+                </label>
+                <select @bind="CustomFieldType"
+                        class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500 dark:bg-gray-700 dark:text-white">
+                    <option value="Text">@Localizer["FieldTypeText"]</option>
+                    <option value="Hidden">@Localizer["FieldTypeHidden"]</option>
+                    <option value="Email">@Localizer["FieldTypeEmail"]</option>
+                    <option value="URL">@Localizer["FieldTypeUrl"]</option>
+                    <option value="Phone">@Localizer["FieldTypePhone"]</option>
+                    <option value="Number">@Localizer["FieldTypeNumber"]</option>
+                    <option value="Date">@Localizer["FieldTypeDate"]</option>
+                    <option value="TextArea">@Localizer["FieldTypeTextArea"]</option>
+                </select>
+            </div>
+        </div>
+    </ChildContent>
+</FormModal>
+
+@code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Items.AddFieldMenu", "AliasVault.Client");
+
+    /// <summary>
+    /// Optional system fields for the current item type.
+    /// </summary>
+    [Parameter]
+    public IEnumerable<SystemFieldDefinition> OptionalSystemFields { get; set; } = [];
+
+    /// <summary>
+    /// Field keys that are currently visible.
+    /// </summary>
+    [Parameter]
+    public HashSet<string> VisibleFieldKeys { get; set; } = [];
+
+    /// <summary>
+    /// Whether the 2FA section is currently visible.
+    /// </summary>
+    [Parameter]
+    public bool Show2FA { get; set; }
+
+    /// <summary>
+    /// Whether the attachments section is currently visible.
+    /// </summary>
+    [Parameter]
+    public bool ShowAttachments { get; set; }
+
+    /// <summary>
+    /// Whether the current item type has login fields (determines if 2FA option is shown).
+    /// </summary>
+    [Parameter]
+    public bool HasLoginFields { get; set; }
+
+    /// <summary>
+    /// Callback when a system field is added.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> OnAddSystemField { get; set; }
+
+    /// <summary>
+    /// Callback when a custom field is added. Parameters: (label, fieldType).
+    /// </summary>
+    [Parameter]
+    public EventCallback<(string Label, string FieldType)> OnAddCustomField { get; set; }
+
+    /// <summary>
+    /// Current count of custom fields, used for auto-generating default labels.
+    /// </summary>
+    [Parameter]
+    public int CustomFieldCount { get; set; }
+
+    /// <summary>
+    /// Callback when 2FA section is added.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnAdd2FA { get; set; }
+
+    /// <summary>
+    /// Callback when attachments section is added.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnAddAttachments { get; set; }
+
+    private bool IsOpen { get; set; }
+    private bool ShowCustomFieldModal { get; set; }
+    private string CustomFieldLabel { get; set; } = string.Empty;
+    private string CustomFieldType { get; set; } = "Text";
+
+    private void ToggleMenu()
+    {
+        IsOpen = !IsOpen;
+    }
+
+    private void CloseMenu()
+    {
+        IsOpen = false;
+    }
+
+    private async Task HandleAddSystemField(string fieldKey)
+    {
+        await OnAddSystemField.InvokeAsync(fieldKey);
+        CloseMenu();
+    }
+
+    private async Task HandleAdd2FA()
+    {
+        await OnAdd2FA.InvokeAsync();
+        CloseMenu();
+    }
+
+    private async Task HandleAddAttachments()
+    {
+        await OnAddAttachments.InvokeAsync();
+        CloseMenu();
+    }
+
+    private async Task OpenCustomFieldModal()
+    {
+        ShowCustomFieldModal = true;
+        // Auto-generate a default label based on existing custom field count
+        CustomFieldLabel = string.Format(Localizer["DefaultFieldLabel"].Value, CustomFieldCount + 1);
+        CustomFieldType = "Text";
+        CloseMenu();
+
+        // Wait for the modal to render, then focus and select the input text
+        await Task.Delay(50);
+        await JsInteropService.FocusAndSelectElementById("custom-field-label-input");
+    }
+
+    private Task CloseCustomFieldModal()
+    {
+        ShowCustomFieldModal = false;
+        CustomFieldLabel = string.Empty;
+        CustomFieldType = "Text";
+        return Task.CompletedTask;
+    }
+
+    private async Task HandleAddCustomField()
+    {
+        if (!string.IsNullOrWhiteSpace(CustomFieldLabel))
+        {
+            await OnAddCustomField.InvokeAsync((CustomFieldLabel.Trim(), CustomFieldType));
+            await CloseCustomFieldModal();
+        }
+    }
+
+    private string GetFieldLabel(string fieldKey)
+    {
+        // Map field keys to localized labels
+        return fieldKey switch
+        {
+            FieldKey.LoginUsername => Localizer["FieldLoginUsername"],
+            FieldKey.LoginPassword => Localizer["FieldLoginPassword"],
+            FieldKey.LoginEmail => Localizer["FieldLoginEmail"],
+            FieldKey.LoginUrl => Localizer["FieldLoginUrl"],
+            FieldKey.AliasFirstName => Localizer["FieldAliasFirstName"],
+            FieldKey.AliasLastName => Localizer["FieldAliasLastName"],
+            FieldKey.AliasGender => Localizer["FieldAliasGender"],
+            FieldKey.AliasBirthdate => Localizer["FieldAliasBirthdate"],
+            FieldKey.CardNumber => Localizer["FieldCardNumber"],
+            FieldKey.CardCardholderName => Localizer["FieldCardCardholderName"],
+            FieldKey.CardExpiryMonth => Localizer["FieldCardExpiryMonth"],
+            FieldKey.CardExpiryYear => Localizer["FieldCardExpiryYear"],
+            FieldKey.CardCvv => Localizer["FieldCardCvv"],
+            FieldKey.CardPin => Localizer["FieldCardPin"],
+            FieldKey.NotesContent => Localizer["FieldNotesContent"],
+            _ => fieldKey
+        };
+    }
+
+    private static MarkupString GetFieldIcon(FieldCategory category)
+    {
+        var svg = category switch
+        {
+            FieldCategory.Notes => """<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>""",
+            FieldCategory.Card => """<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>""",
+            _ => """<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>"""
+        };
+        return new MarkupString(svg);
+    }
+}

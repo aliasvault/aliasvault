@@ -13,9 +13,10 @@ import net.aliasvault.app.utils.AppInfo
  */
 object VersionComparison {
     /**
-     * Checks if version1 is greater than or equal to version2, following SemVer rules.
+     * Checks if version1 is greater than or equal to version2, ignoring pre-release suffixes.
      *
-     * Pre-release versions (e.g., -alpha, -beta, -dev) are considered lower than release versions.
+     * Pre-release suffixes (e.g., -alpha, -beta, -dev) are stripped from version1 before comparison.
+     * This allows server versions like "0.25.0-alpha-dev" to be treated as "0.25.0".
      *
      * @param version1 First version string (e.g., "1.2.3" or "1.2.3-beta")
      * @param version2 Second version string (e.g., "1.2.0" or "1.2.0-alpha")
@@ -24,26 +25,23 @@ object VersionComparison {
      * Example:
      * ```kotlin
      * VersionComparison.isGreaterThanOrEqualTo("1.2.3", "1.2.0") // true
-     * VersionComparison.isGreaterThanOrEqualTo("1.2.0-alpha", "1.2.0") // false
-     * VersionComparison.isGreaterThanOrEqualTo("1.2.0", "1.2.0-alpha") // true
+     * VersionComparison.isGreaterThanOrEqualTo("1.2.0-alpha", "1.2.0") // true (ignores -alpha)
+     * VersionComparison.isGreaterThanOrEqualTo("1.2.0-dev", "1.2.1") // false (0.25.0 < 0.25.1)
      * ```
      */
     fun isGreaterThanOrEqualTo(version1: String, version2: String): Boolean {
-        // Split versions into core and pre-release parts
+        // Strip pre-release suffix from version1 (server version)
         val components1 = version1.split("-", limit = 2)
         val components2 = version2.split("-", limit = 2)
 
         val core1 = components1[0]
         val core2 = components2[0]
 
-        val preRelease1 = components1.getOrNull(1)
-        val preRelease2 = components2.getOrNull(1)
-
         // Parse core version numbers
         val parts1 = core1.split(".").mapNotNull { it.toIntOrNull() }
         val parts2 = core2.split(".").mapNotNull { it.toIntOrNull() }
 
-        // Compare core versions first
+        // Compare core versions only
         val maxLength = maxOf(parts1.size, parts2.size)
         for (i in 0 until maxLength) {
             val part1 = parts1.getOrElse(i) { 0 }
@@ -55,14 +53,8 @@ object VersionComparison {
             }
         }
 
-        // If core versions are equal, check pre-release versions
-        // No pre-release (release version) is greater than pre-release version
-        return when {
-            preRelease1 == null && preRelease2 != null -> true
-            preRelease1 != null && preRelease2 == null -> false
-            preRelease1 == null && preRelease2 == null -> true
-            else -> preRelease1!! >= preRelease2!!
-        }
+        // Core versions are equal
+        return true
     }
 
     /**

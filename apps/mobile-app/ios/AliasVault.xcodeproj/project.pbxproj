@@ -7,12 +7,22 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		0EF28D873AC559A33A3B178F /* libPods-VaultUITests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9A795EF04BF70F714FA4B0E5 /* libPods-VaultUITests.a */; };
+		07A10A71081ED4937FFAA625 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
+		07A10A71081ED4937FFAA626 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
+		07A10A71081ED4937FFAA627 /* VaultModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE482AA2DBE8EFE00F4A367 /* VaultModels.framework */; };
 		1381C2F6D317F2404928BA59 /* libPods-VaultUI.a in Frameworks */ = {isa = PBXBuildFile; fileRef = C32D89DCBA51D7C8CDE51DD2 /* libPods-VaultUI.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		3D1B0279B0714C8FF732D2D3 /* libPods-AliasVault.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E23F2188770B15FCBFEBC57 /* libPods-AliasVault.a */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
+		4E959304D034897952CD0FAA /* RustCoreFramework.h in Headers */ = {isa = PBXBuildFile; fileRef = 3441C5082812204EC761AA88 /* RustCoreFramework.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		56C425FAFF2BEE601C4FC167 /* aliasvault_core.swift in Sources */ = {isa = PBXBuildFile; fileRef = 670F12C8E2555CEAB20095EA /* aliasvault_core.swift */; };
+		658478B7E2C454B9FD5A4461 /* RustCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = DCA9E55219D409EB8F443E49 /* RustCore.swift */; };
+		6B02BE4A57083EFEF38AD36C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C8C42997B5868C83ECC353F /* Foundation.framework */; };
+		74ABD6C48D811AB8DDC7A6B2 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
+		835999B8CD9DA8BC5D467BA1 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
+		905A3FBFD11ECE1AAC428868 /* RustCoreFramework.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		9E8B9B9318C79E9CBB868429 /* libPods-VaultStoreKit.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D17078F549B652835E3A4AFA /* libPods-VaultStoreKit.a */; };
+		B00629AD90FABE8F65D64107 /* RustCoreFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */; };
 		B18059E884C0ABDD17F3DC3D /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */; };
 		B2E3CEC9AABDA3497BFE65B7 /* libPods-VaultStoreKitTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E9AD944E3A0F270C797F5DD /* libPods-VaultStoreKitTests.a */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
@@ -21,7 +31,6 @@
 		CE48FCEC2DBE939A00E5E3D6 /* VaultModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE482AA2DBE8EFE00F4A367 /* VaultModels.framework */; };
 		CE48FD372DBE95EB00E5E3D6 /* VaultModels.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE482AA2DBE8EFE00F4A367 /* VaultModels.framework */; };
 		CE48FD632DBEA3B800E5E3D6 /* VaultUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE4816A2DBE8AC800F4A367 /* VaultUI.framework */; };
-		CE59C7632E4F47FE0024A246 /* VaultUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CEE4816A2DBE8AC800F4A367 /* VaultUI.framework */; };
 		CE73B3A02DFC8A0C0081B6CB /* AliasVault.icon in Resources */ = {isa = PBXBuildFile; fileRef = CE73B39F2DFC8A0C0081B6CB /* AliasVault.icon */; };
 		CE7782632EA1822400A75E6F /* VaultUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CE77825D2EA1822400A75E6F /* VaultUtils.framework */; };
 		CE7782642EA1822400A75E6F /* VaultUtils.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = CE77825D2EA1822400A75E6F /* VaultUtils.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -44,10 +53,25 @@
 		CEE9098B2DA548C7008D568F /* Autofill.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = CEE9097E2DA548C7008D568F /* Autofill.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		D6E19ADE0A608FA46984C60D /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = BA88D6CB4FD656C7180FE9F7 /* PrivacyInfo.xcprivacy */; };
 		E8FD7000523F4549908941A2 /* noop-file.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76D5DBE3C1FA4900A7CD27FB /* noop-file.swift */; };
+		E96E1EC08316C9C3CD439F0A /* aliasvault_coreFFI.h in Headers */ = {isa = PBXBuildFile; fileRef = 5CE7700D50681E26308A4E29 /* aliasvault_coreFFI.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F53476297C14F7D0583D7988 /* libPods-Autofill.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ADB2CDEB4F04BBB8D4DB589C /* libPods-Autofill.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1F09A0CB86D87B7C44135D75 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55118F9387BE1BFE21365CB8;
+			remoteInfo = RustCoreFramework;
+		};
+		438C62A9BB3AAF42A6633996 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55118F9387BE1BFE21365CB8;
+			remoteInfo = RustCoreFramework;
+		};
 		CE48FD652DBEA3B800E5E3D6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
@@ -59,8 +83,15 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = CEE481692DBE8AC800F4A367;
-			remoteInfo = VaultUI;
+			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
+			remoteInfo = AliasVault;
+		};
+		CE59C7662E4F47FE0024A247 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = CEE482A92DBE8EFE00F4A367;
+			remoteInfo = VaultModels;
 		};
 		CE7782612EA1822400A75E6F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -118,6 +149,20 @@
 			remoteGlobalIDString = CEE9097D2DA548C7008D568F;
 			remoteInfo = autofill;
 		};
+		DEAC25BDB7E709F0299B67EA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55118F9387BE1BFE21365CB8;
+			remoteInfo = RustCoreFramework;
+		};
+		EBEBD450976E6574AB91BE8D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 55118F9387BE1BFE21365CB8;
+			remoteInfo = RustCoreFramework;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -131,6 +176,7 @@
 				CE7782642EA1822400A75E6F /* VaultUtils.framework in Embed Frameworks */,
 				CEE481802DBE8AC800F4A367 /* VaultUI.framework in Embed Frameworks */,
 				CEE482C02DBE8EFF00F4A367 /* VaultModels.framework in Embed Frameworks */,
+				905A3FBFD11ECE1AAC428868 /* RustCoreFramework.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -159,39 +205,50 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		017AFF1289CCDC7514CC84DA /* Pods-VaultUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultUITests.release.xcconfig"; path = "Target Support Files/Pods-VaultUITests/Pods-VaultUITests.release.xcconfig"; sourceTree = "<group>"; };
-		0185B497D6794232013782D4 /* Pods-VaultUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultUITests.debug.xcconfig"; path = "Target Support Files/Pods-VaultUITests/Pods-VaultUITests.debug.xcconfig"; sourceTree = "<group>"; };
+		017AFF1289CCDC7514CC84DA /* Pods-AliasVaultUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AliasVaultUITests.release.xcconfig"; path = "Target Support Files/Pods-AliasVaultUITests/Pods-AliasVaultUITests.release.xcconfig"; sourceTree = "<group>"; };
+		0185B497D6794232013782D4 /* Pods-AliasVaultUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AliasVaultUITests.debug.xcconfig"; path = "Target Support Files/Pods-AliasVaultUITests/Pods-AliasVaultUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		09DFCC3CBA13D19073CBCC7F /* Pods-VaultStoreKit.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultStoreKit.debug.xcconfig"; path = "Target Support Files/Pods-VaultStoreKit/Pods-VaultStoreKit.debug.xcconfig"; sourceTree = "<group>"; };
 		0E23F2188770B15FCBFEBC57 /* libPods-AliasVault.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AliasVault.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07F961A680F5B00A75B9A /* AliasVault.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AliasVault.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = AliasVault/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = AliasVault/Info.plist; sourceTree = "<group>"; };
 		1A927300CBD3BFE2B7A3CA37 /* Pods-VaultUI.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultUI.release.xcconfig"; path = "Target Support Files/Pods-VaultUI/Pods-VaultUI.release.xcconfig"; sourceTree = "<group>"; };
+		1C8C42997B5868C83ECC353F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		238920B861580FF8C96D6B5B /* libPods-PreviewHost.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-PreviewHost.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3441C5082812204EC761AA88 /* RustCoreFramework.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RustCoreFramework.h; sourceTree = "<group>"; };
 		368EE3A71DE7308558E8E815 /* Pods-VaultStoreKit.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultStoreKit.release.xcconfig"; path = "Target Support Files/Pods-VaultStoreKit/Pods-VaultStoreKit.release.xcconfig"; sourceTree = "<group>"; };
 		456ACD01FF420AE789429A59 /* libPods-VaultStoreTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-VaultStoreTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		587654EE2E1F1914DBBD7F37 /* Pods-Autofill.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Autofill.release.xcconfig"; path = "Target Support Files/Pods-Autofill/Pods-Autofill.release.xcconfig"; sourceTree = "<group>"; };
 		5C1EA06BE7608888B8DF9CE0 /* Pods-AliasVault.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AliasVault.debug.xcconfig"; path = "Target Support Files/Pods-AliasVault/Pods-AliasVault.debug.xcconfig"; sourceTree = "<group>"; };
+		5CE7700D50681E26308A4E29 /* aliasvault_coreFFI.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = aliasvault_coreFFI.h; sourceTree = "<group>"; };
+		61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RustCoreFramework.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		670F12C8E2555CEAB20095EA /* aliasvault_core.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = aliasvault_core.swift; sourceTree = "<group>"; };
 		76D5DBE3C1FA4900A7CD27FB /* noop-file.swift */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.swift; name = "noop-file.swift"; path = "AliasVault/noop-file.swift"; sourceTree = "<group>"; };
+		802A6BCBB1A92683500CC923 /* module.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = module.modulemap; sourceTree = "<group>"; };
 		80E31207C11AA9B7984E118D /* Pods-VaultStoreTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultStoreTests.debug.xcconfig"; path = "Target Support Files/Pods-VaultStoreTests/Pods-VaultStoreTests.debug.xcconfig"; sourceTree = "<group>"; };
 		82C6F986E9F08FE1179D0A40 /* Pods-AliasVault.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-AliasVault.release.xcconfig"; path = "Target Support Files/Pods-AliasVault/Pods-AliasVault.release.xcconfig"; sourceTree = "<group>"; };
 		83C4F2FD713FB96C56BB0D24 /* Pods-VaultStoreTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultStoreTests.release.xcconfig"; path = "Target Support Files/Pods-VaultStoreTests/Pods-VaultStoreTests.release.xcconfig"; sourceTree = "<group>"; };
+		866614F28C50C18588D96EA5 /* aliasvault_core.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = aliasvault_core.swift; sourceTree = "<group>"; };
+		8F8258CE46969A87661E0302 /* RustCore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RustCore.swift; sourceTree = "<group>"; };
 		962DE0FB93C9458BAFEEED60 /* AliasVault-Bridging-Header.h */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = sourcecode.c.h; name = "AliasVault-Bridging-Header.h"; path = "AliasVault/AliasVault-Bridging-Header.h"; sourceTree = "<group>"; };
 		9668BBEEC62508A81A7214E2 /* Pods-PreviewHost.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PreviewHost.release.xcconfig"; path = "Target Support Files/Pods-PreviewHost/Pods-PreviewHost.release.xcconfig"; sourceTree = "<group>"; };
-		9A795EF04BF70F714FA4B0E5 /* libPods-VaultUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-VaultUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		9996E7A841D488251B139CFC /* aliasvault_core.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = aliasvault_core.swift; path = RustCoreFramework/RustCore/Generated/aliasvault_core.swift; sourceTree = "<group>"; };
+		9A795EF04BF70F714FA4B0E5 /* libPods-AliasVaultUITests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-AliasVaultUITests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		9E9AD944E3A0F270C797F5DD /* libPods-VaultStoreKitTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-VaultStoreKitTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9E70CCF7AAA4E05B57CCCC4 /* Pods-VaultStoreKitTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultStoreKitTests.debug.xcconfig"; path = "Target Support Files/Pods-VaultStoreKitTests/Pods-VaultStoreKitTests.debug.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = AliasVault/SplashScreen.storyboard; sourceTree = "<group>"; };
 		ADB2CDEB4F04BBB8D4DB589C /* libPods-Autofill.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Autofill.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		B18F3A7E310165C29C8C6DFE /* Pods-VaultStoreKitTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultStoreKitTests.release.xcconfig"; path = "Target Support Files/Pods-VaultStoreKitTests/Pods-VaultStoreKitTests.release.xcconfig"; sourceTree = "<group>"; };
+		B27A728D066AF582C5B9544F /* module.modulemap */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.module; path = module.modulemap; sourceTree = "<group>"; };
 		B3C355F5D1686A5CF7706974 /* Pods-VaultUI.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-VaultUI.debug.xcconfig"; path = "Target Support Files/Pods-VaultUI/Pods-VaultUI.debug.xcconfig"; sourceTree = "<group>"; };
 		BA88D6CB4FD656C7180FE9F7 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = AliasVault/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
 		C32D89DCBA51D7C8CDE51DD2 /* libPods-VaultUI.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-VaultUI.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		C87FA54AAFE121325F22CDDE /* Pods-PreviewHost.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-PreviewHost.debug.xcconfig"; path = "Target Support Files/Pods-PreviewHost/Pods-PreviewHost.debug.xcconfig"; sourceTree = "<group>"; };
+		C9F10947D429671B08FE934C /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		CE26D68C2DA7FCD2006DC04D /* VaultManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VaultManager.swift; sourceTree = "<group>"; };
 		CE3AE2B02DC7ACD700E7745E /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
-		CE59C75F2E4F47FD0024A246 /* VaultUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = VaultUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		CE59C75F2E4F47FD0024A246 /* AliasVaultUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AliasVaultUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE73B39F2DFC8A0C0081B6CB /* AliasVault.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AliasVault.icon; sourceTree = "<group>"; };
 		CE77825D2EA1822400A75E6F /* VaultUtils.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = VaultUtils.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		CE9A58FA2DBA982100CB0A4C /* RCTNativeVaultManager.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTNativeVaultManager.h; sourceTree = "<group>"; };
@@ -206,9 +263,12 @@
 		CEE9097E2DA548C7008D568F /* Autofill.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = Autofill.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEE9097F2DA548C7008D568F /* AuthenticationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AuthenticationServices.framework; path = System/Library/Frameworks/AuthenticationServices.framework; sourceTree = SDKROOT; };
 		D17078F549B652835E3A4AFA /* libPods-VaultStoreKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-VaultStoreKit.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DCA9E55219D409EB8F443E49 /* RustCore.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RustCore.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F69423750E7F4AD8302AC70B /* RustCoreFramework.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = RustCoreFramework.h; sourceTree = "<group>"; };
 		F8E67ADE689A44F7301E9453 /* Pods-Autofill.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Autofill.debug.xcconfig"; path = "Target Support Files/Pods-Autofill/Pods-Autofill.debug.xcconfig"; sourceTree = "<group>"; };
 		FAC715A2D49A985799AEE119 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-AliasVault/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
+		FC50A59017FED3A083EC2F88 /* aliasvault_coreFFI.h */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.c.h; path = aliasvault_coreFFI.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -222,7 +282,7 @@
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		CE59C7602E4F47FD0024A246 /* VaultUITests */ = {
+		CE59C7602E4F47FD0024A246 /* AliasVaultUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
 			);
@@ -230,7 +290,7 @@
 			};
 			explicitFolders = (
 			);
-			path = VaultUITests;
+			path = AliasVaultUITests;
 			sourceTree = "<group>";
 		};
 		CE77825E2EA1822400A75E6F /* VaultUtils */ = {
@@ -312,6 +372,15 @@
 				CEE4809C2DBE86DD00F4A367 /* VaultStoreKit.framework in Frameworks */,
 				3D1B0279B0714C8FF732D2D3 /* libPods-AliasVault.a in Frameworks */,
 				CE7782632EA1822400A75E6F /* VaultUtils.framework in Frameworks */,
+				B00629AD90FABE8F65D64107 /* RustCoreFramework.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9CAF81A5275E87E62EBFE19E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6B02BE4A57083EFEF38AD36C /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -319,8 +388,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				CE59C7632E4F47FE0024A246 /* VaultUI.framework in Frameworks */,
-				0EF28D873AC559A33A3B178F /* libPods-VaultUITests.a in Frameworks */,
+				07A10A71081ED4937FFAA626 /* RustCoreFramework.framework in Frameworks */,
+				07A10A71081ED4937FFAA627 /* VaultModels.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -339,6 +408,7 @@
 				CE48FCEC2DBE939A00E5E3D6 /* VaultModels.framework in Frameworks */,
 				CE7782732EA18A3500A75E6F /* VaultUtils.framework in Frameworks */,
 				9E8B9B9318C79E9CBB868429 /* libPods-VaultStoreKit.a in Frameworks */,
+				07A10A71081ED4937FFAA625 /* RustCoreFramework.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -358,6 +428,7 @@
 				CEE482CB2DBE8F2B00F4A367 /* VaultModels.framework in Frameworks */,
 				CE77826E2EA18A2F00A75E6F /* VaultUtils.framework in Frameworks */,
 				1381C2F6D317F2404928BA59 /* libPods-VaultUI.a in Frameworks */,
+				74ABD6C48D811AB8DDC7A6B2 /* RustCoreFramework.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -377,12 +448,21 @@
 				CEE909802DA548C7008D568F /* AuthenticationServices.framework in Frameworks */,
 				CEE480AC2DBE88AB00F4A367 /* VaultStoreKit.framework in Frameworks */,
 				F53476297C14F7D0583D7988 /* libPods-Autofill.a in Frameworks */,
+				835999B8CD9DA8BC5D467BA1 /* RustCoreFramework.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0E0B7331E91EB4FF6E74485D /* RustCore */ = {
+			isa = PBXGroup;
+			children = (
+				F3B6DE34AFCF0A5ECDDF12D8 /* Generated */,
+			);
+			path = RustCore;
+			sourceTree = "<group>";
+		};
 		13B07FAE1A68108700A75B9A /* AliasVault */ = {
 			isa = PBXGroup;
 			children = (
@@ -412,9 +492,42 @@
 				456ACD01FF420AE789429A59 /* libPods-VaultStoreTests.a */,
 				C32D89DCBA51D7C8CDE51DD2 /* libPods-VaultUI.a */,
 				9E9AD944E3A0F270C797F5DD /* libPods-VaultStoreKitTests.a */,
-				9A795EF04BF70F714FA4B0E5 /* libPods-VaultUITests.a */,
+				9A795EF04BF70F714FA4B0E5 /* libPods-AliasVaultUITests.a */,
+				DC967BC4C05235EC23436A20 /* iOS */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		3AD00C41DD88E219A26C2E41 /* RustCoreFramework */ = {
+			isa = PBXGroup;
+			children = (
+				3441C5082812204EC761AA88 /* RustCoreFramework.h */,
+				5CE7700D50681E26308A4E29 /* aliasvault_coreFFI.h */,
+				DCA9E55219D409EB8F443E49 /* RustCore.swift */,
+				C9F10947D429671B08FE934C /* Info.plist */,
+				802A6BCBB1A92683500CC923 /* module.modulemap */,
+				0E0B7331E91EB4FF6E74485D /* RustCore */,
+			);
+			path = RustCoreFramework;
+			sourceTree = "<group>";
+		};
+		501D7BE54850A587E2E453AC /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				866614F28C50C18588D96EA5 /* aliasvault_core.swift */,
+			);
+			path = Generated;
+			sourceTree = "<group>";
+		};
+		6114AD0A31612EA499210371 /*  */ = {
+			isa = PBXGroup;
+			children = (
+				8F8258CE46969A87661E0302 /* RustCore.swift */,
+				BF742AD8EAF362C5826AF91C /* RustCore */,
+				B27A728D066AF582C5B9544F /* module.modulemap */,
+				FC50A59017FED3A083EC2F88 /* aliasvault_coreFFI.h */,
+				F69423750E7F4AD8302AC70B /* RustCoreFramework.h */,
+			);
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -436,12 +549,15 @@
 				CEE480882DBE86DC00F4A367 /* VaultStoreKit */,
 				CEE480972DBE86DD00F4A367 /* VaultStoreKitTests */,
 				CEE4816B2DBE8AC800F4A367 /* VaultUI */,
-				CE59C7602E4F47FD0024A246 /* VaultUITests */,
+				CE59C7602E4F47FD0024A246 /* AliasVaultUITests */,
 				CE77825E2EA1822400A75E6F /* VaultUtils */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				D65327D7A22EEC0BE12398D9 /* Pods */,
 				83CBBA001A601CBA00E9B192 /* Products */,
+				6114AD0A31612EA499210371 /*  */,
+				CE5212B62F0C061800F4C835 /* Recovered References */,
+				3AD00C41DD88E219A26C2E41 /* RustCoreFramework */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -457,8 +573,9 @@
 				CEE480912DBE86DD00F4A367 /* VaultStoreKitTests.xctest */,
 				CEE4816A2DBE8AC800F4A367 /* VaultUI.framework */,
 				CEE482AA2DBE8EFE00F4A367 /* VaultModels.framework */,
-				CE59C75F2E4F47FD0024A246 /* VaultUITests.xctest */,
+				CE59C75F2E4F47FD0024A246 /* AliasVaultUITests.xctest */,
 				CE77825D2EA1822400A75E6F /* VaultUtils.framework */,
+				61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -471,6 +588,14 @@
 			name = AliasVault;
 			sourceTree = "<group>";
 		};
+		AF1F34BFD59E4E97E7A2D4E7 /* include */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = include;
+			path = RustCoreFramework/RustCore/include;
+			sourceTree = "<group>";
+		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -478,6 +603,23 @@
 			);
 			name = Supporting;
 			path = AliasVault/Supporting;
+			sourceTree = "<group>";
+		};
+		BF742AD8EAF362C5826AF91C /* RustCore */ = {
+			isa = PBXGroup;
+			children = (
+				501D7BE54850A587E2E453AC /* Generated */,
+				AF1F34BFD59E4E97E7A2D4E7 /* include */,
+			);
+			path = RustCore;
+			sourceTree = "<group>";
+		};
+		CE5212B62F0C061800F4C835 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				9996E7A841D488251B139CFC /* aliasvault_core.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		CE9A58F92DBA97D500CB0A4C /* NativeVaultManager */ = {
@@ -508,8 +650,8 @@
 				1A927300CBD3BFE2B7A3CA37 /* Pods-VaultUI.release.xcconfig */,
 				A9E70CCF7AAA4E05B57CCCC4 /* Pods-VaultStoreKitTests.debug.xcconfig */,
 				B18F3A7E310165C29C8C6DFE /* Pods-VaultStoreKitTests.release.xcconfig */,
-				0185B497D6794232013782D4 /* Pods-VaultUITests.debug.xcconfig */,
-				017AFF1289CCDC7514CC84DA /* Pods-VaultUITests.release.xcconfig */,
+				0185B497D6794232013782D4 /* Pods-AliasVaultUITests.debug.xcconfig */,
+				017AFF1289CCDC7514CC84DA /* Pods-AliasVaultUITests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -520,6 +662,22 @@
 				92DBD88DE9BF7D494EA9DA96 /* AliasVault */,
 			);
 			name = ExpoModulesProviders;
+			sourceTree = "<group>";
+		};
+		DC967BC4C05235EC23436A20 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				1C8C42997B5868C83ECC353F /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		F3B6DE34AFCF0A5ECDDF12D8 /* Generated */ = {
+			isa = PBXGroup;
+			children = (
+				670F12C8E2555CEAB20095EA /* aliasvault_core.swift */,
+			);
+			path = Generated;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -553,6 +711,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		E747A3339226A5367E92F0DD /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4E959304D034897952CD0FAA /* RustCoreFramework.h in Headers */,
+				E96E1EC08316C9C3CD439F0A /* aliasvault_coreFFI.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
@@ -580,17 +747,36 @@
 				CEE4817E2DBE8AC800F4A367 /* PBXTargetDependency */,
 				CEE482BE2DBE8EFF00F4A367 /* PBXTargetDependency */,
 				CE7782622EA1822400A75E6F /* PBXTargetDependency */,
+				FB026F4A1D001039843174C2 /* PBXTargetDependency */,
 			);
 			name = AliasVault;
 			productName = AliasVault;
 			productReference = 13B07F961A680F5B00A75B9A /* AliasVault.app */;
 			productType = "com.apple.product-type.application";
 		};
-		CE59C75E2E4F47FD0024A246 /* VaultUITests */ = {
+		55118F9387BE1BFE21365CB8 /* RustCoreFramework */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = CE59C7682E4F47FE0024A246 /* Build configuration list for PBXNativeTarget "VaultUITests" */;
+			buildConfigurationList = 05E54BEDC9F8B5D8DCB07E11 /* Build configuration list for PBXNativeTarget "RustCoreFramework" */;
 			buildPhases = (
-				2E8B1031EFFD64F99242A5C1 /* [CP] Check Pods Manifest.lock */,
+				7C20B1F4BE2D9D5DB4B311E8 /* Build Rust Core */,
+				E747A3339226A5367E92F0DD /* Headers */,
+				D176309B28AC4E5FB3FACCE2 /* Sources */,
+				9CAF81A5275E87E62EBFE19E /* Frameworks */,
+				A9503CBA7BE5EEA6F2B0D3F9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RustCoreFramework;
+			productName = RustCoreFramework;
+			productReference = 61BC8C49EE3C1989FFB6DB3B /* RustCoreFramework.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+		CE59C75E2E4F47FD0024A246 /* AliasVaultUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE59C7682E4F47FE0024A246 /* Build configuration list for PBXNativeTarget "AliasVaultUITests" */;
+			buildPhases = (
 				CE59C75B2E4F47FD0024A246 /* Sources */,
 				CE59C75C2E4F47FD0024A246 /* Frameworks */,
 				CE59C75D2E4F47FD0024A246 /* Resources */,
@@ -599,14 +785,15 @@
 			);
 			dependencies = (
 				CE59C7652E4F47FE0024A246 /* PBXTargetDependency */,
+				CE59C7672E4F47FE0024A247 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
-				CE59C7602E4F47FD0024A246 /* VaultUITests */,
+				CE59C7602E4F47FD0024A246 /* AliasVaultUITests */,
 			);
-			name = VaultUITests;
-			productName = VaultUITests;
-			productReference = CE59C75F2E4F47FD0024A246 /* VaultUITests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
+			name = AliasVaultUITests;
+			productName = AliasVaultUITests;
+			productReference = CE59C75F2E4F47FD0024A246 /* AliasVaultUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		CE77825C2EA1822400A75E6F /* VaultUtils */ = {
 			isa = PBXNativeTarget;
@@ -642,6 +829,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				174AAF666366E11F87CAB46E /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				CEE480882DBE86DC00F4A367 /* VaultStoreKit */,
@@ -687,6 +875,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				51501F4EEC12BCC0F7346CE5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				CEE4816B2DBE8AC800F4A367 /* VaultUI */,
@@ -733,6 +922,7 @@
 			dependencies = (
 				CEE480AF2DBE88AB00F4A367 /* PBXTargetDependency */,
 				CE48FD662DBEA3B800E5E3D6 /* PBXTargetDependency */,
+				D1EF45A937B53AA2D64CE2E5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				CEE909812DA548C7008D568F /* Autofill */,
@@ -787,7 +977,9 @@
 				Base,
 				de,
 				en,
+				es,
 				fi,
+				fr,
 				he,
 				nl,
 				it,
@@ -796,6 +988,12 @@
 				ru,
 				uk,
 				zh,
+				es,
+				fr,
+				sv,
+				tr,
+				ca,
+				ro,
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
@@ -807,9 +1005,10 @@
 				CEE480862DBE86DC00F4A367 /* VaultStoreKit */,
 				CEE480902DBE86DD00F4A367 /* VaultStoreKitTests */,
 				CEE481692DBE8AC800F4A367 /* VaultUI */,
-				CE59C75E2E4F47FD0024A246 /* VaultUITests */,
+				CE59C75E2E4F47FD0024A246 /* AliasVaultUITests */,
 				CEE482A92DBE8EFE00F4A367 /* VaultModels */,
 				CE77825C2EA1822400A75E6F /* VaultUtils */,
+				55118F9387BE1BFE21365CB8 /* RustCoreFramework */,
 			);
 		};
 /* End PBXProject section */
@@ -824,6 +1023,13 @@
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
 				D6E19ADE0A608FA46984C60D /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A9503CBA7BE5EEA6F2B0D3F9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -912,8 +1118,6 @@
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-Core/React-Core_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/React-cxxreact/React-cxxreact_privacy.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/boost/boost_privacy.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/expo-dev-launcher/EXDevLauncher.bundle",
-				"${PODS_CONFIGURATION_BUILD_DIR}/expo-dev-menu/EXDevMenu.bundle",
 				"${PODS_CONFIGURATION_BUILD_DIR}/glog/glog_privacy.bundle",
 			);
 			name = "[CP] Copy Pods Resources";
@@ -928,35 +1132,11 @@
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-Core_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/React-cxxreact_privacy.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/boost_privacy.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXDevLauncher.bundle",
-				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/EXDevMenu.bundle",
 				"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/glog_privacy.bundle",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-AliasVault/Pods-AliasVault-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		2E8B1031EFFD64F99242A5C1 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-VaultUITests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		5DC7F827F296E839DC4DE7BD /* [CP] Check Pods Manifest.lock */ = {
@@ -980,6 +1160,24 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		7C20B1F4BE2D9D5DB4B311E8 /* Build Rust Core */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Rust Core";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Add Rust to PATH (Xcode doesn't include ~/.cargo/bin by default)\nexport PATH=\"$HOME/.cargo/bin:/usr/local/bin:/usr/bin:/bin:$PATH\"\n\n# Build Rust core library for iOS (handles all file copying)\ncd \"$PROJECT_DIR/../../../core/rust\"\n./build.sh --ios --incremental\n";
 		};
 		8F3BE577A5D473AA9A5D1530 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1226,9 +1424,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		D176309B28AC4E5FB3FACCE2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				658478B7E2C454B9FD5A4461 /* RustCore.swift in Sources */,
+				56C425FAFF2BEE601C4FC167 /* aliasvault_core.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		174AAF666366E11F87CAB46E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RustCoreFramework;
+			target = 55118F9387BE1BFE21365CB8 /* RustCoreFramework */;
+			targetProxy = 438C62A9BB3AAF42A6633996 /* PBXContainerItemProxy */;
+		};
+		51501F4EEC12BCC0F7346CE5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RustCoreFramework;
+			target = 55118F9387BE1BFE21365CB8 /* RustCoreFramework */;
+			targetProxy = DEAC25BDB7E709F0299B67EA /* PBXContainerItemProxy */;
+		};
 		CE48FD662DBEA3B800E5E3D6 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = CEE481692DBE8AC800F4A367 /* VaultUI */;
@@ -1236,8 +1455,13 @@
 		};
 		CE59C7652E4F47FE0024A246 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = CEE481692DBE8AC800F4A367 /* VaultUI */;
+			target = 13B07F861A680F5B00A75B9A /* AliasVault */;
 			targetProxy = CE59C7642E4F47FE0024A246 /* PBXContainerItemProxy */;
+		};
+		CE59C7672E4F47FE0024A247 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = CEE482A92DBE8EFE00F4A367 /* VaultModels */;
+			targetProxy = CE59C7662E4F47FE0024A247 /* PBXContainerItemProxy */;
 		};
 		CE7782622EA1822400A75E6F /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -1279,22 +1503,89 @@
 			target = CEE9097D2DA548C7008D568F /* Autofill */;
 			targetProxy = CEE909892DA548C7008D568F /* PBXContainerItemProxy */;
 		};
+		D1EF45A937B53AA2D64CE2E5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RustCoreFramework;
+			target = 55118F9387BE1BFE21365CB8 /* RustCoreFramework */;
+			targetProxy = 1F09A0CB86D87B7C44135D75 /* PBXContainerItemProxy */;
+		};
+		FB026F4A1D001039843174C2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RustCoreFramework;
+			target = 55118F9387BE1BFE21365CB8 /* RustCoreFramework */;
+			targetProxy = EBEBD450976E6574AB91BE8D /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		082DFCD73EA027E328DE92A6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ARCHS = arm64;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2600100;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				EXCLUDED_ARCHS = x86_64;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RustCoreFramework/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(SDKROOT)/usr/lib/swift",
+					"$(inherited)",
+					"$(PROJECT_DIR)/RustCoreFramework/RustCore/lib/$(RUST_LIB_PLATFORM)",
+				);
+				MARKETING_VERSION = 1.0;
+				MODULEMAP_FILE = "$(SRCROOT)/RustCoreFramework/module.modulemap";
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-all_load",
+					"-laliasvault_core",
+				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
+				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.RustCoreFramework;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				"RUST_LIB_PLATFORM[sdk=iphoneos*]" = device;
+				"RUST_LIB_PLATFORM[sdk=iphonesimulator*]" = simulator;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SWIFT_INCLUDE_PATHS = "$(inherited) $(PROJECT_DIR)/RustCoreFramework/RustCore/include";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = arm64;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Release;
+		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 5C1EA06BE7608888B8DF9CE0 /* Pods-AliasVault.debug.xcconfig */;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AliasVault;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AliasVault/AliasVault.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				ENABLE_BITCODE = NO;
+				EXCLUDED_ARCHS = x86_64;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(inherited)",
 					"FB_SONARKIT_ENABLED=1",
@@ -1307,7 +1598,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.24.0;
+				MARKETING_VERSION = 0.26.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1317,10 +1608,12 @@
 				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app;
 				PRODUCT_NAME = AliasVault;
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "AliasVault/AliasVault-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -1329,12 +1622,14 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 82C6F986E9F08FE1179D0A40 /* Pods-AliasVault.release.xcconfig */;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AliasVault;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = AliasVault/AliasVault.entitlements;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
+				EXCLUDED_ARCHS = x86_64;
 				INFOPLIST_FILE = AliasVault/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = AliasVault;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
@@ -1343,7 +1638,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 0.24.0;
+				MARKETING_VERSION = 0.26.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1352,9 +1647,11 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app;
 				PRODUCT_NAME = AliasVault;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_OBJC_BRIDGING_HEADER = "AliasVault/AliasVault-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
@@ -1481,9 +1778,61 @@
 			};
 			name = Release;
 		};
+		86D2A002CEF090A929D6E593 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				ARCHS = arm64;
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2600100;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				EXCLUDED_ARCHS = x86_64;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RustCoreFramework/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(SDKROOT)/usr/lib/swift",
+					"$(inherited)",
+					"$(PROJECT_DIR)/RustCoreFramework/RustCore/lib/$(RUST_LIB_PLATFORM)",
+				);
+				MARKETING_VERSION = 1.0;
+				MODULEMAP_FILE = "$(SRCROOT)/RustCoreFramework/module.modulemap";
+				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-all_load",
+					"-laliasvault_core",
+				);
+				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
+				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.RustCoreFramework;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				"RUST_LIB_PLATFORM[sdk=iphoneos*]" = device;
+				"RUST_LIB_PLATFORM[sdk=iphonesimulator*]" = simulator;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
+				SWIFT_INCLUDE_PATHS = "$(inherited) $(PROJECT_DIR)/RustCoreFramework/RustCore/include";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
+				VERSIONING_SYSTEM = "apple-generic";
+				VERSION_INFO_PREFIX = "";
+			};
+			name = Debug;
+		};
 		CE59C7662E4F47FE0024A246 /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0185B497D6794232013782D4 /* Pods-VaultUITests.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1494,7 +1843,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1506,19 +1855,19 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
-				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app.VaultUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app.AliasVaultUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = AliasVault;
 			};
 			name = Debug;
 		};
 		CE59C7672E4F47FE0024A246 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 017AFF1289CCDC7514CC84DA /* Pods-VaultUITests.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1530,7 +1879,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1541,18 +1890,20 @@
 				MARKETING_VERSION = 1.0;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
-				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app.VaultUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app.AliasVaultUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = AliasVault;
 			};
 			name = Release;
 		};
 		CE7782662EA1822400A75E6F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1564,7 +1915,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -1572,6 +1923,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				EXCLUDED_ARCHS = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -1602,6 +1954,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1610,6 +1963,7 @@
 		CE7782672EA1822400A75E6F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1621,7 +1975,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -1629,6 +1983,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				EXCLUDED_ARCHS = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -1657,6 +2012,7 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1666,6 +2022,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 09DFCC3CBA13D19073CBCC7F /* Pods-VaultStoreKit.debug.xcconfig */;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1674,14 +2031,15 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				EXCLUDED_ARCHS = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -1692,6 +2050,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift$(inherited)";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
@@ -1701,14 +2060,18 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app.VaultStoreKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				"RUST_LIB_PLATFORM[sdk=iphoneos*]" = device;
+				"RUST_LIB_PLATFORM[sdk=iphonesimulator*]" = simulator;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1718,6 +2081,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 368EE3A71DE7308558E8E815 /* Pods-VaultStoreKit.release.xcconfig */;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1727,14 +2091,15 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				EXCLUDED_ARCHS = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -1745,6 +2110,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift$(inherited)";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
@@ -1753,13 +2119,17 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app.VaultStoreKit;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				"RUST_LIB_PLATFORM[sdk=iphoneos*]" = device;
+				"RUST_LIB_PLATFORM[sdk=iphonesimulator*]" = simulator;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1776,7 +2146,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1811,7 +2181,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -1836,6 +2206,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = B3C355F5D1686A5CF7706974 /* Pods-VaultUI.debug.xcconfig */;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1844,7 +2215,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -1852,6 +2223,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				EXCLUDED_ARCHS = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -1862,6 +2234,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift$(inherited)";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
@@ -1871,14 +2244,18 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
 				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app.VaultUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				"RUST_LIB_PLATFORM[sdk=iphoneos*]" = device;
+				"RUST_LIB_PLATFORM[sdk=iphonesimulator*]" = simulator;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1888,6 +2265,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 1A927300CBD3BFE2B7A3CA37 /* Pods-VaultUI.release.xcconfig */;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1897,7 +2275,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -1905,6 +2283,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				EXCLUDED_ARCHS = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -1915,6 +2294,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = "$(SDKROOT)/usr/lib/swift$(inherited)";
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.0;
 				MODULE_VERIFIER_SUPPORTED_LANGUAGES = "objective-c objective-c++";
@@ -1923,13 +2303,17 @@
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app.VaultUI;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				"RUST_LIB_PLATFORM[sdk=iphoneos*]" = device;
+				"RUST_LIB_PLATFORM[sdk=iphonesimulator*]" = simulator;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_INSTALL_MODULE = YES;
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1938,6 +2322,7 @@
 		CEE482C22DBE8EFF00F4A367 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1946,7 +2331,7 @@
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -1954,6 +2339,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				EXCLUDED_ARCHS = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -1981,6 +2367,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -1989,6 +2376,7 @@
 		CEE482C32DBE8EFF00F4A367 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -1998,7 +2386,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -2006,6 +2394,7 @@
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				ENABLE_MODULE_VERIFIER = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				EXCLUDED_ARCHS = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -2031,6 +2420,7 @@
 				SWIFT_INSTALL_OBJC_HEADER = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 			};
@@ -2040,6 +2430,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = F8E67ADE689A44F7301E9453 /* Pods-Autofill.debug.xcconfig */;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2049,10 +2440,11 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CODE_SIGN_ENTITLEMENTS = autofill/autofill.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				EXCLUDED_ARCHS = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = autofill/Info.plist;
@@ -2065,7 +2457,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 0.24.0;
+				MARKETING_VERSION = 0.26.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_DEBUG";
@@ -2074,9 +2466,11 @@
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 			};
 			name = Debug;
 		};
@@ -2084,6 +2478,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 587654EE2E1F1914DBBD7F37 /* Pods-Autofill.release.xcconfig */;
 			buildSettings = {
+				ARCHS = arm64;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
@@ -2094,10 +2489,11 @@
 				CODE_SIGN_ENTITLEMENTS = autofill/autofill.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2400301;
+				CURRENT_PROJECT_VERSION = 2600100;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8PHW4HN3F7;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				EXCLUDED_ARCHS = x86_64;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = autofill/Info.plist;
@@ -2110,7 +2506,7 @@
 					"@executable_path/../../Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 0.24.0;
+				MARKETING_VERSION = 0.26.0;
 				MTL_FAST_MATH = YES;
 				OTHER_SWIFT_FLAGS = "$(inherited) -D EXPO_CONFIGURATION_RELEASE";
 				PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app.autofill;
@@ -2118,14 +2514,25 @@
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_ENABLE_EXPLICIT_MODULES = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+				VALID_ARCHS = arm64;
 			};
 			name = Release;
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		05E54BEDC9F8B5D8DCB07E11 /* Build configuration list for PBXNativeTarget "RustCoreFramework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				082DFCD73EA027E328DE92A6 /* Release */,
+				86D2A002CEF090A929D6E593 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "AliasVault" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -2144,7 +2551,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		CE59C7682E4F47FE0024A246 /* Build configuration list for PBXNativeTarget "VaultUITests" */ = {
+		CE59C7682E4F47FE0024A246 /* Build configuration list for PBXNativeTarget "AliasVaultUITests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				CE59C7662E4F47FE0024A246 /* Debug */,

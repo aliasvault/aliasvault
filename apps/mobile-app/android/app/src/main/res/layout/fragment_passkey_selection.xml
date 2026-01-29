@@ -61,7 +61,7 @@
                 android:text="@string/passkey_create_new_button"
                 android:textColor="#FFFFFF"
                 android:backgroundTint="@color/av_primary"
-                android:layout_marginBottom="36dp"
+                android:layout_marginBottom="24dp"
                 app:cornerRadius="8dp"
                 app:icon="@android:drawable/ic_lock_lock"
                 app:iconTint="#FFFFFF"
@@ -69,24 +69,61 @@
                 android:paddingVertical="14dp"
                 android:textSize="16sp" />
 
-            <!-- Separator with text -->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/passkey_select_to_replace"
-                android:textSize="14sp"
-                android:textColor="@color/av_text"
-                android:textStyle="bold"
-                android:layout_marginBottom="12dp"
-                android:paddingStart="4dp"
-                android:paddingEnd="4dp" />
-
+            <!-- Section: Add to existing credential (no passkey yet) -->
             <LinearLayout
-                android:id="@+id/existingPasskeysContainer"
+                android:id="@+id/existingItemsSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
-                <!-- Passkey items will be added programmatically -->
+                android:orientation="vertical"
+                android:layout_marginBottom="24dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/passkey_add_to_existing"
+                    android:textSize="14sp"
+                    android:textColor="@color/av_text"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <LinearLayout
+                    android:id="@+id/existingItemsContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <!-- Items without passkeys will be added programmatically -->
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Section: Replace existing passkey -->
+            <LinearLayout
+                android:id="@+id/existingPasskeysSection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/passkey_select_to_replace"
+                    android:textSize="14sp"
+                    android:textColor="@color/av_text"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="12dp"
+                    android:paddingStart="4dp"
+                    android:paddingEnd="4dp" />
+
+                <LinearLayout
+                    android:id="@+id/existingPasskeysContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <!-- Passkey items will be added programmatically -->
+                </LinearLayout>
             </LinearLayout>
 
             <View
@@ -99,7 +136,7 @@
                 android:id="@+id/cancelButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/passkey_cancel_button"
+                android:text="@string/common_cancel"
                 android:textColor="@color/av_primary"
                 style="@style/Widget.Material3.Button.TextButton"
                 android:paddingVertical="14dp"

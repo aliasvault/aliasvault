@@ -74,9 +74,9 @@
     <value>Uwaga:</value>
     <comment>Reset vault please note prefix</comment>
   </data>
-  <data name="ResetVaultCredentialsDeletedNote" xml:space="preserve">
+  <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
     <value>Wszystkie zaszyfrowane dane uwierzytelniające w Twoim sejfie zostaną trwale usunięte</value>
-    <comment>Reset vault note about credentials being deleted</comment>
+    <comment>Reset vault note about items being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
     <value>Twoje aliasy e-mailowe zostaną zachowane i będą mogły być ponownie użyte po zresetowaniu sejfu.</value>

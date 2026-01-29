@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import * as Yup from 'yup';
 
@@ -26,7 +26,7 @@ const DEFAULT_OPTIONS: ApiOption[] = [
  */
 const createUrlSchema = (t: (key: string) => string): Yup.ObjectSchema<{apiUrl: string; clientUrl: string}> => Yup.object().shape({
   apiUrl: Yup.string()
-    .required(t('validation.apiUrlRequired'))
+    .required(t('settings.validation.apiUrlRequired'))
     .test('is-valid-api-url', t('settings.validation.apiUrlInvalid'), (value: string | undefined) => {
       if (!value) {
         return true; // Allow empty for non-custom option
@@ -39,7 +39,7 @@ const createUrlSchema = (t: (key: string) => string): Yup.ObjectSchema<{apiUrl: 
       }
     }),
   clientUrl: Yup.string()
-    .required(t('validation.clientUrlRequired'))
+    .required(t('settings.validation.clientUrlRequired'))
     .test('is-valid-client-url', t('settings.validation.clientUrlInvalid'), (value: string | undefined) => {
       if (!value) {
         return true; // Allow empty for non-custom option
@@ -66,6 +66,34 @@ const AuthSettings: React.FC = () => {
   const { setIsInitialLoading } = useLoading();
 
   const urlSchema = createUrlSchema(t);
+  const apiUrlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const clientUrlDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Track pending values that haven't been saved yet due to debounce
+  const pendingApiUrlRef = useRef<string | null>(null);
+  const pendingClientUrlRef = useRef<string | null>(null);
+
+  // Flush pending saves and clean up on unmount (when navigating away)
+  useEffect((): (() => void) => {
+    return (): void => {
+      // Clear debounce timers
+      if (apiUrlDebounceRef.current) {
+        clearTimeout(apiUrlDebounceRef.current);
+      }
+      if (clientUrlDebounceRef.current) {
+        clearTimeout(clientUrlDebounceRef.current);
+      }
+
+      // Save any pending values synchronously before unmount
+      if (pendingApiUrlRef.current !== null) {
+        const value = pendingApiUrlRef.current;
+        storage.setItem('local:apiUrl', value);
+      }
+      if (pendingClientUrlRef.current !== null) {
+        const value = pendingClientUrlRef.current;
+        storage.setItem('local:clientUrl', value);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     /**
@@ -116,43 +144,63 @@ const AuthSettings: React.FC = () => {
   };
 
   /**
-   * Handle custom API URL change
+   * Handle custom API URL change.
+   * Updates UI state immediately but debounces validation and storage writes to prevent concurrency issues.
    */
-  const handleCustomUrlChange = async (e: React.ChangeEvent<HTMLInputElement>) : Promise<void> => {
+  const handleCustomUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) : void => {
     const value = e.target.value;
     setCustomUrl(value);
+    pendingApiUrlRef.current = value;
 
-    try {
-      await urlSchema.validateAt('apiUrl', { apiUrl: value });
-      setErrors(prev => ({ ...prev, apiUrl: undefined }));
-      await storage.setItem('local:apiUrl', value);
-    } catch (error: unknown) {
-      if (error instanceof Yup.ValidationError) {
-        setErrors(prev => ({ ...prev, apiUrl: error.message }));
-        // On error we revert back to the aliasvault.net official hosted instance.
-        await storage.setItem('local:apiUrl', AppInfo.DEFAULT_API_URL);
-        await storage.setItem('local:clientUrl', AppInfo.DEFAULT_CLIENT_URL);
-      }
+    if (apiUrlDebounceRef.current) {
+      clearTimeout(apiUrlDebounceRef.current);
     }
-  };
+
+    apiUrlDebounceRef.current = setTimeout(async () => {
+      try {
+        await urlSchema.validateAt('apiUrl', { apiUrl: value });
+        setErrors(prev => ({ ...prev, apiUrl: undefined }));
+        await storage.setItem('local:apiUrl', value);
+        pendingApiUrlRef.current = null;
+      } catch (error: unknown) {
+        if (error instanceof Yup.ValidationError) {
+          setErrors(prev => ({ ...prev, apiUrl: error.message }));
+          // On error we revert back to the aliasvault.net official hosted instance.
+          await storage.setItem('local:apiUrl', AppInfo.DEFAULT_API_URL);
+          await storage.setItem('local:clientUrl', AppInfo.DEFAULT_CLIENT_URL);
+          pendingApiUrlRef.current = null;
+        }
+      }
+    }, 150);
+  }, [urlSchema]);
 
   /**
-   * Handle custom client URL change
+   * Handle custom client URL change.
+   * Updates UI state immediately but debounces validation and storage writes to prevent concurrency issues.
    */
-  const handleCustomClientUrlChange = async (e: React.ChangeEvent<HTMLInputElement>) : Promise<void> => {
+  const handleCustomClientUrlChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) : void => {
     const value = e.target.value;
     setCustomClientUrl(value);
+    pendingClientUrlRef.current = value;
 
-    try {
-      await urlSchema.validateAt('clientUrl', { clientUrl: value });
-      setErrors(prev => ({ ...prev, clientUrl: undefined }));
-      await storage.setItem('local:clientUrl', value);
-    } catch (error: unknown) {
-      if (error instanceof Yup.ValidationError) {
-        setErrors(prev => ({ ...prev, clientUrl: error.message }));
-      }
+    if (clientUrlDebounceRef.current) {
+      clearTimeout(clientUrlDebounceRef.current);
     }
-  };
+
+    clientUrlDebounceRef.current = setTimeout(async () => {
+      try {
+        await urlSchema.validateAt('clientUrl', { clientUrl: value });
+        setErrors(prev => ({ ...prev, clientUrl: undefined }));
+        await storage.setItem('local:clientUrl', value);
+        pendingClientUrlRef.current = null;
+      } catch (error: unknown) {
+        if (error instanceof Yup.ValidationError) {
+          setErrors(prev => ({ ...prev, clientUrl: error.message }));
+          pendingClientUrlRef.current = null;
+        }
+      }
+    }, 150);
+  }, [urlSchema]);
 
   /**
    * Toggle global popup.

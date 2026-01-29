@@ -1,16 +1,17 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { storage } from 'wxt/utils/storage';
 
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
-import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/shared/models/webapi';
+import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import type { Item } from '@/utils/dist/core/models/vault';
+import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
+import { getItemWithFallback } from '@/utils/StorageUtility';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
-import { CredentialsResponse as messageCredentialsResponse } from '@/utils/types/messaging/CredentialsResponse';
 import { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
+import { ItemsResponse as messageItemsResponse } from '@/utils/types/messaging/ItemsResponse';
 import { PasswordSettingsResponse as messagePasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettingsResponse';
-import { StoreVaultRequest } from '@/utils/types/messaging/StoreVaultRequest';
 import { StringResponse as stringResponse } from '@/utils/types/messaging/StringResponse';
 import { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
@@ -19,15 +20,31 @@ import { WebApiService } from '@/utils/WebApiService';
 import { t } from '@/i18n/StandaloneI18n';
 
 /**
+ * Cache for the SqliteClient to avoid repeated decryption and initialization.
+ * The cached instance is the single source of truth for the in-memory vault.
+ *
+ * Cache Strategy:
+ * - Local mutations (createCredential, etc.): Work directly on cachedSqliteClient, no cache clearing
+ * - New vault from remote (login, sync): Clear cache by setting both to null
+ * - Logout/clear vault: Clear cache by setting both to null
+ *
+ * The cache is cleared by setting cachedSqliteClient and cachedVaultBlob to null directly
+ * in the functions that receive new vault data from external sources.
+ */
+let cachedSqliteClient: SqliteClient | null = null;
+let cachedVaultBlob: string | null = null;
+
+/**
  * Check if the user is logged in and if the vault is locked, and also check for pending migrations.
  */
 export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, isVaultLocked: boolean, hasPendingMigrations: boolean, error?: string }> {
   const username = await storage.getItem('local:username');
   const accessToken = await storage.getItem('local:accessToken');
-  const vaultData = await storage.getItem('session:encryptedVault');
+  const vaultData = await storage.getItem('local:encryptedVault');
+  const encryptionKey = await handleGetEncryptionKey();
 
   const isLoggedIn = username !== null && accessToken !== null;
-  const isVaultLocked = isLoggedIn && vaultData === null;
+  const isVaultLocked = isLoggedIn && (vaultData === null || encryptionKey === null);
 
   // If vault is locked, we can't check for pending migrations
   if (isVaultLocked) {
@@ -57,8 +74,6 @@ export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, i
       hasPendingMigrations
     };
   } catch (error) {
-    console.error('Error checking pending migrations:', error);
-
     // If it's a version incompatibility error, we need to handle it specially
     if (error instanceof VaultVersionIncompatibleError) {
       // Return the error so the UI can handle it appropriately (logout user)
@@ -80,37 +95,32 @@ export async function handleCheckAuthStatus() : Promise<{ isLoggedIn: boolean, i
 }
 
 /**
- * Store the vault in browser storage.
+ * Store vault metadata (email domains) in browser storage.
+ * This is used during login/sync when receiving vault data from the server.
  */
-export async function handleStoreVault(
-  message: any,
+export async function handleStoreVaultMetadata(
+  message: {
+    publicEmailDomainList?: string[];
+    privateEmailDomainList?: string[];
+    hiddenPrivateEmailDomainList?: string[];
+  },
 ) : Promise<messageBoolResponse> {
   try {
-    const vaultRequest = message as StoreVaultRequest;
-
-    // Store new encrypted vault in session storage.
-    await storage.setItem('session:encryptedVault', vaultRequest.vaultBlob);
-
-    /*
-     * For all other values, check if they have a value and store them in session storage if they do.
-     * Some updates, e.g. when mutating local database, these values will not be set.
-     */
-
-    if (vaultRequest.publicEmailDomainList) {
-      await storage.setItem('session:publicEmailDomains', vaultRequest.publicEmailDomainList);
+    if (message.publicEmailDomainList) {
+      await storage.setItem('local:publicEmailDomains', message.publicEmailDomainList);
     }
 
-    if (vaultRequest.privateEmailDomainList) {
-      await storage.setItem('session:privateEmailDomains', vaultRequest.privateEmailDomainList);
+    if (message.privateEmailDomainList) {
+      await storage.setItem('local:privateEmailDomains', message.privateEmailDomainList);
     }
 
-    if (vaultRequest.vaultRevisionNumber) {
-      await storage.setItem('session:vaultRevisionNumber', vaultRequest.vaultRevisionNumber);
+    if (message.hiddenPrivateEmailDomainList) {
+      await storage.setItem('local:hiddenPrivateEmailDomains', message.hiddenPrivateEmailDomainList);
     }
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to store vault:', error);
+    console.error('Failed to store vault metadata:', error);
     return { success: false, error: await t('common.errors.unknownError') };
   }
 }
@@ -126,22 +136,23 @@ export async function handleStoreEncryptionKey(
     return { success: true };
   } catch (error) {
     console.error('Failed to store encryption key:', error);
-    return { success: false, error: await t('common.errors.failedToStoreEncryptionKey') };
+    return { success: false, error: await t('common.errors.unknownErrorTryAgain') };
   }
 }
 
 /**
  * Store the encryption key derivation parameters in browser storage.
+ * These are stored in local: storage to enable offline unlock after browser restart.
  */
 export async function handleStoreEncryptionKeyDerivationParams(
   params: EncryptionKeyDerivationParams,
 ) : Promise<messageBoolResponse> {
   try {
-    await storage.setItem('session:encryptionKeyDerivationParams', params);
+    await storage.setItem('local:encryptionKeyDerivationParams', params);
     return { success: true };
   } catch (error) {
     console.error('Failed to store encryption key derivation params:', error);
-    return { success: false, error: await t('common.errors.failedToStoreEncryptionParams') };
+    return { success: false, error: await t('common.errors.unknownErrorTryAgain') };
   }
 }
 
@@ -150,42 +161,51 @@ export async function handleStoreEncryptionKeyDerivationParams(
  */
 export async function handleSyncVault(
 ) : Promise<messageBoolResponse> {
-  const webApi = new WebApiService(() => {});
+  const webApi = new WebApiService();
   const statusResponse = await webApi.getStatus();
   const statusError = webApi.validateStatusResponse(statusResponse);
   if (statusError !== null) {
     return { success: false, error: await t('common.errors.' + statusError) };
   }
 
-  const vaultRevisionNumber = await storage.getItem('session:vaultRevisionNumber') as number;
+  const localServerRevision = await storage.getItem('local:serverRevision') as number | null ?? 0;
 
-  if (statusResponse.vaultRevision > vaultRevisionNumber) {
+  if (statusResponse.vaultRevision > localServerRevision) {
     // Retrieve the latest vault from the server.
     const vaultResponse = await webApi.get<VaultResponse>('Vault');
 
+    // Store in local: storage for persistence (fresh from server, not dirty)
     await storage.setItems([
-      { key: 'session:encryptedVault', value: vaultResponse.vault.blob },
-      { key: 'session:publicEmailDomains', value: vaultResponse.vault.publicEmailDomainList },
-      { key: 'session:privateEmailDomains', value: vaultResponse.vault.privateEmailDomainList },
-      { key: 'session:vaultRevisionNumber', value: vaultResponse.vault.currentRevisionNumber }
+      { key: 'local:encryptedVault', value: vaultResponse.vault.blob },
+      { key: 'local:publicEmailDomains', value: vaultResponse.vault.publicEmailDomainList },
+      { key: 'local:privateEmailDomains', value: vaultResponse.vault.privateEmailDomainList },
+      { key: 'local:hiddenPrivateEmailDomains', value: vaultResponse.vault.hiddenPrivateEmailDomainList },
+      { key: 'local:serverRevision', value: vaultResponse.vault.currentRevisionNumber },
+      { key: 'local:isDirty', value: false }
     ]);
+
+    // Clear cached client since we received a new vault blob from server
+    cachedSqliteClient = null;
+    cachedVaultBlob = null;
   }
 
   return { success: true };
 }
 
 /**
- * Get the vault from browser storage.
+ * Get the vault from browser storage (local: for persistence).
  */
 export async function handleGetVault(
 ) : Promise<messageVaultResponse> {
   try {
     const encryptionKey = await handleGetEncryptionKey();
 
-    const encryptedVault = await storage.getItem('session:encryptedVault') as string;
-    const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[];
-    const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[];
-    const vaultRevisionNumber = await storage.getItem('session:vaultRevisionNumber') as number;
+    const encryptedVault = await storage.getItem('local:encryptedVault') as string;
+    // TODO: the fallback mechanism can be removed some period of time after 0.27.0 is released.
+    const publicEmailDomains = await getItemWithFallback<string[]>('local:publicEmailDomains');
+    const privateEmailDomains = await getItemWithFallback<string[]>('local:privateEmailDomains');
+    const hiddenPrivateEmailDomains = await getItemWithFallback<string[]>('local:hiddenPrivateEmailDomains') ?? [];
+    const serverRevision = await storage.getItem('local:serverRevision') as number | null;
 
     if (!encryptedVault) {
       console.error('Vault not available');
@@ -207,58 +227,80 @@ export async function handleGetVault(
       vault: decryptedVault,
       publicEmailDomains: publicEmailDomains ?? [],
       privateEmailDomains: privateEmailDomains ?? [],
-      vaultRevisionNumber: vaultRevisionNumber ?? 0
+      hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? [],
+      serverRevision: serverRevision ?? 0
     };
   } catch (error) {
     console.error('Failed to get vault:', error);
-    return { success: false, error: await t('common.errors.failedToRetrieveData') };
+    return { success: false, error: await t('common.errors.unknownError') };
   }
 }
 
 /**
- * Clear the vault from browser storage.
+ * Lock the vault by clearing only session data.
+ * This preserves local vault data so user can unlock again without server.
  */
-export function handleClearVault(
-) : messageBoolResponse {
+export function handleLockVault(): messageBoolResponse {
+  // Clear session-only data (locks the vault)
   storage.removeItems([
-    'session:encryptedVault',
     'session:encryptionKey',
-    // TODO: the derivedKey clear can be removed some period of time after 0.22.0 is released.
-    'session:derivedKey',
-    'session:encryptionKeyDerivationParams',
-    'session:publicEmailDomains',
-    'session:privateEmailDomains',
-    'session:vaultRevisionNumber'
+    'session:persistedFormValues',
   ]);
 
   return { success: true };
 }
 
 /**
- * Get all credentials.
+ * Clear session data (tokens and ephemeral data).
+ * This is safe to call during forced logout as it preserves vault data.
  */
-export async function handleGetCredentials(
-) : Promise<messageCredentialsResponse> {
-  const encryptionKey = await handleGetEncryptionKey();
+export async function handleClearSession(): Promise<messageBoolResponse> {
+  // Clear auth tokens
+  await storage.removeItems([
+    'local:accessToken',
+    'local:refreshToken',
+  ]);
 
-  if (!encryptionKey) {
-    return { success: false, error: await t('common.errors.vaultIsLocked') };
-  }
+  // Clear session-only data (security: encryption key must not persist)
+  await storage.removeItems([
+    'session:encryptionKey',
+    'session:persistedFormValues',
+  ]);
 
-  try {
-    const sqliteClient = await createVaultSqliteClient();
-    const credentials = sqliteClient.getAllCredentials();
-    return { success: true, credentials: credentials };
-  } catch (error) {
-    console.error('Error getting credentials:', error);
-    return { success: false, error: await t('common.errors.failedToRetrieveData') };
-  }
+  // Clear cached client since session ended
+  cachedSqliteClient = null;
+  cachedVaultBlob = null;
+
+  return { success: true };
 }
 
 /**
- * Create an identity.
+ * Clear vault data and username.
+ * This removes all persistent vault storage.
  */
-export async function handleCreateIdentity(
+export async function handleClearVaultData(): Promise<messageBoolResponse> {
+  // Clear vault data
+  await storage.removeItems([
+    'local:encryptedVault',
+    'local:publicEmailDomains',
+    'local:privateEmailDomains',
+    'local:hiddenPrivateEmailDomains',
+    'local:serverRevision',
+    'local:isDirty',
+    'local:mutationSequence',
+    'local:isOfflineMode',
+    'local:encryptionKeyDerivationParams',
+    'local:username',
+  ]);
+
+  return { success: true };
+}
+
+/**
+ * Create a new item in the vault.
+ * Uses the native Item type with field-based structure.
+ */
+export async function handleCreateItem(
   message: any,
 ) : Promise<messageBoolResponse> {
   const encryptionKey = await handleGetEncryptionKey();
@@ -270,15 +312,119 @@ export async function handleCreateIdentity(
   try {
     const sqliteClient = await createVaultSqliteClient();
 
-    // Add the new credential to the vault/database.
-    await sqliteClient.createCredential(message.credential, message.attachments || []);
+    // Add the new item to the vault/database.
+    await sqliteClient.items.create(message.item, message.attachments || [], message.totpCodes || []);
 
     // Upload the new vault to the server.
     await uploadNewVaultToServer(sqliteClient);
 
     return { success: true };
   } catch (error) {
-    console.error('Failed to create identity:', error);
+    console.error('Failed to create item:', error);
+    return { success: false, error: await t('common.errors.unknownError') };
+  }
+}
+
+/**
+ * Get items filtered by URL matching (for autofill).
+ * Filters items in the background script before sending to reduce message payload size.
+ *
+ * @param message - Filtering parameters: currentUrl, pageTitle, matchingMode
+ */
+export async function handleGetFilteredItems(
+  message: { currentUrl: string, pageTitle: string, matchingMode?: string }
+) : Promise<messageItemsResponse> {
+  const encryptionKey = await handleGetEncryptionKey();
+
+  if (!encryptionKey) {
+    return { success: false, error: await t('common.errors.vaultIsLocked') };
+  }
+
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    const allItems = sqliteClient.items.getAll();
+
+    const { filterItems, AutofillMatchingMode } = await import('@/utils/itemMatcher/ItemMatcher');
+
+    // Parse matching mode from string
+    let matchingMode = AutofillMatchingMode.DEFAULT;
+    if (message.matchingMode) {
+      matchingMode = message.matchingMode as typeof AutofillMatchingMode[keyof typeof AutofillMatchingMode];
+    }
+
+    // Filter items in background to reduce payload size (~95% reduction)
+    const filteredItems = await filterItems(
+      allItems,
+      message.currentUrl,
+      message.pageTitle,
+      matchingMode
+    );
+
+    return { success: true, items: filteredItems };
+  } catch (error) {
+    console.error('Error getting filtered items:', error);
+    return { success: false, error: await t('common.errors.unknownError') };
+  }
+}
+
+/**
+ * Get items filtered by text search query.
+ * Searches across entire vault (name, fields) and returns matches.
+ *
+ * @param message - Search parameters: searchTerm
+ */
+export async function handleGetSearchItems(
+  message: { searchTerm: string }
+) : Promise<messageItemsResponse> {
+  const encryptionKey = await handleGetEncryptionKey();
+
+  if (!encryptionKey) {
+    return { success: false, error: await t('common.errors.vaultIsLocked') };
+  }
+
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    const allItems = sqliteClient.items.getAll();
+
+    // If search term is empty, return empty array
+    if (!message.searchTerm || message.searchTerm.trim() === '') {
+      return { success: true, items: [] };
+    }
+
+    const searchTerm = message.searchTerm.toLowerCase().trim();
+    const { FieldKey } = await import('@/utils/dist/core/models/vault');
+
+    // Filter items by search term across multiple fields
+    const searchResults = allItems.filter((item: Item) => {
+      // Search in item name
+      if (item.Name?.toLowerCase().includes(searchTerm)) {
+        return true;
+      }
+
+      // Search in field values
+      const searchableFieldKeys = [
+        FieldKey.LoginUsername,
+        FieldKey.LoginEmail,
+        FieldKey.LoginUrl,
+        FieldKey.AliasFirstName,
+        FieldKey.AliasLastName
+      ];
+
+      return item.Fields?.some((field: { FieldKey: string; Value: string | string[] }) => {
+        if ((searchableFieldKeys as string[]).includes(field.FieldKey)) {
+          const value = Array.isArray(field.Value) ? field.Value.join(' ') : field.Value;
+          return value?.toLowerCase().includes(searchTerm);
+        }
+        return false;
+      });
+    }).sort((a: Item, b: Item) => {
+      // Sort by name
+      return (a.Name ?? '').localeCompare(b.Name ?? '');
+    });
+
+    return { success: true, items: searchResults };
+  } catch (error) {
+    console.error('Error searching items:', error);
     return { success: false, error: await t('common.errors.unknownError') };
   }
 }
@@ -289,16 +435,10 @@ export async function handleCreateIdentity(
 export async function getEmailAddressesForVault(
   sqliteClient: SqliteClient
 ): Promise<string[]> {
-  // TODO: create separate query to only get email addresses to avoid loading all credentials.
-  const credentials = sqliteClient.getAllCredentials();
+  const emailAddresses = sqliteClient.items.getAllEmailAddresses();
 
-  // Get metadata from storage
-  const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[];
-
-  const emailAddresses = credentials
-    .filter(cred => cred.Alias?.Email != null)
-    .map(cred => cred.Alias.Email ?? '')
-    .filter((email, index, self) => self.indexOf(email) === index);
+  // Get metadata from local: storage
+  const privateEmailDomains = await getItemWithFallback<string[]>('local:privateEmailDomains') ?? [];
 
   return emailAddresses.filter(email => {
     const domain = email?.split('@')[1];
@@ -308,33 +448,39 @@ export async function getEmailAddressesForVault(
 
 /**
  * Get default email domain for a vault.
+ * Falls back to first private or public domain if no default is configured.
  */
 export function handleGetDefaultEmailDomain(): Promise<stringResponse> {
   return (async (): Promise<stringResponse> => {
     try {
-      const privateEmailDomains = await storage.getItem('session:privateEmailDomains') as string[];
-      const publicEmailDomains = await storage.getItem('session:publicEmailDomains') as string[];
-
       const sqliteClient = await createVaultSqliteClient();
-      const defaultEmailDomain = sqliteClient.getDefaultEmailDomain(privateEmailDomains, publicEmailDomains);
+      let domain = sqliteClient.settings.getDefaultEmailDomain();
 
-      return { success: true, value: defaultEmailDomain ?? undefined };
+      // If no default domain is configured, fall back to first private or public domain
+      if (!domain) {
+        const privateEmailDomains = await getItemWithFallback<string[]>('local:privateEmailDomains') ?? [];
+        const publicEmailDomains = await getItemWithFallback<string[]>('local:publicEmailDomains') ?? [];
+        domain = privateEmailDomains[0] || publicEmailDomains[0] || '';
+      }
+
+      return { success: true, value: domain || undefined };
     } catch (error) {
       console.error('Error getting default email domain:', error);
-      return { success: false, error: await t('common.errors.failedToRetrieveData') };
+      return { success: false, error: await t('common.errors.unknownError') };
     }
   })();
 }
 
 /**
  * Get the default identity settings.
+ * Returns the effective language (with smart UI language matching if no explicit override is set).
  */
 export async function handleGetDefaultIdentitySettings(
 ) : Promise<IdentitySettingsResponse> {
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const language = sqliteClient.getDefaultIdentityLanguage();
-    const gender = sqliteClient.getDefaultIdentityGender();
+    const language = sqliteClient.settings.getEffectiveIdentityLanguage();
+    const gender = sqliteClient.settings.getDefaultIdentityGender();
 
     return {
       success: true,
@@ -345,7 +491,7 @@ export async function handleGetDefaultIdentitySettings(
     };
   } catch (error) {
     console.error('Error getting default identity settings:', error);
-    return { success: false, error: await t('common.errors.failedToRetrieveData') };
+    return { success: false, error: await t('common.errors.unknownError') };
   }
 }
 
@@ -356,12 +502,12 @@ export async function handleGetPasswordSettings(
 ) : Promise<messagePasswordSettingsResponse> {
   try {
     const sqliteClient = await createVaultSqliteClient();
-    const passwordSettings = sqliteClient.getPasswordSettings();
+    const passwordSettings = sqliteClient.settings.getPasswordSettings();
 
     return { success: true, settings: passwordSettings };
   } catch (error) {
     console.error('Error getting password settings:', error);
-    return { success: false, error: await t('common.errors.failedToRetrieveData') };
+    return { success: false, error: await t('common.errors.unknownError') };
   }
 }
 
@@ -384,32 +530,39 @@ export async function handleGetEncryptionKey(
 
 /**
  * Get the encryption key derivation parameters for password change detection and offline mode.
+ * These are stored in local: storage to enable offline unlock after browser restart.
  */
 export async function handleGetEncryptionKeyDerivationParams(
 ) : Promise<EncryptionKeyDerivationParams | null> {
-  const params = await storage.getItem('session:encryptionKeyDerivationParams') as EncryptionKeyDerivationParams | null;
-  return params;
+  // Get metadata from storage
+  return await getItemWithFallback<EncryptionKeyDerivationParams>('local:encryptionKeyDerivationParams');
 }
 
 /**
- * Upload the vault to the server.
+ * Upload the currently stored vault to the server.
+ * Returns the upload status and captures the mutation sequence at start for race detection.
  */
 export async function handleUploadVault(
-  message: any
 ) : Promise<messageVaultUploadResponse> {
   try {
-    // Store the new vault blob in session storage.
-    await storage.setItem('session:encryptedVault', message.vaultBlob);
+    // Capture mutation sequence at start of upload for race detection
+    const mutationSeqAtStart = await storage.getItem('local:mutationSequence') as number | null ?? 0;
 
-    // Create new sqlite client which will use the new vault blob.
+    // Create sqlite client from the already-stored vault blob.
     const sqliteClient = await createVaultSqliteClient();
 
-    // Upload the new vault to the server.
+    // Upload the vault to the server.
     const response = await uploadNewVaultToServer(sqliteClient);
-    return { success: true, status: response.status, newRevisionNumber: response.newRevisionNumber };
+
+    return {
+      success: true,
+      status: response.status,
+      newRevisionNumber: response.newRevisionNumber,
+      mutationSeqAtStart
+    };
   } catch (error) {
     console.error('Failed to upload vault:', error);
-    return { success: false, error: await t('common.errors.failedToUploadVault') };
+    return { success: false, error: await t('common.errors.unknownError') };
   }
 }
 
@@ -465,13 +618,38 @@ export async function handleClearPersistedFormValues(): Promise<void> {
 
 /**
  * Upload a new version of the vault to the server using the provided sqlite client.
+ * Prunes expired trash items (older than 30 days) before uploading.
  */
 async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<VaultPostResponse> {
-  const updatedVaultData = sqliteClient.exportToBase64();
+  let updatedVaultData = sqliteClient.exportToBase64();
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
     throw new Error(await t('common.errors.vaultIsLocked'));
+  }
+
+  /**
+   * Prune expired items from trash before uploading.
+   * Items that have been in trash (DeletedAt set) for more than 30 days
+   * are permanently deleted (IsDeleted = true) as part of the sync process.
+   */
+  try {
+    const { vaultMergeService } = await import('@/utils/VaultMergeService');
+    const pruneResult = await vaultMergeService.prune(updatedVaultData, 30);
+    if (pruneResult.success && pruneResult.statementCount > 0) {
+      console.info(`[VaultSync] Pruned expired items from trash (${pruneResult.statementCount} statements)`);
+      updatedVaultData = pruneResult.prunedVaultBase64;
+
+      /**
+       * Reload the sqlite client with the pruned vault so the UI reflects the change.
+       * Clear the cache to force re-initialization.
+       */
+      cachedSqliteClient = null;
+      cachedVaultBlob = null;
+      await sqliteClient.initializeFromBase64(updatedVaultData);
+    }
+  } catch (pruneError) {
+    console.warn('[VaultSync] Failed to prune vault, continuing with upload:', pruneError);
   }
 
   const encryptedVault = await EncryptionUtility.symmetricEncrypt(
@@ -479,12 +657,11 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
     encryptionKey
   );
 
-  await storage.setItems([
-    { key: 'session:encryptedVault', value: encryptedVault }
-  ]);
+  // Store in local: storage for persistence
+  await storage.setItem('local:encryptedVault', encryptedVault);
 
-  // Get metadata from storage
-  const vaultRevisionNumber = await storage.getItem('session:vaultRevisionNumber') as number;
+  // Get server revision for API
+  const serverRevision = await storage.getItem('local:serverRevision') as number | null ?? 0;
 
   // Upload new encrypted vault to server.
   const username = await storage.getItem('local:username') as string;
@@ -493,26 +670,26 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
   const newVault: Vault = {
     blob: encryptedVault,
     createdAt: new Date().toISOString(),
-    credentialsCount: sqliteClient.getAllCredentials().length,
-    currentRevisionNumber: vaultRevisionNumber,
+    credentialsCount: sqliteClient.items.getAll().length,
+    currentRevisionNumber: serverRevision,
     emailAddressList: emailAddresses,
-    privateEmailDomainList: [], // Empty on purpose, API will not use this for vault updates.
-    publicEmailDomainList: [], // Empty on purpose, API will not use this for vault updates.
-    encryptionPublicKey: '', // Empty on purpose, only required if new public/private key pair is generated.
-    client: '', // Empty on purpose, API will not use this for vault updates.
     updatedAt: new Date().toISOString(),
     username: username,
-    version: (await sqliteClient.getDatabaseVersion()).version
+    version: (await sqliteClient.getDatabaseVersion()).version,
+    // TODO: add public RSA encryption key to payload when implementing vault creation from browser extension. Currently only web app does this.
+    encryptionPublicKey: '',
   };
 
-  const webApi = new WebApiService(() => {});
+  const webApi = new WebApiService();
   const response = await webApi.post<Vault, VaultPostResponse>('Vault', newVault);
 
   // Check if response is successful (.status === 0)
   if (response.status === 0) {
-    await storage.setItem('session:vaultRevisionNumber', response.newRevisionNumber);
+    // Upload succeeded - update server revision
+    await storage.setItem('local:serverRevision', response.newRevisionNumber);
   } else {
-    throw new Error(await t('common.errors.failedToUploadVault'));
+    // Upload failed
+    throw new Error(await t('common.errors.unknownError'));
   }
 
   return response;
@@ -520,23 +697,182 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
 
 /**
  * Create a new sqlite client for the stored vault.
+ * Uses a cache to avoid repeated decryption and initialization for read operations.
  */
 async function createVaultSqliteClient() : Promise<SqliteClient> {
-  const encryptedVault = await storage.getItem('session:encryptedVault') as string;
+  // Read from local: storage for persistent vault access
+  const encryptedVault = await storage.getItem('local:encryptedVault') as string;
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptedVault || !encryptionKey) {
     throw new Error(await t('common.errors.unknownError'));
   }
 
-  // Decrypt the vault.
+  // Check if we have a valid cached client
+  if (cachedSqliteClient && cachedVaultBlob === encryptedVault) {
+    return cachedSqliteClient;
+  }
+
+  // Decrypt the vault
   const decryptedVault = await EncryptionUtility.symmetricDecrypt(
     encryptedVault,
     encryptionKey
   );
 
-  // Initialize the SQLite client with the decrypted vault.
+  // Initialize the SQLite client with the decrypted vault
   const sqliteClient = new SqliteClient();
   await sqliteClient.initializeFromBase64(decryptedVault);
 
+  // Cache the client and vault blob
+  cachedSqliteClient = sqliteClient;
+  cachedVaultBlob = encryptedVault;
+
   return sqliteClient;
+}
+
+/**
+ * Get the encrypted vault blob directly (for merge operations).
+ */
+export async function handleGetEncryptedVault(): Promise<string | null> {
+  return await storage.getItem('local:encryptedVault') as string | null;
+}
+
+/**
+ * Store the encrypted vault blob.
+ *
+ * Two modes:
+ * 1. Local mutation (markDirty=true): Always succeeds, increments mutation sequence
+ * 2. Sync operation (expectedMutationSeq provided): Only succeeds if no mutations happened
+ *    since sync started. This prevents sync from overwriting concurrent local changes.
+ *
+ * @param request Object with:
+ *   - vaultBlob: The encrypted vault data
+ *   - markDirty: If true, marks vault as dirty and increments mutation sequence (for local mutations)
+ *   - serverRevision: Optional explicit server revision (for sync operations)
+ *   - expectedMutationSeq: If provided, only store if current sequence matches (for sync operations)
+ * @returns { success, mutationSequence } - success=false if expectedMutationSeq didn't match
+ */
+export async function handleStoreEncryptedVault(request: {
+  vaultBlob: string;
+  markDirty?: boolean;
+  serverRevision?: number;
+  expectedMutationSeq?: number;
+}): Promise<{ success: boolean; mutationSequence: number }> {
+  let mutationSequence = await storage.getItem('local:mutationSequence') as number | null ?? 0;
+
+  /*
+   * If expectedMutationSeq is provided, this is a sync operation.
+   * Reject if mutations happened during sync to avoid overwriting local changes.
+   */
+  if (request.expectedMutationSeq !== undefined && request.expectedMutationSeq !== mutationSequence) {
+    return { success: false, mutationSequence };
+  }
+
+  if (request.markDirty) {
+    // Increment mutation sequence and mark dirty
+    mutationSequence++;
+  }
+
+  // Build items to store - use explicit typing for storage.setItems
+  if (request.markDirty && request.serverRevision !== undefined) {
+    await storage.setItems([
+      { key: 'local:encryptedVault', value: request.vaultBlob },
+      { key: 'local:mutationSequence', value: mutationSequence },
+      { key: 'local:isDirty', value: true },
+      { key: 'local:serverRevision', value: request.serverRevision }
+    ]);
+  } else if (request.markDirty) {
+    await storage.setItems([
+      { key: 'local:encryptedVault', value: request.vaultBlob },
+      { key: 'local:mutationSequence', value: mutationSequence },
+      { key: 'local:isDirty', value: true }
+    ]);
+  } else if (request.serverRevision !== undefined) {
+    await storage.setItems([
+      { key: 'local:encryptedVault', value: request.vaultBlob },
+      { key: 'local:serverRevision', value: request.serverRevision }
+    ]);
+  } else {
+    await storage.setItem('local:encryptedVault', request.vaultBlob);
+  }
+
+  // Clear cache since vault blob changed
+  cachedSqliteClient = null;
+  cachedVaultBlob = null;
+
+  return { success: true, mutationSequence };
+}
+
+/**
+ * Mark the vault as clean after successful sync.
+ * Only clears dirty flag if no mutations happened during sync.
+ *
+ * @param mutationSeqAtStart - The mutation sequence when sync started
+ * @param newServerRevision - The new server revision after successful upload
+ * @returns Whether the dirty flag was cleared
+ */
+export async function handleMarkVaultClean(request: {
+  mutationSeqAtStart: number;
+  newServerRevision: number;
+}): Promise<{ cleared: boolean; currentMutationSeq: number }> {
+  const currentMutationSeq = await storage.getItem('local:mutationSequence') as number | null ?? 0;
+
+  if (currentMutationSeq === request.mutationSeqAtStart) {
+    // No mutations during sync - safe to mark as clean
+    await storage.setItems([
+      { key: 'local:isDirty', value: false },
+      { key: 'local:serverRevision', value: request.newServerRevision }
+    ]);
+    return { cleared: true, currentMutationSeq };
+  }
+
+  // Mutations happened during sync - keep dirty, but still update server revision
+  await storage.setItem('local:serverRevision', request.newServerRevision);
+  return { cleared: false, currentMutationSeq };
+}
+
+/**
+ * Get the current sync state.
+ */
+export async function handleGetSyncState(): Promise<{
+  isDirty: boolean;
+  mutationSequence: number;
+  serverRevision: number;
+}> {
+  const [isDirty, mutationSequence, serverRevision] = await Promise.all([
+    storage.getItem('local:isDirty') as Promise<boolean | null>,
+    storage.getItem('local:mutationSequence') as Promise<number | null>,
+    storage.getItem('local:serverRevision') as Promise<number | null>
+  ]);
+
+  return {
+    isDirty: isDirty ?? false,
+    mutationSequence: mutationSequence ?? 0,
+    serverRevision: serverRevision ?? 0
+  };
+}
+
+/**
+ * Get the current server revision.
+ */
+export async function handleGetServerRevision(): Promise<number> {
+  // First try new key, then fall back to legacy key
+  let revision = await storage.getItem('local:serverRevision') as number | null;
+
+  if (revision === null) {
+    // Try legacy key - parse string format "250" or "250+1" to get server part
+    const legacyRevision = await storage.getItem('local:vaultRevisionNumber') as string | number | null;
+    if (legacyRevision !== null) {
+      if (typeof legacyRevision === 'number') {
+        revision = legacyRevision;
+      } else {
+        // Handle legacy "250+1" format - extract just the server part
+        const parts = legacyRevision.split('+');
+        revision = parseInt(parts[0], 10) || 0;
+      }
+      // Migrate to new key
+      await storage.setItem('local:serverRevision', revision);
+    }
+  }
+
+  return revision ?? 0;
 }

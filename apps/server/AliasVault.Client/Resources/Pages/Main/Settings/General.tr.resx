@@ -71,27 +71,19 @@
   </data>
   <!-- Alias Settings Section -->
   <data name="AliasSettingsTitle">
-    <value>Alias Settings</value>
-    <comment>Title for alias settings section</comment>
+    <value>Identity Generator Settings</value>
+    <comment>Title for identity generator settings section</comment>
   </data>
   <data name="AliasGenerationLanguageLabel">
-    <value>Alias generation language</value>
+    <value>Dil</value>
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
     <value>Set the default language that will be used when generating new identities.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
-  <data name="EnglishOption">
-    <value>English</value>
-    <comment>English language option</comment>
-  </data>
-  <data name="DutchOption">
-    <value>Dutch</value>
-    <comment>Dutch language option</comment>
-  </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Alias generation gender</value>
+    <value>Cinsiyet</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
@@ -99,16 +91,24 @@
     <comment>Description for alias generation gender setting</comment>
   </data>
   <data name="RandomOption">
-    <value>Random</value>
+    <value>Rastgele</value>
     <comment>Random gender option</comment>
   </data>
   <data name="MaleOption">
-    <value>Male</value>
+    <value>Erkek</value>
     <comment>Male gender option</comment>
   </data>
   <data name="FemaleOption">
-    <value>Female</value>
+    <value>Kadın</value>
     <comment>Female gender option</comment>
+  </data>
+  <data name="AliasGenerationAgeRangeLabel">
+    <value>Age range</value>
+    <comment>Label for alias generation age range setting</comment>
+  </data>
+  <data name="AliasGenerationAgeRangeDescription">
+    <value>Set the default age range for generating new identities. This affects the birthdate assigned to the generated identity.</value>
+    <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
   <data name="ClipboardSettingsTitle">
@@ -128,15 +128,15 @@
     <comment>Option to disable clipboard clearing</comment>
   </data>
   <data name="ClipboardClear5SecondsOption">
-    <value>5 seconds</value>
+    <value>5 saniye</value>
     <comment>Option to clear clipboard after 5 seconds</comment>
   </data>
   <data name="ClipboardClear10SecondsOption">
-    <value>10 seconds</value>
+    <value>10 saniye</value>
     <comment>Option to clear clipboard after 10 seconds</comment>
   </data>
   <data name="ClipboardClear15SecondsOption">
-    <value>15 seconds</value>
+    <value>15 saniye</value>
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
   <data name="ClipboardClearLimitationNote">
@@ -145,7 +145,7 @@
   </data>
   <!-- Password Settings Section -->
   <data name="PasswordSettingsTitle">
-    <value>Password Settings</value>
+    <value>Parola Ayarları</value>
     <comment>Title for password settings section</comment>
   </data>
   <!-- App Language Settings Section -->
@@ -154,7 +154,7 @@
     <comment>Title for app language settings section</comment>
   </data>
   <data name="AppLanguageLabel">
-    <value>Language</value>
+    <value>Dil</value>
     <comment>Label for app language setting</comment>
   </data>
   <data name="AppLanguageDescription">

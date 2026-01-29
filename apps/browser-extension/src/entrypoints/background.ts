@@ -8,11 +8,11 @@ import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeou
 import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardClearTimeout, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData } from '@/entrypoints/background/PasskeyHandler';
-import { handleOpenPopup, handlePopupWithCredential, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearVault, handleCreateIdentity, handleGetCredentials, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVault, handleSyncVault, handleUploadVault } from '@/entrypoints/background/VaultMessageHandler';
+import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision } from '@/entrypoints/background/VaultMessageHandler';
 
 import { GLOBAL_CONTEXT_MENU_ENABLED_KEY } from '@/utils/Constants';
-import { EncryptionKeyDerivationParams } from "@/utils/dist/shared/models/metadata";
+import { EncryptionKeyDerivationParams } from "@/utils/dist/core/models/metadata";
 
 import { defineBackground, storage, browser } from '#imports';
 
@@ -27,24 +27,32 @@ export default defineBackground({
     onMessage('GET_ENCRYPTION_KEY', () => handleGetEncryptionKey());
     onMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS', () => handleGetEncryptionKeyDerivationParams());
     onMessage('GET_VAULT', () => handleGetVault());
-    onMessage('GET_CREDENTIALS', () => handleGetCredentials());
+    onMessage('GET_FILTERED_ITEMS', ({ data }) => handleGetFilteredItems(data as { currentUrl: string, pageTitle: string, matchingMode?: string }));
+    onMessage('GET_SEARCH_ITEMS', ({ data }) => handleGetSearchItems(data as { searchTerm: string }));
 
     onMessage('GET_DEFAULT_EMAIL_DOMAIN', () => handleGetDefaultEmailDomain());
     onMessage('GET_DEFAULT_IDENTITY_SETTINGS', () => handleGetDefaultIdentitySettings());
     onMessage('GET_PASSWORD_SETTINGS', () => handleGetPasswordSettings());
 
-    onMessage('STORE_VAULT', ({ data }) => handleStoreVault(data));
+    onMessage('STORE_VAULT_METADATA', ({ data }) => handleStoreVaultMetadata(data as { publicEmailDomainList?: string[]; privateEmailDomainList?: string[]; hiddenPrivateEmailDomainList?: string[] }));
     onMessage('STORE_ENCRYPTION_KEY', ({ data }) => handleStoreEncryptionKey(data as string));
     onMessage('STORE_ENCRYPTION_KEY_DERIVATION_PARAMS', ({ data }) => handleStoreEncryptionKeyDerivationParams(data as EncryptionKeyDerivationParams));
 
-    onMessage('CREATE_IDENTITY', ({ data }) => handleCreateIdentity(data));
-    onMessage('UPLOAD_VAULT', ({ data }) => handleUploadVault(data));
-    onMessage('SYNC_VAULT', () => handleSyncVault());
+    onMessage('GET_ENCRYPTED_VAULT', () => handleGetEncryptedVault());
+    onMessage('STORE_ENCRYPTED_VAULT', ({ data }) => handleStoreEncryptedVault(data as { vaultBlob: string; markDirty?: boolean; serverRevision?: number; expectedMutationSeq?: number }));
+    onMessage('GET_SYNC_STATE', () => handleGetSyncState());
+    onMessage('MARK_VAULT_CLEAN', ({ data }) => handleMarkVaultClean(data as { mutationSeqAtStart: number; newServerRevision: number }));
+    onMessage('GET_SERVER_REVISION', () => handleGetServerRevision());
 
-    onMessage('CLEAR_VAULT', () => handleClearVault());
+    onMessage('CREATE_ITEM', ({ data }) => handleCreateItem(data));
+    onMessage('UPLOAD_VAULT', () => handleUploadVault());
+    onMessage('SYNC_VAULT', () => handleSyncVault());
+    onMessage('LOCK_VAULT', () => handleLockVault());
+    onMessage('CLEAR_SESSION', () => handleClearSession());
+    onMessage('CLEAR_VAULT_DATA', () => handleClearVaultData());
 
     onMessage('OPEN_POPUP', () => handleOpenPopup());
-    onMessage('OPEN_POPUP_WITH_CREDENTIAL', ({ data }) => handlePopupWithCredential(data));
+    onMessage('OPEN_POPUP_WITH_ITEM', ({ data }) => handlePopupWithItem(data));
     onMessage('OPEN_POPUP_CREATE_CREDENTIAL', ({ data }) => handleOpenPopupCreateCredential(data));
     onMessage('TOGGLE_CONTEXT_MENU', ({ data }) => handleToggleContextMenu(data));
 

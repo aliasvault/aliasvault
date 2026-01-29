@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">AliasVault</string>
+  <string name="autofill_service_description" translatable="true">Autocompletare AliasVault</string>
+  <string name="aliasvault_icon">Pictogramă AliasVault</string>
+  <!-- Common strings -->
+  <string name="common_close">Închide</string>
+  <string name="common_next">Înainte</string>
+  <string name="common_cancel">Anulați</string>
+  <string name="unknown_error">A apărut o eroare necunoscută</string>
+  <!-- AutofillService strings -->
+  <string name="autofill_failed_to_retrieve">Preluare eșuată, deschide aplicația</string>
+  <string name="autofill_no_match_found">Nicio potrivire găsită, creezi una nouă?</string>
+  <string name="autofill_open_app">Deschide aplicația</string>
+  <string name="autofill_vault_locked">Seif blocat</string>
+  <!-- Biometric prompts -->
+  <string name="biometric_store_key_title">Stocare cheie de criptare</string>
+  <string name="biometric_store_key_subtitle">Autentifică-te pentru a stoca în siguranță cheia de criptare în Android Keystore. Acest lucru permite accesul securizat la seif.</string>
+  <string name="biometric_unlock_vault_title">Deblocați seiful</string>
+  <string name="biometric_unlock_vault_subtitle">Autentifică-te pentru a accesa seiful</string>
+  <!-- Passkey registration -->
+  <string name="passkey_registration_title">Creează Passkey</string>
+  <string name="create_passkey_title">Creează Passkey Nou</string>
+  <string name="create_passkey_subtitle">Înregistrează un passkey nou pentru acest site web. Va fi stocat în siguranță în seif și sincronizat automat pe toate dispozitivele tale prin AliasVault.</string>
+  <string name="replace_passkey">Înlocuiește Passkey</string>
+  <string name="passkey_display_name_label">Nume Passkey</string>
+  <string name="passkey_display_name_hint">Introdu un nume pentru acest passkey</string>
+  <string name="passkey_website_label">Site web</string>
+  <string name="passkey_username_label">Nume utilizator</string>
+  <string name="passkey_create_button">Creează Passkey</string>
+  <string name="passkey_creating">Se creează passkey-ul…</string>
+  <string name="passkey_saving">Se salvează în seif…</string>
+  <string name="passkey_syncing">Sincronizare cu serverul…</string>
+  <string name="passkey_error_title">Eroare</string>
+  <string name="passkey_error_empty_name">Introdu un nume pentru passkey</string>
+  <string name="passkey_creation_failed">Crearea passkey-ului a eșuat</string>
+  <string name="passkey_retry_button">Reîncearcă</string>
+  <string name="passkey_info_icon">Pictogramă informații</string>
+  <string name="passkey_create_explanation">Această acțiune creează un passkey nou și îl stochează în seif. Va fi sincronizat automat pe toate dispozitivele care folosesc AliasVault.</string>
+  <string name="passkey_create_new_button">Creează Passkey Nou</string>
+  <string name="passkey_select_to_replace">Sau înlocuiește un passkey existent:</string>
+  <string name="passkey_add_to_existing">Sau adaugă passkey la un element existent:</string>
+  <string name="passkey_replace_explanation">Această acțiune va înlocui passkey-ul existent cu unul nou. Reține că vechiul passkey va fi suprascris și nu va mai putea fi accesat. Dacă dorești să creezi un passkey separat, revino la ecranul anterior.</string>
+  <string name="passkey_merge_explanation">Această acțiune va adăuga un passkey la elementul tău existent. Parola și celelalte date vor fi păstrate.</string>
+  <string name="passkey_replacing">Se înlocuiește passkey-ul…</string>
+  <string name="add_passkey">Adaugă Passkey</string>
+  <string name="add_passkey_subtitle">Se adaugă passkey la elementul existent</string>
+  <string name="passkey_checking_connection">Se verifică conexiunea…</string>
+  <string name="passkey_retrieving">Se preia passkey-ul…</string>
+  <string name="passkey_verifying">Se verifică…</string>
+  <string name="passkey_authenticating">Autentificare…</string>
+  <!-- Vault sync error messages -->
+  <string name="connection_error_title">Eroare de conexiune</string>
+  <string name="connection_error_message">Nu s-a putut stabili conexiunea cu serverul. Verifică conexiunea la internet și încearcă din nou crearea passkey-ului.</string>
+  <string name="session_expired_title">Sesiune expirată</string>
+  <string name="session_expired_message">Sesiunea ta a expirat. Autentifică-te din nou.</string>
+  <string name="password_changed_title">Parolă schimbată</string>
+  <string name="password_changed_message">Parola ta a fost schimbată. Autentifică-te din nou.</string>
+  <string name="version_not_supported_title">Actualizare necesară</string>
+  <string name="version_not_supported_message">Versiunea aplicației nu mai este compatibilă. Instalează cea mai recentă actualizare.</string>
+  <string name="server_unavailable_title">Server indisponibil</string>
+  <string name="server_unavailable_message">Serverul este momentan indisponibil. Încearcă din nou mai târziu.</string>
+  <string name="network_error_title">Eroare de rețea</string>
+  <string name="network_error_message">A apărut o eroare de rețea. Verifică conexiunea și încearcă din nou.</string>
+  <string name="server_version_not_supported_title">Actualizare server necesară</string>
+  <string name="server_version_not_supported_message">Versiunea serverului este incompatibilă. Contactează administratorul pentru a actualiza serverul.</string>
+  <!-- Passkey authentication and unlock error messages -->
+  <string name="error_unlock_method_required">Activează autentificarea biometrică sau PIN-ul în aplicația AliasVault pentru a continua</string>
+  <string name="error_unlock_vault_first">Deblochează mai întâi seiful în aplicația AliasVault</string>
+  <string name="error_vault_decrypt_failed">Decriptarea seifului a eșuat</string>
+  <string name="error_biometric_cancelled">Autentificarea biometrică a fost anulată</string>
+  <string name="error_encryption_key_failed">Preluarea cheii de criptare a eșuat</string>
+  <!-- PIN unlock -->
+  <string name="pin_unlock_vault">Deblocați seiful</string>
+  <string name="pin_enter_to_unlock">Introdu PIN-ul pentru a debloca seiful</string>
+  <string name="pin_locked_max_attempts">Cod PIN blocat după prea multe încercări eșuate</string>
+  <string name="pin_incorrect_attempts_remaining">PIN incorect. %d încercări rămase</string>
+  <!-- PIN setup -->
+  <string name="pin_setup_title">Configurare PIN</string>
+  <string name="pin_setup_description">Alege un cod PIN pentru a debloca seiful</string>
+  <string name="pin_confirm_title">Confirmă PIN</string>
+  <string name="pin_confirm_description">Introdu PIN-ul din nou pentru confirmare</string>
+  <string name="pin_mismatch">Codurile PIN nu se potrivesc. Încearcă din nou.</string>
+</resources>

@@ -1,0 +1,44 @@
+# Docker Compose file for the AliasVault all-in-one container (Development)
+#
+# This is the development template which:
+# - Builds the image locally from the Dockerfile
+# - Uses local folder bind mounts for the database, logs and secrets
+# - Loads environment variables from .env file
+#
+# This template is used for development purposes only and allows reuse of same .env used by the install.sh method.
+#
+# Commands to start/stop (run from root of repo):
+# ------------------------------------------------
+#
+# Start stack:
+# ```
+# docker compose -f dockerfiles/docker-compose.all-in-one.dev.yml up -d --build --force-recreate
+# ```
+#
+# Stop stack:
+# ```
+# docker compose -f dockerfiles/docker-compose.all-in-one.dev.yml down
+# ```
+#
+services:
+  aliasvault:
+    build:
+      context: ../
+      dockerfile: dockerfiles/all-in-one/Dockerfile
+    image: aliasvault-allinone:local
+    container_name: aliasvault
+    restart: unless-stopped
+
+    ports:
+      - "80:80"
+      - "443:443"
+      - "25:25"
+      - "587:587"
+
+    volumes:
+      - ../database:/database
+      - ../logs:/logs
+      - ../secrets:/secrets
+
+    env_file:
+      - ../.env

@@ -59,55 +59,51 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
+    <value>Autenticación de doble factor</value>
     <comment>Section title for 2FA codes</comment>
   </data>
-  <data name="AddTotpCodeButton" xml:space="preserve">
-    <value>Add TOTP Code</value>
-    <comment>Button text to add new TOTP code</comment>
-  </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
-    <value>Add a two-factor authenticator code</value>
+    <value>Añadir un código de autenticación de doble factor</value>
     <comment>Description for adding TOTP codes</comment>
   </data>
   <data name="AddTotpCodeModalTitle" xml:space="preserve">
-    <value>Add 2FA TOTP Code</value>
+    <value>Añadir código TOTP 2FA</value>
     <comment>Modal title for adding TOTP code</comment>
   </data>
   <data name="CloseFormButton" xml:space="preserve">
-    <value>Close form</value>
+    <value>Cerrar formulario</value>
     <comment>Button to close the add TOTP form</comment>
   </data>
   <data name="TotpInstructions" xml:space="preserve">
-    <value>If the website offers or requires 2FA for your account, copy the secret key or QR code URI and paste it below.</value>
+    <value>Si el sitio web ofrece o requiere 2FA para su cuenta, copie la clave secreta o el código QR URI y péguelo a continuación.</value>
     <comment>Instructions for adding TOTP codes</comment>
   </data>
   <data name="NameOptionalLabel" xml:space="preserve">
-    <value>Name (optional)</value>
+    <value>Nombre (Opcional)</value>
     <comment>Label for optional name field</comment>
   </data>
   <data name="SecretKeyLabel" xml:space="preserve">
-    <value>Secret Key</value>
+    <value>Clave secreta</value>
     <comment>Label for secret key field</comment>
   </data>
   <data name="SecretKeyPlaceholder" xml:space="preserve">
-    <value>Enter secret key (manual entry)</value>
+    <value>Introducir clave secreta (entrada manual)</value>
     <comment>Placeholder text for secret key input</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">
-    <value>Save</value>
+    <value>Guardar</value>
     <comment>Save button text</comment>
   </data>
   <data name="SaveToViewCodeMessage" xml:space="preserve">
-    <value>Save to view code</value>
+    <value>Guardar para ver el código</value>
     <comment>Message shown for unsaved TOTP codes</comment>
   </data>
   <data name="DeleteTotpCodeConfirmation" xml:space="preserve">
-    <value>Are you sure you want to delete this TOTP code?</value>
+    <value>¿Está seguro que desea eliminar este código TOTP?</value>
     <comment>Confirmation message for deleting TOTP code</comment>
   </data>
   <data name="DeleteTotpCodeTitle" xml:space="preserve">
-    <value>Delete TOTP code</value>
+    <value>Eliminar código TOTP</value>
     <comment>Title for delete TOTP code action</comment>
   </data>
 </root>

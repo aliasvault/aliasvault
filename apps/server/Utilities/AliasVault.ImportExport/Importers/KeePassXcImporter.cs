@@ -34,7 +34,8 @@ public static class KeePassXcImporter
                 Username = record.Username,
                 Password = record.Password,
                 TwoFactorSecret = record.TOTP,
-                Notes = record.Notes
+                Notes = record.Notes,
+                FolderPath = string.IsNullOrWhiteSpace(record.Group) ? null : record.Group,
             };
 
             credentials.Add(credential);

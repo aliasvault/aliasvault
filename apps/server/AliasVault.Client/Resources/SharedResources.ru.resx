@@ -126,6 +126,10 @@
     <value>Отмена</value>
     <comment>Button text for canceling an action</comment>
   </data>
+  <data name="Generate" xml:space="preserve">
+    <value>Generate</value>
+    <comment>Button tooltip for generating a random value</comment>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>Удалить</value>
     <comment>Button text for deleting an item</comment>
@@ -212,6 +216,10 @@
     <value>Произошла ошибка. Попробуйте ещё раз.</value>
     <comment>Generic error message</comment>
   </data>
+  <data name="ErrorUnknown" xml:space="preserve">
+    <value>Произошла неизвестная ошибка. Попробуйте снова.</value>
+    <comment>Generic unknown error message</comment>
+  </data>
   <data name="ErrorValidation" xml:space="preserve">
     <value>Исправьте ошибки ниже.</value>
     <comment>Validation error message</comment>
@@ -284,6 +292,10 @@
     <comment>Error message when password is required</comment>
   </data>
   <!-- General UI text -->
+  <data name="Or" xml:space="preserve">
+    <value>или</value>
+    <comment>Divider text between options</comment>
+  </data>
   <data name="LockVault" xml:space="preserve">
     <value>Заблокировать хранилище</value>
     <comment>Tooltip text for lock vault button</comment>
@@ -299,5 +311,13 @@
   <data name="SyncVaultData" xml:space="preserve">
     <value>Синхронизировать хранилище</value>
     <comment>Tooltip text for sync vault data button</comment>
+  </data>
+  <data name="SyncingChanges" xml:space="preserve">
+    <value>Синхронизация изменений...</value>
+    <comment>Status text when background sync is in progress</comment>
+  </data>
+  <data name="LoadingVault" xml:space="preserve">
+    <value>Загрузка хранилища...</value>
+    <comment>Status text when vault is being loaded</comment>
   </data>
 </root>

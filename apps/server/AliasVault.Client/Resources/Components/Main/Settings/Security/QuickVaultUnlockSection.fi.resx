@@ -59,36 +59,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Holvin lukituksen pika-avaus</value>
-    <comment>Title for quick vault unlock section</comment>
+    <value>Todennusavaimella avaaminen</value>
+    <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Holvin salauksen purkuavain tallennetaan sala-avaimen avulla. Tämä tarkoittaa, että kun lataat AliasVault-sivun tai -välilehden uudelleen, voit kirjautua sisään kasvoillasi, sormenjäljelläsi tai selaimen sisäänrakennetuilla turva-avaimilla. Jos haluat poistaa käytöstä holvin pikalukituksen, voit tehdä sen alla olevalla painikkeella.</value>
-    <comment>Description when quick unlock is enabled</comment>
+    <value>Pääsalasanasi on salattu todennusavaimella PRF ja tallennettu paikallisesti. Kun lataat AliasVault-sivun tai välilehden, voit avata holvisi salasanallasi. Jos haluat poistaa salasanan lukituksen käytöstä, voit tehdä sen alla olevalla painikkeella. Pääsalasanasi toimii yhä holvin lukituksen avaamiseksi.</value>
+    <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Poista holvin lukituksen pika-avaus käytöstä</value>
-    <comment>Button to disable quick vault unlock</comment>
+    <value>Poista todennusavaimella avaaminen käytöstä</value>
+    <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>Oletuksena, kun lataat AliasVault-sivun tai -välilehden uudelleen, sinua pyydetään antamaan pääsalasanasi uudelleen. Vaihtoehtoisesti voit käyttää selaimen sala-avainta (tai laitteistotodennusta, kuten YubiKey) pääsalasanan sijaan. Näin voit avata holvin lukituksen kasvoillasi, sormenjäljelläsi tai selaimen sisäänrakennetuilla suojausavaimilla. Tämä koskee vain nykyistä laitetta ja selainta.</value>
-    <comment>Description when quick unlock is disabled</comment>
+    <value>Oletuksena AliasVault-sivun tai -välilehden lataaminen uudelleen edellyttää, että syötät pääsalasanan uudestaan. Salasanalla voit avata holvisi välittömästi. Kun käytössä, pääsalasanasi on paikallisesti salattu todennnusavaimen PRF-laajennuksen avulla. Huomautus: todennusavain toimii vain nykyiselle laitteelle ja selaimelle, jotka otat sen käyttöön.</value>
+    <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>Huomioithan, että tämä ominaisuus on kokeellinen eikä välttämättä toimi kaikilla laitteilla tai selaimilla. Selaimesi tulee tukea WebAuthn- ja PRF-laajennusta, jotta tämä toimisi. Jos kohtaat ongelmia, voit poistaa tämän ominaisuuden käytöstä milloin tahansa.</value>
-    <comment>Warning about experimental nature of the feature</comment>
+    <value>Tätä ominaisuutta tukee tällä hetkellä AliasVault-selainlaajennus ja iOS-sovellus. Android-tuki on tulossa pian. Jos sinulla on ongelmia, voit poistaa tämän ominaisuuden käytöstä milloin tahansa.</value>
+    <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Ota holvin lukituksen pika-avaus käyttöön</value>
-    <comment>Button to enable quick vault unlock</comment>
+    <value>Ota käyttöön todennusavaimella avaaminen</value>
+    <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Holvin lukituksen pika-avaus on otettu käyttöön. Kun holvisi lukitaan seuraavan kerran, voit avata sen lukituksen luomallasi sala-avaimella.</value>
-    <comment>Success message when quick unlock is enabled</comment>
+    <value>Todennusavaimella avaaminen otettu käyttöön. Seuraavalla kerralla holvisi ollessa lukittu, voit avata sen luomallasi todennusavaimella. </value>
+    <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Holvin lukituksen pika-avaus on poistettu käytöstä.</value>
-    <comment>Success message when quick unlock is disabled</comment>
+    <value>Todennusavaimella avaiiminen poistettu käytöstä.</value>
+    <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
     <value>Nykyinen selain ei tue WebAuth PRF -laajennusta. Kirjauduthan sisään sen sijaan salasanalla.</value>

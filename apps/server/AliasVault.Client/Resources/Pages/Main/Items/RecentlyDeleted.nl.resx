@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Page Header -->
+  <data name="PageTitle" xml:space="preserve">
+    <value>Recent verwijderd</value>
+    <comment>Page title for recently deleted items</comment>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Items die zijn verwijderd, kunnen binnen 30 dagen worden hersteld.</value>
+    <comment>Page description text</comment>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Deze items zullen na 30 dagen permanent verwijderd worden. Je kunt ze herstellen of ze direct verwijderen.</value>
+    <comment>Description text explaining 30-day retention</comment>
+  </data>
+  <!-- Empty State -->
+  <data name="NoItems" xml:space="preserve">
+    <value>Geen recent verwijderde items</value>
+    <comment>Title when no deleted items exist</comment>
+  </data>
+  <data name="NoItemsDescription" xml:space="preserve">
+    <value>Items die je verwijdert verschijnen hier gedurende 30 dagen voordat ze definitief verwijderd worden.</value>
+    <comment>Description when no deleted items exist</comment>
+  </data>
+  <data name="Untitled" xml:space="preserve">
+    <value>Naamloos</value>
+    <comment>Fallback name for items without a name</comment>
+  </data>
+  <!-- Days Remaining -->
+  <data name="DaysRemaining" xml:space="preserve">
+    <value>Permanent verwijderd in {0} dagen</value>
+    <comment>Text showing how many days until permanent deletion</comment>
+  </data>
+  <data name="ExpiringSoon" xml:space="preserve">
+    <value>Vervalt binnenkort</value>
+    <comment>Text shown when item will be deleted within 24 hours</comment>
+  </data>
+  <!-- Actions -->
+  <data name="Restore" xml:space="preserve">
+    <value>Herstel</value>
+    <comment>Button text to restore a deleted item</comment>
+  </data>
+  <data name="EmptyAll" xml:space="preserve">
+    <value>Prullenbak legen</value>
+    <comment>Button text to permanently delete all items</comment>
+  </data>
+  <!-- Confirm Delete Modal -->
+  <data name="ConfirmDeleteTitle" xml:space="preserve">
+    <value>Item definitief verwijderen?</value>
+    <comment>Title for delete confirmation modal</comment>
+  </data>
+  <data name="ConfirmDeleteMessage" xml:space="preserve">
+    <value>Deze actie kan niet ongedaan worden gemaakt. Het item zal permanent uit je kluis worden verwijderd.</value>
+    <comment>Message in delete confirmation modal</comment>
+  </data>
+  <data name="DeletePermanently" xml:space="preserve">
+    <value>Definitief verwijderen</value>
+    <comment>Button text to confirm permanent deletion</comment>
+  </data>
+  <!-- Confirm Empty All Modal -->
+  <data name="ConfirmEmptyAllTitle" xml:space="preserve">
+    <value>Prullenbak legen?</value>
+    <comment>Title for empty all confirmation modal</comment>
+  </data>
+  <data name="ConfirmEmptyAllMessage" xml:space="preserve">
+    <value>Dit zal {0} item(s) permanent verwijderen. Deze actie kan niet ongedaan worden gemaakt.</value>
+    <comment>Message in empty all confirmation modal</comment>
+  </data>
+  <!-- Status Messages -->
+  <data name="Restoring" xml:space="preserve">
+    <value>Item herstellen...</value>
+    <comment>Loading message while restoring</comment>
+  </data>
+  <data name="RestoreSuccess" xml:space="preserve">
+    <value>Item succesvol hersteld.</value>
+    <comment>Success message after restore</comment>
+  </data>
+  <data name="RestoreFailed" xml:space="preserve">
+    <value>Item herstellen mislukt.</value>
+    <comment>Error message when restore fails</comment>
+  </data>
+  <data name="Deleting" xml:space="preserve">
+    <value>Item verwijderen...</value>
+    <comment>Loading message while deleting</comment>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Item permanent verwijderd.</value>
+    <comment>Success message after permanent deletion</comment>
+  </data>
+  <data name="DeleteFailed" xml:space="preserve">
+    <value>Verwijderen van item is mislukt.</value>
+    <comment>Error message when deletion fails</comment>
+  </data>
+  <data name="EmptyAllSuccess" xml:space="preserve">
+    <value>Alle items permanent verwijderd.</value>
+    <comment>Success message after emptying trash</comment>
+  </data>
+  <data name="EmptyAllPartialFailed" xml:space="preserve">
+    <value>Verwijderen van {0} item(s) mislukt.</value>
+    <comment>Error message when some deletions fail</comment>
+  </data>
+</root>

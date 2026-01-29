@@ -15,6 +15,12 @@ type HeaderButton = {
 interface IAndroidHeaderProps {
   title: string;
   headerButtons?: HeaderButton[];
+  /** Optional callback when title is pressed (enables dropdown mode) */
+  onTitlePress?: () => void;
+  /** Show dropdown arrow expanded state */
+  isDropdownOpen?: boolean;
+  /** Optional subtitle shown next to title (e.g., item count) */
+  subtitle?: string;
 }
 
 /**
@@ -22,10 +28,13 @@ interface IAndroidHeaderProps {
  * @param {IAndroidHeaderProps} props - The component props
  * @returns {React.ReactNode} The Android header component
  */
-export function AndroidHeader({ title, headerButtons = [] }: IAndroidHeaderProps): React.ReactNode {
+export function AndroidHeader({ title, headerButtons = [], onTitlePress, isDropdownOpen, subtitle }: IAndroidHeaderProps): React.ReactNode {
   const colors = useColors();
 
   const styles = StyleSheet.create({
+    dropdownIcon: {
+      marginLeft: -4,
+    },
     headerButton: {
       padding: 4,
     },
@@ -39,6 +48,10 @@ export function AndroidHeader({ title, headerButtons = [] }: IAndroidHeaderProps
       fontSize: 22,
       fontWeight: 'bold',
     },
+    headerSubtitle: {
+      color: colors.textMuted,
+      fontSize: 16,
+    },
     leftButton: {
       marginRight: 'auto',
     },
@@ -48,7 +61,29 @@ export function AndroidHeader({ title, headerButtons = [] }: IAndroidHeaderProps
     rightButton: {
       marginLeft: 'auto',
     },
+    titleContainer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 4,
+    },
   });
+
+  const titleContent = (
+    <View style={styles.titleContainer}>
+      <ThemedText style={styles.headerTitle}>{title}</ThemedText>
+      {subtitle && (
+        <ThemedText style={styles.headerSubtitle}>{subtitle}</ThemedText>
+      )}
+      {onTitlePress && (
+        <MaterialIcons
+          name={isDropdownOpen ? 'keyboard-arrow-up' : 'keyboard-arrow-down'}
+          size={24}
+          color={colors.text}
+          style={styles.dropdownIcon}
+        />
+      )}
+    </View>
+  );
 
   return (
     <View style={styles.headerContainer}>
@@ -68,7 +103,16 @@ export function AndroidHeader({ title, headerButtons = [] }: IAndroidHeaderProps
         </Pressable>
       )}
       <Logo width={40} height={40} style={styles.logo} />
-      <ThemedText style={styles.headerTitle}>{title}</ThemedText>
+      {onTitlePress ? (
+        <Pressable
+          onPress={onTitlePress}
+          android_ripple={{ color: 'lightgray' }}
+        >
+          {titleContent}
+        </Pressable>
+      ) : (
+        titleContent
+      )}
       {headerButtons.find(b => b.position === 'right') && (
         <Pressable
           style={[styles.headerButton, styles.rightButton]}

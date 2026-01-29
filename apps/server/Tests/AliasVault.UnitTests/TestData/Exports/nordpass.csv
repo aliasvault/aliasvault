@@ -1,0 +1,8 @@
+name,url,additional_urls,username,password,note,cardholdername,cardnumber,cvc,pin,expirydate,zipcode,folder,full_name,phone_number,email,address1,address2,city,country,state,type,custom_fields
+Password title,http://google.nl,,email@example.tld,password,,,,,,,,Business,,,,,,,,,password,"[{""type"":""text"",""label"":""CustomFieldName1"",""value"":""Test""}]"
+SecureNote1,,,,,"This is my secure note content
+
+Test test",,,,,,,,,,,,,,,,note,
+Creditcard Visa,,,,,,Holdername,1234123412341234123,1231,1231,12/28,1231AB,,,,,,,,,,credit_card,
+Business,,,,,,,,,,,,,,,,,,,,,folder,
+Root item,,,rootuser,rootpass,,,,,,,,,,,,,,,,,password,

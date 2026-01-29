@@ -2,11 +2,11 @@ import Foundation
 
 /**
  * Passkey model representing a WebAuthn credential
- * Linked to a parent Credential for UI display (service name, logo, etc.)
+ * Linked to a parent Item for UI display (service name, logo, etc.)
  */
 public struct Passkey: Codable, Hashable, Equatable {
     public let id: UUID  // Passkey record ID which is also the webauthn credential ID
-    public let parentCredentialId: UUID  // Parent Credential UUID (AliasVault internal ID)
+    public let parentItemId: UUID  // Parent Item UUID (AliasVault internal ID)
     public let rpId: String  // Relying party identifier (domain)
     public let userHandle: Data?  // User ID/handle from RP (optional)
     public let userName: String?  // User-visible identifier (typically email)
@@ -20,7 +20,7 @@ public struct Passkey: Codable, Hashable, Equatable {
 
     public init(
         id: UUID,
-        parentCredentialId: UUID,
+        parentItemId: UUID,
         rpId: String,
         userHandle: Data?,
         userName: String?,
@@ -33,7 +33,7 @@ public struct Passkey: Codable, Hashable, Equatable {
         isDeleted: Bool
     ) {
         self.id = id
-        self.parentCredentialId = parentCredentialId
+        self.parentItemId = parentItemId
         self.rpId = rpId
         self.userHandle = userHandle
         self.userName = userName

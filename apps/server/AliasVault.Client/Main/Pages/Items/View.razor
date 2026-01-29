@@ -1,0 +1,385 @@
+@page "/items/{id:guid}"
+@inherits MainBase
+@inject ItemService ItemService
+@inject FolderService FolderService
+@implements IAsyncDisposable
+@using Microsoft.Extensions.Localization
+@using AliasClientDb
+@using AliasClientDb.Models
+@using AliasVault.Client.Main.Models
+@using AliasVault.Client.Main.Utilities
+@using AliasVault.Client.Main.Components.Items
+@using AliasVault.Client.Main.Components.Fields
+
+<LayoutPageTitle>@Localizer["ViewItemPageTitle"]</LayoutPageTitle>
+
+@if (IsLoading || Item == null)
+{
+    <LoadingIndicator />
+}
+else
+{
+    <PageHeader
+        BreadcrumbItems="@BreadcrumbItems"
+        Title="@Localizer["ViewItemTitle"]">
+        <CustomActions>
+            <LinkButton
+                SmallText="@Localizer["EditButtonMobile"]"
+                Text="@Localizer["EditButtonDesktop"]"
+                Href="@($"/items/{Id}/edit")"
+                Color="primary" />
+            <LinkButton
+                SmallText="@Localizer["DeleteButtonMobile"]"
+                Text="@Localizer["DeleteButtonDesktop"]"
+                Href="@($"/items/{Id}/delete")"
+                Color="danger" />
+        </CustomActions>
+    </PageHeader>
+
+    <div class="grid grid-cols-1 px-4 pt-6 md:grid-cols-2 lg:grid-cols-3 lg:gap-4 dark:bg-gray-900">
+        @* Left column *@
+        <div class="col-span-1 md:col-span-2 lg:col-span-1">
+            @* Header block with icon and name *@
+            <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                <div class="items-center flex space-x-4">
+                    <ItemIcon
+                        ItemType="@(Item.ItemType ?? ItemType.Login)"
+                        Logo="@Item.Logo?.FileData"
+                        CardNumber="@GetCardNumber()"
+                        AltText="@(Item.Name ?? "Item")"
+                        SizeClass="w-14 h-14" />
+
+                    <div class="flex-1 min-w-0">
+                        <h3 class="mb-1 text-xl font-bold text-gray-900 dark:text-white truncate">@(Item.Name ?? Localizer["Untitled"])</h3>
+                        @foreach (var url in UrlValues)
+                        {
+                            <div class="text-sm truncate">
+                                @if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) || url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <a href="@url" target="_blank" rel="noopener noreferrer" class="text-blue-500 break-all dark:text-blue-400 hover:underline">@url</a>
+                                }
+                                else
+                                {
+                                    <span class="text-gray-700 break-all dark:text-gray-300">@url</span>
+                                }
+                            </div>
+                        }
+                        @if (Folder != null)
+                        {
+                            <a href="/items/folder/@Folder.Id" class="inline-flex items-center gap-2 mt-2 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                <svg class="w-4 h-4 text-orange-500" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/>
+                                </svg>
+                                <span>@Folder.Name</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* Recent emails - only for Login/Alias *@
+            @if ((Item.ItemType == ItemType.Login || Item.ItemType == ItemType.Alias) && !string.IsNullOrEmpty(GetEmailAddress()))
+            {
+                <RecentEmails EmailAddress="@GetEmailAddress()" />
+            }
+
+            @* TOTP codes - only for items with TOTP *@
+            @if (Item.TotpCodes.Any(t => !t.IsDeleted))
+            {
+                <TotpViewer TotpCodeList="@Item.TotpCodes.Where(t => !t.IsDeleted).ToList()" />
+            }
+
+            @* Notes - if present (left column for non-Note types) *@
+            @if (Item.ItemType != ItemType.Note && GroupedFields.TryGetValue(FieldCategory.Notes, out var notesFields) && notesFields.Count > 0)
+            {
+                <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["NotesSection"]</h3>
+                    <div class="grid grid-cols-6 gap-6">
+                        @foreach (var field in notesFields)
+                        {
+                            <FieldBlock Field="@field" ItemId="@Item.Id" HideLabel="true" />
+                        }
+                    </div>
+                </div>
+            }
+
+            @* Attachments *@
+            @if (Item.Attachments.Any(a => !a.IsDeleted))
+            {
+                <AttachmentViewer Attachments="@Item.Attachments" />
+            }
+        </div>
+
+        @* Right column *@
+        <div class="col-span-1 md:col-span-2 lg:col-span-2">
+            @* Login fields - for Login/Alias *@
+            @if ((Item.ItemType == ItemType.Login || Item.ItemType == ItemType.Alias) &&
+                GroupedFields.TryGetValue(FieldCategory.Login, out var loginFields) && loginFields.Count > 0)
+            {
+                <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <h3 class="mb-2 text-xl font-semibold dark:text-white">@Localizer["LoginDetailsSection"]</h3>
+                    <p class="mb-4 text-sm text-gray-600 dark:text-gray-400">
+                        @{
+                            var email = GetEmailAddress();
+                        }
+                        @if (EmailService.IsAliasVaultSupportedDomain(email ?? string.Empty))
+                        {
+                            <span>@Localizer["GeneratedItemDescription"]</span>
+                        }
+                        else
+                        {
+                            <span>@Localizer["StoredItemDescription"]</span>
+                        }
+                    </p>
+
+                    @* Show passkey if available *@
+                    @if (Item.Passkeys != null && Item.Passkeys.Any())
+                    {
+                        var passkey = Item.Passkeys.First();
+                        <div class="mb-6 p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+                                </svg>
+                                <div class="flex-1">
+                                    <div class="mb-1">
+                                        <span class="text-sm font-semibold text-gray-900 dark:text-white">@Localizer["PasskeyLabel"]</span>
+                                    </div>
+                                    <div class="space-y-1 mb-2">
+                                        @if (!string.IsNullOrWhiteSpace(passkey.RpId))
+                                        {
+                                            <div>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">@Localizer["PasskeySiteLabel"]: </span>
+                                                <span class="text-sm text-gray-900 dark:text-white">@passkey.RpId</span>
+                                            </div>
+                                        }
+                                        @if (!string.IsNullOrWhiteSpace(passkey.DisplayName))
+                                        {
+                                            <div>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400">@Localizer["PasskeyDisplayNameLabel"]: </span>
+                                                <span class="text-sm text-gray-900 dark:text-white">@passkey.DisplayName</span>
+                                            </div>
+                                        }
+                                    </div>
+                                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                                        @Localizer["PasskeyHelpText"]
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                    <form action="#">
+                        <div class="grid grid-cols-6 gap-6">
+                            @foreach (var field in loginFields)
+                            {
+                                <FieldBlock Field="@field" ItemId="@Item.Id" FullWidth="@LayoutUtils.ShouldBeFullWidth(field, loginFields)" />
+                            }
+                        </div>
+                    </form>
+                </div>
+            }
+
+            @* Alias fields - for Alias type only *@
+            @if (Item.ItemType == ItemType.Alias &&
+                GroupedFields.TryGetValue(FieldCategory.Alias, out var aliasFields) && aliasFields.Count > 0)
+            {
+                <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["AliasSection"]</h3>
+                    <form action="#">
+                        <div class="grid grid-cols-6 gap-6">
+                            @* Show full name if first and last name exist *@
+                            @{
+                                var firstName = aliasFields.FirstOrDefault(f => f.FieldKey == FieldKey.AliasFirstName)?.Value;
+                                var lastName = aliasFields.FirstOrDefault(f => f.FieldKey == FieldKey.AliasLastName)?.Value;
+                            }
+                            @if (!string.IsNullOrWhiteSpace(firstName) && !string.IsNullOrWhiteSpace(lastName))
+                            {
+                                <div class="col-span-6">
+                                    <CopyPasteFormRow Label="@Localizer["FullNameLabel"]" Value="@($"{firstName} {lastName}")" />
+                                </div>
+                            }
+                            @foreach (var field in aliasFields)
+                            {
+                                <FieldBlock Field="@field" ItemId="@Item.Id" FullWidth="@LayoutUtils.ShouldBeFullWidth(field, aliasFields)" />
+                            }
+                        </div>
+                    </form>
+                </div>
+            }
+
+            @* Card fields - for CreditCard type *@
+            @if (Item.ItemType == ItemType.CreditCard &&
+                GroupedFields.TryGetValue(FieldCategory.Card, out var cardFields) && cardFields.Count > 0)
+            {
+                <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["CardSection"]</h3>
+                    <form action="#">
+                        <div class="grid grid-cols-6 gap-6">
+                            @foreach (var field in cardFields)
+                            {
+                                <FieldBlock Field="@field" ItemId="@Item.Id" FullWidth="@LayoutUtils.ShouldBeFullWidth(field, cardFields)" />
+                            }
+                        </div>
+                    </form>
+                </div>
+            }
+
+            @* Notes - for Note type (main content area) *@
+            @if (Item.ItemType == ItemType.Note && GroupedFields.TryGetValue(FieldCategory.Notes, out var noteTypeNotesFields) && noteTypeNotesFields.Count > 0)
+            {
+                <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["NotesSection"]</h3>
+                    <div class="grid grid-cols-6 gap-6">
+                        @foreach (var field in noteTypeNotesFields)
+                        {
+                            <FieldBlock Field="@field" ItemId="@Item.Id" HideLabel="true" />
+                        }
+                    </div>
+                </div>
+            }
+
+            @* Custom fields *@
+            @if (GroupedFields.TryGetValue(FieldCategory.Custom, out var customFields) && customFields.Count > 0)
+            {
+                <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <form action="#">
+                        <div class="grid grid-cols-6 gap-6">
+                            @foreach (var field in customFields)
+                            {
+                                <FieldBlock Field="@field" ItemId="@Item.Id" FullWidth="true" />
+                            }
+                        </div>
+                    </form>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Items.View", "AliasVault.Client");
+
+    /// <summary>
+    /// Gets or sets the item ID.
+    /// </summary>
+    [Parameter]
+    public Guid Id { get; set; }
+
+    private bool IsLoading { get; set; } = true;
+    private Item? Item { get; set; } = new();
+    private Folder? Folder { get; set; }
+    private Dictionary<FieldCategory, List<DisplayField>> GroupedFields { get; set; } = new();
+    private List<string> UrlValues { get; set; } = new();
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        // Breadcrumb items are added dynamically in LoadEntryAsync after folder is loaded
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        await LoadEntryAsync();
+    }
+
+    /// <summary>
+    /// Loads the item.
+    /// </summary>
+    private async Task LoadEntryAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        // Load the item from the database via ItemService.
+        Item = await ItemService.LoadEntryAsync(Id);
+
+        if (Item is null)
+        {
+            // Error loading item.
+            GlobalNotificationService.AddErrorMessage(Localizer["ItemNotFoundError"]);
+            NavigationManager.NavigateTo("/items", false, true);
+            return;
+        }
+
+        // Load the folder if the item is in one
+        Folder = null;
+        if (Item.FolderId.HasValue)
+        {
+            Folder = await FolderService.GetByIdAsync(Item.FolderId.Value);
+        }
+
+        // Add breadcrumb items - Home is already added by MainBase, add folder if present
+        if (Folder != null)
+        {
+            BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Folder.Name, Url = $"/items/folder/{Folder.Id}" });
+        }
+
+        BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["ViewItemBreadcrumb"] });
+
+        // Group fields by category for display
+        GroupedFields = FieldGrouper.GroupByCategory(Item);
+
+        // Get URL values for prominent display
+        UrlValues = FieldGrouper.GetUrlValues(Item);
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Gets the email address from the item.
+    /// </summary>
+    private string? GetEmailAddress()
+    {
+        return ItemService.GetFieldValue(Item!, FieldKey.LoginEmail);
+    }
+
+    /// <summary>
+    /// Gets the card number from the item (for icon display).
+    /// </summary>
+    private string? GetCardNumber()
+    {
+        return ItemService.GetFieldValue(Item!, FieldKey.CardNumber);
+    }
+
+    /// <inheritdoc />
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        await KeyboardShortcutService.UnregisterShortcutAsync("ge");
+        await KeyboardShortcutService.UnregisterShortcutAsync("gd");
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            await KeyboardShortcutService.RegisterShortcutAsync("ge", NavigateToEdit);
+            await KeyboardShortcutService.RegisterShortcutAsync("gd", NavigateToDelete);
+        }
+    }
+
+    /// <summary>
+    /// Navigates to the edit page.
+    /// </summary>
+    private Task NavigateToEdit()
+    {
+        NavigationManager.NavigateTo($"/items/{Id}/edit");
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Navigates to the delete page.
+    /// </summary>
+    private Task NavigateToDelete()
+    {
+        NavigationManager.NavigateTo($"/items/{Id}/delete");
+        return Task.CompletedTask;
+    }
+}

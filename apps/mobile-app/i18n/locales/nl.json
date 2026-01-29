@@ -8,7 +8,7 @@
     "no": "Nee",
     "ok": "OK",
     "continue": "Doorgaan",
-    "loading": "Laden...",
+    "loading": "Laden",
     "error": "Fout",
     "success": "Succes",
     "never": "Nooit",
@@ -16,8 +16,20 @@
     "loadMore": "Laad meer",
     "use": "Gebruik",
     "confirm": "Bevestigen",
+    "next": "Volgende",
+    "notice": "Melding",
+    "enabled": "Ingeschakeld",
+    "disabled": "Uitgeschakeld",
+    "twoFactorAuthentication": "Tweestapsverificatie",
+    "add": "Toevoegen",
+    "generate": "Generate",
+    "attachments": "Bijlagen",
+    "deleteItemConfirmTitle": "Verwijder item",
+    "deleteItemConfirmDescription": "Weet je zeker dat je dit item wilt verwijderen?",
     "errors": {
-      "unknownError": "Er is een onbekende fout opgetreden. Probeer het opnieuw."
+      "unknownError": "Er is een onbekende fout opgetreden.",
+      "unknownErrorTryAgain": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
+      "serverVersionTooOld": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze functie te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt."
     }
   },
   "auth": {
@@ -34,6 +46,7 @@
     "verifyingAuthCode": "Authenticatiecode verifiëren",
     "verify": "Verifiëren",
     "unlockVault": "Vault ontgrendelen",
+    "unlockWithPin": "Ontgrendelen met PIN",
     "enterPassword": "Voer je wachtwoord in om je vault te ontgrendelen",
     "enterPasswordPlaceholder": "Wachtwoord",
     "enterAuthCode": "Voer 6-cijferige code in",
@@ -42,6 +55,7 @@
     "enableBiometric": "{{biometric}} inschakelen?",
     "biometricPrompt": "Wil je {{biometric}} gebruiken om je vault te ontgrendelen?",
     "tryBiometricAgain": "Probeer {{biometric}} Opnieuw",
+    "tryPinAgain": "Probeer PIN opnieuw",
     "authCodeNote": "Opmerking: als je geen toegang hebt tot je authenticator, kunt je je 2FA resetten door met een herstelcode in te loggen via de website.",
     "errors": {
       "credentialsRequired": "Gebruikersnaam en wachtwoord zijn vereist",
@@ -53,20 +67,18 @@
       "networkError": "Netwerkfout. Controleer de verbinding en probeer het opnieuw.",
       "networkErrorSelfHosted": "Netwerkfout. Controleer de verbinding en probeer het opnieuw. Voor self-hosted instances, controleer dat er een geldig SSL-certificaat is geconfigureerd. Self-signed SSL-certificaten worden niet ondersteund door de app wegens veiligheidsredenen.",
       "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
-      "tokenRefreshFailed": "Authenticatietoken vernieuwen mislukt",
-      "httpError": "HTTP fout: {{status}}",
-      "biometricRequired": "Schakel biometrische authenticatie in om passkeys te gebruiken",
-      "unlockVaultFirst": "Ontgrendel eerst de vault in de AliasVault app",
-      "vaultDecryptFailed": "Ontsleutelen van vault mislukt",
-      "vaultUnlockFailed": "Ontgrendelen van vault mislukt",
-      "biometricCancelled": "Biometrische verificatie geannuleerd",
-      "encryptionKeyFailed": "Fout bij ophalen van encryptiesleutel"
+      "httpError": "HTTP fout: {{status}}"
     },
     "confirmLogout": "Weet je zeker dat je wilt uitloggen? Je moet opnieuw inloggen met je hoofdwachtwoord om toegang te krijgen tot je vault.",
     "noAccountYet": "Nog geen account?",
     "createNewVault": "Nieuwe vault aanmaken",
     "connectingTo": "Verbinden met",
     "loggedInAs": "Ingelogd als"
+  },
+  "logout": {
+    "unsyncedChangesTitle": "Niet-gesynchroniseerde wijzigingen",
+    "unsyncedChangesWarning": "Er zijn niet gesynchroniseerde wijzigingen die verloren zullen gaan als je nu uitlogt. Weet je zeker dat je wilt doorgaan?",
+    "logoutAnyway": "Toch uitloggen"
   },
   "vault": {
     "syncingVault": "Vault synchroniseren",
@@ -76,131 +88,35 @@
     "executingOperation": "Bezig met uitvoeren...",
     "checkingVaultUpdates": "Controleren op vault updates",
     "syncingUpdatedVault": "Bijgewerkte vault synchroniseren",
+    "mergingVault": "Vault wijzigingen mergen",
+    "uploadingChanges": "Wijzigingen uploaden",
     "errors": {
       "failedToGetEncryptedDatabase": "Fout bij ophalen van versleutelde vault",
       "usernameNotFound": "Gebruikersnaam niet gevonden",
-      "vaultMergeRequired": "Vault merge is vereist. Login via de web app om meerdere vault updates te kunnen verwerken.",
       "vaultOutdated": "Je vault is verouderd. Log in op de AliasVault website en volg de stappen.",
-      "failedToUploadVault": "Fout bij het uploaden van de vault naar de server. Probeer het opnieuw door de app af te sluiten en opnieuw te openen.",
-      "usernameNotFoundLoginAgain": "Gebruikersnaam niet gevonden. Log opnieuw in.",
-      "errorDuringPasswordChange": "Fout tijdens het wijzigen van het wachtwoord. Log opnieuw in om de vault te synchroniseren en probeer het opnieuw.",
       "failedToSyncVault": "Vault ophalen mislukt",
-      "operationFailed": "Bewerking mislukt",
       "versionNotSupported": "Deze versie van de mobiele app van AliasVault wordt niet meer ondersteund door de server. Update de app naar de nieuwste versie.",
       "serverVersionNotSupported": "De AliasVault server moet bijgewerkt worden naar een nieuwere versie om deze mobiele app te kunnen gebruiken. Neem contact op met support als je hulp nodig hebt.",
       "appOutdated": "Deze app is verouderd en kan niet worden gebruikt om deze (nieuwe) vault te openen. Update de AliasVault app om door te gaan.",
-      "vaultDecryptFailed": "Vault kon niet worden gedecrypt, probeer uit- en opnieuw in te loggen.",
-      "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in."
-    }
-  },
-  "credentials": {
-    "title": "Credentials",
-    "addCredential": "Credential toevoegen",
-    "editCredential": "Credential bewerken",
-    "deleteCredential": "Credential verwijderen",
-    "deleteConfirm": "Weet je zeker dat je deze credential wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
-    "service": "Credential",
-    "serviceName": "Naam",
-    "serviceUrl": "Website URL",
-    "loginCredentials": "Inloggegevens",
-    "username": "Gebruikersnaam",
-    "email": "E-mail",
-    "alias": "Alias",
-    "metadata": "Metadata",
-    "firstName": "Voornaam",
-    "lastName": "Achternaam",
-    "nickName": "Bijnaam",
-    "fullName": "Volledige naam",
-    "gender": "Geslacht",
-    "birthDate": "Geboortedatum",
-    "birthDatePlaceholder": "YYYY-MM-DD",
-    "notes": "Notities",
-    "randomAlias": "Alias",
-    "manual": "Handmatig",
-    "generateRandomAlias": "Genereer willekeurige alias",
-    "clearAliasFields": "Leeg alias velden",
-    "enterFullEmail": "Voer volledig e-mailadres in",
-    "enterEmailPrefix": "Emailvoorvoegsel invoeren",
-    "useDomainChooser": "Domein kiezen",
-    "enterCustomDomain": "Ander e-mailadres gebruiken",
-    "selectEmailDomain": "Selecteer e-maildomein",
-    "privateEmailTitle": "Privé e-mail",
-    "privateEmailAliasVaultServer": "AliasVault server",
-    "privateEmailDescription": "E2E versleuteld, volledig privé.",
-    "publicEmailTitle": "Publieke tijdelijke e-mailproviders",
-    "publicEmailDescription": "Anoniem maar beperkte privacy. E-mail inhoud is leesbaar door iedereen die het adres kent.",
-    "searchPlaceholder": "Vault doorzoeken...",
-    "noMatchingCredentials": "Geen credentials gevonden",
-    "noCredentialsFound": "Geen credentials gevonden. Maak er een aan om te beginnen. Tip: je kunt ook inloggen op de AliasVault webapp om credentials te importeren uit andere wachtwoord-managers.",
-    "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
-    "recentEmails": "Recente e-mails",
-    "loadingEmails": "E-mails laden...",
-    "noEmailsYet": "Nog geen e-mails ontvangen.",
-    "offlineEmailsMessage": "Je bent offline. Maak verbinding met het internet om je e-mails te laden.",
-    "emailLoadError": "Er is een fout opgetreden bij het laden van e-mails. Probeer het later opnieuw.",
-    "emailUnexpectedError": "Er is een onverwachte fout opgetreden bij het laden van e-mails. Probeer het later opnieuw.",
-    "password": "Wachtwoord",
-    "passwordLength": "Wachtwoordlengte",
-    "changePasswordComplexity": "Wachtwoordinstellingen",
-    "includeLowercase": "Kleine letters (a-z)",
-    "includeUppercase": "Hoofdletters (A-Z)",
-    "includeNumbers": "Cijfers (0-9)",
-    "includeSpecialChars": "Speciale tekens (!@#)",
-    "avoidAmbiguousChars": "Onduidelijke tekens vermijden",
-    "deletingCredential": "Credential verwijderen...",
-    "errorLoadingCredentials": "Fout bij het laden van credentials",
-    "vaultSyncFailed": "Vault synchronisatie mislukt",
-    "vaultSyncedSuccessfully": "Vault succesvol gesynchroniseerd",
-    "vaultUpToDate": "Vault is up-to-date",
-    "offlineMessage": "Je bent offline. Maak verbinding met het internet om je vault te synchroniseren.",
-    "credentialCreated": "Credential aangemaakt!",
-    "credentialCreatedMessage": "Je nieuwe credential is toegevoegd aan je vault en is klaar voor gebruik.",
-    "credentialDetails": "Credential details",
-    "emailPreview": "E-mail voorbeeld",
-    "switchBackToBrowser": "Schakel terug naar je browser om door te gaan.",
-    "filters": {
-      "all": "(Alle) Credentials",
-      "passkeys": "Passkeys",
-      "aliases": "Aliassen",
-      "userpass": "Wachtwoorden"
-    },
-    "twoFactorAuth": "Tweestapsverificatie",
-    "totpCode": "TOTP Code",
-    "attachments": "Bijlagen",
-    "loadingAttachments": "Bijlagen laden...",
-    "addAttachments": "Bijlage toevoegen",
-    "deleteAttachment": "Verwijderen",
-    "toasts": {
-      "credentialUpdated": "Credential succesvol bijgewerkt",
-      "credentialCreated": "Credential succesvol aangemaakt",
-      "credentialDeleted": "Credential succesvol verwijderd",
-      "usernameCopied": "Gebruikersnaam gekopieerd naar klembord",
-      "emailCopied": "E-mail gekopieerd naar klembord",
-      "passwordCopied": "Wachtwoord gekopieerd naar klembord"
-    },
-    "createNewAliasFor": "Nieuwe alias maken voor",
-    "errors": {
-      "loadFailed": "Laden van credential mislukt",
-      "saveFailed": "Credential opslaan mislukt",
-      "generateUsernameFailed": "Genereren van gebruikersnaam mislukt",
-      "generatePasswordFailed": "Genereren van wachtwoord mislukt"
-    },
-    "contextMenu": {
-      "title": "Credential opties",
-      "edit": "Bewerken",
-      "delete": "Verwijderen",
-      "copyUsername": "Kopieer gebruikersnaam",
-      "copyEmail": "Kopieer e-mail",
-      "copyPassword": "Kopieer wachtwoord"
+      "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in.",
+      "passwordChangeRequiresOnline": "Het wijzigen van je wachtwoord vereist een internetverbinding. Probeer het opnieuw wanneer je online bent."
     }
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "Website",
-    "displayName": "Weergavenaam",
     "helpText": "Passkeys worden aangemaakt op de website wanneer er om wordt gevraagd. Ze kunnen niet handmatig worden bewerkt. Om deze passkey te verwijderen, kun je deze verwijderen uit deze credential.",
     "passkeyMarkedForDeletion": "Passkey gemarkeerd om te verwijderen",
     "passkeyWillBeDeleted": "Deze passkey zal worden verwijderd wanneer je deze credential opslaat."
+  },
+  "totp": {
+    "addCode": "2FA-code toevoegen",
+    "nameOptional": "Naam (optioneel)",
+    "secretKey": "Secret key",
+    "instructions": "Voer de secret key in die door de website wordt weergegeven waar je tweestapsverificatie wilt toevoegen.",
+    "saveToViewCode": "Opslaan om code te bekijken",
+    "errors": {
+      "invalidSecretKey": "Ongeldig formaat."
+    }
   },
   "settings": {
     "title": "Instellingen",
@@ -229,7 +145,10 @@
       "openAutofillSettings": "Open Autofill Instellingen",
       "buttonTip": "Als bovenstaande knop niet werkt, dan zou deze geblokkeerd kunnen worden vanwege beveiligingsinstellingen. Open in dit geval handmatig Android Instellingen → Algemeen → Wachtwoorden en Automatisch invullen.",
       "step2": "2. Sommige apps, bijvoorbeeld Google Chrome, vereisen handmatige configuratie om third-party apps toe te staan voor autofill. De meeste apps zouden echter standaard met autofill moeten werken.",
-      "alreadyConfigured": "Al geconfigureerd"
+      "alreadyConfigured": "Al geconfigureerd",
+      "advancedOptions": "Geavanceerde instellingen",
+      "showSearchText": "Toon zoektekst",
+      "showSearchTextDescription": "Toon de zoektekst die AliasVault ontvangt van Android om te zoeken naar overeenkomende credentials"
     },
     "vaultUnlock": "Vault ontgrendelmethode",
     "autoLock": "Automatisch vergrendelen",
@@ -285,8 +204,12 @@
       "biometricEnabled": "{{biometric}} is nu succesvol ingeschakeld",
       "biometricNotAvailable": "{{biometric}} Niet Beschikbaar",
       "biometricDisabledMessage": "{{biometric}} is uitgeschakeld voor AliasVault. Ga naar de app instellingen om dit in te schakelen.",
-      "biometricHelp": "Je vault ontsleutelingssleutel wordt veilig opgeslagen op je lokale apparaat in de {{keystore}} en kan veilig worden opgehaald met {{biometric}}.",
+      "biometricHelp": "Gebruik biometrische authenticatie om je kluis te ontgrendelen, die is beveiligd door de {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} is niet beschikbaar. Tik om instellingen te openen en/of ga naar je apparaat-instellingen om het in te schakelen en te configureren.",
+      "pin": "Pincode",
+      "pinDescription": "Gebruik een eigen pincode om je vault sneller te ontgrendelen.",
+      "pinEnabled": "Pincode succesvol ingeschakeld",
+      "pinDisabled": "Pincode is uitgeschakeld",
       "passwordHelp": "Voer je volledige hoofdwachtwoord opnieuw in om je vault te ontgrendelen. Dit is altijd ingeschakeld als fallback optie.",
       "keystoreIOS": "iOS Sleutelhanger",
       "keystoreAndroid": "Android Sleutelopslag"
@@ -300,19 +223,12 @@
       "languageDescription": "Stel de taal in die wordt gebruikt bij het genereren van nieuwe identiteiten.",
       "genderSection": "Geslacht",
       "genderDescription": "Stel de geslachtsvoorkeur in voor het genereren van nieuwe identiteiten.",
-      "languageOptions": {
-        "english": "Engels",
-        "dutch": "Nederlands"
-      },
+      "ageRangeSection": "Leeftijdsrange",
+      "ageRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
       "genderOptions": {
         "random": "Willekeurig",
         "male": "Mannelijk",
         "female": "Vrouwelijk"
-      },
-      "errors": {
-        "loadFailed": "Laden van identiteit generator instellingen mislukt.",
-        "languageUpdateFailed": "Bijwerken van taalinstelling mislukt.",
-        "genderUpdateFailed": "Bijwerken van geslacht voorkeur mislukt."
       }
     },
     "passwordGeneratorSettings": {
@@ -360,7 +276,6 @@
         "success": "Succesvol",
         "failed": "Mislukt",
         "time": "Tijd",
-        "device": "Apparaat",
         "ipAddress": "IP-adres",
         "client": "Client",
         "failedToLoad": "Laden van auth logs mislukt"
@@ -388,12 +303,225 @@
         "failedToDelete": "Account verwijderen mislukt. Probeer het opnieuw.",
         "usernameNotFound": "Gebruikersnaam niet gevonden. Log opnieuw in."
       }
+    },
+    "qrScanner": {
+      "title": "QR-code scanner",
+      "scanningMessage": "Scan AliasVault QR-code",
+      "mobileLogin": {
+        "confirmTitle": "Bevestig inlogverzoek",
+        "confirmSubtitle": "Verifieer om login goed te keuren op een ander apparaat.",
+        "confirmMessage": "Je staat op het punt om in te loggen op een ander apparaat met je account. Dit andere apparaat krijgt volledige toegang tot je vault. Ga alleen verder als je dit apparaat vertrouwd.",
+        "successDescription": "Succesvol ingelogd op het andere apparaat.",
+        "requestExpired": "Dit loginverzoek is verlopen. Genereer een nieuwe QR-code."
+      }
     }
   },
   "navigation": {
-    "credentials": "Credentials",
+    "vault": "Vault",
     "emails": "E-mails",
     "settings": "Instellingen"
+  },
+  "itemTypes": {
+    "creating": "Aanmaken",
+    "editing": "Bewerken",
+    "login": {
+      "title": "Login"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Creditcard",
+      "cardInformation": "Kaartgegevens"
+    },
+    "note": {
+      "title": "Opmerking"
+    },
+    "addField": "Veld toevoegen",
+    "addCustomField": "Aangepast veld toevoegen",
+    "customFields": "Extra velden",
+    "fieldLabel": "Veldlabel",
+    "fieldType": "Veldtype",
+    "enterFieldName": "Voer de veldnaam in",
+    "fieldTypes": {
+      "text": "Tekst",
+      "hidden": "Verborgen",
+      "email": "E-mail",
+      "url": "URL",
+      "phone": "Telefoon",
+      "number": "Nummer",
+      "date": "Datum",
+      "textArea": "Tekstvak"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Gebruikersnaam",
+    "login.password": "Wachtwoord",
+    "login.email": "E-mail",
+    "login.url": "URL",
+    "alias.first_name": "Voornaam",
+    "alias.last_name": "Achternaam",
+    "alias.gender": "Geslacht",
+    "alias.birthdate": "Geboortedatum",
+    "card.cardholder_name": "Naam kaarthouder",
+    "card.number": "Kaartnummer",
+    "card.expiry_month": "Vervalmaand",
+    "card.expiry_year": "Vervaljaar",
+    "card.cvv": "CVV",
+    "card.pin": "Pincode",
+    "notes.content": "Notities"
+  },
+  "items": {
+    "title": "Items",
+    "addItem": "Item toevoegen",
+    "editItem": "Item bewerken",
+    "deleteItem": "Verwijder item",
+    "itemDetails": "Item details",
+    "itemCreated": "Item aangemaakt",
+    "itemCreatedMessage": "Je nieuwe item is toegevoegd aan je vault en is klaar voor gebruik.",
+    "emailPreview": "E-mail voorbeeld",
+    "untitled": "Naamloos",
+    "name": "Naam",
+    "url": "URL",
+    "itemName": "Naam",
+    "service": "Credential",
+    "serviceName": "Naam",
+    "serviceUrl": "Website URL",
+    "loginCredentials": "Inloggegevens",
+    "cardInformation": "Kaartgegevens",
+    "username": "Gebruikersnaam",
+    "email": "E-mail",
+    "alias": "Alias",
+    "metadata": "Metadata",
+    "firstName": "Voornaam",
+    "lastName": "Achternaam",
+    "nickName": "Bijnaam",
+    "fullName": "Volledige naam",
+    "gender": "Geslacht",
+    "birthDate": "Geboortedatum",
+    "birthDatePlaceholder": "YYYY-MM-DD",
+    "notes": "Notities",
+    "randomAlias": "Alias",
+    "manual": "Handmatig",
+    "generateRandomAlias": "Genereer willekeurige alias",
+    "clearAliasFields": "Leeg alias velden",
+    "enterEmailPrefix": "Emailvoorvoegsel invoeren",
+    "useDomainChooser": "Domein kiezen",
+    "enterCustomDomain": "Voer aangepast domein in",
+    "selectEmailDomain": "Selecteer e-maildomein",
+    "privateEmailTitle": "Privé e-mail",
+    "privateEmailAliasVaultServer": "AliasVault server",
+    "privateEmailDescription": "E2E versleuteld, volledig privé.",
+    "publicEmailTitle": "Publieke tijdelijke e-mailproviders",
+    "publicEmailDescription": "Anoniem maar beperkte privacy. E-mail inhoud is leesbaar door iedereen die het adres kent.",
+    "searchPlaceholder": "Vault doorzoeken...",
+    "noMatchingItems": "Geen items gevonden",
+    "noMatchingItemsSearch": "Geen items die overeenkomen met \"{{search}}\"",
+    "noMatchingItemsWithFilter": "Geen {{filter}} items die overeenkomen met \"{{search}}\"",
+    "noItemsFound": "Geen items gevonden. Maak er een aan om te beginnen. Tip: je kunt ook inloggen op de AliasVault webapp om items te importeren uit andere wachtwoord-managers.",
+    "allItemsInFolders": "Al je items zijn georganiseerd in mappen. Tik op een map hierboven om je gegevens te bekijken, of gebruik de zoekopdracht om specifieke items te vinden.",
+    "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
+    "noAttachmentsFound": "Geen items gevonden met bijlagen",
+    "noItemsOfTypeFound": "Geen {{type}} items gevonden",
+    "clearSearch": "Wis zoekopdracht",
+    "clearFilter": "Wis filter",
+    "recentEmails": "Recente e-mails",
+    "loadingEmails": "E-mails laden...",
+    "noEmailsYet": "Nog geen e-mails ontvangen.",
+    "offlineEmailsMessage": "Je bent offline. Maak verbinding met het internet om je e-mails te laden.",
+    "emailLoadError": "Er is een fout opgetreden bij het laden van e-mails. Probeer het later opnieuw.",
+    "emailUnexpectedError": "Er is een onverwachte fout opgetreden bij het laden van e-mails. Probeer het later opnieuw.",
+    "password": "Wachtwoord",
+    "passwordLength": "Wachtwoordlengte",
+    "changePasswordComplexity": "Wachtwoord instellingen",
+    "includeLowercase": "Kleine letters (a-z)",
+    "includeUppercase": "Hoofdletters (A-Z)",
+    "includeNumbers": "Cijfers (0-9)",
+    "includeSpecialChars": "Speciale tekens (!@#)",
+    "avoidAmbiguousChars": "Onduidelijke tekens vermijden",
+    "deletingItem": "Item verwijderen...",
+    "errorLoadingItems": "Fout bij het laden van items",
+    "vaultSyncFailed": "Vault synchronisatie mislukt",
+    "vaultSyncedSuccessfully": "Vault succesvol gesynchroniseerd",
+    "vaultUpToDate": "Vault is up-to-date",
+    "offlineMessage": "Je bent offline. Maak verbinding met het internet om je vault te synchroniseren.",
+    "switchBackToBrowser": "Schakel terug naar je browser om door te gaan.",
+    "filters": {
+      "all": "(Alle) Items",
+      "passkeys": "Passkeys",
+      "aliases": "Aliassen",
+      "userpass": "Wachtwoorden",
+      "attachments": "Bijlagen"
+    },
+    "totpCode": "TOTP-code",
+    "attachments": "Bijlagen",
+    "deleteAttachment": "Verwijderen",
+    "fileSavedTo": "Bestand opgeslagen in",
+    "previewNotSupported": "Voorbeeldweergave wordt niet ondersteund",
+    "downloadToView": "Download het bestand om het te bekijken",
+    "unsavedChanges": {
+      "title": "Wijzigingen ongedaan maken?",
+      "message": "Er zijn niet opgeslagen wijzigingen. \nWeet je zeker dat je deze ongedaan wilt maken?",
+      "discard": "Ongedaan maken"
+    },
+    "toasts": {
+      "itemUpdated": "Item succesvol bijgewerkt",
+      "itemCreated": "Item succesvol aangemaakt",
+      "itemDeleted": "Item succesvol verwijderd",
+      "usernameCopied": "Gebruikersnaam gekopieerd naar klembord",
+      "emailCopied": "E-mail gekopieerd naar klembord",
+      "passwordCopied": "Wachtwoord gekopieerd naar klembord"
+    },
+    "createNewAliasFor": "Nieuwe alias maken voor",
+    "contextMenu": {
+      "title": "Itemopties",
+      "edit": "Bewerken",
+      "delete": "Verwijderen",
+      "copyUsername": "Kopieer gebruikersnaam",
+      "copyEmail": "Kopieer e-mail",
+      "copyPassword": "Kopieer wachtwoord"
+    },
+    "viewHistory": "Toon geschiedenis",
+    "history": "Geschiedenis",
+    "noHistoryAvailable": "Nog geen geschiedenis",
+    "deleteHistoryConfirm": "Weet je zeker dat je dit geschiedenis item wilt verwijderen?",
+    "deleteConfirm": "Weet je zeker dat je dit item wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
+    "folders": {
+      "folder": "Map",
+      "newFolder": "Nieuwe map",
+      "createFolder": "Map aanmaken",
+      "editFolder": "Map bewerken",
+      "folderName": "Mapnaam",
+      "folderNamePlaceholder": "b.v. werk, persoonlijk",
+      "folderNameRequired": "Mapnaam is verplicht",
+      "deleteFolder": "Map verwijderen",
+      "deleteFolderKeepItems": "Verwijder alleen map",
+      "deleteFolderKeepItemsDescription": "Items zullen terug worden verplaatst naar de hoofdlijst.",
+      "deleteFolderAndItems": "Verwijder map en alle items",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) zullen worden verplaatst naar recent verwijderd.",
+      "emptyFolderHint": "Deze map is leeg. Om items naar deze map te verplaatsen, wijzig het item en selecteer deze map.",
+      "noFolder": "Geen map",
+      "selectFolder": "Map selecteren"
+    },
+    "recentlyDeleted": {
+      "title": "Recent verwijderd",
+      "noItems": "Geen verwijderde items",
+      "noItemsDescription": "Items die je verwijdert verschijnen hier gedurende 30 dagen voordat ze definitief verwijderd worden.",
+      "description": "Deze items zullen na 30 dagen permanent verwijderd worden. Je kunt ze herstellen of ze direct verwijderen.",
+      "restore": "Herstel",
+      "deletePermanently": "Permanent verwijderen",
+      "emptyAll": "Alles verwijderen",
+      "daysRemaining": "{{count}} dag resterend",
+      "daysRemaining_plural": "{{count}} dagen resterend",
+      "expiringSoon": "Vervalt binnenkort",
+      "confirmDeleteTitle": "Permanent verwijderen?",
+      "confirmDeleteMessage": "Dit item zal permanent worden verwijderd en kan niet worden hersteld.",
+      "confirmEmptyAllTitle": "Recent verwijderd leegmaken?",
+      "confirmEmptyAllMessage": "Alle {{count}} items zullen permanent worden verwijderd en kunnen niet worden hersteld.",
+      "itemRestored": "Item hersteld",
+      "itemDeleted": "Item permanent verwijderd",
+      "allItemsDeleted": "Alle items permanent verwijderd"
+    }
   },
   "emails": {
     "title": "E-mails",
@@ -417,14 +545,6 @@
       "hoursAgo_single": "{{count}} uur geleden",
       "hoursAgo_plural": "{{count}} uur geleden",
       "yesterday": "gisteren"
-    },
-    "errors": {
-      "generic": "Er is een fout opgetreden",
-      "loadFailed": "Laden van e-mails mislukt",
-      "deleteFailed": "E-mail verwijderen mislukt",
-      "dbNotAvailable": "Database context of e-mail niet beschikbaar",
-      "decryptFailed": "Bijlage ontsleutelen mislukt",
-      "downloadFailed": "Bijlage downloaden mislukt"
     }
   },
   "validation": {
@@ -444,7 +564,6 @@
     "INVALID_RECOVERY_CODE": "Ongeldige herstelcode. Probeer het opnieuw.",
     "REFRESH_TOKEN_REQUIRED": "Refreshtoken is vereist.",
     "INVALID_REFRESH_TOKEN": "Ongeldige refreshtoken.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Refreshtoken succesvol gerevoked.",
     "PUBLIC_REGISTRATION_DISABLED": "Registratie van nieuwe accounts is momenteel uitgeschakeld op deze server. Neem contact op met de beheerder.",
     "USERNAME_REQUIRED": "Gebruikersnaam is vereist.",
     "USERNAME_ALREADY_IN_USE": "Gebruikersnaam is al in gebruik.",
@@ -461,28 +580,35 @@
     "INTERNAL_SERVER_ERROR": "Interne serverfout.",
     "VAULT_ERROR": "De lokale vault is niet up-to-date. Synchroniseer je vault door de pagina te vernieuwen en probeer het opnieuw."
   },
+  "sync": {
+    "offline": "Offline",
+    "syncing": "Synchroniseren...",
+    "pending": "Wachten...",
+    "retrySync": "Probeer opnieuw",
+    "backOnline": "Terug online",
+    "stillOffline": "Nog steeds offline",
+    "syncFailed": "Sync mislukt"
+  },
   "app": {
-    "openReadOnlyMode": "Open in read-only modus",
     "status": {
       "unlockingVault": "Vault ontgrendelen",
       "decryptingVault": "Vault decrypten",
-      "openingVaultReadOnly": "Vault openen in alleen-lezen modus"
+      "openingVaultReadOnly": "Vault openen in alleen-lezen modus",
+      "retryingConnection": "Opnieuw proberen..."
     },
     "offline": {
-      "banner": "Offline modus (alleen lezen)",
+      "banner": "Offline - wijzigingen worden gesynchroniseerd wanneer online",
       "backOnline": "Terug online",
       "stillOffline": "Nog steeds offline"
     },
     "alerts": {
       "syncIssue": "Geen verbinding",
-      "syncIssueMessage": "De AliasVault server kon niet worden bereikt en je vault kon niet worden gesynchroniseerd. Wil je je lokale vault openen in alleen-lezen modus of de verbinding opnieuw proberen?",
       "openLocalVault": "Open lokale vault",
       "retrySync": "Opnieuw proberen"
     },
     "navigation": {
       "login": "Login",
-      "loginSettings": "Login instellingen",
-      "notFound": "Niet gevonden"
+      "loginSettings": "Login instellingen"
     },
     "notFound": {
       "title": "Pagina niet gevonden",

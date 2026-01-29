@@ -40,6 +40,7 @@ public class VaultStore {
 
     /// Initialize the VaultStore
     public init() {
+        excludeSharedContainerFromBackup()
         loadSavedSettings()
         setupNotificationObservers()
     }
@@ -53,6 +54,22 @@ public class VaultStore {
     /// Whether the vault is currently unlocked
     public var isVaultUnlocked: Bool {
         return encryptionKey != nil
+    }
+
+    /// Exclude the entire shared app group container from iCloud and iTunes backups.
+    /// All app data (encrypted vault database, UserDefaults plist with auth tokens and key
+    /// derivation parameters) is security-sensitive and device-bound. Note: actual encryption keys
+    /// are stored separately in the Keychain with ThisDeviceOnly accessibility.
+    private func excludeSharedContainerFromBackup() {
+        guard var containerURL = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: VaultConstants.userDefaultsSuite
+        ) else {
+            return
+        }
+
+        var resourceValues = URLResourceValues()
+        resourceValues.isExcludedFromBackup = true
+        try? containerURL.setResourceValues(resourceValues)
     }
 
     private func loadSavedSettings() {

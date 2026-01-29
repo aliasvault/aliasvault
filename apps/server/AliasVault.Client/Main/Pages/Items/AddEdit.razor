@@ -1,0 +1,1285 @@
+@page "/items/create"
+@page "/items/{id:guid}/edit"
+@inherits MainBase
+@inject ItemService ItemService
+@inject IJSRuntime JSRuntime
+@inject AliasVault.Client.Services.QuickCreateStateService QuickCreateStateService
+@using AliasVault.Client.Services.JsInterop.Models
+@using AliasVault.Client.Main.Components.Items
+@using AliasVault.Client.Main.Components.Forms
+@using Microsoft.Extensions.Localization
+@using AliasClientDb
+@using AliasClientDb.Models
+@implements IAsyncDisposable
+
+<PageHeader
+    BreadcrumbItems="@BreadcrumbItems"
+    Title="@(EditMode ? Localizer["EditItemTitle"] : Localizer["AddItemTitle"])"
+    Description="@(EditMode ? Localizer["EditItemDescription"] : Localizer["AddItemDescription"])">
+    <CustomActions>
+        <ConfirmButton OnClick="TriggerFormSubmit">@Localizer["SaveItemButton"]</ConfirmButton>
+        <CancelButton OnClick="Cancel">@SharedLocalizer["Cancel"]</CancelButton>
+    </CustomActions>
+</PageHeader>
+
+@if (Loading)
+{
+    <LoadingIndicator />
+}
+else
+{
+    <EditForm @ref="EditFormRef" Model="Obj" OnValidSubmit="SaveAlias">
+        <DataAnnotationsValidator />
+        <div class="grid grid-cols-1 px-4 pt-6 md:grid-cols-2 lg:grid-cols-3 md:gap-4 dark:bg-gray-900">
+            <div class="col-span-1 md:col-span-1 lg:col-span-1">
+                @* Item Type Selector *@
+                <ItemTypeSelector
+                    SelectedType="@Obj.ItemType"
+                    SelectedTypeChanged="HandleItemTypeChange"
+                    IsEditMode="@EditMode"
+                    ShowDropdown="@ShowTypeDropdown"
+                    ShowDropdownChanged="@((show) => ShowTypeDropdown = show)"
+                    OnRegenerateAlias="@GenerateRandomAlias" />
+
+                @* Service/Name Section - Always shown *@
+                <div class="p-4 mb-4 bg-white border-2 border-primary-600 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                    <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["ServiceSectionHeader"]</h3>
+                    <div class="grid gap-6">
+                        <div class="col-span-6 sm:col-span-3">
+                            <EditFormRow Id="service-name" Label="@Localizer["ServiceNameLabel"]" Placeholder="@Localizer["ServiceNamePlaceholder"]" @bind-Value="Obj.ServiceName"></EditFormRow>
+                            <ValidationMessage For="() => Obj.ServiceName"/>
+                            @* Folder Selector - below name field *@
+                            <FolderSelector @bind-SelectedFolderId="Obj.FolderId" />
+                        </div>
+                        @* URL field - only for Login and Alias types (multi-value) *@
+                        @if (ShouldShowField(FieldKey.LoginUrl))
+                        {
+                            <div class="col-span-6 sm:col-span-3">
+                                <MultiValueFormRow
+                                    Id="service-url"
+                                    Label="@Localizer["ServiceUrlLabel"]"
+                                    Values="@GetUrlValues()"
+                                    ValuesChanged="OnUrlValuesChanged"
+                                    OnFocus="OnFocusUrlInput" />
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @* TOTP Codes Section - Only for Login/Alias types when visible *@
+                @if (Show2FA && HasLoginFields())
+                {
+                    <div class="col-span-1 md:col-span-1 lg:col-span-1">
+                        <TotpCodes TotpCodeList="@Obj.TotpCodes" TotpCodesChanged="HandleTotpCodesChanged" CanRemove="@CanRemove2FASection()" OnRemove="Remove2FASection" />
+                    </div>
+                }
+
+                @* Notes Section - When visible (left side for non-Note types) *@
+                @if (ShouldShowField(FieldKey.NotesContent) && Obj.ItemType != ItemType.Note)
+                {
+                    <div class="col-span-1 md:col-span-1 lg:col-span-1">
+                        <RemovableSection CanRemove="@CanRemoveField(FieldKey.NotesContent)" OnRemove="() => RemoveOptionalField(FieldKey.NotesContent)">
+                            <div class="col-span-6 sm:col-span-3">
+                                <EditFormRow Type="textarea" Id="notes" Label="@Localizer["NotesLabel"]" LabelStyle="EditFormRow.FormLabelStyle.Header" @bind-Value="Obj.GetField(FieldKey.NotesContent)!.Value"></EditFormRow>
+                            </div>
+                        </RemovableSection>
+                    </div>
+                }
+
+                @* Attachments Section - When visible *@
+                @if (ShowAttachments)
+                {
+                    <div class="col-span-1 md:col-span-1 lg:col-span-1">
+                        <RemovableSection Title="@Localizer["AttachmentsSectionHeader"]" CanRemove="@CanRemoveAttachmentsSection()" OnRemove="RemoveAttachmentsSection">
+                            <div class="col-span-6 sm:col-span-3">
+                                <AttachmentUploader
+                                    Attachments="@Obj.Attachments"
+                                    AttachmentsChanged="@HandleAttachmentsChanged" />
+                            </div>
+                        </RemovableSection>
+                    </div>
+                }
+
+                @* Add Field Menu - Left column (visible only on lg screens when right column is also shown) *@
+                <div class="hidden lg:block mb-4">
+                    <AddFieldMenu
+                        OptionalSystemFields="@GetOptionalSystemFields()"
+                        VisibleFieldKeys="@GetVisibleFieldKeys()"
+                        Show2FA="@Show2FA"
+                        ShowAttachments="@ShowAttachments"
+                        HasLoginFields="@HasLoginFields()"
+                        CustomFieldCount="@Obj.GetCustomFields().Count"
+                        OnAddSystemField="AddOptionalField"
+                        OnAddCustomField="AddCustomField"
+                        OnAdd2FA="Add2FASection"
+                        OnAddAttachments="AddAttachmentsSection" />
+                </div>
+            </div>
+
+            <div class="col-span-1 md:col-span-1 lg:col-span-2">
+                @* Login Details Section - For Login and Alias types *@
+                @if (HasLoginFields())
+                {
+                    <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 overflow-visible">
+                        <h3 class="mb-4 text-xl font-semibold dark:text-white flex items-center gap-2">
+                            <span>@Localizer["LoginDetailsSectionHeader"]</span>
+                            @if (Obj.ItemType == ItemType.Login && !ShouldShowField(FieldKey.LoginEmail))
+                            {
+                                <button type="button" @onclick="() => AddOptionalField(FieldKey.LoginEmail)" @onclick:preventDefault="true"
+                                        class="inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full transition-colors focus:outline-none text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 border border-dashed border-gray-300 dark:border-gray-600 hover:border-primary-400 dark:hover:border-primary-500">
+                                    <svg class="w-2.5 h-2.5 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <line x1="12" y1="5" x2="12" y2="19" />
+                                        <line x1="5" y1="12" x2="19" y2="12" />
+                                    </svg>
+                                    <span>@SharedLocalizer["Email"]</span>
+                                </button>
+                            }
+                        </h3>
+                        <div class="grid gap-6">
+                            @if (EditMode && Obj.Passkeys != null && Obj.Passkeys.Any())
+                            {
+                                var passkey = Obj.Passkeys.First();
+                                @* With passkey: Username, Passkey, Email, Password *@
+                                <div class="col-span-6">
+                                    <EditUsernameFormRow Id="username" Label="@Localizer["UsernameLabel"]" @bind-Value="Obj.GetField(FieldKey.LoginUsername)!.Value" OnGenerateNewUsername="GenerateRandomUsername"></EditUsernameFormRow>
+                                </div>
+                                @if (!PasskeyMarkedForDeletion)
+                                {
+                                    <div class="col-span-6">
+                                        <div class="p-3 rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700">
+                                            <div class="flex items-start gap-3">
+                                                <svg class="w-5 h-5 text-gray-600 dark:text-gray-400 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+                                                </svg>
+                                                <div class="flex-1">
+                                                    <div class="mb-1 flex items-center justify-between">
+                                                        <span class="text-sm font-semibold text-gray-900 dark:text-white">@Localizer["PasskeyLabel"]</span>
+                                                        <button type="button" @onclick="MarkPasskeyForDeletion" class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300" title="@Localizer["DeletePasskeyButton"]">
+                                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <polyline points="3 6 5 6 21 6" />
+                                                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                                                <line x1="10" y1="11" x2="10" y2="17" />
+                                                                <line x1="14" y1="11" x2="14" y2="17" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    <div class="space-y-1 mb-2">
+                                                        @if (!string.IsNullOrWhiteSpace(passkey.RpId))
+                                                        {
+                                                            <div>
+                                                                <span class="text-xs text-gray-500 dark:text-gray-400">@Localizer["PasskeySiteLabel"]: </span>
+                                                                <span class="text-sm text-gray-900 dark:text-white">@passkey.RpId</span>
+                                                            </div>
+                                                        }
+                                                        @if (!string.IsNullOrWhiteSpace(passkey.DisplayName))
+                                                        {
+                                                            <div>
+                                                                <span class="text-xs text-gray-500 dark:text-gray-400">@Localizer["PasskeyDisplayNameLabel"]: </span>
+                                                                <span class="text-sm text-gray-900 dark:text-white">@passkey.DisplayName</span>
+                                                            </div>
+                                                        }
+                                                    </div>
+                                                    <p class="text-xs text-gray-600 dark:text-gray-400">
+                                                        @Localizer["PasskeyHelpText"]
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="col-span-6">
+                                        <div class="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+                                            <div class="flex items-start gap-3">
+                                                <svg class="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+                                                </svg>
+                                                <div class="flex-1">
+                                                    <div class="mb-1 flex items-center justify-between">
+                                                        <span class="text-sm font-semibold text-red-900 dark:text-red-100">@Localizer["PasskeyMarkedForDeletion"]</span>
+                                                        <button type="button" @onclick="UndoPasskeyDeletion" class="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" title="@Localizer["UndoButton"]">
+                                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                                <path d="M3 7v6h6" />
+                                                                <path d="M21 17a9 9 0 00-9-9 9 9 0 00-6 2.3L3 13" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                    <p class="text-xs text-red-800 dark:text-red-200">
+                                                        @Localizer["PasskeyWillBeDeleted"]
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                <div class="col-span-6">
+                                    <EmailDomainField Id="email"
+                                                      @bind-Value="Obj.GetField(FieldKey.LoginEmail)!.Value"
+                                                      DefaultToEmailMode="@(Obj.ItemType == ItemType.Login)"
+                                                      OnGenerateAlias="@(Obj.ItemType == ItemType.Alias ? HandleGenerateAliasEmail : HandleGenerateRandomEmail)"></EmailDomainField>
+                                </div>
+                                <div class="col-span-6">
+                                    <EditPasswordFormRow Id="password" Label="@Localizer["PasswordLabel"]" @bind-Value="Obj.GetField(FieldKey.LoginPassword)!.Value" ShowPassword="IsPasswordVisible"></EditPasswordFormRow>
+                                </div>
+                            }
+                            else
+                            {
+                                @* Without passkey: Email (optional add for Login), Username, Password *@
+                                @if (ShouldShowField(FieldKey.LoginEmail))
+                                {
+                                    <div class="col-span-6">
+                                        @if (CanRemoveField(FieldKey.LoginEmail))
+                                        {
+                                            <EmailDomainField Id="email"
+                                                              @bind-Value="Obj.GetField(FieldKey.LoginEmail)!.Value"
+                                                              DefaultToEmailMode="@(Obj.ItemType == ItemType.Login)"
+                                                              OnRemove="@(() => RemoveOptionalField(FieldKey.LoginEmail))"
+                                                              OnGenerateAlias="@(Obj.ItemType == ItemType.Alias ? HandleGenerateAliasEmail : HandleGenerateRandomEmail)"></EmailDomainField>
+                                        }
+                                        else
+                                        {
+                                            <EmailDomainField Id="email"
+                                                              @bind-Value="Obj.GetField(FieldKey.LoginEmail)!.Value"
+                                                              DefaultToEmailMode="@(Obj.ItemType == ItemType.Login)"
+                                                              OnGenerateAlias="@(Obj.ItemType == ItemType.Alias ? HandleGenerateAliasEmail : HandleGenerateRandomEmail)"></EmailDomainField>
+                                        }
+                                    </div>
+                                }
+
+                                <div class="col-span-6">
+                                    <EditUsernameFormRow Id="username" Label="@Localizer["UsernameLabel"]" @bind-Value="Obj.GetField(FieldKey.LoginUsername)!.Value" OnGenerateNewUsername="GenerateRandomUsername"></EditUsernameFormRow>
+                                </div>
+                                <div class="col-span-6">
+                                    <EditPasswordFormRow Id="password" Label="@Localizer["PasswordLabel"]" @bind-Value="Obj.GetField(FieldKey.LoginPassword)!.Value" ShowPassword="IsPasswordVisible"></EditPasswordFormRow>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+
+                @* Alias Identity Section - For Alias type *@
+                @if (Obj.ItemType == ItemType.Alias)
+                {
+                    <div class="col-span-1 md:col-span-1 lg:col-span-2">
+                        <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                            <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["AliasSectionHeader"]</h3>
+                            <div class="mb-4">
+                                <Button OnClick="HandleGenerateOrClearAlias" Color="@(HasAliasValues() ? "secondary" : "primary")" AdditionalClasses="@GetToggleButtonClasses()">
+                                    <svg class='w-5 h-5 inline-block' viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                                        @if (HasAliasValues())
+                                        {
+                                            <path d="M18 6L6 18M6 6l12 12"/>
+                                        }
+                                        else
+                                        {
+                                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                            <circle cx="8" cy="8" r="1"/>
+                                            <circle cx="16" cy="8" r="1"/>
+                                            <circle cx="12" cy="12" r="1"/>
+                                            <circle cx="8" cy="16" r="1"/>
+                                            <circle cx="16" cy="16" r="1"/>
+                                        }
+                                    </svg>
+                                    @(HasAliasValues() ? Localizer["ClearAliasFieldsButton"] : Localizer["GenerateRandomAliasButton"])
+                                </Button>
+                            </div>
+                            <div class="grid gap-6">
+                                <div class="col-span-6 sm:col-span-3">
+                                    <EditFormRow Id="first-name" Label="@Localizer["FirstNameLabel"]" @bind-Value="Obj.GetField(FieldKey.AliasFirstName)!.Value"></EditFormRow>
+                                </div>
+                                <div class="col-span-6 sm:col-span-3">
+                                    <EditFormRow Id="last-name" Label="@Localizer["LastNameLabel"]" @bind-Value="Obj.GetField(FieldKey.AliasLastName)!.Value"></EditFormRow>
+                                </div>
+                                <div class="col-span-6 sm:col-span-3">
+                                    <EditFormRow Id="gender" Label="@Localizer["GenderLabel"]" @bind-Value="Obj.GetField(FieldKey.AliasGender)!.Value"></EditFormRow>
+                                </div>
+                                <div class="col-span-6 sm:col-span-3">
+                                    <EditFormRow Id="birthdate" Label="@Localizer["BirthDateLabel"]" @bind-Value="Obj.GetField(FieldKey.AliasBirthdate)!.Value"></EditFormRow>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @* Credit Card Section - For CreditCard type *@
+                @if (Obj.ItemType == ItemType.CreditCard)
+                {
+                    <div class="col-span-1 md:col-span-1 lg:col-span-2">
+                        <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                            <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["CardDetailsSectionHeader"]</h3>
+                            <div class="grid gap-6">
+                                <div class="col-span-6">
+                                    <EditFormRow Id="cardholder-name" Label="@Localizer["CardholderNameLabel"]" @bind-Value="Obj.GetField(FieldKey.CardCardholderName)!.Value"></EditFormRow>
+                                </div>
+                                <div class="col-span-6">
+                                    <EditPasswordFormRow Id="card-number" Label="@Localizer["CardNumberLabel"]" @bind-Value="Obj.GetField(FieldKey.CardNumber)!.Value" ShowPassword="false" ShowGenerateButtons="false"></EditPasswordFormRow>
+                                </div>
+                                <div class="col-span-3">
+                                    <EditFormRow Id="expiry-month" Label="@Localizer["ExpiryMonthLabel"]" Placeholder="MM" @bind-Value="Obj.GetField(FieldKey.CardExpiryMonth)!.Value"></EditFormRow>
+                                </div>
+                                <div class="col-span-3">
+                                    <EditFormRow Id="expiry-year" Label="@Localizer["ExpiryYearLabel"]" Placeholder="YYYY" @bind-Value="Obj.GetField(FieldKey.CardExpiryYear)!.Value"></EditFormRow>
+                                </div>
+                                <div class="col-span-6 sm:col-span-3">
+                                    <EditPasswordFormRow Id="card-cvv" Label="@Localizer["CardCvvLabel"]" @bind-Value="Obj.GetField(FieldKey.CardCvv)!.Value" ShowPassword="false" ShowGenerateButtons="false"></EditPasswordFormRow>
+                                </div>
+                                @if (ShouldShowField(FieldKey.CardPin))
+                                {
+                                    <div class="col-span-6 sm:col-span-3 relative">
+                                        <EditPasswordFormRow Id="card-pin" Label="@Localizer["CardPinLabel"]" @bind-Value="Obj.GetField(FieldKey.CardPin)!.Value" ShowPassword="false"></EditPasswordFormRow>
+                                        @if (CanRemoveField(FieldKey.CardPin))
+                                        {
+                                            <button type="button" @onclick="() => RemoveOptionalField(FieldKey.CardPin)" @onclick:preventDefault="true"
+                                                    class="absolute top-0 right-0 text-gray-400 hover:text-red-500 transition-colors" title="@Localizer["RemoveField"]">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @* Notes Section - For Note type (main content area) *@
+                @if (Obj.ItemType == ItemType.Note)
+                {
+                    <div class="col-span-1 md:col-span-1 lg:col-span-2">
+                        <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                            <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["NotesLabel"]</h3>
+                            <div class="grid gap-6">
+                                <div class="col-span-6">
+                                    <EditFormRow Type="textarea" Id="notes" Label="" @bind-Value="Obj.GetField(FieldKey.NotesContent)!.Value"></EditFormRow>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @* Custom Fields Section *@
+                @{
+                    var customFields = Obj.GetCustomFields();
+                }
+                @if (customFields.Any())
+                {
+                    <div class="col-span-1 md:col-span-1 lg:col-span-2">
+                        <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+                            <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["CustomFieldsSectionHeader"]</h3>
+                            <div class="grid gap-6">
+                                @foreach (var customField in customFields)
+                                {
+                                    <div class="col-span-6">
+                                        <EditableFieldLabel
+                                            HtmlFor="@($"custom-{customField.TempId ?? customField.FieldKey}")"
+                                            Label="@customField.Label"
+                                            LabelChanged="@((newLabel) => Obj.UpdateCustomFieldLabel(customField.FieldKey, newLabel))"
+                                            OnDelete="@(() => Obj.RemoveCustomField(customField.FieldKey))" />
+                                        @if (customField.FieldType == FieldType.TextArea)
+                                        {
+                                            <div class="relative">
+                                                <textarea id="@($"custom-{customField.TempId ?? customField.FieldKey}")" style="height: 200px;" class="outline-0 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" @bind="customField.Value"></textarea>
+                                            </div>
+                                        }
+                                        else if (customField.IsHidden || customField.FieldType == FieldType.Hidden || customField.FieldType == FieldType.Password)
+                                        {
+                                            <EditPasswordFormRow Id="@($"custom-{customField.TempId ?? customField.FieldKey}")" Label="" @bind-Value="customField.Value" ShowPassword="false"></EditPasswordFormRow>
+                                        }
+                                        else
+                                        {
+                                            <div class="relative">
+                                                <input type="text" id="@($"custom-{customField.TempId ?? customField.FieldKey}")" autocomplete="off" class="outline-0 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" @bind="customField.Value" autocapitalize="off" autocorrect="off">
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                @* Add Field Menu *@
+                <div class="col-span-1 md:col-span-1 lg:col-span-2 mb-4">
+                    <AddFieldMenu
+                        OptionalSystemFields="@GetOptionalSystemFields()"
+                        VisibleFieldKeys="@GetVisibleFieldKeys()"
+                        Show2FA="@Show2FA"
+                        ShowAttachments="@ShowAttachments"
+                        HasLoginFields="@HasLoginFields()"
+                        CustomFieldCount="@Obj.GetCustomFields().Count"
+                        OnAddSystemField="AddOptionalField"
+                        OnAddCustomField="AddCustomField"
+                        OnAdd2FA="Add2FASection"
+                        OnAddAttachments="AddAttachmentsSection" />
+                </div>
+            </div>
+        </div>
+        <button type="submit" class="hidden">@Localizer["SaveItemButton"]</button>
+    </EditForm>
+}
+
+@code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Items.AddEdit", "AliasVault.Client");
+
+    /// <summary>
+    /// Gets or sets the Credentials ID.
+    /// </summary>
+    [Parameter]
+    public Guid? Id { get; set; }
+
+    private bool EditMode { get; set; }
+    private EditForm EditFormRef { get; set; } = null!;
+    private bool Loading { get; set; } = true;
+    private bool IsPasswordVisible { get; set; } = false;
+    private bool PasskeyMarkedForDeletion { get; set; } = false;
+    private bool ShowTypeDropdown { get; set; } = false;
+    private bool Show2FA { get; set; } = false;
+    private bool ShowAttachments { get; set; } = false;
+    private bool Show2FAAddedManually { get; set; } = false;
+    private bool ShowAttachmentsAddedManually { get; set; } = false;
+    private ItemEdit Obj { get; set; } = new();
+    private IJSObjectReference? Module;
+
+    /// <summary>
+    /// Fields that were manually added via the + menu.
+    /// </summary>
+    private HashSet<string> ManuallyAddedFields { get; set; } = [];
+
+    /// <summary>
+    /// Fields that initially had values when loaded (for edit mode).
+    /// </summary>
+    private HashSet<string> InitiallyVisibleFields { get; set; } = [];
+
+    // Track last generated values to protect manual entries
+    private string? LastGeneratedUsername { get; set; }
+    private string? LastGeneratedPassword { get; set; }
+    private string? LastGeneratedEmail { get; set; }
+
+    /// <inheritdoc />
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        QuickCreateStateService.OnChange -= OnQuickCreateStateChanged;
+        await KeyboardShortcutService.UnregisterShortcutAsync("gc");
+        if (Module is not null)
+        {
+            await Module.DisposeAsync();
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        if (Id.HasValue)
+        {
+            EditMode = true;
+        }
+        else
+        {
+            EditMode = false;
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (EditMode)
+        {
+            BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["ViewItemBreadcrumb"], Url = $"/items/{Id}" });
+            BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["EditItemBreadcrumb"] });
+        }
+        else
+        {
+            BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["AddNewItemBreadcrumb"] });
+        }
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            Module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/modules/newIdentityWidget.js");
+
+            // Subscribe to quick create state changes so we can reinitialize
+            // when the user triggers the widget while already on this page.
+            QuickCreateStateService.OnChange += OnQuickCreateStateChanged;
+
+            if (EditMode)
+            {
+                await LoadExistingCredential();
+            }
+            else
+            {
+                await ApplyQuickCreateState();
+            }
+
+            Loading = false;
+            StateHasChanged();
+
+            if (!EditMode)
+            {
+                await JsInteropService.FocusElementById("service-name");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Handles the quick create state change event when the user triggers the
+    /// CreateNewIdentityWidget while already on the AddEdit page.
+    /// </summary>
+    private async void OnQuickCreateStateChanged()
+    {
+        await InvokeAsync(async () =>
+        {
+            // Ensure we are in create mode since quick create always creates new items.
+            EditMode = false;
+
+            await ApplyQuickCreateState();
+            Loading = false;
+            StateHasChanged();
+            await JsInteropService.FocusElementById("service-name");
+        });
+    }
+
+    /// <summary>
+    /// Creates a new credential and applies any prefilled data from the QuickCreateStateService.
+    /// </summary>
+    private async Task ApplyQuickCreateState()
+    {
+        CreateNewCredential();
+
+        // Reset manually added fields tracking for the fresh form.
+        ManuallyAddedFields = [];
+        InitiallyVisibleFields = [];
+
+        // Use the state service to pre-fill form data
+        if (!string.IsNullOrEmpty(QuickCreateStateService.ServiceName))
+        {
+            Obj.ServiceName = QuickCreateStateService.ServiceName;
+        }
+
+        if (!string.IsNullOrEmpty(QuickCreateStateService.ServiceUrl))
+        {
+            Obj.SetFieldValue(FieldKey.LoginUrl, QuickCreateStateService.ServiceUrl);
+        }
+
+        if (!string.IsNullOrEmpty(QuickCreateStateService.ItemType))
+        {
+            await HandleItemTypeChange(QuickCreateStateService.ItemType);
+        }
+
+        if (QuickCreateStateService.FolderId.HasValue)
+        {
+            Obj.FolderId = QuickCreateStateService.FolderId;
+        }
+
+        // Clear the state after using it
+        QuickCreateStateService.ClearState();
+    }
+
+    /// <summary>
+    /// Checks if the current item type has login-related fields.
+    /// </summary>
+    private bool HasLoginFields()
+    {
+        return Obj.ItemType == ItemType.Login || Obj.ItemType == ItemType.Alias;
+    }
+
+    /// <summary>
+    /// Determines if a field should be shown based on item type and visibility rules.
+    /// </summary>
+    private bool ShouldShowField(string fieldKey)
+    {
+        // Check if field applies to current item type
+        var fieldDef = SystemFieldRegistry.GetSystemField(fieldKey);
+        if (fieldDef == null || !SystemFieldRegistry.FieldAppliesToType(fieldDef, Obj.ItemType))
+        {
+            return false;
+        }
+
+        // Check if manually added
+        if (ManuallyAddedFields.Contains(fieldKey))
+        {
+            return true;
+        }
+
+        // Check if initially visible (edit mode)
+        if (InitiallyVisibleFields.Contains(fieldKey))
+        {
+            return true;
+        }
+
+        // Check if it has a value
+        if (Obj.HasFieldValue(fieldKey))
+        {
+            return true;
+        }
+
+        // Check if shown by default for this item type
+        var config = fieldDef.ApplicableToTypes.GetValueOrDefault(Obj.ItemType);
+        return config?.ShowByDefault ?? false;
+    }
+
+    /// <summary>
+    /// Determines if a field can be removed (is an optional field).
+    /// </summary>
+    private bool CanRemoveField(string fieldKey)
+    {
+        // A field can be removed if it's an optional field for the current item type
+        var fieldDef = SystemFieldRegistry.GetSystemField(fieldKey);
+        if (fieldDef == null)
+        {
+            return false;
+        }
+
+        // Check if it's an optional field (not shown by default)
+        var config = fieldDef.ApplicableToTypes.GetValueOrDefault(Obj.ItemType);
+        return config != null && !config.ShowByDefault;
+    }
+
+    /// <summary>
+    /// Gets the optional system fields for the current item type.
+    /// </summary>
+    private IEnumerable<SystemFieldDefinition> GetOptionalSystemFields()
+    {
+        return SystemFieldRegistry.GetOptionalFieldsForItemType(Obj.ItemType);
+    }
+
+    /// <summary>
+    /// Gets the currently visible field keys.
+    /// </summary>
+    private HashSet<string> GetVisibleFieldKeys()
+    {
+        var keys = new HashSet<string>();
+
+        foreach (var field in SystemFieldRegistry.GetFieldsForItemType(Obj.ItemType))
+        {
+            if (ShouldShowField(field.FieldKey))
+            {
+                keys.Add(field.FieldKey);
+            }
+        }
+
+        return keys;
+    }
+
+    /// <summary>
+    /// Adds an optional field.
+    /// </summary>
+    private void AddOptionalField(string fieldKey)
+    {
+        ManuallyAddedFields.Add(fieldKey);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Removes an optional field (hides it and clears the value).
+    /// </summary>
+    private void RemoveOptionalField(string fieldKey)
+    {
+        ManuallyAddedFields.Remove(fieldKey);
+        InitiallyVisibleFields.Remove(fieldKey);
+        Obj.SetFieldValue(fieldKey, string.Empty);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Adds the 2FA section.
+    /// </summary>
+    private void Add2FASection()
+    {
+        Show2FA = true;
+        Show2FAAddedManually = true;
+
+        // Restore any soft-deleted TOTP codes (undo previous removal)
+        foreach (var totpCode in Obj.TotpCodes)
+        {
+            if (totpCode.IsDeleted)
+            {
+                totpCode.IsDeleted = false;
+                totpCode.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Removes the 2FA section and marks existing TOTP codes for deletion.
+    /// </summary>
+    private void Remove2FASection()
+    {
+        Show2FA = false;
+        Show2FAAddedManually = false;
+
+        // Mark all TOTP codes for deletion (soft delete for existing, remove new ones)
+        foreach (var totpCode in Obj.TotpCodes.ToList())
+        {
+            if (totpCode.Id != Guid.Empty)
+            {
+                // Existing code - mark for soft delete
+                totpCode.IsDeleted = true;
+                totpCode.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                // New code - just remove from list
+                Obj.TotpCodes.Remove(totpCode);
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Checks if the 2FA section can be removed.
+    /// Only allow removal when there's at least one TOTP code registered.
+    /// </summary>
+    private bool CanRemove2FASection()
+    {
+        return Obj.TotpCodes.Any(t => !t.IsDeleted);
+    }
+
+    /// <summary>
+    /// Adds the attachments section.
+    /// </summary>
+    private void AddAttachmentsSection()
+    {
+        ShowAttachments = true;
+        ShowAttachmentsAddedManually = true;
+
+        // Restore any soft-deleted attachments (undo previous removal)
+        foreach (var attachment in Obj.Attachments)
+        {
+            if (attachment.IsDeleted)
+            {
+                attachment.IsDeleted = false;
+                attachment.UpdatedAt = DateTime.UtcNow;
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Removes the attachments section and marks existing attachments for deletion.
+    /// </summary>
+    private void RemoveAttachmentsSection()
+    {
+        ShowAttachments = false;
+        ShowAttachmentsAddedManually = false;
+
+        // Mark all attachments for deletion (soft delete for existing, remove new ones)
+        foreach (var attachment in Obj.Attachments.ToList())
+        {
+            if (attachment.Id != Guid.Empty)
+            {
+                // Existing attachment - mark for soft delete
+                attachment.IsDeleted = true;
+                attachment.UpdatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                // New attachment - just remove from list
+                Obj.Attachments.Remove(attachment);
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Checks if the attachments section can be removed (always true when visible).
+    /// </summary>
+    private bool CanRemoveAttachmentsSection()
+    {
+        return true;
+    }
+
+    /// <summary>
+    /// Adds a custom field.
+    /// </summary>
+    private void AddCustomField((string Label, string FieldType) args)
+    {
+        Obj.AddCustomField(args.Label, args.FieldType);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles item type change.
+    /// Clears field values that don't apply to the new item type.
+    /// </summary>
+    private async Task HandleItemTypeChange(string newType)
+    {
+        if (Obj.ItemType == newType)
+        {
+            return;
+        }
+
+        var oldType = Obj.ItemType;
+        Obj.ItemType = newType;
+
+        // Clear all system fields that don't apply to the new type
+        foreach (var fieldDef in SystemFieldRegistry.Fields.Values)
+        {
+            if (!SystemFieldRegistry.FieldAppliesToType(fieldDef, newType))
+            {
+                Obj.SetFieldValue(fieldDef.FieldKey, string.Empty);
+            }
+        }
+
+        // Clear manually added fields that don't apply to new type
+        var fieldsToRemove = ManuallyAddedFields
+            .Where(fk => {
+                var def = SystemFieldRegistry.GetSystemField(fk);
+                return def != null && !SystemFieldRegistry.FieldAppliesToType(def, newType);
+            })
+            .ToList();
+        foreach (var fk in fieldsToRemove)
+        {
+            ManuallyAddedFields.Remove(fk);
+        }
+
+        // Clear initially visible fields that don't apply to new type
+        var initialFieldsToRemove = InitiallyVisibleFields
+            .Where(fk => {
+                var def = SystemFieldRegistry.GetSystemField(fk);
+                return def != null && !SystemFieldRegistry.FieldAppliesToType(def, newType);
+            })
+            .ToList();
+        foreach (var fk in initialFieldsToRemove)
+        {
+            InitiallyVisibleFields.Remove(fk);
+        }
+
+        // Generate alias for Alias type in create mode
+        if (newType == ItemType.Alias && !EditMode && !HasAliasValues())
+        {
+            await GenerateRandomAlias();
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Loads an existing credential for editing.
+    /// </summary>
+    private async Task LoadExistingCredential()
+    {
+        if (Id is null)
+        {
+            NavigateAwayWithError(Localizer["ItemNotExistError"]);
+            return;
+        }
+
+        var item = await ItemService.LoadEntryAsync(Id.Value);
+        if (item is null)
+        {
+            NavigateAwayWithError(Localizer["ItemNotExistError"]);
+            return;
+        }
+
+        Obj = ItemEdit.FromEntity(item);
+
+        // Track initially visible fields
+        foreach (var fieldDef in SystemFieldRegistry.GetFieldsForItemType(Obj.ItemType))
+        {
+            if (Obj.HasFieldValue(fieldDef.FieldKey))
+            {
+                InitiallyVisibleFields.Add(fieldDef.FieldKey);
+            }
+        }
+
+        // Show sections that have content
+        Show2FA = Obj.TotpCodes.Any();
+        ShowAttachments = Obj.Attachments.Any();
+
+        // Set default URL if not set
+        if (!Obj.HasFieldValue(FieldKey.LoginUrl))
+        {
+            Obj.SetFieldValue(FieldKey.LoginUrl, ItemService.DefaultServiceUrl);
+        }
+    }
+
+    /// <summary>
+    /// Creates a new item object.
+    /// </summary>
+    private Item CreateNewItemObject()
+    {
+        var item = new Item
+        {
+            ItemType = AliasClientDb.Models.ItemType.Login,
+            FieldValues = new List<FieldValue>(),
+            Attachments = new List<Attachment>(),
+            TotpCodes = new List<TotpCode>(),
+            Passkeys = new List<Passkey>()
+        };
+
+        // Don't pre-populate email for Login type - it's an optional field
+        // Email will be populated when user switches to Alias type or manually adds the field
+
+        return item;
+    }
+
+    /// <summary>
+    /// Creates a new item object for editing.
+    /// </summary>
+    private void CreateNewCredential()
+    {
+        Obj = ItemEdit.FromEntity(CreateNewItemObject());
+
+        Obj.SetFieldValue(FieldKey.AliasBirthdate, string.Empty);
+        Obj.SetFieldValue(FieldKey.LoginUrl, ItemService.DefaultServiceUrl);
+    }
+
+    /// <summary>
+    /// Adds an error message and navigates to the home page.
+    /// </summary>
+    private void NavigateAwayWithError(string errorMessage)
+    {
+        GlobalNotificationService.AddErrorMessage(errorMessage);
+        NavigationManager.NavigateTo("/items", false, true);
+    }
+
+    /// <summary>
+    /// Gets the URL values for the multi-value field.
+    /// Ensures at least one entry exists.
+    /// </summary>
+    private List<string> GetUrlValues()
+    {
+        var field = Obj.GetField(FieldKey.LoginUrl);
+        if (field == null)
+        {
+            return new List<string> { string.Empty };
+        }
+
+        // Return Values if populated, otherwise convert single Value
+        if (field.Values != null && field.Values.Count > 0)
+        {
+            return field.Values;
+        }
+
+        return string.IsNullOrEmpty(field.Value)
+            ? new List<string> { string.Empty }
+            : new List<string> { field.Value };
+    }
+
+    /// <summary>
+    /// Handles URL values change from the multi-value component.
+    /// </summary>
+    private void OnUrlValuesChanged(List<string> values)
+    {
+        Obj.SetFieldValues(FieldKey.LoginUrl, values);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// When the URL input is focused, place cursor at the end of the default URL.
+    /// </summary>
+    private void OnFocusUrlInput((int Index, FocusEventArgs Args) e)
+    {
+        var urlValues = GetUrlValues();
+        if (e.Index >= urlValues.Count)
+        {
+            return;
+        }
+
+        var currentUrl = urlValues[e.Index];
+        if (currentUrl != ItemService.DefaultServiceUrl)
+        {
+            return;
+        }
+
+        Task.Delay(1).ContinueWith(_ =>
+        {
+            JSRuntime.InvokeVoidAsync("eval", $"document.getElementById('service-url-{e.Index}').setSelectionRange({ItemService.DefaultServiceUrl.Length}, {ItemService.DefaultServiceUrl.Length})");
+        });
+    }
+
+    private void HandleAttachmentsChanged(List<Attachment> updatedAttachments)
+    {
+        Obj.Attachments = updatedAttachments;
+        StateHasChanged();
+    }
+
+    private void HandleTotpCodesChanged(List<TotpCode> updatedTotpCodes)
+    {
+        Obj.TotpCodes = updatedTotpCodes;
+        StateHasChanged();
+    }
+
+    private async Task HandleGenerateOrClearAlias()
+    {
+        if (HasAliasValues())
+        {
+            ClearAliasFields();
+        }
+        else
+        {
+            await GenerateRandomAlias();
+        }
+    }
+
+    private void ClearAliasFields()
+    {
+        Obj.SetFieldValue(FieldKey.AliasFirstName, string.Empty);
+        Obj.SetFieldValue(FieldKey.AliasLastName, string.Empty);
+        Obj.SetFieldValue(FieldKey.AliasGender, string.Empty);
+        Obj.SetFieldValue(FieldKey.AliasBirthdate, string.Empty);
+
+        StateHasChanged();
+    }
+
+    private bool HasAliasValues()
+    {
+        return !string.IsNullOrWhiteSpace(Obj.GetFieldValue(FieldKey.AliasFirstName)) ||
+               !string.IsNullOrWhiteSpace(Obj.GetFieldValue(FieldKey.AliasLastName)) ||
+               !string.IsNullOrWhiteSpace(Obj.GetFieldValue(FieldKey.AliasGender)) ||
+               !string.IsNullOrWhiteSpace(Obj.GetFieldValue(FieldKey.AliasBirthdate));
+    }
+
+    private string GetToggleButtonClasses()
+    {
+        var baseClasses = "flex items-center justify-center gap-1";
+        if (HasAliasValues())
+        {
+            return $"{baseClasses} bg-gray-500 hover:bg-gray-600 text-white";
+        }
+        return baseClasses;
+    }
+
+    private async Task GenerateRandomAlias()
+    {
+        string currentUsername = Obj.GetFieldValue(FieldKey.LoginUsername);
+        string currentPassword = Obj.GetFieldValue(FieldKey.LoginPassword);
+        string currentEmail = Obj.GetFieldValue(FieldKey.LoginEmail);
+
+        var generatedItem = await ItemService.GenerateRandomIdentityAsync(Obj.ToEntity());
+        var generatedObj = ItemEdit.FromEntity(generatedItem);
+
+        // Keep the current values if user has modified them
+        Obj.SetFieldValue(FieldKey.LoginUsername, currentUsername);
+        Obj.SetFieldValue(FieldKey.LoginPassword, currentPassword);
+        Obj.SetFieldValue(FieldKey.LoginEmail, currentEmail);
+
+        // Always update alias fields
+        Obj.SetFieldValue(FieldKey.AliasFirstName, generatedObj.GetFieldValue(FieldKey.AliasFirstName));
+        Obj.SetFieldValue(FieldKey.AliasLastName, generatedObj.GetFieldValue(FieldKey.AliasLastName));
+        Obj.SetFieldValue(FieldKey.AliasGender, generatedObj.GetFieldValue(FieldKey.AliasGender));
+        Obj.SetFieldValue(FieldKey.AliasBirthdate, generatedObj.GetFieldValue(FieldKey.AliasBirthdate));
+
+        var generatedUsername = generatedObj.GetFieldValue(FieldKey.LoginUsername);
+        var generatedPassword = generatedObj.GetFieldValue(FieldKey.LoginPassword);
+        var generatedEmail = generatedObj.GetFieldValue(FieldKey.LoginEmail);
+
+        if (string.IsNullOrWhiteSpace(currentUsername) || currentUsername == LastGeneratedUsername)
+        {
+            Obj.SetFieldValue(FieldKey.LoginUsername, generatedUsername);
+            LastGeneratedUsername = generatedUsername;
+        }
+
+        if (string.IsNullOrWhiteSpace(currentPassword) || currentPassword == LastGeneratedPassword)
+        {
+            Obj.SetFieldValue(FieldKey.LoginPassword, generatedPassword);
+            LastGeneratedPassword = generatedPassword;
+            IsPasswordVisible = true;
+        }
+
+        if (string.IsNullOrWhiteSpace(currentEmail) || currentEmail == LastGeneratedEmail || currentEmail.StartsWith("@"))
+        {
+            Obj.SetFieldValue(FieldKey.LoginEmail, generatedEmail);
+            LastGeneratedEmail = generatedEmail;
+        }
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Generate a new random username.
+    /// </summary>
+    private async Task GenerateRandomUsername()
+    {
+        var aliasFirstName = Obj.GetFieldValue(FieldKey.AliasFirstName);
+        var aliasLastName = Obj.GetFieldValue(FieldKey.AliasLastName);
+        var aliasBirthDate = Obj.GetFieldValue(FieldKey.AliasBirthdate);
+
+        AliasVaultIdentity identity;
+        if (string.IsNullOrWhiteSpace(aliasFirstName) && string.IsNullOrWhiteSpace(aliasLastName) && string.IsNullOrWhiteSpace(aliasBirthDate))
+        {
+            var randomIdentity = await ItemService.GenerateRandomIdentityAsync(CreateNewItemObject());
+            var randomIdentityEdit = ItemEdit.FromEntity(randomIdentity);
+
+            identity = new AliasVaultIdentity
+            {
+                FirstName = randomIdentityEdit.GetFieldValue(FieldKey.AliasFirstName),
+                LastName = randomIdentityEdit.GetFieldValue(FieldKey.AliasLastName),
+                BirthDate = randomIdentityEdit.GetFieldValue(FieldKey.AliasBirthdate),
+                Gender = randomIdentityEdit.GetFieldValue(FieldKey.AliasGender),
+                NickName = randomIdentityEdit.GetFieldValue(FieldKey.LoginUsername),
+            };
+        }
+        else
+        {
+            identity = new AliasVaultIdentity
+            {
+                FirstName = aliasFirstName,
+                LastName = aliasLastName,
+                BirthDate = aliasBirthDate,
+                Gender = Obj.GetFieldValue(FieldKey.AliasGender),
+                NickName = Obj.GetFieldValue(FieldKey.LoginUsername),
+            };
+        }
+
+        Obj.SetFieldValue(FieldKey.LoginUsername, await JsInteropService.GenerateRandomUsernameAsync(identity));
+    }
+
+    /// <summary>
+    /// Generate an identity-based email alias (for Alias type email field).
+    /// Uses the current alias field values (first name, last name, birthdate) to derive the email prefix,
+    /// so the email stays consistent with the filled-in persona fields.
+    /// </summary>
+    private async Task HandleGenerateAliasEmail()
+    {
+        var firstName = Obj.GetFieldValue(FieldKey.AliasFirstName);
+        var lastName = Obj.GetFieldValue(FieldKey.AliasLastName);
+
+        string prefix;
+        if (string.IsNullOrWhiteSpace(firstName) && string.IsNullOrWhiteSpace(lastName))
+        {
+            // No alias identity fields filled in, fall back to random prefix.
+            prefix = await JsInteropService.GenerateRandomStringEmailPrefixAsync();
+        }
+        else
+        {
+            var identity = new AliasVaultIdentity
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                BirthDate = Obj.GetFieldValue(FieldKey.AliasBirthdate),
+                Gender = Obj.GetFieldValue(FieldKey.AliasGender),
+                NickName = Obj.GetFieldValue(FieldKey.LoginUsername),
+            };
+
+            prefix = await JsInteropService.GenerateRandomEmailPrefixAsync(identity);
+        }
+
+        var defaultEmailDomain = DbService.Settings.DefaultEmailDomain;
+        var email = !string.IsNullOrEmpty(defaultEmailDomain) ? $"{prefix}@{defaultEmailDomain}" : prefix;
+
+        Obj.SetFieldValue(FieldKey.LoginEmail, email);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Generate a random-string email alias (for Login type email field).
+    /// Uses random characters instead of identity-based prefixes since Login type
+    /// has no persona fields to base the email on.
+    /// </summary>
+    private async Task HandleGenerateRandomEmail()
+    {
+        var prefix = await JsInteropService.GenerateRandomStringEmailPrefixAsync();
+        var defaultEmailDomain = DbService.Settings.DefaultEmailDomain;
+        var email = !string.IsNullOrEmpty(defaultEmailDomain) ? $"{prefix}@{defaultEmailDomain}" : prefix;
+
+        Obj.SetFieldValue(FieldKey.LoginEmail, email);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Cancel the edit operation.
+    /// </summary>
+    private void Cancel()
+    {
+        NavigationManager.NavigateTo("/items/" + Id);
+    }
+
+    /// <summary>
+    /// Trigger the form submit.
+    /// </summary>
+    private async Task TriggerFormSubmit()
+    {
+        if (EditFormRef.EditContext?.Validate() == false)
+        {
+            return;
+        }
+
+        await SaveAlias();
+    }
+
+    /// <summary>
+    /// Marks the passkey for deletion.
+    /// </summary>
+    private void MarkPasskeyForDeletion()
+    {
+        PasskeyMarkedForDeletion = true;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Undoes the passkey deletion mark.
+    /// </summary>
+    private void UndoPasskeyDeletion()
+    {
+        PasskeyMarkedForDeletion = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Save the item to the database.
+    /// </summary>
+    private async Task SaveAlias()
+    {
+        GlobalLoadingSpinner.Show(Localizer["SavingVaultMessage"]);
+        StateHasChanged();
+
+        // Delete passkeys if marked for deletion
+        if (PasskeyMarkedForDeletion && Obj.Passkeys != null && Obj.Passkeys.Any())
+        {
+            var context = await DbService.GetDbContextAsync();
+            foreach (var passkey in Obj.Passkeys)
+            {
+                await ItemService.DeletePasskeyAsync(passkey.Id);
+            }
+            Obj.Passkeys.Clear();
+        }
+
+        if (EditMode)
+        {
+            if (Id is not null)
+            {
+                Id = await ItemService.UpdateEntryAsync(Obj.ToEntity());
+            }
+        }
+        else
+        {
+            Id = await ItemService.InsertEntryAsync(Obj.ToEntity());
+        }
+
+        GlobalLoadingSpinner.Hide();
+        StateHasChanged();
+
+        if (Id is null || Id == Guid.Empty)
+        {
+            GlobalNotificationService.AddErrorMessage(Localizer["ErrorSavingItem"], true);
+            return;
+        }
+
+        if (EditMode)
+        {
+            GlobalNotificationService.AddSuccessMessage(Localizer["ItemUpdatedSuccess"]);
+        }
+        else
+        {
+            GlobalNotificationService.AddSuccessMessage(Localizer["ItemCreatedSuccess"]);
+        }
+
+        NavigationManager.NavigateTo("/items/" + Id);
+    }
+
+}

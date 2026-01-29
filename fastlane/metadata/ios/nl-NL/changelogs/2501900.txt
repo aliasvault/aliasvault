@@ -1,0 +1,2 @@
+- Update QR code scanner
+- Wachtwoordgenerator "onduidelijke tekens vermijden" optie verbeterd

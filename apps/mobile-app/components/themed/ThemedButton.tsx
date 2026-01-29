@@ -13,6 +13,7 @@ type ThemedButtonProps = {
   disabled?: boolean;
   style?: ViewStyle;
   textStyle?: TextStyle;
+  testID?: string;
 };
 
 /**
@@ -25,6 +26,7 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
   disabled = false,
   style,
   textStyle,
+  testID,
 }) => {
   const colors = useColors();
 
@@ -59,6 +61,7 @@ export const ThemedButton: React.FC<ThemedButtonProps> = ({
       ]}
       onPress={onPress}
       disabled={disabled || loading}
+      testID={testID}
     >
       <ThemedText style={[styles.buttonText, textStyle]}>
         {title}

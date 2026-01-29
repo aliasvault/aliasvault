@@ -12,6 +12,7 @@ type FormInputCopyToClipboardProps = {
   label: string;
   value: string;
   type?: 'text' | 'password';
+  labelSuffix?: React.ReactNode;
 }
 
 const clipboardService = new ClipboardCopyService();
@@ -60,7 +61,8 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
   id,
   label,
   value,
-  type = 'text'
+  type = 'text',
+  labelSuffix
 }) => {
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
@@ -101,6 +103,7 @@ export const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> =
     <div>
       <label htmlFor={id} className="block mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">
         {label}
+        {labelSuffix}
       </label>
       <div className="relative">
         <input

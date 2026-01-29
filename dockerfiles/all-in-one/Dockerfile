@@ -1,20 +1,63 @@
 # Multi-stage build for AliasVault single container deployment
 
 # ============================================
-# Stage 1: Build .NET applications
+# Stage 1: Build core libraries
+# ============================================
+FROM rust:1-slim-bookworm AS core-builder
+
+# Install Node.js and wasm-pack (Rust already included in base image)
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl ca-certificates && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    rustup target add wasm32-unknown-unknown && \
+    cargo install wasm-pack --locked && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src
+
+# Copy core library source files
+COPY core/ ./core/
+
+# Build core libraries (only browser target needed for server apps)
+RUN cd ./core && \
+    chmod +x build-and-distribute.sh && \
+    ./build-and-distribute.sh --browser
+
+# ============================================
+# Stage 2: Build .NET applications
 # ============================================
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-builder
 
-# Install Python (required for WASM compilation)
+# Install Python (required for WASM compilation) and Node.js (required by JS bundler)
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3 python3-pip && \
+    apt-get install -y --no-install-recommends python3 python3-pip curl ca-certificates && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y --no-install-recommends nodejs && \
+    apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /src
 
 # Copy all source files
 COPY apps/server/ ./apps/server/
-COPY shared/ ./shared/
+
+# Copy built core libraries from core-builder stage
+COPY --from=core-builder /src/core/ ./core/
+
+# Copy Rust WASM output to Client wwwroot/wasm/
+RUN mkdir -p ./apps/server/AliasVault.Client/wwwroot/wasm && \
+    cp ./core/rust/dist/wasm/aliasvault_core_bg.wasm ./apps/server/AliasVault.Client/wwwroot/wasm/ && \
+    cp ./core/rust/dist/wasm/aliasvault_core.js ./apps/server/AliasVault.Client/wwwroot/wasm/
+
+# Copy TypeScript core packages (identity-generator, password-generator, vault) to Client wwwroot/js/dist/core/
+RUN mkdir -p ./apps/server/AliasVault.Client/wwwroot/js/dist/core/identity-generator && \
+    mkdir -p ./apps/server/AliasVault.Client/wwwroot/js/dist/core/password-generator && \
+    mkdir -p ./apps/server/AliasVault.Client/wwwroot/js/dist/core/vault && \
+    cp -r ./core/typescript/identity-generator/dist/* ./apps/server/AliasVault.Client/wwwroot/js/dist/core/identity-generator/ && \
+    cp -r ./core/typescript/password-generator/dist/* ./apps/server/AliasVault.Client/wwwroot/js/dist/core/password-generator/ && \
+    cp -r ./core/vault/dist/* ./apps/server/AliasVault.Client/wwwroot/js/dist/core/vault/
 
 # Install required .NET workloads and restore packages once for the entire solution
 WORKDIR /src/apps/server
@@ -56,15 +99,20 @@ RUN find /app -name "*.pdb" -delete && \
     find /app -name "web.config" -delete
 
 # ============================================
-# Stage 2: Download s6-overlay separately
+# Stage 3: Download s6-overlay separately
 # ============================================
 FROM alpine:3.19 AS s6-downloader
 ARG S6_OVERLAY_VERSION=3.2.0.2
-RUN wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz && \
-    wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-x86_64.tar.xz
+ARG TARGETARCH
+RUN ARCH="${TARGETARCH}"; \
+    if [ "$ARCH" = "amd64" ]; then ARCH="x86_64"; fi; \
+    if [ "$ARCH" = "arm64" ]; then ARCH="aarch64"; fi; \
+    wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-noarch.tar.xz && \
+    wget https://github.com/just-containers/s6-overlay/releases/download/v${S6_OVERLAY_VERSION}/s6-overlay-${ARCH}.tar.xz && \
+    mv s6-overlay-${ARCH}.tar.xz s6-overlay-arch.tar.xz
 
 # ============================================
-# Stage 3: Final runtime image
+# Stage 4: Final runtime image
 # ============================================
 FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim
 
@@ -105,7 +153,7 @@ RUN apt-get update && \
     locale-gen && \
     # Extract s6-overlay
     tar -C / -Jxpf /tmp/s6-overlay-noarch.tar.xz && \
-    tar -C / -Jxpf /tmp/s6-overlay-x86_64.tar.xz && \
+    tar -C / -Jxpf /tmp/s6-overlay-arch.tar.xz && \
     rm /tmp/s6-overlay-*.tar.xz && \
     # Clean up package manager files ONLY (preserve all PostgreSQL files)
     apt-get clean && \
@@ -163,6 +211,7 @@ ENV ALIASVAULT_VERBOSITY=0 \
     IP_LOGGING_ENABLED=true \
     SUPPORT_EMAIL="" \
     PRIVATE_EMAIL_DOMAINS="" \
+    HIDDEN_PRIVATE_EMAIL_DOMAINS="" \
     HOSTNAME=localhost \
     POSTGRES_HOST=localhost \
     POSTGRES_PORT=5432 \

@@ -220,7 +220,8 @@ class VaultDatabase(
      * Begin a SQL transaction on the vault.
      */
     fun beginTransaction() {
-        dbConnection?.beginTransaction()
+        val db = dbConnection ?: error(IllegalStateException("Database not initialized"))
+        db.compileStatement("BEGIN TRANSACTION").execute()
     }
 
     /**
@@ -248,11 +249,9 @@ class VaultDatabase(
             // Retry up to 5 times if we hit transient locking errors
             for (attempt in 1..5) {
                 try {
-                    // VACUUM cannot run inside a transaction
-                    if (db.inTransaction()) {
-                        Log.w(TAG, "Database was in a transaction; ending before VACUUM")
-                        db.endTransaction()
-                    }
+                    // VACUUM cannot run inside a transaction.
+                    // End any lingering transaction (no-op if none).
+                    try { db.compileStatement("END").execute() } catch (_: Exception) {}
 
                     db.compileStatement(vacuumIntoSql).use { it.execute() }
                     break // Success, exit the loop
@@ -298,8 +297,8 @@ class VaultDatabase(
      * Commit a SQL transaction and persist the encrypted vault.
      */
     fun commitTransaction() {
-        dbConnection?.setTransactionSuccessful()
-        dbConnection?.endTransaction()
+        val db = dbConnection ?: error(IllegalStateException("Database not initialized"))
+        db.compileStatement("COMMIT").execute()
         persistDatabaseToEncryptedStorage()
     }
 
@@ -307,7 +306,8 @@ class VaultDatabase(
      * Rollback a SQL transaction on the vault.
      */
     fun rollbackTransaction() {
-        dbConnection?.endTransaction()
+        val db = dbConnection ?: error(IllegalStateException("Database not initialized"))
+        db.compileStatement("ROLLBACK").execute()
     }
 
     // endregion

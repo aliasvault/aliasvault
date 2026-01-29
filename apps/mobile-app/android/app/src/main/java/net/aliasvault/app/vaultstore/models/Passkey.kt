@@ -5,7 +5,7 @@ import java.util.UUID
 
 /**
  * Passkey model representing a WebAuthn credential.
- * Linked to a parent Credential for UI display (service name, logo, etc.).
+ * Linked to a parent Item for UI display (service name, logo, etc.).
  *
  * This is a Kotlin port of the iOS Swift implementation:
  * - Reference: apps/mobile-app/ios/VaultModels/Passkey.swift
@@ -17,9 +17,9 @@ data class Passkey(
     val id: UUID,
 
     /**
-     * Parent Credential UUID (AliasVault internal ID).
+     * Parent Item UUID (AliasVault internal ID).
      */
-    val parentCredentialId: UUID,
+    val parentItemId: UUID,
 
     /**
      * Relying party identifier (domain).
@@ -78,7 +78,7 @@ data class Passkey(
         other as Passkey
 
         if (id != other.id) return false
-        if (parentCredentialId != other.parentCredentialId) return false
+        if (parentItemId != other.parentItemId) return false
         if (rpId != other.rpId) return false
         if (userHandle != null) {
             if (other.userHandle == null) return false
@@ -101,7 +101,7 @@ data class Passkey(
 
     override fun hashCode(): Int {
         var result = id.hashCode()
-        result = 31 * result + parentCredentialId.hashCode()
+        result = 31 * result + parentItemId.hashCode()
         result = 31 * result + rpId.hashCode()
         result = 31 * result + (userHandle?.contentHashCode() ?: 0)
         result = 31 * result + (userName?.hashCode() ?: 0)

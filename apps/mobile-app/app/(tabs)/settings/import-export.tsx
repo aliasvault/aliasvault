@@ -2,9 +2,10 @@ import { Ionicons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import type { Item } from '@/utils/dist/core/models/vault';
+import { FieldKey, getFieldValue, itemToCredential } from '@/utils/dist/core/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -13,6 +14,7 @@ import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
+import { useDialog } from '@/context/DialogContext';
 
 /**
  * CSV record for Credential objects (matching server format).
@@ -43,6 +45,7 @@ export default function ImportExportScreen(): React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const dbContext = useDb();
+  const { showAlert, showConfirm } = useDialog();
   const [isExporting, setIsExporting] = useState(false);
 
   /**
@@ -63,8 +66,8 @@ export default function ImportExportScreen(): React.ReactNode {
     try {
       const date = new Date(dateStr);
       if (isNaN(date.getTime())) {
-        // If invalid date, return a default date
-        return '01/01/0001 00:00:00';
+        // If invalid date, return empty string
+        return '';
       }
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
@@ -74,41 +77,40 @@ export default function ImportExportScreen(): React.ReactNode {
       const seconds = String(date.getSeconds()).padStart(2, '0');
       return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`;
     } catch {
-      // Return default date if parsing fails
-      return '01/01/0001 00:00:00';
+      // Return empty string if parsing fails
+      return '';
     }
   };
 
   /**
-   * Convert credentials to CSV format.
+   * Convert items to CSV format.
    */
-  const credentialsToCsv = async (credentials: Credential[]): Promise<string> => {
+  const itemsToCsv = async (items: Item[]): Promise<string> => {
     const records: ICredentialCsvRecord[] = [];
 
-    // Get all credentials with their TOTP codes
-    for (const credential of credentials) {
-      // Get TOTP codes for this credential
-      const totpCodes = await dbContext.sqliteClient?.getTotpCodesForCredential(credential.Id) ?? [];
+    // Get all items with their TOTP codes
+    for (const item of items) {
+      // Get TOTP codes for this item
+      const totpCodes = await dbContext.sqliteClient?.settings.getTotpCodesForItem(item.Id) ?? [];
       const totpSecret = totpCodes.length > 0 ? totpCodes[0].SecretKey : '';
 
-      /*
-       * For now, we'll use current date for CreatedAt/UpdatedAt since they're not available
-       * in the Credential type. In a production scenario, we'd want to extend the
-       * SqliteClient to fetch these fields.
-       */
-      const currentDate = formatDate(new Date().toISOString());
+      // Convert item to credential format for backward compatibility with CSV export
+      const credential = itemToCredential(item);
+
+      // Get nickname from item fields (not in Credential type but needed for CSV)
+      const nickName = getFieldValue(item, FieldKey.AliasNickname) ?? '';
 
       const record: ICredentialCsvRecord = {
         Version: '1.5.0',
         Username: credential.Username ?? '',
         Notes: credential.Notes ?? '',
-        CreatedAt: currentDate,
-        UpdatedAt: currentDate,
+        CreatedAt: formatDate(item.CreatedAt),
+        UpdatedAt: formatDate(item.UpdatedAt),
         AliasGender: credential.Alias?.Gender ?? '',
         AliasFirstName: credential.Alias?.FirstName ?? '',
         AliasLastName: credential.Alias?.LastName ?? '',
-        AliasNickName: credential.Alias?.NickName ?? '',
-        AliasBirthDate: credential.Alias?.BirthDate ? formatDate(credential.Alias.BirthDate) : '01/01/0001 00:00:00',
+        AliasNickName: nickName,
+        AliasBirthDate: credential.Alias?.BirthDate ? formatDate(credential.Alias.BirthDate) : '',
         AliasEmail: credential.Alias?.Email ?? '',
         ServiceName: credential.ServiceName ?? '',
         ServiceUrl: credential.ServiceUrl ?? '',
@@ -183,24 +185,14 @@ export default function ImportExportScreen(): React.ReactNode {
    * Show export confirmation dialog.
    */
   const showExportConfirmation = (): void => {
-    const warningMessage = t('settings.exportWarning');
-
-    Alert.alert(
+    showConfirm(
       t('settings.exportConfirmTitle'),
-      warningMessage,
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.confirm'),
-          style: 'destructive',
-          /**
-           * Handle export confirmation.
-           */
-          onPress: (): void => {
-            handleExport();
-          }
-        },
-      ]
+      t('settings.exportWarning'),
+      t('common.confirm'),
+      () => {
+        handleExport();
+      },
+      { confirmStyle: 'destructive' }
     );
   };
 
@@ -223,8 +215,8 @@ export default function ImportExportScreen(): React.ReactNode {
       const dateStr = new Date().toISOString().split('T')[0];
 
       // Export as CSV
-      const credentials = await dbContext.sqliteClient?.getAllCredentials() ?? [];
-      const csvContent = await credentialsToCsv(credentials);
+      const items = await dbContext.sqliteClient?.items.getAll() ?? [];
+      const csvContent = await itemsToCsv(items);
 
       const filename = `aliasvault-export-${dateStr}.csv`;
       const downloadsDir = FileSystem.documentDirectory + 'Exports/';
@@ -260,10 +252,7 @@ export default function ImportExportScreen(): React.ReactNode {
       }
     } catch (error) {
       console.error('Export error:', error);
-      Alert.alert(
-        t('common.error'),
-        t('common.errors.unknownError')
-      );
+      showAlert(t('common.error'), t('common.errors.unknownError'));
     } finally {
       setIsExporting(false);
     }

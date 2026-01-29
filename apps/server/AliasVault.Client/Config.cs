@@ -24,6 +24,12 @@ public class Config
     public List<string> PrivateEmailDomains { get; set; } = [];
 
     /// <summary>
+    /// Gets or sets the list of private email domains that should be hidden from UI components.
+    /// These domains still function as private email domains but are not shown in domain selection dropdowns.
+    /// </summary>
+    public List<string> HiddenPrivateEmailDomains { get; set; } = [];
+
+    /// <summary>
     /// Gets or sets the list of public email domains that are allowed to be used by the client vault users.
     /// </summary>
     public List<string> PublicEmailDomains { get; set; } =

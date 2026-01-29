@@ -3,10 +3,10 @@ import { Buffer } from 'buffer';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
-import srp from 'secure-remote-password/client';
 
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
-import type { PasswordChangeInitiateResponse, Vault, VaultPasswordChangeRequest } from '@/utils/dist/shared/models/webapi';
+import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import type { PasswordChangeInitiateResponse, Vault, VaultPasswordChangeRequest } from '@/utils/dist/core/models/webapi';
+import { FieldKey, getFieldValue } from '@/utils/dist/core/models/vault';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useVaultSync } from '@/hooks/useVaultSync';
@@ -48,17 +48,18 @@ export function useVaultMutate() : {
    * Prepare vault for password change operation.
    */
   const prepareVaultForPasswordChange = useCallback(async (): Promise<Vault> => {
-    const currentRevision = await NativeVaultManager.getCurrentVaultRevisionNumber();
+    const syncState = await NativeVaultManager.getSyncState();
+    const currentRevision = syncState.serverRevision;
     const encryptedDb = await NativeVaultManager.getEncryptedDatabase();
     if (!encryptedDb) {
       throw new Error(t('vault.errors.failedToGetEncryptedDatabase'));
     }
 
     const privateEmailDomains = await dbContext.sqliteClient!.getPrivateEmailDomains();
-    const credentials = await dbContext.sqliteClient!.getAllCredentials();
-    const privateEmailAddresses = credentials
-      .filter(cred => cred.Alias?.Email != null)
-      .map(cred => cred.Alias!.Email!)
+    const items = await dbContext.sqliteClient!.items.getAll();
+    const privateEmailAddresses = items
+      .map(item => getFieldValue(item, FieldKey.LoginEmail))
+      .filter((email): email is string => email != null && email !== '')
       .filter((email, index, self) => self.indexOf(email) === index)
       .filter(email => {
         return privateEmailDomains.some(domain => email.toLowerCase().endsWith(`@${domain.toLowerCase()}`));
@@ -72,13 +73,13 @@ export function useVaultMutate() : {
     return {
       blob: encryptedDb,
       createdAt: new Date().toISOString(),
-      credentialsCount: credentials.length,
+      credentialsCount: items.length,
       currentRevisionNumber: currentRevision,
       emailAddressList: privateEmailAddresses,
       privateEmailDomainList: [],
+      hiddenPrivateEmailDomainList: [],
       publicEmailDomainList: [],
       encryptionPublicKey: '',
-      client: '',
       updatedAt: new Date().toISOString(),
       username: username,
       version: (await dbContext.sqliteClient!.getDatabaseVersion())?.version ?? '0.0.0'
@@ -86,66 +87,58 @@ export function useVaultMutate() : {
   }, [dbContext, authContext, t]);
 
   /**
+   * Trigger background sync without blocking the UI.
+   * This is fire-and-forget - the ServerSyncIndicator shows progress.
+   */
+  const triggerBackgroundSync = useCallback(async (options: VaultMutationOptions): Promise<void> => {
+    dbContext.setIsSyncing(true);
+
+    try {
+      await syncVault({
+        onSuccess: async () => {
+          // Register credential identities after successful sync
+          try {
+            await NativeVaultManager.registerCredentialIdentities();
+          } catch (error) {
+            console.warn('VaultMutate: Failed to register credential identities:', error);
+          }
+          await dbContext.refreshSyncState();
+          options.onSuccess?.();
+        },
+        onError: async (error) => {
+          await dbContext.refreshSyncState();
+          // Don't show error toast - the indicator shows offline/pending state
+          console.warn('Background sync failed:', error);
+          options.onError?.(new Error(error));
+        },
+        onOffline: async () => {
+          // Local change is saved and isDirty is set - will sync when back online
+          await dbContext.refreshSyncState();
+          options.onSuccess?.();
+        }
+      });
+    } finally {
+      dbContext.setIsSyncing(false);
+      await dbContext.refreshSyncState();
+    }
+  }, [syncVault, dbContext]);
+
+  /**
    * Execute the provided operation (e.g. create/update/delete credential)
-   * Now delegates to native layer for vault upload.
    */
   const executeMutateOperation = useCallback(async (
     operation: () => Promise<void>,
     options: VaultMutationOptions
-  ) : Promise<void> => {
-    setSyncStatus(t('vault.savingChangesToVault'));
-
-    // Execute the provided operation (e.g. create/update/delete credential)
-    // The operation should wrap its changes in beginTransaction/commitTransaction
+  ): Promise<void> => {
     await operation();
 
-    setSyncStatus(t('vault.uploadingVaultToServer'));
+    // Refresh sync state to show "Pending" indicator immediately
+    await dbContext.refreshSyncState();
 
-    try {
-      // Call native mutateVault which handles:
-      // - Preparing vault metadata (credentials count, email addresses, etc.)
-      // - Uploading to server
-      // - Updating revision number
-      // - Clearing offline mode on success
-      const result = await NativeVaultManager.mutateVault();
-
-      // Verify success
-      if (result !== true) {
-        console.error('VaultMutate: Native mutateVault did not return true, result:', result);
-        throw new Error('Vault mutation did not complete successfully');
-      }
-
-      // Register credential identities after successful mutation
-      try {
-        await NativeVaultManager.registerCredentialIdentities();
-      } catch (error) {
-        console.warn('VaultMutate: Failed to register credential identities:', error);
-        // Don't fail the mutation if credential registration fails
-      }
-
-      // Success
-      options.onSuccess?.();
-    } catch (error) {
-      console.error('VaultMutate: Error during vault mutation:', error);
-
-      // Check if it's a network error
-      if (error instanceof Error && (error.message.includes('network') || error.message.includes('timeout'))) {
-        // Network error, mark as offline and track pending changes
-        await NativeVaultManager.setOfflineMode(true);
-        options.onSuccess?.();
-        return;
-      }
-
-      // Check for vault outdated error
-      if (error instanceof Error && error.message.includes('Vault is outdated')) {
-        options.onError?.(new Error(t('vault.errors.vaultOutdated')));
-        return;
-      }
-
-      // Re-throw the error so it's handled by the caller
-      options.onError?.(new Error(t('common.errors.unknownError')));
-    }
-  }, [t]);
+    // Trigger background sync - fire-and-forget, don't await
+    // The ServerSyncIndicator will show syncing/pending/offline state
+    void triggerBackgroundSync(options);
+  }, [dbContext, triggerBackgroundSync]);
 
   /**
    * Execute the provided operation (e.g. create/update/delete credential)
@@ -164,16 +157,16 @@ export function useVaultMutate() : {
     // Convert base64 string to hex string
     const currentPasswordHashString = Buffer.from(currentPasswordHashBase64, 'base64').toString('hex').toUpperCase();
 
-    // Generate client ephemeral and session
-    const newClientEphemeral = srp.generateEphemeral();
+    // Generate client ephemeral and session using native SRP
+    const newClientEphemeral = await NativeVaultManager.srpGenerateEphemeral();
     // Get username from the auth context, always lowercase and trimmed which is required for the argon2id key derivation
     const username = authContext.username?.toLowerCase().trim();
     if (!username) {
-      throw new Error(t('vault.errors.usernameNotFoundLoginAgain'));
+      throw new Error(t('common.errors.unknownError'));
     }
 
-    const privateKey = srp.derivePrivateKey(currentSalt, username, currentPasswordHashString);
-    const newClientSession = srp.deriveSession(
+    const privateKey = await NativeVaultManager.srpDerivePrivateKey(currentSalt, username, currentPasswordHashString);
+    const newClientSession = await NativeVaultManager.srpDeriveSession(
       newClientEphemeral.secret,
       currentServerEphemeral,
       currentSalt,
@@ -181,8 +174,8 @@ export function useVaultMutate() : {
       privateKey
     );
 
-    // Generate salt and verifier for new password
-    const newSalt = srp.generateSalt();
+    // Generate salt and verifier for new password using native SRP
+    const newSalt = await NativeVaultManager.srpGenerateSalt();
     const newPasswordHash = await EncryptionUtility.deriveKeyFromPassword(newPasswordPlainText, newSalt, data.encryptionType, data.encryptionSettings);
     const newPasswordHashString = Buffer.from(newPasswordHash).toString('hex').toUpperCase();
 
@@ -209,12 +202,12 @@ export function useVaultMutate() : {
       await NativeVaultManager.unlockVault();
     } catch {
       // If any part of this fails, we need logout the user as the local vault and stored encryption key are now potentially corrupt.
-      await authContext.logout(t('vault.errors.errorDuringPasswordChange'));
+      await authContext.logout(t('common.errors.unknownErrorTryAgain'));
     }
 
-    // Generate SRP password change data
-    const newPrivateKey = srp.derivePrivateKey(newSalt, username, newPasswordHashString);
-    const newVerifier = srp.deriveVerifier(newPrivateKey);
+    // Generate SRP password change data using native SRP
+    const newPrivateKey = await NativeVaultManager.srpDerivePrivateKey(newSalt, username, newPasswordHashString);
+    const newVerifier = await NativeVaultManager.srpDeriveVerifier(newPrivateKey);
 
     // Prepare vault for password change
     const vault = await prepareVaultForPasswordChange();
@@ -230,6 +223,9 @@ export function useVaultMutate() : {
     };
 
     try {
+      // Capture mutation sequence before upload for atomic state update
+      const syncState = await NativeVaultManager.getSyncState();
+
       // Upload to server
       const response = await webApi.post<typeof passwordChangeVault, VaultPostResponse>('Vault/change-password', passwordChangeVault);
 
@@ -242,7 +238,8 @@ export function useVaultMutate() : {
       // If we get here, it means we have a valid connection to the server.
       await NativeVaultManager.setOfflineMode(false);
 
-      await NativeVaultManager.setCurrentVaultRevisionNumber(newRevisionNumber);
+      // Update revision atomically with sync state (clears dirty flag if no mutations during upload)
+      await NativeVaultManager.markVaultClean(syncState.mutationSequence, newRevisionNumber);
       options.onSuccess?.();
     } catch (error) {
       console.error('Error during password change operation:', error);
@@ -251,94 +248,31 @@ export function useVaultMutate() : {
   }, [dbContext, authContext, webApi, prepareVaultForPasswordChange, t]);
 
   /**
-   * Hook to execute a vault mutation which uploads a new encrypted vault to the server
+   * Hook to execute a vault mutation which uploads a new encrypted vault to the server.
    */
   const executeVaultMutation = useCallback(async (
     operation: () => Promise<void>,
     options: VaultMutationOptions = {}
   ) => {
     try {
-      setIsLoading(true);
-      setSyncStatus(t('vault.checkingForVaultUpdates'));
-
-      // Skip sync check if requested (e.g., during upgrade operations)
-      if (options.skipSyncCheck) {
-        setSyncStatus(t('vault.executingOperation'));
-        await executeMutateOperation(operation, options);
-        return;
-      }
-
-      // If we're in offline mode, try to sync once to see if we can get back online
-      if (authContext.isOffline) {
-        await syncVault({
-          /**
-           * Handle the status update.
-           */
-          onStatus: (message) => setSyncStatus(message),
-          /**
-           * Handle successful vault sync and continue with vault mutation.
-           */
-          onSuccess: async (hasNewVault) => {
-            if (hasNewVault) {
-              // Vault was changed, but has now been reloaded so we can continue with the operation.
-            }
-            await executeMutateOperation(operation, options);
-          },
-          /**
-           * Handle offline state and prompt user for action.
-           */
-          onError: () => {
-            // Still offline, proceed with local operation
-            executeMutateOperation(operation, options);
-          }
-        });
-      } else {
-        await syncVault({
-          /**
-           * Handle the status update.
-           */
-          onStatus: (message) => setSyncStatus(message),
-          /**
-           * Handle successful vault sync and continue with vault mutation.
-           */
-          onSuccess: async (hasNewVault) => {
-            if (hasNewVault) {
-              // Vault was changed, but has now been reloaded so we can continue with the operation.
-            }
-            await executeMutateOperation(operation, options);
-          },
-          /**
-           * Handle error during vault sync.
-           */
-          onError: (error) => {
-            Toast.show({
-              type: 'error',
-              text1: t('vault.errors.failedToSyncVault'),
-              text2: error,
-              position: 'bottom'
-            });
-            options.onError?.(new Error(error));
-          }
-        });
-      }
+      await executeMutateOperation(operation, options);
     } catch (error) {
       console.error('Error during vault mutation:', error);
       Toast.show({
         type: 'error',
-        text1: t('vault.errors.operationFailed'),
-        text2: error instanceof Error ? error.message : t('common.errors.unknownError'),
+        text1: t('common.errors.unknownError'),
         position: 'bottom'
       });
       options.onError?.(error instanceof Error ? error : new Error(t('common.errors.unknownError')));
-    } finally {
-      setIsLoading(false);
-      setSyncStatus('');
     }
-  }, [syncVault, executeMutateOperation, authContext.isOffline, t]);
+  }, [executeMutateOperation, t]);
 
   /**
    * Hook to execute a password change which uploads a new encrypted vault to the server
-   * with updated SRP verifier and salt. It shares common logic with the regular vault mutation upload.
+   * with updated SRP verifier and salt.
+   *
+   * Unlike regular mutations, password change REQUIRES a pre-sync to ensure we're
+   * re-encrypting the latest vault. Cannot proceed offline.
    */
   const executeVaultPasswordChange = useCallback(async (
     currentPasswordHashBase64: string,
@@ -349,65 +283,46 @@ export function useVaultMutate() : {
       setIsLoading(true);
       setSyncStatus(t('vault.checkingForVaultUpdates'));
 
-      // If we're in offline mode, try to sync once to see if we can get back online
-      if (authContext.isOffline) {
-        await syncVault({
-          /**
-           * Handle the status update.
-           */
+      // Password change requires online - must sync first to get latest vault before re-encryption
+      const syncSuccess = await new Promise<boolean>((resolve) => {
+        syncVault({
           onStatus: (message) => setSyncStatus(message),
-          /**
-           * Handle successful vault sync and continue with vault mutation.
-           */
-          onSuccess: async (hasNewVault) => {
-            if (hasNewVault) {
-              // Vault was changed, but has now been reloaded so we can continue with the operation.
-            }
-            await executePasswordChangeOperation(currentPasswordHashBase64, newPasswordPlainText, options);
-          },
-          /**
-           * Handle offline state and prompt user for action.
-           */
-          onError: () => {
-            // Still offline, proceed with local operation
-            executePasswordChangeOperation(currentPasswordHashBase64, newPasswordPlainText, options);
-          }
-        });
-      } else {
-        await syncVault({
-          /**
-           * Handle the status update.
-           */
-          onStatus: (message) => setSyncStatus(message),
-          /**
-           * Handle successful vault sync and continue with vault mutation.
-           */
-          onSuccess: async (hasNewVault) => {
-            if (hasNewVault) {
-              // Vault was changed, but has now been reloaded so we can continue with the operation.
-            }
-            await executePasswordChangeOperation(currentPasswordHashBase64, newPasswordPlainText, options);
-          },
-          /**
-           * Handle error during vault sync.
-           */
+          onSuccess: () => resolve(true),
           onError: (error) => {
             Toast.show({
               type: 'error',
-              text1: t('vault.errors.failedToSyncVault'),
+              text1: t('common.error'),
               text2: error,
               position: 'bottom'
             });
             options.onError?.(new Error(error));
+            resolve(false);
+          },
+          onOffline: () => {
+            Toast.show({
+              type: 'error',
+              text1: t('common.error'),
+              text2: t('vault.errors.passwordChangeRequiresOnline'),
+              position: 'bottom'
+            });
+            options.onError?.(new Error(t('vault.errors.passwordChangeRequiresOnline')));
+            resolve(false);
           }
         });
+      });
+
+      if (!syncSuccess) {
+        return;
       }
+
+      // Now execute the password change operation
+      await executePasswordChangeOperation(currentPasswordHashBase64, newPasswordPlainText, options);
     } catch (error) {
-      console.error('Error during vault mutation:', error);
+      console.error('Error during password change:', error);
       Toast.show({
         type: 'error',
-        text1: t('vault.errors.operationFailed'),
-        text2: error instanceof Error ? error.message : t('common.errors.unknownError'),
+        text1: t('common.error'),
+        text2: t('common.errors.unknownError'),
         position: 'bottom'
       });
       options.onError?.(error instanceof Error ? error : new Error(t('common.errors.unknownError')));
@@ -415,7 +330,7 @@ export function useVaultMutate() : {
       setIsLoading(false);
       setSyncStatus('');
     }
-  }, [syncVault, executePasswordChangeOperation, authContext.isOffline, t]);
+  }, [syncVault, executePasswordChangeOperation, t]);
 
   return {
     executeVaultMutation,

@@ -5,6 +5,9 @@
   <string name="aliasvault_icon">AliasVault-kuvake</string>
   <!-- Common strings -->
   <string name="common_close">Sulje</string>
+  <string name="common_next">Seuraava</string>
+  <string name="common_cancel">Peruuta</string>
+  <string name="unknown_error">Tapahtui tuntematon virhe</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Nouto epäonnistui, avaa sovellus</string>
   <string name="autofill_no_match_found">Ei osumia löytynyt, luodaanko uusi?</string>
@@ -19,13 +22,12 @@
   <string name="passkey_registration_title">Luo todennusavain</string>
   <string name="create_passkey_title">Luo uusi todennusavain</string>
   <string name="create_passkey_subtitle">Rekisteröi uusi todennusavain tälle sivustolle. Se tallennetaan turvallisesti holveen ja synkronoidaan automaattisesti eri laitteissa AliasVaultin kanssa.</string>
-  <string name="replace_passkey_title">Korvaa todennusavain</string>
+  <string name="replace_passkey">Korvaa sala-avain</string>
   <string name="passkey_display_name_label">Todennusavaimen nimi</string>
   <string name="passkey_display_name_hint">Anne nimi tälle todennusavaimelle</string>
   <string name="passkey_website_label">Verkkosivusto</string>
   <string name="passkey_username_label">Käyttäjänimi</string>
   <string name="passkey_create_button">Luo todennusavain, Passkey</string>
-  <string name="passkey_cancel_button">Peruuta</string>
   <string name="passkey_creating">Luodaan todennusavainta...</string>
   <string name="passkey_saving">Tallennetaan holviin…</string>
   <string name="passkey_syncing">Synkronoidaan palvelimeen…</string>
@@ -37,10 +39,16 @@
   <string name="passkey_create_explanation">Tämä luo uuden todennusavaimen ja tallentaa sen holviisi. Se synkronoidaan automaattisesti kaikkiin laitteisiin, jotka käyttävät AliasVaultia.</string>
   <string name="passkey_create_new_button">Luo uusi todennusavain, Passkey</string>
   <string name="passkey_select_to_replace">Tai korvaa olemassa oleva todennusavain:</string>
-  <string name="passkey_replace_button">Korvaa todennusavain</string>
+  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
   <string name="passkey_replace_explanation">Tämä korvaa olemassa olevan todennusavaimen uudella todennusavaimella. Ole hyvä ja ota huomioon, että vanha todennusavaimesi on korvattu eikä enää käytettävissä. Jos haluat luoda erillisen todennusavaimen sen sijaan, mene takaisin edelliseen ruutuun.</string>
+  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
   <string name="passkey_replacing">Korvataan todennusavainta...</string>
+  <string name="add_passkey">Add Passkey</string>
+  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
   <string name="passkey_checking_connection">Tarkistetaan yhteyttä</string>
+  <string name="passkey_retrieving">Noudetaan todennusavainta...</string>
+  <string name="passkey_verifying">Tarkistetaan…</string>
+  <string name="passkey_authenticating">Todennetaan…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Yhteysvirhe</string>
   <string name="connection_error_message">Yhteyttä palvelimeen ei voida luoda. Tarkista internet-yhteytesi ja yritä luoda todennusavain uudelleen.</string>
@@ -57,10 +65,20 @@
   <string name="server_version_not_supported_title">Palvelimen päivtys vaaditaan</string>
   <string name="server_version_not_supported_message">Palvelimen versio on vanhentunut. Ota yhteyttä järjestelmänvalvojaan päivittääksesi palvelin.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_biometric_required">Ole hyvä ja ota biometrinen todennus käyttöön AliasVault-sovelluksessa, jotta voit käyttää todennusavaimia.</string>
+  <string name="error_unlock_method_required">Ole hyvä ja ota biometrinen todennus käyttöön AliasVault-sovelluksessa, jotta voit käyttää todennusavaimia.</string>
   <string name="error_unlock_vault_first">Ole hyvä ja avaa holvi ensin AliasVault-sovelluksessa</string>
   <string name="error_vault_decrypt_failed">Holvin salauksen purku epäonnistui</string>
-  <string name="error_vault_unlock_failed">Holvin lukituksen poisto epäonnistui</string>
   <string name="error_biometric_cancelled">Biometrinen tunnistus peruttu</string>
   <string name="error_encryption_key_failed">Salausavaimen noutaminen epäonnistui</string>
+  <!-- PIN unlock -->
+  <string name="pin_unlock_vault">Avaa holvin lukitus</string>
+  <string name="pin_enter_to_unlock">Syötä PIN-koodi avataksesi holvisi</string>
+  <string name="pin_locked_max_attempts">PIN-koodi lukittu liian monen epäonnistuneen yrityksen jälkeen</string>
+  <string name="pin_incorrect_attempts_remaining">Virheellinen PIN, %d yritystä jäljellä</string>
+  <!-- PIN setup -->
+  <string name="pin_setup_title">Aseta PIN-koodi</string>
+  <string name="pin_setup_description">Syötä PIN-koodi avataksesi holvisi</string>
+  <string name="pin_confirm_title">Vahvista PIN</string>
+  <string name="pin_confirm_description">Syötä PIN-koodi uudelleen vahvistaaksesi</string>
+  <string name="pin_mismatch">PIN-koodit eivät täsmää. Yritä uudelleen.</string>
 </resources>

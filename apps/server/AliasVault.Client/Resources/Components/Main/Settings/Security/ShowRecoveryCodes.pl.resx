@@ -63,7 +63,7 @@
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Poniższe kody odzyskiwania służą do uzyskania dostępu do konta w przypadku utraty dostępu do urządzenia uwierzytelniającego. Zrób ich zdjęcie lub zapisz je i przechowuj w bezpiecznym miejscu. Nie udostępniaj ich nikomu.</value>
+    <value>Poniższe kody odzyskiwania służą do uzyskania dostępu do konta w przypadku utraty dostępu do aplikacji uwierzytelniającej. Zrób ich zdjęcie lub zapisz je i przechowuj w bezpiecznym miejscu. Nie udostępniaj ich nikomu.</value>
     <comment>Description of recovery codes</comment>
   </data>
   <data name="WarningTitle" xml:space="preserve">

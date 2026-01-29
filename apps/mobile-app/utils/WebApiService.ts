@@ -1,5 +1,5 @@
 import { AppInfo } from '@/utils/AppInfo';
-import type { StatusResponse, VaultResponse, AuthLogModel, RefreshToken } from '@/utils/dist/shared/models/webapi';
+import type { StatusResponse, VaultResponse, AuthLogModel, RefreshToken } from '@/utils/dist/core/models/webapi';
 
 import i18n from '@/i18n';
 
@@ -312,27 +312,6 @@ export class WebApiService {
    */
   public async getAuthLogs(): Promise<AuthLogModel[]> {
     return this.get<AuthLogModel[]>('Security/authlogs');
-  }
-
-  /**
-   * Validates the vault response and returns an error message if validation fails
-   */
-  public validateVaultResponse(vaultResponseJson: VaultResponse): string | null {
-    /**
-     * Status 0 = OK, vault is ready.
-     * Status 1 = Merge required, which only the web client supports.
-     * Status 2 = Outdated, which means the local vault is outdated and the client should fetch the latest vault from the server before saving can continue.
-     */
-    if (vaultResponseJson.status === 1) {
-      // Note: vault merge is no longer allowed by the API as of 0.20.0, updates with the same revision number are rejected. So this check can be removed later.
-      return i18n.t('vault.errors.vaultOutdated');
-    }
-
-    if (vaultResponseJson.status === 2) {
-      return i18n.t('vault.errors.vaultOutdated');
-    }
-
-    return null;
   }
 
   /**

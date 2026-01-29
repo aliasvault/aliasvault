@@ -45,45 +45,44 @@ final public class VaultStoreKitTests: XCTestCase {
         XCTAssertTrue(vaultStore.isVaultUnlocked, "Vault should be unlocked after initialization")
     }
 
-    func testGetAllCredentials() async throws {
-        // Try to get all credentials
-        let credentials = try vaultStore.getAllCredentials()
+    func testGetAllItems() async throws {
+        // Try to get all items
+        let items = try vaultStore.getAllItems()
 
-        // Verify we got some credentials back
-        XCTAssertFalse(credentials.isEmpty, "Should have retrieved some credentials")
+        // Verify we got some items back
+        XCTAssertFalse(items.isEmpty, "Should have retrieved some items")
 
-        // Verify the structure of the first credential
-        if let firstCredential = credentials.first {
-            XCTAssertNotNil(firstCredential.id, "Credential should have an ID")
-            XCTAssertNotNil(firstCredential.service, "Credential should have a service")
-            XCTAssertNotNil(firstCredential.password, "Credential should have a password")
+        // Verify the structure of the first item
+        if let firstItem = items.first {
+            XCTAssertNotNil(firstItem.id, "Item should have an ID")
+            XCTAssertNotNil(firstItem.name, "Item should have a name")
+            XCTAssertNotNil(firstItem.password, "Item should have a password")
         }
     }
 
     /**
-     * This test verifies that the Gmail credential details are correct including
-     * the expectedlogo binary data.
+     * This test verifies that the Gmail item details are correct including
+     * the expected logo binary data.
      */
-    func testGetGmailCredentialDetails() async throws {
-        // Get all credentials
-        let credentials = try vaultStore.getAllCredentials()
+    func testGetGmailItemDetails() async throws {
+        // Get all items
+        let items = try vaultStore.getAllItems()
 
-        // Find the Gmail credential
-        let gmailCredential = credentials.first { $0.service.name == "Gmail Test Account" }
-        XCTAssertNotNil(gmailCredential, "Gmail Test Account credential should exist")
+        // Find the Gmail item
+        let gmailItem = items.first { $0.name == "Gmail Test Account" }
+        XCTAssertNotNil(gmailItem, "Gmail Test Account item should exist")
 
-        if let gmail = gmailCredential {
+        if let gmail = gmailItem {
             // Verify all expected properties
-            XCTAssertEqual(gmail.service.name, "Gmail Test Account")
-            XCTAssertEqual(gmail.service.url, "https://google.com")
+            XCTAssertEqual(gmail.name, "Gmail Test Account")
+            XCTAssertEqual(gmail.url, "https://google.com")
             XCTAssertEqual(gmail.username, "test.user@gmail.com")
-            XCTAssertEqual(gmail.alias?.firstName, "Test")
-            XCTAssertEqual(gmail.alias?.lastName, "User")
-            XCTAssertEqual(gmail.notes, "Test Gmail account for unit testing")
+            XCTAssertEqual(gmail.firstName, "Test")
+            XCTAssertEqual(gmail.lastName, "User")
 
             // Verify logo exists and has sufficient size
-            XCTAssertNotNil(gmail.service.logo, "Service logo should not be nil")
-            if let logoData = gmail.service.logo {
+            XCTAssertNotNil(gmail.logo, "Item logo should not be nil")
+            if let logoData = gmail.logo {
                 XCTAssertGreaterThan(logoData.count, 1024, "Logo data should exceed 1KB in size")
             }
         }

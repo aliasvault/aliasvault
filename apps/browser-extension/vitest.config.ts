@@ -5,4 +5,7 @@ export default defineConfig({
   plugins: [
     WxtVitest(),
   ],
+  test: {
+    exclude: ['**/node_modules/**', '**/tests/**'],
+  },
 });

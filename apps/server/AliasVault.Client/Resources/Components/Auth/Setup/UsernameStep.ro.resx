@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Assistant messages -->
+  <data name="GreatNowLetsSetupUsername">
+    <value>Minunat! Acum, să configurăm numele de utilizator pentru AliasVault.</value>
+    <comment>Assistant message about setting up username</comment>
+  </data>
+  <data name="EnterUsernameInstructions">
+    <value>Introdu numele tău de utilizator preferat. Acesta poate fi adresa ta de e-mail sau orice nume unic dorești.</value>
+    <comment>Instructions for entering username</comment>
+  </data>
+  <data name="RememberUsernameNote">
+    <value>Reține: Acesta este numele pe care îl vei folosi ulterior pentru autentificare, deci asigură-te că este ceva ce îți vei aminti!</value>
+    <comment>Important note about remembering username</comment>
+  </data>
+  <!-- Form labels -->
+  <data name="UsernameLabel">
+    <value>Nume utilizator</value>
+    <comment>Label for username input field</comment>
+  </data>
+  <data name="UsernamePlaceholder">
+    <value>Introdu numele de utilizator sau e-mailul dorit</value>
+    <comment>Placeholder text for username input</comment>
+  </data>
+  <!-- Validation messages -->
+  <data name="ValidatingUsernameMessage">
+    <value>Se validează numele de utilizator...</value>
+    <comment>Message shown while validating username</comment>
+  </data>
+  <data name="UsernameAvailableMessage">
+    <value>Numele de utilizator este disponibil!</value>
+    <comment>Message shown when username is available</comment>
+  </data>
+  <data name="UsernameRequiredError">
+    <value>Numele de utilizator este obligatoriu.</value>
+    <comment>Error message when username is empty</comment>
+  </data>
+  <data name="ServerCommunicationError">
+    <value>A apărut o eroare în timpul comunicării cu serverul AliasVault.</value>
+    <comment>Error message for server communication issues</comment>
+  </data>
+  <!-- Alt text -->
+  <data name="AssistantAvatarAlt">
+    <value>Asistent AliasVault</value>
+    <comment>Alt text for assistant avatar image</comment>
+  </data>
+</root>

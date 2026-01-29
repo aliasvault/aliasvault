@@ -1,0 +1,126 @@
+@using Microsoft.Extensions.Localization
+
+@inject IStringLocalizerFactory LocalizerFactory
+
+@if (IsEditing)
+{
+    <div class="flex items-center gap-2 mb-2">
+        <input type="text"
+               @bind="EditValue"
+               @bind:event="oninput"
+               @onkeydown="HandleKeyDown"
+               @onblur="HandleSave"
+               class="flex-1 px-2 py-1 text-sm font-medium text-gray-900 dark:text-white border border-primary-500 rounded focus:outline-none focus:ring-1 focus:ring-primary-500 dark:bg-gray-700 dark:border-primary-400"
+               placeholder="@Localizer["FieldLabelPlaceholder"]"
+               @ref="EditInputRef" />
+        <button type="button"
+                @onclick="HandleSave"
+                @onclick:preventDefault="true"
+                class="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 text-xs px-2 py-1">
+            ✓
+        </button>
+        <button type="button"
+                @onclick="HandleCancel"
+                @onclick:preventDefault="true"
+                class="text-gray-600 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 text-xs px-2 py-1">
+            ✕
+        </button>
+    </div>
+}
+else
+{
+    <div class="flex items-center gap-2 mb-2">
+        <label for="@HtmlFor" class="text-sm font-medium text-gray-900 dark:text-white">@Label</label>
+        <button type="button"
+                @onclick="StartEditing"
+                @onclick:preventDefault="true"
+                class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xs"
+                title="@Localizer["EditLabel"]">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+            </svg>
+        </button>
+        @if (OnDelete.HasDelegate)
+        {
+            <button type="button"
+                    @onclick="HandleDelete"
+                    @onclick:preventDefault="true"
+                    class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-xs"
+                    title="@Localizer["DeleteField"]">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+            </button>
+        }
+    </div>
+}
+
+@code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Forms.EditableFieldLabel", "AliasVault.Client");
+
+    /// <summary>
+    /// Gets or sets the HTML for attribute to associate with the input.
+    /// </summary>
+    [Parameter]
+    public string HtmlFor { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the current label text.
+    /// </summary>
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the callback when the label changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> LabelChanged { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback when the delete button is clicked.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnDelete { get; set; }
+
+    private bool IsEditing { get; set; }
+    private string EditValue { get; set; } = string.Empty;
+    private ElementReference EditInputRef;
+
+    private void StartEditing()
+    {
+        EditValue = Label;
+        IsEditing = true;
+    }
+
+    private async Task HandleSave()
+    {
+        if (!string.IsNullOrWhiteSpace(EditValue))
+        {
+            await LabelChanged.InvokeAsync(EditValue.Trim());
+        }
+        IsEditing = false;
+    }
+
+    private void HandleCancel()
+    {
+        EditValue = Label;
+        IsEditing = false;
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await HandleSave();
+        }
+        else if (e.Key == "Escape")
+        {
+            HandleCancel();
+        }
+    }
+
+    private async Task HandleDelete()
+    {
+        await OnDelete.InvokeAsync();
+    }
+}

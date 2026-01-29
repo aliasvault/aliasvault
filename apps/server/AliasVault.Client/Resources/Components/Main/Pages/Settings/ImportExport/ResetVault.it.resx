@@ -74,9 +74,9 @@
     <value>Si prega di notare:</value>
     <comment>Reset vault please note prefix</comment>
   </data>
-  <data name="ResetVaultCredentialsDeletedNote" xml:space="preserve">
+  <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
     <value>Tutte le credenziali crittografate nella cassaforte verranno eliminate in modo permanente</value>
-    <comment>Reset vault note about credentials being deleted</comment>
+    <comment>Reset vault note about items being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
     <value>I tuoi alias email saranno conservati e potranno essere riutilizzati dopo aver resettato la tua cassaforte</value>

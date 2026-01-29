@@ -1,10 +1,10 @@
 import * as Haptics from 'expo-haptics';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, TouchableOpacity, Alert, RefreshControl, Platform } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, RefreshControl, Platform } from 'react-native';
 import Toast from 'react-native-toast-message';
 
-import type { RefreshToken } from '@/utils/dist/shared/models/webapi';
+import type { RefreshToken } from '@/utils/dist/core/models/webapi';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -13,6 +13,7 @@ import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
+import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
 /**
  * Active sessions screen.
@@ -21,6 +22,7 @@ export default function ActiveSessionsScreen() : React.ReactNode {
   const colors = useColors();
   const webApi = useWebApi();
   const { t } = useTranslation();
+  const { showAlert, showConfirm } = useDialog();
 
   const [refreshTokens, setRefreshTokens] = useState<RefreshToken[]>([]);
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 200);
@@ -90,49 +92,41 @@ export default function ActiveSessionsScreen() : React.ReactNode {
       const response = await webApi.getActiveSessions();
       setRefreshTokens(response);
     } catch {
-      Alert.alert(t('common.error'), t('settings.securitySettings.activeSessions.failedToLoad'));
+      showAlert(t('common.error'), t('settings.securitySettings.activeSessions.failedToLoad'));
     } finally {
       setIsLoading(false);
     }
-  }, [webApi, setIsLoading, setRefreshTokens, t]);
+  }, [webApi, setIsLoading, setRefreshTokens, showAlert, t]);
 
   /**
    * Handle the revoke session action.
    */
   const handleRevokeSession = async (sessionId: string) : Promise<void> => {
-    Alert.alert(
+    showConfirm(
       t('settings.securitySettings.activeSessions.revokeSession'),
       t('settings.securitySettings.activeSessions.revokeConfirmation'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('settings.securitySettings.activeSessions.revoke'),
-          style: 'destructive',
-          /**
-           * Revoke the session and refresh the sessions.
-           */
-          onPress: async () : Promise<void> => {
-            try {
-              await webApi.revokeSession(sessionId);
-              await loadSessions();
+      t('settings.securitySettings.activeSessions.revoke'),
+      async () : Promise<void> => {
+        try {
+          await webApi.revokeSession(sessionId);
+          await loadSessions();
 
-              // Show success toast
-              Toast.show({
-                text1: t('settings.securitySettings.activeSessions.sessionRevoked'),
-                type: 'success',
-                position: 'bottom',
-              });
-            } catch {
-              // Show error toast
-              Toast.show({
-                text1: t('settings.securitySettings.activeSessions.failedToRevoke'),
-                type: 'error',
-                position: 'bottom',
-              });
-            }
-          },
-        },
-      ]
+          // Show success toast
+          Toast.show({
+            text1: t('settings.securitySettings.activeSessions.sessionRevoked'),
+            type: 'success',
+            position: 'bottom',
+          });
+        } catch {
+          // Show error toast
+          Toast.show({
+            text1: t('settings.securitySettings.activeSessions.failedToRevoke'),
+            type: 'error',
+            position: 'bottom',
+          });
+        }
+      },
+      { confirmStyle: 'destructive' }
     );
   };
 

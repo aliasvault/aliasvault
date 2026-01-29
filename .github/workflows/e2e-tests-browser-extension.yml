@@ -1,0 +1,192 @@
+# Browser Extension E2E tests
+name: E2E Tests - Browser Extension
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'apps/browser-extension/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-browser-extension.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'apps/browser-extension/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-browser-extension.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-extension-dotnet-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core/rust
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack --locked
+
+      - name: Build core libraries
+        run: |
+          cd ./core
+          chmod +x build-and-distribute.sh
+          ./build-and-distribute.sh --browser
+
+      - name: Install .NET dependencies
+        working-directory: apps/server
+        run: dotnet workload install wasm-tools
+
+      - name: Build server
+        working-directory: apps/server
+        run: dotnet build
+
+      - name: Build browser extension
+        working-directory: apps/browser-extension
+        run: |
+          npm install
+          npm run build:chrome
+
+      - name: Start dev database
+        run: ./install.sh configure-dev-db start
+
+      - name: Ensure browsers are installed
+        working-directory: apps/server
+        run: pwsh Tests/AliasVault.E2ETests/bin/Debug/net9.0/playwright.ps1 install --with-deps
+
+      - name: Run ExtensionTests with retry
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          command: cd apps/server && dotnet test Tests/AliasVault.E2ETests --no-build --verbosity normal --filter "Category=ExtensionTests"
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: extension-dotnet-test-results
+          path: TestResults-Extension.xml
+
+  browser-extension-playwright-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/browser-extension/package-lock.json
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core/rust
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack --locked
+
+      - name: Build core libraries
+        run: |
+          cd ./core
+          chmod +x build-and-distribute.sh
+          ./build-and-distribute.sh --browser
+
+      - name: Install .NET dependencies
+        working-directory: apps/server
+        run: dotnet workload install wasm-tools
+
+      - name: Build API server
+        working-directory: apps/server
+        run: dotnet build AliasVault.Api
+
+      - name: Start dev database
+        run: ./install.sh configure-dev-db start
+
+      - name: Start API server
+        working-directory: apps/server/AliasVault.Api
+        run: |
+          dotnet run --no-build &
+          # Wait for API to be ready
+          echo "Waiting for API to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5092/v1/Auth/status > /dev/null 2>&1; then
+              echo "API is ready!"
+              break
+            fi
+            echo "Attempt $i: API not ready yet..."
+            sleep 2
+          done
+        env:
+          ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5433;Database=aliasdb_e2e_extension;Username=aliasvault;Password=password"
+          JWT_KEY: "12345678901234567890123456789012"
+          DATA_PROTECTION_CERT_PASS: "Development"
+          PUBLIC_REGISTRATION_ENABLED: "true"
+          ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
+          ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
+
+      - name: Install browser extension dependencies
+        run: npm ci
+        working-directory: apps/browser-extension
+
+      - name: Install Playwright browsers
+        run: npx playwright install chromium --with-deps
+        working-directory: apps/browser-extension
+
+      - name: Build and run E2E tests
+        run: xvfb-run --auto-servernum npm run test:e2e:build
+        working-directory: apps/browser-extension
+        env:
+          ALIASVAULT_API_URL: "http://localhost:5092"
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-extension-playwright-report
+          path: apps/browser-extension/playwright-report/
+          retention-days: 30
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-extension-playwright-test-results
+          path: apps/browser-extension/tests/test-results/
+          retention-days: 30

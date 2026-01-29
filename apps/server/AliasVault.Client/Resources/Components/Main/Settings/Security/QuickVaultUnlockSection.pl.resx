@@ -59,36 +59,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Szybkie odblokowanie sejfu</value>
-    <comment>Title for quick vault unlock section</comment>
+    <value>Odblokowanie kluczem dostępu</value>
+    <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Klucz deszyfrujący sejfu jest zapisywany za pomocą hasła. Oznacza to, że po ponownym załadowaniu strony lub karty AliasVault można zalogować się za pomocą twarzy, odcisku palca lub wbudowanych kluczy bezpieczeństwa przeglądarki. Jeśli chcesz wyłączyć szybkie odblokowywanie sejfu, możesz to zrobić za pomocą poniższego przycisku.</value>
-    <comment>Description when quick unlock is enabled</comment>
+    <value>Twoje hasło główne jest zaszyfrowane za pomocą klucza dostępu PRF i przechowywane lokalnie. Po ponownym załadowaniu strony lub karty AliasVault możesz odblokować swój sejf za pomocą klucza dostępu. Jeśli chcesz wyłączyć odblokowywanie kluczem dostępu, możesz to zrobić klikając poniżej. Nadal będziesz mógł odblokować sejf hasłem głównym.</value>
+    <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Wyłącz szybkie odblokowywanie sejfu</value>
-    <comment>Button to disable quick vault unlock</comment>
+    <value>Wyłącz odblokowywanie kluczem dostępu</value>
+    <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>Domyślnie po ponownym załadowaniu strony lub karty AliasVault pojawi się prośba o ponowne wprowadzenie hasła głównego. Alternatywnie można wybrać użycie klucza dostępu przeglądarki (lub sprzętowego urządzenia uwierzytelniającego, takiego jak YubiKey) zamiast hasła głównego. Umożliwi to odblokowanie sejfu za pomocą rozpoznawania twarzy, odcisku palca lub wbudowanych kluczy bezpieczeństwa przeglądarki. Dotyczy to tylko bieżącego urządzenia i przeglądarki.</value>
-    <comment>Description when quick unlock is disabled</comment>
+    <value>Domyślnie, ponowne załadowanie strony lub karty AliasVault wymaga ponownego wprowadzenia hasła głównego. Dzięki kluczowi dostępu możesz odblokować swój sejf natychmiastowo. Po włączeniu hasło główne jest szyfrowane lokalnie za pomocą rozszerzenia PRF klucza dostępu. Uwaga: klucz dostępu będzie działał tylko na bieżącym urządzeniu i przeglądarce, na której go włączysz.</value>
+    <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>Należy pamiętać, że ta funkcja jest eksperymentalna i może nie działać na wszystkich urządzeniach lub przeglądarkach. Aby funkcja działała, przeglądarka musi obsługiwać WebAuthn i rozszerzenie PRF. W przypadku wystąpienia jakichkolwiek problemów funkcję tę można wyłączyć w dowolnym momencie.</value>
-    <comment>Warning about experimental nature of the feature</comment>
+    <value>Ta funkcja jest obecnie obsługiwana przez rozszerzenie przeglądarki AliasVault oraz aplikację iOS. Obsługa Androida pojawi się wkrótce. Jeśli napotkasz jakiekolwiek problemy, możesz w dowolnym momencie wyłączyć tę funkcję.</value>
+    <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Włącz szybkie odblokowywanie sejfu</value>
-    <comment>Button to enable quick vault unlock</comment>
+    <value>Włącz odblokowywanie kluczem dostępu</value>
+    <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Funkcja szybkiego odblokowania sejfu została pomyślnie włączona. Następnym razem, gdy sejf zostanie zablokowany, będzie można go odblokować za pomocą utworzonego hasła.</value>
-    <comment>Success message when quick unlock is enabled</comment>
+    <value>Odblokowywanie kluczem dostępu zostało pomyślnie włączone. Przy następnym zablokowaniu sejf będziesz mógł odblokować go za pomocą utworzonego klucza.</value>
+    <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Funkcja szybkiego odblokowywania skarbca została pomyślnie wyłączona.</value>
-    <comment>Success message when quick unlock is disabled</comment>
+    <value>Odblokowywanie kluczem dostępu zostało pomyślnie wyłączone.</value>
+    <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
     <value>Twoja obecna przeglądarka nie obsługuje rozszerzenia WebAuthn PRF. Spróbuj ponownie w innej przeglądarce.</value>

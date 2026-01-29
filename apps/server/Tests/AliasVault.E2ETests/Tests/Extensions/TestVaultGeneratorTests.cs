@@ -101,20 +101,20 @@ public class TestVaultGeneratorTests : BrowserExtensionPlaywrightTest
         // Create each credential entry
         foreach (var credential in testCredentials)
         {
-            await CreateCredentialEntry(credential);
+            await CreateItemEntry(credential);
         }
 
-        // Verify all credentials were created
+        // Verify all items were created
         await Page.BringToFrontAsync();
-        await NavigateUsingBlazorRouter("credentials");
-        await WaitForUrlAsync("credentials", "Credentials");
+        await NavigateUsingBlazorRouter("items");
+        await WaitForUrlAsync("items", "Vault");
 
         foreach (var credential in testCredentials)
         {
             var serviceName = credential["service-name"];
             await Page.WaitForSelectorAsync($"text={serviceName}");
             var pageContent = await Page.TextContentAsync("body");
-            Assert.That(pageContent, Does.Contain(serviceName), $"Created credential '{serviceName}' not found in vault");
+            Assert.That(pageContent, Does.Contain(serviceName), $"Created item '{serviceName}' not found in vault");
         }
 
         // Get the user's vault from the database

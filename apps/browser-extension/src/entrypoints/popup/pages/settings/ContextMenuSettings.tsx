@@ -65,7 +65,7 @@ const ContextMenuSettings: React.FC = () => {
                     : 'bg-red-500 hover:bg-red-600 text-white'
                 }`}
               >
-                {isContextMenuEnabled ? t('settings.enabled') : t('settings.disabled')}
+                {isContextMenuEnabled ? t('common.enabled') : t('common.disabled')}
               </button>
             </div>
           </div>

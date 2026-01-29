@@ -1,0 +1,263 @@
+@page "/items/recently-deleted"
+@inherits MainBase
+@inject ItemService ItemService
+@using Microsoft.Extensions.Localization
+@using AliasClientDb
+@using AliasClientDb.Models
+@using AliasVault.Client.Main.Components.Items
+
+<LayoutPageTitle>@Localizer["PageTitle"]</LayoutPageTitle>
+
+<PageHeader
+    BreadcrumbItems="@BreadcrumbItems"
+    Title="@Localizer["PageTitle"]"
+    Description="@Localizer["PageDescription"]">
+    <CustomActions>
+        @if (Items.Count > 0)
+        {
+            <button @onclick="ShowEmptyAllModal" class="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300">
+                @Localizer["EmptyAll"]
+            </button>
+        }
+    </CustomActions>
+</PageHeader>
+
+@if (IsLoading)
+{
+    <LoadingIndicator />
+}
+else
+{
+    <div class="mx-4">
+        @if (Items.Count == 0)
+        {
+            <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <div class="text-gray-500 dark:text-gray-400 space-y-2 mb-10">
+                    <p>@Localizer["NoItems"]</p>
+                    <p class="text-sm">@Localizer["NoItemsDescription"]</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800">
+                <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                    @Localizer["Description"]
+                </p>
+
+                <ul class="space-y-2">
+                    @foreach (var item in Items)
+                    {
+                        var daysRemaining = GetDaysRemaining(item.DeletedAt);
+                        <li data-item="deleted" class="relative">
+                            <div class="bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-3">
+                                <div class="flex items-start gap-3">
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <ItemIcon
+                                                ItemType="@(item.ItemType ?? ItemType.Login)"
+                                                Logo="@item.Logo?.FileData"
+                                                CardNumber="@ItemService.GetFieldValue(item, FieldKey.CardNumber)"
+                                                SizeClass="w-6 h-6" />
+                                            <span data-item-name class="font-medium text-gray-900 dark:text-white truncate">
+                                                @(item.Name ?? Localizer["Untitled"])
+                                            </span>
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                            @if (daysRemaining > 0)
+                                            {
+                                                @string.Format(Localizer["DaysRemaining"], daysRemaining)
+                                            }
+                                            else
+                                            {
+                                                <span class="text-red-500">@Localizer["ExpiringSoon"]</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    <div class="flex items-center gap-2">
+                                        <button data-action="restore" @onclick="() => RestoreItem(item.Id)" class="px-3 py-1 text-sm bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded hover:bg-green-200 dark:hover:bg-green-900/50">
+                                            @Localizer["Restore"]
+                                        </button>
+                                        <button data-action="delete" @onclick="() => ShowDeleteConfirmation(item.Id)" class="px-3 py-1 text-sm bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded hover:bg-red-200 dark:hover:bg-red-900/50">
+                                            @SharedLocalizer["Delete"]
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+}
+
+@* Confirm Delete Modal *@
+@if (ShowDeleteModal)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                @Localizer["ConfirmDeleteTitle"]
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+                @Localizer["ConfirmDeleteMessage"]
+            </p>
+            <div class="flex justify-end gap-3">
+                <button @onclick="CloseDeleteModal" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
+                    @SharedLocalizer["Cancel"]
+                </button>
+                <button data-action="confirm-delete" @onclick="ConfirmDelete" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">
+                    @Localizer["DeletePermanently"]
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@* Confirm Empty All Modal *@
+@if (ShowEmptyAllModalVisible)
+{
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                @Localizer["ConfirmEmptyAllTitle"]
+            </h3>
+            <p class="text-gray-600 dark:text-gray-400 mb-6">
+                @string.Format(Localizer["ConfirmEmptyAllMessage"], Items.Count)
+            </p>
+            <div class="flex justify-end gap-3">
+                <button @onclick="CloseEmptyAllModal" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600">
+                    @SharedLocalizer["Cancel"]
+                </button>
+                <button @onclick="ConfirmEmptyAll" class="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700">
+                    @Localizer["EmptyAll"]
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Items.RecentlyDeleted", "AliasVault.Client");
+
+    private bool IsLoading { get; set; } = true;
+    private List<Item> Items { get; set; } = new();
+    private bool ShowDeleteModal { get; set; }
+    private bool ShowEmptyAllModalVisible { get; set; }
+    private Guid? SelectedItemId { get; set; }
+
+    private const int RetentionDays = 30;
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        BreadcrumbItems.Add(new BreadcrumbItem { Url = "items", DisplayName = SharedLocalizer["Vault"] });
+        BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["PageTitle"] });
+    }
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (firstRender)
+        {
+            await LoadItemsAsync();
+        }
+    }
+
+    private async Task LoadItemsAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        Items = await ItemService.GetRecentlyDeletedAsync();
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    private int GetDaysRemaining(DateTime? deletedAt)
+    {
+        if (deletedAt == null)
+        {
+            return RetentionDays;
+        }
+
+        var expiryDate = deletedAt.Value.AddDays(RetentionDays);
+        var daysRemaining = (expiryDate - DateTime.UtcNow).Days;
+        return Math.Max(0, daysRemaining);
+    }
+
+    private async Task RestoreItem(Guid itemId)
+    {
+        var success = await ItemService.RestoreItemInBackgroundAsync(itemId);
+        if (success)
+        {
+            GlobalNotificationService.AddSuccessMessage(Localizer["RestoreSuccess"]);
+            NavigationManager.NavigateTo("/items");
+        }
+        else
+        {
+            GlobalNotificationService.AddErrorMessage(Localizer["RestoreFailed"], true);
+        }
+    }
+
+    private void ShowDeleteConfirmation(Guid itemId)
+    {
+        SelectedItemId = itemId;
+        ShowDeleteModal = true;
+        StateHasChanged();
+    }
+
+    private void CloseDeleteModal()
+    {
+        ShowDeleteModal = false;
+        SelectedItemId = null;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmDelete()
+    {
+        if (SelectedItemId == null)
+        {
+            return;
+        }
+
+        ShowDeleteModal = false;
+
+        await ItemService.PermanentlyDeleteItemInBackgroundAsync(SelectedItemId.Value);
+        GlobalNotificationService.AddSuccessMessage(Localizer["DeleteSuccess"]);
+
+        SelectedItemId = null;
+        await LoadItemsAsync();
+    }
+
+    private void ShowEmptyAllModal()
+    {
+        ShowEmptyAllModalVisible = true;
+        StateHasChanged();
+    }
+
+    private void CloseEmptyAllModal()
+    {
+        ShowEmptyAllModalVisible = false;
+        StateHasChanged();
+    }
+
+    private async Task ConfirmEmptyAll()
+    {
+        ShowEmptyAllModalVisible = false;
+
+        foreach (var item in Items.ToList())
+        {
+            await ItemService.PermanentlyDeleteItemInBackgroundAsync(item.Id);
+        }
+
+        GlobalNotificationService.AddSuccessMessage(Localizer["EmptyAllSuccess"]);
+        await LoadItemsAsync();
+    }
+}

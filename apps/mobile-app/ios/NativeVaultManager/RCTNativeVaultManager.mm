@@ -89,14 +89,6 @@
     [vaultManager setAutoLockTimeout:timeout resolver:resolve rejecter:reject];
 }
 
-- (void)clearClipboardAfterDelay:(double)delayInSeconds resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager clearClipboardAfterDelay:delayInSeconds resolver:resolve rejecter:reject];
-}
-
-- (void)storeDatabase:(NSString *)base64EncryptedDb resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager storeDatabase:base64EncryptedDb resolver:resolve rejecter:reject];
-}
-
 - (void)storeMetadata:(NSString *)metadata resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager storeMetadata:metadata resolver:resolve rejecter:reject];
 }
@@ -119,18 +111,16 @@
 
 - (void)clearVault:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager clearVault];
+    resolve(nil);
+}
+
+- (void)clearSession:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager clearSession];
+    resolve(nil);
 }
 
 - (void)getEncryptedDatabase:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager getEncryptedDatabase:resolve rejecter:reject];
-}
-
-- (void)getCurrentVaultRevisionNumber:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager getCurrentVaultRevisionNumber:resolve rejecter:reject];
-}
-
-- (void)setCurrentVaultRevisionNumber:(double)revisionNumber resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager setCurrentVaultRevisionNumber:revisionNumber resolver:resolve rejecter:reject];
 }
 
 - (void)deriveKeyFromPassword:(NSString *)password salt:(NSString *)salt encryptionType:(NSString *)encryptionType encryptionSettings:(NSString *)encryptionSettings resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
@@ -141,21 +131,19 @@
     [vaultManager openAutofillSettingsPage:resolve rejecter:reject];
 }
 
+- (void)getAutofillShowSearchText:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getAutofillShowSearchText:resolve rejecter:reject];
+}
+
+- (void)setAutofillShowSearchText:(BOOL)showSearchText resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager setAutofillShowSearchText:showSearchText resolver:resolve rejecter:reject];
+}
+
 - (void)copyToClipboardWithExpiration:(NSString *)text expirationSeconds:(double)expirationSeconds resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager copyToClipboardWithExpiration:text expirationSeconds:expirationSeconds resolver:resolve rejecter:reject];
 }
 
 // MARK: - Android-specific methods (stubs for iOS)
-
-- (void)canScheduleExactAlarms:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    // Only used by Android, return true.
-    resolve(@(YES));
-}
-
-- (void)requestExactAlarmPermission:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    // Only used by Android, return true.
-    resolve(@"Not applicable on iOS");
-}
 
 - (void)isIgnoringBatteryOptimizations:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     // Only used by Android, return true.
@@ -223,6 +211,12 @@
     [vaultManager clearUsername:resolve rejecter:reject];
 }
 
+// MARK: - Server Version Management
+
+- (void)isServerVersionGreaterThanOrEqualTo:(NSString *)targetVersion resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager isServerVersionGreaterThanOrEqualTo:targetVersion resolver:resolve rejecter:reject];
+}
+
 // MARK: - Offline Mode Management
 
 - (void)setOfflineMode:(BOOL)isOffline resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
@@ -233,18 +227,82 @@
     [vaultManager getOfflineMode:resolve rejecter:reject];
 }
 
-// MARK: - Vault Sync and Mutate
+// MARK: - Vault Sync
 
-- (void)isNewVaultVersionAvailable:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager isNewVaultVersionAvailable:resolve rejecter:reject];
+- (void)syncVaultWithServer:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager syncVaultWithServer:resolve rejecter:reject];
 }
 
-- (void)downloadVault:(double)newRevision resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager downloadVault:newRevision resolver:resolve rejecter:reject];
+// MARK: - Sync State Management
+
+- (void)getSyncState:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager getSyncState:resolve rejecter:reject];
 }
 
-- (void)mutateVault:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager mutateVault:resolve rejecter:reject];
+- (void)markVaultClean:(double)mutationSeqAtStart newServerRevision:(double)newServerRevision resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager markVaultClean:(NSInteger)mutationSeqAtStart newServerRevision:(NSInteger)newServerRevision resolver:resolve rejecter:reject];
+}
+
+- (void)resetSyncStateForFreshDownload:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager resetSyncStateForFreshDownload:resolve rejecter:reject];
+}
+
+// MARK: - PIN Unlock
+
+- (void)isPinEnabled:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager isPinEnabled:resolve rejecter:reject];
+}
+
+- (void)removeAndDisablePin:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager removeAndDisablePin:resolve rejecter:reject];
+}
+
+- (void)showPinUnlock:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager showPinUnlock:resolve rejecter:reject];
+}
+
+- (void)showPinSetup:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager showPinSetup:resolve rejecter:reject];
+}
+
+// MARK: - Mobile Login
+
+- (void)encryptDecryptionKeyForMobileLogin:(NSString *)publicKeyJWK resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager encryptDecryptionKeyForMobileLogin:publicKeyJWK resolver:resolve rejecter:reject];
+}
+
+// MARK: - Re-authentication
+
+- (void)authenticateUser:(NSString *)title subtitle:(NSString *)subtitle resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager authenticateUser:title subtitle:subtitle resolver:resolve rejecter:reject];
+}
+
+// MARK: - QR Code Scanner
+
+- (void)scanQRCode:(NSArray<NSString *> *)prefixes statusText:(NSString *)statusText resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager scanQRCode:prefixes statusText:statusText resolver:resolve rejecter:reject];
+}
+
+// MARK: - SRP (Secure Remote Password) Operations
+
+- (void)srpGenerateSalt:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager srpGenerateSalt:resolve rejecter:reject];
+}
+
+- (void)srpDerivePrivateKey:(NSString *)salt identity:(NSString *)identity passwordHash:(NSString *)passwordHash resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager srpDerivePrivateKey:salt identity:identity passwordHash:passwordHash resolver:resolve rejecter:reject];
+}
+
+- (void)srpDeriveVerifier:(NSString *)privateKey resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager srpDeriveVerifier:privateKey resolver:resolve rejecter:reject];
+}
+
+- (void)srpGenerateEphemeral:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager srpGenerateEphemeral:resolve rejecter:reject];
+}
+
+- (void)srpDeriveSession:(NSString *)clientSecret serverPublic:(NSString *)serverPublic salt:(NSString *)salt identity:(NSString *)identity privateKey:(NSString *)privateKey resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager srpDeriveSession:clientSecret serverPublic:serverPublic salt:salt identity:identity privateKey:privateKey resolver:resolve rejecter:reject];
 }
 
 @end

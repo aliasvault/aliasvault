@@ -28,7 +28,25 @@ class VaultCache(
     }
 
     /**
+     * Clear session data only (for forced logout).
+     * Preserves vault data on disk for recovery on next login.
+     * This is used when the user is forcibly logged out (e.g., 401, token revocation)
+     * to allow recovery of unsynced local changes.
+     */
+    fun clearSession() {
+        Log.d(TAG, "Clearing session - preserving vault data for recovery")
+
+        // Clear in-memory data only
+        clearCache()
+
+        // Clear biometric-protected key (user will need to re-authenticate)
+        keystoreProvider.clearKeys()
+    }
+
+    /**
      * Clear all vault data including from persisted storage.
+     * This is used for user-initiated logout where they explicitly
+     * choose to clear all local data.
      */
     fun clearVault() {
         clearCache()

@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NewAliasButtonText" xml:space="preserve">
+    <value>+ Nou</value>
+    <comment>Text for the new item button</comment>
+  </data>
+  <data name="NewAliasButtonShort" xml:space="preserve">
+    <value>+</value>
+    <comment>Short text for the new alias button on mobile</comment>
+  </data>
+  <data name="CreateNewAliasTitle" xml:space="preserve">
+    <value>Creați un alias nou</value>
+    <comment>Title of the create new alias popup</comment>
+  </data>
+  <data name="NameLabel" xml:space="preserve">
+    <value>Nume</value>
+    <comment>Label for name field</comment>
+  </data>
+  <data name="WebsiteUrlLabel" xml:space="preserve">
+    <value>URL Website</value>
+    <comment>Label for website URL field</comment>
+  </data>
+  <data name="NamePlaceholderLogin" xml:space="preserve">
+    <value>Ex. Facebook</value>
+    <comment>Placeholder text for login name field</comment>
+  </data>
+  <data name="NamePlaceholderAlias" xml:space="preserve">
+    <value>Ex. Facebook</value>
+    <comment>Placeholder text for alias name field</comment>
+  </data>
+  <data name="NamePlaceholderCard" xml:space="preserve">
+    <value>Ex. Mastercard</value>
+    <comment>Placeholder text for card name field</comment>
+  </data>
+  <data name="NamePlaceholderNote" xml:space="preserve">
+    <value>Ex. Detalii Pașaport</value>
+    <comment>Placeholder text for note name field</comment>
+  </data>
+  <data name="CreateButton" xml:space="preserve">
+    <value>Creează</value>
+    <comment>Create button text</comment>
+  </data>
+  <data name="ContinueButton" xml:space="preserve">
+    <value>Continuă</value>
+    <comment>Continue button text for non-alias types</comment>
+  </data>
+  <data name="CreateNewLoginTitle" xml:space="preserve">
+    <value>Creați o nouă autentificare</value>
+    <comment>Title for creating a new login item</comment>
+  </data>
+  <data name="CreateNewCreditCardTitle" xml:space="preserve">
+    <value>Creați un card nou</value>
+    <comment>Title for creating a new credit card item</comment>
+  </data>
+  <data name="CreateNewNoteTitle" xml:space="preserve">
+    <value>Creați o notiță nouă</value>
+    <comment>Title for creating a new note item</comment>
+  </data>
+  <data name="TypeLogin" xml:space="preserve">
+    <value>Autentificare</value>
+    <comment>Login item type label</comment>
+  </data>
+  <data name="TypeAlias" xml:space="preserve">
+    <value>Alias</value>
+    <comment>Alias item type label</comment>
+  </data>
+  <data name="TypeCard" xml:space="preserve">
+    <value>Card</value>
+    <comment>Credit card item type label (short)</comment>
+  </data>
+  <data name="TypeNote" xml:space="preserve">
+    <value>Notiță</value>
+    <comment>Note item type label</comment>
+  </data>
+  <data name="CreatingNewAliasMessage" xml:space="preserve">
+    <value>Se creează aliasul nou...</value>
+    <comment>Loading message while creating alias</comment>
+  </data>
+  <data name="CreateItemErrorMessage" xml:space="preserve">
+    <value>Eroare la crearea noului tău element. Reîncearcă din nou (mai târziu) sau folosește deconectarea și reconectarea la contul tău.</value>
+    <comment>Error message when item creation fails</comment>
+  </data>
+  <data name="ItemCreatedSuccessMessage" xml:space="preserve">
+    <value>Element creat cu succes.</value>
+    <comment>Success message when item is created</comment>
+  </data>
+</root>

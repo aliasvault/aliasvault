@@ -4,6 +4,7 @@ import { sendMessage } from 'webext-bridge/popup';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
+import { removeAndDisablePin } from '@/utils/PinUnlockService';
 
 import { storage } from '#imports';
 
@@ -12,7 +13,8 @@ type AuthContextType = {
   username: string | null;
   initializeAuth: () => Promise<boolean>;
   setAuthTokens: (username: string, accessToken: string, refreshToken: string) => Promise<void>;
-  clearAuth: (errorMessage?: string) => Promise<void>;
+  clearAuthUserInitiated: (errorMessage?: string) => Promise<void>;
+  clearAuthForced: (errorMessage?: string) => Promise<void>;
   globalMessage: string | null;
   clearGlobalMessage: () => void;
 }
@@ -64,22 +66,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   /**
-   * Clear authentication data and tokens from storage.
-   * This is called by AppContext after revoking tokens on the server.
+   * Clear authentication data and tokens from storage (forced logout).
+   * This is called when the server forces a logout (401, token revocation, password change).
+   * Preserves the encrypted vault + metadata for recovery on next login.
+   * Keeps username for login page prefill and vault ownership verification.
+   *
+   * This is the base logout function. clearAuthUserInitiated builds on top of this.
+   *
+   * @param errorMessage Optional error message to display on the login page
    */
-  const clearAuth = useCallback(async (errorMessage?: string) : Promise<void> => {
-    // Clear vault from background worker and remove local storage tokens.
-    await sendMessage('CLEAR_VAULT', {}, 'background');
-    await storage.removeItems(['local:username', 'local:accessToken', 'local:refreshToken']);
+  const clearAuthForced = useCallback(async (errorMessage?: string) : Promise<void> => {
+    // Clear session data (tokens + ephemeral data) - vault data is preserved for recovery
+    await sendMessage('CLEAR_SESSION', {}, 'background');
+
+    // Clear in-memory database reference
     dbContext?.clearDatabase();
 
-    // Set local storage global message that will be shown on the login page.
+    // Clear PIN unlock data (if any)
+    try {
+      await removeAndDisablePin();
+    } catch (error) {
+      console.error('Failed to remove PIN data:', error);
+      // Non-fatal error - continue with logout
+    }
+
+    // Set global message that will be shown on the login page
     if (errorMessage) {
       setGlobalMessage(errorMessage);
     }
+  }, [dbContext]);
+
+  /**
+   * Clear authentication data and tokens from storage (user-initiated logout).
+   * This is called when the user explicitly clicks the logout button.
+   *
+   * Builds on clearAuthForced by also clearing vault data and username.
+   *
+   * @param errorMessage Optional error message to display on the login page
+   */
+  const clearAuthUserInitiated = useCallback(async (errorMessage?: string) : Promise<void> => {
+    // First, perform the base forced logout (clears session, in-memory db, PIN)
+    await clearAuthForced(errorMessage);
+
+    // Additionally clear vault data and username (forced logout preserves these for recovery)
+    await sendMessage('CLEAR_VAULT_DATA', {}, 'background');
 
     setUsername(null);
-  }, [dbContext]);
+  }, [clearAuthForced]);
 
   /**
    * Clear global message (called after displaying the message).
@@ -93,10 +126,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     username,
     initializeAuth,
     setAuthTokens,
-    clearAuth,
+    clearAuthUserInitiated,
+    clearAuthForced,
     globalMessage,
     clearGlobalMessage,
-  }), [isInitialized, username, initializeAuth, globalMessage, setAuthTokens, clearAuth, clearGlobalMessage]);
+  }), [isInitialized, username, initializeAuth, globalMessage, setAuthTokens, clearAuthUserInitiated, clearAuthForced, clearGlobalMessage]);
 
   return (
     <AuthContext.Provider value={contextValue}>

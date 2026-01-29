@@ -59,36 +59,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Desbloqueio rápido do cofre</value>
-    <comment>Title for quick vault unlock section</comment>
+    <value>Desbloqueio com Passkey</value>
+    <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>A chave de descriptografia do cofre é salva através de um passkey. Isto significa que quando você atualizar a página ou aba do AliasVault, você poderá fazer login com seu rosto, impressão digital, ou chaves de segurança do navegador. Se você pretende desabilitar o desbloqueio rápido do cofre, você pode fazer isso com o botão abaixo.</value>
-    <comment>Description when quick unlock is enabled</comment>
+    <value>Sua senha mestre é criptografada com passkey PRF e armazenada localmente. Quando você atualiza a página ou aba do AliasVault, você pode desbloquear seu cofre com sua passkey. Se você deseja desabilitar o desbloqueio por passkey, você pode utilizar o botão abaixo. Sua senha mestre ainda funcionará para desbloquear o cofre.</value>
+    <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Desabilitar desbloqueio rápido do cofre</value>
-    <comment>Button to disable quick vault unlock</comment>
+    <value>Desabilitar Desbloqueio com Passkey</value>
+    <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>Por padrão, quando você atualiza a página ou aba do AliasVault, será solicitado que você digite sua senha mestre novamente. Alternativamente, você pode escolher utilizar um passkey do navegador (ou autenticador físico, como a YubiKey), ao invés da sua senha mestre. Isto te permitirá desbloquear seu cofre com seu rosto, impressão digital, ou chaves de segurança do navegador. Isto se aplica apenas ao dispositivo e navegador atuais.</value>
-    <comment>Description when quick unlock is disabled</comment>
+    <value>Por padrão, atualizar a página ou aba do AliasVault requer que você digite sua senha mestre novamente. Com uma passkey, você pode desbloquear seu cofre instantaneamente. Quando habilitado, sua senha mestre é criptografada localmente usando a extensão PRF da passkey. Nota: a passkey funcionará apenas no dispositivo atual e navegador em que você habilitar.</value>
+    <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>Por favor, note que este recurso é experimental e pode não funcionar em todos os dispositivos ou navegadores. Seu navegador deve suportar WebAuthn e a extensão PRF para isto funcionar. Se você tiver algum problema, você pode desabilitar este recurso a qualquer momento.</value>
-    <comment>Warning about experimental nature of the feature</comment>
+    <value>Esta função é suportada pela extensão de navegador e aplicativo iOS do AliasVault. Suporte para Android será adicionado em breve. Se você tiver qualquer problema, você pode desabilitar esta função a qualquer momento.</value>
+    <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Habilitar Desbloqueio Rápido do Cofre</value>
-    <comment>Button to enable quick vault unlock</comment>
+    <value>Habilitar Desbloqueio com Passkey</value>
+    <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Desbloqueio Rápido do Cofre foi habilitado com sucesso. Na próxima vez que seu cofre for bloqueado, você pode desbloqueá-lo com a passkey criada.</value>
-    <comment>Success message when quick unlock is enabled</comment>
+    <value>Desbloqueio com passkey foi habilitado com sucesso. Na próxima vez que seu cofre for bloqueado, você poderá desbloqueá-lo com a passkey criada.</value>
+    <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Desbloqueio Rápido de Cofre foi desabilitado com sucesso.</value>
-    <comment>Success message when quick unlock is disabled</comment>
+    <value>Desbloqueio por Passkey foi desabilitado com sucesso.</value>
+    <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
     <value>Seu navegador atual não tem suporte ao WebAthn com extensão PRF. Por favor, tente novamente em um navegador diferente.</value>

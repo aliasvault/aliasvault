@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import net.aliasvault.app.utils.Helpers
-import net.aliasvault.app.vaultstore.models.Credential
+import net.aliasvault.app.vaultstore.models.Item
 import net.aliasvault.app.vaultstore.models.Passkey
 import net.aliasvault.app.vaultstore.passkey.PasskeyHelper
 import org.json.JSONArray
@@ -94,13 +94,13 @@ class CredentialIdentityStore private constructor(context: Context) {
         try {
             val passkeyIdentities = mutableListOf<PasskeyIdentity>()
 
-            // Get all passkeys with their credentials in a single efficient query
-            // This replaces the N+1 query pattern that was calling getPasskeysForCredential() for each credential
-            val passkeysWithCredentials = vaultStore.getAllPasskeysWithCredentials()
+            // Get all passkeys with their items in a single efficient query
+            // This replaces the N+1 query pattern that was calling getPasskeysForItem() for each item
+            val passkeysWithItems = vaultStore.getAllPasskeysWithItems()
 
-            passkeysWithCredentials.forEach { (passkey, credential) ->
+            passkeysWithItems.forEach { (passkey, item) ->
                 if (!passkey.isDeleted) {
-                    passkeyIdentities.add(createPasskeyIdentity(passkey, credential))
+                    passkeyIdentities.add(createPasskeyIdentity(passkey, item))
                 }
             }
 
@@ -178,11 +178,11 @@ class CredentialIdentityStore private constructor(context: Context) {
     }
 
     /**
-     * Create a PasskeyIdentity from a Passkey and its parent Credential.
+     * Create a PasskeyIdentity from a Passkey and its parent Item.
      */
-    private fun createPasskeyIdentity(passkey: Passkey, credential: Credential): PasskeyIdentity {
-        // Get userName - prefer passkey's userName, fallback to credential's username or email
-        val userName = passkey.userName ?: credential.username ?: credential.alias?.email
+    private fun createPasskeyIdentity(passkey: Passkey, item: Item): PasskeyIdentity {
+        // Get userName - prefer passkey's userName, fallback to item's username or email fields
+        val userName = passkey.userName ?: item.username ?: item.email
 
         // Convert passkey ID to credential ID (base64url-encoded bytes)
         val credentialIdBytes = PasskeyHelper.guidToBytes(passkey.id.toString())

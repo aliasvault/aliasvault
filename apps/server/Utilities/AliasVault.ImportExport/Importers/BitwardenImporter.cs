@@ -37,12 +37,35 @@ public static class BitwardenImporter
                 Username = record.Username,
                 Password = record.Password,
                 TwoFactorSecret = record.OTPAuth,
-                Notes = record.Notes
+                Notes = record.Notes,
+                FolderPath = string.IsNullOrWhiteSpace(record.Folder) ? null : record.Folder,
+                ItemType = MapBitwardenType(record.Type),
             };
 
             credentials.Add(credential);
         }
 
         return credentials;
+    }
+
+    /// <summary>
+    /// Maps Bitwarden type values to ImportedItemType.
+    /// Bitwarden types: login, note, card, identity.
+    /// </summary>
+    private static ImportedItemType? MapBitwardenType(string? bitwardenType)
+    {
+        if (string.IsNullOrWhiteSpace(bitwardenType))
+        {
+            return null;
+        }
+
+        return bitwardenType.ToLowerInvariant() switch
+        {
+            "login" => ImportedItemType.Login,
+            "note" or "securenote" => ImportedItemType.Note,
+            "card" => ImportedItemType.Creditcard,
+            "identity" => ImportedItemType.Alias,
+            _ => ImportedItemType.Login,
+        };
     }
 }

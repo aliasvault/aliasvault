@@ -1,0 +1,158 @@
+@using AliasVault.Client.Main.Components.Layout
+@using AliasVault.Client.Main.Models
+@using Microsoft.Extensions.Localization
+
+@inject FolderService FolderService
+@inject IStringLocalizerFactory LocalizerFactory
+
+<div class="flex items-center gap-2 mt-2">
+    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+    </svg>
+    <button type="button"
+            @onclick="OpenFolderModal"
+            @onclick:preventDefault="true"
+            class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors">
+        @if (SelectedFolderId.HasValue)
+        {
+            var folder = Folders.FirstOrDefault(f => f.Id == SelectedFolderId.Value);
+            <span class="text-primary-600 dark:text-primary-400">@folder?.Name</span>
+        }
+        else
+        {
+            <span>@Localizer["NoFolder"]</span>
+        }
+    </button>
+</div>
+
+@* Folder Selection Modal *@
+<FormModal
+    IsOpen="ShowFolderModal"
+    Title="@Localizer["SelectFolderTitle"]"
+    ShowDefaultFooter="false"
+    MaxWidth="sm"
+    OnClose="CloseFolderModal">
+    <Icon>
+        <svg class="h-6 w-6 text-orange-600 dark:text-orange-400" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/>
+        </svg>
+    </Icon>
+    <ChildContent>
+        <div class="space-y-1 max-h-64 overflow-y-auto -mx-2">
+            @* No Folder Option *@
+            <button type="button"
+                    @onclick="() => SelectFolder(null)"
+                    @onclick:preventDefault="true"
+                    class="@GetFolderButtonClass(null)">
+                <svg class="@GetFolderIconClass(null)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                </svg>
+                <span class="font-medium">&mdash;</span>
+                @if (!SelectedFolderId.HasValue)
+                {
+                    <svg class="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                }
+            </button>
+
+            @* Folder Options *@
+            @foreach (var folder in Folders)
+            {
+                <button type="button"
+                        @onclick="() => SelectFolder(folder.Id)"
+                        @onclick:preventDefault="true"
+                        class="@GetFolderButtonClass(folder.Id)">
+                    <svg class="@GetFolderIconClass(folder.Id)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    <span class="font-medium">@folder.Name</span>
+                    @if (folder.ItemCount > 0)
+                    {
+                        <span class="text-xs text-gray-400 dark:text-gray-500">(@folder.ItemCount)</span>
+                    }
+                    @if (SelectedFolderId == folder.Id)
+                    {
+                        <svg class="w-5 h-5 ml-auto text-primary-600 dark:text-primary-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                        </svg>
+                    }
+                </button>
+            }
+
+            @if (Folders.Count == 0)
+            {
+                <p class="px-3 py-2 text-sm text-gray-500 dark:text-gray-400 italic">
+                    @Localizer["NoFoldersAvailable"]
+                </p>
+            }
+        </div>
+    </ChildContent>
+</FormModal>
+
+@code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Items.FolderSelector", "AliasVault.Client");
+
+    /// <summary>
+    /// Gets or sets the currently selected folder ID.
+    /// </summary>
+    [Parameter]
+    public Guid? SelectedFolderId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the callback when folder selection changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback<Guid?> SelectedFolderIdChanged { get; set; }
+
+    private List<FolderWithCount> Folders { get; set; } = [];
+    private bool ShowFolderModal { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadFoldersAsync();
+    }
+
+    private async Task LoadFoldersAsync()
+    {
+        Folders = await FolderService.GetAllWithCountsAsync();
+    }
+
+    private void OpenFolderModal()
+    {
+        ShowFolderModal = true;
+    }
+
+    private Task CloseFolderModal()
+    {
+        ShowFolderModal = false;
+        return Task.CompletedTask;
+    }
+
+    private async Task SelectFolder(Guid? folderId)
+    {
+        SelectedFolderId = folderId;
+        await SelectedFolderIdChanged.InvokeAsync(folderId);
+        ShowFolderModal = false;
+    }
+
+    private string GetFolderButtonClass(Guid? folderId)
+    {
+        var isSelected = SelectedFolderId == folderId;
+        var baseClass = "w-full px-3 py-2 text-left rounded-md flex items-center gap-3 transition-colors";
+
+        if (isSelected)
+        {
+            return $"{baseClass} bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300";
+        }
+
+        return $"{baseClass} text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700";
+    }
+
+    private string GetFolderIconClass(Guid? folderId)
+    {
+        var isSelected = SelectedFolderId == folderId;
+        return isSelected ? "w-5 h-5 text-primary-500" : "w-5 h-5 text-gray-400";
+    }
+}

@@ -5,446 +5,128 @@ import VaultUtils
 
 /**
  * VaultStore+Passkey
- * Extension to VaultStore for passkey operations
+ * Extension to VaultStore for passkey operations.
+ * Delegates to PasskeyRepository for database operations.
  */
 extension VaultStore {
 
-    // MARK: - Column Expressions
-
-    private static let passkeysTable = Table("Passkeys")
-
-    private static let colId = Expression<String>("Id")
-    private static let colCredentialId = Expression<String>("CredentialId")
-    private static let colRpId = Expression<String>("RpId")
-    private static let colUserHandle = Expression<Blob?>("UserHandle")
-    private static let colPublicKey = Expression<String>("PublicKey")
-    private static let colPrivateKey = Expression<String>("PrivateKey")
-    private static let colPrfKey = Expression<Blob?>("PrfKey")
-    private static let colDisplayName = Expression<String>("DisplayName")
-    private static let colAdditionalData = Expression<Blob?>("AdditionalData")
-    private static let colCreatedAt = Expression<String>("CreatedAt")
-    private static let colUpdatedAt = Expression<String>("UpdatedAt")
-    private static let colIsDeleted = Expression<Int64>("IsDeleted")
-
-    // MARK: - Passkey Queries
+    // MARK: - Passkey Queries (Public API)
 
     /**
      * Get a passkey by its credential ID (the WebAuthn credential ID, not the parent Credential UUID)
      */
     public func getPasskey(byCredentialId credentialId: Data) throws -> Passkey? {
-        guard let dbConn = dbConnection else {
-            throw VaultStoreError.vaultNotUnlocked
-        }
-
-        // The Passkeys.Id column is a string UUID (not a blob), so we need to convert the credentialId bytes to a UUID string.
-        // Use PasskeyHelper to convert the credentialId (Data) to a UUID string for lookup.
+        // Convert credentialId bytes to a UUID string for lookup
         guard let credentialIdString = try? PasskeyHelper.bytesToGuid(credentialId) else {
             print("VaultStore+Passkey: Failed to convert credentialId bytes to UUID string")
             return nil
         }
-        let query = Self.passkeysTable
-            .filter(Self.colId == credentialIdString)
-            .filter(Self.colIsDeleted == 0)
-            .limit(1)
-
-        for row in try dbConn.prepare(query) {
-            if let passkey = try parsePasskeyRow(row) {
-                return passkey
-            }
-        }
-
-        return nil
+        return try passkeyRepository.getById(credentialIdString)
     }
 
     /**
-     * Get all passkeys for a credential
+     * Get all passkeys for an item (new model)
+     */
+    public func getPasskeys(forItemId itemId: UUID) throws -> [Passkey] {
+        return try passkeyRepository.getByItemId(itemId.uuidString.uppercased())
+    }
+
+    /**
+     * Get all passkeys for a credential (legacy alias for backwards compatibility)
      */
     public func getPasskeys(forCredentialId credentialId: UUID) throws -> [Passkey] {
-        guard let dbConn = dbConnection else {
-            throw VaultStoreError.vaultNotUnlocked
-        }
-
-        let query = Self.passkeysTable
-            .filter(Self.colCredentialId == credentialId.uuidString)
-            .filter(Self.colIsDeleted == 0)
-            .order(Self.colCreatedAt.desc)
-
-        var passkeys: [Passkey] = []
-        for row in try dbConn.prepare(query) {
-            if let passkey = try parsePasskeyRow(row) {
-                passkeys.append(passkey)
-            }
-        }
-
-        return passkeys
+        return try getPasskeys(forItemId: credentialId)
     }
 
     /**
      * Get all passkeys for a specific relying party identifier (RP ID)
      */
     public func getPasskeys(forRpId rpId: String) throws -> [Passkey] {
-        guard let dbConn = dbConnection else {
-            throw VaultStoreError.vaultNotUnlocked
-        }
-
-        let query = Self.passkeysTable
-            .filter(Self.colRpId == rpId)
-            .filter(Self.colIsDeleted == 0)
-            .order(Self.colCreatedAt.desc)
-
-        var passkeys: [Passkey] = []
-        for row in try dbConn.prepare(query) {
-            if let passkey = try parsePasskeyRow(row) {
-                passkeys.append(passkey)
-            }
-        }
-
-        return passkeys
+        return try passkeyRepository.getByRpId(rpId)
     }
 
     /**
-     * Get passkeys with credential info for a specific rpId and optionally username
+     * Get passkeys with item info for a specific rpId and optionally username
      * Used for finding existing passkeys that might be replaced during registration
      */
     public func getPasskeysWithCredentialInfo(forRpId rpId: String, userName: String? = nil, userId: Data? = nil) throws -> [(passkey: Passkey, serviceName: String?, username: String?)] {
-        guard let dbConn = dbConnection else {
-            throw VaultStoreError.vaultNotUnlocked
-        }
-
-        // Join passkeys with credentials and services to get display info
-        let passkeysTable = Table("Passkeys")
-        let credentialsTable = Table("Credentials")
-        let servicesTable = Table("Services")
-
-        let query = passkeysTable
-            .select(passkeysTable[*], credentialsTable[Expression<String?>("Username")], servicesTable[Expression<String?>("Name")])
-            .join(credentialsTable, on: passkeysTable[Expression<String>("CredentialId")] == credentialsTable[Expression<String>("Id")])
-            .join(servicesTable, on: credentialsTable[Expression<String>("ServiceId")] == servicesTable[Expression<String>("Id")])
-            .filter(passkeysTable[Expression<String>("RpId")] == rpId)
-            .filter(passkeysTable[Expression<Int64>("IsDeleted")] == 0)
-            .filter(credentialsTable[Expression<Int64>("IsDeleted")] == 0)
-            .order(passkeysTable[Expression<String>("CreatedAt")].desc)
-
-        var results: [(passkey: Passkey, serviceName: String?, username: String?)] = []
-
-        for row in try dbConn.prepare(query) {
-            if let passkey = try parsePasskeyRow(row) {
-                let credUsername = try? row.get(Expression<String?>("Username"))
-                let serviceName = try? row.get(Expression<String?>("Name"))
-
-                // Filter by username or userId if provided
-                var matches = true
-                if let userName = userName {
-                    if credUsername != userName {
-                        matches = false
-                    }
-                }
-                if let userId = userId {
-                    if passkey.userHandle != userId {
-                        matches = false
-                    }
-                }
-
-                if matches {
-                    results.append((passkey: passkey, serviceName: serviceName, username: credUsername))
-                }
-            }
-        }
-
-        return results
-    }
-
-    // MARK: - Helper Methods
-
-    /**
-     * Parse a passkey row from database query using type-safe column expressions
-     */
-    private func parsePasskeyRow(_ row: Row) throws -> Passkey? {
-        // Extract required fields using column expressions
-        let idString = try row.get(Self.colId)
-        let parentCredentialIdString = try row.get(Self.colCredentialId)
-        let rpId = try row.get(Self.colRpId)
-        let userHandleBlob = try? row.get(Self.colUserHandle)
-        let publicKeyString = try row.get(Self.colPublicKey)
-        let privateKeyString = try row.get(Self.colPrivateKey)
-        let displayName = try row.get(Self.colDisplayName)
-        let createdAtString = try row.get(Self.colCreatedAt)
-        let updatedAtString = try row.get(Self.colUpdatedAt)
-        let isDeletedInt64 = try row.get(Self.colIsDeleted)
-
-        // Parse UUIDs
-        guard let id = UUID(uuidString: idString),
-              let parentCredentialId = UUID(uuidString: parentCredentialIdString) else {
-            print("VaultStore+Passkey: Invalid UUID in passkey row - id=\(idString), credentialId=\(parentCredentialIdString)")
-            return nil
-        }
-
-        // Parse dates
-        guard let createdAt = DateHelpers.parseDateString(createdAtString),
-              let updatedAt = DateHelpers.parseDateString(updatedAtString) else {
-            print("VaultStore+Passkey: Invalid date in passkey row - created=\(createdAtString), updated=\(updatedAtString)")
-            return nil
-        }
-
-        // Parse public/private keys
-        guard let publicKeyData = publicKeyString.data(using: .utf8),
-              let privateKeyData = privateKeyString.data(using: .utf8) else {
-            print("VaultStore+Passkey: Invalid key data in passkey row")
-            return nil
-        }
-
-        // Parse userHandle (stored as blob - raw bytes)
-        let userHandle: Data?
-        if let userHandleBlob = userHandleBlob {
-            userHandle = Data(userHandleBlob.bytes)
-        } else {
-            userHandle = nil
-        }
-
-        // Parse PrfKey (stored as blob)
-        let prfKey: Data?
-        if let prfKeyBlob = try? row.get(Self.colPrfKey) {
-            prfKey = Data(prfKeyBlob.bytes)
-        } else {
-            prfKey = nil
-        }
-
-        let isDeleted = isDeletedInt64 == 1
-
-        return Passkey(
-            id: id,
-            parentCredentialId: parentCredentialId,  // Parent Credential UUID
-            rpId: rpId,
-            userHandle: userHandle,
-            userName: nil,  // userName not stored in DB, derived from parent credential
-            publicKey: publicKeyData,
-            privateKey: privateKeyData,
-            prfKey: prfKey,
-            displayName: displayName,
-            createdAt: createdAt,
-            updatedAt: updatedAt,
-            isDeleted: isDeleted
-        )
-    }
-
-    // MARK: - Passkey Storage
-
-    /**
-     * Format a date for database insertion
-     * Format: yyyy-MM-dd HH:mm:ss
-     */
-    private func formatDateForDatabase(_ date: Date) -> String {
-        return DateHelpers.toStandardFormat(date)
+        let results = try passkeyRepository.getWithItemInfo(forRpId: rpId, userName: userName, userId: userId)
+        return results.map { (passkey: $0.passkey, serviceName: $0.serviceName, username: $0.username) }
     }
 
     /**
-     * Create a credential with a passkey (proof of concept for passkey registration)
-     * This creates a minimal credential record and links the passkey to it
+     * Get Items that match an rpId but don't have a passkey yet.
+     * Used for finding existing credentials that could have a passkey added to them.
+     * Uses the Rust credential matcher for consistent cross-platform matching logic.
      */
-    public func createCredentialWithPasskey(
+    public func getItemsWithoutPasskey(forRpId rpId: String, userName: String? = nil) throws -> [ItemWithCredentialInfoData] {
+        // Get all items without passkeys
+        let allItems = try passkeyRepository.getAllItemsWithoutPasskey()
+
+        // Use Rust item matcher for intelligent filtering
+        var matchedItems = RustItemMatcher.filterItemsWithData(allItems, rpId: rpId)
+
+        // Apply optional username filter
+        if let userName = userName {
+            matchedItems = matchedItems.filter { $0.username == userName }
+        }
+
+        return matchedItems
+    }
+
+    // MARK: - Passkey Storage (Public API)
+
+    /**
+     * Create an item with a passkey (for passkey registration)
+     * This creates an Item record with field values and links the passkey to it
+     */
+    @discardableResult
+    public func createItemWithPasskey(
         rpId: String,
         userName: String?,
         displayName: String,
         passkey: Passkey,
         logo: Data? = nil
-    ) throws -> Credential {
-        guard let dbConn = dbConnection else {
-            throw VaultStoreError.vaultNotUnlocked
+    ) throws -> UUID {
+        let itemIdString = try passkeyRepository.createItemWithPasskey(
+            rpId: rpId,
+            userName: userName,
+            displayName: displayName,
+            passkey: passkey,
+            logo: logo
+        )
+
+        // Return the created item ID
+        guard let itemId = UUID(uuidString: itemIdString) else {
+            throw VaultStoreError.databaseError("Invalid item ID returned")
         }
 
-        let credentialId = passkey.parentCredentialId
-        let now = Date()
-        let timestamp = formatDateForDatabase(now)
-
-        // Create a minimal service for the RP
-        let serviceId = UUID()
-        let serviceTable = Table("Services")
-
-        // Convert logo Data to SQLite Blob if present
-        let logoBlob = logo.map { Blob(bytes: [UInt8]($0)) }
-
-        let serviceInsert = serviceTable.insert(
-            Expression<String>("Id") <- serviceId.uuidString,
-            Expression<String?>("Name") <- displayName,  // Use displayName as the service name (title)
-            Expression<String?>("Url") <- "https://\(rpId)",
-            Expression<SQLite.Blob?>("Logo") <- logoBlob,
-            Expression<String>("CreatedAt") <- timestamp,
-            Expression<String>("UpdatedAt") <- timestamp,
-            Expression<Int64>("IsDeleted") <- 0
-        )
-        try dbConn.run(serviceInsert)
-
-        // Create a minimal alias with empty fields and default birthdate
-        // TODO: once birthdate is made nullable in datamodel refactor, remove this.
-        let aliasId = UUID()
-        let aliasesTable = Table("Aliases")
-        let aliasInsert = aliasesTable.insert(
-            Expression<String>("Id") <- aliasId.uuidString,
-            Expression<String?>("FirstName") <- "",
-            Expression<String?>("LastName") <- "",
-            Expression<String?>("NickName") <- "",
-            Expression<String?>("BirthDate") <- "0001-01-01 00:00:00",
-            Expression<String?>("Gender") <- "",
-            Expression<String?>("Email") <- "",
-            Expression<String>("CreatedAt") <- timestamp,
-            Expression<String>("UpdatedAt") <- timestamp,
-            Expression<Int64>("IsDeleted") <- 0
-        )
-        try dbConn.run(aliasInsert)
-
-        // Create the credential with the alias
-        let credentialsTable = Table("Credentials")
-        let credentialInsert = credentialsTable.insert(
-            Expression<String>("Id") <- credentialId.uuidString,
-            Expression<String>("ServiceId") <- serviceId.uuidString,
-            Expression<String?>("AliasId") <- aliasId.uuidString,
-            Expression<String?>("Username") <- userName,
-            Expression<String?>("Notes") <- nil,
-            Expression<String>("CreatedAt") <- timestamp,
-            Expression<String>("UpdatedAt") <- timestamp,
-            Expression<Int64>("IsDeleted") <- 0
-        )
-        try dbConn.run(credentialInsert)
-
-        // Insert the passkey
-        try insertPasskey(passkey)
-
-        // Return the credential
-        let service = Service(
-            id: serviceId,
-            name: rpId,
-            url: "https://\(rpId)",
-            logo: logo,
-            createdAt: now,
-            updatedAt: now,
-            isDeleted: false
-        )
-
-        // Create default birthdate (0001-01-01)
-        var defaultBirthDateComponents = DateComponents()
-        defaultBirthDateComponents.year = 1
-        defaultBirthDateComponents.month = 1
-        defaultBirthDateComponents.day = 1
-        let defaultBirthDate = Calendar(identifier: .gregorian).date(from: defaultBirthDateComponents)!
-
-        let alias = Alias(
-            id: aliasId,
-            gender: "",
-            firstName: "",
-            lastName: "",
-            nickName: "",
-            birthDate: defaultBirthDate,
-            email: "",
-            createdAt: now,
-            updatedAt: now,
-            isDeleted: false
-        )
-
-        return Credential(
-            id: credentialId,
-            alias: alias,
-            service: service,
-            username: userName,
-            notes: nil,
-            password: nil,
-            passkeys: [passkey],
-            createdAt: now,
-            updatedAt: now,
-            isDeleted: false
-        )
+        return itemId
     }
 
     /**
      * Insert a new passkey into the database
      */
     public func insertPasskey(_ passkey: Passkey) throws {
-        guard let dbConn = dbConnection else {
-            throw VaultStoreError.vaultNotUnlocked
-        }
-
-        let insert = Self.passkeysTable.insert(
-            Self.colId <- passkey.id.uuidString,
-            Self.colCredentialId <- passkey.parentCredentialId.uuidString,
-            Self.colRpId <- passkey.rpId,
-            Self.colUserHandle <- passkey.userHandle.map { Blob(bytes: [UInt8]($0)) },
-            Self.colPublicKey <- String(data: passkey.publicKey, encoding: .utf8)!,
-            Self.colPrivateKey <- String(data: passkey.privateKey, encoding: .utf8)!,
-            Self.colPrfKey <- passkey.prfKey.map { Blob(bytes: [UInt8]($0)) },
-            Self.colDisplayName <- passkey.displayName,
-            Self.colCreatedAt <- formatDateForDatabase(passkey.createdAt),
-            Self.colUpdatedAt <- formatDateForDatabase(passkey.updatedAt),
-            Self.colIsDeleted <- Int64(passkey.isDeleted ? 1 : 0)
-        )
-
-        try dbConn.run(insert)
+        try passkeyRepository.create(passkey)
     }
 
     /**
      * Replace an existing passkey with a new one
-     * This deletes the old passkey and creates a new one with the same credential
+     * This deletes the old passkey and creates a new one with the same item
      */
     public func replacePasskey(oldPasskeyId: UUID, newPasskey: Passkey, displayName: String, logo: Data? = nil) throws {
-        guard let dbConn = dbConnection else {
-            throw VaultStoreError.vaultNotUnlocked
+        // Get the old passkey to find its item
+        guard let oldPasskey = try passkeyRepository.getById(oldPasskeyId.uuidString.uppercased()) else {
+            throw VaultStoreError.passkeyNotFound
         }
 
-        // Get the old passkey to find its credential
-        let oldPasskeyQuery = Self.passkeysTable
-            .filter(Self.colId == oldPasskeyId.uuidString)
-            .filter(Self.colIsDeleted == 0)
-            .limit(1)
+        let itemId = oldPasskey.parentItemId
 
-        guard let oldPasskeyRow = try dbConn.pluck(oldPasskeyQuery),
-              let oldPasskey = try parsePasskeyRow(oldPasskeyRow) else {
-            throw VaultStoreError.databaseError("Passkey not found")
-        }
-
-        let credentialId = oldPasskey.parentCredentialId
-        let now = Date()
-        let timestamp = formatDateForDatabase(now)
-
-        // Update the credential's service with new logo if provided
-        if let logo = logo {
-            let logoBlob = Blob(bytes: [UInt8](logo))
-            let credentialsTable = Table("Credentials")
-            let servicesTable = Table("Services")
-
-            // Get the service ID from the credential
-            let credQuery = credentialsTable
-                .filter(Expression<String>("Id") == credentialId.uuidString)
-                .limit(1)
-
-            if let credRow = try dbConn.pluck(credQuery) {
-                let serviceId = try credRow.get(Expression<String>("ServiceId"))
-
-                // Update the service with new logo and displayName
-                let serviceUpdate = servicesTable
-                    .filter(Expression<String>("Id") == serviceId)
-                    .update(
-                        Expression<SQLite.Blob?>("Logo") <- logoBlob,
-                        Expression<String?>("Name") <- displayName,
-                        Expression<String>("UpdatedAt") <- timestamp
-                    )
-
-                try dbConn.run(serviceUpdate)
-            }
-        }
-
-        // Delete the old passkey
-        let deleteQuery = Self.passkeysTable
-            .filter(Self.colId == oldPasskeyId.uuidString)
-            .update(
-                Self.colIsDeleted <- 1,
-                Self.colUpdatedAt <- timestamp
-            )
-
-        try dbConn.run(deleteQuery)
-
-        // Create the new passkey with the same credential ID
-        var updatedPasskey = newPasskey
-        updatedPasskey = Passkey(
+        // Create the new passkey with the same item ID
+        let updatedPasskey = Passkey(
             id: newPasskey.id,
-            parentCredentialId: credentialId,  // Use the old credential ID
+            parentItemId: itemId,  // Use the old item ID
             rpId: newPasskey.rpId,
             userHandle: newPasskey.userHandle,
             userName: newPasskey.userName,
@@ -452,12 +134,52 @@ extension VaultStore {
             privateKey: newPasskey.privateKey,
             prfKey: newPasskey.prfKey,
             displayName: displayName,
-            createdAt: now,
-            updatedAt: now,
+            createdAt: Date(),
+            updatedAt: Date(),
             isDeleted: false
         )
 
-        try insertPasskey(updatedPasskey)
+        // Replace the passkey (handles logo update in same transaction)
+        try passkeyRepository.replace(
+            oldPasskeyId: oldPasskeyId.uuidString.uppercased(),
+            with: updatedPasskey,
+            displayName: displayName,
+            logo: logo
+        )
+    }
+
+    /**
+     * Add a passkey to an existing Item (merge passkey into existing credential).
+     * @param itemId The UUID of the existing Item to add the passkey to.
+     * @param passkey The passkey to add.
+     * @param logo Optional logo to update/add.
+     */
+    public func addPasskeyToExistingItem(
+        itemId: UUID,
+        passkey: Passkey,
+        logo: Data? = nil
+    ) throws {
+        // Create the passkey with the existing item ID
+        let passkeyWithItemId = Passkey(
+            id: passkey.id,
+            parentItemId: itemId,  // Link to the existing item
+            rpId: passkey.rpId,
+            userHandle: passkey.userHandle,
+            userName: passkey.userName,
+            publicKey: passkey.publicKey,
+            privateKey: passkey.privateKey,
+            prfKey: passkey.prfKey,
+            displayName: passkey.displayName,
+            createdAt: Date(),
+            updatedAt: Date(),
+            isDeleted: false
+        )
+
+        try passkeyRepository.addPasskeyToExistingItem(
+            itemId: itemId,
+            passkey: passkeyWithItemId,
+            logo: logo
+        )
     }
 }
 
@@ -467,6 +189,6 @@ extension VaultStore {
 public enum VaultStoreError: Error {
     case vaultNotUnlocked
     case passkeyNotFound
-    case credentialNotFound
+    case itemNotFound
     case databaseError(String)
 }

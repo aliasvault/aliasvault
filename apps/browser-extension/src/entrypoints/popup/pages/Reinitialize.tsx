@@ -74,8 +74,8 @@ const Reinitialize: React.FC = () => {
       sendMessage('CLEAR_PERSISTED_FORM_VALUES', null, 'background'),
     ]);
 
-    // Navigate to the credentials page as default entry page
-    navigate('/credentials', { replace: true });
+    // Navigate to the items page as default entry page
+    navigate('/items', { replace: true });
   }, [navigate]);
 
   useEffect(() => {
@@ -109,42 +109,38 @@ const Reinitialize: React.FC = () => {
         // Only perform vault sync once during initialization
         hasInitialized.current = true;
 
-        // Perform vault sync and restore state
+        /*
+         * Navigate immediately using local vault - don't block on sync.
+         * This ensures the UI is responsive even if server is slow.
+         */
+        setIsInitialLoading(false);
+        if (inlineUnlock) {
+          navigate('/unlock-success', { replace: true });
+        } else if (pendingRedirectUrl) {
+          navigate(pendingRedirectUrl, { replace: true });
+        } else {
+          await restoreLastPage();
+        }
+
+        /*
+         * Run sync in background. If server has newer vault, useVaultSync will:
+         * 1. Download and merge (if needed)
+         * 2. Call dbContext.loadDatabase() which updates sqliteClient
+         * 3. ItemsList reacts to sqliteClient changes and auto-refreshes
+         */
         syncVault({
-          initialSync: false,
           /**
-           * Handle successful vault sync.
-           */
-          onSuccess: async () => {
-            // After successful sync, try to restore last page or go to credentials
-            if (inlineUnlock) {
-              setIsInitialLoading(false);
-              navigate('/unlock-success', { replace: true });
-            } else if (pendingRedirectUrl) {
-              // If there's a pending redirect URL in storage, use it (most reliable)
-              setIsInitialLoading(false);
-              navigate(pendingRedirectUrl, { replace: true });
-            } else {
-              await restoreLastPage();
-            }
-          },
-          /**
-           * Handle vault sync error.
-           * @param error Error message
-           */
-          onError: (error) => {
-            console.error('Vault sync error during initialization:', error);
-            // Even if sync fails, continue with initialization
-            restoreLastPage().then(() => {
-              setIsInitialLoading(false);
-            });
-          },
-          /**
-           * Handle upgrade required.
+           * Handle upgrade required - redirect to upgrade page.
            */
           onUpgradeRequired: () => {
             navigate('/upgrade', { replace: true });
-            setIsInitialLoading(false);
+          },
+          /**
+           * Handle sync errors silently - user already has local vault.
+           * @param error Error message
+           */
+          onError: (error) => {
+            console.error('Background vault sync error:', error);
           }
         });
       } else {

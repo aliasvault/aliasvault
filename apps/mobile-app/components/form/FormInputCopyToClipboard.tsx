@@ -15,6 +15,8 @@ type FormInputCopyToClipboardProps = {
   label: string;
   value: string | undefined;
   type?: 'text' | 'password';
+  /** Optional element to render next to the label (e.g., history button) */
+  labelSuffix?: React.ReactNode;
 }
 
 /**
@@ -24,6 +26,7 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
   label,
   value,
   type = 'text',
+  labelSuffix,
 }) : React.ReactNode => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const colors = useColors();
@@ -172,6 +175,10 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
       fontSize: 12,
       marginBottom: 4,
     },
+    labelRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+    },
     value: {
       color: colors.text,
       fontSize: 16,
@@ -202,9 +209,14 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
       )}
       <View style={styles.inputContent}>
         <View style={styles.valueContainer}>
-          <Text style={styles.label}>
-            {label}
-          </Text>
+          {label && (
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>
+                {label}
+              </Text>
+              {labelSuffix}
+            </View>
+          )}
           <Text style={styles.value} numberOfLines={1} ellipsizeMode="tail">
             {displayValue}
           </Text>

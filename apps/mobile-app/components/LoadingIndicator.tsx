@@ -4,13 +4,13 @@ import { StyleSheet, View, Text, Animated, useColorScheme } from 'react-native';
 import { useColors } from '@/hooks/useColorScheme';
 
 type LoadingIndicatorProps = {
-  status: string;
+  status?: string | null;
 };
 
 /**
  * Loading indicator component.
  */
-export default function LoadingIndicator({ status }: LoadingIndicatorProps): React.ReactNode {
+export default function LoadingIndicator({ status = '' }: LoadingIndicatorProps): React.ReactNode {
   const colors = useColors();
   const dot1Anim = useRef(new Animated.Value(0)).current;
   const dot2Anim = useRef(new Animated.Value(0)).current;
@@ -89,8 +89,9 @@ export default function LoadingIndicator({ status }: LoadingIndicatorProps): Rea
    * If the status ends with a pipe character (|), don't show any dots
    * This provides an explicit way to disable the loading dots animation
    */
-  const statusTrimmed = status.endsWith('|') ? status.slice(0, -1) : status;
-  const shouldShowDots = !status.endsWith('|');
+  const statusText = status || '';
+  const statusTrimmed = statusText.endsWith('|') ? statusText.slice(0, -1) : statusText;
+  const shouldShowDots = statusText.length > 0 && !statusText.endsWith('|');
 
   const backgroundColor = colorScheme === 'dark' ? 'transparent' : '#fff';
   const shadowColor = '#000';

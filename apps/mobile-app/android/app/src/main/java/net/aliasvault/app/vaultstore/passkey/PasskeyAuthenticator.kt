@@ -37,7 +37,7 @@ import javax.crypto.spec.SecretKeySpec
  */
 object PasskeyAuthenticator {
 
-    /** AliasVault AAGUID: a11a5vau-9f32-4b8c-8c5d-2f7d13e8c942. */
+    /** AliasVault AAGUID: a11a5faa-9f32-4b8c-8c5d-2f7d13e8c942. */
     private val AAGUID = byteArrayOf(
         0xa1.toByte(), 0x1a, 0x5f, 0xaa.toByte(), 0x9f.toByte(), 0x32, 0x4b, 0x8c.toByte(),
         0x8c.toByte(), 0x5d, 0x2f, 0x7d, 0x13, 0xe8.toByte(), 0xc9.toByte(), 0x42,

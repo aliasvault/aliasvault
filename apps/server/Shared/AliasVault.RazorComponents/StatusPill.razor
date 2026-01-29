@@ -23,9 +23,32 @@
     [Parameter]
     public string TextFalse { get; set; } = "Disabled";
 
-    private string PillClass => Enabled
-        ? "bg-green-100 text-green-800"
-        : "bg-red-100 text-red-800";
+    /// <summary>
+    /// Optional color override: "green", "yellow", "red". If not specified, uses Enabled parameter.
+    /// </summary>
+    [Parameter]
+    public string? Color { get; set; }
+
+    private string PillClass
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(Color))
+            {
+                return Color.ToLower() switch
+                {
+                    "green" => "bg-green-100 text-green-800",
+                    "yellow" => "bg-yellow-100 text-yellow-800",
+                    "red" => "bg-red-100 text-red-800",
+                    _ => "bg-gray-100 text-gray-800"
+                };
+            }
+
+            return Enabled
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800";
+        }
+    }
 
     private string StatusText => Enabled ? TextTrue : TextFalse;
 }

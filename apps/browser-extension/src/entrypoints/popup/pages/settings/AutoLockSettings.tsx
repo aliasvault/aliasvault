@@ -50,8 +50,8 @@ const AutoLockSettings: React.FC = () => {
               <div className="flex items-center mb-2">
                 <p className="font-medium text-gray-900 dark:text-white">{t('settings.autoLockTimeout')}</p>
                 <HelpModal
-                  titleKey="settings.autoLockTimeout"
-                  contentKey="settings.autoLockTimeoutHelp"
+                  title={t('settings.autoLockTimeout')}
+                  content={t('settings.autoLockTimeoutHelp')}
                   className="ml-2"
                 />
               </div>

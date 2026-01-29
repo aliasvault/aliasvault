@@ -12,5 +12,7 @@
   <true/>
   <key>compileBitcode</key>
   <true/>
+  <key>manageAppVersionAndBuildNumber</key>
+  <false/>
 </dict>
 </plist>

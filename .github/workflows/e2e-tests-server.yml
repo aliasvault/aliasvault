@@ -1,0 +1,124 @@
+# Server E2E tests (Admin and Client/Blazor WASM)
+name: E2E Tests - Server
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'apps/server/**'
+      - 'core/**'
+      - 'install.sh'
+      - '.github/workflows/e2e-tests-server.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'apps/server/**'
+      - 'core/**'
+      - 'install.sh'
+      - '.github/workflows/e2e-tests-server.yml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  admin-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Install dependencies
+        working-directory: apps/server
+        run: dotnet workload install wasm-tools
+
+      - name: Build
+        working-directory: apps/server
+        run: dotnet build
+
+      - name: Start dev database
+        run: ./install.sh configure-dev-db start
+
+      - name: Ensure browsers are installed
+        working-directory: apps/server
+        run: pwsh Tests/AliasVault.E2ETests/bin/Debug/net9.0/playwright.ps1 install --with-deps
+
+      - name: Run AdminTests with retry
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          command: cd apps/server && dotnet test Tests/AliasVault.E2ETests --no-build --verbosity normal --filter "Category=AdminTests"
+
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-test-results
+          path: TestResults-Admin.xml
+
+  client-tests:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core/rust
+
+      - name: Install wasm-pack
+        run: cargo install wasm-pack --locked
+
+      - name: Build core libraries
+        run: |
+          cd ./core
+          chmod +x build-and-distribute.sh
+          ./build-and-distribute.sh --browser
+
+      - name: Install dependencies
+        working-directory: apps/server
+        run: dotnet workload install wasm-tools
+
+      - name: Build
+        working-directory: apps/server
+        run: dotnet build
+
+      - name: Start dev database
+        run: ./install.sh configure-dev-db start
+
+      - name: Ensure browsers are installed
+        working-directory: apps/server
+        run: pwsh Tests/AliasVault.E2ETests/bin/Debug/net9.0/playwright.ps1 install --with-deps
+
+      - name: Run ClientTests with retry (Shard ${{ matrix.shard }})
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          command: cd apps/server && dotnet test Tests/AliasVault.E2ETests --no-build --verbosity normal --filter "FullyQualifiedName~.E2ETests.Tests.Client.Shard${{ matrix.shard }}."

@@ -126,6 +126,10 @@
     <value>Скасувати</value>
     <comment>Button text for canceling an action</comment>
   </data>
+  <data name="Generate" xml:space="preserve">
+    <value>Generate</value>
+    <comment>Button tooltip for generating a random value</comment>
+  </data>
   <data name="Delete" xml:space="preserve">
     <value>Видалити</value>
     <comment>Button text for deleting an item</comment>
@@ -212,6 +216,10 @@
     <value>Сталась помилка. Спробуйте ще раз.</value>
     <comment>Generic error message</comment>
   </data>
+  <data name="ErrorUnknown" xml:space="preserve">
+    <value>Сталася невідома помилка. Будь ласка, спробуйте ще раз.</value>
+    <comment>Generic unknown error message</comment>
+  </data>
   <data name="ErrorValidation" xml:space="preserve">
     <value>Виправте наведені нижче помилки.</value>
     <comment>Validation error message</comment>
@@ -284,12 +292,16 @@
     <comment>Error message when password is required</comment>
   </data>
   <!-- General UI text -->
+  <data name="Or" xml:space="preserve">
+    <value>або</value>
+    <comment>Divider text between options</comment>
+  </data>
   <data name="LockVault" xml:space="preserve">
-    <value>Lock vault</value>
+    <value>Заблокувати сховище</value>
     <comment>Tooltip text for lock vault button</comment>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Home</value>
+    <value>Головна</value>
     <comment>Home breadcrumb text</comment>
   </data>
   <data name="Notes" xml:space="preserve">
@@ -297,7 +309,15 @@
     <comment>Notes section heading</comment>
   </data>
   <data name="SyncVaultData" xml:space="preserve">
-    <value>Sync vault data</value>
+    <value>Синхронізувати дані сховища</value>
     <comment>Tooltip text for sync vault data button</comment>
+  </data>
+  <data name="SyncingChanges" xml:space="preserve">
+    <value>Syncing changes...</value>
+    <comment>Status text when background sync is in progress</comment>
+  </data>
+  <data name="LoadingVault" xml:space="preserve">
+    <value>Loading vault...</value>
+    <comment>Status text when vault is being loaded</comment>
   </data>
 </root>

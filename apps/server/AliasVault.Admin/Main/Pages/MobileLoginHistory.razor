@@ -1,0 +1,382 @@
+@page "/mobile-login-history"
+@using AliasVault.Admin.Main.Models
+@using AliasVault.RazorComponents.Tables
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavigationManager
+@inherits MainBase
+
+<LayoutPageTitle>Mobile Login History</LayoutPageTitle>
+
+<PageHeader
+    BreadcrumbItems="@BreadcrumbItems"
+    Title="@(TotalRecords > 0 ? $"Mobile Login History ({TotalRecords:N0})" : "Mobile Login History")"
+    Description="View all 'login with mobile app' login requests, including IP addresses, timestamps, and whether they were fulfilled. Each record represents a single attempt to log in using the mobile app.">
+    <CustomActions>
+        <RefreshButton OnClick="() => RefreshData(CancellationToken.None)" ButtonText="Refresh" />
+    </CustomActions>
+</PageHeader>
+
+@if (IsInitialized)
+{
+    <div class="px-4">
+        <ResponsivePaginator CurrentPage="CurrentPage" PageSize="PageSize" TotalRecords="TotalRecords" OnPageChanged="HandlePageChanged" />
+        <div class="mb-3 flex space-x-4">
+            <div class="w-3/4">
+                <div class="relative">
+                    <SearchIcon />
+                    <input type="text" @bind-value="SearchTerm" @bind-value:event="oninput" id="search" placeholder="Search by username or IP address..." class="w-full px-4 ps-10 py-2 border rounded text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                </div>
+            </div>
+            <div class="w-1/4">
+                <select @bind="SelectedStatusFilter" class="w-full px-4 py-2 border rounded text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                    <option value="">All Requests</option>
+                    <option value="retrieved">Retrieved</option>
+                    <option value="fulfilled">Fulfilled</option>
+                    <option value="pending">Pending</option>
+                </select>
+            </div>
+        </div>
+    </div>
+}
+
+@if (IsLoading)
+{
+    <LoadingIndicator />
+}
+else
+{
+    <div class="px-4">
+        <SortableTable Columns="@_tableColumns" SortColumn="@SortColumn" SortDirection="@SortDirection" OnSortChanged="HandleSortChanged">
+            @foreach (var request in RequestList)
+            {
+                <SortableTableRow>
+                    <SortableTableColumn IsPrimary="true">@request.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss")</SortableTableColumn>
+                    <SortableTableColumn>
+                        <span class="font-mono text-sm">@(request.ClientIpAddress ?? "N/A")</span>
+                    </SortableTableColumn>
+                    <SortableTableColumn>
+                        <span class="font-mono text-sm">@(request.MobileIpAddress ?? "N/A")</span>
+                    </SortableTableColumn>
+                    <SortableTableColumn>
+                        @if (request.FulfilledAt.HasValue)
+                        {
+                            <span class="text-sm">@request.FulfilledAt.Value.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                        }
+                        else
+                        {
+                            <span class="text-gray-500 dark:text-gray-400 text-sm italic">-</span>
+                        }
+                    </SortableTableColumn>
+                    <SortableTableColumn>
+                        @if (request.RetrievedAt.HasValue)
+                        {
+                            <span class="text-sm">@request.RetrievedAt.Value.ToString("yyyy-MM-dd HH:mm:ss")</span>
+                        }
+                        else
+                        {
+                            <span class="text-gray-500 dark:text-gray-400 text-sm italic">-</span>
+                        }
+                    </SortableTableColumn>
+                    <SortableTableColumn>
+                        @if (!string.IsNullOrEmpty(request.Username))
+                        {
+                            <a href="users/@request.UserId" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                                @request.Username
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="text-gray-500 dark:text-gray-400 italic">-</span>
+                        }
+                    </SortableTableColumn>
+                    <SortableTableColumn>
+                        @if (request.RetrievedAt.HasValue)
+                        {
+                            <StatusPill Color="green" Enabled="true" TextTrue="Retrieved" />
+                        }
+                        else if (request.FulfilledAt.HasValue)
+                        {
+                            <StatusPill Color="yellow" Enabled="true" TextTrue="Fulfilled" />
+                        }
+                        else
+                        {
+                            <StatusPill Color="red" Enabled="false" TextFalse="Pending" />
+                        }
+                    </SortableTableColumn>
+                </SortableTableRow>
+            }
+        </SortableTable>
+    </div>
+}
+
+@code {
+    private readonly List<TableColumn> _tableColumns = [
+        new TableColumn { Title = "Created At", PropertyName = "CreatedAt" },
+        new TableColumn { Title = "Client IP", PropertyName = "ClientIpAddress" },
+        new TableColumn { Title = "Mobile IP", PropertyName = "MobileIpAddress" },
+        new TableColumn { Title = "Fulfilled At", PropertyName = "FulfilledAt" },
+        new TableColumn { Title = "Retrieved At", PropertyName = "RetrievedAt" },
+        new TableColumn { Title = "Username", PropertyName = "Username" },
+        new TableColumn { Title = "Status", Sortable = false },
+    ];
+
+    private List<MobileLoginRequestModel> RequestList { get; set; } = [];
+    private bool IsInitialized { get; set; } = false;
+    private bool IsLoading { get; set; } = true;
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 50;
+    private int TotalRecords { get; set; }
+
+    private string _searchTerm = string.Empty;
+    private CancellationTokenSource? _searchCancellationTokenSource;
+    private string _lastSearchTerm = string.Empty;
+
+    private string SearchTerm
+    {
+        get => _searchTerm;
+        set
+        {
+            if (_searchTerm != value)
+            {
+                _searchTerm = value;
+                _searchCancellationTokenSource?.Cancel();
+                _searchCancellationTokenSource = new CancellationTokenSource();
+                _ = RefreshData(_searchCancellationTokenSource.Token);
+            }
+        }
+    }
+
+    private string _selectedStatusFilter = string.Empty;
+    private string _lastSelectedStatusFilter = string.Empty;
+    private string SelectedStatusFilter
+    {
+        get => _selectedStatusFilter;
+        set
+        {
+            if (_selectedStatusFilter != value)
+            {
+                _selectedStatusFilter = value;
+                _searchCancellationTokenSource?.Cancel();
+                _searchCancellationTokenSource = new CancellationTokenSource();
+                _ = RefreshData(_searchCancellationTokenSource.Token);
+            }
+        }
+    }
+
+    private string SortColumn { get; set; } = "CreatedAt";
+    private SortDirection SortDirection { get; set; } = SortDirection.Descending;
+
+    private async Task HandleSortChanged((string column, SortDirection direction) sort)
+    {
+        SortColumn = sort.column;
+        SortDirection = sort.direction;
+        await RefreshData(CancellationToken.None);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = "Users", Url = "users" });
+        BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = "Mobile Login History" });
+
+        // Check for search query parameter
+        var uri = new Uri(NavigationManager.Uri);
+        var queryParams = QueryHelpers.ParseQuery(uri.Query);
+        if (queryParams.TryGetValue("search", out var search))
+        {
+            _searchTerm = search.ToString();
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await RefreshData(CancellationToken.None);
+        }
+    }
+
+    private void HandlePageChanged(int newPage)
+    {
+        CurrentPage = newPage;
+        _ = RefreshData(CancellationToken.None);
+    }
+
+    private async Task RefreshData(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            IsLoading = true;
+            StateHasChanged();
+
+            await using var dbContext = await DbContextFactory.CreateDbContextAsync(cancellationToken);
+
+            // Join with AliasVaultUsers table to get username via UserId FK
+            var query = from request in dbContext.MobileLoginRequests
+                        join user in dbContext.AliasVaultUsers on request.UserId equals user.Id into userJoin
+                        from user in userJoin.DefaultIfEmpty()
+                        select new MobileLoginRequestWithUsername
+                        {
+                            Request = request,
+                            Username = user != null ? user.UserName : null
+                        };
+
+            query = ApplySearchFilter(query);
+            query = ApplyStatusFilter(query);
+            query = ApplySort(query);
+
+            TotalRecords = await query.CountAsync(cancellationToken);
+            var requests = await query
+                .Skip((CurrentPage - 1) * PageSize)
+                .Take(PageSize)
+                .Select(r => new
+                {
+                    r.Request.CreatedAt,
+                    r.Request.ClientIpAddress,
+                    r.Request.MobileIpAddress,
+                    r.Request.FulfilledAt,
+                    r.Request.RetrievedAt,
+                    r.Username,
+                    r.Request.UserId
+                })
+                .ToListAsync(cancellationToken);
+
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
+            RequestList = requests.Select(r => new MobileLoginRequestModel
+            {
+                CreatedAt = r.CreatedAt,
+                ClientIpAddress = r.ClientIpAddress,
+                MobileIpAddress = r.MobileIpAddress,
+                FulfilledAt = r.FulfilledAt,
+                RetrievedAt = r.RetrievedAt,
+                Username = r.Username,
+                UserId = r.UserId
+            }).ToList();
+
+            IsLoading = false;
+            IsInitialized = true;
+            StateHasChanged();
+        }
+        catch (OperationCanceledException)
+        {
+            // Expected when cancellation is requested, do nothing
+        }
+    }
+
+    private IQueryable<MobileLoginRequestWithUsername> ApplySearchFilter(IQueryable<MobileLoginRequestWithUsername> query)
+    {
+        if (SearchTerm.Length > 0)
+        {
+            // Reset page number back to 1 if the search term has changed
+            if (SearchTerm != _lastSearchTerm && CurrentPage != 1)
+            {
+                CurrentPage = 1;
+            }
+            _lastSearchTerm = SearchTerm;
+
+            var searchTerm = SearchTerm.Trim().ToLower();
+            query = query.Where(r =>
+                (r.Username != null && EF.Functions.Like(r.Username.ToLower(), "%" + searchTerm + "%")) ||
+                (r.Request.ClientIpAddress != null && EF.Functions.Like(r.Request.ClientIpAddress.ToLower(), "%" + searchTerm + "%")) ||
+                (r.Request.MobileIpAddress != null && EF.Functions.Like(r.Request.MobileIpAddress.ToLower(), "%" + searchTerm + "%"))
+            );
+        }
+
+        return query;
+    }
+
+    private IQueryable<MobileLoginRequestWithUsername> ApplyStatusFilter(IQueryable<MobileLoginRequestWithUsername> query)
+    {
+        if (!string.IsNullOrEmpty(SelectedStatusFilter))
+        {
+            // Reset page number back to 1 if the filter has changed
+            if (SelectedStatusFilter != _lastSelectedStatusFilter && CurrentPage != 1)
+            {
+                CurrentPage = 1;
+            }
+            _lastSelectedStatusFilter = SelectedStatusFilter;
+
+            switch (SelectedStatusFilter)
+            {
+                case "retrieved":
+                    query = query.Where(r => r.Request.RetrievedAt != null);
+                    break;
+                case "fulfilled":
+                    query = query.Where(r => r.Request.FulfilledAt != null && r.Request.RetrievedAt == null);
+                    break;
+                case "pending":
+                    query = query.Where(r => r.Request.FulfilledAt == null);
+                    break;
+            }
+        }
+
+        return query;
+    }
+
+    private IQueryable<MobileLoginRequestWithUsername> ApplySort(IQueryable<MobileLoginRequestWithUsername> query)
+    {
+        switch (SortColumn)
+        {
+            case "CreatedAt":
+                query = SortDirection == SortDirection.Ascending
+                    ? query.OrderBy(x => x.Request.CreatedAt)
+                    : query.OrderByDescending(x => x.Request.CreatedAt);
+                break;
+            case "ClientIpAddress":
+                query = SortDirection == SortDirection.Ascending
+                    ? query.OrderBy(x => x.Request.ClientIpAddress)
+                    : query.OrderByDescending(x => x.Request.ClientIpAddress);
+                break;
+            case "MobileIpAddress":
+                query = SortDirection == SortDirection.Ascending
+                    ? query.OrderBy(x => x.Request.MobileIpAddress)
+                    : query.OrderByDescending(x => x.Request.MobileIpAddress);
+                break;
+            case "FulfilledAt":
+                query = SortDirection == SortDirection.Ascending
+                    ? query.OrderBy(x => x.Request.FulfilledAt)
+                    : query.OrderByDescending(x => x.Request.FulfilledAt);
+                break;
+            case "RetrievedAt":
+                query = SortDirection == SortDirection.Ascending
+                    ? query.OrderBy(x => x.Request.RetrievedAt)
+                    : query.OrderByDescending(x => x.Request.RetrievedAt);
+                break;
+            case "Username":
+                query = SortDirection == SortDirection.Ascending
+                    ? query.OrderBy(x => x.Username)
+                    : query.OrderByDescending(x => x.Username);
+                break;
+            default:
+                query = query.OrderByDescending(x => x.Request.CreatedAt);
+                break;
+        }
+
+        return query;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _searchCancellationTokenSource?.Cancel();
+            _searchCancellationTokenSource?.Dispose();
+        }
+        base.Dispose(disposing);
+    }
+
+    public class MobileLoginRequestModel
+    {
+        public DateTime CreatedAt { get; set; }
+        public string? ClientIpAddress { get; set; }
+        public string? MobileIpAddress { get; set; }
+        public DateTime? FulfilledAt { get; set; }
+        public DateTime? RetrievedAt { get; set; }
+        public string? Username { get; set; }
+        public string? UserId { get; set; }
+    }
+}

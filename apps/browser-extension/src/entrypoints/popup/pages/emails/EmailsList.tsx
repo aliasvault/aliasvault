@@ -12,7 +12,7 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
-import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
@@ -46,8 +46,15 @@ const EmailsList: React.FC = () => {
         return;
       }
 
+      // Check if we are in offline mode
+      if (dbContext.isOffline) {
+        setIsLoading(false);
+        setIsInitialLoading(false);
+        return;
+      }
+
       // Get unique email addresses from all credentials.
-      const emailAddresses = dbContext.sqliteClient.getAllEmailAddresses();
+      const emailAddresses = dbContext.sqliteClient.items.getAllEmailAddresses();
 
       try {
         // For now we only show the latest 50 emails. No pagination.
@@ -58,7 +65,7 @@ const EmailsList: React.FC = () => {
         });
 
         // Decrypt emails locally using private key associated with the email address.
-        const encryptionKeys = dbContext.sqliteClient.getAllEncryptionKeys();
+        const encryptionKeys = dbContext.sqliteClient.settings.getAllEncryptionKeys();
 
         // Decrypt emails locally using public/private key pairs.
         const decryptedEmails = await EncryptionUtility.decryptEmailList(data.mails, encryptionKeys);
@@ -66,7 +73,7 @@ const EmailsList: React.FC = () => {
         setEmails(decryptedEmails);
       } catch (error) {
         console.error(error);
-        throw new Error(t('emails.errors.emailLoadError'));
+        throw new Error(t('common.errors.unknownError'));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
@@ -74,7 +81,7 @@ const EmailsList: React.FC = () => {
       setIsLoading(false);
       setIsInitialLoading(false);
     }
-  }, [dbContext?.sqliteClient, webApi, setIsLoading, setIsInitialLoading, t]);
+  }, [dbContext?.sqliteClient, dbContext.isOffline, webApi, setIsLoading, setIsInitialLoading, t]);
 
   useEffect(() => {
     loadEmails();
@@ -145,6 +152,22 @@ const EmailsList: React.FC = () => {
 
   if (error) {
     return <div className="text-red-500">{t('common.error')}: {error}</div>;
+  }
+
+  // Show offline message if in offline mode
+  if (dbContext.isOffline) {
+    return (
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-gray-900 dark:text-white text-xl">{t('emails.title')}</h2>
+        </div>
+        <div className="text-gray-500 dark:text-gray-400 space-y-2">
+          <p className="text-sm">
+            {t('emails.offlineMessage')}
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (emails.length === 0) {

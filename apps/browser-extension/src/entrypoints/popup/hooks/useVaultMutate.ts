@@ -1,147 +1,123 @@
-import { useCallback, useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useCallback, useRef } from 'react';
 import { sendMessage } from 'webext-bridge/popup';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
-import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import { UploadVaultRequest } from '@/utils/types/messaging/UploadVaultRequest';
-import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
 
-type VaultMutationOptions = {
-  onSuccess?: () => void;
-  onError?: (error: Error) => void;
-  skipSyncCheck?: boolean;
-}
+import { useVaultSync } from './useVaultSync';
 
 /**
  * Hook to execute a vault mutation.
+ *
+ * Flow:
+ * 1. Execute the mutation on local database
+ * 2. Save encrypted vault locally and mark as dirty (increments mutation sequence)
+ * 3. Trigger sync in background which handles: upload, merge if needed, offline mode
+ *
+ * The mutation sequence is used for race detection:
+ * - Each mutation increments the sequence
+ * - Sync captures sequence at start, only clears dirty if sequence unchanged
+ * - This ensures we never lose local changes during concurrent operations
  */
-export function useVaultMutate() : {
-  executeVaultMutation: (operation: () => Promise<void>, options?: VaultMutationOptions) => Promise<void>;
-  isLoading: boolean;
-  syncStatus: string;
-  } {
-  const { t } = useTranslation();
-  const [isLoading, setIsLoading] = useState(false);
-  const [syncStatus, setSyncStatus] = useState(t('common.syncingVault'));
+export function useVaultMutate(): {
+    executeVaultMutationAsync: (operation: () => Promise<void>) => Promise<void>;
+    } {
   const dbContext = useDb();
   const { syncVault } = useVaultSync();
 
-  /**
-   * Execute the provided operation (e.g. create/update/delete credential)
-   */
-  const executeMutateOperation = useCallback(async (
-    operation: () => Promise<void>,
-    options: VaultMutationOptions
-  ) : Promise<void> => {
-    setSyncStatus(t('common.savingChangesToVault'));
+  // Track if a sync is currently in progress
+  const isSyncingRef = useRef(false);
 
+  /**
+   * Execute the provided operation and save locally.
+   * Atomically increments mutation sequence and marks dirty.
+   */
+  const saveLocally = useCallback(async (operation: () => Promise<void>): Promise<void> => {
     // Execute the provided operation (e.g. create/update/delete credential)
     await operation();
 
-    setSyncStatus(t('common.uploadingVaultToServer'));
-
-    // Upload the updated vault to the server.
+    // Export and encrypt the updated vault
     const base64Vault = dbContext.sqliteClient!.exportToBase64();
-
-    // Get encryption key from background worker
     const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY', {}, 'background') as string;
-
-    // Encrypt the vault.
     const encryptedVaultBlob = await EncryptionUtility.symmetricEncrypt(
       base64Vault,
       encryptionKey
     );
 
-    const request: UploadVaultRequest = {
+    // Store the updated vault locally, mark dirty, increment mutation sequence
+    await sendMessage('STORE_ENCRYPTED_VAULT', {
       vaultBlob: encryptedVaultBlob,
-    };
+      markDirty: true
+    }, 'background');
 
-    const response = await sendMessage('UPLOAD_VAULT', request, 'background') as messageVaultUploadResponse;
-
-    /*
-     * If we get here, it means we have a valid connection to the server.
-     * TODO: offline mode is not implemented for browser extension yet.
-     * authContext.setOfflineMode(false);
-     */
-
-    if (response.status === 0 && response.newRevisionNumber) {
-      await dbContext.setCurrentVaultRevisionNumber(response.newRevisionNumber);
-      options.onSuccess?.();
-    } else if (response.status === 1) {
-      // Note: vault merge is no longer allowed by the API as of 0.20.0, updates with the same revision number are rejected. So this check can be removed later.
-      throw new Error('Vault merge required. Please login via the web app to merge the multiple pending updates to your vault.');
-    } else if (response.status === 2) {
-      throw new Error(t('common.errors.failedToUploadVault'));
-    } else {
-      throw new Error(t('common.errors.failedToUploadVault'));
-    }
-
-    // Check if it's a network error
-    /*
-     * if (error instanceof Error && (error.message.includes('network') || error.message.includes('timeout'))) {
-     *
-     * // Network error, mark as offline and track pending changes - TODO: offline mode is not implemented for browser extension yet.
-     * // authContext.setOfflineMode(true);
-     *options.onError?.(new Error('Network error'));
-     *return;
-     *}
-     */
-  }, [dbContext, t]);
+    // Refresh the sync state in React
+    await dbContext.refreshSyncState();
+  }, [dbContext]);
 
   /**
-   * Hook to execute a vault mutation which uploads a new encrypted vault to the server
+   * Trigger a sync cycle. If sync is already in progress, it will be queued.
+   * After sync completes, checks if more mutations happened and re-syncs if needed.
    */
-  const executeVaultMutation = useCallback(async (
-    operation: () => Promise<void>,
-    options: VaultMutationOptions = {}
-  ) => {
+  const triggerSync = useCallback(async (): Promise<void> => {
+    if (isSyncingRef.current) {
+      // Sync already in progress - it will re-sync if dirty when done
+      return;
+    }
+
+    isSyncingRef.current = true;
+
     try {
-      setIsLoading(true);
-      setSyncStatus(t('common.checkingVaultUpdates'));
-
-      // Skip sync check if requested (e.g., during upgrade operations)
-      if (options.skipSyncCheck) {
-        setSyncStatus(t('common.executingOperation'));
-        await executeMutateOperation(operation, options);
-        return;
-      }
-
       await syncVault({
         /**
-         * Handle the status update.
+         * Handle successful sync completion.
          */
-        onStatus: (message) => setSyncStatus(message),
-        /**
-         * Handle successful vault sync and continue with vault mutation.
-         */
-        onSuccess: async (hasNewVault) => {
-          if (hasNewVault) {
-            // Vault was changed, but has now been reloaded so we can continue with the operation.
+        onSuccess: async () => {
+          await dbContext.refreshSyncState();
+
+          // Skip re-sync if offline - vault stays dirty until server is reachable
+          if (!dbContext.getIsOffline()) {
+            const syncState = await sendMessage('GET_SYNC_STATE', {}, 'background') as { isDirty: boolean };
+            if (syncState.isDirty) {
+              isSyncingRef.current = false;
+              await triggerSync();
+            }
           }
-          await executeMutateOperation(operation, options);
         },
         /**
-         * Handle error during vault sync.
+         * Offline mode - no re-sync needed, vault stays dirty until online.
+         */
+        onOffline: () => {},
+        /**
+         * Handle sync errors.
+         * @param error - Error message from sync
          */
         onError: (error) => {
-          options.onError?.(new Error(error));
+          console.error('Background sync error:', error);
         }
       });
     } catch (error) {
-      console.error('Error during vault mutation:', error);
-      options.onError?.(error instanceof Error ? error : new Error(t('common.errors.unknownError')));
+      console.error('Error during background sync:', error);
     } finally {
-      setIsLoading(false);
-      setSyncStatus('');
+      isSyncingRef.current = false;
     }
-  }, [syncVault, executeMutateOperation, t]);
+  }, [dbContext, syncVault]);
+
+  /**
+   * Execute a vault mutation asynchronously: save locally immediately, then
+   * trigger sync in background. This doesn't block the UI.
+   */
+  const executeVaultMutationAsync = useCallback(async (
+    operation: () => Promise<void>
+  ): Promise<void> => {
+    // 1. Execute mutation and save locally (fast, doesn't block)
+    await saveLocally(operation);
+
+    // 2. Trigger sync in background
+    void triggerSync();
+  }, [saveLocally, triggerSync]);
 
   return {
-    executeVaultMutation,
-    isLoading,
-    syncStatus,
+    executeVaultMutationAsync,
   };
 }

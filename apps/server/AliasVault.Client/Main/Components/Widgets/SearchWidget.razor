@@ -4,9 +4,12 @@
 @inject JsInteropService JsInteropService
 @inject IStringLocalizerFactory LocalizerFactory
 @inject LanguageService LanguageService
+@inject ItemService ItemService
 @implements IAsyncDisposable
 @using Microsoft.Extensions.Localization
 @using System.Timers
+@using AliasClientDb
+@using AliasClientDb.Models
 
 <div class="relative" id="searchWidgetContainer">
     <input
@@ -65,16 +68,20 @@
                             <div
                                 class="search-result @(i == SelectedIndex ? "bg-gray-100 dark:bg-gray-700" : "") px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center"
                                 @onclick="() => SelectResult(result)">
-                                <DisplayFavicon FaviconBytes="@result.Service.Logo" Width="24" />
+                                <DisplayFavicon FaviconBytes="@result.Logo?.FileData" Width="24" />
                                 <div class="ml-2">
-                                    <div>@result.Service.Name</div>
-                                    @if (!string.IsNullOrEmpty(result.Alias.Email))
-                                    {
-                                        <span class="text-gray-500">(@result.Alias.Email)</span>
+                                    <div>@result.Name</div>
+                                    @{
+                                        var email = ItemService.GetFieldValue(result, FieldKey.LoginEmail);
+                                        var username = ItemService.GetFieldValue(result, FieldKey.LoginUsername);
                                     }
-                                    else if (!string.IsNullOrEmpty(result.Username))
+                                    @if (!string.IsNullOrEmpty(email))
                                     {
-                                        <span class="text-gray-500">(@result.Username)</span>
+                                        <span class="text-gray-500">(@email)</span>
+                                    }
+                                    else if (!string.IsNullOrEmpty(username))
+                                    {
+                                        <span class="text-gray-500">(@username)</span>
                                     }
                                 </div>
                             </div>
@@ -99,7 +106,7 @@
     private IStringLocalizer Localizer => _localizer ??= LocalizerFactory.Create("Components.Main.Widgets.SearchWidget", "AliasVault.Client");
 
     private string SearchTerm { get; set; } = string.Empty;
-    private List<Credential> SearchResults { get; set; } = new();
+    private List<Item> SearchResults { get; set; } = new();
     private bool ShowResults { get; set; }
     private bool ShowHelpText { get; set; }
     private int SelectedIndex { get; set; } = -1;
@@ -199,26 +206,31 @@
             {
                 var searchTerms = SearchTerm.Trim().ToLowerInvariant().Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-                var query = context.Credentials
-                    .Include(x => x.Service)
-                    .Include(x => x.Alias)
+                var query = context.Items
+                    .Include(x => x.Logo)
+                    .Include(x => x.FieldValues.Where(fv => !fv.IsDeleted))
                     .Where(x => !x.IsDeleted)
+                    .Where(x => x.DeletedAt == null)
                     .AsQueryable();
 
                 foreach (var term in searchTerms)
                 {
-                    // We filter credentials by searching in the following fields:
-                    // - Service name
-                    // - Username
-                    // - Alias email
-                    // - Service URL
-                    // - Notes
+                    // We filter items by searching in the following fields:
+                    // - Item name
+                    // - Username (from field values)
+                    // - Email (from field values)
+                    // - URL (from field values)
+                    // - Notes (from field values)
                     query = query.Where(x =>
-                        (x.Service.Name != null && EF.Functions.Like(x.Service.Name.ToLower(), $"%{term}%")) ||
-                        (x.Alias.Email != null && EF.Functions.Like(x.Alias.Email.ToLower(), $"%{term}%")) ||
-                        (x.Username != null && EF.Functions.Like(x.Username.ToLower(), $"%{term}%")) ||
-                        (x.Service.Url != null && EF.Functions.Like(x.Service.Url.ToLower(), $"%{term}%")) ||
-                        (x.Notes != null && EF.Functions.Like(x.Notes.ToLower(), $"%{term}%"))
+                        (x.Name != null && EF.Functions.Like(x.Name.ToLower(), $"%{term}%")) ||
+                        x.FieldValues.Any(fv =>
+                            !fv.IsDeleted &&
+                            fv.Value != null &&
+                            (fv.FieldKey == FieldKey.LoginEmail ||
+                             fv.FieldKey == FieldKey.LoginUsername ||
+                             fv.FieldKey == FieldKey.LoginUrl ||
+                             fv.FieldKey == FieldKey.NotesContent) &&
+                            EF.Functions.Like(fv.Value.ToLower(), $"%{term}%"))
                     );
                 }
 
@@ -263,10 +275,10 @@
         }
     }
 
-    private async Task SelectResult(Credential credential)
+    private async Task SelectResult(Item item)
     {
         await JsInteropService.BlurElementById("searchWidget");
-        NavigationManager.NavigateTo($"/credentials/{credential.Id}");
+        NavigationManager.NavigateTo($"/items/{item.Id}");
     }
 
     private void ResetSearchField(object? sender, LocationChangedEventArgs e)

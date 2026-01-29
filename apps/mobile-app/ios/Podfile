@@ -96,7 +96,3 @@ end
 target 'VaultUI' do
   pod 'Macaw', '~> 0.9.7'
 end
-
-target 'VaultUITests' do
-  pod 'Macaw', '~> 0.9.7'
-end

@@ -1,7 +1,7 @@
 @page "/settings/import-export/reset-vault"
 @inherits MainBase
 @inject HttpClient Http
-@inject CredentialService CredentialService
+@inject ItemService ItemService
 @inject ILogger<ResetVault> Logger
 @using System.Text.Json
 @using AliasVault.Client.Utilities
@@ -26,7 +26,7 @@
         <div class="mb-6 text-gray-600 dark:text-gray-400">
             <p class="mb-2">@Localizer["ResetVaultPleaseNote"]</p>
             <ul class="list-disc list-inside space-y-2">
-                <li>@Localizer["ResetVaultCredentialsDeletedNote"]</li>
+                <li>@Localizer["ResetVaultItemsDeletedNote"]</li>
                 <li>@Localizer["ResetVaultEmailAliasesKeptNote"]</li>
                 <li>@Localizer["ResetVaultSettingsKeptNote"]</li>
                 <li>@Localizer["ResetVaultIrreversibleNote"]</li>
@@ -171,13 +171,13 @@
                 return;
             }
 
-            // Clear local vault data by hard-deleting all credentials
-            await CredentialService.HardDeleteAllCredentialsAsync();
+            // Clear local vault data by hard-deleting all items
+            await ItemService.HardDeleteAllItemsAsync();
 
             GlobalNotificationService.AddSuccessMessage(Localizer["ResetVaultSuccessMessage"]);
 
-            // Redirect to credentials overview page to show the empty vault
-            NavigationManager.NavigateTo("/credentials");
+            // Redirect to items overview page to show the empty vault
+            NavigationManager.NavigateTo("/items");
         }
         catch (Exception ex)
         {

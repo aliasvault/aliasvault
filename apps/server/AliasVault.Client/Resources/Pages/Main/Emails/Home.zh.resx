@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>邮件</value>
+    <value>电子邮件</value>
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">

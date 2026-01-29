@@ -1,0 +1,106 @@
+<label for="@Id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Label</label>
+<div class="space-y-2">
+    @for (int i = 0; i < Values.Count; i++)
+    {
+        var index = i;
+        var isLastInput = index == Values.Count - 1;
+        <div class="relative">
+            <input type="text"
+                   id="@($"{Id}-{index}")"
+                   autocomplete="off"
+                   class="outline-0 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5 pr-10 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                   value="@Values[index]"
+                   @oninput="e => OnInputChanged(index, e)"
+                   @onfocus="e => OnFocusEvent(index, e)"
+                   placeholder="@Placeholder"
+                   autocapitalize="off"
+                   autocorrect="off">
+            @if (isLastInput)
+            {
+                <button type="button"
+                        @onclick="AddValue"
+                        @onclick:preventDefault="true"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center text-gray-400 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                </button>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// Id prefix for the input fields.
+    /// </summary>
+    [Parameter]
+    public string Id { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Label for the input fields.
+    /// </summary>
+    [Parameter]
+    public string Label { get; set; } = "Value";
+
+    /// <summary>
+    /// List of values for multi-value field.
+    /// </summary>
+    [Parameter]
+    public List<string> Values { get; set; } = new() { string.Empty };
+
+    /// <summary>
+    /// Callback that is triggered when values change.
+    /// </summary>
+    [Parameter]
+    public EventCallback<List<string>> ValuesChanged { get; set; }
+
+    /// <summary>
+    /// Callback that is triggered when focus event happens.
+    /// </summary>
+    [Parameter]
+    public EventCallback<(int Index, FocusEventArgs Args)> OnFocus { get; set; }
+
+    /// <summary>
+    /// Placeholder text for the input fields.
+    /// </summary>
+    [Parameter]
+    public string Placeholder { get; set; } = string.Empty;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        // Ensure at least one empty input is always shown
+        if (Values == null || Values.Count == 0)
+        {
+            Values = new List<string> { string.Empty };
+        }
+    }
+
+    private async Task OnInputChanged(int index, ChangeEventArgs e)
+    {
+        var newValue = e.Value?.ToString() ?? string.Empty;
+
+        // Create a new list to trigger change detection
+        var newValues = new List<string>(Values);
+        newValues[index] = newValue;
+        Values = newValues;
+
+        await ValuesChanged.InvokeAsync(Values);
+    }
+
+    private async Task OnFocusEvent(int index, FocusEventArgs e)
+    {
+        if (OnFocus.HasDelegate)
+        {
+            await OnFocus.InvokeAsync((index, e));
+        }
+    }
+
+    private async Task AddValue()
+    {
+        var newValues = new List<string>(Values) { string.Empty };
+        Values = newValues;
+        await ValuesChanged.InvokeAsync(Values);
+    }
+}

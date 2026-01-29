@@ -1,0 +1,319 @@
+@using AliasVault.Client.Auth.Models
+@using AliasVault.Client.Auth.Services
+@using AliasVault.Client.Main.Components.Layout
+@using AliasVault.Client.Utilities
+@using Microsoft.Extensions.Localization
+@using Microsoft.Extensions.DependencyInjection
+@implements IDisposable
+
+@if (IsOpen)
+{
+    <ModalWrapper>
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black bg-opacity-80 transition-opacity" @onclick="HandleClose"></div>
+
+        <!-- Modal -->
+        <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-6 pb-6 pt-5 text-left shadow-xl transition-all w-full max-w-md mx-4">
+            <!-- Close button -->
+            <button type="button" class="absolute right-4 top-4 text-gray-400 hover:text-gray-500 focus:outline-none" @onclick="HandleClose">
+                <span class="sr-only">@SharedLocalizer["Close"]</span>
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+
+            <!-- Content -->
+            <div class="mt-3">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                    @Title
+                </h3>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    @Description
+                </p>
+
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="mb-4 p-3 bg-red-100 dark:bg-red-900/30 border border-red-400 dark:border-red-700 rounded text-red-700 dark:text-red-400 text-sm">
+                        @_errorMessage
+                    </div>
+                }
+
+                @if (!string.IsNullOrEmpty(_qrCodeUrl))
+                {
+                    <div class="flex flex-col items-center mb-4">
+                        <div id="@_qrElementId" data-url="@_qrCodeUrl" class="@(_isLoading ? "hidden" : "") mb-3 p-4 bg-white rounded-lg border-4 border-gray-200 dark:border-gray-600">
+                            <!-- QR code will be rendered here -->
+                        </div>
+                        @if (!_isLoading)
+                        {
+                            <div class="text-gray-700 dark:text-gray-300 text-sm font-medium">
+                                @FormatTime(_timeRemaining)
+                            </div>
+                        }
+                    </div>
+                }
+
+                @if (_isLoading && string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="flex justify-center py-8">
+                        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                    </div>
+                }
+
+                <button type="button" @onclick="HandleClose" class="mt-4 w-full inline-flex justify-center rounded-md bg-white dark:bg-gray-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-200 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    @SharedLocalizer["Cancel"]
+                </button>
+            </div>
+        </div>
+    </ModalWrapper>
+}
+
+@code {
+    private string? _qrCodeUrl;
+    private MobileLoginErrorCode? _errorCode;
+    private string? _errorMessage;
+    private int _timeRemaining = 120; // 2 minutes in seconds
+    private MobileLoginUtility? _mobileLoginUtility;
+    private bool _isLoading = true;
+    private System.Threading.Timer? _countdownTimer;
+    private string _qrElementId = $"mobile-unlock-qr-{Guid.NewGuid():N}";
+
+    [Inject]
+    private HttpClient Http { get; set; } = default!;
+
+    [Inject]
+    private JsInteropService JsInteropService { get; set; } = default!;
+
+    [Inject]
+    private ILogger<MobileUnlockModal> Logger { get; set; } = default!;
+
+    [Inject]
+    private IStringLocalizerFactory LocalizerFactory { get; set; } = default!;
+
+    [Inject]
+    private IServiceProvider ScopedServices { get; set; } = default!;
+
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
+
+    private IStringLocalizer MobileLoginLocalizer => LocalizerFactory.Create("MobileLogin", "AliasVault.Client");
+
+    /// <summary>
+    /// Whether the modal is open.
+    /// </summary>
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// Callback when the modal is closed.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    /// <summary>
+    /// Callback when mobile login/unlock succeeds with the result.
+    /// </summary>
+    [Parameter]
+    public EventCallback<MobileLoginResult> OnSuccess { get; set; }
+
+    /// <summary>
+    /// Mode - 'login' or 'unlock'.
+    /// </summary>
+    [Parameter]
+    public string Mode { get; set; } = "login";
+
+    /// <summary>
+    /// Modal title based on mode.
+    /// </summary>
+    private string Title => Mode == "unlock"
+        ? LocalizerFactory.Create("Pages.Auth.MobileUnlockModal", "AliasVault.Client")["UnlockTitle"]
+        : LocalizerFactory.Create("Pages.Auth.MobileUnlockModal", "AliasVault.Client")["PageTitle"];
+
+    /// <summary>
+    /// Modal description based on mode.
+    /// </summary>
+    private string Description => LocalizerFactory.Create("Pages.Auth.MobileUnlockModal", "AliasVault.Client")["ScanQrCodeDescription"];
+
+    /// <inheritdoc />
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        if (IsOpen && _mobileLoginUtility == null)
+        {
+            await InitiateMobileLoginAsync();
+        }
+        else if (!IsOpen)
+        {
+            Cleanup();
+        }
+    }
+
+    /// <summary>
+    /// Initialize mobile login when modal opens.
+    /// </summary>
+    private async Task InitiateMobileLoginAsync()
+    {
+        try
+        {
+            _isLoading = true;
+            _errorCode = null;
+            _errorMessage = null;
+            _qrCodeUrl = null;
+            _timeRemaining = 120;
+            StateHasChanged();
+
+            // Initialize mobile login utility
+            var utilityLogger = ScopedServices.GetRequiredService<ILogger<MobileLoginUtility>>();
+            _mobileLoginUtility = new MobileLoginUtility(Http, JsInteropService, utilityLogger);
+
+            // Initiate mobile login and get QR code data
+            var requestId = await _mobileLoginUtility.InitiateAsync();
+
+            // Generate QR code with AliasVault prefix for mobile login
+            _qrCodeUrl = $"aliasvault://open/mobile-unlock/{requestId}";
+
+            // Render QR code while showing loading
+            StateHasChanged();
+            await Task.Delay(100); // Give DOM time to render
+            await JsInteropService.GenerateQrCode(_qrElementId);
+
+            // Wait for QR code to be fully rendered before hiding loading
+            await Task.Delay(300);
+
+            _isLoading = false;
+            StateHasChanged();
+
+            // Start countdown timer
+            StartCountdownTimer();
+
+            // Start polling for response
+            await _mobileLoginUtility.StartPollingAsync(
+                HandleSuccessAsync,
+                HandleErrorAsync);
+        }
+        catch (MobileLoginException ex)
+        {
+            Logger.LogError(ex, "Error initiating mobile login");
+            _isLoading = false;
+            _errorCode = ex.ErrorCode;
+            _errorMessage = GetErrorMessage(ex.ErrorCode);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initiating mobile login");
+            _isLoading = false;
+            _errorCode = MobileLoginErrorCode.Generic;
+            _errorMessage = GetErrorMessage(MobileLoginErrorCode.Generic);
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Handle successful mobile login/unlock.
+    /// </summary>
+    private async Task HandleSuccessAsync(MobileLoginResult result)
+    {
+        try
+        {
+            // Call parent success callback
+            await OnSuccess.InvokeAsync(result);
+
+            // Close modal after successful processing
+            await HandleClose();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error handling mobile login success");
+            _errorMessage = SharedLocalizer["ErrorUnknown"];
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Handle error.
+    /// </summary>
+    private void HandleErrorAsync(MobileLoginErrorCode errorCode)
+    {
+        _isLoading = false;
+        _qrCodeUrl = null; // Hide QR code when error occurs
+        _errorCode = errorCode;
+        _errorMessage = GetErrorMessage(errorCode);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Get translated error message for error code.
+    /// </summary>
+    private string GetErrorMessage(MobileLoginErrorCode errorCode)
+    {
+        return errorCode switch
+        {
+            MobileLoginErrorCode.Timeout => MobileLoginLocalizer["ErrorTimeout"],
+            MobileLoginErrorCode.Generic => SharedLocalizer["ErrorUnknown"],
+            _ => SharedLocalizer["ErrorUnknown"]
+        };
+    }
+
+    /// <summary>
+    /// Handle modal close.
+    /// </summary>
+    private async Task HandleClose()
+    {
+        Cleanup();
+        await OnClose.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Cleanup resources.
+    /// </summary>
+    private void Cleanup()
+    {
+        _mobileLoginUtility?.Cleanup();
+        _mobileLoginUtility?.Dispose();
+        _mobileLoginUtility = null;
+        _countdownTimer?.Dispose();
+        _countdownTimer = null;
+        _qrCodeUrl = null;
+        _errorCode = null;
+        _errorMessage = null;
+        _timeRemaining = 120;
+        _isLoading = true;
+    }
+
+    /// <summary>
+    /// Format time remaining as MM:SS.
+    /// </summary>
+    private string FormatTime(int seconds)
+    {
+        var mins = seconds / 60;
+        var secs = seconds % 60;
+        return $"{mins}:{secs:D2}";
+    }
+
+    /// <summary>
+    /// Start countdown timer.
+    /// </summary>
+    private void StartCountdownTimer()
+    {
+        _countdownTimer = new System.Threading.Timer(_ =>
+        {
+            if (_timeRemaining > 0)
+            {
+                _timeRemaining--;
+                InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                _countdownTimer?.Dispose();
+                _mobileLoginUtility?.StopPolling();
+            }
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
+    }
+
+    /// <inheritdoc />
+    public void Dispose()
+    {
+        Cleanup();
+    }
+}

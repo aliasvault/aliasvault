@@ -79,7 +79,16 @@ else
                     <SortableTableColumn>@log.Client</SortableTableColumn>
                     <SortableTableColumn>@log.EventType</SortableTableColumn>
                     <SortableTableColumn><StatusPill Enabled="log.IsSuccess" TextTrue="Success" TextFalse="@log.FailureReason.ToString()" /></SortableTableColumn>
-                    <SortableTableColumn>@log.IpAddress</SortableTableColumn>
+                    <SortableTableColumn>
+                        @if (!string.IsNullOrEmpty(log.IpAddress))
+                        {
+                            <a href="logging/auth?search=@Uri.EscapeDataString(log.IpAddress)" class="cursor-pointer">@log.IpAddress</a>
+                        }
+                        else
+                        {
+                            <span>-</span>
+                        }
+                    </SortableTableColumn>
                 </SortableTableRow>
             }
         </SortableTable>

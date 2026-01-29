@@ -1,4 +1,4 @@
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { useState, useEffect, useCallback, useMemo, useLayoutEffect } from 'react';
 import { StyleSheet, View, Text, TextInput, ActivityIndicator } from 'react-native';
 
@@ -10,6 +10,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedView } from '@/components/themed/ThemedView';
+import { HeaderBackButton } from '@/components/ui/HeaderBackButton';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
@@ -24,6 +25,7 @@ type ApiOption = {
 export default function SettingsScreen() : React.ReactNode {
   const colors = useColors();
   const navigation = useNavigation();
+  const router = useRouter();
   const { t } = useTranslation();
   const [selectedOption, setSelectedOption] = useState<string>(AppInfo.DEFAULT_API_URL);
   const [customUrl, setCustomUrl] = useState<string>('');
@@ -37,9 +39,17 @@ export default function SettingsScreen() : React.ReactNode {
   useLayoutEffect(() => {
     navigation.setOptions({
       title: t('app.navigation.loginSettings'),
-      headerBackTitle: t('app.navigation.login'),
+      /**
+       * Header left button (custom back button with testID for E2E tests).
+       */
+      headerLeft: (): React.ReactNode => (
+        <HeaderBackButton
+          label={t('app.navigation.login')}
+          onPress={() => router.back()}
+        />
+      ),
     });
-  }, [navigation, t]);
+  }, [navigation, router, t]);
 
   /**
    * Load the stored settings from native layer.
@@ -182,6 +192,7 @@ export default function SettingsScreen() : React.ReactNode {
                     selectedOption === option.value && styles.optionButtonSelected
                   ]}
                   onPress={() => handleOptionChange(option.value)}
+                  testID={`api-option-${option.value === 'custom' ? 'custom' : 'default'}`}
                 >
                   <Text style={[
                     styles.optionButtonText,
@@ -205,6 +216,7 @@ export default function SettingsScreen() : React.ReactNode {
                     autoCorrect={false}
                     multiline={false}
                     numberOfLines={1}
+                    testID="custom-api-url-input"
                   />
                 </View>
               )}

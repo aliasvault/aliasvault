@@ -67,7 +67,7 @@
     <comment>Text before logout link</comment>
   </data>
   <data name="LogoutLink" xml:space="preserve">
-    <value>登出</value>
+    <value>退出登录</value>
     <comment>Link text for logout</comment>
   </data>
 </root>

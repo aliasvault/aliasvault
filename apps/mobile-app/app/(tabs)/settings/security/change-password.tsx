@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, KeyboardAvoidingView, Platform } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -14,6 +14,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedTextInput } from '@/components/themed/ThemedTextInput';
 import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
 import { useAuth } from '@/context/AuthContext';
+import { useDialog } from '@/context/DialogContext';
 
 /**
  * Change password screen.
@@ -24,6 +25,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
   const authContext = useAuth();
   const { executeVaultPasswordChange, syncStatus } = useVaultMutate();
   const { t } = useTranslation();
+  const { showAlert } = useDialog();
 
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -65,17 +67,17 @@ export default function ChangePasswordScreen(): React.ReactNode {
    */
   const handleSubmit = async (): Promise<void> => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      Alert.alert(t('common.error'), t('settings.securitySettings.changePassword.fillAllFields'));
+      showAlert(t('common.error'), t('settings.securitySettings.changePassword.fillAllFields'));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      Alert.alert(t('common.error'), t('settings.securitySettings.changePassword.passwordsDoNotMatch'));
+      showAlert(t('common.error'), t('settings.securitySettings.changePassword.passwordsDoNotMatch'));
       return;
     }
 
     if (!authContext.username) {
-      Alert.alert(t('common.error'), t('settings.securitySettings.changePassword.userNotAuthenticated'));
+      showAlert(t('common.error'), t('settings.securitySettings.changePassword.userNotAuthenticated'));
       return;
     }
 
@@ -85,28 +87,22 @@ export default function ChangePasswordScreen(): React.ReactNode {
 
       const currentPasswordHashBase64 = await authContext.verifyPassword(currentPassword);
       if (!currentPasswordHashBase64) {
-        Alert.alert(t('common.error'), t('settings.securitySettings.changePassword.currentPasswordIncorrect'));
+        showAlert(t('common.error'), t('settings.securitySettings.changePassword.currentPasswordIncorrect'));
         return;
       }
 
       await executeVaultPasswordChange(currentPasswordHashBase64, newPassword);
 
       // Show confirm dialog and go back to the settings screen
-      Alert.alert(t('common.success'), t('settings.securitySettings.changePassword.passwordChangedSuccessfully'), [
-        { text: t('common.ok'),
-          /**
-           * Reset the password change state and go back to the settings screen
-           */
-          onPress: () : void => {
-            setCurrentPassword('');
-            setNewPassword('');
-            setConfirmPassword('');
-            router.back();
-          } }
-      ]);
+      showAlert(t('common.success'), t('settings.securitySettings.changePassword.passwordChangedSuccessfully'), () => {
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+        router.back();
+      });
     } catch (error) {
       console.error('Password change error:', error);
-      Alert.alert(t('common.error'), t('settings.securitySettings.changePassword.failedToChange'));
+      showAlert(t('common.error'), t('settings.securitySettings.changePassword.failedToChange'));
     } finally {
       setIsLoading(false);
       setLoadingStatus(null);
@@ -122,7 +118,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardAvoidingView}
       >
-        <ThemedContainer>
+        <ThemedContainer testID="change-password-screen">
           <ThemedScrollView>
             <ThemedText style={styles.headerText}>
               {t('settings.securitySettings.changePassword.headerText')}
@@ -132,6 +128,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
               <View style={styles.inputContainer}>
                 <ThemedText style={styles.label}>{t('settings.securitySettings.changePassword.currentPassword')}</ThemedText>
                 <ThemedTextInput
+                  testID="current-password-input"
                   secureTextEntry
                   value={currentPassword}
                   onChangeText={setCurrentPassword}
@@ -142,6 +139,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
               <View style={styles.inputContainer}>
                 <ThemedText style={styles.label}>{t('settings.securitySettings.changePassword.newPassword')}</ThemedText>
                 <ThemedTextInput
+                  testID="new-password-input"
                   secureTextEntry
                   value={newPassword}
                   onChangeText={setNewPassword}
@@ -152,6 +150,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
               <View style={styles.inputContainer}>
                 <ThemedText style={styles.label}>{t('settings.securitySettings.changePassword.confirmNewPassword')}</ThemedText>
                 <ThemedTextInput
+                  testID="confirm-password-input"
                   secureTextEntry
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
@@ -160,6 +159,7 @@ export default function ChangePasswordScreen(): React.ReactNode {
               </View>
 
               <ThemedButton
+                testID="change-password-button"
                 title={t('settings.securitySettings.changePassword.changePassword')}
                 onPress={handleSubmit}
                 loading={isLoading}

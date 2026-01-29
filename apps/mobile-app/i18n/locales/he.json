@@ -8,7 +8,7 @@
     "no": "לא",
     "ok": "אישור",
     "continue": "המשך",
-    "loading": "בטעינה…",
+    "loading": "Loading",
     "error": "שגיאה",
     "success": "הצליח",
     "never": "אף פעם",
@@ -16,8 +16,20 @@
     "loadMore": "לטעון עוד",
     "use": "להשתמש",
     "confirm": "אישור",
+    "next": "הבא",
+    "notice": "לתשומת ליבך",
+    "enabled": "פעיל",
+    "disabled": "כבוי",
+    "twoFactorAuthentication": "אימות דו־שלבי",
+    "add": "Add",
+    "generate": "Generate",
+    "attachments": "צרופות",
+    "deleteItemConfirmTitle": "Delete Item",
+    "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
-      "unknownError": "אירעה שגיאה לא ידועה, נא לנסות שוב."
+      "unknownError": "אירעה שגיאה לא ידועה.",
+      "unknownErrorTryAgain": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
+      "serverVersionTooOld": "The AliasVault server needs to be updated to a newer version in order to use this feature. Please contact the server admin if you need help."
     }
   },
   "auth": {
@@ -34,6 +46,7 @@
     "verifyingAuthCode": "קוד האימות נבדק",
     "verify": "אימות",
     "unlockVault": "שחרור נעילת כספת",
+    "unlockWithPin": "שחרור נעילה עם קוד אישי",
     "enterPassword": "נא למלא את הסיסמה שלך כדי לשחרר את הכספת שלך",
     "enterPasswordPlaceholder": "סיסמה",
     "enterAuthCode": "נא למלא קוד באורך 6 ספרות",
@@ -42,6 +55,7 @@
     "enableBiometric": "להפעיל את {{biometric}}?",
     "biometricPrompt": "להשתמש ב־{{biometric}} כדי לשחרר את נעילת הכספת שלך?",
     "tryBiometricAgain": "לנסות {{biometric}} שוב",
+    "tryPinAgain": "Try PIN Again",
     "authCodeNote": "לתשומת ליבך: אם אין לך גישה להתקן המאמת (authenticator) שלך, אפשר לאפס אימות דו־שלבי עם קוד שחזור על ידי כניסה דרך האתר.",
     "errors": {
       "credentialsRequired": "שם המשתמש והסיסמה הם חובה",
@@ -53,20 +67,18 @@
       "networkError": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט תקין ולנסות שוב.",
       "networkErrorSelfHosted": "הבקשה דרך הרשת נכשלה. נא לבדוק שהחיבור שלך לאינטרנט והשרת זמינים. למערכות באירוח עצמי, נא לוודא שמותקן אצלך אישור SSL תקף. אישורים בחתימה עצמית לא נתמכים במכשירים ניידים מטעמי אבטחת מידע.",
       "sessionExpired": "משך ההפעלה שלך פג. נא להיכנס שוב.",
-      "tokenRefreshFailed": "ריענון אסימון האימות נכשל",
-      "httpError": "שגיאת HTTP:‏ {{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "פענוח הכספת נכשל",
-      "vaultUnlockFailed": "שחרור הכספת נכשל",
-      "biometricCancelled": "האימות הביומטרי בוטל",
-      "encryptionKeyFailed": "משיכת מפתח ההצפנה נכשל"
+      "httpError": "שגיאת HTTP:‏ {{status}}"
     },
     "confirmLogout": "לצאת? צריך להיכנס שוב עם סיסמת העל שלך כדי לגשת לכספת שלך.",
     "noAccountYet": "אין לך חשבון עדיין?",
     "createNewVault": "יצירת כספת חדשה",
     "connectingTo": "מתבצעת התחברות אל",
     "loggedInAs": "נכנסת בתור"
+  },
+  "logout": {
+    "unsyncedChangesTitle": "Unsynced Changes",
+    "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
+    "logoutAnyway": "Log out anyway"
   },
   "vault": {
     "syncingVault": "הכספת מסתנכרת",
@@ -76,131 +88,35 @@
     "executingOperation": "הפעולה רצה…",
     "checkingVaultUpdates": "מתבצעת בדיקה לשינויים בכספת",
     "syncingUpdatedVault": "הכספת העדכנית מסתנכרת",
+    "mergingVault": "Merging vault changes",
+    "uploadingChanges": "Uploading changes",
     "errors": {
       "failedToGetEncryptedDatabase": "משיכת מסד הנתונים המוצפן נכשלה",
       "usernameNotFound": "שם המשתמש לא נמצא",
-      "vaultMergeRequired": "יש למזג את הכספות. נא להיכנס דרך הדפדפן כדי למזג את השינויים הממתינים לכספת שלך.",
       "vaultOutdated": "הכספת שלך לא עדכנית. נא להיכנס לאתר AliasVault ולעקוב אחר ההנחיות.",
-      "failedToUploadVault": "שליחת הכספת לשרת נכשלה. נא לנסות שוב על ידי פתיחת היישום מחדש.",
-      "usernameNotFoundLoginAgain": "שם המשתמש לא נמצא. נא להיכנס שוב.",
-      "errorDuringPasswordChange": "שגיאה במהלך פעולת החלפת סיסמה. נא להיכנס שוב כדי למשוך את הכספת העדכנית ביותר שלך.",
       "failedToSyncVault": "סנכרון הכספת נכשל",
-      "operationFailed": "הפעולה נכשלה",
       "versionNotSupported": "הגרסה הזאת של היישומון של AliasVault לניידים לא נתמכת עוד על ידי השרת. נא לעדכן את היישומון שלך לגרסה העדכנית ביותר.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "serverVersionNotSupported": "יש לעדכן את שרת AliasVault לגרסה חדשה יותר כדי להשתמש ביישומון הזה לנייד. נא ליצור קשר עם התמיכה לקבלת עזרה.",
       "appOutdated": "היישום הזה לא עדכני ואי אפשר להשתמש בו כדי לגשת לגרסת הכספת (החדשה יותר) הזאת. נא לעדכן את יישום AliasVault כדי להמשיך.",
-      "vaultDecryptFailed": "לא ניתן לפענח את הכספת, אם הבעיה נמשכת נא לצאת מהמערכת ולהיכנס שוב.",
-      "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע."
-    }
-  },
-  "credentials": {
-    "title": "פרטי גישה",
-    "addCredential": "הוספת פרטי גישה",
-    "editCredential": "עריכת פרטי גישה",
-    "deleteCredential": "מחיקת פרטי גישה",
-    "deleteConfirm": "למחוק את פרטי הגישה? זאת פעולה בלתי הפיכה.",
-    "service": "שירות",
-    "serviceName": "שם השירות",
-    "serviceUrl": "כתובת השירות",
-    "loginCredentials": "פרטי הגישה",
-    "username": "שם משתמש",
-    "email": "דוא״ל",
-    "alias": "כינוי",
-    "metadata": "נתוני על",
-    "firstName": "שם פרטי",
-    "lastName": "שם משפחה",
-    "nickName": "כינוי",
-    "fullName": "שם מלא",
-    "gender": "מגדר",
-    "birthDate": "תאריך לידה",
-    "birthDatePlaceholder": "YYYY-MM-DD",
-    "notes": "הערות",
-    "randomAlias": "כינוי אקראי",
-    "manual": "ידני",
-    "generateRandomAlias": "יצירת כינוי אקראי",
-    "clearAliasFields": "לפנות שדות כינויים",
-    "enterFullEmail": "נא למלא כתובת דוא״ל מלאה",
-    "enterEmailPrefix": "נא למלא קידומת דוא״ל",
-    "useDomainChooser": "להשתמש בבורר שמות התחום",
-    "enterCustomDomain": "נא למלא שם תחום מותאם אישית",
-    "selectEmailDomain": "בחירת שם תחום לדוא״ל",
-    "privateEmailTitle": "כתובת דוא״ל פרטית",
-    "privateEmailAliasVaultServer": "שרת AliasVault",
-    "privateEmailDescription": "הצפנה מקצה לקצה, פרטיות מלאה.",
-    "publicEmailTitle": "ספקי תיבת דוא״ל זמנית ציבוריים",
-    "publicEmailDescription": "פרטיות אלמונית אך מוגבלת. תוכן הדוא״ל נגיש לכל מי שיודע את הכתובת.",
-    "searchPlaceholder": "חיפוש בכספת…",
-    "noMatchingCredentials": "לא נמצאו פרטי גישה מתאימים",
-    "noCredentialsFound": "לא נמצאו פרטי גישה. נא ליצור כאלה כדי להתחיל. המלצה: אפשר גם להיכנס דרך האתר של AliasVault כדי לייבא פרטי גישה ממנהלי סיסמאות אחרים.",
-    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
-    "recentEmails": "הודעות דוא״ל אחרונות",
-    "loadingEmails": "הודעות הדוא״ל נטענות…",
-    "noEmailsYet": "לא התקבלו הודעות דוא״ל עדיין.",
-    "offlineEmailsMessage": "החיבור שלך מנותק. נא להתחבר לאינטרנט כדי לטעון את הודעות הדוא״ל שלך.",
-    "emailLoadError": "אירעה שגיאה בטעינת הודעות הדוא״ל. נא לנסות שוב מאוחר יותר.",
-    "emailUnexpectedError": "אירעה שגיאה לא צפויה בטעינת הודעות הדוא״ל. נא לנסות שוב מאוחר יותר.",
-    "password": "סיסמה",
-    "passwordLength": "אורך סיסמה",
-    "changePasswordComplexity": "הגדרות סיסמה",
-    "includeLowercase": "אותיות קטנות (a-z)",
-    "includeUppercase": "אותיות גדולות (A-Z)",
-    "includeNumbers": "מספרים (‎0‏-9)",
-    "includeSpecialChars": "תווים מיוחדים (!@#)",
-    "avoidAmbiguousChars": "כדאי להימנע מאותיות ותווים שדומים חזותית",
-    "deletingCredential": "פרטי הגישה נמחקים…",
-    "errorLoadingCredentials": "שגיאה בטעינת פרטי הגישה",
-    "vaultSyncFailed": "סנכרון הכספת נכשל",
-    "vaultSyncedSuccessfully": "הכספת סונכרנה בהצלחה",
-    "vaultUpToDate": "הכספת עדכנית",
-    "offlineMessage": "החיבור שלך מנותק. נא להתחבר לאינטרנט כדי לסנכרן את הכספת שלך.",
-    "credentialCreated": "פרטי גישה נוצרו!",
-    "credentialCreatedMessage": "פרטי הגישה החדשים שלך נוספו לכספת שלך והם מוכנים לשימוש.",
-    "credentialDetails": "פירוט פרטי גישה",
-    "emailPreview": "תצוגה מקדימה של הודעת דוא״ל",
-    "switchBackToBrowser": "יש לחזור לדפדפן שלך כדי להמשיך.",
-    "filters": {
-      "all": "(כל) פרטי הגישה",
-      "passkeys": "Passkeys",
-      "aliases": "כינויים",
-      "userpass": "סיסמאות"
-    },
-    "twoFactorAuth": "אימות דו־שלבי",
-    "totpCode": "קוד חד־פעמי זמני",
-    "attachments": "צרופות",
-    "loadingAttachments": "הצרופות נטענות…",
-    "addAttachments": "הוספת צרופות",
-    "deleteAttachment": "מחיקה",
-    "toasts": {
-      "credentialUpdated": "פרטי הגישה עודכנו בהצלחה",
-      "credentialCreated": "פרטי הגישה נוצרו בהצלחה",
-      "credentialDeleted": "פרטי הגישה נמחקו בהצלחה",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
-    },
-    "createNewAliasFor": "יצירת כינוי חדש עבור",
-    "errors": {
-      "loadFailed": "טעינת פרטי הגישה נכשלה",
-      "saveFailed": "Failed to save credential",
-      "generateUsernameFailed": "יצירת שם משתמש נכשלה",
-      "generatePasswordFailed": "יצירת סיסמה נכשלה"
-    },
-    "contextMenu": {
-      "title": "אפשרויות פרטי גישה",
-      "edit": "עריכה",
-      "delete": "מחיקה",
-      "copyUsername": "העתקת שם משתמש",
-      "copyEmail": "העתקת דוא״ל",
-      "copyPassword": "העתקת סיסמה"
+      "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע.",
+      "passwordChangeRequiresOnline": "Password change requires an internet connection. Please try again when online."
     }
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "אתר",
-    "displayName": "שם תצוגה",
     "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
     "passkeyMarkedForDeletion": "Passkey marked for deletion",
     "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+  },
+  "totp": {
+    "addCode": "Add 2FA Code",
+    "nameOptional": "שם (רשות)",
+    "secretKey": "מפתח סודי",
+    "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
+    "saveToViewCode": "יש לשמור כדי לצפות בקוד",
+    "errors": {
+      "invalidSecretKey": "Invalid secret key format."
+    }
   },
   "settings": {
     "title": "הגדרות",
@@ -229,7 +145,10 @@
       "openAutofillSettings": "פתיחת הגדרות השלמה אוטומטית",
       "buttonTip": "אם הכפתור שלעיל לא עובד כנראה שהוא חסום עקב הגדרות אבטחת מידע. אפשר לגשת ידנית להגדרות Android ← ניהול כללי ← סיסמאות והשלמה אוטומטית.",
       "step2": "2. חלק מהיישומונים, למשל: Google Chrome, עלולים לדרוש הגדרות ידניות בהגדרות שלהן כדי שתאפשרנה יישומוני השלמות אוטומטיות מגורמי צד־שלישי. עם זאת, רוב היישומונים אמורים לעבוד עם השלמה אוטומטית כברירת מחדל.",
-      "alreadyConfigured": "כבר הגדרתי את זה"
+      "alreadyConfigured": "כבר הגדרתי את זה",
+      "advancedOptions": "אפשרויות מתקדמות",
+      "showSearchText": "הצגת טקסט חיפוש",
+      "showSearchTextDescription": "Include the text AliasVault receives from Android that it uses to search for a matching credential"
     },
     "vaultUnlock": "שיטת שחרור נעילת כספת",
     "autoLock": "תום המתנה לנעילה אוטומטית",
@@ -285,8 +204,12 @@
       "biometricEnabled": "{{biometric}} פעיל כעת",
       "biometricNotAvailable": "{{biometric}} לא זמין",
       "biometricDisabledMessage": "{{biometric}} מושבת עבור AliasVault. כדי להשתמש בו, נא להפעיל אותו בהגדרות ההתקן תחילה.",
-      "biometricHelp": "מפתח פענוח הכספת שלך יאוחסן בצורה מאובטחת במכשיר שלך ב{{keystore}} וניתן יהיה לגשת אליו בצורה מאובטחת עם {{biometric}}.",
+      "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} לא זמין. נא לגעת כדי לפתוח את ההגדרות ו/או לגשת להגדרות המכשיר שלך כדי להפעיל ולהגדיר אותו.",
+      "pin": "קוד גישה אישי",
+      "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
+      "pinEnabled": "שחרור קוד אישי הופעל בהצלחה",
+      "pinDisabled": "PIN unlock has been disabled",
       "passwordHelp": "נא למלא מחדש את סיסמת העל המלאה שלך כדי לשחרר את נעילת הכספת שלך. זה תמיד מופעל כאפשרות גיבוי.",
       "keystoreIOS": "iOS Keychain (צרור מפתחות)",
       "keystoreAndroid": "Android Keystore (אחסון מפתחות)"
@@ -300,19 +223,12 @@
       "languageDescription": "נא להגדיר את השפה שתשמש ליצירת זהויות חדשות.",
       "genderSection": "מגדר",
       "genderDescription": "להגדיר את אפשרויות המגדר ליצירת זהויות חדשות.",
-      "languageOptions": {
-        "english": "אנגלית",
-        "dutch": "הולנדית"
-      },
+      "ageRangeSection": "טווח גילים",
+      "ageRangeDescription": "הגדרת טווח גילים ליצירת זהויות חדשות.",
       "genderOptions": {
         "random": "אקראי",
         "male": "זכר",
         "female": "נקבה"
-      },
-      "errors": {
-        "loadFailed": "טעינת הגדרות מייצר הזהויות נכשלה.",
-        "languageUpdateFailed": "עדכון הגדרת השפה נכשל.",
-        "genderUpdateFailed": "עדכון הגדרת המגדר נכשל."
       }
     },
     "passwordGeneratorSettings": {
@@ -360,7 +276,6 @@
         "success": "הצלחה",
         "failed": "כשל",
         "time": "זמן",
-        "device": "מכשיר",
         "ipAddress": "כתובת IP",
         "client": "לקוח",
         "failedToLoad": "טעינת יומני האימות נכשלה"
@@ -388,12 +303,225 @@
         "failedToDelete": "מחיקת החשבון נכשלה. נא לנסות שוב.",
         "usernameNotFound": "שם המשתמש לא נמצא. נא להיכנס שוב."
       }
+    },
+    "qrScanner": {
+      "title": "QR Code Scanner",
+      "scanningMessage": "Scan AliasVault QR code",
+      "mobileLogin": {
+        "confirmTitle": "Confirm Login Request",
+        "confirmSubtitle": "Re-authenticate to approve login on another device.",
+        "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
+        "successDescription": "The remote device has been successfully logged in.",
+        "requestExpired": "This login request has expired. Please generate a new QR code."
+      }
     }
   },
   "navigation": {
-    "credentials": "פרטי גישה",
+    "vault": "Vault",
     "emails": "הודעות דוא״ל",
     "settings": "הגדרות"
+  },
+  "itemTypes": {
+    "creating": "Creating",
+    "editing": "Editing",
+    "login": {
+      "title": "כניסה"
+    },
+    "alias": {
+      "title": "כינוי"
+    },
+    "creditCard": {
+      "title": "Credit Card",
+      "cardInformation": "Card Information"
+    },
+    "note": {
+      "title": "הערה"
+    },
+    "addField": "Add Field",
+    "addCustomField": "Add Custom Field",
+    "customFields": "Custom Fields",
+    "fieldLabel": "Field Label",
+    "fieldType": "Field Type",
+    "enterFieldName": "Enter field name",
+    "fieldTypes": {
+      "text": "Text",
+      "hidden": "Hidden",
+      "email": "דוא״ל",
+      "url": "URL",
+      "phone": "Phone",
+      "number": "Number",
+      "date": "תאריך",
+      "textArea": "Text Area"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "שם משתמש",
+    "login.password": "סיסמה",
+    "login.email": "דוא״ל",
+    "login.url": "URL",
+    "alias.first_name": "שם פרטי",
+    "alias.last_name": "שם משפחה",
+    "alias.gender": "מגדר",
+    "alias.birthdate": "תאריך לידה",
+    "card.cardholder_name": "Cardholder Name",
+    "card.number": "Card Number",
+    "card.expiry_month": "Expiry Month",
+    "card.expiry_year": "Expiry Year",
+    "card.cvv": "CVV",
+    "card.pin": "PIN",
+    "notes.content": "הערות"
+  },
+  "items": {
+    "title": "Items",
+    "addItem": "Add Item",
+    "editItem": "Edit Item",
+    "deleteItem": "Delete Item",
+    "itemDetails": "Item Details",
+    "itemCreated": "Item Created",
+    "itemCreatedMessage": "Your new item has been added to your vault and is ready to use.",
+    "emailPreview": "תצוגה מקדימה של הודעת דוא״ל",
+    "untitled": "Untitled",
+    "name": "שם",
+    "url": "URL",
+    "itemName": "שם",
+    "service": "שירות",
+    "serviceName": "שם השירות",
+    "serviceUrl": "כתובת השירות",
+    "loginCredentials": "פרטי הגישה",
+    "cardInformation": "Card Information",
+    "username": "שם משתמש",
+    "email": "דוא״ל",
+    "alias": "כינוי",
+    "metadata": "נתוני על",
+    "firstName": "שם פרטי",
+    "lastName": "שם משפחה",
+    "nickName": "כינוי",
+    "fullName": "שם מלא",
+    "gender": "מגדר",
+    "birthDate": "תאריך לידה",
+    "birthDatePlaceholder": "YYYY-MM-DD",
+    "notes": "הערות",
+    "randomAlias": "כינוי אקראי",
+    "manual": "ידני",
+    "generateRandomAlias": "יצירת כינוי אקראי",
+    "clearAliasFields": "לפנות שדות כינויים",
+    "enterEmailPrefix": "נא למלא קידומת דוא״ל",
+    "useDomainChooser": "להשתמש בבורר שמות התחום",
+    "enterCustomDomain": "נא למלא שם תחום מותאם אישית",
+    "selectEmailDomain": "בחירת שם תחום לדוא״ל",
+    "privateEmailTitle": "כתובת דוא״ל פרטית",
+    "privateEmailAliasVaultServer": "שרת AliasVault",
+    "privateEmailDescription": "הצפנה מקצה לקצה, פרטיות מלאה.",
+    "publicEmailTitle": "ספקי תיבת דוא״ל זמנית ציבוריים",
+    "publicEmailDescription": "פרטיות אלמונית אך מוגבלת. תוכן הדוא״ל נגיש לכל מי שיודע את הכתובת.",
+    "searchPlaceholder": "חיפוש בכספת…",
+    "noMatchingItems": "No matching items found",
+    "noMatchingItemsSearch": "No items matching \"{{search}}\"",
+    "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
+    "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
+    "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
+    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
+    "noAttachmentsFound": "No items with attachments found",
+    "noItemsOfTypeFound": "No {{type}} items found",
+    "clearSearch": "Clear search",
+    "clearFilter": "Clear filter",
+    "recentEmails": "הודעות דוא״ל אחרונות",
+    "loadingEmails": "הודעות הדוא״ל נטענות…",
+    "noEmailsYet": "לא התקבלו הודעות דוא״ל עדיין.",
+    "offlineEmailsMessage": "החיבור שלך מנותק. נא להתחבר לאינטרנט כדי לטעון את הודעות הדוא״ל שלך.",
+    "emailLoadError": "אירעה שגיאה בטעינת הודעות הדוא״ל. נא לנסות שוב מאוחר יותר.",
+    "emailUnexpectedError": "אירעה שגיאה לא צפויה בטעינת הודעות הדוא״ל. נא לנסות שוב מאוחר יותר.",
+    "password": "סיסמה",
+    "passwordLength": "אורך סיסמה",
+    "changePasswordComplexity": "הגדרות סיסמה",
+    "includeLowercase": "אותיות קטנות (a-z)",
+    "includeUppercase": "אותיות גדולות (A-Z)",
+    "includeNumbers": "מספרים (‎0‏-9)",
+    "includeSpecialChars": "תווים מיוחדים (!@#)",
+    "avoidAmbiguousChars": "כדאי להימנע מאותיות ותווים שדומים חזותית",
+    "deletingItem": "Deleting item...",
+    "errorLoadingItems": "Error loading items",
+    "vaultSyncFailed": "סנכרון הכספת נכשל",
+    "vaultSyncedSuccessfully": "הכספת סונכרנה בהצלחה",
+    "vaultUpToDate": "הכספת עדכנית",
+    "offlineMessage": "החיבור שלך מנותק. נא להתחבר לאינטרנט כדי לסנכרן את הכספת שלך.",
+    "switchBackToBrowser": "יש לחזור לדפדפן שלך כדי להמשיך.",
+    "filters": {
+      "all": "(All) Items",
+      "passkeys": "Passkeys",
+      "aliases": "כינויים",
+      "userpass": "סיסמאות",
+      "attachments": "צרופות"
+    },
+    "totpCode": "קוד חד־פעמי זמני",
+    "attachments": "צרופות",
+    "deleteAttachment": "מחיקה",
+    "fileSavedTo": "הקובץ נשמר אל",
+    "previewNotSupported": "אין תמיכה בתצוגה מקדימה",
+    "downloadToView": "יש להוריד את הקובץ כדי לצפות בו",
+    "unsavedChanges": {
+      "title": "להתעלם מהשינויים?",
+      "message": "יש שינויים שלא נשמרו. לסלק אותם?",
+      "discard": "סילוק"
+    },
+    "toasts": {
+      "itemUpdated": "Item updated successfully",
+      "itemCreated": "Item created successfully",
+      "itemDeleted": "Item deleted successfully",
+      "usernameCopied": "שם המשתמש הועתק ללוח הגזירים",
+      "emailCopied": "הדוא״ל הועתק ללוח הגזירים",
+      "passwordCopied": "הסיסמה הועתקה ללוח הגזירים"
+    },
+    "createNewAliasFor": "יצירת כינוי חדש עבור",
+    "contextMenu": {
+      "title": "Item Options",
+      "edit": "עריכה",
+      "delete": "מחיקה",
+      "copyUsername": "העתקת שם משתמש",
+      "copyEmail": "העתקת דוא״ל",
+      "copyPassword": "העתקת סיסמה"
+    },
+    "viewHistory": "View history",
+    "history": "History",
+    "noHistoryAvailable": "No history available",
+    "deleteHistoryConfirm": "Are you sure you want to delete this history record?",
+    "deleteConfirm": "Are you sure you want to delete this item? This action cannot be undone.",
+    "folders": {
+      "folder": "תיקייה",
+      "newFolder": "New Folder",
+      "createFolder": "יצירת תיקייה",
+      "editFolder": "Edit Folder",
+      "folderName": "Folder Name",
+      "folderNamePlaceholder": "e.g., Work, Personal",
+      "folderNameRequired": "Folder name is required",
+      "deleteFolder": "Delete Folder",
+      "deleteFolderKeepItems": "Delete folder only",
+      "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+      "deleteFolderAndItems": "Delete folder and all items",
+      "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+      "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and select this folder.",
+      "noFolder": "No Folder",
+      "selectFolder": "בחירת תיקייה"
+    },
+    "recentlyDeleted": {
+      "title": "Recently Deleted",
+      "noItems": "No deleted items",
+      "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+      "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
+      "restore": "Restore",
+      "deletePermanently": "Delete Permanently",
+      "emptyAll": "Empty All",
+      "daysRemaining": "{{count}} day remaining",
+      "daysRemaining_plural": "{{count}} days remaining",
+      "expiringSoon": "Expiring soon",
+      "confirmDeleteTitle": "Delete Permanently?",
+      "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
+      "confirmEmptyAllTitle": "Empty Recently Deleted?",
+      "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered.",
+      "itemRestored": "Item restored",
+      "itemDeleted": "Item permanently deleted",
+      "allItemsDeleted": "All items permanently deleted"
+    }
   },
   "emails": {
     "title": "הודעות דוא״ל",
@@ -417,14 +545,6 @@
       "hoursAgo_single": "לפני שעה",
       "hoursAgo_plural": "לפני {{count}} שעות",
       "yesterday": "אתמול"
-    },
-    "errors": {
-      "generic": "אירעה שגיאה",
-      "loadFailed": "טעינת הודעות הדוא״ל נכשלה",
-      "deleteFailed": "מחיקת הודעת הדוא״ל נכשלה",
-      "dbNotAvailable": "הקשר מסד הנתונים או כתובת הדוא״ל לא זמינים",
-      "decryptFailed": "פענוח הצרופה נכשל",
-      "downloadFailed": "הורדת הצרופה נכשלה"
     }
   },
   "validation": {
@@ -444,7 +564,6 @@
     "INVALID_RECOVERY_CODE": "קוד שחזור שגוי. נא לנסות שוב.",
     "REFRESH_TOKEN_REQUIRED": "אסימון ריענון חובה.",
     "INVALID_REFRESH_TOKEN": "אסימון ריענון שגוי.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "אסימון הריענון נשלל בהצלחה.",
     "PUBLIC_REGISTRATION_DISABLED": "רישום חשבון חדש מושבת כרגע בשרת הזה. נא ליצור קשר עם ההנהלה.",
     "USERNAME_REQUIRED": "שם משתמש חובה.",
     "USERNAME_ALREADY_IN_USE": "שם המשתמש תפוס.",
@@ -461,28 +580,35 @@
     "INTERNAL_SERVER_ERROR": "שגיאת שרת פנימית.",
     "VAULT_ERROR": "הכספת המקומית אינה עדכנית. נא לסנכרן את הכספת שלך על ידי ריענון העמוד ולנסות שוב."
   },
+  "sync": {
+    "offline": "Offline",
+    "syncing": "Syncing...",
+    "pending": "Pending sync",
+    "retrySync": "Tap to retry",
+    "backOnline": "להתחבר בחזרה",
+    "stillOffline": "עדיין בלתי מקוון",
+    "syncFailed": "Sync failed"
+  },
   "app": {
-    "openReadOnlyMode": "פתיחה במצב לקריאה בלבד",
     "status": {
       "unlockingVault": "שחרור נעילת כספת",
       "decryptingVault": "פענוח הצפנת כספת",
-      "openingVaultReadOnly": "כספת נפתח במצב לקריאה בלבד"
+      "openingVaultReadOnly": "כספת נפתח במצב לקריאה בלבד",
+      "retryingConnection": "מתבצע ניסיון להתחבר מחדש…"
     },
     "offline": {
-      "banner": "מצב בלתי מקוון (קריאה בלבד)",
+      "banner": "Offline - changes will sync when online",
       "backOnline": "להתחבר בחזרה",
       "stillOffline": "עדיין בלתי מקוון"
     },
     "alerts": {
       "syncIssue": "אין חיבור",
-      "syncIssueMessage": "לא ניתן לגשת לשרת ה־AliasVault ולא ניתן לסנכרן את הכספת שלך. לפתוח את הכספת המקומית במצב קריאה בלבד או לנסות להתחבר שוב?",
       "openLocalVault": "פתיחת כספת מקומית",
       "retrySync": "לנסות לסנכרן מחדש"
     },
     "navigation": {
       "login": "כניסה",
-      "loginSettings": "הגדרות כניסה",
-      "notFound": "לא נמצא"
+      "loginSettings": "הגדרות כניסה"
     },
     "notFound": {
       "title": "העמוד לא נמצא",

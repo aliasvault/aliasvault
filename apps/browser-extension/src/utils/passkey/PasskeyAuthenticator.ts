@@ -33,7 +33,7 @@ export class PasskeyAuthenticator {
    */
   private constructor() {}
 
-  /** AliasVault AAGUID: a11a5vau-9f32-4b8c-8c5d-2f7d13e8c942 */
+  /** AliasVault AAGUID: a11a5faa-9f32-4b8c-8c5d-2f7d13e8c942 */
   private static readonly AAGUID = new Uint8Array([
     0xa1, 0x1a, 0x5f, 0xaa, 0x9f, 0x32, 0x4b, 0x8c,
     0x8c, 0x5d, 0x2f, 0x7d, 0x13, 0xe8, 0xc9, 0x42

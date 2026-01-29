@@ -126,6 +126,27 @@ export default function SettingsLayout(): React.ReactNode {
           ...defaultHeaderOptions,
         }}
       />
+      <Stack.Screen
+        name="qr-scanner"
+        options={{
+          title: t('settings.qrScanner.title'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="mobile-unlock/[id]"
+        options={{
+          title: t('settings.qrScanner.mobileLogin.confirmTitle'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="mobile-unlock/result"
+        options={{
+          title: t('common.success'),
+          ...defaultHeaderOptions,
+        }}
+      />
     </Stack>
   );
 }

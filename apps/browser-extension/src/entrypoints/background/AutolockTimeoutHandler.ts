@@ -1,6 +1,6 @@
 import { storage } from 'wxt/utils/storage';
 
-import { handleClearVault } from '@/entrypoints/background/VaultMessageHandler';
+import { handleLockVault } from '@/entrypoints/background/VaultMessageHandler';
 
 import { AUTO_LOCK_TIMEOUT_KEY } from '@/utils/Constants';
 
@@ -58,8 +58,7 @@ async function resetAutoLockTimer(): Promise<void> {
   // Set new timer
   autoLockTimer = setTimeout(async () => {
     try {
-      // Lock the vault using the existing handler
-      handleClearVault();
+      handleLockVault();
 
       console.info('[AUTO_LOCK] Vault locked due to inactivity');
       autoLockTimer = null;
@@ -99,8 +98,8 @@ async function extendAutoLockTimer(): Promise<void> {
   // Set new timer
   autoLockTimer = setTimeout(async () => {
     try {
-      // Lock the vault using the existing handler
-      handleClearVault();
+      // Lock the vault (preserves local data for offline unlock)
+      handleLockVault();
 
       console.info('[AUTO_LOCK] Vault locked due to inactivity');
       autoLockTimer = null;

@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Page titles and descriptions -->
+  <data name="AddItemTitle">
+    <value>Add Item</value>
+    <comment>Title for adding a new item</comment>
+  </data>
+  <data name="EditItemTitle">
+    <value>Edit Item</value>
+    <comment>Title for editing an existing item</comment>
+  </data>
+  <data name="AddItemDescription">
+    <value>Create a new item below.</value>
+    <comment>Description for adding a new item</comment>
+  </data>
+  <data name="EditItemDescription">
+    <value>Edit the existing item below.</value>
+    <comment>Description for editing an existing item</comment>
+  </data>
+  <!-- Breadcrumb items -->
+  <data name="ViewItemBreadcrumb">
+    <value>View item</value>
+    <comment>Breadcrumb text for viewing an item</comment>
+  </data>
+  <data name="EditItemBreadcrumb">
+    <value>Edit item</value>
+    <comment>Breadcrumb text for editing an item</comment>
+  </data>
+  <data name="AddNewItemBreadcrumb">
+    <value>Add new item</value>
+    <comment>Breadcrumb text for adding a new item</comment>
+  </data>
+  <!-- Section headers -->
+  <data name="ServiceSectionHeader">
+    <value>Item</value>
+    <comment>Header for the item information section</comment>
+  </data>
+  <data name="LoginDetailsSectionHeader">
+    <value>Облікові дані для входу</value>
+    <comment>Header for the login credentials section</comment>
+  </data>
+  <data name="AliasSectionHeader">
+    <value>Псевдонім</value>
+    <comment>Header for the alias information section</comment>
+  </data>
+  <data name="NotesSectionHeader">
+    <value>Нотатки</value>
+    <comment>Header for the notes section</comment>
+  </data>
+  <data name="AttachmentsSectionHeader">
+    <value>Вкладення</value>
+    <comment>Header for the attachments section</comment>
+  </data>
+  <!-- Form labels -->
+  <data name="ServiceNameLabel">
+    <value>Назва</value>
+    <comment>Label for item name input</comment>
+  </data>
+  <data name="ServiceUrlLabel">
+    <value>Website URL</value>
+    <comment>Label for website URL input</comment>
+  </data>
+  <data name="EmailLabel">
+    <value>Електронна пошта</value>
+    <comment>Label for email input</comment>
+  </data>
+  <data name="UsernameLabel">
+    <value>Ім'я користувача</value>
+    <comment>Label for username input</comment>
+  </data>
+  <data name="PasswordLabel">
+    <value>Пароль</value>
+    <comment>Label for password input</comment>
+  </data>
+  <data name="FirstNameLabel">
+    <value>Ім’я</value>
+    <comment>Label for first name input</comment>
+  </data>
+  <data name="LastNameLabel">
+    <value>Прізвище</value>
+    <comment>Label for last name input</comment>
+  </data>
+  <data name="NickNameLabel">
+    <value>Нікнейм</value>
+    <comment>Label for nick name input</comment>
+  </data>
+  <data name="GenderLabel">
+    <value>Стать</value>
+    <comment>Label for gender input</comment>
+  </data>
+  <data name="BirthDateLabel">
+    <value>Дата народження</value>
+    <comment>Label for birth date input</comment>
+  </data>
+  <data name="NotesLabel">
+    <value>Нотатки</value>
+    <comment>Label for notes input</comment>
+  </data>
+  <!-- Placeholders -->
+  <data name="ServiceNamePlaceholder">
+    <value>Наприклад, Facebook</value>
+    <comment>Placeholder text for service name input</comment>
+  </data>
+  <!-- Button text -->
+  <data name="GenerateRandomAliasButton">
+    <value>Генерувати випадковий псевдонім</value>
+    <comment>Button text for generating a random alias</comment>
+  </data>
+  <data name="ClearAliasFieldsButton">
+    <value>Очистити поля псевдоніма</value>
+    <comment>Button text for clearing alias fields</comment>
+  </data>
+  <data name="SaveItemButton">
+    <value>Save Item</value>
+    <comment>Button text for saving an item</comment>
+  </data>
+  <data name="CancelButton">
+    <value>Скасувати</value>
+    <comment>Button text for canceling the operation</comment>
+  </data>
+  <!-- Loading and status messages -->
+  <data name="SavingVaultMessage">
+    <value>Збереження сховища...</value>
+    <comment>Loading message when saving vault</comment>
+  </data>
+  <!-- Error messages -->
+  <data name="ItemNotExistError">
+    <value>This item does not exist (anymore). Please try again.</value>
+    <comment>Error message when item doesn't exist</comment>
+  </data>
+  <data name="ErrorSavingItem">
+    <value>Error saving item. Please try again.</value>
+    <comment>Error message when saving item fails</comment>
+  </data>
+  <!-- Success messages -->
+  <data name="ItemUpdatedSuccess">
+    <value>Item updated successfully.</value>
+    <comment>Success message when item is updated</comment>
+  </data>
+  <data name="ItemCreatedSuccess">
+    <value>Item created successfully.</value>
+    <comment>Success message when item is created</comment>
+  </data>
+  <!-- Passkey labels -->
+  <data name="PasskeySectionHeader">
+    <value>Ключ доступу</value>
+    <comment>Section header for passkey</comment>
+  </data>
+  <data name="PasskeyLabel">
+    <value>Ключ доступу</value>
+    <comment>Label for passkey</comment>
+  </data>
+  <data name="PasskeySiteLabel">
+    <value>Вебсайт</value>
+    <comment>Label for passkey site/relying party ID</comment>
+  </data>
+  <data name="PasskeyDisplayNameLabel">
+    <value>Назва</value>
+    <comment>Label for passkey display name</comment>
+  </data>
+  <data name="PasskeyHelpText">
+    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, use the delete button below. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <comment>Help text explaining how passkeys work</comment>
+  </data>
+  <data name="DeletePasskeyButton">
+    <value>Видалити ключ доступу</value>
+    <comment>Button to delete passkey</comment>
+  </data>
+  <data name="PasskeyMarkedForDeletion">
+    <value>Ключ доступу позначено для видалення</value>
+    <comment>Header when passkey is marked for deletion</comment>
+  </data>
+  <data name="PasskeyWillBeDeleted">
+    <value>This passkey will be deleted when you save this item.</value>
+    <comment>Message explaining passkey will be deleted on save</comment>
+  </data>
+  <data name="UndoButton">
+    <value>Скасувати</value>
+    <comment>Button to undo passkey deletion</comment>
+  </data>
+  <!-- Card section fields -->
+  <data name="CardDetailsSectionHeader">
+    <value>Card Details</value>
+    <comment>Header for the credit card details section</comment>
+  </data>
+  <data name="CardholderNameLabel">
+    <value>Cardholder Name</value>
+    <comment>Label for cardholder name input</comment>
+  </data>
+  <data name="CardNumberLabel">
+    <value>Card Number</value>
+    <comment>Label for card number input</comment>
+  </data>
+  <data name="ExpiryMonthLabel">
+    <value>Expiry Month</value>
+    <comment>Label for expiry month input</comment>
+  </data>
+  <data name="ExpiryYearLabel">
+    <value>Expiry Year</value>
+    <comment>Label for expiry year input</comment>
+  </data>
+  <data name="CardCvvLabel">
+    <value>CVV</value>
+    <comment>Label for CVV input</comment>
+  </data>
+  <data name="CardPinLabel">
+    <value>PIN</value>
+    <comment>Label for PIN input</comment>
+  </data>
+  <!-- Custom fields section -->
+  <data name="CustomFieldsSectionHeader">
+    <value>Custom Fields</value>
+    <comment>Header for the custom fields section</comment>
+  </data>
+  <data name="RemoveField">
+    <value>Remove field</value>
+    <comment>Tooltip for removing a field</comment>
+  </data>
+  <data name="AddEmailField">
+    <value>Add Email</value>
+    <comment>Button text for adding email field</comment>
+  </data>
+</root>

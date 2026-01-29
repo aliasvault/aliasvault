@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="LoggingOutTitle" xml:space="preserve">
-    <value>登出中</value>
+    <value>退出登录中</value>
     <comment>Title shown during logout process</comment>
   </data>
   <data name="LoggingOutDescription" xml:space="preserve">
-    <value>正在安全卸载您的数据并登出。请稍候。</value>
+    <value>正在安全卸载您的数据并退出登录。请稍候。</value>
     <comment>Description shown during logout process</comment>
   </data>
 </root>

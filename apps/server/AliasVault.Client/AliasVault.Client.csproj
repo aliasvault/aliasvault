@@ -45,6 +45,14 @@
         </Task>
     </UsingTask>
 
+    <Target Name="NpmInstall" BeforeTargets="NpmBuild" Condition="!Exists('node_modules')">
+        <Exec Command="npm install" WorkingDirectory="$(ProjectDir)" />
+    </Target>
+
+    <Target Name="NpmBuild" BeforeTargets="GenerateCacheBustedIndexHtml">
+        <Exec Command="npm run build:js" WorkingDirectory="$(ProjectDir)" />
+    </Target>
+
     <Target Name="GenerateCacheBustedIndexHtml" BeforeTargets="Build">
         <ReplaceText InputFile="wwwroot/index.template.html" OutputFile="wwwroot/index.html" CacheBuster="$(CacheBuster)" BuildVersion="$(BuildVersion)" />
     </Target>

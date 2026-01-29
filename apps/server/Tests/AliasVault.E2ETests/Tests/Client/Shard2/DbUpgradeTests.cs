@@ -41,6 +41,12 @@ public class DbUpgradeTests : ClientPlaywrightTest
             "Test credential 2",
         ];
 
+        // The 1.0.0 vault was created when SRP used the username as the identity.
+        // Update the user's SrpIdentity to match what the old vault expects (lowercase username).
+        var user = ApiDbContext.AliasVaultUsers.First();
+        user.SrpIdentity = TestUserUsername.ToLowerInvariant();
+        await ApiDbContext.SaveChangesAsync();
+
         // Insert static 1.0.0 vault into the database for the current user.
         ApiDbContext.Vaults.Add(
             new Vault
@@ -62,39 +68,39 @@ public class DbUpgradeTests : ClientPlaywrightTest
         await Logout();
         await Login();
 
-        // Wait for two things: either the homepage to show with credentials OR the
+        // Wait for two things: either the homepage to show with items OR the
         // vault upgrade step to show.
         await WaitForUrlAsync("sync", "Vault needs to be upgraded");
 
         var submitButton = Page.Locator("text=Start upgrade process").First;
         await submitButton.ClickAsync();
 
-        // Soft navigate to credentials.
-        await NavigateUsingBlazorRouter("credentials");
+        // Soft navigate to items.
+        await NavigateUsingBlazorRouter("items");
         await WaitForUrlAsync(string.Empty, "Test credential 1");
 
-        // Wait for all credential cards on the page to have fully rendered.
+        // Wait for all item cards on the page to have fully rendered.
         await Task.Delay(500);
 
         // Check if the expected service names still appear on the index page and are still accessible.
         var pageContent = await Page.TextContentAsync("body");
         foreach (var serviceName in expectedServiceNamesInVault)
         {
-            Assert.That(pageContent, Does.Contain(serviceName), $"Credential name '{serviceName}' which existed in 1.0.0 encrypted vault does not appear on index page after database upgrade. Check client DB migration logic for potential data loss.");
+            Assert.That(pageContent, Does.Contain(serviceName), $"Item name '{serviceName}' which existed in 1.0.0 encrypted vault does not appear on index page after database upgrade. Check client DB migration logic for potential data loss.");
 
             // Find the clickable div with class "credential-card" containing the service name
             var credentialCard = await Page.WaitForSelectorAsync($".credential-card:has-text('{serviceName}')");
-            Assert.That(credentialCard, Is.Not.Null, $"Could not find credential card for service '{serviceName}'");
+            Assert.That(credentialCard, Is.Not.Null, $"Could not find item card for service '{serviceName}'");
 
-            // Click on the credential card
+            // Click on the item card
             await credentialCard.ClickAsync();
 
             // Wait for navigation to complete
-            await WaitForUrlAsync("credentials/**");
+            await WaitForUrlAsync("items/**");
 
             // Check if the service name appears in the body of the new page
-            var credentialPageContent = await Page.TextContentAsync("body");
-            Assert.That(credentialPageContent, Does.Contain(serviceName), $"Service name '{serviceName}' not found on the credential details page");
+            var itemPageContent = await Page.TextContentAsync("body");
+            Assert.That(itemPageContent, Does.Contain(serviceName), $"Service name '{serviceName}' not found on the item details page");
 
             // Navigate back to the index page for the next iteration
             await Page.GoBackAsync();

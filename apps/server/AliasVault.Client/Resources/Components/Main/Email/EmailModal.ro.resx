@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="FromLabel" xml:space="preserve">
+    <value>De la:</value>
+    <comment>Email sender field label</comment>
+  </data>
+  <data name="ToLabel" xml:space="preserve">
+    <value>Către:</value>
+    <comment>Email recipient field label</comment>
+  </data>
+  <data name="DateLabel" xml:space="preserve">
+    <value>Dată:</value>
+    <comment>Email date field label</comment>
+  </data>
+  <data name="ActionsLabel" xml:space="preserve">
+    <value>Acțiuni:</value>
+    <comment>Email actions section label</comment>
+  </data>
+  <data name="DeleteButton" xml:space="preserve">
+    <value>Șterge</value>
+    <comment>Delete email button text</comment>
+  </data>
+  <data name="AttachmentsLabel" xml:space="preserve">
+    <value>Atașamente:</value>
+    <comment>Email attachments section header</comment>
+  </data>
+  <data name="CloseButton" xml:space="preserve">
+    <value>Închide</value>
+    <comment>Close modal button text</comment>
+  </data>
+  <data name="DeleteEmailTitle" xml:space="preserve">
+    <value>Șterge e-mailul</value>
+    <comment>Delete email confirmation dialog title</comment>
+  </data>
+  <data name="DeleteEmailConfirmation" xml:space="preserve">
+    <value>Sigur dorești să ștergi acest e-mail? Această acțiune este ireversibilă.</value>
+    <comment>Delete email confirmation message</comment>
+  </data>
+  <data name="EmailDeletedSuccess" xml:space="preserve">
+    <value>E-mail șters cu succes</value>
+    <comment>Success message when email is deleted</comment>
+  </data>
+  <data name="EmailDeleteFailed" xml:space="preserve">
+    <value>Ștergerea e-mailului a eșuat</value>
+    <comment>Error message when email deletion fails</comment>
+  </data>
+  <data name="GenericError" xml:space="preserve">
+    <value>A apărut o eroare</value>
+    <comment>Generic error message</comment>
+  </data>
+  <data name="NoEmailBody" xml:space="preserve">
+    <value>[Acest e-mail nu are conținut.]</value>
+    <comment>Message shown when email has no content</comment>
+  </data>
+  <data name="AttachmentDownloadFailed" xml:space="preserve">
+    <value>Descărcarea atașamentului a eșuat</value>
+    <comment>Error message when attachment download fails</comment>
+  </data>
+  <data name="AttachmentDownloadError" xml:space="preserve">
+    <value>Eroare descărcare atașament</value>
+    <comment>Error message for attachment download error</comment>
+  </data>
+</root>

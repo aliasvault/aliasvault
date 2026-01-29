@@ -36,13 +36,13 @@ public class TotpCode : SyncableEntity
     public string SecretKey { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the credential ID.
+    /// Gets or sets the item ID.
     /// </summary>
-    public Guid CredentialId { get; set; }
+    public Guid ItemId { get; set; }
 
     /// <summary>
-    /// Gets or sets the credential.
+    /// Gets or sets the item.
     /// </summary>
-    [ForeignKey("CredentialId")]
-    public virtual Credential? Credential { get; set; }
+    [ForeignKey("ItemId")]
+    public virtual Item? Item { get; set; }
 }

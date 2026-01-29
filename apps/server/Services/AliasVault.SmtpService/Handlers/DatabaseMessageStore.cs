@@ -375,6 +375,14 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
 
         // Insert the email into the database.
         dbContext.Emails.Add(newEmail);
+
+        // Increment the user's EmailsReceived counter (persistent counter for abuse detection)
+        var user = await dbContext.AliasVaultUsers.FindAsync(userEncryptionKey.UserId);
+        if (user != null)
+        {
+            user.EmailsReceived++;
+        }
+
         await dbContext.SaveChangesAsync();
 
         return newEmail.Id;

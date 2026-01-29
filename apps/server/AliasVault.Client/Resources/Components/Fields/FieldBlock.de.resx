@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Login Field Labels -->
+  <data name="FieldLabel_login_username" xml:space="preserve">
+    <value>Benutzername</value>
+    <comment>Label for username field</comment>
+  </data>
+  <data name="FieldLabel_login_password" xml:space="preserve">
+    <value>Passwort</value>
+    <comment>Label for password field</comment>
+  </data>
+  <data name="FieldLabel_login_email" xml:space="preserve">
+    <value>E-Mail</value>
+    <comment>Label for email field</comment>
+  </data>
+  <data name="FieldLabel_login_url" xml:space="preserve">
+    <value>Webseite</value>
+    <comment>Label for URL field</comment>
+  </data>
+  <!-- Alias Field Labels -->
+  <data name="FieldLabel_alias_first_name" xml:space="preserve">
+    <value>Vorname</value>
+    <comment>Label for first name field</comment>
+  </data>
+  <data name="FieldLabel_alias_last_name" xml:space="preserve">
+    <value>Nachname</value>
+    <comment>Label for last name field</comment>
+  </data>
+  <data name="FieldLabel_alias_gender" xml:space="preserve">
+    <value>Geschlecht</value>
+    <comment>Label for gender field</comment>
+  </data>
+  <data name="FieldLabel_alias_birthdate" xml:space="preserve">
+    <value>Geburtsdatum</value>
+    <comment>Label for birthdate field</comment>
+  </data>
+  <!-- Card Field Labels -->
+  <data name="FieldLabel_card_number" xml:space="preserve">
+    <value>Card Number</value>
+    <comment>Label for card number field</comment>
+  </data>
+  <data name="FieldLabel_card_cardholder_name" xml:space="preserve">
+    <value>Cardholder Name</value>
+    <comment>Label for cardholder name field</comment>
+  </data>
+  <data name="FieldLabel_card_expiry_month" xml:space="preserve">
+    <value>Expiry Month</value>
+    <comment>Label for expiry month field</comment>
+  </data>
+  <data name="FieldLabel_card_expiry_year" xml:space="preserve">
+    <value>Expiry Year</value>
+    <comment>Label for expiry year field</comment>
+  </data>
+  <data name="FieldLabel_card_cvv" xml:space="preserve">
+    <value>CVV</value>
+    <comment>Label for CVV field</comment>
+  </data>
+  <data name="FieldLabel_card_pin" xml:space="preserve">
+    <value>PIN</value>
+    <comment>Label for PIN field</comment>
+  </data>
+  <!-- Notes Field Labels -->
+  <data name="FieldLabel_notes_content" xml:space="preserve">
+    <value>Notizen</value>
+    <comment>Label for notes content field</comment>
+  </data>
+  <!-- History -->
+  <data name="ViewHistory" xml:space="preserve">
+    <value>View history</value>
+    <comment>Tooltip for history icon button</comment>
+  </data>
+</root>

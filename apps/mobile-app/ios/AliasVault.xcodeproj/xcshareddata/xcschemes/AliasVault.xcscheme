@@ -39,6 +39,17 @@
                ReferencedContainer = "container:AliasVault.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "CE59C75E2E4F47FD0024A246"
+               BuildableName = "AliasVaultUITests.xctest"
+               BlueprintName = "AliasVaultUITests"
+               ReferencedContainer = "container:AliasVault.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

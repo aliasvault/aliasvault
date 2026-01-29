@@ -1,0 +1,7 @@
+- Add passkey support
+- Add Brazilian Portugese, Russian and Polish languages
+- Add quick autofill feature
+- Add image zoom support to attachment previews
+- Improved search logic
+- Tweak layout on iOS 26
+- Fix a bug where multiple private domains were not shown correctly in email domain chooser

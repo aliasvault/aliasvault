@@ -35,11 +35,6 @@ public enum ApiErrorCode
     INVALID_REFRESH_TOKEN,
 
     /// <summary>
-    /// Refresh token was successfully revoked.
-    /// </summary>
-    REFRESH_TOKEN_REVOKED_SUCCESSFULLY,
-
-    /// <summary>
     /// Public registration is disabled on this server.
     /// </summary>
     PUBLIC_REGISTRATION_DISABLED,
@@ -110,11 +105,6 @@ public enum ApiErrorCode
     PENDING_MIGRATIONS,
 
     /// <summary>
-    /// System is OK.
-    /// </summary>
-    SYSTEM_OK,
-
-    /// <summary>
     /// Internal server error occurred.
     /// </summary>
     INTERNAL_SERVER_ERROR,
@@ -143,4 +133,14 @@ public enum ApiErrorCode
     /// Vault is not up-to-date and requires synchronization.
     /// </summary>
     VAULT_NOT_UP_TO_DATE,
+
+    /// <summary>
+    /// Mobile login request not found or expired.
+    /// </summary>
+    MOBILE_LOGIN_REQUEST_NOT_FOUND,
+
+    /// <summary>
+    /// Mobile login request already fulfilled.
+    /// </summary>
+    MOBILE_LOGIN_REQUEST_ALREADY_FULFILLED,
 }

@@ -17,8 +17,8 @@
 
                 <div class="hidden justify-between items-center w-full lg:flex lg:w-auto lg:order-1">
                     <ul class="flex flex-col mt-4 space-x-6 text-sm font-medium lg:flex-row xl:space-x-8 lg:mt-0">
-                        <NavLink href="/credentials" class="block text-gray-700 hover:text-primary-700 dark:text-gray-400 dark:hover:text-white" ActiveClass="text-primary-700 dark:text-primary-500" Match="NavLinkMatch.All">
-                            @Localizer["CredentialsNav"]
+                        <NavLink href="/items" class="block text-gray-700 hover:text-primary-700 dark:text-gray-400 dark:hover:text-white" ActiveClass="text-primary-700 dark:text-primary-500" Match="NavLinkMatch.All">
+                            @Localizer["VaultNav"]
                         </NavLink>
                         <NavLink href="/emails" class="block text-gray-700 hover:text-primary-700 dark:text-gray-400 dark:hover:text-white" ActiveClass="text-primary-700 dark:text-primary-500" Match="NavLinkMatch.All">
                             @Localizer["EmailsNav"]
@@ -45,8 +45,8 @@
             <div class="absolute w-full md:w-64 top-[40px] md:top-[39px] right-0 z-50 my-4 text-base list-none bg-white rounded-b-lg divide-y divide-gray-100 shadow dark:bg-gray-700 dark:divide-gray-600 @(IsMobileMenuOpen ? "block" : "hidden")" id="mobileMenuDropdown" data-popper-placement="bottom">
                 <ul class="lg:hidden py-1 font-light text-gray-500 dark:text-gray-400" aria-labelledby="mobileMenuDropdownButton">
                     <li>
-                        <NavLink href="/credentials" class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white" ActiveClass="text-primary-700 dark:text-primary-500" Match="NavLinkMatch.Prefix">
-                            @Localizer["CredentialsNav"]
+                        <NavLink href="/items" class="block py-2 px-4 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-400 dark:hover:text-white" ActiveClass="text-primary-700 dark:text-primary-500" Match="NavLinkMatch.Prefix">
+                            @Localizer["VaultNav"]
                         </NavLink>
                     </li>
                     <li>

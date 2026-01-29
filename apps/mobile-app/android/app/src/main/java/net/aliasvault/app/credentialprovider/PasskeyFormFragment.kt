@@ -25,11 +25,12 @@ import net.aliasvault.app.credentialprovider.models.PasskeyRegistrationViewModel
 import net.aliasvault.app.exceptions.PasskeyOperationException
 import net.aliasvault.app.exceptions.VaultOperationException
 import net.aliasvault.app.utils.Helpers
-import net.aliasvault.app.vaultstore.PasskeyWithCredentialInfo
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.models.Passkey
 import net.aliasvault.app.vaultstore.passkey.PasskeyAuthenticator
 import net.aliasvault.app.vaultstore.passkey.PasskeyHelper
+import net.aliasvault.app.vaultstore.repositories.ItemWithCredentialInfo
+import net.aliasvault.app.vaultstore.repositories.PasskeyWithCredentialInfo
 import net.aliasvault.app.webapi.WebApiService
 import org.json.JSONObject
 import java.util.Date
@@ -44,15 +45,21 @@ class PasskeyFormFragment : Fragment() {
         private const val TAG = "PasskeyFormFragment"
         private const val ARG_IS_REPLACE = "is_replace"
         private const val ARG_PASSKEY_ID = "passkey_id"
+        private const val ARG_ITEM_ID = "item_id"
 
         /**
          * Create a new instance of PasskeyFormFragment.
+         *
+         * @param isReplace Whether this is a passkey replacement operation.
+         * @param passkeyId The ID of the passkey to replace (if isReplace is true).
+         * @param itemId The ID of the existing Item to merge passkey into (if merging).
          */
-        fun newInstance(isReplace: Boolean, passkeyId: String?): PasskeyFormFragment {
+        fun newInstance(isReplace: Boolean, passkeyId: String?, itemId: String? = null): PasskeyFormFragment {
             return PasskeyFormFragment().apply {
                 arguments = Bundle().apply {
                     putBoolean(ARG_IS_REPLACE, isReplace)
                     passkeyId?.let { putString(ARG_PASSKEY_ID, it) }
+                    itemId?.let { putString(ARG_ITEM_ID, it) }
                 }
             }
         }
@@ -63,7 +70,9 @@ class PasskeyFormFragment : Fragment() {
     private lateinit var webApiService: WebApiService
 
     private var isReplace: Boolean = false
+    private var isMerge: Boolean = false
     private var passkeyToReplace: PasskeyWithCredentialInfo? = null
+    private var itemToMerge: ItemWithCredentialInfo? = null
 
     // UI elements
     private lateinit var headerSubtitle: TextView
@@ -83,9 +92,16 @@ class PasskeyFormFragment : Fragment() {
         super.onCreate(savedInstanceState)
         isReplace = arguments?.getBoolean(ARG_IS_REPLACE) ?: false
         val passkeyId = arguments?.getString(ARG_PASSKEY_ID)
+        val itemId = arguments?.getString(ARG_ITEM_ID)
+
         passkeyToReplace = passkeyId?.let {
             viewModel.getPasskeyById(UUID.fromString(it))
         }
+
+        itemToMerge = itemId?.let {
+            viewModel.getItemById(UUID.fromString(it))
+        }
+        isMerge = itemToMerge != null
 
         // Initialize services
         vaultStore = VaultStore.getExistingInstance()
@@ -120,18 +136,29 @@ class PasskeyFormFragment : Fragment() {
         loadingIndicator = view.findViewById(R.id.loadingIndicator)
 
         // Update UI based on mode
-        if (isReplace && passkeyToReplace != null) {
-            headerTitle.text = getString(R.string.replace_passkey_title)
-            headerSubtitle.visibility = View.GONE
-            infoExplanationText.text = getString(R.string.passkey_replace_explanation)
-            displayNameInput.setText(passkeyToReplace?.passkey?.displayName)
-            saveButton.text = getString(R.string.passkey_replace_button)
-        } else {
-            headerTitle.text = getString(R.string.create_passkey_title)
-            headerSubtitle.visibility = View.GONE
-            infoExplanationText.text = getString(R.string.passkey_create_explanation)
-            displayNameInput.setText(viewModel.rpName ?: viewModel.rpId)
-            saveButton.text = getString(R.string.passkey_create_button)
+        when {
+            isReplace && passkeyToReplace != null -> {
+                headerTitle.text = getString(R.string.replace_passkey)
+                headerSubtitle.visibility = View.GONE
+                infoExplanationText.text = getString(R.string.passkey_replace_explanation)
+                displayNameInput.setText(passkeyToReplace?.passkey?.displayName)
+                saveButton.text = getString(R.string.replace_passkey)
+            }
+            isMerge && itemToMerge != null -> {
+                headerTitle.text = getString(R.string.add_passkey)
+                headerSubtitle.visibility = View.VISIBLE
+                headerSubtitle.text = getString(R.string.add_passkey_subtitle)
+                infoExplanationText.text = getString(R.string.passkey_merge_explanation)
+                displayNameInput.setText(itemToMerge?.serviceName ?: viewModel.rpName ?: viewModel.rpId)
+                saveButton.text = getString(R.string.add_passkey)
+            }
+            else -> {
+                headerTitle.text = getString(R.string.create_passkey_title)
+                headerSubtitle.visibility = View.GONE
+                infoExplanationText.text = getString(R.string.passkey_create_explanation)
+                displayNameInput.setText(viewModel.rpName ?: viewModel.rpId)
+                saveButton.text = getString(R.string.passkey_create_button)
+            }
         }
 
         // Set website
@@ -175,10 +202,16 @@ class PasskeyFormFragment : Fragment() {
 
         // Start passkey creation in coroutine
         lifecycleScope.launch {
-            if (isReplace && passkeyToReplace != null) {
-                replacePasskeyFlow(displayName, passkeyToReplace!!)
-            } else {
-                createPasskeyFlow(displayName)
+            when {
+                isReplace && passkeyToReplace != null -> {
+                    replacePasskeyFlow(displayName, passkeyToReplace!!)
+                }
+                isMerge && itemToMerge != null -> {
+                    mergePasskeyFlow(displayName, itemToMerge!!)
+                }
+                else -> {
+                    createPasskeyFlow(displayName)
+                }
             }
         }
     }
@@ -214,12 +247,11 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_checking_connection))
             }
 
-            try {
-                vaultStore.syncVault(webApiService)
-            } catch (e: Exception) {
+            val syncResult = vaultStore.syncVaultWithServer(webApiService)
+            if (!syncResult.success && !syncResult.wasOffline) {
                 // Server connectivity check failed - show appropriate error dialog
                 withContext(Dispatchers.Main) {
-                    showSyncErrorAlert(e)
+                    showSyncErrorAlert(Exception(syncResult.error ?: "Sync failed"))
                 }
                 return@withContext
             }
@@ -246,8 +278,11 @@ class PasskeyFormFragment : Fragment() {
             val requestObj = JSONObject(viewModel.requestJson)
             val challenge = requestObj.optString("challenge", "")
 
-            // Use origin from the request, or fallback to RP id
-            val requestOrigin = viewModel.origin ?: ("https://" + viewModel.rpId)
+            // Use the origin set by PasskeyRegistrationActivity
+            val requestOrigin = viewModel.origin
+                ?: throw net.aliasvault.app.exceptions.PasskeyOperationException(
+                    "Origin not available",
+                )
 
             // Extract PRF inputs if present
             val prfInputs = extractPrfInputs(requestObj)
@@ -269,7 +304,7 @@ class PasskeyFormFragment : Fragment() {
             val now = Date()
             val passkey = Passkey(
                 id = passkeyId,
-                parentCredentialId = UUID.randomUUID(), // Will be set by createCredentialWithPasskey
+                parentItemId = UUID.randomUUID(), // Will be set by createItemWithPasskey
                 rpId = viewModel.rpId,
                 userHandle = viewModel.userId,
                 userName = viewModel.userName,
@@ -287,7 +322,7 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_saving))
             }
 
-            vaultStore.createCredentialWithPasskey(
+            vaultStore.createItemWithPasskey(
                 rpId = viewModel.rpId,
                 userName = viewModel.userName,
                 displayName = displayName,
@@ -406,12 +441,11 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_checking_connection))
             }
 
-            try {
-                vaultStore.syncVault(webApiService)
-            } catch (e: Exception) {
+            val syncResult = vaultStore.syncVaultWithServer(webApiService)
+            if (!syncResult.success && !syncResult.wasOffline) {
                 // Server connectivity check failed - show appropriate error dialog
                 withContext(Dispatchers.Main) {
-                    showSyncErrorAlert(e)
+                    showSyncErrorAlert(Exception(syncResult.error ?: "Sync failed"))
                 }
                 return@withContext
             }
@@ -438,8 +472,9 @@ class PasskeyFormFragment : Fragment() {
             val requestObj = JSONObject(viewModel.requestJson)
             val challenge = requestObj.optString("challenge", "")
 
-            // Use origin from the request
-            val requestOrigin = viewModel.origin ?: throw PasskeyOperationException("Origin not available")
+            // Use the origin set by PasskeyRegistrationActivity
+            val requestOrigin = viewModel.origin
+                ?: throw PasskeyOperationException("Origin not available")
 
             // Extract PRF inputs if present
             val prfInputs = extractPrfInputs(requestObj)
@@ -461,7 +496,7 @@ class PasskeyFormFragment : Fragment() {
             val now = Date()
             val newPasskey = Passkey(
                 id = newPasskeyId,
-                parentCredentialId = passkeyToReplace.passkey.parentCredentialId,
+                parentItemId = passkeyToReplace.passkey.parentItemId,
                 rpId = viewModel.rpId,
                 userHandle = viewModel.userId,
                 userName = viewModel.userName,
@@ -479,22 +514,12 @@ class PasskeyFormFragment : Fragment() {
                 showLoading(getString(R.string.passkey_saving))
             }
 
-            val db = vaultStore.database ?: throw VaultOperationException("Vault not unlocked")
-            db.beginTransaction()
-            try {
-                vaultStore.replacePasskey(
-                    oldPasskeyId = passkeyToReplace.passkey.id,
-                    newPasskey = newPasskey,
-                    displayName = displayName,
-                    logo = logo,
-                )
-
-                // Commit transaction and persist to encrypted vault file
-                vaultStore.commitTransaction()
-            } catch (e: Exception) {
-                db.endTransaction()
-                throw e
-            }
+            vaultStore.replacePasskey(
+                oldPasskeyId = passkeyToReplace.passkey.id,
+                newPasskey = newPasskey,
+                displayName = displayName,
+                logo = logo,
+            )
 
             // Step 4: Upload vault changes to server
             withContext(Dispatchers.Main) {
@@ -592,6 +617,201 @@ class PasskeyFormFragment : Fragment() {
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error replacing passkey", e)
+            withContext(Dispatchers.Main) {
+                showError(getString(R.string.passkey_creation_failed) + ": ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Merge passkey into existing Item flow.
+     * Adds a passkey to an existing credential (Item) that has user/pass but no passkey.
+     */
+    private suspend fun mergePasskeyFlow(
+        displayName: String,
+        item: ItemWithCredentialInfo,
+    ) = withContext(Dispatchers.IO) {
+        try {
+            // Step 1: Sync vault before adding passkey to ensure we have latest data
+            withContext(Dispatchers.Main) {
+                showLoading(getString(R.string.passkey_checking_connection))
+            }
+
+            val syncResult = vaultStore.syncVaultWithServer(webApiService)
+            if (!syncResult.success && !syncResult.wasOffline) {
+                // Server connectivity check failed - show appropriate error dialog
+                withContext(Dispatchers.Main) {
+                    showSyncErrorAlert(Exception(syncResult.error ?: "Sync failed"))
+                }
+                return@withContext
+            }
+
+            // Step 2: Create passkey
+            withContext(Dispatchers.Main) {
+                showLoading(getString(R.string.passkey_creating))
+            }
+
+            // Extract favicon (optional)
+            var logo: ByteArray? = null
+            try {
+                logo = webApiService.extractFavicon("https://${viewModel.rpId}")
+            } catch (e: Exception) {
+                Log.w(TAG, "Favicon extraction failed", e)
+                // Continue without logo
+            }
+
+            // Generate passkey credentials
+            val passkeyId = UUID.randomUUID()
+            val credentialId = PasskeyHelper.guidToBytes(passkeyId.toString())
+
+            // Parse request to get challenge
+            val requestObj = JSONObject(viewModel.requestJson)
+            val challenge = requestObj.optString("challenge", "")
+
+            // Use the origin set by PasskeyRegistrationActivity
+            val requestOrigin = viewModel.origin
+                ?: throw PasskeyOperationException("Origin not available")
+
+            // Extract PRF inputs if present
+            val prfInputs = extractPrfInputs(requestObj)
+            val enablePrf = prfInputs != null
+
+            // Create the passkey using PasskeyAuthenticator
+            val passkeyResult = PasskeyAuthenticator.createPasskey(
+                credentialId = credentialId,
+                rpId = viewModel.rpId,
+                userId = viewModel.userId,
+                userName = viewModel.userName,
+                userDisplayName = viewModel.userDisplayName,
+                uvPerformed = true,
+                enablePrf = enablePrf,
+                prfInputs = prfInputs,
+            )
+
+            // Create Passkey model object
+            val now = Date()
+            val passkey = Passkey(
+                id = passkeyId,
+                parentItemId = item.itemId, // Link to existing Item
+                rpId = viewModel.rpId,
+                userHandle = viewModel.userId,
+                userName = viewModel.userName,
+                publicKey = passkeyResult.publicKey,
+                privateKey = passkeyResult.privateKey,
+                prfKey = passkeyResult.prfSecret,
+                displayName = displayName,
+                createdAt = now,
+                updatedAt = now,
+                isDeleted = false,
+            )
+
+            // Step 3: Add passkey to existing Item in database
+            withContext(Dispatchers.Main) {
+                showLoading(getString(R.string.passkey_saving))
+            }
+
+            vaultStore.addPasskeyToExistingItem(
+                itemId = item.itemId,
+                passkeyObj = passkey,
+                logo = logo,
+            )
+
+            // Step 4: Upload vault changes to server
+            withContext(Dispatchers.Main) {
+                showLoading(getString(R.string.passkey_syncing))
+            }
+
+            try {
+                vaultStore.mutateVault(webApiService)
+            } catch (e: Exception) {
+                Log.w(TAG, "Vault mutation failed, but passkey was added locally", e)
+                // Show error dialog but continue - passkey is still saved locally
+                withContext(Dispatchers.Main) {
+                    showSyncErrorAlert(e)
+                    delay(2000)
+                }
+            }
+
+            // Step 5: Update credential identity cache
+            updateCredentialIdentityCache()
+
+            // Build response (same as create flow)
+            val credentialIdB64 = Helpers.bytesToBase64url(credentialId)
+            val attestationObjectB64 = Helpers.bytesToBase64url(passkeyResult.attestationObject)
+
+            val clientDataJson = buildClientDataJson(challenge, requestOrigin)
+            val clientDataJsonB64 = Helpers.bytesToBase64url(clientDataJson.toByteArray(Charsets.UTF_8))
+
+            val responseJson = JSONObject().apply {
+                put("id", credentialIdB64)
+                put("rawId", credentialIdB64)
+                put("type", "public-key")
+                put("authenticatorAttachment", "cross-platform")
+                put(
+                    "response",
+                    JSONObject().apply {
+                        put("clientDataJSON", clientDataJsonB64)
+                        put("attestationObject", attestationObjectB64)
+                        put("authenticatorData", Helpers.bytesToBase64url(passkeyResult.authenticatorData))
+                        put(
+                            "transports",
+                            org.json.JSONArray().apply {
+                                put("internal")
+                            },
+                        )
+                        put("publicKey", Helpers.bytesToBase64url(passkeyResult.publicKeyDER))
+                        put("publicKeyAlgorithm", -7)
+                    },
+                )
+
+                // Add PRF extension results if present
+                val prfResults = if (enablePrf) {
+                    passkeyResult.prfResults
+                } else {
+                    null
+                }
+                if (prfResults != null) {
+                    put(
+                        "clientExtensionResults",
+                        JSONObject().apply {
+                            put(
+                                "prf",
+                                JSONObject().apply {
+                                    put("enabled", true)
+                                    put(
+                                        "results",
+                                        JSONObject().apply {
+                                            put("first", Helpers.bytesToBase64url(prfResults.first))
+                                            prfResults.second?.let {
+                                                put("second", Helpers.bytesToBase64url(it))
+                                            }
+                                        },
+                                    )
+                                },
+                            )
+                        },
+                    )
+                } else {
+                    put("clientExtensionResults", JSONObject())
+                }
+            }
+
+            val response = CreatePublicKeyCredentialResponse(responseJson.toString())
+
+            withContext(Dispatchers.Main) {
+                hideLoading()
+                val resultIntent = Intent()
+                try {
+                    PendingIntentHandler.setCreateCredentialResponse(resultIntent, response)
+                    requireActivity().setResult(Activity.RESULT_OK, resultIntent)
+                    requireActivity().finish()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error setting credential response", e)
+                    showError(getString(R.string.passkey_creation_failed) + ": ${e.message}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error adding passkey to existing item", e)
             withContext(Dispatchers.Main) {
                 showError(getString(R.string.passkey_creation_failed) + ": ${e.message}")
             }

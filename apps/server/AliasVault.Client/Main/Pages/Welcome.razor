@@ -203,14 +203,14 @@
 
     private void CreateFirstIdentity()
     {
-        NavigationManager.NavigateTo("credentials/create");
+        NavigationManager.NavigateTo("items/create");
     }
 
     private async Task FinishTutorial()
     {
         GlobalLoadingSpinner.Show(Localizer["FinishingTutorialMessage"]);
         await DbService.Settings.SetTutorialDoneAsync(true);
-        NavigationManager.NavigateTo("credentials");
+        NavigationManager.NavigateTo("items");
         GlobalLoadingSpinner.Hide();
     }
 

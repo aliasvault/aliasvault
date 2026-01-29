@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Step titles -->
+  <data name="TermsAndConditionsStepTitle">
+    <value>Utilizare AliasVault</value>
+    <comment>Title for the terms and conditions step</comment>
+  </data>
+  <data name="UsernameStepTitle">
+    <value>Alegeți numele de utilizator</value>
+    <comment>Title for the username selection step</comment>
+  </data>
+  <data name="PasswordStepTitle">
+    <value>Setați parola</value>
+    <comment>Title for the password creation step</comment>
+  </data>
+  <data name="CreatingStepTitle">
+    <value>Se creează seiful</value>
+    <comment>Title for the vault creation step</comment>
+  </data>
+  <data name="SetupStepTitle">
+    <value>Configurare</value>
+    <comment>Default setup step title</comment>
+  </data>
+  <!-- Button text -->
+  <data name="CreateAccountButton">
+    <value>Creați cont</value>
+    <comment>Button text for creating account</comment>
+  </data>
+  <data name="ContinueButton">
+    <value>Continuă</value>
+    <comment>Continue button text</comment>
+  </data>
+</root>

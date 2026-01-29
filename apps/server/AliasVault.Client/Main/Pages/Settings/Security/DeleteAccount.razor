@@ -4,11 +4,12 @@
 @using AliasVault.Client.Utilities
 @using AliasVault.Shared.Models.WebApi.Auth
 @using AliasVault.Cryptography.Client
-@using SecureRemotePassword
+@using AliasVault.Client.Services.JsInterop.RustCore
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.Extensions.Localization
 @using AliasVault.Client.Resources
 @inject HttpClient Http
+@inject RustCoreService RustCoreService
 
 <LayoutPageTitle>@Localizer["PageTitle"]</LayoutPageTitle>
 
@@ -99,12 +100,17 @@
     /// <summary>
     /// The ephemeral client for SRP.
     /// </summary>
-    private SrpEphemeral ClientEphemeral { get; set; } = null!;
+    private SrpEphemeral ClientEphemeral { get; set; } = new();
 
     /// <summary>
     /// The session client for SRP.
     /// </summary>
-    private SrpSession ClientSession { get; set; } = null!;
+    private SrpSession ClientSession { get; set; } = new();
+
+    /// <summary>
+    /// The SRP private key.
+    /// </summary>
+    private string PrivateKey { get; set; } = string.Empty;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -171,18 +177,22 @@
                 return;
             }
 
+            // Use srpIdentity from server response if available, otherwise fall back to username.
+            // Note: the fallback can be removed in the future after 0.27.0+ is deployed.
+            var srpIdentity = loginResponse.SrpIdentity ?? username;
+
             // Verify password using SRP
             var passwordHash = await Encryption.DeriveKeyFromPasswordAsync(_passwordModel.Password, loginResponse.Salt, loginResponse.EncryptionType, loginResponse.EncryptionSettings);
             var passwordHashString = BitConverter.ToString(passwordHash).Replace("-", string.Empty);
 
-            ClientEphemeral = Srp.GenerateEphemeralClient();
-            var privateKey = Srp.DerivePrivateKey(loginResponse.Salt, username, passwordHashString);
-            ClientSession = Srp.DeriveSessionClient(
-                privateKey,
+            ClientEphemeral = await RustCoreService.SrpGenerateEphemeralAsync();
+            PrivateKey = await RustCoreService.SrpDerivePrivateKeyAsync(loginResponse.Salt, srpIdentity, passwordHashString);
+            ClientSession = await RustCoreService.SrpDeriveSessionClientAsync(
+                PrivateKey,
                 ClientEphemeral.Secret,
                 loginResponse.ServerEphemeral,
                 loginResponse.Salt,
-                username);
+                srpIdentity);
 
             // Send final delete request with SRP proof.
             result = await Http.PostAsJsonAsync("v1/Auth/delete-account/confirm", new DeleteAccountRequest(username, ClientEphemeral.Public, ClientSession.Proof));

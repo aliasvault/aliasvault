@@ -14,7 +14,7 @@ import net.aliasvault.app.credentialprovider.models.PasskeyRegistrationViewModel
 
 /**
  * Fragment that shows the passkey selection screen.
- * Displays options to create new or replace existing passkeys.
+ * Displays options to create new, replace existing passkeys, or merge with existing credentials.
  */
 class PasskeySelectionFragment : Fragment() {
 
@@ -35,6 +35,9 @@ class PasskeySelectionFragment : Fragment() {
         val headerSubtitle = view.findViewById<TextView>(R.id.headerSubtitle)
         val createNewButton = view.findViewById<MaterialButton>(R.id.createNewButton)
         val existingPasskeysContainer = view.findViewById<LinearLayout>(R.id.existingPasskeysContainer)
+        val existingPasskeysSection = view.findViewById<View>(R.id.existingPasskeysSection)
+        val existingItemsSection = view.findViewById<View>(R.id.existingItemsSection)
+        val existingItemsContainer = view.findViewById<LinearLayout>(R.id.existingItemsContainer)
         val cancelButton = view.findViewById<MaterialButton>(R.id.cancelButton)
 
         // Set title and subtitle
@@ -44,33 +47,67 @@ class PasskeySelectionFragment : Fragment() {
         // Set up create new button
         createNewButton.setOnClickListener {
             viewModel.onCreateNewSelected()
-            navigateToForm(isReplace = false, passkeyId = null)
+            navigateToForm(isReplace = false, passkeyId = null, itemId = null)
         }
 
-        // Populate existing passkeys list
-        val inflater = LayoutInflater.from(requireContext())
-        viewModel.existingPasskeys.forEach { passkeyInfo ->
-            val itemView = inflater.inflate(R.layout.item_existing_passkey, existingPasskeysContainer, false)
+        val layoutInflater = LayoutInflater.from(requireContext())
 
-            val displayNameView = itemView.findViewById<TextView>(R.id.passkeyDisplayName)
-            val subtitleView = itemView.findViewById<TextView>(R.id.passkeySubtitle)
+        // Show existing Items without passkeys section (for merging)
+        if (viewModel.existingItemsWithoutPasskey.isNotEmpty()) {
+            existingItemsSection?.visibility = View.VISIBLE
 
-            displayNameView.text = passkeyInfo.passkey.displayName
-            val subtitle = buildString {
-                passkeyInfo.username?.let { append(it) }
-                if (passkeyInfo.username != null && passkeyInfo.serviceName != null) {
-                    append(" • ")
+            viewModel.existingItemsWithoutPasskey.forEach { itemInfo ->
+                val itemView = layoutInflater.inflate(R.layout.item_existing_passkey, existingItemsContainer, false)
+
+                val displayNameView = itemView.findViewById<TextView>(R.id.passkeyDisplayName)
+                val subtitleView = itemView.findViewById<TextView>(R.id.passkeySubtitle)
+
+                displayNameView.text = itemInfo.serviceName ?: viewModel.rpId
+                val subtitle = buildString {
+                    itemInfo.username?.let { append(it) }
                 }
-                passkeyInfo.serviceName?.let { append(it) }
-            }
-            subtitleView.text = subtitle.ifEmpty { viewModel.rpId }
+                subtitleView.text = subtitle.ifEmpty { itemInfo.url ?: viewModel.rpId }
 
-            itemView.setOnClickListener {
-                viewModel.onReplaceSelected(passkeyInfo)
-                navigateToForm(isReplace = true, passkeyId = passkeyInfo.passkey.id.toString())
-            }
+                itemView.setOnClickListener {
+                    viewModel.onMergeSelected(itemInfo)
+                    navigateToForm(isReplace = false, passkeyId = null, itemId = itemInfo.itemId.toString())
+                }
 
-            existingPasskeysContainer.addView(itemView)
+                existingItemsContainer?.addView(itemView)
+            }
+        } else {
+            existingItemsSection?.visibility = View.GONE
+        }
+
+        // Show existing passkeys section (for replacement)
+        if (viewModel.existingPasskeys.isNotEmpty()) {
+            existingPasskeysSection?.visibility = View.VISIBLE
+
+            viewModel.existingPasskeys.forEach { passkeyInfo ->
+                val itemView = layoutInflater.inflate(R.layout.item_existing_passkey, existingPasskeysContainer, false)
+
+                val displayNameView = itemView.findViewById<TextView>(R.id.passkeyDisplayName)
+                val subtitleView = itemView.findViewById<TextView>(R.id.passkeySubtitle)
+
+                displayNameView.text = passkeyInfo.passkey.displayName
+                val subtitle = buildString {
+                    passkeyInfo.username?.let { append(it) }
+                    if (passkeyInfo.username != null && passkeyInfo.serviceName != null) {
+                        append(" • ")
+                    }
+                    passkeyInfo.serviceName?.let { append(it) }
+                }
+                subtitleView.text = subtitle.ifEmpty { viewModel.rpId }
+
+                itemView.setOnClickListener {
+                    viewModel.onReplaceSelected(passkeyInfo)
+                    navigateToForm(isReplace = true, passkeyId = passkeyInfo.passkey.id.toString(), itemId = null)
+                }
+
+                existingPasskeysContainer.addView(itemView)
+            }
+        } else {
+            existingPasskeysSection?.visibility = View.GONE
         }
 
         // Set up cancel button
@@ -80,8 +117,8 @@ class PasskeySelectionFragment : Fragment() {
         }
     }
 
-    private fun navigateToForm(isReplace: Boolean, passkeyId: String?) {
-        val fragment = PasskeyFormFragment.newInstance(isReplace, passkeyId)
+    private fun navigateToForm(isReplace: Boolean, passkeyId: String?, itemId: String?) {
+        val fragment = PasskeyFormFragment.newInstance(isReplace, passkeyId, itemId)
         parentFragmentManager.beginTransaction()
             .setCustomAnimations(
                 R.anim.slide_in_right,

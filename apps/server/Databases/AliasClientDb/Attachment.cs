@@ -34,13 +34,13 @@ public class Attachment : SyncableEntity
     public byte[] Blob { get; set; } = null!;
 
     /// <summary>
-    /// Gets or sets the credential foreign key.
+    /// Gets or sets the item foreign key.
     /// </summary>
-    public Guid CredentialId { get; set; }
+    public Guid ItemId { get; set; }
 
     /// <summary>
-    /// Gets or sets the credential navigation property.
+    /// Gets or sets the item navigation property.
     /// </summary>
-    [ForeignKey("CredentialId")]
-    public virtual Credential Credential { get; set; } = null!;
+    [ForeignKey("ItemId")]
+    public virtual Item Item { get; set; } = null!;
 }

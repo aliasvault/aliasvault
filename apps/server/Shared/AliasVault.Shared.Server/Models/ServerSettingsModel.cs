@@ -23,6 +23,12 @@ public class ServerSettingsModel
     public int AuthLogRetentionDays { get; set; } = 30;
 
     /// <summary>
+    /// Gets or sets the mobile login log retention days. Defaults to 30.
+    /// Mobile login requests older than this will be permanently deleted.
+    /// </summary>
+    public int MobileLoginLogRetentionDays { get; set; } = 30;
+
+    /// <summary>
     /// Gets or sets the email retention days. Defaults to 0 (unlimited).
     /// </summary>
     public int EmailRetentionDays { get; set; }

@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
-import { Href, Stack, useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
 import { Linking, StyleSheet, Platform } from 'react-native';
@@ -12,12 +12,15 @@ import { install } from 'react-native-quick-crypto';
 import { useColors, useColorScheme } from '@/hooks/useColorScheme';
 
 import SpaceMono from '@/assets/fonts/SpaceMono-Regular.ttf';
+import LoadingIndicator from '@/components/LoadingIndicator';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { AliasVaultToast } from '@/components/Toast';
 import { AppProvider } from '@/context/AppContext';
 import { AuthProvider } from '@/context/AuthContext';
 import { ClipboardCountdownProvider } from '@/context/ClipboardCountdownContext';
 import { DbProvider } from '@/context/DbContext';
+import { DialogProvider } from '@/context/DialogContext';
+import { NavigationProvider, useNavigation } from '@/context/NavigationContext';
 import { WebApiProvider } from '@/context/WebApiContext';
 import { initI18n } from '@/i18n';
 
@@ -30,9 +33,9 @@ function RootLayoutNav() : React.ReactNode {
   const colorScheme = useColorScheme();
   const colors = useColors();
   const router = useRouter();
+  const navigation = useNavigation();
 
   const [bootComplete, setBootComplete] = useState(false);
-  const [redirectTarget, setRedirectTarget] = useState<string | null>(null);
   const hasBooted = useRef(false);
 
   useEffect(() => {
@@ -51,52 +54,38 @@ function RootLayoutNav() : React.ReactNode {
       await initI18n();
 
       hasBooted.current = true;
-      setRedirectTarget('/initialize');
+
+      // Check if we have a pending deep link and pass it to initialize
+      const initialUrl = await Linking.getInitialURL();
+      if (initialUrl) {
+        const path = initialUrl
+          .replace('net.aliasvault.app://', '')
+          .replace('aliasvault://', '')
+          .replace('exp+aliasvault://', '');
+
+        navigation.setReturnUrl({ path });
+      }
+
       setBootComplete(true);
     };
 
     initializeApp();
-  }, []);
+  }, [navigation, router]);
 
   useEffect(() => {
     /**
      * Redirect to a explicit target page if we have one (in case of non-happy path).
-     * Otherwise check for a deep link and simulate stack navigation.
-     * If neither is present, we let the router redirect us to the default route.
      */
     const redirect = async () : Promise<void> => {
       if (!bootComplete) {
         return;
       }
 
-      if (redirectTarget) {
-        // If we have an explicit redirect target, we navigate to it. This overrides potential deep link handling.
-        router.replace(redirectTarget as Href);
-      } else {
-        // Check if we have an initial URL to handle (deep link from most likely the autofill extension).
-        const initialUrl = await Linking.getInitialURL();
-        if (initialUrl) {
-          /**
-           * Check for certain supported deep link routes, and if found, ensure we simulate the stack navigation
-           * as otherwise the "back" button for navigation will not work as expected.
-           */
-          const path = initialUrl.replace('net.aliasvault.app://', '');
-          const isDetailRoute = path.includes('credentials/');
-          if (isDetailRoute) {
-            // First go to the credentials tab.
-            router.replace('/(tabs)/credentials');
-
-            // Then push the target route inside the credentials tab.
-            setTimeout(() => {
-              router.push(path as Href);
-            }, 0);
-          }
-        }
-      }
+      router.replace('/initialize');
     };
 
     redirect();
-  }, [bootComplete, redirectTarget, router]);
+  }, [bootComplete, router]);
 
   const styles = StyleSheet.create({
     container: {
@@ -110,6 +99,7 @@ function RootLayoutNav() : React.ReactNode {
     return (
       <ThemedView style={styles.container}>
         {/* Loading state while booting */}
+        <LoadingIndicator />
       </ThemedView>
     );
   }
@@ -182,18 +172,22 @@ export default function RootLayout() : React.ReactNode {
   }
 
   return (
-    <DbProvider>
-      <AuthProvider>
-        <WebApiProvider>
-          <AppProvider>
-            <ClipboardCountdownProvider>
-              <GestureHandlerRootView>
-                <RootLayoutNav />
-              </GestureHandlerRootView>
-            </ClipboardCountdownProvider>
-          </AppProvider>
-        </WebApiProvider>
-      </AuthProvider>
-    </DbProvider>
+    <NavigationProvider>
+      <DbProvider>
+        <AuthProvider>
+          <WebApiProvider>
+            <AppProvider>
+              <ClipboardCountdownProvider>
+                <DialogProvider>
+                  <GestureHandlerRootView>
+                    <RootLayoutNav />
+                  </GestureHandlerRootView>
+                </DialogProvider>
+              </ClipboardCountdownProvider>
+            </AppProvider>
+          </WebApiProvider>
+        </AuthProvider>
+      </DbProvider>
+    </NavigationProvider>
   );
 }

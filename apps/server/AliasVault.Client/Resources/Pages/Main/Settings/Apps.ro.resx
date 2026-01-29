@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Page title and description -->
+  <data name="PageTitle">
+    <value>Extensii și aplicații</value>
+    <comment>Page title for extensions and apps</comment>
+  </data>
+  <data name="PageDescription">
+    <value>Instalează extensiile de browser și aplicațiile mobile pentru a-ți accesa seiful de pe toate dispozitivele și pentru a completa automat datele de autentificare pe site-uri.</value>
+    <comment>Page description for extensions and apps</comment>
+  </data>
+  <data name="BreadcrumbTitle">
+    <value>Extensii și aplicații</value>
+    <comment>Breadcrumb title for extensions and apps</comment>
+  </data>
+  <!-- Browser Extensions Section -->
+  <data name="BrowserExtensionsTitle">
+    <value>Extensii de browser</value>
+    <comment>Title for browser extensions section</comment>
+  </data>
+  <data name="BrowserExtensionsDescription">
+    <value>Extensia de browser AliasVault îți permite să completezi automat datele de autentificare existente pe orice site. De asemenea, îți permite să generezi aliasuri noi în timpul înregistrării, să accesezi e-mailurile primite pe toate aliasurile tale și să îți vizualizezi aliasurile și identitățile.</value>
+    <comment>Description for browser extensions</comment>
+  </data>
+  <data name="InstallButton">
+    <value>Instalați</value>
+    <comment>Install button text</comment>
+  </data>
+  <data name="ComingSoonText">
+    <value>În curând</value>
+    <comment>Coming soon text for unavailable extensions</comment>
+  </data>
+  <!-- Mobile Apps Section -->
+  <data name="MobileAppsTitle">
+    <value>Aplicații mobile</value>
+    <comment>Title for mobile apps section</comment>
+  </data>
+  <data name="MobileAppsDescription">
+    <value>Aplicația mobilă AliasVault îți permite să îți accesezi aliasurile și identitățile de oriunde, să vizualizezi și să gestionezi e-mailurile primite și să generezi aliasuri noi oricând. Datele tale sunt protejate integral prin autentificare biometrică direct pe dispozitiv.</value>
+    <comment>Description for mobile apps</comment>
+  </data>
+  <data name="DownloadButton">
+    <value>Descărcați</value>
+    <comment>Download button text</comment>
+  </data>
+</root>

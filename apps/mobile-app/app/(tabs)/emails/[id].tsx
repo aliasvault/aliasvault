@@ -5,16 +5,17 @@ import * as FileSystem from 'expo-file-system';
 import { useLocalSearchParams, useRouter, useNavigation, Stack } from 'expo-router';
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, ActivityIndicator, Alert, Share, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
+import { StyleSheet, View, ActivityIndicator, Share, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
-import type { Email } from '@/utils/dist/shared/models/webapi';
+import type { Item } from '@/utils/dist/core/models/vault';
+import type { Email } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
 
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
@@ -40,7 +41,8 @@ export default function EmailDetailsScreen() : React.ReactNode {
   const [isMetadataMaximized, setMetadataMaximized] = useState(false);
   const [isHtmlView, setHtmlView] = useState(true);
   const isDarkMode = useColorScheme() === 'dark';
-  const [associatedCredential, setAssociatedCredential] = useState<Credential | null>(null);
+  const [associatedItem, setAssociatedItem] = useState<Item | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   /**
    * Load the email.
@@ -54,6 +56,13 @@ export default function EmailDetailsScreen() : React.ReactNode {
         return;
       }
 
+      // Check if we are in offline mode
+      if (dbContext.isOffline) {
+        setError(t('emails.offlineMessage'));
+        setIsLoading(false);
+        return;
+      }
+
       const response = await webApi.get<Email>(`Email/${id}`);
 
       // Decrypt email locally using public/private key pairs
@@ -61,11 +70,11 @@ export default function EmailDetailsScreen() : React.ReactNode {
       const decryptedEmail = await EncryptionUtility.decryptEmail(response, encryptionKeys);
       setEmail(decryptedEmail);
 
-      // Look up associated credential
+      // Look up associated item
       if (decryptedEmail.toLocal && decryptedEmail.toDomain) {
         const emailAddress = `${decryptedEmail.toLocal}@${decryptedEmail.toDomain}`;
-        const credential = await dbContext.sqliteClient.getCredentialByEmail(emailAddress);
-        setAssociatedCredential(credential);
+        const item = await dbContext.sqliteClient.items.getByEmail(emailAddress);
+        setAssociatedItem(item);
       }
 
       // Set initial view mode based on content
@@ -75,11 +84,20 @@ export default function EmailDetailsScreen() : React.ReactNode {
         setHtmlView(false);
       }
     } catch (err) {
+      /*
+       * Suppress errors while vault has unsynced changes
+       * Network errors during sync can trigger false positives
+       */
+      if (dbContext.shouldSuppressEmailErrors()) {
+        setIsLoading(false);
+        return;
+      }
+
       setError(err instanceof Error ? err.message : t('common.error'));
     } finally {
       setIsLoading(false);
     }
-  }, [dbContext.sqliteClient, id, webApi, t]);
+  }, [dbContext, id, webApi, t]);
 
   useEffect(() => {
     loadEmail();
@@ -88,39 +106,35 @@ export default function EmailDetailsScreen() : React.ReactNode {
   /**
    * Handle the delete button press.
    */
-  const handleDelete = useCallback(async () : Promise<void> => {
-    Alert.alert(
-      t('emails.deleteEmail'),
-      t('emails.deleteEmailConfirm'),
-      [
-        {
-          text: t('common.cancel'),
-          style: 'cancel',
-        },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          /**
-           * Handle the delete button press.
-           */
-          onPress: async () : Promise<void> => {
-            try {
-              // Delete the email from the server.
-              await webApi.delete(`Email/${id}`);
+  const handleDelete = useCallback(() : void => {
+    setShowDeleteConfirm(true);
+  }, []);
 
-              // Refresh the emails list in the index screen.
-              emitter.emit('refreshEmails');
+  /**
+   * Confirm and execute email deletion.
+   */
+  const confirmDelete = useCallback(async () : Promise<void> => {
+    try {
+      // Delete the email from the server.
+      await webApi.delete(`Email/${id}`);
 
-              // Go back to the emails list screen.
-              router.back();
-            } catch (err) {
-              setError(err instanceof Error ? err.message : t('emails.errors.deleteFailed'));
-            }
-          },
-        },
-      ]
-    );
+      // Refresh the emails list in the index screen.
+      emitter.emit('refreshEmails');
+
+      // Go back to the emails list screen.
+      router.back();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
+    }
+    setShowDeleteConfirm(false);
   }, [id, router, webApi, t]);
+
+  /**
+   * Hide delete confirmation dialog.
+   */
+  const hideDeleteConfirm = useCallback((): void => {
+    setShowDeleteConfirm(false);
+  }, []);
 
   /**
    * Handle the download attachment button press.
@@ -132,7 +146,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
       );
 
       if (!dbContext?.sqliteClient || !email) {
-        setError(t('emails.errors.dbNotAvailable'));
+        setError(t('common.errors.unknownError'));
         return;
       }
 
@@ -144,7 +158,7 @@ export default function EmailDetailsScreen() : React.ReactNode {
       );
 
       if (!decryptedBytes) {
-        setError(t('emails.errors.decryptFailed'));
+        setError(t('common.errors.unknownError'));
         return;
       }
 
@@ -163,16 +177,16 @@ export default function EmailDetailsScreen() : React.ReactNode {
       await FileSystem.deleteAsync(tempFile);
     } catch (err) {
       console.error('handleDownloadAttachment error', err);
-      setError(err instanceof Error ? err.message : t('emails.errors.downloadFailed'));
+      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
     }
   };
 
   /**
-   * Handle the open credential button press.
+   * Handle the open item button press.
    */
-  const handleOpenCredential = () : void => {
-    if (associatedCredential) {
-      router.push(`/(tabs)/credentials/${associatedCredential.Id}`);
+  const handleOpenItem = () : void => {
+    if (associatedItem) {
+      router.push(`/(tabs)/items/${associatedItem.Id}`);
     }
   };
 
@@ -238,12 +252,12 @@ export default function EmailDetailsScreen() : React.ReactNode {
     metadataContainer: {
       padding: 2,
     },
-    metadataCredential: {
+    metadataItem: {
       alignItems: 'center',
       alignSelf: 'center',
       flexDirection: 'row',
     },
-    metadataCredentialIcon: {
+    metadataItemIcon: {
       marginRight: 4,
     },
     metadataHeading: {
@@ -405,15 +419,15 @@ export default function EmailDetailsScreen() : React.ReactNode {
           <View style={styles.metadataRow}>
             <View style={styles.metadataValue}>
               <ThemedText style={[styles.metadataText, styles.metadataSubject]}>{email.subject}</ThemedText>
-              {associatedCredential && (
+              {associatedItem && (
                 <View>
                   <RobustPressable
-                    onPress={handleOpenCredential}
-                    style={styles.metadataCredential}
+                    onPress={handleOpenItem}
+                    style={styles.metadataItem}
                   >
-                    <IconSymbol size={16} name={IconSymbolName.Key} color={colors.primary} style={styles.metadataCredentialIcon} />
+                    <IconSymbol size={16} name={IconSymbolName.Key} color={colors.primary} style={styles.metadataItemIcon} />
                     <ThemedText style={[styles.metadataText, { color: colors.primary }]}>
-                      {associatedCredential.ServiceName}
+                      {associatedItem.Name}
                     </ThemedText>
                   </RobustPressable>
                 </View>
@@ -500,27 +514,48 @@ export default function EmailDetailsScreen() : React.ReactNode {
   }
 
   return (
-    <ThemedView style={styles.container}>
-      <Stack.Screen options={{ title: t('emails.emailDetails') }} />
-      {metadataView}
-      {emailView}
-      {email.attachments && email.attachments.length > 0 && (
-        <View style={styles.attachments}>
-          <ThemedText style={styles.attachmentsTitle}>{t('emails.attachments')}</ThemedText>
-          {email.attachments.map((attachment) => (
-            <RobustPressable
-              key={attachment.id}
-              style={styles.attachment}
-              onPress={() => handleDownloadAttachment(attachment)}
-            >
-              <Ionicons name="attach" size={20} color="#666" />
-              <ThemedText style={styles.attachmentName}>
-                {attachment.filename} ({Math.ceil(attachment.filesize / 1024)} {t('emails.sizeKB')})
-              </ThemedText>
-            </RobustPressable>
-          ))}
-        </View>
-      )}
-    </ThemedView>
+    <>
+      <ThemedView style={styles.container}>
+        <Stack.Screen options={{ title: t('emails.emailDetails') }} />
+        {metadataView}
+        {emailView}
+        {email.attachments && email.attachments.length > 0 && (
+          <View style={styles.attachments}>
+            <ThemedText style={styles.attachmentsTitle}>{t('emails.attachments')}</ThemedText>
+            {email.attachments.map((attachment) => (
+              <RobustPressable
+                key={attachment.id}
+                style={styles.attachment}
+                onPress={() => handleDownloadAttachment(attachment)}
+              >
+                <Ionicons name="attach" size={20} color="#666" />
+                <ThemedText style={styles.attachmentName}>
+                  {attachment.filename} ({Math.ceil(attachment.filesize / 1024)} {t('emails.sizeKB')})
+                </ThemedText>
+              </RobustPressable>
+            ))}
+          </View>
+        )}
+      </ThemedView>
+
+      <ConfirmDialog
+        isVisible={showDeleteConfirm}
+        title={t('emails.deleteEmail')}
+        message={t('emails.deleteEmailConfirm')}
+        buttons={[
+          {
+            text: t('common.cancel'),
+            style: 'cancel',
+            onPress: hideDeleteConfirm,
+          },
+          {
+            text: t('common.delete'),
+            style: 'destructive',
+            onPress: confirmDelete,
+          },
+        ]}
+        onClose={hideDeleteConfirm}
+      />
+    </>
   );
 }

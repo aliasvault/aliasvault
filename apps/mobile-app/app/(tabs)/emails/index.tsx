@@ -6,7 +6,7 @@ import { StyleSheet, View, ScrollView, RefreshControl, Animated , Platform } fro
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
-import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { MailboxBulkRequest, MailboxBulkResponse, MailboxEmail } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import emitter from '@/utils/EventEmitter';
 
@@ -19,7 +19,6 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { CollapsibleHeader } from '@/components/ui/CollapsibleHeader';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
-import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
 import { useWebApi } from '@/context/WebApiContext';
 
@@ -30,7 +29,6 @@ export default function EmailsScreen() : React.ReactNode {
   const { t } = useTranslation();
   const dbContext = useDb();
   const webApi = useWebApi();
-  const authContext = useAuth();
   const colors = useColors();
   const navigation = useNavigation();
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -53,15 +51,14 @@ export default function EmailsScreen() : React.ReactNode {
         return;
       }
 
-      // Check if we are in offline mode, if so, we don't need to load emails from the server
-      const isOffline = authContext.isOffline;
-      if (isOffline) {
+      // Check if we are in offline mode
+      if (dbContext.isOffline) {
         setIsLoading(false);
         return;
       }
 
-      // Get unique email addresses from all credentials
-      const emailAddresses = await dbContext.sqliteClient.getAllEmailAddresses();
+      // Get unique email addresses from all items
+      const emailAddresses = await dbContext.sqliteClient.items.getAllEmailAddresses();
 
       try {
         // For now we only show the latest 50 emails. No pagination.
@@ -80,20 +77,29 @@ export default function EmailsScreen() : React.ReactNode {
         setEmails(decryptedEmails);
         setIsLoading(false);
       } catch {
+        /*
+         * Suppress errors while vault has unsynced changes or if we're offline
+         * Network errors during sync can trigger false positives
+         */
+        if (dbContext.shouldSuppressEmailErrors() || dbContext.isOffline) {
+          setIsLoading(false);
+          return;
+        }
+
         // Show toast and throw error
         Toast.show({
           type: 'error',
-          text1: t('emails.errors.loadFailed'),
+          text1: t('common.errors.unknownError'),
           position: 'bottom',
         });
-        throw new Error(t('emails.errors.loadFailed'));
+        throw new Error(t('common.errors.unknownError'));
       } finally {
         setIsLoading(false);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : t('common.error'));
     }
-  }, [dbContext?.sqliteClient, webApi, setIsLoading, authContext.isOffline, t]);
+  }, [dbContext, webApi, setIsLoading, t]);
 
   useEffect(() => {
     const unsubscribeFocus = navigation.addListener('focus', () => {
@@ -157,7 +163,6 @@ export default function EmailsScreen() : React.ReactNode {
       alignItems: 'center',
       flex: 1,
       justifyContent: 'center',
-      padding: 20,
     },
     contentContainer: {
       paddingBottom: Platform.OS === 'ios' ? insets.bottom + 60 : 10,
@@ -189,7 +194,7 @@ export default function EmailsScreen() : React.ReactNode {
       );
     }
 
-    if (authContext.isOffline) {
+    if (dbContext.isOffline) {
       return (
         <View style={styles.centerContainer}>
           <ThemedText style={styles.emptyText}>{t('emails.offlineMessage')}</ThemedText>
@@ -221,7 +226,7 @@ export default function EmailsScreen() : React.ReactNode {
   };
 
   return (
-    <ThemedContainer>
+    <ThemedContainer testID="emails-screen">
       <CollapsibleHeader
         title={t('emails.title')}
         scrollY={scrollY}

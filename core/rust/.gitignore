@@ -1,0 +1,35 @@
+# Rust build artifacts
+/target/
+
+# Distribution directory - compiled binaries are built locally or in CI, not committed
+/dist/
+
+# Cargo lock file (library projects typically don't commit this)
+# Uncomment if you want to commit for reproducible builds
+# Cargo.lock
+
+# IDE
+.idea/
+*.swp
+*.swo
+.vscode/
+
+# macOS
+.DS_Store
+
+# Temporary files
+*.tmp
+*.bak
+
+# Compiled binaries - these are built locally or in CI
+*.a
+*.so
+*.dylib
+*.dll
+*.wasm
+
+# NOTE: Binaries are NOT committed to the repository.
+# They are built:
+# 1. Locally via ./build.sh when needed
+# 2. In CI pipelines for deployment
+# 3. In Docker builds for containerized deployments

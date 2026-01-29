@@ -6,6 +6,7 @@ export default defineConfig({
   manifest: ({ browser, manifestVersion, mode, command }) => {
     const permissions = [
       "storage",
+      "unlimitedStorage",
       "activeTab",
       "contextMenus",
       "scripting",
@@ -20,7 +21,7 @@ export default defineConfig({
     return {
       name: "AliasVault",
       description: "AliasVault Browser AutoFill Extension. Keeping your personal information private.",
-      version: "0.24.0",
+      version: "0.26.0",
       content_security_policy: {
         extension_pages: "script-src 'self' 'wasm-unsafe-eval'; object-src 'self';"
       },
@@ -40,7 +41,8 @@ export default defineConfig({
         resources: [
           "webauthn.js",
           "src/sql-wasm.wasm",
-          "src/argon2.wasm"
+          "src/argon2.wasm",
+          "src/aliasvault_core_bg.wasm"
         ],
         matches: ["<all_urls>"]
       }]
@@ -59,6 +61,10 @@ export default defineConfig({
           },
           {
             src: 'node_modules/sql.js/dist/sql-wasm.wasm',
+            dest: 'src'
+          },
+          {
+            src: 'src/utils/dist/core/rust/aliasvault_core_bg.wasm',
             dest: 'src'
           }
         ]

@@ -32,27 +32,14 @@ cd aliasvault/apps/mobile-app
 npm install
 ```
 
-4. Install and build Android dependencies:
+4. Deploy release build to your device via React Native automatically:
+
 ```bash
-cd android
-./gradlew assembleRelease
+npx react-native run-android --mode release
 ```
 
-5. Deploy release build to your device:
 
-For MacOS, install adb to deploy the app to a phone or simulator via command line:
-```bash
-# Install adb
-brew install android-platform-tools
-
-# List devices (physical devices connected via USB and any running simulators)
-adb devices
-
-# Deploy to chosen device
-adb -s [device-id] install android/app/build/outputs/apk/release/app-release.apk
-```
-
-6. For publishing to Google Play:
+5. For publishing to Google Play:
 Create a local gradle file in your user directory where the keystore credentials will be placed
 ```bash
 nano ~/.gradle/gradle.properties
@@ -74,7 +61,7 @@ cd android
 ./gradlew app:bundleRelease
 ```
 
-The resulting .aapb file will be available in:
+The resulting .aab file will be available in:
 
 ```bash
 app/build/outputs/bundle/release

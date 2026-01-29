@@ -56,6 +56,12 @@ else
     public EventCallback<(Guid id, bool disabled)> OnEmailClaimStatusChanged { get; set; }
 
     /// <summary>
+    /// Gets or sets the event callback for when the count changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnCountChanged { get; set; }
+
+    /// <summary>
     /// Gets or sets the list of email claims to display.
     /// </summary>
     private List<UserEmailClaimWithCount> EmailClaimList { get; set; } = [];
@@ -103,22 +109,38 @@ else
             return;
         }
 
-        // Load all email claims for this user.
-        EmailClaimList = await dbContext.UserEmailClaims
+        // Load all email claims for this user
+        var claims = await dbContext.UserEmailClaims
             .Where(x => x.UserId == User.Id)
-            .Select(x => new UserEmailClaimWithCount
-            {
-                Id = x.Id,
-                Address = x.Address,
-                AddressLocal = x.AddressLocal,
-                AddressDomain = x.AddressDomain,
-                CreatedAt = x.CreatedAt,
-                UpdatedAt = x.UpdatedAt,
-                EmailCount = dbContext.Emails.Count(e => e.To == x.Address),
-                Disabled = x.Disabled
-            })
             .OrderBy(x => x.CreatedAt)
             .ToListAsync();
+
+        // Get email addresses for this user to filter email counts
+        var userEmailAddresses = claims.Select(x => x.Address).ToList();
+
+        // Load email counts only for this user's email addresses in a single query
+        var emailCounts = await dbContext.Emails
+            .Where(e => userEmailAddresses.Contains(e.To))
+            .GroupBy(e => e.To)
+            .Select(g => new { Address = g.Key, Count = g.Count() })
+            .ToListAsync();
+
+        var emailCountDict = emailCounts.ToDictionary(x => x.Address, x => x.Count);
+
+        EmailClaimList = claims.Select(x => new UserEmailClaimWithCount
+        {
+            Id = x.Id,
+            Address = x.Address,
+            AddressLocal = x.AddressLocal,
+            AddressDomain = x.AddressDomain,
+            CreatedAt = x.CreatedAt,
+            UpdatedAt = x.UpdatedAt,
+            EmailCount = emailCountDict.TryGetValue(x.Address, out var count) ? count : 0,
+            Disabled = x.Disabled
+        }).ToList();
+
+        // Notify parent that count has changed
+        await OnCountChanged.InvokeAsync();
     }
 
     private void HandleSortChanged((string column, SortDirection direction) sort)
@@ -220,5 +242,13 @@ Do you want to proceed with disabling all email claims?"))
             "Disabled" => SortableTable.SortListByProperty(emailClaims, e => e.Disabled, sortDirection),
             _ => emailClaims
         };
+    }
+
+    /// <summary>
+    /// Gets the total count of email claims (including disabled).
+    /// </summary>
+    public int GetTotalEmailClaimsCount()
+    {
+        return EmailClaimList.Count;
     }
 }

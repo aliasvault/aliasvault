@@ -1,11 +1,13 @@
-import srp from 'secure-remote-password/client'
-
-import type { LoginRequest, LoginResponse, ValidateLoginRequest, ValidateLoginRequest2Fa, ValidateLoginResponse, BadRequestResponse } from '@/utils/dist/shared/models/webapi';
+import { SrpAuthService } from '@/utils/auth/SrpAuthService';
+import type { LoginResponse, ValidateLoginResponse, ValidateLoginRequest, ValidateLoginRequest2Fa, BadRequestResponse } from '@/utils/dist/core/models/webapi';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { WebApiService } from '@/utils/WebApiService';
 
 /**
  * Utility class for SRP authentication operations.
+ *
+ * This class wraps the SrpAuthService to provide WebApiService-aware
+ * authentication methods for the browser extension popup.
  */
 class SrpUtility {
   private readonly webApiService: WebApiService;
@@ -13,7 +15,7 @@ class SrpUtility {
   /**
    * Constructor for the SrpUtility class.
    *
-   * @param {WebApiService} webApiService - The WebApiService instance.
+   * @param webApiService - The WebApiService instance.
    */
   public constructor(webApiService: WebApiService) {
     this.webApiService = webApiService;
@@ -23,16 +25,14 @@ class SrpUtility {
    * Initiate login with server.
    */
   public async initiateLogin(username: string): Promise<LoginResponse> {
-    const model: LoginRequest = {
-      username: username.toLowerCase().trim(),
-    };
+    const normalizedUsername = SrpAuthService.normalizeUsername(username);
 
     const response = await this.webApiService.rawFetch('Auth/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(model),
+      body: JSON.stringify({ username: normalizedUsername }),
     });
 
     // Check if response is a bad request (400)
@@ -55,26 +55,38 @@ class SrpUtility {
     rememberMe: boolean,
     loginResponse: LoginResponse
   ): Promise<ValidateLoginResponse> {
+    const normalizedUsername = SrpAuthService.normalizeUsername(username);
+
+    /*
+     * Use srpIdentity from server response if available, otherwise fall back to normalized username.
+     * @todo Remove fallback after 0.26.0+ has been released.
+     */
+    const srpIdentity = loginResponse.srpIdentity ?? normalizedUsername;
+
     // Generate client ephemeral
-    const clientEphemeral = srp.generateEphemeral()
+    const clientEphemeral = await SrpAuthService.generateEphemeral();
 
-    // Derive private key
-    const privateKey = srp.derivePrivateKey(loginResponse.salt, username, passwordHashString);
+    // Derive private key using srpIdentity (not the typed username)
+    const privateKey = await SrpAuthService.derivePrivateKey(
+      loginResponse.salt,
+      srpIdentity,
+      passwordHashString
+    );
 
-    // Derive session
-    const sessionProof = srp.deriveSession(
+    // Derive session using srpIdentity (not the typed username)
+    const session = await SrpAuthService.deriveSession(
       clientEphemeral.secret,
       loginResponse.serverEphemeral,
       loginResponse.salt,
-      username,
+      srpIdentity,
       privateKey
     );
 
     const model: ValidateLoginRequest = {
-      username: username.toLowerCase().trim(),
+      username: normalizedUsername,
       rememberMe: rememberMe,
       clientPublicEphemeral: clientEphemeral.public,
-      clientSessionProof: sessionProof.proof,
+      clientSessionProof: session.proof,
     };
 
     const response = await this.webApiService.rawFetch('Auth/validate', {
@@ -106,25 +118,38 @@ class SrpUtility {
     loginResponse: LoginResponse,
     code2Fa: number
   ): Promise<ValidateLoginResponse> {
+    const normalizedUsername = SrpAuthService.normalizeUsername(username);
+
+    /*
+     * Use srpIdentity from server response if available, otherwise fall back to normalized username.
+     * @todo Remove fallback after 0.26.0+ has been released.
+     */
+    const srpIdentity = loginResponse.srpIdentity ?? normalizedUsername;
+
     // Generate client ephemeral
-    const clientEphemeral = srp.generateEphemeral()
+    const clientEphemeral = await SrpAuthService.generateEphemeral();
 
-    // Derive private key
-    const privateKey = srp.derivePrivateKey(loginResponse.salt, username, passwordHashString);
+    // Derive private key using srpIdentity (not the typed username)
+    const privateKey = await SrpAuthService.derivePrivateKey(
+      loginResponse.salt,
+      srpIdentity,
+      passwordHashString
+    );
 
-    // Derive session
-    const sessionProof = srp.deriveSession(
+    // Derive session using srpIdentity (not the typed username)
+    const session = await SrpAuthService.deriveSession(
       clientEphemeral.secret,
       loginResponse.serverEphemeral,
       loginResponse.salt,
-      username,
+      srpIdentity,
       privateKey
     );
+
     const model: ValidateLoginRequest2Fa = {
-      username: username.toLowerCase().trim(),
+      username: normalizedUsername,
       rememberMe,
       clientPublicEphemeral: clientEphemeral.public,
-      clientSessionProof: sessionProof.proof,
+      clientSessionProof: session.proof,
       code2Fa,
     };
 

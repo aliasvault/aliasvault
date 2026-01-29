@@ -18,7 +18,7 @@ public class CredentialIdentityStore {
     /// Save credentials into the native iOS credential store.
     /// - Parameters:
     ///   - credentials: The credentials to register
-    public func saveCredentialIdentities(_ credentials: [Credential]) async throws {
+    public func saveCredentialIdentities(_ credentials: [AutofillCredential]) async throws {
         var allIdentities: [ASCredentialIdentity] = []
 
         let state = await storeState()
@@ -77,65 +77,65 @@ public class CredentialIdentityStore {
     }
 
     /// Create password credential identities from credentials
-    private func createPasswordIdentities(from credentials: [Credential]) -> [ASPasswordCredentialIdentity] {
-        return credentials.compactMap { credential in
-            guard credential.passkeys?.isEmpty == true else {
-                // Skip if this record is a passkey as it will be saved in the createPasskeyIdentities method
-                return nil
+    /// Creates one identity per URL for multi-URL support (iOS matches by domain itself)
+    private func createPasswordIdentities(from credentials: [AutofillCredential]) -> [ASPasswordCredentialIdentity] {
+        return credentials.flatMap { credential -> [ASPasswordCredentialIdentity] in
+            guard !credential.hasPasskey else {
+                // Skip if this record has a passkey as they will be saved in createPasskeyIdentities
+                return []
             }
 
-            guard let password = credential.password, !password.value.isEmpty else {
-                // Skip credentials with no password (e.g. applies when this record is a passkey)
-                return nil
+            guard credential.hasPassword else {
+                // Skip credentials with no password
+                return []
             }
 
-            guard let urlString = credential.service.url,
-                  let url = URL(string: urlString),
-                  let host = url.host else {
-                return nil
-            }
-
-            let identifier = CredentialHelpers.usernameOrEmail(credential: credential)
+            let identifier = credential.identifier
             guard !identifier.isEmpty else {
-                return nil // Skip credentials with no identifier
+                return [] // Skip credentials with no identifier
             }
 
-            let effectiveDomain = Self.effectiveDomain(from: host)
+            // Create one identity per URL for multi-URL support
+            return credential.serviceUrls.compactMap { urlString -> ASPasswordCredentialIdentity? in
+                guard let url = URL(string: urlString),
+                      let host = url.host else {
+                    return nil
+                }
 
-            return ASPasswordCredentialIdentity(
-                serviceIdentifier: ASCredentialServiceIdentifier(identifier: effectiveDomain, type: .domain),
-                user: identifier,
-                recordIdentifier: credential.id.uuidString
-            )
+                let effectiveDomain = Self.effectiveDomain(from: host)
+
+                return ASPasswordCredentialIdentity(
+                    serviceIdentifier: ASCredentialServiceIdentifier(identifier: effectiveDomain, type: .domain),
+                    user: identifier,
+                    recordIdentifier: credential.id.uuidString
+                )
+            }
         }
     }
 
     /// Create passkey credential identities from credentials
-    private func createPasskeyIdentities(from credentials: [Credential]) -> [ASPasskeyCredentialIdentity] {
-        return credentials.flatMap { credential -> [ASPasskeyCredentialIdentity] in
-            guard let passkeys = credential.passkeys else {
-                return []
+    private func createPasskeyIdentities(from credentials: [AutofillCredential]) -> [ASPasskeyCredentialIdentity] {
+        return credentials.compactMap { credential -> ASPasskeyCredentialIdentity? in
+            guard let passkey = credential.passkey, !passkey.isDeleted else {
+                return nil
             }
 
-            return passkeys.filter { !($0.isDeleted) }
-                .compactMap { passkey in
-                    // Get the userName for display in iOS AutoFill UI
-                    // Passkeys don't store userName in the database, so we use the credential's username or email
-                    let userName = passkey.userName ?? CredentialHelpers.usernameOrEmail(credential: credential)
+            // Get the userName for display in iOS AutoFill UI
+            // Passkeys may store userName, otherwise use the credential's identifier
+            let userName = passkey.userName ?? credential.identifier
 
-                    // Convert passkey.Id to bytes for credentialID
-                    let credentialId = try? PasskeyHelper.guidToBytes(passkey.id.uuidString)
+            // Convert passkey.Id to bytes for credentialID
+            let credentialId = try? PasskeyHelper.guidToBytes(passkey.id.uuidString)
 
-                    // For passkeys, we use the rpId from the passkey itself, not the service URL
-                    // This is because passkeys are tied to the RP ID, which may differ from the service URL
-                    return ASPasskeyCredentialIdentity(
-                        relyingPartyIdentifier: passkey.rpId,
-                        userName: userName,
-                        credentialID: credentialId ?? Data(),  // WebAuthn credential ID (16-byte GUID)
-                        userHandle: passkey.userHandle ?? Data(),
-                        recordIdentifier: passkey.id.uuidString
-                    )
-                }
+            // For passkeys, we use the rpId from the passkey itself, not the service URL
+            // This is because passkeys are tied to the RP ID, which may differ from the service URL
+            return ASPasskeyCredentialIdentity(
+                relyingPartyIdentifier: passkey.rpId,
+                userName: userName,
+                credentialID: credentialId ?? Data(),  // WebAuthn credential ID (16-byte GUID)
+                userHandle: passkey.userHandle ?? Data(),
+                recordIdentifier: passkey.id.uuidString
+            )
         }
     }
 }

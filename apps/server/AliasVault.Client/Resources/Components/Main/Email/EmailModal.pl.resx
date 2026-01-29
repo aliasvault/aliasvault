@@ -79,7 +79,7 @@
     <comment>Delete email button text</comment>
   </data>
   <data name="AttachmentsLabel" xml:space="preserve">
-    <value>Załaczniki:</value>
+    <value>Załączniki:</value>
     <comment>Email attachments section header</comment>
   </data>
   <data name="CloseButton" xml:space="preserve">

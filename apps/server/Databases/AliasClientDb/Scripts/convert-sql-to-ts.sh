@@ -6,11 +6,10 @@
 # Configurable settings
 SQL_DIR="MigrationSql"
 OUTPUT_FILE="MigrationTs/SqlConstants.ts"
-VERSIONS_FILE="MigrationTs/VaultVersions.ts"
 TEMP_DIR="/tmp/sql_to_ts"
 
-# Path to the shared vault-sql package
-SHARED_SQL_DIR="../../../../../shared/vault-sql/src/sql"
+# Path to the core vault package
+SHARED_SQL_DIR="../../../../../core/vault/src/sql"
 
 # Create temp directory and output directory
 mkdir -p "$TEMP_DIR"
@@ -57,7 +56,7 @@ extract_version_info() {
     echo "$version|$readable_desc|$release_date"
 }
 
-# Function to copy files to shared vault-sql directory
+# Function to copy files to core vault directory
 copy_to_shared_sql() {
     local source_file="$1"
     local target_file="$2"
@@ -66,9 +65,9 @@ copy_to_shared_sql() {
         echo "Copying $source_file to $target_file"
         cp "$source_file" "$target_file"
         if [ $? -eq 0 ]; then
-            echo "✓ Successfully copied to shared vault-sql directory"
+            echo "✓ Successfully copied to core vault directory"
         else
-            echo "✗ Failed to copy to shared vault-sql directory"
+            echo "✗ Failed to copy to core vault directory"
             return 1
         fi
     else
@@ -152,13 +151,13 @@ echo "TypeScript constants file generated: $OUTPUT_FILE"
 echo "Total migrations processed: ${#migration_files[@]}"
 
 
-# Copy generated files to shared vault-sql directory
+# Copy generated files to core vault directory
 echo ""
-echo "Copying generated files to shared vault-sql directory..."
+echo "Copying generated files to core vault directory..."
 
-# Check if shared directory exists
+# Check if core vault directory exists
 if [ ! -d "$SHARED_SQL_DIR" ]; then
-    echo "✗ Shared vault-sql directory not found: $SHARED_SQL_DIR"
+    echo "✗ Core vault directory not found: $SHARED_SQL_DIR"
     echo "Make sure you're running this script from the correct location"
     exit 1
 fi

@@ -1,0 +1,69 @@
+name: "Build Core Libraries"
+description: "Builds and distributes all core libraries including TypeScript packages and Rust WASM"
+inputs:
+  working-directory:
+    description: "Working directory (default: repository root)"
+    required: false
+    default: "."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Setup Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: wasm32-unknown-unknown
+
+    - name: Install wasm-pack
+      shell: bash
+      run: cargo install wasm-pack --locked
+
+    - name: Build and distribute core libraries
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        cd ./core
+        chmod +x build-and-distribute.sh
+        ./build-and-distribute.sh
+
+    - name: Verify core library distribution
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        # Check if files exist and were recently modified
+        TARGET_DIRS=(
+          "apps/browser-extension/src/utils/dist/core/identity-generator"
+          "apps/browser-extension/src/utils/dist/core/password-generator"
+          "apps/browser-extension/src/utils/dist/core/models"
+          "apps/browser-extension/src/utils/dist/core/vault"
+          "apps/browser-extension/src/utils/dist/core/rust"
+          "apps/mobile-app/utils/dist/core/identity-generator"
+          "apps/mobile-app/utils/dist/core/password-generator"
+          "apps/mobile-app/utils/dist/core/models"
+          "apps/mobile-app/utils/dist/core/vault"
+        )
+
+        for dir in "${TARGET_DIRS[@]}"; do
+          if [ ! -d "$dir" ]; then
+            echo "Warning: Directory $dir does not exist (may be expected for some builds)"
+            continue
+          fi
+
+          # Check if files were modified in the last 10 minutes
+          find "$dir" -type f -mmin -10 | grep -q . || {
+            echo "Warning: Files in $dir were not recently modified"
+          }
+        done
+
+        # Verify critical rust WASM files exist
+        if [ ! -f "apps/browser-extension/src/utils/dist/core/rust/aliasvault_core_bg.wasm" ]; then
+          echo "Error: Rust WASM files not found in browser extension"
+          exit 1
+        fi
+
+        echo "Core library distribution verified"

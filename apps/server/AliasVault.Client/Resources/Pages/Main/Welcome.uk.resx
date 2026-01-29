@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Step titles -->
   <data name="WelcomeStepTitle">
-    <value>Welcome to AliasVault</value>
+    <value>Ласкаво просимо до AliasVult</value>
     <comment>Title for the welcome step</comment>
   </data>
   <data name="HowAliasVaultWorksStepTitle">
@@ -106,7 +106,7 @@
   </data>
   <!-- Navigation buttons -->
   <data name="ContinueButton">
-    <value>Continue</value>
+    <value>Продовжити</value>
     <comment>Continue button text</comment>
   </data>
   <data name="GetStartedButton">

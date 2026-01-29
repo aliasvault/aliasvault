@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Section options -->
+  <data name="TwoFactorAuthentication">
+    <value>Двухфакторная аутентификация</value>
+    <comment>Option to add 2FA section</comment>
+  </data>
+  <data name="Attachments">
+    <value>Вложения</value>
+    <comment>Option to add attachments section</comment>
+  </data>
+  <data name="AddCustomField">
+    <value>Добавить своё поле</value>
+    <comment>Option to add a custom field</comment>
+  </data>
+  <!-- Field labels -->
+  <data name="FieldLoginUsername">
+    <value>Логин</value>
+    <comment>Username field label</comment>
+  </data>
+  <data name="FieldLoginPassword">
+    <value>Пароль</value>
+    <comment>Password field label</comment>
+  </data>
+  <data name="FieldLoginEmail">
+    <value>Почта</value>
+    <comment>Email field label</comment>
+  </data>
+  <data name="FieldLoginUrl">
+    <value>URL</value>
+    <comment>URL field label</comment>
+  </data>
+  <data name="FieldAliasFirstName">
+    <value>Имя</value>
+    <comment>First name field label</comment>
+  </data>
+  <data name="FieldAliasLastName">
+    <value>Фамилия</value>
+    <comment>Last name field label</comment>
+  </data>
+  <data name="FieldAliasGender">
+    <value>Пол</value>
+    <comment>Gender field label</comment>
+  </data>
+  <data name="FieldAliasBirthdate">
+    <value>Дата рождения</value>
+    <comment>Birth date field label</comment>
+  </data>
+  <data name="FieldCardNumber">
+    <value>Номер карты</value>
+    <comment>Card number field label</comment>
+  </data>
+  <data name="FieldCardCardholderName">
+    <value>Имя держателя карты</value>
+    <comment>Cardholder name field label</comment>
+  </data>
+  <data name="FieldCardExpiryMonth">
+    <value>Месяц окончания</value>
+    <comment>Expiry month field label</comment>
+  </data>
+  <data name="FieldCardExpiryYear">
+    <value>Год окончания</value>
+    <comment>Expiry year field label</comment>
+  </data>
+  <data name="FieldCardCvv">
+    <value>CVV-код</value>
+    <comment>CVV field label</comment>
+  </data>
+  <data name="FieldCardPin">
+    <value>PIN</value>
+    <comment>PIN field label</comment>
+  </data>
+  <data name="FieldNotesContent">
+    <value>Примечание</value>
+    <comment>Notes field label</comment>
+  </data>
+  <!-- Custom field modal -->
+  <data name="FieldLabel">
+    <value>Название поля</value>
+    <comment>Label for field label input</comment>
+  </data>
+  <data name="EnterFieldName">
+    <value>Введите название поля</value>
+    <comment>Placeholder for field name input</comment>
+  </data>
+  <data name="FieldType">
+    <value>Тип поля</value>
+    <comment>Label for field type selector</comment>
+  </data>
+  <data name="FieldTypeText">
+    <value>Текст</value>
+    <comment>Text field type option</comment>
+  </data>
+  <data name="FieldTypeHidden">
+    <value>Скрытое</value>
+    <comment>Hidden field type option</comment>
+  </data>
+  <data name="FieldTypeEmail">
+    <value>Почта</value>
+    <comment>Email field type option</comment>
+  </data>
+  <data name="FieldTypeUrl">
+    <value>URL</value>
+    <comment>URL field type option</comment>
+  </data>
+  <data name="FieldTypePhone">
+    <value>Телефон</value>
+    <comment>Phone field type option</comment>
+  </data>
+  <data name="FieldTypeNumber">
+    <value>Номер</value>
+    <comment>Number field type option</comment>
+  </data>
+  <data name="FieldTypeDate">
+    <value>Дата</value>
+    <comment>Date field type option</comment>
+  </data>
+  <data name="FieldTypeTextArea">
+    <value>Текстовая область</value>
+    <comment>Text area field type option</comment>
+  </data>
+  <!-- Buttons -->
+  <data name="Add">
+    <value>Добавить</value>
+    <comment>Add button text</comment>
+  </data>
+  <data name="Cancel">
+    <value>Отменить</value>
+    <comment>Cancel button text</comment>
+  </data>
+  <!-- Default field label -->
+  <data name="DefaultFieldLabel">
+    <value>Field {0}</value>
+    <comment>Default label for custom field, {0} is the field number</comment>
+  </data>
+</root>

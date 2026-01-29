@@ -68,4 +68,22 @@ public class ImportedCredential
     /// Gets or sets the alias information.
     /// </summary>
     public ImportedAlias? Alias { get; set; }
+
+    /// <summary>
+    /// Gets or sets the folder path from the source (e.g., "Business" or "Personal/Work").
+    /// For multi-level paths, the deepest folder will be used during import.
+    /// </summary>
+    public string? FolderPath { get; set; }
+
+    /// <summary>
+    /// Gets or sets the item type. Each importer is responsible for setting this based on the source data.
+    /// If null, defaults to Login or Alias (if alias data is present).
+    /// </summary>
+    public ImportedItemType? ItemType { get; set; }
+
+    /// <summary>
+    /// Gets or sets credit card information if the item is a credit card type.
+    /// Each importer should populate this from its own format.
+    /// </summary>
+    public ImportedCreditcard? Creditcard { get; set; }
 }

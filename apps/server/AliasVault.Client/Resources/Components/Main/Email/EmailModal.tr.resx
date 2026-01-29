@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="FromLabel" xml:space="preserve">
-    <value>From:</value>
+    <value>Gönderici:</value>
     <comment>Email sender field label</comment>
   </data>
   <data name="ToLabel" xml:space="preserve">
-    <value>To:</value>
+    <value>Alıcı:</value>
     <comment>Email recipient field label</comment>
   </data>
   <data name="DateLabel" xml:space="preserve">
-    <value>Date:</value>
+    <value>Tarih:</value>
     <comment>Email date field label</comment>
   </data>
   <data name="ActionsLabel" xml:space="preserve">
@@ -75,19 +75,19 @@
     <comment>Email actions section label</comment>
   </data>
   <data name="DeleteButton" xml:space="preserve">
-    <value>Delete</value>
+    <value>Sil</value>
     <comment>Delete email button text</comment>
   </data>
   <data name="AttachmentsLabel" xml:space="preserve">
-    <value>Attachments:</value>
+    <value>Ekler:</value>
     <comment>Email attachments section header</comment>
   </data>
   <data name="CloseButton" xml:space="preserve">
-    <value>Close</value>
+    <value>Kapat</value>
     <comment>Close modal button text</comment>
   </data>
   <data name="DeleteEmailTitle" xml:space="preserve">
-    <value>Delete Email</value>
+    <value>E-postayı sil</value>
     <comment>Delete email confirmation dialog title</comment>
   </data>
   <data name="DeleteEmailConfirmation" xml:space="preserve">
@@ -99,11 +99,11 @@
     <comment>Success message when email is deleted</comment>
   </data>
   <data name="EmailDeleteFailed" xml:space="preserve">
-    <value>Failed to delete email</value>
+    <value>E-posta silinemedi</value>
     <comment>Error message when email deletion fails</comment>
   </data>
   <data name="GenericError" xml:space="preserve">
-    <value>An error occurred</value>
+    <value>Bir hata oluştu</value>
     <comment>Generic error message</comment>
   </data>
   <data name="NoEmailBody" xml:space="preserve">
@@ -111,7 +111,7 @@
     <comment>Message shown when email has no content</comment>
   </data>
   <data name="AttachmentDownloadFailed" xml:space="preserve">
-    <value>Failed to download attachment</value>
+    <value>Ek dosya indirilemedi</value>
     <comment>Error message when attachment download fails</comment>
   </data>
   <data name="AttachmentDownloadError" xml:space="preserve">

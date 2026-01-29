@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NoLogoText" xml:space="preserve">
+    <value>Fără logo</value>
+    <comment>Text shown when service logo is not available</comment>
+  </data>
+  <data name="ImportFromServiceTitle" xml:space="preserve">
+    <value>Importă din {0}</value>
+    <comment>Modal title for importing from a service. {0} is placeholder for service name</comment>
+  </data>
+  <data name="UploadExportFileText" xml:space="preserve">
+    <value>Încărcați fișierul de export {0}:</value>
+    <comment>Text for file upload instruction. {0} is placeholder for service name</comment>
+  </data>
+  <data name="CancelButton" xml:space="preserve">
+    <value>Anulați</value>
+    <comment>Cancel button text</comment>
+  </data>
+  <data name="BackButton" xml:space="preserve">
+    <value>Înapoi</value>
+    <comment>Back button text</comment>
+  </data>
+  <data name="NextButton" xml:space="preserve">
+    <value>Înainte</value>
+    <comment>Next button text</comment>
+  </data>
+  <data name="ImportButton" xml:space="preserve">
+    <value>Importă</value>
+    <comment>Import button text</comment>
+  </data>
+  <data name="ImportFoldersLabel" xml:space="preserve">
+    <value>Importă dosarele (dacă sunt disponibile)</value>
+    <comment>Checkbox label for importing folder structure from the source password manager</comment>
+  </data>
+  <data name="FoldersDetected" xml:space="preserve">
+    <value>{0} dosar(e) detectate</value>
+    <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
+  </data>
+</root>

@@ -2,8 +2,8 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
-import type { MailboxEmail } from '@/utils/dist/shared/models/webapi';
+import type { Item } from '@/utils/dist/core/models/vault';
+import type { MailboxEmail } from '@/utils/dist/core/models/webapi';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -25,26 +25,26 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const dbContext = useDb();
-  const [associatedCredential, setAssociatedCredential] = useState<Credential | null>(null);
+  const [associatedItem, setAssociatedItem] = useState<Item | null>(null);
 
   /**
-   * Load the associated credential for this email.
+   * Load the associated item for this email.
    */
   useEffect(() => {
     /**
-     * Load the credential associated with the email's recipient address.
+     * Load the item associated with the email's recipient address.
      */
-    const loadCredential = async (): Promise<void> => {
+    const loadItem = async (): Promise<void> => {
       if (!dbContext?.sqliteClient || !email.toLocal || !email.toDomain) {
         return;
       }
 
       const emailAddress = `${email.toLocal}@${email.toDomain}`;
-      const credential = await dbContext.sqliteClient.getCredentialByEmail(emailAddress);
-      setAssociatedCredential(credential);
+      const item = await dbContext.sqliteClient.items.getByEmail(emailAddress);
+      setAssociatedItem(item);
     };
 
-    loadCredential();
+    loadItem();
   }, [dbContext?.sqliteClient, email.toLocal, email.toDomain]);
 
   /**
@@ -149,11 +149,11 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
       <ThemedText style={styles.emailPreview} numberOfLines={2}>
         {email.messagePreview}
       </ThemedText>
-      {associatedCredential && (
+      {associatedItem && (
         <View style={styles.serviceContainer}>
           <IconSymbol size={14} name={IconSymbolName.Key} color={colors.primary} style={styles.serviceIcon} />
           <ThemedText style={styles.serviceName}>
-            {associatedCredential.ServiceName}
+            {associatedItem.Name}
           </ThemedText>
         </View>
       )}

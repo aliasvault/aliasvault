@@ -34,7 +34,8 @@ public static class OnePasswordImporter
                 Username = record.Username,
                 Password = record.Password,
                 TwoFactorSecret = record.OTPAuth,
-                Notes = record.Notes
+                Notes = record.Notes,
+                FolderPath = string.IsNullOrWhiteSpace(record.Tags) ? null : record.Tags,
             };
 
             credentials.Add(credential);

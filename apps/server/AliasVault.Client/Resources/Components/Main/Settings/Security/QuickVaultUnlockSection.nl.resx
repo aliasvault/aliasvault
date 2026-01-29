@@ -59,36 +59,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Quick vault unlock</value>
-    <comment>Title for quick vault unlock section</comment>
+    <value>Passkey ontgrendeling</value>
+    <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>De vault decryption key wordt opgeslagen via een passkey. Dit betekent dat wanneer je de AliasVault pagina of tab herlaadt, je kunt inloggen met je gezicht, vingerafdruk of security key. Als je de quick vault unlock functionaliteit wilt uitschakelen, kun je dat doen met de knop hieronder.</value>
-    <comment>Description when quick unlock is enabled</comment>
+    <value>Je hoofdwachtwoord is versleuteld met de passkey (PRF) en lokaal opgeslagen. Wanneer je de AliasVault pagina of tabblad ververst, kun je je kluis ontgrendelen met je passkey. Als je de passkey wilt uitschakelen, kun je dat doen met de onderstaande knop. Je hoofdwachtwoord zal nog steeds werken om de kluis te ontgrendelen.</value>
+    <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Quick Vault Unlock Uitschakelen</value>
-    <comment>Button to disable quick vault unlock</comment>
+    <value>Passkey ontgrendeling uitschakelen</value>
+    <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>Standaard wordt je gevraagd om je hoofdwachtwoord opnieuw in te voeren wanneer je de AliasVault pagina of tab herlaadt. Als alternatief kun je ervoor kiezen om een browser toegangssleutel (of hardware authenticator zoals YubiKey) te gebruiken in plaats van je hoofdwachtwoord. Hiermee kun je je kluis ontgrendelen met je gezicht, vingerafdruk of ingebouwde browser beveiligingssleutels. Dit geldt alleen voor het huidige apparaat en browser.</value>
-    <comment>Description when quick unlock is disabled</comment>
+    <value>Als je de AliasVault pagina of het tabblad ververst, moet je je hoofdwachtwoord opnieuw invoeren. Met een passkey kun je je kluis direct ontgrendelen. Wanneer ingeschakeld, is jouw hoofdwachtwoord lokaal versleuteld met behulp van de PRF-extensie van de passkey. Opmerking: de passkey zal alleen werken voor het huidige apparaat en de browser waar je deze hebt ingeschakeld.</value>
+    <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>Let op dat deze functie experimenteel is en mogelijk niet werkt op alle apparaten of browsers. Je browser moet WebAuthn en de PRF-extensie ondersteunen om dit te laten werken. Als je problemen ondervindt, kun je deze functie op elk moment uitschakelen.</value>
-    <comment>Warning about experimental nature of the feature</comment>
+    <value>Deze functie wordt momenteel ondersteund door AliasVault browserextensie en iOS app. Android ondersteuning komt binnenkort. Als je problemen ondervindt, kunt je deze functie op elk gewenst moment uitschakelen.</value>
+    <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Quick Vault Unlock Inschakelen</value>
-    <comment>Button to enable quick vault unlock</comment>
+    <value>Passkey ontgrendeling inschakelen</value>
+    <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Quick Vault Unlock is succesvol ingeschakeld. De volgende keer dat je vault vergrendeld is, kun je deze ontgrendelen met je aangemaakte toegangssleutel.</value>
-    <comment>Success message when quick unlock is enabled</comment>
+    <value>Passkey ontgrendeling is succesvol ingeschakeld. De volgende keer dat je vault vergrendeld is, kun je deze ontgrendelen met je aangemaakte passkey.</value>
+    <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Quick Vault Unlock is succesvol uitgeschakeld.</value>
-    <comment>Success message when quick unlock is disabled</comment>
+    <value>Passkey ontgrendeling is succesvol uitgeschakeld.</value>
+    <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
     <value>Je huidige browser ondersteunt de WebAuthn PRF-extensie niet. Probeer het opnieuw met een andere browser.</value>

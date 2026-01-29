@@ -26,7 +26,7 @@ type AppContextType = {
   setAutoLockTimeout: (timeout: number) => Promise<void>;
   getClipboardClearTimeout: () => Promise<number>;
   setClipboardClearTimeout: (timeout: number) => Promise<void>;
-  getBiometricDisplayNameKey: () => Promise<string>;
+  getBiometricDisplayName: () => Promise<string>;
   isBiometricsEnabledOnDevice: () => Promise<boolean>;
   setOfflineMode: (isOffline: boolean) => void;
   verifyPassword: (password: string) => Promise<string | null>;
@@ -34,9 +34,6 @@ type AppContextType = {
   // Autofill methods
   shouldShowAutofillReminder: boolean;
   markAutofillConfigured: () => Promise<void>;
-  // Return URL methods
-  returnUrl: { path: string; params?: object } | null;
-  setReturnUrl: (url: { path: string; params?: object } | null) => void;
 }
 
 export type AuthMethod = 'faceid' | 'password';
@@ -52,7 +49,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const isLoggingOutRef = useRef(false);
 
   /**
-   * Logout the user by revoking tokens and clearing the auth tokens from storage.
+   * Logout the user (forced logout path - e.g., 401, token revocation).
+   * Uses clearAuthForced to preserve vault data for potential RPO recovery.
    * Prevents recursive logout calls by tracking logout state.
    */
   const logout = useCallback(async (errorMessage?: string): Promise<void> => {
@@ -64,7 +62,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       isLoggingOutRef.current = true;
       await webApi.revokeTokens();
-      await auth.clearAuth(errorMessage);
+      // Use forced logout to preserve vault data for recovery
+      await auth.clearAuthForced(errorMessage);
     } catch (error) {
       console.error('Error during logout:', error);
     } finally {
@@ -105,7 +104,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     username: auth.username,
     isOffline: auth.isOffline,
     shouldShowAutofillReminder: auth.shouldShowAutofillReminder,
-    returnUrl: auth.returnUrl,
     // Wrap auth methods
     logout,
     initializeAuth: auth.initializeAuth,
@@ -120,20 +118,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setAutoLockTimeout: auth.setAutoLockTimeout,
     getClipboardClearTimeout: auth.getClipboardClearTimeout,
     setClipboardClearTimeout: auth.setClipboardClearTimeout,
-    getBiometricDisplayNameKey: auth.getBiometricDisplayNameKey,
+    getBiometricDisplayName: auth.getBiometricDisplayName,
     isBiometricsEnabledOnDevice: auth.isBiometricsEnabledOnDevice,
     setOfflineMode: auth.setOfflineMode,
     verifyPassword: auth.verifyPassword,
     getEncryptionKeyDerivationParams: auth.getEncryptionKeyDerivationParams,
     markAutofillConfigured: auth.markAutofillConfigured,
-    setReturnUrl: auth.setReturnUrl,
   }), [
     auth.isInitialized,
     auth.isLoggedIn,
     auth.username,
     auth.isOffline,
     auth.shouldShowAutofillReminder,
-    auth.returnUrl,
     auth.initializeAuth,
     auth.setAuthTokens,
     auth.login,
@@ -145,14 +141,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     auth.setAutoLockTimeout,
     auth.getClipboardClearTimeout,
     auth.setClipboardClearTimeout,
-    auth.getBiometricDisplayNameKey,
+    auth.getBiometricDisplayName,
     auth.isBiometricsEnabledOnDevice,
     auth.setOfflineMode,
     auth.verifyPassword,
     auth.getEncryptionKeyDerivationParams,
     auth.markAutofillConfigured,
-    auth.setReturnUrl,
-    logout,
+    logout
   ]);
 
   return (

@@ -15,6 +15,13 @@ using Microsoft.AspNetCore.Identity;
 public class AliasVaultUser : IdentityUser
 {
     /// <summary>
+    /// Gets or sets the SRP identity used for authentication. This is a fixed value (typically a random GUID)
+    /// that is used for all SRP operations, is set during registration, and never changes.
+    /// </summary>
+    [System.ComponentModel.DataAnnotations.StringLength(255)]
+    public string? SrpIdentity { get; set; }
+
+    /// <summary>
     /// Gets or sets created timestamp.
     /// </summary>
     public DateTime CreatedAt { get; set; }
@@ -49,6 +56,13 @@ public class AliasVaultUser : IdentityUser
     /// Updated automatically on successful authentication events.
     /// </summary>
     public DateTime? LastActivityDate { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total count of emails received by this user across all time.
+    /// This is a persistent counter that is incremented when emails are received and is never decremented,
+    /// even when emails are deleted. Used for abuse detection and usage statistics.
+    /// </summary>
+    public int EmailsReceived { get; set; } = 0;
 
     /// <summary>
     /// Gets or sets the collection of vaults.

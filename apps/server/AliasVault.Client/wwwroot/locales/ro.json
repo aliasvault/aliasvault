@@ -1,0 +1,25 @@
+{
+  "loading": {
+    "title": "AliasVault se încarcă",
+    "message": "Se inițializează mediul securizat. AliasVault prioritizează confidențialitatea ta rulând integral în browser. Prima încărcare ar putea dura puțin.",
+    "refreshText": "Dacă încărcarea pare blocată, puteți apăsa butonul de mai jos pentru a reîmprospăta pagina.",
+    "refreshButtonText": "Actualizați pagina"
+  },
+  "errors": {
+    "unhandledError": "A apărut o eroare neprevăzută. Încearcă să reîncarci pagina. Dacă problema persistă, contactează serviciul de asistență.",
+    "webAssemblyError": "AliasVault necesită WebAssembly, care nu este compatibil cu acest browser. Încercați să folosiți un browser mai modern.",
+    "reloadPageText": "Reîncărcați pagina"
+  },
+  "quotes": {
+    "security": [
+      "Identitatea ta este cel mai valoros bun al tău. Protejeaz-o ca atare.",
+      "În lumea digitală, o parolă puternică este prima ta linie de apărare.",
+      "Securitatea nu este un produs, ci un proces.",
+      "Cea mai slabă verigă din lanțul securității este elementul uman.",
+      "Securitatea pare întotdeauna excesivă, până când devine insuficientă.",
+      "Ai încredere, dar verifică – mai ales online.",
+      "Datele tale sunt la fel de sigure ca cea mai slabă parolă a ta.",
+      "Cea mai sigură parolă este cea pe care nu o poți ține minte."
+    ]
+  }
+}

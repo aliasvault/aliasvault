@@ -2,6 +2,7 @@ Contact: mailto:security@support.aliasvault.net
 Expires: 2026-09-16T12:00:00.000Z
 Preferred-Languages: en
 Canonical: https://raw.githubusercontent.com/aliasvault/aliasvault/main/SECURITY.txt
+Policy: https://github.com/lanedirt/AliasVault/blob/main/SECURITY.md
 
 # Security Policy for AliasVault
 #
@@ -14,4 +15,5 @@ Canonical: https://raw.githubusercontent.com/aliasvault/aliasvault/main/SECURITY
 # - Potential impact
 # - Suggested remediation (if any)
 #
-# We will acknowledge receipt within 48 hours and provide updates as we investigate.
+# For our full security policy, threat model, and vulnerability classification
+# criteria (including CVE eligibility), see SECURITY.md linked above.

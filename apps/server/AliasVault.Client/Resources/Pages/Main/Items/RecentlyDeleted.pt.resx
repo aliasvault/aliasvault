@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Page Header -->
+  <data name="PageTitle" xml:space="preserve">
+    <value>Recentemente Excluídos</value>
+    <comment>Page title for recently deleted items</comment>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Itens que foram excluídos e podem ser restaurados em até 30 dias.</value>
+    <comment>Page description text</comment>
+  </data>
+  <data name="Description" xml:space="preserve">
+    <value>Itens abaixo serão permanentemente excluídos depois de 30 dias. Você pode restaurá-los ou permanentemente excluí-los antes.</value>
+    <comment>Description text explaining 30-day retention</comment>
+  </data>
+  <!-- Empty State -->
+  <data name="NoItems" xml:space="preserve">
+    <value>Nenhum item recentemente excluído</value>
+    <comment>Title when no deleted items exist</comment>
+  </data>
+  <data name="NoItemsDescription" xml:space="preserve">
+    <value>Itens que você excluir aparecerão aqui por 30 dias antes de serem permanentemente removidos.</value>
+    <comment>Description when no deleted items exist</comment>
+  </data>
+  <data name="Untitled" xml:space="preserve">
+    <value>Sem Título</value>
+    <comment>Fallback name for items without a name</comment>
+  </data>
+  <!-- Days Remaining -->
+  <data name="DaysRemaining" xml:space="preserve">
+    <value>Permanentemente excluído em {0} dias</value>
+    <comment>Text showing how many days until permanent deletion</comment>
+  </data>
+  <data name="ExpiringSoon" xml:space="preserve">
+    <value>Expirando em breve</value>
+    <comment>Text shown when item will be deleted within 24 hours</comment>
+  </data>
+  <!-- Actions -->
+  <data name="Restore" xml:space="preserve">
+    <value>Restaurar</value>
+    <comment>Button text to restore a deleted item</comment>
+  </data>
+  <data name="EmptyAll" xml:space="preserve">
+    <value>Esvaziar lixeira</value>
+    <comment>Button text to permanently delete all items</comment>
+  </data>
+  <!-- Confirm Delete Modal -->
+  <data name="ConfirmDeleteTitle" xml:space="preserve">
+    <value>Excluir item permanentemente?</value>
+    <comment>Title for delete confirmation modal</comment>
+  </data>
+  <data name="ConfirmDeleteMessage" xml:space="preserve">
+    <value>Esta ação não pode ser desfeita. O item será permanentemente excluído do seu cofre.</value>
+    <comment>Message in delete confirmation modal</comment>
+  </data>
+  <data name="DeletePermanently" xml:space="preserve">
+    <value>Excluir permanentemente</value>
+    <comment>Button text to confirm permanent deletion</comment>
+  </data>
+  <!-- Confirm Empty All Modal -->
+  <data name="ConfirmEmptyAllTitle" xml:space="preserve">
+    <value>Esvaziar lixeira?</value>
+    <comment>Title for empty all confirmation modal</comment>
+  </data>
+  <data name="ConfirmEmptyAllMessage" xml:space="preserve">
+    <value>Isto irá excluir permanentemente {0} item(ns). Esta ação não pode ser desfeita.</value>
+    <comment>Message in empty all confirmation modal</comment>
+  </data>
+  <!-- Status Messages -->
+  <data name="Restoring" xml:space="preserve">
+    <value>Restaurando item...</value>
+    <comment>Loading message while restoring</comment>
+  </data>
+  <data name="RestoreSuccess" xml:space="preserve">
+    <value>Item restaurado com sucesso.</value>
+    <comment>Success message after restore</comment>
+  </data>
+  <data name="RestoreFailed" xml:space="preserve">
+    <value>Falha ao restaurar item.</value>
+    <comment>Error message when restore fails</comment>
+  </data>
+  <data name="Deleting" xml:space="preserve">
+    <value>Excluindo item...</value>
+    <comment>Loading message while deleting</comment>
+  </data>
+  <data name="DeleteSuccess" xml:space="preserve">
+    <value>Item excluído permanentemente.</value>
+    <comment>Success message after permanent deletion</comment>
+  </data>
+  <data name="DeleteFailed" xml:space="preserve">
+    <value>Falha ao excluir item.</value>
+    <comment>Error message when deletion fails</comment>
+  </data>
+  <data name="EmptyAllSuccess" xml:space="preserve">
+    <value>Todos os itens foram permanentemente excluídos.</value>
+    <comment>Success message after emptying trash</comment>
+  </data>
+  <data name="EmptyAllPartialFailed" xml:space="preserve">
+    <value>Falha ao excluir {0} item(ns).</value>
+    <comment>Error message when some deletions fail</comment>
+  </data>
+</root>

@@ -5,6 +5,9 @@
   <string name="aliasvault_icon">AliasVault icona</string>
   <!-- Common strings -->
   <string name="common_close">Chiudi</string>
+  <string name="common_next">Avanti</string>
+  <string name="common_cancel">Annulla</string>
+  <string name="unknown_error">Si è verificato un errore sconosciuto</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Impossibile recuperare, aprire l\'app</string>
   <string name="autofill_no_match_found">Nessuna corrispondenza trovata, crearne una nuova?</string>
@@ -19,13 +22,12 @@
   <string name="passkey_registration_title">Crea Passkey</string>
   <string name="create_passkey_title">Crea Nuova Passkey</string>
   <string name="create_passkey_subtitle">Registra una nuova passkey per questo sito. Sarà memorizzata in modo sicuro nella tua cassaforte e sincronizzata automaticamente tra i tuoi dispositivi con AliasVault.</string>
-  <string name="replace_passkey_title">Sostituisci Passkey</string>
+  <string name="replace_passkey">Sostituire Passkey</string>
   <string name="passkey_display_name_label">Nome Passkey</string>
   <string name="passkey_display_name_hint">Inserisci un nome per questa passkey</string>
   <string name="passkey_website_label">Sito Web</string>
   <string name="passkey_username_label">Nome Utente</string>
   <string name="passkey_create_button">Crea Passkey</string>
-  <string name="passkey_cancel_button">Annulla</string>
   <string name="passkey_creating">Creazione passkey…</string>
   <string name="passkey_saving">Salvataggio nella cassaforte…</string>
   <string name="passkey_syncing">Sincronizzazione con il server…</string>
@@ -37,10 +39,16 @@
   <string name="passkey_create_explanation">Questo crea una nuova passkey e la memorizza nella tua cassaforte. Sarà sincronizzata automaticamente su tutti i tuoi dispositivi che usano AliasVault.</string>
   <string name="passkey_create_new_button">Crea Nuova Passkey</string>
   <string name="passkey_select_to_replace">Oppure, sostituire un passkey esistente:</string>
-  <string name="passkey_replace_button">Sostituire Passkey</string>
+  <string name="passkey_add_to_existing">Oppure, aggiungi passkey a un elemento esistente:</string>
   <string name="passkey_replace_explanation">Questo sostituirà la passkey esistente con una nuova. Si prega di notare che la vecchia passkey sarà sovrascritta e non sarà più accessibile. Se si desidera invece creare una passkey separata, tornare alla schermata precedente.</string>
+  <string name="passkey_merge_explanation">Questo aggiungerà una passkey al tuo elemento esistente. La tua password e altri dati saranno preservati.</string>
   <string name="passkey_replacing">Sostituzione passkey…</string>
+  <string name="add_passkey">Aggiungi Passkey</string>
+  <string name="add_passkey_subtitle">Aggiunta passkey all\'elemento esistente</string>
   <string name="passkey_checking_connection">Controllo connessione…</string>
+  <string name="passkey_retrieving">Recupero passkey…</string>
+  <string name="passkey_verifying">Verifica…</string>
+  <string name="passkey_authenticating">Autenticazione…</string>
   <!-- Vault sync error messages -->
   <string name="connection_error_title">Errore Di Connessione</string>
   <string name="connection_error_message">Non è possibile effettuare alcuna connessione al server. Controlla la tua connessione internet e prova a creare nuovamente la passkey.</string>
@@ -57,10 +65,20 @@
   <string name="server_version_not_supported_title">Aggiornamento Del Server Richiesto</string>
   <string name="server_version_not_supported_message">La versione del server è obsoleta. Contatta l\'amministratore per aggiornare il server.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_biometric_required">Abilitare l\'autenticazione biometrica nell\'app principale di AliasVault per utilizzare le passkey</string>
+  <string name="error_unlock_method_required">Si prega di abilitare l\'autenticazione biometrica o PIN nell\'app principale di AliasVault per continuare</string>
   <string name="error_unlock_vault_first">Si prega di sbloccare prima la cassaforte nell\'app AliasVault</string>
   <string name="error_vault_decrypt_failed">Decifratura della cassaforte non riuscita</string>
-  <string name="error_vault_unlock_failed">Sblocco della cassaforte non riuscito</string>
   <string name="error_biometric_cancelled">Autenticazione biometrica cancellata</string>
   <string name="error_encryption_key_failed">Impossibile recuperare la chiave di cifratura</string>
+  <!-- PIN unlock -->
+  <string name="pin_unlock_vault">Sblocca Cassaforte</string>
+  <string name="pin_enter_to_unlock">Inserisci il PIN per sbloccare la cassaforte</string>
+  <string name="pin_locked_max_attempts">PIN bloccato dopo troppi tentativi falliti</string>
+  <string name="pin_incorrect_attempts_remaining">PIN errato, %d tentativi rimasti</string>
+  <!-- PIN setup -->
+  <string name="pin_setup_title">Configurare PIN</string>
+  <string name="pin_setup_description">Scegli un PIN per sbloccare la cassaforte</string>
+  <string name="pin_confirm_title">Conferma PIN</string>
+  <string name="pin_confirm_description">Reinserisci il tuo PIN per confermare.</string>
+  <string name="pin_mismatch">I PIN non corrispondono. Riprova.</string>
 </resources>

@@ -1,9 +1,9 @@
 /**
  * AliasVault Autofill Service Implementation
  *
- * This service implements the Android Autofill framework to provide AliasVault credentials
+ * This service implements the Android Autofill framework to provide AliasVault items
  * to forms. It identifies username and password fields in apps and websites,
- * then offers stored credentials from AliasVault.
+ * then offers stored items from AliasVault.
  *
  */
 package net.aliasvault.app.autofill
@@ -27,12 +27,13 @@ import android.widget.RemoteViews
 import net.aliasvault.app.MainActivity
 import net.aliasvault.app.R
 import net.aliasvault.app.autofill.models.FieldType
-import net.aliasvault.app.autofill.utils.CredentialMatcher
 import net.aliasvault.app.autofill.utils.FieldFinder
 import net.aliasvault.app.autofill.utils.ImageUtils
+import net.aliasvault.app.autofill.utils.RustItemMatcher
+import net.aliasvault.app.utils.ItemTypeIcon
 import net.aliasvault.app.vaultstore.VaultStore
-import net.aliasvault.app.vaultstore.interfaces.CredentialOperationCallback
-import net.aliasvault.app.vaultstore.models.Credential
+import net.aliasvault.app.vaultstore.interfaces.ItemOperationCallback
+import net.aliasvault.app.vaultstore.models.Item
 
 /**
  * The AutofillService class.
@@ -80,7 +81,6 @@ class AutofillService : AutofillService() {
                 safeCallback()
                 return
             }
-
             launchActivityForAutofill(fieldFinder) { response -> safeCallback(response) }
         } catch (e: Exception) {
             Log.e(TAG, "Unexpected error in onFillRequest", e)
@@ -96,8 +96,12 @@ class AutofillService : AutofillService() {
 
                 val responseBuilder = FillResponse.Builder()
 
-                // Add debug dataset showing what we're searching for
-                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                // Add debug dataset if enabled in settings
+                val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
+                val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
+                if (showSearchText) {
+                    responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                }
 
                 // Add failed to retrieve dataset
                 responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder))
@@ -114,7 +118,7 @@ class AutofillService : AutofillService() {
         // In a full implementation, you would:
         // 1. Extract the username/password from the SaveRequest
         // 2. Launch an activity to let the user confirm saving
-        // 3. Save the credential using the VaultStore
+        // 3. Save the item using the VaultStore
 
         // For now, just acknowledge the request
         callback.onSuccess()
@@ -134,76 +138,93 @@ class AutofillService : AutofillService() {
         val store = VaultStore.getExistingInstance()
 
         if (store != null) {
-            // We have an existing instance, try to get credentials
-            if (store.tryGetAllCredentials(object : CredentialOperationCallback {
-                    override fun onSuccess(result: List<Credential>) {
+            // We have an existing instance, try to get items
+            if (store.tryGetAllItems(object : ItemOperationCallback {
+                    override fun onSuccess(result: List<Item>) {
                         try {
                             if (result.isEmpty()) {
-                                // No credentials available
-                                Log.d(TAG, "No credentials available")
+                                // No items available
+                                Log.d(TAG, "No items available")
                                 callback(null)
                                 return
                             }
 
-                            // Filter credentials based on app/website info
+                            // Filter items based on app/website info
                             val filteredByApp = if (appInfo != null) {
-                                CredentialMatcher.filterCredentialsByAppInfo(result, appInfo)
+                                RustItemMatcher.filterItemsByAppInfo(result, appInfo)
                             } else {
                                 result
                             }
 
-                            // Further filter to only include credentials with autofillable data.
-                            // This prevents from showing non-autofillable credentials like passkeys.
-                            val filteredCredentials = filteredByApp.filter { credential ->
-                                val hasUsername = !credential.username.isNullOrEmpty()
-                                val hasEmail = credential.alias?.email?.isNotEmpty() == true
-                                val hasPassword = !credential.password?.value.isNullOrEmpty()
+                            // Further filter to only include items with autofillable data.
+                            // This prevents from showing non-autofillable items like passkeys.
+                            val filteredItems = filteredByApp.filter { item ->
+                                val hasUsername = !item.username.isNullOrEmpty()
+                                val hasEmail = !item.email.isNullOrEmpty()
+                                val hasPassword = !item.password.isNullOrEmpty()
 
                                 (hasUsername || hasEmail) && hasPassword
                             }
 
                             Log.d(
                                 TAG,
-                                "Credentials after filtering: app matches=${filteredByApp.size}, with data=${filteredCredentials.size}",
+                                "Items after filtering: app matches=${filteredByApp.size}, with data=${filteredItems.size}",
                             )
 
                             val responseBuilder = FillResponse.Builder()
 
-                            // Always add debug dataset as first option showing what we're searching for
-                            responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                            // Add debug dataset if enabled in settings
+                            val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
+                            val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
+                            if (showSearchText) {
+                                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                            }
 
                             // If there are no results, return "no matches" placeholder option.
-                            if (filteredCredentials.isEmpty()) {
+                            if (filteredItems.isEmpty()) {
                                 Log.d(
                                     TAG,
-                                    "No credentials found for this app, showing 'no matches' option",
+                                    "No items found for this app, showing 'no matches' option",
                                 )
                                 responseBuilder.addDataset(createNoMatchesDataset(fieldFinder))
                             } else {
                                 // If there are matches, add them to the dataset
-                                for (credential in filteredCredentials) {
+                                for (item in filteredItems) {
                                     responseBuilder.addDataset(
-                                        createCredentialDataset(fieldFinder, credential),
+                                        createItemDataset(fieldFinder, item),
                                     )
+                                }
+
+                                // Add "Open app" option at the bottom (when search text is not shown and there are matches)
+                                if (!showSearchText) {
+                                    responseBuilder.addDataset(createOpenAppDataset(fieldFinder))
                                 }
                             }
 
                             callback(responseBuilder.build())
                         } catch (e: Exception) {
-                            Log.e(TAG, "Error parsing credentials", e)
+                            Log.e(TAG, "Error parsing items", e)
                             // Show "Failed to retrieve, open app" option instead of failing
                             val responseBuilder = FillResponse.Builder()
-                            responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                            val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
+                            val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
+                            if (showSearchText) {
+                                responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                            }
                             responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder))
                             callback(responseBuilder.build())
                         }
                     }
 
                     override fun onError(e: Exception) {
-                        Log.e(TAG, "Error getting credentials", e)
+                        Log.e(TAG, "Error getting items", e)
                         // Show "Failed to retrieve, open app" option instead of failing
                         val responseBuilder = FillResponse.Builder()
-                        responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                        val sharedPreferences = getSharedPreferences("AliasVaultPrefs", android.content.Context.MODE_PRIVATE)
+                        val showSearchText = sharedPreferences.getBoolean("autofill_show_search_text", false)
+                        if (showSearchText) {
+                            responseBuilder.addDataset(createSearchDebugDataset(fieldFinder, appInfo ?: "unknown"))
+                        }
                         responseBuilder.addDataset(createFailedToRetrieveDataset(fieldFinder))
                         callback(responseBuilder.build())
                     }
@@ -224,116 +245,94 @@ class AutofillService : AutofillService() {
     }
 
     /**
-     * Create a dataset from a credential.
+     * Create a dataset from an item.
      * @param fieldFinder The field finder
-     * @param credential The credential
+     * @param item The item
      * @return The dataset
      */
-    private fun createCredentialDataset(fieldFinder: FieldFinder, credential: Credential): Dataset {
-        // Choose layout based on whether we have a logo
-        val layoutId = if (credential.service.logo != null) {
-            R.layout.autofill_dataset_item_icon
-        } else {
-            R.layout.autofill_dataset_item
-        }
+    private fun createItemDataset(fieldFinder: FieldFinder, item: Item): Dataset {
+        // Always use icon layout (will show logo or placeholder icon)
+        val layoutId = R.layout.autofill_dataset_item_icon
 
-        // Create presentation for this credential using our custom layout
+        // Create presentation for this item using our custom layout
         val presentation = RemoteViews(packageName, layoutId)
 
         val dataSetBuilder = Dataset.Builder(presentation)
 
         // Add autofill values for all fields
-        var presentationDisplayValue = credential.service.name
+        var presentationDisplayValue = item.name
         var hasSetValue = false
         for (field in fieldFinder.autofillableFields) {
             val fieldType = field.second
             when (fieldType) {
                 FieldType.PASSWORD -> {
-                    if (credential.password != null) {
+                    if (!item.password.isNullOrEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
-                            AutofillValue.forText(credential.password.value as CharSequence),
+                            AutofillValue.forText(item.password as CharSequence),
                         )
                         hasSetValue = true
                     }
                 }
                 FieldType.EMAIL -> {
-                    if (credential.alias?.email != null) {
+                    if (!item.email.isNullOrEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
-                            AutofillValue.forText(credential.alias.email),
+                            AutofillValue.forText(item.email),
                         )
                         hasSetValue = true
-                        if (credential.alias.email.isNotEmpty()) {
-                            presentationDisplayValue += " (${credential.alias.email})"
-                        } else if (!credential.username.isNullOrEmpty()) {
-                            presentationDisplayValue += " (${credential.username})"
-                        }
-                    } else if (credential.username != null) {
+                        presentationDisplayValue += " (${item.email})"
+                    } else if (!item.username.isNullOrEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
-                            AutofillValue.forText(credential.username),
+                            AutofillValue.forText(item.username),
                         )
                         hasSetValue = true
-                        if (credential.username.isNotEmpty()) {
-                            presentationDisplayValue += " (${credential.username})"
-                        } else if ((credential.alias?.email ?: "").isNotEmpty()) {
-                            presentationDisplayValue += " (${credential.alias?.email})"
-                        }
+                        presentationDisplayValue += " (${item.username})"
                     }
                 }
                 FieldType.USERNAME -> {
-                    if (credential.username != null) {
+                    if (!item.username.isNullOrEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
-                            AutofillValue.forText(credential.username),
+                            AutofillValue.forText(item.username),
                         )
                         hasSetValue = true
-                        if (credential.username.isNotEmpty()) {
-                            presentationDisplayValue += " (${credential.username})"
-                        } else if ((credential.alias?.email ?: "").isNotEmpty()) {
-                            presentationDisplayValue += " (${credential.alias?.email})"
-                        }
-                    } else if (credential.alias?.email != null) {
+                        presentationDisplayValue += " (${item.username})"
+                    } else if (!item.email.isNullOrEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
-                            AutofillValue.forText(credential.alias.email),
+                            AutofillValue.forText(item.email),
                         )
                         hasSetValue = true
-                        if (credential.alias.email.isNotEmpty()) {
-                            presentationDisplayValue += " (${credential.alias?.email})"
-                        }
+                        presentationDisplayValue += " (${item.email})"
                     }
                 }
                 else -> {
                     // For unknown field types, try both email and username
-                    if (credential.alias?.email != null) {
+                    if (!item.email.isNullOrEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
-                            AutofillValue.forText(credential.alias.email),
+                            AutofillValue.forText(item.email),
                         )
                         hasSetValue = true
-                        if (credential.alias.email.isNotEmpty()) {
-                            presentationDisplayValue += " (${credential.alias.email})"
-                        }
-                    } else if (credential.username != null) {
+                        presentationDisplayValue += " (${item.email})"
+                    } else if (!item.username.isNullOrEmpty()) {
                         dataSetBuilder.setValue(
                             field.first,
-                            AutofillValue.forText(credential.username),
+                            AutofillValue.forText(item.username),
                         )
                         hasSetValue = true
-                        if (credential.username.isNotEmpty()) {
-                            presentationDisplayValue += " (${credential.username})"
-                        }
+                        presentationDisplayValue += " (${item.username})"
                     }
                 }
             }
         }
 
-        // If no value was set, this shouldn't happen now since we filter credentials
+        // If no value was set, this shouldn't happen now since we filter items
         // but keep as safety measure
         if (!hasSetValue && fieldFinder.autofillableFields.isNotEmpty()) {
-            Log.w(TAG, "Credential ${credential.service.name} has no autofillable data - this should have been filtered")
+            Log.w(TAG, "Item ${item.name} has no autofillable data - this should have been filtered")
             dataSetBuilder.setValue(
                 fieldFinder.autofillableFields.first().first,
                 AutofillValue.forText(""),
@@ -346,13 +345,21 @@ class AutofillService : AutofillService() {
             presentationDisplayValue,
         )
 
-        // Set the logo if available
-        val logoBytes = credential.service.logo
-        if (logoBytes != null) {
-            val bitmap = ImageUtils.bytesToBitmap(logoBytes)
-            if (bitmap != null) {
-                presentation.setImageViewBitmap(R.id.icon, bitmap)
-            }
+        // Set the logo if available, otherwise use placeholder icon
+        val logoBytes = item.logo
+        val bitmap = if (logoBytes != null) {
+            ImageUtils.bytesToBitmap(logoBytes)
+        } else {
+            // Use placeholder key icon for Login/Alias items
+            ItemTypeIcon.getIcon(
+                context = this@AutofillService,
+                itemType = ItemTypeIcon.ItemType.LOGIN,
+                size = 96,
+            )
+        }
+
+        if (bitmap != null) {
+            presentation.setImageViewBitmap(R.id.icon, bitmap)
         }
 
         return dataSetBuilder.build()
@@ -373,12 +380,12 @@ class AutofillService : AutofillService() {
 
         val dataSetBuilder = Dataset.Builder(presentation)
 
-        // Get the app/website information to use as service URL
+        // Get the app/website information to use as item URL
         val appInfo = fieldFinder.getAppInfo()
         val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
 
         // Create deep link URL
-        val deepLinkUrl = "net.aliasvault.app://credentials/add-edit-page?serviceUrl=$encodedUrl"
+        val deepLinkUrl = "aliasvault://items/add-edit-page?itemUrl=$encodedUrl"
 
         // Add a click listener to open AliasVault app with deep link
         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -457,7 +464,7 @@ class AutofillService : AutofillService() {
         val dataSetBuilder = Dataset.Builder(presentation)
 
         // Create deep link URL
-        val deepLinkUrl = "net.aliasvault.app://reinitialize"
+        val deepLinkUrl = "aliasvault://reinitialize"
 
         // Add a click listener to open AliasVault app with deep link
         val intent = Intent(Intent.ACTION_VIEW).apply {
@@ -501,12 +508,55 @@ class AutofillService : AutofillService() {
 
         val dataSetBuilder = Dataset.Builder(presentation)
 
-        // Get the app/website information to use as service URL
+        // Get the app/website information to use as item URL
         val appInfo = fieldFinder.getAppInfo()
         val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
 
-        // Create deep link URL to credentials page with service URL
-        val deepLinkUrl = "net.aliasvault.app://credentials?serviceUrl=$encodedUrl"
+        // Create deep link URL to items page with item URL
+        val deepLinkUrl = "aliasvault://items?itemUrl=$encodedUrl"
+
+        // Add a click listener to open AliasVault app with deep link
+        val intent = Intent(Intent.ACTION_VIEW).apply {
+            data = android.net.Uri.parse(deepLinkUrl)
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        val pendingIntent = PendingIntent.getActivity(
+            this@AutofillService,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        dataSetBuilder.setAuthentication(pendingIntent.intentSender)
+
+        // Add placeholder values to satisfy Android's requirement that at least one value must be set
+        if (fieldFinder.autofillableFields.isNotEmpty()) {
+            for (field in fieldFinder.autofillableFields) {
+                dataSetBuilder.setValue(field.first, AutofillValue.forText(""))
+            }
+        }
+
+        return dataSetBuilder.build()
+    }
+
+    /**
+     * Create a dataset for the "open app" option.
+     * @param fieldFinder The field finder
+     * @return The dataset
+     */
+    private fun createOpenAppDataset(fieldFinder: FieldFinder): Dataset {
+        // Create presentation for the "open app" option with AliasVault logo
+        val presentation = RemoteViews(packageName, R.layout.autofill_dataset_item_logo)
+        presentation.setTextViewText(
+            R.id.text,
+            getString(R.string.autofill_open_app),
+        )
+
+        val dataSetBuilder = Dataset.Builder(presentation)
+
+        // Create deep link URL to open the items page
+        val appInfo = fieldFinder.getAppInfo()
+        val encodedUrl = appInfo?.let { java.net.URLEncoder.encode(it, "UTF-8") } ?: ""
+        val deepLinkUrl = "aliasvault://items?itemUrl=$encodedUrl"
 
         // Add a click listener to open AliasVault app with deep link
         val intent = Intent(Intent.ACTION_VIEW).apply {

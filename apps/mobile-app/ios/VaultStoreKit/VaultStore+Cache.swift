@@ -10,7 +10,28 @@ extension VaultStore {
         self.dbConnection = nil
     }
 
+    /// Clear session data only (for forced logout).
+    /// Preserves vault data on disk for recovery on next login.
+    /// This is used when the user is forcibly logged out (e.g., 401, token revocation)
+    /// to allow recovery of unsynced local changes.
+    public func clearSession() {
+        print("Clearing session - preserving vault data for recovery")
+
+        // Clear in-memory data only
+        self.encryptionKey = nil
+        self.dbConnection = nil
+
+        // Clear biometric-protected key from keychain (user will need to re-authenticate)
+        do {
+            try removeKeyFromKeychain()
+            print("Successfully removed encryption key from keychain")
+        } catch {
+            print("Failed to remove encryption key from keychain: \(error)")
+        }
+    }
+
     /// Clear the vault storage - remove the encryption key and encrypted database from the device
+    /// This is used for user-initiated logout where they explicitly choose to clear all local data.
     public func clearVault() throws {
         print("Clearing vault - removing all stored data")
 
@@ -34,6 +55,21 @@ extension VaultStore {
         self.userDefaults.removeObject(forKey: VaultConstants.authMethodsKey)
         self.userDefaults.removeObject(forKey: VaultConstants.autoLockTimeoutKey)
         self.userDefaults.removeObject(forKey: VaultConstants.encryptionKeyDerivationParamsKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.usernameKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.offlineModeKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.pinEnabledKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.serverVersionKey)
+
+        // Clear sync state
+        self.userDefaults.removeObject(forKey: VaultConstants.isDirtyKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.mutationSequenceKey)
+        self.userDefaults.removeObject(forKey: VaultConstants.isSyncingKey)
+
+        // Clear WebApiService keys (auth tokens, API URL)
+        self.userDefaults.removeObject(forKey: "apiUrl")
+        self.userDefaults.removeObject(forKey: "accessToken")
+        self.userDefaults.removeObject(forKey: "refreshToken")
+
         self.userDefaults.synchronize()
         print("Cleared UserDefaults")
 

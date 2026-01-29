@@ -1,0 +1,237 @@
+@using AliasVault.RazorComponents.Tables
+
+@if (IsLoading)
+{
+    <LoadingIndicator />
+}
+else if (RelatedUsers.Any())
+{
+    <SortableTable Columns="@_relatedUsersTableColumns" SortColumn="@SortColumn" SortDirection="@SortDirection" OnSortChanged="HandleSortChanged">
+        @foreach (var relatedUser in SortedRelatedUsersList)
+        {
+            <SortableTableRow>
+                <SortableTableColumn IsPrimary="true">
+                    <a href="users/@relatedUser.UserId">@relatedUser.Username</a>
+                </SortableTableColumn>
+                <SortableTableColumn>@relatedUser.SharedIpAddresses.ToString("N0")</SortableTableColumn>
+                <SortableTableColumn>@relatedUser.MostRecentSharedIp</SortableTableColumn>
+                <SortableTableColumn>@relatedUser.CredentialsCount.ToString("N0")</SortableTableColumn>
+                <SortableTableColumn>@relatedUser.EmailClaimsCount.ToString("N0")</SortableTableColumn>
+                <SortableTableColumn>@relatedUser.RegistrationDate.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
+                <SortableTableColumn><StatusPill Enabled="!relatedUser.IsBlocked" TextTrue="Active" TextFalse="Blocked" /></SortableTableColumn>
+            </SortableTableRow>
+        }
+    </SortableTable>
+
+    @if (TotalRelatedUsers > RelatedUsers.Count)
+    {
+        <div class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+            Showing @RelatedUsers.Count of @TotalRelatedUsers related users (limited to top 20 by shared IP count)
+        </div>
+    }
+}
+else
+{
+    <div class="flex items-center justify-center py-8">
+        <div class="text-center">
+            <div class="text-gray-500 dark:text-gray-400">
+                <i class="fas fa-users text-4xl mb-4"></i>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-white">No related users</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">No other users found with shared IP addresses.</p>
+        </div>
+    </div>
+}
+
+@code {
+    /// <summary>
+    /// Gets or sets the user ID to find related users for.
+    /// </summary>
+    [Parameter]
+    public string UserId { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the event callback for when the count changes.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnCountChanged { get; set; }
+
+    private List<RelatedUserInfo> RelatedUsers { get; set; } = [];
+    private int TotalRelatedUsers { get; set; } = 0;
+    private bool IsLoading { get; set; } = true;
+
+    private string SortColumn { get; set; } = "SharedIpAddresses";
+    private SortDirection SortDirection { get; set; } = SortDirection.Descending;
+
+    private readonly List<TableColumn> _relatedUsersTableColumns = [
+        new TableColumn { Title = "Username", PropertyName = "Username" },
+        new TableColumn { Title = "Shared IPs", PropertyName = "SharedIpAddresses" },
+        new TableColumn { Title = "Most Recent IP", PropertyName = "MostRecentSharedIp" },
+        new TableColumn { Title = "Credentials", PropertyName = "CredentialsCount" },
+        new TableColumn { Title = "Email Claims", PropertyName = "EmailClaimsCount" },
+        new TableColumn { Title = "Registered", PropertyName = "RegistrationDate" },
+        new TableColumn { Title = "Status", PropertyName = "IsBlocked" },
+    ];
+
+    private IEnumerable<RelatedUserInfo> SortedRelatedUsersList => SortList(RelatedUsers, SortColumn, SortDirection);
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        await RefreshData();
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Refresh the related users data.
+    /// </summary>
+    private async Task RefreshData()
+    {
+        await using var dbContext = await DbContextFactory.CreateDbContextAsync();
+
+        if (string.IsNullOrEmpty(UserId))
+        {
+            RelatedUsers = [];
+            TotalRelatedUsers = 0;
+            return;
+        }
+
+        // Get distinct IP addresses from auth logs for this user (excluding fully anonymized IPs)
+        var userIpAddresses = await dbContext.AuthLogs
+            .Where(x => x.Username == dbContext.AliasVaultUsers
+                .Where(u => u.Id == UserId)
+                .Select(u => u.UserName)
+                .FirstOrDefault() && x.IpAddress != null && x.IpAddress != "xxx.xxx.xxx.xxx")
+            .Select(x => x.IpAddress!)
+            .Distinct()
+            .ToListAsync();
+
+        if (!userIpAddresses.Any())
+        {
+            RelatedUsers = [];
+            TotalRelatedUsers = 0;
+            return;
+        }
+
+        // Extract IP ranges (first 3 octets for IPv4)
+        var ipRanges = userIpAddresses
+            .Where(ip => ip.Split('.').Length == 4)
+            .Select(ip => string.Join(".", ip.Split('.').Take(3)))
+            .Distinct()
+            .ToList();
+
+        // Find other users with auth logs in the same IP ranges
+        var relatedUserData = await dbContext.AuthLogs
+            .Where(x => x.Username != null &&
+                       x.IpAddress != null &&
+                       x.IpAddress != "xxx.xxx.xxx.xxx" &&
+                       ipRanges.Any(range => x.IpAddress.StartsWith(range)))
+            .GroupBy(x => x.Username)
+            .Select(g => new
+            {
+                Username = g.Key,
+                SharedIps = g.Select(x => x.IpAddress).Distinct().Where(ip => ip != null && userIpAddresses.Contains(ip)).Count(),
+                MostRecentSharedIp = g.Where(x => x.IpAddress != null && userIpAddresses.Contains(x.IpAddress)).OrderByDescending(x => x.Timestamp).Select(x => x.IpAddress).FirstOrDefault()
+            })
+            .Where(x => x.SharedIps > 0)
+            .ToListAsync();
+
+        // Get user details
+        var usernames = relatedUserData.Select(x => x.Username).Distinct().ToList();
+        var users = await dbContext.AliasVaultUsers
+            .Where(u => u.UserName != null && usernames.Contains(u.UserName) && u.Id != UserId)
+            .Select(u => new
+            {
+                u.Id,
+                u.UserName,
+                u.CreatedAt,
+                u.Blocked
+            })
+            .ToListAsync();
+
+        TotalRelatedUsers = users.Count;
+
+        // Get vault statistics for all related users (from their latest vault)
+        var userIds = users.Select(u => u.Id).ToList();
+        var vaultStats = await dbContext.Vaults
+            .Where(v => userIds.Contains(v.UserId))
+            .GroupBy(v => v.UserId)
+            .Select(g => new
+            {
+                UserId = g.Key,
+                CredentialsCount = g.OrderByDescending(v => v.RevisionNumber).First().CredentialsCount,
+                EmailClaimsCount = g.OrderByDescending(v => v.RevisionNumber).First().EmailClaimsCount
+            })
+            .ToListAsync();
+
+        // Combine the data
+        RelatedUsers = (from user in users
+                       join data in relatedUserData on user.UserName equals data.Username
+                       join vaultStat in vaultStats on user.Id equals vaultStat.UserId into vaultGroup
+                       from vault in vaultGroup.DefaultIfEmpty()
+                       select new RelatedUserInfo
+                       {
+                           UserId = user.Id,
+                           Username = user.UserName ?? "Unknown",
+                           SharedIpAddresses = data.SharedIps,
+                           MostRecentSharedIp = data.MostRecentSharedIp ?? "-",
+                           CredentialsCount = vault?.CredentialsCount ?? 0,
+                           EmailClaimsCount = vault?.EmailClaimsCount ?? 0,
+                           RegistrationDate = user.CreatedAt,
+                           IsBlocked = user.Blocked
+                       })
+                       .OrderByDescending(x => x.SharedIpAddresses)
+                       .Take(20)
+                       .ToList();
+
+        // Notify parent that count has changed
+        await OnCountChanged.InvokeAsync();
+    }
+
+    private void HandleSortChanged((string column, SortDirection direction) sort)
+    {
+        SortColumn = sort.column;
+        SortDirection = sort.direction;
+        StateHasChanged();
+    }
+
+    private static IEnumerable<RelatedUserInfo> SortList(List<RelatedUserInfo> relatedUsers, string sortColumn, SortDirection sortDirection)
+    {
+        return sortColumn switch
+        {
+            "Username" => SortableTable.SortListByProperty(relatedUsers, r => r.Username, sortDirection),
+            "SharedIpAddresses" => SortableTable.SortListByProperty(relatedUsers, r => r.SharedIpAddresses, sortDirection),
+            "MostRecentSharedIp" => SortableTable.SortListByProperty(relatedUsers, r => r.MostRecentSharedIp, sortDirection),
+            "CredentialsCount" => SortableTable.SortListByProperty(relatedUsers, r => r.CredentialsCount, sortDirection),
+            "EmailClaimsCount" => SortableTable.SortListByProperty(relatedUsers, r => r.EmailClaimsCount, sortDirection),
+            "RegistrationDate" => SortableTable.SortListByProperty(relatedUsers, r => r.RegistrationDate, sortDirection),
+            "IsBlocked" => SortableTable.SortListByProperty(relatedUsers, r => r.IsBlocked, sortDirection),
+            _ => relatedUsers
+        };
+    }
+
+    /// <summary>
+    /// Gets the count of related users found.
+    /// </summary>
+    public int GetRelatedUsersCount()
+    {
+        return TotalRelatedUsers;
+    }
+
+    private class RelatedUserInfo
+    {
+        public string UserId { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public int SharedIpAddresses { get; set; }
+        public string MostRecentSharedIp { get; set; } = string.Empty;
+        public int CredentialsCount { get; set; }
+        public int EmailClaimsCount { get; set; }
+        public DateTime RegistrationDate { get; set; }
+        public bool IsBlocked { get; set; }
+    }
+}

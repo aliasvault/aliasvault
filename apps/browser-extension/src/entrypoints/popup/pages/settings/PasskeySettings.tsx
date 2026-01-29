@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { extractDomain, extractRootDomain } from '@/entrypoints/contentScript/Filter';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import {
   PASSKEY_PROVIDER_ENABLED_KEY,
   PASSKEY_DISABLED_SITES_KEY
 } from '@/utils/Constants';
+import { extractDomain, extractRootDomain } from '@/utils/itemMatcher/ItemMatcher';
 
 import { storage, browser } from "#imports";
 
@@ -49,7 +49,7 @@ const PasskeySettings: React.FC = () => {
   const loadSettings = useCallback(async () : Promise<void> => {
     const tab = await getCurrentTab();
     const hostname = new URL(tab.url ?? '').hostname;
-    const baseDomain = extractRootDomain(extractDomain(hostname));
+    const baseDomain = await extractRootDomain(await extractDomain(hostname));
 
     // Load settings from local storage
     const disabledUrls = await storage.getItem(PASSKEY_DISABLED_SITES_KEY) as string[] ?? [];
@@ -147,7 +147,7 @@ const PasskeySettings: React.FC = () => {
                     : 'bg-red-500 hover:bg-red-600 text-white'
                 }`}
               >
-                {settings.isGloballyEnabled ? t('settings.enabled') : t('settings.disabled')}
+                {settings.isGloballyEnabled ? t('common.enabled') : t('common.disabled')}
               </button>
             </div>
           </div>
@@ -176,7 +176,7 @@ const PasskeySettings: React.FC = () => {
                         : 'bg-red-500 hover:bg-red-600 text-white'
                     }`}
                   >
-                    {settings.isEnabled ? t('settings.enabled') : t('settings.disabled')}
+                    {settings.isEnabled ? t('common.enabled') : t('common.disabled')}
                   </button>
                 )}
               </div>

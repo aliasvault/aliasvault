@@ -11,6 +11,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using AliasVault.Client.Services.JsInterop.Models;
 using AliasVault.Shared.Core;
+using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>
@@ -34,19 +35,19 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     /// <returns>A task representing the asynchronous operation.</returns>
     public async Task InitializeAsync()
     {
-        _identityGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/shared/identity-generator/index.mjs?v={_cacheBuster}");
+        _identityGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/identity-generator/index.mjs?v={_cacheBuster}");
         if (_identityGeneratorModule == null)
         {
             throw new InvalidOperationException("Failed to initialize identity generator module");
         }
 
-        _passwordGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/shared/password-generator/index.mjs?v={_cacheBuster}");
+        _passwordGeneratorModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/password-generator/index.mjs?v={_cacheBuster}");
         if (_passwordGeneratorModule == null)
         {
             throw new InvalidOperationException("Failed to initialize password generator module");
         }
 
-        _vaultSqlInteropModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/shared/vault-sql/index.mjs?v={_cacheBuster}");
+        _vaultSqlInteropModule = await jsRuntime.InvokeAsync<IJSObjectReference>("import", $"./js/dist/core/vault/index.mjs?v={_cacheBuster}");
         if (_vaultSqlInteropModule == null)
         {
             throw new InvalidOperationException("Failed to initialize vault SQL generator module");
@@ -101,6 +102,14 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     /// <returns>Task.</returns>
     public async Task FocusElementById(string elementId) =>
         await jsRuntime.InvokeVoidAsync("focusElement", elementId);
+
+    /// <summary>
+    /// Focus an element by its ID and select all its text.
+    /// </summary>
+    /// <param name="elementId">The element ID to focus and select.</param>
+    /// <returns>Task.</returns>
+    public async Task FocusAndSelectElementById(string elementId) =>
+        await jsRuntime.InvokeVoidAsync("focusAndSelectElement", elementId);
 
     /// <summary>
     /// Blur (defocus) an element by its ID.
@@ -235,7 +244,7 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
         try
         {
             // Invoke the JavaScript function and get the result as a byte array
-            await jsRuntime.InvokeVoidAsync("generateQrCode", "authenticator-uri");
+            await jsRuntime.InvokeVoidAsync("generateQrCode", elementId);
         }
         catch (JSException ex)
         {
@@ -324,6 +333,25 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     }
 
     /// <summary>
+    /// Sets up an IntersectionObserver for infinite scrolling.
+    /// </summary>
+    /// <typeparam name="TComponent">Component type.</typeparam>
+    /// <param name="element">The sentinel element to observe.</param>
+    /// <param name="objRef">DotNetObjectReference.</param>
+    /// <returns>Task.</returns>
+    public async Task SetupInfiniteScroll<TComponent>(ElementReference element, DotNetObjectReference<TComponent> objRef)
+        where TComponent : class =>
+        await jsRuntime.InvokeVoidAsync("window.setupInfiniteScroll", element, objRef);
+
+    /// <summary>
+    /// Tears down the IntersectionObserver for infinite scrolling.
+    /// </summary>
+    /// <param name="element">The sentinel element that was observed.</param>
+    /// <returns>Task.</returns>
+    public async Task TeardownInfiniteScroll(ElementReference element) =>
+        await jsRuntime.InvokeVoidAsync("window.teardownInfiniteScroll", element);
+
+    /// <summary>
     /// Registers a visibility callback which is invoked when the visibility of component changes in client.
     /// </summary>
     /// <typeparam name="TComponent">Component type.</typeparam>
@@ -361,12 +389,113 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     }
 
     /// <summary>
+    /// Gets all available languages for identity generation.
+    /// </summary>
+    /// <returns>Array of language options.</returns>
+    public async Task<List<LanguageOption>> GetAvailableIdentityGeneratorLanguagesAsync()
+    {
+        try
+        {
+            if (_identityGeneratorModule == null)
+            {
+                await InitializeAsync();
+            }
+
+            var result = await _identityGeneratorModule!.InvokeAsync<List<LanguageOption>>("getAvailableLanguages");
+            return result ?? new List<LanguageOption>();
+        }
+        catch (JSException ex)
+        {
+            await Console.Error.WriteLineAsync($"JavaScript error getting available languages: {ex.Message}");
+            return new List<LanguageOption>();
+        }
+    }
+
+    /// <summary>
+    /// Gets all available age range options from the shared JavaScript utility.
+    /// </summary>
+    /// <returns>Array of age range options.</returns>
+    public async Task<List<AgeRangeOption>> GetAvailableIdentityGeneratorAgeRangesAsync()
+    {
+        try
+        {
+            if (_identityGeneratorModule == null)
+            {
+                await InitializeAsync();
+            }
+
+            var result = await _identityGeneratorModule!.InvokeAsync<List<AgeRangeOption>>("getAvailableAgeRanges");
+            return result ?? new List<AgeRangeOption>();
+        }
+        catch (JSException ex)
+        {
+            await Console.Error.WriteLineAsync($"JavaScript error getting age ranges: {ex.Message}");
+            return new List<AgeRangeOption>();
+        }
+    }
+
+    /// <summary>
+    /// Maps a UI language code to an identity generator language code.
+    /// If no explicit match is found, returns null to indicate no preference.
+    /// </summary>
+    /// <param name="uiLanguageCode">The UI language code (e.g., "en", "en-US", "nl-NL", "de-DE", "fr").</param>
+    /// <returns>The matching identity generator language code or null if no match.</returns>
+    public async Task<string?> MapUiLanguageToIdentityLanguageAsync(string? uiLanguageCode)
+    {
+        try
+        {
+            if (string.IsNullOrEmpty(uiLanguageCode))
+            {
+                return null;
+            }
+
+            if (_identityGeneratorModule == null)
+            {
+                await InitializeAsync();
+            }
+
+            var result = await _identityGeneratorModule!.InvokeAsync<string?>("mapUiLanguageToIdentityLanguage", uiLanguageCode);
+            return result;
+        }
+        catch (JSException ex)
+        {
+            await Console.Error.WriteLineAsync($"JavaScript error mapping UI language to identity language: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Converts an age range string to birthdate options using the shared JavaScript utility.
+    /// </summary>
+    /// <param name="ageRange">Age range string (e.g., "21-25", "30-35", or "random").</param>
+    /// <returns>Birthdate options object or null if random.</returns>
+    public async Task<object?> ConvertAgeRangeToBirthdateOptionsAsync(string ageRange)
+    {
+        try
+        {
+            if (_identityGeneratorModule == null)
+            {
+                await InitializeAsync();
+            }
+
+            var result = await _identityGeneratorModule!.InvokeAsync<object?>("convertAgeRangeToBirthdateOptions", ageRange);
+            return result;
+        }
+        catch (JSException ex)
+        {
+            await Console.Error.WriteLineAsync($"JavaScript error converting age range: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Generates a random identity using the specified language.
     /// </summary>
-    /// <param name="language">The language to use for generating the identity (e.g. "en", "nl").</param>
-    /// <param name="gender">The gender preference for generating the identity (optional, defaults to random).</param>
+    /// <param name="language">The language to use for generating the identity (e.g. "en", "nl", "de").</param>
+    /// <param name="gender">The gender preference for generating the identity (defaults to "random").</param>
+    /// <param name="birthdateOptions">Optional birthdate options (targetYear and yearDeviation).</param>
     /// <returns>An AliasVaultIdentity containing the generated identity information.</returns>
-    public async Task<AliasVaultIdentity> GenerateRandomIdentityAsync(string language, string? gender = null)
+    public async Task<AliasVaultIdentity> GenerateRandomIdentityAsync(string language, string? gender = null, object? birthdateOptions = null)
     {
         try
         {
@@ -376,9 +505,15 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
             }
 
             var generatorInstance = await _identityGeneratorModule!.InvokeAsync<IJSObjectReference>("CreateIdentityGenerator", language);
-            var result = string.IsNullOrEmpty(gender) || gender == "random"
-                ? await generatorInstance.InvokeAsync<AliasVaultIdentity>("generateRandomIdentity")
-                : await generatorInstance.InvokeAsync<AliasVaultIdentity>("generateRandomIdentity", gender);
+
+            // Use "random" as default if gender is null or empty
+            var genderValue = "random";
+            if (!string.IsNullOrEmpty(gender))
+            {
+                genderValue = gender;
+            }
+
+            var result = await generatorInstance.InvokeAsync<AliasVaultIdentity>("generateRandomIdentity", genderValue, birthdateOptions);
 
             return result;
         }
@@ -415,7 +550,33 @@ public sealed class JsInteropService(IJSRuntime jsRuntime)
     }
 
     /// <summary>
-    /// Generates a random email prefix.
+    /// Generates a random string email prefix (not based on any identity).
+    /// Uses random alphanumeric characters, suitable for login-type credentials
+    /// where no persona fields are available to base the email on.
+    /// </summary>
+    /// <returns>The generated random email prefix.</returns>
+    public async Task<string> GenerateRandomStringEmailPrefixAsync()
+    {
+        try
+        {
+            if (_identityGeneratorModule == null)
+            {
+                await InitializeAsync();
+            }
+
+            var generatorInstance = await _identityGeneratorModule!.InvokeAsync<IJSObjectReference>("CreateUsernameEmailGenerator");
+            var result = await generatorInstance.InvokeAsync<string>("generateRandomEmailPrefix");
+            return result;
+        }
+        catch (JSException ex)
+        {
+            await Console.Error.WriteLineAsync($"JavaScript error generating random string email prefix: {ex.Message}");
+            throw new InvalidOperationException("Failed to generate random string email prefix", ex);
+        }
+    }
+
+    /// <summary>
+    /// Generates a random email prefix based on an identity.
     /// </summary>
     /// <param name="identity">The identity to use for generating the email prefix.</param>
     /// <returns>The generated email prefix.</returns>

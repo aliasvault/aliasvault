@@ -1,0 +1,75 @@
+/* English localization strings for VaultUI */
+"error" = "Eroare";
+"cancel" = "Anulați";
+"back" = "Înapoi";
+"next" = "Înainte";
+"edit" = "Editează";
+"website" = "Site web";
+"username" = "Nume utilizator";
+"title" = "Titlu";
+"unknown_error" = "A apărut o eroare necunoscută";
+
+"loading_items" = "Se încarcă elementele...";
+"no_items_found" = "Nu s-au găsit elemente";
+"no_items_match" = "Niciun element existent nu corespunde căutării tale";
+"create_new_item" = "Creează element nou";
+"select_item" = "Selectați elementul";
+"select_text_to_insert" = "Selectați textul de inserat";
+"choose_username" = "Alege numele de utilizator";
+"select_text_to_insert_message" = "Selectați textul pe care doriți să îl inserați în câmpul selectat";
+"choose_username_message" = "Acest site web poate necesita fie numele de utilizator, fie adresa de e-mail pentru autentificare";
+"username_prefix" = "Utilizator: ";
+"email_prefix" = "E-mail: ";
+"password" = "Parolă";
+"items_load_error" = "Încărcarea elementelor a eșuat. Această versiune poate fi incompatibilă. Deschide aplicația AliasVault pentru actualizări.";
+"no_item_selected" = "Niciun element selectat.";
+
+/* Context menu strings */
+"copy_username" = "Copiază numele de utilizator";
+"copy_password" = "Copiază parola";
+"copy_email" = "Copiază e-mailul";
+"view_details" = "Vezi detalii";
+"username_copied" = "Nume de utilizator copiat";
+"password_copied" = "Parolă copiată";
+"email_copied" = "E-mail copiat";
+
+/* Search bar */
+"search_items" = "Caută elemente...";
+
+/* Passkey registration */
+"create_passkey_title" = "Creează Passkey nou";
+"create_passkey_subtitle" = "Înregistrează un Passkey nou pentru acest site web. Acesta va fi stocat în siguranță în seif și sincronizat automat pe toate dispozitivele tale prin AliasVault.";
+"create_passkey_button_confirm" = "Creează Passkey";
+
+/* Passkey provider */
+"passkey" = "Passkey";
+"loading_passkeys" = "Se încarcă Passkey-urile...";
+"no_passkeys_found" = "Nu s-au găsit Passkey-uri";
+"no_passkeys_match" = "Niciun Passkey existent nu corespunde căutării tale";
+"select_passkey" = "Selectați passkey-ul";
+"passkeys_load_error" = "Încărcarea passkey-urilor a eșuat. Această versiune poate fi incompatibilă. Deschide aplicația AliasVault pentru actualizări.";
+
+/* Passkey replacement */
+"create_new_passkey" = "Creează Passkey nou";
+"select_passkey_to_replace" = "Sau înlocuiește un Passkey existent";
+"replace_passkey" = "Înlocuiește Passkey";
+"replace_passkey_explanation" = "Această acțiune va înlocui Passkey-ul existent cu unul nou. Reține că vechiul Passkey va fi suprascris și nu va mai putea fi accesat. Dacă dorești să creezi un Passkey separat, revino la ecranul anterior.";
+"create_passkey_explanation" = "Această acțiune creează un Passkey nou și îl stochează în seif. Acesta va fi sincronizat automat pe toate dispozitivele tale care utilizează AliasVault.";
+
+/* Passkey merge with existing item */
+"passkey_add_to_existing" = "Sau adaugă Passkey la un element existent";
+"add_passkey" = "Adaugă Passkey";
+"merge_passkey_explanation" = "Această acțiune va adăuga un Passkey la elementul tău existent. Parola și celelalte date vor fi păstrate.";
+
+/* PIN Unlock */
+"unlock_vault" = "Deblocați seiful";
+"enter_pin_to_unlock_vault" = "Introdu PIN-ul pentru a debloca seiful";
+"pin_locked_max_attempts" = "PIN blocat după prea multe încercări eșuate";
+"pin_incorrect_attempts_remaining" = "PIN incorect. Mai ai %d încercări";
+
+/* PIN Setup */
+"pin_setup_title" = "Configurare PIN";
+"pin_setup_subtitle" = "Alege un PIN pentru a-ți debloca seiful";
+"pin_confirm_title" = "Confirmă PIN-ul";
+"pin_confirm_subtitle" = "Reintrodu PIN-ul pentru confirmare";
+"pin_mismatch" = "Codurile PIN nu coincid. Încearcă din nou.";

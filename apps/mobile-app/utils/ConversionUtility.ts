@@ -1,6 +1,6 @@
 /**
  * Utility class for conversion operations.
- * TODO: make this a shared utility class in root /shared/ folder so we can reuse it between
+ * TODO: make this a shared utility class in root /core/ folder so we can reuse it between
  * browser extension/mobile app and possibly WASM client.
  */
 class ConversionUtility {

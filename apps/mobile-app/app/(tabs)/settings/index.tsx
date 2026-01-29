@@ -1,12 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import { router, useFocusEffect } from 'expo-router';
 import { useRef, useState, useCallback } from 'react';
-import { StyleSheet, View, ScrollView, TouchableOpacity, Animated, Platform, Alert, Linking } from 'react-native';
+import { StyleSheet, View, ScrollView, TouchableOpacity, Animated, Platform, Linking } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import { AppInfo } from '@/utils/AppInfo';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useLogout } from '@/hooks/useLogout';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -17,6 +19,7 @@ import { InlineSkeletonLoader } from '@/components/ui/InlineSkeletonLoader';
 import { TitleContainer } from '@/components/ui/TitleContainer';
 import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
 import { useApp } from '@/context/AppContext';
+import { useDialog } from '@/context/DialogContext';
 
 /**
  * Settings screen.
@@ -24,8 +27,11 @@ import { useApp } from '@/context/AppContext';
 export default function SettingsScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
-  const { getAuthMethodDisplayKey, shouldShowAutofillReminder, logout } = useApp();
+  const { showAlert, showConfirm } = useDialog();
+  const insets = useSafeAreaInsets();
+  const { getAuthMethodDisplayKey, shouldShowAutofillReminder } = useApp();
   const { getAutoLockTimeout, getClipboardClearTimeout } = useApp();
+  const { logoutUserInitiated } = useLogout();
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
@@ -105,29 +111,6 @@ export default function SettingsScreen() : React.ReactNode {
   );
 
   /**
-   * Handle the logout.
-   */
-  const handleLogout = async () : Promise<void> => {
-    // Show native confirmation dialog
-    Alert.alert(
-      t('auth.logout'),
-      t('auth.confirmLogout'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        { text: t('auth.logout'), style: 'destructive',
-          /**
-           * Handle the logout.
-           */
-          onPress: async () : Promise<void> => {
-            await logout();
-            router.replace('/login');
-          }
-        },
-      ]
-    );
-  };
-
-  /**
    * Handle the vault unlock press.
    */
   const handleVaultUnlockPress = () : void => {
@@ -182,51 +165,59 @@ export default function SettingsScreen() : React.ReactNode {
   const handleLanguagePress = (): void => {
     const isIOS = Platform.OS === 'ios';
 
-    Alert.alert(
+    showConfirm(
       t('settings.language'),
       t('settings.languageSystemMessage'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('settings.openSettings'),
-          style: 'default',
-          /**
-           * Open platform-specific settings
-           */
-          onPress: async (): Promise<void> => {
-            if (isIOS) {
-              // Open iOS Settings app
-              await Linking.openURL('app-settings:');
-            } else {
-              // Fallback to general locale settings
-              try {
-                await Linking.openSettings();
-                return;
-              } catch (error) {
-                console.warn('Failed to open general locale settings:', error);
-              }
-
-              // Fallback to general settings
-              try {
-                await Linking.openSettings();
-                return;
-              } catch (error) {
-                console.warn('Failed to open general settings:', error);
-              }
-
-              // Final fallback - show manual instructions
-              Alert.alert(
-                t('common.error') ?? 'Error',
-                'Unable to open device settings. Please manually navigate to the app settings and change the language.'
-              );
-            }
+      t('settings.openSettings'),
+      async (): Promise<void> => {
+        if (isIOS) {
+          // Open iOS Settings app
+          await Linking.openURL('app-settings:');
+        } else {
+          // Fallback to general locale settings
+          try {
+            await Linking.openSettings();
+            return;
+          } catch (error) {
+            console.warn('Failed to open general locale settings:', error);
           }
+
+          // Fallback to general settings
+          try {
+            await Linking.openSettings();
+            return;
+          } catch (error) {
+            console.warn('Failed to open general settings:', error);
+          }
+
+          // Final fallback - show manual instructions
+          showAlert(
+            t('common.error') ?? 'Error',
+            'Unable to open device settings. Please manually navigate to the app settings and change the language.'
+          );
         }
-      ]
+      },
+      { cancelText: t('common.cancel') }
     );
   };
 
   const styles = StyleSheet.create({
+    fab: {
+      alignItems: 'center',
+      backgroundColor: colors.primary,
+      borderRadius: 28,
+      bottom: Platform.OS === 'ios' ? insets.bottom + 60 : 16,
+      elevation: 4,
+      height: 56,
+      justifyContent: 'center',
+      position: 'absolute',
+      right: 16,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      width: 56,
+    },
     scrollContent: {
       paddingBottom: 80,
       paddingTop: Platform.OS === 'ios' ? 42 : 16,
@@ -307,7 +298,7 @@ export default function SettingsScreen() : React.ReactNode {
   });
 
   return (
-    <ThemedContainer>
+    <ThemedContainer testID="settings-screen">
       <CollapsibleHeader
         title={t('settings.title')}
         scrollY={scrollY}
@@ -480,6 +471,7 @@ export default function SettingsScreen() : React.ReactNode {
           </TouchableOpacity>
           <View style={styles.separator} />
           <TouchableOpacity
+            testID="security-settings-link"
             style={styles.settingItem}
             onPress={() => router.push('/(tabs)/settings/security')}
           >
@@ -496,7 +488,7 @@ export default function SettingsScreen() : React.ReactNode {
         <View style={styles.section}>
           <TouchableOpacity
             style={styles.settingItem}
-            onPress={handleLogout}
+            onPress={logoutUserInitiated}
           >
             <View style={styles.settingItemIcon}>
               <Ionicons name="log-out" size={20} color={colors.primary} />
@@ -511,6 +503,15 @@ export default function SettingsScreen() : React.ReactNode {
           <ThemedText style={styles.versionText}>{t('settings.appVersion', { version: AppInfo.VERSION, url: getDisplayUrl() })}</ThemedText>
         </View>
       </Animated.ScrollView>
+
+      {/* Floating Action Button for QR Scanner - shown for testing both options */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push('/(tabs)/settings/qr-scanner')}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="qr-code-outline" size={32} color={colors.primarySurfaceText} />
+      </TouchableOpacity>
     </ThemedContainer>
   );
 }

@@ -1,0 +1,2 @@
+- Update QR code scanner
+- Improve password generator "non-ambigious characters" option

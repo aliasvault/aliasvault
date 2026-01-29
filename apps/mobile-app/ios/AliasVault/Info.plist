@@ -23,12 +23,15 @@
 	<array>
 		<string>de</string>
 		<string>en</string>
+		<string>es</string>
 		<string>fi</string>
+		<string>fr</string>
 		<string>he</string>
 		<string>it</string>
 		<string>nl</string>
 		<string>pl</string>
 		<string>pt</string>
+		<string>ro</string>
 		<string>uk</string>
 		<string>ru</string>
 		<string>zh</string>
@@ -46,7 +49,14 @@
 		<dict>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>net.aliasvault.app</string>
+				<string>aliasvault</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>net.aliasvault.app</string>
+		</dict>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
 				<string>net.aliasvault.app</string>
 			</array>
 		</dict>
@@ -72,6 +82,8 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>AliasVault supports scanning QR codes for logging into your vault on web or desktop without re-entering your master password.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>AliasVault uses Face ID to securely store your encryption key, allowing you to access your encrypted data with facial authentication.</string>
 	<key>NSUserActivityTypes</key>

@@ -20,13 +20,15 @@ public class RegisterRequest
     /// <param name="verifier">The verifier value.</param>
     /// <param name="encryptionType">The encryption type.</param>
     /// <param name="encryptionSettings">The encryption settings.</param>
-    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings)
+    /// <param name="srpIdentity">The SRP identity.</param>
+    public RegisterRequest(string username, string salt, string verifier, string encryptionType, string encryptionSettings, string? srpIdentity = null)
     {
         Username = username.ToLowerInvariant().Trim();
         Salt = salt;
         Verifier = verifier;
         EncryptionType = encryptionType;
         EncryptionSettings = encryptionSettings;
+        SrpIdentity = srpIdentity;
     }
 
     /// <summary>
@@ -53,4 +55,11 @@ public class RegisterRequest
     /// Gets the encryption settings.
     /// </summary>
     public string EncryptionSettings { get; }
+
+    /// <summary>
+    /// Gets the SRP identity used for authentication. This is a fixed value (typically a GUID) that
+    /// is used for all SRP operations. If not provided, defaults to the lowercase username for
+    /// backward compatibility.
+    /// </summary>
+    public string? SrpIdentity { get; }
 }

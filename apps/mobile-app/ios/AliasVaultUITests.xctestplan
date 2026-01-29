@@ -1,0 +1,30 @@
+{
+  "configurations" : [
+    {
+      "id" : "951DE877-ECA8-4F41-8726-D1278DCCDFA0",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "performanceAntipatternCheckerEnabled" : true,
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:AliasVault.xcodeproj",
+      "identifier" : "13B07F861A680F5B00A75B9A",
+      "name" : "AliasVault"
+    }
+  },
+  "testTargets" : [
+    {
+      "parallelizable" : true,
+      "target" : {
+        "containerPath" : "container:AliasVault.xcodeproj",
+        "identifier" : "CE59C75E2E4F47FD0024A246",
+        "name" : "AliasVaultUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

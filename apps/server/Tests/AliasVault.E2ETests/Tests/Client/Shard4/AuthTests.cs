@@ -56,12 +56,13 @@ public class AuthTests : ClientPlaywrightTest
         await Logout();
         await Login();
 
-        // Wait for the index page to load which should show "Credentials" in the top menu.
-        await WaitForUrlAsync("**", "Credentials");
+        // Wait for the page to load after login. After registration without completing the tutorial,
+        // the welcome screen will be shown. Otherwise the items page is shown.
+        await WaitForUrlAsync("**", WelcomeMessage);
 
         // Check if the login was successful by verifying content.
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain(WelcomeMessage), "No index content after logging in.");
+        Assert.That(pageContent, Does.Contain(WelcomeMessage), "No welcome/index content after logging in.");
 
         // Check if login has created an auth log entry.
         var authLogEntry = await ApiDbContext.AuthLogs.FirstOrDefaultAsync(x => x.Username == TestUserUsername && x.EventType == AuthEventType.Login);
@@ -119,12 +120,13 @@ public class AuthTests : ClientPlaywrightTest
         await Logout();
         await Login(rememberMe: true);
 
-        // Wait for the index page to load which should show "Credentials" in the top menu.
-        await WaitForUrlAsync("**", "Credentials");
+        // Wait for the page to load after login. After registration without completing the tutorial,
+        // the welcome screen will be shown. Otherwise the items page is shown.
+        await WaitForUrlAsync("**", WelcomeMessage);
 
         // Check if the login was successful by verifying content.
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain(WelcomeMessage), "No index content after logging in.");
+        Assert.That(pageContent, Does.Contain(WelcomeMessage), "No welcome/index content after logging in.");
 
         // Check if login has created an auth log entry.
         var authLogEntry = await ApiDbContext.AuthLogs.FirstOrDefaultAsync(x => x.Username == TestUserUsername && x.EventType == AuthEventType.Login);
@@ -219,10 +221,10 @@ public class AuthTests : ClientPlaywrightTest
 
         // Verify we can log in with the new account
         await Login();
-        await WaitForUrlAsync("**", "Credentials");
+        await WaitForUrlAsync("**", WelcomeMessage);
 
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain(WelcomeMessage), "No welcome message shown after re-registering deleted account.");
+        Assert.That(pageContent, Does.Contain(WelcomeMessage), "No welcome/index content shown after re-registering deleted account.");
 
         // Verify that a new auth log entry was created for the registration
         var authLogEntry = await ApiDbContext.AuthLogs.FirstOrDefaultAsync(x => x.Username == TestUserUsername && x.EventType == AuthEventType.Register);
@@ -299,12 +301,13 @@ public class AuthTests : ClientPlaywrightTest
     /// <returns>Async task.</returns>
     private async Task VerifySuccessfulLogin()
     {
-        // Wait for the index page to load which should show "Credentials" in the top menu.
-        await WaitForUrlAsync("**", "Credentials");
+        // Wait for the page to load after login. After registration without completing the tutorial,
+        // the welcome screen will be shown. Otherwise the items page is shown.
+        await WaitForUrlAsync("**", WelcomeMessage);
 
         // Check if the login was successful by verifying content.
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain(WelcomeMessage), "No index content after logging in.");
+        Assert.That(pageContent, Does.Contain(WelcomeMessage), "No welcome/index content after logging in.");
 
         // Check if login has created an auth log entry and it contains the expected client header value.
         var authLogEntry = await ApiDbContext.AuthLogs.FirstOrDefaultAsync(x => x.EventType == AuthEventType.Login);

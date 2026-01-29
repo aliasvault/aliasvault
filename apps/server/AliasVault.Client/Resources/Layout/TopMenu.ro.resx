@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Main navigation links -->
+  <data name="VaultNav">
+    <value>Seif</value>
+    <comment>Main navigation link for vault section</comment>
+  </data>
+  <data name="EmailsNav">
+    <value>E-mailuri</value>
+    <comment>Main navigation link for emails section</comment>
+  </data>
+  <!-- Settings menu items -->
+  <data name="GeneralSettingsNav">
+    <value>Setări generale</value>
+    <comment>Navigation link for general settings</comment>
+  </data>
+  <data name="SecuritySettingsNav">
+    <value>Setări de securitate</value>
+    <comment>Navigation link for security settings</comment>
+  </data>
+  <data name="ImportExportNav">
+    <value>Importă / Exportă</value>
+    <comment>Navigation link for import/export settings</comment>
+  </data>
+  <data name="ExtensionsAppsNav">
+    <value>Extensii și Aplicații</value>
+    <comment>Navigation link for extensions and apps settings</comment>
+  </data>
+  <!-- Menu actions -->
+  <data name="EnableLightMode">
+    <value>Comută la modul luminos</value>
+    <comment>Button text for switching to light theme</comment>
+  </data>
+  <data name="EnableDarkMode">
+    <value>Comută la modul întunecat</value>
+    <comment>Button text for switching to dark theme</comment>
+  </data>
+  <data name="LogOut">
+    <value>Deconectare</value>
+    <comment>Button text for logging out</comment>
+  </data>
+  <!-- Accessibility labels -->
+  <data name="OpenMenuLabel">
+    <value>Deschide meniul</value>
+    <comment>Screen reader label for mobile menu button</comment>
+  </data>
+  <!-- Status labels -->
+  <data name="NewLabel">
+    <value>NOU</value>
+    <comment>Label for new features or menu items</comment>
+  </data>
+  <data name="BetaLabel">
+    <value>BETA</value>
+    <comment>Label indicating beta version of the application</comment>
+  </data>
+</root>

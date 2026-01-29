@@ -6,13 +6,16 @@
 	<array>
 		<string>de</string>
 		<string>en</string>
+		<string>es</string>
 		<string>fi</string>
+		<string>fr</string>
 		<string>he</string>
 		<string>it</string>
 		<string>nl</string>
 		<string>pl</string>
 		<string>pt</string>
-    	<string>ru</string>
+		<string>ro</string>
+		<string>ru</string>
 		<string>uk</string>
 		<string>zh</string>
 	</array>

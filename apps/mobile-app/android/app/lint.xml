@@ -3,6 +3,8 @@
     <!-- Disable some rules that are too strict or not relevant -->
     <issue id="ObsoleteLintCustomCheck" severity="ignore" />
     <issue id="GradleDependency" severity="ignore" />
+    <!-- Translations are managed by Crowdin which may have extra keys temporarily -->
+    <issue id="ExtraTranslation" severity="ignore" />
 
     <!-- Enable and configure important rules -->
     <issue id="NewApi" severity="error" />

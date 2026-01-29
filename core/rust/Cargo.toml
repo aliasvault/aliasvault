@@ -1,0 +1,86 @@
+[package]
+name = "aliasvault-core"
+version = "0.26.0"
+edition = "2021"
+description = "Cross-platform core library for AliasVault"
+license = "AGPL-3.0"
+repository = "https://github.com/aliasvault/aliasvault"
+authors = ["AliasVault"]
+
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
+
+[lib]
+crate-type = ["lib", "cdylib", "staticlib"]
+name = "aliasvault_core"
+
+[features]
+default = []
+# Feature for UniFFI bindings (Swift/Kotlin) - runtime only, no CLI tools
+uniffi = ["dep:uniffi"]
+# Feature for UniFFI CLI bindgen tool (only for generating bindings, not for library)
+uniffi-cli = ["uniffi/cli"]
+# Feature for WASM builds (browser extension)
+wasm = ["dep:wasm-bindgen", "dep:serde-wasm-bindgen", "dep:console_error_panic_hook"]
+# Feature for C FFI exports (.NET P/Invoke)
+ffi = []
+
+[dependencies]
+# Serialization - core dependency for JSON handling
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Date/time handling for LWW comparison (minimal features for smaller binary)
+chrono = { version = "0.4", default-features = false, features = ["serde", "now"] }
+
+# Error handling
+thiserror = "1.0"
+
+# SRP (Secure Remote Password) protocol
+srp = "0.6"
+sha2 = "0.10"
+rand = { version = "0.8", features = ["std", "std_rng"] }
+num-bigint = "0.4"
+digest = "0.10"
+subtle = "2.5"
+getrandom = { version = "0.2", features = ["js"] }
+
+# Argon2 password hashing
+argon2 = "0.5"
+
+# UniFFI for Swift/Kotlin bindings (optional)
+# Note: Don't add "cli" feature here - it pulls in heavy bindgen dependencies
+# The uniffi-cli feature enables CLI separately for the uniffi-bindgen binary only
+uniffi = { version = "0.28", optional = true }
+
+# WASM bindings (optional)
+wasm-bindgen = { version = "0.2", optional = true }
+serde-wasm-bindgen = { version = "0.6", optional = true }
+console_error_panic_hook = { version = "0.1", optional = true }
+
+[dev-dependencies]
+
+# Build dependencies for UniFFI
+[build-dependencies]
+uniffi = { version = "0.28", features = ["build"] }
+
+# Binary for generating Swift/Kotlin bindings
+# This binary requires uniffi-cli feature which includes the heavy bindgen dependencies
+[[bin]]
+name = "uniffi-bindgen"
+path = "uniffi-bindgen.rs"
+required-features = ["uniffi-cli"]
+
+# Dev profile - fast compilation
+[profile.dev]
+opt-level = 0
+debug = false
+incremental = true
+
+# Release profile - optimized for size
+[profile.release]
+opt-level = "z"
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = "symbols"

@@ -8,7 +8,7 @@
     "no": "Não",
     "ok": "Ok",
     "continue": "Continuar",
-    "loading": "Carregando...",
+    "loading": "Carregando",
     "error": "Erro",
     "success": "Sucesso",
     "never": "Nunca",
@@ -16,8 +16,20 @@
     "loadMore": "Carregar mais",
     "use": "Utilizar",
     "confirm": "Confirmar",
+    "next": "Próximo",
+    "notice": "Aviso",
+    "enabled": "Habilitado",
+    "disabled": "Desabilitado",
+    "twoFactorAuthentication": "Autenticação de dois fatores",
+    "add": "Adicionar",
+    "generate": "Generate",
+    "attachments": "Anexos",
+    "deleteItemConfirmTitle": "Excluir Item",
+    "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "errors": {
-      "unknownError": "Ocorreu um erro desconhecido. Por favor, tente novamente."
+      "unknownError": "Ocorreu um erro desconhecido.",
+      "unknownErrorTryAgain": "Ocorreu um erro desconhecido. Por favor, tente novamente.",
+      "serverVersionTooOld": "O servidor do AliasVault deve ser atualizado para uma versão mais recente para utilizar esta função. Por favor, entre em contato com o administrador do servidor se precisar de ajuda."
     }
   },
   "auth": {
@@ -34,6 +46,7 @@
     "verifyingAuthCode": "Verificando código de autenticação",
     "verify": "Verificar",
     "unlockVault": "Desbloquear cofre",
+    "unlockWithPin": "Desbloquear com PIN",
     "enterPassword": "Digite sua senha para desbloquear o cofre",
     "enterPasswordPlaceholder": "Senha",
     "enterAuthCode": "Digite o código de 6 dígitos",
@@ -42,6 +55,7 @@
     "enableBiometric": "Habilitar {{biometric}}?",
     "biometricPrompt": "Gostaria de utilizar {{biometric}} para desbloquear seu cofre?",
     "tryBiometricAgain": "Tente novamente com {{biometric}}",
+    "tryPinAgain": "Tente o PIN Novamente",
     "authCodeNote": "Nota: se você não tem acesso ao seu aparelho de verificação, você pode resetar seu 2FA com um código de recuperação fazendo login no site.",
     "errors": {
       "credentialsRequired": "Usuário e senha são obrigatórios",
@@ -53,20 +67,18 @@
       "networkError": "Conexão falhou. Por favor verifique sua conexão com a internet e tente novamente.",
       "networkErrorSelfHosted": "Conexão falhou. Verifique sua conexão com a rede e a disponibilidade do servidor. Para instâncias self-hosted, por favor confirme que possue um certificado SSL válido instalado. Certificados self-signed não são suportados em celulares por questões de segurança.",
       "sessionExpired": "Sua sessão expirou. Por favor faça login novamente.",
-      "tokenRefreshFailed": "Falha ao atualizar token de autenticação",
-      "httpError": "Erro HTTP: {{status}}",
-      "biometricRequired": "Please enable biometric authentication in the main AliasVault app in order to use passkeys",
-      "unlockVaultFirst": "Please unlock vault in AliasVault app first",
-      "vaultDecryptFailed": "Failed to decrypt vault",
-      "vaultUnlockFailed": "Failed to unlock vault",
-      "biometricCancelled": "Biometric authentication cancelled",
-      "encryptionKeyFailed": "Failed to retrieve encryption key"
+      "httpError": "Erro HTTP: {{status}}"
     },
     "confirmLogout": "Tem certeza que deseja sair? Você precisará fazer login novamente com sua senha mestre para acessar o cofre.",
     "noAccountYet": "Não tem conta ainda?",
     "createNewVault": "Criar novo cofre",
     "connectingTo": "Conectando à",
     "loggedInAs": "Logado como"
+  },
+  "logout": {
+    "unsyncedChangesTitle": "Alterações Dessincronizadas",
+    "unsyncedChangesWarning": "Você tem alterações dessincronizadas que serão perdidas caso você saia da sua conta agora. Têm certeza que deseja continuar?",
+    "logoutAnyway": "Sair assim mesmo"
   },
   "vault": {
     "syncingVault": "Sincronizando cofre",
@@ -76,139 +88,43 @@
     "executingOperation": "Realizando operação...",
     "checkingVaultUpdates": "Verificando atualizações do cofre",
     "syncingUpdatedVault": "Sincronizando cofre atualizado",
+    "mergingVault": "Integrando mudanças do cofre",
+    "uploadingChanges": "Enviando mudanças",
     "errors": {
       "failedToGetEncryptedDatabase": "Falha ao acessar dados criptografados",
       "usernameNotFound": "Usuário não encontrado",
-      "vaultMergeRequired": "Junção de cofres necessária. Por favor realize o login via site para adicionar as atualizações pendentes ao cofre.",
       "vaultOutdated": "Seu cofre está desatualizado. Por favor realize login pelo site do AliasVault e siga as instruções.",
-      "failedToUploadVault": "Falha ao enviar cofre ao servidor. Por favor tente novamente reabrindo o aplicativo.",
-      "usernameNotFoundLoginAgain": "Usuário não encontrado. Por favor realize login novamente.",
-      "errorDuringPasswordChange": "Erro ao atualizar a senha. Por favor realize login novamente para recuperar seu último cofre.",
       "failedToSyncVault": "Falha ao sincronizar cofre",
-      "operationFailed": "Operação falhou",
       "versionNotSupported": "Esta versão do aplicativo AliasVault não é mais suportada pelo servidor. Por favor atualize seu aplicativo para a última versão.",
-      "serverVersionNotSupported": "The AliasVault server needs to be updated to a newer version in order to use this mobile app. Please contact support if you need help.",
+      "serverVersionNotSupported": "O servidor do AliasVault precisa ser atualizado para uma nova versão para poder utilizar o aplicativo móvel. Por favor, entre em contato com o suporte caso precise de ajuda.",
       "appOutdated": "Este aplicativo está desatualizado e não pode ser utilizado para acessar essa (nova) versão do cofre. Por favor, atualize seu aplicativo AliasVault para continuar.",
-      "vaultDecryptFailed": "Cofre não pôde ser descriptografado, se o problema persistir por favor saia e realize login novamente.",
-      "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança."
-    }
-  },
-  "credentials": {
-    "title": "Credenciais",
-    "addCredential": "Adicionar Credencial",
-    "editCredential": "Editar Credencial",
-    "deleteCredential": "Excluir Credencial",
-    "deleteConfirm": "Tem certeza que deseja excluir esta credencial? Essa operação não pode ser desfeita.",
-    "service": "Serviço",
-    "serviceName": "Nome do Serviço",
-    "serviceUrl": "URL do Serviço",
-    "loginCredentials": "Credenciais de login",
-    "username": "Usuário",
-    "email": "E-mail",
-    "alias": "Alias",
-    "metadata": "Metadados",
-    "firstName": "Primeiro Nome",
-    "lastName": "Sobrenome",
-    "nickName": "Apelido",
-    "fullName": "Nome Completo",
-    "gender": "Gênero",
-    "birthDate": "Data de Nascimento",
-    "birthDatePlaceholder": "AAAA-MM-DD",
-    "notes": "Notas",
-    "randomAlias": "Alias Aleatório",
-    "manual": "Manual",
-    "generateRandomAlias": "Gerar Alias Aleatório",
-    "clearAliasFields": "Limpar Campos de Alias",
-    "enterFullEmail": "Digite o endereço de e-mail completo",
-    "enterEmailPrefix": "Digite o prefixo do e-mail",
-    "useDomainChooser": "Utilizar escolhedor de domínio",
-    "enterCustomDomain": "Digitar domínio personalizado",
-    "selectEmailDomain": "Selecionar domínio de e-mail",
-    "privateEmailTitle": "E-mail privado",
-    "privateEmailAliasVaultServer": "Servidor AliasVault",
-    "privateEmailDescription": "Criptografia E2E, totalmente privado.",
-    "publicEmailTitle": "Provedores Públicos de E-mail Temporário",
-    "publicEmailDescription": "Anônimo mas com privacidade limitada. Conteúdo do e-mail pode ser lido por qualquer um que souber o endereço.",
-    "searchPlaceholder": "Search vault...",
-    "noMatchingCredentials": "Nenhuma credencial foi encontrada",
-    "noCredentialsFound": "Nenhuma credencial encontrada. Crie uma para iniciar. Dica: você também pode fazer login no site do AliasVault e importar credenciais de outros gerenciadores de senhas.",
-    "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
-    "recentEmails": "E-mails recentes",
-    "loadingEmails": "Carregando emails...",
-    "noEmailsYet": "Nenhum e-mail recebido ainda.",
-    "offlineEmailsMessage": "Você está offline. Por favor reconecte à internet para carregar seus e-mails.",
-    "emailLoadError": "Ocorreu um erro ao carregar os e-mails. Por favor tente novamente mais tarde.",
-    "emailUnexpectedError": "Ocorreu um erro inesperado ao carregar e-mails. Por favor tente novamente mais tarde.",
-    "password": "Senha",
-    "passwordLength": "Tamanho da Senha",
-    "changePasswordComplexity": "Configurações de Senha",
-    "includeLowercase": "Minúsculas (a-z)",
-    "includeUppercase": "Maiúsculas (A-Z)",
-    "includeNumbers": "Números (0-9)",
-    "includeSpecialChars": "Caracteres Especiais (!@#)",
-    "avoidAmbiguousChars": "Evitar Caracteres Ambíguos",
-    "deletingCredential": "Excluindo credencial...",
-    "errorLoadingCredentials": "Erro ao carregar credenciais",
-    "vaultSyncFailed": "Sincronização do cofre falhou",
-    "vaultSyncedSuccessfully": "Cofre sincronizado com sucesso",
-    "vaultUpToDate": "Cofre está atualizado",
-    "offlineMessage": "Você está offline. Por favor conecte-se à internet para sincronizar seu cofre.",
-    "credentialCreated": "Credencial Criada!",
-    "credentialCreatedMessage": "Sua nova credencial foi adicionada ao seu cofre e está pronta para ser usada.",
-    "credentialDetails": "Detalhes da Credencial",
-    "emailPreview": "Prévia de E-mail",
-    "switchBackToBrowser": "Volte ao navegador para continuar.",
-    "filters": {
-      "all": "(All) Credentials",
-      "passkeys": "Passkeys",
-      "aliases": "Aliases",
-      "userpass": "Passwords"
-    },
-    "twoFactorAuth": "Autenticação de dois fatores",
-    "totpCode": "Código TOTP",
-    "attachments": "Anexos",
-    "loadingAttachments": "Carregando anexos...",
-    "addAttachments": "Adicionar Anexo",
-    "deleteAttachment": "Excluir",
-    "toasts": {
-      "credentialUpdated": "Credencial atualizada com sucesso",
-      "credentialCreated": "Credencial criada com sucesso",
-      "credentialDeleted": "Credencial excluída com sucesso",
-      "usernameCopied": "Username copied to clipboard",
-      "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
-    },
-    "createNewAliasFor": "Criar novo alias para",
-    "errors": {
-      "loadFailed": "Falha ao carregar crerencial",
-      "saveFailed": "Failed to save credential",
-      "generateUsernameFailed": "Falha ao gerar usuário",
-      "generatePasswordFailed": "Falha ao gerar senha"
-    },
-    "contextMenu": {
-      "title": "Opções da Credencial",
-      "edit": "Editar",
-      "delete": "Excluir",
-      "copyUsername": "Copiar Usuário",
-      "copyEmail": "Copiar E-mail",
-      "copyPassword": "Copiar Senha"
+      "passwordChanged": "Sua senha mudou desde o último login. Por favor realize login novamente por questões de segurança.",
+      "passwordChangeRequiresOnline": "Alteração de senhas requer uma conexão com a internet. Por favor, tente novamente quando estiver online."
     }
   },
   "passkeys": {
     "passkey": "Passkey",
-    "site": "Site",
-    "displayName": "Display Name",
-    "helpText": "Passkeys are created on the website when prompted. They cannot be manually edited. To remove this passkey, you can delete it from this credential.",
-    "passkeyMarkedForDeletion": "Passkey marked for deletion",
-    "passkeyWillBeDeleted": "This passkey will be deleted when you save this credential."
+    "helpText": "Passkeys são criadas no website quanto solicitado. Elas não podem ser editadas manualmente. Para remover esta passkey, você pode excluí-la desta credencial.",
+    "passkeyMarkedForDeletion": "Passkey marcada para ser excluída",
+    "passkeyWillBeDeleted": "Esta passkey será excluída quando você salvar esta credencial."
+  },
+  "totp": {
+    "addCode": "Adicionar Código de Autenticação de Dois Fatores",
+    "nameOptional": "Nome (opcional)",
+    "secretKey": "Chave Secreta",
+    "instructions": "Digite a chave secreta exibida pelo website que você quer adicionar a autenticação de dois fatores.",
+    "saveToViewCode": "Salvar para ver código",
+    "errors": {
+      "invalidSecretKey": "Formato de chave secreta inválido."
+    }
   },
   "settings": {
     "title": "Configurações",
-    "autofill": "Autofill & Passkeys",
+    "autofill": "Autopreenchimento & Passkeys",
     "iosAutofillSettings": {
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in iOS. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through iOS. To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "Você pode configurar o AliasVault para prover autopreenchimento nativo de senhas e passkeys no iOS. Siga as instruções abaixo para habilitar.",
+      "passkeyNotice": "Passkeys são criadas através do iOS. Para armazená-las no AliasVault, confirme que o autopreenchimento está habilitado abaixo.",
+      "howToEnable": "Como habilitar Autopreenchimento & Passkeys:",
       "step1": "1. Abra as Configurações do iOS através do botão abaixo",
       "step2": "2. Vá até \"Geral\"",
       "step3": "3. Clique \"Autopreenchimento & Senhas\"",
@@ -220,16 +136,19 @@
     },
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Funcionalidade Experimental",
-      "warningDescription": "Autofill and passkey support for Android is currently in an experimental state.",
+      "warningDescription": "Suporte para autopreenchimento e passkeys no Android está em fase experimental.",
       "warningLink": "Leia mais sobre isso aqui",
-      "headerText": "You can configure AliasVault to provide native password and passkey autofill functionality in Android. Follow the instructions below to enable it.",
-      "passkeyNotice": "Passkeys are created through Android Credential Manager (Android 14+). To store them in AliasVault, ensure Autofill below is enabled.",
-      "howToEnable": "How to enable Autofill & Passkeys:",
+      "headerText": "Você pode configurar o AliasVault para prover a funcionalidade de autopreenchimento de senhas e passkeys no Android. Siga as instruções abaixo para habilitar.",
+      "passkeyNotice": "Passkeys são criadas através do Gerenciador de Credenciais Android (Android 14+). Para armazená-las no AliasVault, confirme que o autopreenchimento está habilitado abaixo.",
+      "howToEnable": "Como habilitar Autopreenchimento & Passkeys:",
       "step1": "1. Abra as Configurações do Android através do botão abaixo, e troque o \"serviço de autopreenchimento preferido\" para \"AliasVault\"",
       "openAutofillSettings": "Abrir Configurações de Autopreenchimento",
       "buttonTip": "Se o botão acima não funcionar pode estar bloqueado pelas configurações de segurança. Você pode ir manualmente às Configurações do Android → Configurações Gerais → Senhas e autopreenchimento.",
       "step2": "2. Alguns aplicativos, ex. Google Chrome, podem solicitar configurações manuais nas suas configurações para habilitar autopreenchimento de aplicativos terceiros. Porém, a maioria dos aplicativos deve funcionar com autopreenchimento por padrão.",
-      "alreadyConfigured": "Já configurei"
+      "alreadyConfigured": "Já configurei",
+      "advancedOptions": "Opções Avançadas",
+      "showSearchText": "Mostrar busca por texto",
+      "showSearchTextDescription": "Inclua o texto que o AliasVault recebe do Android, e que é usado para pesquisar credenciais relacionadas"
     },
     "vaultUnlock": "Método de Desbloqueio do Cofre",
     "autoLock": "Tempo para Bloqueio Automático",
@@ -285,8 +204,12 @@
       "biometricEnabled": "{{biometric}} foi ativado com sucesso",
       "biometricNotAvailable": "{{biometric}} Não Disponível",
       "biometricDisabledMessage": "{{biometric}} está desabitado para o AliasVault. Para utilizar, por favor primeiro habilite nas configurações do seu dispositivo.",
-      "biometricHelp": "A chave de descriptografia do seu cofre será salva seguramente no seu dispositivo local na {{keystore}} e pode ser acessada com {{biometric}}.",
+      "biometricHelp": "Utilize biometria para desbloquear seu cofre, que está protegido por {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} não está disponível. Clique para abrir as configurações e/ou vá às configurações do seu dispositivo para habilitar e configurar.",
+      "pin": "Código PIN",
+      "pinDescription": "Utilize um código PIN para desbloquear seu cofre mais rapidamente.",
+      "pinEnabled": "Desbloqueio por PIN habilitado com sucesso",
+      "pinDisabled": "Desbloqueio por PIN foi desabilitado",
       "passwordHelp": "Re-digite sua senha mestre para desbloquear seu cofre. Isso sempre estará disponível como uma opção alternativa.",
       "keystoreIOS": "iOS Keychain",
       "keystoreAndroid": "Android Keystore"
@@ -300,19 +223,12 @@
       "languageDescription": "Defina o idioma que será utilizado ao gerar novas identidades.",
       "genderSection": "Gênero",
       "genderDescription": "Defina a preferência de gênero para geração de novas identidades.",
-      "languageOptions": {
-        "english": "Inglês",
-        "dutch": "Holandês"
-      },
+      "ageRangeSection": "Faixa Etária",
+      "ageRangeDescription": "Selecione a faixa etária para geração de novas identidades.",
       "genderOptions": {
         "random": "Aleatório",
         "male": "Masculino",
         "female": "Feminino"
-      },
-      "errors": {
-        "loadFailed": "Falha ao carregar configurações do gerador.",
-        "languageUpdateFailed": "Falha ao atualizar configurações de idioma.",
-        "genderUpdateFailed": "Falha ao atualizar configurações de gênero."
       }
     },
     "passwordGeneratorSettings": {
@@ -360,7 +276,6 @@
         "success": "Sucesso",
         "failed": "Falha",
         "time": "Horário",
-        "device": "Dispositivo",
         "ipAddress": "Endereço IP",
         "client": "Cliente",
         "failedToLoad": "Falha ao carregar registros de autenticação"
@@ -388,12 +303,225 @@
         "failedToDelete": "Falha ao excluir conta. Por favor tente novamente.",
         "usernameNotFound": "Usuário não encontrado. Por favor faça login novamente."
       }
+    },
+    "qrScanner": {
+      "title": "Escaneador de Código QR",
+      "scanningMessage": "Escanear código QR do AliasVault",
+      "mobileLogin": {
+        "confirmTitle": "Confirmar Requisição de Login",
+        "confirmSubtitle": "Autentique novamente para aprovar login em outros dispositivos.",
+        "confirmMessage": "Você está prestes a fazer login em um dispositivo remoto com sua conta. Este outro dispositivo terá acesso total ao seu cofre. Proceda apenas se você confia neste dispositivo.",
+        "successDescription": "O login no dispositivo remoto foi feito com sucesso.",
+        "requestExpired": "Esta requisição de login expirou. Por favor, gere um novo código QR."
+      }
     }
   },
   "navigation": {
-    "credentials": "Credenciais",
+    "vault": "Cofre",
     "emails": "E-mails",
     "settings": "Configurações"
+  },
+  "itemTypes": {
+    "creating": "Criando",
+    "editing": "Editando",
+    "login": {
+      "title": "Login"
+    },
+    "alias": {
+      "title": "Alias"
+    },
+    "creditCard": {
+      "title": "Cartão de Crédito",
+      "cardInformation": "Informações do Cartão"
+    },
+    "note": {
+      "title": "Nota"
+    },
+    "addField": "Adicionar Campo",
+    "addCustomField": "Adicionar Campo Personalizado",
+    "customFields": "Campos Personalizados",
+    "fieldLabel": "Nome do Campo",
+    "fieldType": "Tipo do Campo",
+    "enterFieldName": "Digite o nome do campo",
+    "fieldTypes": {
+      "text": "Texto",
+      "hidden": "Escondido",
+      "email": "E-mail",
+      "url": "URL",
+      "phone": "Telefone",
+      "number": "Número",
+      "date": "Data",
+      "textArea": "Área de Texto"
+    }
+  },
+  "fieldLabels": {
+    "login.username": "Nome de usuário",
+    "login.password": "Senha",
+    "login.email": "E-mail",
+    "login.url": "URL",
+    "alias.first_name": "Primeiro Nome",
+    "alias.last_name": "Sobrenome",
+    "alias.gender": "Gênero",
+    "alias.birthdate": "Data de Nascimento",
+    "card.cardholder_name": "Nome do Titular do Cartão",
+    "card.number": "Número do Cartão",
+    "card.expiry_month": "Mês de Expiração",
+    "card.expiry_year": "Ano de Expiração",
+    "card.cvv": "CVV",
+    "card.pin": "Senha",
+    "notes.content": "Notas"
+  },
+  "items": {
+    "title": "Itens",
+    "addItem": "Adicionar Item",
+    "editItem": "Editar Item",
+    "deleteItem": "Excluir Item",
+    "itemDetails": "Detalhes do Item",
+    "itemCreated": "Item Criado",
+    "itemCreatedMessage": "Seu novo item foi adicionado ao cofre e está pronto para ser utilizado.",
+    "emailPreview": "Prévia de E-mail",
+    "untitled": "Sem Título",
+    "name": "Nome",
+    "url": "URL",
+    "itemName": "Nome",
+    "service": "Serviço",
+    "serviceName": "Nome do Serviço",
+    "serviceUrl": "URL do Serviço",
+    "loginCredentials": "Crednciais de login",
+    "cardInformation": "Informações do Cartão",
+    "username": "Nome de usuário",
+    "email": "E-mail",
+    "alias": "Alias",
+    "metadata": "Metadados",
+    "firstName": "Primeiro Nome",
+    "lastName": "Sobrenome",
+    "nickName": "Apelido",
+    "fullName": "Nome Completo",
+    "gender": "Gênero",
+    "birthDate": "Data de Nascimento",
+    "birthDatePlaceholder": "AAAA-MM-DD",
+    "notes": "Notas",
+    "randomAlias": "Alias Aleatório",
+    "manual": "Manual",
+    "generateRandomAlias": "Gerar Alias Aleatório",
+    "clearAliasFields": "Limpar Campos de Alias",
+    "enterEmailPrefix": "Digite o prefixo do e-mail",
+    "useDomainChooser": "Utilizar seletor de domínio",
+    "enterCustomDomain": "Digitar domínio personalizado",
+    "selectEmailDomain": "Selecionar domínio de e-mail",
+    "privateEmailTitle": "E-mail Privado",
+    "privateEmailAliasVaultServer": "Servidor AliasVault",
+    "privateEmailDescription": "Criptografia E2E, totalmente privado.",
+    "publicEmailTitle": "Provedores Públicos de E-mail Temporário",
+    "publicEmailDescription": "Anônimo mas com privacidade limitada. Conteúdo do e-mail pode ser lido por qualquer um que souber o endereço.",
+    "searchPlaceholder": "Pesquisar cofre...",
+    "noMatchingItems": "Nenhum ítem correspondente encontrado",
+    "noMatchingItemsSearch": "Nenhum item corresponde à \"{{search}}\"",
+    "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
+    "noItemsFound": "Nenhum item encontrado. Crie um para iniciar. Dica: você também pode fazer login no aplicativo web do AliasVault para importar credenciais de outros gerenciadores de senhas.",
+    "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
+    "noPasskeysFound": "Nenhuma passkey foi criada ainda. Passkeys são veiadas visitando um website que ofereça passkey como método de autenticação.",
+    "noAttachmentsFound": "Nenhum item com anexos encontrado",
+    "noItemsOfTypeFound": "Nenhum item do tipo {{type}} encontrado",
+    "clearSearch": "Limpar busca",
+    "clearFilter": "Limpar filtro",
+    "recentEmails": "E-mails recentes",
+    "loadingEmails": "Carregando e-mails...",
+    "noEmailsYet": "Nenhum e-mail recebido ainda.",
+    "offlineEmailsMessage": "Você está offline. Por favor conecte-se à internet para carregar seus e-mails.",
+    "emailLoadError": "Ocorreu um erro ao carregar os e-mails. Por favor, tente novamente mais tarde.",
+    "emailUnexpectedError": "Ocorreu um erro inesperado ao carregar e-mails. Por favor, tente novamente mais tarde.",
+    "password": "Senha",
+    "passwordLength": "Tamanho da Senha",
+    "changePasswordComplexity": "Configurações de Senha",
+    "includeLowercase": "Minúsculas (a-z)",
+    "includeUppercase": "Maiúsculas (A-Z)",
+    "includeNumbers": "Números (0-9)",
+    "includeSpecialChars": "Caracteres Especiais (!@#)",
+    "avoidAmbiguousChars": "Evitar Caracteres Ambíguos",
+    "deletingItem": "Excluindo item...",
+    "errorLoadingItems": "Erro ao carregar itens",
+    "vaultSyncFailed": "Sincronização do cofre falhou",
+    "vaultSyncedSuccessfully": "Cofre sincronizado com sucesso",
+    "vaultUpToDate": "Cofre está atualizado",
+    "offlineMessage": "Você está offline. Por favor conecte-se à internet para sincronizar seu cofre.",
+    "switchBackToBrowser": "Volte ao navegador para continuar.",
+    "filters": {
+      "all": "(Todos) Itens",
+      "passkeys": "Passkeys",
+      "aliases": "Aliases",
+      "userpass": "Senhas",
+      "attachments": "Anexos"
+    },
+    "totpCode": "Código TOTP",
+    "attachments": "Anexos",
+    "deleteAttachment": "Excluir",
+    "fileSavedTo": "Arquivo salvo em",
+    "previewNotSupported": "Pré-visualização não suportada",
+    "downloadToView": "Baixe o arquivo para abri-lo",
+    "unsavedChanges": {
+      "title": "Descartar alterações?",
+      "message": "Você tem alterações pendentes. Tem certeza que deseja descartá-las?",
+      "discard": "Descartar"
+    },
+    "toasts": {
+      "itemUpdated": "Item atualizado com sucesso",
+      "itemCreated": "Item criado com sucesso",
+      "itemDeleted": "Item excluído com sucesso",
+      "usernameCopied": "Nome de usuário copiado para a área de transferência",
+      "emailCopied": "E-mail copiado para a área de transferência",
+      "passwordCopied": "Senha copiada para a área de transferência"
+    },
+    "createNewAliasFor": "Criar novo alias para",
+    "contextMenu": {
+      "title": "Opções do Item",
+      "edit": "Editar",
+      "delete": "Excluir",
+      "copyUsername": "Copiar Nome de Usuário",
+      "copyEmail": "Copiar E-mail",
+      "copyPassword": "Copiar Senha"
+    },
+    "viewHistory": "Ver histórico",
+    "history": "Histórico",
+    "noHistoryAvailable": "Nenhum histórico disponível",
+    "deleteHistoryConfirm": "Tem certeza que deseja excluir este dado do histórico?",
+    "deleteConfirm": "Tem certeza que deseja excluir este item? Esta ação não poderá ser desfeita.",
+    "folders": {
+      "folder": "Pasta",
+      "newFolder": "Nova Pasta",
+      "createFolder": "Criar Pasta",
+      "editFolder": "Editar Pasta",
+      "folderName": "Nome da Pasta",
+      "folderNamePlaceholder": "ex.: Trabalho, Pessoal",
+      "folderNameRequired": "Nome da pasta é obrigatório",
+      "deleteFolder": "Excluir Pasta",
+      "deleteFolderKeepItems": "Excluir apenas a pasta",
+      "deleteFolderKeepItemsDescription": "Itens serão movidos de volta para a lista principal.",
+      "deleteFolderAndItems": "Excluir pasta e todos os itens",
+      "deleteFolderAndItemsDescription": "{{count}} item(ns) serão movidos para Recentemente Excluídos.",
+      "emptyFolderHint": "Esta pasta está vazia. Para mover itens para esta pasta, edite o item e selecione esta pasta.",
+      "noFolder": "Nenhuma Pasta",
+      "selectFolder": "Selecionar Pasta"
+    },
+    "recentlyDeleted": {
+      "title": "Recentemente Excluídos",
+      "noItems": "Nenhum item excluído",
+      "noItemsDescription": "Itens que você excluir aparecerão aqui por 30 dias antes de serem excluídos permanentemente.",
+      "description": "Estes itens serão excluídos permanentemente depois de 30 dias. Você pode restaurá-los ou excluí-los imediatamente.",
+      "restore": "Restaurar",
+      "deletePermanently": "Excluir Permanentemente",
+      "emptyAll": "Esvaziar Tudo",
+      "daysRemaining": "{{count}} dia restante",
+      "daysRemaining_plural": "{{count}} dias restantes",
+      "expiringSoon": "Expirando em breve",
+      "confirmDeleteTitle": "Excluir Permanentemente?",
+      "confirmDeleteMessage": "Este item será excluído permanentemente e não poderá ser recuperado.",
+      "confirmEmptyAllTitle": "Esvaziar Recentemente Excluídos?",
+      "confirmEmptyAllMessage": "Todos os {{count}} itens serão permanentemente excluídos e não poderão ser recuperados.",
+      "itemRestored": "Item restaurado",
+      "itemDeleted": "Item permanentemente excluído",
+      "allItemsDeleted": "Todos os itens foram permanentemente excluídos"
+    }
   },
   "emails": {
     "title": "E-mails",
@@ -417,14 +545,6 @@
       "hoursAgo_single": "há {{count}} hora",
       "hoursAgo_plural": "há {{count}} horas",
       "yesterday": "ontem"
-    },
-    "errors": {
-      "generic": "Ocorreu um erro",
-      "loadFailed": "Falha ao carregar e-mails",
-      "deleteFailed": "Falha ao excluir e-mail",
-      "dbNotAvailable": "E-mail ou contexto do banco de dados não disponível",
-      "decryptFailed": "Falha ao descriptografar anexo",
-      "downloadFailed": "Falha ao baixar anexo"
     }
   },
   "validation": {
@@ -444,7 +564,6 @@
     "INVALID_RECOVERY_CODE": "Código de recuperação inválido. Por favor tente novamente.",
     "REFRESH_TOKEN_REQUIRED": "Token de atualização é obrigatório.",
     "INVALID_REFRESH_TOKEN": "Token de atualização inválido.",
-    "REFRESH_TOKEN_REVOKED_SUCCESSFULLY": "Token de atualização revogado com sucesso.",
     "PUBLIC_REGISTRATION_DISABLED": "Registro de novas contas está atualmente desabilitado neste servidor. Por favor entre em contato com o administrador.",
     "USERNAME_REQUIRED": "Usuário é obrigatório.",
     "USERNAME_ALREADY_IN_USE": "Usuário já está em uso.",
@@ -461,28 +580,35 @@
     "INTERNAL_SERVER_ERROR": "Erro interno do servidor.",
     "VAULT_ERROR": "O cofre local não está atualizado. Por favor sincronize seu cofre recarregando a página e tente novamente."
   },
+  "sync": {
+    "offline": "Offline",
+    "syncing": "Sincronizando...",
+    "pending": "Sincronização pendente",
+    "retrySync": "Toque para tentar novamente",
+    "backOnline": "Online novamente",
+    "stillOffline": "Ainda está offline",
+    "syncFailed": "Sincronização falhou"
+  },
   "app": {
-    "openReadOnlyMode": "Abrir em modo de leitura",
     "status": {
       "unlockingVault": "Desbloqueando cofre",
       "decryptingVault": "Descriptografando cofre",
-      "openingVaultReadOnly": "Abrindo cofre em modo de leitura"
+      "openingVaultReadOnly": "Abrindo cofre em modo de leitura",
+      "retryingConnection": "Reconectando..."
     },
     "offline": {
-      "banner": "Modo offline (apenas leitura)",
+      "banner": "Offline - mudanças serão sincronizadas quando estiver online",
       "backOnline": "Online novamente",
       "stillOffline": "Ainda está offline"
     },
     "alerts": {
-      "syncIssue": "No Connection",
-      "syncIssueMessage": "Não foi possível conectar ao servidor do AliasVault e seu cofre não pôde ser sincronizado. Gostaria de abrir seu cofre local em modo de leitura ou tentar a conexão novamente?",
+      "syncIssue": "Sem Conexão",
       "openLocalVault": "Abrir Cofre Local",
       "retrySync": "Tentar Sincronizar Novamente"
     },
     "navigation": {
       "login": "Login",
-      "loginSettings": "Configurações de Login",
-      "notFound": "Não Encontrado"
+      "loginSettings": "Configurações de Login"
     },
     "notFound": {
       "title": "Página não encontrada",

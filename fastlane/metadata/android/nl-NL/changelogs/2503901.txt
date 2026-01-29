@@ -1,0 +1,2 @@
+- Android Passkey compatibiliteit verbeterd
+- Frans en Spaans toegevoegd als taalopties

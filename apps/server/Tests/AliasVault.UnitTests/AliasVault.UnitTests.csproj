@@ -72,6 +72,7 @@
       <EmbeddedResource Include="TestData\Exports\1password_8.csv" />
       <EmbeddedResource Include="TestData\Exports\protonpass.csv" />
       <EmbeddedResource Include="TestData\Exports\lastpass.csv" />
+      <EmbeddedResource Include="TestData\Exports\nordpass.csv" />
       <EmbeddedResource Include="TestData\Exports\aliasvault_mobile_app_export.csv" />
     </ItemGroup>
 

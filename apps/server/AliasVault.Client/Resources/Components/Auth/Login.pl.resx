@@ -64,7 +64,7 @@
     <comment>Main login page title</comment>
   </data>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Uwierzytelnianie dwuskładnikowe</value>
+    <value>Weryfikacja dwuetapowa (2FA)</value>
     <comment>Title for 2FA step</comment>
   </data>
   <data name="RecoveryCodeVerificationTitle" xml:space="preserve">
@@ -101,10 +101,6 @@
     <value>Zaloguj się</value>
     <comment>Login button text</comment>
   </data>
-  <data name="LoginToAccountButton" xml:space="preserve">
-    <value>Zaloguj się na swoje konto</value>
-    <comment>Extended login button text</comment>
-  </data>
   <!-- Links -->
   <data name="LostPasswordLink" xml:space="preserve">
     <value>Nie pamiętasz hasła?</value>
@@ -122,13 +118,17 @@
     <value>Zaloguj się za pomocą kodu uwierzytelniającego.</value>
     <comment>Link text for logging in with authenticator</comment>
   </data>
+  <data name="MobileDeviceLink" xml:space="preserve">
+    <value>Zaloguj się za pomocą aplikacji mobilnej</value>
+    <comment>Link text for mobile device login</comment>
+  </data>
   <!-- Descriptions and help text -->
   <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
     <value>Twoje dane logowania są chronione przez aplikację uwierzytelniającą. Wpisz poniżej swój kod uwierzytelniający.</value>
     <comment>Description for 2FA step</comment>
   </data>
   <data name="RecoveryCodeDescription" xml:space="preserve">
-    <value>Poprosiłeś o zalogowanie się za pomocą kodu odzyskiwania. Kod odzyskiwania to jednorazowy kod, którego można użyć do zalogowania się na swoje konto. Pamiętaj, że jeśli nie wyłączysz ręcznie uwierzytelniania dwuskładnikowego po zalogowaniu, przy następnym logowaniu zostaniesz ponownie poproszony o podanie kodu uwierzytelniającego.</value>
+    <value>Poprosiłeś o zalogowanie się za pomocą kodu odzyskiwania. Kod odzyskiwania to jednorazowy kod, którego można użyć do zalogowania się na swoje konto. Pamiętaj, że jeśli nie wyłączysz ręcznie uwierzytelniania dwuskładnikowego (2FA) po zalogowaniu, przy następnym logowaniu zostaniesz ponownie poproszony o podanie kodu uwierzytelniającego.</value>
     <comment>Description for recovery code step</comment>
   </data>
   <data name="NoAccountYetText" xml:space="preserve">

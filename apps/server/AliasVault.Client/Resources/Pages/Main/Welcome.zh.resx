@@ -42,7 +42,7 @@
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>您的密码库已成功创建！通过为每个注册的服务创建唯一别名来保护您的在线隐私。让我们了解AliasVault的工作原理，然后创建您的第一个安全别名。</value>
+    <value>您的密码库已成功创建！通过为每个注册的服务创建唯一别名，保护您的在线隐私。让我们了解 AliasVault 的工作原理，然后创建您的第一个安全别名。</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
@@ -51,7 +51,7 @@
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
-    <value>AliasVault会生成一个包含安全私人电子邮件地址的随机身份</value>
+    <value>AliasVault 会生成一个包含安全私人电子邮件地址的随机身份</value>
     <comment>First step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep2">
@@ -59,7 +59,7 @@
     <comment>Second step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep3">
-    <value>收到的电子邮件会显示在此应用中，并且可以在浏览器中打开</value>
+    <value>收到的电子邮件会显示在本应用中，并可在浏览器中打开</value>
     <comment>Third step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep4">
@@ -76,11 +76,11 @@
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>在安全设置中启用双因素认证（2FA）</value>
+    <value>在安全设置中启用两步验证</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
-    <value>双因素认证（2FA）为您的账户增加了额外的安全层。在访问加密的密码库之前，您需要输入认证器的验证码或提供恢复代码。</value>
+    <value>两步验证为您的账户增加了额外的安全层。您需要输入身份验证器的验证码或提供恢复代码，才能访问加密的密码库。</value>
     <comment>Content for two-factor authentication tip</comment>
   </data>
   <data name="ExtensionsAppsTipTitle">
@@ -88,7 +88,7 @@
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>安装AliasVault浏览器扩展和移动应用，可直接从浏览器和手机创建别名并自动填充表单。</value>
+    <value>安装 AliasVault 浏览器扩展和移动应用，即可直接通过浏览器和手机创建别名和自动填充表单。</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
@@ -97,7 +97,7 @@
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
-    <value>既然您已经了解AliasVault的工作原理，让我们创建您的第一个安全身份吧！</value>
+    <value>既然您已经了解 AliasVault 的工作原理，我们来创建您的首个安全身份吧！</value>
     <comment>Message encouraging user to create first identity</comment>
   </data>
   <data name="CreateFirstIdentityButton">

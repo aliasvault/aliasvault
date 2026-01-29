@@ -2,9 +2,10 @@ import Foundation
 
 /// Utility for comparing semantic version strings
 public enum VersionComparison {
-    /// Checks if version1 is greater than or equal to version2, following SemVer rules.
+    /// Checks if version1 is greater than or equal to version2, ignoring pre-release suffixes.
     ///
-    /// Pre-release versions (e.g., -alpha, -beta, -dev) are considered lower than release versions.
+    /// Pre-release suffixes (e.g., -alpha, -beta, -dev) are stripped from version1 before comparison.
+    /// This allows server versions like "0.25.0-alpha-dev" to be treated as "0.25.0".
     ///
     /// - Parameters:
     ///   - version1: First version string (e.g., "1.2.3" or "1.2.3-beta")
@@ -14,25 +15,22 @@ public enum VersionComparison {
     /// - Example:
     /// ```swift
     /// VersionComparison.isGreaterThanOrEqualTo("1.2.3", "1.2.0") // true
-    /// VersionComparison.isGreaterThanOrEqualTo("1.2.0-alpha", "1.2.0") // false
-    /// VersionComparison.isGreaterThanOrEqualTo("1.2.0", "1.2.0-alpha") // true
+    /// VersionComparison.isGreaterThanOrEqualTo("1.2.0-alpha", "1.2.0") // true (ignores -alpha)
+    /// VersionComparison.isGreaterThanOrEqualTo("1.2.0-dev", "1.2.1") // false (0.25.0 < 0.25.1)
     /// ```
     public static func isGreaterThanOrEqualTo(_ version1: String, _ version2: String) -> Bool {
-        // Split versions into core and pre-release parts
+        // Strip pre-release suffix from version1 (server version)
         let components1 = version1.split(separator: "-", maxSplits: 1)
         let components2 = version2.split(separator: "-", maxSplits: 1)
 
         let core1 = String(components1[0])
         let core2 = String(components2[0])
 
-        let preRelease1 = components1.count > 1 ? String(components1[1]) : nil
-        let preRelease2 = components2.count > 1 ? String(components2[1]) : nil
-
         // Parse core version numbers
         let parts1 = core1.split(separator: ".").compactMap { Int($0) }
         let parts2 = core2.split(separator: ".").compactMap { Int($0) }
 
-        // Compare core versions first
+        // Compare core versions only
         let maxLength = max(parts1.count, parts2.count)
         for iVal in 0..<maxLength {
             let part1 = iVal < parts1.count ? parts1[iVal] : 0
@@ -46,20 +44,8 @@ public enum VersionComparison {
             }
         }
 
-        // If core versions are equal, check pre-release versions
-        // No pre-release (release version) is greater than pre-release version
-        if preRelease1 == nil && preRelease2 != nil {
-            return true
-        }
-        if preRelease1 != nil && preRelease2 == nil {
-            return false
-        }
-        if preRelease1 == nil && preRelease2 == nil {
-            return true
-        }
-
-        // Both have pre-release versions, compare them lexically
-        return preRelease1! >= preRelease2!
+        // Core versions are equal
+        return true
     }
 
     /// Checks if a given server version meets the minimum requirement

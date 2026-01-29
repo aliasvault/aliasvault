@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Page Header -->
+  <data name="PageTitle" xml:space="preserve">
+    <value>Cassaforte</value>
+    <comment>Main vault page title</comment>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Trova tutte le tue credenziali qui sotto.</value>
+    <comment>Page description text</comment>
+  </data>
+  <!-- Settings Dropdown -->
+  <data name="ViewModeLabel" xml:space="preserve">
+    <value>Modalità Visualizzazione</value>
+    <comment>Label for view mode dropdown</comment>
+  </data>
+  <data name="GridViewOption" xml:space="preserve">
+    <value>Formato griglia</value>
+    <comment>Grid view option in dropdown</comment>
+  </data>
+  <data name="TableViewOption" xml:space="preserve">
+    <value>Formato tabella</value>
+    <comment>Table view option in dropdown</comment>
+  </data>
+  <data name="SortOrderLabel" xml:space="preserve">
+    <value>Ordina per</value>
+    <comment>Label for sort order dropdown</comment>
+  </data>
+  <data name="OldestFirstOption" xml:space="preserve">
+    <value>Prima i più vecchi</value>
+    <comment>Oldest first sort option</comment>
+  </data>
+  <data name="NewestFirstOption" xml:space="preserve">
+    <value>Prima i più recenti</value>
+    <comment>Newest first sort option</comment>
+  </data>
+  <data name="AlphabeticalOption" xml:space="preserve">
+    <value>Alfabetico</value>
+    <comment>Alphabetical sort option</comment>
+  </data>
+  <!-- Empty State -->
+  <data name="NoItemsTitle" xml:space="preserve">
+    <value>Ancora nessun articolo</value>
+    <comment>Title when no items exist</comment>
+  </data>
+  <data name="CreateFirstItemText" xml:space="preserve">
+    <value>Crea le tue prime credenziali utilizzando il</value>
+    <comment>Text explaining how to create first item</comment>
+  </data>
+  <data name="NewAliasButtonText" xml:space="preserve">
+    <value>"+ Nuovo Alias"</value>
+    <comment>Text reference to the New Alias button (desktop)</comment>
+  </data>
+  <data name="NewAliasButtonTextMobile" xml:space="preserve">
+    <value>"+"</value>
+    <comment>Text reference to the New Alias button (mobile)</comment>
+  </data>
+  <data name="ButtonLocationText" xml:space="preserve">
+    <value>pulsante nell'angolo in alto a destra.</value>
+    <comment>Text describing button location</comment>
+  </data>
+  <data name="OrText" xml:space="preserve">
+    <value>o</value>
+    <comment>Separator text between options</comment>
+  </data>
+  <data name="ImportItemsText" xml:space="preserve">
+    <value>Se in precedenza hai usato un gestore di password diverso, puoi importare le tue credenziali da esso.</value>
+    <comment>Text explaining import option</comment>
+  </data>
+  <data name="ImportButtonText" xml:space="preserve">
+    <value>Importa da KeePass, Bitwarden, Chrome, Firefox...</value>
+    <comment>Import button text</comment>
+  </data>
+  <!-- Error Messages -->
+  <data name="FailedToLoadItemsMessage" xml:space="preserve">
+    <value>Caricamento degli elementi non riuscito.</value>
+    <comment>Error message when items fail to load</comment>
+  </data>
+  <!-- Filter Options -->
+  <data name="FilterLabel" xml:space="preserve">
+    <value>Filtro</value>
+    <comment>Label for filter dropdown</comment>
+  </data>
+  <data name="FilterAllOption" xml:space="preserve">
+    <value>(Tutti) Elementi</value>
+    <comment>Filter option to show all items</comment>
+  </data>
+  <data name="FilterPasskeysOption" xml:space="preserve">
+    <value>Passkey</value>
+    <comment>Filter option to show only passkeys</comment>
+  </data>
+  <data name="FilterAliasesOption" xml:space="preserve">
+    <value>Alias</value>
+    <comment>Filter option to show only aliases</comment>
+  </data>
+  <data name="FilterUserpassOption" xml:space="preserve">
+    <value>Password</value>
+    <comment>Filter option to show only username/passwords</comment>
+  </data>
+  <data name="FilterAttachmentsOption" xml:space="preserve">
+    <value>Allegati</value>
+    <comment>Filter option to show only items with attachments</comment>
+  </data>
+  <data name="FilterRecentlyDeletedOption" xml:space="preserve">
+    <value>Eliminato di Recente</value>
+    <comment>Filter option to show recently deleted items</comment>
+  </data>
+  <!-- Filtered Empty States -->
+  <data name="NoPasskeysFound" xml:space="preserve">
+    <value>Nessuna paskey è stata ancora creata. Le passkey vengono aggiunte attraverso l'estensione del browser o le applicazioni per dispositivi mobili quando si visita un sito web che supporta le chiavi di accesso e offre l'autenticazione con passkey.</value>
+    <comment>Empty state message when no passkeys are found</comment>
+  </data>
+  <data name="NoAttachmentsFound" xml:space="preserve">
+    <value>Nessun elemento con allegati trovato.</value>
+    <comment>Empty state message when no items with attachments are found</comment>
+  </data>
+  <data name="NoItemsFound" xml:space="preserve">
+    <value>Nessun elemento corrisponde ai filtri selezionati</value>
+    <comment>Empty state message when no items match the filter</comment>
+  </data>
+  <data name="EmptyFolderMessage" xml:space="preserve">
+    <value>Questa cartella è vuota.</value>
+    <comment>Empty state message when folder has no items</comment>
+  </data>
+  <data name="AllItemsInFoldersMessage" xml:space="preserve">
+    <value>Tutti gli elementi sono organizzati in cartelle. Fare clic su una cartella qui sopra per visualizzare le credenziali o utilizzare la ricerca per trovare elementi specifici.</value>
+    <comment>Empty state message when all items are in folders and none at root level</comment>
+  </data>
+  <!-- Folder Management -->
+  <data name="NewFolder" xml:space="preserve">
+    <value>Nuova Cartella</value>
+    <comment>Button text for creating a new folder</comment>
+  </data>
+  <data name="EditFolder" xml:space="preserve">
+    <value>Modifica Cartella</value>
+    <comment>Button text for editing a folder</comment>
+  </data>
+  <data name="DeleteFolder" xml:space="preserve">
+    <value>Elimina Cartella</value>
+    <comment>Button text for deleting a folder</comment>
+  </data>
+  <data name="BackToRoot" xml:space="preserve">
+    <value>Indietro</value>
+    <comment>Button text for navigating back to root</comment>
+  </data>
+  <data name="FailedToCreateFolder" xml:space="preserve">
+    <value>Non è stato possibile creare la cartella.</value>
+    <comment>Error message when folder creation fails</comment>
+  </data>
+  <data name="FailedToDeleteFolder" xml:space="preserve">
+    <value>Eliminazione della cartella non riuscita</value>
+    <comment>Error message when folder deletion fails</comment>
+  </data>
+  <!-- Infinite Scroll -->
+  <data name="LoadingMore" xml:space="preserve">
+    <value>Caricamento di altri risultati...</value>
+    <comment>Text shown when loading more items during infinite scroll</comment>
+  </data>
+  <!-- Clear Filter -->
+  <data name="ClearFilter" xml:space="preserve">
+    <value>Cancella filtro</value>
+    <comment>Button text for clearing the active filter</comment>
+  </data>
+  <data name="FilteringBy" xml:space="preserve">
+    <value>Filtrare per:</value>
+    <comment>Label shown when a filter is active</comment>
+  </data>
+</root>

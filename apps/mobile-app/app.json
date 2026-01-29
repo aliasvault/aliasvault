@@ -2,10 +2,10 @@
   "expo": {
     "name": "AliasVault",
     "slug": "AliasVault",
-    "version": "0.24.0-beta",
+    "version": "0.26.0-alpha",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "net.aliasvault.app",
+    "scheme": "aliasvault",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "platforms": [

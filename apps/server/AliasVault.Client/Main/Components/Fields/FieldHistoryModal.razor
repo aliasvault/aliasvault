@@ -1,0 +1,218 @@
+@using AliasClientDb
+@using AliasVault.Client.Main.Components.Layout
+@using Microsoft.Extensions.Localization
+@inject ItemService ItemService
+@inject DbService DbService
+@inject IStringLocalizerFactory LocalizerFactory
+
+<ClickOutsideHandler OnClose="Close" ContentId="fieldHistoryModal">
+    <ModalWrapper OnEnter="Close">
+        <div id="fieldHistoryModal" class="relative bg-white dark:bg-gray-800 w-full max-w-2xl flex flex-col rounded-lg shadow-xl max-h-[90vh] border-2 border-gray-300 dark:border-gray-600">
+            <!-- Header -->
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                        @Localizer["HistoryTitle"] - @FieldLabel
+                    </h2>
+                    <button @onclick="Close" class="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-4">
+                @if (IsLoading)
+                {
+                    <div class="flex justify-center items-center py-8">
+                        <svg class="animate-spin h-8 w-8 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                }
+                else if (HistoryRecords.Count == 0)
+                {
+                    <p class="text-gray-500 dark:text-gray-400 text-center py-8">@Localizer["NoHistoryAvailable"]</p>
+                }
+                else
+                {
+                    <div class="space-y-4">
+                        @foreach (var record in HistoryRecords)
+                        {
+                            <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div class="text-sm text-gray-500 dark:text-gray-400">
+                                        @FormatDate(record.ChangedAt)
+                                    </div>
+                                    @if (ConfirmDeleteId == record.Id)
+                                    {
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-xs text-gray-500 dark:text-gray-400">@Localizer["DeleteConfirm"]</span>
+                                            <button @onclick="@(() => DeleteRecordAsync(record.Id))" class="text-xs px-2 py-1 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 font-medium">
+                                                @SharedLocalizer["Confirm"]
+                                            </button>
+                                            <button @onclick="@(() => ConfirmDeleteId = null)" class="text-xs px-2 py-1 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+                                                @SharedLocalizer["Cancel"]
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <button @onclick="@(() => ConfirmDeleteId = record.Id)" class="text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400 transition-colors" title="@SharedLocalizer["Delete"]">
+                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                                            </svg>
+                                        </button>
+                                    }
+                                </div>
+                                @{
+                                    var values = ParseValueSnapshot(record.ValueSnapshot);
+                                }
+                                @foreach (var value in values)
+                                {
+                                    <div class="mb-2 last:mb-0">
+                                        @if (IsHidden)
+                                        {
+                                            <CopyPastePasswordFormRow
+                                                Id="@($"history-{record.Id}-{values.IndexOf(value)}")"
+                                                Label=""
+                                                Value="@value" />
+                                        }
+                                        else
+                                        {
+                                            <CopyPasteFormRow
+                                                Id="@($"history-{record.Id}-{values.IndexOf(value)}")"
+                                                Label=""
+                                                Value="@value" />
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                <button @onclick="Close" class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    @SharedLocalizer["Close"]
+                </button>
+            </div>
+        </div>
+    </ModalWrapper>
+</ClickOutsideHandler>
+
+@code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Fields.FieldHistoryModal", "AliasVault.Client");
+
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
+
+    /// <summary>
+    /// Gets or sets the item ID.
+    /// </summary>
+    [Parameter]
+    public Guid ItemId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the field key.
+    /// </summary>
+    [Parameter]
+    public string FieldKey { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the field label for display.
+    /// </summary>
+    [Parameter]
+    public string FieldLabel { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets whether the field is hidden (password/sensitive).
+    /// </summary>
+    [Parameter]
+    public bool IsHidden { get; set; }
+
+    /// <summary>
+    /// Callback when the modal is closed.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    private bool IsLoading { get; set; } = true;
+    private List<FieldHistory> HistoryRecords { get; set; } = new();
+    private Guid? ConfirmDeleteId { get; set; }
+
+    /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await LoadHistoryAsync();
+    }
+
+    /// <summary>
+    /// Load field history records.
+    /// </summary>
+    private async Task LoadHistoryAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+        HistoryRecords = await ItemService.GetFieldHistoryAsync(ItemId, FieldKey);
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Delete a history record.
+    /// </summary>
+    private async Task DeleteRecordAsync(Guid historyId)
+    {
+        var success = await ItemService.DeleteFieldHistoryAsync(historyId);
+        if (success)
+        {
+            // Trigger vault sync in background
+            DbService.SaveDatabaseInBackground();
+            // Reload history after deletion
+            await LoadHistoryAsync();
+        }
+
+        ConfirmDeleteId = null;
+    }
+
+    /// <summary>
+    /// Parse the value snapshot JSON to a list of values.
+    /// </summary>
+    private List<string> ParseValueSnapshot(string valueSnapshot)
+    {
+        try
+        {
+            var values = System.Text.Json.JsonSerializer.Deserialize<List<string>>(valueSnapshot);
+            return values ?? new List<string>();
+        }
+        catch
+        {
+            // If parsing fails, return the raw value as a single item
+            return new List<string> { valueSnapshot };
+        }
+    }
+
+    /// <summary>
+    /// Format the date for display.
+    /// </summary>
+    private string FormatDate(DateTime date)
+    {
+        return date.ToString("MMM d, yyyy h:mm tt");
+    }
+
+    /// <summary>
+    /// Close the modal.
+    /// </summary>
+    private async Task Close()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

@@ -21,17 +21,35 @@ export class PopoutUtility {
   }
 
   /**
+   * Get the return path from URL parameters (used for back navigation in expanded popups).
+   * @returns The return path if set, or null
+   */
+  public static getReturnPath(): string | null {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('returnTo');
+  }
+
+  /**
    * Open the current page in a new expanded popup window.
    * @param path - The path to open in the popup (defaults to current path)
+   * @param returnTo - Optional path to return to when back button is pressed
    */
-  public static openInNewPopup(path?: string): void {
+  public static openInNewPopup(path?: string, returnTo?: string): void {
     const width = 800;
     const height = 1000;
     const left = window.screen.width / 2 - width / 2;
     const top = window.screen.height / 2 - height / 2;
 
     const currentPath = path || window.location.hash.replace('#', '');
-    const popupUrl = `popup.html?expanded=true#${currentPath}`;
+
+    // Build URL with parameters
+    const params = new URLSearchParams();
+    params.set('expanded', 'true');
+    if (returnTo) {
+      params.set('returnTo', returnTo);
+    }
+
+    const popupUrl = `popup.html?${params.toString()}#${currentPath}`;
 
     window.open(
       popupUrl,

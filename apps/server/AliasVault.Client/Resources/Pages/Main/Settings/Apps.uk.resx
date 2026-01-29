@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Page title and description -->
   <data name="PageTitle">
-    <value>Extensions &amp; Apps</value>
+    <value>Розширення та додатки</value>
     <comment>Page title for extensions and apps</comment>
   </data>
   <data name="PageDescription">
@@ -29,7 +29,7 @@
     <comment>Page description for extensions and apps</comment>
   </data>
   <data name="BreadcrumbTitle">
-    <value>Extensions &amp; Apps</value>
+    <value>Розширення та додатки</value>
     <comment>Breadcrumb title for extensions and apps</comment>
   </data>
   <!-- Browser Extensions Section -->

@@ -5,7 +5,7 @@ import Foundation
  * This service handles authentication, token refresh, and all HTTP operations.
  */
 public class WebApiService {
-    private let vaultStore = VaultStore()
+    private let vaultStore = VaultStore.shared
 
     // Token storage keys
     private let apiUrlKey = "apiUrl"

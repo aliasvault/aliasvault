@@ -6,8 +6,15 @@ nav_order: 5
 ---
 
 # Architecture
+{: .no_toc }
 
-AliasVault implements a zero-knowledge architecture where sensitive user data and passwords never leave the client device in unencrypted form. Below is a detailed explanation of how the system secures user data and communications.
+---
+
+AliasVault implements zero-knowledge encryption where sensitive user data never leaves the client device in unencrypted form. Below is a detailed explanation of how the system secures user data and communications.
+
+**What is Zero-Knowledge in AliasVault**:
+- **Vault Data** (usernames, passwords, notes, passkeys etc.) is fully encrypted client-side before being sent to the server. The server cannot decrypt any vault contents.
+- **Email Contents**: When emails are received by the server, their contents are immediately encrypted with your public key before being saved. Only you can decrypt and read them with your private key.
 
 ## Diagram
 The security architecture diagram below illustrates all encryption and authentication processes used in AliasVault to secure user data and communications.
@@ -19,6 +26,15 @@ The security architecture diagram below illustrates all encryption and authentic
 </picture>
 
 You can also view the diagram in a browser-friendly HTML format: [AliasVault Security Architecture](https://docs.aliasvault.net/assets/diagrams/security-architecture/aliasvault-security-architecture.html)
+
+<details open markdown="block">
+  <summary>
+    Table of contents
+  </summary>
+  {: .text-delta }
+- TOC
+{:toc}
+</details>
 
 ## Key Components and Process Flow
 
@@ -55,7 +71,7 @@ You can also view the diagram in a browser-friendly HTML format: [AliasVault Sec
 
 #### Email Reception Process
 1. When an email is received, the server:
-    - Verifies if the recipient has a valid email claim
+    - Verifies if the recipient (email address) matches a valid email claim
     - If no valid claim exists, the email is rejected
     - If valid, generates a random 256-bit symmetric key
     - Encrypts the email content using this symmetric key
@@ -70,7 +86,7 @@ You can also view the diagram in a browser-friendly HTML format: [AliasVault Sec
 
 > Note: The use of a symmetric key for email content encryption and asymmetric encryption for the symmetric key (hybrid encryption) is implemented due to RSA's limitations on encryption string length and for better performance.
 
-### 5. Passkey Authentication System
+### 5. Passkey Authentication
 
 AliasVault includes a virtual passkey authenticator that implements the WebAuthn Level 2 specification, allowing users to securely store and use passkeys for passwordless authentication across websites and services.
 
@@ -128,16 +144,55 @@ AliasVault includes a virtual passkey authenticator that implements the WebAuthn
     - PRF is supported via browser extension and iOS (0.24.0+)
         - Android support is pending due to limited Android API support
 
-## Security Benefits
-- Zero-knowledge architecture ensures user data privacy
-- Master password never leaves the client device
-- All sensitive operations (key derivation, encryption/decryption) happen locally
-- Server stores only encrypted data
-- Multi-layer encryption for emails provides secure communication
-- Optional 2FA adds an additional security layer
-- Use of established cryptographic standards (Argon2id, AES-256-GCM, RSA/OAEP)
-- Passkey private keys remain encrypted in vault at all times
-- Cross-platform passkey sync without compromising security
-- WebAuthn compliance eliminates phishing risks through domain binding
+### 6. Login with Mobile
 
-This security architecture ensures that even if the server is compromised, user data remains secure as all sensitive operations and keys remain strictly on the client side.
+AliasVault includes a secure "Login with Mobile" feature that allows users to unlock their vault on web browsers or browser extensions by scanning a QR code with their mobile app. This system provides a convenient authentication method while maintaining zero-knowledge security through end-to-end encryption.
+
+#### Security Architecture
+
+The mobile login system uses a hybrid encryption approach combining RSA asymmetric encryption and AES-256-GCM symmetric encryption to ensure that:
+- The server never has access to the user's decryption key in plaintext
+- Only the authorized client that initiated the request can decrypt the transmitted data
+- No sensitive data persists on the server after retrieval
+
+#### Authentication Flow
+
+1. **Initiation (Browser/Extension Client)**
+   - Client generates an RSA-2048 key pair locally
+   - Public key is sent to the server
+   - Server creates a unique request ID and stores the public key
+   - Client generates a QR code containing the request ID
+   - Private key is kept only in memory (never persisted to disk)
+
+2. **QR Code Scanning (Mobile App)**
+   - User scans the QR code with their authenticated mobile app
+   - Mobile app retrieves the public key from server
+   - Mobile app encrypts the user's vault decryption key using the RSA public key
+   - Encrypted decryption key is sent to server
+   - Server stores the encrypted decryption key and marks the request as fulfilled
+
+3. **Polling and Retrieval (Browser/Extension Client)**
+   - Client polls the server every few seconds
+   - Polling continues for up to 2 minutes (3-minute server-side timeout for buffer)
+   - When fulfilled, server:
+     - Generates a fresh JWT access token and refresh token for the user
+     - Creates a random 256-bit AES symmetric key
+     - Encrypts the JWT tokens and username using this symmetric key
+     - Encrypts the symmetric key itself using the client's RSA public key
+     - Returns all encrypted data in the response
+     - Immediately marks the request as retrieved and clears sensitive data from database
+
+4. **Decryption (Browser/Extension Client)**
+   - Client uses its RSA private key to decrypt the symmetric key
+   - Client uses the symmetric key to decrypt the JWT tokens and username
+   - Client uses the RSA private key to decrypt the vault decryption key
+   - Client can now unlock the vault using the decryption key and stores it in memory
+   - RSA private key is immediately purged from memory
+
+#### Security Properties
+
+- **Zero-Knowledge**: The server never has access to the vault decryption key in plaintext. It only temporarily stores the RSA-encrypted version.
+- **One-Time Use**: Once a mobile login request is retrieved by the client, it cannot be accessed again. The encrypted data is immediately cleared from the database.
+- **Automatic Expiration**: Fulfilled but unretrieved requests are automatically deleted by the server within 24 hours to prevent stale data accumulation.
+- **Man-in-the-Middle Protection**: The encryption scheme ensures that any eavesdroppers cannot intercept the decryption key. Only the local client that started the mobile login request has the private key for decryption.
+- **Short-Lived Requests**: The 3-minute timeout window limits the attack surface for QR code interception.

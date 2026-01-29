@@ -93,6 +93,7 @@ body {
 .av-credential-logo {
   width: 20px;
   height: 20px;
+  flex-shrink: 0;
 }
 
 .av-credential-text {

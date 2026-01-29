@@ -106,4 +106,72 @@ interface StorageProvider {
      * @return True if app is in offline mode, false otherwise
      */
     fun getOfflineMode(): Boolean
+
+    /**
+     * Set the server API version.
+     * @param version The server version to store
+     */
+    fun setServerVersion(version: String)
+
+    /**
+     * Get the server API version.
+     * @return The server version or null if not set
+     */
+    fun getServerVersion(): String?
+
+    /**
+     * Clear the server version.
+     */
+    fun clearServerVersion()
+
+    // region Sync State
+
+    /**
+     * Set the dirty flag indicating local changes need to be synced.
+     * @param isDirty Whether the vault has unsynced changes
+     */
+    fun setIsDirty(isDirty: Boolean)
+
+    /**
+     * Get the dirty flag.
+     * @return True if vault has unsynced changes
+     */
+    fun getIsDirty(): Boolean
+
+    /**
+     * Get the mutation sequence number.
+     * @return The current mutation sequence
+     */
+    fun getMutationSequence(): Int
+
+    /**
+     * Set the mutation sequence number.
+     * @param sequence The new mutation sequence value
+     */
+    fun setMutationSequence(sequence: Int)
+
+    /**
+     * Set the syncing flag.
+     * @param isSyncing Whether a sync operation is in progress
+     */
+    fun setIsSyncing(isSyncing: Boolean)
+
+    /**
+     * Get the syncing flag.
+     * @return True if a sync operation is in progress
+     */
+    fun getIsSyncing(): Boolean
+
+    /**
+     * Clear all sync state (isDirty, mutationSequence, isSyncing).
+     */
+    fun clearSyncState()
+
+    // endregion
+
+    /**
+     * Get the cache directory for temporary files.
+     * @return The cache directory
+     */
+    fun getCacheDir(): File
 }

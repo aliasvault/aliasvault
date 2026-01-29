@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Instructions -->
+  <data name="PleaseReadAndAgree">
+    <value>Citește și acceptă următorii termeni și condiții înainte de a continua.</value>
+    <comment>Instructions to read and agree to terms</comment>
+  </data>
+  <!-- Terms and Conditions title -->
+  <data name="TermsAndConditionsTitle">
+    <value>Termeni și Condiții</value>
+    <comment>Title for the terms and conditions section</comment>
+  </data>
+  <!-- Terms content -->
+  <data name="TermsContent">
+    <value>AliasVault este conceput pentru a-ți spori securitatea online și pentru a-ți proteja confidențialitatea. Cu AliasVault, poți crea identități unice și alias-uri de e-mail pentru diversele tale conturi online, ajutându-te să menții controlul asupra informațiilor tale personale și să reduci riscul de furt de identitate.
+
+Prin utilizarea AliasVault, ești de acord cu următorii termeni:
+
+1. Nu vei folosi AliasVault în scopuri ilegale, inclusiv, dar fără a se limita la fraudă, furt de identitate sau impersonarea unor persoane reale.
+
+2. Ești responsabil pentru menținerea confidențialității contului tău și a oricăror alias-uri create prin AliasVault.
+
+3. AliasVault își rezervă dreptul de a-ți închide contul dacă suspectăm orice utilizare abuzivă sau încălcare a acestor termeni.
+
+4. Înțelegi că, deși AliasVault îți îmbunătățește confidențialitatea, niciun sistem nu este complet infailibil și utilizezi serviciul pe propriul risc.</value>
+    <comment>Full terms and conditions content</comment>
+  </data>
+  <!-- Agreement checkbox -->
+  <data name="AgreementCheckboxLabel">
+    <value>Am citit și sunt de acord cu Termenii și Condițiile</value>
+    <comment>Label for the agreement checkbox</comment>
+  </data>
+</root>

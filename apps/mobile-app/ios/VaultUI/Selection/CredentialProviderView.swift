@@ -15,24 +15,28 @@ public struct CredentialProviderView: View {
          self._viewModel = ObservedObject(wrappedValue: viewModel)
     }
 
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
+    }
+
     public var body: some View {
         NavigationView {
             ZStack {
-                (colorScheme == .dark ? ColorConstants.Dark.background : ColorConstants.Light.background)
+                colors.background
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     SearchBarView(text: $viewModel.searchText)
                         .padding(.horizontal)
                         .padding(.vertical, 8)
-                        .background(colorScheme == .dark ? ColorConstants.Dark.background : ColorConstants.Light.background)
+                        .background(colors.background)
                         .onChange(of: viewModel.searchText) { _ in
                             viewModel.filterCredentials()
                         }
 
                     if viewModel.isLoading {
                         Spacer()
-                        ProgressView(String(localized: "loading_credentials", bundle: locBundle))
+                        ProgressView(String(localized: "loading_items", bundle: locBundle))
                             .progressViewStyle(.circular)
                             .scaleEffect(1.5)
                         Spacer()
@@ -42,24 +46,24 @@ public struct CredentialProviderView: View {
                                 VStack(spacing: 20) {
                                     Image(systemName: "magnifyingglass")
                                         .font(.system(size: 50))
-                                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                                        .foregroundColor(colors.text)
 
-                                    Text(String(localized: "no_credentials_found", bundle: locBundle))
+                                    Text(String(localized: "no_items_found", bundle: locBundle))
                                         .font(.headline)
-                                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                                        .foregroundColor(colors.text)
 
-                                    Text(String(localized: "no_credentials_match", bundle: locBundle))
+                                    Text(String(localized: "no_items_match", bundle: locBundle))
                                         .font(.subheadline)
-                                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                                        .foregroundColor(colors.text)
                                         .multilineTextAlignment(.center)
 
                                     if !viewModel.isChoosingTextToInsert {
                                         VStack(spacing: 12) {
                                             Button(action: {
-                                                var urlString = "net.aliasvault.app://credentials/add-edit-page"
+                                                var urlString = "aliasvault://items/add-edit-page"
                                                 if let serviceUrl = viewModel.serviceUrl {
                                                     let encodedUrl = serviceUrl.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                                                    urlString += "?serviceUrl=\(encodedUrl)"
+                                                    urlString += "?itemUrl=\(encodedUrl)"
                                                 }
                                                 if let url = URL(string: urlString) {
                                                     UIApplication.shared.open(url, options: [:], completionHandler: nil)
@@ -67,11 +71,11 @@ public struct CredentialProviderView: View {
                                             }, label: {
                                                 HStack {
                                                     Image(systemName: "plus.circle.fill")
-                                                    Text(String(localized: "create_new_credential", bundle: locBundle))
+                                                    Text(String(localized: "create_new_item", bundle: locBundle))
                                                 }
                                                 .padding()
                                                 .frame(maxWidth: .infinity)
-                                                .background(ColorConstants.Light.primary)
+                                                .background(colors.primary)
                                                 .foregroundColor(.white)
                                                 .cornerRadius(8)
                                             })
@@ -82,8 +86,8 @@ public struct CredentialProviderView: View {
                                 .padding(.top, 60)
                             } else {
                                 LazyVStack(spacing: 8) {
-                                    ForEach(viewModel.filteredCredentials, id: \.service) { credential in
-                                        CredentialCardWithSelection(
+                                    ForEach(viewModel.filteredCredentials, id: \.id) { credential in
+                                        AutofillCredentialCardWithSelection(
                                             credential: credential,
                                             isChoosingTextToInsert: viewModel.isChoosingTextToInsert,
                                             onSelect: { username, password in
@@ -105,29 +109,29 @@ public struct CredentialProviderView: View {
                     }
                 }
             }
-            .navigationTitle(viewModel.isChoosingTextToInsert ? String(localized: "select_text_to_insert", bundle: locBundle) : String(localized: "select_credential", bundle: locBundle))
+            .navigationTitle(viewModel.isChoosingTextToInsert ? String(localized: "select_text_to_insert", bundle: locBundle) : String(localized: "select_item", bundle: locBundle))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(String(localized: "cancel", bundle: locBundle)) {
                         viewModel.cancel()
                     }
-                    .foregroundColor(ColorConstants.Light.primary)
+                    .foregroundColor(colors.primary)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     HStack {
                         Button(action: {
-                            var urlString = "net.aliasvault.app://credentials/add-edit-page"
+                            var urlString = "aliasvault://items/add-edit-page"
                             if let serviceUrl = viewModel.serviceUrl {
                                 let encodedUrl = serviceUrl.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-                                urlString += "?serviceUrl=\(encodedUrl)"
+                                urlString += "?itemUrl=\(encodedUrl)"
                             }
                             if let url = URL(string: urlString) {
                                 UIApplication.shared.open(url, options: [:], completionHandler: nil)
                             }
                         }, label: {
                             Image(systemName: "plus")
-                            .foregroundColor(ColorConstants.Light.primary)
+                            .foregroundColor(colors.primary)
                         })
                     }
                 }
@@ -150,10 +154,10 @@ public struct CredentialProviderView: View {
     }
 }
 
-// MARK: - CredentialCardWithSelection
+// MARK: - AutofillCredentialCardWithSelection
 
-private struct CredentialCardWithSelection: View {
-    let credential: Credential
+private struct AutofillCredentialCardWithSelection: View {
+    let credential: AutofillCredential
     let isChoosingTextToInsert: Bool
     let onSelect: (String, String) -> Void
     let onCopy: () -> Void
@@ -162,28 +166,15 @@ private struct CredentialCardWithSelection: View {
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
-        CredentialCard(credential: credential, action: {
+        AutofillCredentialCard(credential: credential, action: {
             if isChoosingTextToInsert {
                 showSelectionSheet = true
             } else {
-                // For normal autofill, determine the best identifier and fill immediately
-                let username = credential.username?.trimmingCharacters(in: .whitespacesAndNewlines)
-                let email = credential.alias?.email?.trimmingCharacters(in: .whitespacesAndNewlines)
-                let hasUsername = !(username?.isEmpty ?? true)
-                let hasEmail = !(email?.isEmpty ?? true)
-
-                // Prefer username over email if both exist, or use whichever is available
-                let identifier: String
-                if hasUsername {
-                    identifier = username!
-                } else if hasEmail {
-                    identifier = email!
-                } else {
-                    identifier = ""
-                }
+                // For normal autofill, use the credential's identifier property
+                let identifier = credential.identifier
 
                 // Fill both username and password immediately for normal autofill
-                onSelect(identifier, credential.password?.value ?? "")
+                onSelect(identifier, credential.password ?? "")
             }
         }, onCopy: onCopy)
         .confirmationDialog(
@@ -197,14 +188,14 @@ private struct CredentialCardWithSelection: View {
                 }
             }
 
-            if let email = credential.alias?.email, !email.isEmpty {
+            if let email = credential.email, !email.isEmpty {
                 Button(String(localized: "email_prefix", bundle: locBundle) + email) {
                     onSelect(email, "")
                 }
             }
 
             Button(String(localized: "password", bundle: locBundle)) {
-                onSelect(credential.password?.value ?? "", "")
+                onSelect(credential.password ?? "", "")
             }
 
             Button(String(localized: "cancel", bundle: locBundle), role: .cancel) {}
@@ -217,8 +208,8 @@ private struct CredentialCardWithSelection: View {
 // MARK: - ViewModel
 
 public class CredentialProviderViewModel: ObservableObject {
-    @Published var credentials: [Credential] = []
-    @Published var filteredCredentials: [Credential] = []
+    @Published var credentials: [AutofillCredential] = []
+    @Published var filteredCredentials: [AutofillCredential] = []
     @Published var searchText = ""
     @Published var isLoading = true
     @Published var showError = false
@@ -226,12 +217,12 @@ public class CredentialProviderViewModel: ObservableObject {
     @Published public var isChoosingTextToInsert = false
     @Published public var serviceUrl: String?
 
-    private let loader: () async throws -> [Credential]
+    private let loader: () async throws -> [AutofillCredential]
     private let selectionHandler: (String, String) -> Void
     private let cancelHandler: () -> Void
 
     public init(
-        loader: @escaping () async throws -> [Credential],
+        loader: @escaping () async throws -> [AutofillCredential],
         selectionHandler: @escaping (String, String) -> Void,
         cancelHandler: @escaping () -> Void,
         serviceUrl: String? = nil
@@ -260,13 +251,13 @@ public class CredentialProviderViewModel: ObservableObject {
             isLoading = false
         } catch {
             isLoading = false
-            errorMessage = String(localized: "credentials_load_error", bundle: locBundle)
+            errorMessage = String(localized: "items_load_error", bundle: locBundle)
             showError = true
         }
     }
 
     func filterCredentials() {
-        filteredCredentials = CredentialFilter.filterCredentials(credentials, searchText: searchText)
+        filteredCredentials = RustItemMatcher.filterCredentials(credentials, searchText: searchText)
     }
 
     func handleSelection(username: String, password: String) {
@@ -283,62 +274,20 @@ public class CredentialProviderViewModel: ObservableObject {
 }
 
 // MARK: - Preview Helpers
-extension Service {
-    static var preview: Service {
-        Service(
+extension AutofillCredential {
+    static var preview: AutofillCredential {
+        AutofillCredential(
             id: UUID(),
-            name: "Example Service",
-            url: "https://example.com",
+            serviceName: "Example Service",
+            serviceUrl: "https://example.com",
             logo: nil,
-            createdAt: Date(),
-            updatedAt: Date(),
-            isDeleted: false
-        )
-    }
-}
-
-extension Password {
-    static var preview: Password {
-        Password(
-            id: UUID(),
-            credentialId: UUID(),
-            value: "password123",
-            createdAt: Date(),
-            updatedAt: Date(),
-            isDeleted: false
-        )
-    }
-}
-
-extension Alias {
-    static var preview: Alias {
-        Alias(
-            id: UUID(),
-            gender: "Not specified",
-            firstName: "John",
-            lastName: "Doe",
-            nickName: "JD",
-            birthDate: Date(),
-            email: "john@example.com",
-            createdAt: Date(),
-            updatedAt: Date(),
-            isDeleted: false
-        )
-    }
-}
-
-extension Credential {
-    static var preview: Credential {
-        Credential(
-            id: UUID(),
-            alias: .preview,
-            service: .preview,
             username: "johndoe",
+            email: "john@example.com",
+            password: "password123",
             notes: "Sample credential",
-            password: .preview,
+            passkey: nil,
             createdAt: Date(),
-            updatedAt: Date(),
-            isDeleted: false
+            updatedAt: Date()
         )
     }
 }
@@ -346,26 +295,20 @@ extension Credential {
 // Preview setup
 public class PreviewCredentialProviderViewModel: CredentialProviderViewModel {
     init() {
-        let previewCredentials = [
+        let previewCredentials: [AutofillCredential] = [
             .preview,
-            Credential(
+            AutofillCredential(
                 id: UUID(),
-                alias: .preview,
-                service: Service(
-                    id: UUID(),
-                    name: "Another Service",
-                    url: "https://another.com",
-                    logo: nil,
-                    createdAt: Date(),
-                    updatedAt: Date(),
-                    isDeleted: false
-                ),
+                serviceName: "Another Service",
+                serviceUrl: "https://another.com",
+                logo: nil,
                 username: "anotheruser",
+                email: "another@example.com",
+                password: "password456",
                 notes: "Another sample credential",
-                password: .preview,
+                passkey: nil,
                 createdAt: Date(),
-                updatedAt: Date(),
-                isDeleted: false
+                updatedAt: Date()
             )
         ]
 

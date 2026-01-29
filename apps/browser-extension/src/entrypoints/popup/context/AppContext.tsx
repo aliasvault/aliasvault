@@ -32,6 +32,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   /**
    * Logout the user by revoking tokens and clearing the auth tokens from storage.
    * Prevents recursive logout calls by tracking logout state.
+   *
+   * NOTE: This is used for FORCED logout (from logoutEventEmitter). For user-initiated logout,
+   * use the Settings page which checks isDirty and shows warning dialog.
    */
   const logout = useCallback(async (errorMessage?: string): Promise<void> => {
     if (isLoggingOutRef.current) {
@@ -41,7 +44,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       isLoggingOutRef.current = true;
       await webApi.revokeTokens();
-      await auth.clearAuth(errorMessage);
+      // Use forced logout to preserve orphaned vault
+      await auth.clearAuthForced(errorMessage);
     } catch (error) {
       console.error('Error during logout:', error);
     } finally {
@@ -59,6 +63,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const isLoggedIn = await auth.initializeAuth();
     setIsLoggedIn(isLoggedIn);
     return isLoggedIn;
+  }, [auth]);
+
+  /**
+   * Set auth tokens and update logged in state.
+   */
+  const setAuthTokens = useCallback(async (username: string, accessToken: string, refreshToken: string): Promise<void> => {
+    await auth.setAuthTokens(username, accessToken, refreshToken);
+    setIsLoggedIn(true);
   }, [auth]);
 
   /**
@@ -87,17 +99,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Wrap auth methods
     logout,
     initializeAuth,
-    setAuthTokens: auth.setAuthTokens,
+    setAuthTokens,
     clearGlobalMessage: auth.clearGlobalMessage,
     isLoggedIn: isLoggedIn,
   }), [
     auth.isInitialized,
     auth.username,
     auth.globalMessage,
-    auth.setAuthTokens,
     auth.clearGlobalMessage,
     logout,
     initializeAuth,
+    setAuthTokens,
     isLoggedIn,
   ]);
 

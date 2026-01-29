@@ -1,0 +1,1 @@
+- Improve password generator "non-ambigious characters" option

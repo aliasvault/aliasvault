@@ -1,6 +1,6 @@
 {
     "legalHeader": "Submission of this statement and retrieval and use of this statement indicates acceptance of the appropriate agreement located at https://fidoalliance.org/metadata/metadata-legal-terms/.",
-    "aaguid": "a11a5vau-9f32-4b8c-8c5d-2f7d13e8c942",
+    "aaguid": "a11a5faa-9f32-4b8c-8c5d-2f7d13e8c942",
     "description": "AliasVault Password Manager with Passkey Support",
     "protocolFamily": "fido2",
     "schema": 3,
@@ -86,7 +86,7 @@
         "largeBlobKey",
         "credBlob"
       ],
-      "aaguid": "a11a5vau-9f32-4b8c-8c5d-2f7d13e8c942",
+      "aaguid": "a11a5faa-9f32-4b8c-8c5d-2f7d13e8c942",
       "options": {
         "plat": true,
         "rk": true,

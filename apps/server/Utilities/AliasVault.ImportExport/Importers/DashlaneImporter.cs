@@ -34,7 +34,8 @@ public static class DashlaneImporter
                 Username = record.Username,
                 Password = record.Password,
                 TwoFactorSecret = record.OTPUrl,
-                Notes = BuildNotes(record)
+                Notes = BuildNotes(record),
+                FolderPath = string.IsNullOrWhiteSpace(record.Category) ? null : record.Category,
             };
 
             credentials.Add(credential);
@@ -60,11 +61,6 @@ public static class DashlaneImporter
         if (!string.IsNullOrEmpty(record.Username3))
         {
             notes.Add($"Alternative username 2: {record.Username3}");
-        }
-
-        if (!string.IsNullOrEmpty(record.Category))
-        {
-            notes.Add($"Category: {record.Category}");
         }
 
         return notes.Count > 0 ? string.Join(Environment.NewLine, notes) : null;

@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:client-css": "tailwindcss -i ./tailwind.css -o ./wwwroot/css/tailwind.css --watch"
+    "build:client-css": "tailwindcss -i ./tailwind.css -o ./wwwroot/css/tailwind.css --watch",
+    "build:js": "node scripts/bundle-js.mjs",
+    "build:js:watch": "node scripts/bundle-js.mjs --watch",
+    "build": "npm run build:js && tailwindcss -i ./tailwind.css -o ./wwwroot/css/tailwind.css --minify"
   },
   "keywords": [],
   "author": "",
@@ -14,5 +17,8 @@
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
   }
 }

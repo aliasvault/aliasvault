@@ -17,7 +17,7 @@ The upgrade process involves four main steps:
 1. **Update .NET Entity Framework model** - Modify the EF model and create migrations
 2. **Generate SQL scripts** - Convert EF migrations to SQL scripts for cross-platform use
 3. **Add new migrations to VaultVersions** - Manually update the TypeScript version list
-4. **Rebuild vault-sql shared library** - Compile and distribute the updated SQL scripts
+4. **Rebuild vault library** - Compile and distribute the updated SQL scripts
 
 ---
 
@@ -61,26 +61,26 @@ apps/server/Databases/AliasClientDb/Scripts/run-all.sh
 The script will:
 - Create individual SQL scripts for each migration
 - Convert these to TypeScript versions
-- Save the results in `shared/vault-sql/src/sql` directory
+- Save the results in `core/vault/src/sql` directory
 
 ---
 
 ## 3. Add New Migrations to VaultVersions
 
 ### Step 3.1: Update VaultVersions.ts
-Manually update the `shared/vault-sql/src/sql/VaultVersions.ts` file to include the new migration(s) with the proper fields.
+Manually update the `core/vault/src/sql/VaultVersions.ts` file to include the new migration(s) with the proper fields.
 
 This step ensures that the TypeScript version list is synchronized with the generated SQL scripts and maintains proper version tracking across all client platforms. This list is also used by the client app to detect if there are new migrations that should be applied, and what information to show to the user.
 
 ---
 
-## 4. Rebuild vault-sql Shared Library
+## 4. Rebuild Vault Library
 
 ### Step 4.1: Compile and Distribute
-The vault-sql TypeScript library is consumed by web apps, browser extensions, and mobile apps for vault creation and updates. After generating the SQL scripts, rebuild the library:
+The vault TypeScript library is consumed by web apps, browser extensions, and mobile apps for vault creation and updates. After generating the SQL scripts, rebuild the library:
 
 ```bash
-shared/build-and-distribute.sh
+core/build-and-distribute.sh
 ```
 
 ### Step 4.2: Verify Distribution

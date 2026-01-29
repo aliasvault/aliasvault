@@ -1,7 +1,7 @@
 import { JSDOM } from 'jsdom';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
-import type { Credential } from '@/utils/dist/shared/models/vault';
+import type { Credential } from '@/utils/dist/core/models/vault';
 
 import { FormFiller } from '../FormFiller';
 import { FormFields } from '../types/FormFields';

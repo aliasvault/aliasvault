@@ -58,7 +58,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         // Create credential which should automatically create claim on server during database sync.
         const string serviceName = "Test Service";
         const string email = "testclaim2@example.tld";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName },
             { "email", email },
@@ -66,7 +66,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
 
         // Assert that the claim was created on the server.
         var claim = await ApiDbContext.UserEmailClaims.Where(x => x.Address == email).FirstOrDefaultAsync();
-        Assert.That(claim, Is.Not.Null, "Claim for email address not found in database. Check if credential creation and claim creation are working correctly.");
+        Assert.That(claim, Is.Not.Null, "Claim for email address not found in database. Check if item creation and claim creation are working correctly.");
 
         // Assert that the users public key was created on the server.
         var publicKey = await ApiDbContext.UserEncryptionKeys.Where(x => x.UserId == claim.UserId).FirstOrDefaultAsync();
@@ -106,12 +106,12 @@ public class EmailDecryptionTests : ClientPlaywrightTest
 
         // Attempt to click on email refresh button to get new emails.
         await Page.Locator("id=recent-email-refresh").First.ClickAsync();
-        await WaitForUrlAsync("credentials/**", "Subject");
+        await WaitForUrlAsync("items/**", "Subject");
 
         // Check if the email is visible on the page now.
         await WaitForUrlAsync("*", textSubject);
         var emailContent = await Page.TextContentAsync("body");
-        Assert.That(emailContent, Does.Contain(textSubject), "Email not (correctly) decrypted and displayed on the credential page. Check email decryption logic.");
+        Assert.That(emailContent, Does.Contain(textSubject), "Email not (correctly) decrypted and displayed on the item page. Check email decryption logic.");
 
         // Navigate to the email index page and ensure that the decrypted email is also readable there.
         await NavigateUsingBlazorRouter("emails");
@@ -123,7 +123,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
 
         // Attempt to click on the email subject to open the email.
         await Page.Locator("div", new PageLocatorOptions { HasTextString = textSubject }).First.ClickAsync();
-        await WaitForUrlAsync("emails**", "Credential:");
+        await WaitForUrlAsync("emails**", "Item:");
 
         // Assert that the anchor tag in the email iframe has target="_blank" attribute.
         var anchorTag = await Page.Locator("iframe").First.GetAttributeAsync("srcdoc");
@@ -155,7 +155,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         // Create credential which should automatically create claim on server during database sync.
         const string serviceName = "Test Service";
         const string email = "testclaim@example.tld";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName },
             { "email", email },
@@ -163,7 +163,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
 
         // Assert that the claim was created on the server.
         var claim = await ApiDbContext.UserEmailClaims.Where(x => x.Address == email).FirstOrDefaultAsync();
-        Assert.That(claim, Is.Not.Null, "Claim for email address not found in database. Check if credential creation and claim creation are working correctly.");
+        Assert.That(claim, Is.Not.Null, "Claim for email address not found in database. Check if item creation and claim creation are working correctly.");
 
         // Assert that the users public key was created on the server.
         var publicKey = await ApiDbContext.UserEncryptionKeys.Where(x => x.UserId == claim.UserId).FirstOrDefaultAsync();
@@ -223,13 +223,13 @@ public class EmailDecryptionTests : ClientPlaywrightTest
 
         // Attempt to click on email refresh button to get new emails.
         await Page.Locator("id=recent-email-refresh").First.ClickAsync();
-        await WaitForUrlAsync("credentials/**", "Subject");
+        await WaitForUrlAsync("items/**", "Subject");
 
         // Check if the email is visible on the page now.
         await WaitForUrlAsync("*", textSubject);
 
         var emailContent = await Page.TextContentAsync("body");
-        Assert.That(emailContent, Does.Contain(textSubject), "Email not (correctly) decrypted and displayed on the credential page. Check email decryption logic.");
+        Assert.That(emailContent, Does.Contain(textSubject), "Email not (correctly) decrypted and displayed on the item page. Check email decryption logic.");
 
         // Navigate to the email index page and ensure that the decrypted email is also readable there.
         await NavigateUsingBlazorRouter("emails");
@@ -245,7 +245,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
 
         // Attempt to click on the email subject to open the email.
         await Page.Locator("div", new PageLocatorOptions { HasTextString = textSubject }).First.ClickAsync();
-        await WaitForUrlAsync("emails**", "Credential:");
+        await WaitForUrlAsync("emails**", "Item:");
 
         // Assert that the anchor tag in the email iframe has target="_blank" attribute.
         var anchorTag = await Page.Locator("iframe").First.GetAttributeAsync("srcdoc");
@@ -297,7 +297,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         // Create credential which should automatically create claim on server during database sync.
         const string serviceName = "Test Service";
         const string email = "testclaim@unknowndomain.tld";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName },
             { "email", email },
@@ -320,7 +320,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         // Create credential which should automatically create claim on server during database sync.
         const string serviceName = "Test Service";
         const string email = "testclaimduplicate@example.tld";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName },
             { "email", email },
@@ -328,13 +328,13 @@ public class EmailDecryptionTests : ClientPlaywrightTest
 
         // Assert that the claim was created on the server.
         var claim = await ApiDbContext.UserEmailClaims.FirstOrDefaultAsync(x => x.Address == email);
-        Assert.That(claim, Is.Not.Null, "Claim for email address not found in database. Check if credential creation and claim creation are working correctly.");
+        Assert.That(claim, Is.Not.Null, "Claim for email address not found in database. Check if item creation and claim creation are working correctly.");
 
         // Login as new user.
         await LogoutAndLoginAsNewUser();
 
         // Try to claim the same email address again.
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName },
             { "email", email },
@@ -352,17 +352,89 @@ public class EmailDecryptionTests : ClientPlaywrightTest
     }
 
     /// <summary>
-    /// Test that when a user deletes an alias, the email claim gets disabled in the database.
+    /// Test that when two credentials share the same email address but with different casing
+    /// (e.g., "test1@example.tld" and "Test1@example.tld"), both email claims are created in a single
+    /// vault sync without causing a unique constraint violation (HTTP 500).
+    /// This simulates the scenario where a client creates two credentials offline and then syncs
+    /// them together, sending both case-variant email addresses to the server at the same time.
     /// </summary>
     /// <returns>Async task.</returns>
     [Test]
     [Order(5)]
+    public async Task EmailClaimCaseInsensitiveDuplicateTest()
+    {
+        // Step 1: Create credential A with lowercase email. This establishes the first credential
+        // and creates the email claim on the server during vault sync.
+        const string serviceName1 = "Case Test Service 1";
+        const string email1 = "casedupe@example.tld";
+        await CreateItemEntry(new Dictionary<string, string>
+        {
+            { "service-name", serviceName1 },
+            { "email", email1 },
+        });
+
+        // Assert that the claim was created on the server.
+        var claim = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email1);
+        Assert.That(claim, Is.Not.Null, "Initial claim for email address not found in database.");
+
+        // Step 2: Delete the email claim from the database directly.
+        // This simulates the scenario where both credentials were created while the API was down
+        // (offline mode) so no claim exists on the server yet. When the vault syncs, it will send
+        // both email addresses at once, and the server needs to handle the case-insensitive duplicates.
+        var claimToRemove = await ApiDbContext.UserEmailClaims.FirstAsync(x => x.Address == email1);
+        ApiDbContext.UserEmailClaims.Remove(claimToRemove);
+        await ApiDbContext.SaveChangesAsync();
+
+        // Verify claim is gone.
+        var claimAfterDelete = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email1);
+        Assert.That(claimAfterDelete, Is.Null, "Claim should have been removed from database.");
+
+        // Step 3: Create credential B with the same email but different casing (capital C).
+        // This triggers a vault sync that will send both "casedupe@example.tld" (from credential A
+        // still in local vault) and "Casedupe@example.tld" (from credential B) to the server.
+        // Without proper case-insensitive deduplication, this would cause a unique constraint violation
+        // when the server tries to insert both as "casedupe@example.tld".
+        const string serviceName2 = "Case Test Service 2";
+        const string email2 = "Casedupe@example.tld";
+        await CreateItemEntry(new Dictionary<string, string>
+        {
+            { "service-name", serviceName2 },
+            { "email", email2 },
+        });
+
+        // Step 4: Assert that the vault sync succeeded and no errors occurred.
+        // If the deduplication fails, the server would return HTTP 500 and the client
+        // would show an error or enter a retry loop.
+        // Note: CreateItemEntry already asserts "Item created successfully" and "View item" text,
+        // so if we reach here without exception, the vault sync succeeded.
+
+        // Step 5: Assert that exactly one email claim exists on the server (normalized to lowercase).
+        var claims = await ApiDbContext.UserEmailClaims.AsNoTracking()
+            .Where(x => x.Address == email1)
+            .ToListAsync();
+        Assert.That(claims, Has.Count.EqualTo(1), "Exactly one email claim should exist for the case-insensitive duplicate email address.");
+        Assert.That(claims[0].Address, Is.EqualTo(email1), "Email claim should be stored in lowercase.");
+        Assert.That(claims[0].Disabled, Is.False, "Email claim should not be disabled.");
+
+        // Step 6: Verify no duplicate claims exist with different casing.
+        var allClaims = await ApiDbContext.UserEmailClaims.AsNoTracking()
+            .Where(x => x.AddressLocal == "casedupe" && x.AddressDomain == "example.tld")
+            .ToListAsync();
+        Assert.That(allClaims, Has.Count.EqualTo(1), "No duplicate claims with different casing should exist.");
+    }
+
+    /// <summary>
+    /// Test that when a user deletes an alias, the email claim gets disabled in the database.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    [Order(6)]
     public async Task EmailClaimDeleteDisableTest()
     {
         // Create two credential which should automatically create claims on server during database sync.
         const string serviceName1 = "Test 1 Service";
         const string email1 = "testclaimdisabled@example.tld";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName1 },
             { "email", email1 },
@@ -371,7 +443,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         // Create credential which should automatically create claim on server during database sync.
         const string serviceName2 = "Test 2 Service";
         const string email2 = "testclaimenabled@example.tld";
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName2 },
             { "email", email2 },
@@ -382,8 +454,8 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         var claim2 = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstOrDefaultAsync(x => x.Address == email2);
         Assert.Multiple(() =>
         {
-            Assert.That(claim1, Is.Not.Null, "Claim for email address not found in database. Check if credential creation and claim creation are working correctly.");
-            Assert.That(claim2, Is.Not.Null, "Claim for email address not found in database. Check if credential creation and claim creation are working correctly.");
+            Assert.That(claim1, Is.Not.Null, "Claim for email address not found in database. Check if item creation and claim creation are working correctly.");
+            Assert.That(claim2, Is.Not.Null, "Claim for email address not found in database. Check if item creation and claim creation are working correctly.");
         });
 
         // Assert that both claims are not disabled.
@@ -394,7 +466,10 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         });
 
         // Delete the first credential.
-        await DeleteCredentialEntry(serviceName1);
+        await DeleteItemEntry(serviceName1);
+
+        // Wait for background sync to complete (delete uses background sync).
+        await Task.Delay(1000);
 
         // Assert that the first claim is now disabled, and second still enabled.
         claim1 = await ApiDbContext.UserEmailClaims.AsNoTracking().FirstAsync(x => x.Address == email1);
@@ -406,7 +481,7 @@ public class EmailDecryptionTests : ClientPlaywrightTest
         });
 
         // Create a new credential with the same email as the one that was disabled.
-        await CreateCredentialEntry(new Dictionary<string, string>
+        await CreateItemEntry(new Dictionary<string, string>
         {
             { "service-name", serviceName1 },
             { "email", email1 },

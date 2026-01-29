@@ -40,6 +40,29 @@ interface KeystoreProvider {
      * Clear all stored keys.
      */
     fun clearKeys()
+
+    /**
+     * Trigger standalone biometric authentication (no key retrieval).
+     * This is used for re-authentication before sensitive operations.
+     * @param title The title to show in the biometric prompt
+     * @param callback The callback to handle the result
+     */
+    fun authenticateWithBiometric(title: String, callback: BiometricAuthCallback)
+}
+
+/**
+ * Callback interface for standalone biometric authentication.
+ */
+interface BiometricAuthCallback {
+    /**
+     * Called when authentication succeeds.
+     */
+    fun onSuccess()
+
+    /**
+     * Called when authentication fails or is cancelled.
+     */
+    fun onFailure()
 }
 
 /**

@@ -2,12 +2,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { StyleSheet, View, Alert, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
+import { StyleSheet, View, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text } from 'react-native';
 
-import type { VaultVersion } from '@/utils/dist/shared/vault-sql';
-import { VaultSqlGenerator } from '@/utils/dist/shared/vault-sql';
+import type { VaultVersion } from '@/utils/dist/core/vault';
+import { VaultSqlGenerator } from '@/utils/dist/core/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useLogout } from '@/hooks/useLogout';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
@@ -19,6 +20,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
+import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
@@ -26,9 +28,11 @@ import NativeVaultManager from '@/specs/NativeVaultManager';
  * Upgrade screen.
  */
 export default function UpgradeScreen() : React.ReactNode {
-  const { username, logout } = useApp();
+  const { username } = useApp();
+  const { logoutUserInitiated } = useLogout();
   const webApi = useWebApi();
-  const { sqliteClient } = useDb();
+  const dbContext = useDb();
+  const { sqliteClient } = dbContext;
   const [isLoading, setIsLoading] = useState(false);
   const [currentVersion, setCurrentVersion] = useState<VaultVersion | null>(null);
   const [latestVersion, setLatestVersion] = useState<VaultVersion | null>(null);
@@ -37,6 +41,9 @@ export default function UpgradeScreen() : React.ReactNode {
   const { t } = useTranslation();
   const { executeVaultMutation, isLoading: isVaultMutationLoading, syncStatus } = useVaultMutate();
   const { syncVault } = useVaultSync();
+  const { showAlert, showConfirm } = useDialog();
+
+  const [isSyncingOnLoad, setIsSyncingOnLoad] = useState(true);
 
   // Initialize upgrade status with translation
   useEffect(() => {
@@ -59,41 +66,70 @@ export default function UpgradeScreen() : React.ReactNode {
     }
   }, [sqliteClient]);
 
+  /**
+   * Try to sync with the server on load. If the vault was already upgraded
+   * on another device, the server may have a newer vault that doesn't need
+   * local migration, allowing us to skip the upgrade entirely.
+   */
   useEffect(() => {
-    loadVersionInfo();
-  }, [loadVersionInfo]);
+    /**
+     * Sync on load to check if server has an already-upgraded vault.
+     */
+    const syncOnLoad = async (): Promise<void> => {
+      let skipVersionLoad = false;
+
+      try {
+        setUpgradeStatus(t('vault.checkingVaultUpdates'));
+        await syncVault({
+          /**
+           * Handle the status update.
+           */
+          onStatus: (message) => setUpgradeStatus(message),
+          /**
+           * Handle successful sync and check if upgrade is still needed.
+           */
+          onSuccess: async () => {
+            // After sync, check if we still need to upgrade
+            if (!(await dbContext.hasPendingMigrations())) {
+              // Server had an upgraded vault, no local upgrade needed
+              skipVersionLoad = true;
+              dbContext.setDatabaseAvailable();
+              router.replace('/(tabs)/items');
+            }
+          },
+        });
+      } catch {
+        // On any error, fall through to local upgrade flow
+      } finally {
+        // Always load version info unless we're navigating away
+        if (!skipVersionLoad) {
+          await loadVersionInfo();
+        }
+        setIsSyncingOnLoad(false);
+        setUpgradeStatus(t('upgrade.status.preparingUpgrade'));
+      }
+    };
+
+    syncOnLoad();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /**
    * Handle the vault upgrade.
    */
   const handleUpgrade = async (): Promise<void> => {
     if (!sqliteClient || !currentVersion || !latestVersion) {
-      Alert.alert(
-        t('common.error'),
-        t('upgrade.alerts.unableToGetVersionInfo'),
-        [{ text: t('common.ok'), style: 'default' }]
-      );
+      showAlert(t('common.error'), t('upgrade.alerts.unableToGetVersionInfo'));
       return;
     }
 
     // Check if this is a self-hosted instance and show warning if needed
     if (await webApi.isSelfHosted()) {
-      Alert.alert(
+      showConfirm(
         t('upgrade.alerts.selfHostedServer'),
         t('upgrade.alerts.selfHostedWarning'),
-        [
-          { text: t('common.cancel'), style: 'cancel' },
-          {
-            text: t('upgrade.alerts.continueUpgrade'),
-            style: 'default',
-            /**
-             * Continue upgrade.
-             */
-            onPress: async () : Promise<void> => {
-              await performUpgrade();
-            }
-          }
-        ]
+        t('upgrade.alerts.continueUpgrade'),
+        performUpgrade
       );
     } else {
       await performUpgrade();
@@ -105,19 +141,27 @@ export default function UpgradeScreen() : React.ReactNode {
    */
   const performUpgrade = async (): Promise<void> => {
     if (!sqliteClient || !currentVersion || !latestVersion) {
-      Alert.alert(
-        t('common.error'),
-        t('upgrade.alerts.unableToGetVersionInfo'),
-        [{ text: t('common.ok'), style: 'default' }]
-      );
+      showAlert(t('common.error'), t('upgrade.alerts.unableToGetVersionInfo'));
       return;
+    }
+
+    // Ensure vault is unlocked before upgrade
+    const isUnlocked = await NativeVaultManager.isVaultUnlocked();
+    if (!isUnlocked) {
+      try {
+        await NativeVaultManager.unlockVault();
+      } catch (error) {
+        console.error('Failed to unlock vault for upgrade:', error);
+        showAlert(t('common.error'), t('auth.errors.enterPassword'));
+        return;
+      }
     }
 
     setIsLoading(true);
     setUpgradeStatus(t('upgrade.status.preparingUpgrade'));
 
     try {
-      // Get upgrade SQL commands from vault-sql shared library
+      // Get upgrade SQL commands from vault library
       const vaultSqlGenerator = new VaultSqlGenerator();
       const upgradeResult = vaultSqlGenerator.getUpgradeVaultSql(currentVersion.revision, latestVersion.revision);
 
@@ -149,8 +193,9 @@ export default function UpgradeScreen() : React.ReactNode {
             await NativeVaultManager.executeRaw(sqlCommand);
           } catch (error) {
             console.error(`Error executing SQL command ${i + 1}:`, sqlCommand, error);
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
             await NativeVaultManager.rollbackTransaction();
-            throw new Error(t('upgrade.alerts.failedToApplyMigration', { current: i + 1, total: upgradeResult.sqlCommands.length }));
+            throw new Error(`${t('upgrade.alerts.failedToApplyMigration', { current: i + 1, total: upgradeResult.sqlCommands.length })}\n\nDetails: ${errorMessage}`);
           }
         }
 
@@ -170,20 +215,15 @@ export default function UpgradeScreen() : React.ReactNode {
          */
         onError: (error: Error) => {
           console.error('Upgrade failed:', error);
-          Alert.alert(
-            t('upgrade.alerts.upgradeFailed'),
-            error.message,
-            [{ text: t('common.ok'), style: 'default' }]
-          );
+          showAlert(t('upgrade.alerts.upgradeFailed'), error.message);
         }
       });
 
-    } catch (error) {
-      console.error('Upgrade failed:', error);
-      Alert.alert(
+    } catch (err) {
+      console.error('Upgrade failed:', err);
+      showAlert(
         t('upgrade.alerts.upgradeFailed'),
-        error instanceof Error ? error.message : t('common.errors.unknownError'),
-        [{ text: t('common.ok'), style: 'default' }]
+        err instanceof Error ? err.message : t('common.errors.unknownError')
       );
     } finally {
       setIsLoading(false);
@@ -196,57 +236,58 @@ export default function UpgradeScreen() : React.ReactNode {
    */
   const handleUpgradeSuccess = async () : Promise<void> => {
     try {
-      // Sync vault to ensure we have the latest data
+      // Re-unlock the vault to ensure React Native sees the upgraded database
+      setUpgradeStatus(t('auth.unlocking'));
+      const unlockSuccess = await dbContext.unlockVault();
+
+      if (unlockSuccess) {
+        // Mark database as available after successful unlock
+        dbContext.setDatabaseAvailable();
+      }
+
+      // Sync vault to check for updates and verify server connection
       await syncVault({
         /**
          * Handle the status update.
          */
         onStatus: (message) => setUpgradeStatus(message),
         /**
-         * Handle successful vault sync and navigate to credentials.
+         * Handle successful vault sync and navigate to items.
          */
         onSuccess: () => {
-          // Navigate to credentials index
-          router.replace('/(tabs)/credentials');
+          router.replace('/(tabs)/items');
         },
         /**
-         * Handle sync error and still navigate to credentials.
+         * Handle sync error and still navigate to items.
          */
         onError: (error) => {
           console.error('Sync error after upgrade:', error);
-          // Still navigate to credentials even if sync fails
-          router.replace('/(tabs)/credentials');
+          // Still navigate to items even if sync fails
+          router.replace('/(tabs)/items');
         }
       });
     } catch (error) {
-      console.error('Error during post-upgrade sync:', error);
-      // Navigate to credentials even if sync fails
-      router.replace('/(tabs)/credentials');
+      console.error('Error during post-upgrade flow:', error);
+      // Navigate to items anyway
+      router.replace('/(tabs)/items');
     }
   };
 
   /**
-   * Handle the logout.
+   * Handle the logout - uses the shared useLogout hook which
+   * checks for unsynced changes and shows appropriate confirmation dialog.
    */
   const handleLogout = async () : Promise<void> => {
-    /*
-     * Clear any stored tokens or session data
-     * This will be handled by the auth context
-     */
-    await logout();
-    router.replace('/login');
+    await logoutUserInitiated();
   };
 
   /**
    * Show native dialog with version description.
    */
   const showVersionDialog = (): void => {
-    Alert.alert(
+    showAlert(
       t('upgrade.whatsNew'),
-      `${t('upgrade.whatsNewDescription')}\n\n${latestVersion?.description ?? t('upgrade.noDescriptionAvailable')}`,
-      [
-        { text: t('common.ok'), style: 'default' }
-      ]
+      `${t('upgrade.whatsNewDescription')}\n\n${latestVersion?.description ?? t('upgrade.noDescriptionAvailable')}`
     );
   };
 
@@ -400,7 +441,7 @@ export default function UpgradeScreen() : React.ReactNode {
 
   return (
     <ThemedView style={styles.container}>
-      {(isLoading || isVaultMutationLoading) ? (
+      {(isLoading || isVaultMutationLoading || isSyncingOnLoad) ? (
         <View style={styles.loadingContainer}>
           <LoadingIndicator status={syncStatus || upgradeStatus} />
         </View>

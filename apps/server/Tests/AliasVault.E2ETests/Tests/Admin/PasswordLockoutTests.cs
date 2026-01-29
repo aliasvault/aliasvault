@@ -32,7 +32,7 @@ public class PasswordLockoutTests : AdminPlaywrightTest
         {
             await Page.Locator("input[id='username']").FillAsync(TestUserUsername);
             await Page.Locator("input[id='password']").FillAsync("wrongpassword");
-            var submitButton = Page.GetByRole(AriaRole.Button, new() { Name = "Login to your account" });
+            var submitButton = Page.GetByRole(AriaRole.Button, new() { Name = "Login" });
             await submitButton.ClickAsync();
 
             // Wait for the text "Error: Invalid login attempt." to appear if we expect not to be locked out yet..

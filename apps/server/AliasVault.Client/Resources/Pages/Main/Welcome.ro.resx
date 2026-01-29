@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Step titles -->
+  <data name="WelcomeStepTitle">
+    <value>Bine ați venit la AliasVault</value>
+    <comment>Title for the welcome step</comment>
+  </data>
+  <data name="HowAliasVaultWorksStepTitle">
+    <value>Cum funcționează AliasVault</value>
+    <comment>Title for the how it works step</comment>
+  </data>
+  <data name="TipsStepTitle">
+    <value>Sfaturi</value>
+    <comment>Title for the tips step</comment>
+  </data>
+  <data name="GetStartedStepTitle">
+    <value>Să începem</value>
+    <comment>Title for the get started step</comment>
+  </data>
+  <data name="TutorialStepTitle">
+    <value>Tutorial</value>
+    <comment>Default tutorial step title</comment>
+  </data>
+  <!-- Welcome step content -->
+  <data name="WelcomeMessage">
+    <value>Seiful dumneavoastră a fost creat cu succes! Protejați-vă confidențialitatea online creând aliasuri unice pentru fiecare serviciu la care vă înregistrați. Să învățăm cum funcționează AliasVault și apoi să creăm primul tău alias securizat.</value>
+    <comment>Welcome message on the first tutorial step</comment>
+  </data>
+  <!-- How it works step content -->
+  <data name="HowItWorksIntro">
+    <value>Când trebuie să vă înregistrați la un serviciu nou:</value>
+    <comment>Introduction text for how it works step</comment>
+  </data>
+  <data name="HowItWorksStep1">
+    <value>AliasVault generează o identitate aleatorie cu o adresă de e-mail privată securizată</value>
+    <comment>First step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep2">
+    <value>Folosiți aceste informații pentru a vă înregistra la serviciul respectiv</value>
+    <comment>Second step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep3">
+    <value>E-mailurile primite apar în această aplicație și pot fi deschise în browser</value>
+    <comment>Third step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep4">
+    <value>Adresa ta de e-mail reală și celelalte informații personale rămân private</value>
+    <comment>Fourth step in how it works explanation</comment>
+  </data>
+  <!-- Tips step content -->
+  <data name="MasterPasswordTipTitle">
+    <value>Păstrați parola master în siguranță</value>
+    <comment>Title for master password tip</comment>
+  </data>
+  <data name="MasterPasswordTipContent">
+    <value>Parola master este necesară pentru a vă decripta seiful. Nu o partajați niciodată și păstrați-o într-un loc sigur. Atenție: Dacă pierdeți parola master, datele nu mai pot fi recuperate – nici măcar de către echipa noastră.</value>
+    <comment>Content for master password tip</comment>
+  </data>
+  <data name="TwoFactorTipTitle">
+    <value>Activați autentificarea cu doi factori în setările de securitate</value>
+    <comment>Title for two-factor authentication tip</comment>
+  </data>
+  <data name="TwoFactorTipContent">
+    <value>Autentificarea cu doi factori adaugă un strat suplimentar de securitate contului tău. Aceasta necesită introducerea unui cod din aplicația de autentificare sau a unui cod de recuperare înainte ca seiful tău criptat să poată fi accesat.</value>
+    <comment>Content for two-factor authentication tip</comment>
+  </data>
+  <data name="ExtensionsAppsTipTitle">
+    <value>Extensii de browser și aplicații mobile</value>
+    <comment>Title for browser extensions and mobile apps tip</comment>
+  </data>
+  <data name="ExtensionsAppsTipContent">
+    <value>Instalați extensia de browser și aplicația mobilă AliasVault pentru a crea aliasuri și a completa automat câmpurile de date direct din browser și de pe smartphone.</value>
+    <comment>Content for browser extensions and mobile apps tip</comment>
+  </data>
+  <!-- Create first identity step content -->
+  <data name="ReadyToStartTitle">
+    <value>Sunteți gata să începeți?</value>
+    <comment>Title for ready to start section</comment>
+  </data>
+  <data name="ReadyToStartMessage">
+    <value>Acum că știi cum funcționează AliasVault, să creăm prima ta identitate securizată!</value>
+    <comment>Message encouraging user to create first identity</comment>
+  </data>
+  <data name="CreateFirstIdentityButton">
+    <value>Creați prima identitate</value>
+    <comment>Button text for creating first identity</comment>
+  </data>
+  <!-- Navigation buttons -->
+  <data name="ContinueButton">
+    <value>Continuă</value>
+    <comment>Continue button text</comment>
+  </data>
+  <data name="GetStartedButton">
+    <value>Începe acum</value>
+    <comment>Get started button text</comment>
+  </data>
+  <!-- Loading and status messages -->
+  <data name="FinishingTutorialMessage">
+    <value>Se finalizează tutorialul...</value>
+    <comment>Loading message when finishing tutorial</comment>
+  </data>
+  <!-- Extension and app labels -->
+  <data name="ComingSoonLabel">
+    <value>Disponibil în curând</value>
+    <comment>Label for features coming soon</comment>
+  </data>
+  <data name="SoonSuffix">
+    <value>(În curând)</value>
+    <comment>Suffix indicating feature coming soon</comment>
+  </data>
+</root>

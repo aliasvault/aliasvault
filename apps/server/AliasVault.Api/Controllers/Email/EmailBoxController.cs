@@ -73,7 +73,7 @@ public class EmailBoxController(IAliasServerDbContextFactory dbContextFactory, U
 
         // Retrieve emails from database.
         List<MailboxEmailApiModel> emails = await context.Emails.AsNoTracking()
-            .Where(x => x.To == to)
+            .Where(x => x.To == sanitizedEmail)
             .Select(x => new MailboxEmailApiModel()
             {
                 Id = x.Id,

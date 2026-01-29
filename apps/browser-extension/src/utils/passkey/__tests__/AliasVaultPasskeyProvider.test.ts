@@ -208,11 +208,10 @@ describe('PasskeyAuthenticator', () => {
       );
 
       /*
-       * AliasVault AAGUID: a11a5vau-9f32-4b8c-8c5d-2f7d13e8c942
+       * AliasVault AAGUID: a11a5faa-9f32-4b8c-8c5d-2f7d13e8c942
        * Convert the string representation to bytes (replace 'v' with 'f' and 'u' with 'a')
        */
-      const aaguidString = 'a11a5vau-9f32-4b8c-8c5d-2f7d13e8c942';
-      const aaguidHex = aaguidString.replace(/-/g, '').replace(/v/g, 'f').replace(/u/g, 'a');
+      const aaguidHex = 'a11a5faa-9f32-4b8c-8c5d-2f7d13e8c942'.replace(/-/g, '');
 
       // Verify the hex conversion matches expected bytes
       const expectedAAGUID = new Uint8Array(16);

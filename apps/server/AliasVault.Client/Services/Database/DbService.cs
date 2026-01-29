@@ -9,15 +9,19 @@ namespace AliasVault.Client.Services.Database;
 
 using System.Data;
 using System.Net.Http.Json;
+using System.Text.Json;
 using AliasClientDb;
+using AliasClientDb.Models;
 using AliasVault.Client.Services;
 using AliasVault.Client.Services.Auth;
 using AliasVault.Client.Services.JsInterop.Models;
+using AliasVault.Client.Services.JsInterop.RustCore;
 using AliasVault.Client.Utilities;
 using AliasVault.Shared.Models.Enums;
 using AliasVault.Shared.Models.WebApi.Vault;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Localization;
 
 /// <summary>
 /// Class to manage the in-memory AliasClientDb service. The reason for this service is to provide a way to interact
@@ -29,11 +33,13 @@ public sealed class DbService : IDisposable
     private const string _UNKNOWN_VERSION = "Unknown";
     private readonly AuthService _authService;
     private readonly JsInteropService _jsInteropService;
+    private readonly RustCoreService _rustCore;
     private readonly HttpClient _httpClient;
     private readonly DbServiceState _state = new();
     private readonly Config _config;
     private readonly ILogger<DbService> _logger;
     private readonly GlobalNotificationService _globalNotificationService;
+    private readonly IStringLocalizer _sharedLocalizer;
     private SettingsService _settingsService = new();
     private SqliteConnection? _sqlConnection;
     private AliasClientDbContext _dbContext;
@@ -47,17 +53,21 @@ public sealed class DbService : IDisposable
     /// </summary>
     /// <param name="authService">AuthService.</param>
     /// <param name="jsInteropService">JsInteropService.</param>
+    /// <param name="rustCore">RustCoreService for WASM interop.</param>
     /// <param name="httpClient">HttpClient.</param>
     /// <param name="config">Config instance.</param>
     /// <param name="globalNotificationService">Global notification service.</param>
+    /// <param name="localizerFactory">IStringLocalizerFactory instance.</param>
     /// <param name="logger">ILogger instance.</param>
-    public DbService(AuthService authService, JsInteropService jsInteropService, HttpClient httpClient, Config config, GlobalNotificationService globalNotificationService, ILogger<DbService> logger)
+    public DbService(AuthService authService, JsInteropService jsInteropService, RustCoreService rustCore, HttpClient httpClient, Config config, GlobalNotificationService globalNotificationService, IStringLocalizerFactory localizerFactory, ILogger<DbService> logger)
     {
         _authService = authService;
         _jsInteropService = jsInteropService;
+        _rustCore = rustCore;
         _httpClient = httpClient;
         _config = config;
         _globalNotificationService = globalNotificationService;
+        _sharedLocalizer = localizerFactory.Create("SharedResources", "AliasVault.Client");
         _logger = logger;
 
         // Set the initial state of the database service.
@@ -112,113 +122,6 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Merges two or more databases into one.
-    /// </summary>
-    /// <returns>Bool which indicates if merging was successful.</returns>
-    public async Task<bool> MergeDatabasesAsync()
-    {
-        try
-        {
-            var vaultsToMerge = await _httpClient.GetFromJsonAsync<VaultMergeResponse>($"v1/Vault/merge?currentRevisionNumber={_vaultRevisionNumber}");
-            if (vaultsToMerge == null || vaultsToMerge.Vaults.Count == 0)
-            {
-                // No vaults to merge found, set error state.
-                _state.UpdateState(DbServiceState.DatabaseStatus.MergeFailed, "No vaults to merge found.");
-                return false;
-            }
-
-            var sqlConnections = new List<SqliteConnection>();
-            _logger.LogInformation("Merging databases...");
-
-            // Decrypt and instantiate each vault as a separate in-memory SQLite database.
-            foreach (var vault in vaultsToMerge.Vaults)
-            {
-                // Store username of the loaded vault in memory to send to server as sanity check when updating the vault later.
-                _authService.StoreUsername(vault.Username);
-
-                var decryptedBase64String = await _jsInteropService.SymmetricDecrypt(vault.Blob, _authService.GetEncryptionKeyAsBase64Async());
-
-                _logger.LogInformation("Decrypted vault {VaultUpdatedAt}.", vault.UpdatedAt);
-                var connection = new SqliteConnection("Data Source=:memory:");
-                await connection.OpenAsync();
-                await ImportDbContextFromBase64Async(decryptedBase64String, connection);
-                sqlConnections.Add(connection);
-            }
-
-            // Get all table names from the current base database.
-            var tables = await DbMergeUtility.GetTableNames(_sqlConnection!);
-
-            // Disable foreign key checks on the base connection.
-            await using (var command = _sqlConnection!.CreateCommand())
-            {
-                command.CommandText = "PRAGMA foreign_keys = OFF;";
-                await command.ExecuteNonQueryAsync();
-            }
-
-            // Merge every remote database into the current database.
-            foreach (var connection in sqlConnections)
-            {
-                foreach (var table in tables)
-                {
-                    _logger.LogInformation("Merging table {Table}.", table);
-                    await DbMergeUtility.MergeTable(_sqlConnection, connection, table, _logger);
-                }
-            }
-
-            // Re-enable foreign key checks and verify integrity.
-            await using (var command = _sqlConnection.CreateCommand())
-            {
-                command.CommandText = "PRAGMA foreign_keys = ON;";
-                await command.ExecuteNonQueryAsync();
-
-                // Verify foreign key integrity.
-                command.CommandText = "PRAGMA foreign_key_check;";
-                await using var reader = await command.ExecuteReaderAsync();
-                if (await reader.ReadAsync())
-                {
-                    // Foreign key violation detected.
-                    _state.UpdateState(DbServiceState.DatabaseStatus.MergeFailed, "Foreign key violation detected after merge.");
-                    return false;
-                }
-            }
-
-            // Update the db context with the new merged database.
-            _dbContext = new AliasClientDbContext(_sqlConnection, log => _logger.LogDebug("{Message}", log));
-
-            // Clean up other connections.
-            foreach (var connection in sqlConnections)
-            {
-                await connection.CloseAsync();
-                await connection.DisposeAsync();
-            }
-
-            // Update the current vault revision number to the highest revision number in the merged database(s).
-            // This is important so the server knows that the local client has successfully merged the databases
-            // and should overwrite the existing database on the server with the new merged database.
-            var newRevisionNumber = vaultsToMerge.Vaults.Max(v => v.CurrentRevisionNumber);
-            StoreVaultRevisionNumber(newRevisionNumber);
-
-            _isSuccessfullyInitialized = true;
-            await _settingsService.InitializeAsync(this);
-            _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
-            _logger.LogInformation("Databases merged successfully.");
-
-            // Save the newly merged database to the server.
-            return await SaveDatabaseAsync();
-        }
-        catch (Exception ex)
-        {
-            _globalNotificationService.AddErrorMessage(
-                "Unable to save changes: Your vault has been updated elsewhere. " +
-                "The automatic merge was unsuccessful, possibly due to a password change or vault upgrade. " +
-                "Please log out and log back in to retrieve the latest version of your vault.");
-            _logger.LogError(ex, "Error merging databases.");
-            _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
-            return false;
-        }
-    }
-
-    /// <summary>
     /// Returns the AliasClientDbContext instance.
     /// </summary>
     /// <returns>AliasClientDbContext.</returns>
@@ -269,6 +172,9 @@ public sealed class DbService : IDisposable
             _state.UpdateState(DbServiceState.DatabaseStatus.SavingToServer);
         }
 
+        // Prune expired items from trash before saving.
+        await PruneExpiredTrashItemsAsync();
+
         // Make sure a public/private RSA encryption key exists before saving the database.
         await GetOrCreateEncryptionKeyAsync();
 
@@ -287,6 +193,61 @@ public sealed class DbService : IDisposable
         }
 
         return success;
+    }
+
+    /// <summary>
+    /// Saves the database to the remote server in the background without blocking the caller.
+    /// The local database state is immediately persisted (in-memory), and the server sync happens asynchronously.
+    /// If the sync fails, a notification is shown to the user.
+    /// </summary>
+    /// <remarks>
+    /// This method is useful for operations where blocking the UI is undesirable, such as
+    /// folder creation, settings changes, etc. The local mutation is considered immediately
+    /// successful, and server sync happens in the background.
+    /// </remarks>
+    public void SaveDatabaseInBackground()
+    {
+        // Set state to indicate background sync is pending
+        _state.UpdateState(DbServiceState.DatabaseStatus.BackgroundSyncPending);
+
+        // Fire and forget the background save operation
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                // Prune expired items from trash before saving.
+                await PruneExpiredTrashItemsAsync();
+
+                // Make sure a public/private RSA encryption key exists before saving the database.
+                await GetOrCreateEncryptionKeyAsync();
+
+                var encryptedBase64String = await GetEncryptedDatabaseBase64String();
+
+                // Update state to show we're actively syncing
+                _state.UpdateState(DbServiceState.DatabaseStatus.SavingToServer);
+
+                // Save to webapi.
+                var success = await SaveToServerAsync(encryptedBase64String);
+                if (success)
+                {
+                    _logger.LogInformation("Database successfully saved to server (background sync).");
+                    _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
+                }
+                else
+                {
+                    _logger.LogWarning("Background sync to server failed.");
+                    _globalNotificationService.AddErrorMessage(
+                        "Failed to sync changes to server. Your changes are saved locally and will be synced on next refresh.");
+                    _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error during background database sync.");
+                _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"]);
+                _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
+            }
+        });
     }
 
     /// <summary>
@@ -477,7 +438,7 @@ public sealed class DbService : IDisposable
         var username = _authService.GetUsername();
         var databaseVersion = await GetCurrentDatabaseVersionAsync();
         var encryptionKey = await GetOrCreateEncryptionKeyAsync();
-        var credentialsCount = await _dbContext.Credentials.Where(x => !x.IsDeleted).CountAsync();
+        var credentialsCount = await _dbContext.Items.Where(x => !x.IsDeleted && x.DeletedAt == null).CountAsync();
         var emailAddresses = await GetEmailClaimListAsync();
         var currentDateTime = DateTime.UtcNow;
         return new Vault
@@ -490,6 +451,7 @@ public sealed class DbService : IDisposable
             CredentialsCount = credentialsCount,
             EmailAddressList = emailAddresses,
             PrivateEmailDomainList = [],
+            HiddenPrivateEmailDomainList = [],
             PublicEmailDomainList = [],
             CreatedAt = currentDateTime,
             UpdatedAt = currentDateTime,
@@ -524,17 +486,19 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Get a list of private email addresses that are used in aliases by this vault.
+    /// Get a list of private email addresses that are used in items by this vault.
     /// </summary>
     /// <returns>List of email addresses.</returns>
     public async Task<List<string>> GetEmailClaimListAsync()
     {
-        // Send list of email addresses that are used in aliases by this vault, so they can be
+        // Send list of email addresses that are used in items by this vault, so they can be
         // claimed on the server.
-        var emailAddresses = await _dbContext.Aliases
-            .Where(a => a.Email != null)
-            .Where(a => !a.IsDeleted)
-            .Select(a => a.Email)
+        var emailAddresses = await _dbContext.FieldValues
+            .Where(fv => fv.FieldKey == FieldKey.LoginEmail)
+            .Where(fv => fv.Value != null)
+            .Where(fv => !fv.IsDeleted)
+            .Where(fv => !fv.Item.IsDeleted && fv.Item.DeletedAt == null)
+            .Select(fv => fv.Value)
             .Distinct()
             .Select(email => email!)
             .ToListAsync();
@@ -668,6 +632,143 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
+    /// Converts a JsonElement to its appropriate .NET value for SQLite parameters.
+    /// </summary>
+    /// <param name="element">The JsonElement to convert.</param>
+    /// <returns>The converted value.</returns>
+    private static object? ConvertJsonElementToValue(JsonElement element)
+    {
+        return element.ValueKind switch
+        {
+            JsonValueKind.String => element.GetString(),
+            JsonValueKind.Number => element.TryGetInt64(out var longVal) ? longVal : element.GetDouble(),
+            JsonValueKind.True => 1L, // SQLite stores booleans as integers
+            JsonValueKind.False => 0L,
+            JsonValueKind.Null => null,
+            JsonValueKind.Undefined => null,
+            _ => element.ToString(),
+        };
+    }
+
+    /// <summary>
+    /// Replace first occurrence of a string.
+    /// </summary>
+    /// <param name="text">The text to search in.</param>
+    /// <param name="search">The string to search for.</param>
+    /// <param name="replace">The replacement string.</param>
+    /// <returns>The modified string.</returns>
+    private static string ReplaceFirst(string text, string search, string replace)
+    {
+        int pos = text.IndexOf(search, StringComparison.Ordinal);
+        if (pos < 0)
+        {
+            return text;
+        }
+
+        return text[..pos] + replace + text[(pos + search.Length)..];
+    }
+
+    /// <summary>
+    /// Fetches the latest vault from server, merges with local changes using Rust WASM, and saves the merged result.
+    /// Called when server responds with "Outdated" status, indicating another client has uploaded a newer vault.
+    /// </summary>
+    /// <returns>Bool which indicates if merge and save was successful.</returns>
+    private async Task<bool> MergeWithServerAndSaveAsync()
+    {
+        try
+        {
+            _logger.LogInformation("Local vault is outdated. Fetching latest vault from server for merge...");
+
+            // Fetch the latest vault from server.
+            var response = await _httpClient.GetFromJsonAsync<VaultGetResponse>("v1/Vault");
+            if (response?.Vault == null || string.IsNullOrEmpty(response.Vault.Blob))
+            {
+                _logger.LogError("Failed to fetch vault from server for merge.");
+                _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"]);
+                return false;
+            }
+
+            var serverVault = response.Vault;
+            _logger.LogInformation("Fetched server vault at revision {Revision}.", serverVault.CurrentRevisionNumber);
+
+            // Store username of the loaded vault in memory to send to server as sanity check when updating the vault later.
+            _authService.StoreUsername(serverVault.Username);
+
+            // Decrypt server vault.
+            var decryptedBase64String = await _jsInteropService.SymmetricDecrypt(serverVault.Blob, _authService.GetEncryptionKeyAsBase64Async());
+
+            // Get the list of syncable table names from Rust core.
+            var tableNames = await _rustCore.GetSyncableTableNamesAsync();
+
+            // Read local tables as JSON.
+            var localTables = await ReadTablesAsJsonAsync(_sqlConnection!, tableNames);
+            _logger.LogDebug("Read {Count} local tables.", localTables.Count);
+
+            // Create a temporary in-memory SQLite database for the server vault.
+            await using var serverConnection = new SqliteConnection("Data Source=:memory:");
+            await serverConnection.OpenAsync();
+            await ImportDbContextFromBase64Async(decryptedBase64String, serverConnection);
+
+            // Read server tables as JSON.
+            var serverTables = await ReadTablesAsJsonAsync(serverConnection, tableNames);
+            _logger.LogDebug("Read {Count} server tables.", serverTables.Count);
+
+            // Create the merge input (local has our pending changes, server has the latest).
+            var mergeInput = new MergeInput
+            {
+                LocalTables = localTables,
+                ServerTables = serverTables,
+            };
+
+            // Call Rust WASM merge (LWW - Last Write Wins based on UpdatedAt).
+            var mergeOutput = await _rustCore.MergeVaultsAsync(mergeInput);
+
+            _logger.LogInformation(
+                "Merge completed: {TablesProcessed} tables, {FromLocal} kept local, {FromServer} from server, {Inserted} inserted, {Conflicts} conflicts.",
+                mergeOutput.Stats.TablesProcessed,
+                mergeOutput.Stats.RecordsFromLocal,
+                mergeOutput.Stats.RecordsFromServer,
+                mergeOutput.Stats.RecordsInserted,
+                mergeOutput.Stats.Conflicts);
+
+            // Execute the SQL statements returned by the merge to update local database.
+            await ExecuteMergeSqlStatementsAsync(mergeOutput.Statements);
+
+            // Verify foreign key integrity after merge.
+            await using (var command = _sqlConnection!.CreateCommand())
+            {
+                command.CommandText = "PRAGMA foreign_key_check;";
+                await using var reader = await command.ExecuteReaderAsync();
+                if (await reader.ReadAsync())
+                {
+                    _logger.LogError("Foreign key violation detected after merge.");
+                    _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"]);
+                    return false;
+                }
+            }
+
+            // Update the db context with the merged database.
+            _dbContext = new AliasClientDbContext(_sqlConnection, log => _logger.LogDebug("{Message}", log));
+
+            // Update the local revision number to the server's revision.
+            // When we upload, server will calculate new revision = this + 1.
+            StoreVaultRevisionNumber(serverVault.CurrentRevisionNumber);
+
+            _logger.LogInformation("Local merge completed. Uploading merged vault to server...");
+
+            // Now save the merged vault to server. This recursive call handles the case where
+            // another client uploaded during our merge (returns Outdated again).
+            return await SaveDatabaseAsync();
+        }
+        catch (Exception ex)
+        {
+            _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"]);
+            _logger.LogError(ex, "Error merging with server vault.");
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Checks if there are any pending migrations.
     /// </summary>
     /// <returns>Bool which indicates if there are any pending migrations.</returns>
@@ -703,12 +804,6 @@ public sealed class DbService : IDisposable
             var response = await _httpClient.GetFromJsonAsync<VaultGetResponse>("v1/Vault");
             if (response is not null)
             {
-                if (response.Status == VaultStatus.MergeRequired)
-                {
-                    _state.UpdateState(DbServiceState.DatabaseStatus.MergeRequired);
-                    return false;
-                }
-
                 var vault = response.Vault!;
                 StoreVaultRevisionNumber(vault.CurrentRevisionNumber);
 
@@ -745,9 +840,6 @@ public sealed class DbService : IDisposable
                     _state.UpdateState(DbServiceState.DatabaseStatus.VaultVersionUnrecognized);
                     return false;
                 }
-
-                // Check if any soft-deleted records exist that are older than 7 days. If so, permanently delete them.
-                await VaultCleanupSoftDeletedRecords();
 
                 _isSuccessfullyInitialized = true;
                 await _settingsService.InitializeAsync(this);
@@ -786,22 +878,11 @@ public sealed class DbService : IDisposable
 
             if (vaultUpdateResponse != null)
             {
-                // If the server responds with a merge required status, we need to merge the local database
-                // with the one on the server before we can continue.
-                if (vaultUpdateResponse.Status == VaultStatus.MergeRequired)
+                if (vaultUpdateResponse.Status == VaultStatus.Outdated)
                 {
-                    _state.UpdateState(DbServiceState.DatabaseStatus.MergeRequired);
-                    return await MergeDatabasesAsync();
-                }
-                else if (vaultUpdateResponse.Status == VaultStatus.Outdated)
-                {
-                    // If the server responds with "outdated", it means we need to re-fetch the latest vault.
-                    // Because of how the WASM client works now, it mutates the current database in memory so we need to
-                    // merge the newly fetched database with the local database. For this we still need the
-                    // merge databases logic. So for outdated responses, we still call the MergeDatabasesAsync() method.
-                    // TODO: when changing datamodel and improving offline mode and batched mutations, update this logic and flow as well.
-                    _state.UpdateState(DbServiceState.DatabaseStatus.MergeRequired);
-                    return await MergeDatabasesAsync();
+                    // Server has a newer vault. Fetch it, merge with our local changes, and re-upload.
+                    // The merge uses LWW (Last Write Wins) based on UpdatedAt timestamps.
+                    return await MergeWithServerAndSaveAsync();
                 }
 
                 _vaultRevisionNumber = vaultUpdateResponse.NewRevisionNumber;
@@ -815,6 +896,63 @@ public sealed class DbService : IDisposable
         {
             _logger.LogError(ex, "Error saving database to server.");
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Prunes expired items from the trash.
+    /// Items that have been in trash (DeletedAt set) for longer than 30 days
+    /// are permanently deleted (IsDeleted = true).
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    private async Task PruneExpiredTrashItemsAsync()
+    {
+        try
+        {
+            // Read table data for prune operation
+            var tableNames = new[] { "Items", "FieldValues", "Attachments", "TotpCodes", "Passkeys" };
+            var tables = await ReadTablesAsJsonAsync(_sqlConnection!, tableNames);
+
+            var pruneInput = new JsInterop.RustCore.PruneInput
+            {
+                Tables = tables,
+                RetentionDays = 30,
+                CurrentTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+            };
+
+            var pruneOutput = await _rustCore.PruneVaultAsync(pruneInput);
+
+            if (pruneOutput.Success && pruneOutput.Statements.Count > 0)
+            {
+                _logger.LogInformation("Pruning {StatementCount} expired items from trash.", pruneOutput.Statements.Count);
+
+                // Execute the SQL statements returned by Rust
+                foreach (var stmt in pruneOutput.Statements)
+                {
+                    await using var command = _sqlConnection!.CreateCommand();
+                    command.CommandText = stmt.Sql;
+
+                    for (int i = 0; i < stmt.Params.Count; i++)
+                    {
+                        var param = stmt.Params[i];
+                        command.Parameters.AddWithValue($"@p{i}", param?.ToString() ?? (object)DBNull.Value);
+                    }
+
+                    // Replace ? placeholders with @p0, @p1, etc.
+                    var parameterizedSql = stmt.Sql;
+                    for (int i = 0; i < stmt.Params.Count; i++)
+                    {
+                        parameterizedSql = ReplaceFirst(parameterizedSql, "?", $"@p{i}");
+                    }
+
+                    command.CommandText = parameterizedSql;
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to prune expired trash items. Continuing with save.");
         }
     }
 
@@ -847,36 +985,132 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
-    /// Check if any soft-deleted records exist that are older than 7 days. If so, permanently delete them.
+    /// Reads all specified tables from a SQLite connection as JSON data for the Rust merge.
     /// </summary>
-    /// <returns>Task.</returns>
-    private async Task VaultCleanupSoftDeletedRecords()
+    /// <param name="connection">The SQLite connection to read from.</param>
+    /// <param name="tableNames">The names of tables to read.</param>
+    /// <returns>List of TableData objects containing the table records.</returns>
+    private async Task<List<TableData>> ReadTablesAsJsonAsync(SqliteConnection connection, string[] tableNames)
     {
-        var cutoffDate = DateTime.UtcNow.AddDays(-7);
-        var deleteCount = 0;
+        var tables = new List<TableData>();
 
-        // Hard delete soft-deleted Credentials older than 7 days
-        deleteCount += await _dbContext.Credentials
-            .Where(c => c.IsDeleted && c.UpdatedAt <= cutoffDate)
-            .ExecuteDeleteAsync();
-
-        // Hard delete soft-deleted Passkeys older than 7 days
-        deleteCount += await _dbContext.Passkeys
-            .Where(p => p.IsDeleted && p.UpdatedAt <= cutoffDate)
-            .ExecuteDeleteAsync();
-
-        // Hard delete soft-deleted Attachments older than 7 days
-        deleteCount += await _dbContext.Attachments
-            .Where(a => a.IsDeleted && a.UpdatedAt <= cutoffDate)
-            .ExecuteDeleteAsync();
-
-        if (deleteCount > 0)
+        foreach (var tableName in tableNames)
         {
-            var success = await SaveDatabaseAsync();
-            if (!success)
+            var tableData = new TableData { Name = tableName };
+
+            // Check if table exists in the database.
+            await using var checkCommand = connection.CreateCommand();
+            checkCommand.CommandText = "SELECT name FROM sqlite_master WHERE type='table' AND name=@tableName";
+            checkCommand.Parameters.AddWithValue("@tableName", tableName);
+            var exists = await checkCommand.ExecuteScalarAsync();
+
+            if (exists == null)
             {
-                throw new DataException("Error saving database to server after record deletion.");
+                // Table doesn't exist, add empty table data.
+                tables.Add(tableData);
+                continue;
             }
+
+            // Get column names for the table.
+            await using var columnsCommand = connection.CreateCommand();
+            columnsCommand.CommandText = $"PRAGMA table_info({tableName})";
+            var columns = new List<string>();
+            await using (var columnsReader = await columnsCommand.ExecuteReaderAsync())
+            {
+                while (await columnsReader.ReadAsync())
+                {
+                    columns.Add(columnsReader.GetString(1));
+                }
+            }
+
+            // Read all records from the table.
+            await using var selectCommand = connection.CreateCommand();
+            selectCommand.CommandText = $"SELECT * FROM {tableName}";
+            await using var reader = await selectCommand.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                var record = new Dictionary<string, object?>();
+                for (var i = 0; i < columns.Count; i++)
+                {
+                    var value = reader.GetValue(i);
+
+                    // Convert DBNull to null for proper JSON serialization.
+                    record[columns[i]] = value == DBNull.Value ? null : value;
+                }
+
+                tableData.Records.Add(record);
+            }
+
+            tables.Add(tableData);
+        }
+
+        return tables;
+    }
+
+    /// <summary>
+    /// Executes the SQL statements returned by the Rust merge operation.
+    /// </summary>
+    /// <param name="statements">The SQL statements to execute.</param>
+    /// <returns>Task.</returns>
+    private async Task ExecuteMergeSqlStatementsAsync(List<SqlStatement> statements)
+    {
+        if (statements.Count == 0)
+        {
+            _logger.LogDebug("No SQL statements to execute from merge.");
+            return;
+        }
+
+        _logger.LogDebug("Executing {Count} SQL statements from merge.", statements.Count);
+
+        // Disable foreign key checks during merge execution.
+        await using (var pragmaCommand = _sqlConnection!.CreateCommand())
+        {
+            pragmaCommand.CommandText = "PRAGMA foreign_keys = OFF;";
+            await pragmaCommand.ExecuteNonQueryAsync();
+        }
+
+        try
+        {
+            foreach (var statement in statements)
+            {
+                await using var command = _sqlConnection!.CreateCommand();
+                command.CommandText = statement.Sql;
+
+                // Add parameters in order (SQLite uses positional parameters with ?).
+                for (var i = 0; i < statement.Params.Count; i++)
+                {
+                    var value = statement.Params[i];
+
+                    // Handle JsonElement values from deserialization.
+                    if (value is JsonElement jsonElement)
+                    {
+                        value = ConvertJsonElementToValue(jsonElement);
+                    }
+
+                    command.Parameters.AddWithValue($"@p{i}", value ?? DBNull.Value);
+                }
+
+                // Replace ? placeholders with named parameters.
+                var paramIndex = 0;
+                var sql = statement.Sql;
+                while (sql.Contains('?'))
+                {
+                    var pos = sql.IndexOf('?');
+                    sql = sql[..pos] + $"@p{paramIndex}" + sql[(pos + 1)..];
+                    paramIndex++;
+                }
+
+                command.CommandText = sql;
+                await command.ExecuteNonQueryAsync();
+            }
+        }
+        finally
+        {
+            // Re-enable foreign key checks.
+            await using var pragmaCommand = _sqlConnection!.CreateCommand();
+            pragmaCommand.CommandText = "PRAGMA foreign_keys = ON;";
+            await pragmaCommand.ExecuteNonQueryAsync();
         }
     }
 

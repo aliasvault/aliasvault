@@ -9,8 +9,9 @@
 @using AliasVault.Client.Auth.Models
 @using AliasVault.Client.Utilities
 @using AliasVault.Cryptography.Client
-@using SecureRemotePassword
+@using AliasVault.Client.Services.JsInterop.RustCore
 @using Microsoft.Extensions.Localization
+@inject RustCoreService RustCoreService
 
 @if (_showTwoFactorAuthStep)
 {
@@ -112,10 +113,22 @@ else
             <a href="/user/forgot-password" class="ml-auto text-sm text-primary-700 hover:underline dark:text-primary-500">@Localizer["LostPasswordLink"]</a>
         </div>
 
-        <button type="submit" class="w-full px-5 py-3 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">@Localizer["LoginToAccountButton"]</button>
+        <div class="flex flex-col gap-4">
+            <button type="submit" id="login-button" class="w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center gap-2">
+                @Localizer["LoginButton"]
+            </button>
+            <button type="button" id="mobile-login-button" @onclick="() => _showMobileLoginModal = true" class="hidden md:flex w-full px-5 py-2 text-base font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-gray-700 items-center justify-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                </svg>
+                @Localizer["MobileDeviceLink"]
+            </button>
+        </div>
+
+
         @if (Config.PublicRegistrationEnabled)
         {
-            <div class="text-sm font-medium text-gray-500 dark:text-gray-400">
+            <div class="text-sm font-medium text-gray-500 dark:text-gray-400 text-center">
                 @Localizer["NoAccountYetText"] <a href="/user/setup" class="text-primary-700 hover:underline dark:text-primary-500">@Localizer["CreateNewVaultLink"]</a>
             </div>
         }
@@ -123,6 +136,11 @@ else
 }
 
 <FooterLogin />
+
+<MobileUnlockModal IsOpen="@_showMobileLoginModal"
+                   OnClose="() => _showMobileLoginModal = false"
+                   OnSuccess="HandleMobileLoginSuccess"
+                   Mode="login" />
 
 @code {
     private readonly LoginFormModel _loginModel = new();
@@ -132,9 +150,11 @@ else
     private ServerValidationErrors _serverValidationErrors = new();
     private bool _showTwoFactorAuthStep;
     private bool _showLoginWithRecoveryCodeStep;
+    private bool _showMobileLoginModal;
 
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Auth.Login", "AliasVault.Client");
     private IStringLocalizer ApiErrorLocalizer => LocalizerFactory.Create("ApiErrors", "AliasVault.Client");
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
 
     private SrpEphemeral _clientEphemeral = new();
     private SrpSession _clientSession = new();
@@ -244,18 +264,22 @@ else
         ];
         }
 
+        // Use srpIdentity from server response if available, otherwise fall back to username.
+        // Note: the fallback can be removed in the future after 0.26.0+ is deployed.
+        var srpIdentity = loginResponse.SrpIdentity ?? username;
+
         // 3. Client derives shared session key.
         _passwordHash = await Encryption.DeriveKeyFromPasswordAsync(_loginModel.Password, loginResponse.Salt, loginResponse.EncryptionType, loginResponse.EncryptionSettings);
         var passwordHashString = BitConverter.ToString(_passwordHash).Replace("-", string.Empty);
 
-        _clientEphemeral = Srp.GenerateEphemeralClient();
-        var privateKey = Srp.DerivePrivateKey(loginResponse.Salt, username, passwordHashString);
-        _clientSession = Srp.DeriveSessionClient(
+        _clientEphemeral = await RustCoreService.SrpGenerateEphemeralAsync();
+        var privateKey = await RustCoreService.SrpDerivePrivateKeyAsync(loginResponse.Salt, srpIdentity, passwordHashString);
+        _clientSession = await RustCoreService.SrpDeriveSessionClientAsync(
             privateKey,
             _clientEphemeral.Secret,
             loginResponse.ServerEphemeral,
             loginResponse.Salt,
-            username);
+            srpIdentity);
 
         // 4. Client sends proof of session key to server.
         result = await Http.PostAsJsonAsync("v1/Auth/validate", new ValidateLoginRequest(username, _loginModel.RememberMe, _clientEphemeral.Public, _clientSession.Proof));
@@ -408,7 +432,7 @@ else
     private async Task<List<string>> ProcessLoginVerify(ValidateLoginResponse validateLoginResponse)
     {
         // 5. Client verifies proof.
-        Srp.VerifySession(_clientEphemeral.Public, _clientSession, validateLoginResponse.ServerSessionProof);
+        await RustCoreService.SrpVerifySessionAsync(_clientEphemeral.Public, _clientSession, validateLoginResponse.ServerSessionProof);
 
         // Store the tokens in local storage.
         await AuthService.StoreAccessTokenAsync(validateLoginResponse.Token!.Token);
@@ -452,6 +476,80 @@ else
         else
         {
             _serverValidationErrors.Clear();
+        }
+    }
+
+    /// <summary>
+    /// Handle successful mobile login.
+    /// </summary>
+    private async Task HandleMobileLoginSuccess(MobileLoginResult result)
+    {
+        _loadingIndicator.Show(Localizer["LoggingInMessage"]);
+        _serverValidationErrors.Clear();
+
+        try
+        {
+            // Clear global messages
+            GlobalNotificationService.ClearMessages();
+
+            // Call /login endpoint to retrieve salt and encryption settings
+            var loginInitiateRequest = new { username = result.Username };
+            var loginResponse = await Http.PostAsJsonAsync("v1/Auth/login", loginInitiateRequest);
+
+            if (!loginResponse.IsSuccessStatusCode)
+            {
+                _serverValidationErrors.AddError(Localizer["LoginErrorMessage"]);
+                return;
+            }
+
+            var loginData = await loginResponse.Content.ReadFromJsonAsync<LoginInitiateResponse>();
+            if (loginData == null)
+            {
+                _serverValidationErrors.AddError(Localizer["LoginErrorMessage"]);
+                return;
+            }
+
+            // Store the tokens in local storage
+            await AuthService.StoreAccessTokenAsync(result.Token);
+            await AuthService.StoreRefreshTokenAsync(result.RefreshToken);
+
+            // Convert decryption key from base64 string to byte array
+            var decryptionKeyBytes = Convert.FromBase64String(result.DecryptionKey);
+
+            // Store the encryption key in memory
+            await AuthService.StoreEncryptionKeyAsync(decryptionKeyBytes);
+
+            await AuthStateProvider.GetAuthenticationStateAsync();
+            GlobalNotificationService.ClearMessages();
+
+            // Redirect to the page the user was trying to access before if set
+            var localStorageReturnUrl = await LocalStorage.GetItemAsync<string>(ReturnUrlKey);
+            if (!string.IsNullOrEmpty(localStorageReturnUrl))
+            {
+                await LocalStorage.RemoveItemAsync(ReturnUrlKey);
+                NavigationManager.NavigateTo(localStorageReturnUrl);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+#if DEBUG
+        catch (Exception ex)
+        {
+            // If in debug mode show the actual exception.
+            _serverValidationErrors.AddError(ex.ToString());
+        }
+#else
+        catch
+        {
+            // If in release mode show a generic error.
+            _serverValidationErrors.AddError(Localizer["LoginErrorMessage"]);
+        }
+#endif
+        finally
+        {
+            _loadingIndicator.Hide();
         }
     }
 

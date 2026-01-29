@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="LoggingInWithWebAuthn" xml:space="preserve">
-    <value>正在使用 WebAuthn 登录…</value>
+    <value>正在使用通行密钥登录…</value>
     <comment>Message shown while WebAuthn authentication is in progress</comment>
   </data>
   <data name="QuickUnlockDescription" xml:space="preserve">
-    <value>使用指纹、Face ID 或安全密钥快速解锁您的密码库。或者使用密码作为备用方式登录。</value>
+    <value>使用通行密钥快速解锁您的密码库。或者使用密码作为备用方式登录。</value>
     <comment>Description explaining WebAuthn unlock options</comment>
   </data>
   <data name="UnlockWithWebAuthn" xml:space="preserve">
-    <value>使用 WebAuthn 解锁</value>
+    <value>使用通行密钥解锁</value>
     <comment>Button text for WebAuthn unlock</comment>
   </data>
   <data name="UnlockWithPassword" xml:space="preserve">
@@ -91,7 +91,7 @@
     <comment>Text before logout link</comment>
   </data>
   <data name="LogOutLink" xml:space="preserve">
-    <value>登出</value>
+    <value>退出登录</value>
     <comment>Link text for logout</comment>
   </data>
   <data name="UnlockingVaultMessage" xml:space="preserve">
@@ -103,7 +103,7 @@
     <comment>Error message for unlock request processing</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
-    <value>密码不正确。请尝试重新输入密码，或登出后重新登录。</value>
+    <value>密码不正确。请尝试重新输入密码，或退出登录后重新登录。</value>
     <comment>Error message for incorrect password</comment>
   </data>
   <data name="SessionTimedOutError" xml:space="preserve">
@@ -121,5 +121,9 @@
   <data name="GenericUnlockError" xml:space="preserve">
     <value>处理登录请求时发生错误。（稍后）再试一次。</value>
     <comment>Generic error message for unlock failures</comment>
+  </data>
+  <data name="UnlockWithMobileButton" xml:space="preserve">
+    <value>使用移动应用解锁</value>
+    <comment>Button text for unlocking with mobile app</comment>
   </data>
 </root>

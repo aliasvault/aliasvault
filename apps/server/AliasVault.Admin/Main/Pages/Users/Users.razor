@@ -11,6 +11,12 @@
     Title="@(TotalRecords > 0 ? $"Users ({TotalRecords:N0})" : "Users")"
     Description="This page shows an overview of all registered users and the associated vaults.">
     <CustomActions>
+        <a href="mobile-login-history" class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 dark:hover:text-gray-200 mr-3">
+            <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            Mobile Login History
+        </a>
         <RefreshButton OnClick="() => RefreshData(CancellationToken.None)" ButtonText="Refresh" />
     </CustomActions>
 </PageHeader>
@@ -212,11 +218,7 @@ else
                         v.RevisionNumber,
                         CredentialCount = v.CredentialsCount,
                     }),
-                    EmailClaims = u.EmailClaims.Select(ec => new
-                    {
-                        ec.CreatedAt,
-                        ec.Address
-                    }),
+                    EmailClaimCount = u.EmailClaims.Count(),
                 })
                 .ToListAsync(cancellationToken);
 
@@ -241,7 +243,7 @@ else
                     IsInactive = isInactive,
                     VaultCount = user.Vaults.Count(),
                     CredentialCount = user.Vaults.OrderByDescending(x => x.RevisionNumber).First().CredentialCount,
-                    EmailClaimCount = user.EmailClaims.Count(),
+                    EmailClaimCount = user.EmailClaimCount,
                     VaultStorageInKb = user.Vaults.Sum(x => x.FileSize),
                 };
             }).ToList();

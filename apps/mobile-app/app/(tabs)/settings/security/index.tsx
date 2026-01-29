@@ -57,11 +57,12 @@ export default function SecuritySettingsScreen() : React.ReactNode {
   });
 
   return (
-    <ThemedContainer>
+    <ThemedContainer testID="security-settings-screen">
       <ThemedScrollView>
         <SettingsHeader title={t('settings.securitySettings.title')} description={t('settings.securitySettings.description')} icon="shield-checkmark" />
         <View style={styles.section}>
           <TouchableOpacity
+            testID="change-password-link"
             style={styles.settingItem}
             onPress={() => router.push('/settings/security/change-password')}
           >

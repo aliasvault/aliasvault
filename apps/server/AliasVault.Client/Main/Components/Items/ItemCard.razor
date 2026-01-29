@@ -1,0 +1,121 @@
+@using AliasVault.Client.Main.Models
+@using AliasClientDb.Models
+@inject NavigationManager NavigationManager
+
+@* ItemCard component - displays an item in a card format with appropriate icon and information *@
+<div @onclick="ShowDetails" class="credential-card overflow-hidden p-4 space-y-2 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700
+ dark:bg-gray-800 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors duration-200">
+    <div class="px-4 py-2 text-gray-400 rounded text-center flex flex-col items-center">
+        <div class="mb-2">
+            <ItemIcon
+                ItemType="@Obj.ItemType"
+                Logo="@Obj.Logo"
+                CardNumber="@Obj.CardNumber"
+                AltText="@GetServiceName()"
+                SizeClass="w-12 h-12" />
+        </div>
+        <div class="flex items-center justify-center gap-1.5 w-full">
+            <div class="text-gray-900 dark:text-gray-100 break-words truncate max-w-[150px]" title="@GetServiceName()">@GetServiceName()</div>
+            @if (Obj.HasTotp)
+            {
+                <svg class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 flex-shrink-0" viewBox="0 -960 960 960" fill="currentColor" aria-label="Has TOTP">
+                    <path d="M160-160q-33 0-56.5-23.5T80-240v-480q0-33 23.5-56.5T160-800h640q33 0 56.5 23.5T880-720v480q0 33-23.5 56.5T800-160H160Zm100-200h46v-240h-36l-70 50 24 36 36-26v180Zm124 0h156v-40h-94l-2-2q21-20 34.5-34t21.5-22q18-18 27-36t9-38q0-29-22-48.5T458-600q-26 0-47 15t-29 39l40 16q5-13 14.5-20.5T458-558q15 0 24.5 8t9.5 20q0 11-4 20.5T470-486l-32 32-54 54v40Zm296 0q36 0 58-20t22-52q0-18-10-32t-28-22v-2q14-8 22-20.5t8-29.5q0-27-21-44.5T678-600q-25 0-46.5 14.5T604-550l40 16q4-12 13-19t21-7q13 0 21.5 7.5T708-534q0 14-10 22t-26 8h-18v40h20q20 0 31 8t11 22q0 13-11 22.5t-25 9.5q-17 0-26-7.5T638-436l-40 16q7 29 28.5 44.5T680-360ZM160-240h640v-480H160v480Zm0 0v-480 480Z"/>
+                </svg>
+            }
+            @if (Obj.HasPasskey)
+            {
+                <svg class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Has passkey">
+                    <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4" />
+                </svg>
+            }
+            @if (Obj.HasAttachment)
+            {
+                <svg class="w-3.5 h-3.5 text-gray-500 dark:text-gray-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-label="Has attachments">
+                    <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+                </svg>
+            }
+        </div>
+        <div class="text-gray-500 dark:text-gray-400 break-words w-full text-sm truncate" title="@GetDisplayText()">@GetDisplayText()</div>
+        @if (ShowFolderPath && !string.IsNullOrEmpty(Obj.FolderName))
+        {
+            <div class="text-gray-400 dark:text-gray-500 text-xs mt-1 flex items-center gap-1">
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/>
+                </svg>
+                <span class="truncate max-w-[100px]">@Obj.FolderName</span>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Gets or sets the item list entry object to show.
+    /// </summary>
+    [Parameter]
+    public required ItemListEntry Obj { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to show the folder path (used when searching).
+    /// </summary>
+    [Parameter]
+    public bool ShowFolderPath { get; set; }
+
+    /// <summary>
+    /// Gets the display text for the item, showing username by default,
+    /// falling back to email. For credit cards, shows cardholder name or masked number.
+    /// </summary>
+    private string GetDisplayText()
+    {
+        if (Obj.ItemType == ItemType.CreditCard)
+        {
+            // For credit cards, show masked card number if available
+            if (!string.IsNullOrEmpty(Obj.CardNumber) && Obj.CardNumber.Length >= 4)
+            {
+                return "•••• " + Obj.CardNumber[^4..];
+            }
+
+            return string.Empty;
+        }
+
+        if (Obj.ItemType == ItemType.Note)
+        {
+            // For notes, no secondary text needed
+            return string.Empty;
+        }
+
+        // For Login/Alias, prioritize username then email
+        if (!string.IsNullOrEmpty(Obj.Username))
+        {
+            return Obj.Username;
+        }
+
+        if (!string.IsNullOrEmpty(Obj.Email))
+        {
+            return Obj.Email;
+        }
+
+        return string.Empty;
+    }
+
+    /// <summary>
+    /// Get the service name (item name) for the item.
+    /// </summary>
+    private string GetServiceName()
+    {
+        if (!string.IsNullOrEmpty(Obj.Service))
+        {
+            return Obj.Service;
+        }
+
+        return "Untitled";
+    }
+
+    /// <summary>
+    /// Navigate to the details page of the item.
+    /// </summary>
+    private void ShowDetails()
+    {
+        NavigationManager.NavigateTo($"/items/{Obj.Id}");
+    }
+}

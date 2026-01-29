@@ -19,7 +19,7 @@ npm run zip:firefox
 # Build the Edge extension (saves in dist/edge-mv3)
 npm run zip:edge
 
-# Build the Safari extension (saves in dist/safari-mv2 which is referenced by the dist/safari-xcode/AliasVault.xcodeproj project)
+# Build the Safari extension (saves in dist/safari-mv2 which is referenced by the safari-xcode/AliasVault.xcodeproj project)
 npm run build:safari
-# Open the dist/safari-xcode/AliasVault.xcodeproj project in MacOS Xcode and run the project. This will install the extension to your Safari browser locally.
+# Open the safari-xcode/AliasVault.xcodeproj project in MacOS Xcode and run the project. This will install the extension to your Safari browser locally.
 ```

@@ -1,0 +1,2 @@
+- Android Passkey compatibility improvements
+- Add French and Spanish language options

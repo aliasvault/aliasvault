@@ -7,6 +7,7 @@ import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
 
+import { ServerSyncIndicator } from '@/components/ServerSyncIndicator';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { IconSymbolName } from '@/components/ui/IconSymbolName';
@@ -72,71 +73,79 @@ export default function TabLayout() : React.ReactNode {
   });
 
   return (
-    <Tabs
-      screenListeners={{
-        /**
-         * Listener for the tab press event.
-         * @param {Object} e - The event object.
-         * @param {string} e.target - The target pathname.
-         */
-        tabPress: (e) => {
-          const targetPathname = (e.target as string).split('-')[0];
-          emitter.emit('tabPress', targetPathname);
-        },
-      }}
-      screenOptions={{
-        tabBarActiveTintColor: colors.tint,
-        headerShown: false,
-        tabBarBackground: TabBarBackground,
-        tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
+    <>
+      <Tabs
+        screenListeners={{
+          /**
+           * Listener for the tab press event.
+           * @param {Object} e - The event object.
+           * @param {string} e.target - The target pathname.
+           */
+          tabPress: (e) => {
+            const targetPathname = (e.target as string).split('-')[0];
+            emitter.emit('tabPress', targetPathname);
           },
-          android: {
-            backgroundColor: colors.tabBarBackground,
-          },
-          default: {},
-        }),
-      }}>
-      <Tabs.Screen
-        name="credentials"
-        options={{
-          title: t('navigation.credentials'),
-          /**
-           * Icon for the credentials tab.
-           */
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name={IconSymbolName.Key} color={color} />,
         }}
-      />
-      <Tabs.Screen
-        name="emails"
-        options={{
-          title: t('navigation.emails'),
-          /**
-           * Icon for the emails tab.
-           */
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name={IconSymbolName.Envelope} color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: t('navigation.settings'),
-          /**
-           * Icon for the settings tab.
-           */
-          tabBarIcon: ({ color }) => (
-            <View style={styles.iconContainer}>
-              <IconSymbol size={28} name={IconSymbolName.Gear} color={color} />
-              {authContext.shouldShowAutofillReminder && (
-                <View style={styles.iconNotificationContainer}>
-                  <ThemedText style={styles.iconNotificationText}>1</ThemedText>
-                </View>
-              )}
-            </View>
-          )
-        }}
-      />
-    </Tabs>
+        screenOptions={{
+          tabBarActiveTintColor: colors.tint,
+          headerShown: false,
+          tabBarBackground: TabBarBackground,
+          tabBarStyle: Platform.select({
+            ios: {
+              position: 'absolute',
+            },
+            android: {
+              backgroundColor: colors.tabBarBackground,
+            },
+            default: {},
+          }),
+        }}>
+        <Tabs.Screen
+          name="items"
+          options={{
+            title: t('navigation.vault'),
+            tabBarTestID: 'tab-items',
+            /**
+             * Icon for the vault tab.
+             */
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name={IconSymbolName.Key} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="emails"
+          options={{
+            title: t('navigation.emails'),
+            tabBarTestID: 'tab-emails',
+            /**
+             * Icon for the emails tab.
+             */
+            tabBarIcon: ({ color }) => <IconSymbol size={28} name={IconSymbolName.Envelope} color={color} />,
+          }}
+        />
+        <Tabs.Screen
+          name="settings"
+          options={{
+            title: t('navigation.settings'),
+            tabBarTestID: 'tab-settings',
+            /**
+             * Icon for the settings tab.
+             */
+            tabBarIcon: ({ color }) => (
+              <View style={styles.iconContainer}>
+                <IconSymbol size={28} name={IconSymbolName.Gear} color={color} />
+                {authContext.shouldShowAutofillReminder && (
+                  <View style={styles.iconNotificationContainer}>
+                    <ThemedText style={styles.iconNotificationText}>1</ThemedText>
+                  </View>
+                )}
+              </View>
+            )
+          }}
+        />
+      </Tabs>
+
+      {/* Floating sync indicator - visible on all tabs */}
+      <ServerSyncIndicator />
+    </>
   );
 }

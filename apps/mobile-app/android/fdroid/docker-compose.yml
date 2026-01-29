@@ -14,6 +14,8 @@ services:
       - ./net.aliasvault.app.yml:/net.aliasvault.app.yml
       # Add build script to the container
       - ./scripts/build.sh:/build.sh:Z
+      # Bind the outputs directory to capture APK build output
+      - ./outputs:/outputs:rw
     # Increase memory limits for Gradle builds
     shm_size: '2gb'
     mem_limit: 12g

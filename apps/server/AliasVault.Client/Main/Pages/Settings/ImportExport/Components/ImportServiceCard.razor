@@ -1,6 +1,7 @@
 @inject ILogger<ImportServiceCard> Logger
-@inject CredentialService CredentialService
+@inject ItemService ItemService
 @inject DbService DbService
+@inject FolderService FolderService
 @inject NavigationManager NavigationManager
 @inject GlobalNotificationService GlobalNotificationService
 @inject HttpClient HttpClient
@@ -9,6 +10,8 @@
 @using AliasVault.ImportExport.Importers
 @using AliasVault.ImportExport.Models
 @using AliasVault.Shared.Models.WebApi.Favicon
+@using AliasClientDb
+@using AliasClientDb.Models
 
 <div @onclick="OpenImportModal" class="flex flex-col p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
     <div class="flex items-center">
@@ -126,11 +129,19 @@
                             </div>
                             @if (ImportedCredentials.Count > 0)
                             {
-                                <div class="mb-4">
-                                    <label class="inline-flex items-center">
+                                <div class="mb-4 space-y-2">
+                                    <label class="flex items-center">
                                         <input type="checkbox" @bind="ExtractFavicons" class="form-checkbox h-4 w-4 text-primary-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700">
                                         <span class="ml-2 text-gray-700 dark:text-gray-300">Extract favicons for services with URLs</span>
                                     </label>
+                                    @if (DetectedFolderCount > 0)
+                                    {
+                                        <label class="flex items-center">
+                                            <input type="checkbox" @bind="ImportFolders" class="form-checkbox h-4 w-4 text-primary-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700">
+                                            <span class="ml-2 text-gray-700 dark:text-gray-300">@Localizer["ImportFoldersLabel"]</span>
+                                            <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">(@string.Format(Localizer["FoldersDetected"], DetectedFolderCount))</span>
+                                        </label>
+                                    }
                                 </div>
                             }
                             <div class="flex justify-end mt-6 space-x-2">
@@ -150,10 +161,7 @@
                                     {
                                         <div class="text-center">
                                             <LoadingIndicator />
-                                            <p class="mt-4 text-gray-700 dark:text-gray-300">Extracting favicons... @(FaviconExtractionProgress)/@(TotalFaviconsToExtract)</p>
-                                            <div class="w-full bg-gray-200 rounded-full h-2.5 mt-4 dark:bg-gray-700">
-                                                <div class="bg-primary-600 h-2.5 rounded-full transition-all duration-300" style="width: @(GetFaviconProgressPercentage())%"></div>
-                                            </div>
+                                            <p class="mt-4 text-gray-700 dark:text-gray-300">Extracting favicons... @(FaviconExtractionProgress) / @(TotalFaviconsToExtract)</p>
                                             <div class="mt-4">
                                                 <Button OnClick="@CancelFaviconExtraction" Color="secondary">Cancel</Button>
                                             </div>
@@ -246,6 +254,9 @@
     private List<ImportedCredential> ImportedCredentials { get; set; } = new();
 
     private bool ExtractFavicons { get; set; } = true;
+    private bool ImportFolders { get; set; } = true;
+    private int DetectedFolderCount { get; set; } = 0;
+    private HashSet<string> DetectedFolderNames { get; set; } = new();
     private bool IsExtractingFavicons { get; set; }
     private int FaviconExtractionProgress { get; set; }
     private int TotalFaviconsToExtract { get; set; }
@@ -389,7 +400,8 @@
     }
 
     /// <summary>
-    /// Extracts favicons for credentials.
+    /// Extracts favicons for credentials. Uses domain-based deduplication to avoid
+    /// fetching the same favicon multiple times for the same domain.
     /// </summary>
     private async Task ExtractFaviconsForCredentials()
     {
@@ -400,6 +412,10 @@
         StateHasChanged();
 
         var credentialsWithUrls = ImportedCredentials.Where(c => !string.IsNullOrEmpty(c.ServiceUrl)).ToList();
+
+        // Group credentials by normalized domain to avoid duplicate fetches
+        var processedDomains = new HashSet<string>();
+
         TotalFaviconsToExtract = credentialsWithUrls.Count;
 
         foreach (var credential in credentialsWithUrls)
@@ -409,24 +425,52 @@
                 break;
             }
 
-            await ExtractFaviconForCredential(credential);
+            // Extract normalized domain for deduplication
+            try
+            {
+                var domain = new Uri(credential.ServiceUrl!).Host.ToLowerInvariant();
+                if (domain.StartsWith("www."))
+                {
+                    domain = domain[4..];
+                }
+
+                // Skip if we've already fetched a favicon for this domain
+                if (!processedDomains.Contains(domain))
+                {
+                    processedDomains.Add(domain);
+                    await ExtractFaviconForCredential(credential);
+                }
+            }
+            catch
+            {
+                // Invalid URL - skip
+            }
+
             FaviconExtractionProgress++;
             StateHasChanged();
         }
     }
 
     /// <summary>
-    /// Extracts a favicon for a credential.
+    /// Extracts a favicon for a credential. Stores by normalized domain for deduplication.
     /// </summary>
     /// <param name="credential">The credential to extract the favicon for.</param>
     private async Task ExtractFaviconForCredential(ImportedCredential credential)
     {
         try
         {
-            var apiReturn = await HttpClient.GetFromJsonAsync<FaviconExtractModel>($"v1/Favicon/Extract?url={credential.ServiceUrl!}");
+            // Extract normalized domain for storage key
+            var domain = new Uri(credential.ServiceUrl!).Host.ToLowerInvariant();
+            if (domain.StartsWith("www."))
+            {
+                domain = domain[4..];
+            }
+
+            var apiReturn = await HttpClient.GetFromJsonAsync<FaviconExtractModel>($"v1/Favicon/Extract?url={Uri.EscapeDataString(credential.ServiceUrl!)}");
             if (apiReturn?.Image is not null)
             {
-                ExtractedFavicons[credential.ServiceUrl!] = apiReturn.Image;
+                // Store by normalized domain for deduplication
+                ExtractedFavicons[domain] = apiReturn.Image;
             }
         }
         catch
@@ -436,14 +480,21 @@
     }
 
     /// <summary>
-    /// Imports the credentials to the database.
+    /// Imports the items to the database.
     /// </summary>
     private async Task ImportCredentialsToDatabase()
     {
-        var credentials = BaseImporter.ConvertToCredential(ImportedCredentials);
-        foreach (var credential in credentials)
+        // Build folder mapping if folder import is enabled
+        Dictionary<string, Guid>? folderNameToId = null;
+        if (ImportFolders && DetectedFolderCount > 0)
         {
-            await ProcessSingleCredential(credential);
+            folderNameToId = await CreateOrGetFolders();
+        }
+
+        var items = BaseImporter.ConvertToItem(ImportedCredentials, folderNameToId);
+        foreach (var item in items)
+        {
+            await ProcessSingleItem(item);
             await Task.Delay(2); // Small delay to avoid blocking the UI thread
         }
 
@@ -451,7 +502,7 @@
         if (success)
         {
             GlobalNotificationService.AddSuccessMessage($"Successfully imported {ImportedCredentials.Count} credentials.");
-            NavigationManager.NavigateTo("/credentials");
+            NavigationManager.NavigateTo("/items");
         }
         else
         {
@@ -460,16 +511,84 @@
     }
 
     /// <summary>
-    /// Processes a single credential.
+    /// Creates folders that don't exist and returns a mapping of folder names to folder IDs.
     /// </summary>
-    /// <param name="credential">The credential to process.</param>
-    private async Task ProcessSingleCredential(Credential credential)
+    private async Task<Dictionary<string, Guid>> CreateOrGetFolders()
     {
-        if (!string.IsNullOrEmpty(credential.Service.Url) && ExtractedFavicons.TryGetValue(credential.Service.Url, out var favicon))
+        var folderNameToId = new Dictionary<string, Guid>(StringComparer.OrdinalIgnoreCase);
+        var existingFolders = await FolderService.GetAllWithCountsAsync();
+
+        foreach (var folderName in DetectedFolderNames)
         {
-            credential.Service.Logo = favicon;
+            // Check if folder already exists (case-insensitive)
+            var existingFolder = existingFolders.FirstOrDefault(f =>
+                f.Name.Equals(folderName, StringComparison.OrdinalIgnoreCase));
+
+            if (existingFolder != null)
+            {
+                folderNameToId[folderName] = existingFolder.Id;
+            }
+            else
+            {
+                // Create new folder - CreateAsync returns the new folder ID directly
+                var newFolderId = await FolderService.CreateAsync(folderName);
+                folderNameToId[folderName] = newFolderId;
+            }
         }
-        await CredentialService.InsertEntryAsync(credential, false, false);
+
+        return folderNameToId;
+    }
+
+    /// <summary>
+    /// Processes a single item.
+    /// </summary>
+    /// <param name="item">The item to process.</param>
+    private async Task ProcessSingleItem(Item item)
+    {
+        var url = ItemService.GetFieldValue(item, FieldKey.LoginUrl);
+        if (!string.IsNullOrEmpty(url))
+        {
+            try
+            {
+                // Extract and normalize domain for deduplication
+                var domain = new Uri(url).Host.ToLowerInvariant();
+                if (domain.StartsWith("www."))
+                {
+                    domain = domain[4..];
+                }
+
+                var context = await DbService.GetDbContextAsync();
+
+                // Check if logo already exists for this source (deduplication)
+                var existingLogo = await context.Logos.FirstOrDefaultAsync(l => l.Source == domain);
+                if (existingLogo != null)
+                {
+                    // Reuse existing logo
+                    item.LogoId = existingLogo.Id;
+                }
+                else if (ExtractedFavicons.TryGetValue(domain, out var favicon))
+                {
+                    // Create new logo from extracted favicon
+                    var logo = new Logo
+                    {
+                        Id = Guid.NewGuid(),
+                        Source = domain,
+                        FileData = favicon,
+                        MimeType = "image/png",
+                        FetchedAt = DateTime.UtcNow,
+                        CreatedAt = DateTime.UtcNow,
+                        UpdatedAt = DateTime.UtcNow
+                    };
+                    context.Logos.Add(logo);
+                    item.LogoId = logo.Id;
+                }
+            }
+            catch
+            {
+                // Invalid URL - skip logo assignment
+            }
+        }
+        await ItemService.InsertEntryAsync(item, false, false);
     }
 
     /// <summary>
@@ -529,22 +648,28 @@
     }
 
     /// <summary>
-    /// Detects and removes duplicates from the import list.
+    /// Detects and removes duplicates from the import list, and also detects folders.
     /// </summary>
     private async Task DetectAndRemoveDuplicates()
     {
-        var existingCredentials = await CredentialService.LoadAllAsync();
+        var existingItems = await ItemService.LoadAllAsync();
         var duplicates = ImportedCredentials.Where(imported =>
-            existingCredentials.Any(existing =>
-                existing.Service.Name != null && existing.Service.Name.Equals(imported.ServiceName, StringComparison.OrdinalIgnoreCase) &&
-                existing.Username != null && existing.Username.Equals(imported.Username, StringComparison.OrdinalIgnoreCase) &&
-                existing.Passwords.Any(p => p.Value != null && p.Value.Equals(imported.Password, StringComparison.OrdinalIgnoreCase))
+            existingItems.Any(existing =>
+                existing.Name != null && existing.Name.Equals(imported.ServiceName, StringComparison.OrdinalIgnoreCase) &&
+                ItemService.GetFieldValue(existing, FieldKey.LoginUsername) != null &&
+                ItemService.GetFieldValue(existing, FieldKey.LoginUsername)!.Equals(imported.Username, StringComparison.OrdinalIgnoreCase) &&
+                ItemService.GetFieldValue(existing, FieldKey.LoginPassword) != null &&
+                ItemService.GetFieldValue(existing, FieldKey.LoginPassword)!.Equals(imported.Password, StringComparison.OrdinalIgnoreCase)
             )).ToList();
 
         DuplicateCredentialsCount = duplicates.Count;
 
         // Remove duplicates from the import list
         ImportedCredentials = ImportedCredentials.Except(duplicates).ToList();
+
+        // Detect folders in the import
+        DetectedFolderNames = BaseImporter.CollectUniqueFolderNames(ImportedCredentials);
+        DetectedFolderCount = DetectedFolderNames.Count;
     }
 
     /// <summary>
@@ -554,15 +679,6 @@
     private int GetProgressPercentage()
     {
         return (int)CurrentStep * 100 / (Enum.GetValues(typeof(ImportStep)).Length - 1);
-    }
-
-    private int GetFaviconProgressPercentage()
-    {
-        if (TotalFaviconsToExtract == 0) {
-            return 0;
-        }
-
-        return (FaviconExtractionProgress * 100) / TotalFaviconsToExtract;
     }
 
     private void CancelFaviconExtraction()

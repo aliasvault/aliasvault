@@ -71,27 +71,19 @@
   </data>
   <!-- Alias Settings Section -->
   <data name="AliasSettingsTitle">
-    <value>别名设置</value>
-    <comment>Title for alias settings section</comment>
+    <value>身份生成器设置</value>
+    <comment>Title for identity generator settings section</comment>
   </data>
   <data name="AliasGenerationLanguageLabel">
-    <value>别名生成语言</value>
+    <value>语种</value>
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
     <value>设置生成新身份时将使用的默认语言。</value>
     <comment>Description for alias generation language setting</comment>
   </data>
-  <data name="EnglishOption">
-    <value>英语</value>
-    <comment>English language option</comment>
-  </data>
-  <data name="DutchOption">
-    <value>荷兰语</value>
-    <comment>Dutch language option</comment>
-  </data>
   <data name="AliasGenerationGenderLabel">
-    <value>别名生成性别</value>
+    <value>性别</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
@@ -110,13 +102,21 @@
     <value>女性</value>
     <comment>Female gender option</comment>
   </data>
+  <data name="AliasGenerationAgeRangeLabel">
+    <value>年龄范围</value>
+    <comment>Label for alias generation age range setting</comment>
+  </data>
+  <data name="AliasGenerationAgeRangeDescription">
+    <value>设置生成新身份的默认年龄范围。这将影响分配给已生成身份的出生日期。</value>
+    <comment>Description for alias generation age range setting</comment>
+  </data>
   <!-- Clipboard Settings Section -->
   <data name="ClipboardSettingsTitle">
-    <value>剪切板设置</value>
+    <value>剪贴板设置</value>
     <comment>Title for clipboard settings section</comment>
   </data>
   <data name="ClipboardClearSecondsLabel">
-    <value>复制后自动清除剪切板</value>
+    <value>复制后自动清除剪贴板</value>
     <comment>Label for clipboard clear seconds setting</comment>
   </data>
   <data name="ClipboardClearSecondsDescription">

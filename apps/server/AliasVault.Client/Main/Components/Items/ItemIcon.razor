@@ -1,0 +1,138 @@
+@using AliasVault.Client.Main.Models
+@using AliasClientDb.Models
+@using AliasVault.Client.Main.Utilities
+@using ItemTypeClass = AliasClientDb.Models.ItemType
+
+@* ItemIcon component - displays contextually appropriate icons based on item type *@
+@* Uses centralized ItemTypeIcons for SVG definitions (auto-generated from core/models) *@
+@* For Login/Alias: Uses the Logo field if available, falls back to key placeholder *@
+@* For CreditCard: Shows card brand icons (Visa, MC, Amex, Discover) based on card number *@
+@* For Note: Shows a document/note icon *@
+
+@if (ItemType == ItemTypeClass.Note)
+{
+    @* Note icon - using centralized definition *@
+    <span class="@SizeClass flex-shrink-0 inline-block [&>svg]:w-full [&>svg]:h-full">@((MarkupString)ItemTypeIcons.Note)</span>
+}
+else if (ItemType == ItemTypeClass.CreditCard)
+{
+    @* Credit card icon - detect brand and show appropriate icon from centralized definitions *@
+    <span class="@SizeClass flex-shrink-0 inline-block [&>svg]:w-full [&>svg]:h-full">@((MarkupString)GetCardIconSvg())</span>
+}
+else if (Logo != null && Logo.Length > 0)
+{
+    @* Login/Alias with logo *@
+    <img src="@GetLogoSrc()" alt="@AltText" class="@SizeClass flex-shrink-0 rounded-lg" @onerror="OnImageError" />
+}
+else
+{
+    @* Default placeholder - key icon for Login/Alias without logo *@
+    <span class="@SizeClass flex-shrink-0 inline-block [&>svg]:w-full [&>svg]:h-full">@((MarkupString)ItemTypeIcons.Placeholder)</span>
+}
+
+@code {
+    /// <summary>
+    /// Gets or sets the item type (Login, Alias, CreditCard, Note).
+    /// </summary>
+    [Parameter]
+    public string ItemType { get; set; } = ItemTypeClass.Login;
+
+    /// <summary>
+    /// Gets or sets the logo bytes for Login/Alias items.
+    /// </summary>
+    [Parameter]
+    public byte[]? Logo { get; set; }
+
+    /// <summary>
+    /// Gets or sets the card number for CreditCard items (used for brand detection).
+    /// </summary>
+    [Parameter]
+    public string? CardNumber { get; set; }
+
+    /// <summary>
+    /// Gets or sets the alt text for the image.
+    /// </summary>
+    [Parameter]
+    public string AltText { get; set; } = "Item";
+
+    /// <summary>
+    /// Gets or sets the size class for the icon (Tailwind CSS classes).
+    /// </summary>
+    [Parameter]
+    public string SizeClass { get; set; } = "w-10 h-10";
+
+    /// <summary>
+    /// Gets or sets whether to show placeholder on image error.
+    /// </summary>
+    private bool ShowPlaceholder { get; set; }
+
+    /// <summary>
+    /// Converts logo bytes to data URL.
+    /// </summary>
+    private string GetLogoSrc()
+    {
+        if (Logo == null || Logo.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        var mimeType = DetectMimeType(Logo);
+        var base64 = Convert.ToBase64String(Logo);
+        return $"data:{mimeType};base64,{base64}";
+    }
+
+    /// <summary>
+    /// Detect MIME type from file signature (magic numbers).
+    /// </summary>
+    private static string DetectMimeType(byte[] bytes)
+    {
+        if (bytes.Length >= 5)
+        {
+            var header = System.Text.Encoding.UTF8.GetString(bytes, 0, 5).ToLowerInvariant();
+            if (header.Contains("<?xml") || header.Contains("<svg"))
+            {
+                return "image/svg+xml";
+            }
+        }
+
+        if (bytes.Length >= 4)
+        {
+            if (bytes[0] == 0x00 && bytes[1] == 0x00 && bytes[2] == 0x01 && bytes[3] == 0x00)
+            {
+                return "image/x-icon";
+            }
+
+            if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47)
+            {
+                return "image/png";
+            }
+        }
+
+        return "image/x-icon";
+    }
+
+    /// <summary>
+    /// Handle image load error by showing placeholder.
+    /// </summary>
+    private void OnImageError()
+    {
+        ShowPlaceholder = true;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Gets the appropriate card icon SVG based on the card brand.
+    /// Uses centralized ItemTypeIcons definitions.
+    /// </summary>
+    private string GetCardIconSvg()
+    {
+        return CardBrandDetector.Detect(CardNumber) switch
+        {
+            CardBrandDetector.CardBrand.Visa => ItemTypeIcons.Visa,
+            CardBrandDetector.CardBrand.Mastercard => ItemTypeIcons.Mastercard,
+            CardBrandDetector.CardBrand.Amex => ItemTypeIcons.Amex,
+            CardBrandDetector.CardBrand.Discover => ItemTypeIcons.Discover,
+            _ => ItemTypeIcons.CreditCard,
+        };
+    }
+}

@@ -356,4 +356,57 @@ class AndroidKeystoreProvider(
         // Show biometric prompt
         biometricPrompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
     }
+
+    /**
+     * Trigger standalone biometric authentication (no key retrieval).
+     * This is used for re-authentication before sensitive operations.
+     * @param title The title to show in the biometric prompt
+     * @param callback The callback to handle the result
+     */
+    override fun authenticateWithBiometric(title: String, callback: BiometricAuthCallback) {
+        val currentActivity = getCurrentActivity() as? FragmentActivity
+        if (currentActivity == null) {
+            Log.e(TAG, "Current activity is not a FragmentActivity")
+            callback.onFailure()
+            return
+        }
+
+        // Create BiometricPrompt
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle(title)
+            .setAllowedAuthenticators(
+                BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                    BiometricManager.Authenticators.DEVICE_CREDENTIAL,
+            )
+            .build()
+
+        val biometricPrompt = BiometricPrompt(
+            currentActivity,
+            _executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(
+                    result: BiometricPrompt.AuthenticationResult,
+                ) {
+                    _mainHandler.post {
+                        callback.onSuccess()
+                    }
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    Log.e(TAG, "Biometric authentication error: $errString")
+                    _mainHandler.post {
+                        callback.onFailure()
+                    }
+                }
+
+                override fun onAuthenticationFailed() {
+                    // Don't call callback here, user can retry
+                    Log.w(TAG, "Biometric authentication failed, user can retry")
+                }
+            },
+        )
+
+        // Show biometric prompt
+        biometricPrompt.authenticate(promptInfo)
+    }
 }

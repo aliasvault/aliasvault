@@ -3,8 +3,20 @@ name: Browser Extension Build
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/browser-extension/**'
+      - 'core/**'
+      - '.github/workflows/browser-extension-build.yml'
+      - '.github/actions/build-browser-extension/**'
+      - '.github/actions/build-core-libraries/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/browser-extension/**'
+      - 'core/**'
+      - '.github/workflows/browser-extension-build.yml'
+      - '.github/actions/build-browser-extension/**'
+      - '.github/actions/build-core-libraries/**'
   workflow_dispatch:
 
 concurrency:
@@ -12,49 +24,16 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-shared-libraries:
+  build-core-libraries:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Build and distribute shared libraries
-        run: |
-          cd ./shared
-          chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh
-
-      - name: Verify shared library distribution
-        run: |
-          # Check if files exist and were recently modified
-          TARGET_DIRS=(
-            "apps/browser-extension/src/utils/dist/shared/identity-generator"
-            "apps/browser-extension/src/utils/dist/shared/password-generator"
-            "apps/browser-extension/src/utils/dist/shared/models"
-            "apps/browser-extension/src/utils/dist/shared/vault-sql"
-          )
-
-          for dir in "${TARGET_DIRS[@]}"; do
-            if [ ! -d "$dir" ]; then
-              echo "❌ Directory $dir does not exist"
-              exit 1
-            fi
-
-            # Check if files were modified in the last 5 minutes
-            find "$dir" -type f -mmin -5 | grep -q . || {
-              echo "❌ Files in $dir were not recently modified"
-              exit 1
-            }
-          done
-
-          echo "✅ Shared library distribution verified"
+      - name: Build Core Libraries
+        uses: ./.github/actions/build-core-libraries
 
   build-chrome-extension:
-    needs: build-shared-libraries
+    needs: build-core-libraries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -65,7 +44,7 @@ jobs:
           browser: chrome
 
   build-firefox-extension:
-    needs: build-shared-libraries
+    needs: build-core-libraries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -76,7 +55,7 @@ jobs:
           browser: firefox
 
   build-edge-extension:
-    needs: build-shared-libraries
+    needs: build-core-libraries
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

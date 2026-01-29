@@ -5,12 +5,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, SafeAreaView, TextInput, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions, Alert } from 'react-native';
+import { StyleSheet, View, Text, SafeAreaView, TextInput, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
 import ConversionUtility from '@/utils/ConversionUtility';
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
-import type { LoginResponse, VaultResponse } from '@/utils/dist/shared/models/webapi';
+import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import type { LoginResponse } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { SrpUtility } from '@/utils/SrpUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
@@ -27,7 +27,9 @@ import { InAppBrowserView } from '@/components/ui/InAppBrowserView';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
+import { useDialog } from '@/context/DialogContext';
 import { useWebApi } from '@/context/WebApiContext';
+import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
  * Login screen.
@@ -35,6 +37,7 @@ import { useWebApi } from '@/context/WebApiContext';
 export default function LoginScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
+  const { showAlert, showDialog } = useDialog();
   const [fadeAnim] = useState(new Animated.Value(0));
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
 
@@ -45,6 +48,29 @@ export default function LoginScreen() : React.ReactNode {
       useNativeDriver: true,
     }).start();
     loadApiUrl();
+
+    /**
+     * Check for saved username (from forced logout) and prefill the username field.
+     * This enables users to easily re-login after a forced logout.
+     * Only prefill if the username field is empty (user hasn't started typing).
+     */
+    const loadSavedUsername = async () : Promise<void> => {
+      try {
+        const savedUsername = await NativeVaultManager.getUsername();
+        if (savedUsername) {
+          setCredentials(prev => {
+            // Only prefill if username is empty - don't overwrite user input
+            if (prev.username === '') {
+              return { ...prev, username: savedUsername };
+            }
+            return prev;
+          });
+        }
+      } catch {
+        // Ignore errors - username prefill is optional
+      }
+    };
+    loadSavedUsername();
   }, [fadeAnim, loadApiUrl]);
 
   // Update URL when returning from settings
@@ -77,25 +103,22 @@ export default function LoginScreen() : React.ReactNode {
    * Process the vault response by storing the vault and logging in the user.
    * @param token - The token to use for the vault
    * @param refreshToken - The refresh token to use for the vault
-   * @param vaultResponseJson - The vault response
    * @param passwordHashBase64 - The password hash base64
    * @param initiateLoginResponse - The initiate login response
    */
   const processVaultResponse = async (
     token: string,
     refreshToken: string,
-    vaultResponseJson: VaultResponse,
     passwordHashBase64: string,
     initiateLoginResponse: LoginResponse
   ) : Promise<void> => {
-    // Get biometric display name key and translate it
-    const biometricDisplayNameKey = await authContext.getBiometricDisplayNameKey();
-    const biometricDisplayName = t(biometricDisplayNameKey);
+    // Get biometric display name from auth context
+    const biometricDisplayName = await authContext.getBiometricDisplayName();
     const isBiometricsEnabledOnDevice = await authContext.isBiometricsEnabledOnDevice();
 
     if (isBiometricsEnabledOnDevice) {
       // Show biometric prompt if biometrics are available (faceid or fingerprint enrolled) on device.
-      Alert.alert(
+      showDialog(
         t('auth.enableBiometric', { biometric: biometricDisplayName }),
         t('auth.biometricPrompt', { biometric: biometricDisplayName }),
         [
@@ -110,7 +133,6 @@ export default function LoginScreen() : React.ReactNode {
               await continueProcessVaultResponse(
                 token,
                 refreshToken,
-                vaultResponseJson,
                 passwordHashBase64,
                 initiateLoginResponse
               );
@@ -118,7 +140,7 @@ export default function LoginScreen() : React.ReactNode {
           },
           {
             text: t('common.yes'),
-            isPreferred: true,
+            style: 'default',
             /**
              * Handle enabling biometric authentication
              */
@@ -127,7 +149,6 @@ export default function LoginScreen() : React.ReactNode {
               await continueProcessVaultResponse(
                 token,
                 refreshToken,
-                vaultResponseJson,
                 passwordHashBase64,
                 initiateLoginResponse
               );
@@ -141,7 +162,6 @@ export default function LoginScreen() : React.ReactNode {
       await continueProcessVaultResponse(
         token,
         refreshToken,
-        vaultResponseJson,
         passwordHashBase64,
         initiateLoginResponse
       );
@@ -152,7 +172,6 @@ export default function LoginScreen() : React.ReactNode {
    * Continue processing the vault response after biometric choice
    * @param token - The token to use for the vault
    * @param refreshToken - The refresh token to use for the vault
-   * @param vaultResponseJson - The vault response
    * @param passwordHashBase64 - The password hash base64
    * @param initiateLoginResponse - The initiate login response
    * @param encryptionKeyDerivationParams - The encryption key derivation parameters
@@ -160,7 +179,6 @@ export default function LoginScreen() : React.ReactNode {
   const continueProcessVaultResponse = async (
     token: string,
     refreshToken: string,
-    vaultResponseJson: VaultResponse,
     passwordHashBase64: string,
     initiateLoginResponse: LoginResponse
   ) : Promise<void> => {
@@ -170,20 +188,54 @@ export default function LoginScreen() : React.ReactNode {
       salt: initiateLoginResponse.salt,
     };
 
-    // Set auth tokens, store encryption key and key derivation params, and initialize database
+    /*
+     * Store auth tokens and encryption credentials. syncVault will download
+     * the vault and store it (including metadata) through native code.
+     */
     await authContext.setAuthTokens(ConversionUtility.normalizeUsername(credentials.username), token, refreshToken);
     await dbContext.storeEncryptionKey(passwordHashBase64);
     await dbContext.storeEncryptionKeyDerivationParams(encryptionKeyDerivationParams);
-    await dbContext.initializeDatabase(vaultResponseJson);
+
+    /*
+     * Forced logout recovery check:
+     * If there's an existing local vault (from forced logout), try to unlock it.
+     * If decryption fails (password changed or corrupted), reset sync state so
+     * sync will do a clean download instead of trying to merge.
+     */
+    const hasExistingVault = await NativeVaultManager.hasEncryptedDatabase();
+    if (hasExistingVault) {
+      try {
+        await NativeVaultManager.unlockVault();
+        /*
+         * Decryption succeeded - local vault is valid, sync will handle it.
+         * The sync will compare revisions and decide whether to keep local or download.
+         */
+        console.info('Existing local vault (after forced logout) decrypted successfully, syncing with server');
+      } catch {
+        /*
+         * Decryption failed (password changed or corrupted).
+         * Reset sync state so sync will do a clean download instead of trying to merge.
+         * This matches the browser extension behavior in persistAndLoadVault().
+         */
+        console.info('Existing vault could not be decrypted (password changed or corrupted), resetting for fresh download');
+        await NativeVaultManager.resetSyncStateForFreshDownload();
+      }
+    }
 
     let checkSuccess = true;
-    /**
-     * After setting auth tokens, execute a server status check immediately
-     * which takes care of certain sanity checks such as ensuring client/server
-     * compatibility.
+
+    /*
+     * Sync vault from server (downloads, stores, and validates compatibility)
+     * This will handle the forced logout recovery check in case our local vault is dirty
+     * or is ahead of server in case of RPO event.
      */
     await syncVault({
-      initialSync: true,
+      /**
+       * Update login status during sync.
+       */
+      onStatus: (status) => {
+        setLoginStatus(status);
+      },
       /**
        * Handle the status update.
        */
@@ -191,11 +243,7 @@ export default function LoginScreen() : React.ReactNode {
         checkSuccess = false;
 
         // Show modal with error message
-        Alert.alert(
-          t('common.error'),
-          message,
-          [{ text: t('common.ok'), style: 'default' }]
-        );
+        showAlert(t('common.error'), message);
         // Error will trigger logout through the sync process
         setIsLoading(false);
       },
@@ -219,6 +267,12 @@ export default function LoginScreen() : React.ReactNode {
       return;
     }
 
+    /*
+     * After syncVault completes, the vault has been downloaded and stored by native code.
+     * Immediately mark the database as available without file system checks for faster bootstrap.
+     */
+    dbContext.setDatabaseAvailable();
+
     await authContext.login();
 
     authContext.setOfflineMode(false);
@@ -228,7 +282,7 @@ export default function LoginScreen() : React.ReactNode {
     setPasswordHashBase64(null);
     setInitiateLoginResponse(null);
     setLoginStatus(null);
-    router.replace('/(tabs)/credentials');
+    router.replace('/(tabs)/items');
     setIsLoading(false);
   };
 
@@ -287,23 +341,10 @@ export default function LoginScreen() : React.ReactNode {
 
       setLoginStatus(t('auth.syncingVault'));
       await new Promise(resolve => requestAnimationFrame(resolve));
-      const vaultResponseJson = await webApi.authFetch<VaultResponse>('Vault', { method: 'GET', headers: {
-        'Authorization': `Bearer ${validationResponse.token.token}`
-      } });
-
-      const vaultError = webApi.validateVaultResponse(vaultResponseJson);
-      if (vaultError) {
-        console.error('vaultError', vaultError);
-        setError(vaultError);
-        setIsLoading(false);
-        setLoginStatus(null);
-        return;
-      }
 
       await processVaultResponse(
         validationResponse.token.token,
         validationResponse.token.refreshToken,
-        vaultResponseJson,
         passwordHashBase64,
         initiateLoginResponse
       );
@@ -318,7 +359,7 @@ export default function LoginScreen() : React.ReactNode {
         console.error('Login error:', err);
         // Check if self-hosted to show appropriate server error message
         const isSelfHosted = await webApi.isSelfHosted();
-        setError(t(isSelfHosted ? 'auth.errors.serverErrorSelfHosted' : 'auth.errors.serverError'));
+        setError(isSelfHosted ? t('auth.errors.serverErrorSelfHosted') : t('auth.errors.serverError'));
       }
       setIsLoading(false);
       setLoginStatus(null);
@@ -358,21 +399,10 @@ export default function LoginScreen() : React.ReactNode {
 
       setLoginStatus(t('auth.syncingVault'));
       await new Promise(resolve => requestAnimationFrame(resolve));
-      const vaultResponseJson = await webApi.authFetch<VaultResponse>('Vault', { method: 'GET', headers: {
-        'Authorization': `Bearer ${validationResponse.token.token}`
-      } });
-
-      const vaultError = webApi.validateVaultResponse(vaultResponseJson);
-      if (vaultError) {
-        setError(vaultError);
-        setIsLoading(false);
-        return;
-      }
 
       await processVaultResponse(
         validationResponse.token.token,
         validationResponse.token.refreshToken,
-        vaultResponseJson,
         passwordHashBase64,
         initiateLoginResponse
       );
@@ -468,6 +498,10 @@ export default function LoginScreen() : React.ReactNode {
       color: colors.textMuted,
       fontSize: 14,
     },
+    headerSubtitleContainer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+    },
     headerTitle: {
       color: colors.text,
       fontSize: 24,
@@ -522,6 +556,7 @@ export default function LoginScreen() : React.ReactNode {
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
+      testID="login-screen"
     >
       <ScrollView
         style={styles.container}
@@ -547,19 +582,23 @@ export default function LoginScreen() : React.ReactNode {
             <>
               <View style={styles.headerContainer}>
                 <Text style={styles.headerTitle}>{t('auth.login')}</Text>
-                <Text style={styles.headerSubtitle}>
-                  {t('auth.connectingTo')} {' '}
-                  <Text
-                    style={styles.clickableLink}
-                    onPress={() => router.push('/login-settings')}
-                  >
-                    {getDisplayUrl()}
+                <View style={styles.headerSubtitleContainer}>
+                  <Text style={styles.headerSubtitle}>
+                    {t('auth.connectingTo')}{' '}
                   </Text>
-                </Text>
+                  <RobustPressable
+                    onPress={() => router.push('/login-settings')}
+                    testID="server-url-link-button"
+                  >
+                    <Text style={styles.clickableLink} testID="server-url-link"                    >
+                      {getDisplayUrl()}
+                    </Text>
+                  </RobustPressable>
+                </View>
               </View>
 
               {error && (
-                <View style={styles.errorContainer}>
+                <View style={styles.errorContainer} testID="error-message">
                   <Text style={styles.errorText}>{error}</Text>
                 </View>
               )}
@@ -639,6 +678,7 @@ export default function LoginScreen() : React.ReactNode {
                       placeholderTextColor={colors.textMuted}
                       multiline={false}
                       numberOfLines={1}
+                      testID="username-input"
                     />
                   </View>
                   <Text style={styles.label}>{t('auth.password')}</Text>
@@ -660,6 +700,7 @@ export default function LoginScreen() : React.ReactNode {
                       autoCapitalize="none"
                       multiline={false}
                       numberOfLines={1}
+                      testID="password-input"
                     />
                     <RobustPressable
                       onPress={() => setShowPassword(!showPassword)}
@@ -676,6 +717,7 @@ export default function LoginScreen() : React.ReactNode {
                     style={[styles.button, styles.primaryButton]}
                     onPress={handleSubmit}
                     disabled={isLoading}
+                    testID="login-button"
                   >
                     {isLoading ? (
                       <ActivityIndicator color={colors.text} />

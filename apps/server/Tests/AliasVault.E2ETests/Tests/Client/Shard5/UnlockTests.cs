@@ -65,7 +65,7 @@ public class UnlockTests : ClientPlaywrightTest
             { "password", TestUserPassword },
         });
 
-        var submitButton = Page.GetByRole(AriaRole.Button, new() { Name = "Unlock" });
+        var submitButton = Page.Locator("#unlock-button");
         await submitButton.ClickAsync();
 
         // Check if we get redirected back to the page we were trying to access.

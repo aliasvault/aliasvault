@@ -1,0 +1,5 @@
+- Login met mobiele app support toegevoegd
+- PIN ontgrendelmethode toegevoegd
+- Identiteitsgenerator uitgebreid met leeftijdsrange voorkeur
+- Duitse taal toegevoegd aan identiteit generator
+- Maak en bewerk 2FA TOTP codes via de mobiele app

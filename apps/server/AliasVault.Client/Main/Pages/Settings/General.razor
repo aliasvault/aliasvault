@@ -3,6 +3,7 @@
 @inject LanguageService LanguageService
 @using Microsoft.Extensions.Localization
 @using AliasVault.Client.Services
+@using AliasVault.Client.Services.JsInterop.Models
 
 <LayoutPageTitle>@Localizer["PageTitle"]</LayoutPageTitle>
 
@@ -11,6 +12,23 @@
     Title="@Localizer["PageTitle"]"
     Description="@Localizer["PageDescription"]">
 </PageHeader>
+
+<div class="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">@Localizer["AppLanguageTitle"]</h3>
+
+    <div class="mb-4">
+        <label for="appLanguage" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["AppLanguageLabel"]</label>
+        <select @bind="AppLanguage" @bind:after="UpdateAppLanguage" id="appLanguage" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            @foreach (var language in LanguageService.GetSupportedLanguages())
+            {
+                <option value="@language.Key">@LanguageService.GetLanguageFlag(language.Key) @language.Value</option>
+            }
+        </select>
+        <span class="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">
+            @Localizer["AppLanguageDescription"]
+        </span>
+    </div>
+</div>
 
 <div class="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
     <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">@Localizer["EmailSettingsTitle"]</h3>
@@ -50,31 +68,16 @@
     </div>
 </div>
 
-<div class="p-4 mb-4 mx-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
-    <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">@Localizer["AppLanguageTitle"]</h3>
-
-    <div class="mb-4">
-        <label for="appLanguage" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["AppLanguageLabel"]</label>
-        <select @bind="AppLanguage" @bind:after="UpdateAppLanguage" id="appLanguage" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            @foreach (var language in LanguageService.GetSupportedLanguages())
-            {
-                <option value="@language.Key">@LanguageService.GetLanguageFlag(language.Key) @language.Value</option>
-            }
-        </select>
-        <span class="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">
-            @Localizer["AppLanguageDescription"]
-        </span>
-    </div>
-</div>
-
 <div class="p-4  mx-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
     <h3 class="mb-4 text-lg font-medium text-gray-900 dark:text-white">@Localizer["AliasSettingsTitle"]</h3>
 
     <div class="mb-4">
         <label for="defaultIdentityLanguage" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["AliasGenerationLanguageLabel"]</label>
         <select @bind="DefaultIdentityLanguage" @bind:after="UpdateDefaultIdentityLanguage" id="defaultIdentityLanguage" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            <option value="en">@Localizer["EnglishOption"]</option>
-            <option value="nl">@Localizer["DutchOption"]</option>
+            @foreach (var language in AvailableLanguages)
+            {
+                <option value="@language.Value">@language.Flag @language.Label</option>
+            }
         </select>
         <span class="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">
             @Localizer["AliasGenerationLanguageDescription"]
@@ -90,6 +93,21 @@
         </select>
         <span class="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">
             @Localizer["AliasGenerationGenderDescription"]
+        </span>
+    </div>
+
+    <div class="mb-4">
+        <label for="defaultIdentityAgeRange" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["AliasGenerationAgeRangeLabel"]</label>
+        <select @bind="DefaultIdentityAgeRange" @bind:after="UpdateDefaultIdentityAgeRange" id="defaultIdentityAgeRange" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            @foreach (var ageRange in AvailableAgeRanges)
+            {
+                <option value="@ageRange.Value">
+                    @(ageRange.Value == "random" ? Localizer["RandomOption"] : ageRange.Label)
+                </option>
+            }
+        </select>
+        <span class="block text-sm font-normal text-gray-500 truncate dark:text-gray-400">
+            @Localizer["AliasGenerationAgeRangeDescription"]
         </span>
     </div>
 </div>
@@ -125,15 +143,20 @@
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Settings.General", "AliasVault.Client");
 
-    private List<string> PrivateDomains => Config.PrivateEmailDomains;
+    private List<string> PrivateDomains => Config.PrivateEmailDomains
+        .Where(d => !Config.HiddenPrivateEmailDomains.Contains(d))
+        .ToList();
     private List<string> PublicDomains => Config.PublicEmailDomains;
 
     private string DefaultEmailDomain { get; set; } = string.Empty;
     private bool AutoEmailRefresh { get; set; }
     private string DefaultIdentityLanguage { get; set; } = string.Empty;
     private string DefaultIdentityGender { get; set; } = string.Empty;
+    private string DefaultIdentityAgeRange { get; set; } = string.Empty;
     private string AppLanguage { get; set; } = string.Empty;
     private int ClipboardClearSeconds { get; set; }
+    private List<LanguageOption> AvailableLanguages { get; set; } = new();
+    private List<AgeRangeOption> AvailableAgeRanges { get; set; } = new();
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -141,8 +164,12 @@
         await base.OnInitializedAsync();
         BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["BreadcrumbTitle"] });
 
+        // Load available languages and age ranges from JavaScript utility
+        AvailableLanguages = await JsInteropService.GetAvailableIdentityGeneratorLanguagesAsync();
+        AvailableAgeRanges = await JsInteropService.GetAvailableIdentityGeneratorAgeRangesAsync();
+
         DefaultEmailDomain = DbService.Settings.DefaultEmailDomain;
-        if (DefaultEmailDomain == string.Empty)
+        if (DefaultEmailDomain == string.Empty || Config.HiddenPrivateEmailDomains.Contains(DefaultEmailDomain))
         {
             if (HasValidPrivateDomains())
             {
@@ -154,10 +181,31 @@
             }
         }
         AutoEmailRefresh = DbService.Settings.AutoEmailRefresh;
-        DefaultIdentityLanguage = DbService.Settings.DefaultIdentityLanguage;
+
+        await SetDefaultIdentityLanguageAsync();
         DefaultIdentityGender = DbService.Settings.DefaultIdentityGender;
+        DefaultIdentityAgeRange = DbService.Settings.DefaultIdentityAgeRange;
         AppLanguage = DbService.Settings.AppLanguage;
         ClipboardClearSeconds = DbService.Settings.ClipboardClearSeconds;
+    }
+
+    /// <summary>
+    /// Sets the default identity language.
+    /// </summary>
+    private async Task SetDefaultIdentityLanguageAsync()
+    {
+        var explicitLanguage = DbService.Settings.DefaultIdentityLanguage;
+        if (!string.IsNullOrWhiteSpace(explicitLanguage))
+        {
+            // User has explicitly set a language, use it
+            DefaultIdentityLanguage = explicitLanguage;
+        }
+        else
+        {
+            // No explicit language set, try to match UI language to identity generator language
+            var mappedLanguage = await JsInteropService.MapUiLanguageToIdentityLanguageAsync(DbService.Settings.AppLanguage);
+            DefaultIdentityLanguage = mappedLanguage ?? "en";
+        }
     }
 
     /// <summary>
@@ -197,11 +245,24 @@
     }
 
     /// <summary>
+    /// Updates the default identity age range setting.
+    /// </summary>
+    private async Task UpdateDefaultIdentityAgeRange()
+    {
+        await DbService.Settings.SetDefaultIdentityAgeRange(DefaultIdentityAgeRange);
+        StateHasChanged();
+    }
+
+    /// <summary>
     /// Updates the app language setting.
+    /// Also refreshes the identity generator language to reflect the new UI language if no explicit override is set.
     /// </summary>
     private async Task UpdateAppLanguage()
     {
         await LanguageService.SetLanguageAsync(AppLanguage);
+
+        // After changing UI language, refresh identity generator language if user hasn't set an explicit override
+        await SetDefaultIdentityLanguageAsync();
         StateHasChanged();
     }
 

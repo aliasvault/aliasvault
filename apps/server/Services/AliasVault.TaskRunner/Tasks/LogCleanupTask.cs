@@ -69,5 +69,41 @@ public class LogCleanupTask : IMaintenanceTask
                 .ExecuteDeleteAsync(cancellationToken);
             _logger.LogInformation("Deleted {Count} auth log entries older than {Days} days", deletedCount, settings.AuthLogRetentionDays);
         }
+
+        if (settings.MobileLoginLogRetentionDays > 0)
+        {
+            var cutoffDate = DateTime.UtcNow.AddDays(-settings.MobileLoginLogRetentionDays);
+            var deletedCount = await dbContext.MobileLoginRequests
+                .Where(x => x.CreatedAt < cutoffDate)
+                .ExecuteDeleteAsync(cancellationToken);
+            _logger.LogInformation("Deleted {Count} mobile login request entries older than {Days} days", deletedCount, settings.MobileLoginLogRetentionDays);
+        }
+
+        // Clear sensitive data from stale mobile login requests (fulfilled > 10 minutes ago but not retrieved)
+        const int sensitiveDataTimeoutMinutes = 10;
+        var cutoffTime = DateTime.UtcNow.AddMinutes(-sensitiveDataTimeoutMinutes);
+
+        var staleRequests = await dbContext.MobileLoginRequests
+            .Where(r =>
+                r.FulfilledAt != null &&
+                r.FulfilledAt < cutoffTime &&
+                r.RetrievedAt == null &&
+                r.ClearedAt == null)
+            .ToListAsync(cancellationToken);
+
+        if (staleRequests.Count > 0)
+        {
+            var now = DateTime.UtcNow;
+            foreach (var request in staleRequests)
+            {
+                // Clear all sensitive data
+                request.ClientPublicKey = string.Empty;
+                request.EncryptedDecryptionKey = null;
+                request.ClearedAt = now;
+            }
+
+            await dbContext.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Cleared encrypted data from {Count} fulfilled but not retrieved mobile login requests", staleRequests.Count);
+        }
     }
 }

@@ -3,8 +3,20 @@ name: Mobile App Build
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/mobile-app-build.yml'
+      - '.github/actions/build-android-app/**'
+      - '.github/actions/build-ios-app/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/mobile-app-build.yml'
+      - '.github/actions/build-android-app/**'
+      - '.github/actions/build-ios-app/**'
   workflow_dispatch:
     inputs:
       build_android_signed:
@@ -43,20 +55,20 @@ jobs:
           cache: 'npm'
           cache-dependency-path: apps/mobile-app/package-lock.json
 
-      - name: Build and distribute shared libraries
+      - name: Build and distribute core libraries
         run: |
-          cd ../../shared
+          cd ../../core
           chmod +x build-and-distribute.sh
-          ./build-and-distribute.sh
+          ./build-and-distribute.sh --android
 
-      - name: Verify shared library distribution
+      - name: Verify core library distribution
         run: |
           # Check if files exist and were recently modified
           TARGET_DIRS=(
-            "utils/dist/shared/identity-generator"
-            "utils/dist/shared/password-generator"
-            "utils/dist/shared/models"
-            "utils/dist/shared/vault-sql"
+            "utils/dist/core/identity-generator"
+            "utils/dist/core/password-generator"
+            "utils/dist/core/models"
+            "utils/dist/core/vault"
           )
 
           for dir in "${TARGET_DIRS[@]}"; do
@@ -98,6 +110,12 @@ jobs:
           node-version: '20'
           cache: 'npm'
           cache-dependency-path: apps/mobile-app/package-lock.json
+
+      - name: Build core libraries
+        run: |
+          cd ../../core
+          chmod +x build-and-distribute.sh
+          ./build-and-distribute.sh --android
 
       - name: Install dependencies
         run: npm ci

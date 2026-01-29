@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Type names -->
+  <data name="TypeLogin">
+    <value>Login</value>
+    <comment>Login item type name</comment>
+  </data>
+  <data name="TypeAlias">
+    <value>Alias</value>
+    <comment>Alias item type name</comment>
+  </data>
+  <data name="TypeCreditCard">
+    <value>Cartão de Crédito</value>
+    <comment>Credit Card item type name</comment>
+  </data>
+  <data name="TypeNote">
+    <value>Nota Segura</value>
+    <comment>Secure Note item type name</comment>
+  </data>
+  <!-- Status text -->
+  <data name="Creating">
+    <value>Criando</value>
+    <comment>Status text when creating a new item</comment>
+  </data>
+  <data name="Editing">
+    <value>Editando</value>
+    <comment>Status text when editing an existing item</comment>
+  </data>
+  <!-- Buttons -->
+  <data name="RegenerateAlias">
+    <value>Gerar Alias Novamente</value>
+    <comment>Tooltip for regenerate alias button</comment>
+  </data>
+</root>

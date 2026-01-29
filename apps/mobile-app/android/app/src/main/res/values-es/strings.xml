@@ -1,66 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
-  <string name="aliasvault_icon">AliasVault icon</string>
+  <string name="autofill_service_description" translatable="true">AutoFill de AliasVault</string>
+  <string name="aliasvault_icon">Icono AliasVault</string>
   <!-- Common strings -->
-  <string name="common_close">Close</string>
+  <string name="common_close">Cerrar</string>
+  <string name="common_next">Siguiente</string>
+  <string name="common_cancel">Cancelar</string>
+  <string name="unknown_error">Se produjo un error desconocido</string>
   <!-- AutofillService strings -->
-  <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
-  <string name="autofill_no_match_found">No match found, create new?</string>
-  <string name="autofill_open_app">Open app</string>
-  <string name="autofill_vault_locked">Vault locked</string>
+  <string name="autofill_failed_to_retrieve">Fallo al recuperar, abrir aplicación</string>
+  <string name="autofill_no_match_found">No se han encontrado coincidencias, ¿crear nuevo?</string>
+  <string name="autofill_open_app">Abrir aplicación</string>
+  <string name="autofill_vault_locked">Bóveda bloqueada</string>
   <!-- Biometric prompts -->
-  <string name="biometric_store_key_title">Store Encryption Key</string>
-  <string name="biometric_store_key_subtitle">Authenticate to securely store your encryption key in the Android Keystore. This enables secure access to your vault.</string>
-  <string name="biometric_unlock_vault_title">Unlock Vault</string>
-  <string name="biometric_unlock_vault_subtitle">Authenticate to access your vault</string>
+  <string name="biometric_store_key_title">Guardar clave de cifrado</string>
+  <string name="biometric_store_key_subtitle">Autenticar para almacenar su clave de cifrado de forma segura en el almacén de claves Android. Esto habilita el acceso seguro a su bóveda.</string>
+  <string name="biometric_unlock_vault_title">Desbloquear bóveda</string>
+  <string name="biometric_unlock_vault_subtitle">Autenticar para acceder a su bóveda</string>
   <!-- Passkey registration -->
-  <string name="passkey_registration_title">Create Passkey</string>
-  <string name="create_passkey_title">Create New Passkey</string>
-  <string name="create_passkey_subtitle">Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.</string>
-  <string name="replace_passkey_title">Replace Passkey</string>
-  <string name="passkey_display_name_label">Passkey Name</string>
-  <string name="passkey_display_name_hint">Enter a name for this passkey</string>
-  <string name="passkey_website_label">Website</string>
-  <string name="passkey_username_label">Username</string>
-  <string name="passkey_create_button">Create Passkey</string>
-  <string name="passkey_cancel_button">Cancel</string>
-  <string name="passkey_creating">Creating passkey…</string>
-  <string name="passkey_saving">Saving to vault…</string>
-  <string name="passkey_syncing">Syncing with server…</string>
+  <string name="passkey_registration_title">Crear llave de acceso</string>
+  <string name="create_passkey_title">Crear nueva llave de acceso</string>
+  <string name="create_passkey_subtitle">Registre una nueva llave de acceso para este sitio web. Se almacenará de forma segura en su bóveda y se sincronizará automáticamente en todos sus dispositivos con AliasVault.</string>
+  <string name="replace_passkey">Reemplazar llave de acceso</string>
+  <string name="passkey_display_name_label">Nombre de llave de acceso</string>
+  <string name="passkey_display_name_hint">Introduzca un nombre para esta llave de acceso</string>
+  <string name="passkey_website_label">Sitio Web</string>
+  <string name="passkey_username_label">Nombre de usuario</string>
+  <string name="passkey_create_button">Crear llave de acceso</string>
+  <string name="passkey_creating">Creando llave de acceso…</string>
+  <string name="passkey_saving">Guardando en la bóveda…</string>
+  <string name="passkey_syncing">Sincronizando con el servidor…</string>
   <string name="passkey_error_title">Error</string>
-  <string name="passkey_error_empty_name">Please enter a name for the passkey</string>
-  <string name="passkey_creation_failed">Failed to create passkey</string>
-  <string name="passkey_retry_button">Retry</string>
-  <string name="passkey_info_icon">Info icon</string>
-  <string name="passkey_create_explanation">This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.</string>
-  <string name="passkey_create_new_button">Create New Passkey</string>
-  <string name="passkey_select_to_replace">Or, replace an existing passkey:</string>
-  <string name="passkey_replace_button">Replace Passkey</string>
-  <string name="passkey_replace_explanation">This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.</string>
-  <string name="passkey_replacing">Replacing passkey…</string>
-  <string name="passkey_checking_connection">Checking connection…</string>
+  <string name="passkey_error_empty_name">Introduzca un nombre para la llave de acceso</string>
+  <string name="passkey_creation_failed">Fallo al crear la llave de acceso</string>
+  <string name="passkey_retry_button">Reintentar</string>
+  <string name="passkey_info_icon">Icono de información</string>
+  <string name="passkey_create_explanation">Esto crea una nueva llave de acceso y la almacena en tu bóveda. Se sincronizará automáticamente en todos tus dispositivos que utilicen AliasVault.</string>
+  <string name="passkey_create_new_button">Crear nueva llave de acceso</string>
+  <string name="passkey_select_to_replace">O, reemplazar una llave de acceso existente:</string>
+  <string name="passkey_add_to_existing">O, añadir llave de acceso a un elemento existente:</string>
+  <string name="passkey_replace_explanation">Esto reemplazará la llave de acceso existente con una nueva. Tenga en cuenta que su llave de acceso antigua será sobrescrita y ya no será accesible. Si desea crear una llave de acceso separada en su lugar, vuelva a la pantalla anterior.</string>
+  <string name="passkey_merge_explanation">Esto añadirá una llave de acceso a su elemento existente. Su contraseña y otros datos se conservarán.</string>
+  <string name="passkey_replacing">Reemplazando llave de acceso…</string>
+  <string name="add_passkey">Añadir llave de acceso</string>
+  <string name="add_passkey_subtitle">Añadiendo llave de acceso al elemento existente</string>
+  <string name="passkey_checking_connection">Comprobando la conexión…</string>
+  <string name="passkey_retrieving">Recuperando llave…</string>
+  <string name="passkey_verifying">Verificando…</string>
+  <string name="passkey_authenticating">Autenticando…</string>
   <!-- Vault sync error messages -->
-  <string name="connection_error_title">Connection Error</string>
-  <string name="connection_error_message">No connection to the server can be made. Please check your internet connection and try creating the passkey again.</string>
-  <string name="session_expired_title">Session Expired</string>
-  <string name="session_expired_message">Your session has expired. Please sign in again.</string>
-  <string name="password_changed_title">Password Changed</string>
-  <string name="password_changed_message">Your password has been changed. Please sign in again.</string>
-  <string name="version_not_supported_title">Update Required</string>
-  <string name="version_not_supported_message">Your app version is no longer supported. Please update to the latest version.</string>
-  <string name="server_unavailable_title">Server Unavailable</string>
-  <string name="server_unavailable_message">The server is currently unavailable. Please try again later.</string>
-  <string name="network_error_title">Network Error</string>
-  <string name="network_error_message">A network error occurred. Please check your connection and try again.</string>
-  <string name="server_version_not_supported_title">Server Update Required</string>
-  <string name="server_version_not_supported_message">The server version is outdated. Please contact your administrator to update the server.</string>
+  <string name="connection_error_title">Error de conexión</string>
+  <string name="connection_error_message">No se puede establecer conexión con el servidor. Por favor, compruebe su conexión a Internet e intente crear la llave de acceso de nuevo.</string>
+  <string name="session_expired_title">Sesión expirada</string>
+  <string name="session_expired_message">Su sesión ha expirado. Por favor, inicie sesión de nuevo.</string>
+  <string name="password_changed_title">Contraseña cambiada</string>
+  <string name="password_changed_message">Su contraseña ha sido cambiada. Por favor, inicie sesión de nuevo.</string>
+  <string name="version_not_supported_title">Actualización requerida</string>
+  <string name="version_not_supported_message">La versión de su aplicación ya no es compatible. Por favor, actualice a la última versión.</string>
+  <string name="server_unavailable_title">Servidor no disponible</string>
+  <string name="server_unavailable_message">El servidor no está disponible actualmente. Inténtelo de nuevo más tarde.</string>
+  <string name="network_error_title">Error de red</string>
+  <string name="network_error_message">Se produjo un error de red. Por favor, compruebe la conexión y vuelva a intentarlo.</string>
+  <string name="server_version_not_supported_title">Actualización del servidor necesaria</string>
+  <string name="server_version_not_supported_message">La versión del servidor está desactualizada. Por favor, contacte con su administrador para actualizar el servidor.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_biometric_required">Please enable biometric authentication in the main AliasVault app in order to use passkeys</string>
-  <string name="error_unlock_vault_first">Please unlock vault in AliasVault app first</string>
-  <string name="error_vault_decrypt_failed">Failed to decrypt vault</string>
-  <string name="error_vault_unlock_failed">Failed to unlock vault</string>
-  <string name="error_biometric_cancelled">Biometric authentication cancelled</string>
-  <string name="error_encryption_key_failed">Failed to retrieve encryption key</string>
+  <string name="error_unlock_method_required">Por favor, habilite la autenticación biométrica o PIN en la aplicación principal de AliasVault para continuar</string>
+  <string name="error_unlock_vault_first">Por favor, primero desbloquea bóveda en la aplicación AliasVault</string>
+  <string name="error_vault_decrypt_failed">Error al descifrar la bóveda</string>
+  <string name="error_biometric_cancelled">Autenticación biométrica cancelada</string>
+  <string name="error_encryption_key_failed">Fallo al recuperar la clave de cifrado</string>
+  <!-- PIN unlock -->
+  <string name="pin_unlock_vault">Desbloquear bóveda</string>
+  <string name="pin_enter_to_unlock">Introduzca su PIN para desbloquear su bóveda</string>
+  <string name="pin_locked_max_attempts">PIN bloqueado tras demasiados intentos fallidos</string>
+  <string name="pin_incorrect_attempts_remaining">PIN incorrecto, %d intentos restantes</string>
+  <!-- PIN setup -->
+  <string name="pin_setup_title">Configurar PIN</string>
+  <string name="pin_setup_description">Elija un PIN para desbloquear su bóveda</string>
+  <string name="pin_confirm_title">Confirmar PIN</string>
+  <string name="pin_confirm_description">Vuelva a introducir su PIN para confirmar</string>
+  <string name="pin_mismatch">Los PIN no coinciden. Por favor, inténtalo de nuevo.</string>
 </resources>

@@ -13,6 +13,10 @@ public struct LoadingOverlayView: View {
         self.message = message
     }
 
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
+    }
+
     public var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
@@ -25,7 +29,7 @@ public struct LoadingOverlayView: View {
                     HStack(spacing: 10) {
                         ForEach(0..<4) { index in
                             Circle()
-                                .fill(ColorConstants.Light.tertiary)
+                                .fill(colors.tertiary)
                                 .frame(width: 8, height: 8)
                                 .opacity(animatingDots[index] ? 1.0 : 0.3)
                                 .animation(
@@ -43,7 +47,7 @@ public struct LoadingOverlayView: View {
                             .fill(colorScheme == .dark ? Color.clear : Color.white)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 20)
-                                    .stroke(ColorConstants.Light.tertiary, lineWidth: 5)
+                                    .stroke(colors.tertiary, lineWidth: 5)
                             )
                             .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
                     )
@@ -52,7 +56,7 @@ public struct LoadingOverlayView: View {
                     if !message.isEmpty {
                         Text(message + textDots)
                             .font(.body)
-                            .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                            .foregroundColor(colors.text)
                             .multilineTextAlignment(.center)
                             .padding(.horizontal)
                             .padding(.top, 16)

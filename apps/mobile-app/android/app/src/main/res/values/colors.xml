@@ -32,4 +32,7 @@
 
   <!-- Loading overlay background (light mode: white with 80% opacity) -->
   <color name="av_loading_overlay">#CCFFFFFF</color>
+
+  <!-- Alias for primary color (used in PIN unlock) -->
+  <color name="primary">@color/av_primary</color>
 </resources>

@@ -28,4 +28,9 @@ class TestKeystoreProvider : KeystoreProvider {
     override fun clearKeys() {
         // Do nothing in test implementation
     }
+
+    override fun authenticateWithBiometric(title: String, callback: BiometricAuthCallback) {
+        // Always fail in test implementation since biometrics are not available
+        callback.onFailure()
+    }
 }

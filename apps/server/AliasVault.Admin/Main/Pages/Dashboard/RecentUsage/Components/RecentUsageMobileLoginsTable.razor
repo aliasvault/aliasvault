@@ -1,0 +1,72 @@
+@using AliasVault.Admin.Main.Models
+@using AliasVault.RazorComponents.Tables
+
+<div class="p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 sm:p-6 dark:bg-gray-800">
+    <div class="flex items-center justify-between mb-4">
+        <div>
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Top IP Addresses by Mobile Login Requests (Last 72h)</h3>
+            <p class="text-sm text-gray-500 dark:text-gray-400">IP addresses with the most mobile login requests in the last 72 hours (last octet anonymized)</p>
+        </div>
+    </div>
+
+    @if (Data != null && Data.Any())
+    {
+        <div class="mb-3">
+            <Paginator CurrentPage="@CurrentPage" PageSize="@PageSize" TotalRecords="@Data.Count" OnPageChanged="@HandlePageChanged" />
+        </div>
+        <div class="overflow-x-auto">
+            <SortableTable Columns="@_tableColumns">
+                @foreach (var ip in PagedData)
+                {
+                    <SortableTableRow>
+                        <SortableTableColumn IsPrimary="true">
+                            <a href="mobile-login-history?search=@Uri.EscapeDataString(ip.OriginalIpAddress)" class="font-mono text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer">
+                                @ip.IpAddress
+                            </a>
+                        </SortableTableColumn>
+                        <SortableTableColumn>@ip.MobileLoginCount72h.ToString("N0")</SortableTableColumn>
+                    </SortableTableRow>
+                }
+            </SortableTable>
+        </div>
+    }
+    else if (Data != null)
+    {
+        <div class="text-center text-gray-500 dark:text-gray-400">
+            <svg class="mx-auto h-12 w-12 text-gray-300 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No Recent Mobile Logins</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">No mobile login requests occurred in the last 72 hours.</p>
+        </div>
+    }
+    else
+    {
+        <div class="px-6 py-8 flex justify-center">
+            <LoadingIndicator />
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public List<RecentUsageMobileLogins>? Data { get; set; }
+
+    private int CurrentPage { get; set; } = 1;
+    private int PageSize { get; set; } = 10;
+
+    private IEnumerable<RecentUsageMobileLogins> PagedData =>
+        Data?.Skip((CurrentPage - 1) * PageSize).Take(PageSize) ?? Enumerable.Empty<RecentUsageMobileLogins>();
+
+    private readonly List<TableColumn> _tableColumns = new()
+    {
+        new() { Title = "Client IP Address", PropertyName = "IpAddress", Sortable = false },
+        new() { Title = "Mobile Logins (72h)", PropertyName = "MobileLoginCount72h", Sortable = false }
+    };
+
+    private void HandlePageChanged(int page)
+    {
+        CurrentPage = page;
+        StateHasChanged();
+    }
+}

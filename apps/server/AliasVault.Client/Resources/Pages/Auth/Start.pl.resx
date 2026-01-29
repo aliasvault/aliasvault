@@ -63,7 +63,7 @@
     <comment>Main title of the application</comment>
   </data>
   <data name="TaglineText" xml:space="preserve">
-    <value>Twoja prywatność. Jest chroniona.</value>
+    <value>Twoja prywatność jest chroniona.</value>
     <comment>Tagline emphasizing privacy protection</comment>
   </data>
   <data name="CreateNewVaultButton" xml:space="preserve">

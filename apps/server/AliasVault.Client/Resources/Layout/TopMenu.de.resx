@@ -20,9 +20,9 @@
     </xsd:element>
   </xsd:schema>
   <!-- Main navigation links -->
-  <data name="CredentialsNav">
-    <value>Zugangsdaten</value>
-    <comment>Main navigation link for credentials section</comment>
+  <data name="VaultNav">
+    <value>Vault</value>
+    <comment>Main navigation link for vault section</comment>
   </data>
   <data name="EmailsNav">
     <value>E-Mails</value>
@@ -46,9 +46,13 @@
     <comment>Navigation link for extensions and apps settings</comment>
   </data>
   <!-- Menu actions -->
-  <data name="ToggleDarkMode">
-    <value>Helles/Dunkles Layout umschalten</value>
-    <comment>Button text for toggling dark/light theme</comment>
+  <data name="EnableLightMode">
+    <value>Zum hellen Design wechseln</value>
+    <comment>Button text for switching to light theme</comment>
+  </data>
+  <data name="EnableDarkMode">
+    <value>Zum dunklen Design wechseln</value>
+    <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
     <value>Abmelden</value>

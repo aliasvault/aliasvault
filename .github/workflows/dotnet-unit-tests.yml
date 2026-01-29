@@ -4,8 +4,16 @@ name: Unit Tests
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/server/**'
+      - 'core/**'
+      - '.github/workflows/dotnet-unit-tests.yml'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/server/**'
+      - 'core/**'
+      - '.github/workflows/dotnet-unit-tests.yml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -23,6 +31,7 @@ jobs:
           dotnet-version: 9.0.x
 
     - name: Install dependencies
+      working-directory: apps/server
       run: dotnet workload install wasm-tools
 
     - name: Restore dependencies

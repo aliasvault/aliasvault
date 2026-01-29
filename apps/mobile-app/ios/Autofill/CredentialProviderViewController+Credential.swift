@@ -16,7 +16,7 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
         // Create the ViewModel with injected behaviors
         let viewModel = CredentialProviderViewModel(
             loader: {
-                return try await vaultStore.getAllCredentials()
+                return try await vaultStore.getAllAutofillCredentials()
             },
             selectionHandler: { identifier, password in
                 self.handleCredentialSelection(identifier: identifier, password: password)
@@ -79,7 +79,7 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
         let minimumDuration: TimeInterval = 0.7 // 700ms
 
         do {
-            let credentials = try vaultStore.getAllCredentials()
+            let credentials = try vaultStore.getAllAutofillCredentials()
 
             if let matchingCredential = credentials.first(where: { credential in
                 return credential.id.uuidString == request.credentialIdentity.recordIdentifier
@@ -94,7 +94,7 @@ extension CredentialProviderViewController: CredentialProviderDelegate {
                 let identifier = request.credentialIdentity.user
                 let passwordCredential = ASPasswordCredential(
                     user: identifier,
-                    password: matchingCredential.password?.value ?? ""
+                    password: matchingCredential.password ?? ""
                 )
                 self.extensionContext.completeRequest(withSelectedCredential: passwordCredential, completionHandler: nil)
             } else {

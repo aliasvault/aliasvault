@@ -1,5 +1,5 @@
-import { Gender, IdentityHelperUtils } from "@/utils/dist/shared/identity-generator";
-import type { Credential } from "@/utils/dist/shared/models/vault";
+import { Gender, IdentityHelperUtils } from "@/utils/dist/core/identity-generator";
+import type { Credential } from "@/utils/dist/core/models/vault";
 import { CombinedDateOptionPatterns, CombinedGenderOptionPatterns } from "@/utils/formDetector/FieldPatterns";
 import { FormFields } from "@/utils/formDetector/types/FormFields";
 import { ClickValidator } from "@/utils/security/ClickValidator";
@@ -27,17 +27,16 @@ export class FormFiller {
    * @param credential The credential to fill the form with.
    */
   public async fillFields(credential: Credential): Promise<void> {
-    // Perform security validation before filling any fields
-    if (!await this.validateFormSecurity()) {
-      console.warn('[AliasVault Security] Autofill blocked due to security validation failure');
-      return;
-    }
+    // Perform security validation to identify safe fields
+    const securityResults = await this.validateFormSecurity();
 
-    // Fill basic fields and password fields in parallel
-    await Promise.all([
-      this.fillBasicFields(credential),
-      this.fillPasswordFields(credential)
-    ]);
+    /*
+     * Fill fields sequentially to avoid race conditions and conflicts.
+     * Some websites have event handlers that can interfere with parallel filling.
+     * Only fill fields that passed security validation.
+     */
+    await this.fillBasicFields(credential, securityResults);
+    await this.fillPasswordFields(credential, securityResults);
 
     this.fillBirthdateFields(credential);
     this.fillGenderFields(credential);
@@ -50,12 +49,18 @@ export class FormFiller {
    * - Form field obstruction via overlays
    * - Suspicious element positioning
    * - Multiple forms with identical fields (potential decoy attacks)
+   *
+   * @returns A map of field elements to their security validation result (true = safe, false = unsafe)
    */
-  private async validateFormSecurity(): Promise<boolean> {
+  private async validateFormSecurity(): Promise<Map<HTMLElement, boolean>> {
+    const results = new Map<HTMLElement, boolean>();
+
     try {
       // Skip security validation in test environments where browser APIs may not be available
       if (typeof window === 'undefined' || typeof MouseEvent === 'undefined') {
-        return true;
+        // In test environments, mark all fields as safe
+        this.getAllFormFields().forEach(field => results.set(field, true));
+        return results;
       }
 
       // 1. Check page-wide security using ClickValidator (detects body/HTML opacity tricks)
@@ -67,30 +72,40 @@ export class FormFiller {
       });
       // Note: isTrusted is read-only and set by the browser
 
-      if (!await this.clickValidator.validateClick(dummyEvent)) {
-        console.warn('[AliasVault Security] Form autofill blocked: Page-wide attack detected');
-        return false;
+      const pageWideSecure = await this.clickValidator.validateClick(dummyEvent);
+      if (!pageWideSecure) {
+        console.warn('[AliasVault Security] Page-wide attack detected - blocking all autofill');
+        // Mark all fields as unsafe
+        this.getAllFormFields().forEach(field => results.set(field, false));
+        return results;
       }
 
-      // 2. Check form field obstruction and positioning
+      // 2. Check for suspicious form duplication (decoy attack)
+      const hasDecoyForms = this.detectDecoyForms();
+      if (hasDecoyForms) {
+        console.warn('[AliasVault Security] Multiple suspicious forms detected - blocking all autofill');
+        // Mark all fields as unsafe
+        this.getAllFormFields().forEach(field => results.set(field, false));
+        return results;
+      }
+
+      // 3. Check individual form field obstruction and positioning
       const formFields = this.getAllFormFields();
       for (const field of formFields) {
-        if (!this.validateFieldSecurity(field)) {
-          console.warn('[AliasVault Security] Form autofill blocked: Field obstruction detected', field);
-          return false;
+        const isFieldSecure = this.validateFieldSecurity(field);
+        results.set(field, isFieldSecure);
+
+        if (!isFieldSecure) {
+          console.warn('[AliasVault Security] Field failed security check (will be skipped):', field);
         }
       }
 
-      // 3. Check for suspicious form duplication (decoy attack)
-      if (this.detectDecoyForms()) {
-        console.warn('[AliasVault Security] Form autofill blocked: Multiple suspicious forms detected');
-        return false;
-      }
-
-      return true;
+      return results;
     } catch (error) {
       console.error('[AliasVault Security] Form security validation error:', error);
-      return false; // Fail safely - block autofill if validation fails
+      // Fail safely - mark all fields as unsafe if validation fails
+      this.getAllFormFields().forEach(field => results.set(field, false));
+      return results;
     }
   }
 
@@ -254,37 +269,50 @@ export class FormFiller {
    * @param value The value to set
    */
   private setElementValue(element: HTMLInputElement | HTMLSelectElement, value: string): void {
-    // Try to set value directly on the element
-    element.value = value;
-
-    // If it's a custom element with shadow DOM, try to find and fill the actual input
+    /*
+     * Check for shadow DOM first - if found, only set value on the shadow input
+     * to avoid duplicate value setting which can cause conflicts.
+     */
     if (element.shadowRoot) {
       const shadowInput = element.shadowRoot.querySelector('input, textarea') as HTMLInputElement;
       if (shadowInput) {
         shadowInput.value = value;
-        // Trigger events on the shadow input as well
         this.triggerInputEvents(shadowInput, false);
+        return;
       }
     }
 
-    // Also check if the element contains a regular child input (non-shadow DOM)
-    const childInput = element.querySelector('input, textarea') as HTMLInputElement;
-    if (childInput && childInput !== element) {
-      childInput.value = value;
-      this.triggerInputEvents(childInput, false);
+    /*
+     * Check for child input (non-shadow DOM) only if element is not already an input.
+     * This handles custom wrapper elements.
+     */
+    if (element.tagName.toLowerCase() !== 'input' && element.tagName.toLowerCase() !== 'select' && element.tagName.toLowerCase() !== 'textarea') {
+      const childInput = element.querySelector('input, textarea, select') as HTMLInputElement | HTMLSelectElement;
+      if (childInput) {
+        childInput.value = value;
+        this.triggerInputEvents(childInput, false);
+        return;
+      }
     }
+
+    /*
+     * Default case: set value directly on the element.
+     * This handles standard HTML input/select/textarea elements.
+     */
+    element.value = value;
   }
 
   /**
    * Fill the basic fields of the form.
    * @param credential The credential to fill the form with.
+   * @param securityResults Security validation results for each field.
    */
-  private async fillBasicFields(credential: Credential): Promise<void> {
-    if (this.form.usernameField && credential.Username) {
+  private async fillBasicFields(credential: Credential, securityResults: Map<HTMLElement, boolean>): Promise<void> {
+    if (this.form.usernameField && credential.Username && securityResults.get(this.form.usernameField) !== false) {
       await this.fillTextFieldWithTyping(this.form.usernameField, credential.Username);
     }
 
-    if (this.form.emailField && (credential.Alias?.Email !== undefined || credential.Username !== undefined)) {
+    if (this.form.emailField && (credential.Alias?.Email !== undefined || credential.Username !== undefined) && securityResults.get(this.form.emailField) !== false) {
       if (credential.Alias?.Email) {
         this.setElementValue(this.form.emailField, credential.Alias.Email);
         this.triggerInputEvents(this.form.emailField);
@@ -304,7 +332,7 @@ export class FormFiller {
       }
     }
 
-    if (this.form.emailConfirmField && credential.Alias?.Email) {
+    if (this.form.emailConfirmField && credential.Alias?.Email && securityResults.get(this.form.emailConfirmField) !== false) {
       this.setElementValue(this.form.emailConfirmField, credential.Alias.Email);
       this.triggerInputEvents(this.form.emailConfirmField);
     }
@@ -333,7 +361,10 @@ export class FormFiller {
    * @param text The text to fill the field with.
    */
   private async fillTextFieldWithTyping(field: HTMLInputElement, text: string): Promise<void> {
-    // Find the actual input element (could be in shadow DOM)
+    /*
+     * Find the actual input element (could be in shadow DOM).
+     * This ensures we only fill one element, avoiding duplicate fills.
+     */
     let actualInput = field;
 
     // Check for shadow DOM input
@@ -372,19 +403,20 @@ export class FormFiller {
    * Fill password fields sequentially to avoid visual conflicts.
    * First fills the main password field, then the confirm field if present.
    * @param credential The credential containing the password.
+   * @param securityResults Security validation results for each field.
    */
-  private async fillPasswordFields(credential: Credential): Promise<void> {
+  private async fillPasswordFields(credential: Credential, securityResults: Map<HTMLElement, boolean>): Promise<void> {
     if (!credential.Password) {
       return;
     }
 
-    // Fill main password field first
-    if (this.form.passwordField) {
+    // Fill main password field first (only if it passed security check)
+    if (this.form.passwordField && securityResults.get(this.form.passwordField) !== false) {
       await this.fillPasswordField(this.form.passwordField, credential.Password);
     }
 
-    // Then fill password confirm field after main field is complete
-    if (this.form.passwordConfirmField) {
+    // Then fill password confirm field after main field is complete (only if it passed security check)
+    if (this.form.passwordConfirmField && securityResults.get(this.form.passwordConfirmField) !== false) {
       await this.fillPasswordField(this.form.passwordConfirmField, credential.Password);
     }
   }
@@ -398,7 +430,10 @@ export class FormFiller {
    * @param password The password to fill the field with.
    */
   private async fillPasswordField(field: HTMLInputElement, password: string): Promise<void> {
-    // Find the actual input element (could be in shadow DOM)
+    /*
+     * Find the actual input element (could be in shadow DOM).
+     * This ensures we only fill one element, avoiding duplicate fills.
+     */
     let actualInput = field;
 
     // Check for shadow DOM input

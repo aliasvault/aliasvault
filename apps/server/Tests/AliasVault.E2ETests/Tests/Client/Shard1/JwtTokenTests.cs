@@ -66,7 +66,7 @@ public class JwtTokenTests : ClientPlaywrightTest
             { "password", TestUserPassword },
         });
 
-        var submitButton = Page.GetByRole(AriaRole.Button, new() { Name = "Unlock" });
+        var submitButton = Page.Locator("#unlock-button");
         await submitButton.ClickAsync();
 
         // Check if we get redirected back to the page we were trying to access.
@@ -96,9 +96,9 @@ public class JwtTokenTests : ClientPlaywrightTest
         // Not all pages do a webapi call on load everytime so we need to navigate to a page that does.
         await NavigateUsingBlazorRouter("test/2");
 
-        await WaitForUrlAsync("user/login", "Login");
+        await WaitForUrlAsync("user/login", "Log in");
 
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain("Login"), "No redirect to login while refresh token should be expired.");
+        Assert.That(pageContent, Does.Contain("Log in"), "No redirect to login while refresh token should be expired.");
     }
 }

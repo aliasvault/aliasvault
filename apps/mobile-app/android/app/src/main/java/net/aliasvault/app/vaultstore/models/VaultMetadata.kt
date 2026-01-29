@@ -15,6 +15,12 @@ data class VaultMetadata(
     val privateEmailDomains: List<String> = emptyList(),
 
     /**
+     * The hidden private email domains of the vault.
+     * These domains still function as private email domains but are hidden from UI components.
+     */
+    val hiddenPrivateEmailDomains: List<String> = emptyList(),
+
+    /**
      * The revision number of the vault.
      */
     val vaultRevisionNumber: Int = 0,

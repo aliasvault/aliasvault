@@ -117,81 +117,75 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="REFRESH_TOKEN_REQUIRED" xml:space="preserve">
-    <value>Refresh token is required.</value>
+    <value>Se requiere actualizar el token.</value>
   </data>
   <data name="ACCOUNT_BLOCKED" xml:space="preserve">
-    <value>Your account has been disabled. If you believe this is a mistake, please contact support.</value>
+    <value>Tu cuenta ha sido desactivada. Si crees que esto es un error, ponte en contacto con soporte.</value>
   </data>
   <data name="INVALID_REFRESH_TOKEN" xml:space="preserve">
-    <value>Invalid refresh token</value>
-  </data>
-  <data name="REFRESH_TOKEN_REVOKED_SUCCESSFULLY" xml:space="preserve">
-    <value>Refresh token revoked successfully</value>
+    <value>Token de actualización inválido</value>
   </data>
   <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
-    <value>New account registration is currently disabled on this server. Please contact the administrator.</value>
+    <value>El registro de nueva cuenta está actualmente deshabilitado en este servidor. Por favor, contacte con el administrador.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
-    <value>Invalid username or password. Please try again.</value>
+    <value>Nombre de usuario o contraseña no válidos. Por favor, inténtelo de nuevo.</value>
   </data>
   <data name="USERNAME_REQUIRED" xml:space="preserve">
-    <value>Username is required.</value>
+    <value>Se requiere un nombre de usuario.</value>
   </data>
   <data name="USERNAME_ALREADY_IN_USE" xml:space="preserve">
-    <value>Username is already in use.</value>
+    <value>El nombre de usuario ya está en uso.</value>
   </data>
   <data name="USERNAME_AVAILABLE" xml:space="preserve">
-    <value>Username is available.</value>
+    <value>El nombre de usuario está disponible.</value>
   </data>
   <data name="USERNAME_MISMATCH" xml:space="preserve">
-    <value>Username does not match the current user.</value>
+    <value>El nombre de usuario no coincide con el usuario actual.</value>
   </data>
   <data name="PASSWORD_MISMATCH" xml:space="preserve">
-    <value>The provided password does not match your current password.</value>
+    <value>La contraseña proporcionada no coincide con su contraseña actual.</value>
   </data>
   <data name="ACCOUNT_SUCCESSFULLY_DELETED" xml:space="preserve">
-    <value>Account successfully deleted.</value>
+    <value>Cuenta eliminada con éxito.</value>
   </data>
   <data name="USERNAME_EMPTY_OR_WHITESPACE" xml:space="preserve">
-    <value>Username cannot be empty or whitespace.</value>
+    <value>El nombre de usuario no puede estar vacío o en blanco.</value>
   </data>
   <data name="USERNAME_TOO_SHORT" xml:space="preserve">
-    <value>Username too short: must be at least 3 characters long.</value>
+    <value>Nombre de usuario demasiado corto: debe tener al menos 3 caracteres.</value>
   </data>
   <data name="USERNAME_TOO_LONG" xml:space="preserve">
-    <value>Username too long: cannot be longer than 40 characters.</value>
+    <value>Nombre de usuario demasiado largo: no puede tener más de 40 caracteres.</value>
   </data>
   <data name="USERNAME_INVALID_EMAIL" xml:space="preserve">
-    <value>Invalid email address.</value>
+    <value>Dirección de correo electrónico inválida.</value>
   </data>
   <data name="USERNAME_INVALID_CHARACTERS" xml:space="preserve">
-    <value>Username is invalid, can only contain letters or digits.</value>
+    <value>El nombre de usuario inválido, solo puede contener letras o dígitos.</value>
   </data>
   <data name="PENDING_MIGRATIONS" xml:space="preserve">
-    <value>There are pending migrations. Please run 'dotnet ef database update' to apply them.</value>
-  </data>
-  <data name="SYSTEM_OK" xml:space="preserve">
-    <value>OK</value>
+    <value>Hay migraciones pendientes. Ejecute 'dotnet ef database update' para aplicarlas.</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
-    <value>Internal server error</value>
+    <value>Error interno del servidor</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
-    <value>The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again.</value>
+    <value>La bóveda local no está actualizada. Por favor, sincronice su bóveda actualizando la página e inténtelo de nuevo.</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
-    <value>An unknown error occurred. Please try again.</value>
+    <value>Se ha producido un error desconocido. Por favor, inténtelo de nuevo.</value>
   </data>
   <data name="INVALID_AUTHENTICATOR_CODE" xml:space="preserve">
-    <value>Invalid authenticator code. Please try again.</value>
+    <value>Código de autenticación inválido. Por favor, inténtelo de nuevo.</value>
   </data>
   <data name="INVALID_RECOVERY_CODE" xml:space="preserve">
-    <value>Invalid recovery code. Please try again.</value>
+    <value>Código de recuperación inválido. Por favor, inténtelo de nuevo.</value>
   </data>
   <data name="VAULT_NOT_UP_TO_DATE" xml:space="preserve">
-    <value>Your vault is not up-to-date. Please synchronize your vault and try again.</value>
+    <value>Su bóveda no está actualizada. Por favor, sincronice su bóveda e inténtelo de nuevo.</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
-    <value>You have entered an incorrect password too many times and your account has now been locked out. You can try again in 30 minutes.</value>
+    <value>Ha introducido una contraseña incorrecta demasiadas veces y su cuenta ha sido bloqueada. Puede intentarlo de nuevo en 30 minutos.</value>
   </data>
 </root>

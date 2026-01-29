@@ -109,11 +109,10 @@ extension VaultStore {
         } catch {
             print("Decryption failed: \(error)")
 
-            // If the decryption fails, we remove the encryption key from memory
-            // so that the next password unlock attempt will require a fresh
-            // re-authentication attempt (either via Face ID or passcode) or
-            // manual password unlock.
-            self.encryptionKey = nil
+            // Note: We intentionally do NOT clear the encryption key here.
+            // The key may be valid for a different vault (e.g., after password change
+            // during login, the new key is stored but the old vault can't be decrypted).
+            // Clearing it would break the subsequent sync that downloads the new vault.
 
             throw NSError(domain: "VaultStore", code: 12, userInfo: [NSLocalizedDescriptionKey: "Decryption failed"])
         }

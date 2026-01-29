@@ -79,7 +79,8 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Jeśli chcesz wyeksportować swoje dane uwierzytelniające AliasVault na inny serwer AliasVault (np. z chmury do serwera własnego lub odwrotnie) lub do zupełnie innej usługi, możesz to zrobić tutaj. Pamiętaj, że wszystkie eksportowane dane są niezaszyfrowane, więc przechowuj je w bezpiecznym miejscu i usuń, gdy nie będą już potrzebne.</value>
+    <value>Usunie wszystkie hasła, ale zachowa konto i aliasy e-mail.
+Użyj, by zacząć od nowa (np. po imporcie z innego menedżera).</value>
     <comment>Export section description</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">

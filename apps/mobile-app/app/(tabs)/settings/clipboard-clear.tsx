@@ -11,20 +11,20 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { useAuth } from '@/context/AuthContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
-const TIMEOUT_OPTIONS = [
-  { value: 0, label: 'settings.clipboardClearOptions.never' },
-  { value: 5, label: 'settings.clipboardClearOptions.5seconds' },
-  { value: 10, label: 'settings.clipboardClearOptions.10seconds' },
-  { value: 15, label: 'settings.clipboardClearOptions.15seconds' },
-  { value: 30, label: 'settings.clipboardClearOptions.30seconds' },
-];
-
 /**
  * Clipboard clear settings screen.
  */
 export default function ClipboardClearScreen(): React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
+
+  const TIMEOUT_OPTIONS = [
+    { value: 0, label: t('settings.clipboardClearOptions.never') },
+    { value: 5, label: t('settings.clipboardClearOptions.5seconds') },
+    { value: 10, label: t('settings.clipboardClearOptions.10seconds') },
+    { value: 15, label: t('settings.clipboardClearOptions.15seconds') },
+    { value: 30, label: t('settings.clipboardClearOptions.30seconds') },
+  ];
   const { getClipboardClearTimeout, setClipboardClearTimeout } = useAuth();
   const [selectedTimeout, setSelectedTimeout] = useState<number>(10);
   const [isIgnoringBatteryOptimizations, setIsIgnoringBatteryOptimizations] = useState<boolean>(true);
@@ -198,7 +198,7 @@ export default function ClipboardClearScreen(): React.ReactNode {
                 style={[styles.option, isLast && styles.optionLast]}
                 onPress={() => handleTimeoutChange(option.value)}
               >
-                <ThemedText style={styles.optionText}>{t(option.label)}</ThemedText>
+                <ThemedText style={styles.optionText}>{option.label}</ThemedText>
                 {selectedTimeout === option.value && (
                   <Ionicons name="checkmark" size={20} style={styles.selectedIcon} />
                 )}

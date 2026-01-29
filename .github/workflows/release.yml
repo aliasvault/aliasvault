@@ -27,7 +27,33 @@ on:
         type: boolean
 
 jobs:
+  # Guard job to prevent releases from main branch
+  valid-release:
+    if: github.event_name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check tag target
+        run: |
+          BRANCHES=$(git branch -r --contains $GITHUB_SHA)
+
+          echo "Tag is contained in:"
+          echo "$BRANCHES"
+
+          if ! echo "$BRANCHES" | grep -q "origin/release/"; then
+            echo "❌ Releases must come from a release/* branch, please recreate the release from a release branch"
+            exit 1
+          fi
+
+          echo "✅ Tag is on a release branch"
+
   upload-install-script:
+    needs: [valid-release]
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -43,7 +69,8 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   build-chrome-extension:
-    if: github.event_name == 'release' || inputs.build_browser_extensions
+    needs: [valid-release]
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_browser_extensions)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -58,7 +85,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-firefox-extension:
-    if: github.event_name == 'release' || inputs.build_browser_extensions
+    needs: [valid-release]
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_browser_extensions)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -73,7 +101,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-edge-extension:
-    if: github.event_name == 'release' || inputs.build_browser_extensions
+    needs: [valid-release]
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_browser_extensions)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -88,7 +117,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-android-release:
-    if: github.event_name == 'release' || inputs.build_mobile_apps
+    needs: [valid-release]
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_mobile_apps)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -107,7 +137,8 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
 
   build-and-push-docker-multi-container:
-    if: github.event_name == 'release' || inputs.build_multi_container
+    needs: [valid-release]
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -372,7 +403,8 @@ jobs:
           annotations: ${{ steps.installcli-meta.outputs.annotations }}
 
   build-and-push-docker-all-in-one:
-    if: github.event_name == 'release' || inputs.build_all_in_one
+    needs: [valid-release]
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_all_in_one)
     runs-on: ubuntu-latest
     permissions:
       contents: read

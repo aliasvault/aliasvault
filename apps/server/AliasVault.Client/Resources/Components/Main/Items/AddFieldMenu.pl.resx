@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Section options -->
+  <data name="TwoFactorAuthentication">
+    <value>Uwierzytelnianie dwuskładnikowe</value>
+    <comment>Option to add 2FA section</comment>
+  </data>
+  <data name="Attachments">
+    <value>Załączniki</value>
+    <comment>Option to add attachments section</comment>
+  </data>
+  <data name="AddCustomField">
+    <value>Dodaj pole niestandardowe</value>
+    <comment>Option to add a custom field</comment>
+  </data>
+  <!-- Field labels -->
+  <data name="FieldLoginUsername">
+    <value>Nazwa użytkownika</value>
+    <comment>Username field label</comment>
+  </data>
+  <data name="FieldLoginPassword">
+    <value>Hasło</value>
+    <comment>Password field label</comment>
+  </data>
+  <data name="FieldLoginEmail">
+    <value>Skrzynka odbiorcza</value>
+    <comment>Email field label</comment>
+  </data>
+  <data name="FieldLoginUrl">
+    <value>adres URL</value>
+    <comment>URL field label</comment>
+  </data>
+  <data name="FieldAliasFirstName">
+    <value>Imię</value>
+    <comment>First name field label</comment>
+  </data>
+  <data name="FieldAliasLastName">
+    <value>Nazwisko</value>
+    <comment>Last name field label</comment>
+  </data>
+  <data name="FieldAliasGender">
+    <value>Płeć</value>
+    <comment>Gender field label</comment>
+  </data>
+  <data name="FieldAliasBirthdate">
+    <value>Data urodzenia</value>
+    <comment>Birth date field label</comment>
+  </data>
+  <data name="FieldCardNumber">
+    <value>Numer karty</value>
+    <comment>Card number field label</comment>
+  </data>
+  <data name="FieldCardCardholderName">
+    <value>Imię i nazwisko posiadacza karty</value>
+    <comment>Cardholder name field label</comment>
+  </data>
+  <data name="FieldCardExpiryMonth">
+    <value>Miesiąc wygaśnięcia</value>
+    <comment>Expiry month field label</comment>
+  </data>
+  <data name="FieldCardExpiryYear">
+    <value>Rok wygaśnięcia</value>
+    <comment>Expiry year field label</comment>
+  </data>
+  <data name="FieldCardCvv">
+    <value>Kod CVV</value>
+    <comment>CVV field label</comment>
+  </data>
+  <data name="FieldCardPin">
+    <value>Kod PIN</value>
+    <comment>PIN field label</comment>
+  </data>
+  <data name="FieldNotesContent">
+    <value>Notatki</value>
+    <comment>Notes field label</comment>
+  </data>
+  <!-- Custom field modal -->
+  <data name="FieldLabel">
+    <value>Etykieta pola</value>
+    <comment>Label for field label input</comment>
+  </data>
+  <data name="EnterFieldName">
+    <value>Wprowadź nazwę pola</value>
+    <comment>Placeholder for field name input</comment>
+  </data>
+  <data name="FieldType">
+    <value>Typ pola</value>
+    <comment>Label for field type selector</comment>
+  </data>
+  <data name="FieldTypeText">
+    <value>Tekst</value>
+    <comment>Text field type option</comment>
+  </data>
+  <data name="FieldTypeHidden">
+    <value>Ukryte</value>
+    <comment>Hidden field type option</comment>
+  </data>
+  <data name="FieldTypeEmail">
+    <value>Skrzynka odbiorcza</value>
+    <comment>Email field type option</comment>
+  </data>
+  <data name="FieldTypeUrl">
+    <value>adres URL</value>
+    <comment>URL field type option</comment>
+  </data>
+  <data name="FieldTypePhone">
+    <value>Numer telefonu</value>
+    <comment>Phone field type option</comment>
+  </data>
+  <data name="FieldTypeNumber">
+    <value>Numer</value>
+    <comment>Number field type option</comment>
+  </data>
+  <data name="FieldTypeDate">
+    <value>Data</value>
+    <comment>Date field type option</comment>
+  </data>
+  <data name="FieldTypeTextArea">
+    <value>Obszar tekst</value>
+    <comment>Text area field type option</comment>
+  </data>
+  <!-- Buttons -->
+  <data name="Add">
+    <value>Dodaj</value>
+    <comment>Add button text</comment>
+  </data>
+  <data name="Cancel">
+    <value>Anulować</value>
+    <comment>Cancel button text</comment>
+  </data>
+  <!-- Default field label -->
+  <data name="DefaultFieldLabel">
+    <value>Pole {0}</value>
+    <comment>Default label for custom field, {0} is the field number</comment>
+  </data>
+</root>

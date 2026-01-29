@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <data name="ViewItemPageTitle">
+    <value>Ver elemento</value>
+    <comment>Page title for viewing an item</comment>
+  </data>
+  <data name="ViewItemTitle">
+    <value>Ver elemento</value>
+    <comment>Page header title for viewing an item</comment>
+  </data>
+  <data name="EditButtonMobile">
+    <value>Editar</value>
+    <comment>Text for edit button on mobile</comment>
+  </data>
+  <data name="EditButtonDesktop">
+    <value>Editar elemento</value>
+    <comment>Text for edit button on desktop</comment>
+  </data>
+  <data name="DeleteButtonMobile">
+    <value>Eliminar</value>
+    <comment>Text for delete button on mobile</comment>
+  </data>
+  <data name="DeleteButtonDesktop">
+    <value>Eliminar elemento</value>
+    <comment>Text for delete button on desktop</comment>
+  </data>
+  <data name="LoginDetailsSection">
+    <value>Datos de inicio de sesión</value>
+    <comment>Section header for login details</comment>
+  </data>
+  <data name="GeneratedItemDescription">
+    <value>A continuación puede ver y copiar los detalles generados para este elemento. Cualquier correo electrónico enviado a la dirección mostrada aparecerá automáticamente en esta página.</value>
+    <comment>Description for generated item with email support</comment>
+  </data>
+  <data name="StoredItemDescription">
+    <value>A continuación puede ver y copiar los detalles de acceso almacenados para este elemento.</value>
+    <comment>Description for stored item without email support</comment>
+  </data>
+  <data name="EmailLabel">
+    <value>Correo</value>
+    <comment>Label for email field</comment>
+  </data>
+  <data name="UsernameLabel">
+    <value>Nombre de usuario</value>
+    <comment>Label for username field</comment>
+  </data>
+  <data name="PasswordLabel">
+    <value>Contraseña</value>
+    <comment>Label for password field</comment>
+  </data>
+  <data name="AliasSection">
+    <value>Alias</value>
+    <comment>Section header for alias information</comment>
+  </data>
+  <data name="FullNameLabel">
+    <value>Nombre completo</value>
+    <comment>Label for full name field</comment>
+  </data>
+  <data name="FirstNameLabel">
+    <value>Nombre</value>
+    <comment>Label for first name field</comment>
+  </data>
+  <data name="LastNameLabel">
+    <value>Apellido</value>
+    <comment>Label for last name field</comment>
+  </data>
+  <data name="BirthdateLabel">
+    <value>Fecha de nacimiento</value>
+    <comment>Label for birthdate field</comment>
+  </data>
+  <data name="NicknameLabel">
+    <value>Apodo</value>
+    <comment>Label for nickname field</comment>
+  </data>
+  <data name="ViewItemBreadcrumb">
+    <value>Ver elemento</value>
+    <comment>Breadcrumb text for view item page</comment>
+  </data>
+  <data name="ItemNotFoundError">
+    <value>Este elemento (ya) no existe. Por favor, inténtalo de nuevo.</value>
+    <comment>Error message when item is not found</comment>
+  </data>
+  <data name="PasskeySectionHeader">
+    <value>Llave de acceso</value>
+    <comment>Section header for passkey</comment>
+  </data>
+  <data name="PasskeyLabel">
+    <value>Llave de acceso</value>
+    <comment>Label for passkey</comment>
+  </data>
+  <data name="PasskeySiteLabel">
+    <value>Sitio</value>
+    <comment>Label for passkey site/relying party ID</comment>
+  </data>
+  <data name="PasskeyDisplayNameLabel">
+    <value>Nombre</value>
+    <comment>Label for passkey display name</comment>
+  </data>
+  <data name="PasskeyHelpText">
+    <value>Las llaves de acceso se crean a través de la extensión del navegador o de las aplicaciones móviles cuando un sitio web lo solicita. No se pueden editar o crear manualmente a través de la aplicación web. Para eliminar esta llave, edite este elemento y elimine la llave. Para reemplazar o crear una nueva llave, visite el sitio web y siga sus indicaciones.</value>
+    <comment>Help text explaining how passkeys work</comment>
+  </data>
+  <data name="Untitled">
+    <value>Untitled</value>
+    <comment>Placeholder for items without a name</comment>
+  </data>
+  <data name="NotesSection">
+    <value>Notas</value>
+    <comment>Section header for notes</comment>
+  </data>
+  <data name="CardSection">
+    <value>Detalles de la tarjeta</value>
+    <comment>Section header for credit card details</comment>
+  </data>
+  <data name="CustomFieldsSection">
+    <value>Campos personalizados</value>
+    <comment>Section header for custom fields</comment>
+  </data>
+</root>

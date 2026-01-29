@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Włącz uwierzytelnianie dwuskładnikowe</value>
+    <value>Włącz weryfikację dwuetapową (2FA)</value>
     <comment>Page title for the enable 2FA page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
@@ -68,12 +68,12 @@
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbEnable2Fa" xml:space="preserve">
-    <value>Włącz uwierzytelnianie dwuskładnikowe </value>
+    <value>Włącz weryfikację dwuetapową (2FA)</value>
     <comment>Breadcrumb text for enable 2FA</comment>
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>Włącz uwierzytelnianie dwuskładnikowe, aby zwiększyć bezpieczeństwo swoich sejfów.</value>
+    <value>Włącz weryfikację dwuetapową (2FA), aby zwiększyć bezpieczeństwo swojego sejfu.</value>
     <comment>Description text explaining 2FA setup</comment>
   </data>
   <!-- Setup instructions -->
@@ -92,11 +92,11 @@
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorEnabledSuccess" xml:space="preserve">
-    <value>Uwierzytelnianie dwuskładnikowe zostało pomyślnie włączone. Przy następnym logowaniu konieczne będzie wprowadzenie kodu uwierzytelnienia dwuskładnikowego.</value>
+    <value>Weryfikacja dwuetapowa (2FA) została pomyślnie włączona. Przy następnym logowaniu konieczne będzie wprowadzenie kodu uwierzytelnienia.</value>
     <comment>Success message when 2FA is enabled</comment>
   </data>
   <data name="FailedToEnable2Fa" xml:space="preserve">
-    <value>Nie udało się włączyć uwierzytelniania dwuskładnikowego.</value>
+    <value>Nie udało się włączyć uwierzytelniania dwuskładnikowego (2FA).</value>
     <comment>Error message when 2FA setup fails</comment>
   </data>
 </root>

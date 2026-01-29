@@ -3,6 +3,7 @@ package net.aliasvault.app.vaultstore
 import android.util.Log
 import net.aliasvault.app.exceptions.SerializationException
 import net.aliasvault.app.exceptions.VaultOperationException
+import net.aliasvault.app.vaultstore.repositories.ItemRepository
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -11,7 +12,7 @@ import org.json.JSONObject
  */
 class VaultMutate(
     private val database: VaultDatabase,
-    private val query: VaultQuery,
+    private val itemRepository: ItemRepository,
     private val metadata: VaultMetadataManager,
 ) {
     companion object {
@@ -22,8 +23,12 @@ class VaultMutate(
 
     /**
      * Execute a vault mutation operation.
+     * This captures mutation sequence for race detection and clears dirty after successful upload.
      */
     suspend fun mutateVault(webApiService: net.aliasvault.app.webapi.WebApiService): Boolean {
+        // Capture mutation sequence for race detection
+        val mutationSeqAtStart = metadata.getMutationSequence()
+
         try {
             val vault = prepareVault()
 
@@ -33,13 +38,10 @@ class VaultMutate(
             json.put("credentialsCount", vault.credentialsCount)
             json.put("currentRevisionNumber", vault.currentRevisionNumber)
             json.put("emailAddressList", JSONArray(vault.emailAddressList))
-            json.put("privateEmailDomainList", JSONArray(vault.privateEmailDomainList))
-            json.put("publicEmailDomainList", JSONArray(vault.publicEmailDomainList))
             json.put("encryptionPublicKey", vault.encryptionPublicKey)
             json.put("updatedAt", vault.updatedAt)
             json.put("username", vault.username)
             json.put("version", vault.version)
-            json.put("client", vault.client)
 
             val response = webApiService.executeRequest(
                 method = "POST",
@@ -67,7 +69,8 @@ class VaultMutate(
 
             when (vaultResponse.status) {
                 0 -> {
-                    metadata.setVaultRevisionNumber(vaultResponse.newRevisionNumber)
+                    // Success - update revision and clear dirty (if no mutations during upload)
+                    metadata.markVaultClean(mutationSeqAtStart, vaultResponse.newRevisionNumber)
                     metadata.setOfflineMode(false)
                     return true
                 }
@@ -78,6 +81,96 @@ class VaultMutate(
         } catch (e: Exception) {
             Log.e(TAG, "Error mutating vault", e)
             throw e
+        }
+    }
+
+    /**
+     * Upload the vault to the server and return detailed result.
+     * This is used for sync operations where race detection is needed.
+     */
+    suspend fun uploadVault(webApiService: net.aliasvault.app.webapi.WebApiService): VaultUploadResult {
+        val mutationSeqAtStart = metadata.getMutationSequence()
+
+        return try {
+            val vault = prepareVault()
+
+            val json = JSONObject()
+            json.put("blob", vault.blob)
+            json.put("createdAt", vault.createdAt)
+            json.put("credentialsCount", vault.credentialsCount)
+            json.put("currentRevisionNumber", vault.currentRevisionNumber)
+            json.put("emailAddressList", JSONArray(vault.emailAddressList))
+            json.put("encryptionPublicKey", vault.encryptionPublicKey)
+            json.put("updatedAt", vault.updatedAt)
+            json.put("username", vault.username)
+            json.put("version", vault.version)
+
+            val response = try {
+                webApiService.executeRequest(
+                    method = "POST",
+                    endpoint = "Vault",
+                    body = json.toString(),
+                    headers = mapOf("Content-Type" to "application/json"),
+                    requiresAuth = true,
+                )
+            } catch (e: Exception) {
+                return VaultUploadResult(
+                    success = false,
+                    status = -1,
+                    newRevisionNumber = 0,
+                    mutationSeqAtStart = mutationSeqAtStart,
+                    error = "Network error: ${e.message}",
+                )
+            }
+
+            if (response.statusCode != 200) {
+                return VaultUploadResult(
+                    success = false,
+                    status = -1,
+                    newRevisionNumber = 0,
+                    mutationSeqAtStart = mutationSeqAtStart,
+                    error = "Server returned error: ${response.statusCode}",
+                )
+            }
+
+            val vaultResponse = try {
+                val responseJson = JSONObject(response.body)
+                VaultPostResponse(
+                    status = responseJson.getInt("status"),
+                    newRevisionNumber = responseJson.getInt("newRevisionNumber"),
+                )
+            } catch (e: Exception) {
+                return VaultUploadResult(
+                    success = false,
+                    status = -1,
+                    newRevisionNumber = 0,
+                    mutationSeqAtStart = mutationSeqAtStart,
+                    error = "Failed to parse response: ${e.message}",
+                )
+            }
+
+            if (vaultResponse.status == 0) {
+                // Success - update local revision number and clear offline mode
+                metadata.setVaultRevisionNumber(vaultResponse.newRevisionNumber)
+                metadata.setOfflineMode(false)
+            }
+
+            VaultUploadResult(
+                success = vaultResponse.status == 0,
+                status = vaultResponse.status,
+                newRevisionNumber = vaultResponse.newRevisionNumber,
+                mutationSeqAtStart = mutationSeqAtStart,
+                error = if (vaultResponse.status != 0) "Vault upload returned status ${vaultResponse.status}" else null,
+            )
+        } catch (e: Exception) {
+            Log.e(TAG, "Error uploading vault", e)
+            VaultUploadResult(
+                success = false,
+                status = -1,
+                newRevisionNumber = 0,
+                mutationSeqAtStart = mutationSeqAtStart,
+                error = "Error uploading vault: ${e.message}",
+            )
         }
     }
 
@@ -97,13 +190,15 @@ class VaultMutate(
             throw VaultOperationException("Vault must be unlocked to prepare for upload")
         }
 
-        val credentials = query.getAllCredentials()
+        // Get all items to count them and extract private email addresses
+        val items = itemRepository.getAll()
 
         val metadataObj = metadata.getVaultMetadataObject()
         val privateEmailDomains = metadataObj?.privateEmailDomains ?: emptyList()
 
-        val privateEmailAddresses = credentials
-            .mapNotNull { it.alias?.email }
+        // Extract private email addresses from items using the email field
+        val privateEmailAddresses = items
+            .mapNotNull { it.email }
             .filter { email ->
                 privateEmailDomains.any { domain ->
                     email.lowercase().endsWith("@${domain.lowercase()}")
@@ -111,7 +206,7 @@ class VaultMutate(
             }
             .distinct()
 
-        val dbVersion = query.getDatabaseVersion()
+        val dbVersion = itemRepository.getDatabaseVersion()
 
         @Suppress("SwallowedException")
         val version = try {
@@ -124,8 +219,6 @@ class VaultMutate(
         } catch (e: Exception) {
             "0.0.0"
         }
-        val baseVersion = version.split("-").firstOrNull() ?: "0.0.0"
-        val client = "android-$baseVersion"
 
         val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", java.util.Locale.US)
         dateFormat.timeZone = java.util.TimeZone.getTimeZone("UTC")
@@ -134,16 +227,14 @@ class VaultMutate(
         return VaultUpload(
             blob = encryptedDb,
             createdAt = now,
-            credentialsCount = credentials.size,
+            credentialsCount = items.size,
             currentRevisionNumber = currentRevision,
             emailAddressList = privateEmailAddresses,
-            privateEmailDomainList = emptyList(),
-            publicEmailDomainList = emptyList(),
+            // TODO: add public RSA encryption key to payload when implementing vault creation from mobile app. Currently only web app does this.
             encryptionPublicKey = "",
             updatedAt = now,
             username = username,
             version = dbVersion,
-            client = client,
         )
     }
 
@@ -157,13 +248,10 @@ class VaultMutate(
         val credentialsCount: Int,
         val currentRevisionNumber: Int,
         val emailAddressList: List<String>,
-        val privateEmailDomainList: List<String>,
-        val publicEmailDomainList: List<String>,
         val encryptionPublicKey: String,
         val updatedAt: String,
         val username: String,
         val version: String,
-        val client: String,
     )
 
     private data class VaultPostResponse(

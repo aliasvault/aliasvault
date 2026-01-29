@@ -86,4 +86,12 @@
     <value>Importa</value>
     <comment>Import button text</comment>
   </data>
+  <data name="ImportFoldersLabel" xml:space="preserve">
+    <value>Importa cartelle (se disponibile)</value>
+    <comment>Checkbox label for importing folder structure from the source password manager</comment>
+  </data>
+  <data name="FoldersDetected" xml:space="preserve">
+    <value>{0} cartelle rilevate</value>
+    <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
+  </data>
 </root>

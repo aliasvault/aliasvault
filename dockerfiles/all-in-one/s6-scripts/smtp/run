@@ -28,6 +28,7 @@ for i in {1..30}; do
 done
 
 export PRIVATE_EMAIL_DOMAINS="${PRIVATE_EMAIL_DOMAINS:-}"
+export HIDDEN_PRIVATE_EMAIL_DOMAINS="${HIDDEN_PRIVATE_EMAIL_DOMAINS:-}"
 export SMTP_TLS_ENABLED="${SMTP_TLS_ENABLED:-false}"
 
 # Set .NET logging level based on verbosity

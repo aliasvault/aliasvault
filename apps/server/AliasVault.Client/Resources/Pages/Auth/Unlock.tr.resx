@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="LoggingInWithWebAuthn" xml:space="preserve">
-    <value>Logging in with WebAuthn...</value>
+    <value>Logging in with passkey...</value>
     <comment>Message shown while WebAuthn authentication is in progress</comment>
   </data>
   <data name="QuickUnlockDescription" xml:space="preserve">
-    <value>Quickly unlock your vault using your fingerprint, face ID, or security key. Or login with your password as a fallback.</value>
+    <value>Quickly unlock your vault using your passkey. Or login with your password as a fallback.</value>
     <comment>Description explaining WebAuthn unlock options</comment>
   </data>
   <data name="UnlockWithWebAuthn" xml:space="preserve">
-    <value>Unlock with WebAuthn</value>
+    <value>Unlock with passkey</value>
     <comment>Button text for WebAuthn unlock</comment>
   </data>
   <data name="UnlockWithPassword" xml:space="preserve">
@@ -83,7 +83,7 @@
     <comment>Label for password input field</comment>
   </data>
   <data name="UnlockButton" xml:space="preserve">
-    <value>Unlock</value>
+    <value>Kilidi aç</value>
     <comment>Button text for unlock submission</comment>
   </data>
   <data name="SwitchAccountsText" xml:space="preserve">
@@ -121,5 +121,9 @@
   <data name="GenericUnlockError" xml:space="preserve">
     <value>An error occurred while processing the login request. Try again (later).</value>
     <comment>Generic error message for unlock failures</comment>
+  </data>
+  <data name="UnlockWithMobileButton" xml:space="preserve">
+    <value>Unlock with Mobile App</value>
+    <comment>Button text for unlocking with mobile app</comment>
   </data>
 </root>

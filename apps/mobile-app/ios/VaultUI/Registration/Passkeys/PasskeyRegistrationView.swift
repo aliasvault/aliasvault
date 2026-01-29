@@ -27,8 +27,8 @@ public struct PasskeyRegistrationView: View {
                         // Header
                         PasskeyRegistrationHeader(rpId: viewModel.rpId)
 
-                        // Show selection or form based on existing passkeys
-                        if viewModel.existingPasskeys.isEmpty {
+                        // Show selection or form based on existing passkeys/items
+                        if viewModel.existingPasskeys.isEmpty && viewModel.existingItemsWithoutPasskey.isEmpty {
                             // Go directly to create form
                             createFormContent
                         } else {
@@ -48,7 +48,7 @@ public struct PasskeyRegistrationView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    if !viewModel.existingPasskeys.isEmpty {
+                    if !viewModel.existingPasskeys.isEmpty || !viewModel.existingItemsWithoutPasskey.isEmpty {
                         Text(String(localized: "create_passkey_title", bundle: locBundle))
                             .font(.headline)
                             .foregroundStyle(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
@@ -64,7 +64,7 @@ public struct PasskeyRegistrationView: View {
     // MARK: - Selection Content (Inline)
 
     private var selectionContent: some View {
-        VStack(spacing: 36) {
+        VStack(spacing: 24) {
             // Create new button
             Button(action: {
                 viewModel.handleCreateNew()
@@ -81,28 +81,56 @@ public struct PasskeyRegistrationView: View {
                 .cornerRadius(8)
             })
 
-            // Existing passkeys list
-            VStack(alignment: .leading, spacing: 12) {
-                Text(String(localized: "select_passkey_to_replace", bundle: locBundle) + ":")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
-                    .padding(.horizontal)
+            // Existing Items without passkey section (for merging)
+            if !viewModel.existingItemsWithoutPasskey.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(String(localized: "passkey_add_to_existing", bundle: locBundle) + ":")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                        .padding(.horizontal)
 
-                ScrollView {
-                    VStack(spacing: 8) {
-                        ForEach(viewModel.existingPasskeys) { passkeyInfo in
-                            Button(action: {
-                                viewModel.handleSelectReplace(passkeyId: passkeyInfo.id)
-                                navigationPath.append(PasskeyNavigationDestination.replace(passkeyInfo.id))
-                            }, label: {
-                                ExistingPasskeyRow(passkey: passkeyInfo)
-                            })
-                            .buttonStyle(PlainButtonStyle())
+                    ScrollView {
+                        VStack(spacing: 8) {
+                            ForEach(viewModel.existingItemsWithoutPasskey) { itemInfo in
+                                Button(action: {
+                                    viewModel.handleSelectMerge(itemId: itemInfo.itemId)
+                                    navigationPath.append(PasskeyNavigationDestination.mergeWithItem(itemInfo.itemId))
+                                }, label: {
+                                    ExistingItemRow(item: itemInfo, rpId: viewModel.rpId)
+                                })
+                                .buttonStyle(PlainButtonStyle())
+                            }
                         }
                     }
+                    .frame(maxHeight: 200)
                 }
-                .frame(maxHeight: 200)
+            }
+
+            // Existing passkeys list (for replacement)
+            if !viewModel.existingPasskeys.isEmpty {
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(String(localized: "select_passkey_to_replace", bundle: locBundle) + ":")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+                        .padding(.horizontal)
+
+                    ScrollView {
+                        VStack(spacing: 8) {
+                            ForEach(viewModel.existingPasskeys) { passkeyInfo in
+                                Button(action: {
+                                    viewModel.handleSelectReplace(passkeyId: passkeyInfo.id)
+                                    navigationPath.append(PasskeyNavigationDestination.replace(passkeyInfo.id))
+                                }, label: {
+                                    ExistingPasskeyRow(passkey: passkeyInfo)
+                                })
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                    }
+                    .frame(maxHeight: 200)
+                }
             }
 
             Spacer()
@@ -210,15 +238,67 @@ public struct PasskeyRegistrationView: View {
             PasskeyFormView(
                 viewModel: viewModel,
                 isReplaceMode: false,
-                replacingPasskeyId: nil
+                replacingPasskeyId: nil,
+                mergingItemId: nil
             )
         case .replace(let passkeyId):
             PasskeyFormView(
                 viewModel: viewModel,
                 isReplaceMode: true,
-                replacingPasskeyId: passkeyId
+                replacingPasskeyId: passkeyId,
+                mergingItemId: nil
+            )
+        case .mergeWithItem(let itemId):
+            PasskeyFormView(
+                viewModel: viewModel,
+                isReplaceMode: false,
+                replacingPasskeyId: nil,
+                mergingItemId: itemId
             )
         }
+    }
+}
+
+/// Row displaying an existing item (without passkey) that can have a passkey merged into it
+struct ExistingItemRow: View {
+    let item: ItemWithCredentialInfo
+    let rpId: String
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Credential icon
+            Image(systemName: "person.crop.circle.fill")
+                .foregroundColor(ColorConstants.Light.primary)
+                .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(item.serviceName ?? rpId)
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.text : ColorConstants.Light.text)
+
+                HStack(spacing: 4) {
+                    if let username = item.username {
+                        Text(username)
+                            .font(.caption)
+                            .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.textMuted : ColorConstants.Light.textMuted)
+                    }
+                }
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .foregroundColor(colorScheme == .dark ? ColorConstants.Dark.textMuted : ColorConstants.Light.textMuted)
+                .font(.caption)
+        }
+        .padding()
+        .background(
+            (colorScheme == .dark ? ColorConstants.Dark.accentBackground : ColorConstants.Light.accentBackground)
+        )
+        .cornerRadius(8)
     }
 }
 
@@ -233,7 +313,10 @@ public class PasskeyRegistrationViewModel: ObservableObject {
     @Published public var isLoading: Bool = false
     @Published public var loadingMessage: String = ""
     @Published public var existingPasskeys: [PasskeyWithCredentialInfo] = []
+    @Published public var existingItemsWithoutPasskey: [ItemWithCredentialInfo] = []
     @Published public var selectedPasskeyToReplace: UUID?
+    @Published public var selectedItemToMerge: UUID?
+    @Published public var isMergeMode: Bool = false
 
     private let completionHandler: (Bool) -> Void
     private let cancelHandler: () -> Void
@@ -245,6 +328,7 @@ public class PasskeyRegistrationViewModel: ObservableObject {
         userName: String? = nil,
         userDisplayName: String? = nil,
         existingPasskeys: [PasskeyWithCredentialInfo] = [],
+        existingItemsWithoutPasskey: [ItemWithCredentialInfo] = [],
         completionHandler: @escaping (Bool) -> Void,
         cancelHandler: @escaping () -> Void
     ) {
@@ -256,6 +340,7 @@ public class PasskeyRegistrationViewModel: ObservableObject {
         // Initialize displayName to rpId by default
         self.displayName = rpId
         self.existingPasskeys = existingPasskeys
+        self.existingItemsWithoutPasskey = existingItemsWithoutPasskey
         self.completionHandler = completionHandler
         self.cancelHandler = cancelHandler
     }
@@ -269,14 +354,28 @@ public class PasskeyRegistrationViewModel: ObservableObject {
 
     public func handleCreateNew() {
         selectedPasskeyToReplace = nil
+        selectedItemToMerge = nil
+        isMergeMode = false
         displayName = rpId
     }
 
     public func handleSelectReplace(passkeyId: UUID) {
         selectedPasskeyToReplace = passkeyId
+        selectedItemToMerge = nil
+        isMergeMode = false
         // Pre-fill display name with the existing passkey's name
         if let passkey = existingPasskeys.first(where: { $0.id == passkeyId }) {
             displayName = passkey.displayName
+        }
+    }
+
+    public func handleSelectMerge(itemId: UUID) {
+        selectedPasskeyToReplace = nil
+        selectedItemToMerge = itemId
+        isMergeMode = true
+        // Pre-fill display name with the existing item's service name
+        if let item = existingItemsWithoutPasskey.first(where: { $0.itemId == itemId }) {
+            displayName = item.serviceName ?? rpId
         }
     }
 

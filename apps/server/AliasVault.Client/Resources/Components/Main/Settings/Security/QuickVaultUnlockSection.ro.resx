@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Deblocare prin Passkey</value>
+    <comment>Title for passkey unlock section</comment>
+  </data>
+  <data name="EnabledDescription" xml:space="preserve">
+    <value>Parola ta master este criptată prin extensia passkey PRF și stocată local. Când reîncarci pagina sau tab-ul AliasVault, îți poți debloca seiful prin passkey. Dacă dorești să dezactivezi deblocarea prin passkey, poți face acest lucru folosind butonul de mai jos. Parola ta master va putea fi folosită în continuare pentru deblocarea seifului.</value>
+    <comment>Description when passkey unlock is enabled</comment>
+  </data>
+  <data name="DisableButton" xml:space="preserve">
+    <value>Dezactivați deblocarea prin Passkey</value>
+    <comment>Button to disable passkey unlock</comment>
+  </data>
+  <data name="DisabledDescription" xml:space="preserve">
+    <value>În mod implicit, reîncărcarea paginii sau a tab-ului AliasVault necesită reintroducerea parolei master. Prin activarea unui passkey, îți poți debloca seiful instantaneu. Când această opțiune este activată, parola ta master este criptată local prin extensia PRF a passkey-ului. Notă: deblocarea prin passkey va funcționa doar pe dispozitivul și browserul curent pe care a fost activată.</value>
+    <comment>Description when passkey unlock is disabled</comment>
+  </data>
+  <data name="ExperimentalWarning" xml:space="preserve">
+    <value>Această funcționalitate este disponibilă momentan în extensia de browser AliasVault și în aplicația iOS. Compatibilitatea pentru Android va fi oferită în curând. Dacă întâmpinați probleme, puteți dezactiva această opțiune în orice moment.</value>
+    <comment>Warning about feature compatibility</comment>
+  </data>
+  <data name="EnableButton" xml:space="preserve">
+    <value>Activați deblocarea prin Passkey</value>
+    <comment>Button to enable passkey unlock</comment>
+  </data>
+  <data name="SuccessEnabledMessage" xml:space="preserve">
+    <value>Deblocarea prin passkey a fost activată cu succes. Data viitoare când seiful este blocat, îl vei putea debloca folosind passkey-ul creat.</value>
+    <comment>Success message when passkey unlock is enabled</comment>
+  </data>
+  <data name="SuccessDisabledMessage" xml:space="preserve">
+    <value>Deblocarea prin passkey a fost dezactivată cu succes.</value>
+    <comment>Success message when passkey unlock is disabled</comment>
+  </data>
+  <data name="WebAuthnNotSupportedError" xml:space="preserve">
+    <value>Browserul tău actual nu este compatibil cu extensia WebAuthn PRF. Reîncearcă folosind un alt browser.</value>
+    <comment>Error when WebAuthn is not supported</comment>
+  </data>
+  <data name="EnableErrorMessage" xml:space="preserve">
+    <value>A apărut o eroare la încercarea de activare a deblocării rapide a seifului. Reîncearcă din nou (mai târziu).</value>
+    <comment>Generic error message when enabling fails</comment>
+  </data>
+</root>

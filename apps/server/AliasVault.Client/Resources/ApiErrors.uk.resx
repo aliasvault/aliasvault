@@ -117,79 +117,73 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="REFRESH_TOKEN_REQUIRED" xml:space="preserve">
-    <value>Refresh token is required.</value>
+    <value>Необхідне оновлення токена.</value>
   </data>
   <data name="ACCOUNT_BLOCKED" xml:space="preserve">
-    <value>Your account has been disabled. If you believe this is a mistake, please contact support.</value>
+    <value>Ваш обліковий запис вимкнено. Якщо ви вважаєте, що це помилка, зверніться до служби підтримки.</value>
   </data>
   <data name="INVALID_REFRESH_TOKEN" xml:space="preserve">
-    <value>Invalid refresh token</value>
-  </data>
-  <data name="REFRESH_TOKEN_REVOKED_SUCCESSFULLY" xml:space="preserve">
-    <value>Refresh token revoked successfully</value>
+    <value>Оновлення токена невдале</value>
   </data>
   <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
-    <value>New account registration is currently disabled on this server. Please contact the administrator.</value>
+    <value>Реєстрація нових облікових записів на цьому сервері наразі вимкнена. Будь ласка, зверніться до адміністратора.</value>
   </data>
   <data name="USER_NOT_FOUND" xml:space="preserve">
-    <value>Invalid username or password. Please try again.</value>
+    <value>Недійсне ім'я користувача або пароль. Будь ласка, спробуйте ще раз.</value>
   </data>
   <data name="USERNAME_REQUIRED" xml:space="preserve">
-    <value>Username is required.</value>
+    <value>Ім'я користувача обов'язкове.</value>
   </data>
   <data name="USERNAME_ALREADY_IN_USE" xml:space="preserve">
-    <value>Username is already in use.</value>
+    <value>Ім'я користувача вже використовується.</value>
   </data>
   <data name="USERNAME_AVAILABLE" xml:space="preserve">
-    <value>Username is available.</value>
+    <value>Ім'я користувача доступне.</value>
   </data>
   <data name="USERNAME_MISMATCH" xml:space="preserve">
-    <value>Username does not match the current user.</value>
+    <value>Ім'я користувача не відповідає поточному користувачеві.</value>
   </data>
   <data name="PASSWORD_MISMATCH" xml:space="preserve">
-    <value>The provided password does not match your current password.</value>
+    <value>Введений пароль не відповідає вашому поточному паролю.</value>
   </data>
   <data name="ACCOUNT_SUCCESSFULLY_DELETED" xml:space="preserve">
-    <value>Account successfully deleted.</value>
+    <value>Обліковий запис успішно видалено.</value>
   </data>
   <data name="USERNAME_EMPTY_OR_WHITESPACE" xml:space="preserve">
-    <value>Username cannot be empty or whitespace.</value>
+    <value>Ім’я користувача не може бути порожнім або містити пробіли.</value>
   </data>
   <data name="USERNAME_TOO_SHORT" xml:space="preserve">
-    <value>Username too short: must be at least 3 characters long.</value>
+    <value>Ім’я користувача закоротке: має містити щонайменше 3 символи.</value>
   </data>
   <data name="USERNAME_TOO_LONG" xml:space="preserve">
-    <value>Username too long: cannot be longer than 40 characters.</value>
+    <value>Ім'я користувача занадто довге: не може бути довшим за 40 символів.</value>
   </data>
   <data name="USERNAME_INVALID_EMAIL" xml:space="preserve">
-    <value>Invalid email address.</value>
+    <value>Недійсна адреса електронної пошти.</value>
   </data>
   <data name="USERNAME_INVALID_CHARACTERS" xml:space="preserve">
-    <value>Username is invalid, can only contain letters or digits.</value>
+    <value>Ім'я користувача недійсне, може містити лише літери або цифри.</value>
   </data>
   <data name="PENDING_MIGRATIONS" xml:space="preserve">
     <value>There are pending migrations. Please run 'dotnet ef database update' to apply them.</value>
   </data>
-  <data name="SYSTEM_OK" xml:space="preserve">
-    <value>OK</value>
-  </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
-    <value>Internal server error</value>
+    <value>Внутрішня помилка сервера</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
-    <value>The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again.</value>
+    <value>Локальне сховище не оновлене. Синхронізуйте своє сховище, оновивши сторінку, та повторіть спробу.</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
-    <value>An unknown error occurred. Please try again.</value>
+    <value>Сталася невідома помилка. Будь ласка, спробуйте ще раз.</value>
   </data>
   <data name="INVALID_AUTHENTICATOR_CODE" xml:space="preserve">
-    <value>Invalid authenticator code. Please try again.</value>
+    <value>Недійсний код автентифікатора. Будь ласка, спробуйте ще раз.</value>
   </data>
   <data name="INVALID_RECOVERY_CODE" xml:space="preserve">
-    <value>Invalid recovery code. Please try again.</value>
+    <value>Недійсний код відновлення. Будь ласка, спробуйте ще раз.</value>
   </data>
   <data name="VAULT_NOT_UP_TO_DATE" xml:space="preserve">
-    <value>Your vault is not up-to-date. Please synchronize your vault and try again.</value>
+    <value>Ваше сховище застаріло. Синхронізуйте його та спробуйте ще раз.</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
     <value>You have entered an incorrect password too many times and your account has now been locked out. You can try again in 30 minutes.</value>

@@ -1,4 +1,5 @@
 package net.aliasvault.app
+import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
 import android.view.WindowInsetsController
@@ -36,7 +37,6 @@ class MainActivity : ReactActivity() {
     override fun onResume() {
         super.onResume()
         // Reapply system bar configuration when app resumes
-        // This ensures our settings persist even if other code tries to override them
         configureSystemBars()
     }
 
@@ -100,5 +100,127 @@ class MainActivity : ReactActivity() {
                 fabricEnabled,
             ) {},
         )
+    }
+
+    /**
+     * Handle activity results - specifically for PIN unlock and PIN setup.
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        // Handle PIN unlock results directly
+        if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.PIN_UNLOCK_REQUEST_CODE) {
+            handlePinUnlockResult(resultCode, data)
+        } else if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.PIN_SETUP_REQUEST_CODE) {
+            handlePinSetupResult(resultCode, data)
+        } else if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.QR_SCANNER_REQUEST_CODE) {
+            handleQRScannerResult(resultCode, data)
+        }
+    }
+
+    /**
+     * Handle PIN unlock result directly without going through React context.
+     * This avoids race conditions with React context initialization.
+     * @param resultCode The result code from the PIN unlock activity.
+     * @param data The intent data containing the encryption key.
+     */
+    private fun handlePinUnlockResult(resultCode: Int, data: Intent?) {
+        val promise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise
+        net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise = null
+
+        if (promise == null) {
+            return
+        }
+
+        val vaultStore = net.aliasvault.app.vaultstore.VaultStore.getInstance(
+            net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider(this) { null },
+            net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider(this),
+        )
+
+        when (resultCode) {
+            net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_SUCCESS -> {
+                val encryptionKeyBase64 = data?.getStringExtra(
+                    net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_ENCRYPTION_KEY,
+                )
+
+                if (encryptionKeyBase64 == null) {
+                    promise.reject("UNLOCK_ERROR", "Failed to get encryption key from PIN unlock", null)
+                    return
+                }
+
+                try {
+                    vaultStore.storeEncryptionKey(encryptionKeyBase64)
+                    vaultStore.unlockVault()
+                    promise.resolve(true)
+                } catch (e: Exception) {
+                    promise.reject("UNLOCK_ERROR", "Failed to unlock vault: ${e.message}", e)
+                }
+            }
+            net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_CANCELLED -> {
+                promise.reject("USER_CANCELLED", "User cancelled PIN unlock", null)
+            }
+            net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_PIN_DISABLED -> {
+                promise.reject("PIN_DISABLED", "PIN was disabled", null)
+            }
+            else -> {
+                promise.reject("UNKNOWN_ERROR", "Unknown error in PIN unlock", null)
+            }
+        }
+    }
+
+    /**
+     * Handle PIN setup result.
+     * @param resultCode The result code from the PIN setup activity.
+     * @param data The intent data (not used for setup, setup happens internally).
+     */
+    @Suppress("UNUSED_PARAMETER")
+    private fun handlePinSetupResult(resultCode: Int, data: Intent?) {
+        val promise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.pinSetupPromise
+        net.aliasvault.app.nativevaultmanager.NativeVaultManager.pinSetupPromise = null
+
+        if (promise == null) {
+            return
+        }
+
+        when (resultCode) {
+            net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_SUCCESS -> {
+                // PIN setup successful
+                promise.resolve(null)
+            }
+            net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_CANCELLED -> {
+                // User cancelled PIN setup
+                promise.reject("USER_CANCELLED", "User cancelled PIN setup", null)
+            }
+            else -> {
+                promise.reject("SETUP_ERROR", "PIN setup failed", null)
+            }
+        }
+    }
+
+    /**
+     * Handle QR scanner result.
+     * @param resultCode The result code from the QR scanner activity.
+     * @param data The intent data containing the scanned QR code.
+     */
+    private fun handleQRScannerResult(resultCode: Int, data: Intent?) {
+        val promise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise
+        net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise = null
+
+        if (promise == null) {
+            return
+        }
+
+        when (resultCode) {
+            RESULT_OK -> {
+                val scannedData = data?.getStringExtra("SCAN_RESULT")
+                promise.resolve(scannedData)
+            }
+            RESULT_CANCELED -> {
+                promise.resolve(null)
+            }
+            else -> {
+                promise.resolve(null)
+            }
+        }
     }
 }

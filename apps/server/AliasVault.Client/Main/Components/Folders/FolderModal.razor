@@ -1,0 +1,122 @@
+@using AliasVault.Client.Main.Components.Layout
+@using Microsoft.Extensions.Localization
+
+@* FolderModal component - modal for creating or editing a folder *@
+<FormModal
+    IsOpen="IsOpen"
+    Title="@(Mode == "create" ? Localizer["CreateFolderTitle"] : Localizer["EditFolderTitle"])"
+    ConfirmText="@(Mode == "create" ? Localizer["CreateButton"] : Localizer["SaveButton"])"
+    CancelText="@Localizer["CancelButton"]"
+    IsLoading="IsSaving"
+    ConfirmDisabled="@string.IsNullOrWhiteSpace(FolderName)"
+    OnClose="HandleClose"
+    OnConfirm="HandleSave">
+    <Icon>
+        <svg class="h-6 w-6 text-orange-600 dark:text-orange-400" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-8l-2-2z"/>
+        </svg>
+    </Icon>
+    <ChildContent>
+        <label for="folder-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            @Localizer["FolderNameLabel"]
+        </label>
+        <input
+            type="text"
+            id="folder-name"
+            @bind="FolderName"
+            @bind:event="oninput"
+            placeholder="@Localizer["FolderNamePlaceholder"]"
+            class="block w-full rounded-md border-0 py-2 px-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-orange-600 sm:text-sm sm:leading-6 dark:bg-gray-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500 dark:focus:ring-orange-500" />
+        @if (!string.IsNullOrEmpty(ErrorMessage))
+        {
+            <p class="mt-2 text-sm text-red-600 dark:text-red-400">@ErrorMessage</p>
+        }
+    </ChildContent>
+</FormModal>
+
+@code {
+    [Inject]
+    private IStringLocalizerFactory LocalizerFactory { get; set; } = default!;
+
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Folders.FolderModal", "AliasVault.Client");
+
+    /// <summary>
+    /// Gets or sets whether the modal is open.
+    /// </summary>
+    [Parameter]
+    public bool IsOpen { get; set; }
+
+    /// <summary>
+    /// Gets or sets the mode (create or edit).
+    /// </summary>
+    [Parameter]
+    public string Mode { get; set; } = "create";
+
+    /// <summary>
+    /// Gets or sets the initial folder name (for edit mode).
+    /// </summary>
+    [Parameter]
+    public string InitialName { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the close callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback OnClose { get; set; }
+
+    /// <summary>
+    /// Gets or sets the save callback.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> OnSave { get; set; }
+
+    private string FolderName { get; set; } = string.Empty;
+    private string ErrorMessage { get; set; } = string.Empty;
+    private bool IsSaving { get; set; }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+    {
+        if (IsOpen)
+        {
+            FolderName = InitialName;
+            ErrorMessage = string.Empty;
+            IsSaving = false;
+        }
+    }
+
+    private async Task HandleSave()
+    {
+        var trimmedName = FolderName?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrEmpty(trimmedName))
+        {
+            ErrorMessage = Localizer["FolderNameRequired"];
+            return;
+        }
+
+        IsSaving = true;
+        ErrorMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            await OnSave.InvokeAsync(trimmedName);
+            await OnClose.InvokeAsync();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+        finally
+        {
+            IsSaving = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleClose()
+    {
+        await OnClose.InvokeAsync();
+    }
+}

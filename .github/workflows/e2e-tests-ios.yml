@@ -1,0 +1,289 @@
+# iOS native E2E tests
+name: E2E Tests - iOS
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-ios.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-ios.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ios-e2e-tests:
+    if: false  # Temporarily disabled - will re-test in separate PR
+    timeout-minutes: 60
+    runs-on: macos-15
+    defaults:
+      run:
+        working-directory: apps/mobile-app
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/mobile-app/package-lock.json
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim,x86_64-apple-ios
+
+      - name: Cache Rust dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core/rust
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: true
+
+      - name: Install CocoaPods
+        run: sudo gem install cocoapods
+
+      - name: Build core libraries for iOS
+        run: |
+          cd ../../core
+          chmod +x build-and-distribute.sh
+          ./build-and-distribute.sh --ios
+
+      - name: Verify core library distribution
+        run: |
+          TARGET_DIRS=(
+            "utils/dist/core/identity-generator"
+            "utils/dist/core/password-generator"
+            "utils/dist/core/models"
+            "utils/dist/core/vault"
+          )
+          for dir in "${TARGET_DIRS[@]}"; do
+            if [ ! -d "$dir" ]; then
+              echo "Error: Directory $dir does not exist"
+              exit 1
+            fi
+          done
+          echo "Core library distribution verified"
+
+      - name: Install mobile app dependencies
+        run: npm ci
+
+      - name: Install CocoaPods dependencies
+        run: |
+          cd ios
+          pod install
+
+      - name: Build API server
+        working-directory: apps/server
+        run: dotnet build AliasVault.Api
+
+      - name: Start PostgreSQL
+        run: |
+          # Install and start PostgreSQL
+          brew install postgresql@17
+          brew services start postgresql@17
+
+          # Add PostgreSQL to PATH
+          echo "/opt/homebrew/opt/postgresql@17/bin" >> $GITHUB_PATH
+          export PATH="/opt/homebrew/opt/postgresql@17/bin:$PATH"
+
+          # Wait for PostgreSQL to be ready
+          for i in {1..15}; do
+            if /opt/homebrew/opt/postgresql@17/bin/pg_isready -h localhost; then
+              echo "PostgreSQL is ready!"
+              break
+            fi
+            echo "Waiting for PostgreSQL... attempt $i"
+            sleep 1
+          done
+
+          # Create database and user
+          /opt/homebrew/opt/postgresql@17/bin/createuser -s aliasvault || true
+          /opt/homebrew/opt/postgresql@17/bin/psql postgres -c "ALTER USER aliasvault WITH PASSWORD 'password';" || true
+          /opt/homebrew/opt/postgresql@17/bin/createdb -O aliasvault aliasdb_e2e_ios || true
+
+      - name: Start API server
+        working-directory: apps/server/AliasVault.Api
+        run: |
+          dotnet run --no-build &
+          # Wait for API to be ready
+          echo "Waiting for API to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
+              echo "API is ready!"
+              break
+            fi
+            echo "Attempt $i: API not ready yet..."
+            sleep 2
+          done
+        env:
+          ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5432;Database=aliasdb_e2e_ios;Username=aliasvault;Password=password"
+          JWT_KEY: "12345678901234567890123456789012"
+          DATA_PROTECTION_CERT_PASS: "Development"
+          PUBLIC_REGISTRATION_ENABLED: "true"
+          ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
+          ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
+          # Bind to all interfaces (IPv4 and IPv6)
+          ASPNETCORE_URLS: "http://0.0.0.0:5092"
+
+      - name: Boot iOS Simulator
+        run: |
+          # List available simulators
+          xcrun simctl list devices available
+
+          # Find and boot iPhone 16 Pro simulator (or fallback to any iPhone)
+          SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 16 Pro" | head -1 | grep -oE '[A-F0-9-]{36}')
+
+          if [ -z "$SIMULATOR_ID" ]; then
+            # Fallback to iPhone 15 Pro
+            SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 15 Pro" | head -1 | grep -oE '[A-F0-9-]{36}')
+          fi
+
+          if [ -z "$SIMULATOR_ID" ]; then
+            # Fallback to any iPhone
+            SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -oE '[A-F0-9-]{36}')
+          fi
+
+          if [ -z "$SIMULATOR_ID" ]; then
+            echo "No iPhone simulator found!"
+            exit 1
+          fi
+
+          echo "Booting simulator: $SIMULATOR_ID"
+          xcrun simctl boot "$SIMULATOR_ID" || true
+
+          # Wait for simulator to be fully booted
+          echo "Waiting for simulator to be ready..."
+          xcrun simctl bootstatus "$SIMULATOR_ID" -b
+
+          # Disable AutoFill to prevent "Save Password" prompts during tests
+          echo "Disabling AutoFill in simulator..."
+          xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Preferences AutoFillPasswords -bool NO
+          xcrun simctl spawn "$SIMULATOR_ID" defaults write -g AutoFillPasswords -bool NO
+
+          echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
+
+      - name: Start Metro bundler
+        run: |
+          # Start Metro bundler in background (non-interactive mode for CI)
+          npx expo start --offline > /tmp/metro.log 2>&1 &
+          METRO_PID=$!
+          echo $METRO_PID > /tmp/metro.pid
+
+          # Wait for Metro to be ready
+          echo "Waiting for Metro bundler to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+              echo "Metro bundler is ready!"
+              break
+            fi
+            echo "Attempt $i: Metro not ready yet..."
+            # Show recent log for debugging
+            tail -3 /tmp/metro.log 2>/dev/null || true
+            sleep 2
+          done
+
+      - name: Build iOS app for testing
+        run: |
+          cd ios
+          xcodebuild build-for-testing \
+            -workspace AliasVault.xcworkspace \
+            -scheme AliasVault \
+            -sdk iphonesimulator \
+            -destination "id=${{ env.SIMULATOR_ID }}" \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="-" \
+            DEVELOPMENT_TEAM="" \
+            IDEFileSystemSynchronizedGroupsAreEnabled=NO
+        env:
+          IDEFileSystemSynchronizedGroupsAreEnabled: NO
+
+      - name: Run iOS E2E Tests
+        run: |
+          cd ios
+          xcodebuild test-without-building \
+            -workspace AliasVault.xcworkspace \
+            -scheme AliasVault \
+            -sdk iphonesimulator \
+            -destination "id=${{ env.SIMULATOR_ID }}" \
+            -derivedDataPath build \
+            -only-testing:AliasVaultUITests \
+            -resultBundlePath TestResults.xcresult \
+            -parallel-testing-enabled NO \
+            -maximum-concurrent-test-simulator-destinations 1 \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGN_IDENTITY="-" \
+            DEVELOPMENT_TEAM="" \
+            IDEFileSystemSynchronizedGroupsAreEnabled=NO
+        env:
+          API_URL: "http://localhost:5092"
+          IDEFileSystemSynchronizedGroupsAreEnabled: NO
+
+      - name: Extract attachments from xcresult
+        if: always()
+        run: |
+          mkdir -p /tmp/test-attachments
+          # Extract all attachments from the xcresult bundle
+          if [ -d "ios/TestResults.xcresult" ]; then
+            xcrun xcresulttool get --path ios/TestResults.xcresult --format json > /tmp/test-attachments/results.json 2>/dev/null || true
+            # Export attachments
+            xcrun xcresulttool export --path ios/TestResults.xcresult --output-path /tmp/test-attachments --type file 2>/dev/null || true
+            # List what we found
+            echo "Attachments found:"
+            ls -la /tmp/test-attachments/ || true
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-e2e-test-results
+          path: apps/mobile-app/ios/TestResults.xcresult
+          retention-days: 14
+
+      - name: Upload extracted attachments
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-e2e-test-attachments
+          path: /tmp/test-attachments/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Upload logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-e2e-test-logs
+          path: |
+            /tmp/api-server.log
+            /tmp/metro.log
+          retention-days: 14
+          if-no-files-found: ignore

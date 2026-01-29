@@ -59,36 +59,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Schnellentsperrung des Tresors</value>
-    <comment>Title for quick vault unlock section</comment>
+    <value>Passkey-Entsperrung</value>
+    <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Der Tresor-Schlüssel ist in einem Passkey gespeichert. Wenn Du die AliasVault-Webseite oder den Tab neu lädst, kannst Du Dich mit Deinem Gesicht, Fingerabdruck oder mit dem eingebauten Browser-Schlüssel anmelden. Wenn Du diese Schnellanmeldung deaktivieren möchtest, kannst Du dies über die folgende Schaltfläche tun.</value>
-    <comment>Description when quick unlock is enabled</comment>
+    <value>Dein Masterpasswort wird mithilfe der Passkey-PRF verschlüsselt und lokal abgelegt. Beim Neuladen der AliasVault-Seite oder des Tabs kannst Du den Tresor mit Deinem Passkey freigeben. Falls Du die Passkey-Freigabe deaktivieren möchtest, nutze den untenstehenden Button. Zum Entsperren des Vaults kannst Du weiterhin Dein Masterpasswort verwenden.</value>
+    <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Schnellentsperrung des Tresors deaktivieren</value>
-    <comment>Button to disable quick vault unlock</comment>
+    <value>Passkey-Entsperrung deaktivieren</value>
+    <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>Standardmäßig wirst Du, wenn Du die AliasVault-Seite oder den Tab neu lädst, aufgefordert, Dein Master-Passwort erneut einzugeben. Alternativ kannst Du einen Browser-Passkey (oder einen Hardware-Authentifikator wie YubiKey) anstelle Deines Master-Passworts verwenden. Dadurch kannst Du Deinen Tresor mit Deinem Gesicht, Fingerabdruck oder eingebauten Browser-Sicherheitsschlüssel entsperren. Dies betrifft nur das aktuelle Gerät und den Browser.</value>
-    <comment>Description when quick unlock is disabled</comment>
+    <value>Standardmäßig musst Du beim Neuladen der AliasVault-Seite oder des Tabs Dein Master-Passwort erneut eingeben. Mit einem Passkey kannst Du Deinen Tresor sofort entsperren. Wenn aktiviert, wird Dein Master-Passwort lokal mit der PRF-Erweiterung des Passkeys verschlüsselt. Hinweis: Der Passkey funktioniert nur für das aktuelle Gerät und den aktuellen Browser, auf dem Du ihn aktivierst.</value>
+    <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>Bitte beachte, dass diese Funktion experimentell ist und möglicherweise nicht auf allen Geräten oder Browsern funktioniert. Dein Browser muss WebAuthn und die PRF-Erweiterung unterstützen, damit dies funktioniert. Wenn Du irgendwelche Probleme haben solltest, kannst Du diese Funktion jederzeit deaktivieren.</value>
-    <comment>Warning about experimental nature of the feature</comment>
+    <value>Dieses Feature wird derzeit von der AliasVault-Browsererweiterung und der iOS‑App unterstützt. Android‑Support folgt in Kürze. Wenn Du Probleme feststellst, kannst Du diese Funktion jederzeit deaktivieren.</value>
+    <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Schnellentsperrung des Tresors aktivieren</value>
-    <comment>Button to enable quick vault unlock</comment>
+    <value>Passkey-Entsperrung aktivieren</value>
+    <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Die Schnellentsperrung des Tresors wurde erfolgreich aktiviert. Wenn der Tresor das nächste Mal gesperrt wird, kannst Du ihn mit Deinem erstellten Passkey wieder entsperren.</value>
-    <comment>Success message when quick unlock is enabled</comment>
+    <value>Die Passkey-Entsperrung wurde erfolgreich aktiviert. Wenn der Tresor das nächste Mal gesperrt wird, kannst Du ihn mit Deinem erstellten Passkey wieder entsperren.</value>
+    <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Die Schnellentsperrung des Tresors wurde erfolgreich deaktiviert.</value>
-    <comment>Success message when quick unlock is disabled</comment>
+    <value>Die Passkey-Entsperrung wurde erfolgreich deaktiviert.</value>
+    <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
     <value>Dein aktueller Browser unterstützt die WebAuthn-PRF-Erweiterung nicht. Bitte versuche es mit einem anderen Browser erneut.</value>

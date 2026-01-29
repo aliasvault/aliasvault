@@ -1,23 +1,72 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { sendMessage } from 'webext-bridge/popup';
 
-import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/shared/models/metadata';
-import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
-import EncryptionUtility from '@/utils/EncryptionUtility';
+import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
 import SqliteClient from '@/utils/SqliteClient';
-import { StoreVaultRequest } from '@/utils/types/messaging/StoreVaultRequest';
+import { getItemWithFallback } from '@/utils/StorageUtility';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
+
+import { storage } from '#imports';
+
+/**
+ * Vault metadata including the server revision.
+ */
+type VaultMetadata = {
+  publicEmailDomains: string[];
+  privateEmailDomains: string[];
+  hiddenPrivateEmailDomains: string[];
+  serverRevision: number;
+};
 
 type DbContextType = {
   sqliteClient: SqliteClient | null;
   dbInitialized: boolean;
   dbAvailable: boolean;
-  initializeDatabase: (vaultResponse: VaultResponse, derivedKey: string) => Promise<SqliteClient>;
+  isOffline: boolean;
+  /**
+   * Get offline state synchronously (avoids React state timing issues).
+   */
+  getIsOffline: () => boolean;
+  /**
+   * True if local vault has changes not yet synced to server.
+   */
+  isDirty: boolean;
+  /**
+   * True if a background sync is in progress.
+   */
+  isSyncing: boolean;
+  /**
+   * Current server revision number.
+   */
+  serverRevision: number;
+  setIsOffline: (offline: boolean) => Promise<void>;
+  /**
+   * Set the syncing state.
+   */
+  setIsSyncing: (syncing: boolean) => void;
+  /**
+   * Check if email errors should be suppressed.
+   * Errors are suppressed when vault has local changes not yet synced,
+   * as the server may not know about newly created items/aliases yet.
+   */
+  shouldSuppressEmailErrors: () => boolean;
+  /**
+   * Load a decrypted vault into memory (SQLite client).
+   */
+  loadDatabase: (decryptedVaultBase64: string) => Promise<SqliteClient>;
+  /**
+   * Load the stored (encrypted) vault from background storage into memory.
+   * Returns the SqliteClient if vault was loaded successfully, null otherwise.
+   */
+  loadStoredDatabase: () => Promise<SqliteClient | null>;
   storeEncryptionKey: (derivedKey: string) => Promise<void>;
   storeEncryptionKeyDerivationParams: (params: EncryptionKeyDerivationParams) => Promise<void>;
   clearDatabase: () => void;
   getVaultMetadata: () => Promise<VaultMetadata | null>;
-  setCurrentVaultRevisionNumber: (revisionNumber: number) => Promise<void>;
+  /**
+   * Refresh sync state (isDirty, serverRevision) from storage.
+   */
+  refreshSyncState: () => Promise<void>;
   hasPendingMigrations: () => Promise<boolean>;
 }
 
@@ -43,46 +92,86 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [dbAvailable, setDbAvailable] = useState(false);
 
   /**
-   * Vault revision.
+   * Offline mode state. If true, the extension is operating offline.
+   * Uses both ref (for sync reads) and state (for re-renders).
    */
-  const [vaultMetadata, setVaultMetadata] = useState<VaultMetadata | null>(null);
+  const [isOffline, setIsOfflineState] = useState(false);
+  const isOfflineRef = useRef(false);
 
-  const initializeDatabase = useCallback(async (vaultResponse: VaultResponse, derivedKey: string) => {
-    // Attempt to decrypt the blob.
-    const decryptedBlob = await EncryptionUtility.symmetricDecrypt(
-      vaultResponse.vault.blob,
-      derivedKey
-    );
+  /**
+   * Dirty state - true if local vault has unsynced changes.
+   */
+  const [isDirty, setIsDirty] = useState(false);
 
-    // Initialize the SQLite client.
+  /**
+   * Syncing state - true if a background sync is in progress.
+   */
+  const [isSyncing, setIsSyncing] = useState(false);
+
+  /**
+   * Server revision number.
+   */
+  const [serverRevision, setServerRevision] = useState(0);
+
+  /**
+   * Check if email errors should be suppressed.
+   * Errors are suppressed when vault has local changes not yet synced,
+   * as the server may not know about newly created items/aliases yet.
+   */
+  const shouldSuppressEmailErrors = useCallback(() => {
+    return isDirty || isSyncing;
+  }, [isDirty, isSyncing]);
+
+  /**
+   * Set the offline mode state and persist it to local storage.
+   * Updates both ref (sync) and state (triggers re-render).
+   */
+  const setIsOffline = useCallback(async (offline: boolean) => {
+    isOfflineRef.current = offline;
+    setIsOfflineState(offline);
+    await storage.setItem('local:isOfflineMode', offline);
+  }, []);
+
+  /**
+   * Load initial state from local storage.
+   */
+  useEffect(() => {
+    /**
+     * Load the offline mode and sync state from local storage.
+     */
+    const loadSyncState = async (): Promise<void> => {
+      const [offlineMode, dirty, revision] = await Promise.all([
+        storage.getItem('local:isOfflineMode') as Promise<boolean | null>,
+        storage.getItem('local:isDirty') as Promise<boolean | null>,
+        storage.getItem('local:serverRevision') as Promise<number | null>
+      ]);
+      isOfflineRef.current = offlineMode ?? false;
+      setIsOfflineState(offlineMode ?? false);
+      setIsDirty(dirty ?? false);
+      setServerRevision(revision ?? 0);
+    };
+    loadSyncState();
+  }, []);
+
+  /**
+   * Load a decrypted vault into memory (SQLite client).
+   */
+  const loadDatabase = useCallback(async (decryptedVaultBase64: string) => {
     const client = new SqliteClient();
-    await client.initializeFromBase64(decryptedBlob);
+    await client.initializeFromBase64(decryptedVaultBase64);
 
     setSqliteClient(client);
     setDbInitialized(true);
     setDbAvailable(true);
-    setVaultMetadata({
-      publicEmailDomains: vaultResponse.vault.publicEmailDomainList,
-      privateEmailDomains: vaultResponse.vault.privateEmailDomainList,
-      vaultRevisionNumber: vaultResponse.vault.currentRevisionNumber,
-    });
-
-    /**
-     * Store encrypted vault in background worker.
-     */
-    const request: StoreVaultRequest = {
-      vaultBlob: vaultResponse.vault.blob,
-      publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
-      privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
-      vaultRevisionNumber: vaultResponse.vault.currentRevisionNumber,
-    };
-
-    await sendMessage('STORE_VAULT', request, 'background');
 
     return client;
   }, []);
 
-  const checkStoredVault = useCallback(async () => {
+  /**
+   * Load the stored (encrypted) vault from background storage into memory.
+   * Returns the SqliteClient if vault was loaded successfully, null otherwise.
+   */
+  const loadStoredDatabase = useCallback(async (): Promise<SqliteClient | null> => {
     try {
       const response = await sendMessage('GET_VAULT', {}, 'background') as messageVaultResponse;
       if (response?.vault) {
@@ -92,40 +181,58 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         setSqliteClient(client);
         setDbInitialized(true);
         setDbAvailable(true);
-
-        setVaultMetadata({
-          publicEmailDomains: response.publicEmailDomains ?? [],
-          privateEmailDomains: response.privateEmailDomains ?? [],
-          vaultRevisionNumber: response.vaultRevisionNumber ?? 0,
-        });
+        return client;
       } else {
         setDbInitialized(true);
         setDbAvailable(false);
+        return null;
       }
     } catch (error) {
       console.error('Error retrieving vault from background:', error);
       setDbInitialized(true);
       setDbAvailable(false);
+      return null;
     }
   }, []);
 
   /**
-   * Get the vault metadata.
+   * Get the vault metadata from local storage (persistent).
    */
   const getVaultMetadata = useCallback(async () : Promise<VaultMetadata | null> => {
-    return vaultMetadata;
-  }, [vaultMetadata]);
+    try {
+      // Use fallback for keys migrated from session: to local: in v0.26.0
+      const publicEmailDomains = await getItemWithFallback<string[]>('local:publicEmailDomains');
+      const privateEmailDomains = await getItemWithFallback<string[]>('local:privateEmailDomains');
+      const hiddenPrivateEmailDomains = await getItemWithFallback<string[]>('local:hiddenPrivateEmailDomains');
+      const revision = await storage.getItem('local:serverRevision') as number | null;
+
+      if (!publicEmailDomains && !privateEmailDomains) {
+        return null;
+      }
+
+      return {
+        publicEmailDomains: publicEmailDomains ?? [],
+        privateEmailDomains: privateEmailDomains ?? [],
+        hiddenPrivateEmailDomains: hiddenPrivateEmailDomains ?? [],
+        serverRevision: revision ?? 0,
+      };
+    } catch (error) {
+      console.error('Error getting vault metadata from local storage:', error);
+      return null;
+    }
+  }, []);
 
   /**
-   * Set the current vault revision number.
+   * Refresh sync state from storage (called after background updates it).
    */
-  const setCurrentVaultRevisionNumber = useCallback(async (revisionNumber: number) => {
-    setVaultMetadata({
-      publicEmailDomains: vaultMetadata?.publicEmailDomains ?? [],
-      privateEmailDomains: vaultMetadata?.privateEmailDomains ?? [],
-      vaultRevisionNumber: revisionNumber,
-    });
-  }, [vaultMetadata]);
+  const refreshSyncState = useCallback(async (): Promise<void> => {
+    const [dirty, revision] = await Promise.all([
+      storage.getItem('local:isDirty') as Promise<boolean | null>,
+      storage.getItem('local:serverRevision') as Promise<number | null>
+    ]);
+    setIsDirty(dirty ?? false);
+    setServerRevision(revision ?? 0);
+  }, []);
 
   /**
    * Check if there are pending migrations.
@@ -138,13 +245,13 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   }, [sqliteClient]);
 
   /**
-   * Check if database is initialized and try to retrieve vault from background
+   * Check if database is initialized and try to retrieve and init stored vault
    */
   useEffect(() : void => {
     if (!dbInitialized) {
-      checkStoredVault();
+      loadStoredDatabase();
     }
-  }, [dbInitialized, checkStoredVault]);
+  }, [dbInitialized, loadStoredDatabase]);
 
   /**
    * Store encryption key in background worker.
@@ -167,21 +274,34 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     setSqliteClient(null);
     setDbInitialized(false);
     setDbAvailable(false);
-    sendMessage('CLEAR_VAULT', {}, 'background');
   }, []);
+
+  /**
+   * Get offline state synchronously from ref.
+   */
+  const getIsOffline = useCallback(() => isOfflineRef.current, []);
 
   const contextValue = useMemo(() => ({
     sqliteClient,
     dbInitialized,
     dbAvailable,
-    initializeDatabase,
+    isOffline,
+    getIsOffline,
+    isDirty,
+    isSyncing,
+    serverRevision,
+    setIsOffline,
+    setIsSyncing,
+    shouldSuppressEmailErrors,
+    loadDatabase,
+    loadStoredDatabase,
     storeEncryptionKey,
     storeEncryptionKeyDerivationParams,
     clearDatabase,
     getVaultMetadata,
-    setCurrentVaultRevisionNumber,
+    refreshSyncState,
     hasPendingMigrations,
-  }), [sqliteClient, dbInitialized, dbAvailable, initializeDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, setCurrentVaultRevisionNumber, hasPendingMigrations]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, isDirty, isSyncing, serverRevision, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, hasPendingMigrations]);
 
   return (
     <DbContext.Provider value={contextValue}>

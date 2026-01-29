@@ -46,11 +46,11 @@ else
             <ServerValidationErrors @ref="_serverValidationErrors" />
 
             <div class="flex space-x-4">
-                <button type="button" @onclick="UnlockWithWebAuthn" class="flex-grow inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                <button type="button" @onclick="UnlockWithWebAuthn" class="flex-grow inline-flex items-center justify-center px-5 py-2 text-base font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
                     <svg class="w-5 h-5 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg>
                     @Localizer["UnlockWithWebAuthn"]
                 </button>
-                <button type="button" @onclick="async () => await ShowPasswordLogin()" class="inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-gray-900 rounded-lg border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
+                <button type="button" @onclick="async () => await ShowPasswordLogin()" class="inline-flex items-center justify-center px-5 py-2 text-base font-medium text-center text-gray-900 rounded-lg border border-gray-300 hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 dark:text-white dark:border-gray-700 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
                     @Localizer["UnlockWithPassword"]
                 </button>
             </div>
@@ -72,19 +72,30 @@ else
                 <ValidationMessage For="() => _unlockModel.Password"/>
             </div>
 
-            <button type="submit" class="w-full inline-flex items-center justify-center px-5 py-3 text-base font-medium text-center text-white rounded-lg bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 sm:w-auto dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-                <svg class="w-5 h-5 mr-2 -ml-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a5 5 0 00-5 5v2a2 2 0 00-2 2v5a2 2 0 002 2h10a2 2 0 002-2v-5a2 2 0 00-2-2H7V7a3 3 0 015.905-.75 1 1 0 001.937-.5A5.002 5.002 0 0010 2z"></path></svg>
+            <button type="submit" id="unlock-button" class="w-full px-5 py-2 text-base font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 flex items-center justify-center gap-2">
                 @Localizer["UnlockButton"]
             </button>
         </EditForm>
+
+        <button type="button" id="mobile-unlock-button" @onclick="() => _showMobileUnlockModal = true" class="hidden md:flex w-full px-5 py-2 text-base font-medium text-center text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:ring-4 focus:ring-gray-200 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-gray-700 items-center justify-center gap-2 mt-4">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            @Localizer["UnlockWithMobileButton"]
+        </button>
     }
 
-    <div class="text-sm font-medium text-gray-500 dark:text-gray-400 mt-6">
+    <div class="text-sm text-center font-medium text-gray-500 dark:text-gray-400 mt-6">
         @Localizer["SwitchAccountsText"] <a href="/user/logout" class="text-primary-700 hover:underline dark:text-primary-500">@Localizer["LogOutLink"]</a>
     </div>
 }
 
 <FooterLogin />
+
+<MobileUnlockModal IsOpen="@_showMobileUnlockModal"
+                   OnClose="() => _showMobileUnlockModal = false"
+                   OnSuccess="HandleMobileUnlockSuccess"
+                   Mode="unlock" />
 
 @code {
     /// <summary>
@@ -98,12 +109,14 @@ else
     private bool IsWebAuthnLoading { get; set; }
     private bool ShowWebAuthnButton { get; set; }
     private bool IsPasswordFocused { get; set; }
+    private bool _showMobileUnlockModal;
     private readonly UnlockModel _unlockModel = new();
     private FullScreenLoadingIndicator _loadingIndicator = new();
     private ServerValidationErrors _serverValidationErrors = new();
     private PasswordInputField? passwordField;
     private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Auth.Unlock", "AliasVault.Client");
     private IStringLocalizer ApiErrorLocalizer => LocalizerFactory.Create("ApiErrors", "AliasVault.Client");
+    private IStringLocalizer SharedLocalizer => LocalizerFactory.Create("SharedResources", "AliasVault.Client");
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -120,6 +133,10 @@ else
             // Try to unlock with WebAuthn if enabled and not explicitly skipped
             if (ShowWebAuthnButton && !SkipWebAuthn)
             {
+                // Add delay to ensure the AliasVault browser extension interceptor doesn't filter
+                // this as an "automatic request". The extension blocks WebAuthn requests within
+                // 1 second of page load to prevent interference with sites that auto-trigger passkeys.
+                await Task.Delay(1100);
                 await UnlockWithWebAuthn();
             }
 
@@ -351,6 +368,64 @@ else
         catch
         {
             // Do nothing
+        }
+    }
+
+    /// <summary>
+    /// Handle successful mobile unlock.
+    /// </summary>
+    private async Task HandleMobileUnlockSuccess(MobileLoginResult result)
+    {
+        _loadingIndicator.Show(Localizer["UnlockingVaultMessage"]);
+        _serverValidationErrors.Clear();
+
+        try
+        {
+            await StatusCheck();
+
+            // Revoke existing tokens
+            await AuthService.RemoveTokensAsync();
+
+            // Store the new tokens
+            await AuthService.StoreAccessTokenAsync(result.Token);
+            await AuthService.StoreRefreshTokenAsync(result.RefreshToken);
+
+            // Convert decryption key from base64 string to byte array
+            var decryptionKeyBytes = Convert.FromBase64String(result.DecryptionKey);
+
+            // Store the encryption key in memory
+            await AuthService.StoreEncryptionKeyAsync(decryptionKeyBytes);
+
+            await AuthStateProvider.GetAuthenticationStateAsync();
+
+            // Redirect to the page the user was trying to access before if set
+            var localStorageReturnUrl = await LocalStorage.GetItemAsync<string>(ReturnUrlKey);
+            if (!string.IsNullOrEmpty(localStorageReturnUrl))
+            {
+                await LocalStorage.RemoveItemAsync(ReturnUrlKey);
+                NavigationManager.NavigateTo(localStorageReturnUrl);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+#if DEBUG
+        catch (Exception ex)
+        {
+            // If in debug mode show the actual exception.
+            _serverValidationErrors.AddError(ex.ToString());
+        }
+#else
+        catch
+        {
+            // If in release mode show a generic error.
+            _serverValidationErrors.AddError(Localizer["GenericUnlockError"]);
+        }
+#endif
+        finally
+        {
+            _loadingIndicator.Hide();
         }
     }
 }

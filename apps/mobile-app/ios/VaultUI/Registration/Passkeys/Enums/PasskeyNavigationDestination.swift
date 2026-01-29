@@ -4,4 +4,5 @@ import Foundation
 public enum PasskeyNavigationDestination: Hashable {
     case createNew
     case replace(UUID)
+    case mergeWithItem(UUID)  // Add passkey to existing item without passkey
 }

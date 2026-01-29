@@ -41,4 +41,46 @@ extension VaultStore {
     public func getAuthMethods() -> AuthMethods {
         return self.enabledAuthMethods
     }
+
+    /// Authenticate the user using biometric authentication only
+    /// Note: This method only handles biometric authentication.
+    /// Returns true if authentication succeeded, false otherwise
+    /// - Parameter title: The title for authentication. Optional, defaults to "Unlock Vault" context.
+    public func issueBiometricAuthentication(title: String?) -> Bool {
+        // Use title if provided, otherwise default
+        let authReason = (title?.isEmpty == false) ? title! : "Unlock Vault"
+
+        // Check if biometric authentication is enabled
+        guard self.enabledAuthMethods.contains(.faceID) else {
+            print("No authentication method enabled")
+            return false
+        }
+
+        let context = LAContext()
+        var error: NSError?
+
+        // Check if biometric authentication is available
+        guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+            print("Biometric authentication not available: \(error?.localizedDescription ?? "unknown error")")
+            return false
+        }
+
+        // Perform biometric authentication synchronously
+        var authenticated = false
+        let semaphore = DispatchSemaphore(value: 0)
+
+        context.evaluatePolicy(
+            .deviceOwnerAuthenticationWithBiometrics,
+            localizedReason: authReason
+        ) { success, authError in
+            authenticated = success
+            if let authError = authError {
+                print("Biometric authentication failed: \(authError.localizedDescription)")
+            }
+            semaphore.signal()
+        }
+
+        semaphore.wait()
+        return authenticated
+    }
 }

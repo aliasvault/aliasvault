@@ -71,27 +71,19 @@
   </data>
   <!-- Alias Settings Section -->
   <data name="AliasSettingsTitle">
-    <value>Alias-asetukset</value>
-    <comment>Title for alias settings section</comment>
+    <value>Henkilöllisyysgeneraattorin asetukset</value>
+    <comment>Title for identity generator settings section</comment>
   </data>
   <data name="AliasGenerationLanguageLabel">
-    <value>Aliaksen luontikieli</value>
+    <value>Kieli</value>
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
     <value>Aseta oletuskieli, jota käytetään luotaessa uusia identiteettejä.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
-  <data name="EnglishOption">
-    <value>Englanti</value>
-    <comment>English language option</comment>
-  </data>
-  <data name="DutchOption">
-    <value>Hollanti</value>
-    <comment>Dutch language option</comment>
-  </data>
   <data name="AliasGenerationGenderLabel">
-    <value>Aliaksen luontisukupuoli</value>
+    <value>Sukupuoli</value>
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
@@ -109,6 +101,14 @@
   <data name="FemaleOption">
     <value>Nainen</value>
     <comment>Female gender option</comment>
+  </data>
+  <data name="AliasGenerationAgeRangeLabel">
+    <value>Ikähaarukka</value>
+    <comment>Label for alias generation age range setting</comment>
+  </data>
+  <data name="AliasGenerationAgeRangeDescription">
+    <value>Aseta oletusikähaarukka uusien henkilöllisyyksien luomiseen. Tämä vaikuttaa luotuun henkilöllisyyteen asetettavaan syntymäpäivään.</value>
+    <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
   <data name="ClipboardSettingsTitle">

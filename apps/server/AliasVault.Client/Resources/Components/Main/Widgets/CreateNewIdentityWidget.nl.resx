@@ -59,8 +59,8 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>+ Nieuwe alias</value>
-    <comment>Text for the new alias button</comment>
+    <value>+ Nieuw</value>
+    <comment>Text for the new item button</comment>
   </data>
   <data name="NewAliasButtonShort" xml:space="preserve">
     <value>+</value>
@@ -70,36 +70,76 @@
     <value>Nieuwe alias aanmaken</value>
     <comment>Title of the create new alias popup</comment>
   </data>
-  <data name="ServiceNameLabel" xml:space="preserve">
+  <data name="NameLabel" xml:space="preserve">
     <value>Naam</value>
-    <comment>Label for service name field</comment>
+    <comment>Label for name field</comment>
   </data>
-  <data name="ServiceNamePlaceholder" xml:space="preserve">
-    <value>Bijv. Facebook</value>
-    <comment>Placeholder text for service name field</comment>
-  </data>
-  <data name="ServiceUrlLabel" xml:space="preserve">
+  <data name="WebsiteUrlLabel" xml:space="preserve">
     <value>Website URL</value>
-    <comment>Label for service URL field</comment>
+    <comment>Label for website URL field</comment>
+  </data>
+  <data name="NamePlaceholderLogin" xml:space="preserve">
+    <value>Bijv. Facebook</value>
+    <comment>Placeholder text for login name field</comment>
+  </data>
+  <data name="NamePlaceholderAlias" xml:space="preserve">
+    <value>Bijv. Facebook</value>
+    <comment>Placeholder text for alias name field</comment>
+  </data>
+  <data name="NamePlaceholderCard" xml:space="preserve">
+    <value>Bijv. Mastercard</value>
+    <comment>Placeholder text for card name field</comment>
+  </data>
+  <data name="NamePlaceholderNote" xml:space="preserve">
+    <value>Bijv. Paspoort</value>
+    <comment>Placeholder text for note name field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
     <value>Aanmaken</value>
     <comment>Create button text</comment>
   </data>
-  <data name="AdvancedModeLink" xml:space="preserve">
-    <value>Aanmaken via geavanceerde modus</value>
-    <comment>Link text to advanced creation mode</comment>
+  <data name="ContinueButton" xml:space="preserve">
+    <value>Doorgaan</value>
+    <comment>Continue button text for non-alias types</comment>
+  </data>
+  <data name="CreateNewLoginTitle" xml:space="preserve">
+    <value>Maak nieuwe login</value>
+    <comment>Title for creating a new login item</comment>
+  </data>
+  <data name="CreateNewCreditCardTitle" xml:space="preserve">
+    <value>Maak nieuwe creditcard</value>
+    <comment>Title for creating a new credit card item</comment>
+  </data>
+  <data name="CreateNewNoteTitle" xml:space="preserve">
+    <value>Maak nieuwe notitie</value>
+    <comment>Title for creating a new note item</comment>
+  </data>
+  <data name="TypeLogin" xml:space="preserve">
+    <value>Login</value>
+    <comment>Login item type label</comment>
+  </data>
+  <data name="TypeAlias" xml:space="preserve">
+    <value>Alias</value>
+    <comment>Alias item type label</comment>
+  </data>
+  <data name="TypeCard" xml:space="preserve">
+    <value>Creditcard</value>
+    <comment>Credit card item type label (short)</comment>
+  </data>
+  <data name="TypeNote" xml:space="preserve">
+    <value>Opmerking</value>
+    <comment>Note item type label</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
     <value>Nieuwe alias wordt aangemaakt...</value>
     <comment>Loading message while creating alias</comment>
   </data>
-  <data name="CreateCredentialErrorMessage" xml:space="preserve">
-    <value>Fout bij het aanmaken van nieuwe credential. Probeer het (later) opnieuw of probeer opnieuw uit- en in te loggen.</value>
-    <comment>Error message when credential creation fails</comment>
+  <data name="CreateItemErrorMessage" xml:space="preserve">
+    <value>Fout bij het aanmaken van een nieuw item. Probeer het opnieuw (later) of log uit en in opnieuw.</value>
+    <comment>Error message when item creation fails</comment>
   </data>
-  <data name="CredentialCreatedSuccessMessage" xml:space="preserve">
-    <value>Credential succesvol aangemaakt.</value>
-    <comment>Success message when credential is created</comment>
+  <data name="ItemCreatedSuccessMessage" xml:space="preserve">
+    <value>Item succesvol aangemaakt.</value>
+    <comment>Success message when item is created</comment>
   </data>
 </root>

@@ -93,8 +93,11 @@ android {
         applicationId 'net.aliasvault.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2400301
-        versionName "0.24.0-beta"
+        versionCode 2600100
+        versionName "0.26.0-alpha"
+
+        // Instrumented test configuration
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     signingConfigs {
         debug {
@@ -202,7 +205,19 @@ dependencies {
     // Add modern SQLite library with VACUUM INTO and backup API support
     implementation("com.github.requery:sqlite-android:3.49.0")
 
-    // Test dependencies
+    // Add ZXing library for QR code scanning (F-Droid compatible)
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+
+    // Add JNA library for UniFFI native bindings (Android-specific AAR with native libs)
+    // Version 5.17.0+ required for Android 15 16KB page size support
+    // See: https://github.com/java-native-access/jna/issues/1647
+    implementation("net.java.dev.jna:jna:5.17.0") {
+        artifact {
+            type = "aar"
+        }
+    }
+
+    // Test dependencies (unit tests)
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:4.0.0'
     testImplementation 'org.mockito.kotlin:mockito-kotlin:4.0.0'
@@ -214,6 +229,14 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
     testImplementation 'org.junit.vintage:junit-vintage-engine:5.9.2'
+
+    // Instrumented test dependencies (androidTest)
+    androidTestImplementation 'androidx.test:core:1.5.0'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test:rules:1.5.0'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.uiautomator:uiautomator:2.2.0'
+    androidTestImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3'
 
     def isGifEnabled = (findProperty('expo.gif.enabled') ?: "") == "true";
     def isWebpEnabled = (findProperty('expo.webp.enabled') ?: "") == "true";
@@ -248,9 +271,13 @@ ktlint {
     ignoreFailures = false
     enableExperimentalRules = true
     filter {
-        exclude("**/generated/**")
+        // Include all Kotlin and Java files first
         include("**/kotlin/**")
         include("**/java/**")
+        // Then exclude generated files
+        exclude("**/generated/**")
+        exclude("**/rustcore/uniffi/**")  // Exclude UniFFI-generated Rust bindings
+        exclude("**/uniffi/**")  // Exclude any uniffi directory
     }
 
     // Configure max line length
@@ -286,9 +313,15 @@ tasks.named("preBuild") {
 afterEvaluate {
     tasks.withType(org.jlleitschuh.gradle.ktlint.tasks.KtLintCheckTask).configureEach {
         dependsOn("generateCodegenArtifactsFromSchema")
+        // Exclude UniFFI-generated Rust bindings
+        exclude("**/rustcore/uniffi/**/*.kt")
+        exclude("**/uniffi/**/*.kt")
     }
     tasks.withType(org.jlleitschuh.gradle.ktlint.tasks.KtLintFormatTask).configureEach {
         dependsOn("generateCodegenArtifactsFromSchema")
+        // Exclude UniFFI-generated Rust bindings
+        exclude("**/rustcore/uniffi/**/*.kt")
+        exclude("**/uniffi/**/*.kt")
     }
 }
 
@@ -297,11 +330,41 @@ detekt {
     config = files("$rootProject.projectDir/detekt.yml")
     baseline = file("$rootProject.projectDir/baseline.xml")
 
-    source.setFrom(files("src/main/java"))
+    source.setFrom(
+        fileTree("src/main/java") {
+            exclude "**/uniffi/**"
+        }
+    )
     reports {
         html.required.set(true)
         xml.required.set(true)
         txt.required.set(false)
         sarif.required.set(false)
     }
+}
+
+// Rust Core build task - ensures native libraries and Kotlin bindings are up to date
+// Uses checksum-based incremental builds to skip if sources haven't changed
+task buildRustCore(type: Exec) {
+    description = "Build Rust Core native libraries and Kotlin bindings"
+    group = "build"
+
+    workingDir = file("${rootProject.projectDir}/scripts")
+
+    // Set up environment for cargo
+    environment "PATH", "${System.getProperty('user.home')}/.cargo/bin:/usr/local/bin:/opt/homebrew/bin:${System.getenv('PATH')}"
+
+    // Determine build mode based on variant
+    def isRelease = gradle.startParameter.taskNames.any { it.toLowerCase().contains('release') }
+    def buildArgs = isRelease ? ['./build-rust-core.sh', '--release'] : ['./build-rust-core.sh', '--debug']
+
+    commandLine buildArgs
+
+    // Only log if there are actual changes
+    ignoreExitValue = false
+}
+
+// Make Rust Core build run before Kotlin compilation
+tasks.matching { it.name.startsWith('compile') && it.name.contains('Kotlin') }.configureEach {
+    dependsOn buildRustCore
 }

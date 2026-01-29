@@ -28,19 +28,19 @@ public class DbSyncTests : ClientPlaywrightTest
     {
         var baselineVault = await CreateBaselineVault(async () =>
         {
-            await CreateCredentialEntry(new Dictionary<string, string> { { "service-name", "TestBaseline1" } });
-            await CreateCredentialEntry(new Dictionary<string, string> { { "service-name", "TestBaseline2" } });
+            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "TestBaseline1" } });
+            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "TestBaseline2" } });
         });
 
         var client1Vault = await SimulateClient(baselineVault, async () =>
         {
-            await NavigateUsingBlazorRouter("credentials");
-            await WaitForUrlAsync("credentials", "Find all of your credentials");
+            await NavigateUsingBlazorRouter("items");
+            await WaitForUrlAsync("items", "Find all of your items");
 
-            await CreateCredentialEntry(new Dictionary<string, string> { { "service-name", "TestA" } });
+            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "TestA" } });
 
-            // Delete a credential to test the delete support during merge.
-            await DeleteCredentialEntry("TestBaseline1");
+            // Delete an item to test the delete support during merge.
+            await DeleteItemEntry("TestBaseline1");
         });
 
         await SimulateClient(baselineVault, async () =>
@@ -50,15 +50,15 @@ public class DbSyncTests : ClientPlaywrightTest
             ApiDbContext.Vaults.Add(client1Vault);
             await ApiDbContext.SaveChangesAsync();
 
-            await NavigateUsingBlazorRouter("credentials");
-            await WaitForUrlAsync("credentials", "Find all of your credentials");
+            await NavigateUsingBlazorRouter("items");
+            await WaitForUrlAsync("items", "Find all of your items");
 
-            await CreateCredentialEntry(new Dictionary<string, string> { { "service-name", "TestB" } });
+            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "TestB" } });
         });
 
         // Assert that the two conflicting vaults have been merged and all service names are found.
-        await NavigateUsingBlazorRouter("credentials");
-        await WaitForUrlAsync("credentials", "Find all of your credentials");
+        await NavigateUsingBlazorRouter("items");
+        await WaitForUrlAsync("items", "Find all of your items");
 
         var pageContent = await Page.TextContentAsync("body");
         var expectedServiceNames = new[] { "TestBaseline2", "TestA", "TestB" };
@@ -67,8 +67,8 @@ public class DbSyncTests : ClientPlaywrightTest
             Assert.That(pageContent, Does.Contain(serviceName), $"{serviceName} not found in vault after merge.");
         }
 
-        // Assert that the deleted credential is not found.
-        Assert.That(pageContent, Does.Not.Contain("TestBaseline1"), "Deleted credential found in vault after merge.");
+        // Assert that the deleted item is not found.
+        Assert.That(pageContent, Does.Not.Contain("TestBaseline1"), "Deleted item found in vault after merge.");
     }
 
     /// <summary>
@@ -79,17 +79,18 @@ public class DbSyncTests : ClientPlaywrightTest
     [Order(2)]
     public async Task DbSyncClientMergeCredentialPropertiesTest()
     {
+        // Use unique prefix "PropTest" to avoid conflicts with other tests in this class
         var baselineVault = await CreateBaselineVault(async () =>
         {
-            await CreateCredentialEntry(new Dictionary<string, string> { { "service-name", "TestBaseline1" }, { "username", "user1" }, { "email", "email1" }, { "first-name", "firstname1" } });
-            await CreateCredentialEntry(new Dictionary<string, string> { { "service-name", "TestBaseline2" }, { "username", "user2" }, { "email", "email2" }, { "first-name", "firstname2" } });
-            await CreateCredentialEntry(new Dictionary<string, string> { { "service-name", "TestBaseline3" }, { "username", "user3" }, { "email", "email3" }, { "first-name", "firstname3" } });
+            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "PropTestBaseline1" }, { "username", "propuser1" }, { "email", "propemail1@example.tld" } });
+            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "PropTestBaseline2" }, { "username", "propuser2" }, { "email", "propemail2@example.tld" } });
+            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "PropTestBaseline3" }, { "username", "propuser3" }, { "email", "propemail3@example.tld" } });
         });
 
         // Client 1 updates the vault first.
         var client1Vault = await SimulateClient(baselineVault, async () =>
         {
-            await UpdateCredentialEntry("TestBaseline2", new Dictionary<string, string> { { "service-name", "TestBaseMutate2" }, { "username", "usermutate2" }, { "email", "emailmutate2" }, { "first-name", "firstnamemutate2" } });
+            await UpdateItemEntry("PropTestBaseline2", new Dictionary<string, string> { { "service-name", "PropTestMutate2" }, { "username", "propmutate2" }, { "email", "propemailmutate2@example.tld" } });
         });
 
         // Then client 2 updates the same vault causing a conflict and requiring a client-side merge.
@@ -100,7 +101,7 @@ public class DbSyncTests : ClientPlaywrightTest
             ApiDbContext.Vaults.Add(client1Vault);
             await ApiDbContext.SaveChangesAsync();
 
-            await UpdateCredentialEntry("TestBaseline3", new Dictionary<string, string> { { "service-name", "TestBaseMutate3" }, { "username", "usermutate3" }, { "email", "emailmutate3" } });
+            await UpdateItemEntry("PropTestBaseline3", new Dictionary<string, string> { { "service-name", "PropTestMutate3" }, { "username", "propmutate3" }, { "email", "propemailmutate3@example.tld" } });
         });
 
         // Then another client updates the client 1 vault again, which should also cause a conflict with the client 2 vault update.
@@ -111,24 +112,25 @@ public class DbSyncTests : ClientPlaywrightTest
             ApiDbContext.Vaults.Add(client2Vault);
             await ApiDbContext.SaveChangesAsync();
 
-            await UpdateCredentialEntry("TestBaseMutate2", new Dictionary<string, string> { { "service-name", "TestBaseMutate23" }, { "first-name", "firstnamemutate23" } });
+            // Update username to test that field-level merge works correctly.
+            await UpdateItemEntry("PropTestMutate2", new Dictionary<string, string> { { "service-name", "PropTestMutate23" }, { "username", "propmutate23" } });
         });
 
-        // Assert that the two conflicting vaults have been merged and all mutated service names are found.
+        // Assert that the two conflicting vaults have been merged and all mutated field values are found.
         Dictionary<string, List<string>> expectedStrings = new()
         {
-            { "TestBaseMutate23", new List<string> { "usermutate2", "emailmutate2@example.tld", "firstnamemutate23" } },
-            { "TestBaseMutate3", new List<string> { "usermutate3", "emailmutate3@example.tld" } },
+            { "PropTestMutate23", new List<string> { "propmutate23", "propemailmutate2@example.tld" } },
+            { "PropTestMutate3", new List<string> { "propmutate3", "propemailmutate3@example.tld" } },
         };
 
         foreach (var serviceName in expectedStrings)
         {
-            // Navigate to the credential details page.
-            await NavigateUsingBlazorRouter("credentials");
-            await WaitForUrlAsync("credentials", "Find all of your credentials");
+            // Navigate to the item details page.
+            await NavigateUsingBlazorRouter("items");
+            await WaitForUrlAsync("items", "Find all of your items");
 
             await Page.ClickAsync($"text={serviceName.Key}");
-            await WaitForUrlAsync($"credentials/**", "View credential");
+            await WaitForUrlAsync($"items/**", "View item");
             foreach (var property in serviceName.Value)
             {
                 // Check if any input on the page has the expected value
@@ -136,7 +138,7 @@ public class DbSyncTests : ClientPlaywrightTest
                 Array.from(document.querySelectorAll('input, textarea'))
                     .some(el => el.value === '{property}')");
 
-                Assert.That(inputWithValue, Is.True, $"No input found with value '{property}' in {serviceName.Key} credential page after merge.");
+                Assert.That(inputWithValue, Is.True, $"No input found with value '{property}' in {serviceName.Key} item page after merge.");
             }
         }
     }
@@ -151,15 +153,15 @@ public class DbSyncTests : ClientPlaywrightTest
     {
         var baselineVault = await CreateBaselineVault(async () =>
         {
-            await CreateCredentialEntry(new Dictionary<string, string> { { "service-name", "TestBaseline" } });
+            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "TestBaseline" } });
         });
 
         var client1Vault = await SimulateClient(baselineVault, async () =>
         {
-            await NavigateUsingBlazorRouter("credentials");
-            await WaitForUrlAsync("credentials", "Find all of your credentials");
+            await NavigateUsingBlazorRouter("items");
+            await WaitForUrlAsync("items", "Find all of your items");
 
-            await CreateCredentialEntry(new Dictionary<string, string> { { "service-name", "TestA" } });
+            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "TestA" } });
 
             // Attempt to change password.
             await NavigateUsingBlazorRouter("settings/security/change-password");
@@ -194,10 +196,10 @@ public class DbSyncTests : ClientPlaywrightTest
             ApiDbContext.Vaults.Add(client1Vault);
             await ApiDbContext.SaveChangesAsync();
 
-            await NavigateUsingBlazorRouter("credentials");
-            await WaitForUrlAsync("credentials", "Find all of your credentials");
+            await NavigateUsingBlazorRouter("items");
+            await WaitForUrlAsync("items", "Find all of your items");
 
-            await CreateCredentialEntry(new Dictionary<string, string> { { "service-name", "TestB" } }, null, false);
+            await CreateItemEntry(new Dictionary<string, string> { { "service-name", "TestB" } }, null, false);
 
             // Wait for 1 second to ensure the page is loaded.
             await Task.Delay(1000);
@@ -205,7 +207,7 @@ public class DbSyncTests : ClientPlaywrightTest
 
         // Assert that merge failed error message is shown.
         var pageContent = await Page.TextContentAsync("body");
-        Assert.That(pageContent, Does.Contain("Unable to save changes"), $"Merge failed error expected after another client changed the password but no error message found.");
+        Assert.That(pageContent, Does.Contain("An unknown error occurred."), $"Merge failed error expected after another client changed the password but no error message found.");
     }
 
     /// <summary>
@@ -241,7 +243,7 @@ public class DbSyncTests : ClientPlaywrightTest
         // Simulate new client.
         await Logout();
         await Login();
-        await WaitForUrlAsync("credentials", "Find all of your credentials");
+        await WaitForUrlAsync("items", "Find all of your items");
 
         // Execute custom client actions.
         await clientActions();

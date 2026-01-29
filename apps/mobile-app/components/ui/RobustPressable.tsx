@@ -9,6 +9,7 @@ interface IRobustPressableProps {
   disabled?: boolean;
   pressRetentionOffset?: number;
   hitSlop?: number;
+  testID?: string;
 }
 
 /**
@@ -24,6 +25,7 @@ export const RobustPressable: React.FC<IRobustPressableProps> = ({
   disabled,
   pressRetentionOffset = 10,
   hitSlop = 10,
+  testID,
 }) => {
   return (
     <Pressable
@@ -36,6 +38,8 @@ export const RobustPressable: React.FC<IRobustPressableProps> = ({
         style,
         { opacity: pressed ? 0.6 : 1 },
       ]}
+      testID={testID}
+      accessibilityLabel={testID}
     >
       {children}
     </Pressable>

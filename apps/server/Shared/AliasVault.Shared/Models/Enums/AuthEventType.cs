@@ -28,6 +28,11 @@ public enum AuthEventType
     Logout = 3,
 
     /// <summary>
+    /// Represents a mobile login attempt (login via QR code from mobile app).
+    /// </summary>
+    MobileLogin = 4,
+
+    /// <summary>
     /// Represents JWT access token refresh event issued by client to API.
     /// </summary>
     TokenRefresh = 10,

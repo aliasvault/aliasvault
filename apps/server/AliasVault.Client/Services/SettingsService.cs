@@ -8,7 +8,6 @@
 namespace AliasVault.Client.Services;
 
 using System;
-using System.Data;
 using System.Globalization;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -43,15 +42,23 @@ public sealed class SettingsService
 
     /// <summary>
     /// Gets the DefaultIdentityLanguage setting.
+    /// Returns the stored override value if set, otherwise returns empty string to indicate no explicit preference.
+    /// Use GetEffectiveIdentityLanguageAsync() to get the language with smart defaults based on UI language.
     /// </summary>
-    /// <returns>Default identity language as two-letter code.</returns>
-    public string DefaultIdentityLanguage => GetSetting("DefaultIdentityLanguage", "en")!;
+    /// <returns>Default identity language as two-letter code, or empty string if not set.</returns>
+    public string DefaultIdentityLanguage => GetSetting("DefaultIdentityLanguage");
 
     /// <summary>
     /// Gets the DefaultIdentityGender setting.
     /// </summary>
     /// <returns>Default identity gender preference.</returns>
     public string DefaultIdentityGender => GetSetting("DefaultIdentityGender", "random")!;
+
+    /// <summary>
+    /// Gets the DefaultIdentityAgeRange setting.
+    /// </summary>
+    /// <returns>Default identity age range (e.g., "random", "21-25", "25-30", etc.).</returns>
+    public string DefaultIdentityAgeRange => GetSetting("DefaultIdentityAgeRange", "random")!;
 
     /// <summary>
     /// Gets a value indicating whether the tutorial has been completed.
@@ -142,6 +149,13 @@ public sealed class SettingsService
     /// <param name="value">The new value.</param>
     /// <returns>Task.</returns>
     public Task SetDefaultIdentityGender(string value) => SetSettingAsync("DefaultIdentityGender", value);
+
+    /// <summary>
+    /// Sets the DefaultIdentityAgeRange setting.
+    /// </summary>
+    /// <param name="value">The new value.</param>
+    /// <returns>Task.</returns>
+    public Task SetDefaultIdentityAgeRange(string value) => SetSettingAsync("DefaultIdentityAgeRange", value);
 
     /// <summary>
     /// Sets the TutorialDone setting.
@@ -344,7 +358,7 @@ public sealed class SettingsService
     }
 
     /// <summary>
-    /// Set setting value in database.
+    /// Set setting value in database. Syncs to server in background without blocking UI.
     /// </summary>
     /// <param name="key">Key of setting to set.</param>
     /// <param name="value">Value of setting to set.</param>
@@ -377,14 +391,12 @@ public sealed class SettingsService
             db.Settings.Update(setting);
         }
 
-        // Also update the setting in the local dictionary so the new value
+        // Update the setting in the local dictionary so the new value
         // is returned by subsequent local reads.
         _settings[key] = value;
 
-        var success = await _dbService.SaveDatabaseAsync();
-        if (!success)
-        {
-            throw new DataException("Error saving database to server after setting update.");
-        }
+        // Save to EF context and sync to server in background (non-blocking).
+        await db.SaveChangesAsync();
+        _dbService.SaveDatabaseInBackground();
     }
 }

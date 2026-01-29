@@ -2,12 +2,17 @@ package net.aliasvault.app.vaultstore
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import io.requery.android.database.sqlite.SQLiteDatabase
-import net.aliasvault.app.vaultstore.interfaces.CredentialOperationCallback
+import kotlinx.coroutines.suspendCancellableCoroutine
 import net.aliasvault.app.vaultstore.interfaces.CryptoOperationCallback
+import net.aliasvault.app.vaultstore.interfaces.ItemOperationCallback
+import net.aliasvault.app.vaultstore.keystoreprovider.BiometricAuthCallback
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreProvider
-import net.aliasvault.app.vaultstore.models.Credential
+import net.aliasvault.app.vaultstore.models.Item
+import net.aliasvault.app.vaultstore.models.StoreVaultResult
 import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
+import kotlin.coroutines.resume
 
 /**
  * The vault store that manages the encrypted vault and all input/output operations on it.
@@ -16,16 +21,17 @@ import net.aliasvault.app.vaultstore.storageprovider.StorageProvider
  * This class uses composition to organize functionality into specialized components:
  * - VaultCrypto: Handles encryption, decryption, and key management
  * - VaultDatabase: Handles database storage and operations
- * - VaultQuery: Handles SQL query execution and credential retrieval
+ * - ItemRepository: Handles item queries through the repository pattern
  * - VaultMetadataManager: Handles metadata and settings storage
  * - VaultAuth: Handles authentication methods and auto-lock
  * - VaultSync: Handles vault synchronization with server
  * - VaultMutate: Handles vault mutation (uploading changes)
  * - VaultCache: Handles cache and storage clearing
  *
- * @param storageProvider The storage provider
- * @param keystoreProvider The keystore provider
+ * @param storageProvider The storage provider.
+ * @param keystoreProvider The keystore provider.
  */
+@Suppress("TooManyFunctions") // This is a facade class that delegates to specialized components
 class VaultStore(
     private val storageProvider: StorageProvider,
     private val keystoreProvider: KeystoreProvider,
@@ -64,13 +70,21 @@ class VaultStore(
 
     private val crypto = VaultCrypto(keystoreProvider, storageProvider)
     private val databaseComponent = VaultDatabase(storageProvider, crypto)
-    private val query = VaultQuery(databaseComponent)
-    private val metadata = VaultMetadataManager(storageProvider)
+    private val itemRepository = net.aliasvault.app.vaultstore.repositories.ItemRepository(databaseComponent)
+    internal val metadata = VaultMetadataManager(storageProvider)
     private val auth = VaultAuth(storageProvider) { cache.clearCache() }
-    private val sync = VaultSync(databaseComponent, metadata, crypto)
-    private val mutate = VaultMutate(databaseComponent, query, metadata)
+    private val sync = VaultSync(databaseComponent, metadata, crypto, storageProvider, itemRepository)
+    private val mutate = VaultMutate(databaseComponent, itemRepository, metadata)
     private val cache = VaultCache(crypto, databaseComponent, keystoreProvider, storageProvider)
     private val passkey = VaultPasskey(databaseComponent)
+    private val pin by lazy {
+        val androidProvider = storageProvider as net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
+        // Use reflection to access private context field
+        val contextField = androidProvider.javaClass.getDeclaredField("context")
+        contextField.isAccessible = true
+        val context = contextField.get(androidProvider) as android.content.Context
+        VaultPin(context)
+    }
 
     // endregion
 
@@ -188,6 +202,13 @@ class VaultStore(
         return crypto.deriveKeyFromPassword(password, salt, encryptionType, encryptionSettings)
     }
 
+    /**
+     * Encrypts the vault's encryption key using an RSA public key for mobile login.
+     */
+    fun encryptDecryptionKeyForMobileLogin(publicKeyJWK: String): String {
+        return crypto.encryptDecryptionKeyForMobileLogin(publicKeyJWK, auth.getAuthMethods())
+    }
+
     // endregion
 
     // region Database Methods
@@ -235,21 +256,112 @@ class VaultStore(
      * Execute a read-only SQL query (SELECT) on the vault.
      */
     fun executeQuery(queryString: String, params: Array<Any?>): List<Map<String, Any?>> {
-        return query.executeQuery(queryString, params)
+        val db = databaseComponent.dbConnection ?: error("Database not initialized")
+
+        // Convert params to strings for SQLite
+        val convertedParams = params.map { param ->
+            when (param) {
+                null -> null
+                is ByteArray -> String(param, Charsets.UTF_8)
+                else -> param.toString()
+            }
+        }.toTypedArray()
+
+        val cursor = db.query(queryString, convertedParams)
+        val results = mutableListOf<Map<String, Any?>>()
+
+        cursor.use {
+            val columnNames = it.columnNames
+            while (it.moveToNext()) {
+                val row = mutableMapOf<String, Any?>()
+                for (columnName in columnNames) {
+                    when (it.getType(it.getColumnIndexOrThrow(columnName))) {
+                        android.database.Cursor.FIELD_TYPE_NULL -> row[columnName] = null
+                        android.database.Cursor.FIELD_TYPE_INTEGER -> row[columnName] = it.getLong(
+                            it.getColumnIndexOrThrow(columnName),
+                        )
+                        android.database.Cursor.FIELD_TYPE_FLOAT -> row[columnName] = it.getDouble(
+                            it.getColumnIndexOrThrow(columnName),
+                        )
+                        android.database.Cursor.FIELD_TYPE_STRING -> row[columnName] = it.getString(
+                            it.getColumnIndexOrThrow(columnName),
+                        )
+                        android.database.Cursor.FIELD_TYPE_BLOB -> row[columnName] = it.getBlob(
+                            it.getColumnIndexOrThrow(columnName),
+                        )
+                    }
+                }
+                results.add(row)
+            }
+        }
+
+        return results
     }
 
     /**
      * Execute an SQL update on the vault that mutates it.
      */
     fun executeUpdate(queryString: String, params: Array<Any?>): Int {
-        return query.executeUpdate(queryString, params)
+        val db = databaseComponent.dbConnection ?: error("Database not initialized")
+
+        val convertedParams = params.map { param ->
+            when (param) {
+                null -> null
+                is ByteArray -> String(param, Charsets.UTF_8)
+                else -> param.toString()
+            }
+        }.toTypedArray()
+
+        val stmt = db.compileStatement(queryString)
+        convertedParams.forEachIndexed { index, value ->
+            if (value == null) {
+                stmt.bindNull(index + 1)
+            } else {
+                stmt.bindString(index + 1, value)
+            }
+        }
+        stmt.execute()
+
+        // Get the number of affected rows
+        val affectedCursor = db.rawQuery("SELECT changes()", null)
+        affectedCursor.use {
+            if (it.moveToFirst()) {
+                return it.getInt(0)
+            }
+        }
+        return 0
     }
 
     /**
      * Execute a raw SQL command on the vault without parameters.
+     * Splits the query by semicolons to handle multiple statements and
+     * skips transaction control statements (BEGIN TRANSACTION, COMMIT, ROLLBACK)
+     * as those are handled externally by the caller.
      */
     fun executeRaw(queryString: String) {
-        query.executeRaw(queryString)
+        val db = databaseComponent.dbConnection ?: error("Database not initialized")
+
+        // Strip BOM (U+FEFF) that may be present at the start of SQL strings.
+        val cleanedQuery = queryString.trimStart('\uFEFF')
+
+        // Split by semicolons to handle multiple statements
+        val statements = cleanedQuery.split(";")
+
+        for (statement in statements) {
+            val trimmed = statement.trim().trimStart('\uFEFF')
+
+            // Skip empty statements and transaction control statements (handled externally)
+            if (trimmed.isEmpty() ||
+                trimmed.uppercase().startsWith("BEGIN TRANSACTION") ||
+                trimmed.uppercase().startsWith("COMMIT") ||
+                trimmed.uppercase().startsWith("ROLLBACK")
+            ) {
+                continue
+            }
+
+            val stmt = db.compileStatement(trimmed)
+            stmt.execute()
+        }
     }
 
     /**
@@ -261,9 +373,16 @@ class VaultStore(
 
     /**
      * Commit a SQL transaction on the vault.
+     * This also atomically marks the vault as dirty and increments the mutation sequence
+     * for proper sync tracking.
      */
     fun commitTransaction() {
         databaseComponent.commitTransaction()
+
+        // Atomically mark vault as dirty and increment mutation sequence
+        // This ensures sync can properly detect local changes
+        metadata.setIsDirty(true)
+        metadata.incrementMutationSequence()
     }
 
     /**
@@ -274,17 +393,33 @@ class VaultStore(
     }
 
     /**
-     * Get all credentials from the vault.
+     * Get all items from the vault.
      */
-    fun getAllCredentials(): List<Credential> {
-        return query.getAllCredentials()
+    fun getAllItems(): List<Item> {
+        return itemRepository.getAll()
     }
 
     /**
-     * Attempts to get all credentials using only the cached encryption key.
+     * Attempts to get all items using only the cached encryption key.
      */
-    fun tryGetAllCredentials(callback: CredentialOperationCallback): Boolean {
-        return query.tryGetAllCredentials(callback, crypto) { unlockVault() }
+    fun tryGetAllItems(callback: ItemOperationCallback): Boolean {
+        if (crypto.encryptionKey == null) {
+            android.util.Log.d("VaultStore", "Encryption key not in memory, authentication required")
+            return false
+        }
+
+        try {
+            if (!databaseComponent.isVaultUnlocked()) {
+                unlockVault()
+            }
+
+            callback.onSuccess(itemRepository.getAll())
+            return true
+        } catch (e: Exception) {
+            android.util.Log.e("VaultStore", "Error retrieving items", e)
+            callback.onError(e)
+            return false
+        }
     }
 
     // endregion
@@ -427,10 +562,102 @@ class VaultStore(
     }
 
     /**
-     * Sync the vault with the server.
+     * Get the sync state.
      */
-    suspend fun syncVault(webApiService: net.aliasvault.app.webapi.WebApiService): Boolean {
-        return sync.syncVault(webApiService)
+    fun getSyncState(): net.aliasvault.app.vaultstore.models.SyncState {
+        return metadata.getSyncState()
+    }
+
+    /**
+     * Set the isDirty flag.
+     */
+    fun setIsDirty(isDirty: Boolean) {
+        metadata.setIsDirty(isDirty)
+    }
+
+    /**
+     * Set the isSyncing flag.
+     */
+    fun setIsSyncing(isSyncing: Boolean) {
+        metadata.setIsSyncing(isSyncing)
+    }
+
+    /**
+     * Store encrypted vault with sync state atomically.
+     * Two modes:
+     * 1. markDirty=true: Local mutation - always succeeds, increments mutation sequence
+     * 2. expectedMutationSeq provided: Sync operation - only succeeds if no mutations happened
+     */
+    fun storeEncryptedVaultWithSyncState(
+        encryptedVault: String,
+        markDirty: Boolean = false,
+        serverRevision: Int? = null,
+        expectedMutationSeq: Int? = null,
+    ): StoreVaultResult {
+        var mutationSequence = metadata.getMutationSequence()
+
+        // Race detection for sync operations
+        if (expectedMutationSeq != null && expectedMutationSeq != mutationSequence) {
+            return StoreVaultResult(success = false, mutationSequence = mutationSequence)
+        }
+
+        if (markDirty) {
+            mutationSequence += 1
+        }
+
+        // Store vault
+        databaseComponent.storeEncryptedDatabase(encryptedVault)
+
+        if (markDirty) {
+            metadata.setMutationSequence(mutationSequence)
+            metadata.setIsDirty(true)
+        }
+
+        if (serverRevision != null) {
+            metadata.setVaultRevisionNumber(serverRevision)
+        }
+
+        return StoreVaultResult(success = true, mutationSequence = mutationSequence)
+    }
+
+    /**
+     * Mark the vault as clean after successful sync.
+     */
+    fun markVaultClean(mutationSeqAtStart: Int, newServerRevision: Int): Boolean {
+        return metadata.markVaultClean(mutationSeqAtStart, newServerRevision)
+    }
+
+    /**
+     * Upload the vault to the server.
+     */
+    suspend fun uploadVault(webApiService: net.aliasvault.app.webapi.WebApiService): VaultUploadResult {
+        return mutate.uploadVault(webApiService)
+    }
+
+    /**
+     * Fetch the server vault (encrypted blob).
+     */
+    suspend fun fetchServerVault(webApiService: net.aliasvault.app.webapi.WebApiService): VaultResponse {
+        return sync.fetchServerVault(webApiService)
+    }
+
+    /**
+     * Check vault version including sync state.
+     */
+    suspend fun checkVaultVersion(webApiService: net.aliasvault.app.webapi.WebApiService): VaultVersionCheckResult {
+        return sync.checkVaultVersion(webApiService)
+    }
+
+    /**
+     * Unified vault sync method that handles all sync scenarios.
+     */
+    suspend fun syncVaultWithServer(webApiService: net.aliasvault.app.webapi.WebApiService): VaultSyncResult {
+        val result = sync.syncVaultWithServer(webApiService)
+        // Re-unlock vault if it was unlocked before sync and action was download/merge
+        if (result.success && (result.action == SyncAction.DOWNLOADED || result.action == SyncAction.MERGED) && isVaultUnlocked()) {
+            unlockVault()
+        }
+        return result
     }
 
     // endregion
@@ -456,14 +683,14 @@ class VaultStore(
     }
 
     /**
-     * Get all passkeys for a credential.
+     * Get all passkeys for an item.
      */
     @Suppress("UnusedParameter")
-    fun getPasskeysForCredential(
-        credentialId: java.util.UUID,
+    fun getPasskeysForItem(
+        itemId: java.util.UUID,
         db: io.requery.android.database.sqlite.SQLiteDatabase,
     ): List<net.aliasvault.app.vaultstore.models.Passkey> {
-        return passkey.getPasskeysForCredential(credentialId)
+        return passkey.getPasskeysForItem(itemId)
     }
 
     /**
@@ -482,15 +709,15 @@ class VaultStore(
         rpId: String,
         userName: String? = null,
         userId: ByteArray? = null,
-    ): List<PasskeyWithCredentialInfo> {
+    ): List<net.aliasvault.app.vaultstore.repositories.PasskeyWithCredentialInfo> {
         return passkey.getPasskeysWithCredentialInfo(rpId, userName, userId)
     }
 
     /**
-     * Get all passkeys with their associated credentials in a single query.
+     * Get all passkeys with their associated items in a single query.
      */
-    fun getAllPasskeysWithCredentials(): List<PasskeyWithCredential> {
-        return passkey.getAllPasskeysWithCredentials()
+    fun getAllPasskeysWithItems(): List<net.aliasvault.app.vaultstore.repositories.PasskeyWithItem> {
+        return passkey.getAllPasskeysWithItems()
     }
 
     /**
@@ -513,16 +740,16 @@ class VaultStore(
     }
 
     /**
-     * Create a credential with a passkey.
+     * Create an item with a passkey.
      */
-    fun createCredentialWithPasskey(
+    fun createItemWithPasskey(
         rpId: String,
         userName: String?,
         displayName: String,
         passkeyObj: net.aliasvault.app.vaultstore.models.Passkey,
         logo: ByteArray? = null,
-    ): net.aliasvault.app.vaultstore.models.Credential {
-        return passkey.createCredentialWithPasskey(rpId, userName, displayName, passkeyObj, logo)
+    ): net.aliasvault.app.vaultstore.models.Item {
+        return passkey.createItemWithPasskey(rpId, userName, displayName, passkeyObj, logo)
     }
 
     /**
@@ -537,6 +764,29 @@ class VaultStore(
         passkey.replacePasskey(oldPasskeyId, newPasskey, displayName, logo)
     }
 
+    /**
+     * Get Items that match an rpId but don't have a passkey yet.
+     * Used for finding existing credentials that could have a passkey added to them.
+     */
+    fun getItemsWithoutPasskeyForRpId(
+        rpId: String,
+        rpName: String? = null,
+        userName: String? = null,
+    ): List<net.aliasvault.app.vaultstore.repositories.ItemWithCredentialInfo> {
+        return passkey.getItemsWithoutPasskeyForRpId(rpId, rpName, userName)
+    }
+
+    /**
+     * Add a passkey to an existing Item (merge passkey into existing credential).
+     */
+    fun addPasskeyToExistingItem(
+        itemId: java.util.UUID,
+        passkeyObj: net.aliasvault.app.vaultstore.models.Passkey,
+        logo: ByteArray? = null,
+    ) {
+        passkey.addPasskeyToExistingItem(itemId, passkeyObj, logo)
+    }
+
     // endregion
 
     // region Cache Methods
@@ -549,10 +799,125 @@ class VaultStore(
     }
 
     /**
+     * Clear session data only (for forced logout).
+     * Preserves vault data on disk for recovery on next login.
+     * This is used when the user is forcibly logged out (e.g., 401, token revocation)
+     * to allow recovery of unsynced local changes.
+     */
+    fun clearSession() {
+        cache.clearSession()
+    }
+
+    /**
      * Clear all vault data including from persisted storage.
+     * This is used for user-initiated logout where they explicitly
+     * choose to clear all local data.
      */
     fun clearVault() {
         cache.clearVault()
+    }
+
+    // endregion
+
+    // region PIN Methods
+
+    /**
+     * Check if PIN unlock is enabled.
+     */
+    fun isPinEnabled(): Boolean {
+        return pin.isPinEnabled()
+    }
+
+    /**
+     * Get the configured PIN length.
+     */
+    fun getPinLength(): Int? {
+        return pin.getPinLength()
+    }
+
+    /**
+     * Get failed PIN attempts count.
+     */
+    fun getPinFailedAttempts(): Int {
+        return pin.getPinFailedAttempts()
+    }
+
+    /**
+     * Setup PIN unlock.
+     */
+    @Throws(Exception::class)
+    fun setupPin(pinValue: String, vaultEncryptionKeyBase64: String) {
+        pin.setupPin(pinValue, vaultEncryptionKeyBase64)
+    }
+
+    /**
+     * Unlock with PIN.
+     */
+    @Throws(Exception::class)
+    fun unlockWithPin(pinValue: String): String {
+        return pin.unlockWithPin(pinValue)
+    }
+
+    /**
+     * Reset failed PIN attempts counter.
+     */
+    fun resetPinFailedAttempts() {
+        pin.resetPinFailedAttempts()
+    }
+
+    /**
+     * Disable PIN unlock and remove all stored data.
+     */
+    fun removeAndDisablePin() {
+        pin.removeAndDisablePin()
+    }
+
+    // endregion
+
+    // region Re-authentication
+
+    /**
+     * Authenticate the user using biometric authentication only.
+     * Note: This method only handles biometric authentication.
+     * Returns true if authentication succeeded, false otherwise.
+     *
+     * @param title The title for authentication. Optional, defaults to "Unlock Vault".
+     * @return True if biometric authentication succeeded, false if authentication failed.
+     */
+    suspend fun issueBiometricAuthentication(title: String?): Boolean {
+        // Use title if provided, otherwise default
+        val authReason = title?.takeIf { it.isNotEmpty() } ?: "Unlock Vault"
+
+        // Check if biometric authentication is enabled
+        val authMethods = auth.getAuthMethods()
+        val isBiometricEnabled = authMethods.contains("faceid")
+
+        if (!isBiometricEnabled) {
+            Log.e("VaultStore", "No authentication method enabled")
+            return false
+        }
+
+        // Check if biometric is available
+        if (!keystoreProvider.isBiometricAvailable()) {
+            Log.e("VaultStore", "Biometric authentication not available")
+            return false
+        }
+
+        // Trigger biometric authentication with a custom prompt
+        return suspendCancellableCoroutine { continuation ->
+            keystoreProvider.authenticateWithBiometric(
+                authReason,
+                object : BiometricAuthCallback {
+                    override fun onSuccess() {
+                        continuation.resume(true)
+                    }
+
+                    override fun onFailure() {
+                        continuation.resume(false)
+                    }
+                },
+            )
+        }
     }
 
     // endregion

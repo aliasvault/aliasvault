@@ -474,6 +474,168 @@ public class TaskRunnerTests
     }
 
     /// <summary>
+    /// Tests the Mobile Login Log Cleanup task.
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task MobileLoginLogCleanup()
+    {
+        // Arrange
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+
+        // Set mobile login retention to 30 days
+        var setting = new ServerSetting
+        {
+            Key = "MobileLoginLogRetentionDays",
+            Value = "30",
+        };
+        dbContext.ServerSettings.Add(setting);
+        await dbContext.SaveChangesAsync();
+
+        // Create old mobile login requests (should be deleted)
+        for (int i = 0; i < 20; i++)
+        {
+            var oldRequest = new MobileLoginRequest
+            {
+                Id = Guid.NewGuid().ToString(),
+                ClientPublicKey = "old-test-key",
+                CreatedAt = DateTime.UtcNow.AddDays(-40 - i), // 40+ days old
+                ClientIpAddress = "192.168.1.1",
+            };
+            dbContext.MobileLoginRequests.Add(oldRequest);
+        }
+
+        // Create recent mobile login requests (should be kept)
+        for (int i = 0; i < 30; i++)
+        {
+            var recentRequest = new MobileLoginRequest
+            {
+                Id = Guid.NewGuid().ToString(),
+                ClientPublicKey = "recent-test-key",
+                CreatedAt = DateTime.UtcNow.AddDays(-i), // 0-29 days old
+                ClientIpAddress = "192.168.1.2",
+            };
+            dbContext.MobileLoginRequests.Add(recentRequest);
+        }
+
+        await dbContext.SaveChangesAsync();
+
+        // Act
+        await _testHost.StartAsync();
+        await WaitForMaintenanceJobCompletion();
+
+        // Assert
+        var remainingRequests = await dbContext.MobileLoginRequests.ToListAsync();
+        Assert.That(remainingRequests, Has.Count.EqualTo(30), "Only recent mobile login requests (last 30 days) should remain");
+    }
+
+    /// <summary>
+    /// Tests the Mobile Login Sensitive Data Cleanup task (runs during nightly maintenance).
+    /// Sensitive data is automatically cleared after 10 minutes (hardcoded).
+    /// </summary>
+    /// <returns>Task.</returns>
+    [Test]
+    public async Task MobileLoginSensitiveDataCleanup()
+    {
+        // Arrange
+        await using var dbContext = await _testHostBuilder.GetDbContextAsync();
+
+        // Create test user
+        var user = new AliasVaultUser
+        {
+            UserName = "testuser",
+            Email = "testuser@example.tld",
+        };
+        dbContext.AliasVaultUsers.Add(user);
+        await dbContext.SaveChangesAsync();
+
+        // Create fulfilled-but-not-retrieved request that's old enough to be cleared (> 10 minutes)
+        var staleRequest = new MobileLoginRequest
+        {
+            Id = Guid.NewGuid().ToString(),
+            ClientPublicKey = "stale-public-key",
+            EncryptedDecryptionKey = "encrypted-key-data",
+            UserId = user.Id,
+            CreatedAt = DateTime.UtcNow.AddMinutes(-15),
+            FulfilledAt = DateTime.UtcNow.AddMinutes(-12), // Fulfilled 12 minutes ago (exceeds 10 min timeout)
+            RetrievedAt = null, // Not yet retrieved
+            ClearedAt = null, // Not yet cleared
+            ClientIpAddress = "192.168.1.1",
+            MobileIpAddress = "10.0.0.1",
+        };
+        dbContext.MobileLoginRequests.Add(staleRequest);
+
+        // Create fulfilled-but-not-retrieved request that's too recent to clear (< 10 minutes)
+        var recentRequest = new MobileLoginRequest
+        {
+            Id = Guid.NewGuid().ToString(),
+            ClientPublicKey = "recent-public-key",
+            EncryptedDecryptionKey = "encrypted-key-data",
+            UserId = user.Id,
+            CreatedAt = DateTime.UtcNow.AddMinutes(-6),
+            FulfilledAt = DateTime.UtcNow.AddMinutes(-5), // Fulfilled 5 minutes ago (under 10 min timeout)
+            RetrievedAt = null,
+            ClearedAt = null,
+            ClientIpAddress = "192.168.1.2",
+            MobileIpAddress = "10.0.0.2",
+        };
+        dbContext.MobileLoginRequests.Add(recentRequest);
+
+        // Create completed request (already retrieved)
+        var completedRequest = new MobileLoginRequest
+        {
+            Id = Guid.NewGuid().ToString(),
+            ClientPublicKey = "completed-public-key",
+            EncryptedDecryptionKey = "encrypted-key-data",
+            UserId = user.Id,
+            CreatedAt = DateTime.UtcNow.AddMinutes(-15),
+            FulfilledAt = DateTime.UtcNow.AddMinutes(-12),
+            RetrievedAt = DateTime.UtcNow.AddMinutes(-11), // Already retrieved
+            ClearedAt = DateTime.UtcNow.AddMinutes(-11), // Already cleared when retrieved
+            ClientIpAddress = "192.168.1.3",
+            MobileIpAddress = "10.0.0.3",
+        };
+        dbContext.MobileLoginRequests.Add(completedRequest);
+
+        await dbContext.SaveChangesAsync();
+
+        // Act - Run the nightly maintenance cleanup
+        await _testHost.StartAsync();
+        await WaitForMaintenanceJobCompletion();
+
+        // Assert - Reload entities from database to get updated values
+        await dbContext.Entry(staleRequest).ReloadAsync();
+        await dbContext.Entry(recentRequest).ReloadAsync();
+        await dbContext.Entry(completedRequest).ReloadAsync();
+
+        var staleAfterCleanup = staleRequest;
+        Assert.Multiple(() =>
+        {
+            // Stale request should have sensitive data cleared
+            Assert.That(staleAfterCleanup.ClientPublicKey, Is.Empty, "Stale request ClientPublicKey should be cleared");
+            Assert.That(staleAfterCleanup.EncryptedDecryptionKey, Is.Null, "Stale request EncryptedDecryptionKey should be cleared");
+            Assert.That(staleAfterCleanup.ClearedAt, Is.Not.Null, "Stale request ClearedAt should be set");
+
+            // Metadata should be preserved for abuse tracking
+            Assert.That(staleAfterCleanup.ClientIpAddress, Is.EqualTo("192.168.1.1"), "Client IP should be preserved");
+            Assert.That(staleAfterCleanup.MobileIpAddress, Is.EqualTo("10.0.0.1"), "Mobile IP should be preserved");
+            Assert.That(staleAfterCleanup.UserId, Is.EqualTo(user.Id), "UserId should be preserved");
+        });
+
+        var recentAfterCleanup = recentRequest;
+        Assert.Multiple(() =>
+        {
+            // Recent request should still have sensitive data (not old enough)
+            Assert.That(recentAfterCleanup.ClientPublicKey, Is.EqualTo("recent-public-key"), "Recent request should retain sensitive data");
+            Assert.That(recentAfterCleanup.EncryptedDecryptionKey, Is.Not.Null, "Recent request should retain encrypted key");
+            Assert.That(recentAfterCleanup.ClearedAt, Is.Null, "Recent request should not be cleared yet");
+        });
+
+        var completedAfterCleanup = completedRequest;
+        Assert.That(completedAfterCleanup.ClearedAt, Is.Not.Null, "Completed request should remain cleared");
+    }
+
+    /// <summary>
     /// Creates a base email with static required fields.
     /// </summary>
     /// <param name="to">The recipient email address.</param>

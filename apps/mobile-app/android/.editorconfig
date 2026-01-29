@@ -17,5 +17,9 @@ ktlint_standard_comment-wrapping = true
 ktlint_standard_annotation = true
 ktlint_standard_public-method-documentation = true
 
+[**/uniffi/**/*.kt]
+# Disable all ktlint rules for UniFFI-generated Rust bindings
+ktlint_disabled_rules = standard
+
 # Detekt rules
 detekt.style.PublicFunctionDocumentation = enabled

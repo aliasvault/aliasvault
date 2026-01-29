@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import PasswordConfigDialog from '@/entrypoints/popup/components/Dialogs/PasswordConfigDialog';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import type { PasswordSettings } from '@/utils/dist/shared/models/vault';
-import { CreatePasswordGenerator } from '@/utils/dist/shared/password-generator';
+import type { PasswordSettings } from '@/utils/dist/core/models/vault';
+import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
 
 interface IPasswordFieldProps {
   id: string;
@@ -16,6 +16,10 @@ interface IPasswordFieldProps {
   error?: string;
   showPassword?: boolean;
   onShowPasswordChange?: (show: boolean) => void;
+  /** Initial password settings to use (e.g., from persisted form state) */
+  initialSettings?: PasswordSettings;
+  /** Callback when password settings change */
+  onSettingsChange?: (settings: PasswordSettings) => void;
 }
 
 /**
@@ -29,7 +33,9 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
   placeholder,
   error,
   showPassword: controlledShowPassword,
-  onShowPasswordChange
+  onShowPasswordChange,
+  initialSettings,
+  onSettingsChange
 }) => {
   const { t } = useTranslation();
   const dbContext = useDb();
@@ -56,12 +62,18 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
   useEffect(() => {
     /**
      * Load password settings from the database.
+     * If initialSettings is provided (e.g., from persisted form state), use it instead of the database default.
      */
     const loadSettings = async (): Promise<void> => {
       try {
         if (dbContext.sqliteClient) {
-          const settings = dbContext.sqliteClient.getPasswordSettings();
-          setCurrentSettings(settings);
+          // Use initialSettings if provided, otherwise use database settings
+          if (initialSettings !== undefined) {
+            setCurrentSettings(initialSettings);
+          } else {
+            const settings = dbContext.sqliteClient.settings.getPasswordSettings();
+            setCurrentSettings(settings);
+          }
           setIsLoaded(true);
         }
       } catch (error) {
@@ -69,7 +81,7 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
       }
     };
     void loadSettings();
-  }, [dbContext.sqliteClient]);
+  }, [dbContext.sqliteClient, initialSettings]);
 
   const generatePassword = useCallback((settings: PasswordSettings) => {
     try {
@@ -90,9 +102,12 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
     const newSettings = { ...currentSettings, Length: length };
     setCurrentSettings(newSettings);
 
+    // Notify parent of settings change for persistence
+    onSettingsChange?.(newSettings);
+
     // Always generate password when length changes
     generatePassword(newSettings);
-  }, [currentSettings, generatePassword]);
+  }, [currentSettings, generatePassword, onSettingsChange]);
 
   const handleRegeneratePassword = useCallback(() => {
     if (!currentSettings) {
@@ -108,7 +123,9 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
 
   const handleAdvancedSettingsChange = useCallback((newSettings: PasswordSettings) => {
     setCurrentSettings(newSettings);
-  }, []);
+    // Notify parent of settings change for persistence
+    onSettingsChange?.(newSettings);
+  }, [onSettingsChange]);
 
   const togglePasswordVisibility = useCallback(() => {
     setShowPassword(!showPassword);
@@ -174,7 +191,7 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
             type="button"
             onClick={handleRegeneratePassword}
             className="px-3 text-gray-500 dark:text-white bg-gray-200 hover:bg-gray-300 focus:ring-4 focus:outline-none focus:ring-gray-300 font-medium rounded-r-lg text-sm border-l border-gray-300 dark:border-gray-700 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800"
-            title={t('credentials.generateRandomPassword')}
+            title={t('common.generate')}
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -187,7 +204,7 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
       <div className="pt-2">
         <div className="flex items-center justify-between mb-2">
           <label htmlFor={`${id}-length`} className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            {t('credentials.passwordLength')}
+            {t('items.passwordLength')}
           </label>
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600 dark:text-gray-400 font-mono">
@@ -197,7 +214,7 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
               type="button"
               onClick={openConfigDialog}
               className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
-              title={t('credentials.changePasswordComplexity')}
+              title={t('items.changePasswordComplexity')}
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />

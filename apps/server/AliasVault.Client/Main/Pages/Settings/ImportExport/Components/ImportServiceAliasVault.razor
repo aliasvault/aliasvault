@@ -19,11 +19,7 @@
 
     private static async Task<List<ImportedCredential>> ProcessFile(string fileContents)
     {
-        var importedCredentials = await Task.Run(() =>
-        {
-            return AliasVault.ImportExport.CredentialCsvService.ImportCredentialsFromCsv(fileContents);
-        });
-
+        var importedCredentials = await AliasVault.ImportExport.ItemCsvService.ImportItemsFromCsv(fileContents);
         return importedCredentials;
     }
 }

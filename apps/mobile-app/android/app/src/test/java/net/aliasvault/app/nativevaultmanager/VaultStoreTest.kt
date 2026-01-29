@@ -35,7 +35,8 @@ class VaultStoreTest {
         val metadata = """
         {
             "publicEmailDomains": ["spamok.com", "spamok.nl"],
-            "privateEmailDomains": ["aliasvault.net", "main.aliasvault.net"],
+            "privateEmailDomains": ["aliasvault.net", "main.aliasvault.net", "hidden.aliasvault.net"],
+            "hiddenPrivateEmailDomains": ["hidden.aliasvault.net"],
             "vaultRevisionNumber": 1
         }
         """
@@ -49,45 +50,44 @@ class VaultStoreTest {
     }
 
     @Test
-    fun testGetAllCredentials() {
-        val credentials = vaultStore.getAllCredentials()
+    fun testGetAllItems() {
+        val items = vaultStore.getAllItems()
 
-        // Verify we got some credentials back
-        assertFalse(credentials.isEmpty(), "Should have retrieved some credentials")
+        // Verify we got some items back
+        assertFalse(items.isEmpty(), "Should have retrieved some items")
 
-        // Verify the structure of the first credential
-        if (credentials.isNotEmpty()) {
-            val firstCredential = credentials.first()
-            assertNotNull(firstCredential.id, "Credential should have an ID")
-            assertNotNull(firstCredential.service, "Credential should have a service")
-            assertNotNull(firstCredential.password, "Credential should have a password")
-            assertNotNull(firstCredential.username, "Credential should have a username")
-            assertNotNull(firstCredential.createdAt, "Credential should have a creation date")
-            assertNotNull(firstCredential.updatedAt, "Credential should have an update date")
+        // Verify the structure of the first item
+        if (items.isNotEmpty()) {
+            val firstItem = items.first()
+            assertNotNull(firstItem.id, "Item should have an ID")
+            assertNotNull(firstItem.name, "Item should have a name")
+            assertNotNull(firstItem.password, "Item should have a password")
+            assertNotNull(firstItem.username, "Item should have a username")
+            assertNotNull(firstItem.createdAt, "Item should have a creation date")
+            assertNotNull(firstItem.updatedAt, "Item should have an update date")
         }
     }
 
     @Test
-    fun testGetGmailCredentialDetails() {
-        // Get all credentials
-        val credentials = vaultStore.getAllCredentials()
+    fun testGetGmailItemDetails() {
+        // Get all items
+        val items = vaultStore.getAllItems()
 
-        // Find the Gmail credential
-        val gmailCredential = credentials.find { it.service.name == "Gmail Test Account" }
-        assertNotNull(gmailCredential, "Gmail Test Account credential should exist")
+        // Find the Gmail item
+        val gmailItem = items.find { it.name == "Gmail Test Account" }
+        assertNotNull(gmailItem, "Gmail Test Account item should exist")
 
         // Verify all expected properties
-        assertEquals("Gmail Test Account", gmailCredential.service.name)
-        assertEquals("https://google.com", gmailCredential.service.url)
-        assertEquals("test.user@gmail.com", gmailCredential.username)
-        assertEquals("Test", gmailCredential.alias?.firstName)
-        assertEquals("User", gmailCredential.alias?.lastName)
-        assertEquals("Test Gmail account for unit testing", gmailCredential.notes)
+        assertEquals("Gmail Test Account", gmailItem.name)
+        assertEquals("https://google.com", gmailItem.url)
+        assertEquals("test.user@gmail.com", gmailItem.username)
+        assertEquals("Test", gmailItem.firstName)
+        assertEquals("User", gmailItem.lastName)
 
         // Verify logo exists and has sufficient size
-        val logo = gmailCredential.service.logo
+        val logo = gmailItem.logo
 
-        assertNotNull(logo, "Service logo should not be nil")
+        assertNotNull(logo, "Item logo should not be nil")
         assertTrue(logo.size > 1024, "Logo data should exceed 1KB in size")
     }
 

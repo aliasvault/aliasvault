@@ -59,36 +59,36 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Быстрая разблокировка хранилища</value>
-    <comment>Title for quick vault unlock section</comment>
+    <value>Разблокировка ключом доступа</value>
+    <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Ключ для расшифровки хранилища сохраняется с помощью passkey. При повторном открытии AliasVault вы сможете войти по лицу, отпечатку пальца или встроенной защите браузера. Если быстрая разблокировка больше не нужна, её можно отключить кнопкой ниже.</value>
-    <comment>Description when quick unlock is enabled</comment>
+    <value>Ваш мастер-пароль зашифрован PRF ключом доступа и хранится локально, что позволяет разблокировать хранилище при перезагрузке страницы. Эту функцию можно отключить кнопкой ниже, при этом вход по мастер-паролю останется доступен.</value>
+    <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Отключить быструю разблокировку</value>
-    <comment>Button to disable quick vault unlock</comment>
+    <value>Отключить разблокировку ключом</value>
+    <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>По умолчанию при повторном открытии AliasVault необходимо снова вводить мастер‑пароль. Вместо него можно выбрать вход через passkey браузера (или аппаратный ключ, например YubiKey). Тогда хранилище будет разблокироваться по лицу, отпечатку пальца или встроенной защите браузера. Настройка действует только на этом устройстве и в этом браузере.</value>
-    <comment>Description when quick unlock is disabled</comment>
+    <value>По умолчанию при перезагрузке страницы или вкладки AliasVault требуется повторный ввод мастер-пароля. С помощью ключа доступа вы можете мгновенно разблокировать свое хранилище. Когда эта функция включена, ваш мастер-пароль шифруется локально с помощью расширения PRF ключа доступа. Примечание: ключ доступа будет работать только на том устройстве и в том браузере, на которых вы его активировали.</value>
+    <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>Учтите, эта функция экспериментальная и может работать не на всех устройствах и не во всех браузерах. Для её использования браузер должен поддерживать WebAuthn и расширение PRF. Если возникнут проблемы, функцию всегда можно отключить.</value>
-    <comment>Warning about experimental nature of the feature</comment>
+    <value>В настоящее время эта функция поддерживается браузерным расширением AliasVault и приложением для iOS. Поддержка для Android появится в ближайшее время. Если у вас возникнут какие-либо проблемы, вы можете отключить эту функцию в любое время.</value>
+    <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Включить быструю разблокировку</value>
-    <comment>Button to enable quick vault unlock</comment>
+    <value>Включить разблокировку ключом</value>
+    <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Быстрая разблокировка хранилища включена. В следующий раз хранилище можно будет открыть с помощью созданного passkey.</value>
-    <comment>Success message when quick unlock is enabled</comment>
+    <value>Разблокировка по ключу доступа успешно включена. В следующий раз, когда ваше хранилище будет заблокировано, вы сможете разблокировать его с помощью созданного ключа доступа.</value>
+    <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Быстрая разблокировка хранилища отключена.</value>
-    <comment>Success message when quick unlock is disabled</comment>
+    <value>Разблокировка по ключу доступа успешно отключена.</value>
+    <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
     <value>Этот браузер не поддерживает WebAuthn PRF. Попробуйте открыть в другом браузере.</value>

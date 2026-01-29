@@ -22,5 +22,9 @@ cd /home/vagrant/build
 fdroid fetchsrclibs net.aliasvault.app --verbose
 # Format build receipe
 fdroid rewritemeta net.aliasvault.app
+# Lint app
+fdroid lint --verbose net.aliasvault.app
 # Build app and scan for any binary files that are prohibited
-fdroid build --verbose --latest --scan-binary --on-server --no-tarball net.aliasvault.app
+fdroid build --verbose --test --latest --scan-binary --on-server --no-tarball net.aliasvault.app
+# Copy any outputs to the bind mount folder
+rsync -avh /home/vagrant/build/build/net.aliasvault.app/apps/mobile-app/android/app/build/outputs/ /outputs/

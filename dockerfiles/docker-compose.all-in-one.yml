@@ -27,3 +27,4 @@ services:
       FORCE_HTTPS_REDIRECT: "false"
       SUPPORT_EMAIL: ""
       PRIVATE_EMAIL_DOMAINS: ""
+      HIDDEN_PRIVATE_EMAIL_DOMAINS: ""

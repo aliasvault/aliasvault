@@ -4,36 +4,48 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, TextInput, Alert, KeyboardAvoidingView, Platform, ScrollView, Dimensions, TouchableWithoutFeedback, Keyboard, Text, Pressable } from 'react-native';
+import { StyleSheet, View, TextInput, KeyboardAvoidingView, Platform, ScrollView, Dimensions, Text, Pressable } from 'react-native';
 
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useLogout } from '@/hooks/useLogout';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import Logo from '@/assets/images/logo.svg';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import LoadingIndicator from '@/components/LoadingIndicator';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { ThemedView } from '@/components/themed/ThemedView';
 import { Avatar } from '@/components/ui/Avatar';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
+import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
  * Unlock screen.
  */
 export default function UnlockScreen() : React.ReactNode {
-  const { isLoggedIn, username, isBiometricsEnabled, getBiometricDisplayNameKey, getEncryptionKeyDerivationParams, logout } = useApp();
+  const { isLoggedIn, username, isBiometricsEnabled, getBiometricDisplayName, getEncryptionKeyDerivationParams } = useApp();
+  const { logoutUserInitiated, logoutForced } = useLogout();
   const dbContext = useDb();
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isBiometricsAvailable, setIsBiometricsAvailable] = useState(false);
   const colors = useColors();
   const { t } = useTranslation();
   const [biometricDisplayName, setBiometricDisplayName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  // PIN unlock state
+  const [pinAvailable, setPinAvailable] = useState(false);
+
+  // Error state for password unlock
+  const [error, setError] = useState<string | null>(null);
+
+  // Alert dialog state
+  const [alertConfig, setAlertConfig] = useState<{ title: string; message: string } | null>(null);
 
   /**
    * Check if the key derivation parameters are stored in native storage.
@@ -42,43 +54,65 @@ export default function UnlockScreen() : React.ReactNode {
   const getKeyDerivationParams = useCallback(async () : Promise<{ salt: string; encryptionType: string; encryptionSettings: string } | null> => {
     const params = await getEncryptionKeyDerivationParams();
     if (!params) {
-      await logout();
-      router.replace('/login');
+      // No params means corrupted state - force logout without confirmation
+      await logoutForced();
       return null;
     }
     return params;
-  }, [logout, getEncryptionKeyDerivationParams]);
+  }, [logoutForced, getEncryptionKeyDerivationParams]);
 
   useEffect(() => {
     getKeyDerivationParams();
 
     /**
-     * Fetch the biometric config.
+     * Fetch the biometric config and PIN availability.
      */
-    const fetchBiometricConfig = async () : Promise<void> => {
+    const fetchConfig = async () : Promise<void> => {
+      // Check if biometrics is available
       const enabled = await isBiometricsEnabled();
       setIsBiometricsAvailable(enabled);
 
-      const displayNameKey = await getBiometricDisplayNameKey();
-      setBiometricDisplayName(t(displayNameKey));
-    };
-    fetchBiometricConfig();
+      const displayName = await getBiometricDisplayName();
+      setBiometricDisplayName(displayName);
 
-  }, [isBiometricsEnabled, getKeyDerivationParams, getBiometricDisplayNameKey, t]);
+      // Check if PIN is enabled
+      const pinEnabled = await NativeVaultManager.isPinEnabled();
+      setPinAvailable(pinEnabled);
+
+      // Stop loading to show password input
+      setIsLoading(false);
+    };
+    fetchConfig();
+
+  }, [isBiometricsEnabled, getKeyDerivationParams, getBiometricDisplayName]);
+
+  /**
+   * Handle the unlock.
+   */
+  /**
+   * Show an alert dialog.
+   */
+  const showAlert = useCallback((title: string, message: string): void => {
+    setAlertConfig({ title, message });
+  }, []);
+
+  /**
+   * Hide the alert dialog.
+   */
+  const hideAlert = useCallback((): void => {
+    setAlertConfig(null);
+  }, []);
 
   /**
    * Handle the unlock.
    */
   const handleUnlock = async () : Promise<void> => {
     if (!password) {
-      Alert.alert(
-        t('common.error'),
-        t('auth.errors.enterPassword'),
-        [{ text: t('common.ok'), style: 'default' }]
-      );
+      showAlert(t('common.error'), t('auth.errors.enterPassword'));
       return;
     }
 
+    setError(null);
     setIsLoading(true);
     try {
       if (!isLoggedIn || !username) {
@@ -112,50 +146,31 @@ export default function UnlockScreen() : React.ReactNode {
         }
 
         /*
-         * Navigate to initialize page which will handle vault sync and then navigate to credentials
-         * This ensures we always check for vault updates even after local unlock
+         * Navigate to reinitialize which will sync vault with server
+         * and then navigate to the appropriate destination.
          */
-        router.replace('/initialize');
+        router.replace('/reinitialize');
       } else {
-        Alert.alert(
-          t('common.error'),
-          t('auth.errors.incorrectPassword'),
-          [{ text: t('common.ok'), style: 'default' }]
-        );
+        showAlert(t('common.error'), t('auth.errors.incorrectPassword'));
       }
-    } catch (error) {
-      if (error instanceof VaultVersionIncompatibleError) {
-        await logout(t(error.message));
+    } catch (err) {
+      if (err instanceof VaultVersionIncompatibleError) {
+        // Vault version incompatible - force logout without confirmation
+        await logoutForced();
         return;
       }
 
-      console.error('Unlock error:', error);
-      Alert.alert(
-        t('common.error'),
-        t('auth.errors.incorrectPassword'),
-        [{ text: t('common.ok'), style: 'default' }]
-      );
+      console.error('Unlock error:', err);
+      showAlert(t('common.error'), t('auth.errors.incorrectPassword'));
     } finally {
       setIsLoading(false);
     }
   };
 
   /**
-   * Handle the logout.
-   */
-  const handleLogout = async () : Promise<void> => {
-    /*
-     * Clear any stored tokens or session data
-     * This will be handled by the auth context
-     */
-    await logout();
-    router.replace('/login');
-  };
-
-  /**
    * Handle the biometrics retry.
    */
-  const handleBiometricsRetry = async () : Promise<void> => {
+  const handleUnlockRetry = async () : Promise<void> => {
     router.replace('/reinitialize');
   };
 
@@ -194,6 +209,12 @@ export default function UnlockScreen() : React.ReactNode {
       borderRadius: 10,
       padding: 20,
       width: '100%',
+    },
+    errorText: {
+      color: colors.errorBorder,
+      fontSize: 14,
+      marginBottom: 12,
+      textAlign: 'center',
     },
     faceIdButton: {
       alignItems: 'center',
@@ -239,13 +260,20 @@ export default function UnlockScreen() : React.ReactNode {
     inputIcon: {
       padding: 12,
     },
-    keyboardAvoidingView: {
-      flex: 1,
+    linkButton: {
+      marginTop: 16,
+    },
+    linkButtonText: {
+      color: colors.primary,
+      fontSize: 16,
+      textAlign: 'center',
     },
     loadingContainer: {
       alignItems: 'center',
       flex: 1,
-      justifyContent: 'center',
+      justifyContent: 'flex-start',
+      paddingHorizontal: 20,
+      paddingTop: '40%',
     },
     logoContainer: {
       alignItems: 'center',
@@ -284,102 +312,125 @@ export default function UnlockScreen() : React.ReactNode {
     },
   });
 
+  // Render password mode or loading
   return (
-    <ThemedView style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+      testID="unlock-screen"
+    >
       {isLoading ? (
         <View style={styles.loadingContainer}>
           <LoadingIndicator status={t('app.status.unlockingVault')} />
         </View>
       ) : (
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={styles.keyboardAvoidingView}
+        <ScrollView
+          style={styles.container}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
         >
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <ScrollView
-              contentContainerStyle={styles.scrollContent}
-              keyboardShouldPersistTaps="handled"
-            >
-              <LinearGradient
-                colors={[colors.loginHeader, colors.background]}
-                style={styles.gradientContainer}
-              />
-              <View style={styles.mainContent}>
-                <View style={styles.headerSection}>
-                  <View style={styles.logoContainer}>
-                    <Logo width={80} height={80} />
-                    <Text style={styles.appName}>{t('auth.unlockVault')}</Text>
-                  </View>
-                </View>
-                <View style={styles.content}>
-                  <View style={styles.avatarContainer}>
-                    <Avatar />
-                    <ThemedText style={styles.username}>{username}</ThemedText>
-                  </View>
-                  <ThemedText style={styles.subtitle}>{t('auth.enterPassword')}</ThemedText>
-
-                  <View style={styles.inputContainer}>
-                    <MaterialIcons
-                      name="lock"
-                      size={20}
-                      color={colors.textMuted}
-                      style={styles.inputIcon}
-                    />
-                    <TextInput
-                      style={styles.input}
-                      placeholder={t('auth.enterPasswordPlaceholder')}
-                      placeholderTextColor={colors.textMuted}
-                      secureTextEntry={!showPassword}
-                      value={password}
-                      onChangeText={setPassword}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      multiline={false}
-                      numberOfLines={1}
-                    />
-                    <Pressable
-                      onPress={() => setShowPassword(!showPassword)}
-                      style={styles.inputIcon}
-                    >
-                      <MaterialIcons
-                        name={showPassword ? "visibility" : "visibility-off"}
-                        size={20}
-                        color={colors.textMuted}
-                      />
-                    </Pressable>
-                  </View>
-
-                  <RobustPressable
-                    style={styles.button}
-                    onPress={handleUnlock}
-                    disabled={isLoading}
-                  >
-                    <ThemedText style={styles.buttonText}>
-                      {isLoading ? t('auth.unlocking') : t('auth.unlock')}
-                    </ThemedText>
-                  </RobustPressable>
-
-                  {isBiometricsAvailable && (
-                    <RobustPressable
-                      style={styles.faceIdButton}
-                      onPress={handleBiometricsRetry}
-                    >
-                      <ThemedText style={styles.faceIdButtonText}>{t('auth.tryBiometricAgain', { biometric: biometricDisplayName })}</ThemedText>
-                    </RobustPressable>
-                  )}
-                </View>
-
-                <RobustPressable
-                  style={styles.logoutButton}
-                  onPress={handleLogout}
-                >
-                  <ThemedText style={styles.logoutButtonText}>{t('auth.logout')}</ThemedText>
-                </RobustPressable>
+          <LinearGradient
+            colors={[colors.loginHeader, colors.background]}
+            style={styles.gradientContainer}
+          />
+          <View style={styles.mainContent}>
+            <View style={styles.headerSection}>
+              <View style={styles.logoContainer}>
+                <Logo width={80} height={80} />
+                <Text style={styles.appName}>{t('auth.unlockVault')}</Text>
               </View>
-            </ScrollView>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
+            </View>
+            <View style={styles.content}>
+              <View style={styles.avatarContainer}>
+                <Avatar />
+                <ThemedText style={styles.username}>{username}</ThemedText>
+              </View>
+              <ThemedText style={styles.subtitle}>{t('auth.enterPassword')}</ThemedText>
+
+              {/* Error Message */}
+              {error && <ThemedText style={styles.errorText}>{error}</ThemedText>}
+
+              <View style={styles.inputContainer}>
+                <MaterialIcons
+                  name="lock"
+                  size={20}
+                  color={colors.textMuted}
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder={t('auth.enterPasswordPlaceholder')}
+                  placeholderTextColor={colors.textMuted}
+                  secureTextEntry={!showPassword}
+                  value={password}
+                  onChangeText={setPassword}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  multiline={false}
+                  numberOfLines={1}
+                  testID="unlock-password-input"
+                />
+                <Pressable
+                  onPress={() => setShowPassword(!showPassword)}
+                  style={styles.inputIcon}
+                >
+                  <MaterialIcons
+                    name={showPassword ? "visibility" : "visibility-off"}
+                    size={20}
+                    color={colors.textMuted}
+                  />
+                </Pressable>
+              </View>
+
+              <RobustPressable
+                style={styles.button}
+                onPress={handleUnlock}
+                disabled={isLoading}
+                testID="unlock-button"
+              >
+                <ThemedText style={styles.buttonText}>
+                  {isLoading ? t('auth.unlocking') : t('auth.unlock')}
+                </ThemedText>
+              </RobustPressable>
+
+              {isBiometricsAvailable && (
+                <RobustPressable
+                  style={styles.faceIdButton}
+                  onPress={handleUnlockRetry}
+                >
+                  <ThemedText style={styles.faceIdButtonText}>{t('auth.tryBiometricAgain', { biometric: biometricDisplayName })}</ThemedText>
+                </RobustPressable>
+              )}
+
+              {/* Use PIN Button */}
+              {pinAvailable && (
+                <RobustPressable
+                  style={styles.faceIdButton}
+                  onPress={handleUnlockRetry}
+                >
+                  <ThemedText style={styles.faceIdButtonText}>{t('auth.tryPinAgain')}</ThemedText>
+                </RobustPressable>
+              )}
+            </View>
+
+            <RobustPressable
+              style={styles.logoutButton}
+              onPress={logoutUserInitiated}
+              testID="logout-button"
+            >
+              <ThemedText style={styles.logoutButtonText}>{t('auth.logout')}</ThemedText>
+            </RobustPressable>
+          </View>
+        </ScrollView>
       )}
-    </ThemedView>
+
+      <ConfirmDialog
+        isVisible={alertConfig !== null}
+        title={alertConfig?.title ?? ''}
+        message={alertConfig?.message ?? ''}
+        buttons={[{ text: t('common.ok'), style: 'default', onPress: hideAlert }]}
+        onClose={hideAlert}
+      />
+    </KeyboardAvoidingView>
   );
 }

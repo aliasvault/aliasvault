@@ -8,6 +8,7 @@
 namespace AliasVault.ImportExport.Importers;
 
 using AliasClientDb;
+using AliasClientDb.Models;
 using AliasVault.ImportExport.Models;
 using AliasVault.TotpGenerator;
 using CsvHelper;
@@ -138,68 +139,245 @@ public static class BaseImporter
         return decoded;
     }
     /// <summary>
-    /// Converts a list of imported credentials to a list of AliasVault credentials.
+    /// Converts a list of imported credentials to a list of AliasVault Items.
     /// </summary>
     /// <param name="importedCredentials">The list of imported credentials.</param>
-    /// <returns>The list of AliasVault credentials.</returns>
-    public static List<Credential> ConvertToCredential(List<ImportedCredential> importedCredentials)
+    /// <param name="folderNameToId">Optional dictionary mapping folder names to folder IDs for folder import.</param>
+    /// <returns>The list of AliasVault Items.</returns>
+    public static List<Item> ConvertToItem(List<ImportedCredential> importedCredentials, Dictionary<string, Guid>? folderNameToId = null)
     {
-        var credentials = new List<Credential>();
+        var items = new List<Item>();
 
-        // Convert imported credentials to AliasVault relational DB format.
+        // Convert imported credentials to AliasVault field-based Item format.
         foreach (var importedCredential in importedCredentials)
         {
-            var credential = new Credential
+            var currentDateTime = DateTime.UtcNow;
+            var createdAt = importedCredential.CreatedAt ?? currentDateTime;
+            var updatedAt = importedCredential.UpdatedAt ?? currentDateTime;
+
+            // Determine the item type (uses ItemType from importer if set)
+            var itemType = DetermineItemType(importedCredential);
+
+            var item = new Item
             {
-                Service = new Service { Name = importedCredential.ServiceName, Url = importedCredential.ServiceUrl },
-                Username = importedCredential.Username,
-                Passwords = [new() { Value = importedCredential.Password }],
-                Notes = importedCredential.Notes,
-                CreatedAt = importedCredential.CreatedAt ?? DateTime.UtcNow,
-                UpdatedAt = importedCredential.UpdatedAt ?? DateTime.UtcNow,
-                Alias = new Alias
-                {
-                    FirstName = importedCredential.Alias?.FirstName,
-                    LastName = importedCredential.Alias?.LastName,
-                    Gender = importedCredential.Alias?.Gender,
-                    // TODO: birth date should be made nullable in client DB as it's not always available.
-                    BirthDate = importedCredential.Alias?.BirthDate ?? DateTime.MinValue,
-                    Email = importedCredential.Email,
-                    NickName = importedCredential.Alias?.NickName,
-                    CreatedAt = importedCredential.CreatedAt ?? DateTime.UtcNow,
-                    UpdatedAt = importedCredential.UpdatedAt ?? DateTime.UtcNow,
-                }
+                Id = Guid.NewGuid(),
+                Name = importedCredential.ServiceName ?? string.Empty,
+                ItemType = itemType,
+                CreatedAt = createdAt,
+                UpdatedAt = updatedAt,
             };
 
+            // Handle folder assignment if folder mapping is provided
+            if (folderNameToId != null && !string.IsNullOrWhiteSpace(importedCredential.FolderPath))
+            {
+                var folderName = ExtractDeepestFolderName(importedCredential.FolderPath);
+                if (!string.IsNullOrWhiteSpace(folderName) && folderNameToId.TryGetValue(folderName, out var folderId))
+                {
+                    item.FolderId = folderId;
+                }
+            }
+
+            // Handle credit card type - parse structured notes and add card fields
+            if (itemType == ItemType.CreditCard)
+            {
+                AddCreditCardFields(item, importedCredential, createdAt, updatedAt);
+            }
+            else
+            {
+                // Add standard field values for non-empty fields (Login, Alias, Note types)
+                AddFieldValueIfNotEmpty(item, FieldKey.LoginUrl, importedCredential.ServiceUrl, createdAt, updatedAt);
+                AddFieldValueIfNotEmpty(item, FieldKey.LoginUsername, importedCredential.Username, createdAt, updatedAt);
+                AddFieldValueIfNotEmpty(item, FieldKey.LoginPassword, importedCredential.Password, createdAt, updatedAt);
+                AddFieldValueIfNotEmpty(item, FieldKey.LoginEmail, importedCredential.Email, createdAt, updatedAt);
+            }
+
+            // Add notes for all item types
+            AddFieldValueIfNotEmpty(item, FieldKey.NotesContent, importedCredential.Notes, createdAt, updatedAt);
+
+            // Add alias fields if present
+            if (importedCredential.Alias != null)
+            {
+                AddFieldValueIfNotEmpty(item, FieldKey.AliasFirstName, importedCredential.Alias.FirstName, createdAt, updatedAt);
+                AddFieldValueIfNotEmpty(item, FieldKey.AliasLastName, importedCredential.Alias.LastName, createdAt, updatedAt);
+                AddFieldValueIfNotEmpty(item, FieldKey.AliasGender, importedCredential.Alias.Gender, createdAt, updatedAt);
+
+                if (importedCredential.Alias.BirthDate.HasValue && importedCredential.Alias.BirthDate.Value != DateTime.MinValue)
+                {
+                    AddFieldValueIfNotEmpty(item, FieldKey.AliasBirthdate, importedCredential.Alias.BirthDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), createdAt, updatedAt);
+                }
+            }
+
+            // Add TOTP codes if present
             if (!string.IsNullOrEmpty(importedCredential.TwoFactorSecret))
             {
-                // Sanitize the secret key by converting from potential URI to secret key and name.
                 try
                 {
                     var (secretKey, name) = TotpHelper.SanitizeSecretKey(importedCredential.TwoFactorSecret);
 
-                    credential.TotpCodes = new List<TotpCode>
+                    item.TotpCodes.Add(new TotpCode
                     {
-                        new()
-                        {
-                            Name = name ?? "Authenticator",
-                            SecretKey = secretKey,
-                            CreatedAt = importedCredential.CreatedAt ?? DateTime.UtcNow,
-                            UpdatedAt = importedCredential.UpdatedAt ?? DateTime.UtcNow,
-                        }
-                    };
+                        Id = Guid.NewGuid(),
+                        Name = name ?? "Authenticator",
+                        SecretKey = secretKey,
+                        CreatedAt = createdAt,
+                        UpdatedAt = updatedAt,
+                    });
                 }
                 catch (Exception ex)
                 {
-                    // 2FA extraction failed, log the error and continue with the next credential
+                    // 2FA extraction failed, log the error and continue with the next item
                     // so the import doesn't fail due to failed 2FA extraction.
                     Console.WriteLine($"Error importing TOTP code: {ex.Message}");
                 }
             }
 
-            credentials.Add(credential);
+            items.Add(item);
         }
 
-        return credentials;
+        return items;
+    }
+
+    /// <summary>
+    /// Determines the item type based on the imported credential.
+    /// Uses ItemType if set by the importer, otherwise checks for alias data.
+    /// </summary>
+    /// <param name="credential">The imported credential to analyze.</param>
+    /// <returns>The item type constant from <see cref="ItemType"/>.</returns>
+    private static string DetermineItemType(ImportedCredential credential)
+    {
+        // If the importer explicitly set a type, use it
+        if (credential.ItemType.HasValue)
+        {
+            // If Login type was set but has alias data, upgrade to Alias
+            if (credential.ItemType == ImportedItemType.Login && HasAliasData(credential))
+            {
+                return ItemType.Alias;
+            }
+
+            return credential.ItemType.Value switch
+            {
+                ImportedItemType.Login => ItemType.Login,
+                ImportedItemType.Note => ItemType.Note,
+                ImportedItemType.Creditcard => ItemType.CreditCard,
+                ImportedItemType.Alias => ItemType.Alias,
+                _ => ItemType.Login,
+            };
+        }
+
+        // Fallback: check for alias data
+        if (HasAliasData(credential))
+        {
+            return ItemType.Alias;
+        }
+
+        // Default to Login
+        return ItemType.Login;
+    }
+
+    /// <summary>
+    /// Checks if the credential has alias identity data.
+    /// </summary>
+    private static bool HasAliasData(ImportedCredential credential)
+    {
+        return credential.Alias != null &&
+            (!string.IsNullOrEmpty(credential.Alias.FirstName) ||
+             !string.IsNullOrEmpty(credential.Alias.LastName) ||
+             !string.IsNullOrEmpty(credential.Alias.Gender) ||
+             credential.Alias.BirthDate.HasValue);
+    }
+
+    /// <summary>
+    /// Extracts the deepest (most specific) folder name from a potentially hierarchical path.
+    /// For example: "Root/Business/Banking" returns "Banking".
+    /// </summary>
+    /// <param name="folderPath">The folder path, potentially with hierarchy separators.</param>
+    /// <returns>The deepest folder name.</returns>
+    public static string? ExtractDeepestFolderName(string? folderPath)
+    {
+        if (string.IsNullOrWhiteSpace(folderPath))
+        {
+            return null;
+        }
+
+        // Handle common hierarchy separators: / and \
+        var separators = new[] { '/', '\\' };
+        var parts = folderPath.Split(separators, StringSplitOptions.RemoveEmptyEntries);
+
+        // Return the last (deepest) part, or null if no valid folder name
+        if (parts.Length == 0)
+        {
+            return null;
+        }
+
+        var result = parts[^1].Trim();
+        return string.IsNullOrEmpty(result) ? null : result;
+    }
+
+    /// <summary>
+    /// Collects unique folder names from imported credentials for folder creation.
+    /// </summary>
+    /// <param name="credentials">The list of imported credentials.</param>
+    /// <returns>A set of unique folder names (deepest level only).</returns>
+    public static HashSet<string> CollectUniqueFolderNames(List<ImportedCredential> credentials)
+    {
+        var folderNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var credential in credentials)
+        {
+            var folderName = ExtractDeepestFolderName(credential.FolderPath);
+            if (!string.IsNullOrWhiteSpace(folderName))
+            {
+                folderNames.Add(folderName);
+            }
+        }
+
+        return folderNames;
+    }
+
+    /// <summary>
+    /// Adds credit card fields to an item from the ImportedCreditcard model.
+    /// Each importer is responsible for populating the Creditcard property.
+    /// </summary>
+    private static void AddCreditCardFields(Item item, ImportedCredential credential, DateTime createdAt, DateTime updatedAt)
+    {
+        if (credential.Creditcard == null)
+        {
+            return;
+        }
+
+        var card = credential.Creditcard;
+        AddFieldValueIfNotEmpty(item, FieldKey.CardCardholderName, card.CardholderName, createdAt, updatedAt);
+        AddFieldValueIfNotEmpty(item, FieldKey.CardNumber, card.Number, createdAt, updatedAt);
+        AddFieldValueIfNotEmpty(item, FieldKey.CardCvv, card.Cvv, createdAt, updatedAt);
+        AddFieldValueIfNotEmpty(item, FieldKey.CardPin, card.Pin, createdAt, updatedAt);
+        AddFieldValueIfNotEmpty(item, FieldKey.CardExpiryMonth, card.ExpiryMonth, createdAt, updatedAt);
+        AddFieldValueIfNotEmpty(item, FieldKey.CardExpiryYear, card.ExpiryYear, createdAt, updatedAt);
+    }
+
+    /// <summary>
+    /// Adds a field value to an item if the value is not empty.
+    /// </summary>
+    /// <param name="item">The item to add the field value to.</param>
+    /// <param name="fieldKey">The field key.</param>
+    /// <param name="value">The field value.</param>
+    /// <param name="createdAt">The created timestamp.</param>
+    /// <param name="updatedAt">The updated timestamp.</param>
+    private static void AddFieldValueIfNotEmpty(Item item, string fieldKey, string? value, DateTime createdAt, DateTime updatedAt)
+    {
+        if (string.IsNullOrEmpty(value))
+        {
+            return;
+        }
+
+        item.FieldValues.Add(new FieldValue
+        {
+            Id = Guid.NewGuid(),
+            ItemId = item.Id,
+            FieldKey = fieldKey,
+            Value = value,
+            Weight = 0,
+            CreatedAt = createdAt,
+            UpdatedAt = updatedAt,
+        });
     }
 }
