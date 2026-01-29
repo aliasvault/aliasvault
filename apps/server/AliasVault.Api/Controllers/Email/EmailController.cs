@@ -174,10 +174,7 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
             return Unauthorized("Not authenticated.");
         }
 
-        // Shadow-block: when active, emails received after the block took effect behave as if they do not exist.
-        var shadowCutoff = await ipBlockListService.GetShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
-
-        // Sanatize input
+        // Sanitize input
         model.Ids = [.. model.Ids.Distinct().ToList().FindAll(id => id > 0)];
 
         if (model.Ids.Count == 0)
@@ -209,7 +206,7 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
 
         EmailBulkResponse returnValue = new()
         {
-            SuccessfullEmailIds = model.Ids,
+            SuccessfulEmailIds = model.Ids,
         };
         return Ok(returnValue);
     }
@@ -232,6 +229,9 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
         {
             return (null, NotFound("Email not found."));
         }
+
+        // Shadow-block: when active, emails received after the block took effect behave as if they do not exist.
+        var shadowCutoff = await ipBlockListService.GetShadowBlockCutoffAsync(user, IpAddressUtility.GetRawIpAddressFromContext(HttpContext));
 
         // Hide emails received after a shadow-block took effect.
         if (shadowCutoff is not null && email.DateSystem > shadowCutoff.Value)
