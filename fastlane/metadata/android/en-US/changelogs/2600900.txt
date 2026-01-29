@@ -1,0 +1,11 @@
+- New item types (credit card, secure note)
+- Folders
+- Custom fields
+- Field history tracking
+- Recently deleted items
+- Full offline mode: view and edit your vault completely offline, changes sync automatically once you're back online
+- Added Romanian app language option
+- Added Italian identity generator option
+- Improve autofill matching
+- Passkey creation wizard now suggests existing credentials to save passkey for
+- Improve Android app backup security
