@@ -63,7 +63,7 @@
     <comment>Message shown while WebAuthn authentication is in progress</comment>
   </data>
   <data name="QuickUnlockDescription" xml:space="preserve">
-    <value>Deblocați rapid seiful folosind passkey-ul. Sau autentificați-vă cu parola ca metodă alternativă.</value>
+    <value>Deblochează rapid seiful folosind passkey-ul. Sau autentificați-vă cu parola ca metodă alternativă.</value>
     <comment>Description explaining WebAuthn unlock options</comment>
   </data>
   <data name="UnlockWithWebAuthn" xml:space="preserve">
