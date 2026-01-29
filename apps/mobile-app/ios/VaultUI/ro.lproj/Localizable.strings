@@ -62,7 +62,7 @@
 "merge_passkey_explanation" = "Această acțiune va adăuga un Passkey la elementul tău existent. Parola și celelalte date vor fi păstrate.";
 
 /* PIN Unlock */
-"unlock_vault" = "Deblocați seiful";
+"unlock_vault" = "Deblochează seiful";
 "enter_pin_to_unlock_vault" = "Introdu PIN-ul pentru a debloca seiful";
 "pin_locked_max_attempts" = "PIN blocat după prea multe încercări eșuate";
 "pin_incorrect_attempts_remaining" = "PIN incorect. Mai ai %d încercări";
