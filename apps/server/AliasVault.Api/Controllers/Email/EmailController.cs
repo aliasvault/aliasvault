@@ -170,7 +170,7 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
             return Unauthorized("Not authenticated.");
         }
 
-        // Sanatize input
+        // Sanitize input
         model.Ids = [.. model.Ids.Distinct().ToList().FindAll(id => id > 0)];
 
         if (model.Ids.Count == 0)
@@ -202,7 +202,7 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
 
         EmailBulkResponse returnValue = new()
         {
-            SuccessfullEmailIds = model.Ids,
+            SuccessfulEmailIds = model.Ids,
         };
         return Ok(returnValue);
     }

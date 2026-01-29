@@ -9,6 +9,7 @@
                type="checkbox"
                id="check-@Email.Id"
                value="@Email.IsChecked"
+               checked="@IsChecked"
                @onclick="@(() => OnEmailCheck.InvokeAsync(Email.Id))" />
     </div>
     <!-- Email card -->

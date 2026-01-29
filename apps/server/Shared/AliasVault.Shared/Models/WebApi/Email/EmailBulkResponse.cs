@@ -15,5 +15,5 @@ public class EmailBulkResponse
     /// <summary>
     /// Gets or sets the emails that were deleted.
     /// </summary>
-    public List<int> SuccessfullEmailIds { get; set; } = new();
+    public List<int> SuccessfulEmailIds { get; set; } = new();
 }

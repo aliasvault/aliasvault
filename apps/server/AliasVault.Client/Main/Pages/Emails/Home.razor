@@ -727,11 +727,7 @@ else
                 }
             }
         }
-
-        // TODO: At this point, the HTML checkboxes should be unchecked, but for some reason they are not.
-        // Calling RefreshData() it's not ideal, but is doing the trick. Comment the line below to troubleshoot the problem.
-        await RefreshData();
-        
+       
         StateHasChanged();
     }
 
@@ -837,22 +833,22 @@ else
             if (response.IsSuccessStatusCode)
             {
                 var emailBulkResponse = await response.Content.ReadFromJsonAsync<EmailBulkResponse>();
-                var successfullCount = emailBulkResponse?.SuccessfullEmailIds.Count;
+                var successfulCount = emailBulkResponse?.SuccessfulEmailIds.Count;
 
-                if (successfullCount == CheckedEmailIds.Count)
+                if (successfulCount == CheckedEmailIds.Count)
                 {
                     // Notify all emails deleted successfully.
-                    GlobalNotificationService.AddSuccessMessage(string.Format(Localizer["BulkDeleteEmailSuccess"], successfullCount), true);
+                    GlobalNotificationService.AddSuccessMessage(string.Format(Localizer["BulkDeleteEmailSuccess"], successfulCount), true);
                 }
                 else
                 {
                     // Notify some errors, some deleted
-                    var errorCount = requestModel.Ids.Count() - successfullCount;
-                    GlobalNotificationService.AddErrorMessage(string.Format(Localizer["BulkDeleteEmailFailedMessage"], successfullCount, errorCount), true);
+                    var errorCount = requestModel.Ids.Count() - successfulCount;
+                    GlobalNotificationService.AddErrorMessage(string.Format(Localizer["BulkDeleteEmailFailedMessage"], successfulCount, errorCount), true);
                 }
 
                 // Handle each email successfully deleted 
-                var successfullEmailIds = emailBulkResponse != null ? emailBulkResponse.SuccessfullEmailIds : [];
+                var successfullEmailIds = emailBulkResponse != null ? emailBulkResponse.SuccessfulEmailIds : [];
                 await HandleEmailsDeleted(successfullEmailIds);
             }
             else
