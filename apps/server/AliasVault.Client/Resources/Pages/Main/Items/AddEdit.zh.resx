@@ -153,11 +153,11 @@
   </data>
   <!-- Success messages -->
   <data name="ItemUpdatedSuccess">
-    <value>项目更新成功.</value>
+    <value>项目更新成功。</value>
     <comment>Success message when item is updated</comment>
   </data>
   <data name="ItemCreatedSuccess">
-    <value>项目创建成功.</value>
+    <value>项目创建成功。</value>
     <comment>Success message when item is created</comment>
   </data>
   <!-- Passkey labels -->
