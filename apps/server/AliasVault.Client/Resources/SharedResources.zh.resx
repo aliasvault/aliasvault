@@ -229,7 +229,7 @@
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>请输入有效的邮件地址。</value>
+    <value>请输入有效的邮箱地址。</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">
@@ -255,7 +255,7 @@
   </data>
   <!-- Loading screen messages -->
   <data name="RefreshPageText" xml:space="preserve">
-    <value>如果加载出现卡住的情况，可以点击下方按钮刷新页面。</value>
+    <value>如果加载卡住了，可以点击下方按钮刷新页面。</value>
     <comment>Text shown above refresh button on loading screen</comment>
   </data>
   <!-- Validation error messages for forms -->
