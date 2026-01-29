@@ -79,7 +79,7 @@
     <comment>Label for website URL field</comment>
   </data>
   <data name="NamePlaceholderLogin" xml:space="preserve">
-    <value>例如 Facebook</value>
+    <value>如 Facebook</value>
     <comment>Placeholder text for login name field</comment>
   </data>
   <data name="NamePlaceholderAlias" xml:space="preserve">
