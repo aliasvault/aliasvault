@@ -77,7 +77,7 @@
     <comment>Warning message about permanent deletion</comment>
   </data>
   <data name="FinalWarning" xml:space="preserve">
-    <value>Avertisment final: Introduceți parola pentru a vă șterge definitiv contul.</value>
+    <value>Avertisment final: Introdu parola pentru a vă șterge definitiv contul.</value>
     <comment>Final warning message before account deletion</comment>
   </data>
   <!-- Note sections -->
@@ -90,7 +90,7 @@
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">
-    <value>Alias-urile tale de email vor rămâne fără proprietar și nu vor mai putea fi revendicate de alți utilizatori</value>
+    <value>Alias-urile tale de e-mail vor rămâne fără proprietar și nu vor mai putea fi revendicate de alți utilizatori</value>
     <comment>Note about email aliases being orphaned</comment>
   </data>
   <data name="AccountCannotBeRecoveredNote" xml:space="preserve">
@@ -107,7 +107,7 @@
     <comment>Label for username confirmation input field</comment>
   </data>
   <data name="EnterPasswordLabel" xml:space="preserve">
-    <value>Introduceți parola</value>
+    <value>Introdu parola</value>
     <comment>Label for password input field</comment>
   </data>
   <!-- Button text -->

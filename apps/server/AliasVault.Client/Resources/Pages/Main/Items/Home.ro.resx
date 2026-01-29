@@ -64,7 +64,7 @@
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Găsește toate elementele tale mai jos.</value>
+    <value>Toate elementele tale sunt afișate mai jos.</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -144,7 +144,7 @@
     <comment>Filter option to show all items</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
-    <value>Passkey-uri</value>
+    <value>Passkeys</value>
     <comment>Filter option to show only passkeys</comment>
   </data>
   <data name="FilterAliasesOption" xml:space="preserve">

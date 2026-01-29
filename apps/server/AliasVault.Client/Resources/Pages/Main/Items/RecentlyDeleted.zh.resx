@@ -60,24 +60,24 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>近期删除</value>
     <comment>Page title for recently deleted items</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Items that have been deleted can be restored within 30 days.</value>
+    <value>已删除的项目可在 30 天内还原。</value>
     <comment>Page description text</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Items below will be permanently deleted after 30 days. You can restore or permanently delete them sooner.</value>
+    <value>以下项目将在 30 天后永久删除。您可以提前将其还原或永久删除。</value>
     <comment>Description text explaining 30-day retention</comment>
   </data>
   <!-- Empty State -->
   <data name="NoItems" xml:space="preserve">
-    <value>No recently deleted items</value>
+    <value>无近期删除项目</value>
     <comment>Title when no deleted items exist</comment>
   </data>
   <data name="NoItemsDescription" xml:space="preserve">
-    <value>Items you delete will appear here for 30 days before being permanently removed.</value>
+    <value>您删除的项目将在此处停留 30 天，随后永久移除。</value>
     <comment>Description when no deleted items exist</comment>
   </data>
   <data name="Untitled" xml:space="preserve">
@@ -86,55 +86,55 @@
   </data>
   <!-- Days Remaining -->
   <data name="DaysRemaining" xml:space="preserve">
-    <value>Permanently deleted in {0} days</value>
+    <value>{0} 天后永久删除</value>
     <comment>Text showing how many days until permanent deletion</comment>
   </data>
   <data name="ExpiringSoon" xml:space="preserve">
-    <value>Expiring soon</value>
+    <value>即将到期</value>
     <comment>Text shown when item will be deleted within 24 hours</comment>
   </data>
   <!-- Actions -->
   <data name="Restore" xml:space="preserve">
-    <value>Restore</value>
+    <value>还原</value>
     <comment>Button text to restore a deleted item</comment>
   </data>
   <data name="EmptyAll" xml:space="preserve">
-    <value>Empty trash</value>
+    <value>清空回收站</value>
     <comment>Button text to permanently delete all items</comment>
   </data>
   <!-- Confirm Delete Modal -->
   <data name="ConfirmDeleteTitle" xml:space="preserve">
-    <value>Permanently delete item?</value>
+    <value>永久删除项目吗？</value>
     <comment>Title for delete confirmation modal</comment>
   </data>
   <data name="ConfirmDeleteMessage" xml:space="preserve">
-    <value>This action cannot be undone. The item will be permanently removed from your vault.</value>
+    <value>此操作无法撤销。该项目将从您的密码库中永久移除。</value>
     <comment>Message in delete confirmation modal</comment>
   </data>
   <data name="DeletePermanently" xml:space="preserve">
-    <value>Delete permanently</value>
+    <value>永久删除</value>
     <comment>Button text to confirm permanent deletion</comment>
   </data>
   <!-- Confirm Empty All Modal -->
   <data name="ConfirmEmptyAllTitle" xml:space="preserve">
-    <value>Empty trash?</value>
+    <value>清空回收站吗？</value>
     <comment>Title for empty all confirmation modal</comment>
   </data>
   <data name="ConfirmEmptyAllMessage" xml:space="preserve">
-    <value>This will permanently delete {0} item(s). This action cannot be undone.</value>
+    <value>这将永久删除 {0} 个项目。此操作无法撤销。</value>
     <comment>Message in empty all confirmation modal</comment>
   </data>
   <!-- Status Messages -->
   <data name="Restoring" xml:space="preserve">
-    <value>Restoring item...</value>
+    <value>正在还原项目…</value>
     <comment>Loading message while restoring</comment>
   </data>
   <data name="RestoreSuccess" xml:space="preserve">
-    <value>Item restored successfully.</value>
+    <value>项目还原成功。</value>
     <comment>Success message after restore</comment>
   </data>
   <data name="RestoreFailed" xml:space="preserve">
-    <value>Failed to restore item.</value>
+    <value>还原项目失败。</value>
     <comment>Error message when restore fails</comment>
   </data>
   <data name="Deleting" xml:space="preserve">
@@ -142,19 +142,19 @@
     <comment>Loading message while deleting</comment>
   </data>
   <data name="DeleteSuccess" xml:space="preserve">
-    <value>Item permanently deleted.</value>
+    <value>项目已永久删除。</value>
     <comment>Success message after permanent deletion</comment>
   </data>
   <data name="DeleteFailed" xml:space="preserve">
-    <value>Failed to delete item.</value>
+    <value>删除项目失败。</value>
     <comment>Error message when deletion fails</comment>
   </data>
   <data name="EmptyAllSuccess" xml:space="preserve">
-    <value>All items permanently deleted.</value>
+    <value>所有项目均已永久删除。</value>
     <comment>Success message after emptying trash</comment>
   </data>
   <data name="EmptyAllPartialFailed" xml:space="preserve">
-    <value>Failed to delete {0} item(s).</value>
+    <value>删除 {0} 个项目失败。</value>
     <comment>Error message when some deletions fail</comment>
   </data>
 </root>

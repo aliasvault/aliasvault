@@ -29,11 +29,11 @@
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
-    <value>Create a new item below.</value>
+    <value>在下方创建新项目。</value>
     <comment>Description for adding a new item</comment>
   </data>
   <data name="EditItemDescription">
-    <value>Edit the existing item below.</value>
+    <value>在下方编辑现有项目。</value>
     <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
@@ -46,12 +46,12 @@
     <comment>Breadcrumb text for editing an item</comment>
   </data>
   <data name="AddNewItemBreadcrumb">
-    <value>Add new item</value>
+    <value>添加新项目</value>
     <comment>Breadcrumb text for adding a new item</comment>
   </data>
   <!-- Section headers -->
   <data name="ServiceSectionHeader">
-    <value>Item</value>
+    <value>项目</value>
     <comment>Header for the item information section</comment>
   </data>
   <data name="LoginDetailsSectionHeader">
@@ -76,11 +76,11 @@
     <comment>Label for item name input</comment>
   </data>
   <data name="ServiceUrlLabel">
-    <value>Website URL</value>
+    <value>网站 URL</value>
     <comment>Label for website URL input</comment>
   </data>
   <data name="EmailLabel">
-    <value>电子邮箱</value>
+    <value>邮箱</value>
     <comment>Label for email input</comment>
   </data>
   <data name="UsernameLabel">
@@ -130,7 +130,7 @@
     <comment>Button text for clearing alias fields</comment>
   </data>
   <data name="SaveItemButton">
-    <value>Save Item</value>
+    <value>保存项目</value>
     <comment>Button text for saving an item</comment>
   </data>
   <data name="CancelButton">
@@ -148,7 +148,7 @@
     <comment>Error message when item doesn't exist</comment>
   </data>
   <data name="ErrorSavingItem">
-    <value>Error saving item. Please try again.</value>
+    <value>保存项目时出错，请重试。</value>
     <comment>Error message when saving item fails</comment>
   </data>
   <!-- Success messages -->
@@ -178,7 +178,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, use the delete button below. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>通行密钥是在网站提示时通过浏览器扩展或移动应用创建的，无法通过网页应用手动编辑或创建。要移除此通行密钥，请使用下方的删除按钮。要替换或创建新的通行密钥，请访问网站并按照其提示操作。</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="DeletePasskeyButton">
@@ -190,7 +190,7 @@
     <comment>Header when passkey is marked for deletion</comment>
   </data>
   <data name="PasskeyWillBeDeleted">
-    <value>This passkey will be deleted when you save this item.</value>
+    <value>保存此项目后，此通行密钥将被删除。</value>
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">
@@ -232,11 +232,11 @@
     <comment>Header for the custom fields section</comment>
   </data>
   <data name="RemoveField">
-    <value>Remove field</value>
+    <value>移除字段</value>
     <comment>Tooltip for removing a field</comment>
   </data>
   <data name="AddEmailField">
-    <value>Add Email</value>
+    <value>添加邮件</value>
     <comment>Button text for adding email field</comment>
   </data>
 </root>

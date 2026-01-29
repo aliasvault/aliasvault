@@ -181,7 +181,7 @@
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <value>Todos os seus itens estão organizados em pastas. Clique em uma pasta acima para ver suas credenciais, ou utilize a busca para encontrar itens específicos.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->

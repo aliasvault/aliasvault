@@ -63,7 +63,7 @@
     <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Parola ta master este criptată prin extensia passkey PRF și stocată local. Când reîncarci pagina sau tab-ul AliasVault, îți poți debloca seiful prin passkey. Dacă dorești să dezactivezi deblocarea prin passkey, poți face acest lucru folosind butonul de mai jos. Parola ta master va putea fi folosită în continuare pentru deblocarea seifului.</value>
+    <value>Parola ta principală este criptată prin extensia passkey PRF și stocată local. Când reîncarci pagina sau tab-ul AliasVault, îți poți debloca seiful prin passkey. Dacă dorești să dezactivezi deblocarea prin passkey, poți face acest lucru folosind butonul de mai jos. Parola ta principală va putea fi folosită în continuare pentru deblocarea seifului.</value>
     <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
@@ -71,7 +71,7 @@
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>În mod implicit, reîncărcarea paginii sau a tab-ului AliasVault necesită reintroducerea parolei master. Prin activarea unui passkey, îți poți debloca seiful instantaneu. Când această opțiune este activată, parola ta master este criptată local prin extensia PRF a passkey-ului. Notă: deblocarea prin passkey va funcționa doar pe dispozitivul și browserul curent pe care a fost activată.</value>
+    <value>În mod implicit, reîncărcarea paginii sau a tab-ului AliasVault necesită reintroducerea parolei principale. Prin activarea unui passkey, îți poți debloca seiful instantaneu. Când această opțiune este activată, parola ta principală este criptată local prin extensia PRF a passkey-ului. Notă: deblocarea prin passkey va funcționa doar pe dispozitivul și browserul curent pe care a fost activată.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">

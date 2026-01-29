@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Email-uri</value>
+    <value>E-mailuri</value>
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
@@ -75,7 +75,7 @@
     <comment>Refresh button text</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
-    <value>Nu utilizați nicio adresă de email privată (încă). Creați un alias nou și folosiți o adresă de email privată acceptată de AliasVault. Toate email-urile primite pe aceste adrese private vor apărea aici.</value>
+    <value>Nu utilizați nicio adresă de e-mail privată (încă). Creați un alias nou și folosiți o adresă de e-mail privată acceptată de AliasVault. Toate e-mailurile tale primite pe aceste adrese private vor apărea aici.</value>
     <comment>Message when no email addresses are configured</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
@@ -95,11 +95,11 @@
     <comment>Error message when email claim does not exist</comment>
   </data>
   <data name="LoadEmailsFailedMessage" xml:space="preserve">
-    <value>Încărcarea email-ului a eșuat: {0}</value>
+    <value>Încărcarea e-mailului a eșuat: {0}</value>
     <comment>Error message when loading email fails. {0} is placeholder for error message</comment>
   </data>
   <data name="LoadMoreEmailsFailedMessage" xml:space="preserve">
-    <value>Încărcarea mai multor email-uri a eșuat: {0}</value>
+    <value>Încărcarea mai multor e-mailuri a eșuat: {0}</value>
     <comment>Error message when loading more emails fails. {0} is placeholder for error message</comment>
   </data>
 </root>

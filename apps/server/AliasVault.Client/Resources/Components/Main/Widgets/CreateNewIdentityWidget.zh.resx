@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>+ New</value>
+    <value>+ 新建</value>
     <comment>Text for the new item button</comment>
   </data>
   <data name="NewAliasButtonShort" xml:space="preserve">
@@ -75,7 +75,7 @@
     <comment>Label for name field</comment>
   </data>
   <data name="WebsiteUrlLabel" xml:space="preserve">
-    <value>Website URL</value>
+    <value>网站 URL</value>
     <comment>Label for website URL field</comment>
   </data>
   <data name="NamePlaceholderLogin" xml:space="preserve">
@@ -83,15 +83,15 @@
     <comment>Placeholder text for login name field</comment>
   </data>
   <data name="NamePlaceholderAlias" xml:space="preserve">
-    <value>例如 Facebook</value>
+    <value>如 Facebook</value>
     <comment>Placeholder text for alias name field</comment>
   </data>
   <data name="NamePlaceholderCard" xml:space="preserve">
-    <value>E.g. Mastercard</value>
+    <value>如“万事达卡”</value>
     <comment>Placeholder text for card name field</comment>
   </data>
   <data name="NamePlaceholderNote" xml:space="preserve">
-    <value>E.g. Passport Details</value>
+    <value>如“护照详情”</value>
     <comment>Placeholder text for note name field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
@@ -103,15 +103,15 @@
     <comment>Continue button text for non-alias types</comment>
   </data>
   <data name="CreateNewLoginTitle" xml:space="preserve">
-    <value>Create New Login</value>
+    <value>创建新登录</value>
     <comment>Title for creating a new login item</comment>
   </data>
   <data name="CreateNewCreditCardTitle" xml:space="preserve">
-    <value>Create New Card</value>
+    <value>创建新卡</value>
     <comment>Title for creating a new credit card item</comment>
   </data>
   <data name="CreateNewNoteTitle" xml:space="preserve">
-    <value>Create New Note</value>
+    <value>创建新备注</value>
     <comment>Title for creating a new note item</comment>
   </data>
   <data name="TypeLogin" xml:space="preserve">
@@ -123,11 +123,11 @@
     <comment>Alias item type label</comment>
   </data>
   <data name="TypeCard" xml:space="preserve">
-    <value>Card</value>
+    <value>卡</value>
     <comment>Credit card item type label (short)</comment>
   </data>
   <data name="TypeNote" xml:space="preserve">
-    <value>注意</value>
+    <value>备注</value>
     <comment>Note item type label</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
@@ -135,11 +135,11 @@
     <comment>Loading message while creating alias</comment>
   </data>
   <data name="CreateItemErrorMessage" xml:space="preserve">
-    <value>Error creating a new item. Please try again (later) or log-out and in again.</value>
+    <value>创建新项目时出错。请（稍后）重试，或退出并重新登录。</value>
     <comment>Error message when item creation fails</comment>
   </data>
   <data name="ItemCreatedSuccessMessage" xml:space="preserve">
-    <value>项目创建成功.</value>
+    <value>项目创建成功。</value>
     <comment>Success message when item is created</comment>
   </data>
 </root>

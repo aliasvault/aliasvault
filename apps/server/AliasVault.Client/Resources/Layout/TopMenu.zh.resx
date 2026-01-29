@@ -25,7 +25,7 @@
     <comment>Main navigation link for vault section</comment>
   </data>
   <data name="EmailsNav">
-    <value>电子邮件</value>
+    <value>邮件</value>
     <comment>Main navigation link for emails section</comment>
   </data>
   <!-- Settings menu items -->

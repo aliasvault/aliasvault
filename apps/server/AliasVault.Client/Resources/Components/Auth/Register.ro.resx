@@ -69,11 +69,11 @@
     <comment>Label for username/email input field</comment>
   </data>
   <data name="PasswordLabel" xml:space="preserve">
-    <value>Parolă Master</value>
+    <value>Parola ta</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="ConfirmPasswordLabel" xml:space="preserve">
-    <value>Confirmă Parola</value>
+    <value>Confirmă parola</value>
     <comment>Label for password confirmation input field</comment>
   </data>
   <!-- Terms and conditions -->

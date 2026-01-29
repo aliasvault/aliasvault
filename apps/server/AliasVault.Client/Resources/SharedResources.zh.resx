@@ -127,7 +127,7 @@
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Generate" xml:space="preserve">
-    <value>Generate</value>
+    <value>生成</value>
     <comment>Button tooltip for generating a random value</comment>
   </data>
   <data name="Delete" xml:space="preserve">
@@ -180,7 +180,7 @@
   </data>
   <!-- Common form elements -->
   <data name="Email" xml:space="preserve">
-    <value>电子邮箱</value>
+    <value>邮箱</value>
     <comment>Label for email input field</comment>
   </data>
   <data name="Password" xml:space="preserve">
@@ -229,7 +229,7 @@
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>请输入有效的电子邮件地址。</value>
+    <value>请输入有效的邮件地址。</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">

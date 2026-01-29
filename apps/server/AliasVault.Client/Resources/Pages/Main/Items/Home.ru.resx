@@ -160,7 +160,7 @@
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>Недавно удаленные</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
@@ -194,7 +194,7 @@
     <comment>Button text for editing a folder</comment>
   </data>
   <data name="DeleteFolder" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>Удалить папку</value>
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">

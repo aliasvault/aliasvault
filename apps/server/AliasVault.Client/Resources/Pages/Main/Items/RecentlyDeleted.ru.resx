@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>Недавно удаленные</value>
     <comment>Page title for recently deleted items</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
@@ -77,7 +77,7 @@
     <comment>Title when no deleted items exist</comment>
   </data>
   <data name="NoItemsDescription" xml:space="preserve">
-    <value>Items you delete will appear here for 30 days before being permanently removed.</value>
+    <value>Удаленные элементы будут храниться здесь 30 дней, после чего они будут удалены безвозвратно.</value>
     <comment>Description when no deleted items exist</comment>
   </data>
   <data name="Untitled" xml:space="preserve">
@@ -90,12 +90,12 @@
     <comment>Text showing how many days until permanent deletion</comment>
   </data>
   <data name="ExpiringSoon" xml:space="preserve">
-    <value>Expiring soon</value>
+    <value>Скоро будут удалены</value>
     <comment>Text shown when item will be deleted within 24 hours</comment>
   </data>
   <!-- Actions -->
   <data name="Restore" xml:space="preserve">
-    <value>Restore</value>
+    <value>Восстановить</value>
     <comment>Button text to restore a deleted item</comment>
   </data>
   <data name="EmptyAll" xml:space="preserve">
@@ -142,7 +142,7 @@
     <comment>Loading message while deleting</comment>
   </data>
   <data name="DeleteSuccess" xml:space="preserve">
-    <value>Item permanently deleted.</value>
+    <value>Элемент удален навсегда.</value>
     <comment>Success message after permanent deletion</comment>
   </data>
   <data name="DeleteFailed" xml:space="preserve">
@@ -150,7 +150,7 @@
     <comment>Error message when deletion fails</comment>
   </data>
   <data name="EmptyAllSuccess" xml:space="preserve">
-    <value>All items permanently deleted.</value>
+    <value>Все элементы удалены навсегда.</value>
     <comment>Success message after emptying trash</comment>
   </data>
   <data name="EmptyAllPartialFailed" xml:space="preserve">

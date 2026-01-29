@@ -20,7 +20,7 @@
     </xsd:element>
   </xsd:schema>
   <data name="NoFolder">
-    <value>No folder</value>
+    <value>无文件夹</value>
     <comment>Text shown when no folder is selected</comment>
   </data>
   <data name="SelectFolderTitle">
@@ -28,7 +28,7 @@
     <comment>Title of the folder selection modal</comment>
   </data>
   <data name="NoFoldersAvailable">
-    <value>No folders available. Create a folder from the vault home page.</value>
+    <value>没有可用的文件夹。请从密码库主页创建文件夹。</value>
     <comment>Message shown when no folders exist</comment>
   </data>
 </root>

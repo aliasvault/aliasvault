@@ -229,7 +229,7 @@
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>Veuillez entrer une adresse email valide</value>
+    <value>Veuillez entrer une adresse email valide.</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">
@@ -276,7 +276,7 @@
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
-    <value>Vous devez accepter les Conditions Générales d'Utilisation</value>
+    <value>Vous devez accepter les Conditions Générales d'Utilisation.</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
   <data name="ErrorSecretKeyRequired" xml:space="preserve">

@@ -191,6 +191,19 @@
     <value>Une fois que vous avez exporté le fichier, vous pouvez le charger ci-dessous.</value>
     <comment>KeePassXC export instructions part 2</comment>
   </data>
+  <!-- NordPass -->
+  <data name="NordPassDescription" xml:space="preserve">
+    <value>Importer des mots de passe depuis NordPass</value>
+    <comment>Description for NordPass import service</comment>
+  </data>
+  <data name="NordPassInstructionsPart1" xml:space="preserve">
+    <value>Afin d'importer vos mots de passe NordPass, vous devez les exporter dans un fichier CSV. Vous pouvez le faire en ouvrant l'application NordPass ou le coffre web, en allant dans 'Paramètres' > 'Exporter les éléments' et en sélectionnant le format CSV.</value>
+    <comment>NordPass export instructions part 1</comment>
+  </data>
+  <data name="NordPassInstructionsPart2" xml:space="preserve">
+    <value>Une fois que vous avez exporté le fichier, vous pouvez le charger ci-dessous.</value>
+    <comment>NordPass export instructions part 2</comment>
+  </data>
   <!-- Proton Pass -->
   <data name="ProtonPassDescription" xml:space="preserve">
     <value>Importer les mots de passe depuis Proton Pass</value>

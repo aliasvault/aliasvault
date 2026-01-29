@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Selectați un serviciu din care doriți să importați. Dacă folosiți un serviciu care nu este listat aici și doriți să fie acceptat, deschide o sesizare pe &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; sau contactează-ne.</value>
+    <value>Selectați un serviciu din care doriți să importați. Dacă folosiți un serviciu care nu este listat aici și doriți să fie acceptat, puteți deschide o sesizare pe &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; sau ne puteți contacta.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">

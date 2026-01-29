@@ -51,11 +51,11 @@
   </data>
   <!-- Section headers -->
   <data name="ServiceSectionHeader">
-    <value>Item</value>
+    <value>Запись</value>
     <comment>Header for the item information section</comment>
   </data>
   <data name="LoginDetailsSectionHeader">
-    <value>Login credentials</value>
+    <value>Данные для авторизации</value>
     <comment>Header for the login credentials section</comment>
   </data>
   <data name="AliasSectionHeader">

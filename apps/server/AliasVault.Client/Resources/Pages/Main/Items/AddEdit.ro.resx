@@ -80,7 +80,7 @@
     <comment>Label for website URL input</comment>
   </data>
   <data name="EmailLabel">
-    <value>Email</value>
+    <value>E-mail</value>
     <comment>Label for email input</comment>
   </data>
   <data name="UsernameLabel">
@@ -122,7 +122,7 @@
   </data>
   <!-- Button text -->
   <data name="GenerateRandomAliasButton">
-    <value>Generează un alias aleatoriu</value>
+    <value>Generați un alias aleatoriu</value>
     <comment>Button text for generating a random alias</comment>
   </data>
   <data name="ClearAliasFieldsButton">
@@ -203,7 +203,7 @@
     <comment>Header for the credit card details section</comment>
   </data>
   <data name="CardholderNameLabel">
-    <value>Nume deținător card</value>
+    <value>Nume Titular</value>
     <comment>Label for cardholder name input</comment>
   </data>
   <data name="CardNumberLabel">
@@ -236,7 +236,7 @@
     <comment>Tooltip for removing a field</comment>
   </data>
   <data name="AddEmailField">
-    <value>Adaugă Email</value>
+    <value>Adaugă E-mail</value>
     <comment>Button text for adding email field</comment>
   </data>
 </root>

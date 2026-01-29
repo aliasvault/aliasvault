@@ -81,7 +81,7 @@
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
-    <value>După ce ai exportat fiierul, îl poți încărca mai jos.</value>
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
     <comment>Bitwarden export instructions part 2</comment>
   </data>
   <!-- LastPass -->
@@ -158,7 +158,7 @@
     <comment>Description for Firefox import service</comment>
   </data>
   <data name="FirefoxInstructionsPart1" xml:space="preserve">
-    <value>Pentru a importa parolele din Firefox, trebuie să le exportați într-un fișier CSV. Puteți face acest lucru deschizând browserul Firefox și accesând Meniu > „Parole”. Apoi dă clic pe pictograma de meniu din colțul din dreapta sus și selectați 'Export passwords'.</value>
+    <value>Pentru a importa parolele din Firefox, trebuie să le exporți ca fișier CSV. Puteți face acest lucru deschizând browserul Firefox și accesând Meniu > „Parole”. Apoi dă clic pe pictograma de meniu din colțul din dreapta sus și selectați 'Export passwords'.</value>
     <comment>Firefox export instructions part 1</comment>
   </data>
   <data name="FirefoxInstructionsPart2" xml:space="preserve">
@@ -190,6 +190,19 @@
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
     <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
     <comment>KeePassXC export instructions part 2</comment>
+  </data>
+  <!-- NordPass -->
+  <data name="NordPassDescription" xml:space="preserve">
+    <value>Importă parolele din NordPass</value>
+    <comment>Description for NordPass import service</comment>
+  </data>
+  <data name="NordPassInstructionsPart1" xml:space="preserve">
+    <value>Pentru a importa parolele din NordPass, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând aplicația NordPass sau seiful web și accesând „Setări” > „Exportă elemente”. Apoi, selectează formatul CSV pentru a finaliza exportul.</value>
+    <comment>NordPass export instructions part 1</comment>
+  </data>
+  <data name="NordPassInstructionsPart2" xml:space="preserve">
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
+    <comment>NordPass export instructions part 2</comment>
   </data>
   <!-- Proton Pass -->
   <data name="ProtonPassDescription" xml:space="preserve">

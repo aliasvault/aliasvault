@@ -159,7 +159,7 @@
     <value>用户名过长：不能超过 40 个字符。</value>
   </data>
   <data name="USERNAME_INVALID_EMAIL" xml:space="preserve">
-    <value>电子邮箱地址无效。</value>
+    <value>邮箱地址无效。</value>
   </data>
   <data name="USERNAME_INVALID_CHARACTERS" xml:space="preserve">
     <value>用户名无效，仅可包含字母或数字。</value>

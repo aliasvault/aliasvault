@@ -75,7 +75,7 @@
     <comment>Button text for password unlock</comment>
   </data>
   <data name="EnterMasterPasswordDescription" xml:space="preserve">
-    <value>Introduceți parola master pentru a vă debloca seiful.</value>
+    <value>Introdu parola principală pentru a vă debloca seiful.</value>
     <comment>Description for password unlock form</comment>
   </data>
   <data name="YourPasswordLabel" xml:space="preserve">
@@ -103,7 +103,7 @@
     <comment>Error message for unlock request processing</comment>
   </data>
   <data name="IncorrectPasswordError" xml:space="preserve">
-    <value>Parola este incorectă. Reîncearcă introducerea parolei tale sau folosește deconectarea și reconectarea la contul tău.</value>
+    <value>Parola este incorectă. Reîncearcă introducerea parolei tale sau deconectarea și reconectarea la contul tău.</value>
     <comment>Error message for incorrect password</comment>
   </data>
   <data name="SessionTimedOutError" xml:space="preserve">

@@ -6,7 +6,7 @@
     "passwordPlaceholder": "Saisissez votre mot de passe",
     "rememberMe": "Se souvenir de moi",
     "loginButton": "Se connecter",
-    "noAccount": "Pas de compte?",
+    "noAccount": "Pas de compte ?",
     "createVault": "Créer un nouveau coffre",
     "twoFactorTitle": "Veuillez entrer le code d'authentification de votre application d'authentification.",
     "authCode": "Code d'authentification",

@@ -83,7 +83,7 @@
   </data>
   <!-- Form elements -->
   <data name="VerificationCodePlaceholder" xml:space="preserve">
-    <value>Introduceți codul de verificare</value>
+    <value>Introdu codul de verificare</value>
     <comment>Placeholder text for verification code input</comment>
   </data>
   <data name="VerifyAndEnableButton" xml:space="preserve">

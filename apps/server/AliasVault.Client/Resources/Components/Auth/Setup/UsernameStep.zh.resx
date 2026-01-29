@@ -25,7 +25,7 @@
     <comment>Assistant message about setting up username</comment>
   </data>
   <data name="EnterUsernameInstructions">
-    <value>请输入您想使用的用户名。可以是您的电子邮件地址或任何您喜欢的独特名称。</value>
+    <value>请输入您想使用的用户名。可以是您的邮件地址或任何您喜欢的独特名称。</value>
     <comment>Instructions for entering username</comment>
   </data>
   <data name="RememberUsernameNote">
@@ -38,7 +38,7 @@
     <comment>Label for username input field</comment>
   </data>
   <data name="UsernamePlaceholder">
-    <value>输入您想要的用户名或电子邮件</value>
+    <value>输入您想要的用户名或邮件</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <!-- Validation messages -->

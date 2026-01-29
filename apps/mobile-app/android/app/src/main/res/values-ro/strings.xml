@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">Autocompletare AliasVault</string>
+  <string name="autofill_service_description" translatable="true">Completare automată AliasVault</string>
   <string name="aliasvault_icon">Pictogramă AliasVault</string>
   <!-- Common strings -->
   <string name="common_close">Închide</string>
@@ -16,7 +16,7 @@
   <!-- Biometric prompts -->
   <string name="biometric_store_key_title">Stocare cheie de criptare</string>
   <string name="biometric_store_key_subtitle">Autentifică-te pentru a stoca în siguranță cheia de criptare în Android Keystore. Acest lucru permite accesul securizat la seif.</string>
-  <string name="biometric_unlock_vault_title">Deblocați seiful</string>
+  <string name="biometric_unlock_vault_title">Deblochează seiful</string>
   <string name="biometric_unlock_vault_subtitle">Autentifică-te pentru a accesa seiful</string>
   <!-- Passkey registration -->
   <string name="passkey_registration_title">Creează Passkey</string>
@@ -65,13 +65,13 @@
   <string name="server_version_not_supported_title">Actualizare server necesară</string>
   <string name="server_version_not_supported_message">Versiunea serverului este incompatibilă. Contactează administratorul pentru a actualiza serverul.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_unlock_method_required">Activează autentificarea biometrică sau PIN-ul în aplicația AliasVault pentru a continua</string>
+  <string name="error_unlock_method_required">Activează autentificarea biometrică sau deblocarea prin PIN în aplicația AliasVault pentru a continua</string>
   <string name="error_unlock_vault_first">Deblochează mai întâi seiful în aplicația AliasVault</string>
   <string name="error_vault_decrypt_failed">Decriptarea seifului a eșuat</string>
   <string name="error_biometric_cancelled">Autentificarea biometrică a fost anulată</string>
   <string name="error_encryption_key_failed">Preluarea cheii de criptare a eșuat</string>
   <!-- PIN unlock -->
-  <string name="pin_unlock_vault">Deblocați seiful</string>
+  <string name="pin_unlock_vault">Deblochează seiful</string>
   <string name="pin_enter_to_unlock">Introdu PIN-ul pentru a debloca seiful</string>
   <string name="pin_locked_max_attempts">Cod PIN blocat după prea multe încercări eșuate</string>
   <string name="pin_incorrect_attempts_remaining">PIN incorect. %d încercări rămase</string>

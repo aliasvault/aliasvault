@@ -71,11 +71,11 @@
     <comment>Description of private email domains</comment>
   </data>
   <data name="PublicEmailTitle" xml:space="preserve">
-    <value>公共临时电子邮箱提供商</value>
+    <value>公共临时邮箱提供商</value>
     <comment>Title for public email domains section</comment>
   </data>
   <data name="PublicEmailDescription" xml:space="preserve">
-    <value>匿名但隐私性有限，任何知晓其地址的人均可读取电子邮件内容。</value>
+    <value>匿名但隐私性有限，任何知晓其地址的人均可读取邮件内容。</value>
     <comment>Description of public email domains</comment>
   </data>
   <data name="PrivateEmailAliasVaultServer" xml:space="preserve">

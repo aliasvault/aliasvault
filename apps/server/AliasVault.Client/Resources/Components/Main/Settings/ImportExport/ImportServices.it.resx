@@ -191,6 +191,19 @@
     <value>Una volta esportato il file, puoi caricarlo qui sotto.</value>
     <comment>KeePassXC export instructions part 2</comment>
   </data>
+  <!-- NordPass -->
+  <data name="NordPassDescription" xml:space="preserve">
+    <value>Importa password da NordPass</value>
+    <comment>Description for NordPass import service</comment>
+  </data>
+  <data name="NordPassInstructionsPart1" xml:space="preserve">
+    <value>Per importare le tue password di NordPass, devi esportarle come file CSV. Puoi farlo aprendo l'app NordPass o il vault web, andando a 'Impostazioni' > 'Esporta oggetti', e selezionando il formato CSV.</value>
+    <comment>NordPass export instructions part 1</comment>
+  </data>
+  <data name="NordPassInstructionsPart2" xml:space="preserve">
+    <value>Una volta esportato il file, puoi caricarlo qui sotto.</value>
+    <comment>NordPass export instructions part 2</comment>
+  </data>
   <!-- Proton Pass -->
   <data name="ProtonPassDescription" xml:space="preserve">
     <value>Importa password da Proton Pass</value>
