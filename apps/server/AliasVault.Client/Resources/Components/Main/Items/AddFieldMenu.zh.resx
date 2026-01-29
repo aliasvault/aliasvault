@@ -42,7 +42,7 @@
     <comment>Password field label</comment>
   </data>
   <data name="FieldLoginEmail">
-    <value>邮件</value>
+    <value>邮箱</value>
     <comment>Email field label</comment>
   </data>
   <data name="FieldLoginUrl">
@@ -115,7 +115,7 @@
     <comment>Hidden field type option</comment>
   </data>
   <data name="FieldTypeEmail">
-    <value>邮件</value>
+    <value>邮箱</value>
     <comment>Email field type option</comment>
   </data>
   <data name="FieldTypeUrl">
