@@ -24,20 +24,6 @@ type EmailDomainFieldProps = {
   onGenerateAlias?: () => void;
 }
 
-// Hardcoded public email domains (same as in browser extension)
-const PUBLIC_EMAIL_DOMAINS = [
-  'spamok.com',
-  'solarflarecorp.com',
-  'spamok.nl',
-  '3060.nl',
-  'landmail.nl',
-  'asdasd.nl',
-  'spamok.de',
-  'spamok.com.ua',
-  'spamok.es',
-  'spamok.fr',
-];
-
 /**
  * Email domain field component with domain chooser functionality for React Native.
  * Allows users to select from private/public domains or enter custom email addresses.
@@ -57,96 +43,37 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
   const colors = useColors();
   const dbContext = useDb();
 
-  // Initialize mode immediately based on value (before domains load)
-  // This prevents flicker by setting the correct mode right away
-  const getInitialMode = useCallback((val: string): boolean => {
-    if (!val || !val.includes('@')) {
-      return defaultEmailMode;
-    }
-    const [, domain] = val.split('@');
-    // Check against PUBLIC_EMAIL_DOMAINS immediately (hardcoded, always available)
-    // This gives us an immediate answer for most cases
-    const isKnownPublicDomain = PUBLIC_EMAIL_DOMAINS.includes(domain);
-    // If it's a known public domain, use alias mode (not custom)
-    // Otherwise, default to email mode until private domains load
-    return !isKnownPublicDomain;
-  }, [defaultEmailMode]);
-
-  const [isCustomDomain, setIsCustomDomain] = useState(() => getInitialMode(value));
-  const [localPart, setLocalPart] = useState(() => {
-    if (value && value.includes('@')) {
-      return value.split('@')[0];
-    }
-    return value || '';
-  });
-  const [selectedDomain, setSelectedDomain] = useState(() => {
-    if (value && value.includes('@')) {
-      return value.split('@')[1];
-    }
-    return PUBLIC_EMAIL_DOMAINS[0] || '';
-  });
+  const [isCustomDomain, setIsCustomDomain] = useState(defaultEmailMode);
+  const [localPart, setLocalPart] = useState('');
+  const [selectedDomain, setSelectedDomain] = useState('');
   const [isModalVisible, setIsModalVisible] = useState(false);
-
-  // Use refs to store domains - this prevents re-renders when they load
-  const privateEmailDomainsRef = useRef<string[]>([]);
-  const hiddenPrivateEmailDomainsRef = useRef<string[]>([]);
-  const hasDomainsLoadedRef = useRef(false);
-
-  // State for domains (only used for UI display in modal, not for mode detection)
+  const [publicEmailDomains, setPublicEmailDomains] = useState<string[]>([]);
   const [privateEmailDomains, setPrivateEmailDomains] = useState<string[]>([]);
   const [hiddenPrivateEmailDomains, setHiddenPrivateEmailDomains] = useState<string[]>([]);
 
-  // Track value changes to avoid unnecessary re-initialization
-  const lastValueRef = useRef<string>(value);
-  const hasInitializedFromValue = useRef(false);
+  /**
+   * Tracks whether the user explicitly toggled mode via buttons.
+   * While true, the value useEffect skips auto-detection of isCustomDomain.
+   */
+  const modeToggledByUser = useRef(false);
 
-  // Get private email domains from vault metadata
+  // Get email domains from vault metadata
   useEffect(() => {
     /**
-     * Load private email domains from vault metadata.
-     * Store in refs immediately (no re-render), then update state for modal display.
-     * This prevents flicker by avoiding re-renders when domains load.
+     * Load email domains from vault metadata.
      */
     const loadDomains = async (): Promise<void> => {
       try {
         const metadata = await dbContext.getVaultMetadata();
-        const privateDomains = metadata?.privateEmailDomains ?? [];
-        const hiddenDomains = metadata?.hiddenPrivateEmailDomains ?? [];
-
-        // Update refs immediately (no re-render triggered)
-        privateEmailDomainsRef.current = privateDomains;
-        hiddenPrivateEmailDomainsRef.current = hiddenDomains;
-        hasDomainsLoadedRef.current = true;
-
-        // Update state for modal display (triggers re-render, but only affects modal)
-        setPrivateEmailDomains(privateDomains);
-        setHiddenPrivateEmailDomains(hiddenDomains);
-
-        // Check if we need to update mode now that domains are loaded
-        // Only update if value has an @ and we're in custom mode
-        if (value && value.includes('@')) {
-          const domain = value.split('@')[1];
-          if (domain) {
-            const isKnownDomain = PUBLIC_EMAIL_DOMAINS.includes(domain) ||
-                                 privateDomains.includes(domain) ||
-                                 hiddenDomains.includes(domain);
-
-            // Only update mode if domain is now recognized AND we're in custom mode
-            // Use functional update to avoid stale closure and prevent unnecessary updates
-            setIsCustomDomain(prev => {
-              if (isKnownDomain && prev) {
-                return false; // Switch to alias mode
-              }
-              return prev; // No change needed - prevents re-render
-            });
-          }
-        }
+        setPublicEmailDomains(metadata?.publicEmailDomains ?? []);
+        setPrivateEmailDomains(metadata?.privateEmailDomains ?? []);
+        setHiddenPrivateEmailDomains(metadata?.hiddenPrivateEmailDomains ?? []);
       } catch (err) {
         console.error('Error loading email domains:', err);
       }
     };
     loadDomains();
-  }, [dbContext, value]);
+  }, [dbContext]);
 
   // Check if private domains are available and valid
   const showPrivateDomains = useMemo(() => {
@@ -154,76 +81,126 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
            !(privateEmailDomains.length === 1 && (privateEmailDomains[0] === 'DISABLED.TLD' || privateEmailDomains[0] === ''));
   }, [privateEmailDomains]);
 
-  // Initialize state from value prop - only runs when value actually changes
+  // Track previous defaultEmailMode to detect prop changes (e.g., when item type changes)
+  const prevDefaultEmailModeRef = useRef(defaultEmailMode);
+
+  // When defaultEmailMode changes (e.g., item type switched from Login to Alias),
+  // update the mode and load the user's configured default domain
   useEffect(() => {
-    // Skip if value hasn't changed and we've already initialized
-    if (value === lastValueRef.current && hasInitializedFromValue.current) {
+    // Only act when defaultEmailMode actually changed
+    if (prevDefaultEmailModeRef.current === defaultEmailMode) {
       return;
     }
-    lastValueRef.current = value;
+    prevDefaultEmailModeRef.current = defaultEmailMode;
 
+    // If switching to alias mode (defaultEmailMode = false) and we don't have a value with a domain
+    if (!defaultEmailMode && (!value || !value.includes('@'))) {
+      modeToggledByUser.current = false;
+      setIsCustomDomain(false);
+
+      // Load the user's configured default domain
+      const loadDefaultDomain = async (): Promise<void> => {
+        const userDefaultDomain = await dbContext.sqliteClient?.getDefaultEmailDomain();
+        if (userDefaultDomain) {
+          setSelectedDomain(userDefaultDomain);
+        }
+      };
+      loadDefaultDomain();
+    }
+  }, [defaultEmailMode, value, dbContext.sqliteClient]);
+
+  // Initialize state from value prop
+  useEffect(() => {
     if (!value) {
-      // Set default domain using refs (no re-render)
-      const defaultDomain = hasDomainsLoadedRef.current && privateEmailDomainsRef.current[0]
-        ? privateEmailDomainsRef.current[0]
-        : PUBLIC_EMAIL_DOMAINS[0];
-      if (defaultDomain && defaultDomain !== selectedDomain) {
-        setSelectedDomain(defaultDomain);
+      // Value is empty - clear local part but preserve selected domain
+      setLocalPart('');
+      // Only set default domain if none is selected yet (initial load)
+      if (!selectedDomain) {
+        // Load the user's configured default domain
+        const loadDefaultDomain = async (): Promise<void> => {
+          const userDefaultDomain = await dbContext.sqliteClient?.getDefaultEmailDomain();
+          if (userDefaultDomain) {
+            setSelectedDomain(userDefaultDomain);
+          } else if (showPrivateDomains && privateEmailDomains[0]) {
+            setSelectedDomain(privateEmailDomains[0]);
+          } else if (publicEmailDomains[0]) {
+            setSelectedDomain(publicEmailDomains[0]);
+          }
+        };
+        loadDefaultDomain();
       }
-      hasInitializedFromValue.current = true;
       return;
     }
 
     if (value.includes('@')) {
       const [local, domain] = value.split('@');
+      setLocalPart(local);
+      setSelectedDomain(domain);
 
-      // Only update if values actually changed (prevents unnecessary re-renders)
-      if (local !== localPart) {
-        setLocalPart(local);
+      /*
+       * Auto-detect mode based on domain recognition, but only if the user
+       * hasn't explicitly toggled mode via the Email/Alias buttons.
+       */
+      if (!modeToggledByUser.current) {
+        const isKnownDomain = publicEmailDomains.includes(domain) ||
+                             privateEmailDomains.includes(domain) ||
+                             hiddenPrivateEmailDomains.includes(domain);
+        setIsCustomDomain(!isKnownDomain);
       }
-      if (domain !== selectedDomain) {
-        setSelectedDomain(domain);
-      }
-
-      // Check mode using refs (no re-render) - works even before domains load
-      const isKnownDomain = PUBLIC_EMAIL_DOMAINS.includes(domain) ||
-                           privateEmailDomainsRef.current.includes(domain) ||
-                           hiddenPrivateEmailDomainsRef.current.includes(domain);
-
-      // Only update mode if it needs to change (prevents flicker)
-      setIsCustomDomain(prev => {
-        const newMode = !isKnownDomain;
-        return newMode !== prev ? newMode : prev;
-      });
-
-      hasInitializedFromValue.current = true;
     } else {
-      if (value !== localPart) {
-        setLocalPart(value);
-      }
+      setLocalPart(value);
+      // Don't reset isCustomDomain here - preserve the current mode
+
       // Set default domain if not already set
-      if (!selectedDomain) {
-        const defaultDomain = hasDomainsLoadedRef.current && privateEmailDomainsRef.current[0]
-          ? privateEmailDomainsRef.current[0]
-          : PUBLIC_EMAIL_DOMAINS[0];
-        if (defaultDomain) {
-          setSelectedDomain(defaultDomain);
-        }
+      if (!selectedDomain && !value.includes('@')) {
+        // Load the user's configured default domain
+        const loadDefaultDomain = async (): Promise<void> => {
+          const userDefaultDomain = await dbContext.sqliteClient?.getDefaultEmailDomain();
+          if (userDefaultDomain) {
+            setSelectedDomain(userDefaultDomain);
+          } else if (showPrivateDomains && privateEmailDomains[0]) {
+            setSelectedDomain(privateEmailDomains[0]);
+          } else if (publicEmailDomains[0]) {
+            setSelectedDomain(publicEmailDomains[0]);
+          }
+        };
+        loadDefaultDomain();
       }
-      hasInitializedFromValue.current = true;
     }
-  }, [value, localPart, selectedDomain]);
+  }, [value, publicEmailDomains, privateEmailDomains, hiddenPrivateEmailDomains, showPrivateDomains, selectedDomain, dbContext.sqliteClient]);
 
   /*
    * Re-check domain mode when domains finish loading.
    * This handles the case where value was set before domains were loaded.
-   * Only switches mode if domain is now recognized and we're currently in custom mode.
+   * Skip if the user has explicitly toggled mode via buttons.
    */
-  // Note: Domain mode checking is now handled in the loadDomains effect above
-  // This prevents the need for a separate effect that triggers re-renders
+  useEffect(() => {
+    if (modeToggledByUser.current) {
+      return;
+    }
+
+    if (!value || !value.includes('@')) {
+      return;
+    }
+
+    const domain = value.split('@')[1];
+    if (!domain) {
+      return;
+    }
+
+    const isKnownDomain = publicEmailDomains.includes(domain) ||
+                         privateEmailDomains.includes(domain) ||
+                         hiddenPrivateEmailDomains.includes(domain);
+
+    if (isKnownDomain && isCustomDomain) {
+      setIsCustomDomain(false);
+    }
+  }, [publicEmailDomains, privateEmailDomains, hiddenPrivateEmailDomains, value, isCustomDomain]);
 
   // Handle local part changes
   const handleLocalPartChange = useCallback((newText: string) => {
+    modeToggledByUser.current = false;
+
     // If in custom domain mode, always pass through the full value
     if (isCustomDomain) {
       onChange(newText);
@@ -262,7 +239,8 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
   }, [localPart, onChange]);
 
   // Toggle between custom domain and domain chooser
-  const toggleCustomDomain = useCallback(() => {
+  const toggleCustomDomain = useCallback(async () => {
+    modeToggledByUser.current = true;
     const newIsCustom = !isCustomDomain;
     setIsCustomDomain(newIsCustom);
 
@@ -273,19 +251,21 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
       setLocalPart('');
     } else {
       // Switching to domain chooser mode - clear old email-mode value.
-      const defaultDomain = showPrivateDomains && privateEmailDomains[0]
-        ? privateEmailDomains[0]
-        : PUBLIC_EMAIL_DOMAINS[0];
-      setSelectedDomain(defaultDomain);
+      // Load the user's configured default domain
+      const userDefaultDomain = await dbContext.sqliteClient?.getDefaultEmailDomain();
+      const defaultDomain = userDefaultDomain ||
+        (showPrivateDomains && privateEmailDomains[0] ? privateEmailDomains[0] : publicEmailDomains[0]);
+      if (defaultDomain) {
+        setSelectedDomain(defaultDomain);
+      }
       setLocalPart('');
       onChange('');
 
       if (onGenerateAlias) {
-        // Delegate to the parent callback which sets the full email value (prefix@domain)
         onGenerateAlias();
       }
     }
-  }, [isCustomDomain, showPrivateDomains, privateEmailDomains, onChange, onGenerateAlias]);
+  }, [isCustomDomain, showPrivateDomains, publicEmailDomains, privateEmailDomains, onChange, onGenerateAlias, dbContext.sqliteClient]);
 
   const styles = StyleSheet.create({
     domainAt: {
@@ -616,7 +596,7 @@ export const EmailDomainField: React.FC<EmailDomainFieldProps> = ({
                   {t('items.publicEmailDescription')}
                 </Text>
                 <View style={styles.domainList}>
-                  {PUBLIC_EMAIL_DOMAINS.map((domain) => (
+                  {publicEmailDomains.map((domain) => (
                     <TouchableOpacity
                       key={domain}
                       style={[
