@@ -1,5 +1,5 @@
 #!/bin/bash
-# @version 20260128
+# @version 20260130
 
 # Repository information used for downloading files and images from GitHub
 REPO_OWNER="aliasvault"
@@ -776,6 +776,57 @@ retry_command() {
     done
 
     log_error "Command failed after $max_attempts attempts: ${command[*]}"
+    return 1
+}
+
+# Check that all Docker images are available in the registry before proceeding
+# Fails immediately if any image is missing (e.g., CI still building images for a new release)
+# Runs checks in parallel for faster execution
+check_images_available() {
+    local version="$1"
+    shift
+    local images=("$@")
+    local missing_images=()
+    local temp_dir=$(mktemp -d)
+
+    printf "${CYAN}ℹ Checking if all Docker images are available for version ${version}...${NC}\n"
+
+    # Check all images in parallel
+    for image in "${images[@]}"; do
+        local image_name=$(basename "$image")
+        (
+            if ! docker manifest inspect "$image" > /dev/null 2>&1; then
+                echo "$image_name" > "$temp_dir/$image_name"
+            fi
+        ) &
+    done
+
+    # Wait for all background checks to complete
+    wait
+
+    # Collect results
+    for image in "${images[@]}"; do
+        local image_name=$(basename "$image")
+        if [ -f "$temp_dir/$image_name" ]; then
+            missing_images+=("$image_name")
+        fi
+    done
+
+    # Cleanup
+    rm -rf "$temp_dir"
+
+    if [ ${#missing_images[@]} -eq 0 ]; then
+        printf "${GREEN}✓ All Docker images are available${NC}\n"
+        return 0
+    fi
+
+    printf "${RED}✗ The following Docker images are not available:${NC}\n"
+    for img in "${missing_images[@]}"; do
+        printf "${RED}    - $img${NC}\n"
+    done
+    printf "\n"
+    printf "${YELLOW}This usually means the CI pipeline is still building the images for version ${version}.${NC}\n"
+    printf "${YELLOW}Please try again in a few minutes or check your internet connection.${NC}\n"
     return 1
 }
 
@@ -2632,11 +2683,26 @@ handle_install_version() {
         "${GITHUB_CONTAINER_REGISTRY}/task-runner:${target_version}"
     )
 
+    # Check all images are available in the registry before pulling
+    # This handles the case where CI is still building images for a new release
+    if ! check_images_available "$target_version" "${images[@]}"; then
+        log_error "Cannot proceed with installation - required Docker images are not available"
+        exit 1
+    fi
+
+    # Now pull all images
+    local pull_failed=false
     for image in "${images[@]}"; do
         if ! retry_command 3 5 enhanced_docker_pull "$image"; then
-            log_warning "Failed to pull image: $image - continuing anyway"
+            log_error "Failed to pull image: $image"
+            pull_failed=true
         fi
     done
+
+    if [ "$pull_failed" = true ]; then
+        log_error "One or more Docker images failed to pull. Please check your internet connection and try again."
+        exit 1
+    fi
 
     printf "${GREEN}✓ Docker image pulling completed${NC}\n"
 
