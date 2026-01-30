@@ -20,19 +20,19 @@
     </xsd:element>
   </xsd:schema>
   <data name="DeleteItemPageTitle">
-    <value>Delete item</value>
+    <value>Удаление элемента</value>
     <comment>Page title for deleting items</comment>
   </data>
   <data name="DeleteItemTitle">
-    <value>Delete item</value>
+    <value>Удаление элемента</value>
     <comment>Page header title for deleting item</comment>
   </data>
   <data name="DeleteItemDescription">
-    <value>You can delete the item below.</value>
+    <value>Вы можете удалить элемент ниже.</value>
     <comment>Page description for deleting item</comment>
   </data>
   <data name="ItemEntrySection">
-    <value>Item entry</value>
+    <value>Данные записи</value>
     <comment>Section header for item details</comment>
   </data>
   <data name="IdLabel">
