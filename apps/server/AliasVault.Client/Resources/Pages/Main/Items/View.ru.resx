@@ -20,11 +20,11 @@
     </xsd:element>
   </xsd:schema>
   <data name="ViewItemPageTitle">
-    <value>View item</value>
+    <value>Просмотр записи</value>
     <comment>Page title for viewing an item</comment>
   </data>
   <data name="ViewItemTitle">
-    <value>View item</value>
+    <value>Просмотр записи</value>
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
@@ -32,7 +32,7 @@
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
-    <value>Edit item</value>
+    <value>Редактировать</value>
     <comment>Text for edit button on desktop</comment>
   </data>
   <data name="DeleteButtonMobile">
@@ -40,19 +40,19 @@
     <comment>Text for delete button on mobile</comment>
   </data>
   <data name="DeleteButtonDesktop">
-    <value>Delete item</value>
+    <value>Удалить запись</value>
     <comment>Text for delete button on desktop</comment>
   </data>
   <data name="LoginDetailsSection">
-    <value>Login details</value>
+    <value>Данные входа</value>
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
-    <value>Below you can view and copy the generated details for this item. Any emails sent to the shown address will automatically appear on this page.</value>
+    <value>Ниже можно просмотреть и скопировать созданные данные. Письма на этот адрес будут автоматически появляться здесь.</value>
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
-    <value>Below you can view and copy the stored login details for this item.</value>
+    <value>Ниже можно просмотреть и скопировать сохранённые данные входа.</value>
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
@@ -92,11 +92,11 @@
     <comment>Label for nickname field</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Просмотр записи</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">
-    <value>This item does not exist (anymore). Please try again.</value>
+    <value>Эта запись больше не существует. Попробуйте снова.</value>
     <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
@@ -116,7 +116,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, edit this item and delete the passkey. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>Ключи доступа создаются в расширении браузера или мобильном приложении по запросу сайта. Их нельзя изменить или создать вручную в веб-версии. Чтобы удалить ключ, перейдите в режим редактирования этой записи. Для замены или создания нового ключа следуйте инструкциям на самом сайте.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="Untitled">
@@ -128,7 +128,7 @@
     <comment>Section header for notes</comment>
   </data>
   <data name="CardSection">
-    <value>Card Details</value>
+    <value>Данные карты</value>
     <comment>Section header for credit card details</comment>
   </data>
   <data name="CustomFieldsSection">
