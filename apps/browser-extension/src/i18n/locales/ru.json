@@ -54,7 +54,7 @@
     "delete": "Удалить",
     "undo": "Отменить",
     "save": "Сохранить",
-    "saving": "Saving...",
+    "saving": "Сохраняем...",
     "create": "Создать",
     "or": "Или",
     "close": "Закрыть",
@@ -82,7 +82,7 @@
     "email": "Электронная почта",
     "username": "Имя пользователя",
     "password": "Пароль",
-    "generate": "Generate",
+    "generate": "Сгенерировать",
     "serviceName": "Название сервиса",
     "loggedIn": "Вход выполнен",
     "syncingVault": "Синхронизация хранилища",
@@ -90,7 +90,7 @@
     "syncingUpdatedVault": "Синхронизация обновленного хранилища",
     "loadMore": "Загрузить ещё",
     "offline": "Офлайн",
-    "offlineMode": "Operating in offline mode",
+    "offlineMode": "Работа в автономном режиме",
     "pendingSync": "Синхронизация...",
     "mergingVaultChanges": "Объединение изменений в хранилище...",
     "uploadingVault": "Uploading vault...",
@@ -105,8 +105,8 @@
       "vaultNotAvailable": "Хранилище недоступно",
       "vaultIsLocked": "Хранилище заблокировано",
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности.",
-      "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again."
+      "syncConflictMaxRetries": "Ошибка синхронизации хранилища. Повторите попытку позже.",
+      "mergeFailed": "Не удалось объединить изменения. Попробуйте снова."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Произошла неизвестная ошибка. Пожалуйста, попробуйте снова.",
@@ -173,8 +173,8 @@
     "loginCredentials": "Учетные данные для авторизации",
     "cardInformation": "Данные карты",
     "addItem": "Добавить запись",
-    "addNewItem": "Add new item",
-    "saveItem": "Save Item",
+    "addNewItem": "Добавить запись",
+    "saveItem": "Сохранить запись",
     "itemDetails": "Детали записи",
     "editItem": "Редактировать запись",
     "untitled": "Без названия",
@@ -190,12 +190,12 @@
     "noAttachmentsFound": "Элементы с вложениями не найдены",
     "noItemsOfTypeFound": "Элементы типа «{{type}}» не найдены",
     "noMatchingItems": "Совпадений не найдено",
-    "noMatchingItemsSearch": "No items matching \"{{search}}\"",
-    "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
-    "clearSearch": "Clear search",
-    "clearFilter": "Clear filter",
-    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
-    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
+    "noMatchingItemsSearch": "По запросу \"{{search}}\" ничего не найдено",
+    "noMatchingItemsWithFilter": "Ничего не найдено в \"{{filter}}\" по запросу \"{{search}}\"",
+    "clearSearch": "Очистить поиск",
+    "clearFilter": "Сбросить фильтр",
+    "emptyFolderHint": "Эта папка пуста. Чтобы переместить сюда записи, перейдите в режим редактирования записи и нажмите на иконку папки в поле имени.",
+    "allItemsInFolders": "Все ваши данные разложены по папкам. Выберите нужную папку выше или воспользуйтесь поиском, чтобы найти конкретную запись.",
     "deleteFolder": "Удалить папку",
     "deleteFolderKeepItems": "Удалить только папку",
     "deleteFolderKeepItemsDescription": "Элементы будут перемещены обратно в основной список.",
@@ -228,7 +228,7 @@
     }
   },
   "itemTypes": {
-    "selectType": "Add New Item",
+    "selectType": "Добавить новую запись",
     "typeLabel": "Item Type",
     "creating": "Создание",
     "editing": "Редактирование",
@@ -291,9 +291,9 @@
   "attachmentUploader": {
     "uploading": "Uploading...",
     "uploadSuccess": "Files uploaded successfully.",
-    "deleteSuccess": "Attachment deleted successfully.",
-    "firefoxExpandRequired": "To upload files, use the expanded window.",
-    "openExpandedWindow": "Open Expanded Window"
+    "deleteSuccess": "Вложение успешно удалено.",
+    "firefoxExpandRequired": "Для загрузки файлов используйте расширенное окно.",
+    "openExpandedWindow": "Открыть расширенное окно"
   },
   "emails": {
     "title": "Письма",
@@ -444,10 +444,10 @@
       "createNewPasskey": "Создать новый ключ доступа",
       "replacingPasskey": "Замена ключа доступа: {{displayName}}",
       "confirmReplace": "Подтвердить замену",
-      "selectExistingLogin": "Add to existing login:",
-      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
-      "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "selectExistingLogin": "Привязать к логину:",
+      "selectExistingLoginDescription": "Привяжите этот ключ доступа к существующей учетной записи для этого сайта.",
+      "attachingToCredential": "Добавление ключа доступа для: {{serviceName}}",
+      "attachPasskey": "Добавить ключ доступа"
     },
     "settings": {
       "passkeyProvider": "Провайдер ключей доступа",
