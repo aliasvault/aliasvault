@@ -1,33 +1,35 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <LangVersion>13</LangVersion>
+        <LangVersion>14</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-      <DocumentationFile>bin\Debug\net9.0\AliasClientDb.xml</DocumentationFile>
+      <DocumentationFile>bin\Debug\net10.0\AliasClientDb.xml</DocumentationFile>
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+      <NoWarn>NU1903</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <DebugSymbols>true</DebugSymbols>
-      <DocumentationFile>bin\Release\net9.0\AliasClientDb.xml</DocumentationFile>
+      <DocumentationFile>bin\Release\net10.0\AliasClientDb.xml</DocumentationFile>
+      <NoWarn>NU1903</NoWarn>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.4" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.4">
+      <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       </PackageReference>
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="9.0.4" />
-      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.4" />
-      <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.4" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="9.0.4" />
-      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.4" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.2" />
+      <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.2" />
+      <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.2" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="10.0.2" />
+      <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.2" />
       <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

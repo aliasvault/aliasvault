@@ -12,7 +12,7 @@ using AliasServerDb;
 /// <summary>
 /// Base class for Playwright E2E tests that run against Admin webapp.
 /// </summary>
-public class AdminPlaywrightTest : PlaywrightTest
+public abstract class AdminPlaywrightTest : PlaywrightTest
 {
     private const int BasePort = 5700;
     private static int _currentPort = BasePort;

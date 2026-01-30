@@ -15,7 +15,7 @@ using Microsoft.Playwright;
 /// <summary>
 /// Base class for tests that use Playwright for E2E browser testing.
 /// </summary>
-public class ClientPlaywrightTest : PlaywrightTest
+public abstract class ClientPlaywrightTest : PlaywrightTest
 {
     private const int BasePort = 5600;
     private static int _currentPort = BasePort;
