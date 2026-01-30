@@ -59,35 +59,35 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EmailSectionTitle" xml:space="preserve">
-    <value>Email</value>
+    <value>E-post</value>
     <comment>Section title for email panel</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
-    <value>Auto-refresh enabled</value>
+    <value>Automatisk uppdatering aktiverad</value>
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="SubjectColumn" xml:space="preserve">
-    <value>Subject</value>
+    <value>Ämne</value>
     <comment>Table column header for email subject</comment>
   </data>
   <data name="DateColumn" xml:space="preserve">
-    <value>Date</value>
+    <value>Datum</value>
     <comment>Table column header for email date</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>No emails received (yet).</value>
+    <value>Inga e-postmeddelanden mottagna (ännu).</value>
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
-    <value>The current chosen email address is already in use. Please change the email address by editing this credential.</value>
+    <value>Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna uppgiftsposten.</value>
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
-    <value>An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.</value>
+    <value>Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara uppgiftsposten för att synkronisera databasen, och försök sedan igen.</value>
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">
-    <value>Load more</value>
+    <value>Läs in fler</value>
     <comment>Button text to load more emails</comment>
   </data>
 </root>
