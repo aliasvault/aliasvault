@@ -9,11 +9,11 @@
 "title" = "Название";
 "unknown_error" = "Произошла неизвестная ошибка";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"select_item" = "Select Item";
+"loading_items" = "Загрузка записей...";
+"no_items_found" = "Записи не найдены";
+"no_items_match" = "Совпадений не найдено";
+"create_new_item" = "Создать запись";
+"select_item" = "Выбор записи";
 "select_text_to_insert" = "Выбрать текст для вставки";
 "choose_username" = "Выберите имя пользователя";
 "select_text_to_insert_message" = "Выберите текст для вставки в выделенное поле ввода";
@@ -21,8 +21,8 @@
 "username_prefix" = "Имя пользователя: ";
 "email_prefix" = "Электронная почта: ";
 "password" = "Пароль";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"items_load_error" = "Ошибка загрузки. Откройте AliasVault и проверьте наличие обновлений.";
+"no_item_selected" = "Запись не выбрана.";
 
 /* Context menu strings */
 "copy_username" = "Скопировать имя пользователя";
@@ -34,7 +34,7 @@
 "email_copied" = "Email скопирован";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "Поиск записей...";
 
 /* Passkey registration */
 "create_passkey_title" = "Создать новый ключ доступа";
@@ -57,9 +57,9 @@
 "create_passkey_explanation" = "Будет создан новый ключ доступа, который сохранится в вашем хранилище. Он будет автоматически синхронизирован со всеми вашими устройствами, на которых используется AliasVault.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"passkey_add_to_existing" = "Или добавьте ключ к существующей записи";
+"add_passkey" = "Добавить ключ доступа";
+"merge_passkey_explanation" = "Это добавит ключ доступа к существующей записи. Ваш пароль и другие данные будут сохранены.";
 
 /* PIN Unlock */
 "unlock_vault" = "Разблокировать хранилище";
