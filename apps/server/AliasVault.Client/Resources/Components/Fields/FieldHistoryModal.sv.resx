@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="HistoryTitle" xml:space="preserve">
-    <value>History</value>
+    <value>Historik</value>
     <comment>Title for the field history modal</comment>
   </data>
   <data name="NoHistoryAvailable" xml:space="preserve">
-    <value>No history available</value>
+    <value>Ingen historik är tillgänglig</value>
     <comment>Message shown when no history records exist</comment>
   </data>
   <data name="DeleteConfirm" xml:space="preserve">
-    <value>Are you sure?</value>
+    <value>Är du säker?</value>
     <comment>Delete confirmation text</comment>
   </data>
 </root>
