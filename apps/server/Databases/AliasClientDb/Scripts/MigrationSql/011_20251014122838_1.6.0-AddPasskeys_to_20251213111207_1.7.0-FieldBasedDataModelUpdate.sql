@@ -1,4 +1,6 @@
-﻿BEGIN TRANSACTION;
+﻿PRAGMA foreign_keys = OFF;
+
+BEGIN TRANSACTION;
 ALTER TABLE "TotpCodes" RENAME COLUMN "CredentialId" TO "ItemId";
 
 DROP INDEX IF EXISTS "IX_TotpCodes_CredentialId";
@@ -503,6 +505,11 @@ DROP TABLE "Aliases";
 
 DROP TABLE "Services";
 
+COMMIT;
+
+PRAGMA foreign_keys = ON;
+
+BEGIN TRANSACTION;
 CREATE TABLE "ef_temp_Attachments" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Attachments" PRIMARY KEY,
     "Blob" BLOB NOT NULL,
