@@ -109,7 +109,14 @@ public struct VaultVersions {
             version: "1.7.0",
             description: "Update to Field-Based Data Model",
             releaseVersion: "0.26.0",
-            compatibleUpToVersion: "0.26.0"
+            compatibleUpToVersion: "0.25.0"
+        ),
+        VaultVersion(
+            revision: 13,
+            version: "2.0.0",
+            description: "Update to Field-Based Data Model",
+            releaseVersion: "0.26.1",
+            compatibleUpToVersion: "0.25.0"
         )
     ]
 

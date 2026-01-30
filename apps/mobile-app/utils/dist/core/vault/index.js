@@ -1296,6 +1296,12 @@ COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20251213111207_1.7.0-FieldBasedDataModelUpdate', '9.0.4');
+
+BEGIN TRANSACTION;
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260130221620_2.0.0-MajorVersionBump', '9.0.4');
+
+COMMIT;
 `;
 var MIGRATION_SCRIPTS = {
   1: `\uFEFFBEGIN TRANSACTION;
@@ -2492,7 +2498,12 @@ CREATE INDEX "IX_TotpCodes_ItemId" ON "TotpCodes" ("ItemId");
 COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20251213111207_1.7.0-FieldBasedDataModelUpdate', '9.0.4');`
+VALUES ('20251213111207_1.7.0-FieldBasedDataModelUpdate', '9.0.4');`,
+  12: `\uFEFFBEGIN TRANSACTION;
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260130221620_2.0.0-MajorVersionBump', '9.0.4');
+
+COMMIT;`
 };
 
 // src/sql/VaultVersions.ts
@@ -2579,7 +2590,14 @@ var VAULT_VERSIONS = [
     version: "1.7.0",
     description: "Update to Field-Based Data Model",
     releaseVersion: "0.26.0",
-    compatibleUpToVersion: "0.26.0"
+    compatibleUpToVersion: "0.25.0"
+  },
+  {
+    revision: 13,
+    version: "2.0.0",
+    description: "Update to Field-Based Data Model",
+    releaseVersion: "0.26.1",
+    compatibleUpToVersion: "0.25.0"
   }
 ];
 
