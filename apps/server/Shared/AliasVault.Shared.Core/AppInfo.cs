@@ -42,7 +42,7 @@ public static class AppInfo
     /// for all clients as we are using a monorepo to build all clients from the same source code. But it's
     /// possible to override the minimum client version for a specific client if needed.
     /// </summary>
-    public const string MinimumClientVersion = "0.12.0";
+    public const string MinimumClientVersion = "0.26.1";
 
     /// <summary>
     /// Gets a dictionary of minimum supported client versions that the WebApi supports.
