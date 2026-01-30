@@ -211,7 +211,7 @@
   </data>
   <!-- Infinite Scroll -->
   <data name="LoadingMore" xml:space="preserve">
-    <value>Loading more...</value>
+    <value>Laddar fler ...</value>
     <comment>Text shown when loading more items during infinite scroll</comment>
   </data>
   <!-- Clear Filter -->
