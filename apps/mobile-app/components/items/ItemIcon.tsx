@@ -167,7 +167,6 @@ function renderLogo(
      * malformed SVGs that would otherwise crash the native renderer
      * (e.g. zero-dimension SVGs triggering UIGraphicsBeginImageContext failures).
      */
-    console.log('logoSource', logoSource);
     const svgWidth = Number(style?.width ?? styles.logo.width);
     const svgHeight = Number(style?.height ?? styles.logo.height);
 
