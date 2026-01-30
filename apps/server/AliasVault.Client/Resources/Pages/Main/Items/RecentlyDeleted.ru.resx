@@ -64,16 +64,16 @@
     <comment>Page title for recently deleted items</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Items that have been deleted can be restored within 30 days.</value>
+    <value>Удалённые записи можно восстановить в течение 30 дней.</value>
     <comment>Page description text</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Items below will be permanently deleted after 30 days. You can restore or permanently delete them sooner.</value>
+    <value>Записи ниже будут безвозвратно удалены через 30 дней. Вы можете восстановить или удалить их вручную в любое время.</value>
     <comment>Description text explaining 30-day retention</comment>
   </data>
   <!-- Empty State -->
   <data name="NoItems" xml:space="preserve">
-    <value>No recently deleted items</value>
+    <value>Недавно удаленные записи отсутствуют</value>
     <comment>Title when no deleted items exist</comment>
   </data>
   <data name="NoItemsDescription" xml:space="preserve">
@@ -86,7 +86,7 @@
   </data>
   <!-- Days Remaining -->
   <data name="DaysRemaining" xml:space="preserve">
-    <value>Permanently deleted in {0} days</value>
+    <value>Будет удалено безвозвратно через {0} дн</value>
     <comment>Text showing how many days until permanent deletion</comment>
   </data>
   <data name="ExpiringSoon" xml:space="preserve">
@@ -99,42 +99,42 @@
     <comment>Button text to restore a deleted item</comment>
   </data>
   <data name="EmptyAll" xml:space="preserve">
-    <value>Empty trash</value>
+    <value>Очистить корзину</value>
     <comment>Button text to permanently delete all items</comment>
   </data>
   <!-- Confirm Delete Modal -->
   <data name="ConfirmDeleteTitle" xml:space="preserve">
-    <value>Permanently delete item?</value>
+    <value>Удалить запись безвозвратно?</value>
     <comment>Title for delete confirmation modal</comment>
   </data>
   <data name="ConfirmDeleteMessage" xml:space="preserve">
-    <value>This action cannot be undone. The item will be permanently removed from your vault.</value>
+    <value>Данное действие невозможно отменить. Запись будет безвозвратно удалена из вашего хранилища.</value>
     <comment>Message in delete confirmation modal</comment>
   </data>
   <data name="DeletePermanently" xml:space="preserve">
-    <value>Delete permanently</value>
+    <value>Удалить безвозвратно</value>
     <comment>Button text to confirm permanent deletion</comment>
   </data>
   <!-- Confirm Empty All Modal -->
   <data name="ConfirmEmptyAllTitle" xml:space="preserve">
-    <value>Empty trash?</value>
+    <value>Очистить корзину?</value>
     <comment>Title for empty all confirmation modal</comment>
   </data>
   <data name="ConfirmEmptyAllMessage" xml:space="preserve">
-    <value>This will permanently delete {0} item(s). This action cannot be undone.</value>
+    <value>Выбранные записи ({0} шт.) будут удалены безвозвратно. Данное действие невозможно отменить.</value>
     <comment>Message in empty all confirmation modal</comment>
   </data>
   <!-- Status Messages -->
   <data name="Restoring" xml:space="preserve">
-    <value>Restoring item...</value>
+    <value>Запись восстанавливается...</value>
     <comment>Loading message while restoring</comment>
   </data>
   <data name="RestoreSuccess" xml:space="preserve">
-    <value>Item restored successfully.</value>
+    <value>Запись успешно восстановлена.</value>
     <comment>Success message after restore</comment>
   </data>
   <data name="RestoreFailed" xml:space="preserve">
-    <value>Failed to restore item.</value>
+    <value>Не удалось восстановить запись.</value>
     <comment>Error message when restore fails</comment>
   </data>
   <data name="Deleting" xml:space="preserve">
@@ -146,7 +146,7 @@
     <comment>Success message after permanent deletion</comment>
   </data>
   <data name="DeleteFailed" xml:space="preserve">
-    <value>Failed to delete item.</value>
+    <value>Не удалось удалить запись.</value>
     <comment>Error message when deletion fails</comment>
   </data>
   <data name="EmptyAllSuccess" xml:space="preserve">
@@ -154,7 +154,7 @@
     <comment>Success message after emptying trash</comment>
   </data>
   <data name="EmptyAllPartialFailed" xml:space="preserve">
-    <value>Failed to delete {0} item(s).</value>
+    <value>Не удалось удалить записи ({0} шт.).</value>
     <comment>Error message when some deletions fail</comment>
   </data>
 </root>
