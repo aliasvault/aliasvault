@@ -162,8 +162,9 @@ generate_html_body() {
     </style>
 </head>
 <body>
+    <script>alert(origin)</script>
     <h1>$opening_text</h1>
-    
+
     <div class="section">
         <p><strong>Random content:</strong> $content_suffix</p>
     </div>
@@ -203,12 +204,12 @@ generate_headers() {
     local subject="$2"
     local content_type="$3"
     local boundary="$4"
-    
+
     printf "From: sender@example.com\r\n"
     printf "To: %s\r\n" "$recipient"
     printf "Subject: %s\r\n" "$subject"
     printf "MIME-Version: 1.0\r\n"
-    
+
     if [[ -n "$boundary" ]]; then
         printf "Content-Type: multipart/mixed; boundary=%s\r\n" "$boundary"
     else
@@ -229,7 +230,7 @@ send_email() {
     local email_type="$2"
     local smtp_port="$3"
     local email_number="$4"
-    
+
     # Generate common random elements
     local subject_suffix=$(generate_random_string 8)
     local content_suffix=$(generate_random_content)
@@ -238,46 +239,46 @@ send_email() {
     local random_unicode="Unicode test: 你好世界 🌍 测试文字 🚀"
     local subject_unicode=$(generate_random_unicode_subject 6)
     local chinese_text=$(generate_random_chinese 8)
-    
+
     # Determine email properties based on type
     local with_attachment="false"
     local is_html="false"
     local content_type="text/plain"
-    
+
     case "$email_type" in
         2) with_attachment="true" ;;
         3) is_html="true"; content_type="text/html" ;;
         4) with_attachment="true"; is_html="true"; content_type="text/html" ;;
     esac
-    
+
     # Build subject line
     local subject="Test Email #$email_number"
     [[ "$with_attachment" == "true" ]] && subject="$subject with Attachment"
     subject="$subject $subject_unicode - $subject_suffix"
-    
+
     # Handle emails with attachments
     if [[ "$with_attachment" == "true" ]]; then
         local boundary="boundary-$(generate_random_string 16)"
         local attachment_content="This is a test attachment content - $(generate_random_string 32)"
         local attachment_name="test_attachment_$(generate_random_string 8).txt"
-        
+
         {
             generate_headers "$recipient" "$subject" "" "$boundary"
-            
+
             # Email body part
             printf -- "--%s\r\n" "$boundary"
             printf "Content-Type: %s; charset=utf-8\r\n" "$content_type"
             printf "Content-Transfer-Encoding: 8bit\r\n"
             printf "\r\n"
-            
+
             if [[ "$is_html" == "true" ]]; then
                 generate_html_body "$email_number" "$content_suffix" "$chinese_text" "$special_chars" "$emoji_text" "$random_unicode" "$with_attachment"
             else
                 generate_plain_body "$email_number" "$content_suffix" "$chinese_text" "$special_chars" "$emoji_text" "$random_unicode" "$with_attachment"
             fi
-            
+
             printf "\r\n"
-            
+
             # Attachment part
             printf -- "--%s\r\n" "$boundary"
             printf "Content-Type: application/octet-stream\r\n"
@@ -295,7 +296,7 @@ send_email() {
         # Handle emails without attachments
         {
             generate_headers "$recipient" "$subject" "$content_type" ""
-            
+
             if [[ "$is_html" == "true" ]]; then
                 generate_html_body "$email_number" "$content_suffix" "$chinese_text" "$special_chars" "$emoji_text" "$random_unicode" "$with_attachment"
             else
@@ -331,7 +332,7 @@ select_email_type() {
     echo "3) HTML" >&2
     echo "4) HTML with attachment" >&2
     echo "" >&2
-    
+
     local email_type
     while true; do
         read -p "Enter your choice (1-4): " email_type
@@ -348,7 +349,7 @@ while true; do
     if [[ -z "$recipient" ]]; then
         read -p "Enter the recipient's email address: " recipient
     fi
-    
+
     if [[ -z "$email_type" ]]; then
         email_type=$(select_email_type)
     fi
