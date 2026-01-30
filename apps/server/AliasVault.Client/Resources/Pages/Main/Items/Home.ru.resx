@@ -64,7 +64,7 @@
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Find all of your items below.</value>
+    <value>Ниже вы найдете все ваши записи.</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -98,11 +98,11 @@
   </data>
   <!-- Empty State -->
   <data name="NoItemsTitle" xml:space="preserve">
-    <value>No items yet</value>
+    <value>Записей пока нет</value>
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Create your first item using the</value>
+    <value>Создайте свою первую запись, используя</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
@@ -122,7 +122,7 @@
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>If you previously used a different password manager, you can import your items from it.</value>
+    <value>Если вы ранее пользовались другим менеджером паролей, вы можете импортировать из него свои записи.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
@@ -131,7 +131,7 @@
   </data>
   <!-- Error Messages -->
   <data name="FailedToLoadItemsMessage" xml:space="preserve">
-    <value>Failed to load items.</value>
+    <value>Не удалось загрузить записи.</value>
     <comment>Error message when items fail to load</comment>
   </data>
   <!-- Filter Options -->
@@ -173,15 +173,15 @@
     <comment>Empty state message when no items with attachments are found</comment>
   </data>
   <data name="NoItemsFound" xml:space="preserve">
-    <value>No items match the selected filter.</value>
+    <value>Нет записей, соответствующих выбранному фильтру.</value>
     <comment>Empty state message when no items match the filter</comment>
   </data>
   <data name="EmptyFolderMessage" xml:space="preserve">
-    <value>This folder is empty.</value>
+    <value>Эта папка пуста.</value>
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <value>Все ваши данные разложены по папкам. Выберите нужную папку выше или воспользуйтесь поиском, чтобы найти конкретную запись.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->
@@ -202,25 +202,25 @@
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
-    <value>Failed to create folder.</value>
+    <value>Не удалось создать папку.</value>
     <comment>Error message when folder creation fails</comment>
   </data>
   <data name="FailedToDeleteFolder" xml:space="preserve">
-    <value>Failed to delete folder.</value>
+    <value>Не удалось удалить папку.</value>
     <comment>Error message when folder deletion fails</comment>
   </data>
   <!-- Infinite Scroll -->
   <data name="LoadingMore" xml:space="preserve">
-    <value>Loading more...</value>
+    <value>Загружаем еще...</value>
     <comment>Text shown when loading more items during infinite scroll</comment>
   </data>
   <!-- Clear Filter -->
   <data name="ClearFilter" xml:space="preserve">
-    <value>Clear filter</value>
+    <value>Сбросить фильтр</value>
     <comment>Button text for clearing the active filter</comment>
   </data>
   <data name="FilteringBy" xml:space="preserve">
-    <value>Filtering by:</value>
+    <value>Фильтрация по:</value>
     <comment>Label shown when a filter is active</comment>
   </data>
 </root>
