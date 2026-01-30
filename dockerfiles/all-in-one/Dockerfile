@@ -3,7 +3,9 @@
 # ============================================
 # Stage 1: Build core libraries
 # ============================================
-FROM rust:1-slim-bookworm AS core-builder
+# Use BUILDPLATFORM to run on native arch (amd64) instead of emulating arm64.
+# WASM output is platform-independent, so we only need to build once.
+FROM --platform=$BUILDPLATFORM rust:1-slim-bookworm AS core-builder
 
 # Install Node.js and wasm-pack (Rust already included in base image)
 RUN apt-get update && \
@@ -28,7 +30,9 @@ RUN cd ./core && \
 # ============================================
 # Stage 2: Build .NET applications
 # ============================================
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-builder
+# Use BUILDPLATFORM for .NET build - the published output is architecture-independent
+# (Blazor WASM runs in browser, server components use IL that runs anywhere)
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-builder
 
 # Install Python (required for WASM compilation) and Node.js (required by JS bundler)
 RUN apt-get update && \

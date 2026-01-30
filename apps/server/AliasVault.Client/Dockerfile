@@ -4,7 +4,9 @@ WORKDIR /app
 # ============================================
 # Stage: Build core libraries
 # ============================================
-FROM rust:1-slim-bookworm AS core-builder
+# Use BUILDPLATFORM to run on native arch (amd64) instead of emulating arm64.
+# WASM output is platform-independent, so we only need to build once.
+FROM --platform=$BUILDPLATFORM rust:1-slim-bookworm AS core-builder
 
 # Install Node.js and wasm-pack (Rust already included in base image)
 RUN apt-get update && \
