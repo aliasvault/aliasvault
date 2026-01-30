@@ -821,8 +821,18 @@ validate_semver() {
     fi
 }
 
+# Cleanup function for signal handling
+cleanup_and_exit() {
+    printf "\n${YELLOW}Script interrupted by user.${NC}\n" >&2
+    exit 130  # 128 + SIGINT(2) = 130, standard exit code for Ctrl+C
+}
+
 # Main function
 main() {
+    # Set up global trap for clean exit on Ctrl+C or termination signals
+    # This ensures the script completely exits instead of continuing to the next command
+    trap cleanup_and_exit INT TERM
+
     parse_args "$@"
 
     # Check if command is empty (should not happen with updated parse_args)
@@ -2054,9 +2064,6 @@ handle_ssl_configuration() {
 
 # Function to handle email server configuration
 handle_email_configuration() {
-    # Setup trap for Ctrl+C and other interrupts
-    trap 'printf "\n${YELLOW}Configuration cancelled by user.${NC}\n"; exit 1' INT TERM
-
     printf "${YELLOW}+++ Email Server Configuration +++${NC}\n"
     printf "\n"
 
@@ -2190,9 +2197,6 @@ handle_email_configuration() {
             exit 1
             ;;
     esac
-
-    # Remove the trap before normal exit
-    trap - INT TERM
 }
 
 # Function to configure Let's Encrypt
@@ -2985,8 +2989,9 @@ handle_db_import() {
 
     # Create a temporary file to store the input
     temp_file=$(mktemp)
-    # Set up trap to ensure temp file cleanup on exit
-    trap 'rm -f "$temp_file"' EXIT INT TERM
+    # Set up trap to ensure temp file cleanup on exit, then call global cleanup
+    trap 'rm -f "$temp_file"; cleanup_and_exit' INT TERM
+    trap 'rm -f "$temp_file"' EXIT
 
     cat <&3 > "$temp_file"  # Read from fd 3 instead of stdin
     exec 3<&-  # Close fd 3
