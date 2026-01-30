@@ -59,63 +59,63 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="FromLabel" xml:space="preserve">
-    <value>From:</value>
+    <value>Från:</value>
     <comment>Email sender field label</comment>
   </data>
   <data name="ToLabel" xml:space="preserve">
-    <value>To:</value>
+    <value>Till:</value>
     <comment>Email recipient field label</comment>
   </data>
   <data name="DateLabel" xml:space="preserve">
-    <value>Date:</value>
+    <value>Datum:</value>
     <comment>Email date field label</comment>
   </data>
   <data name="ItemLabel" xml:space="preserve">
-    <value>Item:</value>
+    <value>Objekt:</value>
     <comment>Email item field label</comment>
   </data>
   <data name="NoneValue" xml:space="preserve">
-    <value>None</value>
+    <value>Inget</value>
     <comment>No item assigned value</comment>
   </data>
   <data name="AttachmentsLabel" xml:space="preserve">
-    <value>Attachments:</value>
+    <value>Bifogade filer:</value>
     <comment>Email attachments section header</comment>
   </data>
   <data name="SelectEmailMessage" xml:space="preserve">
-    <value>Select an email to view its contents</value>
+    <value>Välj ett e-postmeddelande för att se dess innehåll</value>
     <comment>Empty state message when no email is selected</comment>
   </data>
   <data name="DeleteEmailTitle" xml:space="preserve">
-    <value>Delete Email</value>
+    <value>Radera e-postmeddelande</value>
     <comment>Delete email confirmation dialog title</comment>
   </data>
   <data name="DeleteEmailConfirmation" xml:space="preserve">
-    <value>Are you sure you want to delete this email? This action cannot be undone.</value>
+    <value>Är du säker på att du vill ta bort detta e-postmeddelande? Denna åtgärd kan inte ångras.</value>
     <comment>Delete email confirmation message</comment>
   </data>
   <data name="EmailDeletedSuccess" xml:space="preserve">
-    <value>Email deleted successfully</value>
+    <value>E-postmeddelande har raderats</value>
     <comment>Success message when email is deleted</comment>
   </data>
   <data name="EmailDeleteFailed" xml:space="preserve">
-    <value>Failed to delete email</value>
+    <value>Misslyckades att radera e-postmeddelande</value>
     <comment>Error message when email deletion fails</comment>
   </data>
   <data name="GenericError" xml:space="preserve">
-    <value>An error occurred</value>
+    <value>Ett fel uppstod</value>
     <comment>Generic error message</comment>
   </data>
   <data name="NoEmailBody" xml:space="preserve">
-    <value>[This email has no body.]</value>
+    <value>[Detta e-postmeddelande saknar innehåll.]</value>
     <comment>Message shown when email has no content</comment>
   </data>
   <data name="AttachmentDownloadFailed" xml:space="preserve">
-    <value>Failed to download attachment</value>
+    <value>Kunde inte ladda ned bilaga</value>
     <comment>Error message when attachment download fails</comment>
   </data>
   <data name="AttachmentDownloadError" xml:space="preserve">
-    <value>Error downloading attachment</value>
+    <value>Fel vid nedladdning av bilaga</value>
     <comment>Error message for attachment download error</comment>
   </data>
 </root>
