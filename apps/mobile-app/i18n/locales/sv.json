@@ -46,8 +46,8 @@
     "verifyingAuthCode": "Verifierar autentiseringskod",
     "verify": "Bekräfta",
     "unlockVault": "Lås upp valv",
-    "unlockWithPin": "Lås upp med PIN kod",
-    "enterPassword": "Ange PIN koden för att låsa upp ditt valv",
+    "unlockWithPin": "Lås upp med PIN-kod",
+    "enterPassword": "Ange PIN-koden för att låsa upp ditt valv",
     "enterPasswordPlaceholder": "Lösenord",
     "enterAuthCode": "Ange 6-siffrig kod",
     "usernamePlaceholder": "namn / namn@företag.com",
@@ -55,7 +55,7 @@
     "enableBiometric": "Aktivera {{biometric}}?",
     "biometricPrompt": "Vill du använda {{biometric}} för att låsa upp ditt valv?",
     "tryBiometricAgain": "Försök med {{biometric}} igen",
-    "tryPinAgain": "Prova PIN koden igen",
+    "tryPinAgain": "Prova PIN-koden igen",
     "authCodeNote": "Obs! Om du inte har tillgång till din autentiseringsenhet kan du återställa din 2FA med en återställningskod genom att logga in via webbplatsen.",
     "errors": {
       "credentialsRequired": "Användarnamn och lösenord krävs",
@@ -206,10 +206,10 @@
       "biometricDisabledMessage": "{{biometric}} är inaktiverat för AliasVault. För att använda funktionen, aktivera den först i enhetens inställningar.",
       "biometricHelp": "Använd biometri för att låsa upp ditt valv, vilket är säkrat via {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} är inte tillgänglig. Tryck för att öppna inställningar och/eller gå till dina enhetsinställningar för att aktivera och konfigurera den.",
-      "pin": "PIN Kod",
-      "pinDescription": "Använd en anpassad PIN kod för att låsa upp ditt valv snabbare.",
-      "pinEnabled": "PIN upplåsning aktiverat",
-      "pinDisabled": "PIN upplåsning har inaktiverats",
+      "pin": "PIN-Kod",
+      "pinDescription": "Använd en anpassad PIN-kod för att låsa upp ditt valv snabbare.",
+      "pinEnabled": "PIN-upplåsning aktiverat",
+      "pinDisabled": "PIN-upplåsning har inaktiverats",
       "passwordHelp": "Ange ditt fullständiga huvudlösenord igen för att låsa upp ditt valv. Detta är alltid aktiverat som reservalternativ.",
       "keystoreIOS": "iOS Nyckelring",
       "keystoreAndroid": "Android Keystore"
@@ -368,7 +368,7 @@
     "card.expiry_month": "Utgångsmånad",
     "card.expiry_year": "Utgångsår",
     "card.cvv": "Säkerhetskod",
-    "card.pin": "PIN kod",
+    "card.pin": "PIN-kod",
     "notes.content": "Anteckningar"
   },
   "items": {
