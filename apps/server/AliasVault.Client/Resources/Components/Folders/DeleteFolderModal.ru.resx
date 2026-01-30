@@ -63,7 +63,7 @@
     <comment>Title for delete folder modal</comment>
   </data>
   <data name="DeleteFolderDescription" xml:space="preserve">
-    <value>How would you like to delete the folder "{0}"?</value>
+    <value>Каким способом вы хотите удалить папку "{0}"?</value>
     <comment>Description for delete folder modal. {0} is the folder name.</comment>
   </data>
   <data name="DeleteFolderOnlyTitle" xml:space="preserve">
@@ -71,15 +71,15 @@
     <comment>Title for delete folder only option</comment>
   </data>
   <data name="DeleteFolderOnlyDescription" xml:space="preserve">
-    <value>Items in this folder will be moved to root</value>
+    <value>Записи из этой папки будут перемещены в основной раздел</value>
     <comment>Description for delete folder only option</comment>
   </data>
   <data name="DeleteFolderAndContentsTitle" xml:space="preserve">
-    <value>Delete folder and contents</value>
+    <value>Удалить папку и ее содержимое</value>
     <comment>Title for delete folder and contents option</comment>
   </data>
   <data name="DeleteFolderAndContentsDescription" xml:space="preserve">
-    <value>Move {0} item(s) to trash</value>
+    <value>Переместить в корзину (записей: {0})</value>
     <comment>Description for delete folder and contents option. {0} is item count.</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
