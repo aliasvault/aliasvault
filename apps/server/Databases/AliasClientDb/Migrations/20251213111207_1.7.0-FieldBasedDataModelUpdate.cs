@@ -12,6 +12,10 @@ namespace AliasClientDb.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Disable foreign keys to prevent cascade deletes when dropping old tables
+            // Must be executed outside of transaction to take effect in SQLite
+            migrationBuilder.Sql("PRAGMA foreign_keys = OFF;", suppressTransaction: true);
+
             migrationBuilder.DropForeignKey(
                 name: "FK_Attachments_Credentials_CredentialId",
                 table: "Attachments");
@@ -748,6 +752,10 @@ namespace AliasClientDb.Migrations
 
             migrationBuilder.DropTable(
                 name: "Services");
+
+            // Re-enable foreign keys after migration is complete
+            // Must be executed outside of transaction to take effect in SQLite
+            migrationBuilder.Sql("PRAGMA foreign_keys = ON;", suppressTransaction: true);
         }
 
         /// <inheritdoc />

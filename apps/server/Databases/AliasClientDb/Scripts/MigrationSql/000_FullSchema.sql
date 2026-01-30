@@ -670,6 +670,11 @@ CREATE INDEX "IX_Passkeys_RpId" ON "Passkeys" ("RpId");
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20251014122838_1.6.0-AddPasskeys', '9.0.4');
 
+COMMIT;
+
+PRAGMA foreign_keys = OFF;
+
+BEGIN TRANSACTION;
 ALTER TABLE "TotpCodes" RENAME COLUMN "CredentialId" TO "ItemId";
 
 DROP INDEX IF EXISTS "IX_TotpCodes_CredentialId";
@@ -1174,6 +1179,11 @@ DROP TABLE "Aliases";
 
 DROP TABLE "Services";
 
+COMMIT;
+
+PRAGMA foreign_keys = ON;
+
+BEGIN TRANSACTION;
 CREATE TABLE "ef_temp_Attachments" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Attachments" PRIMARY KEY,
     "Blob" BLOB NOT NULL,
