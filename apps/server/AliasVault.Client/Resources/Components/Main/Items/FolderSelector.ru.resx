@@ -20,7 +20,7 @@
     </xsd:element>
   </xsd:schema>
   <data name="NoFolder">
-    <value>No folder</value>
+    <value>Без папки</value>
     <comment>Text shown when no folder is selected</comment>
   </data>
   <data name="SelectFolderTitle">
@@ -28,7 +28,7 @@
     <comment>Title of the folder selection modal</comment>
   </data>
   <data name="NoFoldersAvailable">
-    <value>No folders available. Create a folder from the vault home page.</value>
+    <value>Доступные папки не найдены. Создайте новую папку на главной странице хранилища.</value>
     <comment>Message shown when no folders exist</comment>
   </data>
 </root>
