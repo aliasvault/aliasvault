@@ -572,7 +572,7 @@ namespace AliasClientDb.Migrations
                 WHERE c.Username IS NOT NULL AND c.Username != '';
             ");
 
-            // Migrate login.notes field (system field using FieldKey)
+            // Migrate notes.content field (system field using FieldKey)
             // Note: GUID format must be uppercase with dashes (8-4-4-4-12) to match C# Guid.Parse expectations
             migrationBuilder.Sql(@"
                 INSERT INTO FieldValues (Id, ItemId, FieldDefinitionId, FieldKey, Value, Weight, CreatedAt, UpdatedAt, IsDeleted)
@@ -584,7 +584,7 @@ namespace AliasClientDb.Migrations
                         SUBSTR(hex(randomblob(6)), 1, 12)) AS Id,
                   c.Id AS ItemId,
                   NULL AS FieldDefinitionId,
-                  'login.notes' AS FieldKey,
+                  'notes.content' AS FieldKey,
                   c.Notes AS Value,
                   0 AS Weight,
                   c.UpdatedAt AS CreatedAt,
