@@ -93,7 +93,7 @@
     "offlineMode": "Работа в автономном режиме",
     "pendingSync": "Синхронизация...",
     "mergingVaultChanges": "Объединение изменений в хранилище...",
-    "uploadingVault": "Uploading vault...",
+    "uploadingVault": "Загрузка хранилища...",
     "errors": {
       "serverNotAvailable": "Сервер AliasVault недоступен. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
       "clientVersionNotSupported": "Эта версия браузерного расширения AliasVault больше не поддерживается сервером. Пожалуйста, обновите расширение вашего браузера до последней версии.",
@@ -229,17 +229,17 @@
   },
   "itemTypes": {
     "selectType": "Добавить новую запись",
-    "typeLabel": "Item Type",
+    "typeLabel": "Тип записи",
     "creating": "Создание",
     "editing": "Редактирование",
-    "regenerateAlias": "Regenerate alias",
-    "addCustomField": "Add custom field",
+    "regenerateAlias": "Перегенерировать псевдоним",
+    "addCustomField": "Добавить свое поле",
     "fieldLabel": "Название поля",
     "enterFieldName": "Введите название поля",
     "fieldType": "Тип поля",
     "fieldTypes": {
       "text": "Текст",
-      "hidden": "Hidden (masked text)",
+      "hidden": "Скрыто (маскированный текст)",
       "email": "Почта",
       "url": "URL",
       "phone": "Телефон",
@@ -257,7 +257,7 @@
       "title": "Банковская карта"
     },
     "note": {
-      "title": "Secure Note"
+      "title": "Защищенная заметка"
     }
   },
   "fieldLabels": {
@@ -283,14 +283,14 @@
     "nameOptional": "Имя (необязательно)",
     "secretKey": "Секретный ключ",
     "saveToViewCode": "Сохранить для просмотра кода",
-    "defaultName": "Authenticator",
+    "defaultName": "Аутентификатор",
     "errors": {
       "invalidSecretKey": "Неверный формат секретного ключа."
     }
   },
   "attachmentUploader": {
-    "uploading": "Uploading...",
-    "uploadSuccess": "Files uploaded successfully.",
+    "uploading": "Загрузка...",
+    "uploadSuccess": "Файлы успешно загружены.",
     "deleteSuccess": "Вложение успешно удалено.",
     "firefoxExpandRequired": "Для загрузки файлов используйте расширенное окно.",
     "openExpandedWindow": "Открыть расширенное окно"
