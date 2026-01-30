@@ -223,7 +223,7 @@
     <comment>Label for CVV input</comment>
   </data>
   <data name="CardPinLabel">
-    <value>PIN</value>
+    <value>PIN-kod</value>
     <comment>Label for PIN input</comment>
   </data>
   <!-- Custom fields section -->
