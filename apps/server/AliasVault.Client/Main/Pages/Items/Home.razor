@@ -158,84 +158,52 @@
 }
 else
 {
-    @if (DbService.Settings.CredentialsViewMode == "table")
-    {
-        <div class="px-4 min-h-[250px]">
-            @* Active filter indicator - show persistently when a filter is active *@
-            @if (FilterType != ItemFilterType.All)
-            {
-                <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">@Localizer["FilteringBy"]</span>
-                    <button @onclick="ClearFilter" class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors">
-                        <span>@GetFilterTitle()</span>
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                    </button>
-                </div>
-            }
+    <div class="px-4 mb-4 min-h-[250px]">
+        @* Active filter indicator - show persistently when a filter is active *@
+        @if (FilterType != ItemFilterType.All)
+        {
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+                <span class="text-sm text-gray-500 dark:text-gray-400">@Localizer["FilteringBy"]</span>
+                <button @onclick="ClearFilter" class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors">
+                    <span>@GetFilterTitle()</span>
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+        }
+
+        @* Folders section - only show at root level *@
+        @if (!IsInFolder && !IsSearching)
+        {
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+                @foreach (var folder in Folders)
+                {
+                    <FolderPill Folder="@folder" OnClick="() => NavigateToFolder(folder.Id)" />
+                }
+                <button @onclick="ShowCreateFolderModal" class="@GetAddFolderButtonClass()">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    <svg class="w-3.5 h-3.5 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    @if (Folders.Count == 0)
+                    {
+                        <span>@Localizer["NewFolder"]</span>
+                    }
+                </button>
+            </div>
+        }
+
+        @if (DbService.Settings.CredentialsViewMode == "table")
+        {
             <ItemsTable Credentials="@FilteredAndSortedItems.ToList()" SortOrder="@SortOrder" />
-            @* Infinite scroll sentinel for table view *@
-            @if (HasMoreItems)
-            {
-                <div @ref="_scrollSentinel" class="flex justify-center py-4 min-h-[40px]">
-                    @if (IsLoadingMore)
-                    {
-                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span>@Localizer["LoadingMore"]</span>
-                        </div>
-                    }
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="px-4 mb-4 min-h-[250px]">
-            @* Active filter indicator - show persistently when a filter is active *@
-            @if (FilterType != ItemFilterType.All)
-            {
-                <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">@Localizer["FilteringBy"]</span>
-                    <button @onclick="ClearFilter" class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors">
-                        <span>@GetFilterTitle()</span>
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                    </button>
-                </div>
-            }
-
-            @* Folders section - only show at root level *@
-            @if (!IsInFolder && !IsSearching)
-            {
-                <div class="flex flex-wrap items-center gap-2 mb-4">
-                    @foreach (var folder in Folders)
-                    {
-                        <FolderPill Folder="@folder" OnClick="() => NavigateToFolder(folder.Id)" />
-                    }
-                    <button @onclick="ShowCreateFolderModal" class="@GetAddFolderButtonClass()">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                        </svg>
-                        <svg class="w-3.5 h-3.5 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                        @if (Folders.Count == 0)
-                        {
-                            <span>@Localizer["NewFolder"]</span>
-                        }
-                    </button>
-                </div>
-            }
-
+        }
+        else
+        {
             <div class="grid gap-4 md:grid-cols-4 xl:grid-cols-6">
                 @if (Items.Count == 0 && !IsInFolder)
                 {
@@ -296,25 +264,25 @@ else
                     <ItemCard Obj="@item" ShowFolderPath="@IsSearching" />
                 }
             </div>
+        }
 
-            @* Infinite scroll sentinel - triggers loading more items when visible *@
-            @if (HasMoreItems)
-            {
-                <div @ref="_scrollSentinel" class="flex justify-center py-4 min-h-[40px]">
-                    @if (IsLoadingMore)
-                    {
-                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span>@Localizer["LoadingMore"]</span>
-                        </div>
-                    }
-                </div>
-            }
-        </div>
-    }
+        @* Infinite scroll sentinel - triggers loading more items when visible *@
+        @if (HasMoreItems)
+        {
+            <div @ref="_scrollSentinel" class="flex justify-center py-4 min-h-[40px]">
+                @if (IsLoadingMore)
+                {
+                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>@Localizer["LoadingMore"]</span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
 }
 
 @* Create Folder Modal *@
