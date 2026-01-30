@@ -29,24 +29,24 @@
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
-    <value>Create a new item below.</value>
+    <value>Создайте новый элемент ниже.</value>
     <comment>Description for adding a new item</comment>
   </data>
   <data name="EditItemDescription">
-    <value>Edit the existing item below.</value>
+    <value>Отредактируйте существующий элемент ниже.</value>
     <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Просмотр элемента</value>
     <comment>Breadcrumb text for viewing an item</comment>
   </data>
   <data name="EditItemBreadcrumb">
-    <value>Edit item</value>
+    <value>Редактирование элемента</value>
     <comment>Breadcrumb text for editing an item</comment>
   </data>
   <data name="AddNewItemBreadcrumb">
-    <value>Add new item</value>
+    <value>Добавление элемента</value>
     <comment>Breadcrumb text for adding a new item</comment>
   </data>
   <!-- Section headers -->
@@ -130,7 +130,7 @@
     <comment>Button text for clearing alias fields</comment>
   </data>
   <data name="SaveItemButton">
-    <value>Save Item</value>
+    <value>Сохранить элемент</value>
     <comment>Button text for saving an item</comment>
   </data>
   <data name="CancelButton">
@@ -144,11 +144,11 @@
   </data>
   <!-- Error messages -->
   <data name="ItemNotExistError">
-    <value>This item does not exist (anymore). Please try again.</value>
+    <value>Этот объект больше не существует. Попробуйте еще раз.</value>
     <comment>Error message when item doesn't exist</comment>
   </data>
   <data name="ErrorSavingItem">
-    <value>Error saving item. Please try again.</value>
+    <value>Ошибка при сохранении элемента. Попробуйте еще раз.</value>
     <comment>Error message when saving item fails</comment>
   </data>
   <!-- Success messages -->
@@ -199,7 +199,7 @@
   </data>
   <!-- Card section fields -->
   <data name="CardDetailsSectionHeader">
-    <value>Card Details</value>
+    <value>Данные карты</value>
     <comment>Header for the credit card details section</comment>
   </data>
   <data name="CardholderNameLabel">
@@ -232,11 +232,11 @@
     <comment>Header for the custom fields section</comment>
   </data>
   <data name="RemoveField">
-    <value>Remove field</value>
+    <value>Удалить поле</value>
     <comment>Tooltip for removing a field</comment>
   </data>
   <data name="AddEmailField">
-    <value>Add Email</value>
+    <value>Добавить email</value>
     <comment>Button text for adding email field</comment>
   </data>
 </root>
