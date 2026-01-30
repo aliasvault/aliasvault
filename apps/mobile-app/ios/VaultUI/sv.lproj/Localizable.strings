@@ -63,13 +63,13 @@
 
 /* PIN Unlock */
 "unlock_vault" = "Lås upp valv";
-"enter_pin_to_unlock_vault" = "Ange PIN koden för att låsa upp ditt valv";
-"pin_locked_max_attempts" = "PIN koden låst efter för många misslyckade försök";
-"pin_incorrect_attempts_remaining" = "Felaktig PIN kod. %d försök återstår";
+"enter_pin_to_unlock_vault" = "Ange PIN-koden för att låsa upp ditt valv";
+"pin_locked_max_attempts" = "PIN-koden låst efter för många misslyckade försök";
+"pin_incorrect_attempts_remaining" = "Felaktig PIN-kod. %d försök återstår";
 
 /* PIN Setup */
-"pin_setup_title" = "Ställ in PIN kod";
-"pin_setup_subtitle" = "Välj en PIN kod att låsa upp ditt valv med";
-"pin_confirm_title" = "Bekräfta PIN kod";
-"pin_confirm_subtitle" = "Ange din PIN kod igen för att bekräfta";
-"pin_mismatch" = "PIN koderna matchar inte. Var god försök igen.";
+"pin_setup_title" = "Ställ in PIN-kod";
+"pin_setup_subtitle" = "Välj en PIN-kod att låsa upp ditt valv med";
+"pin_confirm_title" = "Bekräfta PIN-kod";
+"pin_confirm_subtitle" = "Ange din PIN-kod igen för att bekräfta";
+"pin_mismatch" = "PIN-koderna matchar inte. Var god försök igen.";
