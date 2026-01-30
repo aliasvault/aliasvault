@@ -39,12 +39,12 @@
   <string name="passkey_create_explanation">Будет создан новый ключ доступа, который сохранится в вашем хранилище. Он будет автоматически синхронизирован со всеми вашими устройствами, на которых используется AliasVault.</string>
   <string name="passkey_create_new_button">Создать новый ключ доступа</string>
   <string name="passkey_select_to_replace">Или замените существующий ключ доступа:</string>
-  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
+  <string name="passkey_add_to_existing">Или добавьте ключ доступа к существующей записи:</string>
   <string name="passkey_replace_explanation">Существующий ключ доступа будет заменен на новый. Обратите внимание, что старый ключ будет перезаписан и станет недоступен. Если вы хотите создать отдельный ключ доступа, вернитесь на предыдущий экран.</string>
-  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
+  <string name="passkey_merge_explanation">Это добавит ключ доступа к существующей записи. Ваш пароль и другие данные будут сохранены.</string>
   <string name="passkey_replacing">Замена ключа доступа…</string>
-  <string name="add_passkey">Add Passkey</string>
-  <string name="add_passkey_subtitle">Adding passkey to existing item</string>
+  <string name="add_passkey">Добавить ключ доступа</string>
+  <string name="add_passkey_subtitle">Добавление ключа доступа к записи</string>
   <string name="passkey_checking_connection">Проверка соединения…</string>
   <string name="passkey_retrieving">Получение ключа доступа…</string>
   <string name="passkey_verifying">Проверка…</string>
