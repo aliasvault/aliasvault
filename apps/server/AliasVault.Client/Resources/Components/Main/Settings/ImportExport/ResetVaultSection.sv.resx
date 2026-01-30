@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Reset Vault</value>
+    <value>Återställ valv</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>This option allows you to completely empty your vault while keeping your account and email aliases. Use this if you want to start fresh after importing data from another password manager or if you want to clear all existing credentials to start over.</value>
+    <value>Det här alternativet låter dig helt tömma ditt valv samtidigt som du behåller ditt konto och e-postalias. Använd detta om du vill börja om efter att ha importerat data från en annan lösenordshanterare eller om du vill rensa alla befintliga uppgifter för att börja om.</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ResetVaultButton" xml:space="preserve">
-    <value>Reset vault</value>
+    <value>Återställ valv</value>
     <comment>Reset vault button</comment>
   </data>
 </root>
