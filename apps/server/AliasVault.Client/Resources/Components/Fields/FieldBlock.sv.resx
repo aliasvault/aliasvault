@@ -114,7 +114,7 @@
     <comment>Label for CVV field</comment>
   </data>
   <data name="FieldLabel_card_pin" xml:space="preserve">
-    <value>PIN kod</value>
+    <value>PIN-kod</value>
     <comment>Label for PIN field</comment>
   </data>
   <!-- Notes Field Labels -->
