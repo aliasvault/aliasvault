@@ -65,20 +65,20 @@
   <string name="server_version_not_supported_title">Serveruppdatering krävs</string>
   <string name="server_version_not_supported_message">Serverversionen är föråldrad. Kontakta administratören för att uppdatera servern.</string>
   <!-- Passkey authentication and unlock error messages -->
-  <string name="error_unlock_method_required">Aktivera biometrisk eller PIN autentisering i AliasVault-appen för att fortsätta</string>
+  <string name="error_unlock_method_required">Aktivera biometrisk eller PIN-autentisering i AliasVault-appen för att fortsätta</string>
   <string name="error_unlock_vault_first">Lås upp valv i AliasVault-appen först</string>
   <string name="error_vault_decrypt_failed">Misslyckades att dekryptera valvet</string>
   <string name="error_biometric_cancelled">Biometrisk autentisering avbruten</string>
   <string name="error_encryption_key_failed">Det gick inte att hämta krypteringsnyckeln</string>
   <!-- PIN unlock -->
   <string name="pin_unlock_vault">Lås upp valv</string>
-  <string name="pin_enter_to_unlock">Ange PIN koden för att låsa upp ditt valv</string>
-  <string name="pin_locked_max_attempts">PIN koden låst efter för många misslyckade försök</string>
-  <string name="pin_incorrect_attempts_remaining">Felaktig PIN kod. %d försök återstår</string>
+  <string name="pin_enter_to_unlock">Ange PIN-koden för att låsa upp ditt valv</string>
+  <string name="pin_locked_max_attempts">PIN-koden låst efter för många misslyckade försök</string>
+  <string name="pin_incorrect_attempts_remaining">Felaktig PIN-kod. %d försök återstår</string>
   <!-- PIN setup -->
-  <string name="pin_setup_title">Ställ in PIN kod</string>
-  <string name="pin_setup_description">Välj en PIN kod att låsa upp ditt valv med</string>
-  <string name="pin_confirm_title">Bekräfta PIN kod</string>
-  <string name="pin_confirm_description">Ange din PIN kod igen för att bekräfta</string>
-  <string name="pin_mismatch">PIN koderna matchar inte. Var god försök igen.</string>
+  <string name="pin_setup_title">Ställ in PIN-kod</string>
+  <string name="pin_setup_description">Välj en PIN-kod att låsa upp ditt valv med</string>
+  <string name="pin_confirm_title">Bekräfta PIN-kod</string>
+  <string name="pin_confirm_description">Ange din PIN-kod igen för att bekräfta</string>
+  <string name="pin_mismatch">PIN-koderna matchar inte. Var god försök igen.</string>
 </resources>
