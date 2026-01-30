@@ -382,7 +382,7 @@
     "contextMenuDescription": "Högerklicka på inmatningsfält för att komma åt AliasVault alternativ",
     "selectLanguage": "Välj Språk",
     "serverConfiguration": "Serverkonfiguration",
-    "serverConfigurationDescription": "Konfigurera AliasVault-serverns URL för själv-hostade instanser",
+    "serverConfigurationDescription": "Konfigurera AliasVault-serverns URL för egenhostade instanser",
     "customApiUrl": "API URL",
     "customClientUrl": "Klientens URL",
     "apiUrlHint": "API slutpunkts-URL (vanligtvis klientens URL + /api)",
