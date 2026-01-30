@@ -67,7 +67,7 @@
     <comment>Message shown when no history records exist</comment>
   </data>
   <data name="DeleteConfirm" xml:space="preserve">
-    <value>Are you sure?</value>
+    <value>Вы уверены?</value>
     <comment>Delete confirmation text</comment>
   </data>
 </root>
