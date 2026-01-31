@@ -6,7 +6,7 @@
   <!-- Common strings -->
   <string name="common_close">Închide</string>
   <string name="common_next">Înainte</string>
-  <string name="common_cancel">Anulați</string>
+  <string name="common_cancel">Anulează</string>
   <string name="unknown_error">A apărut o eroare necunoscută</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Preluare eșuată, deschide aplicația</string>
