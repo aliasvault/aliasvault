@@ -89,25 +89,25 @@
                                 @if (DuplicateCredentialsCount > 0)
                                 {
                                     <div class="p-4 mb-4 text-blue-700 bg-blue-100 rounded-lg dark:bg-blue-800/30 dark:text-blue-300" role="alert">
-                                        <p>@DuplicateCredentialsCount duplicate credential(s) were found and will not be imported.</p>
+                                        <p>@string.Format(Localizer["DuplicateCredentialsWarning"], DuplicateCredentialsCount)</p>
                                     </div>
                                 }
 
                                 @if (ImportedCredentials.Count == 0)
                                 {
                                     <div class="p-4 mb-4 text-amber-700 bg-amber-100 rounded-lg dark:bg-amber-800/30 dark:text-amber-300" role="alert">
-                                        <p>No new credentials were found to import.</p>
+                                        <p>@Localizer["NoNewCredentials"]</p>
                                     </div>
                                 }
                                 else
                                 {
-                                    <p class="mb-4 text-gray-700 dark:text-gray-300">Check if the following detected credentials look correct before continuing:</p>
+                                    <p class="mb-4 text-gray-700 dark:text-gray-300">@Localizer["PreviewInstructions"]</p>
                                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                         <thead class="bg-gray-50 dark:bg-gray-700">
                                             <tr>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Service</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Username</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Password</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">@Localizer["ServiceColumn"]</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">@Localizer["UsernameColumn"]</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">@Localizer["PasswordColumn"]</th>
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -123,7 +123,7 @@
                                     </table>
                                     @if (ImportedCredentials.Count > 3)
                                     {
-                                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">... and @(ImportedCredentials.Count - 3) more credentials</p>
+                                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">@string.Format(Localizer["MoreCredentials"], ImportedCredentials.Count - 3)</p>
                                     }
                                 }
                             </div>
@@ -132,7 +132,7 @@
                                 <div class="mb-4 space-y-2">
                                     <label class="flex items-center">
                                         <input type="checkbox" @bind="ExtractFavicons" class="form-checkbox h-4 w-4 text-primary-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700">
-                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Extract favicons for services with URLs</span>
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">@Localizer["ExtractFaviconsLabel"]</span>
                                     </label>
                                     @if (DetectedFolderCount > 0)
                                     {
@@ -145,7 +145,7 @@
                                 </div>
                             }
                             <div class="flex justify-end mt-6 space-x-2">
-                                <Button OnClick="@HandlePreviousStep" Color="secondary">Back</Button>
+                                <Button OnClick="@HandlePreviousStep" Color="secondary">@Localizer["BackButton"]</Button>
                                 @if (ImportedCredentials.Count > 0)
                                 {
                                     <Button OnClick="@HandleNextStep" Color="primary">@Localizer["NextButton"]</Button>
@@ -161,9 +161,9 @@
                                     {
                                         <div class="text-center">
                                             <LoadingIndicator />
-                                            <p class="mt-4 text-gray-700 dark:text-gray-300">Extracting favicons... @(FaviconExtractionProgress) / @(TotalFaviconsToExtract)</p>
+                                            <p class="mt-4 text-gray-700 dark:text-gray-300">@string.Format(Localizer["ExtractingFavicons"], FaviconExtractionProgress, TotalFaviconsToExtract)</p>
                                             <div class="mt-4">
-                                                <Button OnClick="@CancelFaviconExtraction" Color="secondary">Cancel</Button>
+                                                <Button OnClick="@CancelFaviconExtraction" Color="secondary">@Localizer["CancelButton"]</Button>
                                             </div>
                                         </div>
                                     }
@@ -174,11 +174,11 @@
                                 }
                                 else {
                                     <div class="mb-4">
-                                        <p class="mb-4 text-gray-700 dark:text-gray-300">Are you sure you want to import (@ImportedCredentials.Count) credentials? Note: the import process can take a short while.</p>
+                                        <p class="mb-4 text-gray-700 dark:text-gray-300">@string.Format(Localizer["ConfirmImportText"], ImportedCredentials.Count)</p>
                                         @if (ExtractFavicons)
                                         {
                                             <div class="p-4 mb-4 text-amber-700 bg-amber-100 rounded-lg dark:bg-amber-800/30 dark:text-amber-300" role="alert">
-                                                <p>Note: Favicon extraction is enabled. This process can take several minutes depending on the number of credentials with URLs. Please keep the page open.</p>
+                                                <p>@Localizer["FaviconExtractionNote"]</p>
                                             </div>
                                         }
                                     </div>
