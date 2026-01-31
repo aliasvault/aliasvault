@@ -36,7 +36,7 @@
   <string name="passkey_creation_failed">Crearea passkey-ului a eșuat</string>
   <string name="passkey_retry_button">Reîncearcă</string>
   <string name="passkey_info_icon">Pictogramă informații</string>
-  <string name="passkey_create_explanation">Această acțiune creează un passkey nou și îl stochează în seif. Va fi sincronizat automat pe toate dispozitivele care folosesc AliasVault.</string>
+  <string name="passkey_create_explanation">Această acțiune creează un Passkey nou și îl stochează în seif. Acesta va fi sincronizat automat pe toate dispozitivele tale care utilizează AliasVault.</string>
   <string name="passkey_create_new_button">Creează Passkey Nou</string>
   <string name="passkey_select_to_replace">Sau înlocuiește un passkey existent:</string>
   <string name="passkey_add_to_existing">Sau adaugă passkey la un element existent:</string>
