@@ -4,8 +4,8 @@
 # with livereload enabled.
 #
 # Usage:
-# docker-compose up -d
-# docker-compose down
+# docker compose up -d
+# docker compose down
 #
 services:
   jekyll:

@@ -31,7 +31,7 @@ RUN cd ./core && \
 # ============================================
 # Stage: Build .NET application
 # ============================================
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG TARGETARCH
 ARG BUILD_CONFIGURATION=Release
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1
