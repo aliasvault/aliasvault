@@ -24,7 +24,7 @@
     <comment>Placeholder text for search input field</comment>
   </data>
   <data name="SearchHelpText">
-    <value>输入要搜索的术语，可以是服务名称、描述或邮件地址。</value>
+    <value>输入要搜索的术语，可以是服务名称、描述或邮箱地址。</value>
     <comment>Help text explaining what can be searched</comment>
   </data>
   <data name="SearchTooShortMessage">
