@@ -83,7 +83,7 @@
     <comment>Description for delete folder and contents option. {0} is item count.</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
-    <value>Anulați</value>
+    <value>Anulează</value>
     <comment>Cancel button text</comment>
   </data>
 </root>
