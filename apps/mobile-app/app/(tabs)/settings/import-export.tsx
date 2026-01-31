@@ -259,18 +259,10 @@ export default function ImportExportScreen(): React.ReactNode {
   };
 
   const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-    scrollContent: {
-      paddingTop: 16,
-      paddingBottom: 40,
-    },
     section: {
       backgroundColor: colors.accentBackground,
       borderRadius: 10,
       marginTop: 16,
-      marginHorizontal: 16,
       padding: 16,
     },
     sectionTitle: {
