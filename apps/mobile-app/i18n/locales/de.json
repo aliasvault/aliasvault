@@ -571,10 +571,10 @@
     "offline": "Offline",
     "syncing": "Synchronisierung läuft...",
     "pending": "Ausstehende Synchronisation ",
-    "retrySync": "Tap to retry",
+    "retrySync": "Antippen, um es erneut zu versuchen",
     "backOnline": "Wieder online",
     "stillOffline": "Immer noch offline",
-    "syncFailed": "Sync failed"
+    "syncFailed": "Synchronisation fehlgeschlagen"
   },
   "app": {
     "status": {
@@ -584,7 +584,7 @@
       "retryingConnection": "Verbindungsversuch wird wiederholt..."
     },
     "offline": {
-      "banner": "Offline - changes will sync when online",
+      "banner": "Offline - Änderungen werden synchronisiert, wenn online",
       "backOnline": "Wieder online",
       "stillOffline": "Immer noch offline"
     },
