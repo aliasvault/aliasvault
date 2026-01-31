@@ -71,7 +71,7 @@
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="RefreshButton" xml:space="preserve">
-    <value>Actualizați</value>
+    <value>Actualizează</value>
     <comment>Refresh button text</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
