@@ -308,8 +308,20 @@ export class FormFiller {
    * @param securityResults Security validation results for each field.
    */
   private async fillBasicFields(credential: Credential, securityResults: Map<HTMLElement, boolean>): Promise<void> {
-    if (this.form.usernameField && credential.Username && securityResults.get(this.form.usernameField) !== false) {
-      await this.fillTextFieldWithTyping(this.form.usernameField, credential.Username);
+    if (this.form.usernameField && securityResults.get(this.form.usernameField) !== false) {
+      if (credential.Username) {
+        await this.fillTextFieldWithTyping(this.form.usernameField, credential.Username);
+      } else if (credential.Alias?.Email && !this.form.emailField) {
+        /*
+         * If current form has no email field AND the credential has an email
+         * then we can assume the email should be used as the username.
+         *
+         * This applies to the usecase where the credential only has email/password
+         * (no explicit username) and the login form uses a username field for the
+         * email/login identifier.
+         */
+        await this.fillTextFieldWithTyping(this.form.usernameField, credential.Alias.Email);
+      }
     }
 
     if (this.form.emailField && (credential.Alias?.Email !== undefined || credential.Username !== undefined) && securityResults.get(this.form.emailField) !== false) {
