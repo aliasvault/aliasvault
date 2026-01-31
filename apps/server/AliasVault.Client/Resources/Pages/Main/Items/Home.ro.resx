@@ -102,7 +102,7 @@
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Creează primul tău element folosind butonul</value>
+    <value>Creează primul tău element folosind</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
@@ -122,7 +122,7 @@
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>Dacă ați utilizat anterior un alt manager de parole, vă puteți importa elementele din acesta.</value>
+    <value>Dacă ai utilizat anterior un alt manager de parole, poți importa elementele din acesta.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
