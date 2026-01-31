@@ -79,6 +79,15 @@ export default function SettingsLayout(): React.ReactNode {
         name="identity-generator"
         options={{
           title: t('settings.identityGenerator'),
+          headerBackTitle: t('settings.title'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="identity-generator-language"
+        options={{
+          title: t('settings.identityGeneratorSettings.languageSection'),
+          headerBackTitle: t('settings.identityGenerator'),
           ...defaultHeaderOptions,
         }}
       />
