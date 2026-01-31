@@ -73,12 +73,12 @@
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>Activați autentificarea cu doi factori pentru a spori securitatea seifurilor dvs.</value>
+    <value>Activează autentificarea cu doi factori pentru a spori securitatea seifurilor tale.</value>
     <comment>Description text explaining 2FA setup</comment>
   </data>
   <!-- Setup instructions -->
   <data name="QrCodeInstructions" xml:space="preserve">
-    <value>Scanați acest cod QR cu aplicația de autentificare sau introduceți manual următorul cod secret:</value>
+    <value>Scanează acest cod QR cu aplicația de autentificare sau introdu manual următorul cod secret:</value>
     <comment>Instructions for scanning QR code or entering secret</comment>
   </data>
   <!-- Form elements -->
@@ -87,12 +87,12 @@
     <comment>Placeholder text for verification code input</comment>
   </data>
   <data name="VerifyAndEnableButton" xml:space="preserve">
-    <value>Verificați și activați</value>
+    <value>Verifică și activează</value>
     <comment>Button text to verify and enable 2FA</comment>
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorEnabledSuccess" xml:space="preserve">
-    <value>Autentificarea cu doi factori a fost activată cu succes. La următoarea autentificare va trebui să introduceți codul 2FA.</value>
+    <value>Autentificarea cu doi factori a fost activată cu succes. La următoarea autentificare va trebui să introduci codul 2FA.</value>
     <comment>Success message when 2FA is enabled</comment>
   </data>
   <data name="FailedToEnable2Fa" xml:space="preserve">
