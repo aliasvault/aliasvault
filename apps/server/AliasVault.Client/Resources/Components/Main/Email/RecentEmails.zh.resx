@@ -79,7 +79,7 @@
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
-    <value>当前选择的邮件地址已被使用。请通过编辑此凭据来更改邮件地址。</value>
+    <value>当前选择的邮箱地址已被使用。请通过编辑此凭据来更改邮箱地址。</value>
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
