@@ -4,6 +4,7 @@
 @using Microsoft.Extensions.Localization
 @inherits AliasVault.Client.Auth.Pages.Base.LoginBase
 @layout Auth.Layout.EmptyLayout
+@inject Config Config
 @attribute [AllowAnonymous]
 
 <div class="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col lg:items-center lg:justify-center">
@@ -86,6 +87,18 @@
 
     private SetupStep _currentStep = SetupStep.TermsAndConditions;
     private readonly SetupData _setupData = new();
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        // Redirect to login page if public registration is disabled
+        if (!Config.PublicRegistrationEnabled)
+        {
+            NavigationManager.NavigateTo("/user/login");
+        }
+    }
 
     /// <summary>
     /// Determines if the "Continue" button is enabled based on the current step and setup data.

@@ -513,6 +513,13 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     [AllowAnonymous]
     public async Task<IActionResult> ValidateUsername([FromBody] ValidateUsernameRequest model)
     {
+        // Check if public registration is disabled in the configuration.
+        // This prevents username enumeration when registration is disabled.
+        if (!config.PublicRegistrationEnabled)
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.PUBLIC_REGISTRATION_DISABLED, 400));
+        }
+
         if (string.IsNullOrWhiteSpace(model.Username))
         {
             return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.USERNAME_REQUIRED, 400));

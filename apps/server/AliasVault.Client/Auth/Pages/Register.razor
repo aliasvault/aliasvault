@@ -2,6 +2,7 @@
 @inherits AliasVault.Client.Auth.Pages.Base.LoginBase
 @attribute [AllowAnonymous]
 @layout Auth.Layout.MainLayout
+@inject Config Config
 @using AliasVault.Client.Auth.Models
 @using AliasVault.Client.Auth.Components
 @using Microsoft.Extensions.Localization
@@ -53,6 +54,18 @@
     private ServerValidationErrors _serverValidationErrors = new();
 
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Auth.Register", "AliasVault.Client");
+
+    /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        // Redirect to login page if public registration is disabled
+        if (!Config.PublicRegistrationEnabled)
+        {
+            NavigationManager.NavigateTo("/user/login");
+        }
+    }
 
     private async Task HandleRegister()
     {
