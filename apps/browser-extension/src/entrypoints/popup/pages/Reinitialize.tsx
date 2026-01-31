@@ -33,7 +33,7 @@ const Reinitialize: React.FC = () => {
 
   // Auth and DB state
   const { isInitialized: authInitialized, isLoggedIn } = useApp();
-  const { dbInitialized, dbAvailable } = useDb();
+  const { dbInitialized, dbAvailable, refreshSyncState } = useDb();
 
   // Derived state
   const isFullyInitialized = authInitialized && dbInitialized;
@@ -127,8 +127,18 @@ const Reinitialize: React.FC = () => {
          * 1. Download and merge (if needed)
          * 2. Call dbContext.loadDatabase() which updates sqliteClient
          * 3. ItemsList reacts to sqliteClient changes and auto-refreshes
+         *
+         * Note: onSuccess triggers refreshSyncState to ensure any UI components
+         * watching sync state will re-render with the updated vault data.
          */
         syncVault({
+          /**
+           * Handle successful sync - refresh sync state to trigger UI updates.
+           * @param _hasNewVault Whether a new vault was downloaded
+           */
+          onSuccess: async (_hasNewVault) => {
+            await refreshSyncState();
+          },
           /**
            * Handle upgrade required - redirect to upgrade page.
            */
@@ -151,7 +161,7 @@ const Reinitialize: React.FC = () => {
     };
 
     handleInitialization();
-  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, navigate, setIsInitialLoading, syncVault, restoreLastPage]);
+  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, navigate, setIsInitialLoading, syncVault, restoreLastPage, refreshSyncState]);
 
   // This component doesn't render anything visible - it just handles initialization
   return null;

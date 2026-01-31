@@ -360,6 +360,25 @@ export default function ItemsScreen(): React.ReactNode {
     loadItems();
   }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems]);
 
+  /**
+   * Track previous syncing state to detect when sync completes.
+   */
+  const wasSyncingRef = useRef(dbContext.isSyncing);
+
+  /**
+   * Reload items when background sync completes (isSyncing goes from true to false).
+   * This ensures newly synced data is displayed without requiring manual pull-to-refresh.
+   */
+  useEffect(() => {
+    const wasSyncing = wasSyncingRef.current;
+    wasSyncingRef.current = dbContext.isSyncing;
+
+    // Only reload when sync just completed (was syncing, now not syncing)
+    if (wasSyncing && !dbContext.isSyncing && isAuthenticated && isDatabaseAvailable) {
+      loadItems();
+    }
+  }, [dbContext.isSyncing, isAuthenticated, isDatabaseAvailable, loadItems]);
+
   // Set header for Android
   useEffect(() => {
     navigation.setOptions({
