@@ -28,7 +28,7 @@
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
-    <value>Editați</value>
+    <value>Editează</value>
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
@@ -48,7 +48,7 @@
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
-    <value>Mai jos puteți vizualiza și copia detaliile generate pentru acest element. Orice e-mail trimis la adresa afișată va apărea automat pe această pagină.</value>
+    <value>Mai jos poți vizualiza și copia detaliile generate pentru acest element. Orice e-mail trimis la adresa afișată va apărea automat pe această pagină.</value>
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
@@ -96,7 +96,7 @@
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">
-    <value>Acest element nu (mai) există. Încearcă din nou.</value>
+    <value>Acest element nu mai există. Încearcă din nou.</value>
     <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
