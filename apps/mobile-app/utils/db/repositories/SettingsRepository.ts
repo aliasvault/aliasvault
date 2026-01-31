@@ -3,6 +3,12 @@ import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/ut
 import { BaseRepository } from '../BaseRepository';
 
 /**
+ * Sort order options for credentials list.
+ * Values must match the C# CredentialSortOrder enum in the Blazor client for cross-platform sync.
+ */
+export type CredentialSortOrder = 'OldestFirst' | 'NewestFirst' | 'Alphabetical';
+
+/**
  * SQL query constants for Settings and related operations.
  */
 const SettingsQueries = {
@@ -205,5 +211,28 @@ export class SettingsRepository extends BaseRepository {
         );
       }
     });
+  }
+
+  /**
+   * Get the credentials sort order preference.
+   * Uses the same key the other clients use for cross-platform sync.
+   * @returns The sort order preference
+   */
+  public async getCredentialsSortOrder(): Promise<CredentialSortOrder> {
+    const value = await this.getSetting('CredentialsSortOrder', 'OldestFirst');
+    // Validate the value is a valid sort order
+    if (value === 'OldestFirst' || value === 'NewestFirst' || value === 'Alphabetical') {
+      return value;
+    }
+    return 'OldestFirst';
+  }
+
+  /**
+   * Set the credentials sort order preference.
+   * Uses the same key the other clients use for cross-platform sync.
+   * @param order - The sort order to set
+   */
+  public async setCredentialsSortOrder(order: CredentialSortOrder): Promise<void> {
+    await this.updateSetting('CredentialsSortOrder', order);
   }
 }

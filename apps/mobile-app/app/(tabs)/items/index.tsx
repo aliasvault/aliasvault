@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
+import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
@@ -66,6 +67,15 @@ const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
 ];
 
 /**
+ * Sort order options with their translation keys.
+ */
+const SORT_OPTIONS: { value: CredentialSortOrder; labelKey: string }[] = [
+  { value: 'OldestFirst', labelKey: 'items.sort.oldestFirst' },
+  { value: 'NewestFirst', labelKey: 'items.sort.newestFirst' },
+  { value: 'Alphabetical', labelKey: 'items.sort.alphabetical' },
+];
+
+/**
  * Items screen - main vault items list.
  */
 export default function ItemsScreen(): React.ReactNode {
@@ -90,6 +100,8 @@ export default function ItemsScreen(): React.ReactNode {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('OldestFirst');
+  const [showSortMenu, setShowSortMenu] = useState(false);
 
   // Recently deleted count state
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
@@ -224,18 +236,42 @@ export default function ItemsScreen(): React.ReactNode {
   }, [itemsList, searchQuery, filterType]);
 
   /**
+   * Sort the filtered items based on the current sort order.
+   */
+  const sortedItems = useMemo(() => {
+    const itemsCopy = [...filteredItems];
+    switch (sortOrder) {
+      case 'NewestFirst':
+        return itemsCopy.sort((a, b) =>
+          new Date(b.CreatedAt || 0).getTime() - new Date(a.CreatedAt || 0).getTime()
+        );
+      case 'Alphabetical':
+        return itemsCopy.sort((a, b) =>
+          (a.Name || '').localeCompare(b.Name || '')
+        );
+      case 'OldestFirst':
+      default:
+        return itemsCopy.sort((a, b) =>
+          new Date(a.CreatedAt || 0).getTime() - new Date(b.CreatedAt || 0).getTime()
+        );
+    }
+  }, [filteredItems, sortOrder]);
+
+  /**
    * Load items (credentials), folders, and recently deleted count.
    */
   const loadItems = useCallback(async (): Promise<void> => {
     try {
-      const [items, loadedFolders, deletedCount] = await Promise.all([
+      const [items, loadedFolders, deletedCount, savedSortOrder] = await Promise.all([
         dbContext.sqliteClient!.items.getAll(),
         dbContext.sqliteClient!.folders.getAll(),
-        dbContext.sqliteClient!.items.getRecentlyDeletedCount()
+        dbContext.sqliteClient!.items.getRecentlyDeletedCount(),
+        dbContext.sqliteClient!.settings.getCredentialsSortOrder()
       ]);
       setItemsList(items);
       setFolders(loadedFolders);
       setRecentlyDeletedCount(deletedCount);
+      setSortOrder(savedSortOrder);
       setIsLoadingItems(false);
     } catch (err) {
       console.error('Error loading items:', err);
@@ -409,8 +445,24 @@ export default function ItemsScreen(): React.ReactNode {
         }
         return <Text>{t('items.title')}</Text>;
       },
+      /**
+       * Sort button in the header (Android only, iOS uses inline button).
+       */
+      headerRight: (): React.ReactNode => {
+        if (Platform.OS === 'android') {
+          return (
+            <TouchableOpacity
+              style={{ padding: 8, marginRight: 8 }}
+              onPress={() => setShowSortMenu(prev => !prev)}
+            >
+              <MaterialIcons name="sort" size={24} color={colors.text} />
+            </TouchableOpacity>
+          );
+        }
+        return null;
+      },
     });
-  }, [navigation, t, getFilterTitle, filteredItems.length, showFilterMenu, hasItemsInFoldersOnly]);
+  }, [navigation, t, getFilterTitle, filteredItems.length, showFilterMenu, hasItemsInFoldersOnly, colors.text]);
 
   /**
    * Delete an item (move to trash).
@@ -474,12 +526,22 @@ export default function ItemsScreen(): React.ReactNode {
       paddingHorizontal: 14,
       paddingTop: Platform.OS === 'ios' ? 42 : 8,
     },
+    // Header row styles
+    headerRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 16,
+    },
     // Filter button styles
     filterButton: {
       alignItems: 'center',
       flexDirection: 'row',
-      marginBottom: 16,
+      flex: 1,
       gap: 8,
+    },
+    sortButton: {
+      padding: 8,
     },
     filterButtonText: {
       color: colors.text,
@@ -511,6 +573,32 @@ export default function ItemsScreen(): React.ReactNode {
       zIndex: 1001,
     },
     filterMenuBackdrop: {
+      bottom: 0,
+      left: 0,
+      position: 'absolute',
+      right: 0,
+      top: 0,
+      zIndex: 1000,
+    },
+    // Sort menu styles
+    sortMenuOverlay: {
+      backgroundColor: colors.accentBackground,
+      borderColor: colors.accentBorder,
+      borderRadius: 8,
+      borderWidth: 1,
+      elevation: 8,
+      overflow: 'hidden',
+      position: 'absolute',
+      right: 14,
+      shadowColor: colors.black,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      top: Platform.OS === 'ios' ? insets.top + 112 : 8,
+      width: 200,
+      zIndex: 1001,
+    },
+    sortMenuBackdrop: {
       bottom: 0,
       left: 0,
       position: 'absolute',
@@ -834,34 +922,47 @@ export default function ItemsScreen(): React.ReactNode {
       <ThemedView>
         {/* Large header with logo (iOS only) */}
         {Platform.OS === 'ios' && (
-          hasItemsInFoldersOnly ? (
-            /* When all items are in folders, show simple title without dropdown */
-            <View style={styles.filterButton}>
-              <Logo width={40} height={40} />
-              <ThemedText style={styles.filterButtonText}>
-                {t('items.title')}
-              </ThemedText>
-            </View>
-          ) : (
-            /* Normal filter dropdown when there are items at root */
+          <View style={styles.headerRow}>
+            {hasItemsInFoldersOnly ? (
+              /* When all items are in folders, show simple title without dropdown */
+              <View style={styles.filterButton}>
+                <Logo width={40} height={40} />
+                <ThemedText style={styles.filterButtonText}>
+                  {t('items.title')}
+                </ThemedText>
+              </View>
+            ) : (
+              /* Normal filter dropdown when there are items at root */
+              <TouchableOpacity
+                style={styles.filterButton}
+                onPress={() => setShowFilterMenu(!showFilterMenu)}
+              >
+                <Logo width={40} height={40} />
+                <ThemedText style={styles.filterButtonText}>
+                  {getFilterTitle()}
+                </ThemedText>
+                <ThemedText style={styles.filterCount}>
+                  ({filteredItems.length})
+                </ThemedText>
+                <MaterialIcons
+                  name={showFilterMenu ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+                  size={28}
+                  color={colors.text}
+                />
+              </TouchableOpacity>
+            )}
+            {/* Sort button */}
             <TouchableOpacity
-              style={styles.filterButton}
-              onPress={() => setShowFilterMenu(!showFilterMenu)}
+              style={styles.sortButton}
+              onPress={() => setShowSortMenu(!showSortMenu)}
             >
-              <Logo width={40} height={40} />
-              <ThemedText style={styles.filterButtonText}>
-                {getFilterTitle()}
-              </ThemedText>
-              <ThemedText style={styles.filterCount}>
-                ({filteredItems.length})
-              </ThemedText>
               <MaterialIcons
-                name={showFilterMenu ? "keyboard-arrow-up" : "keyboard-arrow-down"}
-                size={28}
-                color={colors.text}
+                name="sort"
+                size={24}
+                color={colors.textMuted}
               />
             </TouchableOpacity>
-          )
+          </View>
         )}
 
         {/* Search input */}
@@ -1042,7 +1143,7 @@ export default function ItemsScreen(): React.ReactNode {
         <Animated.FlatList
           ref={flatListRef}
           testID="items-list"
-          data={isLoadingItems ? Array(4).fill(null) : filteredItems}
+          data={isLoadingItems ? Array(4).fill(null) : sortedItems}
           keyExtractor={(itm, index) => itm?.Id ?? `skeleton-${index}`}
           keyboardShouldPersistTaps='handled'
           onScroll={Animated.event(
@@ -1079,6 +1180,53 @@ export default function ItemsScreen(): React.ReactNode {
 
       {/* Filter menu overlay */}
       {renderFilterOverlay()}
+
+      {/* Sort menu overlay */}
+      {showSortMenu && (
+        <>
+          <TouchableOpacity
+            style={styles.sortMenuBackdrop}
+            activeOpacity={1}
+            onPress={() => setShowSortMenu(false)}
+          />
+          <ThemedView style={styles.sortMenuOverlay}>
+            {SORT_OPTIONS.map((option) => (
+              <TouchableOpacity
+                key={option.value}
+                style={[
+                  styles.filterMenuItem,
+                  styles.filterMenuItemWithIcon
+                ]}
+                onPress={async () => {
+                  setSortOrder(option.value);
+                  setShowSortMenu(false);
+                  // Save to settings and trigger vault sync
+                  await executeVaultMutation(async () => {
+                    await dbContext.sqliteClient?.settings.setCredentialsSortOrder(option.value);
+                  });
+                }}
+              >
+                {sortOrder === option.value ? (
+                  <MaterialIcons
+                    name="check"
+                    size={18}
+                    color={colors.primary}
+                    style={styles.filterMenuItemIcon}
+                  />
+                ) : (
+                  <View style={styles.filterMenuItemIcon} />
+                )}
+                <ThemedText style={[
+                  styles.filterMenuItemText,
+                  sortOrder === option.value && styles.filterMenuItemTextActive
+                ]}>
+                  {t(option.labelKey)}
+                </ThemedText>
+              </TouchableOpacity>
+            ))}
+          </ThemedView>
+        </>
+      )}
 
       {/* Create folder modal */}
       <FolderModal

@@ -19,6 +19,7 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { ItemTypes } from '@/utils/dist/core/models/vault';
 
@@ -35,6 +36,15 @@ type FilterType = 'all' | 'passkeys' | 'attachments' | ItemType;
 
 const FILTER_STORAGE_KEY = 'items-filter';
 const FILTER_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Sort order options with their translation keys
+ */
+const SORT_OPTIONS: { value: CredentialSortOrder; labelKey: string }[] = [
+  { value: 'OldestFirst', labelKey: 'items.sort.oldestFirst' },
+  { value: 'NewestFirst', labelKey: 'items.sort.newestFirst' },
+  { value: 'Alphabetical', labelKey: 'items.sort.alphabetical' },
+];
 
 /**
  * Get stored filter from localStorage if not expired
@@ -113,6 +123,8 @@ const ItemsList: React.FC = () => {
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
+  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('OldestFirst');
+  const [showSortMenu, setShowSortMenu] = useState(false);
   const { setIsInitialLoading } = useLoading();
 
   // Derive current folder from URL params
@@ -342,6 +354,9 @@ const ItemsList: React.FC = () => {
         // Also get recently deleted count
         const deletedCount = dbContext.sqliteClient?.items.getRecentlyDeletedCount() ?? 0;
         setRecentlyDeletedCount(deletedCount);
+        // Load sort order from settings
+        const savedSortOrder = dbContext.sqliteClient?.settings.getCredentialsSortOrder() ?? 'OldestFirst';
+        setSortOrder(savedSortOrder);
         setIsLoading(false);
         setIsInitialLoading(false);
       }
@@ -476,6 +491,28 @@ const ItemsList: React.FC = () => {
     return false;
   });
 
+  /**
+   * Sort the filtered items based on the current sort order.
+   */
+  const sortedItems = useMemo(() => {
+    const itemsCopy = [...filteredItems];
+    switch (sortOrder) {
+      case 'NewestFirst':
+        return itemsCopy.sort((a, b) =>
+          new Date(b.CreatedAt || 0).getTime() - new Date(a.CreatedAt || 0).getTime()
+        );
+      case 'Alphabetical':
+        return itemsCopy.sort((a, b) =>
+          (a.Name || '').localeCompare(b.Name || '')
+        );
+      case 'OldestFirst':
+      default:
+        return itemsCopy.sort((a, b) =>
+          new Date(a.CreatedAt || 0).getTime() - new Date(b.CreatedAt || 0).getTime()
+        );
+    }
+  }, [filteredItems, sortOrder]);
+
   const folders = getFoldersWithCounts();
 
   /**
@@ -553,9 +590,11 @@ const ItemsList: React.FC = () => {
             <>
               <div
                 className="fixed inset-0 z-10"
-                onClick={() => setShowFilterMenu(false)}
+                onClick={() => {
+                  setShowFilterMenu(false);
+                }}
               />
-              <div className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-20">
+              <div className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10 z-20">
                 <div className="py-1">
                   {/* All items filter */}
                   <button
@@ -642,7 +681,62 @@ const ItemsList: React.FC = () => {
             </>
           )}
         </div>
-        <ReloadButton onClick={syncVaultAndRefresh} />
+        <div className="flex items-center gap-1">
+          {/* Sort button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowSortMenu(!showSortMenu)}
+              className="p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title={t('items.sort.title')}
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="6" x2="16" y2="6" />
+                <line x1="4" y1="12" x2="12" y2="12" />
+                <line x1="4" y1="18" x2="8" y2="18" />
+                <polyline points="15 15 18 18 21 15" />
+                <line x1="18" y1="12" x2="18" y2="18" />
+              </svg>
+            </button>
+            {showSortMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowSortMenu(false)}
+                />
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10 z-20">
+                  <div className="py-1">
+                    {SORT_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={async () => {
+                          setSortOrder(option.value);
+                          setShowSortMenu(false);
+                          // Save to settings and trigger vault sync
+                          await executeVaultMutationAsync(async () => {
+                            dbContext.sqliteClient?.settings.setCredentialsSortOrder(option.value);
+                          });
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 ${
+                          sortOrder === option.value ? 'text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        {sortOrder === option.value ? (
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : (
+                          <span className="w-4" />
+                        )}
+                        <span>{t(option.labelKey)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          <ReloadButton onClick={syncVaultAndRefresh} />
+        </div>
       </div>
 
       {items.length > 0 ? (
@@ -801,9 +895,9 @@ const ItemsList: React.FC = () => {
           )}
 
           {/* Items */}
-          {filteredItems.length > 0 && (
+          {sortedItems.length > 0 && (
             <ul id="items-list" className="space-y-2">
-              {filteredItems.map(item => (
+              {sortedItems.map(item => (
                 <ItemCard
                   key={item.Id}
                   item={item}
