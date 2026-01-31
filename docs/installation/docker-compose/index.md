@@ -53,7 +53,7 @@ services:
       SUPPORT_EMAIL: ""
       PRIVATE_EMAIL_DOMAINS: ""
 ```
-3. Run `docker-compose up -d` to start the container.
+3. Run `docker compose up -d` to start the container.
 4. After the container has started, AliasVault should now be running. You can access it at:
 
     - Admin Panel: http://localhost/admin

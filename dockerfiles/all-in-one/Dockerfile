@@ -30,9 +30,7 @@ RUN cd ./core && \
 # ============================================
 # Stage 2: Build .NET applications
 # ============================================
-# Use BUILDPLATFORM for .NET build - the published output is architecture-independent
-# (Blazor WASM runs in browser, server components use IL that runs anywhere)
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-builder
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-builder
 
 # Install Python (required for WASM compilation) and Node.js (required by JS bundler)
 RUN apt-get update && \
