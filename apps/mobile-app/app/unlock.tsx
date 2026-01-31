@@ -168,10 +168,78 @@ export default function UnlockScreen() : React.ReactNode {
   };
 
   /**
-   * Handle the biometrics retry.
+   * Internal PIN unlock handler - performs PIN unlock and navigates on success.
+   * Returns true if unlock succeeded, false otherwise.
    */
-  const handleUnlockRetry = async () : Promise<void> => {
-    router.replace('/reinitialize');
+  const performPinUnlock = async () : Promise<boolean> => {
+    try {
+      await NativeVaultManager.showPinUnlock();
+
+      // Check if vault is now unlocked
+      const isNowUnlocked = await NativeVaultManager.isVaultUnlocked();
+      if (isNowUnlocked) {
+        // Check if the vault is up to date
+        if (await dbContext.hasPendingMigrations()) {
+          router.replace('/upgrade');
+          return true;
+        }
+        router.replace('/reinitialize');
+        return true;
+      }
+      // Not unlocked means user cancelled - return false but don't show error
+      return false;
+    } catch (err) {
+      // User cancelled or PIN unlock failed
+      const errorMessage = err instanceof Error ? err.message : '';
+      if (!errorMessage.includes('cancelled') && !errorMessage.includes('canceled')) {
+        console.error('PIN unlock error:', err);
+        setError(t('auth.errors.pinFailed'));
+      }
+      return false;
+    }
+  };
+
+  /**
+   * Handle the biometrics retry - directly triggers biometric unlock.
+   * If biometric fails and PIN is available, automatically falls back to PIN.
+   */
+  const handleBiometricRetry = async () : Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const unlocked = await dbContext.unlockVault();
+      if (unlocked) {
+        // Check if the vault is up to date
+        if (await dbContext.hasPendingMigrations()) {
+          router.replace('/upgrade');
+          return;
+        }
+        router.replace('/reinitialize');
+      } else {
+        // Biometric failed - try PIN fallback if available
+        if (pinAvailable) {
+          await performPinUnlock();
+        }
+      }
+    } catch (err) {
+      console.error('Biometric retry error:', err);
+      // Biometric failed - try PIN fallback if available
+      if (pinAvailable) {
+        await performPinUnlock();
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Handle the PIN retry button - directly triggers PIN unlock flow.
+   */
+  const handlePinRetry = async () : Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    await performPinUnlock();
+    setIsLoading(false);
   };
 
   const styles = StyleSheet.create({
@@ -396,7 +464,7 @@ export default function UnlockScreen() : React.ReactNode {
               {isBiometricsAvailable && (
                 <RobustPressable
                   style={styles.faceIdButton}
-                  onPress={handleUnlockRetry}
+                  onPress={handleBiometricRetry}
                 >
                   <ThemedText style={styles.faceIdButtonText}>{t('auth.tryBiometricAgain', { biometric: biometricDisplayName })}</ThemedText>
                 </RobustPressable>
@@ -406,7 +474,7 @@ export default function UnlockScreen() : React.ReactNode {
               {pinAvailable && (
                 <RobustPressable
                   style={styles.faceIdButton}
-                  onPress={handleUnlockRetry}
+                  onPress={handlePinRetry}
                 >
                   <ThemedText style={styles.faceIdButtonText}>{t('auth.tryPinAgain')}</ThemedText>
                 </RobustPressable>

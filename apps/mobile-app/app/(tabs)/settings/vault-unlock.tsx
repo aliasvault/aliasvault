@@ -133,16 +133,10 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
       return;
     }
 
-    // If enabling biometrics and PIN is enabled, disable PIN first
-    if (value && pinEnabled) {
-      try {
-        await NativeVaultManager.removeAndDisablePin();
-        setPinEnabled(false);
-      } catch (error) {
-        console.error('Failed to disable PIN:', error);
-      }
-    }
-
+    /*
+     * Biometrics and PIN can now both be enabled simultaneously.
+     * Biometrics takes priority during unlock, PIN serves as fallback.
+     */
     setIsBiometricsEnabled(value);
     setAuthMethods(value ? ['faceid', 'password'] : ['password']);
 
@@ -155,7 +149,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
         visibilityTime: 1200,
       });
     }
-  }, [hasBiometrics, pinEnabled, setAuthMethods, biometricDisplayName, showDialog, t]);
+  }, [hasBiometrics, setAuthMethods, biometricDisplayName, showDialog, t]);
 
   /**
    * Handle enable PIN - launches native PIN setup UI.
@@ -165,12 +159,10 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
       // Launch native PIN setup UI
       await NativeVaultManager.showPinSetup();
 
-      // PIN setup successful - now disable biometrics if it was enabled
-      if (isBiometricsEnabled) {
-        setIsBiometricsEnabled(false);
-        await setAuthMethods(['password']);
-      }
-
+      /*
+       * PIN and biometrics can now both be enabled simultaneously.
+       * Biometrics takes priority during unlock, PIN serves as fallback.
+       */
       setPinEnabled(true);
       Toast.show({
         type: 'success',
@@ -188,7 +180,7 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
       console.error('Failed to enable PIN:', error);
       showAlert(t('common.error'), t('common.errors.unknownErrorTryAgain'));
     }
-  }, [isBiometricsEnabled, setAuthMethods, showAlert, t]);
+  }, [showAlert, t]);
 
   /**
    * Handle disable PIN.

@@ -15,7 +15,8 @@ export type UnlockResult = {
 export class VaultUnlockHelper {
   /**
    * Attempt to unlock the vault using available authentication methods.
-   * Tries biometric first (if available), then PIN (if enabled), otherwise indicates manual unlock needed.
+   * Priority: Biometric -> PIN -> Manual unlock
+   * If biometric fails/is cancelled and PIN is enabled, automatically falls back to PIN.
    *
    * @param params Configuration for unlock attempt
    * @returns Promise<UnlockResult> indicating success/failure and any actions needed
@@ -34,52 +35,32 @@ export class VaultUnlockHelper {
     if (isFaceIDEnabled) {
       try {
         const isUnlocked = await unlockVault();
-        if (!isUnlocked) {
-          return {
-            success: false,
-            error: 'Biometric unlock failed',
-            redirectToUnlock: true,
-          };
+        if (isUnlocked) {
+          return { success: true };
         }
-        return { success: true };
+        // Biometric failed - fall through to PIN fallback below
+        console.log('Biometric unlock returned false, trying PIN fallback if available');
       } catch (error) {
+        // Biometric error - fall through to PIN fallback below
         console.error('Biometric unlock error:', error);
-        return {
-          success: false,
-          error: error instanceof Error ? error.message : 'Biometric unlock failed',
-          redirectToUnlock: true,
-        };
       }
+
+      // Biometric failed or was cancelled - try PIN fallback if available
+      if (isPinEnabled) {
+        return this.attemptPinUnlock();
+      }
+
+      // No PIN fallback available
+      return {
+        success: false,
+        error: 'Biometric unlock failed',
+        redirectToUnlock: true,
+      };
     }
 
-    // Try PIN unlock if biometric is not available
+    // Biometric not enabled - try PIN unlock directly
     if (isPinEnabled) {
-      try {
-        await NativeVaultManager.showPinUnlock();
-
-        // Verify vault is now unlocked
-        const isNowUnlocked = await NativeVaultManager.isVaultUnlocked();
-        if (!isNowUnlocked) {
-          return {
-            success: false,
-            error: 'PIN unlock failed',
-            redirectToUnlock: true,
-          };
-        }
-        return { success: true };
-      } catch (error) {
-        // User cancelled or PIN unlock failed
-        // Only log non-cancellation errors to reduce noise
-        const errorMessage = error instanceof Error ? error.message : 'PIN unlock failed or cancelled';
-        if (!errorMessage.includes('cancelled')) {
-          console.error('PIN unlock error:', error);
-        }
-        return {
-          success: false,
-          error: errorMessage,
-          redirectToUnlock: true,
-        };
-      }
+      return this.attemptPinUnlock();
     }
 
     // No automatic unlock method available - manual unlock required
@@ -88,6 +69,38 @@ export class VaultUnlockHelper {
       error: 'No automatic unlock method available',
       redirectToUnlock: true,
     };
+  }
+
+  /**
+   * Attempt PIN unlock.
+   * @returns Promise<UnlockResult> indicating success/failure
+   */
+  private static async attemptPinUnlock(): Promise<UnlockResult> {
+    try {
+      await NativeVaultManager.showPinUnlock();
+
+      // Verify vault is now unlocked
+      const isNowUnlocked = await NativeVaultManager.isVaultUnlocked();
+      if (!isNowUnlocked) {
+        return {
+          success: false,
+          error: 'PIN unlock failed',
+          redirectToUnlock: true,
+        };
+      }
+      return { success: true };
+    } catch (error) {
+      // User cancelled or PIN unlock failed
+      const errorMessage = error instanceof Error ? error.message : 'PIN unlock failed or cancelled';
+      if (!errorMessage.includes('cancelled') && !errorMessage.includes('canceled')) {
+        console.error('PIN unlock error:', error);
+      }
+      return {
+        success: false,
+        error: errorMessage,
+        redirectToUnlock: true,
+      };
+    }
   }
 
   /**
