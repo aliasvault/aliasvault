@@ -99,7 +99,7 @@
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>Avertisment final: Sunteți pe cale să ștergeți definitiv toate elementele!</value>
+    <value>Avertisment final: Ești pe cale să ștergi definitiv toate elementele!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
