@@ -2,9 +2,11 @@ package net.aliasvault.app.vaultstore.keystoreprovider
 
 import android.app.Activity
 import android.content.Context
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyPermanentlyInvalidatedException
 import android.security.keystore.KeyProperties
 import android.util.Base64
 import android.util.Log
@@ -100,30 +102,60 @@ class AndroidKeystoreProvider(
                         "AndroidKeyStore",
                     )
 
-                    val keySpec = KeyGenParameterSpec.Builder(
+                    val keySpecBuilder = KeyGenParameterSpec.Builder(
                         KEYSTORE_ALIAS,
                         KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT,
                     )
                         .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
                         .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                        .setUserAuthenticationRequired(false)
-                        .build()
+                        .setUserAuthenticationRequired(true)
+                        .setInvalidatedByBiometricEnrollment(true)
 
-                    keyGenerator.init(keySpec)
+                    // Require strong biometric authentication per crypto operation
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                        keySpecBuilder.setUserAuthenticationParameters(
+                            0,
+                            KeyProperties.AUTH_BIOMETRIC_STRONG,
+                        )
+                    } else {
+                        @Suppress("DEPRECATION")
+                        keySpecBuilder.setUserAuthenticationValidityDurationSeconds(-1)
+                    }
+
+                    keyGenerator.init(keySpecBuilder.build())
                     keyGenerator.generateKey()
                 }
 
-                // Get the created key
                 val secretKey = keyStore.getKey(KEYSTORE_ALIAS, null) as SecretKey
 
-                // Create BiometricPrompt
+                // Initialize cipher for CryptoObject binding
+                val cipher = Cipher.getInstance(
+                    "${KeyProperties.KEY_ALGORITHM_AES}/" +
+                        "${KeyProperties.BLOCK_MODE_GCM}/" +
+                        KeyProperties.ENCRYPTION_PADDING_NONE,
+                )
+
+                try {
+                    cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+                } catch (e: KeyPermanentlyInvalidatedException) {
+                    Log.w(TAG, "Key permanently invalidated, clearing keys", e)
+                    keyStore.deleteEntry(KEYSTORE_ALIAS)
+                    File(context.filesDir, ENCRYPTED_KEY_FILE).delete()
+                    callback.onError(
+                        Exception(
+                            "Biometric enrollment changed. " +
+                                "Please sign in with your password to re-enable biometric unlock.",
+                            e,
+                        ),
+                    )
+                    return@post
+                }
+
                 val promptInfo = BiometricPrompt.PromptInfo.Builder()
                     .setTitle(context.getString(R.string.biometric_store_key_title))
                     .setSubtitle(context.getString(R.string.biometric_store_key_subtitle))
-                    .setAllowedAuthenticators(
-                        BiometricManager.Authenticators.BIOMETRIC_STRONG or
-                            BiometricManager.Authenticators.DEVICE_CREDENTIAL,
-                    )
+                    .setNegativeButtonText(context.getString(R.string.common_cancel))
+                    .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
                     .build()
 
                 val biometricPrompt = BiometricPrompt(
@@ -134,27 +166,14 @@ class AndroidKeystoreProvider(
                             result: BiometricPrompt.AuthenticationResult,
                         ) {
                             try {
-                                // Initialize cipher for encryption
-                                val cipher = Cipher.getInstance(
-                                    "${KeyProperties.KEY_ALGORITHM_AES}/" +
-                                        "${KeyProperties.BLOCK_MODE_GCM}/" +
-                                        KeyProperties.ENCRYPTION_PADDING_NONE,
-                                )
-
-                                // Initialize cipher with the secret key
-                                cipher.init(Cipher.ENCRYPT_MODE, secretKey)
-
-                                // Encrypt the key
-                                val encryptedKey = cipher.doFinal(key.toByteArray())
-                                val iv = cipher.iv
-
-                                // Combine IV and encrypted key
+                                val authenticatedCipher = result.cryptoObject?.cipher
+                                    ?: error("Cipher is null after authentication")
+                                val encryptedKey = authenticatedCipher.doFinal(key.toByteArray())
+                                val iv = authenticatedCipher.iv
                                 val byteBuffer = ByteBuffer.allocate(iv.size + encryptedKey.size)
                                 byteBuffer.put(iv)
                                 byteBuffer.put(encryptedKey)
                                 val combined = byteBuffer.array()
-
-                                // Store encrypted key in private file
                                 val encryptedKeyB64 = Base64.encodeToString(
                                     combined,
                                     Base64.NO_WRAP,
@@ -187,8 +206,7 @@ class AndroidKeystoreProvider(
                     },
                 )
 
-                // Show biometric prompt without crypto object for device credentials
-                biometricPrompt.authenticate(promptInfo)
+                biometricPrompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
             } catch (e: Exception) {
                 Log.e(TAG, "Error in biometric key storage", e)
                 callback.onError(Exception("Failed to initialize key storage: ${e.message}"))
@@ -287,16 +305,28 @@ class AndroidKeystoreProvider(
                 KeyProperties.ENCRYPTION_PADDING_NONE,
         )
         val spec = GCMParameterSpec(128, iv)
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, spec)
 
-        // Create BiometricPrompt
+        try {
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, spec)
+        } catch (e: KeyPermanentlyInvalidatedException) {
+            Log.w(TAG, "Key permanently invalidated, clearing keys", e)
+            keyStore.deleteEntry(KEYSTORE_ALIAS)
+            keyFile.delete()
+            callback.onError(
+                Exception(
+                    "Biometric enrollment changed. " +
+                        "Please sign in with your password to re-enable biometric unlock.",
+                    e,
+                ),
+            )
+            return
+        }
+
         val promptInfo = BiometricPrompt.PromptInfo.Builder()
             .setTitle(context.getString(R.string.biometric_unlock_vault_title))
             .setSubtitle(context.getString(R.string.biometric_unlock_vault_subtitle))
-            .setAllowedAuthenticators(
-                BiometricManager.Authenticators.BIOMETRIC_STRONG or
-                    BiometricManager.Authenticators.DEVICE_CREDENTIAL,
-            )
+            .setNegativeButtonText(context.getString(R.string.common_cancel))
+            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
             .build()
 
         val biometricPrompt = BiometricPrompt(
@@ -307,25 +337,14 @@ class AndroidKeystoreProvider(
                     result: BiometricPrompt.AuthenticationResult,
                 ) {
                     try {
-                        // Get the cipher from the result
-                        val cipher = result.cryptoObject?.cipher ?: error("Cipher is null")
-
-                        // Decode combined data
+                        val authCipher = result.cryptoObject?.cipher ?: error("Cipher is null")
                         val combined = Base64.decode(encryptedKeyB64, Base64.NO_WRAP)
-
-                        // Extract IV and encrypted data
                         val byteBuffer = ByteBuffer.wrap(combined)
-
-                        // GCM typically uses 12 bytes for IV
                         val iv = ByteArray(12)
                         byteBuffer.get(iv)
-
-                        // Get remaining bytes as ciphertext
                         val encryptedBytes = ByteArray(byteBuffer.remaining())
                         byteBuffer.get(encryptedBytes)
-
-                        // Decrypt the key
-                        val decryptedKey = cipher.doFinal(encryptedBytes)
+                        val decryptedKey = authCipher.doFinal(encryptedBytes)
 
                         Log.d(TAG, "Encryption key retrieved successfully")
                         callback.onSuccess(String(decryptedKey))
@@ -353,60 +372,103 @@ class AndroidKeystoreProvider(
             },
         )
 
-        // Show biometric prompt
         biometricPrompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
     }
 
     /**
      * Trigger standalone biometric authentication (no key retrieval).
-     * This is used for re-authentication before sensitive operations.
+     * Used for re-authentication before sensitive operations.
      * @param title The title to show in the biometric prompt
      * @param callback The callback to handle the result
      */
     override fun authenticateWithBiometric(title: String, callback: BiometricAuthCallback) {
-        val currentActivity = getCurrentActivity() as? FragmentActivity
-        if (currentActivity == null) {
-            Log.e(TAG, "Current activity is not a FragmentActivity")
-            callback.onFailure()
-            return
+        _mainHandler.post {
+            try {
+                val currentActivity = getCurrentActivity() as? FragmentActivity
+                if (currentActivity == null) {
+                    Log.e(TAG, "Current activity is not a FragmentActivity")
+                    callback.onFailure()
+                    return@post
+                }
+
+                // Set up KeyStore and get or create auth key
+                val keyStore = KeyStore.getInstance("AndroidKeyStore")
+                keyStore.load(null)
+
+                // Use existing key if available, otherwise create one for auth purposes
+                if (!keyStore.containsAlias(KEYSTORE_ALIAS)) {
+                    Log.e(TAG, "No keystore key available for authentication")
+                    callback.onFailure()
+                    return@post
+                }
+
+                val secretKey = keyStore.getKey(KEYSTORE_ALIAS, null) as SecretKey
+
+                // Initialize cipher for CryptoObject binding (encrypt mode with fresh IV)
+                val cipher = Cipher.getInstance(
+                    "${KeyProperties.KEY_ALGORITHM_AES}/" +
+                        "${KeyProperties.BLOCK_MODE_GCM}/" +
+                        KeyProperties.ENCRYPTION_PADDING_NONE,
+                )
+
+                try {
+                    cipher.init(Cipher.ENCRYPT_MODE, secretKey)
+                } catch (e: KeyPermanentlyInvalidatedException) {
+                    Log.w(TAG, "Key permanently invalidated during auth", e)
+                    keyStore.deleteEntry(KEYSTORE_ALIAS)
+                    File(context.filesDir, ENCRYPTED_KEY_FILE).delete()
+                    callback.onFailure()
+                    return@post
+                }
+
+                val promptInfo = BiometricPrompt.PromptInfo.Builder()
+                    .setTitle(title)
+                    .setNegativeButtonText(context.getString(R.string.common_cancel))
+                    .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_STRONG)
+                    .build()
+
+                val biometricPrompt = BiometricPrompt(
+                    currentActivity,
+                    _executor,
+                    object : BiometricPrompt.AuthenticationCallback() {
+                        override fun onAuthenticationSucceeded(
+                            result: BiometricPrompt.AuthenticationResult,
+                        ) {
+                            // Verify CryptoObject was used - this proves biometric auth occurred
+                            val authCipher = result.cryptoObject?.cipher
+                            if (authCipher == null) {
+                                Log.e(TAG, "CryptoObject cipher is null after authentication")
+                                _mainHandler.post {
+                                    callback.onFailure()
+                                }
+                                return
+                            }
+
+                            _mainHandler.post {
+                                callback.onSuccess()
+                            }
+                        }
+
+                        override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                            Log.e(TAG, "Biometric authentication error: $errString")
+                            _mainHandler.post {
+                                callback.onFailure()
+                            }
+                        }
+
+                        override fun onAuthenticationFailed() {
+                            // Don't call callback here, user can retry
+                            Log.w(TAG, "Biometric authentication failed, user can retry")
+                        }
+                    },
+                )
+
+                // Authenticate with CryptoObject binding for cryptographic verification
+                biometricPrompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
+            } catch (e: Exception) {
+                Log.e(TAG, "Error in biometric authentication", e)
+                callback.onFailure()
+            }
         }
-
-        // Create BiometricPrompt
-        val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle(title)
-            .setAllowedAuthenticators(
-                BiometricManager.Authenticators.BIOMETRIC_STRONG or
-                    BiometricManager.Authenticators.DEVICE_CREDENTIAL,
-            )
-            .build()
-
-        val biometricPrompt = BiometricPrompt(
-            currentActivity,
-            _executor,
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationSucceeded(
-                    result: BiometricPrompt.AuthenticationResult,
-                ) {
-                    _mainHandler.post {
-                        callback.onSuccess()
-                    }
-                }
-
-                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    Log.e(TAG, "Biometric authentication error: $errString")
-                    _mainHandler.post {
-                        callback.onFailure()
-                    }
-                }
-
-                override fun onAuthenticationFailed() {
-                    // Don't call callback here, user can retry
-                    Log.w(TAG, "Biometric authentication failed, user can retry")
-                }
-            },
-        )
-
-        // Show biometric prompt
-        biometricPrompt.authenticate(promptInfo)
     }
 }
