@@ -1,6 +1,6 @@
 /* English localization strings for VaultUI */
 "error" = "Eroare";
-"cancel" = "Anulați";
+"cancel" = "Anulează";
 "back" = "Înapoi";
 "next" = "Înainte";
 "edit" = "Editează";
