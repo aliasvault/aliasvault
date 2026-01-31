@@ -250,7 +250,7 @@
     <comment>Error status message</comment>
   </data>
   <data name="Info" xml:space="preserve">
-    <value>Informație</value>
+    <value>Informații</value>
     <comment>Information status message</comment>
   </data>
   <!-- Loading screen messages -->
