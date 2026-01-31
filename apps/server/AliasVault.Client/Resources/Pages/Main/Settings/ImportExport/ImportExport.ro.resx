@@ -79,7 +79,7 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Dacă vrei să exporți detaliile de conectare AliasVault către un alt server AliasVault (ex: de la cloud la self-hosting sau invers) sau către un alt serviciu, poți face exportul aici. Reține că toate fișierele exportate sunt necriptate, așa că păstrează-le într-un loc sigur și șterge-le când nu mai ai nevoie de ele.</value>
+    <value>Dacă vrei să exporți datele de autentificare AliasVault către un alt server AliasVault (de exemplu, din cloud către self-hosting sau invers) ori către un alt serviciu, poți face exportul aici. Reține că toate fișierele exportate sunt necriptate, așa că păstrează-le într-un loc sigur și șterge-le când nu mai ai nevoie de ele.</value>
     <comment>Export section description</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
@@ -105,7 +105,7 @@ Ești sigur că vrei să continui exportul?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>Resetați seiful</value>
+    <value>Resetează seiful</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
