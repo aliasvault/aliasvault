@@ -150,7 +150,7 @@
     <value>Cont șters cu succes.</value>
   </data>
   <data name="USERNAME_EMPTY_OR_WHITESPACE" xml:space="preserve">
-    <value>Numele de utilizator nu poate fi gol sau format doar din spații.</value>
+    <value>Numele de utilizator nu poate fi necompletat sau format doar din spații.</value>
   </data>
   <data name="USERNAME_TOO_SHORT" xml:space="preserve">
     <value>Numele de utilizator este prea scurt: trebuie să aibă cel puțin 3 caractere.</value>
@@ -186,6 +186,6 @@
     <value>Seiful tău nu este actualizat. Sincronizează seiful și încearcă din nou.</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
-    <value>Ai introdus o parolă greșită de prea multe ori, iar contul tău a fost blocat. Poți încerca din nou peste 30 de minute.</value>
+    <value>Ai introdus o parolă greșită de prea multe ori, iar contul tău a fost blocat. Încearcă din nou peste 30 de minute.</value>
   </data>
 </root>
