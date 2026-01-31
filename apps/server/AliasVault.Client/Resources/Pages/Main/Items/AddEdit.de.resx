@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Page titles and descriptions -->
   <data name="AddItemTitle">
-    <value>Add Item</value>
+    <value>Eintrag hinzufügen</value>
     <comment>Title for adding a new item</comment>
   </data>
   <data name="EditItemTitle">
