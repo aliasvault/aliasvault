@@ -87,7 +87,7 @@
     <comment>Import button text</comment>
   </data>
   <data name="ImportFoldersLabel" xml:space="preserve">
-    <value>Import folders</value>
+    <value>Ordner importieren</value>
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
