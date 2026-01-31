@@ -73,17 +73,17 @@
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>Dezactivarea autentificării cu doi factori înseamnă că vă veți putea autentifica folosind doar parola.</value>
+    <value>Dezactivarea autentificării cu doi factori înseamnă că te vei putea autentifica folosind doar parola.</value>
     <comment>Description text explaining what disabling 2FA means</comment>
   </data>
   <!-- Warning message -->
   <data name="WarningMessage" xml:space="preserve">
-    <value>Atenție: după dezactivarea autentificării cu doi factori, orice aplicație de autentificare configurată va înceta să funcționeze. Când veți dori să reactivați autentificarea cu doi factori, va trebui să configurați din nou aplicația.</value>
+    <value>Atenție: după dezactivarea autentificării cu doi factori, orice aplicație de autentificare configurată va înceta să funcționeze. Când vei dori să reactivezi autentificarea cu doi factori, va trebui să configurezi din nou aplicația.</value>
     <comment>Warning message about the consequences of disabling 2FA</comment>
   </data>
   <!-- Status message -->
   <data name="StatusMessage" xml:space="preserve">
-    <value>Autentificarea cu doi factori este în prezent activată. Dezactivați-o pentru a vă putea accesa seiful doar cu parola.</value>
+    <value>Autentificarea cu doi factori este în prezent activată. Dezactivează-o pentru a-ți putea accesa seiful doar cu parola.</value>
     <comment>Status message explaining current 2FA state</comment>
   </data>
   <!-- Button text -->
