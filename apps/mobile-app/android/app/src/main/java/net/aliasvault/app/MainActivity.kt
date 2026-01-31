@@ -10,6 +10,9 @@ import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnable
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import expo.modules.ReactActivityDelegateWrapper
 import expo.modules.splashscreen.SplashScreenManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 /**
  * The main activity of the app.
@@ -148,12 +151,20 @@ class MainActivity : ReactActivity() {
                     return
                 }
 
-                try {
-                    vaultStore.storeEncryptionKey(encryptionKeyBase64)
-                    vaultStore.unlockVault()
-                    promise.resolve(true)
-                } catch (e: Exception) {
-                    promise.reject("UNLOCK_ERROR", "Failed to unlock vault: ${e.message}", e)
+                // Run vault unlock on IO thread to avoid blocking the main thread
+                // (unlockVault involves file I/O and database operations)
+                CoroutineScope(Dispatchers.IO).launch {
+                    try {
+                        // Use initEncryptionKey instead of storeEncryptionKey
+                        // storeEncryptionKey would trigger biometric prompt if biometrics is enabled
+                        // since it tries to store the key in the biometric-protected keystore.
+                        // For PIN unlock, we just want to set the key in memory.
+                        vaultStore.initEncryptionKey(encryptionKeyBase64)
+                        vaultStore.unlockVault()
+                        promise.resolve(true)
+                    } catch (e: Exception) {
+                        promise.reject("UNLOCK_ERROR", "Failed to unlock vault: ${e.message}", e)
+                    }
                 }
             }
             net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_CANCELLED -> {

@@ -39,22 +39,23 @@ class UnlockCoordinator(
 
     /**
      * Start the unlock flow by checking which auth method is enabled.
-     * Priority: PIN -> Biometric -> Error
+     * Priority: Biometric -> PIN -> Error
+     * Biometrics takes priority, PIN serves as fallback if biometrics fails or is unavailable.
      */
     fun startUnlockFlow() {
         val pinEnabled = vaultStore.isPinEnabled()
         val biometricEnabled = vaultStore.isBiometricAuthEnabled()
 
         when {
-            pinEnabled -> {
-                // PIN is enabled - launch PIN unlock activity
-                Log.d(TAG, "PIN unlock is enabled, launching PIN unlock activity")
-                launchPinUnlock()
-            }
             biometricEnabled -> {
-                // Only biometric is enabled - attempt biometric unlock
+                // Biometric is enabled - attempt biometric unlock first
                 Log.d(TAG, "Biometric unlock is enabled, attempting biometric unlock")
                 attemptBiometricUnlock()
+            }
+            pinEnabled -> {
+                // Only PIN is enabled - launch PIN unlock activity
+                Log.d(TAG, "PIN unlock is enabled, launching PIN unlock activity")
+                launchPinUnlock()
             }
             else -> {
                 // Neither PIN nor biometric is enabled
@@ -66,16 +67,18 @@ class UnlockCoordinator(
 
     /**
      * Launch PIN unlock activity.
+     * Can be called directly to retry PIN unlock.
      */
-    private fun launchPinUnlock() {
+    fun launchPinUnlock() {
         val intent = Intent(activity, PinUnlockActivity::class.java)
         activity.startActivityForResult(intent, REQUEST_CODE_PIN_UNLOCK)
     }
 
     /**
      * Attempt biometric unlock using the keystore provider.
+     * Can be called directly to retry biometric unlock.
      */
-    private fun attemptBiometricUnlock() {
+    fun attemptBiometricUnlock() {
         val keystoreProvider = AndroidKeystoreProvider(activity.applicationContext) { activity }
         keystoreProvider.retrieveKeyExternal(
             activity,
@@ -164,20 +167,21 @@ class UnlockCoordinator(
 
     /**
      * Handle errors during biometric keystore retrieval.
+     * Falls back to PIN if enabled, otherwise reports the error.
      */
     private fun handleBiometricKeystoreError(e: Exception) {
+        // For any biometric error, try PIN fallback if enabled
+        if (vaultStore.isPinEnabled()) {
+            Log.d(TAG, "Biometric failed (${e.message}), falling back to PIN")
+            launchPinUnlock()
+            return // Don't call onError, we're falling back to PIN
+        }
+
+        // No PIN fallback available - report the error
         val errorMessage = when {
             e.message?.contains("user canceled", ignoreCase = true) == true ||
-                e.message?.contains("authentication failed", ignoreCase = true) == true -> {
-                // User cancelled or biometric failed - check if PIN is available as fallback
-                if (vaultStore.isPinEnabled()) {
-                    Log.d(TAG, "Biometric cancelled/failed, falling back to PIN")
-                    launchPinUnlock()
-                    return // Don't call onError, we're falling back to PIN
-                } else {
-                    "Authentication cancelled"
-                }
-            }
+                e.message?.contains("canceled", ignoreCase = true) == true ->
+                "Authentication cancelled"
             else -> "Failed to retrieve encryption key"
         }
         onError(errorMessage)
