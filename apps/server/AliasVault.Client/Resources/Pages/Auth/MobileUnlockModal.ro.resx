@@ -67,7 +67,7 @@
     <comment>Modal title for mobile unlock feature</comment>
   </data>
   <data name="ScanQrCodeDescription" xml:space="preserve">
-    <value>Scanați acest cod QR cu aplicația mobilă AliasVault pentru a vă autentifica și a vă debloca seiful.</value>
+    <value>Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful.</value>
     <comment>Description instructing user to scan QR code</comment>
   </data>
 </root>
