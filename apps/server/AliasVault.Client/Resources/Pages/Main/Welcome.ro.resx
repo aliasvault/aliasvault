@@ -72,11 +72,11 @@
     <comment>Title for master password tip</comment>
   </data>
   <data name="MasterPasswordTipContent">
-    <value>Parola principală este necesară pentru a vă decripta seiful. Nu o partajați niciodată și păstrați-o într-un loc sigur. Atenție: Dacă pierdeți parola principală, datele nu mai pot fi recuperate – nici măcar de către echipa noastră.</value>
+    <value>Parola principală este necesară pentru a-ți decripta seiful. Nu o partaja niciodată și păstreaz-o într-un loc sigur. Atenție: Dacă îți pierzi parola principală, datele nu mai pot fi recuperate – nici măcar de echipa noastră.</value>
     <comment>Content for master password tip</comment>
   </data>
   <data name="TwoFactorTipTitle">
-    <value>Activați autentificarea cu doi factori în setările de securitate</value>
+    <value>Activează autentificarea cu doi factori în setările de securitate</value>
     <comment>Title for two-factor authentication tip</comment>
   </data>
   <data name="TwoFactorTipContent">
@@ -88,12 +88,12 @@
     <comment>Title for browser extensions and mobile apps tip</comment>
   </data>
   <data name="ExtensionsAppsTipContent">
-    <value>Instalați extensia de browser și aplicația mobilă AliasVault pentru a crea aliasuri și a completa automat câmpurile de date direct din browser și de pe smartphone.</value>
+    <value>Instalează extensia de browser și aplicația mobilă AliasVault pentru a crea aliasuri și a completa automat câmpurile direct din browser și de pe smartphone.</value>
     <comment>Content for browser extensions and mobile apps tip</comment>
   </data>
   <!-- Create first identity step content -->
   <data name="ReadyToStartTitle">
-    <value>Sunteți gata să începeți?</value>
+    <value>Ești gata să începi?</value>
     <comment>Title for ready to start section</comment>
   </data>
   <data name="ReadyToStartMessage">
@@ -101,7 +101,7 @@
     <comment>Message encouraging user to create first identity</comment>
   </data>
   <data name="CreateFirstIdentityButton">
-    <value>Creați prima identitate</value>
+    <value>Creează prima identitate</value>
     <comment>Button text for creating first identity</comment>
   </data>
   <!-- Navigation buttons -->
