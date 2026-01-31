@@ -63,23 +63,23 @@
     <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Parola ta principală este criptată prin extensia passkey PRF și stocată local. Când reîncarci pagina sau tab-ul AliasVault, îți poți debloca seiful prin passkey. Dacă dorești să dezactivezi deblocarea prin passkey, poți face acest lucru folosind butonul de mai jos. Parola ta principală va putea fi folosită în continuare pentru deblocarea seifului.</value>
+    <value>Parola ta principală este criptată prin extensia passkey PRF și stocată local. Când reîncarci pagina sau tab-ul AliasVault, îți poți debloca seiful prin passkey. Dacă vrei să dezactivezi deblocarea prin passkey, poți face acest lucru folosind butonul de mai jos. Parola ta principală va putea fi folosită în continuare pentru deblocarea seifului.</value>
     <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Dezactivați deblocarea prin Passkey</value>
+    <value>Dezactivează deblocarea prin Passkey</value>
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>În mod implicit, reîncărcarea paginii sau a tab-ului AliasVault necesită reintroducerea parolei principale. Prin activarea unui passkey, îți poți debloca seiful instantaneu. Când această opțiune este activată, parola ta principală este criptată local prin extensia PRF a passkey-ului. Notă: deblocarea prin passkey va funcționa doar pe dispozitivul și browserul curent pe care a fost activată.</value>
+    <value>În mod implicit, reîncărcarea paginii sau a tab-ului AliasVault necesită reintroducerea parolei principale. Activând un passkey, îți poți debloca seiful instantaneu. Când această opțiune este activată, parola ta principală este criptată local prin extensia PRF a passkey-ului. Notă: deblocarea prin passkey va funcționa doar pe dispozitivul și browserul curent pe care a fost activată.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>Această funcționalitate este disponibilă momentan în extensia de browser AliasVault și în aplicația iOS. Compatibilitatea pentru Android va fi oferită în curând. Dacă întâmpinați probleme, puteți dezactiva această opțiune în orice moment.</value>
+    <value>Această funcționalitate este disponibilă momentan în extensia de browser AliasVault și în aplicația iOS. Compatibilitatea pentru Android va fi oferită în curând. Dacă întâmpini probleme, poți dezactiva această opțiune în orice moment.</value>
     <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Activați deblocarea prin Passkey</value>
+    <value>Activează deblocarea prin Passkey</value>
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
