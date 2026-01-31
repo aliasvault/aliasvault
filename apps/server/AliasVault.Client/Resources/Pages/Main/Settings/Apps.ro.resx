@@ -42,7 +42,7 @@
     <comment>Description for browser extensions</comment>
   </data>
   <data name="InstallButton">
-    <value>Instalați</value>
+    <value>Instalează</value>
     <comment>Install button text</comment>
   </data>
   <data name="ComingSoonText">
@@ -59,7 +59,7 @@
     <comment>Description for mobile apps</comment>
   </data>
   <data name="DownloadButton">
-    <value>Descărcați</value>
+    <value>Descarcă</value>
     <comment>Download button text</comment>
   </data>
 </root>
