@@ -71,11 +71,11 @@
     <comment>Status message when 2FA is disabled</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Activați autentificarea cu doi factori</value>
+    <value>Activează autentificarea cu doi factori</value>
     <comment>Button to enable 2FA</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Dezactivați autentificarea cu doi factori</value>
+    <value>Dezactivează autentificarea cu doi factori</value>
     <comment>Button to disable 2FA</comment>
   </data>
 </root>
