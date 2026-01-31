@@ -87,7 +87,7 @@
     <comment>Import button text</comment>
   </data>
   <data name="ImportFoldersLabel" xml:space="preserve">
-    <value>Import folders</value>
+    <value>Importă dosarele</value>
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
@@ -95,7 +95,7 @@
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
   <data name="DuplicateCredentialsWarning" xml:space="preserve">
-    <value>{0} duplicate credential(s) were found and will not be imported.</value>
+    <value>Au fost găsite {0} credențiale (date de autentificare) duplicate și nu vor fi importate.</value>
     <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
   </data>
   <data name="NoNewCredentials" xml:space="preserve">
@@ -135,7 +135,7 @@
     <comment>Warning note about favicon extraction duration</comment>
   </data>
   <data name="ExtractingFavicons" xml:space="preserve">
-    <value>Extracting favicons... {0} / {1}</value>
+    <value>Extrage pictogramele... {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
 </root>
