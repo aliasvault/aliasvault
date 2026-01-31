@@ -87,7 +87,7 @@
     <comment>Label for new vault version</comment>
   </data>
   <data name="StartUpgradeButton" xml:space="preserve">
-    <value>Începeți procesul de actualizare</value>
+    <value>Începe procesul de actualizare</value>
     <comment>Button text to start the upgrade process</comment>
   </data>
   <data name="UpgradeSuccessMessage" xml:space="preserve">
