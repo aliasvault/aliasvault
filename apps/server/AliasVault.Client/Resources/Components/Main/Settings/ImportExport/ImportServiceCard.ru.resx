@@ -87,11 +87,55 @@
     <comment>Import button text</comment>
   </data>
   <data name="ImportFoldersLabel" xml:space="preserve">
-    <value>Импортировать папки (если доступно)</value>
+    <value>Импортировать папки</value>
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
     <value>Обнаружено папок: {0}</value>
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
+  </data>
+  <data name="DuplicateCredentialsWarning" xml:space="preserve">
+    <value>Найдено дубликатов: {0}. Они не будут импортированы.</value>
+    <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
+  </data>
+  <data name="NoNewCredentials" xml:space="preserve">
+    <value>Новых записей для импорта не найдено.</value>
+    <comment>Warning text when no new credentials are available for import</comment>
+  </data>
+  <data name="PreviewInstructions" xml:space="preserve">
+    <value>Проверьте правильность распознанных данных перед продолжением:</value>
+    <comment>Instructions shown before the credential preview table</comment>
+  </data>
+  <data name="ServiceColumn" xml:space="preserve">
+    <value>Сервис</value>
+    <comment>Column header for service name in credential preview table</comment>
+  </data>
+  <data name="UsernameColumn" xml:space="preserve">
+    <value>Логин</value>
+    <comment>Column header for username in credential preview table</comment>
+  </data>
+  <data name="PasswordColumn" xml:space="preserve">
+    <value>Пароль</value>
+    <comment>Column header for password in credential preview table</comment>
+  </data>
+  <data name="MoreCredentials" xml:space="preserve">
+    <value>... и еще {0} записей</value>
+    <comment>Text showing additional credentials not displayed. {0} is the count</comment>
+  </data>
+  <data name="ExtractFaviconsLabel" xml:space="preserve">
+    <value>Загрузить иконки для сервисов с URL</value>
+    <comment>Checkbox label for favicon extraction option</comment>
+  </data>
+  <data name="ConfirmImportText" xml:space="preserve">
+    <value>Импортировать записи ({0})? Обратите внимание: процесс может занять некоторое время.</value>
+    <comment>Confirmation text before importing. {0} is the credential count</comment>
+  </data>
+  <data name="FaviconExtractionNote" xml:space="preserve">
+    <value>Примечание: Включено извлечение иконок. Этот процесс может занять несколько минут в зависимости от количества записей с URL. Пожалуйста, не закрывайте страницу.</value>
+    <comment>Warning note about favicon extraction duration</comment>
+  </data>
+  <data name="ExtractingFavicons" xml:space="preserve">
+    <value>Извлечение иконок... {0} / {1}</value>
+    <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
 </root>

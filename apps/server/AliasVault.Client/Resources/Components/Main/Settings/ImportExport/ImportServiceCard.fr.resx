@@ -87,11 +87,55 @@
     <comment>Import button text</comment>
   </data>
   <data name="ImportFoldersLabel" xml:space="preserve">
-    <value>Importer les dossiers (si disponible)</value>
+    <value>Importer les dossiers</value>
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
     <value>{0} répertoire(s) détecté(s)</value>
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
+  </data>
+  <data name="DuplicateCredentialsWarning" xml:space="preserve">
+    <value>Les {0} identifiants en double ont été trouvés et ne seront pas importés.</value>
+    <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
+  </data>
+  <data name="NoNewCredentials" xml:space="preserve">
+    <value>Aucun nouvel identifiant n'a été trouvé à importer.</value>
+    <comment>Warning text when no new credentials are available for import</comment>
+  </data>
+  <data name="PreviewInstructions" xml:space="preserve">
+    <value>Vérifiez si les identifiants détectés ci-dessous semblent corrects avant de continuer :</value>
+    <comment>Instructions shown before the credential preview table</comment>
+  </data>
+  <data name="ServiceColumn" xml:space="preserve">
+    <value>Service</value>
+    <comment>Column header for service name in credential preview table</comment>
+  </data>
+  <data name="UsernameColumn" xml:space="preserve">
+    <value>Nom d'utilisateur</value>
+    <comment>Column header for username in credential preview table</comment>
+  </data>
+  <data name="PasswordColumn" xml:space="preserve">
+    <value>Mot de passe</value>
+    <comment>Column header for password in credential preview table</comment>
+  </data>
+  <data name="MoreCredentials" xml:space="preserve">
+    <value>... et {0} identifiants supplémentaires</value>
+    <comment>Text showing additional credentials not displayed. {0} is the count</comment>
+  </data>
+  <data name="ExtractFaviconsLabel" xml:space="preserve">
+    <value>Extraire les icônes de favoris pour les services avec des URLs</value>
+    <comment>Checkbox label for favicon extraction option</comment>
+  </data>
+  <data name="ConfirmImportText" xml:space="preserve">
+    <value>Êtes-vous sûr de vouloir importer les ({0}) identifiants ? Note: le processus d'importation peut prendre un court moment.</value>
+    <comment>Confirmation text before importing. {0} is the credential count</comment>
+  </data>
+  <data name="FaviconExtractionNote" xml:space="preserve">
+    <value>Remarque : l'extraction des icônes de favoris est activée. Ce processus peut prendre plusieurs minutes selon le nombre d'identifiants avec des URL. Veuillez garder la page ouverte.</value>
+    <comment>Warning note about favicon extraction duration</comment>
+  </data>
+  <data name="ExtractingFavicons" xml:space="preserve">
+    <value>Extraction des icônes de favoris ... {0} / {1}</value>
+    <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
 </root>

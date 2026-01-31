@@ -25,7 +25,7 @@
     <comment>Assistant message about setting up username</comment>
   </data>
   <data name="EnterUsernameInstructions">
-    <value>请输入您想使用的用户名。可以是您的邮件地址或任何您喜欢的独特名称。</value>
+    <value>请输入您想使用的用户名。可以是您的邮箱地址或任何您喜欢的独特名称。</value>
     <comment>Instructions for entering username</comment>
   </data>
   <data name="RememberUsernameNote">

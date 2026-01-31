@@ -195,11 +195,11 @@
   </data>
   <!-- NordPass -->
   <data name="NordPassDescription" xml:space="preserve">
-    <value>Import passwords from NordPass</value>
+    <value>Importiere Deine Passwörter aus Nordpass</value>
     <comment>Description for NordPass import service</comment>
   </data>
   <data name="NordPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your NordPass passwords, you need to export them as a CSV file. You can do this by opening the NordPass app or web vault, going to 'Settings' > 'Export Items', and selecting the CSV format.</value>
+    <value>Um Ihre NordPass Passwörter zu importieren, müssen Sie diese als CSV Datei exportieren. Sie können dies tun, indem Sie die NordPass App oder Web-Tresor öffnen, in "Einstellungen" > "Elemente exportieren" gehen und das CSV-Format auswählen.</value>
     <comment>NordPass export instructions part 1</comment>
   </data>
   <data name="NordPassInstructionsPart2" xml:space="preserve">

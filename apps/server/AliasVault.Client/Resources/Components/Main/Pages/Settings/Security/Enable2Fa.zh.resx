@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>启用双因素认证（2FA）</value>
+    <value>启用两步验证（2FA）</value>
     <comment>Page title for the enable 2FA page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
@@ -68,17 +68,17 @@
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbEnable2Fa" xml:space="preserve">
-    <value>启用双因素认证（2FA）</value>
+    <value>启用两步验证（2FA）</value>
     <comment>Breadcrumb text for enable 2FA</comment>
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>启用双因素认证（2FA）可提高您密码库的安全性。</value>
+    <value>启用两步验证（2FA）可提高您密码库的安全性。</value>
     <comment>Description text explaining 2FA setup</comment>
   </data>
   <!-- Setup instructions -->
   <data name="QrCodeInstructions" xml:space="preserve">
-    <value>使用您的认证器应用扫描此二维码，或手动输入以下密钥：</value>
+    <value>使用您的身份验证器应用扫描此二维码，或手动输入以下密钥：</value>
     <comment>Instructions for scanning QR code or entering secret</comment>
   </data>
   <!-- Form elements -->
@@ -92,11 +92,11 @@
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorEnabledSuccess" xml:space="preserve">
-    <value>双因素认证（2FA）已成功启用。下次登录时，您需要输入双因素认证代码。</value>
+    <value>两步验证（2FA）已成功启用。下次登录时，您需要输入两步验证代码。</value>
     <comment>Success message when 2FA is enabled</comment>
   </data>
   <data name="FailedToEnable2Fa" xml:space="preserve">
-    <value>启用双因素认证（2FA）失败。</value>
+    <value>启用两步验证（2FA）失败。</value>
     <comment>Error message when 2FA setup fails</comment>
   </data>
 </root>

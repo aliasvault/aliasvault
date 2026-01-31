@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>禁用双因素认证（2FA）</value>
+    <value>禁用两步验证（2FA）</value>
     <comment>Page title for the disable 2FA page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
@@ -68,40 +68,40 @@
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbDisable2Fa" xml:space="preserve">
-    <value>禁用双因素认证（2FA）</value>
+    <value>禁用两步验证（2FA）</value>
     <comment>Breadcrumb text for disable 2FA</comment>
   </data>
   <!-- Page description -->
   <data name="PageDescription" xml:space="preserve">
-    <value>禁用双因素认证（2FA）意味着您只需密码即可登录。</value>
+    <value>禁用两步验证（2FA）意味着您只需密码即可登录。</value>
     <comment>Description text explaining what disabling 2FA means</comment>
   </data>
   <!-- Warning message -->
   <data name="WarningMessage" xml:space="preserve">
-    <value>请注意：禁用双因素认证（2FA）后，所有已配置的认证器应用都将停止工作。如果想重新启用双因素认证（2FA），您需要重新配置认证器应用。</value>
+    <value>请注意：禁用两步验证（2FA）后，所有已配置的身份验证器应用都将停止工作。如果想重新启用两步验证（2FA），您需要重新配置身份验证器应用。</value>
     <comment>Warning message about the consequences of disabling 2FA</comment>
   </data>
   <!-- Status message -->
   <data name="StatusMessage" xml:space="preserve">
-    <value>当前已启用双因素认证（2FA）。禁用后，您只需密码即可访问密码库。</value>
+    <value>当前已启用两步验证（2FA）。禁用后，您只需密码即可访问密码库。</value>
     <comment>Status message explaining current 2FA state</comment>
   </data>
   <!-- Button text -->
   <data name="ConfirmDisableButton" xml:space="preserve">
-    <value>确认禁用双因素认证（2FA）</value>
+    <value>确认禁用两步验证（2FA）</value>
     <comment>Button text to confirm disabling 2FA</comment>
   </data>
   <!-- Success and error messages -->
   <data name="TwoFactorDisabledSuccess" xml:space="preserve">
-    <value>双因素认证（2FA）已成功禁用。</value>
+    <value>两步验证（2FA）已成功禁用。</value>
     <comment>Success message when 2FA is disabled</comment>
   </data>
   <data name="FailedToDisable2Fa" xml:space="preserve">
-    <value>禁用双因素认证（2FA）失败。</value>
+    <value>禁用两步验证（2FA）失败。</value>
     <comment>Error message when 2FA disable fails</comment>
   </data>
   <data name="TwoFactorNotEnabled" xml:space="preserve">
-    <value>尚未启用双因素认证（2FA）。</value>
+    <value>尚未启用两步验证（2FA）。</value>
     <comment>Error message when 2FA is not enabled</comment>
   </data>
 </root>

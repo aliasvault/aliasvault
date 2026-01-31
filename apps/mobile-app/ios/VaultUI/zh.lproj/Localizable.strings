@@ -17,7 +17,7 @@
 "select_text_to_insert" = "选择要插入的文本";
 "choose_username" = "选择用户名";
 "select_text_to_insert_message" = "选择要插入到聚焦输入字段的文本";
-"choose_username_message" = "此网站可能需要您的用户名或邮件地址才能登录";
+"choose_username_message" = "此网站可能需要您的用户名或邮箱地址才能登录";
 "username_prefix" = "用户名：";
 "email_prefix" = "邮箱：";
 "password" = "密码";

@@ -75,7 +75,7 @@
     <comment>Reset vault please note prefix</comment>
   </data>
   <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
-    <value>All encrypted items in your vault will be permanently deleted</value>
+    <value>Alle in Deinem Tresor verschlüsselten Zugangsdaten werden unwiderruflich gelöscht</value>
     <comment>Reset vault note about items being deleted</comment>
   </data>
   <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">

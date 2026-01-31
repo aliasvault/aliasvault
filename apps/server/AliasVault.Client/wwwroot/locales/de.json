@@ -8,7 +8,7 @@
   "errors": {
     "unhandledError": "Ein unbehandelter Fehler ist aufgetreten. Bitte lade die Seite neu. Wenn das Problem weiterhin besteht, kontaktiere bitte den Support.",
     "webAssemblyError": "AliasVault benötigt WebAssembly, was von diesem Browser nicht unterstützt wird. Versuche, einen moderneren Browser zu verwenden, der WebAssembly unterstützt.",
-    "reloadPageText": "Seite neu laden"
+    "reloadPageText": "Reload Page"
   },
   "quotes": {
     "security": [

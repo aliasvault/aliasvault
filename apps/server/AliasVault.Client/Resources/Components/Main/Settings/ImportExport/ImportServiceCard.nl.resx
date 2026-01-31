@@ -94,4 +94,48 @@
     <value>{0} map(en) gevonden</value>
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
+  <data name="DuplicateCredentialsWarning" xml:space="preserve">
+    <value>{0} dubbele credential(s) werden gevonden en worden niet geïmporteerd.</value>
+    <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
+  </data>
+  <data name="NoNewCredentials" xml:space="preserve">
+    <value>Geen nieuwe credentials gevonden om te importeren.</value>
+    <comment>Warning text when no new credentials are available for import</comment>
+  </data>
+  <data name="PreviewInstructions" xml:space="preserve">
+    <value>Controleer of de volgende gedetecteerde credentials correct zijn voordat je verdergaat:</value>
+    <comment>Instructions shown before the credential preview table</comment>
+  </data>
+  <data name="ServiceColumn" xml:space="preserve">
+    <value>Service</value>
+    <comment>Column header for service name in credential preview table</comment>
+  </data>
+  <data name="UsernameColumn" xml:space="preserve">
+    <value>Gebruikersnaam</value>
+    <comment>Column header for username in credential preview table</comment>
+  </data>
+  <data name="PasswordColumn" xml:space="preserve">
+    <value>Wachtwoord</value>
+    <comment>Column header for password in credential preview table</comment>
+  </data>
+  <data name="MoreCredentials" xml:space="preserve">
+    <value>... en {0} meer credentials</value>
+    <comment>Text showing additional credentials not displayed. {0} is the count</comment>
+  </data>
+  <data name="ExtractFaviconsLabel" xml:space="preserve">
+    <value>Favicons ophalen voor services met URLs</value>
+    <comment>Checkbox label for favicon extraction option</comment>
+  </data>
+  <data name="ConfirmImportText" xml:space="preserve">
+    <value>Weet je zeker dat je ({0}) credentials wilt importeren? Opmerking: het importproces kan even duren.</value>
+    <comment>Confirmation text before importing. {0} is the credential count</comment>
+  </data>
+  <data name="FaviconExtractionNote" xml:space="preserve">
+    <value>Opmerking: Favicons ophalen is ingeschakeld. Dit proces kan enkele minuten duren, afhankelijk van het aantal credentials met URL's. Houd de pagina open.</value>
+    <comment>Warning note about favicon extraction duration</comment>
+  </data>
+  <data name="ExtractingFavicons" xml:space="preserve">
+    <value>Favicons ophalen... {0} / {1}</value>
+    <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
+  </data>
 </root>

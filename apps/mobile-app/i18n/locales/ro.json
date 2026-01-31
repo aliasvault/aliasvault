@@ -165,7 +165,7 @@
     "batteryOptimizationHelpTitle": "Activează ștergerea clipboard-ului în fundal",
     "batteryOptimizationActive": "Optimizarea bateriei blochează sarcinile în fundal",
     "batteryOptimizationDisabled": "Ștergerea clipboard-ului în fundal a fost activată",
-    "batteryOptimizationHelpDescription": "Optimizează bateria Android, însă reține că acest lucru împiedică ștergerea fiabilă a clipboard-ului când aplicația este în fundal. Dezactivează optimizarea pentru AliasVault pentru a permite funcționarea corectă.",
+    "batteryOptimizationHelpDescription": "Optimizarea bateriei Android împiedică ștergerea fiabilă a clipboard-ului când aplicația rulează în fundal. Dezactivarea optimizării pentru AliasVault permite funcționarea corectă.",
     "disableBatteryOptimization": "Dezactivează optimizarea bateriei",
     "identityGenerator": "Generator de Identitate",
     "passwordGenerator": "Generator de Parole",
