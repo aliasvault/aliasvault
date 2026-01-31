@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page title and breadcrumbs -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Ștergeți contul</value>
+    <value>Șterge contul</value>
     <comment>Page title for the delete account page</comment>
   </data>
   <data name="BreadcrumbSecuritySettings" xml:space="preserve">
@@ -68,7 +68,7 @@
     <comment>Breadcrumb text for security settings</comment>
   </data>
   <data name="BreadcrumbDeleteAccount" xml:space="preserve">
-    <value>Ștergeți contul</value>
+    <value>Șterge contul</value>
     <comment>Breadcrumb text for delete account</comment>
   </data>
   <!-- Warning messages -->
