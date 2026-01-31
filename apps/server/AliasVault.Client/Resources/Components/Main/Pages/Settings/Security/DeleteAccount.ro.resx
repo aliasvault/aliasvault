@@ -129,7 +129,7 @@
     <comment>Error message when username is not provided</comment>
   </data>
   <data name="UsernameDoesNotMatch" xml:space="preserve">
-    <value>Numele de utilizator introdus nu corespunde cu numele de utilizator actual. Încearcă din nou.</value>
+    <value>Numele de utilizator introdus nu corespunde cu cel actual. Încearcă din nou.</value>
     <comment>Error message when username doesn't match</comment>
   </data>
   <data name="ErrorProcessingRequest" xml:space="preserve">
