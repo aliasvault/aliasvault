@@ -359,7 +359,7 @@
     "clipboardClear10Seconds": "După 10 secunde",
     "clipboardClear15Seconds": "După 15 secunde",
     "autoLockTimeout": "Interval auto-blocare",
-    "autoLockTimeoutDescription": "Blocați automat seiful după o perioadă de inactivitate",
+    "autoLockTimeoutDescription": "Blochează automat seiful după o perioadă de inactivitate",
     "autoLockTimeoutHelp": "Seiful se va bloca doar după perioada de inactivitate specificată (fără completare automată sau deschiderea extensiei). Seiful se va bloca întotdeauna la închiderea browserului.",
     "autoLockNever": "Niciodată",
     "autoLock15Seconds": "15 secunde",
