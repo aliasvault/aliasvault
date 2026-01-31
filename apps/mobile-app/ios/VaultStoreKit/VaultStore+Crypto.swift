@@ -219,7 +219,7 @@ extension VaultStore {
 
     /// Retrieve the encryption key from the keychain
     private func retrieveKeyFromKeychain(context: LAContext) throws -> Data {
-        // Ensure interaction is allowed so system can prompt for Face ID or passcode fallback
+        // Ensure interaction is allowed so system can prompt for biometric authentication
         context.interactionNotAllowed = false
         context.localizedReason = "Authenticate to unlock your vault"
 

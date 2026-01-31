@@ -139,7 +139,7 @@ struct PasskeyFormView: View {
 
             // Loading overlay
             if viewModel.isLoading {
-                LoadingOverlayView(message: viewModel.loadingMessage)
+                BrandedLoadingView(message: viewModel.loadingMessage)
             }
         }
         .navigationBarTitleDisplayMode(.inline)

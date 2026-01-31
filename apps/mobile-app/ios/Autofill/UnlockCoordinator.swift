@@ -26,35 +26,12 @@ struct UnlockCoordinatorView: View {
                 // Show PIN unlock view
                 PinUnlockView(viewModel: pinViewModel)
             } else {
-                // Show logo placeholder while biometric unlock is in progress
-                BiometricUnlockPlaceholderView()
+                // Show branded loading view while biometric unlock is in progress
+                BrandedLoadingView(message: nil, showLoadingAnimation: false)
             }
         }
         .onAppear {
             coordinator.startUnlockFlow()
-        }
-    }
-}
-
-/// Simple placeholder view showing the AliasVault logo while biometric authentication is in progress
-struct BiometricUnlockPlaceholderView: View {
-    @Environment(\.colorScheme) var colorScheme
-
-    private var colors: ColorConstants.Colors.Type {
-        ColorConstants.colors(for: colorScheme)
-    }
-
-    var body: some View {
-        ZStack {
-            colors.background
-                .ignoresSafeArea()
-
-            VStack {
-                Image("Logo", bundle: .vaultUI)
-                    .resizable()
-                    .aspectRatio(contentMode: .fit)
-                    .frame(width: 70, height: 70)
-            }
         }
     }
 }
