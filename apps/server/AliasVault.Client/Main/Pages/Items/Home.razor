@@ -200,7 +200,11 @@ else
 
         @if (DbService.Settings.CredentialsViewMode == "table")
         {
-            <ItemsTable Credentials="@FilteredAndSortedItems.ToList()" SortOrder="@SortOrder" />
+            <ItemsTable
+                Credentials="@FilteredAndSortedItems.ToList()"
+                SortColumn="@TableSortColumn"
+                CurrentSortDirection="@TableSortDirection"
+                OnTableSortChanged="HandleTableSortChanged" />
         }
         else
         {
@@ -423,6 +427,16 @@ else
     }
 
     /// <summary>
+    /// Gets or sets the current table sort column (for table view column header sorting).
+    /// </summary>
+    private string TableSortColumn { get; set; } = "CreatedAt";
+
+    /// <summary>
+    /// Gets or sets the current table sort direction (for table view column header sorting).
+    /// </summary>
+    private SortDirection TableSortDirection { get; set; } = SortDirection.Ascending;
+
+    /// <summary>
     /// Gets whether we're currently in a folder view.
     /// </summary>
     private bool IsInFolder => FolderId.HasValue;
@@ -475,7 +489,12 @@ else
                 _ => filtered, // All
             };
 
-            // Then apply sort
+            // Apply sort - use table column sort if in table view, otherwise use settings dropdown sort
+            if (ViewMode == "table")
+            {
+                return ApplyTableSort(filtered);
+            }
+
             return SortOrder switch
             {
                 CredentialSortOrder.NewestFirst => filtered.OrderByDescending(x => x.CreatedAt),
@@ -483,6 +502,31 @@ else
                 _ => filtered.OrderBy(x => x.CreatedAt), // OldestFirst (default)
             };
         }
+    }
+
+    /// <summary>
+    /// Applies table column sorting to the filtered items.
+    /// </summary>
+    /// <param name="items">The items to sort.</param>
+    /// <returns>The sorted items.</returns>
+    private IEnumerable<ItemListEntry> ApplyTableSort(IEnumerable<ItemListEntry> items)
+    {
+        return TableSortColumn switch
+        {
+            "Service" => TableSortDirection == SortDirection.Ascending
+                ? items.OrderBy(x => x.Service ?? string.Empty)
+                : items.OrderByDescending(x => x.Service ?? string.Empty),
+            "Username" => TableSortDirection == SortDirection.Ascending
+                ? items.OrderBy(x => x.Username ?? string.Empty)
+                : items.OrderByDescending(x => x.Username ?? string.Empty),
+            "Email" => TableSortDirection == SortDirection.Ascending
+                ? items.OrderBy(x => x.Email ?? string.Empty)
+                : items.OrderByDescending(x => x.Email ?? string.Empty),
+            "CreatedAt" => TableSortDirection == SortDirection.Ascending
+                ? items.OrderBy(x => x.CreatedAt)
+                : items.OrderByDescending(x => x.CreatedAt),
+            _ => items.OrderBy(x => x.CreatedAt), // Default
+        };
     }
 
     /// <summary>
@@ -576,6 +620,19 @@ else
     }
 
     /// <summary>
+    /// Handles the table column sort changed event.
+    /// This applies sorting to ALL items before pagination.
+    /// </summary>
+    /// <param name="sort">The sort column and direction.</param>
+    private void HandleTableSortChanged((string Column, SortDirection Direction) sort)
+    {
+        TableSortColumn = sort.Column;
+        TableSortDirection = sort.Direction;
+        VisibleItemCount = BatchSize; // Reset visible items when sort changes to show first N sorted items
+        StateHasChanged();
+    }
+
+    /// <summary>
     /// Loads more items for infinite scroll. Called from JavaScript via IntersectionObserver.
     /// </summary>
     [JSInvokable]
@@ -611,8 +668,25 @@ else
     {
         ShowSettingsDropdown = false;
 
+        // Sync table sort state with the dropdown sort order
+        SyncTableSortWithSortOrder();
+
         // Reload the items in case the settings were changed.
         await LoadItemsAsync();
+    }
+
+    /// <summary>
+    /// Synchronizes the table sort column and direction with the settings dropdown sort order.
+    /// Called when the user changes the sort order via the settings dropdown.
+    /// </summary>
+    private void SyncTableSortWithSortOrder()
+    {
+        (TableSortColumn, TableSortDirection) = SortOrder switch
+        {
+            CredentialSortOrder.NewestFirst => ("CreatedAt", SortDirection.Descending),
+            CredentialSortOrder.Alphabetical => ("Service", SortDirection.Ascending),
+            _ => ("CreatedAt", SortDirection.Ascending), // OldestFirst (default)
+        };
     }
 
     /// <summary>
@@ -780,6 +854,9 @@ else
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+
+        // Initialize table sort state from saved sort order
+        SyncTableSortWithSortOrder();
 
         // Load folder name if in folder view
         if (FolderId.HasValue)

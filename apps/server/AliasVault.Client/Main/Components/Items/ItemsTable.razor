@@ -3,7 +3,7 @@
 @inject NavigationManager NavigationManager
 
 <SortableTable Columns="@_tableColumns" SortColumn="@SortColumn" SortDirection="@CurrentSortDirection" OnSortChanged="HandleSortChanged">
-    @foreach (var credential in DisplayedCredentials)
+    @foreach (var credential in Credentials)
     {
         <SortableTableRow Class="cursor-pointer" OnClick="@(() => NavigateToCredential(credential.Id))">
             <SortableTableColumn Padding="false">
@@ -27,25 +27,23 @@
     public List<ItemListEntry> Credentials { get; set; } = [];
 
     /// <summary>
-    /// Gets or sets the sort order for the credentials (used to determine initial table state).
+    /// Gets or sets the current sort column.
     /// </summary>
     [Parameter]
-    public CredentialSortOrder SortOrder { get; set; } = CredentialSortOrder.OldestFirst;
+    public string SortColumn { get; set; } = "CreatedAt";
 
     /// <summary>
-    /// Gets or sets the column to sort by.
+    /// Gets or sets the current sort direction.
     /// </summary>
-    private string SortColumn { get; set; } = "CreatedAt";
+    [Parameter]
+    public SortDirection CurrentSortDirection { get; set; } = SortDirection.Ascending;
 
     /// <summary>
-    /// Gets or sets the current sort direction for table column sorting.
+    /// Gets or sets the callback for when the sort changes.
+    /// The parent component should handle sorting ALL items when this is invoked.
     /// </summary>
-    private SortDirection CurrentSortDirection { get; set; } = SortDirection.Ascending;
-
-    /// <summary>
-    /// Gets or sets whether the user has explicitly clicked a column to sort.
-    /// </summary>
-    private bool UserHasClickedColumn { get; set; } = false;
+    [Parameter]
+    public EventCallback<(string Column, SortDirection Direction)> OnTableSortChanged { get; set; }
 
     /// <summary>
     /// Gets or sets the columns to show in the table.
@@ -58,93 +56,13 @@
     ];
 
     /// <summary>
-    /// Gets the credentials to display, with optional column-based sorting applied.
-    /// </summary>
-    private IEnumerable<ItemListEntry> DisplayedCredentials
-    {
-        get
-        {
-            // If user has explicitly clicked a column header to sort, apply that sorting
-            if (UserHasClickedColumn)
-            {
-                return SortList(Credentials, SortColumn, CurrentSortDirection);
-            }
-
-            // Otherwise use the pre-sorted credentials passed from parent
-            return Credentials;
-        }
-    }
-
-    /// <summary>
-    /// Gets the default sort column based on the sort order.
-    /// </summary>
-    private string GetDefaultSortColumn()
-    {
-        return SortOrder switch
-        {
-            CredentialSortOrder.Alphabetical => "Service",
-            _ => "CreatedAt", // OldestFirst and NewestFirst
-        };
-    }
-
-    /// <summary>
-    /// Gets the default sort direction based on the sort order.
-    /// </summary>
-    private SortDirection GetDefaultSortDirection()
-    {
-        return SortOrder switch
-        {
-            CredentialSortOrder.NewestFirst => SortDirection.Descending,
-            CredentialSortOrder.Alphabetical => SortDirection.Ascending,
-            _ => SortDirection.Ascending, // OldestFirst (default)
-        };
-    }
-
-    /// <inheritdoc />
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-
-        // Only reset if the SortOrder parameter has changed
-        var newDefaultColumn = GetDefaultSortColumn();
-        var newDefaultDirection = GetDefaultSortDirection();
-
-        if (SortColumn != newDefaultColumn || (!UserHasClickedColumn && CurrentSortDirection != newDefaultDirection))
-        {
-            SortColumn = newDefaultColumn;
-            CurrentSortDirection = newDefaultDirection;
-            UserHasClickedColumn = false; // Reset user interaction state when parameters change
-        }
-    }
-
-    /// <summary>
-    /// Handles the sort changed event.
+    /// Handles the sort changed event from the table header click.
+    /// Notifies the parent component to apply sorting on all items.
     /// </summary>
     /// <param name="sort">The sort event.</param>
-    private void HandleSortChanged((string column, SortDirection direction) sort)
+    private async Task HandleSortChanged((string column, SortDirection direction) sort)
     {
-        SortColumn = sort.column;
-        CurrentSortDirection = sort.direction;
-        UserHasClickedColumn = true;
-        StateHasChanged();
-    }
-
-    /// <summary>
-    /// Sorts the list of credentials.
-    /// </summary>
-    /// <param name="credentials">The list of credentials to sort.</param>
-    /// <param name="sortColumn">The column to sort by.</param>
-    /// <param name="sortDirection">The direction to sort by.</param>
-    private static IEnumerable<ItemListEntry> SortList(List<ItemListEntry> credentials, string sortColumn, SortDirection sortDirection)
-    {
-        return sortColumn switch
-        {
-            "Service" => SortableTable.SortListByProperty(credentials, c => c.Service, sortDirection),
-            "Username" => SortableTable.SortListByProperty(credentials, c => c.Username, sortDirection),
-            "Email" => SortableTable.SortListByProperty(credentials, c => c.Email, sortDirection),
-            "CreatedAt" => SortableTable.SortListByProperty(credentials, c => c.CreatedAt, sortDirection),
-            _ => credentials
-        };
+        await OnTableSortChanged.InvokeAsync((sort.column, sort.direction));
     }
 
     /// <summary>
