@@ -29,11 +29,11 @@
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
-    <value>Creați un element nou mai jos.</value>
+    <value>Creează un element nou mai jos.</value>
     <comment>Description for adding a new item</comment>
   </data>
   <data name="EditItemDescription">
-    <value>Editați elementul existent mai jos.</value>
+    <value>Editează elementul existent mai jos.</value>
     <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
@@ -42,7 +42,7 @@
     <comment>Breadcrumb text for viewing an item</comment>
   </data>
   <data name="EditItemBreadcrumb">
-    <value>Editați elementul</value>
+    <value>Editează elementul</value>
     <comment>Breadcrumb text for editing an item</comment>
   </data>
   <data name="AddNewItemBreadcrumb">
@@ -122,7 +122,7 @@
   </data>
   <!-- Button text -->
   <data name="GenerateRandomAliasButton">
-    <value>Generați un alias aleatoriu</value>
+    <value>Generează un alias aleatoriu</value>
     <comment>Button text for generating a random alias</comment>
   </data>
   <data name="ClearAliasFieldsButton">
@@ -144,7 +144,7 @@
   </data>
   <!-- Error messages -->
   <data name="ItemNotExistError">
-    <value>Acest element nu (mai) există. Încearcă din nou.</value>
+    <value>Acest element nu mai există. Încearcă din nou.</value>
     <comment>Error message when item doesn't exist</comment>
   </data>
   <data name="ErrorSavingItem">
@@ -194,7 +194,7 @@
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">
-    <value>Revino</value>
+    <value>Revocă</value>
     <comment>Button to undo passkey deletion</comment>
   </data>
   <!-- Card section fields -->
