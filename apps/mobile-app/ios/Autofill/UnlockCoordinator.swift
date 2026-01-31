@@ -26,13 +26,35 @@ struct UnlockCoordinatorView: View {
                 // Show PIN unlock view
                 PinUnlockView(viewModel: pinViewModel)
             } else {
-                // Transparent for biometric unlock - Face ID appears with no background
-                Color.clear
-                    .ignoresSafeArea()
+                // Show logo placeholder while biometric unlock is in progress
+                BiometricUnlockPlaceholderView()
             }
         }
         .onAppear {
             coordinator.startUnlockFlow()
+        }
+    }
+}
+
+/// Simple placeholder view showing the AliasVault logo while biometric authentication is in progress
+struct BiometricUnlockPlaceholderView: View {
+    @Environment(\.colorScheme) var colorScheme
+
+    private var colors: ColorConstants.Colors.Type {
+        ColorConstants.colors(for: colorScheme)
+    }
+
+    var body: some View {
+        ZStack {
+            colors.background
+                .ignoresSafeArea()
+
+            VStack {
+                Image("Logo", bundle: .vaultUI)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 70, height: 70)
+            }
         }
     }
 }
@@ -57,18 +79,20 @@ class UnlockCoordinator: ObservableObject {
     }
 
     func startUnlockFlow() {
-        // Check if PIN is enabled
+        // Check which auth methods are enabled
+        // Priority: Biometric -> PIN -> Cancel
+        // Biometrics takes priority, PIN serves as fallback if biometrics fails or is unavailable.
         let pinEnabled = vaultStore.isPinEnabled()
         let biometricEnabled = vaultStore.isBiometricAuthEnabled()
 
-        if pinEnabled {
-            // PIN is enabled - show PIN unlock view
-            createPinViewModel()
-        } else if biometricEnabled {
-            // Only biometric is enabled - attempt biometric unlock
+        if biometricEnabled {
+            // Biometric is enabled - attempt biometric unlock first
             Task {
                 await attemptBiometricUnlock()
             }
+        } else if pinEnabled {
+            // Only PIN is enabled - show PIN unlock view
+            createPinViewModel()
         } else {
             // No auth method enabled - this shouldn't happen, but cancel the request
             cancel()
