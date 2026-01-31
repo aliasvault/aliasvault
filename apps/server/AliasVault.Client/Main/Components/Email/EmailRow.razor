@@ -2,7 +2,17 @@
 @using Microsoft.Extensions.Localization
 @inject IStringLocalizerFactory LocalizerFactory
 
-<li class="@($"hover:bg-gray-50 dark:hover:bg-gray-600 transition duration-150 ease-in-out cursor-pointer {(IsSelected ? "bg-primary-50 dark:bg-primary-900/30 border-l-4 border-primary-500" : "")}")">
+<li class="@($"flex justify-start items-center hover:bg-gray-50 dark:hover:bg-gray-600 transition duration-150 ease-in-out cursor-pointer {(IsSelected ? "bg-primary-50 dark:bg-primary-900/30 border-l-4 border-primary-500" : "")}")">
+    <!-- Checkbox for multiple emails selection -->
+    <div class="pl-4 py-4 mr-2 flex-shrink-0 pt-1" >
+        <input class="form-checkbox h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+               type="checkbox"
+               id="check-@Email.Id"
+               value="@Email.IsChecked"
+               checked="@IsChecked"
+               @onclick="@(() => OnEmailCheck.InvokeAsync(Email.Id))" />
+    </div>
+    <!-- Email card -->
     <div @onclick="@(() => OnEmailClick.InvokeAsync(Email.Id))" class="p-4 flex justify-start items-start">
         <div class="mr-4 flex-shrink-0">
             <SenderInitials SenderName="@Email.FromName" SenderEmail="@Email.FromEmail" />
@@ -56,6 +66,18 @@
     [Parameter]
     public EventCallback<int> OnEmailClick { get; set; }
 
+
+    /// <summary>
+    /// OnCheck handler for email.
+    /// </summary>
+    [Parameter]
+    public EventCallback<int> OnEmailCheck { get; set;}
+
+    /// <summary>
+    /// Whether this email is currently checked.
+    /// </summary>
+    [Parameter]
+    public bool IsChecked { get; set; }
 
     /// <summary>
     /// Whether this email is currently selected.
