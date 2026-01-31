@@ -172,10 +172,12 @@ extension VaultStore {
 
     /// Store the encryption key in the keychain
     internal func storeKeyInKeychain(_ keyData: Data) throws {
+        // Use .biometryCurrentSet to require biometric authentication only (no passcode fallback)
+        // This also invalidates the key when biometrics are added/removed.
         guard let accessControl = SecAccessControlCreateWithFlags(
             nil,
             kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
-            [.userPresence],
+            [.biometryCurrentSet],
             nil
         ) else {
             throw NSError(domain: "VaultStore", code: 11, userInfo: [NSLocalizedDescriptionKey: "Failed to create access control"])
