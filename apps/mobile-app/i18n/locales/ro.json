@@ -128,8 +128,8 @@
       "step1": "1. Deschide Setările iOS prin butonul de mai jos",
       "step2": "2. Mergi la „General”",
       "step3": "3. Apasă pe „AutoFill & Passwords”",
-      "step4": "4. Activați „AliasVault”",
-      "step5": "5. Dezactivați alți furnizori de parole (ex. „iCloud Passwords”) pentru a evita conflictele",
+      "step4": "4. Activează „AliasVault”",
+      "step5": "5. Dezactivează alți furnizori de parole (ex. „iCloud Passwords”) pentru a evita conflictele",
       "openIosSettings": "Deschide Setări iOS",
       "alreadyConfigured": "Am configurat deja",
       "warningText": "Notă: Va trebui să te autentifici cu Face ID/Touch ID sau cu codul de acces al dispozitivului când folosești completarea automată."
@@ -148,7 +148,7 @@
       "alreadyConfigured": "Am configurat deja",
       "advancedOptions": "Opțiuni Avansate",
       "showSearchText": "Afișează textul căutat",
-      "showSearchTextDescription": "Includeți textul pe care AliasVault îl primește de la Android pentru a căuta date de autentificare corespondente"
+      "showSearchTextDescription": "Include textul pe care AliasVault îl primește de la Android pentru a căuta date de autentificare corespondente"
     },
     "vaultUnlock": "Metodă deblocare seif",
     "autoLock": "Interval auto-blocare",
@@ -162,17 +162,17 @@
       "15seconds": "15 secunde",
       "30seconds": "30 secunde"
     },
-    "batteryOptimizationHelpTitle": "Activați ștergerea clipboard-ului în fundal",
+    "batteryOptimizationHelpTitle": "Activează ștergerea clipboard-ului în fundal",
     "batteryOptimizationActive": "Optimizarea bateriei blochează sarcinile în fundal",
     "batteryOptimizationDisabled": "Ștergerea clipboard-ului în fundal a fost activată",
-    "batteryOptimizationHelpDescription": "Optimizarea bateriei Android împiedică ștergerea fiabilă a clipboard-ului când aplicația este în fundal. Dezactivarea optimizării pentru AliasVault permite funcționarea corectă.",
-    "disableBatteryOptimization": "Dezactivați optimizarea bateriei",
+    "batteryOptimizationHelpDescription": "Optimizează bateria Android, însă reține că acest lucru împiedică ștergerea fiabilă a clipboard-ului când aplicația este în fundal. Dezactivează optimizarea pentru AliasVault pentru a permite funcționarea corectă.",
+    "disableBatteryOptimization": "Dezactivează optimizarea bateriei",
     "identityGenerator": "Generator de Identitate",
     "passwordGenerator": "Generator de Parole",
     "importExport": "Importă / Exportă",
     "importSectionTitle": "Importă",
     "importSectionDescription": "Importă parolele din alte managere de parole sau dintr-un export anterior AliasVault.",
-    "importWebNote": "Pentru a importa datele de autentificare din alte managere de parole, autentificarea în aplicația web este necesară. Funcția de import este momentan disponibilă doar în versiunea web.",
+    "importWebNote": "Pentru a importa datele de autentificare din alte managere de parole, trebuie să te autentifici în aplicația web. Funcția de import este momentan disponibilă doar în versiunea web.",
     "exportSectionTitle": "Export",
     "exportSectionDescription": "Exportă datele din seif într-un fișier CSV. Acest fișier poate fi folosit ca backup sau pentru import în alte aplicații.",
     "exportCsvButton": "Exportă seiful în fișier CSV",
@@ -215,16 +215,16 @@
       "keystoreAndroid": "Android Keystore"
     },
     "autoLockSettings": {
-      "description": "Alege cât timp aplicația poate rămâne în fundal înainte de a solicita re-autentificarea. Va trebui să folosești Face ID sau parola pentru a debloca din nou."
+      "description": "Alege cât timp aplicația poate rămâne în fundal înainte de a solicita reautentificarea. Va trebui să folosești Face ID sau să introduci parola pentru a debloca seiful din nou."
     },
     "identityGeneratorSettings": {
       "description": "Configurează limba și genul implicit pentru generarea de noi identități.",
       "languageSection": "Limbă",
-      "languageDescription": "Setați limba care va fi utilizată la generarea noilor identități.",
+      "languageDescription": "Setează limba care va fi utilizată la generarea noilor identități.",
       "genderSection": "Gen",
-      "genderDescription": "Setați preferința de gen pentru generarea noilor identități.",
+      "genderDescription": "Setează preferința de gen pentru generarea noilor identități.",
       "ageRangeSection": "Interval de vârstă",
-      "ageRangeDescription": "Setați intervalul de vârstă pentru generarea noilor identități.",
+      "ageRangeDescription": "Setează intervalul de vârstă pentru generarea noilor identități.",
       "genderOptions": {
         "random": "Aleatoriu",
         "male": "Masculin",
@@ -243,7 +243,7 @@
       "recentAuthLogs": "Autentificări recente",
       "deleteAccountTitle": "Șterge Contul",
       "changePassword": {
-        "headerText": "Schimbarea parolei principale modifică cheile de criptare ale seifului. Se recomandă schimbarea periodică a parolei principale.",
+        "headerText": "Schimbarea parolei principale modifică cheile de criptare ale seifului. Îți recomandăm să îți schimbi periodic parola principală.",
         "currentPassword": "Parolă actuală",
         "newPassword": "Parolă nouă",
         "confirmNewPassword": "Confirmă parola nouă",
@@ -259,7 +259,7 @@
         "failedToChange": "Schimbarea parolei a eșuat. Încearcă din nou."
       },
       "activeSessions": {
-        "headerText": "Mai jos găsiți lista dispozitivelor pe care sunteți conectat în prezent sau unde aveți o sesiune activă. Te poți deconecta de la oricare dintre aceste sesiuni aici.",
+        "headerText": "Mai jos găsești lista dispozitivelor pe care ești conectat în prezent sau unde ai o sesiune activă. Te poți deconecta de la oricare dintre aceste sesiuni aici.",
         "noSessions": "Nicio sesiune activă",
         "revoke": "Revocă",
         "revokeSession": "Revocă Sesiunea",
@@ -398,7 +398,7 @@
     "randomAlias": "Alias aleatoriu",
     "manual": "Manual",
     "enterEmailPrefix": "Introdu prefixul e-mailului",
-    "selectEmailDomain": "Selectați domeniul de e-mail",
+    "selectEmailDomain": "Selectează domeniul de e-mail",
     "privateEmailTitle": "E-mail privat",
     "privateEmailAliasVaultServer": "Server AliasVault",
     "privateEmailDescription": "Criptat E2E, complet privat.",
@@ -486,9 +486,9 @@
       "deleteFolderKeepItemsDescription": "Elementele vor fi mutate în lista principală.",
       "deleteFolderAndItems": "Șterge dosarul și toate elementele",
       "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
-      "emptyFolderHint": "Acest dosar este gol. Pentru a muta elemente aici, editați elementul și selectați acest dosar.",
+      "emptyFolderHint": "Acest dosar este gol. Pentru a muta elemente aici, editează elementul și selectează acest dosar.",
       "noFolder": "Niciun dosar",
-      "selectFolder": "Selectați dosarul"
+      "selectFolder": "Selectează dosarul"
     },
     "recentlyDeleted": {
       "title": "Șterse Recent",
@@ -558,14 +558,14 @@
     "USERNAME_MISMATCH": "Numele de utilizator nu se potrivește cu utilizatorul curent.",
     "PASSWORD_MISMATCH": "Parola furnizată nu se potrivește cu parola ta curentă.",
     "ACCOUNT_SUCCESSFULLY_DELETED": "Cont șters cu succes.",
-    "USERNAME_EMPTY_OR_WHITESPACE": "Numele de utilizator nu poate fi gol sau format doar din spații.",
+    "USERNAME_EMPTY_OR_WHITESPACE": "Numele de utilizator nu poate fi necompletat sau format doar din spații.",
     "USERNAME_TOO_SHORT": "Numele de utilizator este prea scurt: trebuie să aibă cel puțin 3 caractere.",
     "USERNAME_TOO_LONG": "Numele de utilizator este prea lung: nu poate depăși 40 de caractere.",
     "USERNAME_INVALID_EMAIL": "Adresă de e-mail invalidă.",
-    "USERNAME_INVALID_CHARACTERS": "Numele de utilizator este invalid; poate conține doar litere sau cifre.",
+    "USERNAME_INVALID_CHARACTERS": "Numele de utilizator este invalid, folosește doar litere sau cifre.",
     "VAULT_NOT_UP_TO_DATE": "Seiful tău nu este la zi. Sincronizarea seifului tău este necesară înainte de a reîncerca.",
     "INTERNAL_SERVER_ERROR": "Eroare internă de server.",
-    "VAULT_ERROR": "Seiful tău local nu este la zi. Reîmprospătați pagina pentru sincronizarea seifului tău și reîncearcă."
+    "VAULT_ERROR": "Seiful tău local nu este la zi. Reîmprospătează pagina pentru a sincroniza seiful și reîncearcă."
   },
   "sync": {
     "offline": "Offline",
@@ -631,7 +631,7 @@
     "status": {
       "preparingUpgrade": "Se pregătește actualizarea...",
       "vaultAlreadyUpToDate": "Seiful este deja la zi",
-      "startingDatabaseTransaction": "Se pornește tranzacția bazei de date...",
+      "startingDatabaseTransaction": "Se inițiază tranzacția bazei de date...",
       "applyingDatabaseMigrations": "Se aplică migrările bazei de date...",
       "applyingMigration": "Se aplică migrarea {{current}} din {{total}}...",
       "committingChanges": "Se finalizează modificările..."
