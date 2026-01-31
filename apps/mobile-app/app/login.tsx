@@ -38,18 +38,70 @@ export default function LoginScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const { showAlert, showDialog } = useDialog();
-  const [fadeAnim] = useState(new Animated.Value(0));
+
+  // Animation values for entrance effects
+  const logoScale = useRef(new Animated.Value(0.3)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const titleTranslateY = useRef(new Animated.Value(20)).current;
+  const titleOpacity = useRef(new Animated.Value(0)).current;
+  const formOpacity = useRef(new Animated.Value(0)).current;
+  const formTranslateY = useRef(new Animated.Value(30)).current;
+
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
 
   // Track if username prefill has been attempted (only do it once on mount)
   const usernamePrefillAttemptedRef = useRef(false);
 
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
+    /* Staggered entrance animations - Logo: scale up with spring + fade in */
+    Animated.parallel([
+      Animated.spring(logoScale, {
+        toValue: 1,
+        friction: 5,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+      Animated.timing(logoOpacity, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // App name: slide up + fade in (slight delay after logo starts)
+    Animated.sequence([
+      Animated.delay(150),
+      Animated.parallel([
+        Animated.timing(titleTranslateY, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(titleOpacity, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
+    // Form slides up shortly after
+    Animated.sequence([
+      Animated.delay(300),
+      Animated.parallel([
+        Animated.timing(formOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(formTranslateY, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
     loadApiUrl();
 
     /**
@@ -73,7 +125,7 @@ export default function LoginScreen() : React.ReactNode {
       }
     };
     loadSavedUsername();
-  }, [fadeAnim, loadApiUrl]);
+  }, [loadApiUrl, logoScale, logoOpacity, titleTranslateY, titleOpacity, formOpacity, formTranslateY]);
 
   // Update URL when returning from settings
   useFocusEffect(() => {
@@ -577,18 +629,31 @@ export default function LoginScreen() : React.ReactNode {
             colors={[colors.loginHeader, colors.background]}
             style={styles.gradientContainer}
           />
-          <Animated.View style={[styles.headerSection, { opacity: fadeAnim }]}>
+          <View style={styles.headerSection}>
             <View style={styles.logoContainer}>
-              <Logo width={80} height={80} />
-              <Text style={styles.appName}>{t('app.appName')}</Text>
+              <Animated.View style={{
+                opacity: logoOpacity,
+                transform: [{ scale: logoScale }],
+              }}>
+                <Logo width={80} height={80} />
+              </Animated.View>
+              <Animated.Text style={[styles.appName, {
+                opacity: titleOpacity,
+                transform: [{ translateY: titleTranslateY }],
+              }]}>
+                {t('app.appName')}
+              </Animated.Text>
             </View>
-          </Animated.View>
+          </View>
         </SafeAreaView>
         <ThemedView style={styles.content}>
           {isLoading ? (
             <LoadingIndicator status={loginStatus ?? t('common.loading')} />
           ) : (
-            <>
+            <Animated.View style={{
+              opacity: formOpacity,
+              transform: [{ translateY: formTranslateY }],
+            }}>
               <View style={styles.headerContainer}>
                 <Text style={styles.headerTitle}>{t('auth.login')}</Text>
                 <View style={styles.headerSubtitleContainer}>
@@ -744,7 +809,7 @@ export default function LoginScreen() : React.ReactNode {
                   </View>
                 </View>
               )}
-            </>
+            </Animated.View>
           )}
         </ThemedView>
       </ScrollView>
