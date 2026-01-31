@@ -77,7 +77,7 @@
     <comment>Warning message about permanent deletion</comment>
   </data>
   <data name="FinalWarning" xml:space="preserve">
-    <value>Avertisment final: Introdu parola pentru a vă șterge definitiv contul.</value>
+    <value>Introdu parola pentru a-ți șterge definitiv contul.</value>
     <comment>Final warning message before account deletion</comment>
   </data>
   <!-- Note sections -->
@@ -103,7 +103,7 @@
   </data>
   <!-- Form labels -->
   <data name="ConfirmUsernameLabel" xml:space="preserve">
-    <value>Confirmați numele de utilizator</value>
+    <value>Confirmă numele de utilizator</value>
     <comment>Label for username confirmation input field</comment>
   </data>
   <data name="EnterPasswordLabel" xml:space="preserve">
