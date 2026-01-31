@@ -3,6 +3,12 @@ import type { EncryptionKey, PasswordSettings, TotpCode, Attachment } from '@/ut
 import { BaseRepository } from '../BaseRepository';
 
 /**
+ * Sort order options for credentials list.
+ * Values must match the C# CredentialSortOrder enum in the Blazor client for cross-platform sync.
+ */
+export type CredentialSortOrder = 'OldestFirst' | 'NewestFirst' | 'Alphabetical';
+
+/**
  * SQL query constants for Settings and related operations.
  */
 const SettingsQueries = {
@@ -188,5 +194,56 @@ export class SettingsRepository extends BaseRepository {
     }
     // Fall back to browser language (first two characters)
     return navigator.language.substring(0, 2);
+  }
+
+  /**
+   * Get the credentials sort order preference.
+   * Uses the same key the other clients use for cross-platform sync.
+   * @returns The sort order preference
+   */
+  public getCredentialsSortOrder(): CredentialSortOrder {
+    const value = this.getSetting('CredentialsSortOrder', 'OldestFirst');
+    // Validate the value is a valid sort order
+    if (value === 'OldestFirst' || value === 'NewestFirst' || value === 'Alphabetical') {
+      return value;
+    }
+    return 'OldestFirst';
+  }
+
+  /**
+   * Update or insert a setting.
+   * @param key - The setting key
+   * @param value - The setting value
+   */
+  public updateSetting(key: string, value: string): void {
+    const now = this.now();
+
+    // Check if setting exists
+    const results = this.client.executeQuery<{ count: number }>(
+      `SELECT COUNT(*) as count FROM Settings WHERE Key = ?`,
+      [key]
+    );
+    const exists = results[0]?.count > 0;
+
+    if (exists) {
+      this.client.executeUpdate(
+        `UPDATE Settings SET Value = ?, UpdatedAt = ? WHERE Key = ?`,
+        [value, now, key]
+      );
+    } else {
+      this.client.executeUpdate(
+        `INSERT INTO Settings (Key, Value, CreatedAt, UpdatedAt, IsDeleted) VALUES (?, ?, ?, ?, ?)`,
+        [key, value, now, now, 0]
+      );
+    }
+  }
+
+  /**
+   * Set the credentials sort order preference.
+   * Uses the same key the other clients use for cross-platform sync.
+   * @param order - The sort order to set
+   */
+  public setCredentialsSortOrder(order: CredentialSortOrder): void {
+    this.updateSetting('CredentialsSortOrder', order);
   }
 }
