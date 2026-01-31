@@ -68,7 +68,7 @@
     <comment>Page description text</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Elementele de mai jos vor fi șterse definitiv după 30 de zile. Le puteți restaura sau șterge definitiv mai devreme.</value>
+    <value>Elementele de mai jos vor fi șterse definitiv după 30 de zile. Le poți restaura sau șterge definitiv mai devreme.</value>
     <comment>Description text explaining 30-day retention</comment>
   </data>
   <!-- Empty State -->
@@ -117,7 +117,7 @@
   </data>
   <!-- Confirm Empty All Modal -->
   <data name="ConfirmEmptyAllTitle" xml:space="preserve">
-    <value>Goliți coșul?</value>
+    <value>Golești coșul?</value>
     <comment>Title for empty all confirmation modal</comment>
   </data>
   <data name="ConfirmEmptyAllMessage" xml:space="preserve">
