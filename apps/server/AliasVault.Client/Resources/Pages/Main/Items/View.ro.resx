@@ -116,7 +116,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkey-urile sunt create prin extensia de browser sau aplicațiile mobile la solicitarea unui site web. Acestea nu pot fi editate sau create manual prin aplicația web. Pentru a elimina acest passkey, editați elementul și ștergeți passkey-ul. Pentru a înlocui sau a crea un passkey nou, vizitați site-ul respectiv și urmați instrucțiunile acestuia.</value>
+    <value>Passkey-urile sunt create prin extensia de browser sau aplicațiile mobile la solicitarea unui site web. Nu poți să le editezi sau să le creezi manual prin aplicația web. Pentru a elimina un passkey, editează elementul și șterge passkey-ul. Pentru a înlocui sau a crea un passkey nou, vizitează site-ul respectiv și urmează instrucțiunile acestuia.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="Untitled">
