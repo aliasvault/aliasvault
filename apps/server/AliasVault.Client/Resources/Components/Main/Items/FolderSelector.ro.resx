@@ -24,7 +24,7 @@
     <comment>Text shown when no folder is selected</comment>
   </data>
   <data name="SelectFolderTitle">
-    <value>Selectați dosarul</value>
+    <value>Selectează dosarul</value>
     <comment>Title of the folder selection modal</comment>
   </data>
   <data name="NoFoldersAvailable">
