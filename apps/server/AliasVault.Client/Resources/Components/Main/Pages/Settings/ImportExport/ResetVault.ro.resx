@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Resetați seiful</value>
+    <value>Resetează seiful</value>
     <comment>Page title</comment>
   </data>
   <data name="BreadcrumbImportExport" xml:space="preserve">
@@ -67,7 +67,7 @@
     <comment>Breadcrumb for import export</comment>
   </data>
   <data name="BreadcrumbResetVault" xml:space="preserve">
-    <value>Resetați seiful</value>
+    <value>Resetează seiful</value>
     <comment>Breadcrumb for reset vault</comment>
   </data>
   <data name="ResetVaultPleaseNote" xml:space="preserve">
@@ -91,7 +91,7 @@
     <comment>Reset vault note about action being irreversible</comment>
   </data>
   <data name="ResetVaultConfirmUsernameLabel" xml:space="preserve">
-    <value>Pentru a continua, introduceți numele de utilizator pentru confirmare</value>
+    <value>Pentru a continua, introdu numele de utilizator pentru confirmare</value>
     <comment>Reset vault username confirmation label</comment>
   </data>
   <data name="ResetVaultContinueButton" xml:space="preserve">
