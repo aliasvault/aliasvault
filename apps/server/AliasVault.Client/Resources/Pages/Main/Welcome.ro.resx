@@ -42,12 +42,12 @@
   </data>
   <!-- Welcome step content -->
   <data name="WelcomeMessage">
-    <value>Seiful dumneavoastră a fost creat cu succes! Protejați-vă confidențialitatea online creând aliasuri unice pentru fiecare serviciu la care vă înregistrați. Să învățăm cum funcționează AliasVault și apoi să creăm primul tău alias securizat.</value>
+    <value>Seiful tău a fost creat cu succes! Protejează-ți confidențialitatea online creând aliasuri unice pentru fiecare serviciu la care te înregistrezi. Descoperă cum funcționează AliasVault și apoi creează primul tău alias securizat.</value>
     <comment>Welcome message on the first tutorial step</comment>
   </data>
   <!-- How it works step content -->
   <data name="HowItWorksIntro">
-    <value>Când trebuie să vă înregistrați la un serviciu nou:</value>
+    <value>Când trebuie să te înregistrezi la un serviciu nou:</value>
     <comment>Introduction text for how it works step</comment>
   </data>
   <data name="HowItWorksStep1">
@@ -55,7 +55,7 @@
     <comment>First step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep2">
-    <value>Folosiți aceste informații pentru a vă înregistra la serviciul respectiv</value>
+    <value>Folosește aceste informații pentru a te înregistra la serviciul respectiv</value>
     <comment>Second step in how it works explanation</comment>
   </data>
   <data name="HowItWorksStep3">
