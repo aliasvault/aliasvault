@@ -124,11 +124,11 @@
   </data>
   <!-- Descriptions and help text -->
   <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
-    <value>您的登录受认证器应用保护。请在下方输入您的认证器代码。</value>
+    <value>您的登录受身份验证器应用保护。请在下方输入您的身份验证器代码。</value>
     <comment>Description for 2FA step</comment>
   </data>
   <data name="RecoveryCodeDescription" xml:space="preserve">
-    <value>您已请求使用恢复码登录。恢复码是一次性代码，可用于登录您的账户。请注意，如果您在登录后不手动禁用双因素认证（2FA），下次登录时仍会要求您输入双因素认证（2FA）动态验证码。</value>
+    <value>您已请求使用恢复码登录。恢复码是一次性代码，可用于登录您的账户。请注意，如果您在登录后不手动禁用两步验证（2FA），下次登录时仍会要求您输入两步验证（2FA）动态验证码。</value>
     <comment>Description for recovery code step</comment>
   </data>
   <data name="NoAccountYetText" xml:space="preserve">
@@ -149,7 +149,7 @@
     <comment>Loading message during login process</comment>
   </data>
   <data name="VerifyingTwoFactorCodeMessage" xml:space="preserve">
-    <value>正在验证双因素认证（2FA）…</value>
+    <value>正在验证两步验证（2FA）…</value>
     <comment>Loading message during 2FA verification</comment>
   </data>
   <data name="VerifyingRecoveryCodeMessage" xml:space="preserve">
