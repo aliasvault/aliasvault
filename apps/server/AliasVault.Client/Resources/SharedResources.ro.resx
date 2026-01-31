@@ -123,7 +123,7 @@
     <comment>Button text for saving changes</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Anulați</value>
+    <value>Anulează</value>
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Generate" xml:space="preserve">
@@ -175,7 +175,7 @@
     <comment>Button text to confirm an action</comment>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Actualizați</value>
+    <value>Actualizează</value>
     <comment>Button text to refresh content</comment>
   </data>
   <!-- Common form elements -->
@@ -213,11 +213,11 @@
   </data>
   <!-- Common error messages -->
   <data name="ErrorGeneric" xml:space="preserve">
-    <value>A apărut o eroare. Încercați din nou.</value>
+    <value>A apărut o eroare. Încearcă din nou.</value>
     <comment>Generic error message</comment>
   </data>
   <data name="ErrorUnknown" xml:space="preserve">
-    <value>A apărut o eroare necunoscută. Încercați din nou.</value>
+    <value>A apărut o eroare necunoscută. Încearcă din nou.</value>
     <comment>Generic unknown error message</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
