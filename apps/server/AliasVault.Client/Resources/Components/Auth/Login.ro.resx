@@ -81,7 +81,7 @@
     <comment>Label for password input field</comment>
   </data>
   <data name="AuthenticatorCodeLabel" xml:space="preserve">
-    <value>Cod autentificator</value>
+    <value>Cod de autentificare</value>
     <comment>Label for 2FA code input field</comment>
   </data>
   <data name="RecoveryCodeLabel" xml:space="preserve">
