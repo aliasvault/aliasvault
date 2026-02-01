@@ -79,15 +79,15 @@
     <comment>Description for password unlock form</comment>
   </data>
   <data name="YourPasswordLabel" xml:space="preserve">
-    <value>Your password</value>
+    <value>Ditt lösenord</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="UnlockButton" xml:space="preserve">
-    <value>Unlock</value>
+    <value>Lås upp</value>
     <comment>Button text for unlock submission</comment>
   </data>
   <data name="SwitchAccountsText" xml:space="preserve">
-    <value>Switch accounts?</value>
+    <value>Växla konton?</value>
     <comment>Text before logout link</comment>
   </data>
   <data name="LogOutLink" xml:space="preserve">
@@ -95,7 +95,7 @@
     <comment>Link text for logout</comment>
   </data>
   <data name="UnlockingVaultMessage" xml:space="preserve">
-    <value>Unlocking vault...</value>
+    <value>Låser upp valv...</value>
     <comment>Loading message while unlocking vault</comment>
   </data>
   <data name="UnlockRequestError" xml:space="preserve">
@@ -119,7 +119,7 @@
     <comment>Error message when WebAuthn is not supported</comment>
   </data>
   <data name="GenericUnlockError" xml:space="preserve">
-    <value>An error occurred while processing the login request. Try again (later).</value>
+    <value>Ett fel inträffade vid bearbetning av inloggningsbegäran. Försök igen (senare).</value>
     <comment>Generic error message for unlock failures</comment>
   </data>
   <data name="UnlockWithMobileButton" xml:space="preserve">
