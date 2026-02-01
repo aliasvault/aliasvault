@@ -87,7 +87,7 @@
     <comment>Import button text</comment>
   </data>
   <data name="ImportFoldersLabel" xml:space="preserve">
-    <value>Import folders</value>
+    <value>导入文件夹</value>
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
@@ -95,47 +95,47 @@
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
   <data name="DuplicateCredentialsWarning" xml:space="preserve">
-    <value>{0} duplicate credential(s) were found and will not be imported.</value>
+    <value>发现 {0} 个重复凭据，将不会导入。</value>
     <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
   </data>
   <data name="NoNewCredentials" xml:space="preserve">
-    <value>No new credentials were found to import.</value>
+    <value>未找到需要导入的新凭据。</value>
     <comment>Warning text when no new credentials are available for import</comment>
   </data>
   <data name="PreviewInstructions" xml:space="preserve">
-    <value>Check if the following detected credentials look correct before continuing:</value>
+    <value>在继续之前，请检查以下检测到的凭据是否正确：</value>
     <comment>Instructions shown before the credential preview table</comment>
   </data>
   <data name="ServiceColumn" xml:space="preserve">
-    <value>Service</value>
+    <value>服务</value>
     <comment>Column header for service name in credential preview table</comment>
   </data>
   <data name="UsernameColumn" xml:space="preserve">
-    <value>Username</value>
+    <value>用户名</value>
     <comment>Column header for username in credential preview table</comment>
   </data>
   <data name="PasswordColumn" xml:space="preserve">
-    <value>Password</value>
+    <value>密码</value>
     <comment>Column header for password in credential preview table</comment>
   </data>
   <data name="MoreCredentials" xml:space="preserve">
-    <value>... and {0} more credentials</value>
+    <value>以及 {0} 个其他凭证</value>
     <comment>Text showing additional credentials not displayed. {0} is the count</comment>
   </data>
   <data name="ExtractFaviconsLabel" xml:space="preserve">
-    <value>Extract favicons for services with URLs</value>
+    <value>提取具有 URL 的服务的网站图标</value>
     <comment>Checkbox label for favicon extraction option</comment>
   </data>
   <data name="ConfirmImportText" xml:space="preserve">
-    <value>Are you sure you want to import ({0}) credentials? Note: the import process can take a short while.</value>
+    <value>您确定要导入（{0}）个凭据吗？注意：导入过程可能需要一些时间。</value>
     <comment>Confirmation text before importing. {0} is the credential count</comment>
   </data>
   <data name="FaviconExtractionNote" xml:space="preserve">
-    <value>Note: Favicon extraction is enabled. This process can take several minutes depending on the number of credentials with URLs. Please keep the page open.</value>
+    <value>注意：已启用网站图标提取。此过程可能需要几分钟，具体时间取决于包含 URL 的凭据数量。请保持页面处于打开状态。</value>
     <comment>Warning note about favicon extraction duration</comment>
   </data>
   <data name="ExtractingFavicons" xml:space="preserve">
-    <value>Extracting favicons... {0} / {1}</value>
+    <value>正在提取网站图标… {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
 </root>
