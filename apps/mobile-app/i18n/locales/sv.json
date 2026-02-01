@@ -440,6 +440,12 @@
       "passkeys": "Passkeys",
       "attachments": "Bifogade filer"
     },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
+    },
     "totpCode": "TOTP-kod",
     "attachments": "Bifogade filer",
     "deleteAttachment": "Radera",
