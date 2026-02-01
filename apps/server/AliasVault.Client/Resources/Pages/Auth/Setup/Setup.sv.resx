@@ -25,7 +25,7 @@
     <comment>Title for the terms and conditions step</comment>
   </data>
   <data name="UsernameStepTitle">
-    <value>Choose Username</value>
+    <value>Välj användarnamn</value>
     <comment>Title for the username selection step</comment>
   </data>
   <data name="PasswordStepTitle">
@@ -46,7 +46,7 @@
     <comment>Button text for creating account</comment>
   </data>
   <data name="ContinueButton">
-    <value>Continue</value>
+    <value>Fortsätt</value>
     <comment>Continue button text</comment>
   </data>
 </root>
