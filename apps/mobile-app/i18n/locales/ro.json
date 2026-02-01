@@ -441,10 +441,10 @@
       "attachments": "Atașamente"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Filtrează după",
+      "oldestFirst": "Cele mai vechi primele",
+      "newestFirst": "Cele mai noi primele",
+      "alphabetical": "Alfabetic (A-Z)"
     },
     "totpCode": "Cod TOTP",
     "attachments": "Atașamente",
