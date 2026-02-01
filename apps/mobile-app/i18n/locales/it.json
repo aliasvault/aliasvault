@@ -441,10 +441,10 @@
       "attachments": "Allegati"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Ordina per",
+      "oldestFirst": "Prima i più vecchi",
+      "newestFirst": "Prima i più recenti",
+      "alphabetical": "Alfabetico (A-Z)"
     },
     "totpCode": "Codice TOTP",
     "attachments": "Allegati",
