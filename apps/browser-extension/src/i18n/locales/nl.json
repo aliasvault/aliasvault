@@ -206,10 +206,10 @@
       "passkeys": "Passkeys"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Sorteren op",
+      "oldestFirst": "Oudste eerst",
+      "newestFirst": "Nieuwste eerst",
+      "alphabetical": "Alfabetisch (A-Z)"
     },
     "deleteItemTitle": "Verwijder item",
     "deleteItemConfirm": "Weet je zeker dat je dit item wilt verwijderen?",
@@ -402,6 +402,21 @@
       "apiUrlInvalid": "Voer een geldige API URL in",
       "clientUrlRequired": "Client URL is vereist",
       "clientUrlInvalid": "Voer een geldige client URL in"
+    },
+    "identityGenerator": "Identiteit generator",
+    "identityGeneratorSettings": {
+      "description": "Configureer de standaardtaal en geslachtsvoorkeur voor het genereren van nieuwe identiteiten.",
+      "languageSection": "Taal",
+      "languageDescription": "Stel de taal in die wordt gebruikt bij het genereren van nieuwe identiteiten.",
+      "genderSection": "Geslacht",
+      "genderDescription": "Stel de geslachtsvoorkeur in voor het genereren van nieuwe identiteiten.",
+      "ageRangeSection": "Leeftijdsrange",
+      "ageRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
+      "genderOptions": {
+        "random": "Willekeurig",
+        "male": "Mannelijk",
+        "female": "Vrouwelijk"
+      }
     },
     "unlockMethod": {
       "title": "Vault ontgrendelmethode",
