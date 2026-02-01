@@ -6,13 +6,11 @@ import '@/entrypoints/contentScript/style.css';
 import { onMessage } from "webext-bridge/content-script";
 
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
-import { isAutoShowPopupEnabled, openAutofillPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
+import { isAutoShowPopupEnabled, openAutofillPopup, removeExistingPopup, createVaultLockedPopup } from '@/entrypoints/contentScript/Popup';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
-
-import { t } from '@/i18n/StandaloneI18n';
 
 import { defineContentScript, createShadowRootUi, storage } from '#imports';
 
@@ -160,22 +158,12 @@ export default defineContentScript({
               error?: string
             };
 
-            if (authStatus.isVaultLocked) {
-              // Vault is locked, show vault locked popup
-              const { createVaultLockedPopup } = await import('@/entrypoints/contentScript/Popup');
-              createVaultLockedPopup(inputElement, container);
-              return;
-            }
-
-            if (authStatus.hasPendingMigrations) {
-              // Show upgrade required popup
-              await createUpgradeRequiredPopup(inputElement, container, await t('content.vaultUpgradeRequired'));
-              return;
-            }
-
-            if (authStatus.error) {
-              // Show upgrade required popup for version-related errors
-              await createUpgradeRequiredPopup(inputElement, container, authStatus.error);
+            if (authStatus.isVaultLocked || authStatus.hasPendingMigrations || authStatus.error) {
+              /*
+               * Vault is locked, has pending migrations, or has errors - show vault locked popup.
+               * User will see specific details when they open the main popup.
+               */
+              await createVaultLockedPopup(inputElement, container);
               return;
             }
 

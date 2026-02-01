@@ -163,8 +163,6 @@
     "generateNewPassword": "Generate new password",
     "togglePasswordVisibility": "Toggle password visibility",
     "passwordCopiedToClipboard": "Password copied to clipboard",
-    "openAliasVaultToUpgrade": "Open AliasVault to upgrade",
-    "vaultUpgradeRequired": "Vault upgrade required.",
     "dismissPopup": "Dismiss popup"
   },
   "items": {

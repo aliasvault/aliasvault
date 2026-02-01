@@ -17,6 +17,10 @@ type ItemIconProps = {
 /**
  * Renders an SVG string as a React component using dangerouslySetInnerHTML.
  * The SVG is wrapped in a div to apply className for sizing.
+ *
+ * NOTE: dangerouslySetInnerHTML is used here with trusted static SVG strings
+ * from ItemTypeIconSvgs (defined at build time in the models package).
+ * These are NOT user-provided values, so this usage is safe.
  */
 const SvgIcon: React.FC<{ svg: string; className?: string }> = ({ svg, className = 'w-8 h-8' }) => (
   <div
@@ -94,14 +98,20 @@ const ItemIcon: React.FC<ItemIconProps> = ({ item, className = 'w-8 h-8' }) => {
         alt={item.Name || 'Item'}
         className={`${className} flex-shrink-0`}
         onError={(e) => {
-          // On error, replace with placeholder icon
+          // On error, replace with placeholder icon using safe DOM parsing
           const target = e.target as HTMLImageElement;
           target.style.display = 'none';
           const parent = target.parentElement;
           if (parent) {
             const placeholder = document.createElement('div');
             placeholder.className = className;
-            placeholder.innerHTML = ItemTypeIconSvgs.Placeholder;
+            // Parse the trusted static SVG string safely using DOMParser
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(ItemTypeIconSvgs.Placeholder, 'image/svg+xml');
+            const svgElement = svgDoc.documentElement;
+            if (svgElement && svgElement.tagName.toLowerCase() === 'svg') {
+              placeholder.appendChild(document.importNode(svgElement, true));
+            }
             parent.insertBefore(placeholder, target);
           }
         }}
