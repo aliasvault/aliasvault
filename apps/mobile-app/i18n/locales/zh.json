@@ -441,10 +441,10 @@
       "attachments": "附件"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "排序方式",
+      "oldestFirst": "最早在前",
+      "newestFirst": "最新在前",
+      "alphabetical": "字母顺序（A-Z）"
     },
     "totpCode": "TOTP 验证码",
     "attachments": "附件",
