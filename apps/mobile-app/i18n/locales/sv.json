@@ -441,10 +441,10 @@
       "attachments": "Bifogade filer"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Sortera efter",
+      "oldestFirst": "Äldst först",
+      "newestFirst": "Nyast först",
+      "alphabetical": "Alfabetiskt (A-Z)"
     },
     "totpCode": "TOTP-kod",
     "attachments": "Bifogade filer",
