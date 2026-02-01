@@ -403,6 +403,21 @@
       "clientUrlRequired": "URL-ul Client este obligatoriu",
       "clientUrlInvalid": "Introdu un URL Client valid"
     },
+    "identityGenerator": "Generator de Identitate",
+    "identityGeneratorSettings": {
+      "description": "Configurează limba și genul implicit pentru generarea de noi identități.",
+      "languageSection": "Limbă",
+      "languageDescription": "Setează limba care va fi utilizată la generarea noilor identități.",
+      "genderSection": "Gen",
+      "genderDescription": "Setează preferința de gen pentru generarea noilor identități.",
+      "ageRangeSection": "Interval de vârstă",
+      "ageRangeDescription": "Setează intervalul de vârstă pentru generarea noilor identități.",
+      "genderOptions": {
+        "random": "Aleatoriu",
+        "male": "Masculin",
+        "female": "Feminin"
+      }
+    },
     "unlockMethod": {
       "title": "Metodă deblocare seif",
       "introText": "Alege cum dorești să îți deblochezi seiful. Poți folosi parola principală (întotdeauna disponibilă) sau poți configura un cod PIN pentru acces rapid. După 3 încercări eșuate ale PIN-ului, va trebui să folosești parola principală.",
