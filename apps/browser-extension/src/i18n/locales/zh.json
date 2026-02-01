@@ -403,6 +403,21 @@
       "clientUrlRequired": "客户端 URL 为必填项",
       "clientUrlInvalid": "请输入有效的客户端 URL"
     },
+    "identityGenerator": "身份生成器",
+    "identityGeneratorSettings": {
+      "description": "配置生成新身份时的默认语言和性别偏好。",
+      "languageSection": "语言",
+      "languageDescription": "设置生成新身份时使用的语言。",
+      "genderSection": "性别",
+      "genderDescription": "设置生成新身份时的性别偏好。",
+      "ageRangeSection": "年龄范围",
+      "ageRangeDescription": "设置生成新身份的年龄范围。",
+      "genderOptions": {
+        "random": "随机",
+        "male": "男",
+        "female": "女"
+      }
+    },
     "unlockMethod": {
       "title": "密码库解锁方式",
       "introText": "选择您解锁密码库的方式。您可以使用主密码（始终可用），也可以设置 PIN 码以便快捷访问。PIN 码输入错误 3 次后，您需要使用主密码。",
