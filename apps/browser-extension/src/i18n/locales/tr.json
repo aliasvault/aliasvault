@@ -312,7 +312,7 @@
     "emailNotFound": "E-posta bulunamadı",
     "noEmails": "No emails found",
     "noEmailsDescription": "Özel e-posta adreslerinize henüz bir e-posta gelmedi. Yeni bir e-posta aldığınızda burada görünecektir.",
-    "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
+    "offlineMessage": "Çevrimdışısınız. E-postalarınızı yüklemek için lütfen internet bağlantısı sağlayın.",
     "dateFormat": {
       "justNow": "biraz önce",
       "minutesAgo_single": "{{count}} dakika önce",
@@ -402,6 +402,21 @@
       "apiUrlInvalid": "Please enter a valid API URL",
       "clientUrlRequired": "Client URL is required",
       "clientUrlInvalid": "Please enter a valid client URL"
+    },
+    "identityGenerator": "Kimlik Oluşturucu",
+    "identityGeneratorSettings": {
+      "description": "Yeni kimlikler oluştururken varsayılan dil ve cinsiyet tercihlerini yapılandırın.",
+      "languageSection": "Dil",
+      "languageDescription": "Yeni kimlikler oluşturulurken kullanılacak dili belirleyin.",
+      "genderSection": "Cinsiyet",
+      "genderDescription": "Yeni kimlikler oluştururken cinsiyet tercihlerini belirleyin.",
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
+      "genderOptions": {
+        "random": "Rastgele",
+        "male": "Erkek",
+        "female": "Kadın"
+      }
     },
     "unlockMethod": {
       "title": "Kasa Açma Yöntemi",
