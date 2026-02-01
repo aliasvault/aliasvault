@@ -21,11 +21,11 @@
   </xsd:schema>
   <!-- Page titles and descriptions -->
   <data name="AddItemTitle">
-    <value>Add Item</value>
+    <value>Lägg till objekt</value>
     <comment>Title for adding a new item</comment>
   </data>
   <data name="EditItemTitle">
-    <value>Edit Item</value>
+    <value>Redigera objekt</value>
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
@@ -46,16 +46,16 @@
     <comment>Breadcrumb text for editing an item</comment>
   </data>
   <data name="AddNewItemBreadcrumb">
-    <value>Add new item</value>
+    <value>Lägg till nytt objekt</value>
     <comment>Breadcrumb text for adding a new item</comment>
   </data>
   <!-- Section headers -->
   <data name="ServiceSectionHeader">
-    <value>Item</value>
+    <value>Objekt</value>
     <comment>Header for the item information section</comment>
   </data>
   <data name="LoginDetailsSectionHeader">
-    <value>Login credentials</value>
+    <value>Inloggningsuppgifter</value>
     <comment>Header for the login credentials section</comment>
   </data>
   <data name="AliasSectionHeader">
@@ -63,40 +63,40 @@
     <comment>Header for the alias information section</comment>
   </data>
   <data name="NotesSectionHeader">
-    <value>Notes</value>
+    <value>Anteckningar</value>
     <comment>Header for the notes section</comment>
   </data>
   <data name="AttachmentsSectionHeader">
-    <value>Attachments</value>
+    <value>Bifogade filer</value>
     <comment>Header for the attachments section</comment>
   </data>
   <!-- Form labels -->
   <data name="ServiceNameLabel">
-    <value>Name</value>
+    <value>Namn</value>
     <comment>Label for item name input</comment>
   </data>
   <data name="ServiceUrlLabel">
-    <value>Website URL</value>
+    <value>Webbplatsadress</value>
     <comment>Label for website URL input</comment>
   </data>
   <data name="EmailLabel">
-    <value>Email</value>
+    <value>E-post</value>
     <comment>Label for email input</comment>
   </data>
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>Användarnamn</value>
     <comment>Label for username input</comment>
   </data>
   <data name="PasswordLabel">
-    <value>Password</value>
+    <value>Lösenord</value>
     <comment>Label for password input</comment>
   </data>
   <data name="FirstNameLabel">
-    <value>First Name</value>
+    <value>Förnamn</value>
     <comment>Label for first name input</comment>
   </data>
   <data name="LastNameLabel">
-    <value>Last Name</value>
+    <value>Efternamn</value>
     <comment>Label for last name input</comment>
   </data>
   <data name="NickNameLabel">
@@ -104,15 +104,15 @@
     <comment>Label for nick name input</comment>
   </data>
   <data name="GenderLabel">
-    <value>Gender</value>
+    <value>Kön</value>
     <comment>Label for gender input</comment>
   </data>
   <data name="BirthDateLabel">
-    <value>Birth Date</value>
+    <value>Födelsedatum</value>
     <comment>Label for birth date input</comment>
   </data>
   <data name="NotesLabel">
-    <value>Notes</value>
+    <value>Anteckningar</value>
     <comment>Label for notes input</comment>
   </data>
   <!-- Placeholders -->
@@ -122,7 +122,7 @@
   </data>
   <!-- Button text -->
   <data name="GenerateRandomAliasButton">
-    <value>Generate Random Alias</value>
+    <value>Generera slumpmässigt alias</value>
     <comment>Button text for generating a random alias</comment>
   </data>
   <data name="ClearAliasFieldsButton">
@@ -130,11 +130,11 @@
     <comment>Button text for clearing alias fields</comment>
   </data>
   <data name="SaveItemButton">
-    <value>Save Item</value>
+    <value>Spara objekt</value>
     <comment>Button text for saving an item</comment>
   </data>
   <data name="CancelButton">
-    <value>Cancel</value>
+    <value>Avbryt</value>
     <comment>Button text for canceling the operation</comment>
   </data>
   <!-- Loading and status messages -->
@@ -153,11 +153,11 @@
   </data>
   <!-- Success messages -->
   <data name="ItemUpdatedSuccess">
-    <value>Item updated successfully.</value>
+    <value>Objektet har uppdaterats.</value>
     <comment>Success message when item is updated</comment>
   </data>
   <data name="ItemCreatedSuccess">
-    <value>Item created successfully.</value>
+    <value>Objektet har skapats.</value>
     <comment>Success message when item is created</comment>
   </data>
   <!-- Passkey labels -->
@@ -170,11 +170,11 @@
     <comment>Label for passkey</comment>
   </data>
   <data name="PasskeySiteLabel">
-    <value>Site</value>
+    <value>Webbplats</value>
     <comment>Label for passkey site/relying party ID</comment>
   </data>
   <data name="PasskeyDisplayNameLabel">
-    <value>Name</value>
+    <value>Namn</value>
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
@@ -186,7 +186,7 @@
     <comment>Button to delete passkey</comment>
   </data>
   <data name="PasskeyMarkedForDeletion">
-    <value>Passkey marked for deletion</value>
+    <value>Passkey markerad för borttagning</value>
     <comment>Header when passkey is marked for deletion</comment>
   </data>
   <data name="PasskeyWillBeDeleted">
@@ -194,7 +194,7 @@
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">
-    <value>Undo</value>
+    <value>Ångra</value>
     <comment>Button to undo passkey deletion</comment>
   </data>
   <!-- Card section fields -->
@@ -203,23 +203,23 @@
     <comment>Header for the credit card details section</comment>
   </data>
   <data name="CardholderNameLabel">
-    <value>Cardholder Name</value>
+    <value>Kortinnehavarens namn</value>
     <comment>Label for cardholder name input</comment>
   </data>
   <data name="CardNumberLabel">
-    <value>Card Number</value>
+    <value>Kortnummer</value>
     <comment>Label for card number input</comment>
   </data>
   <data name="ExpiryMonthLabel">
-    <value>Expiry Month</value>
+    <value>Utgångsmånad</value>
     <comment>Label for expiry month input</comment>
   </data>
   <data name="ExpiryYearLabel">
-    <value>Expiry Year</value>
+    <value>Utgångsår</value>
     <comment>Label for expiry year input</comment>
   </data>
   <data name="CardCvvLabel">
-    <value>CVV</value>
+    <value>Säkerhetskod</value>
     <comment>Label for CVV input</comment>
   </data>
   <data name="CardPinLabel">
@@ -228,7 +228,7 @@
   </data>
   <!-- Custom fields section -->
   <data name="CustomFieldsSectionHeader">
-    <value>Custom Fields</value>
+    <value>Anpassade fält</value>
     <comment>Header for the custom fields section</comment>
   </data>
   <data name="RemoveField">
