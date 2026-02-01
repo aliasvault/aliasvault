@@ -72,7 +72,7 @@
   </data>
   <!-- Form labels -->
   <data name="ServiceNameLabel">
-    <value>Name</value>
+    <value>Nom</value>
     <comment>Label for item name input</comment>
   </data>
   <data name="ServiceUrlLabel">
@@ -80,15 +80,15 @@
     <comment>Label for website URL input</comment>
   </data>
   <data name="EmailLabel">
-    <value>Email</value>
+    <value>Correu electrònic</value>
     <comment>Label for email input</comment>
   </data>
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>Nom d’usuari</value>
     <comment>Label for username input</comment>
   </data>
   <data name="PasswordLabel">
-    <value>Password</value>
+    <value>Contrasenya</value>
     <comment>Label for password input</comment>
   </data>
   <data name="FirstNameLabel">
@@ -134,7 +134,7 @@
     <comment>Button text for saving an item</comment>
   </data>
   <data name="CancelButton">
-    <value>Cancel</value>
+    <value>Cancel·la</value>
     <comment>Button text for canceling the operation</comment>
   </data>
   <!-- Loading and status messages -->
@@ -174,7 +174,7 @@
     <comment>Label for passkey site/relying party ID</comment>
   </data>
   <data name="PasskeyDisplayNameLabel">
-    <value>Name</value>
+    <value>Nom</value>
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
