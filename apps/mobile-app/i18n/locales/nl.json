@@ -441,10 +441,10 @@
       "attachments": "Bijlagen"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Sorteren op",
+      "oldestFirst": "Oudste eerst",
+      "newestFirst": "Nieuwste eerst",
+      "alphabetical": "Alfabetisch (A-Z)"
     },
     "totpCode": "TOTP-code",
     "attachments": "Bijlagen",
