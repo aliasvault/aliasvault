@@ -1,0 +1,5 @@
+- Probleem verholpen m.b.t. data migraties wat kon leiden tot ontbrekende TOTP codes en passkeys
+- Probleem verholpen bij het maken van passkeys wat kon leiden tot fouten
+- UI ververst nu correct nadat vault is gesynchroniseerd
+- Spaans, Roemeens and Perzische taal toegevoegd aan identiteitgenerator
+- Item sorteeropties toegevoegd
