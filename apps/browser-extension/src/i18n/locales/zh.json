@@ -206,10 +206,10 @@
       "passkeys": "通行密钥"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "排序方式",
+      "oldestFirst": "最早在前",
+      "newestFirst": "最新在前",
+      "alphabetical": "字母顺序（A-Z）"
     },
     "deleteItemTitle": "删除项目",
     "deleteItemConfirm": "您确定要删除此项目吗？",
@@ -405,11 +405,11 @@
     },
     "identityGenerator": "身份生成器",
     "identityGeneratorSettings": {
-      "description": "配置生成新身份时的默认语言和性别偏好。",
+      "description": "配置生成新身份的默认语言和性别偏好。",
       "languageSection": "语言",
-      "languageDescription": "设置生成新身份时使用的语言。",
+      "languageDescription": "设置生成新身份将使用的语言。",
       "genderSection": "性别",
-      "genderDescription": "设置生成新身份时的性别偏好。",
+      "genderDescription": "设置生成新身份的性别偏好。",
       "ageRangeSection": "年龄范围",
       "ageRangeDescription": "设置生成新身份的年龄范围。",
       "genderOptions": {
