@@ -440,6 +440,12 @@
       "passkeys": "Sala-avaimet",
       "attachments": "Liitteet"
     },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
+    },
     "totpCode": "TOTP-koodi",
     "attachments": "Liitteet",
     "deleteAttachment": "Poista",
