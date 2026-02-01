@@ -403,6 +403,21 @@
       "clientUrlRequired": "L'URL del client è obbligatorio",
       "clientUrlInvalid": "Inserisci un URL del client valido"
     },
+    "identityGenerator": "Generatore di identità",
+    "identityGeneratorSettings": {
+      "description": "Configura lingua e preferenze di genere per la generazione di nuove identità.",
+      "languageSection": "Lingua",
+      "languageDescription": "Imposta la lingua usata per generare nuove identità.",
+      "genderSection": "Genere",
+      "genderDescription": "Imposta la preferenza di genere per generare nuove identità.",
+      "ageRangeSection": "Fascia d'età",
+      "ageRangeDescription": "Imposta la fascia di età per generare nuove identità.",
+      "genderOptions": {
+        "random": "Casuale",
+        "male": "Maschio",
+        "female": "Femmina"
+      }
+    },
     "unlockMethod": {
       "title": "Metodo di sblocco cassaforte",
       "introText": "Scegli come sbloccare la cassaforte. Puoi usare la tua password principale (sempre disponibile) o impostare un codice PIN per un accesso più veloce. Dopo 3 tentativi di PIN falliti, è necessario utilizzare la password principale.",
