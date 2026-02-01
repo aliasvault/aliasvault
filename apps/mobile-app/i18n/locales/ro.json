@@ -154,7 +154,7 @@
     "autoLock": "Interval auto-blocare",
     "clipboardClear": "Golește clipboardul",
     "clipboardClearDescription": "Șterge automat parolele copiate și informațiile sensibile din clipboard după o perioadă specificată.",
-    "clipboardClearAndroidWarning": "Notă: unele dispozitive Android au istoricul clipboard-ului activat, care poate păstra elementele copiate anterior. AliasVault poate suprascrie doar cel mai recent element. Recomandăm dezactivarea istoricului clipboard-ului din setările dispozitivului.",
+    "clipboardClearAndroidWarning": "Notă: unele dispozitive Android au istoricul clipboard-ului activat, care poate păstra elementele copiate anterior. AliasVault poate suprascrie doar cel mai recent element, dar intrările mai vechi pot rămâne vizibile în istoric. Din motive de securitate, recomandăm să dezactivați orice funcții ale istoricului clipboard-ului în setările dispozitivului.",
     "clipboardClearOptions": {
       "never": "Niciodată",
       "5seconds": "5 secunde",
@@ -165,7 +165,7 @@
     "batteryOptimizationHelpTitle": "Activează ștergerea clipboard-ului în fundal",
     "batteryOptimizationActive": "Optimizarea bateriei blochează sarcinile în fundal",
     "batteryOptimizationDisabled": "Ștergerea clipboard-ului în fundal a fost activată",
-    "batteryOptimizationHelpDescription": "Optimizarea bateriei Android împiedică ștergerea fiabilă a clipboard-ului când aplicația rulează în fundal. Dezactivarea optimizării pentru AliasVault permite funcționarea corectă.",
+    "batteryOptimizationHelpDescription": "Optimizarea bateriei Android împiedică ștergerea fiabilă a clipboard-ului când aplicația rulează în fundal. Dezactivarea optimizării bateriei pentru AliasVault permite ștergerea precisă a clipboard-ului în fundal și acordă automat permisiunile necesare.",
     "disableBatteryOptimization": "Dezactivează optimizarea bateriei",
     "identityGenerator": "Generator de Identitate",
     "passwordGenerator": "Generator de Parole",
@@ -439,6 +439,12 @@
       "all": "(Toate) Elementele",
       "passkeys": "Passkeys",
       "attachments": "Atașamente"
+    },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
     },
     "totpCode": "Cod TOTP",
     "attachments": "Atașamente",
