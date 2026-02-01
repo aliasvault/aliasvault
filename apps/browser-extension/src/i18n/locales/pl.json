@@ -403,6 +403,21 @@
       "clientUrlRequired": "Adres URL klienta jest wymagany",
       "clientUrlInvalid": "Wprowadź prawidłowy adres URL klienta"
     },
+    "identityGenerator": "Generator tożsamości",
+    "identityGeneratorSettings": {
+      "description": "Skonfiguruj domyślny język i preferencje dotyczące płci dla generowania nowych tożsamości.",
+      "languageSection": "Wybierz język",
+      "languageDescription": "Ustaw język, który będzie używany podczas generowania nowych tożsamości.",
+      "genderSection": "Płeć",
+      "genderDescription": "Ustaw preferencje dotyczące płci dla generowania nowych tożsamości.",
+      "ageRangeSection": "Zakres wieku",
+      "ageRangeDescription": "Ustaw zakres wieku dla generowania nowych tożsamości.",
+      "genderOptions": {
+        "random": "Losowy",
+        "male": "Mężczyzna",
+        "female": "Kobieta"
+      }
+    },
     "unlockMethod": {
       "title": "Metoda odblokowania skarbca",
       "introText": "Wybierz sposób odblokowania sejfu. Możesz użyć hasła głównego (zawsze dostępnego) lub skonfigurować kod PIN, aby uzyskać szybszy dostęp. Po 3 nieudanych próbach wprowadzenia kodu PIN konieczne będzie użycie hasła głównego.",
