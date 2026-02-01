@@ -403,19 +403,19 @@
       "clientUrlRequired": "L'URL du client est requise",
       "clientUrlInvalid": "Veuillez entrer une URL de client valide"
     },
-    "identityGenerator": "Identity Generator",
+    "identityGenerator": "Générateur d'identité",
     "identityGeneratorSettings": {
-      "description": "Configure the default language and gender preference for generating new identities.",
-      "languageSection": "Language",
-      "languageDescription": "Set the language that will be used when generating new identities.",
-      "genderSection": "Gender",
-      "genderDescription": "Set the gender preference for generating new identities.",
-      "ageRangeSection": "Tranches d'âges",
-      "ageRangeDescription": "Définir la tranche d'âge pour la génération de nouvelles identités.",
+      "description": "Configurer la langue par défaut et la préférence de genre pour la génération de nouvelles identités.",
+      "languageSection": "Langue",
+      "languageDescription": "Définit la langue qui sera utilisée lors de la génération de nouvelles identités.",
+      "genderSection": "Genre",
+      "genderDescription": "Définissez la préférence de genre pour la génération de nouvelles identités.",
+      "ageRangeSection": "Tranche d'âge",
+      "ageRangeDescription": "Définit la tranche d'âge pour la génération de nouvelles identités.",
       "genderOptions": {
-        "random": "Random",
-        "male": "Male",
-        "female": "Female"
+        "random": "Aléatoire",
+        "male": "Homme",
+        "female": "Femme"
       }
     },
     "unlockMethod": {
