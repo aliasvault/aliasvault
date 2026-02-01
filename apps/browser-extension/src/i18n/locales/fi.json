@@ -403,6 +403,21 @@
       "clientUrlRequired": "Asiakkaan URL-osoite vaaditaan",
       "clientUrlInvalid": "Syötä kelvollinen asiakas-URL-osoite"
     },
+    "identityGenerator": "Identiteetin luonti",
+    "identityGeneratorSettings": {
+      "description": "Määritä oletuskieli- ja sukupuoliasetukset uusien käyttäjätunnusten luontia varten.",
+      "languageSection": "Kieli",
+      "languageDescription": "Aseta kieli, jota käytetään luotaessa uusia henkilöllisyyksiä.",
+      "genderSection": "Sukupuoli",
+      "genderDescription": "Aseta oletussukupuoli uusien henkilöllisyyksien luomiseksi. ",
+      "ageRangeSection": "Ikähaarukka",
+      "ageRangeDescription": "Aseta ikähaarukka uusia henkilöllisyyksien luomisessa",
+      "genderOptions": {
+        "random": "Satunnainen",
+        "male": "Mies",
+        "female": "Nainen"
+      }
+    },
     "unlockMethod": {
       "title": "Holvin lukituksen avausmenetelmä",
       "introText": "Valitse, miten haluat avata holvisi. Voit käyttää pääsalasanaa (aina saatavilla) tai määrittää nopean 4-8 numeroisen PIN-koodin nopeampaa käyttöä varten. Kolmen epäonnistuneen PIN-yrityksen jälkeen sinun on käytettävä pääsalasanaa.",
