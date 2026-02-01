@@ -74,7 +74,7 @@
     "loadingAttachments": "Laddar bifogade filer...",
     "settings": "Inställningar",
     "recentEmails": "Senaste e-postmeddelanden",
-    "credentials": "Användaruppgifter",
+    "credentials": "Inloggningsuppgifter",
     "customFields": "Anpassade fält",
     "twoFactorAuthentication": "Tvåfaktorsautentisering",
     "alias": "Alias",
@@ -322,8 +322,8 @@
       "yesterday": "igår"
     },
     "apiErrors": {
-      "CLAIM_DOES_NOT_MATCH_USER": "Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna uppgiftsposten.",
-      "CLAIM_DOES_NOT_EXIST": "Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara uppgiftsposten för att synkronisera databasen, och försök sedan igen."
+      "CLAIM_DOES_NOT_MATCH_USER": "Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna post.",
+      "CLAIM_DOES_NOT_EXIST": "Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara posten för att synkronisera databasen, och försök sedan igen."
     }
   },
   "settings": {
@@ -440,7 +440,7 @@
   "passkeys": {
     "passkey": "Passkey",
     "site": "Webbplats",
-    "helpText": "Passkeys skapas på webbplatsen när du blir tillfrågad. De kan inte redigeras manuellt. För att radera denna passkey, kan du ta bort det från denna inloggning. För att byta ut denna passkey eller skapa en ny, besök webbplatsen och följ dess anvisningar.",
+    "helpText": "Passkeys skapas på webbplatsen när du blir tillfrågad. De kan inte redigeras manuellt. För att radera denna passkey, kan du ta bort det från denna posten. För att byta ut denna passkey eller skapa en ny, besök webbplatsen och följ dess anvisningar.",
     "passkeyMarkedForDeletion": "Passkey markerad för borttagning",
     "passkeyWillBeDeleted": "Denna passkey kommer att tas bort när du sparar dessa uppgifter.",
     "useBrowserPasskey": "Använd Webbläsar Passkey",
