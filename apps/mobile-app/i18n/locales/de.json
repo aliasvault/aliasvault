@@ -440,6 +440,12 @@
       "passkeys": "Passkeys",
       "attachments": "Anhänge"
     },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
+    },
     "totpCode": "TOTP-Code",
     "attachments": "Anhänge",
     "deleteAttachment": "Löschen",
