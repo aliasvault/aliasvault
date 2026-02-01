@@ -205,6 +205,12 @@
       "all": "(Todos) Elementos",
       "passkeys": "Llaves de acceso"
     },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
+    },
     "deleteItemTitle": "Eliminar elemento",
     "deleteItemConfirm": "¿Está seguro de querer borrar este ítem?",
     "viewHistory": "Ver historial",
