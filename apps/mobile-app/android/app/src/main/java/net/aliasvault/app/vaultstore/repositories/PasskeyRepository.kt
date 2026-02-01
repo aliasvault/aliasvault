@@ -186,28 +186,10 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
             val now = Date()
             val timestamp = DateHelpers.toStandardFormat(now)
 
-            // Create logo if provided
+            // Create or reuse logo if provided
             val logoId = if (logo != null) {
-                val logoIdGen = generateId()
                 val source = rpId.lowercase().replace("www.", "")
-
-                executeUpdate(
-                    """
-                    INSERT INTO Logos (Id, Source, FileData, MimeType, FetchedAt, CreatedAt, UpdatedAt, IsDeleted)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                    """.trimIndent(),
-                    arrayOf(
-                        logoIdGen,
-                        source,
-                        logo, // ByteArray for FileData
-                        "image/png",
-                        null, // FetchedAt
-                        timestamp,
-                        timestamp,
-                        0,
-                    ),
-                )
-                logoIdGen
+                getOrCreateLogo(source, logo, timestamp)
             } else {
                 null
             }
@@ -380,24 +362,8 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
                         arrayOf(logo, timestamp, existingLogoId),
                     )
                 } else {
-                    // Create new logo
-                    val newLogoId = generateId()
-                    executeUpdate(
-                        """
-                        INSERT INTO Logos (Id, Source, FileData, MimeType, FetchedAt, CreatedAt, UpdatedAt, IsDeleted)
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-                        """.trimIndent(),
-                        arrayOf(
-                            newLogoId,
-                            source,
-                            logo,
-                            "image/png",
-                            null,
-                            timestamp,
-                            timestamp,
-                            0,
-                        ),
-                    )
+                    // Create or reuse logo with unique source check
+                    val newLogoId = getOrCreateLogo(source, logo, timestamp)
 
                     // Link logo to item
                     executeUpdate(
@@ -676,6 +642,59 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
     }
 
     // MARK: - Helper Methods
+
+    /**
+     * Get an existing logo ID for a source, or create a new logo if none exists.
+     * This prevents UNIQUE constraint violations on Logos.Source.
+     *
+     * @param source The normalized source domain (e.g., 'github.com')
+     * @param logoData The logo image data as ByteArray
+     * @param timestamp The current timestamp for CreatedAt/UpdatedAt
+     * @return The logo ID (existing or newly created)
+     */
+    private fun getOrCreateLogo(source: String, logoData: ByteArray, timestamp: String): String {
+        // Check if a logo for this source already exists
+        val existingLogos = executeQuery(
+            "SELECT Id, IsDeleted FROM Logos WHERE Source = ? LIMIT 1",
+            arrayOf(source),
+        )
+
+        val existingLogo = existingLogos.firstOrNull()
+        if (existingLogo != null) {
+            val existingLogoId = existingLogo["Id"] as String
+            val isDeleted = (existingLogo["IsDeleted"] as? Long) == 1L
+
+            // Sanity check: restore if soft-deleted
+            if (isDeleted) {
+                executeUpdate(
+                    "UPDATE Logos SET IsDeleted = 0, UpdatedAt = ? WHERE Id = ?",
+                    arrayOf(timestamp, existingLogoId),
+                )
+            }
+            return existingLogoId
+        }
+
+        // Create new logo entry
+        val logoId = generateId()
+        executeUpdate(
+            """
+            INSERT INTO Logos (Id, Source, FileData, MimeType, FetchedAt, CreatedAt, UpdatedAt, IsDeleted)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """.trimIndent(),
+            arrayOf(
+                logoId,
+                source,
+                logoData,
+                "image/png",
+                null,
+                timestamp,
+                timestamp,
+                0,
+            ),
+        )
+
+        return logoId
+    }
 
     /**
      * Parse a passkey row from database query results.
