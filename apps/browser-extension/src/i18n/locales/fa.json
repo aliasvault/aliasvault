@@ -403,6 +403,21 @@
       "clientUrlRequired": "Client URL is required",
       "clientUrlInvalid": "Please enter a valid client URL"
     },
+    "identityGenerator": "Identity Generator",
+    "identityGeneratorSettings": {
+      "description": "Configure the default language and gender preference for generating new identities.",
+      "languageSection": "Language",
+      "languageDescription": "Set the language that will be used when generating new identities.",
+      "genderSection": "Gender",
+      "genderDescription": "Set the gender preference for generating new identities.",
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
+      "genderOptions": {
+        "random": "Random",
+        "male": "Male",
+        "female": "Female"
+      }
+    },
     "unlockMethod": {
       "title": "Vault Unlock Method",
       "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
