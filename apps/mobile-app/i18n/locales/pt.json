@@ -440,6 +440,12 @@
       "passkeys": "Passkeys",
       "attachments": "Anexos"
     },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
+    },
     "totpCode": "Código TOTP",
     "attachments": "Anexos",
     "deleteAttachment": "Excluir",
