@@ -205,6 +205,12 @@
       "all": "(Wszystkie) pozycje",
       "passkeys": "Klucze dostępu"
     },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
+    },
     "deleteItemTitle": "Usuń element",
     "deleteItemConfirm": "Czy na pewno chcesz usunąć ten element?",
     "viewHistory": "Pokaż historię",
