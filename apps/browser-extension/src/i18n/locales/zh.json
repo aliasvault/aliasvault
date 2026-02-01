@@ -205,6 +205,12 @@
       "all": "（所有）项目",
       "passkeys": "通行密钥"
     },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
+    },
     "deleteItemTitle": "删除项目",
     "deleteItemConfirm": "您确定要删除此项目吗？",
     "viewHistory": "查看历史记录",
