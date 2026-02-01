@@ -441,10 +441,10 @@
       "attachments": "Pièces jointes"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Trier par",
+      "oldestFirst": "Plus anciens en premier",
+      "newestFirst": "Les plus récents en premier",
+      "alphabetical": "Alphabétique (A-Z)"
     },
     "totpCode": "Code à usage unique",
     "attachments": "Pièces jointes",
