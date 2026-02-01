@@ -206,10 +206,10 @@
       "passkeys": "Passkeys"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Sortera efter",
+      "oldestFirst": "Äldst först",
+      "newestFirst": "Nyast först",
+      "alphabetical": "Alfabetiskt (A-Z)"
     },
     "deleteItemTitle": "Radera objekt",
     "deleteItemConfirm": "Är du säker på att du vill radera det här objektet?",
