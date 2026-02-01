@@ -75,7 +75,7 @@
     <comment>Email actions section label</comment>
   </data>
   <data name="DeleteButton" xml:space="preserve">
-    <value>Delete</value>
+    <value>Suprimeix</value>
     <comment>Delete email button text</comment>
   </data>
   <data name="AttachmentsLabel" xml:space="preserve">
@@ -83,7 +83,7 @@
     <comment>Email attachments section header</comment>
   </data>
   <data name="CloseButton" xml:space="preserve">
-    <value>Close</value>
+    <value>Tanca</value>
     <comment>Close modal button text</comment>
   </data>
   <data name="DeleteEmailTitle" xml:space="preserve">
