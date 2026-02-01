@@ -59,11 +59,11 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Recent Auth Logs</value>
+    <value>Senaste Auth Loggar</value>
     <comment>Section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>Below you can find an overview of recent login attempts to your account.</value>
+    <value>Nedan hittar du en översikt över de senaste inloggningsförsöken till ditt konto.</value>
     <comment>Description of auth logs section</comment>
   </data>
   <data name="NoLogsMessage" xml:space="preserve">
@@ -79,11 +79,11 @@
     <comment>Table column header</comment>
   </data>
   <data name="ClientColumn" xml:space="preserve">
-    <value>Client</value>
+    <value>Klient </value>
     <comment>Table column header</comment>
   </data>
   <data name="IpAddressColumn" xml:space="preserve">
-    <value>IP Address</value>
+    <value>IP-adress</value>
     <comment>Table column header</comment>
   </data>
   <data name="DeviceColumn" xml:space="preserve">
@@ -91,15 +91,15 @@
     <comment>Table column header</comment>
   </data>
   <data name="SuccessColumn" xml:space="preserve">
-    <value>Success</value>
+    <value>Lyckades</value>
     <comment>Table column header</comment>
   </data>
   <data name="SuccessStatus" xml:space="preserve">
-    <value>Success</value>
+    <value>Lyckades</value>
     <comment>Status indicator for successful login</comment>
   </data>
   <data name="FailedStatus" xml:space="preserve">
-    <value>Failed</value>
+    <value>Misslyckades</value>
     <comment>Status indicator for failed login</comment>
   </data>
 </root>
