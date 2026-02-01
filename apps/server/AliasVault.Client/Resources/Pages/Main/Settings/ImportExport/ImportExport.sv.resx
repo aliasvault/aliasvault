@@ -79,7 +79,7 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>If you want to export your AliasVault credentials to another AliasVault server (e.g. from cloud to self-hosted or vice-versa) or to another service altogether, you can export it here. Note that all exports are unencrypted so store it in a safe place and delete it when you no longer need it.</value>
+    <value>Om du vill exportera dina AliasVault-uppgifter till en annan AliasVault-server (t.ex. från moln till egenhostad eller vice versa) eller till en annan tjänst helt och hållet, kan du exportera den här. Observera att all export är okrypterad så lagra den på ett säkert ställe och ta bort den när du inte längre behöver den.</value>
     <comment>Export section description</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
