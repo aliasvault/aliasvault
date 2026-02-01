@@ -127,7 +127,7 @@
     <comment>Checkbox label for favicon extraction option</comment>
   </data>
   <data name="ConfirmImportText" xml:space="preserve">
-    <value>Ești sigur că vrei să imporți ({0}) date de autentificare? Atenție: procesul de import poate dura puțin.</value>
+    <value>Ești sigur că vrei să imporți ({0}) date de autentificare? Atenție: procesul de import poate dura puțin timp.</value>
     <comment>Confirmation text before importing. {0} is the credential count</comment>
   </data>
   <data name="FaviconExtractionNote" xml:space="preserve">
