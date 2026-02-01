@@ -205,6 +205,12 @@
       "all": "(All) Items",
       "passkeys": "Passkeys"
     },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
+    },
     "deleteItemTitle": "Eintrag löschen",
     "deleteItemConfirm": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
     "viewHistory": "View history",
