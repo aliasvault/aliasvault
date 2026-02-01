@@ -441,10 +441,10 @@
       "attachments": "Anhänge"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Sortieren nach",
+      "oldestFirst": "Älteste zuerst",
+      "newestFirst": "Neuste zuerst",
+      "alphabetical": "Alphabetisch (A-Z)"
     },
     "totpCode": "TOTP-Code",
     "attachments": "Anhänge",
