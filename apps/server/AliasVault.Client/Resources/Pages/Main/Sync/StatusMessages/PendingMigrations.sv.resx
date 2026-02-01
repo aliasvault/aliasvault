@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="UpgradeVaultTitle" xml:space="preserve">
-    <value>Upgrade Vault</value>
+    <value>Uppgradera valv</value>
     <comment>Title for vault upgrade process</comment>
   </data>
   <data name="UpgradeDescription" xml:space="preserve">
@@ -67,7 +67,7 @@
     <comment>Description of vault upgrade process</comment>
   </data>
   <data name="VersionInformationTitle" xml:space="preserve">
-    <value>Version Information</value>
+    <value>Versionsinformation</value>
     <comment>Title for version information section</comment>
   </data>
   <data name="UpgradeRequiredDescription" xml:space="preserve">
@@ -75,15 +75,15 @@
     <comment>Description of upgrade requirements with changes placeholder</comment>
   </data>
   <data name="NoDescriptionAvailable" xml:space="preserve">
-    <value>No description available for this version.</value>
+    <value>Ingen beskrivning tillgänglig för denna version.</value>
     <comment>Fallback text when version description is not available</comment>
   </data>
   <data name="YourVaultLabel" xml:space="preserve">
-    <value>Your vault version:</value>
+    <value>Din valvversion:</value>
     <comment>Label for current vault version</comment>
   </data>
   <data name="NewVersionLabel" xml:space="preserve">
-    <value>New available version:</value>
+    <value>Ny tillgänglig version:</value>
     <comment>Label for new vault version</comment>
   </data>
   <data name="StartUpgradeButton" xml:space="preserve">
