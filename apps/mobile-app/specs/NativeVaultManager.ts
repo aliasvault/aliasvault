@@ -38,6 +38,9 @@ export interface Spec extends TurboModule {
   beginTransaction(): Promise<void>;
   commitTransaction(): Promise<void>;
   rollbackTransaction(): Promise<void>;
+  // Persist the in-memory database to encrypted storage and mark as dirty.
+  // Used after migrations where SQL handles its own transactions but we need to persist and sync.
+  persistAndMarkDirty(): Promise<void>;
 
   // Cryptography operations
   deriveKeyFromPassword(password: string, salt: string, encryptionType: string, encryptionSettings: string): Promise<string>;

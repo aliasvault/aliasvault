@@ -177,13 +177,14 @@ export default function UpgradeScreen() : React.ReactNode {
         return;
       }
 
-      // Use the useVaultMutate hook to handle the upgrade and vault upload
+      /*
+       * Use the useVaultMutate hook to handle the upgrade and vault upload.
+       * IMPORTANT: Do NOT wrap migration SQL in beginTransaction/commitTransaction!
+       * The migration SQL contains PRAGMA foreign_keys statements that MUST be executed
+       * outside of any transaction to take effect. The SQL handles its own transactions.
+       */
       await executeVaultMutation(async () => {
-        // Begin transaction
-        setUpgradeStatus(t('upgrade.status.startingDatabaseTransaction'));
-        await NativeVaultManager.beginTransaction();
-
-        // Execute each SQL command
+        // Execute each SQL command (each migration script handles its own transactions)
         setUpgradeStatus(t('upgrade.status.applyingDatabaseMigrations'));
         for (let i = 0; i < upgradeResult.sqlCommands.length; i++) {
           const sqlCommand = upgradeResult.sqlCommands[i];
@@ -194,14 +195,17 @@ export default function UpgradeScreen() : React.ReactNode {
           } catch (error) {
             console.error(`Error executing SQL command ${i + 1}:`, sqlCommand, error);
             const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            await NativeVaultManager.rollbackTransaction();
             throw new Error(`${t('upgrade.alerts.failedToApplyMigration', { current: i + 1, total: upgradeResult.sqlCommands.length })}\n\nDetails: ${errorMessage}`);
           }
         }
 
-        // Commit transaction
+        /*
+         * Persist the database to encrypted storage and mark as dirty.
+         * This is needed because we're not using beginTransaction/commitTransaction.
+         * The executeVaultMutation hook will handle the upload.
+         */
         setUpgradeStatus(t('upgrade.status.committingChanges'));
-        await NativeVaultManager.commitTransaction();
+        await NativeVaultManager.persistAndMarkDirty();
       }, {
         skipSyncCheck: true, // Skip sync check during upgrade to prevent loop
         /**
