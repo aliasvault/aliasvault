@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Vault</value>
+    <value>Tresor</value>
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
@@ -140,7 +140,7 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>(All) Items</value>
+    <value>(Alle) Elemente</value>
     <comment>Filter option to show all items</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
@@ -160,7 +160,7 @@
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>Zuletzt gelöscht</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
@@ -169,7 +169,7 @@
     <comment>Empty state message when no passkeys are found</comment>
   </data>
   <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>No items with attachments found.</value>
+    <value>Keine Elemente mit Anhängen gefunden.</value>
     <comment>Empty state message when no items with attachments are found</comment>
   </data>
   <data name="NoItemsFound" xml:space="preserve">
@@ -181,7 +181,7 @@
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <value>Alle Ihre Einträge sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Einträge zu finden.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->
