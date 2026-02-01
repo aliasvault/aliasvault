@@ -18,7 +18,8 @@ export default defineConfig({
       permissions.push("offscreen");
     }
 
-    return {
+    // Base manifest configuration
+    const baseManifest = {
       name: "AliasVault",
       description: "AliasVault Browser AutoFill Extension. Keeping your personal information private.",
       version: "0.27.0",
@@ -47,6 +48,26 @@ export default defineConfig({
         matches: ["<all_urls>"]
       }]
     };
+
+    // Add Firefox-specific settings
+    if (browser === 'firefox') {
+      return {
+        ...baseManifest,
+        browser_specific_settings: {
+          gecko: {
+            id: "extension@aliasvault.net",
+            strict_min_version: "109.0",
+            data_collection_permissions: {
+              ads: false,
+              telemetry: false,
+              technical: false
+            }
+          }
+        }
+      };
+    }
+
+    return baseManifest;
   },
   modules: ['@wxt-dev/module-react'],
   srcDir: 'src',
