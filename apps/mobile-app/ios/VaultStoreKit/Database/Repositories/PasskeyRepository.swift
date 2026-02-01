@@ -228,6 +228,7 @@ public class PasskeyRepository: BaseRepository {
                     itemId: newPasskey.parentItemId.uuidString.uppercased(),
                     logo: logo,
                     displayName: displayName,
+                    rpId: newPasskey.rpId,
                     now: now
                 )
             }
@@ -287,23 +288,11 @@ public class PasskeyRepository: BaseRepository {
             let itemId = passkey.parentItemId.uuidString.uppercased()
             let now = self.now()
 
-            // Create logo if provided
+            // Create or reuse logo if provided
             var logoId: String?
             if let logo = logo {
-                logoId = generateId()
                 let source = rpId.lowercased().replacingOccurrences(of: "www.", with: "")
-                let logoDataParam = "av-base64-to-blob:\(logo.base64EncodedString())"
-
-                try client.executeUpdate(LogoQueries.insert, params: [
-                    logoId!,
-                    source,
-                    logoDataParam,
-                    "image/png",
-                    nil,
-                    now,
-                    now,
-                    0
-                ])
+                logoId = try getOrCreateLogo(source: source, logoData: logo, now: now)
             }
 
             // Create the Item
@@ -380,10 +369,11 @@ public class PasskeyRepository: BaseRepository {
     ///   - itemId: The item ID
     ///   - logo: The new logo data
     ///   - displayName: The new display name
-    public func updateItemLogo(itemId: String, logo: Data, displayName: String) throws {
+    ///   - rpId: The relying party ID for logo source
+    public func updateItemLogo(itemId: String, logo: Data, displayName: String, rpId: String) throws {
         try withTransaction {
             let now = self.now()
-            try updateItemLogoInternal(itemId: itemId, logo: logo, displayName: displayName, now: now)
+            try updateItemLogoInternal(itemId: itemId, logo: logo, displayName: displayName, rpId: rpId, now: now)
         }
     }
 
@@ -393,8 +383,9 @@ public class PasskeyRepository: BaseRepository {
     ///   - itemId: The item ID
     ///   - logo: The new logo data
     ///   - displayName: The new display name
+    ///   - rpId: The relying party ID for logo source (used when creating new logo)
     ///   - now: The current timestamp
-    private func updateItemLogoInternal(itemId: String, logo: Data, displayName: String, now: String) throws {
+    private func updateItemLogoInternal(itemId: String, logo: Data, displayName: String, rpId: String, now: String) throws {
         // Get current logo ID from item
         let itemResults = try client.executeQuery(
             "SELECT LogoId FROM Items WHERE Id = ?",
@@ -411,18 +402,9 @@ public class PasskeyRepository: BaseRepository {
                 existingLogoId
             ])
         } else {
-            // Create new logo and link to item
-            let newLogoId = generateId()
-            try client.executeUpdate(LogoQueries.insert, params: [
-                newLogoId,
-                "", // Source not needed for update
-                logoDataParam,
-                "image/png",
-                nil,
-                now,
-                now,
-                0
-            ])
+            // Create or reuse logo with unique source check
+            let source = rpId.lowercased().replacingOccurrences(of: "www.", with: "")
+            let newLogoId = try getOrCreateLogo(source: source, logoData: logo, now: now)
 
             // Update item with new logo ID
             try client.executeUpdate(
@@ -460,6 +442,7 @@ public class PasskeyRepository: BaseRepository {
                     itemId: itemIdString,
                     logo: logo,
                     displayName: passkey.displayName,
+                    rpId: passkey.rpId,
                     now: now
                 )
             }
@@ -491,6 +474,54 @@ public class PasskeyRepository: BaseRepository {
 
             return passkeyId
         }
+    }
+
+    // MARK: - Helper Methods
+
+    /// Get an existing logo ID for a source, or create a new logo if none exists.
+    /// This prevents UNIQUE constraint violations on Logos.Source.
+    /// - Parameters:
+    ///   - source: The normalized source domain (e.g., 'github.com')
+    ///   - logoData: The logo image data
+    ///   - now: The current timestamp for CreatedAt/UpdatedAt
+    /// - Returns: The logo ID (existing or newly created)
+    private func getOrCreateLogo(source: String, logoData: Data, now: String) throws -> String {
+        // Check if a logo for this source already exists
+        let existingLogos = try client.executeQuery(
+            "SELECT Id, IsDeleted FROM Logos WHERE Source = ? LIMIT 1",
+            params: [source]
+        )
+
+        if let existingLogo = existingLogos.first,
+           let existingLogoId = existingLogo["Id"] as? String {
+            let isDeleted = (existingLogo["IsDeleted"] as? Int64) == 1
+
+            // Sanity check: restore if soft-deleted
+            if isDeleted {
+                try client.executeUpdate(
+                    "UPDATE Logos SET IsDeleted = 0, UpdatedAt = ? WHERE Id = ?",
+                    params: [now, existingLogoId]
+                )
+            }
+            return existingLogoId
+        }
+
+        // Create new logo entry
+        let logoId = generateId()
+        let logoDataParam = "av-base64-to-blob:\(logoData.base64EncodedString())"
+
+        try client.executeUpdate(LogoQueries.insert, params: [
+            logoId,
+            source,
+            logoDataParam,
+            "image/png",
+            nil,
+            now,
+            now,
+            0
+        ])
+
+        return logoId
     }
 }
 
