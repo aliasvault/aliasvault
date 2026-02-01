@@ -63,7 +63,7 @@
     <comment>Page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>You can view all emails received by your private email addresses below.</value>
+    <value>Du kan se alla e-postmeddelanden som mottagits av dina privata e-postadresser nedan.</value>
     <comment>Page description</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
@@ -71,15 +71,15 @@
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="RefreshButton" xml:space="preserve">
-    <value>Refresh</value>
+    <value>Uppdatera</value>
     <comment>Refresh button text</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
-    <value>You are not using any private email addresses (yet). Create a new alias and use a private email address supported by AliasVault. All emails received by these private email addresses will show up here.</value>
+    <value>Du använder inga privata e-postadresser (ännu). Skapa ett nytt alias och använd en privat e-postadress som stöds av AliasVault. Alla e-postmeddelanden som tas emot av dessa privata e-postadresser kommer att visas här.</value>
     <comment>Message when no email addresses are configured</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>No emails have been received yet.</value>
+    <value>Inga e-postmeddelanden har tagits emot ännu.</value>
     <comment>Message when no emails are received</comment>
   </data>
   <data name="LoadingText" xml:space="preserve">
@@ -95,7 +95,7 @@
     <comment>Error message when email claim does not exist</comment>
   </data>
   <data name="LoadEmailsFailedMessage" xml:space="preserve">
-    <value>Failed to load email: {0}</value>
+    <value>Det gick inte att ladda e-post: {0}</value>
     <comment>Error message when loading email fails. {0} is placeholder for error message</comment>
   </data>
   <data name="LoadMoreEmailsFailedMessage" xml:space="preserve">
