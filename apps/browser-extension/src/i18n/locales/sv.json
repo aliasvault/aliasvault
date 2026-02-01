@@ -403,6 +403,21 @@
       "clientUrlRequired": "Klientens URL krävs",
       "clientUrlInvalid": "Ange en giltig klient-URL"
     },
+    "identityGenerator": "Identitets Generator",
+    "identityGeneratorSettings": {
+      "description": "Konfigurera standardspråk och könspreferens för att generera nya identiteter.",
+      "languageSection": "Språk",
+      "languageDescription": "Ange det språk som ska användas för att generera nya identiteter.",
+      "genderSection": "Kön",
+      "genderDescription": "Ställ in könspreferensen för att generera nya identiteter.",
+      "ageRangeSection": "Åldersintervall",
+      "ageRangeDescription": "Ange åldersintervallet för att generera nya identiteter.",
+      "genderOptions": {
+        "random": "Slumpad",
+        "male": "Man",
+        "female": "Kvinna"
+      }
+    },
     "unlockMethod": {
       "title": "Valvupplåsningsmetod",
       "introText": "Välj hur du vill låsa upp ditt valv. Du kan använda ditt huvudlösenord (alltid tillgängligt) eller ange en PIN-kod för snabbare åtkomst. Efter 3 misslyckade PIN-försök måste du använda ditt huvudlösenord.",
