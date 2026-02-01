@@ -67,7 +67,7 @@
     <comment>Warning description for account deletion</comment>
   </data>
   <data name="DeleteButton" xml:space="preserve">
-    <value>Delete Account</value>
+    <value>Radera konto</value>
     <comment>Button to delete account</comment>
   </data>
 </root>
