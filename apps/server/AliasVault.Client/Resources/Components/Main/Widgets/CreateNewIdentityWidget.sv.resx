@@ -71,11 +71,11 @@
     <comment>Title of the create new alias popup</comment>
   </data>
   <data name="NameLabel" xml:space="preserve">
-    <value>Name</value>
+    <value>Namn</value>
     <comment>Label for name field</comment>
   </data>
   <data name="WebsiteUrlLabel" xml:space="preserve">
-    <value>Website URL</value>
+    <value>Webbplatsadress</value>
     <comment>Label for website URL field</comment>
   </data>
   <data name="NamePlaceholderLogin" xml:space="preserve">
@@ -95,11 +95,11 @@
     <comment>Placeholder text for note name field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
-    <value>Create</value>
+    <value>Skapa</value>
     <comment>Create button text</comment>
   </data>
   <data name="ContinueButton" xml:space="preserve">
-    <value>Continue</value>
+    <value>Fortsätt</value>
     <comment>Continue button text for non-alias types</comment>
   </data>
   <data name="CreateNewLoginTitle" xml:space="preserve">
@@ -115,7 +115,7 @@
     <comment>Title for creating a new note item</comment>
   </data>
   <data name="TypeLogin" xml:space="preserve">
-    <value>Login</value>
+    <value>Logga in</value>
     <comment>Login item type label</comment>
   </data>
   <data name="TypeAlias" xml:space="preserve">
@@ -127,11 +127,11 @@
     <comment>Credit card item type label (short)</comment>
   </data>
   <data name="TypeNote" xml:space="preserve">
-    <value>Note</value>
+    <value>Anteckning</value>
     <comment>Note item type label</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
-    <value>Creating new alias...</value>
+    <value>Skapar nytt alias...</value>
     <comment>Loading message while creating alias</comment>
   </data>
   <data name="CreateItemErrorMessage" xml:space="preserve">
@@ -139,7 +139,7 @@
     <comment>Error message when item creation fails</comment>
   </data>
   <data name="ItemCreatedSuccessMessage" xml:space="preserve">
-    <value>Item created successfully.</value>
+    <value>Objektet har skapats.</value>
     <comment>Success message when item is created</comment>
   </data>
 </root>
