@@ -25,15 +25,15 @@
     <comment>Title for adding a new item</comment>
   </data>
   <data name="EditItemTitle">
-    <value>Edit Item</value>
+    <value>Eintrag editieren</value>
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
-    <value>Create a new item below.</value>
+    <value>Neuen Eintrag erstellen.</value>
     <comment>Description for adding a new item</comment>
   </data>
   <data name="EditItemDescription">
-    <value>Edit the existing item below.</value>
+    <value>Bearbeite den Eintrag.</value>
     <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
