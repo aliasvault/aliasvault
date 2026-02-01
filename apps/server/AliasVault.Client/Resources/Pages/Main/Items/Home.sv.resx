@@ -60,7 +60,7 @@
   </resheader>
   <!-- Page Header -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Vault</value>
+    <value>Valv</value>
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
@@ -118,7 +118,7 @@
     <comment>Text describing button location</comment>
   </data>
   <data name="OrText" xml:space="preserve">
-    <value>or</value>
+    <value>eller</value>
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
@@ -140,7 +140,7 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>(All) Items</value>
+    <value>(Alla) objekt</value>
     <comment>Filter option to show all items</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
@@ -156,11 +156,11 @@
     <comment>Filter option to show only username/passwords</comment>
   </data>
   <data name="FilterAttachmentsOption" xml:space="preserve">
-    <value>Attachments</value>
+    <value>Bifogade filer</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
-    <value>Recently Deleted</value>
+    <value>Nyligen borttagna</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
@@ -169,7 +169,7 @@
     <comment>Empty state message when no passkeys are found</comment>
   </data>
   <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>No items with attachments found.</value>
+    <value>Inga objekt med bifogade filer hittades.</value>
     <comment>Empty state message when no items with attachments are found</comment>
   </data>
   <data name="NoItemsFound" xml:space="preserve">
@@ -181,24 +181,24 @@
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <value>Alla dina objekt är organiserade i mappar. Klicka på en mapp ovan för att visa dina uppgifter, eller använd sökningen för att hitta specifika objekt.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->
   <data name="NewFolder" xml:space="preserve">
-    <value>New Folder</value>
+    <value>Ny mapp</value>
     <comment>Button text for creating a new folder</comment>
   </data>
   <data name="EditFolder" xml:space="preserve">
-    <value>Edit Folder</value>
+    <value>Redigera mapp</value>
     <comment>Button text for editing a folder</comment>
   </data>
   <data name="DeleteFolder" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>Radera mapp</value>
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">
-    <value>Back</value>
+    <value>Tillbaka</value>
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
@@ -216,7 +216,7 @@
   </data>
   <!-- Clear Filter -->
   <data name="ClearFilter" xml:space="preserve">
-    <value>Clear filter</value>
+    <value>Rensa filter</value>
     <comment>Button text for clearing the active filter</comment>
   </data>
   <data name="FilteringBy" xml:space="preserve">
