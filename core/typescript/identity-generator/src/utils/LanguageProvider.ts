@@ -28,15 +28,34 @@ export interface ILanguageOption {
 /**
  * Gets all available languages for identity generation.
  * Display labels are in the native language, with optional flag emoji that clients can choose to display.
- * @returns Array of language options
+ * Languages are sorted alphabetically by label for consistent display across all platforms.
+ * @returns Array of language options sorted alphabetically by label
  */
 export function getAvailableLanguages(): ILanguageOption[] {
-  return [
+  const languages: ILanguageOption[] = [
+    {
+      value: 'de',
+      label: 'Deutsch',
+      flag: '🇩🇪',
+      alternativeCodes: ['de-DE', 'de-AT', 'de-CH', 'de-LU', 'de-LI']
+    },
     {
       value: 'en',
       label: 'English',
       flag: '🇬🇧',
       alternativeCodes: ['en-US', 'en-GB', 'en-CA', 'en-AU', 'en-NZ', 'en-IE', 'en-ZA', 'en-SG', 'en-IN']
+    },
+    {
+      value: 'es',
+      label: 'Español',
+      flag: '🇪🇸',
+      alternativeCodes: ['es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-CL', 'es-PE', 'es-VE', 'es-EC', 'es-GT', 'es-CU', 'es-BO', 'es-DO', 'es-HN', 'es-PY', 'es-SV', 'es-NI', 'es-CR', 'es-PA', 'es-UY', 'es-PR']
+    },
+    {
+      value: 'it',
+      label: 'Italiano',
+      flag: '🇮🇹',
+      alternativeCodes: ['it-IT', 'it-CH', 'it-SM', 'it-VA']
     },
     {
       value: 'nl',
@@ -45,18 +64,21 @@ export function getAvailableLanguages(): ILanguageOption[] {
       alternativeCodes: ['nl-NL', 'nl-BE']
     },
     {
-      value: 'de',
-      label: 'Deutsch',
-      flag: '🇩🇪',
-      alternativeCodes: ['de-DE', 'de-AT', 'de-CH', 'de-LU', 'de-LI']
+      value: 'ro',
+      label: 'Română',
+      flag: '🇷🇴',
+      alternativeCodes: ['ro-RO', 'ro-MD']
     },
     {
-      value: 'it',
-      label: 'Italiano',
-      flag: '🇮🇹',
-      alternativeCodes: ['it-IT', 'it-CH', 'it-SM', 'it-VA']
+      value: 'fa',
+      label: 'فارسی',
+      flag: '🇮🇷',
+      alternativeCodes: ['fa-IR', 'fa-AF']
     }
   ];
+
+  // Sort alphabetically by label using locale-aware comparison
+  return languages.sort((a, b) => a.label.localeCompare(b.label));
 }
 
 /**

@@ -18,6 +18,10 @@ The AliasVault identity generator uses lists (dictionaries) of possible names. C
 - 🇬🇧 **English** (en)
 - 🇳🇱 **Dutch** (nl)
 - 🇩🇪 **German** (de)
+- 🇮🇹 **Italian** (it)
+- 🇪🇸 **Spanish** (es)
+- 🇷🇴 **Romanian** (ro)
+- 🇮🇷 **Persian/Farsi** (fa)
 
 **Your language not listed?** Help us add it!
 

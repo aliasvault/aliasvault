@@ -3,11 +3,14 @@ import { IdentityGeneratorEn } from "src/implementations/IdentityGeneratorEn";
 import { IdentityGeneratorNl } from "src/implementations/IdentityGeneratorNl";
 import { IdentityGeneratorDe } from "src/implementations/IdentityGeneratorDe";
 import { IdentityGeneratorIt } from "src/implementations/IdentityGeneratorIt";
+import { IdentityGeneratorEs } from "src/implementations/IdentityGeneratorEs";
+import { IdentityGeneratorRo } from "src/implementations/IdentityGeneratorRo";
+import { IdentityGeneratorFa } from "src/implementations/IdentityGeneratorFa";
 
 /**
  * Creates a new identity generator based on the language.
  * Falls back to English if the requested language is not supported.
- * @param language - The language to use for generating the identity (e.g. "en", "nl", "de", "it").
+ * @param language - The language to use for generating the identity (e.g. "en", "nl", "de", "it", "es", "ro", "fa").
  * @returns A new identity generator instance.
  */
 export const CreateIdentityGenerator = (language: string): IdentityGenerator => {
@@ -20,6 +23,12 @@ export const CreateIdentityGenerator = (language: string): IdentityGenerator => 
       return new IdentityGeneratorDe();
     case 'it':
       return new IdentityGeneratorIt();
+    case 'es':
+      return new IdentityGeneratorEs();
+    case 'ro':
+      return new IdentityGeneratorRo();
+    case 'fa':
+      return new IdentityGeneratorFa();
     default:
       // Fallback to English for unsupported languages
       console.warn(`Language '${language}' is not supported. Falling back to English.`);
