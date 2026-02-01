@@ -181,7 +181,7 @@
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>Alla dina objekt är organiserade i mappar. Klicka på en mapp ovan för att visa dina uppgifter, eller använd sökningen för att hitta specifika objekt.</value>
+    <value>Alla dina objekt är organiserade i mappar. Klicka på en mapp ovan för att visa dina inloggningsuppgifter, eller använd sökningen för att hitta specifika objekt.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->
