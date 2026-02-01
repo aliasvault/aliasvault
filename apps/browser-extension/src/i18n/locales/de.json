@@ -206,10 +206,10 @@
       "passkeys": "Passkeys"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Sortieren nach",
+      "oldestFirst": "Älteste zuerst",
+      "newestFirst": "Neuste zuerst",
+      "alphabetical": "Alphabetisch (A-Z)"
     },
     "deleteItemTitle": "Eintrag löschen",
     "deleteItemConfirm": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
