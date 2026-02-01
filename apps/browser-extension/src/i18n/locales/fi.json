@@ -205,6 +205,12 @@
       "all": "(Kaikki) tiedot",
       "passkeys": "Sala-avaimet"
     },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
+    },
     "deleteItemTitle": "Poista kohde",
     "deleteItemConfirm": "Haluatko varmasti poistaa tämän kohteen?",
     "viewHistory": "View history",
