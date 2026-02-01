@@ -403,6 +403,21 @@
       "clientUrlRequired": "כתובת לקוח חובה",
       "clientUrlInvalid": "נא למלא כתובת לקוח תקפה"
     },
+    "identityGenerator": "מייצר זהויות",
+    "identityGeneratorSettings": {
+      "description": "להגדיר את העדפת השפה והמגדר ליצירת זהויות חדשות כברירת מחדל.",
+      "languageSection": "שפה",
+      "languageDescription": "נא להגדיר את השפה שתשמש ליצירת זהויות חדשות.",
+      "genderSection": "מגדר",
+      "genderDescription": "להגדיר את אפשרויות המגדר ליצירת זהויות חדשות.",
+      "ageRangeSection": "טווח גילים",
+      "ageRangeDescription": "הגדרת טווח גילים ליצירת זהויות חדשות.",
+      "genderOptions": {
+        "random": "אקראי",
+        "male": "זכר",
+        "female": "נקבה"
+      }
+    },
     "unlockMethod": {
       "title": "שיטת שחרור נעילת כספת",
       "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
