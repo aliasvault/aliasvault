@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
-      "all": "(All) Items",
+      "all": "(Alle) Elemente",
       "passkeys": "Passkeys"
     },
     "sort": {
@@ -213,9 +213,9 @@
     },
     "deleteItemTitle": "Eintrag löschen",
     "deleteItemConfirm": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
-    "viewHistory": "View history",
-    "history": "History",
-    "noHistoryAvailable": "No history available",
+    "viewHistory": "Historie ansehen",
+    "history": "Historie",
+    "noHistoryAvailable": "Keine Historie verfügbar",
     "tags": "Schlagwörter",
     "changePasswordComplexity": "Komplexität des Passworts ändern",
     "passwordLength": "Passwortlänge",
@@ -236,22 +236,22 @@
   "itemTypes": {
     "selectType": "Add New Item",
     "typeLabel": "Item Type",
-    "creating": "Creating",
-    "editing": "Editing",
+    "creating": "Wird erstellt",
+    "editing": "Bearbeiten",
     "regenerateAlias": "Regenerate alias",
     "addCustomField": "Add custom field",
-    "fieldLabel": "Field Label",
-    "enterFieldName": "Enter field name",
-    "fieldType": "Field Type",
+    "fieldLabel": "Feldbezeichnung",
+    "enterFieldName": "Feldnamen eingeben",
+    "fieldType": "Feldtyp",
     "fieldTypes": {
       "text": "Text",
       "hidden": "Hidden (masked text)",
       "email": "E-Mail",
       "url": "URL",
-      "phone": "Phone",
-      "number": "Number",
+      "phone": "Telefon",
+      "number": "Nummer",
       "date": "Date",
-      "textArea": "Text Area"
+      "textArea": "Mehrzeiliger Text"
     },
     "login": {
       "title": "Anmelden"
@@ -260,7 +260,7 @@
       "title": "Alias"
     },
     "creditCard": {
-      "title": "Credit Card"
+      "title": "Kreditkarte"
     },
     "note": {
       "title": "Secure Note"
@@ -276,11 +276,11 @@
     "alias.birthdate": "Geburtsdatum",
     "login.email": "E-Mail",
     "notes.content": "Notizen",
-    "card.cardholder_name": "Cardholder Name",
-    "card.number": "Card Number",
-    "card.expiry_month": "Expiry Month",
-    "card.expiry_year": "Expiry Year",
-    "card.cvv": "CVV",
+    "card.cardholder_name": "Name des Karteninhabers",
+    "card.number": "Kartennummer",
+    "card.expiry_month": "Ablaufmonat",
+    "card.expiry_year": "Ablaufjahr",
+    "card.cvv": "Sicherheitscode",
     "card.pin": "PIN"
   },
   "totp": {
@@ -402,6 +402,21 @@
       "apiUrlInvalid": "Bitte gib eine gültige API-URL ein",
       "clientUrlRequired": "Client-URL ist erforderlich",
       "clientUrlInvalid": "Bitte gib eine gültige Client-URL ein"
+    },
+    "identityGenerator": "Identitätsgenerator",
+    "identityGeneratorSettings": {
+      "description": "Lege die Standardsprache und Geschlechtspräferenz für die Erstellung neuer Identitäten fest.",
+      "languageSection": "Sprache",
+      "languageDescription": "Lege die Sprache fest, die bei der Erstellung neuer Identitäten verwendet wird.",
+      "genderSection": "Geschlecht",
+      "genderDescription": "Lege die Geschlechtspräferenz für die Erstellung neuer Identitäten fest.",
+      "ageRangeSection": "Altersspanne",
+      "ageRangeDescription": "Lege die Altersspanne für die Erstellung neuer Identitäten fest.",
+      "genderOptions": {
+        "random": "Zufällig",
+        "male": "Männlich",
+        "female": "Weiblich"
+      }
     },
     "unlockMethod": {
       "title": "Methode zum Entsperren des Tresors",
