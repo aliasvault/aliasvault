@@ -403,6 +403,21 @@
       "clientUrlRequired": "URL de Cliente é obrigatório",
       "clientUrlInvalid": "Por favor, digite um URL de cliente válido"
     },
+    "identityGenerator": "Gerador de Identidade",
+    "identityGeneratorSettings": {
+      "description": "Configure o idioma padrão e preferência de gênero para geração de novas identidades.",
+      "languageSection": "Idioma",
+      "languageDescription": "Defina o idioma que será utilizado ao gerar novas identidades.",
+      "genderSection": "Gênero",
+      "genderDescription": "Defina a preferência de gênero para geração de novas identidades.",
+      "ageRangeSection": "Faixa Etária",
+      "ageRangeDescription": "Selecione a faixa etária para geração de novas identidades.",
+      "genderOptions": {
+        "random": "Aleatório",
+        "male": "Masculino",
+        "female": "Feminino"
+      }
+    },
     "unlockMethod": {
       "title": "Método de Desbloqueio do Cofre",
       "introText": "Escolha como você quer desbloquear seu cofre. Você pode utilizar sua senha mestre (sempre disponível), ou configurar um PIN para facilitar o acesso. Após 3 tentativas incorretas de PIN, você deverá utilizar sua senha mestre.",
