@@ -403,6 +403,21 @@
       "clientUrlRequired": "La URL de cliente es necesaria",
       "clientUrlInvalid": "Por favor, introduzca una URL de cliente válida"
     },
+    "identityGenerator": "Generador de identidad",
+    "identityGeneratorSettings": {
+      "description": "Configurar el idioma por defecto y la preferencia de género para generar nuevas identidades.",
+      "languageSection": "Idioma",
+      "languageDescription": "Establece el idioma que se utilizará al generar nuevas identidades.",
+      "genderSection": "Género",
+      "genderDescription": "Establecer la preferencia de género para generar nuevas identidades.",
+      "ageRangeSection": "Rango de edad",
+      "ageRangeDescription": "Establecer el rango de edad para generar nuevas identidades.",
+      "genderOptions": {
+        "random": "Aleatorio",
+        "male": "Hombre",
+        "female": "Mujer"
+      }
+    },
     "unlockMethod": {
       "title": "Método de desbloqueo de la bóveda",
       "introText": "Elija cómo desea desbloquear su bóveda. Puede utilizar su contraseña maestra (siempre disponible) o configurar un código PIN para un acceso más rápido. Después de 3 intentos fallidos de PIN, necesitarás usar tu contraseña maestra.",
