@@ -21,11 +21,11 @@
   </xsd:schema>
   <!-- Main navigation links -->
   <data name="VaultNav">
-    <value>Vault</value>
+    <value>Valv</value>
     <comment>Main navigation link for vault section</comment>
   </data>
   <data name="EmailsNav">
-    <value>Emails</value>
+    <value>E-post</value>
     <comment>Main navigation link for emails section</comment>
   </data>
   <!-- Settings menu items -->
@@ -38,7 +38,7 @@
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="ImportExportNav">
-    <value>Import / Export</value>
+    <value>Importera / Exportera</value>
     <comment>Navigation link for import/export settings</comment>
   </data>
   <data name="ExtensionsAppsNav">
