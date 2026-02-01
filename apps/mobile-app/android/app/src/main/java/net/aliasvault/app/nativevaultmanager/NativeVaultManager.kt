@@ -486,6 +486,26 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
+     * Persist the in-memory database to encrypted storage and mark as dirty.
+     * Used after migrations where SQL handles its own transactions but we need to persist and sync.
+     * @param promise The promise to resolve
+     */
+    @ReactMethod
+    override fun persistAndMarkDirty(promise: Promise) {
+        try {
+            vaultStore.persistAndMarkDirty()
+            promise.resolve(null)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error persisting and marking dirty", e)
+            promise.reject(
+                "ERR_PERSIST_AND_MARK_DIRTY",
+                "Failed to persist and mark dirty: ${e.message}",
+                e,
+            )
+        }
+    }
+
+    /**
      * Set the auto-lock timeout.
      * @param timeout The timeout in seconds
      * @param promise The promise to resolve
