@@ -61,6 +61,10 @@
     [vaultManager rollbackTransaction:resolve rejecter:reject];
 }
 
+- (void)persistAndMarkDirty:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager persistAndMarkDirty:resolve rejecter:reject];
+}
+
 - (void)getAuthMethods:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager getAuthMethods:resolve rejecter:reject];
 }

@@ -310,6 +310,17 @@ public class VaultManager: NSObject {
     }
 
     @objc
+    func persistAndMarkDirty(_ resolve: @escaping RCTPromiseResolveBlock,
+                            rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            try vaultStore.persistAndMarkDirty()
+            resolve(nil)
+        } catch {
+            reject("PERSIST_ERROR", "Failed to persist and mark dirty: \(error.localizedDescription)", error)
+        }
+    }
+
+    @objc
     func deriveKeyFromPassword(_ password: String,
                               salt: String,
                               encryptionType: String,
