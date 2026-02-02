@@ -22,6 +22,7 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { ItemTypes } from '@/utils/dist/core/models/vault';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
@@ -125,7 +126,13 @@ const ItemsList: React.FC = () => {
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
   const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('OldestFirst');
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showFolders, setShowFolders] = useState(true);
   const { setIsInitialLoading } = useLoading();
+
+  // Load showFolders preference from storage on mount
+  useEffect(() => {
+    LocalPreferencesService.getShowFolders().then(setShowFolders);
+  }, []);
 
   // Derive current folder from URL params
   const currentFolderId = folderIdParam ?? null;
@@ -442,8 +449,11 @@ const ItemsList: React.FC = () => {
       if (item.FolderId !== currentFolderId) {
         return false;
       }
-    } else if (!searchTerm) {
-      // In root view without search, exclude items that are in folders
+    } else if (!searchTerm && showFolders) {
+      /*
+       * When showing folders (checkbox ON): only show root items (exclude items in folders)
+       * When not showing folders (checkbox OFF): show all items flat
+       */
       if (item.FolderId) {
         return false;
       }
@@ -594,22 +604,49 @@ const ItemsList: React.FC = () => {
                   setShowFilterMenu(false);
                 }}
               />
-              <div className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10 z-20">
+              <div className="absolute left-0 top-full mt-1 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10 z-20">
                 <div className="py-1">
-                  {/* All items filter */}
-                  <button
-                    onClick={() => {
-                      const newFilter = 'all';
-                      setFilterType(newFilter);
-                      storeFilter(newFilter);
-                      setShowFilterMenu(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                      filterType === 'all' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    {t('items.filters.all')}
-                  </button>
+                  {/* All items filter with show folders toggle (only show toggle on root view) */}
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        const newFilter = 'all';
+                        setFilterType(newFilter);
+                        storeFilter(newFilter);
+                        setShowFilterMenu(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                        filterType === 'all' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      {t('items.title')}
+                    </button>
+                    {!currentFolderId && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const newValue = !showFolders;
+                          setShowFolders(newValue);
+                          LocalPreferencesService.setShowFolders(newValue);
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+                      >
+                        <span>{t('items.filters.showFolders')}</span>
+                        <svg
+                          className={`w-5 h-5 ${showFolders ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                          {showFolders && (
+                            <polyline points="7 12 10 15 17 8" />
+                          )}
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                   <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
                   {/* Item type filters - dynamically generated from ItemTypes */}
                   {ITEM_TYPE_OPTIONS.map((option) => (
@@ -858,8 +895,8 @@ const ItemsList: React.FC = () => {
         </>
       ) : (
         <>
-          {/* Folders as inline pills (only show at root level when not searching) */}
-          {!currentFolderId && !searchTerm && (
+          {/* Folders as inline pills (only show at root level when not searching and showFolders is enabled) */}
+          {!currentFolderId && !searchTerm && showFolders && (
             <div className="flex flex-wrap items-center gap-2 mb-4">
               {folders.map(folder => (
                 <FolderPill

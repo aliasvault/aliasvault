@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
-      "all": "(All) Items",
+      "showFolders": "show folders",
       "passkeys": "Passkeys"
     },
     "sort": {
