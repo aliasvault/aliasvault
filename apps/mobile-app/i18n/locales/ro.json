@@ -311,7 +311,7 @@
         "confirmTitle": "Confirmă Cererea de Autentificare",
         "confirmSubtitle": "Re-autentifică-te pentru a aproba logarea pe alt dispozitiv.",
         "confirmMessage": "Ești pe cale să te autentifici pe un dispozitiv la distanță. Acest dispozitiv va avea acces complet la seiful tău. Continuă doar dacă ai încredere în acel dispozitiv.",
-        "successDescription": "Dispozitivul la distanță a fost autentificat cu succes.",
+        "successDescription": "Dispozitivul de la distanță a fost autentificat cu succes.",
         "requestExpired": "Cererea de autentificare a expirat. Generează un cod QR nou."
       }
     }
@@ -408,7 +408,7 @@
     "noMatchingItems": "Nu s-au găsit elemente potrivite",
     "noMatchingItemsSearch": "Nu s-au găsit elemente pentru „{{search}}”",
     "noMatchingItemsWithFilter": "Niciun element {{filter}} nu se potrivește cu „{{search}}”",
-    "noItemsFound": "Nu s-a găsit nicio înregistrare. Creează una pentru a începe. Sfat: te poți autentifica în aplicația web AliasVault pentru a importa date de autentificare din alte managere de parole.",
+    "noItemsFound": "Nu s-a găsit niciun element. Creează unul pentru a începe. Sfat: te poți autentifica în aplicația web AliasVault pentru a importa date de autentificare din alte managere de parole.",
     "allItemsInFolders": "Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.",
     "noPasskeysFound": "Nu a fost creat niciun passkey încă. Passkey-urile se creează vizitând un site care oferă passkey ca metodă de autentificare.",
     "noAttachmentsFound": "Nu s-au găsit elemente cu atașamente",
