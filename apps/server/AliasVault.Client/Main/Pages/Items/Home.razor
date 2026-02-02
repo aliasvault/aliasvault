@@ -57,10 +57,25 @@
                 <ClickOutsideHandler OnClose="CloseFilterDropdown" ContentId="filterDropdown,filterButton">
                     <div id="filterDropdown" class="absolute left-0 top-full z-10 mt-2 w-56 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700">
                         <div class="py-1">
-                            @* All items filter *@
-                            <button @onclick="() => SetFilter(ItemFilterType.All)" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 @(FilterType == ItemFilterType.All ? "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400" : "text-gray-700 dark:text-gray-300")">
-                                @Localizer["FilterAllOption"]
-                            </button>
+                            @* All items filter with show folders toggle (only show toggle on root view) *@
+                            <div class="flex items-center justify-between px-4 py-2 @(FilterType == ItemFilterType.All ? "bg-orange-50 dark:bg-orange-900/20" : "")">
+                                <button @onclick="() => SetFilter(ItemFilterType.All)" class="text-left text-sm hover:text-gray-900 dark:hover:text-white @(FilterType == ItemFilterType.All ? "text-orange-600 dark:text-orange-400" : "text-gray-700 dark:text-gray-300")">
+                                    @Localizer["FilterAllOption"]
+                                </button>
+                                @if (!IsInFolder)
+                                {
+                                    <button @onclick="ToggleShowFoldersAsync" @onclick:stopPropagation="true" class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                                        <span>@Localizer["ShowFoldersOption"]</span>
+                                        <svg class="w-5 h-5 @(ShowFolders ? "text-orange-500 dark:text-orange-400" : "text-gray-400 dark:text-gray-500")" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                            @if (ShowFolders)
+                                            {
+                                                <polyline points="7 12 10 15 17 8" />
+                                            }
+                                        </svg>
+                                    </button>
+                                }
+                            </div>
                             <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
 
                             @* Item type filters with icons *@
@@ -174,8 +189,8 @@ else
             </div>
         }
 
-        @* Folders section - only show at root level *@
-        @if (!IsInFolder && !IsSearching)
+        @* Folders section - only show at root level when ShowFolders is enabled *@
+        @if (!IsInFolder && !IsSearching && ShowFolders)
         {
             <div class="flex flex-wrap items-center gap-2 mb-4">
                 @foreach (var folder in Folders)
@@ -384,6 +399,16 @@ else
     private ItemFilterType FilterType { get; set; } = ItemFilterType.All;
 
     /// <summary>
+    /// LocalStorage key for the show folders preference.
+    /// </summary>
+    private const string ShowFoldersStorageKey = "items-show-folders";
+
+    /// <summary>
+    /// Gets or sets whether to show folders (true) or show all items flat (false).
+    /// </summary>
+    private bool ShowFolders { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets the number of visible items for infinite scroll.
     /// </summary>
     private int VisibleItemCount { get; set; } = 200;
@@ -471,9 +496,10 @@ else
                 // Show only items in this folder
                 filtered = filtered.Where(x => x.FolderId == FolderId);
             }
-            else if (!IsSearching)
+            else if (!IsSearching && ShowFolders)
             {
-                // At root level, exclude items that are in folders
+                // When showing folders (checkbox ON): only show root items (exclude items in folders)
+                // When not showing folders (checkbox OFF): show all items flat
                 filtered = filtered.Where(x => x.FolderId == null);
             }
 
@@ -616,6 +642,17 @@ else
     {
         FilterType = ItemFilterType.All;
         VisibleItemCount = BatchSize; // Reset visible items when filter changes
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Toggles the show folders setting.
+    /// </summary>
+    private async Task ToggleShowFoldersAsync()
+    {
+        ShowFolders = !ShowFolders;
+        VisibleItemCount = BatchSize; // Reset visible items when setting changes
+        await LocalStorage.SetItemAsync(ShowFoldersStorageKey, ShowFolders);
         StateHasChanged();
     }
 
@@ -857,6 +894,10 @@ else
 
         // Initialize table sort state from saved sort order
         SyncTableSortWithSortOrder();
+
+        // Load show folders preference from local storage
+        var storedShowFolders = await LocalStorage.GetItemAsync<bool?>(ShowFoldersStorageKey);
+        ShowFolders = storedShowFolders ?? true;
 
         // Load folder name if in folder view
         if (FolderId.HasValue)

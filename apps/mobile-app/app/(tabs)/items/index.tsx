@@ -1,4 +1,5 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -35,6 +36,11 @@ import { RobustPressable } from '@/components/ui/RobustPressable';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
+
+/**
+ * Storage key for the show folders preference.
+ */
+const SHOW_FOLDERS_STORAGE_KEY = 'items-show-folders';
 
 /**
  * Filter types for the items list.
@@ -122,6 +128,24 @@ export default function ItemsScreen(): React.ReactNode {
       setSearchQuery(decodedUrl);
     }
   }, [itemUrl]);
+
+  // Load saved showFolderItems preference from AsyncStorage
+  useEffect(() => {
+    /**
+     * Load the show folders preference from AsyncStorage.
+     */
+    const loadShowFoldersPreference = async (): Promise<void> => {
+      try {
+        const stored = await AsyncStorage.getItem(SHOW_FOLDERS_STORAGE_KEY);
+        if (stored !== null) {
+          setShowFolderItems(stored === 'true');
+        }
+      } catch {
+        // Ignore storage errors, use default value
+      }
+    };
+    loadShowFoldersPreference();
+  }, []);
 
   /**
    * Get folders with item counts for display.
@@ -810,7 +834,11 @@ export default function ItemsScreen(): React.ReactNode {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.filterMenuItemToggle}
-              onPress={() => setShowFolderItems(!showFolderItems)}
+              onPress={() => {
+                const newValue = !showFolderItems;
+                setShowFolderItems(newValue);
+                AsyncStorage.setItem(SHOW_FOLDERS_STORAGE_KEY, String(newValue));
+              }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
               <ThemedText style={styles.filterMenuToggleHint}>
