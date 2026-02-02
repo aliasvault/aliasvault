@@ -74,6 +74,7 @@
       <EmbeddedResource Include="TestData\Exports\lastpass.csv" />
       <EmbeddedResource Include="TestData\Exports\nordpass.csv" />
       <EmbeddedResource Include="TestData\Exports\aliasvault_mobile_app_export.csv" />
+      <EmbeddedResource Include="TestData\Exports\roboform.csv" />
     </ItemGroup>
 
 </Project>
