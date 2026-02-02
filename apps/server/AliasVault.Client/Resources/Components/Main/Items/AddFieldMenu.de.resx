@@ -29,7 +29,7 @@
     <comment>Option to add attachments section</comment>
   </data>
   <data name="AddCustomField">
-    <value>Add Custom Field</value>
+    <value>Benutzerdefiniertes Feld hinzufügen</value>
     <comment>Option to add a custom field</comment>
   </data>
   <!-- Field labels -->
@@ -66,23 +66,23 @@
     <comment>Birth date field label</comment>
   </data>
   <data name="FieldCardNumber">
-    <value>Card Number</value>
+    <value>Kartennummer</value>
     <comment>Card number field label</comment>
   </data>
   <data name="FieldCardCardholderName">
-    <value>Cardholder Name</value>
+    <value>Name des Karteninhabers</value>
     <comment>Cardholder name field label</comment>
   </data>
   <data name="FieldCardExpiryMonth">
-    <value>Expiry Month</value>
+    <value>Ablaufmonat</value>
     <comment>Expiry month field label</comment>
   </data>
   <data name="FieldCardExpiryYear">
-    <value>Expiry Year</value>
+    <value>Ablaufjahr</value>
     <comment>Expiry year field label</comment>
   </data>
   <data name="FieldCardCvv">
-    <value>CVV</value>
+    <value>Sicherheitscode</value>
     <comment>CVV field label</comment>
   </data>
   <data name="FieldCardPin">
@@ -95,15 +95,15 @@
   </data>
   <!-- Custom field modal -->
   <data name="FieldLabel">
-    <value>Field Label</value>
+    <value>Feldbezeichnung</value>
     <comment>Label for field label input</comment>
   </data>
   <data name="EnterFieldName">
-    <value>Enter field name</value>
+    <value>Feldnamen eingeben</value>
     <comment>Placeholder for field name input</comment>
   </data>
   <data name="FieldType">
-    <value>Field Type</value>
+    <value>Feldtyp</value>
     <comment>Label for field type selector</comment>
   </data>
   <data name="FieldTypeText">
@@ -111,7 +111,7 @@
     <comment>Text field type option</comment>
   </data>
   <data name="FieldTypeHidden">
-    <value>Hidden</value>
+    <value>Versteckt</value>
     <comment>Hidden field type option</comment>
   </data>
   <data name="FieldTypeEmail">
@@ -123,11 +123,11 @@
     <comment>URL field type option</comment>
   </data>
   <data name="FieldTypePhone">
-    <value>Phone</value>
+    <value>Telefon</value>
     <comment>Phone field type option</comment>
   </data>
   <data name="FieldTypeNumber">
-    <value>Number</value>
+    <value>Nummer</value>
     <comment>Number field type option</comment>
   </data>
   <data name="FieldTypeDate">
@@ -135,12 +135,12 @@
     <comment>Date field type option</comment>
   </data>
   <data name="FieldTypeTextArea">
-    <value>Text Area</value>
+    <value>Mehrzeiliger Text</value>
     <comment>Text area field type option</comment>
   </data>
   <!-- Buttons -->
   <data name="Add">
-    <value>Add</value>
+    <value>Hinzufügen</value>
     <comment>Add button text</comment>
   </data>
   <data name="Cancel">
@@ -149,7 +149,7 @@
   </data>
   <!-- Default field label -->
   <data name="DefaultFieldLabel">
-    <value>Field {0}</value>
+    <value>Feld {0}</value>
     <comment>Default label for custom field, {0} is the field number</comment>
   </data>
 </root>
