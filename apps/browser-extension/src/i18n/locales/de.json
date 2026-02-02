@@ -197,9 +197,9 @@
     "emptyFolderHint": "Dieser Ordner ist leer. Um Elemente in diesen Ordner zu verschieben, bearbeiten Sie das Element und wählen Sie diesen Ordner.",
     "allItemsInFolders": "Alle Ihre Einträge sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Einträge zu finden.",
     "deleteFolder": "Ordner löschen",
-    "deleteFolderKeepItems": "Delete folder only",
+    "deleteFolderKeepItems": "Nur Ordner löschen",
     "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-    "deleteFolderAndItems": "Delete folder and all items",
+    "deleteFolderAndItems": "Ordner und alle Einträge löschen",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "all": "(Alle) Elemente",
@@ -234,18 +234,18 @@
     }
   },
   "itemTypes": {
-    "selectType": "Add New Item",
+    "selectType": "Neuen Eintrag hinzufügen",
     "typeLabel": "Item Type",
     "creating": "Wird erstellt",
     "editing": "Bearbeiten",
-    "regenerateAlias": "Regenerate alias",
-    "addCustomField": "Add custom field",
+    "regenerateAlias": "Alias neu generieren",
+    "addCustomField": "Benutzerdefiniertes Feld hinzufügen",
     "fieldLabel": "Feldbezeichnung",
     "enterFieldName": "Feldnamen eingeben",
     "fieldType": "Feldtyp",
     "fieldTypes": {
       "text": "Text",
-      "hidden": "Hidden (masked text)",
+      "hidden": "Versteckt (versteckter Text)",
       "email": "E-Mail",
       "url": "URL",
       "phone": "Telefon",
@@ -263,7 +263,7 @@
       "title": "Kreditkarte"
     },
     "note": {
-      "title": "Secure Note"
+      "title": "Sichere Notiz"
     }
   },
   "fieldLabels": {
@@ -295,7 +295,7 @@
     }
   },
   "attachmentUploader": {
-    "uploading": "Uploading...",
+    "uploading": "Hochladen...",
     "uploadSuccess": "Files uploaded successfully.",
     "deleteSuccess": "Attachment deleted successfully.",
     "firefoxExpandRequired": "To upload files, use the expanded window.",
@@ -467,8 +467,8 @@
       "confirmReplace": "Ersetzen bestätigen",
       "selectExistingLogin": "Add to existing login:",
       "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
-      "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "attachingToCredential": "Passkey zu {{serviceName}} hinzufügen",
+      "attachPasskey": "Passkey hinzufügen"
     },
     "settings": {
       "passkeyProvider": "Passkey-Anbieter",
@@ -476,12 +476,12 @@
     }
   },
   "recentlyDeleted": {
-    "title": "Recently Deleted",
-    "noItems": "No deleted items",
-    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
+    "title": "Kürzlich gelöscht",
+    "noItems": "Keine gelöschten Elemente",
+    "noItemsDescription": "Elemente, die du löscht, werden hier 30 Tage lang erscheinen, bevor sie endgültig entfernt werden.",
     "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
     "restore": "Restore",
-    "deletePermanently": "Delete Permanently",
+    "deletePermanently": "Dauerhaft löschen",
     "emptyAll": "Empty All",
     "daysRemaining_one": "{{count}} day remaining",
     "daysRemaining_other": "Noch {{count}} Tage",
