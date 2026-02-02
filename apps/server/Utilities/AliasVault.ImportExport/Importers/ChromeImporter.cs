@@ -33,7 +33,7 @@ public static class ChromeImporter
             var credential = new ImportedCredential
             {
                 ServiceName = record.Name,
-                ServiceUrl = record.Url,
+                ServiceUrls = BaseImporter.ParseUrls(record.Url),
                 Username = record.Username,
                 Password = record.Password,
                 Notes = record.Note

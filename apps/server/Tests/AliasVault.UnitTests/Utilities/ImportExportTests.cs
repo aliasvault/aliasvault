@@ -61,7 +61,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(importedCredential.ServiceName, Is.EqualTo(item.Name));
-            Assert.That(importedCredential.ServiceUrl, Is.EqualTo("https://testservice.com"));
+            Assert.That(importedCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://testservice.com"));
             Assert.That(importedCredential.Username, Is.EqualTo("testuser"));
             Assert.That(importedCredential.Notes, Is.EqualTo("Test notes"));
             Assert.That(importedCredential.CreatedAt?.Date, Is.EqualTo(item.CreatedAt.Date));
@@ -109,9 +109,35 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(aliasVaultCredential.ServiceName, Is.EqualTo("Aliasvault.net"));
-            Assert.That(aliasVaultCredential.ServiceUrl, Is.EqualTo("https://www.aliasvault.net"));
+            Assert.That(aliasVaultCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://www.aliasvault.net"));
             Assert.That(aliasVaultCredential.Username, Is.EqualTo("root"));
             Assert.That(aliasVaultCredential.Password, Is.EqualTo("toor"));
+        });
+
+        // Test entry with multiple URLs (TutaNota3)
+        var multiUrlCredential = importedCredentials.First(c => c.ServiceName == "TutaNota3");
+        Assert.Multiple(() =>
+        {
+            Assert.That(multiUrlCredential.ServiceName, Is.EqualTo("TutaNota3"));
+            Assert.That(multiUrlCredential.ServiceUrls, Has.Count.EqualTo(3));
+            Assert.That(multiUrlCredential.ServiceUrls![0], Is.EqualTo("https://www.aliasvault.net"));
+            Assert.That(multiUrlCredential.ServiceUrls[1], Is.EqualTo("https://app.aliasvault.net"));
+            Assert.That(multiUrlCredential.ServiceUrls[2], Is.EqualTo("https://downloads.aliasvault.net"));
+            Assert.That(multiUrlCredential.Username, Is.EqualTo("avtest3@tutamail.com"));
+        });
+
+        // Verify multiple URLs get converted to multiple FieldValues
+        var multiUrlItem = convertedItems.First(i => i.Name == "TutaNota3");
+        var urlFieldValues = multiUrlItem.FieldValues.Where(fv => fv.FieldKey == FieldKey.LoginUrl).OrderBy(fv => fv.Weight).ToList();
+        Assert.Multiple(() =>
+        {
+            Assert.That(urlFieldValues, Has.Count.EqualTo(3));
+            Assert.That(urlFieldValues[0].Value, Is.EqualTo("https://www.aliasvault.net"));
+            Assert.That(urlFieldValues[1].Value, Is.EqualTo("https://app.aliasvault.net"));
+            Assert.That(urlFieldValues[2].Value, Is.EqualTo("https://downloads.aliasvault.net"));
+            Assert.That(urlFieldValues[0].Weight, Is.EqualTo(0));
+            Assert.That(urlFieldValues[1].Weight, Is.EqualTo(1));
+            Assert.That(urlFieldValues[2].Weight, Is.EqualTo(2));
         });
     }
 
@@ -146,7 +172,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(sampleCredential.ServiceName, Is.EqualTo("Sample"));
-            Assert.That(sampleCredential.ServiceUrl, Is.EqualTo("https://strongboxsafe.com"));
+            Assert.That(sampleCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://strongboxsafe.com"));
             Assert.That(sampleCredential.Username, Is.EqualTo("username"));
             Assert.That(sampleCredential.Password, Is.EqualTo("&3V_$z?Aiw-_x+nbYj"));
         });
@@ -183,7 +209,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(onePasswordAccount.ServiceName, Is.EqualTo("1Password Account (dpatel)"));
-            Assert.That(onePasswordAccount.ServiceUrl, Is.EqualTo("https://my.1password.com"));
+            Assert.That(onePasswordAccount.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://my.1password.com"));
             Assert.That(onePasswordAccount.Username, Is.EqualTo("derekpatel@aliasvault.net"));
             Assert.That(onePasswordAccount.Password, Is.EqualTo("passwordexample"));
             Assert.That(onePasswordAccount.Notes, Is.EqualTo("You can use this login to sign in to your account on 1password.com."));
@@ -211,7 +237,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(exampleCredential.ServiceName, Is.EqualTo("example.com"));
-            Assert.That(exampleCredential.ServiceUrl, Is.EqualTo("https://example.com/"));
+            Assert.That(exampleCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://example.com/"));
             Assert.That(exampleCredential.Username, Is.EqualTo("usernamegoogle"));
             Assert.That(exampleCredential.Password, Is.EqualTo("passwordgoogle"));
             Assert.That(exampleCredential.Notes, Is.EqualTo("Note for example password from Google"));
@@ -221,7 +247,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(facebookCredential.ServiceName, Is.EqualTo("facebook.com"));
-            Assert.That(facebookCredential.ServiceUrl, Is.EqualTo("https://facebook.com/"));
+            Assert.That(facebookCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://facebook.com/"));
             Assert.That(facebookCredential.Username, Is.EqualTo("facebookuser"));
             Assert.That(facebookCredential.Password, Is.EqualTo("facebookpass"));
             Assert.That(facebookCredential.Notes, Is.EqualTo("Facebook comment"));
@@ -249,7 +275,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(exampleCredential.ServiceName, Is.EqualTo("example.com"));
-            Assert.That(exampleCredential.ServiceUrl, Is.EqualTo("https://example.com"));
+            Assert.That(exampleCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://example.com"));
             Assert.That(exampleCredential.Username, Is.EqualTo("username-example"));
             Assert.That(exampleCredential.Password, Is.EqualTo("examplepassword"));
         });
@@ -258,7 +284,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(youtubeCredential.ServiceName, Is.EqualTo("youtube.com"));
-            Assert.That(youtubeCredential.ServiceUrl, Is.EqualTo("https://youtube.com"));
+            Assert.That(youtubeCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://youtube.com"));
             Assert.That(youtubeCredential.Username, Is.EqualTo("youtubeusername"));
             Assert.That(youtubeCredential.Password, Is.EqualTo("youtubepassword"));
         });
@@ -285,7 +311,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(sampleEntry.ServiceName, Is.EqualTo("Sample Entry"));
-            Assert.That(sampleEntry.ServiceUrl, Is.EqualTo("https://keepass.info/"));
+            Assert.That(sampleEntry.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://keepass.info/"));
             Assert.That(sampleEntry.Username, Is.EqualTo("User Name"));
             Assert.That(sampleEntry.Password, Is.EqualTo("Password"));
             Assert.That(sampleEntry.Notes, Is.EqualTo("Notes"));
@@ -295,7 +321,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(sampleEntry2.ServiceName, Is.EqualTo("Sample Entry #2"));
-            Assert.That(sampleEntry2.ServiceUrl, Is.EqualTo("https://keepass.info/help/kb/testform.html"));
+            Assert.That(sampleEntry2.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://keepass.info/help/kb/testform.html"));
             Assert.That(sampleEntry2.Username, Is.EqualTo("Michael321"));
             Assert.That(sampleEntry2.Password, Is.EqualTo("12345"));
             Assert.That(sampleEntry2.Notes, Is.Empty);
@@ -323,7 +349,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(specialEntry.ServiceName, Is.EqualTo("Entry with \"notes\" special chars"));
-            Assert.That(specialEntry.ServiceUrl, Is.Empty);
+            Assert.That(specialEntry.ServiceUrls?.FirstOrDefault(), Is.Null);
             Assert.That(specialEntry.Username, Is.Empty);
             Assert.That(specialEntry.Password, Is.EqualTo("DVfIsb4TGkL7oKCwyiet"));
             Assert.That(specialEntry.Notes, Does.Contain("\"with quotes\""));
@@ -336,7 +362,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(sampleEntry.ServiceName, Is.EqualTo("Sample Entry"));
-            Assert.That(sampleEntry.ServiceUrl, Is.EqualTo("https://keepass.info/"));
+            Assert.That(sampleEntry.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://keepass.info/"));
             Assert.That(sampleEntry.Username, Is.EqualTo("User Name"));
             Assert.That(sampleEntry.Password, Is.EqualTo("Password"));
             Assert.That(sampleEntry.Notes, Is.EqualTo("Notes"));
@@ -364,7 +390,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(sampleEntry.ServiceName, Is.EqualTo("Sample Entry"));
-            Assert.That(sampleEntry.ServiceUrl, Is.EqualTo("https://keepass.info/"));
+            Assert.That(sampleEntry.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://keepass.info/"));
             Assert.That(sampleEntry.Username, Is.EqualTo("User Name"));
             Assert.That(sampleEntry.Password, Is.EqualTo("Password"));
             Assert.That(sampleEntry.Notes, Is.EqualTo("Notes"));
@@ -375,7 +401,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(sampleEntry2.ServiceName, Is.EqualTo("Sample Entry #2"));
-            Assert.That(sampleEntry2.ServiceUrl, Is.EqualTo("https://keepass.info/help/kb/testform.html"));
+            Assert.That(sampleEntry2.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://keepass.info/help/kb/testform.html"));
             Assert.That(sampleEntry2.Username, Is.EqualTo("Michael321"));
             Assert.That(sampleEntry2.Password, Is.EqualTo("12345"));
             Assert.That(sampleEntry2.Notes, Is.Empty);
@@ -404,7 +430,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(testProton1Credential.ServiceName, Is.EqualTo("Test proton 1"));
-            Assert.That(testProton1Credential.ServiceUrl, Is.EqualTo("https://www.website.com/"));
+            Assert.That(testProton1Credential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://www.website.com/"));
             Assert.That(testProton1Credential.Username, Is.EqualTo("user1"));
             Assert.That(testProton1Credential.Password, Is.EqualTo("pass1"));
             Assert.That(testProton1Credential.TwoFactorSecret, Is.EqualTo("otpauth://totp/Strongbox?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&algorithm=SHA1&digits=6&period=30"));
@@ -455,7 +481,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(testCredential.ServiceName, Is.EqualTo("Test"));
-            Assert.That(testCredential.ServiceUrl, Is.EqualTo("https://Test"));
+            Assert.That(testCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://Test"));
             Assert.That(testCredential.Username, Is.EqualTo("Test username"));
             Assert.That(testCredential.Password, Is.EqualTo("password123"));
             Assert.That(testCredential.Notes, Is.Null);
@@ -465,7 +491,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(googleCredential.ServiceName, Is.EqualTo("Google"));
-            Assert.That(googleCredential.ServiceUrl, Is.EqualTo("https://www.google.com"));
+            Assert.That(googleCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://www.google.com"));
             Assert.That(googleCredential.Username, Is.EqualTo("googleuser"));
             Assert.That(googleCredential.Password, Is.EqualTo("googlepassword"));
             Assert.That(googleCredential.Notes, Is.Null);
@@ -475,7 +501,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(localCredential.ServiceName, Is.EqualTo("Local"));
-            Assert.That(localCredential.ServiceUrl, Is.EqualTo("https://www.testwebsite.local"));
+            Assert.That(localCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://www.testwebsite.local"));
             Assert.That(localCredential.Username, Is.EqualTo("testusername"));
             Assert.That(localCredential.Password, Is.EqualTo("testpassword"));
             Assert.That(localCredential.Notes, Is.EqualTo("testnote\nAlternative username 1: testusernamealternative"));
@@ -503,7 +529,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(exampleCredential.ServiceName, Is.EqualTo("Examplename"));
-            Assert.That(exampleCredential.ServiceUrl, Is.EqualTo("https://example.com"));
+            Assert.That(exampleCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://example.com"));
             Assert.That(exampleCredential.Username, Is.EqualTo("Exampleusername"));
             Assert.That(exampleCredential.Password, Is.EqualTo("examplepassword"));
             Assert.That(exampleCredential.Notes, Is.EqualTo("Examplenotes"));
@@ -515,7 +541,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(userWithoutUrlCredential.ServiceName, Is.EqualTo("Userwithouturlornotes"));
-            Assert.That(userWithoutUrlCredential.ServiceUrl, Is.Null);
+            Assert.That(userWithoutUrlCredential.ServiceUrls?.FirstOrDefault(), Is.Null);
             Assert.That(userWithoutUrlCredential.Username, Is.EqualTo("userwithouturlornotes"));
             Assert.That(userWithoutUrlCredential.Password, Is.EqualTo("userpass"));
             Assert.That(userWithoutUrlCredential.Notes, Is.Empty);
@@ -527,7 +553,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(secureNoteCredential.ServiceName, Is.EqualTo("securenote1"));
-            Assert.That(secureNoteCredential.ServiceUrl, Is.Null);
+            Assert.That(secureNoteCredential.ServiceUrls?.FirstOrDefault(), Is.Null);
             Assert.That(secureNoteCredential.Username, Is.Empty);
             Assert.That(secureNoteCredential.Password, Is.Empty);
             Assert.That(secureNoteCredential.Notes, Is.EqualTo("Securenotecontent here"));
@@ -539,7 +565,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(creditCardCredential.ServiceName, Is.EqualTo("Paymentcard1"));
-            Assert.That(creditCardCredential.ServiceUrl, Is.Null); // Should be normalized to null
+            Assert.That(creditCardCredential.ServiceUrls?.FirstOrDefault(), Is.Null); // Should be normalized to null
             Assert.That(creditCardCredential.Username, Is.Empty);
             Assert.That(creditCardCredential.Password, Is.Empty);
             Assert.That(creditCardCredential.ItemType, Is.EqualTo(ImportedItemType.Creditcard));
@@ -573,7 +599,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(gmailCredential.ServiceName, Is.EqualTo("Gmail"));
-            Assert.That(gmailCredential.ServiceUrl, Is.EqualTo("https://gmail.com"));
+            Assert.That(gmailCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://gmail.com"));
             Assert.That(gmailCredential.Username, Is.EqualTo("your.email@gmail.com"));
             Assert.That(gmailCredential.Password, Is.EqualTo("your_password"));
             Assert.That(gmailCredential.Notes, Is.EqualTo("Important email account"));
@@ -585,7 +611,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(facebookCredential.ServiceName, Is.EqualTo("Facebook"));
-            Assert.That(facebookCredential.ServiceUrl, Is.EqualTo("https://facebook.com"));
+            Assert.That(facebookCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://facebook.com"));
             Assert.That(facebookCredential.Username, Is.EqualTo("your.username"));
             Assert.That(facebookCredential.Password, Is.EqualTo("your_password"));
             Assert.That(facebookCredential.Notes, Is.EqualTo("Social media account"));
@@ -597,7 +623,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(githubCredential.ServiceName, Is.EqualTo("GitHub"));
-            Assert.That(githubCredential.ServiceUrl, Is.EqualTo("https://github.com"));
+            Assert.That(githubCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://github.com"));
             Assert.That(githubCredential.Username, Is.EqualTo("developer_username"));
             Assert.That(githubCredential.Password, Is.EqualTo("your_password"));
             Assert.That(githubCredential.Notes, Is.EqualTo("Development platform"));
@@ -609,7 +635,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(secureNoteCredential.ServiceName, Is.EqualTo("Secure Note"));
-            Assert.That(secureNoteCredential.ServiceUrl, Is.Null);
+            Assert.That(secureNoteCredential.ServiceUrls?.FirstOrDefault(), Is.Null);
             Assert.That(secureNoteCredential.Username, Is.Empty);
             Assert.That(secureNoteCredential.Password, Is.Empty);
             Assert.That(secureNoteCredential.Notes, Is.EqualTo("Important information or notes without login credentials"));
@@ -638,7 +664,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(gmailCredential.ServiceName, Is.EqualTo("Gmail"));
-            Assert.That(gmailCredential.ServiceUrl, Is.EqualTo("https://gmail.com"));
+            Assert.That(gmailCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://gmail.com"));
             Assert.That(gmailCredential.Username, Is.EqualTo("testuser@gmail.com"));
             Assert.That(gmailCredential.Password, Is.EqualTo("gmailpass123"));
             Assert.That(gmailCredential.Notes, Is.EqualTo("Important email account"));
@@ -649,7 +675,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(githubCredential.ServiceName, Is.EqualTo("GitHub"));
-            Assert.That(githubCredential.ServiceUrl, Is.EqualTo("https://github.com"));
+            Assert.That(githubCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://github.com"));
             Assert.That(githubCredential.Username, Is.EqualTo("devuser"));
             Assert.That(githubCredential.Password, Is.EqualTo("devpass789"));
             Assert.That(githubCredential.Notes, Is.EqualTo("Development platform"));
@@ -660,7 +686,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(secureNoteCredential.ServiceName, Is.EqualTo("Secure Note"));
-            Assert.That(secureNoteCredential.ServiceUrl, Is.Null);
+            Assert.That(secureNoteCredential.ServiceUrls?.FirstOrDefault(), Is.Null);
             Assert.That(secureNoteCredential.Username, Is.Empty);
             Assert.That(secureNoteCredential.Password, Is.Empty);
             Assert.That(secureNoteCredential.Notes, Is.EqualTo("Important information stored securely"));
@@ -688,7 +714,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(passwordCredential.ServiceName, Is.EqualTo("Password title"));
-            Assert.That(passwordCredential.ServiceUrl, Is.EqualTo("http://google.nl"));
+            Assert.That(passwordCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("http://google.nl"));
             Assert.That(passwordCredential.Username, Is.EqualTo("email@example.tld"));
             Assert.That(passwordCredential.Password, Is.EqualTo("password"));
             Assert.That(passwordCredential.FolderPath, Is.EqualTo("Business"));
@@ -701,7 +727,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(secureNote.ServiceName, Is.EqualTo("SecureNote1"));
-            Assert.That(secureNote.ServiceUrl, Is.Null);
+            Assert.That(secureNote.ServiceUrls?.FirstOrDefault(), Is.Null);
             Assert.That(secureNote.Username, Is.Empty);
             Assert.That(secureNote.Password, Is.Empty);
             Assert.That(secureNote.ItemType, Is.EqualTo(ImportedItemType.Note));
@@ -817,7 +843,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(credential3.ServiceName, Is.EqualTo("credential3"));
-            Assert.That(credential3.ServiceUrl, Is.Empty);
+            Assert.That(credential3.ServiceUrls?.FirstOrDefault(), Is.Null);
             Assert.That(credential3.Username, Is.EqualTo("username3"));
             Assert.That(credential3.Password, Is.Empty);
             Assert.That(credential3.Notes, Is.EqualTo("without password"));
@@ -836,7 +862,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(service2Credential.ServiceName, Is.EqualTo("service2"));
-            Assert.That(service2Credential.ServiceUrl, Is.EqualTo("https://service2.com"));
+            Assert.That(service2Credential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://service2.com"));
             Assert.That(service2Credential.Username, Is.EqualTo("username2"));
             Assert.That(service2Credential.Password, Is.EqualTo("password2"));
             Assert.That(service2Credential.Notes, Is.Empty);
@@ -853,7 +879,7 @@ public class ImportExportTests
         Assert.Multiple(() =>
         {
             Assert.That(service1Credential.ServiceName, Is.EqualTo("service1"));
-            Assert.That(service1Credential.ServiceUrl, Is.Empty);
+            Assert.That(service1Credential.ServiceUrls?.FirstOrDefault(), Is.Null);
             Assert.That(service1Credential.Username, Is.EqualTo("username1"));
             Assert.That(service1Credential.Password, Is.EqualTo("password1"));
             Assert.That(service1Credential.Notes, Is.EqualTo("notes1"));
@@ -1124,6 +1150,118 @@ public class ImportExportTests
         // Note: Dashlane test data may or may not have categories
         var folderNames = BaseImporter.CollectUniqueFolderNames(importedCredentials);
         Assert.That(folderNames, Is.Not.Null, "Should return a set (even if empty)");
+    }
+
+    /// <summary>
+    /// Test case for importing credentials from RoboForm CSV and ensuring all values are present.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task ImportCredentialsFromRoboformCsv()
+    {
+        // Arrange
+        var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceStringAsync("AliasVault.UnitTests.TestData.Exports.roboform.csv");
+
+        // Act
+        var importedCredentials = await RoboformImporter.ImportFromCsvAsync(fileContent);
+
+        // Assert - Should import 4 records
+        Assert.That(importedCredentials, Has.Count.EqualTo(4));
+
+        // Test regular login credential
+        var comCredential = importedCredentials.First(c => c.ServiceName == "Com");
+        Assert.Multiple(() =>
+        {
+            Assert.That(comCredential.ServiceName, Is.EqualTo("Com"));
+            Assert.That(comCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://www.example.com.com"));
+            Assert.That(comCredential.Username, Is.EqualTo("username1"));
+            Assert.That(comCredential.Password, Is.EqualTo("password1"));
+            Assert.That(comCredential.Notes, Is.Null.Or.Empty);
+            Assert.That(comCredential.FolderPath, Is.Null);
+            Assert.That(comCredential.ItemType, Is.EqualTo(ImportedItemType.Login));
+        });
+
+        // Test credential with note
+        var exampleCredential = importedCredentials.First(c => c.ServiceName == "Example");
+        Assert.Multiple(() =>
+        {
+            Assert.That(exampleCredential.ServiceName, Is.EqualTo("Example"));
+            Assert.That(exampleCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://www.example.com"));
+            Assert.That(exampleCredential.Username, Is.EqualTo("exampleusername"));
+            Assert.That(exampleCredential.Password, Is.EqualTo("examplepassword"));
+            Assert.That(exampleCredential.Notes, Is.EqualTo("Examplenote"));
+            Assert.That(exampleCredential.FolderPath, Is.Null);
+            Assert.That(exampleCredential.ItemType, Is.EqualTo(ImportedItemType.Login));
+        });
+
+        // Test secure note (no URL, login, or password)
+        var safeNoteCredential = importedCredentials.First(c => c.ServiceName == "Safenotename");
+        Assert.Multiple(() =>
+        {
+            Assert.That(safeNoteCredential.ServiceName, Is.EqualTo("Safenotename"));
+            Assert.That(safeNoteCredential.ServiceUrls?.FirstOrDefault(), Is.Null);
+            Assert.That(safeNoteCredential.Username, Is.Null.Or.Empty);
+            Assert.That(safeNoteCredential.Password, Is.Null.Or.Empty);
+            Assert.That(safeNoteCredential.Notes, Is.EqualTo("Safenote content example here"));
+            Assert.That(safeNoteCredential.ItemType, Is.EqualTo(ImportedItemType.Note));
+        });
+
+        // Test credential in folder
+        var businessCredential = importedCredentials.First(c => c.ServiceName == "Business");
+        Assert.Multiple(() =>
+        {
+            Assert.That(businessCredential.ServiceName, Is.EqualTo("Business"));
+            Assert.That(businessCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://www.business.com"));
+            Assert.That(businessCredential.Username, Is.EqualTo("businessusername"));
+            Assert.That(businessCredential.Password, Is.EqualTo("businesspassword"));
+            Assert.That(businessCredential.FolderPath, Is.EqualTo("Business"));
+            Assert.That(businessCredential.ItemType, Is.EqualTo(ImportedItemType.Login));
+        });
+    }
+
+    /// <summary>
+    /// Test case for RoboForm folder import.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task RoboformFolderImport()
+    {
+        // Arrange
+        var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceStringAsync("AliasVault.UnitTests.TestData.Exports.roboform.csv");
+
+        // Act
+        var importedCredentials = await RoboformImporter.ImportFromCsvAsync(fileContent);
+
+        // Assert - verify folder path is extracted (leading slash removed)
+        var folderNames = BaseImporter.CollectUniqueFolderNames(importedCredentials);
+        Assert.That(folderNames, Does.Contain("Business"));
+
+        var credentialWithFolder = importedCredentials.First(c => c.FolderPath == "Business");
+        Assert.That(credentialWithFolder.ServiceName, Is.EqualTo("Business"));
+    }
+
+    /// <summary>
+    /// Test case for RoboForm secure note detection.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task RoboformSecureNoteDetection()
+    {
+        // Arrange
+        var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceStringAsync("AliasVault.UnitTests.TestData.Exports.roboform.csv");
+
+        // Act
+        var importedCredentials = await RoboformImporter.ImportFromCsvAsync(fileContent);
+        var items = BaseImporter.ConvertToItem(importedCredentials);
+
+        // Assert - verify secure note is detected
+        var secureNoteItem = items.FirstOrDefault(i => i.Name == "Safenotename");
+        Assert.That(secureNoteItem, Is.Not.Null, "Should find Safenotename");
+        Assert.That(secureNoteItem!.ItemType, Is.EqualTo(ItemType.Note), "Secure note should have Note item type");
+
+        // Verify the note content is preserved
+        var notesFieldValue = secureNoteItem.FieldValues.FirstOrDefault(fv => fv.FieldKey == FieldKey.NotesContent);
+        Assert.That(notesFieldValue?.Value, Is.EqualTo("Safenote content example here"));
     }
 
     /// <summary>

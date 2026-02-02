@@ -61,7 +61,7 @@ public static class LastPassImporter
             var credential = new ImportedCredential
             {
                 ServiceName = record.Title,
-                ServiceUrl = normalizedUrl,
+                ServiceUrls = BaseImporter.ParseUrls(normalizedUrl),
                 Username = record.Username,
                 Password = record.Password,
                 TwoFactorSecret = record.TwoFactorSecret,

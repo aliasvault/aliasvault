@@ -138,6 +138,29 @@ public static class BaseImporter
 
         return decoded;
     }
+
+    /// <summary>
+    /// Parses a URL string that may contain multiple comma-separated URLs.
+    /// Many password managers export multiple URIs as comma-separated values within quotes.
+    /// </summary>
+    /// <param name="url">The URL string to parse.</param>
+    /// <returns>A list of URLs, or null if the input is empty.</returns>
+    public static List<string>? ParseUrls(string? url)
+    {
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            return null;
+        }
+
+        // Split by comma and filter out empty entries
+        var urls = url.Split(',', StringSplitOptions.RemoveEmptyEntries)
+            .Select(u => u.Trim())
+            .Where(u => !string.IsNullOrWhiteSpace(u))
+            .ToList();
+
+        return urls.Count > 0 ? urls : null;
+    }
+
     /// <summary>
     /// Converts a list of imported credentials to a list of AliasVault Items.
     /// </summary>
@@ -185,7 +208,7 @@ public static class BaseImporter
             else
             {
                 // Add standard field values for non-empty fields (Login, Alias, Note types)
-                AddFieldValueIfNotEmpty(item, FieldKey.LoginUrl, importedCredential.ServiceUrl, createdAt, updatedAt);
+                AddUrlFieldValues(item, importedCredential.ServiceUrls, createdAt, updatedAt);
                 AddFieldValueIfNotEmpty(item, FieldKey.LoginUsername, importedCredential.Username, createdAt, updatedAt);
                 AddFieldValueIfNotEmpty(item, FieldKey.LoginPassword, importedCredential.Password, createdAt, updatedAt);
                 AddFieldValueIfNotEmpty(item, FieldKey.LoginEmail, importedCredential.Email, createdAt, updatedAt);
@@ -352,6 +375,39 @@ public static class BaseImporter
         AddFieldValueIfNotEmpty(item, FieldKey.CardPin, card.Pin, createdAt, updatedAt);
         AddFieldValueIfNotEmpty(item, FieldKey.CardExpiryMonth, card.ExpiryMonth, createdAt, updatedAt);
         AddFieldValueIfNotEmpty(item, FieldKey.CardExpiryYear, card.ExpiryYear, createdAt, updatedAt);
+    }
+
+    /// <summary>
+    /// Adds URL field values to an item, supporting multiple URLs with proper weight ordering.
+    /// </summary>
+    /// <param name="item">The item to add the field values to.</param>
+    /// <param name="urls">The list of URLs to add.</param>
+    /// <param name="createdAt">The created timestamp.</param>
+    /// <param name="updatedAt">The updated timestamp.</param>
+    private static void AddUrlFieldValues(Item item, List<string>? urls, DateTime createdAt, DateTime updatedAt)
+    {
+        if (urls == null || urls.Count == 0)
+        {
+            return;
+        }
+
+        var weight = 0;
+        foreach (var url in urls)
+        {
+            if (!string.IsNullOrEmpty(url))
+            {
+                item.FieldValues.Add(new FieldValue
+                {
+                    Id = Guid.NewGuid(),
+                    ItemId = item.Id,
+                    FieldKey = FieldKey.LoginUrl,
+                    Value = url,
+                    Weight = weight++,
+                    CreatedAt = createdAt,
+                    UpdatedAt = updatedAt,
+                });
+            }
+        }
     }
 
     /// <summary>

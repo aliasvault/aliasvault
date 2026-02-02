@@ -411,12 +411,12 @@
         FaviconExtractionCancellation = new CancellationTokenSource();
         StateHasChanged();
 
-        var credentialsWithUrls = ImportedCredentials.Where(c => !string.IsNullOrEmpty(c.ServiceUrl)).ToList();
+        var credentialsWithUrls = ImportedCredentials.Where(c => c.ServiceUrls?.FirstOrDefault() != null).ToList();
 
         // Group credentials by normalized domain to avoid duplicate fetches
         var processedDomains = new HashSet<string>();
 
-        TotalFaviconsToExtract = credentialsWithUrls.Count;
+        TotalFaviconsToExtract = credentialsWithUrls.Count();
 
         foreach (var credential in credentialsWithUrls)
         {
@@ -428,7 +428,7 @@
             // Extract normalized domain for deduplication
             try
             {
-                var domain = new Uri(credential.ServiceUrl!).Host.ToLowerInvariant();
+                var domain = new Uri(credential.ServiceUrls!.First()).Host.ToLowerInvariant();
                 if (domain.StartsWith("www."))
                 {
                     domain = domain[4..];
@@ -460,13 +460,14 @@
         try
         {
             // Extract normalized domain for storage key
-            var domain = new Uri(credential.ServiceUrl!).Host.ToLowerInvariant();
+            var url = credential.ServiceUrls!.First();
+            var domain = new Uri(url).Host.ToLowerInvariant();
             if (domain.StartsWith("www."))
             {
                 domain = domain[4..];
             }
 
-            var apiReturn = await HttpClient.GetFromJsonAsync<FaviconExtractModel>($"v1/Favicon/Extract?url={Uri.EscapeDataString(credential.ServiceUrl!)}");
+            var apiReturn = await HttpClient.GetFromJsonAsync<FaviconExtractModel>($"v1/Favicon/Extract?url={Uri.EscapeDataString(url)}");
             if (apiReturn?.Image is not null)
             {
                 // Store by normalized domain for deduplication

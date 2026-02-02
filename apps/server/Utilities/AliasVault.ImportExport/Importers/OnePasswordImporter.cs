@@ -30,7 +30,7 @@ public static class OnePasswordImporter
             var credential = new ImportedCredential
             {
                 ServiceName = record.Title,
-                ServiceUrl = record.Url,
+                ServiceUrls = BaseImporter.ParseUrls(record.Url),
                 Username = record.Username,
                 Password = record.Password,
                 TwoFactorSecret = record.OTPAuth,

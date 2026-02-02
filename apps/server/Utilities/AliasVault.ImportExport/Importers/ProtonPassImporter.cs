@@ -30,7 +30,7 @@ public static class ProtonPassImporter
             var credential = new ImportedCredential
             {
                 ServiceName = record.Name,
-                ServiceUrl = record.Url,
+                ServiceUrls = BaseImporter.ParseUrls(record.Url),
                 Email = record.Email,
                 Username = record.Username,
                 Password = record.Password,

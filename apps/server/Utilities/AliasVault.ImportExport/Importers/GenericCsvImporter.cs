@@ -66,7 +66,7 @@ public static class GenericCsvImporter
             var credential = new ImportedCredential
             {
                 ServiceName = record.ServiceName.Trim(),
-                ServiceUrl = NormalizeUrl(record.Url),
+                ServiceUrls = BaseImporter.ParseUrls(NormalizeUrl(record.Url)),
                 Username = record.Username?.Trim(),
                 Password = record.Password?.Trim(),
                 TwoFactorSecret = record.TotpSecret?.Trim(),
