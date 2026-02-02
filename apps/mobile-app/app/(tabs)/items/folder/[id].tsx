@@ -9,12 +9,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
+import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
 import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticationError';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useItemSort, useSortedItems } from '@/hooks/useItemSort';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultSync } from '@/hooks/useVaultSync';
@@ -22,6 +24,7 @@ import { useVaultSync } from '@/hooks/useVaultSync';
 import { DeleteFolderModal } from '@/components/folders/DeleteFolderModal';
 import { FolderModal } from '@/components/folders/FolderModal';
 import { ItemCard } from '@/components/items/ItemCard';
+import { SortMenu } from '@/components/items/SortMenu';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
@@ -87,6 +90,9 @@ export default function FolderViewScreen(): React.ReactNode {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+
+  // Sort state
+  const { sortOrder, setSortOrder, showSortMenu, setShowSortMenu, toggleSortMenu } = useItemSort();
 
   // Folder modals
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
@@ -166,6 +172,11 @@ export default function FolderViewScreen(): React.ReactNode {
   }, [itemsList, searchQuery, filterType]);
 
   /**
+   * Sort the filtered items based on the current sort order.
+   */
+  const sortedItems = useSortedItems(filteredItems, sortOrder);
+
+  /**
    * Load items in this folder and folder details.
    */
   const loadItems = useCallback(async (): Promise<void> => {
@@ -174,9 +185,10 @@ export default function FolderViewScreen(): React.ReactNode {
     }
 
     try {
-      const [items, folders] = await Promise.all([
+      const [items, folders, savedSortOrder] = await Promise.all([
         dbContext.sqliteClient!.items.getAll(),
-        dbContext.sqliteClient!.folders.getAll()
+        dbContext.sqliteClient!.folders.getAll(),
+        dbContext.sqliteClient!.settings.getCredentialsSortOrder()
       ]);
       // Filter to only items in this folder
       const folderItems = items.filter((item: Item) => item.FolderId === folderId);
@@ -185,6 +197,7 @@ export default function FolderViewScreen(): React.ReactNode {
       // Find this folder
       const currentFolder = folders.find((f: Folder) => f.Id === folderId);
       setFolder(currentFolder || null);
+      setSortOrder(savedSortOrder);
       setIsLoadingItems(false);
     } catch (err) {
       console.error('Error loading folder items:', err);
@@ -195,7 +208,7 @@ export default function FolderViewScreen(): React.ReactNode {
       });
       setIsLoadingItems(false);
     }
-  }, [dbContext.sqliteClient, folderId, setIsLoadingItems, t]);
+  }, [dbContext.sqliteClient, folderId, setIsLoadingItems, setSortOrder, t]);
 
   useEffect(() => {
     // Add listener for item changes
@@ -445,12 +458,22 @@ export default function FolderViewScreen(): React.ReactNode {
       color: colors.textMuted,
       fontSize: 20,
     },
+    // Header row styles
+    headerRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 16,
+    },
     // Filter button styles
     filterButton: {
       alignItems: 'center',
       flexDirection: 'row',
-      marginBottom: 16,
+      flex: 1,
       gap: 8,
+    },
+    sortButton: {
+      padding: 8,
     },
     filterButtonText: {
       color: colors.text,
@@ -673,28 +696,42 @@ export default function FolderViewScreen(): React.ReactNode {
   };
 
   /**
-   * Render the list header with filter and search.
+   * Render the list header with filter, sort button, and search.
    */
   const renderListHeader = (): React.ReactNode => {
     return (
       <ThemedView>
-        {/* Filter button */}
-        <TouchableOpacity
-          style={styles.filterButton}
-          onPress={() => setShowFilterMenu(!showFilterMenu)}
-        >
-          <ThemedText style={styles.filterButtonText}>
-            {getFilterTitle()}
-          </ThemedText>
-          <ThemedText style={styles.filterCount}>
-            ({filteredItems.length})
-          </ThemedText>
-          <MaterialIcons
-            name={showFilterMenu ? "keyboard-arrow-up" : "keyboard-arrow-down"}
-            size={24}
-            color={colors.text}
-          />
-        </TouchableOpacity>
+        {/* Header row with filter dropdown and sort button */}
+        <View style={styles.headerRow}>
+          {/* Filter button */}
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={() => setShowFilterMenu(!showFilterMenu)}
+          >
+            <ThemedText style={styles.filterButtonText}>
+              {getFilterTitle()}
+            </ThemedText>
+            <ThemedText style={styles.filterCount}>
+              ({filteredItems.length})
+            </ThemedText>
+            <MaterialIcons
+              name={showFilterMenu ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+              size={24}
+              color={colors.text}
+            />
+          </TouchableOpacity>
+          {/* Sort button */}
+          <TouchableOpacity
+            style={styles.sortButton}
+            onPress={toggleSortMenu}
+          >
+            <MaterialIcons
+              name="sort"
+              size={24}
+              color={colors.textMuted}
+            />
+          </TouchableOpacity>
+        </View>
 
         {/* Search input */}
         <ThemedView style={styles.searchContainer}>
@@ -762,7 +799,7 @@ export default function FolderViewScreen(): React.ReactNode {
       {/* Item list */}
       <FlatList
         ref={flatListRef}
-        data={isLoadingItems ? Array(4).fill(null) : filteredItems}
+        data={isLoadingItems ? Array(4).fill(null) : sortedItems}
         keyExtractor={(itm, index) => itm?.Id ?? `skeleton-${index}`}
         keyboardShouldPersistTaps='handled'
         contentContainerStyle={styles.contentContainer}
@@ -793,6 +830,21 @@ export default function FolderViewScreen(): React.ReactNode {
 
       {/* Filter menu overlay */}
       {renderFilterOverlay()}
+
+      {/* Sort menu overlay */}
+      <SortMenu
+        visible={showSortMenu}
+        sortOrder={sortOrder}
+        onSelect={async (order: CredentialSortOrder) => {
+          setSortOrder(order);
+          // Save to settings and trigger vault sync
+          await executeVaultMutation(async () => {
+            await dbContext.sqliteClient?.settings.setCredentialsSortOrder(order);
+          });
+        }}
+        onClose={() => setShowSortMenu(false)}
+        topOffset={Platform.OS === 'ios' ? paddingTop + 104 : paddingTop + 44}
+      />
 
       {/* Folder modals */}
       <FolderModal

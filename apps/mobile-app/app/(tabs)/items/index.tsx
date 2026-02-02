@@ -25,6 +25,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { FolderModal } from '@/components/folders/FolderModal';
 import { FolderPill, type FolderWithCount } from '@/components/folders/FolderPill';
 import { ItemCard } from '@/components/items/ItemCard';
+import { SortMenu } from '@/components/items/SortMenu';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
@@ -64,15 +65,6 @@ const ITEM_TYPE_OPTIONS: ItemTypeOption[] = [
   { type: ItemTypes.Alias, titleKey: 'itemTypes.alias.title', iconName: 'person' },
   { type: ItemTypes.CreditCard, titleKey: 'itemTypes.creditCard.title', iconName: 'credit-card' },
   { type: ItemTypes.Note, titleKey: 'itemTypes.note.title', iconName: 'description' },
-];
-
-/**
- * Sort order options with their translation keys.
- */
-const SORT_OPTIONS: { value: CredentialSortOrder; labelKey: string }[] = [
-  { value: 'OldestFirst', labelKey: 'items.sort.oldestFirst' },
-  { value: 'NewestFirst', labelKey: 'items.sort.newestFirst' },
-  { value: 'Alphabetical', labelKey: 'items.sort.alphabetical' },
 ];
 
 /**
@@ -573,32 +565,6 @@ export default function ItemsScreen(): React.ReactNode {
       zIndex: 1001,
     },
     filterMenuBackdrop: {
-      bottom: 0,
-      left: 0,
-      position: 'absolute',
-      right: 0,
-      top: 0,
-      zIndex: 1000,
-    },
-    // Sort menu styles
-    sortMenuOverlay: {
-      backgroundColor: colors.accentBackground,
-      borderColor: colors.accentBorder,
-      borderRadius: 8,
-      borderWidth: 1,
-      elevation: 8,
-      overflow: 'hidden',
-      position: 'absolute',
-      right: 14,
-      shadowColor: colors.black,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.25,
-      shadowRadius: 4,
-      top: Platform.OS === 'ios' ? insets.top + 112 : 8,
-      width: 200,
-      zIndex: 1001,
-    },
-    sortMenuBackdrop: {
       bottom: 0,
       left: 0,
       position: 'absolute',
@@ -1182,51 +1148,18 @@ export default function ItemsScreen(): React.ReactNode {
       {renderFilterOverlay()}
 
       {/* Sort menu overlay */}
-      {showSortMenu && (
-        <>
-          <TouchableOpacity
-            style={styles.sortMenuBackdrop}
-            activeOpacity={1}
-            onPress={() => setShowSortMenu(false)}
-          />
-          <ThemedView style={styles.sortMenuOverlay}>
-            {SORT_OPTIONS.map((option) => (
-              <TouchableOpacity
-                key={option.value}
-                style={[
-                  styles.filterMenuItem,
-                  styles.filterMenuItemWithIcon
-                ]}
-                onPress={async () => {
-                  setSortOrder(option.value);
-                  setShowSortMenu(false);
-                  // Save to settings and trigger vault sync
-                  await executeVaultMutation(async () => {
-                    await dbContext.sqliteClient?.settings.setCredentialsSortOrder(option.value);
-                  });
-                }}
-              >
-                {sortOrder === option.value ? (
-                  <MaterialIcons
-                    name="check"
-                    size={18}
-                    color={colors.primary}
-                    style={styles.filterMenuItemIcon}
-                  />
-                ) : (
-                  <View style={styles.filterMenuItemIcon} />
-                )}
-                <ThemedText style={[
-                  styles.filterMenuItemText,
-                  sortOrder === option.value && styles.filterMenuItemTextActive
-                ]}>
-                  {t(option.labelKey)}
-                </ThemedText>
-              </TouchableOpacity>
-            ))}
-          </ThemedView>
-        </>
-      )}
+      <SortMenu
+        visible={showSortMenu}
+        sortOrder={sortOrder}
+        onSelect={async (order: CredentialSortOrder) => {
+          setSortOrder(order);
+          // Save to settings and trigger vault sync
+          await executeVaultMutation(async () => {
+            await dbContext.sqliteClient?.settings.setCredentialsSortOrder(order);
+          });
+        }}
+        onClose={() => setShowSortMenu(false)}
+      />
 
       {/* Create folder modal */}
       <FolderModal
