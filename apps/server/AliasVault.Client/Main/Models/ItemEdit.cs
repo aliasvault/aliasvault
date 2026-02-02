@@ -86,6 +86,7 @@ public sealed class ItemEdit
 
     /// <summary>
     /// Creates an ItemEdit instance from an Item entity.
+    /// Creates clones of Attachments, TotpCodes, and Passkeys to avoid modifying EF-tracked entities.
     /// </summary>
     /// <param name="item">The item entity to convert.</param>
     /// <returns>A new ItemEdit instance.</returns>
@@ -99,9 +100,9 @@ public sealed class ItemEdit
             LogoId = item.LogoId,
             ServiceLogo = item.Logo?.FileData,
             FolderId = item.FolderId,
-            Attachments = item.Attachments.Where(a => !a.IsDeleted).ToList(),
-            TotpCodes = item.TotpCodes.Where(t => !t.IsDeleted).ToList(),
-            Passkeys = item.Passkeys.Where(p => !p.IsDeleted).ToList(),
+            Attachments = item.Attachments.Where(a => !a.IsDeleted).Select(CloneAttachment).ToList(),
+            TotpCodes = item.TotpCodes.Where(t => !t.IsDeleted).Select(CloneTotpCode).ToList(),
+            Passkeys = item.Passkeys.Where(p => !p.IsDeleted).Select(ClonePasskey).ToList(),
             CreateDate = item.CreatedAt,
             LastUpdate = item.UpdatedAt,
         };
@@ -568,5 +569,67 @@ public sealed class ItemEdit
         // For unknown fields with a system field prefix, this might be a new system field
         // not yet in the registry - treat as custom for now
         return FieldCategory.Custom;
+    }
+
+    /// <summary>
+    /// Creates a clone of an Attachment entity to avoid modifying EF-tracked entities.
+    /// </summary>
+    /// <param name="attachment">The attachment to clone.</param>
+    /// <returns>A new Attachment instance with copied values.</returns>
+    private static Attachment CloneAttachment(Attachment attachment)
+    {
+        return new Attachment
+        {
+            Id = attachment.Id,
+            Filename = attachment.Filename,
+            Blob = attachment.Blob,
+            ItemId = attachment.ItemId,
+            CreatedAt = attachment.CreatedAt,
+            UpdatedAt = attachment.UpdatedAt,
+            IsDeleted = attachment.IsDeleted,
+        };
+    }
+
+    /// <summary>
+    /// Creates a clone of a TotpCode entity to avoid modifying EF-tracked entities.
+    /// </summary>
+    /// <param name="totpCode">The TOTP code to clone.</param>
+    /// <returns>A new TotpCode instance with copied values.</returns>
+    private static TotpCode CloneTotpCode(TotpCode totpCode)
+    {
+        return new TotpCode
+        {
+            Id = totpCode.Id,
+            Name = totpCode.Name,
+            SecretKey = totpCode.SecretKey,
+            ItemId = totpCode.ItemId,
+            CreatedAt = totpCode.CreatedAt,
+            UpdatedAt = totpCode.UpdatedAt,
+            IsDeleted = totpCode.IsDeleted,
+        };
+    }
+
+    /// <summary>
+    /// Creates a clone of a Passkey entity to avoid modifying EF-tracked entities.
+    /// </summary>
+    /// <param name="passkey">The passkey to clone.</param>
+    /// <returns>A new Passkey instance with copied values.</returns>
+    private static Passkey ClonePasskey(Passkey passkey)
+    {
+        return new Passkey
+        {
+            Id = passkey.Id,
+            RpId = passkey.RpId,
+            UserHandle = passkey.UserHandle,
+            PublicKey = passkey.PublicKey,
+            PrivateKey = passkey.PrivateKey,
+            PrfKey = passkey.PrfKey,
+            DisplayName = passkey.DisplayName,
+            AdditionalData = passkey.AdditionalData,
+            ItemId = passkey.ItemId,
+            CreatedAt = passkey.CreatedAt,
+            UpdatedAt = passkey.UpdatedAt,
+            IsDeleted = passkey.IsDeleted,
+        };
     }
 }
