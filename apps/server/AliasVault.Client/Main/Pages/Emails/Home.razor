@@ -848,8 +848,8 @@ else
                 }
 
                 // Handle each email successfully deleted 
-                var successfullEmailIds = emailBulkResponse != null ? emailBulkResponse.SuccessfulEmailIds : [];
-                await HandleEmailsDeleted(successfullEmailIds);
+                var successfulEmailIds = emailBulkResponse != null ? emailBulkResponse.SuccessfulEmailIds : [];
+                await HandleEmailsDeleted(successfulEmailIds);
             }
             else
             {
