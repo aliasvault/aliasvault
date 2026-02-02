@@ -41,6 +41,13 @@ class VaultStore(
         private var instance: VaultStore? = null
 
         /**
+         * Prefix used to identify base64-encoded blob data from React Native.
+         * The React Native side prefixes base64 strings with this to indicate
+         * they should be converted to ByteArray for SQLite BLOB storage.
+         */
+        private const val BASE64_BLOB_PREFIX = "av-base64-to-blob:"
+
+        /**
          * Get the instance of the vault store.
          * @param keystoreProvider The keystore provider
          * @param storageProvider The storage provider
@@ -258,11 +265,15 @@ class VaultStore(
     fun executeQuery(queryString: String, params: Array<Any?>): List<Map<String, Any?>> {
         val db = databaseComponent.dbConnection ?: error("Database not initialized")
 
-        // Convert params to strings for SQLite
+        // Process params - convert base64-prefixed strings to ByteArray for blob binding
         val convertedParams = params.map { param ->
-            when (param) {
-                null -> null
-                is ByteArray -> String(param, Charsets.UTF_8)
+            when {
+                param == null -> null
+                param is String && param.startsWith(BASE64_BLOB_PREFIX) -> {
+                    val base64 = param.removePrefix(BASE64_BLOB_PREFIX)
+                    android.util.Base64.decode(base64, android.util.Base64.NO_WRAP)
+                }
+                param is ByteArray -> param
                 else -> param.toString()
             }
         }.toTypedArray()
@@ -275,20 +286,14 @@ class VaultStore(
             while (it.moveToNext()) {
                 val row = mutableMapOf<String, Any?>()
                 for (columnName in columnNames) {
-                    when (it.getType(it.getColumnIndexOrThrow(columnName))) {
+                    val colIndex = it.getColumnIndexOrThrow(columnName)
+                    val colType = it.getType(colIndex)
+                    when (colType) {
                         android.database.Cursor.FIELD_TYPE_NULL -> row[columnName] = null
-                        android.database.Cursor.FIELD_TYPE_INTEGER -> row[columnName] = it.getLong(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_FLOAT -> row[columnName] = it.getDouble(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_STRING -> row[columnName] = it.getString(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_BLOB -> row[columnName] = it.getBlob(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
+                        android.database.Cursor.FIELD_TYPE_INTEGER -> row[columnName] = it.getLong(colIndex)
+                        android.database.Cursor.FIELD_TYPE_FLOAT -> row[columnName] = it.getDouble(colIndex)
+                        android.database.Cursor.FIELD_TYPE_STRING -> row[columnName] = it.getString(colIndex)
+                        android.database.Cursor.FIELD_TYPE_BLOB -> row[columnName] = it.getBlob(colIndex)
                     }
                 }
                 results.add(row)
@@ -304,23 +309,32 @@ class VaultStore(
     fun executeUpdate(queryString: String, params: Array<Any?>): Int {
         val db = databaseComponent.dbConnection ?: error("Database not initialized")
 
-        val convertedParams = params.map { param ->
-            when (param) {
-                null -> null
-                is ByteArray -> String(param, Charsets.UTF_8)
+        // Process params - convert base64-prefixed strings to ByteArray for blob binding
+        val processedParams = params.map { param ->
+            when {
+                param == null -> null
+                param is String && param.startsWith(BASE64_BLOB_PREFIX) -> {
+                    val base64 = param.removePrefix(BASE64_BLOB_PREFIX)
+                    android.util.Base64.decode(base64, android.util.Base64.NO_WRAP)
+                }
+                param is ByteArray -> param
                 else -> param.toString()
             }
-        }.toTypedArray()
+        }
 
         val stmt = db.compileStatement(queryString)
-        convertedParams.forEachIndexed { index, value ->
-            if (value == null) {
-                stmt.bindNull(index + 1)
-            } else {
-                stmt.bindString(index + 1, value)
+        try {
+            processedParams.forEachIndexed { index, value ->
+                when (value) {
+                    null -> stmt.bindNull(index + 1)
+                    is ByteArray -> stmt.bindBlob(index + 1, value)
+                    else -> stmt.bindString(index + 1, value.toString())
+                }
             }
+            stmt.execute()
+        } finally {
+            stmt.close()
         }
-        stmt.execute()
 
         // Get the number of affected rows
         val affectedCursor = db.rawQuery("SELECT changes()", null)
