@@ -94,6 +94,7 @@ export default function ItemsScreen(): React.ReactNode {
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('OldestFirst');
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showFolderItems, setShowFolderItems] = useState(true);
 
   // Recently deleted count state
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
@@ -183,11 +184,14 @@ export default function ItemsScreen(): React.ReactNode {
    */
   const filteredItems = useMemo(() => {
     return itemsList.filter(item => {
-      // Root view (no search): exclude items in folders
-      if (!searchQuery && item.FolderId) {
+      /*
+       * When showing folders (checkbox ON): only show root items (exclude items in folders)
+       * When not showing folders (checkbox OFF): show all items flat
+       */
+      if (!searchQuery && showFolderItems && item.FolderId) {
         return false;
       }
-      // When searching: show all matching items regardless of folder
+      // When searching or not showing folders: show all matching items regardless of folder
 
       // Apply type filter
       let passesTypeFilter = true;
@@ -225,7 +229,7 @@ export default function ItemsScreen(): React.ReactNode {
         searchableFields.some(field => field.includes(word))
       );
     });
-  }, [itemsList, searchQuery, filterType]);
+  }, [itemsList, searchQuery, filterType, showFolderItems]);
 
   /**
    * Sort the filtered items based on the current sort order.
@@ -606,6 +610,24 @@ export default function ItemsScreen(): React.ReactNode {
       justifyContent: 'space-between',
       width: '100%',
     },
+    filterMenuItemWithToggle: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    filterMenuItemLabel: {
+      flex: 1,
+    },
+    filterMenuItemToggle: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 6,
+      padding: 4,
+    },
+    filterMenuToggleHint: {
+      color: colors.textMuted,
+      fontSize: 12,
+    },
     filterMenuItemBadge: {
       color: colors.textMuted,
       fontSize: 14,
@@ -764,24 +786,43 @@ export default function ItemsScreen(): React.ReactNode {
         />
         {/* Menu content */}
         <ThemedView style={styles.filterMenuOverlay}>
-          {/* All items filter */}
-          <TouchableOpacity
+          {/* Items filter with include folders toggle */}
+          <View
             style={[
               styles.filterMenuItem,
+              styles.filterMenuItemWithToggle,
               filterType === 'all' && styles.filterMenuItemActive
             ]}
-            onPress={() => {
-              setFilterType('all');
-              setShowFilterMenu(false);
-            }}
           >
-            <ThemedText style={[
-              styles.filterMenuItemText,
-              filterType === 'all' && styles.filterMenuItemTextActive
-            ]}>
-              {t('items.filters.all')}
-            </ThemedText>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.filterMenuItemLabel}
+              onPress={() => {
+                setFilterType('all');
+                setShowFilterMenu(false);
+              }}
+            >
+              <ThemedText style={[
+                styles.filterMenuItemText,
+                filterType === 'all' && styles.filterMenuItemTextActive
+              ]}>
+                {t('items.filters.all')}
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.filterMenuItemToggle}
+              onPress={() => setShowFolderItems(!showFolderItems)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <ThemedText style={styles.filterMenuToggleHint}>
+                {t('items.filters.showFolders')}
+              </ThemedText>
+              <MaterialIcons
+                name={showFolderItems ? 'check-box' : 'check-box-outline-blank'}
+                size={20}
+                color={showFolderItems ? colors.primary : colors.textMuted}
+              />
+            </TouchableOpacity>
+          </View>
 
           <ThemedView style={styles.filterMenuSeparator} />
 
@@ -963,8 +1004,8 @@ export default function ItemsScreen(): React.ReactNode {
           )}
         </ThemedView>
 
-        {/* Folder pills (shown below search when not searching) */}
-        {!searchQuery && (
+        {/* Folder pills (shown below search when not searching and showing folder items) */}
+        {!searchQuery && showFolderItems && (
           <View style={styles.folderPillsContainer}>
             {foldersWithCounts.map((folder) => (
               <FolderPill
