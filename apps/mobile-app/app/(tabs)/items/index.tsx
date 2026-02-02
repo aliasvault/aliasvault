@@ -415,17 +415,6 @@ export default function ItemsScreen(): React.ReactNode {
        */
       headerTitle: (): React.ReactNode => {
         if (Platform.OS === 'android') {
-          // When all items are in folders, show simple title without dropdown
-          if (hasItemsInFoldersOnly) {
-            return (
-              <AndroidHeader
-                title={t('items.title')}
-                subtitle=""
-                onTitlePress={undefined}
-                isDropdownOpen={false}
-              />
-            );
-          }
           return (
             <AndroidHeader
               title={getFilterTitle()}
@@ -454,7 +443,7 @@ export default function ItemsScreen(): React.ReactNode {
         return null;
       },
     });
-  }, [navigation, t, getFilterTitle, filteredItems.length, showFilterMenu, hasItemsInFoldersOnly, colors.text]);
+  }, [navigation, t, getFilterTitle, filteredItems.length, showFilterMenu, colors.text]);
 
   /**
    * Delete an item (move to trash).
@@ -750,7 +739,7 @@ export default function ItemsScreen(): React.ReactNode {
    * Render the filter menu as an absolute overlay.
    */
   const renderFilterOverlay = (): React.ReactNode => {
-    if (!showFilterMenu || hasItemsInFoldersOnly) {
+    if (!showFilterMenu) {
       return null;
     }
 
@@ -889,34 +878,23 @@ export default function ItemsScreen(): React.ReactNode {
         {/* Large header with logo (iOS only) */}
         {Platform.OS === 'ios' && (
           <View style={styles.headerRow}>
-            {hasItemsInFoldersOnly ? (
-              /* When all items are in folders, show simple title without dropdown */
-              <View style={styles.filterButton}>
-                <Logo width={40} height={40} />
-                <ThemedText style={styles.filterButtonText}>
-                  {t('items.title')}
-                </ThemedText>
-              </View>
-            ) : (
-              /* Normal filter dropdown when there are items at root */
-              <TouchableOpacity
-                style={styles.filterButton}
-                onPress={() => setShowFilterMenu(!showFilterMenu)}
-              >
-                <Logo width={40} height={40} />
-                <ThemedText style={styles.filterButtonText}>
-                  {getFilterTitle()}
-                </ThemedText>
-                <ThemedText style={styles.filterCount}>
-                  ({filteredItems.length})
-                </ThemedText>
-                <MaterialIcons
-                  name={showFilterMenu ? "keyboard-arrow-up" : "keyboard-arrow-down"}
-                  size={28}
-                  color={colors.text}
-                />
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              style={styles.filterButton}
+              onPress={() => setShowFilterMenu(!showFilterMenu)}
+            >
+              <Logo width={40} height={40} />
+              <ThemedText style={styles.filterButtonText}>
+                {getFilterTitle()}
+              </ThemedText>
+              <ThemedText style={styles.filterCount}>
+                ({filteredItems.length})
+              </ThemedText>
+              <MaterialIcons
+                name={showFilterMenu ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+                size={28}
+                color={colors.text}
+              />
+            </TouchableOpacity>
             {/* Sort button */}
             <TouchableOpacity
               style={styles.sortButton}

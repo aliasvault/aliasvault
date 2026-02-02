@@ -533,35 +533,28 @@ const ItemsList: React.FC = () => {
     <div>
       <div className="flex justify-between items-center gap-2 mb-4">
         <div className="relative min-w-0 flex-1 flex items-center gap-2">
-          {/* When all items are in folders at root level, show simple title without dropdown */}
-          {hasItemsInFoldersOnly && !currentFolderId ? (
-            <h2 className="text-gray-900 dark:text-white text-xl min-w-0">
-              <span className="truncate">{t('items.title')}</span>
+          <button
+            onClick={() => setShowFilterMenu(!showFilterMenu)}
+            className="flex items-center gap-1 text-gray-900 dark:text-white text-xl hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none min-w-0"
+          >
+            <h2 className="flex items-baseline gap-1.5 min-w-0 overflow-hidden">
+              <span className="truncate">{getFilterTitle()}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400 shrink-0">
+                ({filteredItems.length})
+              </span>
             </h2>
-          ) : (
-            <button
-              onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className="flex items-center gap-1 text-gray-900 dark:text-white text-xl hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none min-w-0"
+            <svg
+              className="w-4 h-4 mt-1 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <h2 className="flex items-baseline gap-1.5 min-w-0 overflow-hidden">
-                <span className="truncate">{getFilterTitle()}</span>
-                <span className="text-sm text-gray-500 dark:text-gray-400 shrink-0">
-                  ({filteredItems.length})
-                </span>
-              </h2>
-              <svg
-                className="w-4 h-4 mt-1 shrink-0"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-          )}
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
           {/* Edit and Delete buttons when inside a folder */}
           {currentFolderId && (
             <div className="flex items-center gap-1 shrink-0">
@@ -586,7 +579,7 @@ const ItemsList: React.FC = () => {
               </button>
             </div>
           )}
-          {showFilterMenu && !(hasItemsInFoldersOnly && !currentFolderId) && (
+          {showFilterMenu && (
             <>
               <div
                 className="fixed inset-0 z-10"
