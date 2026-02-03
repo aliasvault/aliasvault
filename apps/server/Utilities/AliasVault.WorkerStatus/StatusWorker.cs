@@ -28,7 +28,8 @@ public class StatusWorker(ILogger<StatusWorker> logger, Func<IWorkerStatusDbCont
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            _dbContext = createDbContext();
+            using var dbContext = createDbContext();
+            _dbContext = dbContext;
 
             try
             {
@@ -50,23 +51,33 @@ public class StatusWorker(ILogger<StatusWorker> logger, Func<IWorkerStatusDbCont
                         logger.LogInformation("Service is (soft) stopped.");
                         break;
                 }
+
+                await Task.Delay(5000, stoppingToken);
             }
             catch (TaskCanceledException)
             {
-                // Ignore exception, this is expected when the service is stopped.
+                // Expected when the service is stopped - exit the loop gracefully.
+                break;
             }
             catch (Exception e)
             {
                 logger.LogError(e, "StatusWorker exception");
+                await Task.Delay(5000, stoppingToken);
             }
-
-            await Task.Delay(5000, stoppingToken);
         }
 
-        // If we reach this point, the service is hard stopping: not in software but on OS level.
+        // Service is hard stopping: not in software but on OS level.
         // Mark the service as stopped.
-        _dbContext = createDbContext();
-        await SetServiceStatus(await GetServiceStatus(), "Stopped");
+        try
+        {
+            using var dbContext = createDbContext();
+            _dbContext = dbContext;
+            await SetServiceStatus(await GetServiceStatus(), "Stopped");
+        }
+        catch (Exception e)
+        {
+            logger.LogError(e, "Failed to set service status to Stopped during shutdown");
+        }
     }
 
     /// <summary>
@@ -125,7 +136,7 @@ public class StatusWorker(ILogger<StatusWorker> logger, Func<IWorkerStatusDbCont
     /// <returns>New current status.</returns>
     private async Task<WorkerServiceStatus> GetServiceStatus()
     {
-        var entry = GetOrCreateInitialStatusRecord();
+        var entry = await GetOrCreateInitialStatusRecordAsync();
 
         if (!string.IsNullOrEmpty(entry.DesiredStatus) && entry.CurrentStatus != entry.DesiredStatus)
         {
@@ -169,22 +180,38 @@ public class StatusWorker(ILogger<StatusWorker> logger, Func<IWorkerStatusDbCont
 
     /// <summary>
     /// Retrieves status record or creates an initial status record if it does not exist.
+    /// Also cleans up any duplicate records for the same service name.
     /// </summary>
-    private WorkerServiceStatus GetOrCreateInitialStatusRecord()
+    private async Task<WorkerServiceStatus> GetOrCreateInitialStatusRecordAsync()
     {
-        var entry = _dbContext.WorkerServiceStatuses.FirstOrDefault(x => x.ServiceName == globalServiceStatus.ServiceName);
-        if (entry != null)
+        var entries = _dbContext.WorkerServiceStatuses
+            .Where(x => x.ServiceName == globalServiceStatus.ServiceName)
+            .OrderBy(x => x.Id)
+            .ToList();
+
+        if (entries.Count > 1)
         {
-            return entry;
+            // Keep the first (oldest) record and remove duplicates.
+            var duplicates = entries.Skip(1).ToList();
+            _dbContext.WorkerServiceStatuses.RemoveRange(duplicates);
+            await _dbContext.SaveChangesAsync();
+            logger.LogInformation("Removed {Count} duplicate status records for service {ServiceName}", duplicates.Count, globalServiceStatus.ServiceName);
         }
 
-        entry = new WorkerServiceStatus
+        if (entries.Count > 0)
+        {
+            return entries[0];
+        }
+
+        var entry = new WorkerServiceStatus
         {
             ServiceName = globalServiceStatus.ServiceName,
             CurrentStatus = Status.Started.ToString(),
             DesiredStatus = string.Empty,
+            Heartbeat = DateTime.UtcNow,
         };
         _dbContext.WorkerServiceStatuses.Add(entry);
+        await _dbContext.SaveChangesAsync();
 
         return entry;
     }
