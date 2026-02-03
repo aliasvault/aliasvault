@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Usuń folder i wszystkie elementy",
     "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
     "filters": {
-      "all": "(Wszystkie) pozycje",
+      "folders": "Folders",
       "passkeys": "Klucze dostępu"
     },
     "sort": {
