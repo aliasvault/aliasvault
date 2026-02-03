@@ -95,7 +95,7 @@
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
   <data name="DuplicateCredentialsWarning" xml:space="preserve">
-    <value>{0} date de autentificare duplicate au fost găsite și nu vor fi importate.</value>
+    <value>Au fost găsite {0} date de autentificare duplicate, care nu vor fi importate.</value>
     <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
   </data>
   <data name="NoNewCredentials" xml:space="preserve">
