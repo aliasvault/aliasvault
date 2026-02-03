@@ -1,7 +1,6 @@
 import { sendMessage } from 'webext-bridge/background';
-import { storage } from 'wxt/utils/storage';
 
-import { CLIPBOARD_CLEAR_TIMEOUT_KEY } from '@/utils/Constants';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 let clipboardClearTimer: NodeJS.Timeout | null = null;
 let countdownInterval: NodeJS.Timeout | null = null;
@@ -82,7 +81,7 @@ async function clearClipboardContent(): Promise<void> {
  * Handle clipboard copied event - starts countdown and timer to clear clipboard.
  */
 export async function handleClipboardCopied() : Promise<void> {
-  const timeout = await storage.getItem(CLIPBOARD_CLEAR_TIMEOUT_KEY) as number ?? 10;
+  const timeout = await LocalPreferencesService.getClipboardClearTimeout();
 
   // Clear any existing timer
   if (clipboardClearTimer) {
@@ -186,15 +185,14 @@ export function handleCancelClipboardClear(): void {
  * Get the clipboard clear timeout setting.
  */
 export async function handleGetClipboardClearTimeout(): Promise<number> {
-  const timeout = await storage.getItem(CLIPBOARD_CLEAR_TIMEOUT_KEY) as number ?? 10;
-  return timeout;
+  return LocalPreferencesService.getClipboardClearTimeout();
 }
 
 /**
  * Set the clipboard clear timeout setting.
  */
 export async function handleSetClipboardClearTimeout(data: number): Promise<boolean> {
-  await storage.setItem(CLIPBOARD_CLEAR_TIMEOUT_KEY, data);
+  await LocalPreferencesService.setClipboardClearTimeout(data);
   return true;
 }
 
