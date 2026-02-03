@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Verwijder map en alle items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) zullen worden verplaatst naar recent verwijderd.",
     "filters": {
-      "all": "(Alle) Items",
+      "folders": "Folders",
       "passkeys": "Passkeys"
     },
     "sort": {
