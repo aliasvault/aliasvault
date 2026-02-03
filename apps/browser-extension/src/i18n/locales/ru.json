@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Удалить папку и все элементы",
     "deleteFolderAndItemsDescription": "{{count}} объект(ов) будет перемещено в раздел «Недавно удалённые».",
     "filters": {
-      "all": "(Все) Записи",
+      "folders": "Folders",
       "passkeys": "Ключи доступа"
     },
     "sort": {
