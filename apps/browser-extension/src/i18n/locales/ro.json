@@ -129,9 +129,9 @@
       "USERNAME_TOO_LONG": "Nume prea lung: nu poate depăși 40 de caractere.",
       "USERNAME_INVALID_EMAIL": "Adresă de e-mail invalidă.",
       "USERNAME_INVALID_CHARACTERS": "Numele de utilizator este invalid, poate conține doar litere sau cifre.",
-      "VAULT_NOT_UP_TO_DATE": "Seiful nu este la zi. Sincronizează seiful și încearcă din nou.",
+      "VAULT_NOT_UP_TO_DATE": "Seiful tău nu este actualizat. Sincronizează seiful și încearcă din nou.",
       "INTERNAL_SERVER_ERROR": "Eroare internă de server.",
-      "VAULT_ERROR": "Seiful local nu este la zi. Sincronizează seiful reîncărcând pagina."
+      "VAULT_ERROR": "Seiful local nu este actualizat. Sincronizează seiful prin reîmprospătarea paginii și încearcă din nou."
     }
   },
   "content": {
@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Șterge dosarul și toate elementele",
     "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
     "filters": {
-      "all": "(Toate) Elementele",
+      "folders": "Folders",
       "passkeys": "Passkeys"
     },
     "sort": {
