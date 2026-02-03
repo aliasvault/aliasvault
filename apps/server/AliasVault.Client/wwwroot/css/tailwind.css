@@ -1109,6 +1109,10 @@ video {
   min-height: 100vh;
 }
 
+.min-h-\[350px\] {
+  min-height: 350px;
+}
+
 .w-1 {
   width: 0.25rem;
 }
@@ -1560,6 +1564,10 @@ video {
 
 .overflow-y-auto {
   overflow-y: auto;
+}
+
+.overflow-x-hidden {
+  overflow-x: hidden;
 }
 
 .overscroll-y-auto {

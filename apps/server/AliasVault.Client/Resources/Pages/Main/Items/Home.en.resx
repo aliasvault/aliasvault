@@ -149,7 +149,7 @@
     <comment>Filter option to show all items</comment>
   </data>
   <data name="ShowFoldersOption" xml:space="preserve">
-    <value>show folders</value>
+    <value>Folders</value>
     <comment>Toggle option to show or hide folder structure</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
