@@ -189,8 +189,11 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
         {
             if (email.MessagePlain != null && !string.IsNullOrEmpty(email.MessagePlain) && email.MessagePlain.Length > 3)
             {
+                // Decode HTML entities (e.g., &#39; -> ', &amp; -> &)
+                string plainToPlainText = System.Net.WebUtility.HtmlDecode(email.MessagePlain);
+
                 // Replace any newline characters with a space
-                string plainToPlainText = Regex.Replace(email.MessagePlain, @"\t|\n|\r", " ", RegexOptions.NonBacktracking);
+                plainToPlainText = Regex.Replace(plainToPlainText, @"\t|\n|\r", " ", RegexOptions.NonBacktracking);
 
                 // Remove all "-" or "=" characters if there are 3 or more in a row
                 plainToPlainText = Regex.Replace(plainToPlainText, @"-{3,}|\={3,}", string.Empty, RegexOptions.NonBacktracking);
@@ -211,6 +214,9 @@ public class DatabaseMessageStore(ILogger<DatabaseMessageStore> logger, Config c
             else if (email.MessageHtml != null)
             {
                 string htmlToPlainText = Uglify.HtmlToText(email.MessageHtml).ToString();
+
+                // Decode HTML entities (e.g., &#39; -> ', &amp; -> &)
+                htmlToPlainText = System.Net.WebUtility.HtmlDecode(htmlToPlainText);
 
                 // Replace any newline characters with a space
                 htmlToPlainText = Regex.Replace(htmlToPlainText, @"\t|\n|\r", string.Empty, RegexOptions.NonBacktracking);
