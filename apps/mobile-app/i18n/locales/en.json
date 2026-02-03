@@ -437,7 +437,7 @@
     "switchBackToBrowser": "Switch back to your browser to continue.",
     "filters": {
       "all": "Items",
-      "showFolders": "show folders",
+      "showFolders": "Folders",
       "passkeys": "Passkeys",
       "attachments": "Attachments"
     },

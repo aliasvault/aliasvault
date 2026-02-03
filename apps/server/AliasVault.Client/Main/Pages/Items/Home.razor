@@ -651,6 +651,7 @@ else
     private async Task ToggleShowFoldersAsync()
     {
         ShowFolders = !ShowFolders;
+        ShowFilterDropdown = false; // Close dropdown so user can see the change
         VisibleItemCount = BatchSize; // Reset visible items when setting changes
         await LocalStorage.SetItemAsync(ShowFoldersStorageKey, ShowFolders);
         StateHasChanged();

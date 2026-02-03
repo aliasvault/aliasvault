@@ -831,6 +831,7 @@ export default function ItemsScreen(): React.ReactNode {
                 const newValue = !showFolderItems;
                 setShowFolderItems(newValue);
                 LocalPreferencesService.setShowFolders(newValue);
+                setShowFilterMenu(false);
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >

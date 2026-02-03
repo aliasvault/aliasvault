@@ -628,6 +628,7 @@ const ItemsList: React.FC = () => {
                           const newValue = !showFolders;
                           setShowFolders(newValue);
                           LocalPreferencesService.setShowFolders(newValue);
+                          setShowFilterMenu(false);
                         }}
                         className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
                       >
