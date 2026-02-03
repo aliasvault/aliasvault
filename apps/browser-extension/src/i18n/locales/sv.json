@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Radera mapp och alla objekt",
     "deleteFolderAndItemsDescription": "{{count}} objekt kommer att flyttas till Nyligen borttagen.",
     "filters": {
-      "all": "(Alla) objekt",
+      "folders": "Folders",
       "passkeys": "Passkeys"
     },
     "sort": {
