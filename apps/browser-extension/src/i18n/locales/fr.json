@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Supprimer le dossier et tous les éléments",
     "deleteFolderAndItemsDescription": "{{count}} élément(s) vont être déplacés vers Récemment supprimés.",
     "filters": {
-      "all": "(Tous) Éléments",
+      "folders": "Folders",
       "passkeys": "Clés d'accès"
     },
     "sort": {
