@@ -432,11 +432,12 @@
     "errorLoadingItems": "Eroare la încărcarea elementelor",
     "vaultSyncFailed": "Sincronizarea seifului a eșuat",
     "vaultSyncedSuccessfully": "Seiful a fost sincronizat cu succes",
-    "vaultUpToDate": "Seiful este la zi",
+    "vaultUpToDate": "Seiful este actualizat",
     "offlineMessage": "Ești offline. Conectează-te la internet pentru a sincroniza seiful.",
     "switchBackToBrowser": "Revino în browser pentru a continua.",
     "filters": {
-      "all": "(Toate) Elementele",
+      "all": "Items",
+      "showFolders": "Folders",
       "passkeys": "Passkeys",
       "attachments": "Atașamente"
     },
@@ -569,9 +570,9 @@
     "USERNAME_TOO_LONG": "Numele de utilizator este prea lung: nu poate depăși 40 de caractere.",
     "USERNAME_INVALID_EMAIL": "Adresă de e-mail invalidă.",
     "USERNAME_INVALID_CHARACTERS": "Numele de utilizator este invalid, folosește doar litere sau cifre.",
-    "VAULT_NOT_UP_TO_DATE": "Seiful tău nu este la zi. Sincronizarea seifului tău este necesară înainte de a reîncerca.",
+    "VAULT_NOT_UP_TO_DATE": "Seiful tău nu este actualizat. Sincronizează seiful și încearcă din nou.",
     "INTERNAL_SERVER_ERROR": "Eroare internă de server.",
-    "VAULT_ERROR": "Seiful tău local nu este la zi. Reîmprospătează pagina pentru a sincroniza seiful și reîncearcă."
+    "VAULT_ERROR": "Seiful local nu este actualizat. Sincronizează seiful prin reîmprospătarea paginii și încearcă din nou."
   },
   "sync": {
     "offline": "Offline",
@@ -636,7 +637,7 @@
     "noDescriptionAvailable": "Nicio descriere disponibilă pentru această versiune.",
     "status": {
       "preparingUpgrade": "Se pregătește actualizarea...",
-      "vaultAlreadyUpToDate": "Seiful este deja la zi",
+      "vaultAlreadyUpToDate": "Seiful este deja actualizat",
       "startingDatabaseTransaction": "Se inițiază tranzacția bazei de date...",
       "applyingDatabaseMigrations": "Se aplică migrările bazei de date...",
       "applyingMigration": "Se aplică migrarea {{current}} din {{total}}...",
