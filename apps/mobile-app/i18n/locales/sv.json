@@ -436,8 +436,8 @@
     "offlineMessage": "Du är offline. Anslut till internet för att synkronisera ditt valv.",
     "switchBackToBrowser": "Växla tillbaka till webbläsaren för att fortsätta.",
     "filters": {
-      "all": "Items",
-      "showFolders": "Folders",
+      "all": "Objekt",
+      "showFolders": "Mappar",
       "passkeys": "Passkeys",
       "attachments": "Bifogade filer"
     },
