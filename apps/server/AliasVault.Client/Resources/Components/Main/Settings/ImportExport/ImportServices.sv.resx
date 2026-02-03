@@ -254,7 +254,7 @@
     <comment>Description for RoboForm import service</comment>
   </data>
   <data name="RoboformInstructionsPart1" xml:space="preserve">
-    <value>In order to import your RoboForm passwords, you need to export them as a CSV file. You can do this by opening RoboForm, going to 'RoboForm' menu > 'Options' > 'Account &amp; Data' > 'Export' and selecting CSV format.</value>
+    <value>För att importera dina lösenord från RoboForm måste du exportera dem som en CSV-fil. Du kan göra detta genom att öppna RoboForm, gå till menyn 'RoboForm' > 'Alternativ' > 'Konto och data' > 'Exportera' och välja CSV-format.</value>
     <comment>RoboForm export instructions part 1</comment>
   </data>
   <data name="RoboformInstructionsPart2" xml:space="preserve">
