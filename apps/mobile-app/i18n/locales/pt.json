@@ -436,7 +436,8 @@
     "offlineMessage": "Você está offline. Por favor conecte-se à internet para sincronizar seu cofre.",
     "switchBackToBrowser": "Volte ao navegador para continuar.",
     "filters": {
-      "all": "(Todos) Itens",
+      "all": "Items",
+      "showFolders": "Folders",
       "passkeys": "Passkeys",
       "attachments": "Anexos"
     },
