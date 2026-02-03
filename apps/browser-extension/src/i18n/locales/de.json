@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Ordner und alle Einträge löschen",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
-      "all": "(Alle) Elemente",
+      "folders": "Folders",
       "passkeys": "Passkeys"
     },
     "sort": {
