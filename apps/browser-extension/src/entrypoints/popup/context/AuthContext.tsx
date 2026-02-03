@@ -3,7 +3,7 @@ import { sendMessage } from 'webext-bridge/popup';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { removeAndDisablePin } from '@/utils/PinUnlockService';
 
 import { storage } from '#imports';
@@ -60,7 +60,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await storage.setItem('local:refreshToken', refreshToken);
 
     // Clear dismiss until (which can be enabled after user has dimissed vault is locked popup) to ensure popup is shown.
-    await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
+    await LocalPreferencesService.setVaultLockedDismissUntil(0);
 
     setUsername(username);
   }, []);

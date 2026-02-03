@@ -4,9 +4,7 @@ import { sendMessage } from 'webext-bridge/popup';
 
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import { CLIPBOARD_CLEAR_TIMEOUT_KEY } from '@/utils/Constants';
-
-import { storage } from "#imports";
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 /**
  * Clipboard settings page component.
@@ -22,7 +20,7 @@ const ClipboardSettings: React.FC = () => {
      */
     const loadSettings = async () : Promise<void> => {
       // Load clipboard clear timeout
-      const timeout = await storage.getItem(CLIPBOARD_CLEAR_TIMEOUT_KEY) as number ?? 10;
+      const timeout = await LocalPreferencesService.getClipboardClearTimeout();
       setClipboardTimeout(timeout);
       setIsInitialLoading(false);
     };
@@ -34,7 +32,7 @@ const ClipboardSettings: React.FC = () => {
    * Set clipboard clear timeout.
    */
   const setClipboardClearTimeout = async (timeout: number) : Promise<void> => {
-    await storage.setItem(CLIPBOARD_CLEAR_TIMEOUT_KEY, timeout);
+    await LocalPreferencesService.setClipboardClearTimeout(timeout);
     await sendMessage('SET_CLIPBOARD_CLEAR_TIMEOUT', timeout, 'background');
     setClipboardTimeout(timeout);
   };

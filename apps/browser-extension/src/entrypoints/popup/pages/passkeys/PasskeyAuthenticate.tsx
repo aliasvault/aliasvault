@@ -10,13 +10,11 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 
-import { PASSKEY_DISABLED_SITES_KEY } from '@/utils/Constants';
 import { extractDomain, extractRootDomain } from '@/utils/itemMatcher/ItemMatcher';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { GetRequest, PasskeyGetCredentialResponse, PendingPasskeyGetRequest, StoredPasskeyRecord } from '@/utils/passkey/types';
-
-import { storage } from "#imports";
 
 /**
  * PasskeyAuthenticate
@@ -319,10 +317,10 @@ const PasskeyAuthenticate: React.FC = () => {
       const hostname = new URL(request.origin).hostname;
       const baseDomain = await extractRootDomain(await extractDomain(hostname));
 
-      const disabledSites = await storage.getItem(PASSKEY_DISABLED_SITES_KEY) as string[] ?? [];
+      const disabledSites = await LocalPreferencesService.getPasskeyDisabledSites();
       if (!disabledSites.includes(baseDomain)) {
         disabledSites.push(baseDomain);
-        await storage.setItem(PASSKEY_DISABLED_SITES_KEY, disabledSites);
+        await LocalPreferencesService.setPasskeyDisabledSites(disabledSites);
       }
     }
     // For 'once', we don't store anything - just bypass this one time

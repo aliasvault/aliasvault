@@ -14,15 +14,13 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import { PASSKEY_DISABLED_SITES_KEY } from '@/utils/Constants';
 import type { Item, Passkey } from '@/utils/dist/core/models/vault';
 import { FieldKey, ItemTypes, getFieldValue, createSystemField } from '@/utils/dist/core/models/vault';
 import { extractDomain, extractRootDomain, filterItems, AutofillMatchingMode } from '@/utils/itemMatcher/ItemMatcher';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { CreateRequest, PasskeyCreateCredentialResponse, PendingPasskeyCreateRequest } from '@/utils/passkey/types';
-
-import { storage } from "#imports";
 
 /**
  * PasskeyCreate
@@ -495,10 +493,10 @@ const PasskeyCreate: React.FC = () => {
       const hostname = new URL(request.origin).hostname;
       const baseDomain = await extractRootDomain(await extractDomain(hostname));
 
-      const disabledSites = await storage.getItem(PASSKEY_DISABLED_SITES_KEY) as string[] ?? [];
+      const disabledSites = await LocalPreferencesService.getPasskeyDisabledSites();
       if (!disabledSites.includes(baseDomain)) {
         disabledSites.push(baseDomain);
-        await storage.setItem(PASSKEY_DISABLED_SITES_KEY, disabledSites);
+        await LocalPreferencesService.setPasskeyDisabledSites(disabledSites);
       }
     }
     // For 'once', we don't store anything - just bypass this one time

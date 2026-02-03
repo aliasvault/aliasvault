@@ -29,6 +29,10 @@ const KEYS = {
 
   // UI preferences
   SHOW_FOLDERS: 'local:aliasvault_show_folders',
+
+  // Session/Navigation state
+  PENDING_REDIRECT_URL: 'session:pendingRedirectUrl',
+  SKIP_FORM_RESTORE: 'local:aliasvault_skip_form_restore',
 } as const;
 
 /**
@@ -45,12 +49,6 @@ export enum AutofillMatchingMode {
  * Provides typed getters/setters with sensible defaults for all local storage settings.
  */
 export const LocalPreferencesService = {
-  /*
-   * ============================================
-   * UI Preferences
-   * ============================================
-   */
-
   /**
    * Get the show folders preference.
    * @returns Whether to show folders (true) or show all items flat (false). Defaults to true.
@@ -66,12 +64,6 @@ export const LocalPreferencesService = {
   async setShowFolders(showFolders: boolean): Promise<void> {
     await storage.setItem(KEYS.SHOW_FOLDERS, showFolders);
   },
-
-  /*
-   * ============================================
-   * Autofill Settings
-   * ============================================
-   */
 
   /**
    * Get whether the global autofill popup is enabled.
@@ -137,12 +129,6 @@ export const LocalPreferencesService = {
     await storage.setItem(KEYS.TEMPORARY_DISABLED_SITES, sites);
   },
 
-  /*
-   * ============================================
-   * Context Menu Settings
-   * ============================================
-   */
-
   /**
    * Get whether the global context menu is enabled.
    * @returns Whether context menu is globally enabled. Defaults to true.
@@ -196,12 +182,6 @@ export const LocalPreferencesService = {
   async setPasskeyDisabledSites(sites: string[]): Promise<void> {
     await storage.setItem(KEYS.PASSKEY_DISABLED_SITES, sites);
   },
-
-  /*
-   * ============================================
-   * Timeout Settings
-   * ============================================
-   */
 
   /**
    * Get the clipboard clear timeout in seconds.
@@ -289,12 +269,6 @@ export const LocalPreferencesService = {
     await storage.setItem(KEYS.CUSTOM_USERNAME_HISTORY, history);
   },
 
-  /*
-   * ============================================
-   * Utility Methods
-   * ============================================
-   */
-
   /**
    * Clear all UI preferences. Can be called on logout.
    * Note: This only clears UI preferences, not security-related settings.
@@ -329,5 +303,41 @@ export const LocalPreferencesService = {
        * as those are user preferences that should persist across logins.
        */
     ]);
+  },
+
+  /**
+   * Get the pending redirect URL (used for passkey flows).
+   * @returns The pending redirect URL or null if not set.
+   */
+  async getPendingRedirectUrl(): Promise<string | null> {
+    const value = await storage.getItem(KEYS.PENDING_REDIRECT_URL) as string | null;
+    return value ?? null;
+  },
+
+  /**
+   * Set the pending redirect URL.
+   */
+  async setPendingRedirectUrl(url: string | null): Promise<void> {
+    if (url === null) {
+      await storage.removeItem(KEYS.PENDING_REDIRECT_URL);
+    } else {
+      await storage.setItem(KEYS.PENDING_REDIRECT_URL, url);
+    }
+  },
+
+  /**
+   * Get whether form restore should be skipped.
+   * @returns Whether to skip form restore. Defaults to false.
+   */
+  async getSkipFormRestore(): Promise<boolean> {
+    const value = await storage.getItem(KEYS.SKIP_FORM_RESTORE) as boolean | null;
+    return value ?? false;
+  },
+
+  /**
+   * Set whether form restore should be skipped.
+   */
+  async setSkipFormRestore(skip: boolean): Promise<void> {
+    await storage.setItem(KEYS.SKIP_FORM_RESTORE, skip);
   },
 };

@@ -6,7 +6,7 @@ import LanguageSwitcher from '@/entrypoints/popup/components/LanguageSwitcher';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { AppInfo } from '@/utils/AppInfo';
-import { GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, DISABLED_SITES_KEY, VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import { storage } from '#imports';
 
@@ -102,8 +102,8 @@ const AuthSettings: React.FC = () => {
     const loadStoredSettings = async () : Promise<void> => {
       const apiUrl = await storage.getItem('local:apiUrl') as string;
       const clientUrl = await storage.getItem('local:clientUrl') as string;
-      const globallyEnabled = await storage.getItem(GLOBAL_AUTOFILL_POPUP_ENABLED_KEY) !== false; // Default to true if not set
-      const dismissUntil = await storage.getItem(VAULT_LOCKED_DISMISS_UNTIL_KEY) as number;
+      const globallyEnabled = await LocalPreferencesService.getGlobalAutofillPopupEnabled();
+      const dismissUntil = await LocalPreferencesService.getVaultLockedDismissUntil();
 
       if (dismissUntil) {
         setIsGloballyEnabled(false);
@@ -208,12 +208,12 @@ const AuthSettings: React.FC = () => {
   const toggleGlobalPopup = async () : Promise<void> => {
     const newGloballyEnabled = !isGloballyEnabled;
 
-    await storage.setItem(GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, newGloballyEnabled);
+    await LocalPreferencesService.setGlobalAutofillPopupEnabled(newGloballyEnabled);
 
     if (newGloballyEnabled) {
       // Reset all disabled sites when enabling globally
-      await storage.setItem(DISABLED_SITES_KEY, []);
-      await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
+      await LocalPreferencesService.setDisabledSites([]);
+      await LocalPreferencesService.setVaultLockedDismissUntil(0);
     }
 
     setIsGloballyEnabled(newGloballyEnabled);

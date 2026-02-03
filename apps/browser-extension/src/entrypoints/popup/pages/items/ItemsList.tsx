@@ -631,7 +631,7 @@ const ItemsList: React.FC = () => {
                         }}
                         className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
                       >
-                        <span>{t('items.filters.showFolders')}</span>
+                        <span>{t('items.filters.folders')}</span>
                         <svg
                           className={`w-5 h-5 ${showFolders ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`}
                           viewBox="0 0 24 24"

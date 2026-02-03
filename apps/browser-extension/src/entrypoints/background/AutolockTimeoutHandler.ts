@@ -2,7 +2,7 @@ import { storage } from 'wxt/utils/storage';
 
 import { handleLockVault } from '@/entrypoints/background/VaultMessageHandler';
 
-import { AUTO_LOCK_TIMEOUT_KEY } from '@/utils/Constants';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 let autoLockTimer: NodeJS.Timeout | null = null;
 
@@ -24,7 +24,7 @@ export function handlePopupHeartbeat(): void {
  * Set the auto-lock timeout setting.
  */
 export async function handleSetAutoLockTimeout(timeout: number): Promise<boolean> {
-  await storage.setItem(AUTO_LOCK_TIMEOUT_KEY, timeout);
+  await LocalPreferencesService.setAutoLockTimeout(timeout);
   resetAutoLockTimer();
   return true;
 }
@@ -40,7 +40,7 @@ async function resetAutoLockTimer(): Promise<void> {
   }
 
   // Get timeout setting
-  const timeout = await storage.getItem(AUTO_LOCK_TIMEOUT_KEY) as number ?? 0;
+  const timeout = await LocalPreferencesService.getAutoLockTimeout();
 
   // Don't set timer if timeout is 0 (disabled) or if vault is already locked
   if (timeout === 0) {
@@ -74,7 +74,7 @@ async function resetAutoLockTimer(): Promise<void> {
  */
 async function extendAutoLockTimer(): Promise<void> {
   // Get timeout setting
-  const timeout = await storage.getItem(AUTO_LOCK_TIMEOUT_KEY) as number ?? 0;
+  const timeout = await LocalPreferencesService.getAutoLockTimeout();
 
   // Don't extend timer if timeout is 0 (disabled)
   if (timeout === 0) {

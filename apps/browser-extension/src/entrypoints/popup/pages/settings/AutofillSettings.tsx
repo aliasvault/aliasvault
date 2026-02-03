@@ -3,15 +3,9 @@ import { useTranslation } from 'react-i18next';
 
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import {
-  DISABLED_SITES_KEY,
-  GLOBAL_AUTOFILL_POPUP_ENABLED_KEY,
-  TEMPORARY_DISABLED_SITES_KEY,
-  AUTOFILL_MATCHING_MODE_KEY
-} from '@/utils/Constants';
-import { AutofillMatchingMode } from '@/utils/itemMatcher/ItemMatcher';
+import { AutofillMatchingMode, LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
-import { storage, browser } from "#imports";
+import { browser } from "#imports";
 
 /**
  * Autofill settings type.
@@ -55,10 +49,10 @@ const AutofillSettings: React.FC = () => {
     const tab = await getCurrentTab();
     const currentUrl = new URL(tab.url ?? '').hostname;
 
-    // Load settings local storage.
-    const disabledUrls = await storage.getItem(DISABLED_SITES_KEY) as string[] ?? [];
-    const temporaryDisabledUrls = await storage.getItem(TEMPORARY_DISABLED_SITES_KEY) as Record<string, number> ?? {};
-    const isGloballyEnabled = await storage.getItem(GLOBAL_AUTOFILL_POPUP_ENABLED_KEY) !== false; // Default to true if not set
+    // Load settings using LocalPreferencesService
+    const disabledUrls = await LocalPreferencesService.getDisabledSites();
+    const temporaryDisabledUrls = await LocalPreferencesService.getTemporaryDisabledSites();
+    const isGloballyEnabled = await LocalPreferencesService.getGlobalAutofillPopupEnabled();
 
     // Clean up expired temporary disables
     const now = Date.now();
@@ -67,11 +61,11 @@ const AutofillSettings: React.FC = () => {
     );
 
     if (Object.keys(cleanedTemporaryDisabledUrls).length !== Object.keys(temporaryDisabledUrls).length) {
-      await storage.setItem(TEMPORARY_DISABLED_SITES_KEY, cleanedTemporaryDisabledUrls);
+      await LocalPreferencesService.setTemporaryDisabledSites(cleanedTemporaryDisabledUrls);
     }
 
     // Load autofill matching mode
-    const matchingModeValue = await storage.getItem(AUTOFILL_MATCHING_MODE_KEY) as AutofillMatchingMode ?? AutofillMatchingMode.DEFAULT;
+    const matchingModeValue = await LocalPreferencesService.getAutofillMatchingMode();
     setAutofillMatchingMode(matchingModeValue);
 
     setSettings({
@@ -110,8 +104,8 @@ const AutofillSettings: React.FC = () => {
       delete newTemporaryDisabledUrls[currentUrl];
     }
 
-    await storage.setItem(DISABLED_SITES_KEY, newDisabledUrls);
-    await storage.setItem(TEMPORARY_DISABLED_SITES_KEY, newTemporaryDisabledUrls);
+    await LocalPreferencesService.setDisabledSites(newDisabledUrls);
+    await LocalPreferencesService.setTemporaryDisabledSites(newTemporaryDisabledUrls);
 
     setSettings(prev => ({
       ...prev,
@@ -125,8 +119,8 @@ const AutofillSettings: React.FC = () => {
    * Reset settings.
    */
   const resetSettings = async () : Promise<void> => {
-    await storage.setItem(DISABLED_SITES_KEY, []);
-    await storage.setItem(TEMPORARY_DISABLED_SITES_KEY, {});
+    await LocalPreferencesService.setDisabledSites([]);
+    await LocalPreferencesService.setTemporaryDisabledSites({});
 
     setSettings(prev => ({
       ...prev,
@@ -142,7 +136,7 @@ const AutofillSettings: React.FC = () => {
   const toggleGlobalPopup = async () : Promise<void> => {
     const newGloballyEnabled = !settings.isGloballyEnabled;
 
-    await storage.setItem(GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, newGloballyEnabled);
+    await LocalPreferencesService.setGlobalAutofillPopupEnabled(newGloballyEnabled);
 
     setSettings(prev => ({
       ...prev,
@@ -154,7 +148,7 @@ const AutofillSettings: React.FC = () => {
    * Set autofill matching mode.
    */
   const setAutofillMatchingModeSetting = async (mode: AutofillMatchingMode) : Promise<void> => {
-    await storage.setItem(AUTOFILL_MATCHING_MODE_KEY, mode);
+    await LocalPreferencesService.setAutofillMatchingMode(mode);
     setAutofillMatchingMode(mode);
   };
 

@@ -11,10 +11,10 @@ import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, han
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision } from '@/entrypoints/background/VaultMessageHandler';
 
-import { GLOBAL_CONTEXT_MENU_ENABLED_KEY } from '@/utils/Constants';
 import { EncryptionKeyDerivationParams } from "@/utils/dist/core/models/metadata";
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
-import { defineBackground, storage, browser } from '#imports';
+import { defineBackground, browser } from '#imports';
 
 export default defineBackground({
   /**
@@ -83,7 +83,7 @@ export default defineBackground({
     onMessage('GET_REQUEST_DATA', ({ data }) => handleGetRequestData(data));
 
     // Setup context menus
-    const isContextMenuEnabled = await storage.getItem(GLOBAL_CONTEXT_MENU_ENABLED_KEY) ?? true;
+    const isContextMenuEnabled = await LocalPreferencesService.getGlobalContextMenuEnabled();
     if (isContextMenuEnabled) {
       await setupContextMenus();
     }

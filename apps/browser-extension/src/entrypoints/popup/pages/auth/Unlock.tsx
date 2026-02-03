@@ -20,8 +20,8 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
 import { SrpAuthService } from '@/utils/auth/SrpAuthService';
-import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import {
   getPinLength,
   isPinEnabled,
@@ -33,8 +33,6 @@ import {
 } from '@/utils/PinUnlockService';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
-
-import { storage } from '#imports';
 
 /**
  * Unlock mode type
@@ -292,7 +290,7 @@ const Unlock: React.FC = () => {
       }
 
       // Clear dismiss until
-      await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
+      await LocalPreferencesService.setVaultLockedDismissUntil(0);
 
       // Reset PIN failed attempts on successful password unlock
       await resetFailedAttempts();
@@ -390,7 +388,7 @@ const Unlock: React.FC = () => {
       }
 
       // Clear dismiss until
-      await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
+      await LocalPreferencesService.setVaultLockedDismissUntil(0);
 
       // Navigate to reinitialize which will call syncVault to sync with server
       navigate('/reinitialize', { replace: true });
@@ -485,7 +483,7 @@ const Unlock: React.FC = () => {
       }
 
       // Clear dismiss until
-      await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
+      await LocalPreferencesService.setVaultLockedDismissUntil(0);
 
       // Reset PIN failed attempts on successful unlock
       await resetFailedAttempts();

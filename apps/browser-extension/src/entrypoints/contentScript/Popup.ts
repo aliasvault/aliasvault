@@ -2,13 +2,12 @@ import { sendMessage } from 'webext-bridge/content-script';
 
 import { fillItem } from '@/entrypoints/contentScript/Form';
 
-import { DISABLED_SITES_KEY, TEMPORARY_DISABLED_SITES_KEY, GLOBAL_AUTOFILL_POPUP_ENABLED_KEY, VAULT_LOCKED_DISMISS_UNTIL_KEY, AUTOFILL_MATCHING_MODE_KEY, CUSTOM_EMAIL_HISTORY_KEY, CUSTOM_USERNAME_HISTORY_KEY } from '@/utils/Constants';
 import { CreateIdentityGenerator, IdentityHelperUtils } from '@/utils/dist/core/identity-generator';
 import { ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
 import type { Item, ItemField } from '@/utils/dist/core/models/vault';
 import { ItemTypes, FieldKey, createSystemField } from '@/utils/dist/core/models/vault';
 import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/core/password-generator';
-import { AutofillMatchingMode } from '@/utils/itemMatcher/ItemMatcher';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
@@ -18,8 +17,6 @@ import { PasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettin
 import { StringResponse } from '@/utils/types/messaging/StringResponse';
 
 import { t } from '@/i18n/StandaloneI18n';
-
-import { storage } from '#imports';
 
 /**
  * WeakMap to store event listeners for popup containers
@@ -87,7 +84,7 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
 
   (async () : Promise<void> => {
     // Load autofill matching mode setting to send to background for filtering
-    const matchingMode = await storage.getItem(AUTOFILL_MATCHING_MODE_KEY) as AutofillMatchingMode ?? AutofillMatchingMode.DEFAULT;
+    const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
 
     const response = await sendMessage('GET_FILTERED_ITEMS', {
       currentUrl: window.location.href,
@@ -782,9 +779,9 @@ function createItemList(items: Item[], input: HTMLInputElement, rootContainer: H
  * Check if auto-popup is disabled for current site
  */
 export async function isAutoShowPopupEnabled(): Promise<boolean> {
-  const disabledSites = await storage.getItem(DISABLED_SITES_KEY) as string[] ?? [];
-  const temporaryDisabledSites = await storage.getItem(TEMPORARY_DISABLED_SITES_KEY) as Record<string, number> ?? {};
-  const globalPopupEnabled = await storage.getItem(GLOBAL_AUTOFILL_POPUP_ENABLED_KEY) ?? true;
+  const disabledSites = await LocalPreferencesService.getDisabledSites();
+  const temporaryDisabledSites = await LocalPreferencesService.getTemporaryDisabledSites();
+  const globalPopupEnabled = await LocalPreferencesService.getGlobalAutofillPopupEnabled();
 
   const currentHostname = window.location.hostname;
 
@@ -806,7 +803,7 @@ export async function isAutoShowPopupEnabled(): Promise<boolean> {
   }
 
   // Check time-based dismissal
-  const dismissUntil = await storage.getItem(VAULT_LOCKED_DISMISS_UNTIL_KEY) as number;
+  const dismissUntil = await LocalPreferencesService.getVaultLockedDismissUntil();
   if (dismissUntil && Date.now() < dismissUntil) {
     // Popup is dismissed for a certain amount of time.
     return false;
@@ -823,15 +820,15 @@ export async function disableAutoShowPopup(temporary: boolean = false): Promise<
 
   if (temporary) {
     // Add to temporary disabled sites with 1 hour expiry
-    const temporaryDisabledSites = await storage.getItem(TEMPORARY_DISABLED_SITES_KEY) as Record<string, number> ?? {};
+    const temporaryDisabledSites = await LocalPreferencesService.getTemporaryDisabledSites();
     temporaryDisabledSites[currentHostname] = Date.now() + (60 * 60 * 1000); // 1 hour from now
-    await storage.setItem(TEMPORARY_DISABLED_SITES_KEY, temporaryDisabledSites);
+    await LocalPreferencesService.setTemporaryDisabledSites(temporaryDisabledSites);
   } else {
     // Add to permanently disabled sites
-    const disabledSites = await storage.getItem(DISABLED_SITES_KEY) as string[] ?? [];
+    const disabledSites = await LocalPreferencesService.getDisabledSites();
     if (!disabledSites.includes(currentHostname)) {
       disabledSites.push(currentHostname);
-      await storage.setItem(DISABLED_SITES_KEY, disabledSites);
+      await LocalPreferencesService.setDisabledSites(disabledSites);
     }
   }
 }
@@ -844,8 +841,8 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
   removeExistingPopup(rootContainer);
 
   // Load history
-  const emailHistory = await storage.getItem(CUSTOM_EMAIL_HISTORY_KEY) as string[] ?? [];
-  const usernameHistory = await storage.getItem(CUSTOM_USERNAME_HISTORY_KEY) as string[] ?? [];
+  const emailHistory = await LocalPreferencesService.getCustomEmailHistory();
+  const usernameHistory = await LocalPreferencesService.getCustomUsernameHistory();
 
   return new Promise((resolve) => {
     (async (): Promise<void> => {
@@ -1071,8 +1068,10 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       /**
        * Update history with new value (max 2 unique entries)
        */
-      const updateHistory = async (value: string, historyKey: typeof CUSTOM_EMAIL_HISTORY_KEY | typeof CUSTOM_USERNAME_HISTORY_KEY, maxItems: number = 2): Promise<string[]> => {
-        const history = await storage.getItem(historyKey) as string[] ?? [];
+      const updateHistory = async (value: string, historyType: 'email' | 'username', maxItems: number = 2): Promise<string[]> => {
+        const history = historyType === 'email'
+          ? await LocalPreferencesService.getCustomEmailHistory()
+          : await LocalPreferencesService.getCustomUsernameHistory();
 
         // Remove the value if it already exists
         const filteredHistory = history.filter((item: string) => item !== value);
@@ -1086,7 +1085,11 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         const updatedHistory = filteredHistory.slice(0, maxItems);
 
         // Save the updated history
-        await storage.setItem(historyKey, updatedHistory);
+        if (historyType === 'email') {
+          await LocalPreferencesService.setCustomEmailHistory(updatedHistory);
+        } else {
+          await LocalPreferencesService.setCustomUsernameHistory(updatedHistory);
+        }
 
         return updatedHistory;
       };
@@ -1094,10 +1097,16 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
       /**
        * Remove item from history
        */
-      const removeFromHistory = async (value: string, historyKey: typeof CUSTOM_EMAIL_HISTORY_KEY | typeof CUSTOM_USERNAME_HISTORY_KEY): Promise<string[]> => {
-        const history = await storage.getItem(historyKey) as string[] ?? [];
+      const removeFromHistory = async (value: string, historyType: 'email' | 'username'): Promise<string[]> => {
+        const history = historyType === 'email'
+          ? await LocalPreferencesService.getCustomEmailHistory()
+          : await LocalPreferencesService.getCustomUsernameHistory();
         const updatedHistory = history.filter((item: string) => item !== value);
-        await storage.setItem(historyKey, updatedHistory);
+        if (historyType === 'email') {
+          await LocalPreferencesService.setCustomEmailHistory(updatedHistory);
+        } else {
+          await LocalPreferencesService.setCustomUsernameHistory(updatedHistory);
+        }
         return updatedHistory;
       };
 
@@ -1168,7 +1177,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         if (target.classList.contains('av-suggestion-pill-delete')) {
           const value = target.dataset.value;
           if (value) {
-            const updatedHistory = await removeFromHistory(value, CUSTOM_EMAIL_HISTORY_KEY);
+            const updatedHistory = await removeFromHistory(value, 'email');
             emailHistory.splice(0, emailHistory.length, ...updatedHistory);
             updateSuggestions(customEmail, emailSuggestions, emailHistory);
           }
@@ -1196,7 +1205,7 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
         if (target.classList.contains('av-suggestion-pill-delete')) {
           const value = target.dataset.value;
           if (value) {
-            const updatedHistory = await removeFromHistory(value, CUSTOM_USERNAME_HISTORY_KEY);
+            const updatedHistory = await removeFromHistory(value, 'username');
             usernameHistory.splice(0, usernameHistory.length, ...updatedHistory);
             updateSuggestions(customUsername, usernameSuggestions, usernameHistory);
           }
@@ -1628,10 +1637,10 @@ export async function createAliasCreationPopup(suggestedNames: string[], rootCon
 
           // Update history when saving
           if (finalEmail) {
-            await updateHistory(finalEmail, CUSTOM_EMAIL_HISTORY_KEY);
+            await updateHistory(finalEmail, 'email');
           }
           if (finalUsername) {
-            await updateHistory(finalUsername, CUSTOM_USERNAME_HISTORY_KEY);
+            await updateHistory(finalUsername, 'username');
           }
 
           closePopup({
@@ -1876,11 +1885,11 @@ export async function dismissVaultLockedPopup(): Promise<void> {
   if (authStatus.isLoggedIn) {
     // User is logged in - dismiss for 4 hours
     const fourHoursFromNow = Date.now() + (4 * 60 * 60 * 1000);
-    await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, fourHoursFromNow);
+    await LocalPreferencesService.setVaultLockedDismissUntil(fourHoursFromNow);
   } else {
     // User is not logged in - dismiss for 3 days
     const threeDaysFromNow = Date.now() + (3 * 24 * 60 * 60 * 1000);
-    await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, threeDaysFromNow);
+    await LocalPreferencesService.setVaultLockedDismissUntil(threeDaysFromNow);
   }
 }
 

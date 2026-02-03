@@ -28,13 +28,11 @@ import useFormPersistence from '@/entrypoints/popup/hooks/useFormPersistence';
 import useServiceDetection from '@/entrypoints/popup/hooks/useServiceDetection';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import { SKIP_FORM_RESTORE_KEY } from '@/utils/Constants';
 import { UsernameEmailGenerator, Gender } from '@/utils/dist/core/identity-generator';
 import type { Item, ItemField, ItemType, FieldType, Attachment, TotpCode, PasswordSettings } from '@/utils/dist/core/models/vault';
 import { FieldCategories, FieldTypes, ItemTypes, getSystemFieldsForItemType, getOptionalFieldsForItemType, isFieldShownByDefault, getSystemField, fieldAppliesToType } from '@/utils/dist/core/models/vault';
 import { FaviconService } from '@/utils/FaviconService';
-
-import { browser } from '#imports';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 // Valid item types from the shared model
 const VALID_ITEM_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemTypes.CreditCard, ItemTypes.Note];
@@ -380,10 +378,10 @@ const ItemAddEdit: React.FC = () => {
         }
 
         // Check if we should skip form restoration (e.g., when opened from popout button)
-        const result = await browser.storage.local.get([SKIP_FORM_RESTORE_KEY]);
-        if (result[SKIP_FORM_RESTORE_KEY]) {
+        const skipFormRestore = await LocalPreferencesService.getSkipFormRestore();
+        if (skipFormRestore) {
           // Clear the flag after using it
-          await browser.storage.local.remove([SKIP_FORM_RESTORE_KEY]);
+          await LocalPreferencesService.setSkipFormRestore(false);
         } else {
           // Load persisted form values normally
           await loadPersistedValues();
