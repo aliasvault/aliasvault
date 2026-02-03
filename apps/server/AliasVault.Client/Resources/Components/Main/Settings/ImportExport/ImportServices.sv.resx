@@ -250,7 +250,7 @@
   </data>
   <!-- RoboForm -->
   <data name="RoboformDescription" xml:space="preserve">
-    <value>Import passwords from RoboForm</value>
+    <value>Importera lösenord från RoboForm</value>
     <comment>Description for RoboForm import service</comment>
   </data>
   <data name="RoboformInstructionsPart1" xml:space="preserve">
@@ -258,7 +258,7 @@
     <comment>RoboForm export instructions part 1</comment>
   </data>
   <data name="RoboformInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
     <comment>RoboForm export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
