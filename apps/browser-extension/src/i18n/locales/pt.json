@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Excluir pasta e todos os itens",
     "deleteFolderAndItemsDescription": "{{count}} item(s) será(ão) movido(s) para Recentemente Excluídos.",
     "filters": {
-      "all": "(Todos os) Itens",
+      "folders": "Folders",
       "passkeys": "Passkeys"
     },
     "sort": {
