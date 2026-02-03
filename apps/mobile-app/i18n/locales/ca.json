@@ -436,7 +436,8 @@
     "offlineMessage": "You are offline. Please connect to the internet to sync your vault.",
     "switchBackToBrowser": "Switch back to your browser to continue.",
     "filters": {
-      "all": "(All) Items",
+      "all": "Items",
+      "showFolders": "Folders",
       "passkeys": "Passkeys",
       "attachments": "Attachments"
     },
