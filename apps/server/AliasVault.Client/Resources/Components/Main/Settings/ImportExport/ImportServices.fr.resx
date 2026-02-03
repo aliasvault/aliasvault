@@ -250,15 +250,15 @@
   </data>
   <!-- RoboForm -->
   <data name="RoboformDescription" xml:space="preserve">
-    <value>Import passwords from RoboForm</value>
+    <value>Importer des mots de passe depuis RoboForm</value>
     <comment>Description for RoboForm import service</comment>
   </data>
   <data name="RoboformInstructionsPart1" xml:space="preserve">
-    <value>In order to import your RoboForm passwords, you need to export them as a CSV file. You can do this by opening RoboForm, going to 'RoboForm' menu > 'Options' > 'Account &amp; Data' > 'Export' and selecting CSV format.</value>
+    <value>Afin d'importer vos mots de passe RoboForm, vous devez les exporter sous forme de fichier CSV. Vous pouvez le faire en ouvrant RoboForm, en allant dans le menu 'RoboForm' > 'Options' > 'Compte &amp; Données' > 'Export' et en sélectionnant le format CSV.</value>
     <comment>RoboForm export instructions part 1</comment>
   </data>
   <data name="RoboformInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Une fois que vous avez exporté le fichier, vous pouvez le charger ci-dessous.</value>
     <comment>RoboForm export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
