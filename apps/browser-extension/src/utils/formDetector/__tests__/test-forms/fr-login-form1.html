@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>France Tax Login</title>
+</head>
+<body>
+    <form id="loginForm">
+        <div class="fr-fieldset__element">
+            <div class="fr-input-group" id="usernameGroup">
+                <label class="fr-label" for="spi_tmp">
+                    Numéro fiscal <span class="fr-hint-text">Format attendu : 13 chiffres</span>
+                </label>
+                <input class="fr-input form-control" autocomplete="username" aria-required="true" autocorrect="off" aria-describedby="usernameMessage" name="spi_tmp" id="spi_tmp" type="text" maxlength="13" inputmode="numeric" pattern="[0-9]*" data-original-title="13 chiffres" data-placement="top" data-mask="int" data-max="13" data-feedbackok="1/">
+                <div class="fr-messages-group" id="usernameMessage"></div>
+            </div>
+            <p class="fr-mt-n3v" id="lostFiscalNumberLink">
+                <button type="button" class="fr-btn fr-btn--tertiary-no-outline" data-fr-opened="false" aria-controls="numFiscal" style="text-decoration: underline; text-underline-offset: 0.25rem; text-decoration-thickness: 1px; background-color: transparent !important; transition: text-decoration-thickness 0.1s ease; margin: -17px;" onmouseover="this.style.textDecorationThickness='2px'; this.style.backgroundColor='transparent'" onmouseout="this.style.textDecorationThickness='1px'; this.style.backgroundColor='transparent'" data-fr-js-modal-button="true">
+                    Numéro fiscal oublié ?
+                </button>
+            </p>
+        </div>
+    </form>
+</body>
+</html>

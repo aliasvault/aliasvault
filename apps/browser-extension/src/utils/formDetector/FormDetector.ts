@@ -360,11 +360,49 @@ export class FormDetector {
         continue;
       }
 
+      // Check autocomplete attribute for direct field type matching
+      const autocomplete = input.getAttribute('autocomplete')?.toLowerCase() ?? '';
+
+      // Direct autocomplete matches take highest priority (score -2, higher than type=email at -1)
+      if (autocomplete) {
+        // Match autocomplete="username" for username patterns
+        if (patterns === CombinedFieldPatterns.username && autocomplete === 'username') {
+          matches.push({ input: input as HTMLInputElement, score: -2 });
+          continue;
+        }
+        // Match autocomplete="email" for email patterns
+        if (patterns === CombinedFieldPatterns.email && autocomplete === 'email') {
+          matches.push({ input: input as HTMLInputElement, score: -2 });
+          continue;
+        }
+        // Match autocomplete="current-password" or "new-password" for password patterns
+        if (patterns === CombinedFieldPatterns.password &&
+            (autocomplete === 'current-password' || autocomplete === 'new-password')) {
+          matches.push({ input: input as HTMLInputElement, score: -2 });
+          continue;
+        }
+      }
+
+      /**
+       * Check aria-describedby ID for direct field type matching (e.g., aria-describedby="usernameMessage")
+       * Only match if it's a clear username indicator (not usernameConfirm, etc.)
+       */
+      const ariaDescribedById = input.getAttribute('aria-describedby')?.toLowerCase() ?? '';
+      if (ariaDescribedById) {
+        // Match aria-describedby containing "username" for username patterns
+        if (patterns === CombinedFieldPatterns.username &&
+            ariaDescribedById.includes('username')) {
+          matches.push({ input: input as HTMLInputElement, score: -2 });
+          continue;
+        }
+      }
+
       // Collect all text attributes to check
       const attributesToCheck = [
         input.id,
         input.getAttribute('name'),
-        input.getAttribute('placeholder')
+        input.getAttribute('placeholder'),
+        autocomplete
       ]
         .map(a => a?.toLowerCase() ?? '');
 
@@ -374,6 +412,25 @@ export class FormDetector {
         if (label) {
           attributesToCheck.push(label.textContent?.toLowerCase() ?? '');
         }
+      }
+
+      // Check aria-describedby for additional field hints
+      const ariaDescribedBy = input.getAttribute('aria-describedby');
+      if (ariaDescribedBy) {
+        // aria-describedby can contain multiple space-separated IDs
+        const describedByIds = ariaDescribedBy.split(/\s+/);
+        for (const descId of describedByIds) {
+          const describedByElement = this.document.getElementById(descId);
+          if (describedByElement) {
+            attributesToCheck.push(describedByElement.textContent?.toLowerCase() ?? '');
+          }
+        }
+      }
+
+      // Check aria-label attribute
+      const ariaLabel = input.getAttribute('aria-label');
+      if (ariaLabel) {
+        attributesToCheck.push(ariaLabel.toLowerCase());
       }
 
       /**
