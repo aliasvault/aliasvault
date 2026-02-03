@@ -159,7 +159,7 @@
     "failedToCreateIdentity": "Eșec la crearea identității. Încearcă din nou.",
     "enterEmailAndOrUsername": "Introdu adresa de e-mail și/sau numele de utilizator",
     "autofillWithAliasVault": "Completare automată cu AliasVault",
-    "generateRandomPassword": "Generează parolă aleatorie (copiază în clipboard)",
+    "generateRandomPassword": "Generează o parolă aleatorie (copiază în clipboard)",
     "generateNewPassword": "Generează parolă nouă",
     "togglePasswordVisibility": "Comută vizibilitatea parolei",
     "passwordCopiedToClipboard": "Parolă copiată în clipboard",
@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Șterge dosarul și toate elementele",
     "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
     "filters": {
-      "folders": "Folders",
+      "folders": "Dosare",
       "passkeys": "Passkeys"
     },
     "sort": {
