@@ -97,7 +97,7 @@ generate_plain_body() {
     # Use printf for consistent newline handling
     printf "%s\r\n" "$opening_text"
     printf "\r\n"
-    printf "Random content: %s\r\n" "$content_suffix"
+    printf "Random content's here: %s\r\n" "$content_suffix"
     printf "\r\n"
     printf "=== Special Character Testing ===\r\n"
     printf "Special symbols: %s\r\n" "$special_chars"
@@ -166,7 +166,7 @@ generate_html_body() {
     <h1>$opening_text</h1>
 
     <div class="section">
-        <p><strong>Random content:</strong> $content_suffix</p>
+        <p><strong>Random content&#39;s &amp; here:</strong> $content_suffix</p>
     </div>
 
     <div class="section">
