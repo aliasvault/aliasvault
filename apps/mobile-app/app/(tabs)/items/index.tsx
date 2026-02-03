@@ -1,5 +1,4 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -36,11 +35,7 @@ import { RobustPressable } from '@/components/ui/RobustPressable';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
-
-/**
- * Storage key for the show folders preference.
- */
-const SHOW_FOLDERS_STORAGE_KEY = 'items-show-folders';
+import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
 /**
  * Filter types for the items list.
@@ -129,17 +124,15 @@ export default function ItemsScreen(): React.ReactNode {
     }
   }, [itemUrl]);
 
-  // Load saved showFolderItems preference from AsyncStorage
+  // Load saved showFolderItems preference from LocalPreferencesService
   useEffect(() => {
     /**
-     * Load the show folders preference from AsyncStorage.
+     * Load the show folders preference from LocalPreferencesService.
      */
     const loadShowFoldersPreference = async (): Promise<void> => {
       try {
-        const stored = await AsyncStorage.getItem(SHOW_FOLDERS_STORAGE_KEY);
-        if (stored !== null) {
-          setShowFolderItems(stored === 'true');
-        }
+        const stored = await LocalPreferencesService.getShowFolders();
+        setShowFolderItems(stored);
       } catch {
         // Ignore storage errors, use default value
       }
@@ -837,7 +830,7 @@ export default function ItemsScreen(): React.ReactNode {
               onPress={() => {
                 const newValue = !showFolderItems;
                 setShowFolderItems(newValue);
-                AsyncStorage.setItem(SHOW_FOLDERS_STORAGE_KEY, String(newValue));
+                LocalPreferencesService.setShowFolders(newValue);
               }}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >

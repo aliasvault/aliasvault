@@ -9,8 +9,8 @@ import type { NativeSyntheticEvent } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { ItemIcon } from '@/components/items/ItemIcon';
-import { useAuth } from '@/context/AuthContext';
 import { useDialog } from '@/context/DialogContext';
+import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 import { useColors } from '@/hooks/useColorScheme';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { Item } from '@/utils/dist/core/models/vault';
@@ -27,7 +27,6 @@ type ItemCardProps = {
 export function ItemCard({ item, onItemDelete }: ItemCardProps): React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
-  const { getClipboardClearTimeout } = useAuth();
   const { showConfirm } = useDialog();
 
   /**
@@ -68,7 +67,7 @@ export function ItemCard({ item, onItemDelete }: ItemCardProps): React.ReactNode
   const copyToClipboard = async (text: string): Promise<void> => {
     try {
       // Get clipboard clear timeout from settings
-      const timeoutSeconds = await getClipboardClearTimeout();
+      const timeoutSeconds = await LocalPreferencesService.getClipboardClearTimeout();
 
       // Use centralized clipboard utility
       await copyToClipboardWithExpiration(text, timeoutSeconds);

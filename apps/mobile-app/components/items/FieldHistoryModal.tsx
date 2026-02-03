@@ -16,8 +16,8 @@ import { FieldTypes } from '@/utils/dist/core/models/vault';
 import { useColors } from '@/hooks/useColorScheme';
 import { useDb } from '@/context/DbContext';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
-import { useAuth } from '@/context/AuthContext';
 import { ModalWrapper } from '@/components/common/ModalWrapper';
+import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useDialog } from '@/context/DialogContext';
 
@@ -49,7 +49,6 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
   const { t } = useTranslation();
   const colors = useColors();
   const dbContext = useDb();
-  const { getClipboardClearTimeout } = useAuth();
   const { executeVaultMutation } = useVaultMutate();
   const { showConfirm } = useDialog();
   const [history, setHistory] = useState<FieldHistory[]>([]);
@@ -276,7 +275,7 @@ const FieldHistoryModal: React.FC<FieldHistoryModalProps> = ({
 
                 const handleCopy = async (): Promise<void> => {
                   try {
-                    const timeoutSeconds = await getClipboardClearTimeout();
+                    const timeoutSeconds = await LocalPreferencesService.getClipboardClearTimeout();
                     await copyToClipboardWithExpiration(value, timeoutSeconds);
                     Toast.show({
                       type: 'success',

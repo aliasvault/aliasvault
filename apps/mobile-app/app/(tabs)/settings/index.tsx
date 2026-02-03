@@ -20,6 +20,7 @@ import { TitleContainer } from '@/components/ui/TitleContainer';
 import { UsernameDisplay } from '@/components/ui/UsernameDisplay';
 import { useApp } from '@/context/AppContext';
 import { useDialog } from '@/context/DialogContext';
+import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
 /**
  * Settings screen.
@@ -30,7 +31,7 @@ export default function SettingsScreen() : React.ReactNode {
   const { showAlert, showConfirm } = useDialog();
   const insets = useSafeAreaInsets();
   const { getAuthMethodDisplayKey, shouldShowAutofillReminder } = useApp();
-  const { getAutoLockTimeout, getClipboardClearTimeout } = useApp();
+  const { getAutoLockTimeout } = useApp();
   const { logoutUserInitiated } = useLogout();
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -74,7 +75,7 @@ export default function SettingsScreen() : React.ReactNode {
        * Load the clipboard clear display.
        */
       const loadClipboardClearDisplay = async () : Promise<void> => {
-        const clipboardTimeout = await getClipboardClearTimeout();
+        const clipboardTimeout = await LocalPreferencesService.getClipboardClearTimeout();
         let display = t('common.never');
 
         if (clipboardTimeout === 5) {
@@ -107,7 +108,7 @@ export default function SettingsScreen() : React.ReactNode {
       };
 
       loadData();
-    }, [getAutoLockTimeout, getAuthMethodDisplayKey, setIsFirstLoad, loadApiUrl, getClipboardClearTimeout, t])
+    }, [getAutoLockTimeout, getAuthMethodDisplayKey, setIsFirstLoad, loadApiUrl, t])
   );
 
   /**
