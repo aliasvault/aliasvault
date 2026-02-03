@@ -24,12 +24,6 @@ using Microsoft.JSInterop;
 public class LoginBase : OwningComponentBase
 {
     /// <summary>
-    /// LocalStorage key for storing the return url that should be redirected to after a succesful
-    /// login or unlock event.
-    /// </summary>
-    public const string ReturnUrlKey = "returnUrl";
-
-    /// <summary>
     /// Gets or sets the NavigationManager.
     /// </summary>
     [Inject]

@@ -7,6 +7,7 @@
 @using AliasVault.Shared.Models.WebApi.Auth
 @using AliasVault.Client.Auth.Components
 @using AliasVault.Client.Auth.Models
+@using AliasVault.Client.Services
 @using AliasVault.Client.Utilities
 @using AliasVault.Cryptography.Client
 @using AliasVault.Client.Services.JsInterop.RustCore
@@ -445,10 +446,10 @@ else
         GlobalNotificationService.ClearMessages();
 
         // Redirect to the page the user was trying to access before if set.
-        var localStorageReturnUrl = await LocalStorage.GetItemAsync<string>(ReturnUrlKey);
+        var localStorageReturnUrl = await LocalStorage.GetItemAsync<string>(StorageKeys.ReturnUrl);
         if (!string.IsNullOrEmpty(localStorageReturnUrl))
         {
-            await LocalStorage.RemoveItemAsync(ReturnUrlKey);
+            await LocalStorage.RemoveItemAsync(StorageKeys.ReturnUrl);
             NavigationManager.NavigateTo(localStorageReturnUrl);
         }
         else
@@ -523,10 +524,10 @@ else
             GlobalNotificationService.ClearMessages();
 
             // Redirect to the page the user was trying to access before if set
-            var localStorageReturnUrl = await LocalStorage.GetItemAsync<string>(ReturnUrlKey);
+            var localStorageReturnUrl = await LocalStorage.GetItemAsync<string>(StorageKeys.ReturnUrl);
             if (!string.IsNullOrEmpty(localStorageReturnUrl))
             {
-                await LocalStorage.RemoveItemAsync(ReturnUrlKey);
+                await LocalStorage.RemoveItemAsync(StorageKeys.ReturnUrl);
                 NavigationManager.NavigateTo(localStorageReturnUrl);
             }
             else

@@ -22,8 +22,6 @@ public class LanguageService(
     AuthenticationStateProvider authenticationStateProvider,
     DbService dbService)
 {
-    private const string AppLanguageKey = "AppLanguage";
-
     /// <summary>
     /// Language configuration containing all supported languages.
     /// To add a new language, simply add a new entry to this list.
@@ -151,7 +149,7 @@ public class LanguageService(
             // User is authenticated, get language from vault settings
             try
             {
-                var language = await _dbService.Settings.GetSettingAsync<string>(AppLanguageKey);
+                var language = await _dbService.Settings.GetSettingAsync<string>(StorageKeys.AppLanguage);
                 if (!string.IsNullOrEmpty(language))
                 {
                     return language;
@@ -165,7 +163,7 @@ public class LanguageService(
             // If no vault setting found, check localStorage to migrate user's pre-auth preference
             try
             {
-                var storedLanguage = await _localStorage.GetItemAsync<string>(AppLanguageKey);
+                var storedLanguage = await _localStorage.GetItemAsync<string>(StorageKeys.AppLanguage);
                 if (!string.IsNullOrEmpty(storedLanguage))
                 {
                     // Migrate the localStorage setting to vault and then return it
@@ -183,7 +181,7 @@ public class LanguageService(
             // User is not authenticated, check local storage
             try
             {
-                var storedLanguage = await _localStorage.GetItemAsync<string>(AppLanguageKey);
+                var storedLanguage = await _localStorage.GetItemAsync<string>(StorageKeys.AppLanguage);
                 if (!string.IsNullOrEmpty(storedLanguage))
                 {
                     return storedLanguage;
@@ -223,7 +221,7 @@ public class LanguageService(
             // User is authenticated, save to vault settings
             try
             {
-                await _dbService.Settings.SetSettingAsync(AppLanguageKey, languageCode);
+                await _dbService.Settings.SetSettingAsync(StorageKeys.AppLanguage, languageCode);
             }
             catch
             {
@@ -235,7 +233,7 @@ public class LanguageService(
             // User is not authenticated, save to local storage
             try
             {
-                await _localStorage.SetItemAsync(AppLanguageKey, languageCode);
+                await _localStorage.SetItemAsync(StorageKeys.AppLanguage, languageCode);
             }
             catch
             {
@@ -323,10 +321,10 @@ public class LanguageService(
         try
         {
             // Save to vault settings
-            await _dbService.Settings.SetSettingAsync(AppLanguageKey, languageCode);
+            await _dbService.Settings.SetSettingAsync(StorageKeys.AppLanguage, languageCode);
 
             // Clear from localStorage since it's now in vault
-            await _localStorage.RemoveItemAsync(AppLanguageKey);
+            await _localStorage.RemoveItemAsync(StorageKeys.AppLanguage);
         }
         catch
         {
