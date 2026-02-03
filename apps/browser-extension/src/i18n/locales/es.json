@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Eliminar carpeta y todos los elementos",
     "deleteFolderAndItemsDescription": "{{count}} elemento(s) serán movidos a Borrados Recientemente.",
     "filters": {
-      "all": "(Todos) Elementos",
+      "folders": "Folders",
       "passkeys": "Llaves de acceso"
     },
     "sort": {
