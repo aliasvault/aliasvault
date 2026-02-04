@@ -518,6 +518,6 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Apasă pentru a reîncerca sincronizarea"
   }
 }
