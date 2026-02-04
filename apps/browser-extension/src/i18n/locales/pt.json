@@ -515,5 +515,9 @@
     "unsyncedChangesTitle": "Alterações Dessincronizadas",
     "unsyncedChangesWarning": "Você tem alterações dessincronizadas que serão perdidas caso você saia da sua conta agora. Têm certeza que deseja continuar?",
     "logoutAnyway": "Sair assim mesmo"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }
