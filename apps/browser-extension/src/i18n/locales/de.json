@@ -515,5 +515,9 @@
     "unsyncedChangesTitle": "Nicht synchronisierte Änderungen",
     "unsyncedChangesWarning": "Sie haben nicht synchronisierte Änderungen, die verloren gehen, wenn Sie sich jetzt abmelden. Sind Sie sicher, dass Sie fortfahren möchten?",
     "logoutAnyway": "Trotzdem abmelden"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }
