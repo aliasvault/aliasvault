@@ -436,8 +436,8 @@
     "offlineMessage": "您处于离线状态，请连接互联网以同步密码库。",
     "switchBackToBrowser": "切换回浏览器以继续。",
     "filters": {
-      "all": "Items",
-      "showFolders": "Folders",
+      "all": "项目",
+      "showFolders": "文件夹",
       "passkeys": "通行密钥",
       "attachments": "附件"
     },
