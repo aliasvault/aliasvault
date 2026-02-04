@@ -276,36 +276,36 @@
     <comment>Generic error message when passwords don't match</comment>
   </data>
   <data name="ErrorMustAcceptTerms" xml:space="preserve">
-    <value>You must accept the terms and conditions.</value>
+    <value>شرائط و ضوابط قبول کرنا ضروری ہے۔</value>
     <comment>Error message for terms and conditions acceptance</comment>
   </data>
   <data name="ErrorSecretKeyRequired" xml:space="preserve">
-    <value>Secret key is required</value>
+    <value>خفیہ کی(key) درج کرنا ضروری ہے۔</value>
     <comment>Error message when secret key is required</comment>
   </data>
   <data name="ErrorUsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>یوزرنیم(Username) درج کرنا ضروری ہے۔</value>
     <comment>Error message when username is required</comment>
   </data>
   <data name="ErrorPasswordRequired" xml:space="preserve">
-    <value>Password is required</value>
+    <value>پاس ورڈ درج کرنا ضروری ہے۔</value>
     <comment>Error message when password is required</comment>
   </data>
   <!-- General UI text -->
   <data name="Or" xml:space="preserve">
-    <value>or</value>
+    <value>یا</value>
     <comment>Divider text between options</comment>
   </data>
   <data name="LockVault" xml:space="preserve">
-    <value>Lock vault</value>
+    <value>والٹ لاک کریں</value>
     <comment>Tooltip text for lock vault button</comment>
   </data>
   <data name="Home" xml:space="preserve">
-    <value>Home</value>
+    <value>ہوم</value>
     <comment>Home breadcrumb text</comment>
   </data>
   <data name="Notes" xml:space="preserve">
-    <value>Notes</value>
+    <value>نوٹس</value>
     <comment>Notes section heading</comment>
   </data>
   <data name="SyncVaultData" xml:space="preserve">
