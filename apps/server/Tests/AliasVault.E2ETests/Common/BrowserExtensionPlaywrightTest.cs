@@ -153,6 +153,57 @@ public class BrowserExtensionPlaywrightTest : ClientPlaywrightTest
     }
 
     /// <summary>
+    /// Enable offline mode by setting an invalid API URL in extension storage.
+    /// This prevents the extension from syncing with the server.
+    /// </summary>
+    /// <param name="extensionPopup">The extension popup page.</param>
+    /// <returns>Async task.</returns>
+    protected async Task EnableOfflineMode(IPage extensionPopup)
+    {
+        await extensionPopup.EvaluateAsync(@"() => {
+            return new Promise((resolve) => {
+                chrome.storage.local.set({ apiUrl: 'http://offline.invalid.localhost:9999' }, () => {
+                    resolve();
+                });
+            });
+        }");
+    }
+
+    /// <summary>
+    /// Disable offline mode by restoring the valid API URL in extension storage.
+    /// </summary>
+    /// <param name="extensionPopup">The extension popup page.</param>
+    /// <returns>Async task.</returns>
+    protected async Task DisableOfflineMode(IPage extensionPopup)
+    {
+        var script = @"(apiUrl) => {
+            return new Promise((resolve) => {
+                chrome.storage.local.set({ apiUrl: apiUrl }, () => {
+                    resolve();
+                });
+            });
+        }";
+        await extensionPopup.EvaluateAsync(script, ApiBaseUrl.TrimEnd('/'));
+    }
+
+    /// <summary>
+    /// Clear auth tokens from extension storage to simulate a forced logout.
+    /// The vault data is preserved, only authentication is cleared.
+    /// </summary>
+    /// <param name="extensionPopup">The extension popup page.</param>
+    /// <returns>Async task.</returns>
+    protected async Task ClearAuthTokens(IPage extensionPopup)
+    {
+        await extensionPopup.EvaluateAsync(@"() => {
+            return new Promise((resolve) => {
+                chrome.storage.local.remove(['accessToken', 'refreshToken'], () => {
+                    resolve();
+                });
+            });
+        }");
+    }
+
+    /// <summary>
     /// Find the repository root directory by walking up from the current assembly location.
     /// </summary>
     /// <param name="startPath">The starting directory.</param>
