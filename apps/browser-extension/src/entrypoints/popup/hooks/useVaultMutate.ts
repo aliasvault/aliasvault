@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { sendMessage } from 'webext-bridge/popup';
 
+import type { FullVaultSyncResult } from '@/entrypoints/background/VaultMessageHandler';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
@@ -56,6 +57,9 @@ export function useVaultMutate(): {
    * Trigger a sync in the background script.
    * This is fire-and-forget - the sync runs entirely in the background context
    * and continues even if the popup closes.
+   *
+   * If a merge happened during sync (hasNewVault=true), reload the database
+   * so the popup shows the merged data.
    */
   const triggerBackgroundSync = useCallback((): void => {
     /*
@@ -63,7 +67,11 @@ export function useVaultMutate(): {
      * The background script will handle the full sync orchestration
      * and will re-sync if mutations happened during the sync.
      */
-    sendMessage('FULL_VAULT_SYNC', {}, 'background').then(async () => {
+    sendMessage('FULL_VAULT_SYNC', {}, 'background').then(async (result: FullVaultSyncResult) => {
+      // If a merge happened, reload the database to show merged data
+      if (result.hasNewVault) {
+        await dbContext.loadStoredDatabase();
+      }
       // Refresh sync state if popup is still open
       await dbContext.refreshSyncState();
     }).catch((error) => {

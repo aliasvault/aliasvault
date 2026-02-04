@@ -81,7 +81,9 @@ test.describe.serial('6. Field-Level Merge', () => {
       .then((c) => c.fillNotes(clientBNotes))
       .then((c) => c.screenshot('6.4-client-b-before-save.png'))
       .then((c) => c.saveCredential())
-      .then((c) => c.screenshot('6.4-client-b-after-save.png'));
+      .then((c) => c.screenshot('6.4-client-b-after-save.png'))
+      // Wait for background sync (including merge) to complete before next test
+      .then((c) => c.triggerSync());
   });
 
   test('6.5 Client B verifies field-level merge result', async () => {

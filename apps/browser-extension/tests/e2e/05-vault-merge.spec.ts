@@ -73,8 +73,10 @@ test.describe.serial('5. Vault Merge', () => {
   });
 
   test('5.4 Client B vault should contain both credentials after merge', async () => {
+    // Trigger sync to ensure background merge has completed and database is reloaded
     await clientB
-      .goToVault()
+      .triggerSync()
+      .then((c) => c.goToVault())
       .then((c) => c.screenshot('5.4-client-b-vault-state.png'))
       .then((c) => c.verifyCredentialExists(credentialNameA));
 
