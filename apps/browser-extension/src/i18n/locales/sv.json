@@ -515,5 +515,9 @@
     "unsyncedChangesTitle": "Osynkade ändringar",
     "unsyncedChangesWarning": "Du har osynkade ändringar som kommer att gå förlorade om du loggar ut nu. Är du säker på att du vill fortsätta?",
     "logoutAnyway": "Logga ut ändå"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }
