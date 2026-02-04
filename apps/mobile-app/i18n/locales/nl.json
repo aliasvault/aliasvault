@@ -437,7 +437,7 @@
     "switchBackToBrowser": "Schakel terug naar je browser om door te gaan.",
     "filters": {
       "all": "Items",
-      "showFolders": "Folders",
+      "showFolders": "Mappen",
       "passkeys": "Passkeys",
       "attachments": "Bijlagen"
     },
