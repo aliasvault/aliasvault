@@ -518,6 +518,6 @@
   },
   "sync": {
     "offline": "Sin conexión",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Toca para reintentar sincronizar"
   }
 }
