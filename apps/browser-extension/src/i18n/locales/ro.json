@@ -515,5 +515,9 @@
     "unsyncedChangesTitle": "Modificări Nesincronizate",
     "unsyncedChangesWarning": "Ai modificări nesincronizate care se vor pierde dacă te deconectezi acum. Sigur vrei să continui?",
     "logoutAnyway": "Deconectează-te oricum"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }
