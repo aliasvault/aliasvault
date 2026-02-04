@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="NoLogoText" xml:space="preserve">
+    <value>No logo</value>
+    <comment>Text shown when service logo is not available</comment>
+  </data>
+  <data name="ImportFromServiceTitle" xml:space="preserve">
+    <value>Import from {0}</value>
+    <comment>Modal title for importing from a service. {0} is placeholder for service name</comment>
+  </data>
+  <data name="UploadExportFileText" xml:space="preserve">
+    <value>Upload your {0} export file:</value>
+    <comment>Text for file upload instruction. {0} is placeholder for service name</comment>
+  </data>
+  <data name="CancelButton" xml:space="preserve">
+    <value>Cancel</value>
+    <comment>Cancel button text</comment>
+  </data>
+  <data name="BackButton" xml:space="preserve">
+    <value>Back</value>
+    <comment>Back button text</comment>
+  </data>
+  <data name="NextButton" xml:space="preserve">
+    <value>Next</value>
+    <comment>Next button text</comment>
+  </data>
+  <data name="ImportButton" xml:space="preserve">
+    <value>Import</value>
+    <comment>Import button text</comment>
+  </data>
+  <data name="ImportFoldersLabel" xml:space="preserve">
+    <value>Import folders</value>
+    <comment>Checkbox label for importing folder structure from the source password manager</comment>
+  </data>
+  <data name="FoldersDetected" xml:space="preserve">
+    <value>{0} folder(s) detected</value>
+    <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
+  </data>
+  <data name="DuplicateCredentialsWarning" xml:space="preserve">
+    <value>{0} duplicate credential(s) were found and will not be imported.</value>
+    <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
+  </data>
+  <data name="NoNewCredentials" xml:space="preserve">
+    <value>No new credentials were found to import.</value>
+    <comment>Warning text when no new credentials are available for import</comment>
+  </data>
+  <data name="PreviewInstructions" xml:space="preserve">
+    <value>Check if the following detected credentials look correct before continuing:</value>
+    <comment>Instructions shown before the credential preview table</comment>
+  </data>
+  <data name="ServiceColumn" xml:space="preserve">
+    <value>Service</value>
+    <comment>Column header for service name in credential preview table</comment>
+  </data>
+  <data name="UsernameColumn" xml:space="preserve">
+    <value>Username</value>
+    <comment>Column header for username in credential preview table</comment>
+  </data>
+  <data name="PasswordColumn" xml:space="preserve">
+    <value>Password</value>
+    <comment>Column header for password in credential preview table</comment>
+  </data>
+  <data name="MoreCredentials" xml:space="preserve">
+    <value>... and {0} more credentials</value>
+    <comment>Text showing additional credentials not displayed. {0} is the count</comment>
+  </data>
+  <data name="ExtractFaviconsLabel" xml:space="preserve">
+    <value>Extract favicons for services with URLs</value>
+    <comment>Checkbox label for favicon extraction option</comment>
+  </data>
+  <data name="ConfirmImportText" xml:space="preserve">
+    <value>Are you sure you want to import ({0}) credentials? Note: the import process can take a short while.</value>
+    <comment>Confirmation text before importing. {0} is the credential count</comment>
+  </data>
+  <data name="FaviconExtractionNote" xml:space="preserve">
+    <value>Note: Favicon extraction is enabled. This process can take several minutes depending on the number of credentials with URLs. Please keep the page open.</value>
+    <comment>Warning note about favicon extraction duration</comment>
+  </data>
+  <data name="ExtractingFavicons" xml:space="preserve">
+    <value>Extracting favicons... {0} / {1}</value>
+    <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
+  </data>
+</root>
