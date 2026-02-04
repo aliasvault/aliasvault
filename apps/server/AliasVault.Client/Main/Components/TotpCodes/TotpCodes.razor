@@ -7,33 +7,35 @@
 @using Microsoft.Extensions.Localization
 
 <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
-    <div class="flex justify-between">
+    <div class="flex justify-between items-start">
         <div>
-            <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["TwoFactorAuthenticationTitle"]</h3>
+            <h3 class="text-xl font-semibold dark:text-white">@Localizer["TwoFactorAuthenticationTitle"]</h3>
         </div>
-        @if (TotpCodeList.Any(t => !t.IsDeleted) && !IsAddFormVisible)
-        {
-            <div>
-                <button id="add-totp-code" @onclick="ShowAddForm" type="button" class="text-blue-700 hover:text-white border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-3 py-2 text-center dark:border-blue-500 dark:text-blue-500 dark:hover:text-white dark:hover:bg-blue-600 dark:focus:ring-blue-800">
-                    +
+        <div class="flex items-center gap-2">
+            @if (TotpCodeList.Any(t => !t.IsDeleted) && !IsAddFormVisible)
+            {
+                <button id="add-totp-code" @onclick="ShowAddForm" type="button" class="text-primary-700 hover:text-white border border-primary-700 hover:bg-primary-800 focus:ring-2 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-xs w-6 h-6 flex items-center justify-center dark:border-primary-500 dark:text-primary-500 dark:hover:text-white dark:hover:bg-primary-600 dark:focus:ring-primary-800" title="@Localizer["AddTotpCodeDescription"]">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                    </svg>
                 </button>
-            </div>
-        }
+            }
+            @if (CanRemove)
+            {
+                <button type="button" @onclick="HandleRemove" @onclick:preventDefault="true"
+                        class="text-gray-400 hover:text-red-500 transition-colors w-6 h-6 flex items-center justify-center" title="@Localizer["Delete"]">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            }
+        </div>
     </div>
-    @if (CanRemove)
-    {
-        <button type="button" @onclick="HandleRemove" @onclick:preventDefault="true"
-                class="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition-colors" title="@Localizer["Delete"]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-    }
 
     @* Always show add form or existing codes - no empty state *@
     @if (IsAddFormVisible)
         {
-            <div class="p-4 mb-4 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600">
+            <div class="p-4 mb-4 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 mt-4">
                 <EditForm Model="@NewTotpCode" OnValidSubmit="AddTotpCode">
                     <DataAnnotationsValidator />
                     <div class="flex justify-between items-center mb-4">
@@ -51,16 +53,16 @@
                     <p class="mb-4 text-sm text-gray-500 dark:text-gray-400">@Localizer["TotpInstructions"]</p>
                     <div class="mb-4">
                         <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["NameOptionalLabel"]</label>
-                        <InputText id="name" @bind-Value="NewTotpCode.Name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
+                        <InputText id="name" @bind-Value="NewTotpCode.Name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" />
                         <ValidationMessage For="@(() => NewTotpCode.Name)" class="text-red-600 dark:text-red-400 text-sm mt-1" />
                     </div>
                     <div class="mb-4">
                         <label for="secretKey" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">@Localizer["SecretKeyLabel"]</label>
-                        <InputText id="secretKey" @bind-Value="NewTotpCode.SecretKey" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="@Localizer["SecretKeyPlaceholder"]" />
+                        <InputText id="secretKey" @bind-Value="NewTotpCode.SecretKey" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="@Localizer["SecretKeyPlaceholder"]" />
                         <ValidationMessage For="@(() => NewTotpCode.SecretKey)" class="text-red-600 dark:text-red-400 text-sm mt-1" />
                     </div>
                     <div class="flex justify-end">
-                        <button id="save-totp-code" type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                        <button id="save-totp-code" type="submit" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
                             @Localizer["SaveButton"]
                         </button>
                     </div>
