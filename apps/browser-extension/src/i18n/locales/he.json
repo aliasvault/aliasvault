@@ -515,5 +515,9 @@
     "unsyncedChangesTitle": "Unsynced Changes",
     "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
     "logoutAnyway": "Log out anyway"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }
