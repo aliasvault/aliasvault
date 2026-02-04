@@ -44,6 +44,7 @@ services:
       - ./database:/database
       - ./logs:/logs
       - ./secrets:/secrets
+      - ./certificates:/certificates
 
     environment:
       HOSTNAME: "localhost"
@@ -52,6 +53,7 @@ services:
       FORCE_HTTPS_REDIRECT: "false"
       SUPPORT_EMAIL: ""
       PRIVATE_EMAIL_DOMAINS: ""
+      SMTP_TLS_ENABLED: "false"
 ```
 3. Run `docker compose up -d` to start the container.
 4. After the container has started, AliasVault should now be running. You can access it at:
