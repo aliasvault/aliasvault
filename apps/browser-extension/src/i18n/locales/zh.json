@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "删除文件夹和所有项目",
     "deleteFolderAndItemsDescription": "{{count}} 个项目将被移至“近期删除”。",
     "filters": {
-      "folders": "Folders",
+      "folders": "文件夹",
       "passkeys": "通行密钥"
     },
     "sort": {
