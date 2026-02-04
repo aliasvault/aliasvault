@@ -515,5 +515,9 @@
     "unsyncedChangesTitle": "Zmiany niesynchronizowane",
     "unsyncedChangesWarning": "Masz niezsynchronizowane zmiany, które zostaną utracone, jeśli się teraz wylogujesz. Czy na pewno chcesz kontynuować?",
     "logoutAnyway": "Wyloguj się mimo wszystko"
+  },
+  "sync": {
+    "offline": "Jesteś w trybie offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }
