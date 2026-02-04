@@ -28,14 +28,7 @@
     "switchAccounts": "切换账户？",
     "loginWithMobile": "使用移动应用登录",
     "unlockWithMobile": "使用移动应用解锁",
-    "scanQrCode": "使用 AliasVault 移动端应用扫描该二维码，即可登录并解锁您的密码库。",
-    "errors": {
-      "invalidCode": "请输入有效的6位动态验证码。",
-      "serverError": "无法连接到AliasVault服务器。请稍后重试，若问题依旧，请联系支持人员。",
-      "wrongPassword": "密码不正确。请重试。",
-      "sessionExpired": "您的会话已过期。请重新登录。",
-      "mobileLoginRequestExpired": "移动端登录请求超时。请重新加载页面后重试。"
-    }
+    "scanQrCode": "使用 AliasVault 移动端应用扫描该二维码，即可登录并解锁您的密码库。"
   },
   "menu": {
     "vault": "密码库",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "密码库已锁定",
       "passwordChanged": "登录密码已更新，请重新登录以确保账户安全。",
       "syncConflictMaxRetries": "多次尝试后仍无法同步密码库，请稍后重试。",
-      "mergeFailed": "合并密码库更改失败，请重试。"
+      "mergeFailed": "合并密码库更改失败，请重试。",
+      "invalidCode": "Please enter a valid 6-digit authentication code.",
+      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
+      "wrongPassword": "Incorrect password. Please try again.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "发生未知错误。请重试。",
