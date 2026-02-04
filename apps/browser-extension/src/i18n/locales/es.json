@@ -515,5 +515,9 @@
     "unsyncedChangesTitle": "Cambios no sincronizados",
     "unsyncedChangesWarning": "Tienes cambios no sincronizados que se perderán si te desconectas ahora. ¿Estás seguro de que quieres continuar?",
     "logoutAnyway": "Cerrar sesión de todos modos"
+  },
+  "sync": {
+    "offline": "Sin conexión",
+    "tapToRetry": "Tap to retry sync"
   }
 }
