@@ -28,14 +28,7 @@
     "switchAccounts": "Переключить аккаунт?",
     "loginWithMobile": "Войти с помощью мобильного приложения",
     "unlockWithMobile": "Разблокировать через мобильное приложение",
-    "scanQrCode": "Сканируйте QR-код в приложении AliasVault, чтобы войти.",
-    "errors": {
-      "invalidCode": "Пожалуйста, введите правильный 6-значный код аутентификации.",
-      "serverError": "Не удалось подключиться к серверу AliasVault. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
-      "wrongPassword": "Неверный пароль. Пожалуйста, повторите попытку.",
-      "sessionExpired": "Время сеанса истекло. Пожалуйста, войдите снова.",
-      "mobileLoginRequestExpired": "Истекло время ожидания входа. Перезагрузите страницу и повторите попытку."
-    }
+    "scanQrCode": "Сканируйте QR-код в приложении AliasVault, чтобы войти."
   },
   "menu": {
     "vault": "Хранилище",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "Хранилище заблокировано",
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности.",
       "syncConflictMaxRetries": "Ошибка синхронизации хранилища. Повторите попытку позже.",
-      "mergeFailed": "Не удалось объединить изменения. Попробуйте снова."
+      "mergeFailed": "Не удалось объединить изменения. Попробуйте снова.",
+      "invalidCode": "Please enter a valid 6-digit authentication code.",
+      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
+      "wrongPassword": "Incorrect password. Please try again.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Произошла неизвестная ошибка. Пожалуйста, попробуйте снова.",
