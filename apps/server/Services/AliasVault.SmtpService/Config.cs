@@ -18,6 +18,18 @@ public class Config
     public string SmtpTlsEnabled { get; set; } = "false";
 
     /// <summary>
+    /// Gets or sets the path to the directory containing SMTP TLS certificates.
+    /// Defaults to /certificates/smtp in Docker environments.
+    /// </summary>
+    public string SmtpCertificatesPath { get; set; } = "/certificates/smtp";
+
+    /// <summary>
+    /// Gets or sets an error message if TLS certificate loading failed.
+    /// This is used to log a warning when falling back to non-TLS mode.
+    /// </summary>
+    public string? TlsCertificateError { get; set; }
+
+    /// <summary>
     /// Gets or sets the domains that the SMTP service is listening for.
     /// Domains not in this list will be rejected.
     /// </summary>
