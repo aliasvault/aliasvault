@@ -515,5 +515,9 @@
     "unsyncedChangesTitle": "Synkronoimattomat muutokset",
     "unsyncedChangesWarning": "Sinulla on synkronoimattomia muutoksia, jotka menetetään, jos kirjaudut ulos nyt. Oletko varma, että haluat jatkaa?",
     "logoutAnyway": "Kirjaudu ulos joka tapauksessa"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }
