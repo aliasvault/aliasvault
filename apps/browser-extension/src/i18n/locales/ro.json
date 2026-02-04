@@ -28,14 +28,7 @@
     "switchAccounts": "Treci la alt cont?",
     "loginWithMobile": "Autentificare prin aplicația mobilă",
     "unlockWithMobile": "Deblochează prin aplicația mobilă",
-    "scanQrCode": "Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful.",
-    "errors": {
-      "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
-      "serverError": "Conexiunea la serverul AliasVault a eșuat. Încearcă mai târziu sau contactează asistența dacă problema persistă.",
-      "wrongPassword": "Parolă incorectă. Încearcă din nou.",
-      "sessionExpired": "Sesiunea a expirat. Autentifică-te din nou.",
-      "mobileLoginRequestExpired": "Cererea de autentificare mobilă a expirat. Reîncarcă pagina și încearcă din nou."
-    }
+    "scanQrCode": "Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful."
   },
   "menu": {
     "vault": "Seif",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "Seiful este blocat",
       "passwordChanged": "Parola ta a fost schimbată de la ultima autentificare. Autentifică-te din nou din motive de securitate.",
       "syncConflictMaxRetries": "Sincronizarea seifului a eșuat după mai multe încercări. Reîncearcă mai târziu.",
-      "mergeFailed": "Îmbinarea modificărilor seifului a eșuat. Încearcă din nou."
+      "mergeFailed": "Îmbinarea modificărilor seifului a eșuat. Încearcă din nou.",
+      "invalidCode": "Please enter a valid 6-digit authentication code.",
+      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
+      "wrongPassword": "Incorrect password. Please try again.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "A apărut o eroare necunoscută. Încearcă din nou.",
