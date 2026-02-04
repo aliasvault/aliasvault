@@ -148,9 +148,9 @@
     {
         IsPopupVisible = true;
 
-        // Clear the input fields and default to Alias type
+        // Clear the input fields and default to Login type
         Model = new();
-        Model.ItemType = ItemType.Alias;
+        Model.ItemType = ItemType.Login;
         Model.ServiceUrl = ItemService.DefaultServiceUrl;
 
         await UpdatePopupStyle();
@@ -403,7 +403,7 @@
         /// <summary>
         /// The item type to create.
         /// </summary>
-        public string ItemType { get; set; } = ItemTypeClass.Alias;
+        public string ItemType { get; set; } = ItemTypeClass.Login;
 
         /// <summary>
         /// The service name.
