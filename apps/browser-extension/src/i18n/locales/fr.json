@@ -518,6 +518,6 @@
   },
   "sync": {
     "offline": "Hors ligne",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Appuyez pour réessayer"
   }
 }
