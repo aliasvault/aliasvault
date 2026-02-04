@@ -55,6 +55,10 @@ pub struct CredentialMatcherInput {
     /// Matching mode
     #[serde(default)]
     pub matching_mode: AutofillMatchingMode,
+    /// When true, skip port matching entirely (useful for Android where port info is unavailable).
+    /// All domain matches will be treated equally regardless of port.
+    #[serde(default)]
+    pub ignore_port: bool,
 }
 
 /// Output from credential filtering.
@@ -86,6 +90,7 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
         current_url,
         page_title,
         matching_mode,
+        ignore_port,
     } = input;
 
     // Early return for empty URL
@@ -167,7 +172,9 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
 
                     // Check for exact domain+port match (priority 1 - highest)
                     // Both must have same domain AND same port (or both no port)
-                    if enable_exact_match
+                    // Skip this check if ignore_port is true (e.g., Android doesn't provide port info)
+                    if !ignore_port
+                        && enable_exact_match
                         && current_domain_info.domain == cred_domain_info.domain
                         && current_domain_info.port == cred_domain_info.port
                     {
@@ -176,12 +183,16 @@ pub fn filter_credentials(input: CredentialMatcherInput) -> CredentialMatcherOut
                     }
 
                     // Check for exact domain match, ignoring port (priority 2)
+                    // When ignore_port is true, this becomes the highest priority for exact domain matches
                     if enable_exact_match
                         && current_domain_info.domain == cred_domain_info.domain
                         && best_priority.map_or(true, |p| p > 2)
                     {
                         best_priority = Some(2);
-                        // Don't break - might find exact domain+port match in another URL
+                        // Don't break - might find exact domain+port match in another URL (unless ignore_port)
+                        if ignore_port {
+                            break; // When ignoring port, domain match is the best we can do
+                        }
                     }
 
                     // Check for subdomain/root domain match (priority 3)

@@ -68,6 +68,7 @@ fn filter(credentials: Vec<Credential>, current_url: &str, page_title: &str) -> 
         current_url: current_url.to_string(),
         page_title: page_title.to_string(),
         matching_mode: AutofillMatchingMode::Default,
+        ignore_port: false,
     };
     let output = filter_credentials(input);
 
@@ -372,6 +373,7 @@ fn test_json_roundtrip() {
         current_url: "https://github.com".to_string(),
         page_title: String::new(),
         matching_mode: AutofillMatchingMode::Default,
+        ignore_port: false,
     };
 
     let json = serde_json::to_string(&input).unwrap();
@@ -501,6 +503,7 @@ fn test_multi_url_exact_match_priority() {
         current_url: "https://example.org".to_string(),
         page_title: String::new(),
         matching_mode: AutofillMatchingMode::Default,
+        ignore_port: false,
     };
     let output = filter_credentials(input);
 
@@ -756,4 +759,120 @@ fn test_url_word_matching_skips_credentials_with_urls() {
 
     assert_eq!(matches.len(), 1, "Should only match the credential without URLs");
     assert_eq!(matches[0].item_name.as_deref(), Some("Dumpert Account"));
+}
+
+/// Helper to filter with ignore_port flag (for Android-style matching)
+fn filter_ignore_port(credentials: Vec<Credential>, current_url: &str, page_title: &str) -> Vec<Credential> {
+    let input = CredentialMatcherInput {
+        credentials: credentials.clone(),
+        current_url: current_url.to_string(),
+        page_title: page_title.to_string(),
+        matching_mode: AutofillMatchingMode::Default,
+        ignore_port: true,
+    };
+    let output = filter_credentials(input);
+
+    output.matched_ids
+        .iter()
+        .filter_map(|id| credentials.iter().find(|c| c.id == *id).cloned())
+        .collect()
+}
+
+/// [#37] - ignore_port flag: Android scenario where port info is unavailable
+/// When Android sends URL without port, it should still match credentials with ports
+#[test]
+fn test_ignore_port_android_scenario() {
+    let credentials = vec![
+        create_test_credential("Service A (Port 8080)", "https://myserver.local:8080", "admin@a"),
+        create_test_credential("Service B (Port 9000)", "https://myserver.local:9000", "admin@b"),
+        create_test_credential("Service C (No Port)", "https://myserver.local", "admin@c"),
+    ];
+
+    // Without ignore_port: visiting myserver.local (no port) only matches the no-port credential
+    let normal_matches = filter(credentials.clone(), "https://myserver.local/home", "");
+    assert_eq!(normal_matches.len(), 1, "Normal matching should only return no-port credential");
+    assert_eq!(normal_matches[0].item_name.as_deref(), Some("Service C (No Port)"));
+
+    // With ignore_port: visiting myserver.local (no port) matches ALL credentials with same domain
+    // This simulates Android's autofill where port info is stripped by the OS
+    let android_matches = filter_ignore_port(credentials.clone(), "https://myserver.local/home", "");
+    assert_eq!(android_matches.len(), 3, "ignore_port should match all domain credentials regardless of port");
+}
+
+/// [#38] - ignore_port flag: IP address with port scenario
+/// Common for self-hosted services accessed via IP:port
+#[test]
+fn test_ignore_port_ip_address_scenario() {
+    let credentials = vec![
+        create_test_credential("Home Assistant", "https://192.168.1.100:8123", "admin@ha"),
+        create_test_credential("Portainer", "https://192.168.1.100:9443", "admin@portainer"),
+        create_test_credential("Router Admin", "https://192.168.1.1", "admin@router"),
+    ];
+
+    // Android sends just the IP without port
+    let matches = filter_ignore_port(credentials.clone(), "https://192.168.1.100", "");
+
+    // Should match both services on 192.168.1.100, regardless of their stored ports
+    assert_eq!(matches.len(), 2, "Should match all credentials for the IP address");
+
+    // Verify it doesn't match the different IP
+    let router_matches = filter_ignore_port(credentials.clone(), "https://192.168.1.1", "");
+    assert_eq!(router_matches.len(), 1);
+    assert_eq!(router_matches[0].item_name.as_deref(), Some("Router Admin"));
+}
+
+/// [#39] - ignore_port should not affect subdomain matching
+#[test]
+fn test_ignore_port_with_subdomain_matching() {
+    let credentials = vec![
+        create_test_credential("App Portal", "https://app.example.com:8080", "user@app"),
+        create_test_credential("Main Site", "https://example.com", "user@main"),
+    ];
+
+    // With ignore_port, subdomain matching should still work
+    let matches = filter_ignore_port(credentials.clone(), "https://api.example.com", "");
+
+    // Should match both via subdomain/root domain matching
+    assert_eq!(matches.len(), 2, "Subdomain matching should still work with ignore_port");
+}
+
+/// [#40] - ignore_port flag: IP address with multiple ports and one without port
+/// Tests the exact scenario: 4 credentials on same IP (3 with ports, 1 without)
+/// Without flag: visiting IP without port should only match the no-port credential
+/// With flag: visiting IP without port should match all 4 credentials
+#[test]
+fn test_ignore_port_ip_with_multiple_ports_and_no_port() {
+    let credentials = vec![
+        create_test_credential("Service on 5000", "https://192.168.1.10:5000", "admin@5000"),
+        create_test_credential("Service on 6000", "https://192.168.1.10:6000", "admin@6000"),
+        create_test_credential("Service on 7000", "https://192.168.1.10:7000", "admin@7000"),
+        create_test_credential("Service no port", "https://192.168.1.10", "admin@noport"),
+    ];
+
+    // WITHOUT ignore_port flag (normal browser behavior):
+    // Visiting 192.168.1.10 (no port) should ONLY match the credential without port
+    // because we have an exact domain+port match (both have no port)
+    let normal_matches = filter(credentials.clone(), "https://192.168.1.10", "");
+    assert_eq!(normal_matches.len(), 1, "Without ignore_port, should only match the no-port credential");
+    assert_eq!(normal_matches[0].item_name.as_deref(), Some("Service no port"));
+
+    // WITH ignore_port flag (Android behavior where port is stripped):
+    // Visiting 192.168.1.10 (no port) should match ALL 4 credentials
+    // because we ignore port differences entirely
+    let android_matches = filter_ignore_port(credentials.clone(), "https://192.168.1.10", "");
+    assert_eq!(android_matches.len(), 3, "With ignore_port, should match all 4 credentials (max 3 returned)");
+
+    // Note: max 3 results are returned, but all 4 would match if limit was higher
+    // Let's verify with a smaller set that all match
+    let small_credentials = vec![
+        create_test_credential("Service on 5000", "https://192.168.1.10:5000", "admin@5000"),
+        create_test_credential("Service no port", "https://192.168.1.10", "admin@noport"),
+    ];
+
+    let small_normal = filter(small_credentials.clone(), "https://192.168.1.10", "");
+    assert_eq!(small_normal.len(), 1, "Without ignore_port, only no-port matches");
+    assert_eq!(small_normal[0].item_name.as_deref(), Some("Service no port"));
+
+    let small_android = filter_ignore_port(small_credentials.clone(), "https://192.168.1.10", "");
+    assert_eq!(small_android.len(), 2, "With ignore_port, both credentials match");
 }

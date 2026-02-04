@@ -75,6 +75,8 @@ object RustItemMatcher {
                 put("current_url", searchText)
                 put("page_title", "")
                 put("matching_mode", "default")
+                // Note: ignore_port=true because Android's Autofill API does not provide port numbers
+                put("ignore_port", true)
             }
 
             // Call Rust via UniFFI
