@@ -8,6 +8,7 @@ import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
+import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import { NetworkError } from '@/utils/types/errors/NetworkError';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
@@ -124,7 +125,8 @@ export async function handleStoreVaultMetadata(
     return { success: true };
   } catch (error) {
     console.error('Failed to store vault metadata:', error);
-    return { success: false, error: await t('common.errors.unknownError') };
+    // E-602: Storage write failed during metadata store
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_WRITE_FAILED) };
   }
 }
 
@@ -139,7 +141,8 @@ export async function handleStoreEncryptionKey(
     return { success: true };
   } catch (error) {
     console.error('Failed to store encryption key:', error);
-    return { success: false, error: await t('common.errors.unknownErrorTryAgain') };
+    // E-602: Storage write failed during encryption key store
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownErrorTryAgain'), AppErrorCode.STORAGE_WRITE_FAILED) };
   }
 }
 
@@ -155,7 +158,8 @@ export async function handleStoreEncryptionKeyDerivationParams(
     return { success: true };
   } catch (error) {
     console.error('Failed to store encryption key derivation params:', error);
-    return { success: false, error: await t('common.errors.unknownErrorTryAgain') };
+    // E-602: Storage write failed during derivation params store
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownErrorTryAgain'), AppErrorCode.STORAGE_WRITE_FAILED) };
   }
 }
 
@@ -212,12 +216,14 @@ export async function handleGetVault(
 
     if (!encryptedVault) {
       console.error('Vault not available');
-      return { success: false, error: await t('common.errors.vaultNotAvailable') };
+      // E-201: No encrypted vault in storage
+      return { success: false, error: formatErrorWithCode(await t('common.errors.vaultNotAvailable'), AppErrorCode.VAULT_NOT_FOUND) };
     }
 
     if (!encryptionKey) {
       console.error('Encryption key not available');
-      return { success: false, error: await t('common.errors.vaultIsLocked') };
+      // E-202: No encryption key available (vault is locked)
+      return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
     }
 
     const decryptedVault = await EncryptionUtility.symmetricDecrypt(
@@ -235,7 +241,8 @@ export async function handleGetVault(
     };
   } catch (error) {
     console.error('Failed to get vault:', error);
-    return { success: false, error: await t('common.errors.unknownError') };
+    // E-203: Vault decryption failed during get
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.VAULT_DECRYPT_FAILED) };
   }
 }
 
@@ -309,7 +316,8 @@ export async function handleCreateItem(
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
-    return { success: false, error: await t('common.errors.vaultIsLocked') };
+    // E-202: Vault is locked
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
   }
 
   try {
@@ -324,7 +332,8 @@ export async function handleCreateItem(
     return { success: true };
   } catch (error) {
     console.error('Failed to create item:', error);
-    return { success: false, error: await t('common.errors.unknownError') };
+    // E-301: Item create failed
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_CREATE_FAILED) };
   }
 }
 
@@ -340,7 +349,8 @@ export async function handleGetFilteredItems(
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
-    return { success: false, error: await t('common.errors.vaultIsLocked') };
+    // E-202: Vault is locked
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
   }
 
   try {
@@ -366,7 +376,8 @@ export async function handleGetFilteredItems(
     return { success: true, items: filteredItems };
   } catch (error) {
     console.error('Error getting filtered items:', error);
-    return { success: false, error: await t('common.errors.unknownError') };
+    // E-304: Item read failed
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
 }
 
@@ -382,7 +393,8 @@ export async function handleGetSearchItems(
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
-    return { success: false, error: await t('common.errors.vaultIsLocked') };
+    // E-202: Vault is locked
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
   }
 
   try {
@@ -428,7 +440,8 @@ export async function handleGetSearchItems(
     return { success: true, items: searchResults };
   } catch (error) {
     console.error('Error searching items:', error);
-    return { success: false, error: await t('common.errors.unknownError') };
+    // E-304: Item read failed during search
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
 }
 
@@ -469,7 +482,8 @@ export function handleGetDefaultEmailDomain(): Promise<stringResponse> {
       return { success: true, value: domain || undefined };
     } catch (error) {
       console.error('Error getting default email domain:', error);
-      return { success: false, error: await t('common.errors.unknownError') };
+      // E-601: Storage read failed
+      return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
     }
   })();
 }
@@ -494,7 +508,8 @@ export async function handleGetDefaultIdentitySettings(
     };
   } catch (error) {
     console.error('Error getting default identity settings:', error);
-    return { success: false, error: await t('common.errors.unknownError') };
+    // E-601: Storage read failed
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
   }
 }
 
@@ -510,7 +525,8 @@ export async function handleGetPasswordSettings(
     return { success: true, settings: passwordSettings };
   } catch (error) {
     console.error('Error getting password settings:', error);
-    return { success: false, error: await t('common.errors.unknownError') };
+    // E-601: Storage read failed
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
   }
 }
 
@@ -565,7 +581,8 @@ export async function handleUploadVault(
     };
   } catch (error) {
     console.error('Failed to upload vault:', error);
-    return { success: false, error: await t('common.errors.unknownError') };
+    // E-801: Upload failed
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED) };
   }
 }
 
@@ -576,7 +593,8 @@ export async function handleUploadVault(
 export async function handlePersistFormValues(data: any): Promise<void> {
   const encryptionKey = await handleGetEncryptionKey();
   if (!encryptionKey) {
-    throw new Error(await t('common.errors.unknownError'));
+    // E-504: Encryption key not found
+    throw new Error(formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ENCRYPTION_KEY_NOT_FOUND));
   }
 
   // Always stringify the data properly
@@ -628,7 +646,8 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
   const encryptionKey = await handleGetEncryptionKey();
 
   if (!encryptionKey) {
-    throw new Error(await t('common.errors.vaultIsLocked'));
+    // E-202: Vault is locked
+    throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
   }
 
   /**
@@ -690,9 +709,12 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
   if (response.status === 0) {
     // Upload succeeded - update server revision
     await storage.setItem('local:serverRevision', response.newRevisionNumber);
+  } else if (response.status === 2) {
+    // Outdated - server has newer version
+    throw new Error(formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_OUTDATED));
   } else {
     // Upload failed
-    throw new Error(await t('common.errors.unknownError'));
+    throw new Error(formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED));
   }
 
   return response;
@@ -706,8 +728,13 @@ async function createVaultSqliteClient() : Promise<SqliteClient> {
   // Read from local: storage for persistent vault access
   const encryptedVault = await storage.getItem('local:encryptedVault') as string;
   const encryptionKey = await handleGetEncryptionKey();
-  if (!encryptedVault || !encryptionKey) {
-    throw new Error(await t('common.errors.unknownError'));
+  if (!encryptedVault) {
+    // E-201: Vault not found in storage
+    throw new Error(formatErrorWithCode(await t('common.errors.vaultNotAvailable'), AppErrorCode.VAULT_NOT_FOUND));
+  }
+  if (!encryptionKey) {
+    // E-202: Vault is locked
+    throw new Error(formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED));
   }
 
   // Check if we have a valid cached client
@@ -925,7 +952,8 @@ export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
     }
 
     if (authStatus.isVaultLocked) {
-      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: await t('common.errors.vaultIsLocked') };
+      // E-202: Vault is locked
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
     }
 
     // Check app status and vault revision
@@ -1080,7 +1108,11 @@ export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
         if (error instanceof VaultVersionIncompatibleError) {
           return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, error: error.message };
         }
-        throw new Error('Vault could not be decrypted, if the problem persists please logout and login again.');
+        // E-501: Vault decryption failed
+        throw new Error(formatErrorWithCode(
+          'Vault could not be decrypted, if the problem persists please logout and login again.',
+          AppErrorCode.VAULT_DECRYPT_FAILED
+        ));
       }
     } else if (statusResponse.vaultRevision === syncState.serverRevision) {
       /**
@@ -1136,7 +1168,8 @@ export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
         return handleFullVaultSync();
       } else {
         console.error('Server recovery failed:', uploadResponse.error);
-        return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: await t('common.errors.unknownError') };
+        // E-801: Upload failed during server recovery
+        return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.UPLOAD_FAILED) };
       }
     }
 
@@ -1153,12 +1186,11 @@ export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
 
     return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
     console.error('Vault sync error:', err);
 
     // Version incompatibility requires logout
     if (err instanceof VaultVersionIncompatibleError) {
-      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, error: errorMessage };
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, error: err.message };
     }
 
     // Auth error (session expired) - signal popup to trigger logout
@@ -1175,6 +1207,13 @@ export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
       }
     }
 
+    // For all other errors, include an error code so users can report it
+    const baseMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
+    // Check if message already has an error code (E-XXX format)
+    const hasErrorCode = /E-\d{3}/.test(baseMessage);
+    const errorMessage = hasErrorCode
+      ? baseMessage
+      : formatErrorWithCode(baseMessage, AppErrorCode.UNKNOWN_ERROR);
     return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: errorMessage };
   }
 }

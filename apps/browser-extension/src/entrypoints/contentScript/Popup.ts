@@ -356,9 +356,14 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
       }
 
       // Create item in background.
-      await sendMessage('CREATE_ITEM', {
+      const createResponse = await sendMessage('CREATE_ITEM', {
         item: JSON.parse(JSON.stringify(newItem))
-      }, 'background');
+      }, 'background') as { success: boolean; error?: string };
+
+      // Check if item creation succeeded
+      if (!createResponse.success) {
+        throw new Error(createResponse.error || 'Failed to create item');
+      }
 
       // Close popup.
       removeExistingPopup(rootContainer);

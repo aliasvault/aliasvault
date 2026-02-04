@@ -168,7 +168,7 @@ const Reinitialize: React.FC = () => {
     };
 
     handleInitialization();
-  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, navigate, setIsInitialLoading, syncVault, restoreLastPage, refreshSyncState]);
+  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, navigate, setIsInitialLoading, syncVault, restoreLastPage, refreshSyncState, hasPendingMigrations]);
 
   // This component doesn't render anything visible - it just handles initialization
   return null;

@@ -31,6 +31,7 @@ import {
   resetFailedAttempts,
   unlockWithPin
 } from '@/utils/PinUnlockService';
+import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
@@ -273,13 +274,14 @@ const Unlock: React.FC = () => {
       // Store the encryption key in session storage.
       await dbContext.storeEncryptionKey(passwordHashBase64);
 
-      // Load the stored vault from background (decrypts using stored encryption key)
+      /*
+       * Load the stored vault from background (decrypts using stored encryption key).
+       * Throws an error with E-XXX code if decryption fails.
+       */
       const sqliteClient = await dbContext.loadStoredDatabase();
       if (!sqliteClient) {
-        // Decryption failed - likely wrong password
-        setError(t('auth.errors.wrongPassword'));
-        hideLoading();
-        return;
+        // Edge case: no vault loaded but no error thrown (shouldn't happen)
+        throw new Error(t('auth.errors.wrongPassword'));
       }
 
       // Check if there are pending migrations
@@ -301,6 +303,9 @@ const Unlock: React.FC = () => {
       // Check if it's a version incompatibility error
       if (err instanceof VaultVersionIncompatibleError) {
         await app.logout(err.message);
+      } else if (hasErrorCode(err)) {
+        // Error contains an error code (E-XXX), show the formatted message as-is
+        setError(getErrorMessage(err, t('auth.errors.wrongPassword')));
       } else {
         setError(t('auth.errors.wrongPassword'));
       }
@@ -373,10 +378,12 @@ const Unlock: React.FC = () => {
        * - Checking if server has newer version
        * - Merging local changes with server if isDirty is true
        * - Overwriting local with server if no local changes
+       *
+       * Throws an error with E-XXX code if decryption fails.
        */
       const sqliteClient = await dbContext.loadStoredDatabase();
       if (!sqliteClient) {
-        // Decryption failed - likely wrong PIN
+        // Edge case: no vault loaded but no error thrown (shouldn't happen)
         throw new IncorrectPinError(3);
       }
 
@@ -409,6 +416,11 @@ const Unlock: React.FC = () => {
         setPin('');
       } else if (err instanceof InvalidPinFormatError) {
         setError(t('settings.unlockMethod.invalidPinFormat'));
+        setPin('');
+      } else if (hasErrorCode(err)) {
+        // Error contains an error code (E-XXX), show the formatted message as-is
+        console.error('PIN unlock failed:', err);
+        setError(getErrorMessage(err, t('common.errors.unknownErrorTryAgain')));
         setPin('');
       } else {
         console.error('PIN unlock failed:', err);
@@ -466,13 +478,13 @@ const Unlock: React.FC = () => {
        * - Checking if server has newer version
        * - Merging local changes with server if isDirty is true
        * - Overwriting local with server if no local changes
+       *
+       * Throws an error with E-XXX code if decryption fails.
        */
       const sqliteClient = await dbContext.loadStoredDatabase();
       if (!sqliteClient) {
-        // Decryption failed
-        setError(t('common.errors.unknownErrorTryAgain'));
-        hideLoading();
-        return;
+        // Edge case: no vault loaded but no error thrown (shouldn't happen)
+        throw new Error(t('common.errors.unknownErrorTryAgain'));
       }
 
       // Check if there are pending migrations
@@ -494,6 +506,9 @@ const Unlock: React.FC = () => {
       // Check if it's a version incompatibility error
       if (err instanceof VaultVersionIncompatibleError) {
         await app.logout(err.message);
+      } else if (hasErrorCode(err)) {
+        // Error contains an error code (E-XXX), show the formatted message as-is
+        setError(getErrorMessage(err, t('common.errors.unknownErrorTryAgain')));
       } else {
         setError(t('common.errors.unknownErrorTryAgain'));
       }

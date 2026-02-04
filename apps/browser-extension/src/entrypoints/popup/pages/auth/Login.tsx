@@ -21,6 +21,7 @@ import { SrpAuthService } from '@/utils/auth/SrpAuthService';
 import type { VaultResponse, LoginResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
+import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { storage } from '#imports';
@@ -284,6 +285,9 @@ const Login: React.FC = () => {
       // Show API authentication errors as-is.
       if (err instanceof ApiAuthError) {
         setError(t('common.apiErrors.' + err.message));
+      } else if (hasErrorCode(err)) {
+        // Error contains an error code (E-XXX), show the formatted message as-is
+        setError(getErrorMessage(err, t('auth.errors.serverError')));
       } else {
         setError(t('auth.errors.serverError'));
       }
@@ -345,6 +349,9 @@ const Login: React.FC = () => {
       console.error('2FA error:', err);
       if (err instanceof ApiAuthError) {
         setError(t('common.apiErrors.' + err.message));
+      } else if (hasErrorCode(err)) {
+        // Error contains an error code (E-XXX), show the formatted message as-is
+        setError(getErrorMessage(err, t('auth.errors.serverError')));
       } else {
         setError(t('auth.errors.serverError'));
       }
