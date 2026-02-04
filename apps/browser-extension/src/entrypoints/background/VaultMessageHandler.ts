@@ -7,6 +7,7 @@ import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
+import { NetworkError } from '@/utils/types/errors/NetworkError';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 import { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
@@ -15,6 +16,7 @@ import { PasswordSettingsResponse as messagePasswordSettingsResponse } from '@/u
 import { StringResponse as stringResponse } from '@/utils/types/messaging/StringResponse';
 import { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
+import { vaultMergeService } from '@/utils/VaultMergeService';
 import { WebApiService } from '@/utils/WebApiService';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -875,4 +877,298 @@ export async function handleGetServerRevision(): Promise<number> {
   }
 
   return revision ?? 0;
+}
+
+/**
+ * Result of a full vault sync operation.
+ */
+export type FullVaultSyncResult = {
+  success: boolean;
+  /** True if a new vault was downloaded from server */
+  hasNewVault: boolean;
+  /** True if entered offline mode */
+  wasOffline: boolean;
+  /** True if vault upgrade is required */
+  upgradeRequired: boolean;
+  /** Error message if sync failed */
+  error?: string;
+  /** Error key for translation (e.g. 'clientVersionNotSupported') */
+  errorKey?: string;
+  /** True if user needs to be logged out */
+  requiresLogout: boolean;
+};
+
+/**
+ * Full vault sync orchestration that runs entirely in background context.
+ * This ensures sync completes even if popup closes mid-operation.
+ *
+ * Sync logic:
+ * - If server has newer vault AND we have local changes (isDirty) → merge then upload
+ * - If server has newer vault AND no local changes → just download
+ * - If server has same revision AND we have local changes → upload
+ * - If offline → keep local changes, sync later
+ *
+ * Race detection:
+ * - Upload captures mutationSequence at start
+ * - After upload, only clears isDirty if sequence unchanged
+ * - If sequence changed during upload, stays dirty for next sync
+ */
+export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
+  const webApi = new WebApiService();
+
+  try {
+    // Check if user is logged in
+    const authStatus = await handleCheckAuthStatus();
+    if (!authStatus.isLoggedIn) {
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+    }
+
+    if (authStatus.isVaultLocked) {
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: await t('common.errors.vaultIsLocked') };
+    }
+
+    // Check app status and vault revision
+    const statusResponse = await webApi.getStatus();
+
+    // Get current sync state
+    const syncState = await handleGetSyncState();
+
+    // Check if server is actually available (0.0.0 indicates connection error)
+    if (statusResponse.serverVersion === '0.0.0') {
+      // Server is unavailable - enter offline mode if we have a local vault
+      const encryptedVault = await storage.getItem('local:encryptedVault');
+      if (encryptedVault) {
+        await storage.setItem('local:isOfflineMode', true);
+        return { success: true, hasNewVault: false, wasOffline: true, upgradeRequired: false, requiresLogout: false };
+      } else {
+        return { success: false, hasNewVault: false, wasOffline: true, upgradeRequired: false, requiresLogout: false, error: await t('common.errors.serverNotAvailable') };
+      }
+    }
+
+    // Validate status response
+    const statusError = webApi.validateStatusResponse(statusResponse);
+    if (statusError) {
+      if (statusError === 'clientVersionNotSupported' || statusError === 'serverVersionNotSupported') {
+        return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: statusError };
+      }
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, errorKey: statusError };
+    }
+
+    // Check if the SRP salt has changed (password change detection)
+    const storedEncryptionParams = await handleGetEncryptionKeyDerivationParams();
+    if (storedEncryptionParams && statusResponse.srpSalt && statusResponse.srpSalt !== storedEncryptionParams.salt) {
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'passwordChanged' };
+    }
+
+    // Valid connection - exit offline mode if we were in it
+    const isOffline = await storage.getItem('local:isOfflineMode') as boolean | null;
+    if (isOffline) {
+      await storage.setItem('local:isOfflineMode', false);
+    }
+
+    const encryptionKey = await handleGetEncryptionKey();
+    if (!encryptionKey) {
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: await t('common.errors.vaultIsLocked') };
+    }
+
+    if (statusResponse.vaultRevision > syncState.serverRevision) {
+      /*
+       * Server has a newer vault.
+       */
+      const vaultResponseJson = await webApi.get<VaultResponse>('Vault');
+
+      try {
+        if (syncState.isDirty) {
+          /*
+           * We have local changes AND server has newer vault.
+           * Merge local vault with server vault, then upload the merged result.
+           */
+          const localEncryptedVault = await storage.getItem('local:encryptedVault') as string | null;
+
+          if (localEncryptedVault) {
+            const localDecrypted = await EncryptionUtility.symmetricDecrypt(localEncryptedVault, encryptionKey);
+            const serverDecrypted = await EncryptionUtility.symmetricDecrypt(vaultResponseJson.vault.blob, encryptionKey);
+
+            const mergeResult = await vaultMergeService.merge(localDecrypted, serverDecrypted);
+
+            if (mergeResult.success) {
+              console.info('Vault merge during sync completed:', mergeResult.stats);
+
+              const mergedEncryptedVault = await EncryptionUtility.symmetricEncrypt(
+                mergeResult.mergedVaultBase64,
+                encryptionKey
+              );
+
+              /*
+               * Store merged vault. Use expectedMutationSeq to detect if a local mutation
+               * happened during merge - if so, reject and re-sync.
+               */
+              const storeResult = await handleStoreEncryptedVault({
+                vaultBlob: mergedEncryptedVault,
+                serverRevision: vaultResponseJson.vault.currentRevisionNumber,
+                expectedMutationSeq: syncState.mutationSequence
+              });
+
+              if (!storeResult.success) {
+                console.info('Mutation detected during merge, re-syncing...');
+                return handleFullVaultSync();
+              }
+
+              // Upload merged vault to server
+              const uploadResponse = await handleUploadVault();
+
+              if (uploadResponse.success && uploadResponse.status === 0) {
+                await handleMarkVaultClean({
+                  mutationSeqAtStart: uploadResponse.mutationSeqAtStart!,
+                  newServerRevision: uploadResponse.newRevisionNumber!
+                });
+              } else if (uploadResponse.status === 2) {
+                // Server returned Outdated - another device uploaded. Re-sync.
+                return handleFullVaultSync();
+              } else {
+                console.error('Failed to upload merged vault:', uploadResponse.error);
+                return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
+              }
+
+              // Store metadata
+              await handleStoreVaultMetadata({
+                publicEmailDomainList: vaultResponseJson.vault.publicEmailDomainList,
+                privateEmailDomainList: vaultResponseJson.vault.privateEmailDomainList,
+                hiddenPrivateEmailDomainList: vaultResponseJson.vault.hiddenPrivateEmailDomainList,
+              });
+
+              // Check for pending migrations
+              const sqliteClient = await createVaultSqliteClient();
+              const hasPendingMigrations = await sqliteClient.hasPendingMigrations();
+
+              return { success: true, hasNewVault: true, wasOffline: false, upgradeRequired: hasPendingMigrations, requiresLogout: false };
+            } else {
+              console.error('Vault merge failed during sync, using server vault');
+              // Fall through to use server vault
+            }
+          }
+        }
+
+        /*
+         * No local changes (or merge failed) - just use server vault.
+         * Use expectedMutationSeq to detect concurrent mutations.
+         */
+        const storeResult = await handleStoreEncryptedVault({
+          vaultBlob: vaultResponseJson.vault.blob,
+          serverRevision: vaultResponseJson.vault.currentRevisionNumber,
+          expectedMutationSeq: syncState.mutationSequence
+        });
+
+        if (!storeResult.success) {
+          console.info('Mutation detected during sync, re-syncing...');
+          return handleFullVaultSync();
+        }
+
+        await handleStoreVaultMetadata({
+          publicEmailDomainList: vaultResponseJson.vault.publicEmailDomainList,
+          privateEmailDomainList: vaultResponseJson.vault.privateEmailDomainList,
+          hiddenPrivateEmailDomainList: vaultResponseJson.vault.hiddenPrivateEmailDomainList,
+        });
+
+        // Check for pending migrations
+        const sqliteClient = await createVaultSqliteClient();
+        const hasPendingMigrations = await sqliteClient.hasPendingMigrations();
+
+        return { success: true, hasNewVault: true, wasOffline: false, upgradeRequired: hasPendingMigrations, requiresLogout: false };
+      } catch (error) {
+        if (error instanceof VaultVersionIncompatibleError) {
+          return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, error: error.message };
+        }
+        throw new Error('Vault could not be decrypted, if the problem persists please logout and login again.');
+      }
+    } else if (statusResponse.vaultRevision === syncState.serverRevision) {
+      /**
+       * Server and local vault are at the same revision.
+       * If we have pending local changes, upload them now.
+       */
+      if (syncState.isDirty) {
+        const uploadResponse = await handleUploadVault();
+        if (uploadResponse.success && uploadResponse.status === 0) {
+          await handleMarkVaultClean({
+            mutationSeqAtStart: uploadResponse.mutationSeqAtStart!,
+            newServerRevision: uploadResponse.newRevisionNumber!
+          });
+        } else if (uploadResponse.status === 2) {
+          /**
+           * Server returned Outdated - another device uploaded first.
+           * Recursively call sync to fetch, merge, and retry.
+           */
+          return handleFullVaultSync();
+        } else {
+          console.error('Failed to upload pending vault:', uploadResponse.error);
+          return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: uploadResponse.error };
+        }
+      }
+
+      return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+    } else if (statusResponse.vaultRevision < syncState.serverRevision) {
+      /**
+       * Server revision DECREASED - server data loss/rollback detected.
+       * Client has more advanced revision - upload to recover server state.
+       */
+      console.warn(
+        `Server data loss detected! Server at rev ${statusResponse.vaultRevision}, ` +
+        `client at rev ${syncState.serverRevision}. Uploading to recover server state.`
+      );
+
+      const uploadResponse = await handleUploadVault();
+
+      if (uploadResponse.success && uploadResponse.status === 0) {
+        await handleMarkVaultClean({
+          mutationSeqAtStart: uploadResponse.mutationSeqAtStart!,
+          newServerRevision: uploadResponse.newRevisionNumber!
+        });
+
+        console.info(
+          `Server recovery complete: rev ${statusResponse.vaultRevision} → ${uploadResponse.newRevisionNumber}`
+        );
+
+        return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+      } else if (uploadResponse.status === 2) {
+        // Another client recovered first
+        console.info('Another client recovered server first, re-syncing...');
+        return handleFullVaultSync();
+      } else {
+        console.error('Server recovery failed:', uploadResponse.error);
+        return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: await t('common.errors.unknownError') };
+      }
+    }
+
+    // Check for pending migrations (for paths that didn't initialize a new database)
+    try {
+      const sqliteClient = await createVaultSqliteClient();
+      const hasPendingMigrations = await sqliteClient.hasPendingMigrations();
+      if (hasPendingMigrations) {
+        return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: true, requiresLogout: false };
+      }
+    } catch {
+      // Ignore errors checking migrations
+    }
+
+    return { success: true, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false };
+  } catch (err) {
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
+    console.error('Vault sync error:', err);
+
+    // Check if it's a version-related error
+    if (err instanceof VaultVersionIncompatibleError) {
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, error: errorMessage };
+    }
+
+    // Check if it's a network error - enter offline mode
+    if (err instanceof NetworkError) {
+      const encryptedVault = await storage.getItem('local:encryptedVault');
+      if (encryptedVault) {
+        await storage.setItem('local:isOfflineMode', true);
+        return { success: true, hasNewVault: false, wasOffline: true, upgradeRequired: false, requiresLogout: false };
+      }
+    }
+
+    return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: errorMessage };
+  }
 }

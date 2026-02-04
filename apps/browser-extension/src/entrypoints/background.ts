@@ -9,7 +9,7 @@ import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardCl
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision, handleFullVaultSync } from '@/entrypoints/background/VaultMessageHandler';
 
 import { EncryptionKeyDerivationParams } from "@/utils/dist/core/models/metadata";
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -47,6 +47,7 @@ export default defineBackground({
     onMessage('CREATE_ITEM', ({ data }) => handleCreateItem(data));
     onMessage('UPLOAD_VAULT', () => handleUploadVault());
     onMessage('SYNC_VAULT', () => handleSyncVault());
+    onMessage('FULL_VAULT_SYNC', () => handleFullVaultSync());
     onMessage('LOCK_VAULT', () => handleLockVault());
     onMessage('CLEAR_SESSION', () => handleClearSession());
     onMessage('CLEAR_VAULT_DATA', () => handleClearVaultData());
