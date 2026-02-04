@@ -356,7 +356,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
 
                     // Show appropriate error dialog based on error type
                     await MainActor.run {
-                        self.showSyncErrorAlert(error: VaultSyncError.unknownError(message: syncResult.error ?? "Sync failed"))
+                        self.showSyncErrorAlert(error: AppError.unknownError(message: syncResult.error ?? "Sync failed"))
                     }
                     return
                 }

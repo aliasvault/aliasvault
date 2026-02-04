@@ -81,18 +81,12 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   /**
    * Unlock the vault in the native module which will decrypt the database using the stored encryption key
    * and load it into memory.
+   *
+   * @throws Error with error code if unlock fails - caller should handle the error and display appropriate message
    */
   const unlockVault = useCallback(async () : Promise<boolean> => {
-    try {
-      await NativeVaultManager.unlockVault();
-      return true;
-    } catch (error: any) {
-      console.error('Failed to unlock vault:', error);
-      if (error?.code === 'DATABASE_SETUP_ERROR') {
-        console.error('Database setup error:', error.message);
-      }
-      return false;
-    }
+    await NativeVaultManager.unlockVault();
+    return true;
   }, []);
 
   /**
@@ -230,17 +224,15 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   /**
    * Test if the database is working with the provided (to be stored) encryption key by performing a simple query
    * @param derivedKey The encryption key to test with
-   * @returns true if the database is working, false otherwise
+   * @returns true if the database is working
+   * @throws Error with error code if unlock fails - caller should handle the error
    */
   const testDatabaseConnection = useCallback(async (derivedKey: string): Promise<boolean> => {
     // Store the encryption key
     await sqliteClient.storeEncryptionKey(derivedKey);
 
-    // Initialize the database
-    const unlocked = await unlockVault();
-    if (!unlocked) {
-      return false;
-    }
+    // Initialize the database - throws on failure with error code
+    await unlockVault();
 
     // Try to get the database version as a simple test query
     const version = await sqliteClient.getDatabaseVersion();

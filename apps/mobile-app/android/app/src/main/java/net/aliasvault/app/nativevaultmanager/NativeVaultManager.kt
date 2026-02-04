@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import net.aliasvault.app.qrscanner.QRScannerActivity
+import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
@@ -192,9 +193,12 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         try {
             vaultStore.unlockVault()
             promise.resolve(null)
+        } catch (e: AppError) {
+            Log.e(TAG, "Error unlocking vault: ${e.code}", e)
+            promise.reject(e.code, e.message, e)
         } catch (e: Exception) {
-            Log.e(TAG, "Error storing encryption key", e)
-            promise.reject("ERR_STORE_KEY", "Failed to store encryption key: ${e.message}", e)
+            Log.e(TAG, "Error unlocking vault", e)
+            promise.reject("E-001", "Failed to unlock vault: ${e.message}", e)
         }
     }
 

@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.fragment.app.FragmentActivity
 import net.aliasvault.app.R
 import net.aliasvault.app.pinunlock.PinUnlockActivity
+import net.aliasvault.app.vaultstore.AppError
 import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.keystoreprovider.KeystoreOperationCallback
@@ -155,11 +156,12 @@ class UnlockCoordinator(
      * Handle errors during biometric unlock (after successful keystore retrieval).
      */
     private fun handleBiometricUnlockError(e: Exception) {
-        val errorMessage = when {
-            e.message?.contains("No encryption key found", ignoreCase = true) == true ->
-                "Please unlock vault in the app first"
-            e.message?.contains("Database setup error", ignoreCase = true) == true ->
-                "Failed to decrypt vault"
+        val errorMessage = when (e) {
+            is AppError.KeystoreKeyNotFound -> "Please unlock vault in the app first"
+            is AppError.VaultDecryptFailed,
+            is AppError.DatabaseOpenFailed,
+            is AppError.DatabaseBackupFailed,
+            -> "Failed to decrypt vault"
             else -> "Failed to unlock vault"
         }
         onError(errorMessage)
@@ -178,10 +180,8 @@ class UnlockCoordinator(
         }
 
         // No PIN fallback available - report the error
-        val errorMessage = when {
-            e.message?.contains("user canceled", ignoreCase = true) == true ||
-                e.message?.contains("canceled", ignoreCase = true) == true ->
-                "Authentication cancelled"
+        val errorMessage = when (e) {
+            is AppError.BiometricCancelled -> "Authentication cancelled"
             else -> "Failed to retrieve encryption key"
         }
         onError(errorMessage)
@@ -191,11 +191,12 @@ class UnlockCoordinator(
      * Get user-friendly error message for unlock errors.
      */
     private fun getUnlockErrorMessage(e: Exception): String {
-        return when {
-            e.message?.contains("No encryption key found", ignoreCase = true) == true ->
-                "Please unlock vault in the app first"
-            e.message?.contains("Database setup error", ignoreCase = true) == true ->
-                "Failed to decrypt vault"
+        return when (e) {
+            is AppError.KeystoreKeyNotFound -> "Please unlock vault in the app first"
+            is AppError.VaultDecryptFailed,
+            is AppError.DatabaseOpenFailed,
+            is AppError.DatabaseBackupFailed,
+            -> "Failed to decrypt vault"
             else -> "Failed to unlock vault"
         }
     }

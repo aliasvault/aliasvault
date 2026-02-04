@@ -200,12 +200,13 @@ class VaultCrypto(
 
                     override fun onError(e: Exception) {
                         Log.e(TAG, "Error retrieving key", e)
+                        // Pass through the error - AndroidKeystoreProvider now throws proper AppError types
                         callback.onError(e)
                     }
                 },
             )
         } else {
-            callback.onError(Exception("No encryption key found"))
+            callback.onError(AppError.KeystoreKeyNotFound("No encryption key found in memory or keystore"))
         }
     }
 

@@ -574,8 +574,8 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
         var title = NSLocalizedString("connection_error_title", comment: "Connection Error")
         var message = NSLocalizedString("connection_error_message", comment: "No connection to the server can be made.")
 
-        // Check if it's a VaultSyncError and customize message accordingly
-        if let syncError = error as? VaultSyncError {
+        // Check if it's a AppError and customize message accordingly
+        if let syncError = error as? AppError {
             switch syncError {
             case .sessionExpired, .authenticationFailed:
                 title = NSLocalizedString("session_expired_title", comment: "Session Expired")

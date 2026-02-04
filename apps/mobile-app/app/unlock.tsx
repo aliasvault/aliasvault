@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, TextInput, KeyboardAvoidingView, Platform, ScrollView, Dimensions, Text, Pressable } from 'react-native';
 
 import EncryptionUtility from '@/utils/EncryptionUtility';
+import { getAppErrorCode, getErrorTranslationKey, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -137,22 +138,23 @@ export default function UnlockScreen() : React.ReactNode {
 
       const passwordHashBase64 = Buffer.from(passwordHash).toString('base64');
 
-      // Test the database connection with the derived encryption key
-      if (await dbContext.testDatabaseConnection(passwordHashBase64)) {
-        // Check if the vault is up to date, if not, redirect to the upgrade page.
-        if (await dbContext.hasPendingMigrations()) {
-          router.replace('/upgrade');
-          return;
-        }
+      /*
+       * Test the database connection with the derived encryption key.
+       * This throws an error if it fails (with error codes for specific failures).
+       */
+      await dbContext.testDatabaseConnection(passwordHashBase64);
 
-        /*
-         * Navigate to reinitialize which will sync vault with server
-         * and then navigate to the appropriate destination.
-         */
-        router.replace('/reinitialize');
-      } else {
-        showAlert(t('common.error'), t('auth.errors.incorrectPassword'));
+      // Check if the vault is up to date, if not, redirect to the upgrade page.
+      if (await dbContext.hasPendingMigrations()) {
+        router.replace('/upgrade');
+        return;
       }
+
+      /*
+       * Navigate to reinitialize which will sync vault with server
+       * and then navigate to the appropriate destination.
+       */
+      router.replace('/reinitialize');
     } catch (err) {
       if (err instanceof VaultVersionIncompatibleError) {
         // Vault version incompatible - force logout without confirmation
@@ -161,7 +163,16 @@ export default function UnlockScreen() : React.ReactNode {
       }
 
       console.error('Unlock error:', err);
-      showAlert(t('common.error'), t('auth.errors.incorrectPassword'));
+
+      // Try to extract error code from the error
+      const errorCode = getAppErrorCode(err);
+      if (errorCode) {
+        const translationKey = getErrorTranslationKey(errorCode);
+        showAlert(t('common.error'), formatErrorWithCode(t(translationKey), errorCode));
+      } else {
+        // Fallback to incorrect password for unknown errors (likely password mismatch)
+        showAlert(t('common.error'), t('auth.errors.incorrectPassword'));
+      }
     } finally {
       setIsLoading(false);
     }
@@ -207,25 +218,32 @@ export default function UnlockScreen() : React.ReactNode {
     setIsLoading(true);
     setError(null);
     try {
-      const unlocked = await dbContext.unlockVault();
-      if (unlocked) {
-        // Check if the vault is up to date
-        if (await dbContext.hasPendingMigrations()) {
-          router.replace('/upgrade');
-          return;
-        }
-        router.replace('/reinitialize');
-      } else {
-        // Biometric failed - try PIN fallback if available
-        if (pinAvailable) {
-          await performPinUnlock();
-        }
+      // unlockVault now throws errors instead of returning false
+      await dbContext.unlockVault();
+
+      // Check if the vault is up to date
+      if (await dbContext.hasPendingMigrations()) {
+        router.replace('/upgrade');
+        return;
       }
+      router.replace('/reinitialize');
     } catch (err) {
       console.error('Biometric retry error:', err);
-      // Biometric failed - try PIN fallback if available
+
+      // Check if this is a cancellation - don't show error, just allow retry
+      const errorCode = getAppErrorCode(err);
+      if (errorCode === 'E-509') { // BIOMETRIC_CANCELLED
+        // User cancelled - don't show error, just stay on screen
+        return;
+      }
+
+      // For other errors, try PIN fallback if available
       if (pinAvailable) {
         await performPinUnlock();
+      } else if (errorCode) {
+        // Show the error with code if no PIN fallback
+        const translationKey = getErrorTranslationKey(errorCode);
+        setError(formatErrorWithCode(t(translationKey), errorCode));
       }
     } finally {
       setIsLoading(false);

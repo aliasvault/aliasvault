@@ -25,31 +25,22 @@ extension VaultStore {
     /// Unlock the vault - decrypt the database and setup the database with the decrypted data
     public func unlockVault() throws {
         guard let encryptedDbBase64 = getEncryptedDatabase() else {
-            throw NSError(domain: "VaultStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "No encrypted database found"])
+            throw AppError.encryptionKeyNotFound
         }
 
         guard let encryptedDbData = Data(base64Encoded: encryptedDbBase64) else {
-            throw NSError(domain: "VaultStore", code: 1, userInfo: [NSLocalizedDescriptionKey: "Could not base64 decode encrypted database"])
+            throw AppError.base64DecodeFailed
         }
 
         do {
             let decryptedDbBase64 = try decrypt(data: encryptedDbData)
             try setupDatabaseWithDecryptedData(decryptedDbBase64)
-        } catch let error as NSError {
-            // If it's already a VaultStore error with detailed info, pass it through
-            if error.domain == "VaultStore" && error.code >= 10 {
-                throw error
-            }
-
-            // Otherwise, it's a decryption error
-            throw NSError(
-                domain: "VaultStore",
-                code: 5,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Could not unlock vault: Decryption failed",
-                    NSUnderlyingErrorKey: error
-                ]
-            )
+        } catch let vaultError as AppError {
+            // Pass through AppError types
+            throw vaultError
+        } catch {
+            // Wrap other errors as decryption failure
+            throw AppError.vaultDecryptFailed
         }
     }
 
@@ -70,11 +61,7 @@ extension VaultStore {
     private func setupDatabaseWithDecryptedData(_ decryptedDbBase64: Data) throws {
         // Step 1: Decode base64
         guard let decryptedDbData = Data(base64Encoded: decryptedDbBase64) else {
-            throw NSError(
-                domain: "VaultStore",
-                code: 10,
-                userInfo: [NSLocalizedDescriptionKey: "Database setup failed: Could not decode base64 data after decryption"]
-            )
+            throw AppError.base64DecodeFailed
         }
 
         // Step 2: Clean up any existing connection
@@ -85,14 +72,7 @@ extension VaultStore {
         do {
             try decryptedDbData.write(to: tempDbPath)
         } catch {
-            throw NSError(
-                domain: "VaultStore",
-                code: 11,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Database setup failed: Could not write decrypted data to temp file",
-                    NSUnderlyingErrorKey: error
-                ]
-            )
+            throw AppError.databaseTempWriteFailed
         }
 
         // Step 4: Open source database from temp file
@@ -101,14 +81,7 @@ extension VaultStore {
             sourceConnection = try Connection(tempDbPath.path)
         } catch {
             try? FileManager.default.removeItem(at: tempDbPath)
-            throw NSError(
-                domain: "VaultStore",
-                code: 12,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Database setup failed: Could not open source database (file may be corrupt)",
-                    NSUnderlyingErrorKey: error
-                ]
-            )
+            throw AppError.databaseOpenFailed
         }
 
         // Step 5: Create in-memory database connection
@@ -116,14 +89,7 @@ extension VaultStore {
             self.dbConnection = try Connection(":memory:")
         } catch {
             try? FileManager.default.removeItem(at: tempDbPath)
-            throw NSError(
-                domain: "VaultStore",
-                code: 13,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Database setup failed: Could not create in-memory database connection",
-                    NSUnderlyingErrorKey: error
-                ]
-            )
+            throw AppError.databaseMemoryFailed
         }
 
         // Step 6: Use SQLite backup API to copy entire database with full schema preservation
@@ -134,14 +100,7 @@ extension VaultStore {
             backup.finish()
         } catch {
             try? FileManager.default.removeItem(at: tempDbPath)
-            throw NSError(
-                domain: "VaultStore",
-                code: 14,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Database setup failed: Could not backup database to memory",
-                    NSUnderlyingErrorKey: error
-                ]
-            )
+            throw AppError.databaseBackupFailed
         }
 
         // Clean up temp file
@@ -153,14 +112,7 @@ extension VaultStore {
             try self.dbConnection?.execute("PRAGMA synchronous = NORMAL")
             try self.dbConnection?.execute("PRAGMA foreign_keys = ON")
         } catch {
-            throw NSError(
-                domain: "VaultStore",
-                code: 15,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Database setup failed: Could not set database pragmas",
-                    NSUnderlyingErrorKey: error
-                ]
-            )
+            throw AppError.databasePragmaFailed
         }
     }
 }

@@ -153,7 +153,7 @@ extension VaultStore {
                 print("Simulator detected, skipping biometric policy evaluation check and continuing with key retrieval from keychain")
             #else
                 guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
-                    throw NSError(domain: "VaultStore", code: 2, userInfo: [NSLocalizedDescriptionKey: "Face ID not available: \(error?.localizedDescription ?? "Unknown error")"])
+                    throw AppError.biometricFailed
                 }
             #endif
 
@@ -162,12 +162,14 @@ extension VaultStore {
                 let keyData = try retrieveKeyFromKeychain(context: context)
                 self.encryptionKey = keyData
                 return keyData
+            } catch let vaultError as AppError {
+                throw vaultError
             } catch {
-                throw NSError(domain: "VaultStore", code: 9, userInfo: [NSLocalizedDescriptionKey: "Failed to retrieve key from keychain: \(error.localizedDescription)"])
+                throw AppError.keystoreKeyNotFound
             }
         }
 
-        throw NSError(domain: "VaultStore", code: 3, userInfo: [NSLocalizedDescriptionKey: "No encryption key found in memory"])
+        throw AppError.keystoreKeyNotFound
     }
 
     /// Store the encryption key in the keychain
@@ -243,11 +245,11 @@ extension VaultStore {
         guard status == errSecSuccess,
               let keyData = result as? Data else {
             if status == errSecUserCanceled {
-                throw NSError(domain: "VaultStore", code: 8, userInfo: [NSLocalizedDescriptionKey: "Authentication canceled by user"])
+                throw AppError.biometricCancelled
             } else if status == errSecAuthFailed {
-                throw NSError(domain: "VaultStore", code: 8, userInfo: [NSLocalizedDescriptionKey: "Authentication failed"])
+                throw AppError.biometricFailed
             } else {
-                throw NSError(domain: "VaultStore", code: 2, userInfo: [NSLocalizedDescriptionKey: "No encryption key found"])
+                throw AppError.keystoreKeyNotFound
             }
         }
 

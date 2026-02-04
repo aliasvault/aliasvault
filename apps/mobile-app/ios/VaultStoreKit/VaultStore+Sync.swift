@@ -145,14 +145,14 @@ extension VaultStore {
                 requiresAuth: true
             )
         } catch {
-            throw VaultSyncError.networkError(underlyingError: error)
+            throw AppError.networkError(underlyingError: error)
         }
 
         guard vaultResponse.statusCode == 200 else {
             if vaultResponse.statusCode == 401 {
-                throw VaultSyncError.sessionExpired
+                throw AppError.sessionExpired
             }
-            throw VaultSyncError.serverUnavailable(statusCode: vaultResponse.statusCode)
+            throw AppError.serverUnavailable(statusCode: vaultResponse.statusCode)
         }
 
         return try parseVaultResponse(vaultResponse.body)
@@ -250,7 +250,7 @@ extension VaultStore {
                     error: nil
                 )
             }
-        } catch let error as VaultSyncError {
+        } catch let error as AppError {
             setIsSyncing(false)
             return handleSyncError(error)
         } catch {
@@ -313,7 +313,7 @@ extension VaultStore {
                 wasOffline: false,
                 error: nil
             )
-        } catch let error as VaultSyncError {
+        } catch let error as AppError {
             setIsSyncing(false)
             return handleSyncError(error)
         } catch {
@@ -450,7 +450,7 @@ extension VaultStore {
                     error: uploadResult.error ?? "Upload after merge failed"
                 )
             }
-        } catch let error as VaultSyncError {
+        } catch let error as AppError {
             setIsSyncing(false)
             return handleSyncError(error)
         } catch {
@@ -478,10 +478,10 @@ extension VaultStore {
     ///   - localVault: Base64-encoded encrypted local vault blob
     ///   - serverVault: Base64-encoded encrypted server vault blob
     /// - Returns: Base64-encoded encrypted merged vault blob
-    /// - Throws: VaultSyncError if merge fails
+    /// - Throws: AppError if merge fails
     private func performLWWMerge(localVault: String, serverVault: String) throws -> String {
         guard let encryptionKey = self.encryptionKey else {
-            throw VaultSyncError.unknownError(message: "Encryption key not available for merge")
+            throw AppError.unknownError(message: "Encryption key not available for merge")
         }
 
         do {
@@ -494,15 +494,15 @@ extension VaultStore {
             return mergedVault
         } catch let error as VaultMergeService.VaultMergeError {
             print("[VaultSync] Merge error: \(error.localizedDescription)")
-            throw VaultSyncError.unknownError(message: "Merge failed: \(error.localizedDescription)")
+            throw AppError.unknownError(message: "Merge failed: \(error.localizedDescription)")
         } catch {
             print("[VaultSync] Unexpected merge error: \(error)")
-            throw VaultSyncError.unknownError(message: "Merge failed: \(error.localizedDescription)")
+            throw AppError.unknownError(message: "Merge failed: \(error.localizedDescription)")
         }
     }
 
     /// Handle sync errors and return appropriate result
-    private func handleSyncError(_ error: VaultSyncError) -> VaultSyncResult {
+    private func handleSyncError(_ error: AppError) -> VaultSyncResult {
         switch error {
         case .networkError, .serverUnavailable, .timeout:
             setOfflineMode(true)
@@ -547,8 +547,8 @@ extension VaultStore {
                 requiresAuth: true
             )
         } catch {
-            // Network error - convert to VaultSyncError
-            throw VaultSyncError.networkError(underlyingError: error)
+            // Network error - convert to AppError
+            throw AppError.networkError(underlyingError: error)
         }
 
         // Check response status
@@ -558,18 +558,18 @@ extension VaultStore {
             if statusResponse.statusCode == 401 {
                 // Authentication failed even after token refresh attempt
                 print("VaultStore: Authentication failed (401) - token refresh also failed")
-                throw VaultSyncError.sessionExpired
+                throw AppError.sessionExpired
             }
 
             // Other error (5xx, network, etc.) - go offline
             setOfflineMode(true)
-            throw VaultSyncError.serverUnavailable(statusCode: statusResponse.statusCode)
+            throw AppError.serverUnavailable(statusCode: statusResponse.statusCode)
         }
 
         guard let statusData = statusResponse.body.data(using: .utf8) else {
             print("VaultStore: Failed to convert status response to data")
             print("VaultStore: Response body: '\(statusResponse.body)'")
-            throw VaultSyncError.parseError(message: "Failed to convert status response to data")
+            throw AppError.parseError(message: "Failed to convert status response to data")
         }
 
         let decoder = JSONDecoder()
@@ -579,17 +579,17 @@ extension VaultStore {
         } catch {
             print("VaultStore: Failed to decode status response: \(error)")
             print("VaultStore: Response body: '\(statusResponse.body)'")
-            throw VaultSyncError.parseError(message: "Failed to decode status response: \(error.localizedDescription)")
+            throw AppError.parseError(message: "Failed to decode status response: \(error.localizedDescription)")
         }
 
         guard status.clientVersionSupported else {
-            throw VaultSyncError.clientVersionNotSupported
+            throw AppError.clientVersionNotSupported
         }
 
         // Validate server version meets minimum requirement
         guard VersionComparison.isServerVersionSupported(status.serverVersion) else {
             print("VaultStore: Server version \(status.serverVersion) does not meet minimum requirement \(AppInfo.minServerVersion)")
-            throw VaultSyncError.serverVersionNotSupported
+            throw AppError.serverVersionNotSupported
         }
 
         // Store server version in metadata
@@ -608,7 +608,7 @@ extension VaultStore {
         }
 
         if !srpSalt.isEmpty && srpSalt != params.salt {
-            throw VaultSyncError.passwordChanged
+            throw AppError.passwordChanged
         }
     }
 
@@ -624,14 +624,14 @@ extension VaultStore {
                 requiresAuth: true
             )
         } catch {
-            throw VaultSyncError.networkError(underlyingError: error)
+            throw AppError.networkError(underlyingError: error)
         }
 
         guard vaultResponse.statusCode == 200 else {
             if vaultResponse.statusCode == 401 {
-                throw VaultSyncError.sessionExpired
+                throw AppError.sessionExpired
             }
-            throw VaultSyncError.serverUnavailable(statusCode: vaultResponse.statusCode)
+            throw AppError.serverUnavailable(statusCode: vaultResponse.statusCode)
         }
 
         let vault = try parseVaultResponse(vaultResponse.body)
@@ -658,7 +658,7 @@ extension VaultStore {
         let encoder = JSONEncoder()
         guard let metadataData = try? encoder.encode(metadata),
               let metadataJson = String(data: metadataData, encoding: .utf8) else {
-            throw VaultSyncError.parseError(message: "Failed to encode vault metadata")
+            throw AppError.parseError(message: "Failed to encode vault metadata")
         }
 
         try storeMetadata(metadataJson)
@@ -667,7 +667,7 @@ extension VaultStore {
     /// Parse vault response from JSON
     private func parseVaultResponse(_ body: String) throws -> VaultResponse {
         guard let vaultData = body.data(using: .utf8) else {
-            throw VaultSyncError.parseError(message: "Failed to convert vault response to data")
+            throw AppError.parseError(message: "Failed to convert vault response to data")
         }
 
         do {
@@ -675,7 +675,7 @@ extension VaultStore {
         } catch {
             print("VaultStore: Failed to decode vault response: \(error)")
             print("VaultStore: Response body: \(body)")
-            throw VaultSyncError.parseError(message: "Failed to decode vault response: \(error.localizedDescription)")
+            throw AppError.parseError(message: "Failed to decode vault response: \(error.localizedDescription)")
         }
     }
 
@@ -685,11 +685,11 @@ extension VaultStore {
         case 0:
             return
         case 1:
-            throw VaultSyncError.vaultMergeRequired
+            throw AppError.vaultMergeRequired
         case 2:
-            throw VaultSyncError.vaultOutdated
+            throw AppError.vaultOutdated
         default:
-            throw VaultSyncError.unknownError(message: "Unknown vault status: \(status)")
+            throw AppError.unknownError(message: "Unknown vault status: \(status)")
         }
     }
 }

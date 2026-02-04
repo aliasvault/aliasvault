@@ -14,6 +14,7 @@ import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
 import androidx.fragment.app.FragmentActivity
 import net.aliasvault.app.R
+import net.aliasvault.app.vaultstore.AppError
 import java.io.File
 import java.nio.ByteBuffer
 import java.security.KeyStore
@@ -195,9 +196,18 @@ class AndroidKeystoreProvider(
                             errString: CharSequence,
                         ) {
                             Log.e(TAG, "Authentication error: $errorCode - $errString")
-                            callback.onError(
-                                Exception("Authentication error: $errString (code: $errorCode)"),
-                            )
+                            val error = when (errorCode) {
+                                BiometricPrompt.ERROR_USER_CANCELED,
+                                BiometricPrompt.ERROR_NEGATIVE_BUTTON,
+                                BiometricPrompt.ERROR_CANCELED,
+                                -> AppError.BiometricCancelled(
+                                    "Biometric authentication cancelled: $errString",
+                                )
+                                else -> AppError.BiometricFailed(
+                                    "Biometric authentication error: $errString (code: $errorCode)",
+                                )
+                            }
+                            callback.onError(error)
                         }
 
                         override fun onAuthenticationFailed() {
@@ -209,7 +219,7 @@ class AndroidKeystoreProvider(
                 biometricPrompt.authenticate(promptInfo, BiometricPrompt.CryptoObject(cipher))
             } catch (e: Exception) {
                 Log.e(TAG, "Error in biometric key storage", e)
-                callback.onError(Exception("Failed to initialize key storage: ${e.message}"))
+                callback.onError(AppError.BiometricFailed("Failed to initialize key storage: ${e.message}", e))
             }
         }
     }
@@ -274,7 +284,7 @@ class AndroidKeystoreProvider(
         val keyFile = File(context.filesDir, ENCRYPTED_KEY_FILE)
         if (!keyFile.exists()) {
             Log.e(TAG, "No encryption key found")
-            callback.onError(Exception("No encryption key found"))
+            callback.onError(AppError.KeystoreKeyNotFound("No encryption key found in storage"))
             return
         }
         val encryptedKeyB64 = keyFile.readText()
@@ -286,7 +296,7 @@ class AndroidKeystoreProvider(
         // Check if key exists
         if (!keyStore.containsAlias(KEYSTORE_ALIAS)) {
             Log.e(TAG, "Keystore key not found")
-            callback.onError(Exception("Keystore key not found"))
+            callback.onError(AppError.KeystoreKeyNotFound("Keystore key not found in Android Keystore"))
             return
         }
 
@@ -313,9 +323,8 @@ class AndroidKeystoreProvider(
             keyStore.deleteEntry(KEYSTORE_ALIAS)
             keyFile.delete()
             callback.onError(
-                Exception(
-                    "Biometric enrollment changed. " +
-                        "Please sign in with your password to re-enable biometric unlock.",
+                AppError.KeystoreKeyNotFound(
+                    "Biometric enrollment changed. Please sign in with your password to re-enable biometric unlock.",
                     e,
                 ),
             )
@@ -361,9 +370,18 @@ class AndroidKeystoreProvider(
                     errString: CharSequence,
                 ) {
                     Log.e(TAG, "Authentication error: $errorCode - $errString")
-                    callback.onError(
-                        Exception("Authentication error: $errString (code: $errorCode)"),
-                    )
+                    val error = when (errorCode) {
+                        BiometricPrompt.ERROR_USER_CANCELED,
+                        BiometricPrompt.ERROR_NEGATIVE_BUTTON,
+                        BiometricPrompt.ERROR_CANCELED,
+                        -> AppError.BiometricCancelled(
+                            "Biometric authentication cancelled: $errString",
+                        )
+                        else -> AppError.BiometricFailed(
+                            "Biometric authentication error: $errString (code: $errorCode)",
+                        )
+                    }
+                    callback.onError(error)
                 }
 
                 override fun onAuthenticationFailed() {
