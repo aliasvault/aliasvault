@@ -515,5 +515,9 @@
     "unsyncedChangesTitle": "Niet-gesynchroniseerde wijzigingen",
     "unsyncedChangesWarning": "Er zijn niet gesynchroniseerde wijzigingen die verloren zullen gaan als je nu uitlogt. Weet je zeker dat je wilt doorgaan?",
     "logoutAnyway": "Toch uitloggen"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }
