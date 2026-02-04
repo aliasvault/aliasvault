@@ -7,6 +7,7 @@ import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
+import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import { NetworkError } from '@/utils/types/errors/NetworkError';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
@@ -1155,12 +1156,17 @@ export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
     const errorMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
     console.error('Vault sync error:', err);
 
-    // Check if it's a version-related error
+    // Version incompatibility requires logout
     if (err instanceof VaultVersionIncompatibleError) {
       return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, error: errorMessage };
     }
 
-    // Check if it's a network error - enter offline mode
+    // Auth error (session expired) - signal popup to trigger logout
+    if (err instanceof ApiAuthError) {
+      return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: true, errorKey: 'sessionExpired' };
+    }
+
+    // Network error - enter offline mode if we have a local vault
     if (err instanceof NetworkError) {
       const encryptedVault = await storage.getItem('local:encryptedVault');
       if (encryptedVault) {

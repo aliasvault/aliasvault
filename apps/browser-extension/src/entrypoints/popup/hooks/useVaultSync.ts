@@ -46,7 +46,6 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
         return false;
       }
 
-      // Show checking status (don't show syncing indicator yet - only if server has new vault)
       onStatus?.(t('common.checkingVaultUpdates'));
 
       // Delegate to background script for full sync orchestration
@@ -54,9 +53,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
 
       // Handle logout requirement
       if (result.requiresLogout) {
-        const errorMessage = result.errorKey
-          ? t('common.errors.' + result.errorKey)
-          : result.error;
+        const errorMessage = result.errorKey ? t('common.errors.' + result.errorKey) : result.error;
         await app.logout(errorMessage);
         return false;
       }
@@ -83,9 +80,7 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
 
       // Handle errors
       if (!result.success) {
-        const errorMessage = result.errorKey
-          ? t('common.errors.' + result.errorKey)
-          : result.error ?? t('common.errors.unknownError');
+        const errorMessage = result.errorKey ? t('common.errors.' + result.errorKey) : result.error ?? t('common.errors.unknownError');
         onError?.(errorMessage);
         return false;
       }

@@ -33,7 +33,7 @@ const Reinitialize: React.FC = () => {
 
   // Auth and DB state
   const { isInitialized: authInitialized, isLoggedIn } = useApp();
-  const { dbInitialized, dbAvailable, refreshSyncState } = useDb();
+  const { dbInitialized, dbAvailable, refreshSyncState, hasPendingMigrations } = useDb();
 
   // Derived state
   const isFullyInitialized = authInitialized && dbInitialized;
@@ -108,6 +108,13 @@ const Reinitialize: React.FC = () => {
       } else if (shouldRunSync) {
         // Only perform vault sync once during initialization
         hasInitialized.current = true;
+
+        // Check for pending migrations before navigating
+        if (await hasPendingMigrations()) {
+          setIsInitialLoading(false);
+          navigate('/upgrade', { replace: true });
+          return;
+        }
 
         /*
          * Navigate immediately using local vault - don't block on sync.

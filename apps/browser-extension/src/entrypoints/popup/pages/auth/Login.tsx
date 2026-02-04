@@ -20,7 +20,6 @@ import { AppInfo } from '@/utils/AppInfo';
 import { SrpAuthService } from '@/utils/auth/SrpAuthService';
 import type { VaultResponse, LoginResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import SqliteClient from '@/utils/SqliteClient';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
@@ -59,9 +58,8 @@ const Login: React.FC = () => {
   /**
    * Helper to persist and load vault after successful authentication.
    * Checks if local vault exists from forced logout and preserves it if more advanced.
-   * @returns The initialized SqliteClient
    */
-  const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string): Promise<SqliteClient> => {
+  const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string): Promise<void> => {
     // Check if there's existing vault data (from forced logout)
     const existingVault = await storage.getItem('local:encryptedVault') as string | null;
     const existingRevision = await storage.getItem('local:serverRevision') as number | null;
@@ -91,7 +89,8 @@ const Login: React.FC = () => {
             hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
           }, 'background');
 
-          return dbContext.loadDatabase(decryptedExisting);
+          await dbContext.loadDatabase(decryptedExisting);
+          return;
         }
 
         // Server is more advanced - will overwrite local
@@ -119,7 +118,7 @@ const Login: React.FC = () => {
 
     // Decrypt and load the vault into memory
     const decryptedVault = await EncryptionUtility.symmetricDecrypt(vaultToLoad, encryptionKey);
-    return dbContext.loadDatabase(decryptedVault);
+    await dbContext.loadDatabase(decryptedVault);
   };
 
   /**
@@ -149,32 +148,23 @@ const Login: React.FC = () => {
     });
 
     /*
-     * Persist and load the vault
+     * Persist and load the vault.
      * If there was a forced logout, persistAndLoadVault checks existing vault data:
      * - If local vault is more advanced → preserves it (will upload via sync in /reinitialize)
      * - If server is more advanced → uses server vault
      * - If password changed (can't decrypt) → uses server vault
      */
-    const sqliteClient = await persistAndLoadVault(vaultResponseJson, passwordHashBase64);
-
-    // If there are pending migrations, redirect to the upgrade page.
-    try {
-      if (await sqliteClient.hasPendingMigrations()) {
-        navigate('/upgrade', { replace: true });
-        hideLoading();
-        return;
-      }
-    } catch (err) {
-      await app.logout();
-      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
-      hideLoading();
-      return;
-    }
+    await persistAndLoadVault(vaultResponseJson, passwordHashBase64);
 
     // Reset prefill flag so next logout will prefill again
     usernamePrefillAttempted = false;
 
-    // Navigate to reinitialize page which will take care of the proper redirect.
+    /*
+     * Navigate to reinitialize page which will:
+     * 1. Call syncVault() to check version compatibility
+     * 2. Handle pending migrations via onUpgradeRequired callback
+     * 3. Navigate to appropriate page
+     */
     navigate('/reinitialize', { replace: true });
 
     // Show app.
@@ -391,24 +381,14 @@ const Login: React.FC = () => {
       });
 
       // Persist and load the vault
-      const sqliteClient = await persistAndLoadVault(vaultResponse, result.decryptionKey);
+      await persistAndLoadVault(vaultResponse, result.decryptionKey);
 
-      // Check for pending migrations
-      try {
-        if (await sqliteClient.hasPendingMigrations()) {
-          navigate('/upgrade', { replace: true });
-          hideLoading();
-          setIsInitialLoading(false);
-          return;
-        }
-      } catch (err) {
-        await app.logout();
-        setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
-        hideLoading();
-        return;
-      }
-
-      // Navigate to reinitialize page
+      /*
+       * Navigate to reinitialize page which will:
+       * 1. Call syncVault() to check version compatibility
+       * 2. Handle pending migrations via onUpgradeRequired callback
+       * 3. Navigate to appropriate page
+       */
       hideLoading();
       setIsInitialLoading(false);
       navigate('/reinitialize', { replace: true });
