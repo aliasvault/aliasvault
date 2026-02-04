@@ -515,5 +515,9 @@
     "unsyncedChangesTitle": "未同步的更改",
     "unsyncedChangesWarning": "您有更改尚未同步，若您现在退出登录，这些更改将会丢失。您确定要继续吗？",
     "logoutAnyway": "仍要退出登录"
+  },
+  "sync": {
+    "offline": "离线",
+    "tapToRetry": "Tap to retry sync"
   }
 }
