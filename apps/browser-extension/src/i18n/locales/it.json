@@ -202,7 +202,7 @@
     "deleteFolderAndItems": "Elimina cartella e tutti gli elementi",
     "deleteFolderAndItemsDescription": "{{count}} oggetto(i) verrà spostato in Eliminato Recentemente.",
     "filters": {
-      "folders": "Folders",
+      "folders": "Cartelle",
       "passkeys": "Passkey"
     },
     "sort": {
@@ -518,6 +518,6 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Tocca per riprovare la sincronizzazione"
   }
 }
