@@ -21,6 +21,7 @@ services:
       - avdata:/database
       - avlogs:/logs
       - avsecrets:/secrets
+      - avcerts:/certificates
 
     environment:
       HOSTNAME: "localhost"
@@ -35,3 +36,4 @@ volumes:
   avdata:
   avlogs:
   avsecrets:
+  avcerts:

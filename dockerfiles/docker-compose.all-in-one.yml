@@ -19,6 +19,7 @@ services:
       - ./database:/database
       - ./logs:/logs
       - ./secrets:/secrets
+      - ./certificates:/certificates
 
     environment:
       HOSTNAME: "localhost"

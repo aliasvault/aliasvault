@@ -31,8 +31,8 @@ echo "[init] Starting AliasVault..."
 echo ""
 
 # Create required directories
-if [ ! -d /database/postgres ] || [ ! -d /logs/postgres ] || [ ! -d /certificates ] || [ ! -d /secrets ] || [ ! -d /var/run/postgresql ]; then
-    mkdir -p /database/postgres /logs/postgres /certificates /secrets /var/run/postgresql
+if [ ! -d /database/postgres ] || [ ! -d /logs/postgres ] || [ ! -d /certificates/ssl ] || [ ! -d /certificates/smtp ] || [ ! -d /secrets ] || [ ! -d /var/run/postgresql ]; then
+    mkdir -p /database/postgres /logs/postgres /certificates/ssl /certificates/smtp /secrets /var/run/postgresql
     log 0 "[init] Required directories created"
 else
     log 0 "[init] ✅ Required directories already exist"
