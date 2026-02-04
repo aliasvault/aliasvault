@@ -436,8 +436,8 @@
     "offlineMessage": "Sei offline. Collegati a internet per sincronizzare la cassaforte.",
     "switchBackToBrowser": "Torna al browser per continuare.",
     "filters": {
-      "all": "Items",
-      "showFolders": "Folders",
+      "all": "Elementi",
+      "showFolders": "Cartelle",
       "passkeys": "Passkey",
       "attachments": "Allegati"
     },
