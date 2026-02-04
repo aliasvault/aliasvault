@@ -14,7 +14,7 @@ if [ "$VERBOSITY" -ge 1 ]; then
 fi
 
 for i in {1..30}; do
-    if PGPASSWORD="$POSTGRES_PASSWORD" /usr/lib/postgresql/16/bin/psql -h localhost -U aliasvault -d aliasvault -c "SELECT 1;" >/dev/null 2>&1; then
+    if PGPASSWORD="$POSTGRES_PASSWORD" /usr/lib/postgresql/16/bin/psql -h 127.0.0.1 -U aliasvault -d aliasvault -c "SELECT 1;" >/dev/null 2>&1; then
         if [ "$VERBOSITY" -ge 1 ]; then
             echo "[smtp] PostgreSQL ready, starting SMTP..."
         fi

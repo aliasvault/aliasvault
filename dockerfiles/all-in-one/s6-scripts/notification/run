@@ -8,7 +8,7 @@ if [ "$VERBOSITY" -le 1 ]; then
     # Wait for all service ports to be responsive with timeout
     READY=false
     for i in $(seq 1 180); do  # 3 minute timeout
-        if nc -z localhost 3000 && nc -z localhost 3001 && nc -z localhost 3002 && nc -z localhost 80 && nc -z localhost 443; then
+        if nc -z 127.0.0.1 3000 && nc -z 127.0.0.1 3001 && nc -z 127.0.0.1 3002 && nc -z 127.0.0.1 80 && nc -z 127.0.0.1 443; then
             READY=true
             break
         fi
