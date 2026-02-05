@@ -905,6 +905,11 @@ else
         await LoadItemsAsync();
     }
 
+    /// <summary>
+    /// Tracks whether the IntersectionObserver is currently set up.
+    /// </summary>
+    private bool _isObserverSetup;
+
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -913,14 +918,28 @@ else
         if (firstRender)
         {
             await LoadItemsAsync();
-
-            // Set up IntersectionObserver for infinite scroll (only if there are more items to load).
-            // The sentinel element only exists when HasMoreItems is true.
             _dotNetRef = DotNetObjectReference.Create(this);
-            if (HasMoreItems)
+        }
+
+        // Set up or re-attach the IntersectionObserver after every render if there are more items.
+        // The sentinel element is only in the DOM when HasMoreItems is true, and it gets
+        // re-created on each render, so we need to re-attach the observer.
+        if (HasMoreItems && !IsLoading && !IsLoadingMore && _dotNetRef != null)
+        {
+            // Always tear down and re-setup to handle the new sentinel element reference
+            if (_isObserverSetup)
             {
-                await JsInteropService.SetupInfiniteScroll(_scrollSentinel, _dotNetRef);
+                await JsInteropService.TeardownInfiniteScroll(_scrollSentinel);
             }
+
+            await JsInteropService.SetupInfiniteScroll(_scrollSentinel, _dotNetRef);
+            _isObserverSetup = true;
+        }
+        else if (!HasMoreItems && _isObserverSetup)
+        {
+            // No more items - clean up the observer
+            await JsInteropService.TeardownInfiniteScroll(_scrollSentinel);
+            _isObserverSetup = false;
         }
     }
 
@@ -929,7 +948,12 @@ else
     {
         if (_dotNetRef != null)
         {
-            await JsInteropService.TeardownInfiniteScroll(_scrollSentinel);
+            if (_isObserverSetup)
+            {
+                await JsInteropService.TeardownInfiniteScroll(_scrollSentinel);
+                _isObserverSetup = false;
+            }
+
             _dotNetRef.Dispose();
             _dotNetRef = null;
         }

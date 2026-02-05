@@ -167,6 +167,20 @@
                                             </div>
                                         </div>
                                     }
+                                    else if (IsSavingCredentials)
+                                    {
+                                        <div class="text-center">
+                                            <LoadingIndicator />
+                                            <p class="mt-4 text-gray-700 dark:text-gray-300">@string.Format(Localizer["SavingCredentials"], CredentialSaveProgress, TotalCredentialsToSave)</p>
+                                        </div>
+                                    }
+                                    else if (IsSyncingVault)
+                                    {
+                                        <div class="text-center">
+                                            <LoadingIndicator />
+                                            <p class="mt-4 text-gray-700 dark:text-gray-300">@Localizer["SyncingVault"]</p>
+                                        </div>
+                                    }
                                     else
                                     {
                                         <LoadingIndicator />
@@ -262,6 +276,12 @@
     private int TotalFaviconsToExtract { get; set; }
     private CancellationTokenSource? FaviconExtractionCancellation { get; set; }
     private Dictionary<string, byte[]> ExtractedFavicons { get; set; } = new();
+
+    private bool IsSavingCredentials { get; set; }
+    private int CredentialSaveProgress { get; set; }
+    private int TotalCredentialsToSave { get; set; }
+    private bool IsSyncingVault { get; set; }
+    private Dictionary<string, Guid> ImportSessionLogoIds { get; set; } = new();
 
     private int DuplicateCredentialsCount { get; set; } = 0;
 
@@ -367,7 +387,8 @@
         }
         catch (Exception ex)
         {
-            ImportError = $"Error importing credentials: {ex.Message}";
+            ImportError = Localizer["ImportErrorGeneric"];
+            Logger.LogError(ex, "Error during import");
         }
         finally
         {
@@ -396,6 +417,8 @@
     {
         IsImporting = false;
         IsExtractingFavicons = false;
+        IsSavingCredentials = false;
+        IsSyncingVault = false;
         StateHasChanged();
     }
 
@@ -417,6 +440,10 @@
         var processedDomains = new HashSet<string>();
 
         TotalFaviconsToExtract = credentialsWithUrls.Count();
+
+        // Update UI every N items - Task.Delay(1) is required to let browser actually render
+        // Task.Yield() doesn't work because it doesn't give the browser event loop time to paint
+        const int updateEveryNItems = 10;
 
         foreach (var credential in credentialsWithUrls)
         {
@@ -443,12 +470,25 @@
             }
             catch
             {
-                // Invalid URL - skip
+                // Invalid URL
             }
 
             FaviconExtractionProgress++;
-            StateHasChanged();
+
+            // Update UI periodically
+            if (FaviconExtractionProgress % updateEveryNItems == 0)
+            {
+                StateHasChanged();
+                await Task.Delay(1);
+            }
         }
+
+        // Final update to show 100% completion before transitioning to next phase
+        StateHasChanged();
+        await Task.Delay(50);
+
+        IsExtractingFavicons = false;
+        StateHasChanged();
     }
 
     /// <summary>
@@ -493,21 +533,45 @@
         }
 
         var items = BaseImporter.ConvertToItem(ImportedCredentials, folderNameToId);
+
+        // Clear logo tracking for this import session
+        ImportSessionLogoIds.Clear();
+
+        // Show saving credentials progress
+        IsSavingCredentials = true;
+        CredentialSaveProgress = 0;
+        TotalCredentialsToSave = items.Count;
+        StateHasChanged();
+
+        const int updateEveryNItems = 10;
         foreach (var item in items)
         {
             await ProcessSingleItem(item);
-            await Task.Delay(2); // Small delay to avoid blocking the UI thread
+            CredentialSaveProgress++;
+
+            if (CredentialSaveProgress % updateEveryNItems == 0)
+            {
+                StateHasChanged();
+                await Task.Delay(1);
+            }
         }
+
+        StateHasChanged();
+        await Task.Delay(50);
+
+        IsSavingCredentials = false;
+        IsSyncingVault = true;
+        StateHasChanged();
 
         var success = await DbService.SaveDatabaseAsync();
         if (success)
         {
-            GlobalNotificationService.AddSuccessMessage($"Successfully imported {ImportedCredentials.Count} credentials.");
+            GlobalNotificationService.AddSuccessMessage(string.Format(Localizer["ImportSuccessMessage"], ImportedCredentials.Count));
             NavigationManager.NavigateTo("/items");
         }
         else
         {
-            ImportError = "Error saving database.";
+            ImportError = Localizer["ImportErrorGeneric"];
         }
     }
 
@@ -531,7 +595,7 @@
             }
             else
             {
-                // Create new folder - CreateAsync returns the new folder ID directly
+                // Create new folder
                 var newFolderId = await FolderService.CreateAsync(folderName);
                 folderNameToId[folderName] = newFolderId;
             }
@@ -558,37 +622,49 @@
                     domain = domain[4..];
                 }
 
-                var context = await DbService.GetDbContextAsync();
-
-                // Check if logo already exists for this source (deduplication)
-                var existingLogo = await context.Logos.FirstOrDefaultAsync(l => l.Source == domain);
-                if (existingLogo != null)
+                // First check if we already created a logo for this domain in this import session
+                if (ImportSessionLogoIds.TryGetValue(domain, out var sessionLogoId))
                 {
-                    // Reuse existing logo
-                    item.LogoId = existingLogo.Id;
+                    item.LogoId = sessionLogoId;
                 }
-                else if (ExtractedFavicons.TryGetValue(domain, out var favicon))
+                else
                 {
-                    // Create new logo from extracted favicon
-                    var logo = new Logo
+                    var context = await DbService.GetDbContextAsync();
+
+                    var existingLogo = await context.Logos.FirstOrDefaultAsync(l => l.Source == domain);
+                    if (existingLogo != null)
                     {
-                        Id = Guid.NewGuid(),
-                        Source = domain,
-                        FileData = favicon,
-                        MimeType = "image/png",
-                        FetchedAt = DateTime.UtcNow,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
-                    context.Logos.Add(logo);
-                    item.LogoId = logo.Id;
+                        // Reuse existing logo
+                        item.LogoId = existingLogo.Id;
+                        ImportSessionLogoIds[domain] = existingLogo.Id;
+                    }
+                    else if (ExtractedFavicons.TryGetValue(domain, out var favicon))
+                    {
+                        // Create new logo
+                        var logo = new Logo
+                        {
+                            Id = Guid.NewGuid(),
+                            Source = domain,
+                            FileData = favicon,
+                            MimeType = "image/png",
+                            FetchedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        context.Logos.Add(logo);
+                        item.LogoId = logo.Id;
+
+                        // Track this logo for subsequent items with same domain
+                        ImportSessionLogoIds[domain] = logo.Id;
+                    }
                 }
             }
             catch
             {
-                // Invalid URL - skip logo assignment
+                // Invalid URL
             }
         }
+
         await ItemService.InsertEntryAsync(item, false, false);
     }
 
@@ -599,13 +675,13 @@
     {
         if (string.IsNullOrEmpty(e.File.Name))
         {
-            ImportError = $"Please select a valid {ServiceName} export file to import";
+            ImportError = Localizer["ImportErrorInvalidFile"];
             return;
         }
 
         if (e.File.Name.EndsWith(".zip"))
         {
-            ImportError = $"Please unzip the {ServiceName} export file before importing, please read the instructions below for more information.";
+            ImportError = Localizer["ImportErrorZipFile"];
             return;
         }
 
@@ -617,7 +693,8 @@
             // Limit file size to 10MB
             if (e.File.Size > 10 * 1024 * 1024)
             {
-                throw new ArgumentException("File size exceeds 10MB limit");
+                ImportError = Localizer["ImportErrorFileTooLarge"];
+                return;
             }
 
             await using var stream = e.File.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
@@ -638,7 +715,7 @@
         }
         catch (Exception ex)
         {
-            ImportError = $"Error processing {ServiceName} export file. Please check the file format and try again.";
+            ImportError = Localizer["ImportErrorGeneric"];
             Logger.LogError(ex, "Error processing {ServiceName} export file", ServiceName);
         }
         finally
