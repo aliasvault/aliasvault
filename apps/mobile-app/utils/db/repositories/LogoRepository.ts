@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 import { BaseRepository } from '../BaseRepository';
 
 /**
@@ -141,6 +143,11 @@ export class LogoRepository extends BaseRepository {
     }
 
     try {
+      // Handle base64 string (from native SQLite query results - both iOS and Android
+      // return BLOB data as plain base64 strings through the React Native bridge)
+      if (typeof logo === 'string') {
+        return new Uint8Array(Buffer.from(logo, 'base64'));
+      }
       // Handle object-like array conversion (from JSON deserialization)
       if (typeof logo === 'object' && !ArrayBuffer.isView(logo) && !Array.isArray(logo)) {
         const values = Object.values(logo as Record<string, number>);
