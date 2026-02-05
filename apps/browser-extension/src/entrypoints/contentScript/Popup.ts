@@ -213,8 +213,6 @@ export async function createAutofillPopup(input: HTMLInputElement, items: Item[]
   const creatingText = await t('content.creatingNewAlias');
   const failedText = await t('content.failedToCreateIdentity');
 
-  // Disable browser's native autocomplete to avoid conflicts with AliasVault's autocomplete.
-  input.setAttribute('autocomplete', 'false');
   const popup = createBasePopup(input, rootContainer);
 
   // Create credential list container with ID

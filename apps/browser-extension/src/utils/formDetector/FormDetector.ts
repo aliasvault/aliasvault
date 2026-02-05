@@ -360,8 +360,12 @@ export class FormDetector {
         continue;
       }
 
-      // Check autocomplete attribute for direct field type matching
-      const autocomplete = input.getAttribute('autocomplete')?.toLowerCase() ?? '';
+      /**
+       * Check autocomplete attribute for direct field type matching.
+       * First check our custom data-av-autocomplete attribute (set by AliasVault when disabling
+       * native browser autofill), then fall back to the regular autocomplete attribute.
+       */
+      const autocomplete = (input.getAttribute('data-av-autocomplete') ?? input.getAttribute('autocomplete'))?.toLowerCase() ?? '';
 
       // Direct autocomplete matches take highest priority (score -2, higher than type=email at -1)
       if (autocomplete) {
@@ -902,15 +906,39 @@ export class FormDetector {
    * Check if a field is an autofill-triggerable field (username, email, or password).
    */
   public isAutofillTriggerableField(): boolean {
-    // Check if it's a username, email or password field by reusing the existing detection logic
-    const formWrapper = this.getFormWrapper();
+    return this.getDetectedFieldType() !== null;
+  }
 
+  /**
+   * Get the detected field type for the clicked element.
+   * Returns 'username', 'password', or 'email' if detected, null otherwise.
+   * First checks for our custom data-av-field-type attribute (set on previous interactions),
+   * then falls back to full field detection.
+   */
+  public getDetectedFieldType(): string | null {
     if (!this.clickedElement) {
-      return false;
+      return null;
+    }
+
+    // First check if we already detected and stored the field type
+    const storedFieldType = this.clickedElement.getAttribute('data-av-field-type');
+    if (storedFieldType) {
+      return storedFieldType;
     }
 
     // Get the actual input element (handles shadow DOM)
     const actualElement = this.getActualInputElement(this.clickedElement);
+
+    // Also check the actual element for stored field type
+    if (actualElement !== this.clickedElement) {
+      const actualStoredFieldType = actualElement.getAttribute('data-av-field-type');
+      if (actualStoredFieldType) {
+        return actualStoredFieldType;
+      }
+    }
+
+    // Fall back to full field detection
+    const formWrapper = this.getFormWrapper();
 
     // Check both the clicked element and the actual input element
     const elementsToCheck = [this.clickedElement, actualElement].filter((el, index, arr) =>
@@ -920,23 +948,23 @@ export class FormDetector {
     // Check if any of the elements is a username field
     const usernameFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text']);
     if (usernameFields.some(input => elementsToCheck.includes(input))) {
-      return true;
+      return 'username';
     }
 
     // Check if any of the elements is a password field
     const passwordField = this.findPasswordField(formWrapper as HTMLFormElement | null);
     if ((passwordField.primary && elementsToCheck.includes(passwordField.primary)) ||
         (passwordField.confirm && elementsToCheck.includes(passwordField.confirm))) {
-      return true;
+      return 'password';
     }
 
     // Check if any of the elements is an email field
     const emailFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.email, ['text', 'email']);
     if (emailFields.some(input => elementsToCheck.includes(input))) {
-      return true;
+      return 'email';
     }
 
-    return false;
+    return null;
   }
 
   /**

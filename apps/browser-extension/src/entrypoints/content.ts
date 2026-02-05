@@ -63,18 +63,32 @@ export default defineContentScript({
 
           const { isValid, inputElement } = validateInputField(e.target as Element);
           if (isValid && inputElement) {
+            /**
+             * Immediately store the original autocomplete value and disable native autocomplete.
+             * This must happen as early as possible to prevent native browser autofill from showing.
+             */
+            const originalAutocomplete = inputElement.getAttribute('autocomplete');
+            if (originalAutocomplete && !inputElement.hasAttribute('data-av-autocomplete')) {
+              inputElement.setAttribute('data-av-autocomplete', originalAutocomplete);
+            }
+            inputElement.setAttribute('autocomplete', 'off');
+
             const formDetector = new FormDetector(document, inputElement);
             if (!formDetector.containsLoginForm()) {
               return;
             }
 
             // Only show popup for autofill-triggerable fields
-            if (!formDetector.isAutofillTriggerableField()) {
+            const detectedFieldType = formDetector.getDetectedFieldType();
+            if (!detectedFieldType) {
               return;
             }
 
             // Only inject icon and show popup if autofill popup is enabled
             if (await isAutoShowPopupEnabled()) {
+              // Store our detected field type for subsequent clicks
+              inputElement.setAttribute('data-av-field-type', detectedFieldType);
+
               injectIcon(inputElement, container);
 
               // Only show popup if debounce time has passed
