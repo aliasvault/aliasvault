@@ -53,7 +53,7 @@ show_usage() {
     printf "  install                   Install AliasVault by pulling pre-built images from GitHub Container Registry (recommended)\n"
     printf "  build                     Build AliasVault containers locally from source (takes longer and requires sufficient specs)\n"
     printf "  start                     Start AliasVault containers\n"
-    printf "  restart                   Restart AliasVault containers\n"
+    printf "  restart [container]       Restart AliasVault containers (optionally specify a single container)\n"
     printf "  stop                      Stop AliasVault containers\n"
     printf "\n"
     printf "  configure-hostname        Configure the hostname where AliasVault can be accessed from\n"
@@ -175,6 +175,11 @@ parse_args() {
         restart|r)
             COMMAND="restart"
             shift
+            # Check for optional container name argument
+            if [ $# -gt 0 ] && [[ ! "$1" =~ ^- ]]; then
+                COMMAND_ARG="$1"
+                shift
+            fi
             ;;
         update|up)
             COMMAND="update"
@@ -972,7 +977,7 @@ main() {
             handle_stop
             ;;
         "restart")
-            handle_restart
+            handle_restart "$COMMAND_ARG"
             ;;
         "update")
             handle_update
@@ -2405,10 +2410,27 @@ handle_stop() {
 }
 
 handle_restart() {
-    printf "\n${CYAN}> Restarting AliasVault containers...${NC}\n"
-    eval "$(get_docker_compose_command) down"
-    eval "$(get_docker_compose_command) up -d"
-    printf "${GREEN}> AliasVault containers restarted successfully.${NC}\n"
+    local container_name="$1"
+
+    if [ -n "$container_name" ]; then
+        # Validate container name against known services
+        local valid_services="postgres client api admin reverse-proxy smtp task-runner"
+        if ! echo "$valid_services" | grep -qw "$container_name"; then
+            printf "${RED}Error: Invalid container name '${container_name}'${NC}\n"
+            printf "Valid containers: ${valid_services}\n"
+            exit 1
+        fi
+
+        printf "\n${CYAN}> Restarting ${container_name} container...${NC}\n"
+        eval "$(get_docker_compose_command) stop ${container_name}"
+        eval "$(get_docker_compose_command) up -d ${container_name}"
+        printf "${GREEN}> ${container_name} container restarted successfully.${NC}\n"
+    else
+        printf "\n${CYAN}> Restarting AliasVault containers...${NC}\n"
+        eval "$(get_docker_compose_command) down"
+        eval "$(get_docker_compose_command) up -d"
+        printf "${GREEN}> AliasVault containers restarted successfully.${NC}\n"
+    fi
 }
 
 # Function to handle updates
