@@ -100,11 +100,11 @@
       "passwordChanged": "Tu contraseña ha cambiado desde la última vez que iniciaste sesión. Por favor, inicia sesión de nuevo por razones de seguridad.",
       "syncConflictMaxRetries": "No se pudo sincronizar la bóveda después de múltiples intentos. Inténtalo de nuevo más tarde.",
       "mergeFailed": "Error al combinar cambios en la bóveda. Por favor, inténtalo de nuevo.",
-      "invalidCode": "Please enter a valid 6-digit authentication code.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "wrongPassword": "Incorrect password. Please try again.",
-      "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "invalidCode": "Por favor, introduzca un código de autenticación de 6 dígitos válido.",
+      "serverError": "No se pudo llegar al servidor AliasVault. Por favor, inténtelo de nuevo más tarde o póngase en contacto con el soporte si el problema persiste.",
+      "wrongPassword": "Contraseña incorrecta. Por favor, inténtelo de nuevo.",
+      "sessionExpired": "Su sesión ha caducado. Por favor, inicie sesión de nuevo.",
+      "mobileLoginRequestExpired": "Se ha agotado el tiempo de inicio de sesión del móvil. Por favor, vuelva a cargar la página e inténtelo de nuevo."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Se ha producido un error desconocido. Por favor, inténtelo de nuevo.",
