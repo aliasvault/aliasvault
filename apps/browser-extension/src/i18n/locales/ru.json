@@ -100,11 +100,11 @@
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности.",
       "syncConflictMaxRetries": "Ошибка синхронизации хранилища. Повторите попытку позже.",
       "mergeFailed": "Не удалось объединить изменения. Попробуйте снова.",
-      "invalidCode": "Please enter a valid 6-digit authentication code.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "wrongPassword": "Incorrect password. Please try again.",
-      "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "invalidCode": "Введите корректный 6-значный код подтверждения.",
+      "serverError": "Сервер AliasVault недоступен. Повторите попытку позже или свяжитесь с техподдержкой.",
+      "wrongPassword": "Неверный пароль. Повторите попытку.",
+      "sessionExpired": "Срок действия сессии истек. Войдите снова.",
+      "mobileLoginRequestExpired": "Срок запроса на вход истек. Обновите страницу и попробуйте снова."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Произошла неизвестная ошибка. Пожалуйста, попробуйте снова.",
@@ -200,7 +200,7 @@
     "deleteFolderAndItems": "Удалить папку и все элементы",
     "deleteFolderAndItemsDescription": "{{count}} объект(ов) будет перемещено в раздел «Недавно удалённые».",
     "filters": {
-      "folders": "Folders",
+      "folders": "Папки",
       "passkeys": "Ключи доступа"
     },
     "sort": {
@@ -516,6 +516,6 @@
   },
   "sync": {
     "offline": "Офлайн",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Повторить синхронизацию"
   }
 }
