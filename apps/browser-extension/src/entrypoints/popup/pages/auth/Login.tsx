@@ -338,16 +338,7 @@ const Login: React.FC = () => {
    * Handle Lace wallet connection
    */
   const handleWalletConnect = async () : Promise<void> => {
-    setError(null);
-    try {
-      await wallet.connectWallet();
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError(t('wallet.errors.connectionFailed'));
-      }
-    }
+    await wallet.connectWallet();
   };
 
   /**

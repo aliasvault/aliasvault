@@ -61,8 +61,11 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
    */
   const detectWallet = useCallback(async (): Promise<boolean> => {
     try {
-      const result = await sendMessage('DETECT_LACE_WALLET', {}, 'background');
-      return (result as { detected: boolean })?.detected ?? false;
+      const result = await sendMessage('DETECT_LACE_WALLET', {}, 'background') as any;
+      if (!result?.success) {
+        return false;
+      }
+      return result.data?.detected ?? false;
     } catch {
       return false;
     }
@@ -77,11 +80,18 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setIsConnecting(true);
 
     try {
-      const result = await sendMessage('CONNECT_LACE_WALLET', {}, 'background');
-      const state = result as WalletState;
+      const result = await sendMessage('CONNECT_LACE_WALLET', {}, 'background') as any;
 
+      if (!result?.success) {
+        const errorMsg = result?.error ?? 'Failed to connect wallet';
+        setError(errorMsg);
+        return;
+      }
+
+      const state = result.data as WalletState;
       if (!state?.address) {
-        throw new Error('No wallet address returned');
+        setError('No wallet address returned');
+        return;
       }
 
       setWalletState(state);
@@ -92,7 +102,6 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to connect wallet';
       setError(message);
-      throw err;
     } finally {
       setIsConnecting(false);
     }
