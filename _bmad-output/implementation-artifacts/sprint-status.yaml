@@ -1,4 +1,4 @@
-# generated: 2026-01-11
+# generated: 2026-02-07
 # project: aliasvault
 # project_key: aliasvault
 # tracking_system: file-system
@@ -33,7 +33,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-01-11
+generated: 2026-02-07
 project: aliasvault
 project_key: aliasvault
 tracking_system: file-system
@@ -51,9 +51,9 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: Midnight Smart Contracts & Vault Storage
-  epic-2: backlog
-  2-1-vaultregistry-smart-contract: backlog
-  2-2-ipfs-service-pinata: backlog
+  epic-2: in-progress
+  2-1-vaultregistry-smart-contract: done
+  2-2-ipfs-service-pinata: ready-for-dev
   2-3-vault-sync-logic-save-flow: backlog
   2-4-vault-sync-logic-load-flow: backlog
   2-5-contract-deployment-scripts: backlog

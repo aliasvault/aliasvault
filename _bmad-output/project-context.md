@@ -87,7 +87,7 @@ await contract.storeRecoveryKey(recoveryKey)
 **Why this matters:**
 - CIDv0 (base58 encoded, starts with "Qm") is deprecated
 - CIDv1 (base32 encoded) is case-insensitive and URL-safe
-- Midnight contracts store CIDs as strings → must be consistent format
+- Midnight contracts store CID **hashes** as `Bytes<32>` → the raw CID never goes on-chain; validated in TypeScript API layer before circuit call
 
 **Implementation:**
 ```typescript
@@ -303,6 +303,86 @@ const owner = await client.call({
 })
 ```
 
+### 9. Compact Contract Ownership Pattern (CRITICAL)
+
+**Rule:** Use `persistentCommit` (hiding commitment) for owner identity in Compact contracts. Never use `persistentHash` for ownership — it leaks the preimage relationship.
+
+**Why this matters:**
+- `persistentHash` is deterministic but transparent — an observer can link owner identity across transactions
+- `persistentCommit` adds blinding, hiding the secret key relationship (OpenZeppelin ZOwnablePK pattern)
+- For non-rotating ownership (e.g., VaultRegistry), use a fixed domain separator as the nonce
+
+**Implementation (Compact):**
+```compact
+// Derive owner commitment — hiding, non-rotating
+export circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<32>>(pad(32, "vault:owner:"), sk);
+}
+
+// Verify caller is owner
+export circuit updateVault(newCidHash: Bytes<32>): [] {
+  const cidHash = disclose(newCidHash);
+  const sk = local_secret_key();  // witness
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  vaultCidHash = cidHash;
+}
+```
+
+**TypeScript witness pattern:**
+```typescript
+// Private state holds ONLY witness data (secret key for owner auth).
+// Application-layer data (e.g., full CID string) is stored separately.
+export type VaultRegistryPrivateState = {
+  readonly secretKey: Uint8Array;
+};
+
+export const vaultRegistryWitnesses = {
+  local_secret_key: ({ privateState }: WitnessContext<Ledger, VaultRegistryPrivateState>):
+    [VaultRegistryPrivateState, Uint8Array] => [privateState, privateState.secretKey],
+};
+```
+
+### 10. Compact Language Gotchas (CRITICAL for AI Agents)
+
+**Rule:** These Compact syntax rules are non-obvious and frequently cause compilation failures:
+
+| Gotcha | Wrong | Correct |
+|--------|-------|--------|
+| `default` is an expression, not a function | `default<Bytes<32>>()` | `default<Bytes<32>>` |
+| `disclose()` required before conditional/ledger use | `assert(x == y)` | `assert(disclose(x) == y)` |
+| `persistentCommit` signature | `persistentCommit(nonce, [nonce, value])` | `persistentCommit<NonceType>(nonce, value)` |
+| Circuit params need `disclose()` | `registrations.member(param)` | `registrations.member(disclose(param))` |
+| `pad()` for string-to-Bytes | `"vault:owner:"` (bare string) | `pad(32, "vault:owner:")` |
+| Pragma required | (missing) | `pragma language_version >= 0.20;` |
+| Return empty tuple, not Void | `): Void {` | `): [] {` |
+
+**Reference:** Always call `midnight-get-latest-syntax` MCP tool before writing Compact code.
+
+### 11. Contract Unit Testing Pattern
+
+**Rule:** Use the simulator pattern for contract unit tests. Each contract gets a `*-simulator.ts` that wraps the compiled contract with typed methods.
+
+**Why this matters:**
+- Tests run in <2s without a live network
+- Simulator provides typed access to ledger state and circuit calls
+- Pure circuits (`pureCircuits.*`) can be called for off-circuit verification
+
+**Pattern:**
+```typescript
+// vault-registry-simulator.ts
+export class VaultRegistrySimulator {
+  constructor(secretKey: Uint8Array) {
+    this.contract = new Contract<VaultRegistryPrivateState>(vaultRegistryWitnesses);
+    const initialPrivateState = createVaultRegistryPrivateState(secretKey);
+    // ... createConstructorContext, createCircuitContext
+  }
+  public registerVault(hash: Uint8Array): Ledger { /* impureCircuits.registerVault */ }
+  public static ownerCommitment(sk: Uint8Array): Uint8Array {
+    return pureCircuits.ownerCommitment(sk);  // Off-circuit verification
+  }
+}
+```
+
 ---
 
 ## Development Workflow Rules
@@ -408,6 +488,8 @@ Before merging any PR that touches cryptography or guardian recovery:
 
 ---
 
-**Last Updated:** 2026-01-10  
+**Last Updated:** 2026-02-07  
 **Source:** Generated from [architecture.md](_bmad-output/architecture.md)  
-**Maintenance:** Update when implementing new patterns or discovering critical rules
+**Maintenance:** Update when implementing new patterns or discovering critical rules  
+**Change Log:**
+- 2026-02-07: Added Rules 9-11 (Compact ownership pattern, language gotchas, contract testing) from Story 2.1 implementation
