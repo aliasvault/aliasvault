@@ -1,0 +1,25 @@
+@using AliasVault.ImportExport.Models
+@using AliasVault.ImportExport.Importers
+@using Microsoft.Extensions.Localization
+@inject NavigationManager NavigationManager
+@inject GlobalNotificationService GlobalNotificationService
+@inject IStringLocalizerFactory LocalizerFactory
+@inject ILogger<ImportServiceEnpass> Logger
+
+<ImportServiceCard
+    ServiceName="Enpass"
+    Description="@Localizer["EnpassDescription"]"
+    LogoUrl="img/importers/enpass.svg"
+    ProcessFileCallback="ProcessFile">
+    <p class="text-gray-700 dark:text-gray-300 mb-4">@Localizer["EnpassInstructionsPart1"]</p>
+    <p class="text-gray-700 dark:text-gray-300 mb-4">@Localizer["EnpassInstructionsPart2"]</p>
+</ImportServiceCard>
+
+@code {
+    private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Settings.ImportExport.ImportServices", "AliasVault.Client");
+
+    private static async Task<List<ImportedCredential>> ProcessFile(string fileContents)
+    {
+        return await EnpassImporter.ImportFromCsvAsync(fileContents);
+    }
+}
