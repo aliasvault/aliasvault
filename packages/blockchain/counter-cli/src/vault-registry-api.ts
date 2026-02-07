@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { type ContractAddress } from '@midnight-ntwrk/compact-runtime';
-import { VaultRegistry } from '@midnight-ntwrk/counter-contract';
+import { VaultRegistry } from '@aliasvault/contract';
 import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { type Logger } from 'pino';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
@@ -72,8 +70,9 @@ export const checkIsRegistered = async (
   logger.info('Checking registration status...');
   const result = await contract.callTx.isRegistered(walletAddressHash);
   logger.info(`isRegistered tx ${result.public.txId} in block ${result.public.blockHeight}`);
-  // The circuit returns a boolean — extract from transaction result
-  return true; // If tx succeeded, registration check passed
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+  const isRegistered = (result as any).public?.returnValue ?? true;
+  return Boolean(isRegistered);
 };
 
 export const getVaultRegistryLedgerState = async (

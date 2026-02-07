@@ -1,8 +1,10 @@
-import { VaultRegistry } from '@midnight-ntwrk/counter-contract';
+import { VaultRegistry } from '@aliasvault/contract';
 import type { MidnightProviders } from '@midnight-ntwrk/midnight-js-types';
 import type { DeployedContract, FoundContract } from '@midnight-ntwrk/midnight-js-contracts';
 import type { ImpureCircuitId } from '@midnight-ntwrk/compact-js';
 
+// Mirrors VaultRegistryPrivateState in contract/src/witnesses.ts.
+// After next `npm run build` in contract/, import from @aliasvault/contract instead.
 export type VaultRegistryPrivateState = Record<string, never>;
 
 export type VaultRegistryCircuits = ImpureCircuitId<VaultRegistry.Contract<VaultRegistryPrivateState>>;

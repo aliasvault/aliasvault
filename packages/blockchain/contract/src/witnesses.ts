@@ -18,4 +18,7 @@ export type CounterPrivateState = {
   privateCounter: number;
 };
 
+// VaultRegistry has no private state — all ledger state is public.
+export type VaultRegistryPrivateState = Record<string, never>;
+
 export const witnesses = {};

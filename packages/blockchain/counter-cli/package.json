@@ -17,6 +17,6 @@
     "vault-registry": "node --experimental-specifier-resolution=node --loader ts-node/esm src/tui_vault_registry.ts"
   },
   "dependencies": {
-    "@midnight-ntwrk/counter-contract": "*"
+    "@aliasvault/contract": "*"
   }
 }
