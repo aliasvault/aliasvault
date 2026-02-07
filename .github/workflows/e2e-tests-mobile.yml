@@ -52,9 +52,9 @@ concurrency:
 env:
   CARGO_HOME: /Users/ci/.cargo
   RUSTUP_HOME: /Users/ci/.rustup
-  ANDROID_HOME: /Users/ci/Library/Android/sdk
-  ANDROID_SDK_ROOT: /Users/ci/Library/Android/sdk
-  ANDROID_NDK_HOME: /Users/ci/Library/Android/sdk/ndk/26.1.10909125
+  ANDROID_HOME: /Users/ci/Android/sdk
+  ANDROID_SDK_ROOT: /Users/ci/Android/sdk
+  ANDROID_NDK_HOME: /Users/ci/Android/sdk/ndk/26.1.10909125
   PATH: /Users/ci/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:/Applications/Docker.app/Contents/Resources/bin:/Users/ci/Library/Android/sdk/platform-tools:/Users/ci/Library/Android/sdk/emulator:/usr/bin:/bin:/usr/sbin:/sbin
   # UTF-8 locale settings required for CocoaPods
   LANG: en_US.UTF-8
