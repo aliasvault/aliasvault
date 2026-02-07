@@ -18,6 +18,7 @@ import ConversionUtility from '@/entrypoints/popup/utils/ConversionUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 import { useWallet } from '@/entrypoints/popup/context/WalletContext';
+import { getExplorerAddressUrl } from '@/entrypoints/popup/config/explorerConfig';
 
 import { AppInfo } from '@/utils/AppInfo';
 import type { VaultResponse, LoginResponse } from '@/utils/dist/shared/models/webapi';
@@ -533,6 +534,22 @@ const Login: React.FC = () => {
               <p className="text-xs text-gray-600 dark:text-gray-300 font-mono break-all">
                 {wallet.walletState.address.slice(0, 20)}...{wallet.walletState.address.slice(-12)}
               </p>
+              {(() => {
+                const explorerUrl = getExplorerAddressUrl(wallet.walletState.address);
+                return explorerUrl ? (
+                  <a
+                    href={explorerUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center gap-1 text-xs text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                    {t('wallet.verifyOnExplorer')}
+                  </a>
+                ) : null;
+              })()}
             </div>
           ) : wallet.isConnected && wallet.walletState ? (
             /* State 2: Wallet connected, needs signature challenge */

@@ -447,6 +447,7 @@
     "signChallenge": "Sign Challenge to Verify",
     "signing": "Signing...",
     "verified": "Wallet Verified",
+    "verifyOnExplorer": "Verify on Explorer",
     "errors": {
       "connectionFailed": "Failed to connect to Lace wallet. Make sure Lace is installed and you have a web page open.",
       "notFound": "Midnight Lace wallet not found. Is the extension installed and enabled?",

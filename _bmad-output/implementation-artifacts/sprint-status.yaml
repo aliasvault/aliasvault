@@ -46,7 +46,7 @@ development_status:
   1-2-wallet-connection-lace: done
   1-3-wallet-signature-challenge: done
   1-4-vaultregistry-contract-stub: done
-  1-5-block-explorer-link: backlog
+  1-5-block-explorer-link: done
   1-6-remove-srp-auth-flow: backlog
   epic-1-retrospective: optional
 
