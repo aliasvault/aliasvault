@@ -30,7 +30,7 @@
             ],
             "outputs": [
                 "contract/dist/**",
-                "counter-cli/dist/**"
+                "cli/dist/**"
             ],
             "cache": true
         },

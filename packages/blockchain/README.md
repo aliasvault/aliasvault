@@ -39,13 +39,13 @@ cd ..
 
 # 3. Build TypeScript (in WSL for rm/cp commands)
 wsl bash -lc "cd contract && rm -rf dist && npx tsc --project tsconfig.build.json && cp -Rf ./src/managed ./dist/managed && cp ./src/counter.compact ./dist/ && cp ./src/vault-registry.compact ./dist/"
-wsl bash -lc "cd counter-cli && rm -rf dist && npx tsc --project tsconfig.build.json"
+wsl bash -lc "cd cli && rm -rf dist && npx tsc --project tsconfig.build.json"
 
 # 4. Start local Midnight network (in another terminal)
 # cd ~/projects/midnight-local-network && docker compose up
 
 # 5. Run the Counter TUI (connects to already-running local network)
-cd counter-cli
+cd cli
 node --experimental-specifier-resolution=node --loader ts-node/esm src/tui_local.ts
 
 # Or run the VaultRegistry test TUI
@@ -66,7 +66,7 @@ packages/blockchain/
 │   │   ├── witnesses.ts            # Witness functions
 │   │   └── index.ts                # Contract exports (Counter + VaultRegistry)
 │   └── package.json
-├── counter-cli/               # CLI tools for contract deployment & interaction
+├── cli/                       # CLI tools for contract deployment & interaction
 │   ├── src/
 │   │   ├── api.ts                    # Counter contract interaction API
 │   │   ├── vault-registry-api.ts     # VaultRegistry contract interaction API

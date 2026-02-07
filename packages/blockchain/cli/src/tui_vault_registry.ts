@@ -1,10 +1,11 @@
-// VaultRegistry test TUI — deploys contract and tests registration on local Midnight network.
+// VaultRegistry test TUI — deploys contract and tests registration + private CID on local Midnight network.
 // Reuses the wallet infrastructure from the counter CLI.
 //
 // Usage: node --experimental-specifier-resolution=node --loader ts-node/esm src/tui_vault_registry.ts
 
 import { stdin as input, stdout as output } from 'node:process';
 import { createInterface } from 'node:readline/promises';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { createLogger } from './logger-utils.js';
 import { StandaloneConfig, currentDir } from './config.js';
@@ -31,7 +32,7 @@ console.log(`
 ║                                                              ║
 ║              VaultRegistry Contract Test                     ║
 ║              ──────────────────────────                      ║
-║              Deploy and test vault registration              ║
+║              Deploy, register, update CID, verify            ║
 ║                                                              ║
 ╚══════════════════════════════════════════════════════════════╝
 `);
@@ -59,10 +60,14 @@ try {
     midnightProvider: walletAndMidnightProvider,
   };
 
+  // Generate a 32-byte secret key for owner identity
+  const secretKey = crypto.randomBytes(32);
+  console.log(`  Secret key generated (${secretKey.length} bytes)\n`);
+
   // Step 3: Deploy VaultRegistry
-  console.log('\nStep 3: Deploying VaultRegistry contract...');
+  console.log('Step 3: Deploying VaultRegistry contract...');
   const contract = await api.withStatus('Deploying VaultRegistry', () =>
-    vrApi.deployVaultRegistry(providers),
+    vrApi.deployVaultRegistry(providers, secretKey),
   );
   const contractAddress = contract.deployTxData.public.contractAddress;
   console.log(`  Contract deployed at: ${contractAddress}\n`);
@@ -74,30 +79,71 @@ try {
 
   // Step 5: Register a vault
   console.log('Step 5: Registering a vault...');
-  // Create a 32-byte hash from a test wallet address
-  const testAddressHash = new Uint8Array(32);
-  const encoder = new TextEncoder();
-  const testData = encoder.encode('test-wallet-address-for-aliasvault');
-  testAddressHash.set(testData.slice(0, 32));
+  const testAddressHash = crypto.createHash('sha256').update('test-wallet-address-for-aliasvault').digest();
 
   await api.withStatus('Registering vault', () =>
     vrApi.registerVault(contract, testAddressHash),
   );
   console.log('  Vault registered successfully!\n');
 
-  // Step 6: Check updated ledger state
+  // Step 6: Check updated ledger state (should show owner commitment)
   console.log('Step 6: Checking updated ledger state...');
   const updatedState = await vrApi.getVaultRegistryLedgerState(providers, contractAddress);
-  console.log(`  Total vaults (should be 1): ${updatedState?.totalVaults ?? 'N/A'}\n`);
+  console.log(`  Total vaults (should be 1): ${updatedState?.totalVaults ?? 'N/A'}`);
+  console.log(`  Owner set: ${updatedState?.owner ? 'yes' : 'no'}`);
+  console.log(`  VaultCidHash (should be empty): ${Buffer.from(updatedState?.vaultCidHash ?? []).toString('hex')}\n`);
 
-  // Step 7: Try to register the same vault again (should fail)
-  console.log('Step 7: Attempting duplicate registration (should fail)...');
+  // Step 7: Update Vault CID
+  console.log('Step 7: Updating vault CID...');
+  const testCid = 'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi';
+  vrApi.assertCIDv1(testCid);
+  const cidHash = crypto.createHash('sha256').update(testCid).digest();
+  console.log(`  CID: ${testCid}`);
+  console.log(`  CID hash: ${Buffer.from(cidHash).toString('hex')}`);
+
+  await api.withStatus('Updating vault CID', () =>
+    vrApi.updateVault(contract, cidHash),
+  );
+  console.log('  Vault CID updated successfully!\n');
+
+  // Step 8: Verify CID hash in ledger state
+  console.log('Step 8: Verifying CID hash in ledger state...');
+  const finalState = await vrApi.getVaultRegistryLedgerState(providers, contractAddress);
+  const storedHash = Buffer.from(finalState?.vaultCidHash ?? []).toString('hex');
+  const expectedHash = Buffer.from(cidHash).toString('hex');
+  console.log(`  Stored CID hash:   ${storedHash}`);
+  console.log(`  Expected CID hash: ${expectedHash}`);
+  if (storedHash === expectedHash) {
+    console.log('  ✅ CID hash matches!\n');
+  } else {
+    console.log('  ❌ CID hash MISMATCH!\n');
+  }
+
+  // Step 9: Try to register the same vault again (should fail)
+  console.log('Step 9: Attempting duplicate registration (should fail)...');
   try {
     await vrApi.registerVault(contract, testAddressHash);
     console.log('  ERROR: Duplicate registration should have failed!\n');
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     console.log(`  Correctly rejected duplicate: ${msg}\n`);
+  }
+
+  // Step 10: CIDv1 validation test
+  console.log('Step 10: Testing CIDv1 validation...');
+  try {
+    vrApi.assertCIDv1('QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG');
+    console.log('  ERROR: CIDv0 should have been rejected!\n');
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.log(`  Correctly rejected CIDv0: ${msg}`);
+  }
+  try {
+    vrApi.assertCIDv1('BAFY...');
+    console.log('  ERROR: Non-base32 CID should have been rejected!\n');
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.log(`  Correctly rejected non-base32: ${msg}\n`);
   }
 
   console.log('═══════════════════════════════════════════════════════════');
