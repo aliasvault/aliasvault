@@ -263,28 +263,28 @@
   </data>
   <!-- Edge -->
   <data name="EdgeDescription" xml:space="preserve">
-    <value>Import passwords from your Microsoft Edge Password Manager</value>
+    <value>Importeer wachtwoorden uit de Microsoft Edge Password Manager</value>
     <comment>Description for Edge import service</comment>
   </data>
   <data name="EdgeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.</value>
+    <value>Om je Microsoft Edge wachtwoorden te kunnen importeren, moet je ze als CSV-bestand exporteren. Je kunt dit doen door naar Menu > Instellingen > Wachtwoord en autofill > Microsoft Password Manager > ... > Exporteer wachtwoorden.</value>
     <comment>Edge export instructions part 1</comment>
   </data>
   <data name="EdgeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nadat je het bestand hebt geëxporteerd, kun je het hieronder uploaden.</value>
     <comment>Edge export instructions part 2</comment>
   </data>
   <!-- Enpass -->
   <data name="EnpassDescription" xml:space="preserve">
-    <value>Import passwords from Enpass</value>
+    <value>Importeer wachtwoorden uit Enpass</value>
     <comment>Description for Enpass import service</comment>
   </data>
   <data name="EnpassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.</value>
+    <value>Om je Enpass wachtwoorden te importeren, moet je ze als CSV-bestand exporteren. Doe dit door Enpass te openen, ga naar 'Menu' > 'Bestand' > 'Export' > en selecteer vervolgens het CSV formaat.</value>
     <comment>Enpass export instructions part 1</comment>
   </data>
   <data name="EnpassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Nadat je het bestand hebt geëxporteerd, kun je het hieronder uploaden.</value>
     <comment>Enpass export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
