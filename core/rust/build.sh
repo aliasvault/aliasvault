@@ -576,7 +576,14 @@ build_android() {
     # Set up Android toolchain
     local host_tag
     case "$(uname -s)" in
-        Darwin) host_tag="darwin-x86_64" ;;
+        Darwin)
+            # Detect ARM64 vs x86_64 Mac
+            if [ "$(uname -m)" = "arm64" ]; then
+                host_tag="darwin-aarch64"
+            else
+                host_tag="darwin-x86_64"
+            fi
+            ;;
         Linux) host_tag="linux-x86_64" ;;
         *) host_tag="windows-x86_64" ;;
     esac
