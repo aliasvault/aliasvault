@@ -64,9 +64,11 @@ export class WebApiService {
       const response = await this.rawFetch(endpoint, requestOptions);
 
       if (response.status === 401) {
-        const newToken = await this.refreshAccessToken();
-        if (newToken) {
-          headers.set('Authorization', `Bearer ${newToken}`);
+        const refreshResult = await this.refreshAccessToken();
+
+        if (refreshResult.token) {
+          // Token refresh succeeded - retry the request
+          headers.set('Authorization', `Bearer ${refreshResult.token}`);
           const retryResponse = await this.rawFetch(endpoint, {
             ...requestOptions,
             headers,
@@ -77,9 +79,13 @@ export class WebApiService {
           }
 
           return parseJson ? retryResponse.json() : retryResponse as unknown as T;
-        } else {
+        } else if (refreshResult.isAuthError) {
+          // Token refresh failed due to auth error (401/403) - session is truly expired
           logoutEventEmitter.emit('common.errors.sessionExpired');
           throw new ApiAuthError('Session expired');
+        } else {
+          // Token refresh failed due to network/server error - throw NetworkError for offline handling
+          throw new NetworkError('Token refresh failed due to network error');
         }
       }
 
@@ -252,12 +258,16 @@ export class WebApiService {
   }
 
   /**
-   * Refresh the access token.
+   * Result of a token refresh attempt.
+   * - token: New access token if refresh succeeded
+   * - isAuthError: True if refresh failed due to auth error (401/403), meaning session is truly expired
+   *                False if refresh failed due to network/server error, meaning we should enter offline mode
    */
-  private async refreshAccessToken(): Promise<string | null> {
+  private async refreshAccessToken(): Promise<{ token: string | null; isAuthError: boolean }> {
     const refreshToken = await this.getRefreshToken();
     if (!refreshToken) {
-      return null;
+      // No refresh token means session is truly expired
+      return { token: null, isAuthError: true };
     }
 
     try {
@@ -273,16 +283,30 @@ export class WebApiService {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to refresh token');
+      if (response.ok) {
+        const tokenResponse: TokenResponse = await response.json();
+        this.updateTokens(tokenResponse.token, tokenResponse.refreshToken);
+        return { token: tokenResponse.token, isAuthError: false };
       }
 
-      const tokenResponse: TokenResponse = await response.json();
-      this.updateTokens(tokenResponse.token, tokenResponse.refreshToken);
-      return tokenResponse.token;
-    } catch {
-      logoutEventEmitter.emit('common.errors.sessionExpired');
-      return null;
+      // Auth errors (401/403) mean session is truly expired
+      if (response.status === 401 || response.status === 403) {
+        return { token: null, isAuthError: true };
+      }
+
+      // Server errors (5xx) or other non-auth errors, treat as offline/transient
+      console.warn(`Token refresh failed with status ${response.status}, treating as offline`);
+      return { token: null, isAuthError: false };
+    } catch (error) {
+      // Network errors (server unreachable, timeout, DNS, etc.), treat as offline
+      if (error instanceof NetworkError) {
+        console.warn('Token refresh failed due to network error, treating as offline');
+        return { token: null, isAuthError: false };
+      }
+
+      // Unexpected errors, treat as auth error so logout is triggered
+      console.error('Unexpected error during token refresh:', error);
+      return { token: null, isAuthError: true };
     }
   }
 
