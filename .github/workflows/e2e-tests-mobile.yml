@@ -152,16 +152,6 @@ jobs:
         working-directory: apps/server
         run: dotnet build AliasVault.Api
 
-      - name: Create secrets for container mode
-        run: |
-          # Create secrets directory and files that container mode expects
-          sudo mkdir -p /secrets
-          echo "12345678901234567890123456789012" | sudo tee /secrets/jwt_key > /dev/null
-          echo "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag==|2024-01-01T00:00:00Z" | sudo tee /secrets/admin_password_hash > /dev/null
-          echo "password" | sudo tee /secrets/postgres_password > /dev/null
-          sudo chmod 644 /secrets/*
-          echo "✅ Secrets created"
-
       - name: Start API server
         working-directory: apps/server/AliasVault.Api
         run: |
@@ -186,10 +176,12 @@ jobs:
           done
         env:
           ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5433;Database=aliasdb;Username=aliasvault;Password=password"
+          JWT_KEY: "12345678901234567890123456789012"
+          DATA_PROTECTION_CERT_PASS: "Development"
           PUBLIC_REGISTRATION_ENABLED: "true"
+          ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
+          ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
           ASPNETCORE_URLS: "http://0.0.0.0:5092"
-          # Use container mode to skip certificate-based data protection (avoids macOS keychain issues)
-          DOTNET_RUNNING_IN_CONTAINER: "true"
 
       - name: Start Metro bundler
         working-directory: apps/mobile-app
