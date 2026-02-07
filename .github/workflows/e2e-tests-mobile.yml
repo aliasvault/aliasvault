@@ -155,15 +155,17 @@ jobs:
       - name: Start API server
         working-directory: apps/server/AliasVault.Api
         run: |
-          dotnet run --no-build > /tmp/api-server.log 2>&1 &
+          # Use nohup and disown to ensure process survives job ending
+          nohup dotnet run --no-build > /tmp/api-server.log 2>&1 &
           API_PID=$!
           echo $API_PID > /tmp/api-server.pid
+          disown $API_PID
 
           # Wait for API to be ready
           echo "Waiting for API to start..."
           for i in {1..30}; do
             if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
-              echo "✅ API is ready!"
+              echo "✅ API is ready! (PID: $API_PID)"
               break
             fi
             if [ $i -eq 30 ]; then
@@ -186,16 +188,17 @@ jobs:
       - name: Start Metro bundler
         working-directory: apps/mobile-app
         run: |
-          # Start Metro bundler in background
-          npx expo start --offline > /tmp/metro.log 2>&1 &
+          # Use nohup and disown to ensure process survives job ending
+          nohup npx expo start --offline > /tmp/metro.log 2>&1 &
           METRO_PID=$!
           echo $METRO_PID > /tmp/metro.pid
+          disown $METRO_PID
 
           # Wait for Metro to be ready
           echo "Waiting for Metro bundler to start..."
           for i in {1..30}; do
             if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
-              echo "✅ Metro bundler is ready!"
+              echo "✅ Metro bundler is ready! (PID: $METRO_PID)"
               break
             fi
             if [ $i -eq 30 ]; then
@@ -219,6 +222,19 @@ jobs:
         working-directory: apps/mobile-app
 
     steps:
+      - name: Verify API server is running
+        working-directory: .
+        run: |
+          echo "Checking if API server is still running after setup job..."
+          ps aux | grep -i "AliasVault.Api" | grep -v grep || echo "No API process found"
+          if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
+            echo "✅ API server is running"
+          else
+            echo "::error::API server is not running!"
+            cat /tmp/api-server.log 2>/dev/null | tail -50 || echo "No log file"
+            exit 1
+          fi
+
       - name: Install CocoaPods dependencies
         run: |
           cd ios
@@ -398,12 +414,32 @@ jobs:
       - name: Verify API server is running
         run: |
           echo "Checking if API server is still running..."
-          if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
-            echo "✅ API server is running"
+
+          # Check if process is still running
+          echo "Looking for API server process..."
+          ps aux | grep -i "AliasVault.Api" | grep -v grep || echo "No API process found"
+
+          # Check if PID file exists and process is running
+          if [ -f /tmp/api-server.pid ]; then
+            PID=$(cat /tmp/api-server.pid)
+            echo "PID file exists with PID: $PID"
+            if ps -p $PID > /dev/null 2>&1; then
+              echo "Process $PID is still running"
+            else
+              echo "Process $PID is NOT running"
+            fi
           else
-            echo "::error::API server is not running! Check if it was killed between jobs."
-            echo "API server log:"
-            cat /tmp/api-server.log || echo "No log file found"
+            echo "No PID file found at /tmp/api-server.pid"
+          fi
+
+          # Try to connect
+          if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
+            echo "✅ API server is running and responding"
+          else
+            echo "::error::API server is not responding!"
+            echo ""
+            echo "=== API server log ==="
+            cat /tmp/api-server.log 2>/dev/null || echo "No log file found"
             exit 1
           fi
 
@@ -458,20 +494,40 @@ jobs:
     steps:
       - name: Stop shared services
         run: |
-          # Stop API server
+          echo "Stopping shared services..."
+
+          # Stop API server using PID file
           if [ -f /tmp/api-server.pid ]; then
-            kill $(cat /tmp/api-server.pid) 2>/dev/null || true
-            rm /tmp/api-server.pid
+            PID=$(cat /tmp/api-server.pid)
+            echo "Stopping API server (PID: $PID)..."
+            kill $PID 2>/dev/null || true
+            # Wait a moment for graceful shutdown
+            sleep 2
+            # Force kill if still running
+            kill -9 $PID 2>/dev/null || true
+            rm -f /tmp/api-server.pid
           fi
-          # Stop Metro bundler
+
+          # Stop Metro bundler using PID file
           if [ -f /tmp/metro.pid ]; then
-            kill $(cat /tmp/metro.pid) 2>/dev/null || true
-            rm /tmp/metro.pid
+            PID=$(cat /tmp/metro.pid)
+            echo "Stopping Metro bundler (PID: $PID)..."
+            kill $PID 2>/dev/null || true
+            sleep 2
+            kill -9 $PID 2>/dev/null || true
+            rm -f /tmp/metro.pid
           fi
-          # Kill any remaining processes
+
+          # Kill any remaining processes (fallback)
+          echo "Killing any remaining processes..."
           pkill -f "dotnet.*AliasVault.Api" || true
           pkill -f "expo start" || true
           pkill -f "metro" || true
+          pkill -f "node.*react-native" || true
+
+          # Clean up log files
+          rm -f /tmp/api-server.log /tmp/metro.log
+
           echo "✅ Cleanup complete"
 
       - name: Generate summary
