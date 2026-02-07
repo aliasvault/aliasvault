@@ -416,15 +416,16 @@ jobs:
         if: always()
         working-directory: .
         run: |
-          # Stop API and Metro for this job
-          if [ -f /tmp/api-server.pid ]; then
-            kill $(cat /tmp/api-server.pid) 2>/dev/null || true
-          fi
-          if [ -f /tmp/metro.pid ]; then
-            kill $(cat /tmp/metro.pid) 2>/dev/null || true
-          fi
-          pkill -f "dotnet.*AliasVault.Api" || true
-          pkill -f "metro" || true
+          # Kill all related processes forcefully
+          pkill -9 -f "dotnet.*AliasVault.Api" || true
+          pkill -9 -f "AliasVault.Api" || true
+          pkill -9 -f "expo start" || true
+          pkill -9 -f "metro" || true
+          pkill -9 -f "@expo/metro-runtime" || true
+          pkill -9 -f "node.*8081" || true
+
+          # Clean up PID files
+          rm -f /tmp/api-server.pid /tmp/metro.pid
 
   # Android E2E Tests (runs after iOS to avoid resource conflicts on single runner)
   android-e2e:
@@ -589,15 +590,16 @@ jobs:
         if: always()
         working-directory: .
         run: |
-          # Stop API and Metro for this job
-          if [ -f /tmp/api-server.pid ]; then
-            kill $(cat /tmp/api-server.pid) 2>/dev/null || true
-          fi
-          if [ -f /tmp/metro.pid ]; then
-            kill $(cat /tmp/metro.pid) 2>/dev/null || true
-          fi
-          pkill -f "dotnet.*AliasVault.Api" || true
-          pkill -f "metro" || true
+          # Kill all related processes forcefully
+          pkill -9 -f "dotnet.*AliasVault.Api" || true
+          pkill -9 -f "AliasVault.Api" || true
+          pkill -9 -f "expo start" || true
+          pkill -9 -f "metro" || true
+          pkill -9 -f "@expo/metro-runtime" || true
+          pkill -9 -f "node.*8081" || true
+
+          # Clean up PID files
+          rm -f /tmp/api-server.pid /tmp/metro.pid
 
   # Cleanup job - stop shared services
   cleanup:
@@ -605,41 +607,21 @@ jobs:
     needs: [setup, ios-e2e, android-e2e]
     if: always()
     runs-on: macOS-ci
+    timeout-minutes: 2
     steps:
       - name: Stop shared services
+        timeout-minutes: 1
         run: |
-          echo "Stopping shared services..."
+          echo "Cleaning up orphan processes..."
 
-          # Stop API server using PID file
-          if [ -f /tmp/api-server.pid ]; then
-            PID=$(cat /tmp/api-server.pid)
-            echo "Stopping API server (PID: $PID)..."
-            kill $PID 2>/dev/null || true
-            # Wait a moment for graceful shutdown
-            sleep 2
-            # Force kill if still running
-            kill -9 $PID 2>/dev/null || true
-            rm -f /tmp/api-server.pid
-          fi
+          # Force kill everything immediately (no waiting)
+          pkill -9 -f "dotnet.*AliasVault.Api" || true
+          pkill -9 -f "expo start" || true
+          pkill -9 -f "metro" || true
+          pkill -9 -f "node.*react-native" || true
 
-          # Stop Metro bundler using PID file
-          if [ -f /tmp/metro.pid ]; then
-            PID=$(cat /tmp/metro.pid)
-            echo "Stopping Metro bundler (PID: $PID)..."
-            kill $PID 2>/dev/null || true
-            sleep 2
-            kill -9 $PID 2>/dev/null || true
-            rm -f /tmp/metro.pid
-          fi
-
-          # Kill any remaining processes (fallback)
-          echo "Killing any remaining processes..."
-          pkill -f "dotnet.*AliasVault.Api" || true
-          pkill -f "expo start" || true
-          pkill -f "metro" || true
-          pkill -f "node.*react-native" || true
-
-          # Clean up log files
+          # Clean up PID and log files
+          rm -f /tmp/api-server.pid /tmp/metro.pid
           rm -f /tmp/api-server.log /tmp/metro.log
 
           echo "✅ Cleanup complete"
