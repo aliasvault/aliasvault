@@ -258,7 +258,7 @@
     <comment>RoboForm export instructions part 1</comment>
   </data>
   <data name="RoboformInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
     <comment>RoboForm export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
