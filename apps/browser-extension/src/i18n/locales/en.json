@@ -444,10 +444,15 @@
     "connecting": "Connecting...",
     "connected": "Lace Wallet Connected",
     "disconnect": "Disconnect",
+    "signChallenge": "Sign Challenge to Verify",
+    "signing": "Signing...",
+    "verified": "Wallet Verified",
     "errors": {
       "connectionFailed": "Failed to connect to Lace wallet. Make sure Lace is installed and you have a web page open.",
       "notFound": "Midnight Lace wallet not found. Is the extension installed and enabled?",
-      "noActiveTab": "No active tab found. Please open a web page and try again."
+      "noActiveTab": "No active tab found. Please open a web page and try again.",
+      "signingFailed": "Failed to sign challenge. Please try again.",
+      "signingRejected": "Signing was rejected by the wallet."
     }
   }
 }

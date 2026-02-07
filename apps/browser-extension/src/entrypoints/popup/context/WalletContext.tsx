@@ -12,13 +12,26 @@ export interface WalletState {
   encryptionPublicKey: string;
 }
 
+/**
+ * Result from a successful signature challenge.
+ */
+export interface SignatureResult {
+  signature: string;
+  publicKey: string;
+  challenge: string;
+}
+
 type WalletContextType = {
   isConnected: boolean;
   isConnecting: boolean;
+  isSigning: boolean;
+  isVerified: boolean;
   walletState: WalletState | null;
+  signatureResult: SignatureResult | null;
   error: string | null;
   detectWallet: () => Promise<boolean>;
   connectWallet: () => Promise<void>;
+  signChallenge: () => Promise<boolean>;
   disconnectWallet: () => void;
   clearError: () => void;
 };
@@ -34,7 +47,10 @@ const WALLET_STORAGE_KEY = 'local:walletState';
 export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isSigning, setIsSigning] = useState(false);
+  const [isVerified, setIsVerified] = useState(false);
   const [walletState, setWalletState] = useState<WalletState | null>(null);
+  const [signatureResult, setSignatureResult] = useState<SignatureResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   /**
@@ -108,11 +124,52 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   }, []);
 
   /**
+   * Generate a unique challenge message and request wallet signature.
+   * Returns true if signing succeeded.
+   */
+  const signChallenge = useCallback(async (): Promise<boolean> => {
+    setError(null);
+    setIsSigning(true);
+
+    try {
+      // Generate a crypto-random challenge
+      const nonce = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+        .map(b => b.toString(16).padStart(2, '0')).join('');
+      const challenge = `AliasVault-Auth:${nonce}:${Date.now()}`;
+
+      const result = await sendMessage('SIGN_CHALLENGE', { challenge }, 'background') as any;
+
+      if (!result?.success) {
+        setError(result?.error ?? 'Signing failed');
+        return false;
+      }
+
+      const sig = result.data as SignatureResult;
+      if (!sig?.signature) {
+        setError('No signature returned from wallet');
+        return false;
+      }
+
+      setSignatureResult(sig);
+      setIsVerified(true);
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Signing failed';
+      setError(message);
+      return false;
+    } finally {
+      setIsSigning(false);
+    }
+  }, []);
+
+  /**
    * Disconnect wallet and clear persisted state.
    */
   const disconnectWallet = useCallback((): void => {
     setWalletState(null);
     setIsConnected(false);
+    setIsVerified(false);
+    setSignatureResult(null);
     setError(null);
     storage.removeItem(WALLET_STORAGE_KEY);
   }, []);
@@ -127,13 +184,17 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const contextValue = useMemo(() => ({
     isConnected,
     isConnecting,
+    isSigning,
+    isVerified,
     walletState,
+    signatureResult,
     error,
     detectWallet,
     connectWallet,
+    signChallenge,
     disconnectWallet,
     clearError,
-  }), [isConnected, isConnecting, walletState, error, detectWallet, connectWallet, disconnectWallet, clearError]);
+  }), [isConnected, isConnecting, isSigning, isVerified, walletState, signatureResult, error, detectWallet, connectWallet, signChallenge, disconnectWallet, clearError]);
 
   return (
     <WalletContext.Provider value={contextValue}>

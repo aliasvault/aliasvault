@@ -10,7 +10,7 @@ import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithCredential, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearVault, handleCreateIdentity, handleGetCredentials, handleGetFilteredCredentials, handleGetSearchCredentials, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVault, handleSyncVault, handleUploadVault } from '@/entrypoints/background/VaultMessageHandler';
-import { handleDetectLaceWallet, handleConnectLaceWallet, handleGetWalletServiceUris } from '@/entrypoints/background/WalletMessageHandler';
+import { handleDetectLaceWallet, handleConnectLaceWallet, handleSignChallenge, handleGetWalletServiceUris } from '@/entrypoints/background/WalletMessageHandler';
 
 import { GLOBAL_CONTEXT_MENU_ENABLED_KEY } from '@/utils/Constants';
 import { EncryptionKeyDerivationParams } from "@/utils/dist/shared/models/metadata";
@@ -79,6 +79,7 @@ export default defineBackground({
     // Wallet connection messages (Lace)
     onMessage('DETECT_LACE_WALLET', () => handleDetectLaceWallet());
     onMessage('CONNECT_LACE_WALLET', () => handleConnectLaceWallet());
+    onMessage('SIGN_CHALLENGE', ({ data }) => handleSignChallenge(data as { challenge: string }));
     onMessage('GET_WALLET_SERVICE_URIS', () => handleGetWalletServiceUris());
 
     // Setup context menus
