@@ -1,0 +1,42 @@
+{
+  "circuits": [
+    {
+      "name": "registerVault",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "walletAddressHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "isRegistered",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "walletAddressHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Boolean"
+      }
+    }
+  ],
+  "witnesses": [
+  ],
+  "contracts": [
+  ]
+}

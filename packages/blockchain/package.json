@@ -10,6 +10,7 @@
   "scripts": {
     "build": "npm run build --workspaces",
     "tui-local": "cd counter-cli && node --experimental-specifier-resolution=node --loader ts-node/esm src/tui_local.ts",
+    "vault-registry": "cd counter-cli && node --experimental-specifier-resolution=node --loader ts-node/esm src/tui_vault_registry.ts",
     "lint": "npm run lint --workspaces"
   },
   "engines": {

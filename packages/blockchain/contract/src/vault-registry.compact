@@ -1,0 +1,23 @@
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+// Public ledger: set of registered vault owner address hashes
+export ledger registrations: Set<Bytes<32>>;
+
+// Public ledger: total number of registered vaults
+export ledger totalVaults: Counter;
+
+// Register a vault for the given wallet address hash.
+// Fails if the wallet is already registered.
+export circuit registerVault(walletAddressHash: Bytes<32>): [] {
+  const addrHash = disclose(walletAddressHash);
+  assert(!registrations.member(addrHash), "Vault already registered");
+  registrations.insert(addrHash);
+  totalVaults.increment(1);
+}
+
+// Check if a wallet address hash is registered.
+export circuit isRegistered(walletAddressHash: Bytes<32>): Boolean {
+  return registrations.member(disclose(walletAddressHash));
+}

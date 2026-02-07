@@ -31,19 +31,25 @@ Midnight smart contract development for AliasVault, based on the official [midni
 # 1. Install dependencies
 npm install
 
-# 2. Compile the Compact contract (in WSL)
-cd contract && compact compile src/counter.compact src/managed/counter && cd ..
+# 2. Compile the Compact contracts (in WSL)
+cd contract
+compact compile src/counter.compact src/managed/counter
+compact compile src/vault-registry.compact src/managed/vault-registry
+cd ..
 
 # 3. Build TypeScript (in WSL for rm/cp commands)
-wsl bash -lc "cd contract && rm -rf dist && npx tsc --project tsconfig.build.json && cp -Rf ./src/managed ./dist/managed && cp ./src/counter.compact ./dist/"
+wsl bash -lc "cd contract && rm -rf dist && npx tsc --project tsconfig.build.json && cp -Rf ./src/managed ./dist/managed && cp ./src/counter.compact ./dist/ && cp ./src/vault-registry.compact ./dist/"
 wsl bash -lc "cd counter-cli && rm -rf dist && npx tsc --project tsconfig.build.json"
 
 # 4. Start local Midnight network (in another terminal)
 # cd ~/projects/midnight-local-network && docker compose up
 
-# 5. Run the TUI (connects to already-running local network)
+# 5. Run the Counter TUI (connects to already-running local network)
 cd counter-cli
 node --experimental-specifier-resolution=node --loader ts-node/esm src/tui_local.ts
+
+# Or run the VaultRegistry test TUI
+node --experimental-specifier-resolution=node --loader ts-node/esm src/tui_vault_registry.ts
 ```
 
 ## Structure
@@ -52,24 +58,45 @@ node --experimental-specifier-resolution=node --loader ts-node/esm src/tui_local
 packages/blockchain/
 ├── contract/                  # Compact smart contracts + TypeScript bindings
 │   ├── src/
-│   │   ├── counter.compact    # Counter contract (starter, to be extended)
-│   │   ├── managed/           # Compiled contract artifacts (auto-generated)
-│   │   ├── witnesses.ts       # Witness functions
-│   │   └── index.ts           # Contract exports
+│   │   ├── counter.compact         # Counter contract (starter example)
+│   │   ├── vault-registry.compact  # VaultRegistry contract (vault registration)
+│   │   ├── managed/                # Compiled contract artifacts (auto-generated)
+│   │   │   ├── counter/            # Counter compiled output
+│   │   │   └── vault-registry/     # VaultRegistry compiled output
+│   │   ├── witnesses.ts            # Witness functions
+│   │   └── index.ts                # Contract exports (Counter + VaultRegistry)
 │   └── package.json
 ├── counter-cli/               # CLI tools for contract deployment & interaction
 │   ├── src/
-│   │   ├── api.ts             # Contract interaction API
-│   │   ├── cli.ts             # Interactive TUI menus
-│   │   ├── config.ts          # Network configurations
-│   │   ├── tui_local.ts       # Direct-connect entry point (no Docker spin-up)
-│   │   └── standalone.ts      # Entry point that starts its own Docker containers
+│   │   ├── api.ts                    # Counter contract interaction API
+│   │   ├── vault-registry-api.ts     # VaultRegistry contract interaction API
+│   │   ├── vault-registry-types.ts   # VaultRegistry TypeScript types
+│   │   ├── cli.ts                    # Interactive TUI menus (counter)
+│   │   ├── config.ts                 # Network configurations
+│   │   ├── tui_local.ts             # Counter TUI (direct-connect, no Docker)
+│   │   ├── tui_vault_registry.ts    # VaultRegistry test TUI
+│   │   └── standalone.ts            # Entry point that starts its own Docker containers
 │   └── package.json
 └── package.json               # Workspace root
 ```
 
+## Contracts
+
+### Counter (starter example)
+Simple counter contract from the Midnight example-counter template. Used for SDK integration testing.
+
+### VaultRegistry (Story 1.4)
+Vault registration contract — tracks which wallet addresses have registered vaults.
+
+- **Ledger state**: `registrations: Set<Bytes<32>>` + `totalVaults: Counter`
+- **Circuits**: `registerVault(walletAddressHash)` + `isRegistered(walletAddressHash)`
+- Duplicate registration fails with assert: "Vault already registered"
+- Deployed & tested on local network
+
+**Run test TUI:** `npm run vault-registry` (from `packages/blockchain/`)
+
 ## Next Steps (AliasVault)
 
-The counter contract is a working starting point. Future contracts:
-1. **`VaultRegistry.compact`** — Vault CID storage and access control
-2. **`GuardianRecovery.compact`** — Guardian-based password recovery
+Future contracts to implement:
+1. **`VaultRegistry.compact` (full)** — Add vault CID storage, access control, ownership transfer
+2. **`GuardianRecovery.compact`** — Guardian-based password recovery with time-lock
