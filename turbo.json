@@ -1,0 +1,55 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "tasks": {
+        "compact": {
+            "dependsOn": [
+                "^build"
+            ],
+            "outputs": [
+                "src/managed/**",
+                "src/gen/**",
+                "gen/**"
+            ]
+        },
+        "build": {
+            "dependsOn": [
+                "^build",
+                "compact"
+            ],
+            "outputs": [
+                "dist/**",
+                "build/**",
+                ".next/**",
+                "!.next/cache/**"
+            ],
+            "cache": true
+        },
+        "@aliasvault/blockchain#build": {
+            "dependsOn": [
+                "compact"
+            ],
+            "outputs": [
+                "contract/dist/**",
+                "counter-cli/dist/**"
+            ],
+            "cache": true
+        },
+        "test": {
+            "dependsOn": [
+                "compact",
+                "^build"
+            ],
+            "cache": true,
+            "inputs": [
+                "src/**",
+                "__tests__/**"
+            ]
+        },
+        "lint": {
+            "dependsOn": [
+                "compact",
+                "^build"
+            ]
+        }
+    }
+}

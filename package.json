@@ -1,0 +1,23 @@
+{
+    "name": "aliasvault",
+    "version": "2.0.0",
+    "private": true,
+    "type": "module",
+    "description": "AliasVault 2.0 - Decentralized Password Manager on Midnight Blockchain",
+    "scripts": {
+        "build": "turbo run build",
+        "build:blockchain": "turbo run build --filter=@aliasvault/blockchain",
+        "compact": "turbo run compact",
+        "test": "turbo run test",
+        "lint": "turbo run lint",
+        "dev:blockchain": "cd packages/blockchain && npm run dev:frontend"
+    },
+    "engines": {
+        "node": ">=18",
+        "pnpm": ">=8"
+    },
+    "packageManager": "pnpm@8.15.0",
+    "devDependencies": {
+        "turbo": "^2.4.4"
+    }
+}
