@@ -1,5 +1,5 @@
 import { type ContractAddress } from '@midnight-ntwrk/compact-runtime';
-import { VaultRegistry, vaultRegistryWitnesses, createVaultRegistryPrivateState } from '@aliasvault/contract';
+import { VaultRegistry, vaultRegistryWitnesses, createVaultRegistryPrivateState, assertCIDv1 } from '@aliasvault/contract';
 import { deployContract, findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { type Logger } from 'pino';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
@@ -9,6 +9,7 @@ import {
   type VaultRegistryProviders,
   type DeployedVaultRegistryContract,
 } from './vault-registry-types';
+import crypto from 'node:crypto';
 import path from 'node:path';
 import { currentDir } from './config';
 
@@ -25,18 +26,16 @@ export const initVaultRegistryLogger = (l: Logger): void => {
   logger = l;
 };
 
-/**
- * Asserts that a CID string is CIDv1 format (base32-encoded).
- * Per project-context.md Rule 2: ALL IPFS CIDs MUST be CIDv1 format.
- */
-export const assertCIDv1 = (cid: string): void => {
-  if (cid.startsWith('Qm')) {
-    throw new Error('CIDv0 detected. Convert to CIDv1 using IPFS CID.parse().');
-  }
-  if (!/^[a-z2-7]/.test(cid)) {
-    throw new Error('CID must be base32 encoded (CIDv1).');
-  }
-};
+// Re-export assertCIDv1 from contract package for backward compatibility
+export { assertCIDv1 } from '@aliasvault/contract';
+
+// Application-layer CID store — maps contract address to the full CID string.
+// The actual CID is too large for Bytes<32>, so only its hash goes on-chain.
+// ⚠️ IN-MEMORY ONLY: This Map is lost on process restart. Acceptable because:
+//   - The CLI/TUI is a test harness, not the production client.
+//   - The browser extension (production) will persist CIDs in IndexedDB (Stories 2.3/2.4).
+//   - CIDs are recoverable via Pinata pin list + on-chain hash matching.
+const vaultCidStore = new Map<string, string>();
 
 export const deployVaultRegistry = async (
   providers: VaultRegistryProviders,
@@ -78,11 +77,27 @@ export const registerVault = async (
 
 export const updateVault = async (
   contract: DeployedVaultRegistryContract,
-  newCidHash: Uint8Array,
+  newCid: string,
 ): Promise<void> => {
-  logger.info('Updating vault CID...');
-  const result = await contract.callTx.updateVault(newCidHash);
+  assertCIDv1(newCid);
+  const cidHash = crypto.createHash('sha256').update(newCid).digest();
+  logger.info(`Updating vault CID (hash: ${Buffer.from(cidHash).toString('hex').slice(0, 16)}...)`);
+  const result = await contract.callTx.updateVault(cidHash);
+  // Store the full CID locally after successful on-chain update
+  const contractAddress = contract.deployTxData.public.contractAddress;
+  vaultCidStore.set(contractAddress, newCid);
   logger.info(`updateVault tx ${result.public.txId} in block ${result.public.blockHeight}`);
+};
+
+/**
+ * Retrieve the vault CID from the application-layer private store.
+ * The full CID is stored locally (too large for Bytes<32>);
+ * the on-chain vaultCidHash serves as integrity proof.
+ * Returns null if no CID has been stored for this contract.
+ */
+export const getVaultCID = (contract: DeployedVaultRegistryContract): string | null => {
+  const contractAddress = contract.deployTxData.public.contractAddress;
+  return vaultCidStore.get(contractAddress) ?? null;
 };
 
 export const checkIsRegistered = async (
@@ -93,8 +108,11 @@ export const checkIsRegistered = async (
   const result = await contract.callTx.isRegistered(walletAddressHash);
   logger.info(`isRegistered tx ${result.public.txId} in block ${result.public.blockHeight}`);
   // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-  const isRegistered = (result as unknown as { public: { returnValue: boolean } }).public?.returnValue ?? true;
-  return Boolean(isRegistered);
+  const returnValue = (result as unknown as { public: { returnValue: boolean } }).public?.returnValue;
+  if (returnValue === undefined) {
+    throw new Error('Failed to extract returnValue from isRegistered transaction result');
+  }
+  return Boolean(returnValue);
 };
 
 export const getVaultRegistryLedgerState = async (

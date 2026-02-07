@@ -93,24 +93,31 @@ try {
   console.log(`  Owner set: ${updatedState?.owner ? 'yes' : 'no'}`);
   console.log(`  VaultCidHash (should be empty): ${Buffer.from(updatedState?.vaultCidHash ?? []).toString('hex')}\n`);
 
-  // Step 7: Update Vault CID
+  // Step 7: Update Vault CID (API now takes full CID string, validates CIDv1, hashes internally)
   console.log('Step 7: Updating vault CID...');
   const testCid = 'bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi';
-  vrApi.assertCIDv1(testCid);
-  const cidHash = crypto.createHash('sha256').update(testCid).digest();
   console.log(`  CID: ${testCid}`);
-  console.log(`  CID hash: ${Buffer.from(cidHash).toString('hex')}`);
 
   await api.withStatus('Updating vault CID', () =>
-    vrApi.updateVault(contract, cidHash),
+    vrApi.updateVault(contract, testCid),
   );
   console.log('  Vault CID updated successfully!\n');
 
-  // Step 8: Verify CID hash in ledger state
-  console.log('Step 8: Verifying CID hash in ledger state...');
+  // Step 8: Verify getVaultCID returns the stored CID
+  console.log('Step 8: Verifying getVaultCID()...');
+  const retrievedCid = vrApi.getVaultCID(contract);
+  console.log(`  Retrieved CID: ${retrievedCid}`);
+  if (retrievedCid === testCid) {
+    console.log('  ✅ getVaultCID matches!\n');
+  } else {
+    console.log('  ❌ getVaultCID MISMATCH!\n');
+  }
+
+  // Step 8b: Verify CID hash in ledger state
+  console.log('Step 8b: Verifying CID hash in ledger state...');
   const finalState = await vrApi.getVaultRegistryLedgerState(providers, contractAddress);
   const storedHash = Buffer.from(finalState?.vaultCidHash ?? []).toString('hex');
-  const expectedHash = Buffer.from(cidHash).toString('hex');
+  const expectedHash = crypto.createHash('sha256').update(testCid).digest().toString('hex');
   console.log(`  Stored CID hash:   ${storedHash}`);
   console.log(`  Expected CID hash: ${expectedHash}`);
   if (storedHash === expectedHash) {
