@@ -9,7 +9,7 @@ import { storage } from '#imports';
 export interface WalletState {
   address: string;
   coinPublicKey: string;
-  encryptionPublicKey: string;
+  shieldedAddress: string;
 }
 
 /**
@@ -19,6 +19,8 @@ export interface SignatureResult {
   signature: string;
   publicKey: string;
   challenge: string;
+  /** 'signature' if signData succeeded, 'connection-proof' if fallback was used. */
+  authMethod: 'signature' | 'connection-proof';
 }
 
 type WalletContextType = {
@@ -77,7 +79,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
    */
   const detectWallet = useCallback(async (): Promise<boolean> => {
     try {
-      const result = await sendMessage('DETECT_LACE_WALLET', {}, 'background') as any;
+      const result = await sendMessage('DETECT_LACE_WALLET', {}, 'background') as unknown as { success: boolean; data?: { detected: boolean } };
       if (!result?.success) {
         return false;
       }
@@ -96,7 +98,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     setIsConnecting(true);
 
     try {
-      const result = await sendMessage('CONNECT_LACE_WALLET', {}, 'background') as any;
+      const result = await sendMessage('CONNECT_LACE_WALLET', {}, 'background') as unknown as { success: boolean; data?: WalletState; error?: string };
 
       if (!result?.success) {
         const errorMsg = result?.error ?? 'Failed to connect wallet';
@@ -137,7 +139,7 @@ export const WalletProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         .map(b => b.toString(16).padStart(2, '0')).join('');
       const challenge = `AliasVault-Auth:${nonce}:${Date.now()}`;
 
-      const result = await sendMessage('SIGN_CHALLENGE', { challenge }, 'background') as any;
+      const result = await sendMessage('SIGN_CHALLENGE', { challenge }, 'background') as unknown as { success: boolean; data?: SignatureResult; error?: string };
 
       if (!result?.success) {
         setError(result?.error ?? 'Signing failed');

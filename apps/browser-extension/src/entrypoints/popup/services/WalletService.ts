@@ -11,6 +11,8 @@
  * use the useWallet() hook from WalletContext.tsx instead.
  */
 
+import { CURRENT_NETWORK } from '@/entrypoints/popup/config/networkConfig';
+
 export interface WalletAuthState {
   /** Whether the wallet is connected */
   isConnected: boolean;
@@ -22,14 +24,12 @@ export interface WalletAuthState {
   networkId: string;
 }
 
-/** Default network for local development */
-const DEFAULT_NETWORK_ID = 'undeployed';
-
 /**
  * Get the current network ID for wallet connections.
+ * Sourced from shared networkConfig.ts — single source of truth.
  */
 export function getNetworkId(): string {
-  return DEFAULT_NETWORK_ID;
+  return CURRENT_NETWORK;
 }
 
 /**

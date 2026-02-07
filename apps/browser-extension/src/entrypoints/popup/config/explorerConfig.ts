@@ -6,6 +6,8 @@
  * and the UI gracefully hides the explorer link.
  */
 
+import { CURRENT_NETWORK } from './networkConfig';
+
 export interface ExplorerConfig {
   /** Human-readable name of the explorer */
   name: string;
@@ -37,9 +39,6 @@ const EXPLORER_CONFIG: Record<string, ExplorerConfig | null> = {
   },
   mainnet: null,
 };
-
-/** Current network ID — matches the Lace wallet networkId. */
-const CURRENT_NETWORK = 'undeployed';
 
 /**
  * Get explorer config for the current network.

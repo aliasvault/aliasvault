@@ -9,6 +9,14 @@
  */
 
 import { browser } from '#imports';
+import { CURRENT_NETWORK } from '@/entrypoints/popup/config/networkConfig';
+
+/**
+ * Network ID passed to Lace wallet connect().
+ * Sourced from shared networkConfig — injected scripts receive this as an argument
+ * since they run in the page's MAIN world and cannot import extension modules.
+ */
+const WALLET_NETWORK_ID: string = CURRENT_NETWORK;
 
 /**
  * Wallet state returned after a successful connection.
@@ -16,7 +24,7 @@ import { browser } from '#imports';
 export interface WalletConnectionResult {
   address: string;
   coinPublicKey: string;
-  encryptionPublicKey: string;
+  shieldedAddress: string;
 }
 
 /**
@@ -37,11 +45,6 @@ export interface WalletResult<T = unknown> {
   data?: T;
   error?: string;
 }
-
-/**
- * URL prefixes that cannot be injected into via chrome.scripting.executeScript.
- */
-const BLOCKED_URL_PREFIXES = ['chrome://', 'chrome-extension://', 'edge://', 'about:', 'brave://', 'opera://', 'vivaldi://'];
 
 /**
  * Get the currently active tab, validating that the tab URL supports script injection.
@@ -109,7 +112,8 @@ export async function handleConnectLaceWallet(): Promise<WalletResult<WalletConn
     const results = await browser.scripting.executeScript({
       target: { tabId: tab.tabId },
       world: 'MAIN',
-      func: async () => {
+      args: [WALLET_NETWORK_ID],
+      func: async (networkId: string) => {
         const midnight = (window as any).midnight;
         if (!midnight) {
           return { __error: 'window.midnight not found. Is the Lace wallet extension installed and enabled?' };
@@ -122,8 +126,6 @@ export async function handleConnectLaceWallet(): Promise<WalletResult<WalletConn
 
         try {
           // Lace exposes connect(networkId) (newer API) or enable() (older API)
-          // Supported networks: mainnet, preprod, preview, qanet, undeployed
-          const networkId = 'undeployed';
           let api: any;
           if (typeof lace.connect === 'function') {
             api = await lace.connect(networkId);
@@ -150,7 +152,7 @@ export async function handleConnectLaceWallet(): Promise<WalletResult<WalletConn
           return {
             address: String(address),
             coinPublicKey: unshieldedAddress ? String(unshieldedAddress) : '',
-            encryptionPublicKey: shieldedAddresses?.shieldedAddress ? String(shieldedAddresses.shieldedAddress) : '',
+            shieldedAddress: shieldedAddresses?.shieldedAddress ? String(shieldedAddresses.shieldedAddress) : '',
           };
         } catch (e: any) {
           return { __error: e?.message ?? 'Wallet connection was rejected or failed.' };
@@ -181,6 +183,8 @@ export interface SignChallengeResult {
   signature: string;
   publicKey: string;
   challenge: string;
+  /** 'signature' if signData succeeded, 'connection-proof' if fallback was used. */
+  authMethod: 'signature' | 'connection-proof';
 }
 
 /**
@@ -202,16 +206,16 @@ export async function handleSignChallenge(data: { challenge: string }): Promise<
     const results = await browser.scripting.executeScript({
       target: { tabId: tab.tabId },
       world: 'MAIN',
-      args: [challenge],
-      func: async (challengeStr: string) => {
+      args: [challenge, WALLET_NETWORK_ID],
+      func: async (challengeStr: string, networkId: string) => {
         const midnight = (window as any).midnight;
         if (!midnight?.mnLace) {
           return { __error: 'Midnight Lace wallet not found.' };
         }
 
         try {
-          const networkId = 'undeployed';
           const lace = midnight.mnLace;
+          // Lace connect() reuses existing session if already authorized — no duplicate popup
           const api = typeof lace.connect === 'function'
             ? await lace.connect(networkId)
             : await lace.enable();
@@ -224,8 +228,9 @@ export async function handleSignChallenge(data: { challenge: string }): Promise<
 
           let signature = '';
           let publicKey = walletAddress;
+          let authMethod: 'signature' | 'connection-proof' = 'connection-proof';
 
-          // Try signData if available
+          // Try signData if available (Lace v4+ feature)
           if (typeof api.signData === 'function') {
             try {
               const encoder = new TextEncoder();
@@ -233,14 +238,28 @@ export async function handleSignChallenge(data: { challenge: string }): Promise<
               const signed = await api.signData(payload);
 
               // signData may return { signature, key } or just a signature string
-              signature = typeof signed === 'object' ? String(signed.signature ?? signed) : String(signed);
-              publicKey = typeof signed === 'object' ? String(signed.key ?? signed.publicKey ?? walletAddress) : walletAddress;
+              const sig = typeof signed === 'object' ? String(signed.signature ?? signed) : String(signed);
+              const key = typeof signed === 'object' ? String(signed.key ?? signed.publicKey ?? walletAddress) : walletAddress;
+
+              // Validate that signData returned a non-empty signature
+              if (sig && sig !== 'undefined' && sig !== '[object Object]') {
+                signature = sig;
+                publicKey = key;
+                authMethod = 'signature';
+              } else {
+                // signData returned empty/invalid — fall back
+                signature = `connection-proof:${walletAddress}:${challengeStr}`;
+              }
             } catch (signErr: any) {
-              // signData not implemented in current Lace version — fall back to connection-based auth
-              // The wallet address itself serves as proof of ownership (user authorized via Lace popup)
+              // signData not implemented or rejected in current Lace version
+              // Fall back to connection-based auth: the Lace connect() popup itself
+              // proves the user controls this wallet (they authorized the DApp).
+              // NOTE: This is weaker than cryptographic signing — it only proves the
+              // user approved the connection, not that they signed this specific challenge.
               signature = `connection-proof:${walletAddress}:${challengeStr}`;
             }
           } else {
+            // signData not available — use connection-based proof
             signature = `connection-proof:${walletAddress}:${challengeStr}`;
           }
 
@@ -248,6 +267,7 @@ export async function handleSignChallenge(data: { challenge: string }): Promise<
             signature: String(signature),
             publicKey: String(publicKey),
             challenge: challengeStr,
+            authMethod,
           };
         } catch (e: any) {
           return { __error: e?.message ?? 'Signing was rejected or failed.' };
