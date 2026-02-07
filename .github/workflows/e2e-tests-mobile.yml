@@ -152,14 +152,32 @@ jobs:
         working-directory: apps/server
         run: dotnet build AliasVault.Api
 
+  # iOS E2E Tests
+  ios-e2e:
+    name: iOS E2E Tests
+    needs: setup
+    if: needs.setup.outputs.ready == 'true'
+    runs-on: macOS-ci
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/mobile-app
+
+    steps:
+      - name: Cleanup any leftover processes
+        working-directory: .
+        run: |
+          pkill -f "dotnet.*AliasVault.Api" || true
+          pkill -f "expo start" || true
+          pkill -f "metro" || true
+          sleep 1
+
       - name: Start API server
         working-directory: apps/server/AliasVault.Api
         run: |
-          # Use nohup and disown to ensure process survives job ending
-          nohup dotnet run --no-build > /tmp/api-server.log 2>&1 &
+          dotnet run --no-build > /tmp/api-server.log 2>&1 &
           API_PID=$!
           echo $API_PID > /tmp/api-server.pid
-          disown $API_PID
 
           # Wait for API to be ready
           echo "Waiting for API to start..."
@@ -186,13 +204,10 @@ jobs:
           ASPNETCORE_URLS: "http://0.0.0.0:5092"
 
       - name: Start Metro bundler
-        working-directory: apps/mobile-app
         run: |
-          # Use nohup and disown to ensure process survives job ending
-          nohup npx expo start --offline > /tmp/metro.log 2>&1 &
+          npx expo start --offline > /tmp/metro.log 2>&1 &
           METRO_PID=$!
           echo $METRO_PID > /tmp/metro.pid
-          disown $METRO_PID
 
           # Wait for Metro to be ready
           echo "Waiting for Metro bundler to start..."
@@ -209,31 +224,6 @@ jobs:
             echo "Attempt $i: Metro not ready yet..."
             sleep 2
           done
-
-  # iOS E2E Tests
-  ios-e2e:
-    name: iOS E2E Tests
-    needs: setup
-    if: needs.setup.outputs.ready == 'true'
-    runs-on: macOS-ci
-    timeout-minutes: 45
-    defaults:
-      run:
-        working-directory: apps/mobile-app
-
-    steps:
-      - name: Verify API server is running
-        working-directory: .
-        run: |
-          echo "Checking if API server is still running after setup job..."
-          ps aux | grep -i "AliasVault.Api" | grep -v grep || echo "No API process found"
-          if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
-            echo "✅ API server is running"
-          else
-            echo "::error::API server is not running!"
-            cat /tmp/api-server.log 2>/dev/null | tail -50 || echo "No log file"
-            exit 1
-          fi
 
       - name: Install CocoaPods dependencies
         run: |
@@ -355,6 +345,20 @@ jobs:
           retention-days: 14
           if-no-files-found: ignore
 
+      - name: Stop iOS services
+        if: always()
+        working-directory: .
+        run: |
+          # Stop API and Metro for this job
+          if [ -f /tmp/api-server.pid ]; then
+            kill $(cat /tmp/api-server.pid) 2>/dev/null || true
+          fi
+          if [ -f /tmp/metro.pid ]; then
+            kill $(cat /tmp/metro.pid) 2>/dev/null || true
+          fi
+          pkill -f "dotnet.*AliasVault.Api" || true
+          pkill -f "metro" || true
+
   # Android E2E Tests (runs after iOS to avoid resource conflicts on single runner)
   android-e2e:
     name: Android E2E Tests
@@ -367,6 +371,67 @@ jobs:
         working-directory: apps/mobile-app
 
     steps:
+      - name: Cleanup any leftover processes
+        working-directory: .
+        run: |
+          pkill -f "dotnet.*AliasVault.Api" || true
+          pkill -f "expo start" || true
+          pkill -f "metro" || true
+          sleep 1
+
+      - name: Start API server
+        working-directory: apps/server/AliasVault.Api
+        run: |
+          dotnet run --no-build > /tmp/api-server.log 2>&1 &
+          API_PID=$!
+          echo $API_PID > /tmp/api-server.pid
+
+          # Wait for API to be ready
+          echo "Waiting for API to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
+              echo "✅ API is ready! (PID: $API_PID)"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::API failed to start within 60 seconds"
+              cat /tmp/api-server.log
+              exit 1
+            fi
+            echo "Attempt $i: API not ready yet..."
+            sleep 2
+          done
+        env:
+          ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5433;Database=aliasdb;Username=aliasvault;Password=password"
+          JWT_KEY: "12345678901234567890123456789012"
+          DATA_PROTECTION_CERT_PASS: "Development"
+          PUBLIC_REGISTRATION_ENABLED: "true"
+          ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
+          ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
+          ASPNETCORE_URLS: "http://0.0.0.0:5092"
+
+      - name: Start Metro bundler
+        run: |
+          npx expo start --offline > /tmp/metro.log 2>&1 &
+          METRO_PID=$!
+          echo $METRO_PID > /tmp/metro.pid
+
+          # Wait for Metro to be ready
+          echo "Waiting for Metro bundler to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+              echo "✅ Metro bundler is ready! (PID: $METRO_PID)"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::Metro bundler failed to start"
+              cat /tmp/metro.log
+              exit 1
+            fi
+            echo "Attempt $i: Metro not ready yet..."
+            sleep 2
+          done
+
       - name: Start Android emulator
         run: |
           # Check if emulator is already running
@@ -411,38 +476,6 @@ jobs:
           echo "EMULATOR_ID=$EMULATOR_ID" >> $GITHUB_ENV
           echo "✅ Emulator ready: $EMULATOR_ID"
 
-      - name: Verify API server is running
-        run: |
-          echo "Checking if API server is still running..."
-
-          # Check if process is still running
-          echo "Looking for API server process..."
-          ps aux | grep -i "AliasVault.Api" | grep -v grep || echo "No API process found"
-
-          # Check if PID file exists and process is running
-          if [ -f /tmp/api-server.pid ]; then
-            PID=$(cat /tmp/api-server.pid)
-            echo "PID file exists with PID: $PID"
-            if ps -p $PID > /dev/null 2>&1; then
-              echo "Process $PID is still running"
-            else
-              echo "Process $PID is NOT running"
-            fi
-          else
-            echo "No PID file found at /tmp/api-server.pid"
-          fi
-
-          # Try to connect
-          if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
-            echo "✅ API server is running and responding"
-          else
-            echo "::error::API server is not responding!"
-            echo ""
-            echo "=== API server log ==="
-            cat /tmp/api-server.log 2>/dev/null || echo "No log file found"
-            exit 1
-          fi
-
       - name: Build and install Android APK
         run: |
           cd android
@@ -484,6 +517,20 @@ jobs:
             /tmp/metro.log
           retention-days: 14
           if-no-files-found: ignore
+
+      - name: Stop Android services
+        if: always()
+        working-directory: .
+        run: |
+          # Stop API and Metro for this job
+          if [ -f /tmp/api-server.pid ]; then
+            kill $(cat /tmp/api-server.pid) 2>/dev/null || true
+          fi
+          if [ -f /tmp/metro.pid ]; then
+            kill $(cat /tmp/metro.pid) 2>/dev/null || true
+          fi
+          pkill -f "dotnet.*AliasVault.Api" || true
+          pkill -f "metro" || true
 
   # Cleanup job - stop shared services
   cleanup:
