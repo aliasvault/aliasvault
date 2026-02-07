@@ -7,9 +7,14 @@ import {
 import {
   Contract,
   type Ledger,
-  ledger
+  ledger,
+  pureCircuits
 } from "../managed/vault-registry/contract/index.js";
-import { type VaultRegistryPrivateState, witnesses } from "../witnesses.js";
+import {
+  type VaultRegistryPrivateState,
+  vaultRegistryWitnesses,
+  createVaultRegistryPrivateState
+} from "../witnesses.js";
 
 /**
  * Simulator for testing the VaultRegistry contract without a live network.
@@ -19,14 +24,16 @@ export class VaultRegistrySimulator {
   readonly contract: Contract<VaultRegistryPrivateState>;
   circuitContext: CircuitContext<VaultRegistryPrivateState>;
 
-  constructor() {
-    this.contract = new Contract<VaultRegistryPrivateState>(witnesses);
+  constructor(secretKey: Uint8Array) {
+    this.contract = new Contract<VaultRegistryPrivateState>(vaultRegistryWitnesses);
+    const initialPrivateState = createVaultRegistryPrivateState(secretKey);
+    // Note: circuitContext is public so tests can inject cross-instance state for access control testing (M1)
     const {
       currentPrivateState,
       currentContractState,
       currentZswapLocalState
     } = this.contract.initialState(
-      createConstructorContext({} as VaultRegistryPrivateState, "0".repeat(64))
+      createConstructorContext(initialPrivateState, "0".repeat(64))
     );
     this.circuitContext = createCircuitContext(
       sampleContractAddress(),
@@ -52,13 +59,24 @@ export class VaultRegistrySimulator {
     return ledger(this.circuitContext.currentQueryContext.state);
   }
 
+  public updateVault(newCidHash: Uint8Array): Ledger {
+    this.circuitContext = this.contract.impureCircuits.updateVault(
+      this.circuitContext,
+      newCidHash
+    ).context;
+    return ledger(this.circuitContext.currentQueryContext.state);
+  }
+
   public isRegistered(walletAddressHash: Uint8Array): boolean {
     const result = this.contract.impureCircuits.isRegistered(
       this.circuitContext,
       walletAddressHash
     );
-    // Update context (isRegistered is an impure circuit that creates a tx)
     this.circuitContext = result.context;
     return result.result as unknown as boolean;
+  }
+
+  public static ownerCommitment(sk: Uint8Array): Uint8Array {
+    return pureCircuits.ownerCommitment(sk);
   }
 }
