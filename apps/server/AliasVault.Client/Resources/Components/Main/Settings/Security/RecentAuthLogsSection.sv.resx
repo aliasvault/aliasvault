@@ -67,15 +67,15 @@
     <comment>Description of auth logs section</comment>
   </data>
   <data name="NoLogsMessage" xml:space="preserve">
-    <value>No authentication logs found.</value>
+    <value>Inga autentiseringsloggar hittades.</value>
     <comment>Message when no auth logs are available</comment>
   </data>
   <data name="TimestampColumn" xml:space="preserve">
-    <value>Timestamp</value>
+    <value>Tidsstämpel</value>
     <comment>Table column header</comment>
   </data>
   <data name="EventTypeColumn" xml:space="preserve">
-    <value>Event Type</value>
+    <value>Händelsetyp</value>
     <comment>Table column header</comment>
   </data>
   <data name="ClientColumn" xml:space="preserve">
@@ -87,7 +87,7 @@
     <comment>Table column header</comment>
   </data>
   <data name="DeviceColumn" xml:space="preserve">
-    <value>Device</value>
+    <value>Enhet</value>
     <comment>Table column header</comment>
   </data>
   <data name="SuccessColumn" xml:space="preserve">

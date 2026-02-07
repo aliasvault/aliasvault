@@ -29,11 +29,11 @@
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
-    <value>Create a new item below.</value>
+    <value>Erstelle unten einen neuen Eintrag.</value>
     <comment>Description for adding a new item</comment>
   </data>
   <data name="EditItemDescription">
-    <value>Edit the existing item below.</value>
+    <value>Bearbeite den existieren Eintrag unten.</value>
     <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
@@ -148,7 +148,7 @@
     <comment>Error message when item doesn't exist</comment>
   </data>
   <data name="ErrorSavingItem">
-    <value>Error saving item. Please try again.</value>
+    <value>Fehler beim Speichern des Eintrags. Bitte versuche es erneut.</value>
     <comment>Error message when saving item fails</comment>
   </data>
   <!-- Success messages -->
@@ -178,7 +178,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, use the delete button below. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>Passkeys werden über die Browser‑Extension oder die mobilen Apps erstellt, wenn eine Website danach fragt. Sie können nicht manuell über die Web‑App erstellt oder bearbeitet werden. Um diesen Passkey zu entfernen, kannst Du ihn von diesem Eintrag löschen. Um einen Passkey zu ersetzen oder neu zu erstellen, rufe die entsprechende Webseite auf und folge den dortigen Anweisungen.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="DeletePasskeyButton">
@@ -190,7 +190,7 @@
     <comment>Header when passkey is marked for deletion</comment>
   </data>
   <data name="PasskeyWillBeDeleted">
-    <value>This passkey will be deleted when you save this item.</value>
+    <value>Dieser Passkey wird gelöscht, wenn du den Eintrag speicherst.</value>
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">
@@ -232,11 +232,11 @@
     <comment>Header for the custom fields section</comment>
   </data>
   <data name="RemoveField">
-    <value>Remove field</value>
+    <value>Feld entfernen</value>
     <comment>Tooltip for removing a field</comment>
   </data>
   <data name="AddEmailField">
-    <value>Add Email</value>
+    <value>E-Mail hinzufügen</value>
     <comment>Button text for adding email field</comment>
   </data>
 </root>

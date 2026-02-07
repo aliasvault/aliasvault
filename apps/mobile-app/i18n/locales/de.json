@@ -436,15 +436,16 @@
     "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deinen Tresor zu synchronisieren.",
     "switchBackToBrowser": "Wechsle zurück zu Deinem Browser, um fortzufahren",
     "filters": {
-      "all": "(Alle) Elemente",
+      "all": "Items",
+      "showFolders": "Folders",
       "passkeys": "Passkeys",
       "attachments": "Anhänge"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Sortieren nach",
+      "oldestFirst": "Älteste zuerst",
+      "newestFirst": "Neueste zuerst",
+      "alphabetical": "Alphabetisch (A-Z)"
     },
     "totpCode": "TOTP-Code",
     "attachments": "Anhänge",

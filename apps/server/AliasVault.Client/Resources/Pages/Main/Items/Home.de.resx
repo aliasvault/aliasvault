@@ -140,8 +140,12 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>(Alle) Elemente</value>
+    <value>Items</value>
     <comment>Filter option to show all items</comment>
+  </data>
+  <data name="ShowFoldersOption" xml:space="preserve">
+    <value>Folders</value>
+    <comment>Toggle option to show or hide folder structure</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
     <value>Passkeys</value>
@@ -194,7 +198,7 @@
     <comment>Button text for editing a folder</comment>
   </data>
   <data name="DeleteFolder" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>Ordner löschen</value>
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">

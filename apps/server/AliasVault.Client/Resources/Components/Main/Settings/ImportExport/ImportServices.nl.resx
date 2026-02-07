@@ -248,6 +248,45 @@
     <value>Om je wachtwoorden uit Dropbox Passwords te importeren, moet je deze als CSV-bestand exporteren. Je kunt dit doen door Dropbox Passwords te openen, en vervolgens te navigeren naar 'Account' > 'Exporteren' (naar .CSV).</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
+  <!-- RoboForm -->
+  <data name="RoboformDescription" xml:space="preserve">
+    <value>Importeer wachtwoorden uit RoboForm</value>
+    <comment>Description for RoboForm import service</comment>
+  </data>
+  <data name="RoboformInstructionsPart1" xml:space="preserve">
+    <value>Om je RoboForm wachtwoorden te importeren, moet je ze als CSV-bestand exporteren. Doe dit door RoboForm te openen, ga naar menu 'RoboForm' > 'Opties' > 'Account &amp; Data' > 'Exporteren' en selecteer vervolgens het CSV formaat.</value>
+    <comment>RoboForm export instructions part 1</comment>
+  </data>
+  <data name="RoboformInstructionsPart2" xml:space="preserve">
+    <value>Nadat je het bestand hebt geëxporteerd, kun je het hieronder uploaden.</value>
+    <comment>RoboForm export instructions part 2</comment>
+  </data>
+  <!-- Edge -->
+  <data name="EdgeDescription" xml:space="preserve">
+    <value>Importeer wachtwoorden uit de Microsoft Edge Password Manager</value>
+    <comment>Description for Edge import service</comment>
+  </data>
+  <data name="EdgeInstructionsPart1" xml:space="preserve">
+    <value>Om je Microsoft Edge wachtwoorden te kunnen importeren, moet je ze als CSV-bestand exporteren. Je kunt dit doen door naar Menu > Instellingen > Wachtwoord en autofill > Microsoft Password Manager > ... > Exporteer wachtwoorden.</value>
+    <comment>Edge export instructions part 1</comment>
+  </data>
+  <data name="EdgeInstructionsPart2" xml:space="preserve">
+    <value>Nadat je het bestand hebt geëxporteerd, kun je het hieronder uploaden.</value>
+    <comment>Edge export instructions part 2</comment>
+  </data>
+  <!-- Enpass -->
+  <data name="EnpassDescription" xml:space="preserve">
+    <value>Importeer wachtwoorden uit Enpass</value>
+    <comment>Description for Enpass import service</comment>
+  </data>
+  <data name="EnpassInstructionsPart1" xml:space="preserve">
+    <value>Om je Enpass wachtwoorden te importeren, moet je ze als CSV-bestand exporteren. Doe dit door Enpass te openen, ga naar 'Menu' > 'Bestand' > 'Export' > en selecteer vervolgens het CSV formaat.</value>
+    <comment>Enpass export instructions part 1</comment>
+  </data>
+  <data name="EnpassInstructionsPart2" xml:space="preserve">
+    <value>Nadat je het bestand hebt geëxporteerd, kun je het hieronder uploaden.</value>
+    <comment>Enpass export instructions part 2</comment>
+  </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
     <value>Nadat je het bestand hebt geëxporteerd, kun je het hieronder uploaden.</value>

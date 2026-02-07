@@ -95,7 +95,7 @@
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
-    <value>A apărut o eroare la încercarea de activare a deblocării rapide a seifului. Reîncearcă din nou (mai târziu).</value>
+    <value>A apărut o eroare la activarea funcției Deblocare rapidă a seifului. Încearcă din nou (mai târziu).</value>
     <comment>Generic error message when enabling fails</comment>
   </data>
 </root>

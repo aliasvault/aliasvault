@@ -9,11 +9,11 @@
 "title" = "Titel";
 "unknown_error" = "Ein unbekannter Fehler ist aufgetreten";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"select_item" = "Select Item";
+"loading_items" = "Einträge werden geladen...";
+"no_items_found" = "Keine Einträge gefunden";
+"no_items_match" = "Keine existierenden Einträge entsprechen deiner Suche";
+"create_new_item" = "Neuen Eintrag erstellen";
+"select_item" = "Eintrag auswählen";
 "select_text_to_insert" = "Text zum Einfügen auswählen";
 "choose_username" = "Wähle Deinen Benutzernamen";
 "select_text_to_insert_message" = "Text zum Einfügen in das fokussierte Eingabefeld auswählen";
@@ -22,7 +22,7 @@
 "email_prefix" = "E-Mail-Adresse: ";
 "password" = "Passwort";
 "items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"no_item_selected" = "Kein Eintrag ausgewählt.";
 
 /* Context menu strings */
 "copy_username" = "Benutzername kopieren";
@@ -34,7 +34,7 @@
 "email_copied" = "E-Mail-Adresse kopiert";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "Einträge durchsuchen...";
 
 /* Passkey registration */
 "create_passkey_title" = "Neuen Passkey erstellen";
@@ -57,9 +57,9 @@
 "create_passkey_explanation" = "Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf allen Geräten synchronisiert, die AliasVault verwenden.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"passkey_add_to_existing" = "Oder füge den Passkey einem existierenden Eintrag hinzu";
+"add_passkey" = "Passkey hinzufügen";
+"merge_passkey_explanation" = "Dies wird einem existierenden Eintrag einen Passkey hinzufügen. Dein Passwort und andere Daten werden beibehalten.";
 
 /* PIN Unlock */
 "unlock_vault" = "Tresor entsperren";

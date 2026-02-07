@@ -28,14 +28,7 @@
     "switchAccounts": "להחליף חשבונות?",
     "loginWithMobile": "Log in using Mobile App",
     "unlockWithMobile": "Unlock using Mobile App",
-    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
-    "errors": {
-      "invalidCode": "נא למלא קוד אימות באורך 6 ספרות.",
-      "serverError": "לא ניתן ליצור קשר עם השרת של AliasVault. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
-      "wrongPassword": "סיסמה שגויה. נא לנסות שוב.",
-      "sessionExpired": "תוקף ההפעלה שלך פג. נא להיכנס מחדש.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
-    }
+    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault."
   },
   "menu": {
     "vault": "Vault",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "הכספת נעולה",
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again."
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "invalidCode": "Please enter a valid 6-digit authentication code.",
+      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
+      "wrongPassword": "Incorrect password. Please try again.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "אירעה שגיאה לא ידועה, נא לנסות שוב.",
@@ -202,7 +200,7 @@
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
-      "all": "(All) Items",
+      "folders": "Folders",
       "passkeys": "Passkeys"
     },
     "sort": {
@@ -515,5 +513,9 @@
     "unsyncedChangesTitle": "Unsynced Changes",
     "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
     "logoutAnyway": "Log out anyway"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }

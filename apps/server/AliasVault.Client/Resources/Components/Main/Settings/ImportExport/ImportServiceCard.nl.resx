@@ -138,4 +138,32 @@
     <value>Favicons ophalen... {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
+  <data name="SavingCredentials" xml:space="preserve">
+    <value>Gegevens worden opgeslagen in vault... {0} / {1}</value>
+    <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SyncingVault" xml:space="preserve">
+    <value>Vault uploaden naar server...</value>
+    <comment>Progress text when syncing vault to server after import</comment>
+  </data>
+  <data name="ImportSuccessMessage" xml:space="preserve">
+    <value>Succesvol {0} credentials geïmporteerd.</value>
+    <comment>Success message after import completes. {0} is the credential count</comment>
+  </data>
+  <data name="ImportErrorGeneric" xml:space="preserve">
+    <value>Er is een fout opgetreden tijdens het importeren. Probeer het opnieuw.</value>
+    <comment>Generic error message when import fails</comment>
+  </data>
+  <data name="ImportErrorInvalidFile" xml:space="preserve">
+    <value>Selecteer een geldig bestand om te importeren.</value>
+    <comment>Error message when invalid file is selected</comment>
+  </data>
+  <data name="ImportErrorZipFile" xml:space="preserve">
+    <value>Probeer het exportbestand uit te pakken voordat je deze importeert. Zie de instructies hieronder voor meer informatie.</value>
+    <comment>Error message when user tries to import a zip file</comment>
+  </data>
+  <data name="ImportErrorFileTooLarge" xml:space="preserve">
+    <value>Bestandsgrootte is groter dan 10MB limiet.</value>
+    <comment>Error message when file is too large</comment>
+  </data>
 </root>

@@ -28,14 +28,7 @@
     "switchAccounts": "Vaihdetaanko tiliä?",
     "loginWithMobile": "Kirjaudu sisään mobiilisovelluksella",
     "unlockWithMobile": "Avaa käyttämällä mobiilisovellusta",
-    "scanQrCode": "Skannaa tämä QR-koodi AliasVault-mobiilisovelluksellasi kirjautuaksesi sisään ja avataksesi holvisi.",
-    "errors": {
-      "invalidCode": "Syötä kelvollinen 6-numeroinen tunnistautumiskoodi.",
-      "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
-      "wrongPassword": "Virheellinen salasana. Yritä uudelleen.",
-      "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
-      "mobileLoginRequestExpired": "Mobiilikirjautumispyyntö aikakatkaistiin. Lataa sivu uudelleen ja yritä uudelleen."
-    }
+    "scanQrCode": "Skannaa tämä QR-koodi AliasVault-mobiilisovelluksellasi kirjautuaksesi sisään ja avataksesi holvisi."
   },
   "menu": {
     "vault": "Holvi",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "Holvi on lukittu",
       "passwordChanged": "Salasanasi on muuttunut edellisen sisäänkirjautumisen jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again."
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "invalidCode": "Please enter a valid 6-digit authentication code.",
+      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
+      "wrongPassword": "Incorrect password. Please try again.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Tapahtui tuntematon virhe. Yritä uudelleen.",
@@ -202,7 +200,7 @@
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
-      "all": "(Kaikki) tiedot",
+      "folders": "Folders",
       "passkeys": "Sala-avaimet"
     },
     "sort": {
@@ -515,5 +513,9 @@
     "unsyncedChangesTitle": "Synkronoimattomat muutokset",
     "unsyncedChangesWarning": "Sinulla on synkronoimattomia muutoksia, jotka menetetään, jos kirjaudut ulos nyt. Oletko varma, että haluat jatkaa?",
     "logoutAnyway": "Kirjaudu ulos joka tapauksessa"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }

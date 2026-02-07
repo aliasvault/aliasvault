@@ -86,7 +86,7 @@
     <comment>Header for note section</comment>
   </data>
   <data name="VaultsDeletedNote" xml:space="preserve">
-    <value>Alla krypterade valv som innehåller alla dina uppgifter kommer att raderas permanent</value>
+    <value>Alla krypterade valv som innehåller alla dina inloggningsuppgifter kommer att raderas permanent</value>
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">

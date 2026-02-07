@@ -104,9 +104,9 @@
   },
   "passkeys": {
     "passkey": "Passkey",
-    "helpText": "Passkeys skapas på webbplatsen när du blir tillfrågad. De kan inte redigeras manuellt. För att radera denna passkey, tar du bort den från denna uppgiftsposten.",
+    "helpText": "Passkeys skapas på webbplatsen när du blir tillfrågad. De kan inte redigeras manuellt. För att radera denna passkey, tar du bort den från denna inloggningsuppgiften.",
     "passkeyMarkedForDeletion": "Passkey markerad för borttagning",
-    "passkeyWillBeDeleted": "Denna passkey kommer att tas bort när du sparar dessa uppgifter."
+    "passkeyWillBeDeleted": "Denna passkey kommer att tas bort när du sparar denna inloggningsuppgift."
   },
   "totp": {
     "addCode": "Lägg till 2FA kod",
@@ -148,7 +148,7 @@
       "alreadyConfigured": "Jag har redan konfigurerat det",
       "advancedOptions": "Avancerade inställningar",
       "showSearchText": "Visa söktext",
-      "showSearchTextDescription": "Inkludera texten AliasVault tar emot från Android som den använder för att söka efter en matchande uppgiftspost"
+      "showSearchTextDescription": "Inkludera texten AliasVault tar emot från Android som den använder för att söka efter en matchande inloggningsuppgift"
     },
     "vaultUnlock": "Valvupplåsningsmetod",
     "autoLock": "Timeout för automatisk låsning",
@@ -172,7 +172,7 @@
     "importExport": "Importera / Exportera",
     "importSectionTitle": "Importera",
     "importSectionDescription": "Importera dina lösenord från andra lösenordshanterare eller från en tidigare AliasVault-export.",
-    "importWebNote": "Logga in i webbappen för att importera uppgiftsposter från befintliga lösenordshanterare. Importfunktionen är för närvarande endast tillgänglig på webbversionen.",
+    "importWebNote": "Logga in i webbappen för att importera inloggningsuppgifter från befintliga lösenordshanterare. Importfunktionen är för närvarande endast tillgänglig på webbversionen.",
     "exportSectionTitle": "Exportera",
     "exportSectionDescription": "Exportera dina valvdata till en CSV-fil. Denna fil kan användas som en säkerhetskopiering och kan även importeras till andra lösenordshanterare.",
     "exportCsvButton": "Exportera valv till CSV-fil",
@@ -284,7 +284,7 @@
         "headerText": "Borttagning av ditt konto kommer omedelbart och permanent radera alla dina data.",
         "warningText": "Varning: Denna åtgärd kan inte ångras. Alla dina data kommer att raderas permanent.",
         "finalWarning": "Slutgiltig varning: Ange ditt lösenord för att permanent radera ditt konto.",
-        "warningVaults": "Alla krypterade valv som innehåller alla dina uppgifter kommer att raderas permanent",
+        "warningVaults": "Alla krypterade valv som innehåller alla dina inloggningsuppgifter kommer att raderas permanent",
         "warningAliases": "Dina e-postalias kommer att överges och kan inte hämtas av andra användare",
         "warningRecovery": "Ditt konto kan inte återställas efter raderingen",
         "irreversibleWarning": "Kontoborttagningen är oåterkallelig och kan inte ångras. Genom att trycka på knappen nedan raderas ditt konto omedelbart och permanent.",
@@ -408,8 +408,8 @@
     "noMatchingItems": "Hittade inga matchande resultat",
     "noMatchingItemsSearch": "Inga objekt matchar \"{{search}}\"",
     "noMatchingItemsWithFilter": "Inga {{filter}} objekt som matchar \"{{search}}\"",
-    "noItemsFound": "Inga objekt hittades. Skapa ett för att komma igång. Tips: du kan även logga in på AliasVault webbapp för att importera uppgifter från andra lösenordshanterare.",
-    "allItemsInFolders": "Alla dina objekt är organiserade i mappar. Klicka på en mapp ovan för att visa dina uppgifter, eller använd sökningen för att hitta specifika objekt.",
+    "noItemsFound": "Inga objekt hittades. Skapa ett för att komma igång. Tips: du kan även logga in på AliasVault webbapp för att importera inloggningsuppgifter från andra lösenordshanterare.",
+    "allItemsInFolders": "Alla dina objekt är organiserade i mappar. Klicka på en mapp ovan för att visa dina inloggningsuppgifter, eller använd sökningen för att hitta specifika objekt.",
     "noPasskeysFound": "Inga passkeys har skapats ännu. Passkeys skapas genom att besöka en webbplats som erbjuder passkeys som en autentiseringsmetod.",
     "noAttachmentsFound": "Inga objekt med bifogade filer hittades",
     "noItemsOfTypeFound": "Inga {{type}} objekt hittades",
@@ -436,7 +436,8 @@
     "offlineMessage": "Du är offline. Anslut till internet för att synkronisera ditt valv.",
     "switchBackToBrowser": "Växla tillbaka till webbläsaren för att fortsätta.",
     "filters": {
-      "all": "(Alla) objekt",
+      "all": "Objekt",
+      "showFolders": "Mappar",
       "passkeys": "Passkeys",
       "attachments": "Bifogade filer"
     },
@@ -547,8 +548,8 @@
     "invalidEmailFormat": "Ogiltigt e-postformat"
   },
   "apiErrors": {
-    "CLAIM_DOES_NOT_MATCH_USER": "Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna uppgiftsposten.",
-    "CLAIM_DOES_NOT_EXIST": "Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara uppgiftsposten för att synkronisera databasen, och försök sedan igen.",
+    "CLAIM_DOES_NOT_MATCH_USER": "Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna post.",
+    "CLAIM_DOES_NOT_EXIST": "Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara posten för att synkronisera databasen, och försök sedan igen.",
     "UNKNOWN_ERROR": "Ett okänt fel inträffade. Försök igen.",
     "ACCOUNT_LOCKED": "Kontot är tillfälligt låst på grund av för många misslyckade försök. Försök igen senare.",
     "ACCOUNT_BLOCKED": "Ditt konto har inaktiverats. Om du tror att detta är ett misstag, kontakta support.",

@@ -28,14 +28,7 @@
     "switchAccounts": "Treci la alt cont?",
     "loginWithMobile": "Autentificare prin aplicația mobilă",
     "unlockWithMobile": "Deblochează prin aplicația mobilă",
-    "scanQrCode": "Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful.",
-    "errors": {
-      "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
-      "serverError": "Conexiunea la serverul AliasVault a eșuat. Încearcă mai târziu sau contactează asistența dacă problema persistă.",
-      "wrongPassword": "Parolă incorectă. Încearcă din nou.",
-      "sessionExpired": "Sesiunea a expirat. Autentifică-te din nou.",
-      "mobileLoginRequestExpired": "Cererea de autentificare mobilă a expirat. Reîncarcă pagina și încearcă din nou."
-    }
+    "scanQrCode": "Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful."
   },
   "menu": {
     "vault": "Seif",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "Seiful este blocat",
       "passwordChanged": "Parola ta a fost schimbată de la ultima autentificare. Autentifică-te din nou din motive de securitate.",
       "syncConflictMaxRetries": "Sincronizarea seifului a eșuat după mai multe încercări. Reîncearcă mai târziu.",
-      "mergeFailed": "Îmbinarea modificărilor seifului a eșuat. Încearcă din nou."
+      "mergeFailed": "Îmbinarea modificărilor seifului a eșuat. Încearcă din nou.",
+      "invalidCode": "Introdu un cod de autentificare valid din 6 cifre.",
+      "serverError": "Nu s-a putut stabili conexiunea cu serverul AliasVault. Încearcă din nou mai târziu sau contactează asistența dacă problema persistă.",
+      "wrongPassword": "Parolă incorectă. Încearcă din nou.",
+      "sessionExpired": "Sesiunea ta a expirat. Autentifică-te din nou.",
+      "mobileLoginRequestExpired": "Cererea de autentificare de pe dispozitivul mobil a expirat. Reîncarcă pagina și încearcă din nou."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "A apărut o eroare necunoscută. Încearcă din nou.",
@@ -129,9 +127,9 @@
       "USERNAME_TOO_LONG": "Nume prea lung: nu poate depăși 40 de caractere.",
       "USERNAME_INVALID_EMAIL": "Adresă de e-mail invalidă.",
       "USERNAME_INVALID_CHARACTERS": "Numele de utilizator este invalid, poate conține doar litere sau cifre.",
-      "VAULT_NOT_UP_TO_DATE": "Seiful nu este la zi. Sincronizează seiful și încearcă din nou.",
+      "VAULT_NOT_UP_TO_DATE": "Seiful tău nu este actualizat. Sincronizează seiful și încearcă din nou.",
       "INTERNAL_SERVER_ERROR": "Eroare internă de server.",
-      "VAULT_ERROR": "Seiful local nu este la zi. Sincronizează seiful reîncărcând pagina."
+      "VAULT_ERROR": "Seiful local nu este actualizat. Sincronizează seiful prin reîmprospătarea paginii și încearcă din nou."
     }
   },
   "content": {
@@ -159,7 +157,7 @@
     "failedToCreateIdentity": "Eșec la crearea identității. Încearcă din nou.",
     "enterEmailAndOrUsername": "Introdu adresa de e-mail și/sau numele de utilizator",
     "autofillWithAliasVault": "Completare automată cu AliasVault",
-    "generateRandomPassword": "Generează parolă aleatorie (copiază în clipboard)",
+    "generateRandomPassword": "Generează o parolă aleatorie (copiază în clipboard)",
     "generateNewPassword": "Generează parolă nouă",
     "togglePasswordVisibility": "Comută vizibilitatea parolei",
     "passwordCopiedToClipboard": "Parolă copiată în clipboard",
@@ -202,7 +200,7 @@
     "deleteFolderAndItems": "Șterge dosarul și toate elementele",
     "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
     "filters": {
-      "all": "(Toate) Elementele",
+      "folders": "Dosare",
       "passkeys": "Passkeys"
     },
     "sort": {
@@ -515,5 +513,9 @@
     "unsyncedChangesTitle": "Modificări Nesincronizate",
     "unsyncedChangesWarning": "Ai modificări nesincronizate care se vor pierde dacă te deconectezi acum. Sigur vrei să continui?",
     "logoutAnyway": "Deconectează-te oricum"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Apasă pentru a reîncerca sincronizarea"
   }
 }

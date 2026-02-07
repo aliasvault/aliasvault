@@ -436,7 +436,8 @@
     "offlineMessage": "Olet ei-verkkotilassa. Yhdistä internetiin synkronoidaksesi holvisi.",
     "switchBackToBrowser": "Siirry takaisin selaimeen jatkaaksesi.",
     "filters": {
-      "all": "(Kaikki) tiedot",
+      "all": "Items",
+      "showFolders": "Folders",
       "passkeys": "Sala-avaimet",
       "attachments": "Liitteet"
     },

@@ -131,7 +131,7 @@
     <comment>Reset vault progress message</comment>
   </data>
   <data name="ResetVaultSuccessMessage" xml:space="preserve">
-    <value>Your vault has been successfully reset. All items have been deleted and you can now start fresh.</value>
+    <value>Dein Tresor wurde erfolgreich zurückgesetzt. Alle Zugangsdaten wurden gelöscht und Du kannst jetzt neu anfangen.</value>
     <comment>Reset vault success message</comment>
   </data>
   <data name="ResetVaultErrorMessage" xml:space="preserve">

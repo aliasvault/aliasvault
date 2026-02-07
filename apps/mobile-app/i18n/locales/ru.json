@@ -436,15 +436,16 @@
     "offlineMessage": "Вы не в сети. Пожалуйста, подключитесь к Интернету, чтобы синхронизировать ваше хранилище.",
     "switchBackToBrowser": "Вернитесь в свой браузер, чтобы продолжить.",
     "filters": {
-      "all": "(Все) Записи",
+      "all": "Записи",
+      "showFolders": "Папки",
       "passkeys": "Ключи доступа",
       "attachments": "Вложения"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Сортировка",
+      "oldestFirst": "Сначала старые",
+      "newestFirst": "Сначала новые",
+      "alphabetical": "По алфавиту (А–Я)"
     },
     "totpCode": "TOTP код",
     "attachments": "Вложения",

@@ -140,8 +140,12 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>(Toate) elementele</value>
+    <value>Elemente</value>
     <comment>Filter option to show all items</comment>
+  </data>
+  <data name="ShowFoldersOption" xml:space="preserve">
+    <value>Dosare</value>
+    <comment>Toggle option to show or hide folder structure</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
     <value>Passkeys</value>

@@ -67,11 +67,11 @@
     <comment>Description of active sessions</comment>
   </data>
   <data name="NoSessionsMessage" xml:space="preserve">
-    <value>No active sessions found.</value>
+    <value>Inga aktiva sessioner hittades.</value>
     <comment>Message when no active sessions are available</comment>
   </data>
   <data name="DeviceColumn" xml:space="preserve">
-    <value>Device</value>
+    <value>Enhet</value>
     <comment>Table column header</comment>
   </data>
   <data name="LastActiveColumn" xml:space="preserve">
@@ -83,7 +83,7 @@
     <comment>Table column header</comment>
   </data>
   <data name="ActionColumn" xml:space="preserve">
-    <value>Action</value>
+    <value>Åtgärd</value>
     <comment>Table column header</comment>
   </data>
   <data name="RevokeButton" xml:space="preserve">
@@ -91,7 +91,7 @@
     <comment>Button to revoke session</comment>
   </data>
   <data name="RevokeSuccessMessage" xml:space="preserve">
-    <value>Session revoked successfully.</value>
+    <value>Sessionen har återkallats.</value>
     <comment>Success message when session is revoked</comment>
   </data>
   <data name="RevokeErrorMessage" xml:space="preserve">
@@ -99,7 +99,7 @@
     <comment>Error message when session revocation fails</comment>
   </data>
   <data name="RevokeExceptionMessage" xml:space="preserve">
-    <value>Failed to revoke session: {0}.</value>
+    <value>Det gick inte att återkalla sessionen. {0}.</value>
     <comment>Exception message when session revocation fails. {0} is placeholder for error details</comment>
   </data>
 </root>

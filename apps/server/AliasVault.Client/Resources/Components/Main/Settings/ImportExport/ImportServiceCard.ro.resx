@@ -95,7 +95,7 @@
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
   <data name="DuplicateCredentialsWarning" xml:space="preserve">
-    <value>{0} date de autentificare duplicate au fost găsite și nu vor fi importate.</value>
+    <value>Au fost găsite {0} date de autentificare duplicate, care nu vor fi importate.</value>
     <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
   </data>
   <data name="NoNewCredentials" xml:space="preserve">
@@ -137,5 +137,33 @@
   <data name="ExtractingFavicons" xml:space="preserve">
     <value>Se extrag pictogramele… {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SavingCredentials" xml:space="preserve">
+    <value>Se salvează datele de autentificare în seif… {0} / {1}</value>
+    <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SyncingVault" xml:space="preserve">
+    <value>Se sincronizează seiful cu serverul...</value>
+    <comment>Progress text when syncing vault to server after import</comment>
+  </data>
+  <data name="ImportSuccessMessage" xml:space="preserve">
+    <value>Au fost importate cu succes {0} date de autentificare.</value>
+    <comment>Success message after import completes. {0} is the credential count</comment>
+  </data>
+  <data name="ImportErrorGeneric" xml:space="preserve">
+    <value>A apărut o eroare în timpul importului. Încearcă din nou.</value>
+    <comment>Generic error message when import fails</comment>
+  </data>
+  <data name="ImportErrorInvalidFile" xml:space="preserve">
+    <value>Selectează un fișier de export valid pentru import.</value>
+    <comment>Error message when invalid file is selected</comment>
+  </data>
+  <data name="ImportErrorZipFile" xml:space="preserve">
+    <value>Dezarhivează fișierul de export înainte de import. Vezi instrucțiunile de mai jos pentru detalii.</value>
+    <comment>Error message when user tries to import a zip file</comment>
+  </data>
+  <data name="ImportErrorFileTooLarge" xml:space="preserve">
+    <value>Mărimea fișierului depășește limita de 10MB.</value>
+    <comment>Error message when file is too large</comment>
   </data>
 </root>

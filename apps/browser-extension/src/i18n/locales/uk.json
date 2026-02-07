@@ -28,14 +28,7 @@
     "switchAccounts": "Змінити обліковий запис?",
     "loginWithMobile": "Увійти за допомогою мобільного додатку",
     "unlockWithMobile": "Розблокувати за допомогою мобільного додатку",
-    "scanQrCode": "Проскануйте цей QR-код за допомогою мобільного додатка AliasVault, щоб увійти та розблокувати сховище.",
-    "errors": {
-      "invalidCode": "Будь ласка, введіть дійсний 6-значний код автентифікації.",
-      "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
-      "wrongPassword": "Невірний пароль. Будь ласка, спробуйте ще раз.",
-      "sessionExpired": "Час сеансу закінчився. Будь ласка, увійдіть знову.",
-      "mobileLoginRequestExpired": "Час очікування запиту на вхід у мобільний додаток закінчився. Перезавантажте сторінку та спробуйте ще раз."
-    }
+    "scanQrCode": "Проскануйте цей QR-код за допомогою мобільного додатка AliasVault, щоб увійти та розблокувати сховище."
   },
   "menu": {
     "vault": "Vault",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "Сховище заблоковано",
       "passwordChanged": "Ваш пароль змінився з моменту останнього входу. З міркувань безпеки, будь ласка, увійдіть ще раз.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again."
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "invalidCode": "Please enter a valid 6-digit authentication code.",
+      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
+      "wrongPassword": "Incorrect password. Please try again.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
@@ -202,7 +200,7 @@
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
-      "all": "(All) Items",
+      "folders": "Folders",
       "passkeys": "Ключі доступу"
     },
     "sort": {
@@ -515,5 +513,9 @@
     "unsyncedChangesTitle": "Unsynced Changes",
     "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
     "logoutAnyway": "Log out anyway"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }

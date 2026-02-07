@@ -123,7 +123,7 @@
     <value>Ditt konto har inaktiverats. Om du tror att detta är ett misstag, kontakta support.</value>
   </data>
   <data name="INVALID_REFRESH_TOKEN" xml:space="preserve">
-    <value>Invalid refresh token</value>
+    <value>Ogiltig uppdaterings token</value>
   </data>
   <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
     <value>Registrering av nytt konto är för närvarande inaktiverat på denna server. Kontakta administratören.</value>
@@ -165,7 +165,7 @@
     <value>Användarnamnet är ogiltigt, kan endast innehålla bokstäver eller siffror.</value>
   </data>
   <data name="PENDING_MIGRATIONS" xml:space="preserve">
-    <value>There are pending migrations. Please run 'dotnet ef database update' to apply them.</value>
+    <value>Det finns väntande migreringar. Vänligen kör 'dotnet ef databasuppdatering' för att tillämpa dem.</value>
   </data>
   <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
     <value>Internt serverfel</value>
@@ -186,6 +186,6 @@
     <value>Ditt valv är inte uppdaterat. Synkronisera ditt valv och försök igen.</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
-    <value>You have entered an incorrect password too many times and your account has now been locked out. You can try again in 30 minutes.</value>
+    <value>Du har angett ett felaktigt lösenord för många gånger och ditt konto har nu blivit låst. Du kan försöka igen om 30 minuter.</value>
   </data>
 </root>

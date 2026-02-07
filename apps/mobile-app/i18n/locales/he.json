@@ -436,7 +436,8 @@
     "offlineMessage": "החיבור שלך מנותק. נא להתחבר לאינטרנט כדי לסנכרן את הכספת שלך.",
     "switchBackToBrowser": "יש לחזור לדפדפן שלך כדי להמשיך.",
     "filters": {
-      "all": "(All) Items",
+      "all": "Items",
+      "showFolders": "Folders",
       "passkeys": "Passkeys",
       "attachments": "צרופות"
     },

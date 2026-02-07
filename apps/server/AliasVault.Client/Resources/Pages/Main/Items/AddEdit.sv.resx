@@ -29,20 +29,20 @@
     <comment>Title for editing an existing item</comment>
   </data>
   <data name="AddItemDescription">
-    <value>Create a new item below.</value>
+    <value>Skapa ett nytt objekt nedan.</value>
     <comment>Description for adding a new item</comment>
   </data>
   <data name="EditItemDescription">
-    <value>Edit the existing item below.</value>
+    <value>Redigera det befintliga objektet nedan.</value>
     <comment>Description for editing an existing item</comment>
   </data>
   <!-- Breadcrumb items -->
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Visa objekt</value>
     <comment>Breadcrumb text for viewing an item</comment>
   </data>
   <data name="EditItemBreadcrumb">
-    <value>Edit item</value>
+    <value>Redigera objekt</value>
     <comment>Breadcrumb text for editing an item</comment>
   </data>
   <data name="AddNewItemBreadcrumb">
@@ -100,7 +100,7 @@
     <comment>Label for last name input</comment>
   </data>
   <data name="NickNameLabel">
-    <value>Nick Name</value>
+    <value>Smeknamn</value>
     <comment>Label for nick name input</comment>
   </data>
   <data name="GenderLabel">
@@ -117,7 +117,7 @@
   </data>
   <!-- Placeholders -->
   <data name="ServiceNamePlaceholder">
-    <value>E.g. Facebook</value>
+    <value>T.ex. Facebook</value>
     <comment>Placeholder text for service name input</comment>
   </data>
   <!-- Button text -->
@@ -126,7 +126,7 @@
     <comment>Button text for generating a random alias</comment>
   </data>
   <data name="ClearAliasFieldsButton">
-    <value>Clear Alias Fields</value>
+    <value>Rensa aliasfält</value>
     <comment>Button text for clearing alias fields</comment>
   </data>
   <data name="SaveItemButton">
@@ -139,16 +139,16 @@
   </data>
   <!-- Loading and status messages -->
   <data name="SavingVaultMessage">
-    <value>Saving vault...</value>
+    <value>Sparar valv...</value>
     <comment>Loading message when saving vault</comment>
   </data>
   <!-- Error messages -->
   <data name="ItemNotExistError">
-    <value>This item does not exist (anymore). Please try again.</value>
+    <value>Det här objektet finns inte (längre). Försök igen.</value>
     <comment>Error message when item doesn't exist</comment>
   </data>
   <data name="ErrorSavingItem">
-    <value>Error saving item. Please try again.</value>
+    <value>Kunde inte spara objekt. Försök igen.</value>
     <comment>Error message when saving item fails</comment>
   </data>
   <!-- Success messages -->
@@ -178,11 +178,11 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, use the delete button below. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>Passkeys skapas genom webbläsartillägget eller mobilappar när en webbplats tillfrågas. De kan inte redigeras manuellt eller skapas via webbappen. För att ta bort denna passkey, använd borttagningsknappen nedan. För att ersätta eller skapa en ny passkey, besök webbplatsen och följ dess anvisningar.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="DeletePasskeyButton">
-    <value>Delete passkey</value>
+    <value>Radera passkey</value>
     <comment>Button to delete passkey</comment>
   </data>
   <data name="PasskeyMarkedForDeletion">
@@ -190,7 +190,7 @@
     <comment>Header when passkey is marked for deletion</comment>
   </data>
   <data name="PasskeyWillBeDeleted">
-    <value>This passkey will be deleted when you save this item.</value>
+    <value>Detta passkey kommer raderas när du sparar detta objekt.</value>
     <comment>Message explaining passkey will be deleted on save</comment>
   </data>
   <data name="UndoButton">
@@ -199,7 +199,7 @@
   </data>
   <!-- Card section fields -->
   <data name="CardDetailsSectionHeader">
-    <value>Card Details</value>
+    <value>Kortuppgifter</value>
     <comment>Header for the credit card details section</comment>
   </data>
   <data name="CardholderNameLabel">
@@ -232,11 +232,11 @@
     <comment>Header for the custom fields section</comment>
   </data>
   <data name="RemoveField">
-    <value>Remove field</value>
+    <value>Ta bort fält</value>
     <comment>Tooltip for removing a field</comment>
   </data>
   <data name="AddEmailField">
-    <value>Add Email</value>
+    <value>Lägg till e-postaddress</value>
     <comment>Button text for adding email field</comment>
   </data>
 </root>

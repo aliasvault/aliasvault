@@ -85,11 +85,11 @@
     <comment>Label for sort order dropdown</comment>
   </data>
   <data name="OldestFirstOption" xml:space="preserve">
-    <value>最早优先</value>
+    <value>最早在前</value>
     <comment>Oldest first sort option</comment>
   </data>
   <data name="NewestFirstOption" xml:space="preserve">
-    <value>最新优先</value>
+    <value>最新在前</value>
     <comment>Newest first sort option</comment>
   </data>
   <data name="AlphabeticalOption" xml:space="preserve">
@@ -140,8 +140,12 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>（所有）项目</value>
+    <value>项目</value>
     <comment>Filter option to show all items</comment>
+  </data>
+  <data name="ShowFoldersOption" xml:space="preserve">
+    <value>文件夹</value>
+    <comment>Toggle option to show or hide folder structure</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
     <value>通行密钥</value>

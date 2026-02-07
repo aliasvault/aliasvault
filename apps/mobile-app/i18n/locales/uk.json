@@ -436,7 +436,8 @@
     "offlineMessage": "Ви не в мережі. Приєднайтесь до Інтернету, щоб синхронізувати сховище.",
     "switchBackToBrowser": "Щоб продовжити, поверніться до браузера.",
     "filters": {
-      "all": "(All) Items",
+      "all": "Items",
+      "showFolders": "Folders",
       "passkeys": "Ключі доступу",
       "attachments": "Вкладення"
     },

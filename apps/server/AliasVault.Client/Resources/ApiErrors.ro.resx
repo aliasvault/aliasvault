@@ -171,7 +171,7 @@
     <value>Eroare internă de server</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
-    <value>Seiful local nu este actualizat. Sincronizează-l reîmprospătând pagina și încearcă din nou.</value>
+    <value>Seiful local nu este actualizat. Sincronizează seiful prin reîmprospătarea paginii și încearcă din nou.</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
     <value>A apărut o eroare necunoscută. Încearcă din nou.</value>

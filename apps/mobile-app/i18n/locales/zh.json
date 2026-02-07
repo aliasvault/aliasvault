@@ -436,15 +436,16 @@
     "offlineMessage": "您处于离线状态，请连接互联网以同步密码库。",
     "switchBackToBrowser": "切换回浏览器以继续。",
     "filters": {
-      "all": "（所有）项目",
+      "all": "项目",
+      "showFolders": "文件夹",
       "passkeys": "通行密钥",
       "attachments": "附件"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "排序方式",
+      "oldestFirst": "最早在前",
+      "newestFirst": "最新在前",
+      "alphabetical": "字母顺序（A-Z）"
     },
     "totpCode": "TOTP 验证码",
     "attachments": "附件",

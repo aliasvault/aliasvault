@@ -63,19 +63,19 @@
     <comment>Section title</comment>
   </data>
   <data name="EnabledMessage" xml:space="preserve">
-    <value>Two factor authentication is currently enabled.</value>
+    <value>Tvåfaktorsautentisering är för närvarande aktiverat.</value>
     <comment>Status message when 2FA is enabled</comment>
   </data>
   <data name="DisabledMessage" xml:space="preserve">
-    <value>Two factor authentication is currently disabled. In order to improve your account security we advise you to enable it.</value>
+    <value>Tvåfaktorsautentisering är för närvarande inaktiverad. För att förbättra din kontosäkerhet rekommenderar vi att du aktiverar den.</value>
     <comment>Status message when 2FA is disabled</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Two-Factor Authentication</value>
+    <value>Aktivera Tvåfaktorsautentisering</value>
     <comment>Button to enable 2FA</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Disable Two-Factor Authentication</value>
+    <value>Inaktivera tvåfaktorsautentisering</value>
     <comment>Button to disable 2FA</comment>
   </data>
 </root>

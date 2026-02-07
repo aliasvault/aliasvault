@@ -28,14 +28,7 @@
     "switchAccounts": "Mudar de conta?",
     "loginWithMobile": "Entrar utilizado Dispositivo Móvel",
     "unlockWithMobile": "Desbloquear utilizando Dispositivo Móvel",
-    "scanQrCode": "Escaneie este código QR com seu aplicativo AliasVault para dispositivo móvel para entrar e desbloquear seu cofre.",
-    "errors": {
-      "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
-      "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
-      "wrongPassword": "Senha incorreta. Por favor tente novamente.",
-      "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
-      "mobileLoginRequestExpired": "Requisição de login pelo dispositivo móvel demorou muito. Por favor, atualize a página e tente novamente."
-    }
+    "scanQrCode": "Escaneie este código QR com seu aplicativo AliasVault para dispositivo móvel para entrar e desbloquear seu cofre."
   },
   "menu": {
     "vault": "Cofre",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "O cofre está bloqueado",
       "passwordChanged": "Sua senha mudou desde o último login. Por favor, realize login novamente por questões de segurança.",
       "syncConflictMaxRetries": "Não foi possível sincronizar seu cofre após várias tentativas. Por favor, tente novamente mais tarde.",
-      "mergeFailed": "Falha ao combinar mudanças do cofre. Por favor, tente novamente."
+      "mergeFailed": "Falha ao combinar mudanças do cofre. Por favor, tente novamente.",
+      "invalidCode": "Please enter a valid 6-digit authentication code.",
+      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
+      "wrongPassword": "Incorrect password. Please try again.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Um erro desconhecido ocorreu. Por favor, tente novamente.",
@@ -202,14 +200,14 @@
     "deleteFolderAndItems": "Excluir pasta e todos os itens",
     "deleteFolderAndItemsDescription": "{{count}} item(s) será(ão) movido(s) para Recentemente Excluídos.",
     "filters": {
-      "all": "(Todos os) Itens",
+      "folders": "Folders",
       "passkeys": "Passkeys"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Ordenar por",
+      "oldestFirst": "Mais antigos primeiro",
+      "newestFirst": "Mais novos primeiro",
+      "alphabetical": "Ordem Alfabética (A-Z)"
     },
     "deleteItemTitle": "Excluir Item",
     "deleteItemConfirm": "Tem certeza que deseja excluir este item?",
@@ -515,5 +513,9 @@
     "unsyncedChangesTitle": "Alterações Dessincronizadas",
     "unsyncedChangesWarning": "Você tem alterações dessincronizadas que serão perdidas caso você saia da sua conta agora. Têm certeza que deseja continuar?",
     "logoutAnyway": "Sair assim mesmo"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }

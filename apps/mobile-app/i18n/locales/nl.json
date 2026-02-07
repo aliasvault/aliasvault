@@ -436,7 +436,8 @@
     "offlineMessage": "Je bent offline. Maak verbinding met het internet om je vault te synchroniseren.",
     "switchBackToBrowser": "Schakel terug naar je browser om door te gaan.",
     "filters": {
-      "all": "(Alle) Items",
+      "all": "Items",
+      "showFolders": "Mappen",
       "passkeys": "Passkeys",
       "attachments": "Bijlagen"
     },

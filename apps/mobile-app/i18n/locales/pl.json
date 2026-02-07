@@ -436,7 +436,8 @@
     "offlineMessage": "Jesteś offline. Połącz się z Internetem, aby zsynchronizować swój sejf.",
     "switchBackToBrowser": "Wróć do przeglądarki, aby kontynuować.",
     "filters": {
-      "all": "(Wszystkie) pozycje",
+      "all": "Elementy",
+      "showFolders": "Foldery",
       "passkeys": "Klucze dostępu",
       "attachments": "Załączniki"
     },

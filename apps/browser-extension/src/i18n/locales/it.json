@@ -28,14 +28,7 @@
     "switchAccounts": "Cambia account",
     "loginWithMobile": "Accedi con l'App Mobile",
     "unlockWithMobile": "Sblocca con l'App Mobile",
-    "scanQrCode": "Scansiona questo codice QR con l'app mobile di AliasVault per accedere e sbloccare la cassaforte.",
-    "errors": {
-      "invalidCode": "Inserisci un codice di autenticazione a 6 cifre valido.",
-      "serverError": "Impossibile connettersi al server di AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
-      "wrongPassword": "Password non corretta. Riprova nuovamente.",
-      "sessionExpired": "La tua sessione è scaduta. Effettua di nuovo il login.",
-      "mobileLoginRequestExpired": "Richiesta di accesso mobile scaduta. Per favore ricarica la pagina e riprova."
-    }
+    "scanQrCode": "Scansiona questo codice QR con l'app mobile di AliasVault per accedere e sbloccare la cassaforte."
   },
   "menu": {
     "vault": "Cassaforte",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "La cassaforte è bloccata",
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza.",
       "syncConflictMaxRetries": "Impossibile sincronizzare la cassaforte dopo più tentativi. Riprova più tardi.",
-      "mergeFailed": "Sincronizzazione della cassaforte non riuscita. Riprovare."
+      "mergeFailed": "Sincronizzazione della cassaforte non riuscita. Riprovare.",
+      "invalidCode": "Inserisci un codice di autenticazione a 6 cifre valido.",
+      "serverError": "Impossibile raggiungere il server AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
+      "wrongPassword": "Password errata. Riprovare.",
+      "sessionExpired": "La tua sessione è scaduta. Effettua di nuovo il login.",
+      "mobileLoginRequestExpired": "Richiesta di accesso mobile scaduta. Ricarica la pagina e riprova."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Si è verificato un errore sconosciuto. Riprova.",
@@ -202,14 +200,14 @@
     "deleteFolderAndItems": "Elimina cartella e tutti gli elementi",
     "deleteFolderAndItemsDescription": "{{count}} oggetto(i) verrà spostato in Eliminato Recentemente.",
     "filters": {
-      "all": "(Tutti) Elementi",
+      "folders": "Cartelle",
       "passkeys": "Passkey"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Ordina per",
+      "oldestFirst": "Prima i più vecchi",
+      "newestFirst": "Prima i più recenti",
+      "alphabetical": "Alfabetico (A-Z)"
     },
     "deleteItemTitle": "Elimina elemento",
     "deleteItemConfirm": "Sei sicuro di voler rimuovere questo elemento?",
@@ -515,5 +513,9 @@
     "unsyncedChangesTitle": "Modifiche non Sincronizzate",
     "unsyncedChangesWarning": "Hai delle modifiche non sincronizzate che andranno perse se ti disconnetti ora. Sei sicuro di voler continuare?",
     "logoutAnyway": "Esci comunque"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tocca per riprovare la sincronizzazione"
   }
 }
