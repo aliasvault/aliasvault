@@ -52,6 +52,12 @@ export function getAvailableLanguages(): ILanguageOption[] {
       alternativeCodes: ['es-ES', 'es-MX', 'es-AR', 'es-CO', 'es-CL', 'es-PE', 'es-VE', 'es-EC', 'es-GT', 'es-CU', 'es-BO', 'es-DO', 'es-HN', 'es-PY', 'es-SV', 'es-NI', 'es-CR', 'es-PA', 'es-UY', 'es-PR']
     },
     {
+      value: 'fr',
+      label: 'Français',
+      flag: '🇫🇷',
+      alternativeCodes: ['fr-FR', 'fr-CA', 'fr-BE', 'fr-CH', 'fr-LU', 'fr-MC']
+    },
+    {
       value: 'it',
       label: 'Italiano',
       flag: '🇮🇹',
@@ -68,6 +74,18 @@ export function getAvailableLanguages(): ILanguageOption[] {
       label: 'Română',
       flag: '🇷🇴',
       alternativeCodes: ['ro-RO', 'ro-MD']
+    },
+    {
+      value: 'sv',
+      label: 'Svenska',
+      flag: '🇸🇪',
+      alternativeCodes: ['sv-SE', 'sv-FI']
+    },
+    {
+      value: 'ur',
+      label: 'اردو',
+      flag: '🇵🇰',
+      alternativeCodes: ['ur-PK', 'ur-IN']
     },
     {
       value: 'fa',

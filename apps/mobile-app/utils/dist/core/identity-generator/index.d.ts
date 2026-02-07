@@ -243,6 +243,60 @@ declare class IdentityGeneratorFa extends IdentityGenerator {
 }
 
 /**
+ * Identity generator for French language using French word dictionaries.
+ */
+declare class IdentityGeneratorFr extends IdentityGenerator {
+    /**
+     * Get the male first names.
+     */
+    protected getFirstNamesMaleJson(): string[];
+    /**
+     * Get the female first names.
+     */
+    protected getFirstNamesFemaleJson(): string[];
+    /**
+     * Get the last names.
+     */
+    protected getLastNamesJson(): string[];
+}
+
+/**
+ * Identity generator for Swedish language using Swedish word dictionaries.
+ */
+declare class IdentityGeneratorSv extends IdentityGenerator {
+    /**
+     * Get the male first names.
+     */
+    protected getFirstNamesMaleJson(): string[];
+    /**
+     * Get the female first names.
+     */
+    protected getFirstNamesFemaleJson(): string[];
+    /**
+     * Get the last names.
+     */
+    protected getLastNamesJson(): string[];
+}
+
+/**
+ * Identity generator for Urdu language using Urdu word dictionaries.
+ */
+declare class IdentityGeneratorUr extends IdentityGenerator {
+    /**
+     * Get the male first names.
+     */
+    protected getFirstNamesMaleJson(): string[];
+    /**
+     * Get the female first names.
+     */
+    protected getFirstNamesFemaleJson(): string[];
+    /**
+     * Get the last names.
+     */
+    protected getLastNamesJson(): string[];
+}
+
+/**
  * Helper utilities for identity generation that can be used by multiple client applications.
  */
 declare class IdentityHelperUtils {
@@ -370,7 +424,7 @@ declare function mapUiLanguageToIdentityLanguage(uiLanguageCode: string | null |
 /**
  * Creates a new identity generator based on the language.
  * Falls back to English if the requested language is not supported.
- * @param language - The language to use for generating the identity (e.g. "en", "nl", "de", "it", "es", "ro", "fa").
+ * @param language - The language to use for generating the identity (e.g. "en", "nl", "de", "it", "es", "ro", "fa", "fr", "sv", "ur").
  * @returns A new identity generator instance.
  */
 declare const CreateIdentityGenerator: (language: string) => IdentityGenerator;
@@ -382,4 +436,4 @@ declare const CreateIdentityGenerator: (language: string) => IdentityGenerator;
  */
 declare const CreateUsernameEmailGenerator: () => UsernameEmailGenerator;
 
-export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type ILanguageOption, type Identity, IdentityGenerator, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorEs, IdentityGeneratorFa, IdentityGeneratorIt, IdentityGeneratorNl, IdentityGeneratorRo, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages, mapUiLanguageToIdentityLanguage };
+export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type ILanguageOption, type Identity, IdentityGenerator, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorEs, IdentityGeneratorFa, IdentityGeneratorFr, IdentityGeneratorIt, IdentityGeneratorNl, IdentityGeneratorRo, IdentityGeneratorSv, IdentityGeneratorUr, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages, mapUiLanguageToIdentityLanguage };
