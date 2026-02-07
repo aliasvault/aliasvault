@@ -1,0 +1,22 @@
+{
+  "version": { "major": 2, "minor": 0 },
+  "do_communications_commitment": true,
+  "num_inputs": 0,
+  "instructions": [
+    { "op": "load_imm", "imm": "01" },
+    { "op": "load_imm", "imm": "70" },
+    { "op": "load_imm", "imm": "00" },
+    { "op": "declare_pub_input", "var": 1 },
+    { "op": "declare_pub_input", "var": 0 },
+    { "op": "declare_pub_input", "var": 0 },
+    { "op": "declare_pub_input", "var": 2 },
+    { "op": "pi_skip", "guard": 0, "count": 4 },
+    { "op": "load_imm", "imm": "0E" },
+    { "op": "declare_pub_input", "var": 3 },
+    { "op": "declare_pub_input", "var": 0 },
+    { "op": "pi_skip", "guard": 0, "count": 2 },
+    { "op": "load_imm", "imm": "A1" },
+    { "op": "declare_pub_input", "var": 4 },
+    { "op": "pi_skip", "guard": 0, "count": 1 }
+  ]
+}

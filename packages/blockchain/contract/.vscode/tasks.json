@@ -1,0 +1,25 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Compile compact file to JS",
+      "type": "shell",
+      "command": "npx run-compactc --skip-zk ${file} ${workspaceFolder}/src/managed",
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "showReuseMessage": false,
+        "clear": true,
+        "revealProblems": "onProblem"
+      },
+      "problemMatcher": [
+        "$compactException",
+        "$compactInternal",
+        "$compactCommandNotFound"
+      ]
+    }
+  ]
+}

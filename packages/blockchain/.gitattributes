@@ -1,0 +1,8 @@
+# Track specific file patterns in the counter directory
+counter-contract/src/managed/counter/keys/*.prover filter=lfs diff=lfs merge=lfs -text
+counter-contract/src/managed/counter/keys/*.verifier filter=lfs diff=lfs merge=lfs -text
+counter-contract/src/managed/counter/zkir/*.bzkir filter=lfs diff=lfs merge=lfs -text
+counter-contract/src/managed/counter/zkir/*.zkir filter=lfs diff=lfs merge=lfs -text
+
+
+

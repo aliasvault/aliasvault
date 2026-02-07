@@ -1,0 +1,8 @@
+services:
+  proof-server:
+    image: 'midnightntwrk/proof-server:7.0.0'
+    command: ['midnight-proof-server -v']
+    ports:
+      - '6300:6300'
+    environment:
+      RUST_BACKTRACE: 'full'
