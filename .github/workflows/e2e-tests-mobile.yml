@@ -177,11 +177,12 @@ jobs:
         env:
           ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5433;Database=aliasdb;Username=aliasvault;Password=password"
           JWT_KEY: "12345678901234567890123456789012"
-          DATA_PROTECTION_CERT_PASS: "Development"
           PUBLIC_REGISTRATION_ENABLED: "true"
           ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
           ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
           ASPNETCORE_URLS: "http://0.0.0.0:5092"
+          # Skip certificate-based data protection (use container mode which doesn't require keychain)
+          DOTNET_RUNNING_IN_CONTAINER: "true"
 
       - name: Start Metro bundler
         working-directory: apps/mobile-app
