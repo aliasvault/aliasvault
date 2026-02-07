@@ -267,24 +267,24 @@
     <comment>Description for Edge import service</comment>
   </data>
   <data name="EdgeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.</value>
+    <value>Pentru a importa parolele din Microsoft Edge, trebuie să le exporți ca fișier CSV. Poți face acest lucru mergând la Meniu > Setări > Parole și completare automată > Managerul de parole Microsoft > … > Exportă parolele.</value>
     <comment>Edge export instructions part 1</comment>
   </data>
   <data name="EdgeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
     <comment>Edge export instructions part 2</comment>
   </data>
   <!-- Enpass -->
   <data name="EnpassDescription" xml:space="preserve">
-    <value>Import passwords from Enpass</value>
+    <value>Importă parolele din Enpass</value>
     <comment>Description for Enpass import service</comment>
   </data>
   <data name="EnpassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.</value>
+    <value>Pentru a importa parolele din Enpass, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând Enpass, accesând Meniu > Fișier > Export și selectând Fișier CSV (.csv).</value>
     <comment>Enpass export instructions part 1</comment>
   </data>
   <data name="EnpassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
     <comment>Enpass export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
