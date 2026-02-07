@@ -448,6 +448,7 @@
     "signing": "Signing...",
     "verified": "Wallet Verified",
     "verifyOnExplorer": "Verify on Explorer",
+    "connectToAuthenticate": "Connect your Midnight wallet to authenticate",
     "errors": {
       "connectionFailed": "Failed to connect to Lace wallet. Make sure Lace is installed and you have a web page open.",
       "notFound": "Midnight Lace wallet not found. Is the extension installed and enabled?",

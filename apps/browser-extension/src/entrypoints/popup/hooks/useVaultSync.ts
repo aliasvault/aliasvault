@@ -6,7 +6,6 @@ import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
-import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
@@ -82,19 +81,6 @@ export const useVaultSync = () : {
       const statusError = webApi.validateStatusResponse(statusResponse);
       if (statusError) {
         onError?.(t('common.errors.' + statusError));
-        return false;
-      }
-
-      // Check if the SRP salt has changed compared to locally stored encryption key derivation params
-      const storedEncryptionParams = await sendMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS', {}, 'background') as EncryptionKeyDerivationParams | null;
-      if (storedEncryptionParams && statusResponse.srpSalt && statusResponse.srpSalt !== storedEncryptionParams.salt) {
-        /**
-         * Server SRP salt has changed compared to locally stored value, which means the user has changed
-         * their password since the last time they logged in. This means that the local encryption key is no
-         * longer valid and the user needs to re-authenticate. We trigger a logout but do not revoke tokens
-         * as these were already revoked by the server upon password change.
-         */
-        await app.logout(t('common.errors.passwordChanged'));
         return false;
       }
 

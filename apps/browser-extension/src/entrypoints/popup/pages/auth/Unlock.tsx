@@ -3,6 +3,7 @@ import { Buffer } from 'buffer';
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { sendMessage } from 'webext-bridge/popup';
 
 import AlertMessage from '@/entrypoints/popup/components/AlertMessage';
 import Button from '@/entrypoints/popup/components/Button';
@@ -17,7 +18,6 @@ import { useHeaderButtons } from '@/entrypoints/popup/context/HeaderButtonsConte
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
-import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
 import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
@@ -53,7 +53,6 @@ const Unlock: React.FC = () => {
   const { setHeaderButtons } = useHeaderButtons();
 
   const webApi = useWebApi();
-  const srpUtil = new SrpUtility(webApi);
 
   // Unlock mode state
   const [unlockMode, setUnlockMode] = useState<UnlockMode>('password');
@@ -209,15 +208,18 @@ const Unlock: React.FC = () => {
     }
 
     try {
-      // 1. Initiate login to get salt and server ephemeral
-      const loginResponse = await srpUtil.initiateLogin(authContext.username!);
+      // Use locally stored encryption params (stored during initial login)
+      const storedParams = await sendMessage('GET_ENCRYPTION_KEY_DERIVATION_PARAMS', {}, 'background') as { salt: string; encryptionType: string; encryptionSettings: string } | null;
+      if (!storedParams) {
+        throw new Error('No stored encryption parameters found. Please log in again.');
+      }
 
-      // Derive key from password using user's encryption settings
+      // Derive key from password using stored encryption settings
       const passwordHash = await EncryptionUtility.deriveKeyFromPassword(
         password,
-        loginResponse.salt,
-        loginResponse.encryptionType,
-        loginResponse.encryptionSettings
+        storedParams.salt,
+        storedParams.encryptionType,
+        storedParams.encryptionSettings
       );
 
       // Make API call to get latest vault
