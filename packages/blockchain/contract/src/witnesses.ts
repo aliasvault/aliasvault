@@ -13,12 +13,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { type WitnessContext } from '@midnight-ntwrk/compact-runtime';
+import { type Ledger } from './managed/vault-registry/contract/index.js';
+
 // This is how we type an empty object.
 export type CounterPrivateState = {
   privateCounter: number;
 };
 
-// VaultRegistry has no private state — all ledger state is public.
-export type VaultRegistryPrivateState = Record<string, never>;
+// VaultRegistry private state — stores only the owner's secret key (witness data).
+// The actual vault CID is application-layer data managed by the API (too large for Bytes<32>).
+// Follows the bboard pattern: WitnessContext<Ledger, PrivateState> → [newPrivateState, returnValue].
+export type VaultRegistryPrivateState = {
+  readonly secretKey: Uint8Array;
+};
 
+export const createVaultRegistryPrivateState = (
+  secretKey: Uint8Array,
+): VaultRegistryPrivateState => ({
+  secretKey,
+});
+
+// Counter has no witnesses — empty object required by Contract constructor.
 export const witnesses = {};
+
+export const vaultRegistryWitnesses = {
+  local_secret_key: ({
+    privateState,
+  }: WitnessContext<Ledger, VaultRegistryPrivateState>): [
+    VaultRegistryPrivateState,
+    Uint8Array,
+  ] => [privateState, privateState.secretKey],
+};
+

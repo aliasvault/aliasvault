@@ -8,13 +8,45 @@ export ledger registrations: Set<Bytes<32>>;
 // Public ledger: total number of registered vaults
 export ledger totalVaults: Counter;
 
+// Public ledger: owner commitment (hiding commitment derived from secret key)
+export ledger owner: Bytes<32>;
+
+// Public ledger: hash of the current vault CID (commitment, not the CID itself)
+export ledger vaultCidHash: Bytes<32>;
+
+// Witness: returns the owner's secret key from private state
+witness local_secret_key(): Bytes<32>;
+
+// Derive an owner commitment from a secret key using persistentCommit (hiding commitment).
+// Uses a fixed domain separator — ownership does not rotate in VaultRegistry.
+// persistentCommit adds blinding vs persistentHash, per OpenZeppelin ZOwnablePK pattern.
+export circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<32>>(pad(32, "vault:owner:"), sk);
+}
+
 // Register a vault for the given wallet address hash.
+// Sets the caller as owner using their secret key.
 // Fails if the wallet is already registered.
 export circuit registerVault(walletAddressHash: Bytes<32>): [] {
   const addrHash = disclose(walletAddressHash);
   assert(!registrations.member(addrHash), "Vault already registered");
   registrations.insert(addrHash);
   totalVaults.increment(1);
+  // Set owner to the commitment derived from the caller's secret key
+  owner = ownerCommitment(local_secret_key());
+  // Initialize vaultCidHash to default (empty)
+  vaultCidHash = default<Bytes<32>>;
+}
+
+// Update the vault CID hash. Only the owner can call this.
+// The actual CID is stored at the application layer (TypeScript);
+// only the hash is stored on-chain for integrity verification.
+export circuit updateVault(newCidHash: Bytes<32>): [] {
+  const cidHash = disclose(newCidHash);
+  // Verify caller is the owner by deriving their commitment
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  vaultCidHash = cidHash;
 }
 
 // Check if a wallet address hash is registered.

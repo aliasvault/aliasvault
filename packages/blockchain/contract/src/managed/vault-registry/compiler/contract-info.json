@@ -1,11 +1,46 @@
 {
   "circuits": [
     {
+      "name": "ownerCommitment",
+      "pure": true,
+      "arguments": [
+        {
+          "name": "sk",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
       "name": "registerVault",
       "pure": false,
       "arguments": [
         {
           "name": "walletAddressHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "updateVault",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "newCidHash",
           "type": {
             "type-name": "Bytes",
             "length": 32
@@ -36,6 +71,15 @@
     }
   ],
   "witnesses": [
+    {
+      "name": "local_secret_key",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    }
   ],
   "contracts": [
   ]
