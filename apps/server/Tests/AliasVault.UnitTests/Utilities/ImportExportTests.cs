@@ -1265,6 +1265,56 @@ public class ImportExportTests
     }
 
     /// <summary>
+    /// Test case for importing credentials from Edge CSV and ensuring all values are present.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    public async Task ImportCredentialsFromEdgeCsv()
+    {
+        // Arrange
+        var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceStringAsync("AliasVault.UnitTests.TestData.Exports.edge.csv");
+
+        // Act
+        var importedCredentials = await EdgeImporter.ImportFromCsvAsync(fileContent);
+
+        // Assert
+        Assert.That(importedCredentials, Has.Count.EqualTo(4));
+
+        // Test first entry (no notes)
+        var exampleAppCredential = importedCredentials.First(c => c.ServiceName == "example.app.tld");
+        Assert.Multiple(() =>
+        {
+            Assert.That(exampleAppCredential.ServiceName, Is.EqualTo("example.app.tld"));
+            Assert.That(exampleAppCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://example.app.tld/"));
+            Assert.That(exampleAppCredential.Username, Is.EqualTo("exampleu"));
+            Assert.That(exampleAppCredential.Password, Is.EqualTo("examplep"));
+            Assert.That(exampleAppCredential.Notes, Is.Empty);
+        });
+
+        // Test entry with notes
+        var googleCredential = importedCredentials.First(c => c.ServiceName == "google.nl");
+        Assert.Multiple(() =>
+        {
+            Assert.That(googleCredential.ServiceName, Is.EqualTo("google.nl"));
+            Assert.That(googleCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://google.nl/"));
+            Assert.That(googleCredential.Username, Is.EqualTo("myuser"));
+            Assert.That(googleCredential.Password, Is.EqualTo("mypass"));
+            Assert.That(googleCredential.Notes, Is.EqualTo("Google note here microsoft edge"));
+        });
+
+        // Test youtube entry
+        var youtubeCredential = importedCredentials.First(c => c.ServiceName == "youtube.com");
+        Assert.Multiple(() =>
+        {
+            Assert.That(youtubeCredential.ServiceName, Is.EqualTo("youtube.com"));
+            Assert.That(youtubeCredential.ServiceUrls?.FirstOrDefault(), Is.EqualTo("https://youtube.com/"));
+            Assert.That(youtubeCredential.Username, Is.EqualTo("youtubeuser"));
+            Assert.That(youtubeCredential.Password, Is.EqualTo("ytpassword"));
+            Assert.That(youtubeCredential.Notes, Is.EqualTo("Youtubenotes"));
+        });
+    }
+
+    /// <summary>
     /// Helper method to add a field value to an item.
     /// </summary>
     /// <param name="item">The item to add the field value to.</param>

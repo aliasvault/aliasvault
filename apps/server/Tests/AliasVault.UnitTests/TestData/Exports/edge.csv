@@ -1,0 +1,5 @@
+name,url,username,password,note
+example.app.tld,https://example.app.tld/,exampleu,examplep,
+example.com,https://example.com/,Username,password,
+google.nl,https://google.nl/,myuser,mypass,Google note here microsoft edge
+youtube.com,https://youtube.com/,youtubeuser,ytpassword,Youtubenotes
