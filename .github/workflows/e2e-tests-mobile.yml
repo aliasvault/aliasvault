@@ -225,10 +225,57 @@ jobs:
             sleep 2
           done
 
+      - name: Cache CocoaPods
+        id: pods-cache
+        run: |
+          # Use persistent cache on self-hosted runner
+          PODS_CACHE_DIR="/Users/ci/.cache/pods"
+          PODS_HASH=$(md5 -q ios/Podfile.lock)
+          CACHED_PODS="$PODS_CACHE_DIR/$PODS_HASH"
+
+          if [ -d "$CACHED_PODS" ]; then
+            echo "✅ Restoring Pods from cache..."
+            rm -rf ios/Pods
+            cp -R "$CACHED_PODS" ios/Pods
+            echo "cache-hit=true" >> $GITHUB_OUTPUT
+          else
+            echo "cache-hit=false" >> $GITHUB_OUTPUT
+          fi
+
       - name: Install CocoaPods dependencies
+        if: steps.pods-cache.outputs.cache-hit != 'true'
         run: |
           cd ios
           pod install
+
+          # Save to cache
+          PODS_CACHE_DIR="/Users/ci/.cache/pods"
+          PODS_HASH=$(md5 -q Podfile.lock)
+          mkdir -p "$PODS_CACHE_DIR"
+          # Clean old caches (keep last 3)
+          ls -t "$PODS_CACHE_DIR" 2>/dev/null | tail -n +4 | xargs -I {} rm -rf "$PODS_CACHE_DIR/{}" || true
+          cp -R Pods "$PODS_CACHE_DIR/$PODS_HASH"
+          echo "✅ Pods cached"
+
+      - name: Cache Xcode DerivedData
+        id: xcode-cache
+        run: |
+          # Use persistent cache on self-hosted runner based on source hash
+          XCODE_CACHE_DIR="/Users/ci/.cache/xcode-derived"
+          # Hash key files that affect the build
+          SOURCE_HASH=$(cat ios/Podfile.lock package.json ../../core/rust/Cargo.lock 2>/dev/null | md5)
+          CACHED_BUILD="$XCODE_CACHE_DIR/$SOURCE_HASH"
+
+          mkdir -p ios/build
+
+          if [ -d "$CACHED_BUILD" ]; then
+            echo "✅ Restoring Xcode DerivedData from cache..."
+            cp -R "$CACHED_BUILD/"* ios/build/ 2>/dev/null || true
+            echo "cache-hit=true" >> $GITHUB_OUTPUT
+          else
+            echo "cache-hit=false" >> $GITHUB_OUTPUT
+          fi
+          echo "SOURCE_HASH=$SOURCE_HASH" >> $GITHUB_ENV
 
       - name: Boot iOS Simulator
         run: |
@@ -271,20 +318,40 @@ jobs:
       - name: Build iOS app for testing
         run: |
           cd ios
+          # Enable incremental builds
           xcodebuild build-for-testing \
             -workspace AliasVault.xcworkspace \
             -scheme AliasVault \
             -sdk iphonesimulator \
             -destination "id=${{ env.SIMULATOR_ID }}" \
             -derivedDataPath build \
+            -enableBuildDebugging NO \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGN_IDENTITY="-" \
             DEVELOPMENT_TEAM="" \
-            IDEFileSystemSynchronizedGroupsAreEnabled=NO
+            IDEFileSystemSynchronizedGroupsAreEnabled=NO \
+            COMPILER_INDEX_STORE_ENABLE=NO
+
+      - name: Save Xcode build cache
+        if: steps.xcode-cache.outputs.cache-hit != 'true'
+        run: |
+          XCODE_CACHE_DIR="/Users/ci/.cache/xcode-derived"
+          CACHED_BUILD="$XCODE_CACHE_DIR/${{ env.SOURCE_HASH }}"
+
+          mkdir -p "$XCODE_CACHE_DIR"
+          # Clean old caches (keep last 3)
+          ls -t "$XCODE_CACHE_DIR" 2>/dev/null | tail -n +4 | xargs -I {} rm -rf "$XCODE_CACHE_DIR/{}" || true
+
+          # Save the build products (only essential dirs to save space)
+          mkdir -p "$CACHED_BUILD"
+          cp -R ios/build/Build "$CACHED_BUILD/" 2>/dev/null || true
+          echo "✅ Xcode build cached"
 
       - name: Run iOS E2E Tests
         run: |
           cd ios
+          # Remove existing result bundle if present
+          rm -rf TestResults.xcresult
           xcodebuild test-without-building \
             -workspace AliasVault.xcworkspace \
             -scheme AliasVault \
