@@ -15,7 +15,7 @@ using Microsoft.Playwright;
 /// <summary>
 /// Base class for tests that use Playwright for E2E browser testing.
 /// </summary>
-public class ClientPlaywrightTest : PlaywrightTest
+public abstract class ClientPlaywrightTest : PlaywrightTest
 {
     private const int BasePort = 5600;
     private static int _currentPort = BasePort;
@@ -101,10 +101,12 @@ public class ClientPlaywrightTest : PlaywrightTest
 
         // Start WebAPI in-memory.
         _apiFactory.Port = apiPort;
+        _apiFactory.InitializeKestrel();
         _apiFactory.CreateDefaultClient();
 
         // Start Blazor WASM in-memory.
         _clientFactory.Port = appPort;
+        _clientFactory.InitializeKestrel();
         _clientFactory.CreateDefaultClient();
 
         await SetupPlaywrightBrowserAndContext();

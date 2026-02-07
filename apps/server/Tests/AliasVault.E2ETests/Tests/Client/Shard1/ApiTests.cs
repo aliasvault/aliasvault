@@ -66,7 +66,9 @@ public class ApiTests : ClientPlaywrightTest
     {
         // Check if the IP address is not anonymized as we enabled IP logging for this test file, see OneTimeSetUp().
         var authLogEntry = await ApiDbContext.AuthLogs.FirstAsync(x => x.Username == TestUserUsername && x.EventType == AuthEventType.Register);
-        Assert.That(authLogEntry.IpAddress, Is.EqualTo("::1"), "IP address is anonymized while IP logging should be enabled. Check test configuration.");
+
+        bool isValidLocalhostIp = authLogEntry.IpAddress == "::1" || authLogEntry.IpAddress == "127.0.0.1";
+        Assert.That(isValidLocalhostIp, Is.True, $"IP address '{authLogEntry.IpAddress}' is anonymized while IP logging should be enabled. Check test configuration.");
     }
 
     /// <summary>

@@ -30,7 +30,7 @@ RUN cd ./core && \
 # ============================================
 # Stage 2: Build .NET applications
 # ============================================
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-builder
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-builder
 
 # Install Python (required for WASM compilation) and Node.js (required by JS bundler)
 RUN apt-get update && \
@@ -116,7 +116,7 @@ RUN ARCH="${TARGETARCH}"; \
 # ============================================
 # Stage 4: Final runtime image
 # ============================================
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble
 
 # OCI Image Labels
 LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"

@@ -77,7 +77,12 @@ else
     private IEnumerable<string>? RecoveryCodes { get; set; }
     private bool _isLoading = true;
 
-    [SupplyParameterFromForm] private InputModel Input { get; set; } = new();
+    [SupplyParameterFromForm] private InputModel Input { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        Input ??= new();
+    }
 
     /// <inheritdoc/>
     protected override async Task OnAfterRenderAsync(bool firstRender)
