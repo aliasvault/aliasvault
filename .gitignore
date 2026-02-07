@@ -434,3 +434,12 @@ temp
 
 # Safari extension build files
 apps/browser-extension/safari-xcode/AliasVault/build
+
+# AI/IDE agent configs (per-machine, not shared)
+.agent/
+.gemini/
+.opencode/
+.turbo/
+
+# BMAD memory (per-machine state, not shared)
+_bmad/_memory/
