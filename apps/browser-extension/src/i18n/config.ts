@@ -15,6 +15,7 @@ import plTranslations from './locales/pl.json';
 import ptTranslations from './locales/pt.json';
 import roTranslations from './locales/ro.json';
 import ruTranslations from './locales/ru.json';
+import svTranslations from './locales/sv.json';
 import ukTranslations from './locales/uk.json';
 import zhTranslations from './locales/zh.json';
 
@@ -58,6 +59,9 @@ export const LANGUAGE_RESOURCES = {
   },
   ru: {
     translation: ruTranslations
+  },
+  sv: {
+    translation: svTranslations
   },
   uk: {
     translation: ukTranslations
@@ -143,6 +147,12 @@ export const AVAILABLE_LANGUAGES: ILanguageConfig[] = [
     name: 'Russian',
     nativeName: 'Русский',
     flag: '🇷🇺'
+  },
+  {
+    code: 'sv',
+    name: 'Swedish',
+    nativeName: 'Svenska',
+    flag: '🇸🇪'
   },
   {
     code: 'uk',

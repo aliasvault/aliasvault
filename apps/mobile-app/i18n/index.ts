@@ -14,6 +14,7 @@ import pl from './locales/pl.json';
 import pt from './locales/pt.json';
 import ro from './locales/ro.json';
 import ru from './locales/ru.json';
+import sv from './locales/sv.json';
 import uk from './locales/uk.json';
 import zh from './locales/zh.json';
 
@@ -30,6 +31,7 @@ const resources = {
   pt: { translation: pt },
   ro: { translation: ro },
   ru: { translation: ru },
+  sv: { translation: sv },
   uk: { translation: uk },
   zh: { translation: zh },
 };
