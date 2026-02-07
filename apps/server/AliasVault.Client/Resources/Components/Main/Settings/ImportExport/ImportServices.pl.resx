@@ -263,28 +263,28 @@
   </data>
   <!-- Edge -->
   <data name="EdgeDescription" xml:space="preserve">
-    <value>Import passwords from your Microsoft Edge Password Manager</value>
+    <value>Importuj hasła z Menedżera haseł Microsoft Edge</value>
     <comment>Description for Edge import service</comment>
   </data>
   <data name="EdgeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.</value>
+    <value>Aby zaimportować swoje hasła Microsoft Edge, musisz je wyeksportować jako plik CSV. Możesz to zrobić przechodząc do Menu > Ustawienia > Hasło i autouzupełnianie > Menedżer haseł Microsoft > ... > Eksport haseł.</value>
     <comment>Edge export instructions part 1</comment>
   </data>
   <data name="EdgeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Po wyeksportowaniu pliku, możesz go przesłać poniżej.</value>
     <comment>Edge export instructions part 2</comment>
   </data>
   <!-- Enpass -->
   <data name="EnpassDescription" xml:space="preserve">
-    <value>Import passwords from Enpass</value>
+    <value>Importuj hasła z Enpass</value>
     <comment>Description for Enpass import service</comment>
   </data>
   <data name="EnpassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.</value>
+    <value>Aby zaimportować hasła z Enpass, należy je wyeksportować jako plik CSV. Można to zrobić otwierając Enpass, przejść do 'Menu' > 'Plik' > 'Eksport' i wybrać 'plik CSV (.csv)'.</value>
     <comment>Enpass export instructions part 1</comment>
   </data>
   <data name="EnpassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Po wyeksportowaniu pliku, można go przesłać poniżej.</value>
     <comment>Enpass export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
