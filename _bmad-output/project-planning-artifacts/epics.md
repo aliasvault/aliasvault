@@ -1,0 +1,870 @@
+---
+stepsCompleted: [1]
+inputDocuments:
+  - c:\Users\ozi3o\Documents\projects\blockchain\aliasvault\_bmad-output\prd.md
+  - c:\Users\ozi3o\Documents\projects\blockchain\aliasvault\_bmad-output\architecture.md
+project_name: 'aliasvault'
+user_name: 'Ozi3o'
+date: '2026-01-11'
+---
+
+# aliasvault - Epic Breakdown
+
+## Overview
+
+This document provides the complete epic and story breakdown for aliasvault, decomposing the requirements from the PRD and Architecture into implementable stories for the decentralized password manager with Midnight blockchain integration.
+
+## Requirements Inventory
+
+### Functional Requirements
+
+**Wallet-Based Authentication:**
+- FR1: Users can connect their Cardano wallet (Lace/Nami) to create a vault identity
+- FR2: Users can sign cryptographic challenges with their wallet to unlock their vault
+- FR3: System can create an on-chain vault registration on Midnight blockchain upon first connection
+- FR4: Users can verify their vault ownership via the Midnight block explorer
+
+**Vault Operations:**
+- FR5: Users can encrypt their credentials locally using a Master Password
+- FR6: Users can store encrypted vault data on IPFS
+- FR7: Users can update vault metadata on Midnight when vault state changes
+- FR8: Users can decrypt and view their stored credentials in under 2 seconds
+- FR9: Users can manually add new credentials (service name, username, password, notes)
+
+**Guardian Recovery Protocol:**
+- FR10: Users can configure a Guardian wallet during initial setup
+- FR11: Users can initiate a password recovery request via their wallet signature
+- FR12: System can enforce a 72-hour time-lock on recovery requests
+- FR13: Users can claim an encrypted vault backup key from the Guardian contract after time-lock expires
+- FR14: Users can use the claimed backup key to decrypt their vault and set a new Master Password
+- FR15: Users can cancel an active recovery request with their wallet signature
+
+**Multi-Device Security & Notifications:**
+- FR16: Users can install AliasVault on multiple devices (work laptop, tablet, etc.)
+- FR17: System can send push notifications to all user devices when security events occur
+- FR18: Users can transfer vault ownership to a new wallet address
+- FR19: System can invalidate previous recovery requests when ownership is transferred
+
+**Alias Generation & Management:**
+- FR20: Users can generate anonymous email aliases (`@alias.id`)
+- FR21: Users can customize alias names (e.g., `alex-trade-42@alias.id`)
+- FR22: System can route incoming emails from aliases through the SMTP bridge
+- FR23: Users can view encrypted incoming emails in their vault
+- FR24: Users can manage (create, view, delete) multiple aliases per vault
+
+**Protocol Infrastructure Monitoring (Admin/Ops):**
+- FR25: Ops team can monitor IPFS pinning health across distributed nodes
+- FR26: Ops team can view Guardian contract activity (recovery requests, completions, cancellations)
+- FR27: Ops team can track vault registry statistics (mints, updates)
+- FR28: Ops team can trigger re-pinning jobs for degraded nodes
+- FR29: Ops team can detect suspicious on-chain patterns (e.g., rapid ownership transfers)
+
+### Non-Functional Requirements
+
+**Performance:**
+- NFR1: Vault decryption must complete in < 2 seconds after Master Password entry
+- NFR2: Onboarding flow (connect wallet → mint vault) must complete in < 30 seconds
+- NFR3: Guardian Recovery claim transaction must confirm in < 30 seconds
+
+**Security:**
+- NFR4: All vault data must be encrypted using AES-256-GCM before IPFS upload
+- NFR5: Master Password derivation must use Argon2id (resistant to GPU attacks)
+- NFR6: Smart contracts must pass external audit with 0 Critical vulnerabilities
+- NFR7: ZK-proof circuits must be formally verified before mainnet deployment
+- NFR8: Recovery requests must enforce a minimum 72-hour time-lock
+
+**Reliability & Availability:**
+- NFR9: IPFS pinning strategy must achieve > 99.9% availability
+- NFR10: System must support multi-region IPFS pinning (minimum 3 redundant nodes)
+- NFR11: Midnight blockchain connectivity must gracefully handle node failures
+
+**Data Privacy & Compliance:**
+- NFR12: Zero personal data stored on-chain or in IPFS metadata
+- NFR13: GDPR "right to be forgotten" supported via IPFS unpin + key deletion
+- NFR14: Multi-device notifications must use end-to-end encrypted channels
+
+**Browser Extension Compatibility:**
+- NFR15: Extension must support Chrome v100+ and Brave v1.40+
+- NFR16: Extension package size must be < 5MB
+
+### Additional Requirements (from Architecture)
+
+**Starter Template & Project Structure:**
+- AR1: Use hybrid architecture - existing WXT browser extension + MeshJS Midnight starter template
+- AR2: Clone MeshJS/midnight-starter-template into `packages/blockchain` folder
+- AR3: Use Compact language (v0.27+) for all Midnight contracts
+- AR4: Integrate contract build artifacts into browser extension
+
+**Smart Contract Architecture:**
+- AR5: VaultRegistry contract with private state for CID storage (never disclosed on public ledger)
+- AR6: GuardianRecovery contract with 2-of-3 threshold and dual-layer encryption
+- AR7: AliasRegistry contract for email alias management
+- AR8: Witness functions for private state access by wallet owner
+
+**IPFS Integration:**
+- AR9: Use Pinata managed pinning service for MVP
+- AR10: Configure multi-region redundancy (US East, EU West, Asia Pacific)
+- AR11: Maintain local IndexedDB cache as offline fallback
+
+**Conflict Resolution:**
+- AR12: Implement credential-level merge with last-write-wins for same credential updates
+- AR13: Client-side conflict detection before saving
+
+**Guardian Recovery (Enhanced):**
+- AR14: Backup wallet time-lock (72-hour delay) for catastrophic loss recovery
+- AR15: Guardian rotation without password change
+- AR16: Multi-backup wallet support (up to 3)
+- AR17: Recovery key rotation (recommended every 12 months)
+- AR18: Guardian notification protocol via IPFS portal
+
+**SMTP Bridge:**
+- AR19: Initialize Express TypeScript service for SMTP bridge
+- AR20: Integrate Mox SMTP server with Midnight RPC client for alias ownership verification
+
+### FR Coverage Map
+
+| FR | Epic | Description |
+|----|------|-------------|
+| FR1-FR4 | Epic 1 | Wallet Authentication |
+| FR5-FR8 | Epic 2 | Vault Storage & Sync |
+| FR9 | Epic 4 | Credential Management |
+| FR10-FR15 | Epic 3 | Guardian Recovery |
+| FR17 | Post-MVP | Push Notifications |
+| FR18-FR19 | Epic 3 | Ownership Transfer |
+| FR20-FR24 | Epic 5 | Alias Email (TBD) |
+| FR25-FR29 | Post-MVP | Protocol Ops Monitoring |
+
+---
+
+## Epic List
+
+### Epic 1: Project Foundation & Wallet Authentication ✅ APPROVED
+
+**User Outcome:** Developers have a working monorepo with Midnight contracts scaffolded, and users can authenticate with their Cardano wallet instead of username/password.
+
+#### What's NEW (must build)
+
+| Item | Evidence | Scope |
+|------|----------|-------|
+| MeshJS Midnight Starter integration | AR1-AR4 | Clone template, setup `packages/blockchain/` |
+| Lace/Nami wallet connection | FR1 | New `WalletService.ts` (replace SRP) |
+| Wallet signature challenge | FR2 | New flow - sign message to prove ownership |
+| On-chain vault registration | FR3 | VaultRegistry.compact contract (stub) |
+| Block explorer verification link | FR4 | UI component linking to Midnight explorer |
+
+#### What EXISTS (reuse)
+
+| Item | Evidence | Status |
+|------|----------|--------|
+| `EncryptionUtility.ts` | 359 lines, Argon2id + AES-GCM | ✅ Keep unchanged |
+| `SqliteClient.ts` | 1612 lines, local vault cache | ✅ Keep unchanged |
+| UI components | `browser-extension/src/entrypoints/` | ✅ Keep unchanged |
+
+#### What TRANSFORMS (modify)
+
+| Item | Current | Target |
+|------|---------|--------|
+| `WebApiService.ts` | SRP auth to .NET server | Wallet auth (remove SRP flow) |
+
+**FRs Covered:** FR1, FR2, FR3, FR4
+**ARs Covered:** AR1, AR2, AR3, AR4
+
+---
+
+#### Story 1.1: MeshJS Midnight Starter Integration
+
+**As a** developer  
+**I want** a working Midnight contract development environment in the monorepo  
+**So that** I can build and test the blockchain components
+
+**Acceptance Criteria:**
+- [x] MeshJS template cloned to `packages/blockchain/` *(DEVIATION: Used official midnightntwrk/example-counter v2.0.2)*
+- [x] Compact compiler (v0.27+) configured *(Compact CLI 0.4.0, language >= 0.20)*
+- [x] `pnpm build` succeeds for blockchain package
+- [x] Sample contract compiles without errors
+
+---
+
+#### Story 1.2: Wallet Connection (Lace only)
+
+**As a** user  
+**I want** to connect my Cardano wallet (Lace/Nami)  
+**So that** I can authenticate without a username/password
+
+**Acceptance Criteria:**
+- [x] ~~Wallet selection modal shows available wallets~~ *(DESCOPED: Single Lace button — Nami doesn't support Midnight)*
+- [x] User can connect Lace wallet
+- [x] ~~User can connect Nami wallet~~ *(DESCOPED: Nami has no Midnight support)*
+- [x] Wallet address is displayed after connection
+- [x] Connection persists across browser sessions
+
+> **Shared Component:** This wallet connection logic is reused by Story 3.3 (Guardian Portal) and Story 5.2 (Alias Generation UI).
+
+---
+
+#### Story 1.3: Wallet Signature Challenge
+
+**As a** user  
+**I want** to sign a challenge with my wallet  
+**So that** I can prove ownership of my Identity and unlock my vault
+
+**Acceptance Criteria:**
+- [x] System generates unique challenge message
+- [x] Wallet prompts user to sign message *(signData with connection-proof fallback)*
+- [x] ~~Signature is verified client-side~~ *(DEFERRED: Lace signData API not fully stable; authMethod field tracks verification level)*
+- [x] Failed signature shows error message
+- [x] Successful signature proceeds to unlock flow *(sets isVerified=true; full vault unlock in Epic 2)*
+
+---
+
+#### Story 1.4: VaultRegistry Contract Stub
+
+**As a** developer  
+**I want** to deploy a basic VaultRegistry contract  
+**So that** I can start registering vault owners on-chain
+
+**Acceptance Criteria:**
+- [x] VaultRegistry.compact contract scaffolded
+- [x] `registerVault(walletAddress)` function implemented
+- [x] Contract deploys to Midnight testnet *(deployed to local network)*
+- [x] Registration transaction succeeds
+
+---
+
+#### Story 1.5: Block Explorer Link
+
+**As a** user  
+**I want** to see my vault registration on the block explorer  
+**So that** I can verify my data is truly decentralized
+
+**Acceptance Criteria:**
+- [x] Dev check: Verify Midnight block explorer URL availability
+- [x] UI component checks for explorer URL config
+- [x] If available: Show "Verify on Explorer" link
+- [x] If unavailable: Hide link gracefully
+- [x] Link opens correct address on explorer
+
+---
+
+#### Story 1.6: Remove SRP Auth Flow
+
+**As a** developer  
+**I want** to remove the legacy SRP authentication  
+**So that** the codebase relies purely on wallet authentication
+
+**Acceptance Criteria:**
+- [x] **DELETE:** All SRP-related code in `WebApiService.ts`
+- [x] **DELETE:** SRP encryption helpers in `EncryptionUtility.ts` *(SrpUtility.ts deleted — 151 lines)*
+- [x] **DELETE:** SRP data models
+- [x] New `WalletService.ts` created to handle auth state
+
+---
+
+### Epic 2: Midnight Smart Contracts & Vault Storage ✅ APPROVED
+
+**User Outcome:** Users' encrypted vaults are stored on IPFS with the CID managed in Midnight private state. Vault saves and retrievals work through the blockchain instead of the .NET server.
+
+#### What's NEW (must build)
+
+| Item | Evidence | Scope |
+|------|----------|-------|
+| **VaultRegistry.compact** | AR5, Architecture section 4 | Contract with private state for CID, public state for owner/timestamp |
+| **Witness function `getVaultCID()`** | AR8 | Wallet-signed retrieval of private CID |
+| **IPFS upload to Pinata** | AR9-AR10, FR6 | New `IpfsService.ts` with multi-region pinning |
+| **CIDv1 type guard** | `project-context.md` Rule 2 | `assertCIDv1()` enforcement before contract storage |
+| **Contract deployment CLI** | AR3 (MeshJS template) | Scripts in `packages/blockchain/cli/` |
+
+#### What EXISTS (reuse)
+
+| Item | Evidence | Status |
+|------|----------|--------|
+| `EncryptionUtility.symmetricEncrypt()` | Already uses AES-256-GCM | ✅ Vault encryption unchanged |
+| `SqliteClient.exportToBase64()` | Line 119 | ✅ Export vault blob for IPFS upload |
+| `shared/config/contracts.ts` | `project-context.md` Rule 4 | ✅ Pattern exists for address management |
+
+#### What TRANSFORMS (modify)
+
+| Item | Current | Target |
+|------|---------|--------|
+| Vault save flow | `WebApiService.ts` → POST to .NET | New `VaultSyncService.ts` → IPFS + Midnight |
+| Vault load flow | GET from .NET → `SqliteClient.initializeFromBase64()` | Midnight witness → IPFS fetch → SQLite |
+
+**FRs Covered:** FR5, FR6, FR7, FR8
+**ARs Covered:** AR5, AR8, AR9, AR10, AR11
+
+---
+
+#### Story 2.1: VaultRegistry Smart Contract
+
+**As a** user  
+**I want** a smart contract that securely stores my vault's IPFS CID in private state  
+**So that** only I can access my data location
+
+**Acceptance Criteria:**
+- [ ] Contract tracks `owner` (public) and `vaultCID` (private)
+- [ ] `updateVault(cid)` function (only owner can call)
+- [ ] `getVaultCID()` witness function (returns private CID to owner)
+- [ ] `assertCIDv1` logic enforces CIDv1 format
+- [ ] Unit tests for ownership access control
+
+---
+
+#### Story 2.2: IPFS Service (Pinata)
+
+**As a** developer  
+**I want** an IPFS service that uploads encrypted blobs to Pinata  
+**So that** vault data is reliably stored and retrieval strings are generated
+
+**Acceptance Criteria:**
+- [ ] `IpfsService.ts` created with Pinata SDK
+- [ ] Feature: Upload `Uint8Array` → returns `CID`
+- [ ] Feature: Download `CID` → returns `Uint8Array`
+- [ ] Error handling for network failures (retry logic)
+- [ ] Validation: Returned CID must be CIDv1
+
+---
+
+#### Story 2.3: Vault Sync Logic (Save Flow)
+
+**As a** user  
+**I want** my vault encrypted and uploaded when I save  
+**So that** my credentials are backed up on the blockchain network
+
+**Acceptance Criteria:**
+- [ ] `SqliteClient.exportToBase64()` (existing) used to get blob
+- [ ] `EncryptionUtility.symmetricEncrypt()` (existing) used to encrypt blob
+- [ ] Upload encrypted blob to IPFS (Story 2.2)
+- [ ] Call `VaultRegistry.updateVault(cid)` (Story 2.1)
+- [ ] UI shows "Syncing..." → "Synced" status
+
+---
+
+#### Story 2.4: Vault Sync Logic (Load Flow)
+
+**As a** user  
+**I want** to fetch my latest vault when I open the app  
+**So that** I see my up-to-date credentials across devices
+
+**Acceptance Criteria:**
+- [ ] Call `VaultRegistry.getVaultCID()` (Story 2.1)
+- [ ] Download blob from IPFS (Story 2.2)
+- [ ] Decrypt blob with local key
+- [ ] Import into SQLite via `SqliteClient.initializeFromBase64()` (existing)
+- [ ] Handle "No vault found" case (new user)
+
+---
+
+#### Story 2.5: Contract Deployment Scripts
+
+**As a** dev  
+**I want** scripts to deploy contracts to Testnet  
+**So that** CI/CD can automate updates
+
+**Acceptance Criteria:**
+- [ ] `deploy.ts` script in `packages/blockchain/cli`
+- [ ] Script outputs contract address to `shared/config/contracts.ts`
+- [ ] Instructions in README for running deployment
+
+---
+
+#### Story 2.6: VaultRegistry Contract Full Specification
+
+**As a** developer  
+**I want** a consolidated specification for all VaultRegistry functions  
+**So that** implementations across epics are consistent
+
+**VaultRegistry.compact Functions:**
+- `registerVault(walletAddress)` - Epic 1.4
+- `updateVault(cid)` - Epic 2.1
+- `getVaultCID()` witness - Epic 2.1
+- `storeRecoveryKey(key)` - Epic 3.2
+- `getRecoveryKey()` witness - Epic 3.4
+- `transferOwnership(newWallet)` - Epic 3.5
+- `addBackupWallets(wallets[])` - Epic 3.6
+- `initiateBackupTransfer()` - Epic 3.6
+- `getPublicKey(wallet)` witness - Epic 5.5
+- `notifyNewMail(owner, emailCID)` - Epic 5.6
+
+**Acceptance Criteria:**
+- [ ] All functions documented in contract header
+- [ ] Access control matrix defined (owner-only vs public vs witness)
+- [ ] State variables: owner (public), vaultCID (private), recoveryKey (private), backupWallets (private), emailCIDs (private)
+- [ ] Unit tests for each function
+
+> **Note:** This story consolidates contract work from Epics 1-5. Implement incrementally per epic.
+
+### Epic 3: Recovery & Breach Defense ✅ APPROVED
+
+**User Outcome:** Users can recover from password loss via trusted guardians, AND defend against wallet compromise by transferring ownership to a backup wallet. Both are MVP-critical security features.
+
+#### Part A: Guardian Recovery (Lost Password)
+
+##### What's NEW (must build)
+
+| Item | Evidence | Scope |
+|------|----------|-------|
+| **GuardianRecovery.compact** | AR6, FR10-FR15 | Smart contract with 2-of-3 threshold |
+| **72-hour time-lock** | FR12, NFR8 | Contract enforces wait before share claim |
+| **Shamir Secret Sharing** | AR6 | Add `secrets.js-34r7h` to dependencies |
+| **Dual-layer encryption** | Architecture 4.4, `project-context.md` Rule 1 | Recovery key encrypts password, then Shamir splits |
+| **Guardian portal** | AR18 | Static web app for guardians to approve requests |
+| **Guardian configuration UI** | FR10 | Extension UI to add 3 guardian wallet addresses |
+| **Recovery initiation** | FR11 | Wallet-signed request starts time-lock |
+| **Share claiming** | FR13, FR14 | After 72h, claim shares and reconstruct password |
+| **Recovery cancellation** | FR15 | Owner can cancel malicious recovery attempts |
+
+##### What EXISTS (reuse)
+
+| Item | Evidence | Status |
+|------|----------|--------|
+| `EncryptionUtility.encryptWithPublicKey()` | Line 182-207 | ✅ RSA-OAEP for encrypting shares |
+| `EncryptionUtility.decryptWithPrivateKey()` | Line 209-239 | ✅ Decrypt guardian's share |
+| `EncryptionUtility.symmetricEncrypt()` | Line 49-87 | ✅ AES-GCM for recovery key encryption |
+
+#### Part B: Ownership Transfer (Lost/Compromised Wallet)
+
+##### What's NEW (must build)
+
+| Item | Evidence | Scope |
+|------|----------|-------|
+| **`transferOwnership()` in VaultRegistry** | FR18 | Transfer vault to new wallet address |
+| **Recovery invalidation** | FR19 | Previous recovery requests become invalid on transfer |
+| **Backup wallet registration** | AR14-AR16 | UI to configure up to 3 backup wallets |
+| **Backup transfer time-lock** | AR14 | 72-hour delay when backup initiates transfer |
+
+##### What EXISTS (reuse)
+
+| Item | Evidence | Status |
+|------|----------|--------|
+| VaultRegistry contract | Epic 2 | ✅ Extend with transfer functions |
+
+**FRs Covered:** FR10, FR11, FR12, FR13, FR14, FR15, FR18, FR19
+**ARs Covered:** AR6, AR14, AR15, AR16, AR17, AR18
+
+---
+
+#### Story 3.1: Guardian Smart Contract
+
+**As a** user  
+**I want** a contract to manage my recovery guardians with a 72-hour time-lock  
+**So that** I can safely recover my account if I lose my password
+
+**Acceptance Criteria:**
+- [ ] `GuardianRecovery.compact` contract scaffolded
+- [ ] `addGuardians(wallets[])` stores guardian wallet hashes
+- [ ] `initiateRecovery()` starts 72h timer, emits event
+- [ ] `claimShares()` fails before 72h, succeeds after
+- [ ] `cancelRecovery()` for owner to cancel malicious attempts
+- [ ] Unit tests for timer logic and access control
+
+---
+
+#### Story 3.2: Shamir Secret Splitting (Pattern 6)
+
+**As a** user setting up guardians  
+**I want** to encrypt my Master Password with a Recovery Key, then split the Encrypted Password into shares  
+**So that** no single guardian can access my password
+
+**Acceptance Criteria:**
+- [ ] Generate `RecoveryKey` (AES-256, 32 bytes)
+- [ ] Store `RecoveryKey` in `VaultRegistry` private state
+- [ ] Encrypt `MasterPassword` with `RecoveryKey` → `EncryptedPassword`
+- [ ] Split `EncryptedPassword` into 3 shares (2-of-3 threshold) using `secrets.js-34r7h`
+- [ ] Encrypt each share with respective Guardian's public key (RSA-OAEP)
+- [ ] Upload encrypted shares to IPFS
+- [ ] Store share CIDs in `GuardianRecovery` contract
+
+---
+
+#### Story 3.3: Guardian Portal
+
+**As a** guardian  
+**I want** a web interface to approve recovery requests  
+**So that** I can help my friend regain access
+
+**Acceptance Criteria:**
+- [ ] Standalone Vite app at `services/guardian-portal/`
+- [ ] Connect Wallet button (check if wallet is a guardian)
+- [ ] Display "Pending Requests" list
+- [ ] "Approve" action: signs approval transaction
+- [ ] 72h countdown timer displayed
+
+---
+
+#### Story 3.4: Recovery Claim Flow (Pattern 6)
+
+**As a** user recovering my account  
+**I want** to reconstruct the Encrypted Password from shares, then use the Recovery Key to decrypt it  
+**So that** I can recover my Master Password
+
+**Acceptance Criteria:**
+- [ ] UI monitors `GuardianRecovery` for approval events
+- [ ] Once 2+ shares approved: Download and decrypt them
+- [ ] Recombine shares using Shamir combine → Get `EncryptedPassword`
+- [ ] Call `VaultRegistry.getRecoveryKey()` witness → Get `RecoveryKey`
+- [ ] Decrypt `EncryptedPassword` with `RecoveryKey` → Get `MasterPassword`
+- [ ] Display recovered password (user copies or resets)
+
+---
+
+#### Story 3.5: Ownership Transfer
+
+**As a** user with a compromised wallet  
+**I want** to transfer my vault to a backup wallet  
+**So that** the attacker loses access
+
+**Acceptance Criteria:**
+- [ ] `VaultRegistry.transferOwnership(newWallet)` function
+- [ ] Updates `owner` state to new wallet
+- [ ] Invalidates any active recovery requests
+- [ ] UI in Security Settings to initiate transfer
+- [ ] Requires signature from CURRENT wallet
+
+---
+
+#### Story 3.6: Backup Wallet Configuration
+
+**As a** user  
+**I want** to pre-register backup wallets  
+**So that** I can recover if I lose my primary wallet
+
+**Acceptance Criteria:**
+- [ ] UI to add backup wallet addresses (up to 3)
+- [ ] Store backup addresses in `VaultRegistry` private state
+- [ ] Backup wallet can call `initiateBackupTransfer()` (starts 72h timer)
+- [ ] Owner alerted immediately on backup transfer attempt
+
+---
+
+### Epic 4: Credential Management ✅ APPROVED
+
+**User Outcome:** Users can manually add/edit credentials with proper conflict resolution when syncing across devices.
+
+#### What's NEW (must build)
+
+| Item | Evidence | Scope |
+|------|----------|-------|
+| **Credential add/edit via IPFS** | FR9 | SQLite → Encrypt → IPFS → Update Midnight CID |
+| **Credential-level merge** | AR12 | Compare credential IDs, not entire vault blobs |
+| **Last-write-wins for same credential** | AR12 | Timestamp comparison for identical credential edits |
+| **Client-side conflict detection** | AR13 | Detect CID changed before saving |
+
+#### What EXISTS (reuse)
+
+| Item | Evidence | Status |
+|------|----------|--------|
+| `SqliteClient` CRUD | Lines 204-1610 | ✅ All credential operations |
+| `EncryptionUtility.symmetricEncrypt()` | Line 49 | ✅ Vault encryption |
+
+#### What TRANSFORMS (modify)
+
+| Item | Current | Target |
+|------|---------|--------|
+| Credential save | `WebApiService` → .NET | New `VaultSyncService` → IPFS + Midnight |
+
+**Removed from scope (post-MVP):**
+- ~~FR17: Push notifications~~
+
+**FRs Covered:** FR9
+**ARs Covered:** AR12, AR13
+
+---
+
+#### Story 4.1: Credential Add/Edit Flow
+
+**As a** user  
+**I want** to add or edit credentials in my vault  
+**So that** my login information is securely stored
+
+**Acceptance Criteria:**
+- [ ] UI form: service name, username, password, alias email, notes
+- [ ] Generate `credentialId = hash(service + username + timestamp)` (Architecture line 341)
+- [ ] Store `createdAt` and `updatedAt` timestamps
+- [ ] On save: `SqliteClient.execute()` → `EncryptionUtility.symmetricEncrypt()` → `IpfsService.upload()` → `VaultRegistry.updateVault(cid)`
+- [ ] Success/error feedback in UI
+
+**Source:** Architecture Section 3, lines 340-348
+
+---
+
+#### Story 4.2: Credential-Level Merge
+
+**As a** user syncing from multiple devices  
+**I want** credential-level merge  
+**So that** I don't lose changes from other devices
+
+**Acceptance Criteria:**
+- [ ] Implement `resolveVaultConflict(localVault, remoteVault)` (Architecture line 351)
+- [ ] New credentials on remote: add to local
+- [ ] Same credential modified: last-write-wins via `updatedAt` comparison
+- [ ] Deletion conflicts: remote modification wins (user can delete again)
+- [ ] Edge case: simultaneous new credential with same service+username creates two entries (ID includes timestamp)
+
+**Source:** Architecture Section 3, lines 351-385, 395-396
+
+---
+
+#### Story 4.3: Conflict Detection & UX
+
+**As a** user saving my vault  
+**I want** to detect if the CID changed since I last loaded  
+**So that** I don't overwrite changes from another device
+
+**Acceptance Criteria:**
+- [ ] Before save: fetch current CID from `VaultRegistry.getVaultCID()`
+- [ ] Compare with local `lastKnownCID`
+- [ ] If different: auto-merge using Story 4.2 logic
+- [ ] Show notification: "Changes merged: Added X credentials, updated Y credentials" (Architecture line 391)
+- [ ] User reviews merged vault before final upload
+- [ ] Option to force overwrite (advanced)
+
+**Source:** Architecture Section 3, lines 389-392
+
+**Dependencies:** Story 2.3 (Save Flow provides the base sync logic)
+
+### Epic 5: Alias Email System ✅ APPROVED
+
+**User Outcome:** Users can generate anonymous email aliases (@alias.id), receive emails via SMTP, and manage their alias identities.
+
+---
+
+> [!NOTE]
+> **Conflict Resolved (2026-01-11)**
+> 
+> **Decision:** Proceed with **Mox SMTP + Express TypeScript bridge** as originally proposed.
+> 
+> **Rationale:** Midnight SDK is TypeScript-only. The existing C# SmtpServer cannot integrate with Midnight contracts without significant workarounds.
+> 
+> **Full Decision Record:** [ADR-001: SMTP Infrastructure](file:///docs/architecture/adr-001-smtp-infrastructure.md)
+
+---
+
+**FRs Covered:** FR20, FR21, FR22, FR23, FR24
+**ARs Covered:** AR7, AR19, AR20
+
+---
+
+#### Story 5.1: AliasRegistry Smart Contract
+
+**As a** user  
+**I want** my alias ownership recorded on-chain  
+**So that** only I can receive emails to my aliases
+
+**Acceptance Criteria:**
+- [ ] `AliasRegistry.compact` contract deployed to Midnight testnet
+- [ ] `claimAlias(localPart: String, domain: String)` registers alias to caller's wallet
+- [ ] `getOwner(localPart: String, domain: String)` returns owner wallet (public) or null
+- [ ] `releaseAlias(localPart: String, domain: String)` removes ownership (owner only)
+- [ ] Anti-squatting: claim requires 1 NIGHT fee (transferred to protocol wallet)
+- [ ] Alias names validated: 3-64 chars, alphanumeric + hyphen, no leading/trailing hyphen
+- [ ] Unit tests for all contract functions
+- [ ] Integration test: claim → getOwner → release flow
+
+**Technical Notes:**
+- Use private state for alias-to-owner mapping (privacy)
+- Witness function for ownership queries
+
+**Dependencies:** Epic 2 (VaultRegistry must exist for public key lookup)
+
+---
+
+#### Story 5.2: Alias Generation UI
+
+**As a** user  
+**I want** to generate a new email alias from my browser extension  
+**So that** I can sign up for services without revealing my real email
+
+**Acceptance Criteria:**
+- [ ] "Generate Alias" button visible on extension popup
+- [ ] Custom alias name input with real-time validation
+- [ ] Auto-generate random alias option (e.g., `zk-tiger-7842@alias.id`)
+- [ ] Display NIGHT fee before confirmation
+- [ ] Wallet signature required to claim alias on-chain
+- [ ] Success: show new alias, copy-to-clipboard button
+- [ ] Error: display if alias already claimed
+
+**Technical Notes:**
+- Call `AliasRegistry.claimAlias()` via Midnight SDK
+- Store alias locally in SQLite for quick lookup
+
+**Dependencies:** Story 5.1 (AliasRegistry contract)
+
+---
+
+#### Story 5.3: SMTP Bridge Service
+
+**As a** system  
+**I want** to receive email webhooks and verify alias ownership  
+**So that** only legitimate emails reach vault owners
+
+**Acceptance Criteria:**
+- [ ] Express TypeScript service at `smtp-bridge/`
+- [ ] `POST /receive-email` webhook endpoint
+- [ ] Extract alias from `to` header
+- [ ] Query `AliasRegistry.getOwner()` via Midnight SDK
+- [ ] Return 404 if alias not registered
+- [ ] Return 200 with encrypted email CID on success
+- [ ] Rate limiting: max 100 emails/minute per alias
+- [ ] Email size limit: 5MB max
+- [ ] Health check endpoint: `GET /health`
+- [ ] Prometheus metrics: emails received, errors, latency
+
+**Technical Notes:**
+- Use `@midnight-ntwrk/client-sdk` for RPC calls
+- Cache public keys (TTL: 5 minutes) to reduce RPC calls
+- See architecture section 5 for implementation reference
+
+**Dependencies:** Story 5.1 (AliasRegistry contract)
+
+---
+
+#### Story 5.4: Mox SMTP Server Deployment
+
+**As a** DevOps engineer  
+**I want** Mox configured to forward emails to the bridge  
+**So that** `@alias.id` emails are processed by our system
+
+**Acceptance Criteria:**
+- [ ] Mox Docker container deployed
+- [ ] `domains.conf` configured with IncomingWebhook to bridge
+- [ ] SMTP ports 25 and 587 exposed
+- [ ] TLS certificate configured (Let's Encrypt via ACME)
+- [ ] SPF/DKIM/DMARC records documented
+- [ ] MX record for `alias.id` domain points to Mox server
+- [ ] Test: send email to `test@alias.id`, verify webhook received
+
+**Technical Notes:**
+```yaml
+Accounts:
+  aliasvault:
+    IncomingWebhook:
+      URL: http://smtp-bridge:3000/receive-email
+      Authorization: Bearer ${BRIDGE_SECRET}
+```
+
+**Dependencies:** Story 5.3 (Bridge must exist to receive webhooks)
+
+---
+
+#### Story 5.5: Email Encryption & IPFS Storage
+
+**As a** system  
+**I want** to encrypt emails before storing them  
+**So that** only the alias owner can read their mail
+
+**Acceptance Criteria:**
+- [ ] Fetch owner's public key from `VaultRegistry.getPublicKey()`
+- [ ] Encrypt email JSON with AES-256-GCM (random symmetric key)
+- [ ] Encrypt symmetric key with owner's public key (RSA-OAEP)
+- [ ] Package: `[encryptedKey][iv][authTag][encryptedBody]`
+- [ ] Upload encrypted blob to Pinata IPFS
+- [ ] Return CIDv1 (validate with `assertCIDv1()`)
+- [ ] Handle attachments: include in JSON, encrypt together
+- [ ] Max email size after encryption: 10MB
+
+**Technical Notes:**
+- Reuse encryption patterns from `shared/logic/`
+- See architecture section 5 "Encryption Strategy"
+
+**Dependencies:** Story 5.3 (Bridge calls this after ownership verification)
+
+---
+
+#### Story 5.6: Email Notification via Contract
+
+**As a** user  
+**I want** to be notified when I receive email  
+**So that** I know to check my vault
+
+**Acceptance Criteria:**
+- [ ] `VaultRegistry.notifyNewMail(owner, emailCID)` function added
+- [ ] Emits public event: `{ event: 'NewMail', owner: hash(wallet), timestamp }`
+- [ ] CID stored in private state (owner can retrieve via witness)
+- [ ] Contract-sponsored transaction (protocol pays gas)
+- [ ] Extension polls for new mail events (every 60 seconds when active)
+- [ ] Badge notification on extension icon when new mail
+
+**Technical Notes:**
+- Bridge calls this after IPFS upload succeeds
+- Use `sponsored: true` in transaction submission
+
+**Dependencies:** Story 5.5 (Email must be on IPFS first)
+
+---
+
+#### Story 5.7: Email Viewing in Vault
+
+**As a** user  
+**I want** to read my encrypted emails in the vault  
+**So that** I can see messages sent to my aliases
+
+**Acceptance Criteria:**
+- [ ] "Inbox" tab in vault UI
+- [ ] List view: shows from, subject, date (decrypted)
+- [ ] Fetch email CIDs from `VaultRegistry` (witness function)
+- [ ] Download encrypted blob from IPFS
+- [ ] Decrypt using vault's private key
+- [ ] Display email body (HTML sanitized, text fallback)
+- [ ] Display attachments with download option
+- [ ] Mark as read (local state)
+- [ ] Delete email (unpin from IPFS, remove CID from contract)
+
+**Technical Notes:**
+- Decryption happens client-side only
+- Use existing `EncryptionUtility` patterns
+
+**Dependencies:** Story 5.6 (Emails must be stored and notified)
+
+---
+
+#### Story 5.8: Alias Management UI
+
+**As a** user  
+**I want** to manage my aliases  
+**So that** I can view, organize, and delete them
+
+**Acceptance Criteria:**
+- [ ] "Aliases" tab in vault settings
+- [ ] List all owned aliases with creation date
+- [ ] Show which credential/service uses each alias
+- [ ] "Release Alias" button (returns alias to available pool)
+- [ ] Confirmation dialog before release ("This cannot be undone")
+- [ ] Released alias: emails sent to it will bounce
+- [ ] Copy alias to clipboard
+- [ ] Search/filter aliases
+
+**Technical Notes:**
+- Call `AliasRegistry.releaseAlias()` for deletion
+- Local SQLite cache for fast listing
+
+**Dependencies:** Story 5.2 (Aliases must be claimable first)
+
+---
+
+#### Epic 5 Story Dependency Graph
+
+```
+Story 5.1 (AliasRegistry Contract)
+    ├── Story 5.2 (Generation UI)
+    │       └── Story 5.8 (Management UI)
+    └── Story 5.3 (SMTP Bridge)
+            ├── Story 5.4 (Mox Deployment)
+            └── Story 5.5 (Encryption + IPFS)
+                    └── Story 5.6 (Notification)
+                            └── Story 5.7 (Email Viewing)
+```
+
+---
+
+#### Implementation Order (Recommended)
+
+1. **Story 5.1** - Contract foundation
+2. **Story 5.2** - Users can claim aliases
+3. **Story 5.3** - Bridge service skeleton
+4. **Story 5.5** - Encryption logic (can parallelize with 5.4)
+5. **Story 5.4** - Mox deployment
+6. **Story 5.6** - Notification mechanism
+7. **Story 5.7** - Email viewing UI
+8. **Story 5.8** - Alias management UI
+
+

@@ -1,0 +1,21 @@
+project: aliasvault
+project_level: senior
+project_type: product
+field_type: brownfield
+workflow_path: _bmad/bmm/workflows/workflow-status/paths/method-brownfield.yaml
+
+workflow_status:
+  document-project: docs/project-knowledge-index.md
+  brainstorm-project: skipped
+  research: skipped
+  product-brief: _bmad-output/project-planning-artifacts/product-brief-aliasvault-2025-12-26.md
+  prd: "_bmad-output/prd.md"
+  create-ux-design: skipped
+  create-architecture: "_bmad-output/architecture.md"
+  create-epics-and-stories: required
+  test-design: recommended
+  validate-architecture: optional
+  implementation-readiness: required
+  sprint-planning: required
+
+generated: 2025-12-26T11:10:00-05:00
