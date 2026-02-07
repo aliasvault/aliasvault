@@ -397,6 +397,18 @@ jobs:
           echo "EMULATOR_ID=$EMULATOR_ID" >> $GITHUB_ENV
           echo "✅ Emulator ready: $EMULATOR_ID"
 
+      - name: Verify API server is running
+        run: |
+          echo "Checking if API server is still running..."
+          if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
+            echo "✅ API server is running"
+          else
+            echo "::error::API server is not running! Check if it was killed between jobs."
+            echo "API server log:"
+            cat /tmp/api-server.log || echo "No log file found"
+            exit 1
+          fi
+
       - name: Build and install Android APK
         run: |
           cd android
