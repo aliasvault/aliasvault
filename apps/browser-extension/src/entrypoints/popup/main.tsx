@@ -7,6 +7,7 @@ import { DbProvider } from '@/entrypoints/popup/context/DbContext';
 import { HeaderButtonsProvider } from '@/entrypoints/popup/context/HeaderButtonsContext';
 import { LoadingProvider } from '@/entrypoints/popup/context/LoadingContext';
 import { ThemeProvider } from '@/entrypoints/popup/context/ThemeContext';
+import { WalletProvider } from '@/entrypoints/popup/context/WalletContext';
 import { WebApiProvider } from '@/entrypoints/popup/context/WebApiContext';
 
 import i18n from '@/i18n/i18n';
@@ -17,21 +18,23 @@ import i18n from '@/i18n/i18n';
 const renderApp = (): void => {
   const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
   root.render(
-    <DbProvider>
-      <WebApiProvider>
-        <AuthProvider>
-          <AppProvider>
-            <LoadingProvider>
-              <HeaderButtonsProvider>
-                <ThemeProvider>
-                  <App />
-                </ThemeProvider>
-              </HeaderButtonsProvider>
-            </LoadingProvider>
-          </AppProvider>
-        </AuthProvider>
-      </WebApiProvider>
-    </DbProvider>
+    <WalletProvider>
+      <DbProvider>
+        <WebApiProvider>
+          <AuthProvider>
+            <AppProvider>
+              <LoadingProvider>
+                <HeaderButtonsProvider>
+                  <ThemeProvider>
+                    <App />
+                  </ThemeProvider>
+                </HeaderButtonsProvider>
+              </LoadingProvider>
+            </AppProvider>
+          </AuthProvider>
+        </WebApiProvider>
+      </DbProvider>
+    </WalletProvider>
   );
 };
 

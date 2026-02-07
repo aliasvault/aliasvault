@@ -17,6 +17,7 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import ConversionUtility from '@/entrypoints/popup/utils/ConversionUtility';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
+import { useWallet } from '@/entrypoints/popup/context/WalletContext';
 
 import { AppInfo } from '@/utils/AppInfo';
 import type { VaultResponse, LoginResponse } from '@/utils/dist/shared/models/webapi';
@@ -52,6 +53,7 @@ const Login: React.FC = () => {
   const [showMobileLoginModal, setShowMobileLoginModal] = useState(false);
   const webApi = useWebApi();
   const srpUtil = new SrpUtility(webApi);
+  const wallet = useWallet();
 
   /**
    * Handle successful authentication by storing tokens and initializing the database
@@ -333,6 +335,22 @@ const Login: React.FC = () => {
   };
 
   /**
+   * Handle Lace wallet connection
+   */
+  const handleWalletConnect = async () : Promise<void> => {
+    setError(null);
+    try {
+      await wallet.connectWallet();
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError(t('wallet.errors.connectionFailed'));
+      }
+    }
+  };
+
+  /**
    * Handle change
    */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) : void => {
@@ -487,6 +505,61 @@ const Login: React.FC = () => {
             </svg>
             {t('auth.loginWithMobile')}
           </button>
+
+          {/* Divider */}
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300 dark:border-gray-600"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                {t('wallet.orConnectWallet')}
+              </span>
+            </div>
+          </div>
+
+          {/* Lace Wallet Connection */}
+          {wallet.isConnected && wallet.walletState ? (
+            <div className="rounded-lg border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 p-3">
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <span className="text-sm font-medium text-green-700 dark:text-green-400">
+                    {t('wallet.connected')}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => wallet.disconnectWallet()}
+                  className="text-xs text-gray-500 hover:text-red-500 dark:text-gray-400 dark:hover:text-red-400"
+                >
+                  {t('wallet.disconnect')}
+                </button>
+              </div>
+              <p className="text-xs text-gray-600 dark:text-gray-300 font-mono break-all">
+                {wallet.walletState.address.slice(0, 20)}...{wallet.walletState.address.slice(-12)}
+              </p>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={handleWalletConnect}
+              disabled={wallet.isConnecting}
+              className="w-full px-4 py-2.5 text-sm font-medium text-center text-white bg-purple-600 border border-purple-600 rounded-lg hover:bg-purple-700 focus:ring-4 focus:ring-purple-200 dark:bg-purple-700 dark:border-purple-700 dark:hover:bg-purple-600 dark:focus:ring-purple-800 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+              {wallet.isConnecting ? t('wallet.connecting') : t('wallet.connectLace')}
+            </button>
+          )}
+
+          {/* Wallet Error */}
+          {wallet.error && (
+            <p className="mt-2 text-xs text-red-500 dark:text-red-400 text-center">
+              {wallet.error}
+            </p>
+          )}
 
           <div className="text-center text-sm text-gray-500 dark:text-gray-400 mt-6">
             {t('auth.noAccount')}{' '}

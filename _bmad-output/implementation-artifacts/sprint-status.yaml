@@ -43,7 +43,7 @@ development_status:
   # Epic 1: Project Foundation & Wallet Authentication
   epic-1: in-progress
   1-1-meshjs-midnight-starter-integration: done
-  1-2-wallet-connection-lace-nami: backlog
+  1-2-wallet-connection-lace: in-progress
   1-3-wallet-signature-challenge: backlog
   1-4-vaultregistry-contract-stub: backlog
   1-5-block-explorer-link: backlog

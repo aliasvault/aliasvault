@@ -437,5 +437,17 @@
       "upgradeFailed": "Upgrade Failed",
       "failedToApplyMigration": "Failed to apply migration ({{current}} of {{total}})"
     }
+  },
+  "wallet": {
+    "orConnectWallet": "or connect wallet",
+    "connectLace": "Connect Lace Wallet",
+    "connecting": "Connecting...",
+    "connected": "Lace Wallet Connected",
+    "disconnect": "Disconnect",
+    "errors": {
+      "connectionFailed": "Failed to connect to Lace wallet. Make sure Lace is installed and you have a web page open.",
+      "notFound": "Midnight Lace wallet not found. Is the extension installed and enabled?",
+      "noActiveTab": "No active tab found. Please open a web page and try again."
+    }
   }
 }
