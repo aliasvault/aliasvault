@@ -236,6 +236,36 @@ window.rustCorePruneVault = async function(inputJson) {
     }
 };
 
+/**
+ * Reset the entire vault by marking all entities as deleted and clearing content.
+ * This is used for the "Reset Vault" feature. All items, field values, attachments,
+ * TOTP codes, passkeys, logos, and folders are marked as deleted (IsDeleted = true)
+ * with cleared content. Only sync-essential fields are preserved.
+ * @param {string} inputJson - JSON string containing ResetVaultInput.
+ * @returns {Promise<string>} JSON string containing ResetVaultOutput.
+ */
+window.rustCoreResetVault = async function(inputJson) {
+    if (!await initRustCore()) {
+        return JSON.stringify({
+            success: false,
+            error: 'Rust WASM module not available',
+            statements: []
+        });
+    }
+
+    try {
+        const result = wasmModule.resetVaultJson(inputJson);
+        return result;
+    } catch (error) {
+        console.error('[RustCore] Reset vault failed:', error);
+        return JSON.stringify({
+            success: false,
+            error: error.toString(),
+            statements: []
+        });
+    }
+};
+
 // ============================================================================
 // SRP (Secure Remote Password) Functions
 // ============================================================================

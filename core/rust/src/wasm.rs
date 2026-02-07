@@ -6,7 +6,7 @@ use crate::credential_matcher::{
     filter_credentials, CredentialMatcherInput, CredentialMatcherOutput,
 };
 use crate::vault_merge::{merge_vaults, MergeInput, MergeOutput};
-use crate::vault_pruner::{prune_vault, PruneInput, PruneOutput};
+use crate::vault_pruner::{prune_vault, reset_vault, PruneInput, PruneOutput, ResetVaultInput, ResetVaultOutput};
 
 #[wasm_bindgen]
 extern "C" {
@@ -96,6 +96,35 @@ pub fn prune_vault_js(input: JsValue) -> Result<JsValue, JsValue> {
 pub fn prune_vault_json_js(input_json: &str) -> Result<String, JsValue> {
     crate::vault_pruner::prune_vault_json(input_json)
         .map_err(|e| JsValue::from_str(&format!("Prune failed: {}", e)))
+}
+
+/// Reset the entire vault by marking all entities as deleted and clearing content.
+///
+/// This is used for the "Reset Vault" feature. All items, field values, attachments,
+/// TOTP codes, passkeys, logos, and folders are marked as deleted (IsDeleted = true)
+/// with cleared content. Only sync-essential fields (Id, IsDeleted, UpdatedAt, CreatedAt,
+/// foreign keys) are preserved.
+///
+/// Takes a JsValue (ResetVaultInput) and returns a JsValue (ResetVaultOutput).
+#[wasm_bindgen(js_name = resetVault)]
+pub fn reset_vault_js(input: JsValue) -> Result<JsValue, JsValue> {
+    let input: ResetVaultInput = serde_wasm_bindgen::from_value(input)
+        .map_err(|e| JsValue::from_str(&format!("Failed to parse input: {}", e)))?;
+
+    let output: ResetVaultOutput = reset_vault(input)
+        .map_err(|e| JsValue::from_str(&format!("Reset failed: {}", e)))?;
+
+    serde_wasm_bindgen::to_value(&output)
+        .map_err(|e| JsValue::from_str(&format!("Failed to serialize output: {}", e)))
+}
+
+/// Reset vault using JSON strings (alternative API).
+///
+/// Takes a JSON string and returns a JSON string.
+#[wasm_bindgen(js_name = resetVaultJson)]
+pub fn reset_vault_json_js(input_json: &str) -> Result<String, JsValue> {
+    crate::vault_pruner::reset_vault_json(input_json)
+        .map_err(|e| JsValue::from_str(&format!("Reset failed: {}", e)))
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

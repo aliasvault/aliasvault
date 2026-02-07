@@ -23,6 +23,7 @@ pub use vault_merge::{
 };
 pub use vault_pruner::{
     prune_vault, PruneInput, PruneOutput, PruneStats,
+    reset_vault, ResetVaultInput, ResetVaultOutput,
 };
 pub use credential_matcher::{
     filter_credentials, extract_domain, extract_root_domain,

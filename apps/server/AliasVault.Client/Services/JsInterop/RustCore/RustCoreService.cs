@@ -160,6 +160,49 @@ public class RustCoreService : IAsyncDisposable
     }
 
     /// <summary>
+    /// Reset the entire vault by marking all entities as deleted and clearing content.
+    /// This is used for the "Reset Vault" feature. All items, field values, attachments,
+    /// TOTP codes, passkeys, logos, and folders are marked as deleted with cleared content.
+    /// The tombstones ensure proper sync with other clients via Last-Write-Wins merge.
+    /// </summary>
+    /// <returns>The reset output with SQL statements to execute.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if reset fails or WASM module is unavailable.</exception>
+    public async Task<ResetVaultOutput> ResetVaultAsync()
+    {
+        // Wait for WASM to be available with retries, as it may still be loading.
+        if (!await WaitForAvailabilityAsync())
+        {
+            throw new InvalidOperationException("Rust WASM module is not available.");
+        }
+
+        var input = new ResetVaultInput
+        {
+            CurrentTime = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ"),
+        };
+
+        var inputJson = JsonSerializer.Serialize(input, JsonOptions);
+        var resultJson = await jsRuntime.InvokeAsync<string>("rustCoreResetVault", inputJson);
+
+        if (string.IsNullOrEmpty(resultJson))
+        {
+            throw new InvalidOperationException("Reset vault operation returned empty result.");
+        }
+
+        var result = JsonSerializer.Deserialize<ResetVaultOutput>(resultJson, JsonOptions);
+        if (result == null)
+        {
+            throw new InvalidOperationException("Failed to deserialize reset vault result.");
+        }
+
+        if (!result.Success && !string.IsNullOrEmpty(result.Error))
+        {
+            throw new InvalidOperationException($"Reset vault failed: {result.Error}");
+        }
+
+        return result;
+    }
+
+    /// <summary>
     /// Extract domain from URL.
     /// </summary>
     /// <param name="url">The URL to extract domain from.</param>

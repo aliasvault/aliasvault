@@ -3,7 +3,8 @@
 //! This module handles the automatic cleanup of items that have been in the trash
 //! (DeletedAt set) for longer than the retention period (default 30 days).
 //! It generates SQL statements to permanently delete (IsDeleted = true) these items
-//! along with their related entities.
+//! along with their related entities, clearing all sensitive content while preserving
+//! only the fields needed for sync (Id, IsDeleted, UpdatedAt, CreatedAt, and foreign keys).
 
 use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
@@ -60,6 +61,8 @@ pub struct PruneStats {
     pub items_pruned: u32,
     /// Number of field values permanently deleted
     pub field_values_pruned: u32,
+    /// Number of field histories permanently deleted
+    pub field_histories_pruned: u32,
     /// Number of attachments permanently deleted
     pub attachments_pruned: u32,
     /// Number of TOTP codes permanently deleted
@@ -157,9 +160,10 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
     let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
 
     for item_id in &expired_item_ids {
-        // Mark item as permanently deleted
+        // Mark item as permanently deleted and clear content
+        // Keep: Id, IsDeleted, UpdatedAt, CreatedAt, ItemType, LogoId, FolderId
         statements.push(SqlStatement {
-            sql: "UPDATE Items SET IsDeleted = 1, UpdatedAt = ? WHERE Id = ?".to_string(),
+            sql: "UPDATE Items SET IsDeleted = 1, UpdatedAt = ?, Name = NULL, DeletedAt = NULL WHERE Id = ?".to_string(),
             params: vec![
                 serde_json::json!(now_str),
                 serde_json::json!(item_id),
@@ -167,12 +171,13 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
         });
         stats.items_pruned += 1;
 
-        // Mark related FieldValues as deleted
+        // Mark related FieldValues as deleted and clear content
+        // Keep: Id, ItemId, IsDeleted, UpdatedAt, CreatedAt, FieldKey, FieldDefinitionId, Weight
         if let Some(field_values_table) = input.tables.iter().find(|t| t.name == "FieldValues") {
             let related_count = count_related_records(&field_values_table.records, "ItemId", item_id);
             if related_count > 0 {
                 statements.push(SqlStatement {
-                    sql: "UPDATE FieldValues SET IsDeleted = 1, UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0".to_string(),
+                    sql: "UPDATE FieldValues SET IsDeleted = 1, UpdatedAt = ?, Value = NULL WHERE ItemId = ? AND IsDeleted = 0".to_string(),
                     params: vec![
                         serde_json::json!(now_str),
                         serde_json::json!(item_id),
@@ -182,12 +187,29 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
             }
         }
 
-        // Mark related Attachments as deleted
+        // Mark related FieldHistories as deleted and clear content
+        // Keep: Id, ItemId, IsDeleted, UpdatedAt, CreatedAt, FieldKey, FieldDefinitionId, ChangedAt
+        if let Some(field_histories_table) = input.tables.iter().find(|t| t.name == "FieldHistories") {
+            let related_count = count_related_records(&field_histories_table.records, "ItemId", item_id);
+            if related_count > 0 {
+                statements.push(SqlStatement {
+                    sql: "UPDATE FieldHistories SET IsDeleted = 1, UpdatedAt = ?, ValueSnapshot = '' WHERE ItemId = ? AND IsDeleted = 0".to_string(),
+                    params: vec![
+                        serde_json::json!(now_str),
+                        serde_json::json!(item_id),
+                    ],
+                });
+                stats.field_histories_pruned += related_count;
+            }
+        }
+
+        // Mark related Attachments as deleted and clear content
+        // Keep: Id, ItemId, IsDeleted, UpdatedAt, CreatedAt
         if let Some(attachments_table) = input.tables.iter().find(|t| t.name == "Attachments") {
             let related_count = count_related_records(&attachments_table.records, "ItemId", item_id);
             if related_count > 0 {
                 statements.push(SqlStatement {
-                    sql: "UPDATE Attachments SET IsDeleted = 1, UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0".to_string(),
+                    sql: "UPDATE Attachments SET IsDeleted = 1, UpdatedAt = ?, Blob = X'', Filename = '' WHERE ItemId = ? AND IsDeleted = 0".to_string(),
                     params: vec![
                         serde_json::json!(now_str),
                         serde_json::json!(item_id),
@@ -197,12 +219,13 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
             }
         }
 
-        // Mark related TotpCodes as deleted
+        // Mark related TotpCodes as deleted and clear content
+        // Keep: Id, ItemId, IsDeleted, UpdatedAt, CreatedAt
         if let Some(totp_table) = input.tables.iter().find(|t| t.name == "TotpCodes") {
             let related_count = count_related_records(&totp_table.records, "ItemId", item_id);
             if related_count > 0 {
                 statements.push(SqlStatement {
-                    sql: "UPDATE TotpCodes SET IsDeleted = 1, UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0".to_string(),
+                    sql: "UPDATE TotpCodes SET IsDeleted = 1, UpdatedAt = ?, SecretKey = '', Name = '' WHERE ItemId = ? AND IsDeleted = 0".to_string(),
                     params: vec![
                         serde_json::json!(now_str),
                         serde_json::json!(item_id),
@@ -212,12 +235,13 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
             }
         }
 
-        // Mark related Passkeys as deleted
+        // Mark related Passkeys as deleted and clear content
+        // Keep: Id, ItemId, IsDeleted, UpdatedAt, CreatedAt
         if let Some(passkeys_table) = input.tables.iter().find(|t| t.name == "Passkeys") {
             let related_count = count_related_records(&passkeys_table.records, "ItemId", item_id);
             if related_count > 0 {
                 statements.push(SqlStatement {
-                    sql: "UPDATE Passkeys SET IsDeleted = 1, UpdatedAt = ? WHERE ItemId = ? AND IsDeleted = 0".to_string(),
+                    sql: "UPDATE Passkeys SET IsDeleted = 1, UpdatedAt = ?, PrivateKey = '', PublicKey = '', UserHandle = X'', PrfKey = NULL, AdditionalData = NULL, DisplayName = '', RpId = '' WHERE ItemId = ? AND IsDeleted = 0".to_string(),
                     params: vec![
                         serde_json::json!(now_str),
                         serde_json::json!(item_id),
@@ -240,6 +264,109 @@ pub fn prune_vault(input: PruneInput) -> VaultResult<PruneOutput> {
 pub fn prune_vault_json(input_json: &str) -> VaultResult<String> {
     let input: PruneInput = serde_json::from_str(input_json)?;
     let output = prune_vault(input)?;
+    let output_json = serde_json::to_string(&output)?;
+    Ok(output_json)
+}
+
+/// Input for the reset vault operation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResetVaultInput {
+    /// Current time in ISO 8601 format with UTC timezone.
+    pub current_time: String,
+}
+
+/// Output of the reset vault operation.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ResetVaultOutput {
+    /// Whether the reset was successful
+    pub success: bool,
+    /// SQL statements to execute on the local database (in order)
+    pub statements: Vec<SqlStatement>,
+}
+
+/// Generate SQL statements to reset the entire vault.
+///
+/// This marks ALL entities as deleted (IsDeleted = true) and clears all sensitive
+/// content while preserving only the fields needed for sync (Id, IsDeleted, UpdatedAt,
+/// CreatedAt, and foreign keys). This is used for the "Reset Vault" feature.
+///
+/// The tombstones with newer timestamps ensure that when other clients sync, the
+/// deletion state wins via Last-Write-Wins merge strategy.
+///
+/// # Arguments
+/// * `input` - ResetVaultInput containing current time
+///
+/// # Returns
+/// ResetVaultOutput with SQL statements to execute on local database
+pub fn reset_vault(input: ResetVaultInput) -> VaultResult<ResetVaultOutput> {
+    let mut statements: Vec<SqlStatement> = Vec::new();
+
+    // Parse current time from input
+    let now = parse_datetime(&input.current_time)
+        .ok_or_else(|| crate::error::VaultError::General(
+            format!("Invalid current_time format: {}", input.current_time)
+        ))?;
+    let now_str = now.format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+
+    // Mark all Items as deleted and clear content
+    statements.push(SqlStatement {
+        sql: "UPDATE Items SET IsDeleted = 1, UpdatedAt = ?, Name = NULL, DeletedAt = NULL WHERE IsDeleted = 0".to_string(),
+        params: vec![serde_json::json!(now_str)],
+    });
+
+    // Mark all FieldValues as deleted and clear content
+    statements.push(SqlStatement {
+        sql: "UPDATE FieldValues SET IsDeleted = 1, UpdatedAt = ?, Value = NULL WHERE IsDeleted = 0".to_string(),
+        params: vec![serde_json::json!(now_str)],
+    });
+
+    // Mark all FieldHistories as deleted and clear content
+    statements.push(SqlStatement {
+        sql: "UPDATE FieldHistories SET IsDeleted = 1, UpdatedAt = ?, ValueSnapshot = '' WHERE IsDeleted = 0".to_string(),
+        params: vec![serde_json::json!(now_str)],
+    });
+
+    // Mark all Attachments as deleted and clear content
+    statements.push(SqlStatement {
+        sql: "UPDATE Attachments SET IsDeleted = 1, UpdatedAt = ?, Blob = X'', Filename = '' WHERE IsDeleted = 0".to_string(),
+        params: vec![serde_json::json!(now_str)],
+    });
+
+    // Mark all TotpCodes as deleted and clear content
+    statements.push(SqlStatement {
+        sql: "UPDATE TotpCodes SET IsDeleted = 1, UpdatedAt = ?, SecretKey = '', Name = '' WHERE IsDeleted = 0".to_string(),
+        params: vec![serde_json::json!(now_str)],
+    });
+
+    // Mark all Passkeys as deleted and clear content
+    statements.push(SqlStatement {
+        sql: "UPDATE Passkeys SET IsDeleted = 1, UpdatedAt = ?, PrivateKey = '', PublicKey = '', UserHandle = X'', PrfKey = NULL, AdditionalData = NULL, DisplayName = '', RpId = '' WHERE IsDeleted = 0".to_string(),
+        params: vec![serde_json::json!(now_str)],
+    });
+
+    // Mark all Logos as deleted and clear content
+    statements.push(SqlStatement {
+        sql: "UPDATE Logos SET IsDeleted = 1, UpdatedAt = ?, FileData = NULL, Source = '' WHERE IsDeleted = 0".to_string(),
+        params: vec![serde_json::json!(now_str)],
+    });
+
+    // Mark all Folders as deleted and clear content
+    statements.push(SqlStatement {
+        sql: "UPDATE Folders SET IsDeleted = 1, UpdatedAt = ?, Name = '' WHERE IsDeleted = 0".to_string(),
+        params: vec![serde_json::json!(now_str)],
+    });
+
+    Ok(ResetVaultOutput {
+        success: true,
+        statements,
+    })
+}
+
+/// Reset vault using JSON strings.
+/// Convenience function for FFI.
+pub fn reset_vault_json(input_json: &str) -> VaultResult<String> {
+    let input: ResetVaultInput = serde_json::from_str(input_json)?;
+    let output = reset_vault(input)?;
     let output_json = serde_json::to_string(&output)?;
     Ok(output_json)
 }
@@ -432,5 +559,51 @@ mod tests {
 
         assert!(output.success);
         assert_eq!(output.stats.items_pruned, 1);
+    }
+
+    #[test]
+    fn test_reset_vault() {
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+
+        let input = ResetVaultInput {
+            current_time: now_str,
+        };
+
+        let output = reset_vault(input).unwrap();
+
+        assert!(output.success);
+        // Should have statements for all entity types
+        assert_eq!(output.statements.len(), 8); // Items, FieldValues, FieldHistories, Attachments, TotpCodes, Passkeys, Logos, Folders
+
+        // Verify Items statement clears content
+        let items_stmt = &output.statements[0];
+        assert!(items_stmt.sql.contains("UPDATE Items SET IsDeleted = 1"));
+        assert!(items_stmt.sql.contains("Name = NULL"));
+
+        // Verify FieldValues statement clears content
+        let field_values_stmt = &output.statements[1];
+        assert!(field_values_stmt.sql.contains("UPDATE FieldValues SET IsDeleted = 1"));
+        assert!(field_values_stmt.sql.contains("Value = NULL"));
+
+        // Verify Passkeys statement clears all sensitive content
+        let passkeys_stmt = &output.statements[5];
+        assert!(passkeys_stmt.sql.contains("UPDATE Passkeys SET IsDeleted = 1"));
+        assert!(passkeys_stmt.sql.contains("PrivateKey = ''"));
+        assert!(passkeys_stmt.sql.contains("PublicKey = ''"));
+    }
+
+    #[test]
+    fn test_reset_vault_json_api() {
+        let now_str = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
+
+        let input_json = format!(r#"{{
+            "current_time": "{}"
+        }}"#, now_str);
+
+        let output_json = reset_vault_json(&input_json).unwrap();
+        let output: ResetVaultOutput = serde_json::from_str(&output_json).unwrap();
+
+        assert!(output.success);
+        assert_eq!(output.statements.len(), 8);
     }
 }

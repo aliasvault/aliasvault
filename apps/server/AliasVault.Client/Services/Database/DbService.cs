@@ -196,6 +196,64 @@ public sealed class DbService : IDisposable
     }
 
     /// <summary>
+    /// Reset the entire vault by marking all entities as deleted and clearing content.
+    /// This executes the Rust-generated SQL statements to create tombstones with cleared content.
+    /// The tombstones ensure proper sync with other clients via Last-Write-Wins merge.
+    /// </summary>
+    /// <returns>True if successful, false otherwise.</returns>
+    public async Task<bool> ResetVaultAsync()
+    {
+        try
+        {
+            var resetOutput = await _rustCore.ResetVaultAsync();
+
+            if (!resetOutput.Success)
+            {
+                _logger.LogError("Reset vault failed: {Error}", resetOutput.Error);
+                return false;
+            }
+
+            if (resetOutput.Statements.Count > 0)
+            {
+                _logger.LogInformation("Resetting vault with {StatementCount} SQL statements.", resetOutput.Statements.Count);
+
+                // Execute the SQL statements returned by Rust
+                foreach (var stmt in resetOutput.Statements)
+                {
+                    await using var command = _sqlConnection!.CreateCommand();
+                    command.CommandText = stmt.Sql;
+
+                    for (int i = 0; i < stmt.Params.Count; i++)
+                    {
+                        var param = stmt.Params[i];
+                        command.Parameters.AddWithValue($"@p{i}", param?.ToString() ?? (object)DBNull.Value);
+                    }
+
+                    // Replace ? placeholders with @p0, @p1, etc.
+                    var parameterizedSql = stmt.Sql;
+                    for (int i = 0; i < stmt.Params.Count; i++)
+                    {
+                        parameterizedSql = ReplaceFirst(parameterizedSql, "?", $"@p{i}");
+                    }
+
+                    command.CommandText = parameterizedSql;
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+
+            // Clear the EF Core change tracker to ensure it picks up the changes
+            _dbContext.ChangeTracker.Clear();
+
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during vault reset.");
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Saves the database to the remote server in the background without blocking the caller.
     /// The local database state is immediately persisted (in-memory), and the server sync happens asynchronously.
     /// If the sync fails, a notification is shown to the user.

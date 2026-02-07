@@ -172,11 +172,16 @@
             }
 
             // Clear local vault data by hard-deleting all items
-            await ItemService.HardDeleteAllItemsAsync();
+            // Use the Rust-based reset vault logic via DbService.
+            // This ensures consistent tombstone creation with cleared content across all platforms.
+            if (!await DbService.ResetVaultAsync())
+            {
+                Logger.LogError("Error resetting vault");
+                GlobalNotificationService.AddErrorMessage(Localizer["ResetVaultErrorMessage"], true);
+                return;
+            }
 
             GlobalNotificationService.AddSuccessMessage(Localizer["ResetVaultSuccessMessage"]);
-
-            // Redirect to items overview page to show the empty vault
             NavigationManager.NavigateTo("/items");
         }
         catch (Exception ex)

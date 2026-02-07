@@ -664,33 +664,6 @@ public sealed class ItemService(HttpClient httpClient, DbService dbService, Conf
     }
 
     /// <summary>
-    /// Hard delete all items from the database. This permanently removes all item records
-    /// (including soft-deleted ones) from the database for a complete vault reset.
-    /// Also removes all folders.
-    /// </summary>
-    /// <returns>True if successful, false otherwise.</returns>
-    public async Task<bool> HardDeleteAllItemsAsync()
-    {
-        var context = await dbService.GetDbContextAsync();
-
-        // Hard delete all related entities and items.
-        context.Attachments.RemoveRange(context.Attachments);
-        context.FieldValues.RemoveRange(context.FieldValues);
-        context.FieldHistories.RemoveRange(context.FieldHistories);
-        context.TotpCodes.RemoveRange(context.TotpCodes);
-        context.Passkeys.RemoveRange(context.Passkeys);
-        context.Items.RemoveRange(context.Items);
-        context.Logos.RemoveRange(context.Logos);
-        context.Folders.RemoveRange(context.Folders);
-
-        // Save changes locally
-        await context.SaveChangesAsync();
-
-        // Save the database to server
-        return await dbService.SaveDatabaseAsync();
-    }
-
-    /// <summary>
     /// Deletes a passkey by marking it as deleted.
     /// </summary>
     /// <param name="passkeyId">The ID of the passkey to delete.</param>
