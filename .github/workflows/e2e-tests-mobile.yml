@@ -152,6 +152,16 @@ jobs:
         working-directory: apps/server
         run: dotnet build AliasVault.Api
 
+      - name: Create secrets for container mode
+        run: |
+          # Create secrets directory and files that container mode expects
+          sudo mkdir -p /secrets
+          echo "12345678901234567890123456789012" | sudo tee /secrets/jwt_key > /dev/null
+          echo "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag==|2024-01-01T00:00:00Z" | sudo tee /secrets/admin_password_hash > /dev/null
+          echo "password" | sudo tee /secrets/postgres_password > /dev/null
+          sudo chmod 644 /secrets/*
+          echo "✅ Secrets created"
+
       - name: Start API server
         working-directory: apps/server/AliasVault.Api
         run: |
@@ -176,12 +186,9 @@ jobs:
           done
         env:
           ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5433;Database=aliasdb;Username=aliasvault;Password=password"
-          JWT_KEY: "12345678901234567890123456789012"
           PUBLIC_REGISTRATION_ENABLED: "true"
-          ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
-          ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
           ASPNETCORE_URLS: "http://0.0.0.0:5092"
-          # Skip certificate-based data protection (use container mode which doesn't require keychain)
+          # Use container mode to skip certificate-based data protection (avoids macOS keychain issues)
           DOTNET_RUNNING_IN_CONTAINER: "true"
 
       - name: Start Metro bundler
@@ -233,16 +240,15 @@ jobs:
           # List available simulators
           xcrun simctl list devices available
 
-          # Find and boot iPhone 16 Pro simulator (or fallback)
-          SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 16 Pro" | head -1 | grep -oE '[A-F0-9-]{36}')
-
-          if [ -z "$SIMULATOR_ID" ]; then
-            SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone 15 Pro" | head -1 | grep -oE '[A-F0-9-]{36}')
-          fi
-
-          if [ -z "$SIMULATOR_ID" ]; then
-            SIMULATOR_ID=$(xcrun simctl list devices available | grep "iPhone" | head -1 | grep -oE '[A-F0-9-]{36}')
-          fi
+          # Find an iPhone simulator (prefer Pro models, then any iPhone)
+          # Try newest models first, then fall back
+          for model in "iPhone 17 Pro" "iPhone 16 Pro" "iPhone 15 Pro" "iPhone 17" "iPhone 16" "iPhone"; do
+            SIMULATOR_ID=$(xcrun simctl list devices available | grep "$model" | head -1 | grep -oE '[A-F0-9-]{36}')
+            if [ -n "$SIMULATOR_ID" ]; then
+              echo "Found simulator matching '$model'"
+              break
+            fi
+          done
 
           if [ -z "$SIMULATOR_ID" ]; then
             echo "::error::No iPhone simulator found!"
