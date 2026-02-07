@@ -139,31 +139,31 @@
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SavingCredentials" xml:space="preserve">
-    <value>Saving credentials to vault... {0} / {1}</value>
+    <value>Salvataggio credenziali nella cassaforte. {0} / {1}</value>
     <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SyncingVault" xml:space="preserve">
-    <value>Syncing vault to server...</value>
+    <value>Sincronizzazione della cassaforte sul server...</value>
     <comment>Progress text when syncing vault to server after import</comment>
   </data>
   <data name="ImportSuccessMessage" xml:space="preserve">
-    <value>Successfully imported {0} credentials.</value>
+    <value>{0} credenziali importate con successo.</value>
     <comment>Success message after import completes. {0} is the credential count</comment>
   </data>
   <data name="ImportErrorGeneric" xml:space="preserve">
-    <value>An error occurred during import. Please try again.</value>
+    <value>Si è verificato un errore durante l'importazione. Per favore riprova.</value>
     <comment>Generic error message when import fails</comment>
   </data>
   <data name="ImportErrorInvalidFile" xml:space="preserve">
-    <value>Please select a valid export file to import.</value>
+    <value>Si prega di selezionare un file di esportazione valido da importare.</value>
     <comment>Error message when invalid file is selected</comment>
   </data>
   <data name="ImportErrorZipFile" xml:space="preserve">
-    <value>Please unzip the export file before importing. See the instructions below for more information.</value>
+    <value>Si prega di decomprimere il file di esportazione prima dell'importazione. Per maggiori informazioni, consultare le istruzioni riportate di seguito.</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>File size exceeds 10MB limit.</value>
+    <value>La dimensione del file supera il limite di 10MB.</value>
     <comment>Error message when file is too large</comment>
   </data>
 </root>
