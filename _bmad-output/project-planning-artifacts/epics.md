@@ -387,10 +387,11 @@ This document provides the complete epic and story breakdown for aliasvault, dec
 - `notifyNewMail(owner, emailCID)` - Epic 5.6
 
 **Acceptance Criteria:**
-- [ ] All functions documented in contract header
-- [ ] Access control matrix defined (owner-only vs public vs witness)
-- [ ] State variables: owner (public), vaultCID (private), recoveryKey (private), backupWallets (private), emailCIDs (private)
-- [ ] Unit tests for each function
+- [x] All functions documented in contract header — 80-line spec header + VAULT-REGISTRY-SPEC.md canonical doc
+- [x] Access control matrix defined (owner-only vs public vs witness) — in contract header + SPEC.md
+- [x] State variables: owner (public), vaultCID (private), recoveryKey (private), backupWallets (private), emailCIDs (private)
+  - **Deviation (Story 2.6):** `recoveryKeyHash` and `backupWallets` are on the **public ledger**, not private state. Compact has no `private state {}` block — all private state is TypeScript-only (ADR-006). Only the *hash* of the recovery key is stored on-chain; the actual key is in the encrypted vault blob. `emailCIDs` deferred to Epic 5.
+- [x] Unit tests for each function — 33 VR tests (1 skipped due to simulator block-time limitation)
 
 > **Note:** This story consolidates contract work from Epics 1-5. Implement incrementally per epic.
 

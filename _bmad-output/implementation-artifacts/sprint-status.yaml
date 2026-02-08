@@ -51,13 +51,13 @@ development_status:
   epic-1-retrospective: optional
 
   # Epic 2: Midnight Smart Contracts & Vault Storage
-  epic-2: in-progress
+  epic-2: done
   2-1-vaultregistry-smart-contract: done
   2-2-ipfs-service-pinata: done
   2-3-vault-sync-logic-save-flow: done
   2-4-vault-sync-logic-load-flow: done
   2-5-contract-deployment-scripts: done
-  2-6-vaultregistry-contract-full-specification: backlog
+  2-6-vaultregistry-contract-full-specification: done
   epic-2-retrospective: optional
 
   # Epic 3: Recovery & Breach Defense

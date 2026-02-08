@@ -329,6 +329,8 @@ export const vaultRegistryWitnesses = {
 | `pad()` for string-to-Bytes | `"vault:owner:"` (bare string) | `pad(32, "vault:owner:")` |
 | Pragma required | (missing) | `pragma language_version >= 0.20;` |
 | Return empty tuple, not Void | `): Void {` | `): [] {` |
+| No `currentTimestamp()` | `currentTimestamp()` or `block.timestamp` | `blockTimeGte(time)` where `time: Uint<64>` (Unix epoch seconds). Also: `blockTimeGt`, `blockTimeLt`, `blockTimeLte`. Available since Compact 0.17. |
+| `Uint<64>` arithmetic needs cast through Field | `transferInitiatedAt + 259200` | `(((transferInitiatedAt as Field) + (259200 as Field)) as Uint<64>)` |
 
 **Reference:** Always call `midnight-get-latest-syntax` MCP tool before writing Compact code.
 
@@ -345,19 +347,26 @@ export const vaultRegistryWitnesses = {
 ```typescript
 // vault-registry-simulator.ts
 export class VaultRegistrySimulator {
-  constructor(secretKey: Uint8Array) {
+  constructor(secretKey: Uint8Array, backupKey?: Uint8Array) {
     this.contract = new Contract<VaultRegistryPrivateState>(vaultRegistryWitnesses);
-    const initialPrivateState = createVaultRegistryPrivateState(secretKey);
+    const initialPrivateState = createVaultRegistryPrivateState(secretKey, backupKey);
     // ... createConstructorContext, createCircuitContext
   }
+  // circuitContext is public so tests can inject cross-instance state for access control testing
   public registerVault(hash: Uint8Array): Ledger { /* impureCircuits.registerVault */ }
   public static ownerCommitment(sk: Uint8Array): Uint8Array {
     return pureCircuits.ownerCommitment(sk);  // Off-circuit verification
   }
+  public static backupCommitment(bk: Uint8Array): Uint8Array {
+    return pureCircuits.backupCommitment(bk);  // Different domain separator
+  }
 }
 ```
 
+**Limitation:** Simulator block time defaults to 0 and cannot be advanced. `blockTimeGte(unlockTime)` is impossible to satisfy with real timestamps + offsets. Use E2E on local Midnight network for time-lock testing.
+
 ### 12. Midnight Private State is Device-Local (ADR-006)
+
 
 **Rule:** Midnight private state (witnesses) NEVER syncs across devices. Any secret that must be available on multiple devices MUST be stored inside the encrypted vault blob (SQLite DB), not solely in `chrome.storage.local` or Midnight private state.
 
@@ -396,6 +405,7 @@ await chrome.storage.local.set({ midnightSecretKey: hexEncode(secretKey) });
 
 ### 13. pnpm Strict Hoisting & Transitive Dependencies (Story 2.5)
 
+
 **Rule:** When a package imports a module that is only a transitive dependency (not explicitly listed in its `package.json`), pnpm's strict hoisting may not make it available at runtime. Always add explicit dependencies for packages imported directly.
 
 **Why this matters:**
@@ -420,6 +430,33 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'rxjs' imported from ...
 ```
 
 **Discovery:** Story 2.5 — `api.ts` imports `rxjs`, but `rxjs` was only listed as a transitive dependency of `@midnight-ntwrk/wallet-sdk-*` packages. Added `rxjs: ^7.8.2` to fix runtime resolution.
+
+### 14. Compact Set Limitations & Sentinel Values (Story 2.6)
+
+**Rule:** Compact's `Set` type has no `clear()` method and circuits cannot iterate over set members. Use sentinel values (e.g., `0` for "no value") for optional `Uint<64>` fields, but guard against sentinel collision in circuits.
+
+**Why this matters:**
+- `backupWallets: Set<Bytes<32>>` cannot be bulk-cleared on ownership transfer — application layer must enforce sequential `removeBackupWallet()` calls before `transferOwnership()`
+- `transferInitiatedAt: Uint<64>` uses `0` as sentinel for "no transfer initiated" — the `initiateBackupTransfer` circuit must reject `currentTime == 0` to prevent collision
+- Multi-role commitments (owner vs backup) MUST use different domain separators (`"vault:owner:"` vs `"vault:backup:"`) to prevent cross-role commitment collisions even when using the same key
+
+**Sentinel guard pattern:**
+```compact
+// Reject zero timestamp — 0 is the sentinel for "no transfer initiated"
+assert(time != (0 as Uint<64>), "Invalid timestamp");
+```
+
+**Multi-role commitment pattern:**
+```compact
+pure circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+  persistentCommit<Bytes<32>>(pad(32, "vault:owner:"), sk)
+}
+pure circuit backupCommitment(bk: Bytes<32>): Bytes<32> {
+  persistentCommit<Bytes<32>>(pad(32, "vault:backup:"), bk)
+}
+```
+
+**Known limitation:** When `transferOwnership()` or `executeBackupTransfer()` is called, stale backup wallets remain in the set. This is documented in `VAULT-REGISTRY-SPEC.md` Known Limitations and will be addressed architecturally in Epic 3 (Stories 3.5/3.6).
 
 ---
 
@@ -521,7 +558,7 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'rxjs' imported from ...
 Before merging any PR that touches cryptography or guardian recovery:
 
 - [ ] Zero-knowledge principles maintained (no plaintext master password in contracts)
-- [ ] Recovery key stored in Midnight PRIVATE state, not public
+- [ ] Recovery key hash stored on public ledger; actual recovery key stored in encrypted vault blob (ADR-006), NOT in Midnight private state (device-local)
 - [ ] CIDv1 format enforced with type guards
 - [ ] Guardian shares encrypted with RSA-OAEP
 - [ ] Time-lock logic tested with multiple scenarios
@@ -534,6 +571,8 @@ Before merging any PR that touches cryptography or guardian recovery:
 **Source:** Generated from [architecture.md](_bmad-output/architecture.md)
 **Maintenance:** Update when implementing new patterns or discovering critical rules
 **Change Log:**
+- 2026-02-08: Added Rule 14 (Compact Set limitations, sentinel values, multi-role domain separators) from Story 2.6. Updated Rule 11 simulator pattern with backupKey param, multi-role testing, and block-time limitation note.
+- 2026-02-08: Updated Rule 10 with `blockTimeGte/Gt/Lt/Lte(Uint<64>)` discovery (Compact 0.17+) and `Uint<64>` arithmetic cast pattern. Fixed Security Checklist recovery key storage (ADR-006). From Story 2.6 validation.
 - 2026-02-08: Added Rule 13 (pnpm strict hoisting & transitive dependencies) from Story 2.5. pnpm doesn't hoist transitive deps — packages must declare explicit dependencies for modules they import directly.
 - 2026-02-07: Added Rules 9-11 (Compact ownership pattern, language gotchas, contract testing) from Story 2.1 implementation
 - 2026-02-07: Updated Rules 2, 3, 5 with Story 2.2 learnings (canonical assertCIDv1 location, actual IPFS error codes, shared package structure). Updated storage stack (ipfs-http-client → pinata SDK). Added shared/* to pnpm workspace note.
