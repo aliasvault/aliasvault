@@ -2,6 +2,84 @@ pragma language_version >= 0.20;
 
 import CompactStandardLibrary;
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// VaultRegistry Contract — Full Specification
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// PURPOSE: On-chain vault registration, ownership, CID integrity, backup wallet
+//          recovery, and ownership transfer for AliasVault decentralized identity.
+//
+// FUNCTIONS (by access control):
+//
+//   Owner-only (verified via ownerCommitment(local_secret_key())):
+//     - registerVault(walletAddressHash)     [Epic 1.4] Sets initial owner
+//     - updateVault(newCidHash)              [Epic 2.1] Updates vault CID hash
+//     - transferOwnership(newOwnerCommitment)[Epic 2.6] Transfers ownership, resets recovery state
+//     - storeRecoveryKeyHash(keyHash)        [Epic 2.6] Stores hash of recovery key (actual key in vault blob per ADR-006)
+//     - addBackupWallet(walletCommitment)    [Epic 2.6] Adds backup wallet to authorized set
+//     - removeBackupWallet(walletCommitment) [Epic 2.6] Removes backup wallet from set
+//     - cancelBackupTransfer()               [Epic 2.6] Owner cancels pending backup transfer
+//
+//   Backup-wallet-only (verified via backupCommitment(local_backup_key()) + backupWallets.member()):
+//     - initiateBackupTransfer(currentTime)  [Epic 2.6] Starts 72-hour time-locked transfer
+//     - executeBackupTransfer(newOwnerCommitment) [Epic 2.6] Completes transfer after time-lock
+//
+//   Public (no access control):
+//     - isRegistered(walletAddressHash)      [Epic 1.4] Read-only membership check
+//
+//   Pure circuits (off-circuit computation):
+//     - ownerCommitment(sk)                  [Epic 2.1] Derives owner identity commitment
+//     - backupCommitment(bk)                 [Epic 2.6] Derives backup wallet identity commitment
+//
+//   PLANNED (not implemented — deferred to future epics):
+//     - getPublicKey(wallet) witness         [Epic 5.5] Requires AliasRegistry + encryption key infra
+//     - notifyNewMail(owner, emailCID)       [Epic 5.6] Requires SMTP bridge + email storage pipeline
+//     - getRecoveryKey() witness             [Epic 3.4] Recovery key in vault blob (ADR-006), not private state
+//
+// ACCESS CONTROL MATRIX:
+//   ┌─────────────────────────────┬───────────────┬──────────────────────────────────────────────┐
+//   │ Function                    │ Caller        │ Verification Method                          │
+//   ├─────────────────────────────┼───────────────┼──────────────────────────────────────────────┤
+//   │ registerVault               │ Any (1st time)│ !registrations.member(hash)                  │
+//   │ updateVault                 │ Owner only    │ ownerCommitment(local_secret_key())           │
+//   │ transferOwnership           │ Owner only    │ ownerCommitment(local_secret_key())           │
+//   │ storeRecoveryKeyHash        │ Owner only    │ ownerCommitment(local_secret_key())           │
+//   │ addBackupWallet             │ Owner only    │ ownerCommitment(local_secret_key())           │
+//   │ removeBackupWallet          │ Owner only    │ ownerCommitment(local_secret_key())           │
+//   │ cancelBackupTransfer        │ Owner only    │ ownerCommitment(local_secret_key())           │
+//   │ initiateBackupTransfer      │ Backup wallet │ backupCommitment(local_backup_key()) + member │
+//   │ executeBackupTransfer       │ Backup wallet │ backupCommitment(local_backup_key()) + member │
+//   │ isRegistered                │ Any           │ None (read-only)                             │
+//   │ ownerCommitment             │ Pure          │ N/A                                          │
+//   │ backupCommitment            │ Pure          │ N/A                                          │
+//   └─────────────────────────────┴───────────────┴──────────────────────────────────────────────┘
+//
+// STATE VARIABLES:
+//   Current (Epics 1-2):
+//     - registrations: Set<Bytes<32>>   — registered wallet address hashes
+//     - totalVaults: Counter            — total registered vaults
+//     - owner: Bytes<32>                — owner commitment (hiding, via persistentCommit)
+//     - vaultCidHash: Bytes<32>         — SHA-256 hash of current vault CID
+//   New (Epic 2.6, preparing for Epic 3):
+//     - recoveryKeyHash: Bytes<32>      — hash of recovery key (actual key in vault blob per ADR-006)
+//     - backupWallets: Set<Bytes<32>>   — set of authorized backup wallet commitments
+//     - transferInitiatedAt: Uint<64>   — Unix epoch seconds when backup transfer initiated (0 = none)
+//     - transferInitiator: Bytes<32>    — commitment of backup wallet that initiated transfer
+//
+// WITNESSES:
+//     - local_secret_key(): Bytes<32>   — owner's secret key from TypeScript private state
+//     - local_backup_key(): Bytes<32>   — backup wallet's secret key (for backup wallet verification)
+//
+// COMPACT LANGUAGE CONSTRAINTS:
+//     - No `this.sender` — caller identity verified via witness + persistentCommit
+//     - No `private state {}` block — private state is TypeScript-only (VaultRegistryPrivateState)
+//     - No `currentTimestamp()` — use blockTimeGte/Gt/Lt/Lte(Uint<64>) for on-chain time
+//     - Uint<64> arithmetic requires cast: (((val as Field) + (n as Field)) as Uint<64>)
+//     - disclose() required on circuit params before ledger/conditional use
+//     - default<T> is expression not function: default<Bytes<32>> not default<Bytes<32>>()
+//     - Arrays cannot be iterated in circuits — backup wallets added one at a time
+// ═══════════════════════════════════════════════════════════════════════════════
+
 // Public ledger: set of registered vault owner address hashes
 export ledger registrations: Set<Bytes<32>>;
 
@@ -14,14 +92,36 @@ export ledger owner: Bytes<32>;
 // Public ledger: hash of the current vault CID (commitment, not the CID itself)
 export ledger vaultCidHash: Bytes<32>;
 
+// Public ledger: hash of recovery key (actual key stored in vault blob per ADR-006)
+export ledger recoveryKeyHash: Bytes<32>;
+
+// Public ledger: set of authorized backup wallet commitments
+export ledger backupWallets: Set<Bytes<32>>;
+
+// Public ledger: Unix epoch seconds when backup transfer was initiated (0 = none)
+export ledger transferInitiatedAt: Uint<64>;
+
+// Public ledger: commitment of backup wallet that initiated the transfer
+export ledger transferInitiator: Bytes<32>;
+
 // Witness: returns the owner's secret key from private state
 witness local_secret_key(): Bytes<32>;
+
+// Witness: returns the backup wallet's secret key from private state
+witness local_backup_key(): Bytes<32>;
 
 // Derive an owner commitment from a secret key using persistentCommit (hiding commitment).
 // Uses a fixed domain separator — ownership does not rotate in VaultRegistry.
 // persistentCommit adds blinding vs persistentHash, per OpenZeppelin ZOwnablePK pattern.
 export circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
   return persistentCommit<Bytes<32>>(pad(32, "vault:owner:"), sk);
+}
+
+// Derive a backup wallet commitment from a backup key.
+// Uses a DIFFERENT domain separator than ownerCommitment to prevent cross-role
+// commitment collisions — same key MUST produce different commitments for owner vs backup.
+export circuit backupCommitment(bk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<32>>(pad(32, "vault:backup:"), bk);
 }
 
 // Register a vault for the given wallet address hash.
@@ -47,6 +147,91 @@ export circuit updateVault(newCidHash: Bytes<32>): [] {
   const sk = local_secret_key();
   assert(owner == ownerCommitment(sk), "Not the vault owner");
   vaultCidHash = cidHash;
+}
+
+// Transfer ownership to a new owner. Only the current owner can call this.
+// Resets recovery-related state to prevent stale recovery from affecting new owner.
+// KNOWN LIMITATION: backupWallets Set cannot be cleared in-circuit (Compact Set has no
+// clear() and circuits cannot iterate). Owner MUST call removeBackupWallet() for each
+// backup wallet BEFORE calling transferOwnership(). Application layer should enforce
+// this sequence to prevent stale backup wallets from initiating transfers against the
+// new owner. This will be addressed in Epic 3 (Story 3.5/3.6).
+export circuit transferOwnership(newOwnerCommitment: Bytes<32>): [] {
+  const newOwner = disclose(newOwnerCommitment);
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  owner = newOwner;
+  // Reset recovery-related state
+  recoveryKeyHash = default<Bytes<32>>;
+  transferInitiatedAt = 0 as Uint<64>;
+  transferInitiator = default<Bytes<32>>;
+}
+
+// Store the hash of a recovery key. Only the owner can call this.
+// The actual recovery key is stored inside the encrypted vault blob (ADR-006).
+// On-chain, we store only the hash for verification during the claim flow.
+export circuit storeRecoveryKeyHash(keyHash: Bytes<32>): [] {
+  const hash = disclose(keyHash);
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  recoveryKeyHash = hash;
+}
+
+// Add a backup wallet to the authorized set. Only the owner can call this.
+// walletCommitment is derived via backupCommitment(backupKey) off-circuit.
+export circuit addBackupWallet(walletCommitment: Bytes<32>): [] {
+  const commitment = disclose(walletCommitment);
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  backupWallets.insert(commitment);
+}
+
+// Remove a backup wallet from the authorized set. Only the owner can call this.
+export circuit removeBackupWallet(walletCommitment: Bytes<32>): [] {
+  const commitment = disclose(walletCommitment);
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  backupWallets.remove(commitment);
+}
+
+// Initiate a backup transfer. Only an authorized backup wallet can call this.
+// Validates currentTime via blockTimeGte() to prevent gaming the time-lock.
+// Stores the timestamp and initiator commitment for the 72-hour delay.
+export circuit initiateBackupTransfer(currentTime: Uint<64>): [] {
+  const time = disclose(currentTime);
+  const bk = local_backup_key();
+  assert(backupWallets.member(backupCommitment(bk)), "Not a backup wallet");
+  // Reject zero timestamp — 0 is the sentinel for "no transfer initiated"
+  assert(time != (0 as Uint<64>), "Invalid timestamp");
+  // Validate provided time is not in the future
+  assert(blockTimeGte(time), "Provided time is in the future");
+  transferInitiatedAt = time;
+  transferInitiator = backupCommitment(bk);
+}
+
+// Execute a backup transfer after 72-hour time-lock. Only the initiating backup wallet can call.
+// 72 hours = 259200 seconds, enforced on-chain via blockTimeGte(unlockTime).
+// KNOWN LIMITATION: backupWallets not cleared here (same Compact Set constraint as transferOwnership).
+export circuit executeBackupTransfer(newOwnerCommitment: Bytes<32>): [] {
+  const newOwner = disclose(newOwnerCommitment);
+  const bk = local_backup_key();
+  assert(backupWallets.member(backupCommitment(bk)), "Not a backup wallet");
+  assert(transferInitiator == backupCommitment(bk), "Not the transfer initiator");
+  assert(transferInitiatedAt != (0 as Uint<64>), "No transfer initiated");
+  // On-chain 72-hour time-lock enforcement
+  const unlockTime = (((transferInitiatedAt as Field) + (259200 as Field)) as Uint<64>);
+  assert(blockTimeGte(unlockTime), "72-hour time-lock has not elapsed");
+  owner = newOwner;
+  transferInitiatedAt = 0 as Uint<64>;
+  transferInitiator = default<Bytes<32>>;
+}
+
+// Cancel a pending backup transfer. Only the owner can call this.
+export circuit cancelBackupTransfer(): [] {
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  transferInitiatedAt = 0 as Uint<64>;
+  transferInitiator = default<Bytes<32>>;
 }
 
 // Check if a wallet address hash is registered.

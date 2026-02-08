@@ -2,6 +2,7 @@ import type * as __compactRuntime from '@midnight-ntwrk/compact-runtime';
 
 export type Witnesses<PS> = {
   local_secret_key(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
+  local_backup_key(context: __compactRuntime.WitnessContext<Ledger, PS>): [PS, Uint8Array];
 }
 
 export type ImpureCircuits<PS> = {
@@ -9,20 +10,49 @@ export type ImpureCircuits<PS> = {
                 walletAddressHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   updateVault(context: __compactRuntime.CircuitContext<PS>,
               newCidHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  transferOwnership(context: __compactRuntime.CircuitContext<PS>,
+                    newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  storeRecoveryKeyHash(context: __compactRuntime.CircuitContext<PS>,
+                       keyHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  addBackupWallet(context: __compactRuntime.CircuitContext<PS>,
+                  walletCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  removeBackupWallet(context: __compactRuntime.CircuitContext<PS>,
+                     walletCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  initiateBackupTransfer(context: __compactRuntime.CircuitContext<PS>,
+                         currentTime_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  executeBackupTransfer(context: __compactRuntime.CircuitContext<PS>,
+                        newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  cancelBackupTransfer(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
   isRegistered(context: __compactRuntime.CircuitContext<PS>,
                walletAddressHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, boolean>;
 }
 
 export type PureCircuits = {
   ownerCommitment(sk_0: Uint8Array): Uint8Array;
+  backupCommitment(bk_0: Uint8Array): Uint8Array;
 }
 
 export type Circuits<PS> = {
   ownerCommitment(context: __compactRuntime.CircuitContext<PS>, sk_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
+  backupCommitment(context: __compactRuntime.CircuitContext<PS>,
+                   bk_0: Uint8Array): __compactRuntime.CircuitResults<PS, Uint8Array>;
   registerVault(context: __compactRuntime.CircuitContext<PS>,
                 walletAddressHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   updateVault(context: __compactRuntime.CircuitContext<PS>,
               newCidHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  transferOwnership(context: __compactRuntime.CircuitContext<PS>,
+                    newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  storeRecoveryKeyHash(context: __compactRuntime.CircuitContext<PS>,
+                       keyHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  addBackupWallet(context: __compactRuntime.CircuitContext<PS>,
+                  walletCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  removeBackupWallet(context: __compactRuntime.CircuitContext<PS>,
+                     walletCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  initiateBackupTransfer(context: __compactRuntime.CircuitContext<PS>,
+                         currentTime_0: bigint): __compactRuntime.CircuitResults<PS, []>;
+  executeBackupTransfer(context: __compactRuntime.CircuitContext<PS>,
+                        newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+  cancelBackupTransfer(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
   isRegistered(context: __compactRuntime.CircuitContext<PS>,
                walletAddressHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, boolean>;
 }
@@ -37,6 +67,15 @@ export type Ledger = {
   readonly totalVaults: bigint;
   readonly owner: Uint8Array;
   readonly vaultCidHash: Uint8Array;
+  readonly recoveryKeyHash: Uint8Array;
+  backupWallets: {
+    isEmpty(): boolean;
+    size(): bigint;
+    member(elem_0: Uint8Array): boolean;
+    [Symbol.iterator](): Iterator<Uint8Array>
+  };
+  readonly transferInitiatedAt: bigint;
+  readonly transferInitiator: Uint8Array;
 }
 
 export type ContractReferenceLocations = any;

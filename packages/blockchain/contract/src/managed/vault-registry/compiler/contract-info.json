@@ -18,6 +18,23 @@
       }
     },
     {
+      "name": "backupCommitment",
+      "pure": true,
+      "arguments": [
+        {
+          "name": "bk",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
       "name": "registerVault",
       "pure": false,
       "arguments": [
@@ -54,6 +71,125 @@
       }
     },
     {
+      "name": "transferOwnership",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "newOwnerCommitment",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "storeRecoveryKeyHash",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "keyHash",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "addBackupWallet",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "walletCommitment",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "removeBackupWallet",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "walletCommitment",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "initiateBackupTransfer",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "currentTime",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "executeBackupTransfer",
+      "pure": false,
+      "arguments": [
+        {
+          "name": "newOwnerCommitment",
+          "type": {
+            "type-name": "Bytes",
+            "length": 32
+          }
+        }
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
+      "name": "cancelBackupTransfer",
+      "pure": false,
+      "arguments": [
+      ],
+      "result-type": {
+        "type-name": "Tuple",
+        "types": [
+        ]
+      }
+    },
+    {
       "name": "isRegistered",
       "pure": false,
       "arguments": [
@@ -73,6 +209,15 @@
   "witnesses": [
     {
       "name": "local_secret_key",
+      "arguments": [
+      ],
+      "result type": {
+        "type-name": "Bytes",
+        "length": 32
+      }
+    },
+    {
+      "name": "local_backup_key",
       "arguments": [
       ],
       "result type": {
