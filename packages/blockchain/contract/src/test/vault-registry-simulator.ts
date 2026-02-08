@@ -24,9 +24,9 @@ export class VaultRegistrySimulator {
   readonly contract: Contract<VaultRegistryPrivateState>;
   circuitContext: CircuitContext<VaultRegistryPrivateState>;
 
-  constructor(secretKey: Uint8Array) {
+  constructor(secretKey: Uint8Array, backupKey?: Uint8Array) {
     this.contract = new Contract<VaultRegistryPrivateState>(vaultRegistryWitnesses);
-    const initialPrivateState = createVaultRegistryPrivateState(secretKey);
+    const initialPrivateState = createVaultRegistryPrivateState(secretKey, backupKey);
     // Note: circuitContext is public so tests can inject cross-instance state for access control testing (M1)
     const {
       currentPrivateState,
@@ -67,6 +67,61 @@ export class VaultRegistrySimulator {
     return ledger(this.circuitContext.currentQueryContext.state);
   }
 
+  public transferOwnership(newOwnerCommitment: Uint8Array): Ledger {
+    this.circuitContext = this.contract.impureCircuits.transferOwnership(
+      this.circuitContext,
+      newOwnerCommitment
+    ).context;
+    return ledger(this.circuitContext.currentQueryContext.state);
+  }
+
+  public storeRecoveryKeyHash(keyHash: Uint8Array): Ledger {
+    this.circuitContext = this.contract.impureCircuits.storeRecoveryKeyHash(
+      this.circuitContext,
+      keyHash
+    ).context;
+    return ledger(this.circuitContext.currentQueryContext.state);
+  }
+
+  public addBackupWallet(walletCommitment: Uint8Array): Ledger {
+    this.circuitContext = this.contract.impureCircuits.addBackupWallet(
+      this.circuitContext,
+      walletCommitment
+    ).context;
+    return ledger(this.circuitContext.currentQueryContext.state);
+  }
+
+  public removeBackupWallet(walletCommitment: Uint8Array): Ledger {
+    this.circuitContext = this.contract.impureCircuits.removeBackupWallet(
+      this.circuitContext,
+      walletCommitment
+    ).context;
+    return ledger(this.circuitContext.currentQueryContext.state);
+  }
+
+  public initiateBackupTransfer(currentTime: bigint): Ledger {
+    this.circuitContext = this.contract.impureCircuits.initiateBackupTransfer(
+      this.circuitContext,
+      currentTime
+    ).context;
+    return ledger(this.circuitContext.currentQueryContext.state);
+  }
+
+  public executeBackupTransfer(newOwnerCommitment: Uint8Array): Ledger {
+    this.circuitContext = this.contract.impureCircuits.executeBackupTransfer(
+      this.circuitContext,
+      newOwnerCommitment
+    ).context;
+    return ledger(this.circuitContext.currentQueryContext.state);
+  }
+
+  public cancelBackupTransfer(): Ledger {
+    this.circuitContext = this.contract.impureCircuits.cancelBackupTransfer(
+      this.circuitContext
+    ).context;
+    return ledger(this.circuitContext.currentQueryContext.state);
+  }
+
   public isRegistered(walletAddressHash: Uint8Array): boolean {
     const result = this.contract.impureCircuits.isRegistered(
       this.circuitContext,
@@ -78,5 +133,9 @@ export class VaultRegistrySimulator {
 
   public static ownerCommitment(sk: Uint8Array): Uint8Array {
     return pureCircuits.ownerCommitment(sk);
+  }
+
+  public static backupCommitment(bk: Uint8Array): Uint8Array {
+    return pureCircuits.backupCommitment(bk);
   }
 }

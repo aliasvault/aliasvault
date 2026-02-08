@@ -21,17 +21,20 @@ export type CounterPrivateState = {
   privateCounter: number;
 };
 
-// VaultRegistry private state — stores only the owner's secret key (witness data).
+// VaultRegistry private state — stores the owner's secret key and optional backup key (witness data).
 // The actual vault CID is application-layer data managed by the API (too large for Bytes<32>).
 // Follows the bboard pattern: WitnessContext<Ledger, PrivateState> → [newPrivateState, returnValue].
 export type VaultRegistryPrivateState = {
   readonly secretKey: Uint8Array;
+  readonly backupKey: Uint8Array;
 };
 
 export const createVaultRegistryPrivateState = (
   secretKey: Uint8Array,
+  backupKey?: Uint8Array,
 ): VaultRegistryPrivateState => ({
   secretKey,
+  backupKey: backupKey ?? new Uint8Array(32),
 });
 
 // Counter has no witnesses — empty object required by Contract constructor.
@@ -44,5 +47,11 @@ export const vaultRegistryWitnesses = {
     VaultRegistryPrivateState,
     Uint8Array,
   ] => [privateState, privateState.secretKey],
+  local_backup_key: ({
+    privateState,
+  }: WitnessContext<Ledger, VaultRegistryPrivateState>): [
+    VaultRegistryPrivateState,
+    Uint8Array,
+  ] => [privateState, privateState.backupKey],
 };
 
