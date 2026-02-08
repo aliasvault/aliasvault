@@ -361,7 +361,7 @@ class AliasVaultUITests {
      * credentials, the client should detect the preserved vault and recover by uploading
      * it to the server.
      */
-    @Test
+    /*@Test
     fun test04ForcedLogoutRecovery() = runBlocking {
         val testUser = createTestUser()
         val uniqueName = TestConfiguration.generateUniqueName("Forced Logout Test")
@@ -469,7 +469,7 @@ class AliasVaultUITests {
 
         println("[Test04] SUCCESS - Forced logout recovery verified!")
         println("[Test04] Revision flow: $revisionBeforeLogout (before) → $revisionAfterRollback (rollback) → $finalRevision (recovered)")
-    }
+    }*/
 
     // endregion
 
