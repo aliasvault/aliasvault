@@ -71,9 +71,9 @@ echo "=============================================="
 # Gradle format: "ClassName > testMethodName PASSED/FAILED"
 echo ""
 
-# Extract test results - gradle outputs "ClassName > methodName PASSED" or "FAILED"
-PASSED_TESTS=$(grep -E "> test[^ ]+ PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
-FAILED_TESTS=$(grep -E "> test[^ ]+ FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+# Extract test results - gradle outputs "ClassName > methodName[device] PASSED" or "FAILED"
+PASSED_TESTS=$(grep -E "> test[^\[]+\[.*\] PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+FAILED_TESTS=$(grep -E "> test[^\[]+\[.*\] FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
 TOTAL_TESTS=$((PASSED_TESTS + FAILED_TESTS))
 
 echo "  Total:   $TOTAL_TESTS"
@@ -84,13 +84,13 @@ echo ""
 # Show individual test results
 echo "--- Individual Tests ---"
 
-# Show passed tests (extract just the test name)
-grep -E "> test[^ ]+ PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
-    sed 's/.*> \(test[^ ]*\) PASSED.*/  ✅ \1/' || true
+# Show passed tests (extract just the test name without device info)
+grep -E "> test[^\[]+\[.*\] PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+    sed 's/.*> \(test[^\[]*\)\[.*/  ✅ \1/' || true
 
 # Show failed tests
-grep -E "> test[^ ]+ FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
-    sed 's/.*> \(test[^ ]*\) FAILED.*/  ❌ \1/' || true
+grep -E "> test[^\[]+\[.*\] FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+    sed 's/.*> \(test[^\[]*\)\[.*/  ❌ \1/' || true
 
 echo ""
 
@@ -130,14 +130,14 @@ if [ -n "$GITHUB_STEP_SUMMARY" ]; then
 
         # Passed tests
         if [ "$PASSED_TESTS" -gt 0 ]; then
-            grep -E "> test[^ ]+ PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
-                sed 's/.*> \(test[^ ]*\) PASSED.*/- ✅ \1/' || true
+            grep -E "> test[^\[]+\[.*\] PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+                sed 's/.*> \(test[^\[]*\)\[.*/- ✅ \1/' || true
         fi
 
         # Failed tests
         if [ "$FAILED_TESTS" -gt 0 ]; then
-            grep -E "> test[^ ]+ FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
-                sed 's/.*> \(test[^ ]*\) FAILED.*/- ❌ \1/' || true
+            grep -E "> test[^\[]+\[.*\] FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+                sed 's/.*> \(test[^\[]*\)\[.*/- ❌ \1/' || true
         fi
 
         echo ""
@@ -148,4 +148,16 @@ fi
 rm -f "$TEST_OUTPUT_FILE"
 
 echo "Results available at: app/build/reports/androidTests/"
+
+# Sanity check: fail if no tests were executed (likely indicates skipped/broken tests)
+if [ "$TOTAL_TESTS" -eq 0 ]; then
+    echo ""
+    echo "ERROR: No tests were executed! This likely indicates:"
+    echo "  - Tests were skipped (API not available?)"
+    echo "  - Test discovery failed"
+    echo "  - Gradle output format changed"
+    echo ""
+    exit 1
+fi
+
 exit $TEST_EXIT_CODE

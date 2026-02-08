@@ -80,8 +80,10 @@ else
 
     # Start emulator
     if [ "$SHOW_EMULATOR" = "1" ]; then
-        echo "Starting emulator with GUI..."
-        "$ANDROID_HOME/emulator/emulator" -avd "$AVD_NAME" -no-audio -no-boot-anim &
+        echo "Starting emulator with visible window..."
+        # Use -gpu host for better performance on macOS with visible window
+        # Don't use -no-audio or -no-boot-anim to ensure window appears properly
+        "$ANDROID_HOME/emulator/emulator" -avd "$AVD_NAME" -gpu host &
     else
         echo "Starting emulator in headless mode..."
         "$ANDROID_HOME/emulator/emulator" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
