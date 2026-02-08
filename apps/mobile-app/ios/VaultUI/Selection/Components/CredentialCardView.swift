@@ -2,6 +2,8 @@ import SwiftUI
 import VaultModels
 import VaultUtils
 
+private let locBundle = Bundle.vaultUI
+
 /// Autofill credential card view
 public struct AutofillCredentialCard: View {
     let credential: AutofillCredential
@@ -57,42 +59,42 @@ public struct AutofillCredentialCard: View {
             if let username = credential.username, !username.isEmpty {
                 Button(action: {
                     UIPasteboard.general.string = username
-                    copyToastMessage = NSLocalizedString("username_copied", comment: "Username copied message")
+                    copyToastMessage = String(localized: "username_copied", bundle: locBundle)
                     showCopyToast = true
                     // Delay for 1 second before calling onCopy which dismisses the view
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                         onCopy()
                     }
                 }, label: {
-                    Label(NSLocalizedString("copy_username", comment: "Copy username context menu"), systemImage: "person")
+                    Label(String(localized: "copy_username", bundle: locBundle), systemImage: "person")
                 })
             }
 
             if let password = credential.password, !password.isEmpty {
                 Button(action: {
                     UIPasteboard.general.string = password
-                    copyToastMessage = NSLocalizedString("password_copied", comment: "Password copied message")
+                    copyToastMessage = String(localized: "password_copied", bundle: locBundle)
                     showCopyToast = true
                     // Delay for 1 second before calling onCopy which dismisses the view
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                         onCopy()
                     }
                 }, label: {
-                    Label(NSLocalizedString("copy_password", comment: "Copy password context menu"), systemImage: "key")
+                    Label(String(localized: "copy_password", bundle: locBundle), systemImage: "key")
                 })
             }
 
             if let email = credential.email, !email.isEmpty {
                 Button(action: {
                     UIPasteboard.general.string = email
-                    copyToastMessage = NSLocalizedString("email_copied", comment: "Email copied message")
+                    copyToastMessage = String(localized: "email_copied", bundle: locBundle)
                     showCopyToast = true
                     // Delay for 1 second before calling onCopy which dismisses the view
                     DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                         onCopy()
                     }
                 }, label: {
-                    Label(NSLocalizedString("copy_email", comment: "Copy email context menu"), systemImage: "envelope")
+                    Label(String(localized: "copy_email", bundle: locBundle), systemImage: "envelope")
                 })
             }
 
@@ -107,7 +109,7 @@ public struct AutofillCredentialCard: View {
                     UIApplication.shared.open(url)
                 }
             }, label: {
-                Label(NSLocalizedString("view_details", comment: "View details context menu"), systemImage: "eye")
+                Label(String(localized: "view_details", bundle: locBundle), systemImage: "eye")
             })
 
             Button(action: {
@@ -115,7 +117,7 @@ public struct AutofillCredentialCard: View {
                     UIApplication.shared.open(url)
                 }
             }, label: {
-                Label(NSLocalizedString("edit", comment: "Edit context menu"), systemImage: "pencil")
+                Label(String(localized: "edit", bundle: locBundle), systemImage: "pencil")
             })
         })
         .overlay(

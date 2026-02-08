@@ -61,7 +61,8 @@ AliasVault is available on:
 <p>
   <a href="https://apps.apple.com/app/id6745490915" style="display: inline-block; margin-right: 20px;"><img src="https://github.com/user-attachments/assets/bad09b85-2635-4e3e-b154-9f348b88f6d6" style="height: 40px;margin-right:10px;"  alt="Download on the App Store"></a>
   <a href="https://play.google.com/store/apps/details?id=net.aliasvault.app" style="display: inline-block;"><img src="https://github.com/user-attachments/assets/b28979c9-f4b8-4090-8735-e384a7fdaa47" style="height: 40px;" alt="Get it on Google Play"></a>
-      <a href="https://f-droid.org/packages/net.aliasvault.app" style="display: inline-block;"><img src="https://github.com/user-attachments/assets/0fb25df1-0ea2-46a6-bfee-a9d70f22a02a" style="height: 40px;" alt="Get it on F-Droid"></a>
+  <a href="https://f-droid.org/packages/net.aliasvault.app" style="display: inline-block;"><img src="https://github.com/user-attachments/assets/0fb25df1-0ea2-46a6-bfee-a9d70f22a02a" style="height: 40px;" alt="Get it on F-Droid"></a>
+  <a href="https://apps.obtainium.imranr.dev/redirect?r=obtainium://app/{%22id%22:%22net.aliasvault.app%22,%22url%22:%22https://github.com/aliasvault/aliasvault%22,%22author%22:%22AliasVault%22,%22name%22:%22AliasVault%22,%22additionalSettings%22:%22{\%22about\%22:\%22Privacy-first%20Password%20Manager%20with%20Built-in%20Email%20Aliasing.\%22}%22}" style="display: inline-block;"><img src="https://github.com/user-attachments/assets/0e8c7cc6-533b-4fc4-bbc0-ce974d72de4b" style="height: 40px;" alt="Get it on F-Droid"></a>
 </p>
 
 [<img width="700" alt="Screenshot of AliasVault" src="docs/assets/img/screenshot.png">](https://app.aliasvault.net)
