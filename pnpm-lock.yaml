@@ -306,6 +306,49 @@ importers:
         specifier: ^3.2.4
         version: 3.2.4
 
+  shared/vault-sync:
+    dependencies:
+      '@aliasvault/contract':
+        specifier: workspace:*
+        version: link:../../packages/blockchain/contract
+      '@aliasvault/ipfs-service':
+        specifier: workspace:*
+        version: link:../ipfs-service
+    devDependencies:
+      '@eslint/js':
+        specifier: ^9.19.0
+        version: 9.39.2
+      '@types/node':
+        specifier: ^22.13.10
+        version: 22.19.5
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^8.21.0
+        version: 8.54.0(@typescript-eslint/parser@8.52.0)(eslint@9.39.2)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^8.21.0
+        version: 8.52.0(eslint@9.39.2)(typescript@5.9.3)
+      '@vitest/coverage-v8':
+        specifier: ^3.0.8
+        version: 3.2.4(vitest@3.2.4)
+      eslint:
+        specifier: ^9.19.0
+        version: 9.39.2
+      eslint-plugin-import:
+        specifier: ^2.31.0
+        version: 2.32.0(@typescript-eslint/parser@8.52.0)(eslint@9.39.2)
+      eslint-plugin-jsdoc:
+        specifier: ^50.6.3
+        version: 50.8.0(eslint@9.39.2)
+      tsup:
+        specifier: ^8.4.0
+        version: 8.5.1(typescript@5.9.3)
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^3.0.8
+        version: 3.2.4(@types/node@22.19.5)
+
 packages:
 
   /@ampproject/remapping@2.3.0:

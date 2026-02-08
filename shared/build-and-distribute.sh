@@ -9,6 +9,7 @@ chmod +x ./password-generator/build.sh
 chmod +x ./models/build.sh
 chmod +x ./vault-sql/build.sh
 chmod +x ./ipfs-service/build.sh
+chmod +x ./vault-sync/build.sh
 
 # Run all build scripts
 echo "🚀 Starting build process for all modules..."
@@ -25,6 +26,9 @@ cd ../vault-sql
 ./build.sh
 
 cd ../ipfs-service
+./build.sh
+
+cd ../vault-sync
 ./build.sh
 
 echo "✅ All builds completed successfully."
