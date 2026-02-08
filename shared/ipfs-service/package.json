@@ -1,0 +1,36 @@
+{
+  "name": "@aliasvault/ipfs-service",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint src",
+    "lint:fix": "eslint src --fix"
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "AGPL-3.0",
+  "dependencies": {
+    "@aliasvault/contract": "workspace:*",
+    "pinata": "^1.5.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "@types/node": "^22.13.10",
+    "@typescript-eslint/eslint-plugin": "^8.21.0",
+    "@typescript-eslint/parser": "^8.21.0",
+    "@vitest/coverage-v8": "^3.0.8",
+    "eslint": "^9.19.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jsdoc": "^50.6.3",
+    "tsup": "^8.4.0",
+    "typescript": "^5.3.3",
+    "vitest": "^3.0.8"
+  }
+}
