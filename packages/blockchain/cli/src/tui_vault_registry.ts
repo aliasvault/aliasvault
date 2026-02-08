@@ -6,11 +6,11 @@
 import { stdin as input, stdout as output } from 'node:process';
 import { createInterface } from 'node:readline/promises';
 import crypto from 'node:crypto';
-import path from 'node:path';
 import { createLogger } from './logger-utils.js';
-import { StandaloneConfig, currentDir } from './config.js';
+import { StandaloneConfig } from './config.js';
 import * as api from './api.js';
 import * as vrApi from './vault-registry-api.js';
+import { GENESIS_MINT_WALLET_SEED, vaultRegistryZkConfigPath } from './vault-registry-api.js';
 import { type VaultRegistryProviders } from './vault-registry-types.js';
 import { NodeZkConfigProvider } from '@midnight-ntwrk/midnight-js-node-zk-config-provider';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
@@ -18,7 +18,6 @@ import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-p
 import { levelPrivateStateProvider } from '@midnight-ntwrk/midnight-js-level-private-state-provider';
 import type { VaultRegistryCircuits } from './vault-registry-types.js';
 
-const GENESIS_MINT_WALLET_SEED = '0000000000000000000000000000000000000000000000000000000000000001';
 
 const config = new StandaloneConfig();
 const logger = await createLogger(config.logDir);
@@ -45,7 +44,6 @@ try {
   // Step 2: Configure providers for VaultRegistry
   console.log('\nStep 2: Configuring providers...');
   const walletAndMidnightProvider = await api.createWalletAndMidnightProvider(walletCtx);
-  const vaultRegistryZkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'vault-registry');
   const zkConfigProvider = new NodeZkConfigProvider<VaultRegistryCircuits>(vaultRegistryZkConfigPath);
 
   const providers: VaultRegistryProviders = {

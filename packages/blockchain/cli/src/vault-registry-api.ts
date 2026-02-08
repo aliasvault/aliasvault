@@ -15,7 +15,9 @@ import { currentDir } from './config';
 
 let logger: Logger;
 
-const vaultRegistryZkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'vault-registry');
+export const GENESIS_MINT_WALLET_SEED = '0000000000000000000000000000000000000000000000000000000000000001';
+
+export const vaultRegistryZkConfigPath = path.resolve(currentDir, '..', '..', 'contract', 'src', 'managed', 'vault-registry');
 
 const vaultRegistryCompiledContract = CompiledContract.make('vault-registry', VaultRegistry.Contract).pipe(
   CompiledContract.withWitnesses(vaultRegistryWitnesses),
