@@ -71,11 +71,16 @@ packages/blockchain/
 │   │   ├── api.ts                    # Counter contract interaction API
 │   │   ├── vault-registry-api.ts     # VaultRegistry contract interaction API
 │   │   ├── vault-registry-types.ts   # VaultRegistry TypeScript types
+│   │   ├── deploy-vault-registry.ts  # Headless VaultRegistry deployment script
+│   │   ├── deploy-utils.ts           # Deploy utilities (secret key, config update, arg parsing)
 │   │   ├── cli.ts                    # Interactive TUI menus (counter)
 │   │   ├── config.ts                 # Network configurations
 │   │   ├── tui_local.ts             # Counter TUI (direct-connect, no Docker)
 │   │   ├── tui_vault_registry.ts    # VaultRegistry test TUI
-│   │   └── standalone.ts            # Entry point that starts its own Docker containers
+│   │   ├── standalone.ts            # Entry point that starts its own Docker containers
+│   │   └── test/
+│   │       ├── deploy-utils.test.ts  # Deploy utility unit tests
+│   │       └── vault-registry-api.test.ts
 │   └── package.json
 └── package.json               # Workspace root
 ```
@@ -102,8 +107,49 @@ Vault registration contract with **private state** for CID storage and **owner a
 
 **Run test TUI:** `npm run vault-registry` (from `packages/blockchain/`)
 
+## Deployment
+
+Deploy the VaultRegistry contract to a target network and automatically update `shared/config/contracts.ts` with the deployed address.
+
+### Prerequisites per Network
+
+| Network | Requirements |
+|---------|-------------|
+| `local` | Docker running with [midnight-local-network](https://github.com/bricktowers/midnight-local-network) |
+| `preview` | Local proof server running (`http://127.0.0.1:6300`) + wallet seed with tNight |
+| `preprod` | Local proof server running (`http://127.0.0.1:6300`) + wallet seed with tNight |
+
+### Usage
+
+```bash
+# From packages/blockchain/
+
+# Deploy to local network (uses genesis wallet automatically)
+npm run deploy-local
+
+# Deploy to preview (seed required)
+npm run deploy-preview -- --seed=<hex-seed>
+
+# Deploy to preprod (seed required)
+npm run deploy-preprod -- --seed=<hex-seed>
+```
+
+### Flags
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--network=<local\|preview\|preprod>` | Target network | `local` |
+| `--seed=<hex>` | Wallet seed (required for preview/preprod, defaults to genesis for local) | — |
+| `--dry-run` | Print deployed address but skip writing to `shared/config/contracts.ts` | off |
+
+### Post-Deploy Flow
+
+1. Script deploys VaultRegistry and prints the contract address
+2. Address is written to `shared/config/contracts.ts` → `CONTRACTS.VaultRegistry.address`
+3. Browser extension and mobile app import from `shared/config/contracts.ts` (ADR-004)
+4. Rebuild apps to pick up the new address
+
 ## Next Steps (AliasVault)
 
 Future contracts to implement:
 1. **`GuardianRecovery.compact`** — Guardian-based password recovery with time-lock
-2. **IPFS integration** — Pinata service for vault data storage (Story 2.2)
