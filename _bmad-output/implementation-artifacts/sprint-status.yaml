@@ -1,4 +1,4 @@
-# generated: 2026-02-07
+# generated: 2026-02-08
 # project: aliasvault
 # project_key: aliasvault
 # tracking_system: file-system
@@ -33,7 +33,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-02-07
+generated: 2026-02-08
 project: aliasvault
 project_key: aliasvault
 tracking_system: file-system
