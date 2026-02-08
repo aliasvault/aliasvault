@@ -167,31 +167,29 @@ jobs:
       - name: Cleanup any leftover processes
         working-directory: .
         run: |
-          pkill -f "dotnet.*AliasVault.Api" || true
-          pkill -f "expo start" || true
-          pkill -f "metro" || true
+          pkill -9 -f "dotnet.*AliasVault.Api" || true
+          pkill -9 -f "expo start" || true
+          pkill -9 -f "metro" || true
+          pkill -9 -f "node.*8081" || true
           sleep 1
 
       - name: Start API server
         working-directory: apps/server/AliasVault.Api
         run: |
           dotnet run --no-build > /tmp/api-server.log 2>&1 &
-          API_PID=$!
-          echo $API_PID > /tmp/api-server.pid
+          echo $! > /tmp/api-server.pid
 
-          # Wait for API to be ready
           echo "Waiting for API to start..."
           for i in {1..30}; do
             if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
-              echo "✅ API is ready! (PID: $API_PID)"
+              echo "✅ API is ready!"
               break
             fi
             if [ $i -eq 30 ]; then
-              echo "::error::API failed to start within 60 seconds"
+              echo "::error::API failed to start"
               cat /tmp/api-server.log
               exit 1
             fi
-            echo "Attempt $i: API not ready yet..."
             sleep 2
           done
         env:
@@ -206,14 +204,12 @@ jobs:
       - name: Start Metro bundler
         run: |
           npx expo start --offline > /tmp/metro.log 2>&1 &
-          METRO_PID=$!
-          echo $METRO_PID > /tmp/metro.pid
+          echo $! > /tmp/metro.pid
 
-          # Wait for Metro to be ready
           echo "Waiting for Metro bundler to start..."
           for i in {1..30}; do
             if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
-              echo "✅ Metro bundler is ready! (PID: $METRO_PID)"
+              echo "✅ Metro bundler is ready!"
               break
             fi
             if [ $i -eq 30 ]; then
@@ -221,22 +217,18 @@ jobs:
               cat /tmp/metro.log
               exit 1
             fi
-            echo "Attempt $i: Metro not ready yet..."
             sleep 2
           done
 
       - name: Cache CocoaPods
         id: pods-cache
         run: |
-          # Use persistent cache on self-hosted runner
           PODS_CACHE_DIR="/Users/ci/.cache/pods"
           PODS_HASH=$(md5 -q ios/Podfile.lock)
-          CACHED_PODS="$PODS_CACHE_DIR/$PODS_HASH"
-
-          if [ -d "$CACHED_PODS" ]; then
+          if [ -d "$PODS_CACHE_DIR/$PODS_HASH" ]; then
             echo "✅ Restoring Pods from cache..."
             rm -rf ios/Pods
-            cp -R "$CACHED_PODS" ios/Pods
+            cp -R "$PODS_CACHE_DIR/$PODS_HASH" ios/Pods
             echo "cache-hit=true" >> $GITHUB_OUTPUT
           else
             echo "cache-hit=false" >> $GITHUB_OUTPUT
@@ -245,127 +237,19 @@ jobs:
       - name: Install CocoaPods dependencies
         if: steps.pods-cache.outputs.cache-hit != 'true'
         run: |
-          cd ios
-          pod install
-
-          # Save to cache
+          cd ios && pod install
           PODS_CACHE_DIR="/Users/ci/.cache/pods"
           PODS_HASH=$(md5 -q Podfile.lock)
           mkdir -p "$PODS_CACHE_DIR"
-          # Clean old caches (keep last 3)
           ls -t "$PODS_CACHE_DIR" 2>/dev/null | tail -n +4 | xargs -I {} rm -rf "$PODS_CACHE_DIR/{}" || true
           cp -R Pods "$PODS_CACHE_DIR/$PODS_HASH"
-          echo "✅ Pods cached"
 
-      - name: Cache Xcode DerivedData
-        id: xcode-cache
-        run: |
-          # Use persistent cache on self-hosted runner based on source hash
-          XCODE_CACHE_DIR="/Users/ci/.cache/xcode-derived"
-          # Hash key files that affect the build
-          SOURCE_HASH=$(cat ios/Podfile.lock package.json ../../core/rust/Cargo.lock 2>/dev/null | md5)
-          CACHED_BUILD="$XCODE_CACHE_DIR/$SOURCE_HASH"
-
-          mkdir -p ios/build
-
-          if [ -d "$CACHED_BUILD" ]; then
-            echo "✅ Restoring Xcode DerivedData from cache..."
-            cp -R "$CACHED_BUILD/"* ios/build/ 2>/dev/null || true
-            echo "cache-hit=true" >> $GITHUB_OUTPUT
-          else
-            echo "cache-hit=false" >> $GITHUB_OUTPUT
-          fi
-          echo "SOURCE_HASH=$SOURCE_HASH" >> $GITHUB_ENV
-
-      - name: Boot iOS Simulator
-        run: |
-          # Shutdown any existing simulators first
-          xcrun simctl shutdown all || true
-
-          # List available simulators
-          xcrun simctl list devices available
-
-          # Find an iPhone simulator (prefer Pro models, then any iPhone)
-          # Try newest models first, then fall back
-          for model in "iPhone 17 Pro" "iPhone 16 Pro" "iPhone 15 Pro" "iPhone 17" "iPhone 16" "iPhone"; do
-            SIMULATOR_ID=$(xcrun simctl list devices available | grep "$model" | head -1 | grep -oE '[A-F0-9-]{36}')
-            if [ -n "$SIMULATOR_ID" ]; then
-              echo "Found simulator matching '$model'"
-              break
-            fi
-          done
-
-          if [ -z "$SIMULATOR_ID" ]; then
-            echo "::error::No iPhone simulator found!"
-            exit 1
-          fi
-
-          echo "Booting simulator: $SIMULATOR_ID"
-          xcrun simctl boot "$SIMULATOR_ID" || true
-
-          # Wait for simulator to be fully booted
-          echo "Waiting for simulator to be ready..."
-          xcrun simctl bootstatus "$SIMULATOR_ID" -b
-
-          # Disable AutoFill to prevent "Save Password" prompts during tests
-          echo "Disabling AutoFill in simulator..."
-          xcrun simctl spawn "$SIMULATOR_ID" defaults write com.apple.Preferences AutoFillPasswords -bool NO || true
-          xcrun simctl spawn "$SIMULATOR_ID" defaults write -g AutoFillPasswords -bool NO || true
-
-          echo "SIMULATOR_ID=$SIMULATOR_ID" >> $GITHUB_ENV
-          echo "✅ Simulator booted: $SIMULATOR_ID"
-
-      - name: Build iOS app for testing
+      - name: Build and run iOS E2E tests
         run: |
           cd ios
-          # Enable incremental builds
-          xcodebuild build-for-testing \
-            -workspace AliasVault.xcworkspace \
-            -scheme AliasVault \
-            -sdk iphonesimulator \
-            -destination "id=${{ env.SIMULATOR_ID }}" \
-            -derivedDataPath build \
-            -enableBuildDebugging NO \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGN_IDENTITY="-" \
-            DEVELOPMENT_TEAM="" \
-            IDEFileSystemSynchronizedGroupsAreEnabled=NO \
-            COMPILER_INDEX_STORE_ENABLE=NO
-
-      - name: Save Xcode build cache
-        if: steps.xcode-cache.outputs.cache-hit != 'true'
-        run: |
-          XCODE_CACHE_DIR="/Users/ci/.cache/xcode-derived"
-          CACHED_BUILD="$XCODE_CACHE_DIR/${{ env.SOURCE_HASH }}"
-
-          mkdir -p "$XCODE_CACHE_DIR"
-          # Clean old caches (keep last 3)
-          ls -t "$XCODE_CACHE_DIR" 2>/dev/null | tail -n +4 | xargs -I {} rm -rf "$XCODE_CACHE_DIR/{}" || true
-
-          # Save the build products (only essential dirs to save space)
-          mkdir -p "$CACHED_BUILD"
-          cp -R ios/build/Build "$CACHED_BUILD/" 2>/dev/null || true
-          echo "✅ Xcode build cached"
-
-      - name: Run iOS E2E Tests
-        run: |
-          cd ios
-          # Remove existing result bundle if present
-          rm -rf TestResults.xcresult
-          xcodebuild test-without-building \
-            -workspace AliasVault.xcworkspace \
-            -scheme AliasVault \
-            -sdk iphonesimulator \
-            -destination "id=${{ env.SIMULATOR_ID }}" \
-            -derivedDataPath build \
-            -only-testing:AliasVaultUITests \
-            -resultBundlePath TestResults.xcresult \
-            -parallel-testing-enabled NO \
-            -maximum-concurrent-test-simulator-destinations 1 \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGN_IDENTITY="-" \
-            DEVELOPMENT_TEAM="" \
-            IDEFileSystemSynchronizedGroupsAreEnabled=NO
+          chmod +x scripts/*.sh
+          ./scripts/e2e-build.sh
+          ./scripts/e2e-test.sh
         env:
           API_URL: "http://localhost:5092"
 
@@ -414,18 +298,8 @@ jobs:
 
       - name: Stop iOS services
         if: always()
-        working-directory: .
         run: |
-          # Kill all related processes forcefully
-          pkill -9 -f "dotnet.*AliasVault.Api" || true
-          pkill -9 -f "AliasVault.Api" || true
-          pkill -9 -f "expo start" || true
-          pkill -9 -f "metro" || true
-          pkill -9 -f "@expo/metro-runtime" || true
-          pkill -9 -f "node.*8081" || true
-
-          # Clean up PID files
-          rm -f /tmp/api-server.pid /tmp/metro.pid
+          cd ios && ./scripts/e2e-cleanup.sh
 
   # Android E2E Tests (runs after iOS to avoid resource conflicts on single runner)
   android-e2e:
