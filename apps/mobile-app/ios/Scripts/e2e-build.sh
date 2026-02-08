@@ -59,19 +59,22 @@ echo "Simulator ready: $SIMULATOR_ID"
 rm -rf TestResults.xcresult
 
 # Build for testing
+# Note: We allow code signing for simulator to ensure app group entitlements work
 echo ""
 echo "=== Building iOS app for testing ==="
 xcodebuild build-for-testing \
     -workspace AliasVault.xcworkspace \
     -scheme AliasVault \
+    -configuration Debug \
     -sdk iphonesimulator \
     -destination "id=$SIMULATOR_ID" \
     -derivedDataPath build \
-    CODE_SIGNING_ALLOWED=NO \
     CODE_SIGN_IDENTITY="-" \
-    DEVELOPMENT_TEAM="" \
+    CODE_SIGNING_REQUIRED=NO \
+    CODE_SIGNING_ALLOWED=YES \
     IDEFileSystemSynchronizedGroupsAreEnabled=NO \
-    COMPILER_INDEX_STORE_ENABLE=NO
+    COMPILER_INDEX_STORE_ENABLE=NO \
+    ONLY_ACTIVE_ARCH=YES
 
 echo ""
 echo "✅ Build complete!"
