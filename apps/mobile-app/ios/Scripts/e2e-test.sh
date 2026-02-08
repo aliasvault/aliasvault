@@ -48,6 +48,8 @@ rm -rf TestResults.xcresult
 echo ""
 echo "=== Running E2E Tests ==="
 TEST_EXIT_CODE=0
+TEST_OUTPUT_FILE="/tmp/xcodebuild-test-output.log"
+
 xcodebuild test-without-building \
     -workspace AliasVault.xcworkspace \
     -scheme AliasVault \
@@ -61,7 +63,7 @@ xcodebuild test-without-building \
     CODE_SIGNING_ALLOWED=NO \
     CODE_SIGN_IDENTITY="-" \
     DEVELOPMENT_TEAM="" \
-    IDEFileSystemSynchronizedGroupsAreEnabled=NO || TEST_EXIT_CODE=$?
+    IDEFileSystemSynchronizedGroupsAreEnabled=NO 2>&1 | tee "$TEST_OUTPUT_FILE" || TEST_EXIT_CODE=$?
 
 # Parse and display test results summary
 echo ""
@@ -69,84 +71,95 @@ echo "=============================================="
 echo "           iOS E2E TEST RESULTS"
 echo "=============================================="
 
-if [ -d "TestResults.xcresult" ]; then
-    # Extract test summary using xcresulttool
-    SUMMARY_JSON=$(xcrun xcresulttool get --path TestResults.xcresult --format json 2>/dev/null || echo "{}")
+# Parse test results from xcodebuild output (more reliable than xcresult)
+echo ""
+echo "--- Test Results from xcodebuild output ---"
+echo ""
 
-    # Try to get test counts from the summary
-    if command -v jq &> /dev/null; then
-        # If jq is available, parse JSON properly
-        TOTAL=$(echo "$SUMMARY_JSON" | jq -r '.metrics.testsCount.value // 0' 2>/dev/null || echo "?")
-        FAILED=$(echo "$SUMMARY_JSON" | jq -r '.metrics.testsFailedCount.value // 0' 2>/dev/null || echo "?")
-        PASSED=$((TOTAL - FAILED)) 2>/dev/null || PASSED="?"
-    else
-        # Fallback: grep for test counts in raw output
-        TOTAL=$(echo "$SUMMARY_JSON" | grep -o '"testsCount"[^}]*' | grep -o '"value" : [0-9]*' | grep -o '[0-9]*' || echo "?")
-        FAILED=$(echo "$SUMMARY_JSON" | grep -o '"testsFailedCount"[^}]*' | grep -o '"value" : [0-9]*' | grep -o '[0-9]*' || echo "?")
-        if [ "$TOTAL" != "?" ] && [ "$FAILED" != "?" ]; then
-            PASSED=$((TOTAL - FAILED))
-        else
-            PASSED="?"
-        fi
-    fi
+# Extract test case results from output
+PASSED_TESTS=$(grep -E "Test Case.*passed" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+FAILED_TESTS=$(grep -E "Test Case.*failed" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+TOTAL_TESTS=$((PASSED_TESTS + FAILED_TESTS))
 
+# Check for crashes/timeouts
+CRASHED=$(grep -c "Restarting after unexpected exit, crash, or test timeout" "$TEST_OUTPUT_FILE" 2>/dev/null || echo "0")
+
+echo "  Total:   $TOTAL_TESTS"
+echo "  Passed:  $PASSED_TESTS"
+echo "  Failed:  $FAILED_TESTS"
+if [ "$CRASHED" -gt 0 ]; then
+    echo "  ⚠️  Crashes/Timeouts detected: $CRASHED"
+fi
+echo ""
+
+# Show individual test results
+echo "--- Individual Tests ---"
+
+# Show passed tests
+grep -E "Test Case.*passed" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+    sed "s/.*'\([^']*\)'.*/  ✅ \1/" || true
+
+# Show failed tests
+grep -E "Test Case.*failed" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+    sed "s/.*'\([^']*\)'.*/  ❌ \1/" || true
+
+echo ""
+
+# If tests failed or crashed, show failure details
+if [ "$TEST_EXIT_CODE" -ne 0 ]; then
+    echo "--- Failure Details ---"
+    # Show assertion failures
+    grep -A2 "XCTAssert" "$TEST_OUTPUT_FILE" 2>/dev/null | head -20 || true
+    # Show any error messages
+    grep -i "error:" "$TEST_OUTPUT_FILE" 2>/dev/null | grep -v "xcodebuild" | head -10 || true
     echo ""
-    echo "  Total:  $TOTAL"
-    echo "  Passed: $PASSED"
-    echo "  Failed: $FAILED"
-    echo ""
-
-    # List individual test results
-    echo "--- Test Details ---"
-
-    # Get detailed test action info
-    xcrun xcresulttool get --path TestResults.xcresult --format json 2>/dev/null | \
-        grep -E '"(name|testStatus)"' | \
-        paste - - | \
-        sed 's/.*"name".*: "\([^"]*\)".*"testStatus".*: "\([^"]*\)".*/\2: \1/' | \
-        while read line; do
-            if echo "$line" | grep -q "^Success:"; then
-                echo "  ✅ $(echo "$line" | sed 's/Success: //')"
-            elif echo "$line" | grep -q "^Failure:"; then
-                echo "  ❌ $(echo "$line" | sed 's/Failure: //')"
-            fi
-        done
-
-    echo ""
-
-    # If tests failed, try to get failure messages
-    if [ "$TEST_EXIT_CODE" -ne 0 ]; then
-        echo "--- Failure Details ---"
-        # Extract failure summaries
-        xcrun xcresulttool get --path TestResults.xcresult --format json 2>/dev/null | \
-            grep -A5 '"Failure"' | \
-            grep -o '"message"[^,]*' | \
-            head -10 | \
-            sed 's/"message" : "/  /' | \
-            sed 's/"$//'
-        echo ""
-    fi
 fi
 
 echo "=============================================="
 
 # Output for GitHub Actions job summary (if running in CI)
 if [ -n "$GITHUB_STEP_SUMMARY" ]; then
-    echo "## iOS E2E Test Results" >> "$GITHUB_STEP_SUMMARY"
-    echo "" >> "$GITHUB_STEP_SUMMARY"
-    if [ "$TEST_EXIT_CODE" -eq 0 ]; then
-        echo "✅ **All tests passed**" >> "$GITHUB_STEP_SUMMARY"
-    else
-        echo "❌ **Some tests failed**" >> "$GITHUB_STEP_SUMMARY"
-    fi
-    echo "" >> "$GITHUB_STEP_SUMMARY"
-    echo "| Metric | Count |" >> "$GITHUB_STEP_SUMMARY"
-    echo "|--------|-------|" >> "$GITHUB_STEP_SUMMARY"
-    echo "| Total | $TOTAL |" >> "$GITHUB_STEP_SUMMARY"
-    echo "| Passed | $PASSED |" >> "$GITHUB_STEP_SUMMARY"
-    echo "| Failed | $FAILED |" >> "$GITHUB_STEP_SUMMARY"
-    echo "" >> "$GITHUB_STEP_SUMMARY"
+    {
+        echo "## iOS E2E Test Results"
+        echo ""
+        if [ "$TEST_EXIT_CODE" -eq 0 ]; then
+            echo "✅ **All tests passed**"
+        else
+            echo "❌ **Some tests failed**"
+        fi
+        echo ""
+        echo "| Metric | Count |"
+        echo "|--------|-------|"
+        echo "| Total | $TOTAL_TESTS |"
+        echo "| Passed | $PASSED_TESTS |"
+        echo "| Failed | $FAILED_TESTS |"
+        if [ "$CRASHED" -gt 0 ]; then
+            echo "| ⚠️ Crashes/Timeouts | $CRASHED |"
+        fi
+        echo ""
+
+        # Add individual test results
+        echo "### Test Details"
+        echo ""
+
+        # Passed tests
+        if [ "$PASSED_TESTS" -gt 0 ]; then
+            grep -E "Test Case.*passed" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+                sed "s/.*'\([^']*\)'.*/- ✅ \1/" || true
+        fi
+
+        # Failed tests
+        if [ "$FAILED_TESTS" -gt 0 ]; then
+            grep -E "Test Case.*failed" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+                sed "s/.*'\([^']*\)'.*/- ❌ \1/" || true
+        fi
+
+        echo ""
+    } >> "$GITHUB_STEP_SUMMARY"
 fi
+
+# Clean up temp file
+rm -f "$TEST_OUTPUT_FILE"
 
 echo "Results bundle: TestResults.xcresult"
 exit $TEST_EXIT_CODE

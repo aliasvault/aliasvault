@@ -1,24 +1,44 @@
 #!/bin/bash
 # Full iOS E2E test run - starts services, builds, and runs tests
-# Usage: ./scripts/e2e-run.sh
+# Usage: ./scripts/e2e-run.sh [--clean-simulator] [--show-simulator]
 #
 # This script handles everything needed for E2E testing:
-# 1. Starts API server (if not running)
-# 2. Starts Metro bundler (if not running)
-# 3. Builds the iOS app
-# 4. Runs E2E tests
-# 5. Cleans up services
+# 1. Optionally resets the simulator to clean state
+# 2. Starts API server (if not running)
+# 3. Starts Metro bundler (if not running)
+# 4. Builds the iOS app
+# 5. Runs E2E tests
+# 6. Cleans up services
+#
+# Options:
+#   --clean-simulator   Erase all simulator content and settings before testing
+#   --show-simulator    Open Simulator.app to show the simulator UI
 #
 # Prerequisites:
 # - Development database running (./install.sh configure-dev-db start)
 # - CocoaPods installed (pod install already run)
 
-set -e
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IOS_DIR="$(dirname "$SCRIPT_DIR")"
 MOBILE_APP_DIR="$(dirname "$IOS_DIR")"
 PROJECT_ROOT="$(dirname "$(dirname "$MOBILE_APP_DIR")")"
+
+# Parse arguments
+CLEAN_SIMULATOR=0
+SHOW_SIMULATOR="${SHOW_SIMULATOR:-0}"
+BUILD_ARGS=""
+
+for arg in "$@"; do
+    case $arg in
+        --clean-simulator)
+            CLEAN_SIMULATOR=1
+            ;;
+        --show-simulator)
+            SHOW_SIMULATOR=1
+            BUILD_ARGS="$BUILD_ARGS --show-simulator"
+            ;;
+    esac
+done
 
 cd "$IOS_DIR"
 
@@ -129,8 +149,29 @@ fi
 # Build and test
 cd "$IOS_DIR"
 
+# Clean simulator if requested
+if [ "$CLEAN_SIMULATOR" = "1" ]; then
+    echo ""
+    echo "=== Resetting Simulator ==="
+
+    # Find simulator ID first (same logic as e2e-build.sh)
+    SIMULATOR_ID=$(xcrun simctl list devices available | grep -E "iPhone [0-9]+ Pro" | sort -t' ' -k2 -rn | head -1 | grep -oE '[A-F0-9-]{36}')
+
+    if [ -n "$SIMULATOR_ID" ]; then
+        echo "Shutting down simulator..."
+        xcrun simctl shutdown "$SIMULATOR_ID" 2>/dev/null || true
+
+        echo "Erasing simulator content and settings..."
+        xcrun simctl erase "$SIMULATOR_ID"
+
+        echo "✅ Simulator reset complete"
+    else
+        echo "WARNING: No simulator found to reset"
+    fi
+fi
+
 echo ""
-"$SCRIPT_DIR/e2e-build.sh"
+"$SCRIPT_DIR/e2e-build.sh" $BUILD_ARGS
 
 echo ""
 "$SCRIPT_DIR/e2e-test.sh" "$SIMULATOR_ID"

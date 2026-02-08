@@ -164,13 +164,22 @@ jobs:
         working-directory: apps/mobile-app
 
     steps:
-      - name: Cleanup any leftover processes
+      - name: Cleanup any leftover processes and reset simulator
         working-directory: .
         run: |
           pkill -9 -f "dotnet.*AliasVault.Api" || true
           pkill -9 -f "expo start" || true
           pkill -9 -f "metro" || true
           pkill -9 -f "node.*8081" || true
+
+          # Reset simulator to clean state
+          echo "Resetting iOS Simulator..."
+          xcrun simctl shutdown all 2>/dev/null || true
+          SIMULATOR_ID=$(xcrun simctl list devices available | grep -E "iPhone [0-9]+ Pro" | sort -t' ' -k2 -rn | head -1 | grep -oE '[A-F0-9-]{36}')
+          if [ -n "$SIMULATOR_ID" ]; then
+            echo "Erasing simulator $SIMULATOR_ID..."
+            xcrun simctl erase "$SIMULATOR_ID" || true
+          fi
           sleep 1
 
       - name: Start API server
