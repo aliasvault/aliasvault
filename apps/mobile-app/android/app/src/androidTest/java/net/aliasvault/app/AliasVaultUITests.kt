@@ -651,9 +651,17 @@ class AliasVaultUITests {
         }
 
         device.hideKeyboard()
+        Thread.sleep(500) // Wait for keyboard to fully hide
 
-        // Save item
-        device.tapTestId("save-button")
+        // Save item - wait for button to be available then tap
+        if (device.waitForTestId("save-button", TestConfiguration.DEFAULT_TIMEOUT_MS) == null) {
+            println("[Helper] Save button not found")
+            return false
+        }
+        if (!device.tapTestId("save-button")) {
+            println("[Helper] Failed to tap save button")
+            return false
+        }
 
         if (device.waitForText("Login credentials", TestConfiguration.DEFAULT_TIMEOUT_MS) == null) {
             println("[Helper] Item detail screen did not appear after save")

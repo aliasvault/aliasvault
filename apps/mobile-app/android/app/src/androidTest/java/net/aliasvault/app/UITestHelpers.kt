@@ -355,10 +355,25 @@ object UITestHelpers {
 
     /**
      * Hide the keyboard if visible.
+     * Uses pressKeyCode for the BACK key which is safer than pressBack() for keyboard dismissal.
      */
     fun UiDevice.hideKeyboard() {
-        pressBack()
-        Thread.sleep(200)
+        // Check if any input field is focused (keyboard likely visible)
+        val focusedElement = findObject(By.focused(true))
+        if (focusedElement != null) {
+            // Press KEYCODE_ESCAPE to dismiss keyboard without triggering navigation
+            // Fallback to clicking outside if that doesn't work
+            pressKeyCode(android.view.KeyEvent.KEYCODE_ESCAPE)
+            Thread.sleep(200)
+
+            // If still focused, try clicking on the screen outside the keyboard area
+            val stillFocused = findObject(By.focused(true))
+            if (stillFocused != null) {
+                // Click near the top of the screen (header area) to dismiss keyboard
+                click(displayWidth / 2, 100)
+                Thread.sleep(200)
+            }
+        }
     }
 
     // endregion
