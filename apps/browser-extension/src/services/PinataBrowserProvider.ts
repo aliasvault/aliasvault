@@ -148,9 +148,16 @@ export class PinataBrowserProvider {
 
   /**
    * Download blob from IPFS via Pinata gateway.
-   * Returns raw bytes.
+   * Returns raw bytes. Retries transient failures with exponential backoff.
    */
   async download(cid: string): Promise<Uint8Array> {
+    return this.withRetry(() => this.downloadOnce(cid));
+  }
+
+  /**
+   * Single download attempt from Pinata gateway.
+   */
+  private async downloadOnce(cid: string): Promise<Uint8Array> {
     const url = `https://${this.gateway}/files/${cid}`;
     const response = await fetch(url);
 
@@ -160,5 +167,75 @@ export class PinataBrowserProvider {
 
     const buffer = await response.arrayBuffer();
     return new Uint8Array(buffer);
+  }
+
+  /**
+   * Discover the CID for a vault by scanning Pinata pin list and matching SHA-256 hashes.
+   * Used on new devices where no local CID is cached.
+   *
+   * Flow: GET /v3/files → iterate pins → SHA-256(pin.cid) → compare with on-chain cidHash
+   *
+   * @param cidHash - On-chain vaultCidHash as Uint8Array (32 bytes)
+   * @returns Matching CIDv1 string, or null if not found
+   */
+  async discoverCidByHash(cidHash: Uint8Array): Promise<string | null> {
+    // M2: Wrap in withRetry() for transient Pinata API errors, consistent with upload/download.
+    return this.withRetry(() => this.discoverCidByHashOnce(cidHash));
+  }
+
+  /**
+   * Single discovery attempt — scans Pinata pin list pages for a CID matching the given hash.
+   */
+  private async discoverCidByHashOnce(cidHash: Uint8Array): Promise<string | null> {
+    const targetHashHex = Array.from(cidHash)
+      .map((b) => b.toString(16).padStart(2, '0'))
+      .join('');
+
+    let pageToken: string | undefined;
+
+    do {
+      const url = new URL('https://api.pinata.cloud/v3/files');
+      url.searchParams.set('status', 'pinned');
+      url.searchParams.set('limit', '100');
+      if (pageToken) {
+        url.searchParams.set('pageToken', pageToken);
+      }
+
+      const response = await fetch(url.toString(), {
+        headers: {
+          'Authorization': `Bearer ${this.jwt}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Pinata list files failed (${response.status})`);
+      }
+
+      const result = await response.json();
+      const files = result?.data?.files ?? result?.data ?? [];
+
+      for (const file of files) {
+        const pinCid = file.cid;
+        if (!pinCid || typeof pinCid !== 'string') continue;
+
+        // SHA-256 hash the CID string and compare
+        const encoder = new TextEncoder();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(pinCid));
+        const hashHex = Array.from(new Uint8Array(hashBuffer))
+          .map((b) => b.toString(16).padStart(2, '0'))
+          .join('');
+
+        if (hashHex === targetHashHex) {
+          // Rule 2: CIDv1 enforcement — validate before returning
+          assertCIDv1(pinCid);
+          return pinCid;
+        }
+      }
+
+      // Pagination: check for next page token
+      pageToken = result?.data?.next_page_token;
+    } while (pageToken);
+
+    return null;
   }
 }

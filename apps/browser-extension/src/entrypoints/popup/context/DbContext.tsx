@@ -5,6 +5,7 @@ import type { EncryptionKeyDerivationParams, VaultMetadata } from '@/utils/dist/
 import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 import SqliteClient from '@/utils/SqliteClient';
+import { VaultCidStore } from '@/services/VaultCidStore';
 import { StoreVaultRequest } from '@/utils/types/messaging/StoreVaultRequest';
 import type { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 
@@ -15,6 +16,8 @@ type DbContextType = {
   dbInitialized: boolean;
   dbAvailable: boolean;
   initializeDatabase: (vaultResponse: VaultResponse, derivedKey: string) => Promise<SqliteClient>;
+  initializeDatabaseFromBlob: (encryptedBlobBase64: string, derivedKey: string) => Promise<SqliteClient>;
+  extractAndCacheSecretKey: (sqliteClient: SqliteClient) => Promise<void>;
   storeEncryptionKey: (derivedKey: string) => Promise<void>;
   storeEncryptionKeyDerivationParams: (params: EncryptionKeyDerivationParams) => Promise<void>;
   clearDatabase: () => void;
@@ -73,6 +76,68 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     await sendMessage('STORE_VAULT', request, 'background');
 
     return client;
+  }, []);
+
+  /**
+   * Initialize database from a raw encrypted blob (blockchain load flow).
+   * Unlike initializeDatabase(), this does not expect a VaultResponse with metadata.
+   * The encrypted blob comes from IPFS download (base64-encoded for message passing).
+   */
+  const initializeDatabaseFromBlob = useCallback(async (encryptedBlobBase64: string, derivedKey: string) => {
+    // Decrypt the blob using the derived key.
+    const decryptedBlob = await EncryptionUtility.symmetricDecrypt(
+      encryptedBlobBase64,
+      derivedKey
+    );
+
+    // Initialize the SQLite client.
+    const client = new SqliteClient();
+    await client.initializeFromBase64(decryptedBlob);
+
+    setSqliteClient(client);
+    setDbInitialized(true);
+    setDbAvailable(true);
+
+    // Store encrypted vault in background worker (session storage).
+    // Blockchain flow does not have email domain lists or revision numbers —
+    // those are stored inside the SQLite DB itself.
+    const request: StoreVaultRequest = {
+      vaultBlob: encryptedBlobBase64,
+      publicEmailDomainList: [],
+      privateEmailDomainList: [],
+      hiddenPrivateEmailDomainList: [],
+      vaultRevisionNumber: 0,
+    };
+
+    await sendMessage('STORE_VAULT', request, 'background');
+
+    return client;
+  }, []);
+
+  /**
+   * Extract the secretKey from the SQLite Settings table and cache it in VaultCidStore.
+   * Per ADR-006, Midnight private state is device-local. The secretKey (used for owner commitment)
+   * is stored in the encrypted vault so it travels across devices via IPFS.
+   * On a new device, we extract it after first vault load and cache it locally.
+   */
+  const extractAndCacheSecretKey = useCallback(async (client: SqliteClient) => {
+    try {
+      const existingKey = await VaultCidStore.getSecretKey();
+      if (existingKey) {
+        // secretKey already cached locally — skip extraction
+        return;
+      }
+
+      // Read secretKey from SQLite Settings table
+      const secretKeyHex = await VaultCidStore.readSecretKeyFromVault(client);
+      if (secretKeyHex) {
+        await VaultCidStore.setSecretKey(secretKeyHex);
+      }
+    } catch (error) {
+      console.error('Failed to extract secretKey from vault:', error);
+      // Non-fatal: secretKey extraction failure doesn't block vault loading.
+      // The user can still browse their vault; saves will fail until secretKey is available.
+    }
   }, []);
 
   const checkStoredVault = useCallback(async () => {
@@ -178,13 +243,15 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     dbInitialized,
     dbAvailable,
     initializeDatabase,
+    initializeDatabaseFromBlob,
+    extractAndCacheSecretKey,
     storeEncryptionKey,
     storeEncryptionKeyDerivationParams,
     clearDatabase,
     getVaultMetadata,
     setCurrentVaultRevisionNumber,
     hasPendingMigrations,
-  }), [sqliteClient, dbInitialized, dbAvailable, initializeDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, setCurrentVaultRevisionNumber, hasPendingMigrations]);
+  }), [sqliteClient, dbInitialized, dbAvailable, initializeDatabase, initializeDatabaseFromBlob, extractAndCacheSecretKey, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, setCurrentVaultRevisionNumber, hasPendingMigrations]);
 
   return (
     <DbContext.Provider value={contextValue}>

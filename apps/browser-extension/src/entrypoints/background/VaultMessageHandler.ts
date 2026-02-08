@@ -7,7 +7,9 @@ import { VaultCidStore } from '@/services/VaultCidStore';
 import { PinataBrowserProvider } from '@/services/PinataBrowserProvider';
 import { MidnightContractService } from '@/services/MidnightContractService';
 import { BrowserVaultSyncProvider } from '@/services/BrowserVaultSyncProvider';
-import { VaultSyncService, VaultSyncError, base64ToUint8Array, hexToUint8Array } from '@/utils/dist/shared/vault-sync';
+import { VaultSyncService, VaultSyncError, VaultSyncErrorCodes, base64ToUint8Array, uint8ArrayToBase64, hexToUint8Array } from '@/utils/dist/shared/vault-sync';
+import { BrowserVaultLoadProvider } from '@/services/BrowserVaultLoadProvider';
+import type { VaultLoadResponse } from '@/utils/types/messaging/VaultLoadResponse';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
@@ -607,19 +609,11 @@ export async function handleClearPersistedFormValues(): Promise<void> {
 let cachedContractService: MidnightContractService | null = null;
 
 /**
- * Upload encrypted vault blob to IPFS and update the on-chain CID hash.
- * Uses shared VaultSyncService (ADR-003) with BrowserVaultSyncProvider.
- *
- * Flow: base64→Uint8Array → VaultSyncService.saveVault() → { cid, cidHash }
+ * Create and validate PinataBrowserProvider from env credentials.
+ * Shared by both save and load handlers (M1: single factory).
+ * TODO: Move Pinata credentials to secure storage (future story)
  */
-async function handleUploadVaultToBlockchain(
-  encryptedVaultBase64: string,
-): Promise<{ cid: string; cidHash: string }> {
-  // Convert encrypted vault from base64 to Uint8Array for IPFS upload
-  const encryptedBytes = base64ToUint8Array(encryptedVaultBase64);
-
-  // Initialize Pinata provider
-  // TODO: Move Pinata credentials to secure storage (future story)
+function createPinataProvider(): PinataBrowserProvider {
   const pinataJwt = import.meta.env.VITE_PINATA_JWT || '';
   const pinataGateway = import.meta.env.VITE_PINATA_GATEWAY || '';
 
@@ -627,7 +621,16 @@ async function handleUploadVaultToBlockchain(
     throw new Error('Pinata credentials not configured. Set VITE_PINATA_JWT and VITE_PINATA_GATEWAY in .env');
   }
 
-  const pinataProvider = new PinataBrowserProvider({ pinataJwt, pinataGateway });
+  return new PinataBrowserProvider({ pinataJwt, pinataGateway });
+}
+
+async function handleUploadVaultToBlockchain(
+  encryptedVaultBase64: string,
+): Promise<{ cid: string; cidHash: string }> {
+  // Convert encrypted vault from base64 to Uint8Array for IPFS upload
+  const encryptedBytes = base64ToUint8Array(encryptedVaultBase64);
+
+  const pinataProvider = createPinataProvider();
 
   // Ensure contract service is joined (M4: cached, join once)
   if (!cachedContractService || !cachedContractService.isJoined()) {
@@ -643,6 +646,63 @@ async function handleUploadVaultToBlockchain(
   const provider = new BrowserVaultSyncProvider(pinataProvider, cachedContractService);
   const syncService = new VaultSyncService(provider);
   return await syncService.saveVault(encryptedBytes);
+}
+
+/**
+ * Load the latest vault from IPFS via blockchain CID hash verification.
+ * Uses shared VaultSyncService (ADR-003) with BrowserVaultLoadProvider.
+ *
+ * Flow: readVaultCidHash → compare local → download from IPFS → return encrypted blob
+ * Returns VaultLoadResponse for the popup to decrypt and load.
+ */
+export async function handleLoadVaultFromBlockchain(): Promise<VaultLoadResponse> {
+  try {
+    const pinataProvider = createPinataProvider();
+
+    // Reuse cached contract service (same as save flow — M4: join once)
+    if (!cachedContractService) {
+      cachedContractService = new MidnightContractService();
+    }
+
+    const loadProvider = new BrowserVaultLoadProvider(pinataProvider, cachedContractService);
+
+    // M3: loadVault() doesn't need a save provider — constructor is optional
+    const syncService = new VaultSyncService();
+
+    const result = await syncService.loadVault(loadProvider);
+
+    if (result === null) {
+      // Vault is up to date — no download needed
+      return { success: true, upToDate: true };
+    }
+
+    // Convert encrypted bytes to base64 for message passing
+    const encryptedBlob = uint8ArrayToBase64(result.encryptedBytes);
+
+    return {
+      success: true,
+      upToDate: false,
+      encryptedBlob,
+      cid: result.cid,
+      cidHash: result.cidHash,
+    };
+  } catch (error) {
+    console.error('Failed to load vault from blockchain:', error);
+
+    const syncError = error instanceof VaultSyncError ? error : null;
+
+    // Check for "not registered" case (new user)
+    if (syncError?.code === VaultSyncErrorCodes.VAULT_NOT_FOUND) {
+      return { success: true, notRegistered: true };
+    }
+
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error loading vault';
+    return {
+      success: false,
+      error: errorMessage,
+      retryable: syncError?.retryable ?? false,
+    };
+  }
 }
 
 /**

@@ -41,6 +41,11 @@ interface VaultRegistryContract {
   callTx: {
     updateVault(cidHash: Uint8Array): Promise<unknown>;
   };
+  deployTxData: {
+    public: {
+      contractAddress: string;
+    };
+  };
 }
 
 export class MidnightContractService {
@@ -48,6 +53,8 @@ export class MidnightContractService {
   private readonly indexerUrl: string;
   private readonly proofServerUrl: string;
   private contract: VaultRegistryContract | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private cachedPublicDataProvider: any = null;
 
   constructor(config?: MidnightContractConfig) {
     this.contractAddress = config?.contractAddress || CONTRACTS.VaultRegistry.address;
@@ -114,6 +121,38 @@ export class MidnightContractService {
   }
 
   /**
+   * Read the vaultCidHash from the public ledger via the indexer.
+   * Returns null if the contract is not registered (owner is zero bytes or cidHash is zero bytes).
+   *
+   * Uses the indexer's public data provider to read contract state without a circuit call.
+   */
+  async readVaultCidHash(): Promise<Uint8Array | null> {
+    const { indexerPublicDataProvider } = await import('@midnight-ntwrk/midnight-js-indexer-public-data-provider');
+    const { VaultRegistry } = await import('@aliasvault/contract');
+
+    // L3: Cache the public data provider for reuse across calls
+    if (!this.cachedPublicDataProvider) {
+      this.cachedPublicDataProvider = indexerPublicDataProvider(this.indexerUrl);
+    }
+    const contractState = await this.cachedPublicDataProvider.queryContractState(this.contractAddress);
+
+    if (!contractState) {
+      return null;
+    }
+
+    const ledgerState = VaultRegistry.ledger(contractState.data);
+    const owner = ledgerState.owner as Uint8Array;
+    const vaultCidHash = ledgerState.vaultCidHash as Uint8Array;
+
+    // Check if unregistered: owner is zero bytes or cidHash is zero bytes
+    if (this.isZeroBytes(owner) || this.isZeroBytes(vaultCidHash)) {
+      return null;
+    }
+
+    return vaultCidHash;
+  }
+
+  /**
    * Check if the contract has been joined.
    */
   isJoined(): boolean {
@@ -125,5 +164,12 @@ export class MidnightContractService {
    */
   getContractAddress(): string {
     return this.contractAddress;
+  }
+
+  /**
+   * Check if a byte array is all zeros (uninitialized ledger state).
+   */
+  private isZeroBytes(bytes: Uint8Array): boolean {
+    return bytes.every((b) => b === 0);
   }
 }

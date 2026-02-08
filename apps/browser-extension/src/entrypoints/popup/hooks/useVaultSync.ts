@@ -4,9 +4,8 @@ import { sendMessage } from 'webext-bridge/popup';
 
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
-import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 
-import type { VaultResponse } from '@/utils/dist/shared/models/webapi';
+import type { VaultLoadResponse } from '@/utils/types/messaging/VaultLoadResponse';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 /**
@@ -18,7 +17,6 @@ const withMinimumDelay = async <T>(
   enableDelay: boolean = true
 ): Promise<T> => {
   if (!enableDelay) {
-    // If delay is disabled, return the result immediately.
     return operation();
   }
 
@@ -38,12 +36,17 @@ type VaultSyncOptions = {
   onSuccess?: (hasNewVault: boolean) => void;
   onError?: (error: string) => void;
   onStatus?: (message: string) => void;
-  _onOffline?: () => void;
   onUpgradeRequired?: () => void;
 }
 
 /**
- * Hook to sync the vault with the server.
+ * Hook to sync the vault with the blockchain (IPFS + Midnight).
+ * Replaces the centralized .NET API vault sync with decentralized flow.
+ *
+ * Flow:
+ * 1. sendMessage('LOAD_VAULT_FROM_BLOCKCHAIN') → background handler
+ * 2. Background reads on-chain cidHash, compares with local, downloads from IPFS if needed
+ * 3. If new vault: decrypt blob, initialize SQLite, extract secretKey on first load (ADR-006)
  */
 export const useVaultSync = () : {
   syncVault: (options?: VaultSyncOptions) => Promise<boolean>;
@@ -51,110 +54,104 @@ export const useVaultSync = () : {
   const { t } = useTranslation();
   const app = useApp();
   const dbContext = useDb();
-  const webApi = useWebApi();
 
   const syncVault = useCallback(async (options: VaultSyncOptions = {}) => {
-    const { initialSync = false, onSuccess, onError, onStatus, _onOffline, onUpgradeRequired } = options;
+    const { initialSync = false, onSuccess, onError, onStatus, onUpgradeRequired } = options;
 
-    // For the initial sync, we add an artifical delay to various steps which makes it feel more fluid.
+    // For the initial sync, we add an artificial delay to various steps which makes it feel more fluid.
     const enableDelay = initialSync;
 
     try {
       const isLoggedIn = await app.initializeAuth();
 
       if (!isLoggedIn) {
-        // Not authenticated, return false immediately
         return false;
       }
 
-      // Check app status and vault revision
-      onStatus?.(t('common.checkingVaultUpdates'));
-      const statusResponse = await withMinimumDelay(() => webApi.getStatus(), 300, enableDelay);
+      // Step 1: Check on-chain vault state via background handler
+      onStatus?.(t('common.checkingBlockchain'));
+      const loadResponse = await withMinimumDelay(
+        () => sendMessage('LOAD_VAULT_FROM_BLOCKCHAIN', {}, 'background') as Promise<VaultLoadResponse>,
+        300,
+        enableDelay,
+      );
 
-      // Check if server is actually available, 0.0.0 indicates connection error which triggers offline mode.
-      if (statusResponse.serverVersion === '0.0.0') {
-        // Offline mode is not implemented for browser extension yet, so logout the user.
-        onError?.(t('common.errors.serverNotAvailable'));
+      if (!loadResponse.success) {
+        onError?.(loadResponse.error ?? t('common.errors.unknownError'));
         return false;
       }
 
-      const statusError = webApi.validateStatusResponse(statusResponse);
-      if (statusError) {
-        onError?.(t('common.errors.' + statusError));
+      // Handle "not registered" case (new user — no vault on-chain)
+      if (loadResponse.notRegistered) {
+        onStatus?.(t('common.noVaultFound'));
+        onSuccess?.(false);
         return false;
       }
 
-      /*
-       *  If we get here, it means we have a valid connection to the server.
-       *  TODO: browser extension does not support offline mode yet.
-       * authContext.setOfflineMode(false);
-       */
+      // Handle "vault is up to date" case
+      if (loadResponse.upToDate) {
+        onStatus?.(t('common.vaultUpToDate'));
 
-      // Compare vault revisions
-      const vaultMetadata = await dbContext.getVaultMetadata();
-      const vaultRevisionNumber = vaultMetadata?.vaultRevisionNumber ?? 0;
-
-      if (statusResponse.vaultRevision > vaultRevisionNumber) {
-        onStatus?.(t('common.syncingUpdatedVault'));
-        const vaultResponseJson = await withMinimumDelay(() => webApi.get<VaultResponse>('Vault'), 1000, enableDelay);
-
-        try {
-          // Get encryption key from background worker
-          const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY', {}, 'background') as string;
-          const sqliteClient = await dbContext.initializeDatabase(vaultResponseJson as VaultResponse, encryptionKey);
-
-          // Check if the current vault version is known and up to date, if not known trigger an exception, if not up to date redirect to the upgrade page.
-          if (await sqliteClient.hasPendingMigrations()) {
-            onUpgradeRequired?.();
-            return false;
-          }
-
-          onSuccess?.(true);
-          return true;
-        } catch (error) {
-          // Check if it's a version-related error (app needs to be updated)
-          if (error instanceof VaultVersionIncompatibleError) {
-            await app.logout(error.message);
-            return false;
-          }
-          // Vault could not be decrypted, throw an error
-          throw new Error('Vault could not be decrypted, if the problem persists please logout and login again.');
+        // Still check for pending migrations on the existing local vault
+        if (await dbContext.hasPendingMigrations()) {
+          onUpgradeRequired?.();
+          return false;
         }
-      }
 
-      // Check if the vault is up to date, if not, redirect to the upgrade page.
-      if (await dbContext.hasPendingMigrations()) {
-        onUpgradeRequired?.();
+        await withMinimumDelay(() => Promise.resolve(onSuccess?.(false)), 300, enableDelay);
         return false;
       }
 
-      await withMinimumDelay(() => Promise.resolve(onSuccess?.(false)), 300, enableDelay);
-      return false;
+      // Step 2: New vault available — decrypt and load
+      if (!loadResponse.encryptedBlob) {
+        onError?.(t('common.errors.unknownError'));
+        return false;
+      }
+
+      onStatus?.(t('common.decryptingVault'));
+
+      try {
+        // Get encryption key from background worker
+        const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY', {}, 'background') as string;
+        const sqliteClient = await withMinimumDelay(
+          () => dbContext.initializeDatabaseFromBlob(loadResponse.encryptedBlob!, encryptionKey),
+          1000,
+          enableDelay,
+        );
+
+        // Check if the current vault version is known and up to date
+        if (await sqliteClient.hasPendingMigrations()) {
+          onUpgradeRequired?.();
+          return false;
+        }
+
+        // Step 3: Extract secretKey from SQLite on first load (ADR-006)
+        // The secretKey is stored in the vault DB Settings table and travels with the encrypted vault.
+        // On a new device, we need to extract it and cache it locally for future saves.
+        await dbContext.extractAndCacheSecretKey(sqliteClient);
+
+        onSuccess?.(true);
+        return true;
+      } catch (error) {
+        if (error instanceof VaultVersionIncompatibleError) {
+          await app.logout(error.message);
+          return false;
+        }
+        throw new Error('Vault could not be decrypted, if the problem persists please logout and login again.');
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Unknown error during vault sync';
       console.error('Vault sync error:', err);
 
-      // Check if it's a version-related error (app needs to be updated)
       if (err instanceof VaultVersionIncompatibleError) {
         await app.logout(errorMessage);
         return false;
       }
 
-      /*
-       * Check if it's a network error
-       * TODO: browser extension does not support offline mode yet.
-       */
-      /*
-       * if (errorMessage.includes('network') || errorMessage.includes('timeout')) {
-       *authContext.setOfflineMode(true);
-       *return true;
-       *}
-       */
-
       onError?.(errorMessage);
       return false;
     }
-  }, [app, dbContext, webApi, t]);
+  }, [app, dbContext, t]);
 
   return { syncVault };
 };
