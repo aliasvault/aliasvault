@@ -41,6 +41,16 @@ for arg in "$@"; do
     shift 2>/dev/null || true
 done
 
+# If --show-emulator is set, kill any existing headless emulator first
+if [ "$SHOW_EMULATOR" = "1" ]; then
+    EXISTING_EMULATOR=$(adb devices 2>/dev/null | grep "emulator" | head -1 | awk '{print $1}')
+    if [ -n "$EXISTING_EMULATOR" ]; then
+        echo "Killing existing emulator to restart with visible window..."
+        adb emu kill 2>/dev/null || true
+        sleep 3
+    fi
+fi
+
 echo "=== Android E2E Build ==="
 
 # Check if adb is available
