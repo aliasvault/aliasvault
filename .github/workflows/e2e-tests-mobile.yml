@@ -387,62 +387,16 @@ jobs:
             sleep 2
           done
 
-      - name: Start Android emulator
-        run: |
-          # Check if emulator is already running
-          if adb devices | grep -q "emulator"; then
-            echo "Emulator already running, reusing..."
-            EMULATOR_ID=$(adb devices | grep "emulator" | head -1 | awk '{print $1}')
-          else
-            # Start emulator in background
-            echo "Starting Android emulator..."
-            $ANDROID_HOME/emulator/emulator -avd Pixel_Pro_API_36 -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
-            EMULATOR_PID=$!
-            echo $EMULATOR_PID > /tmp/emulator.pid
-
-            # Wait for emulator to be ready
-            echo "Waiting for emulator to boot..."
-            adb wait-for-device
-
-            # Wait for boot to complete
-            for i in {1..60}; do
-              if adb shell getprop sys.boot_completed 2>/dev/null | grep -q "1"; then
-                echo "✅ Emulator booted successfully!"
-                break
-              fi
-              if [ $i -eq 60 ]; then
-                echo "::error::Emulator failed to boot within 2 minutes"
-                exit 1
-              fi
-              echo "Waiting for boot... attempt $i"
-              sleep 2
-            done
-
-            EMULATOR_ID=$(adb devices | grep "emulator" | head -1 | awk '{print $1}')
-          fi
-
-          # Unlock screen
-          adb -s $EMULATOR_ID shell input keyevent 82
-
-          # Set up port forwarding
-          adb -s $EMULATOR_ID reverse tcp:5092 tcp:5092
-          adb -s $EMULATOR_ID reverse tcp:8081 tcp:8081
-
-          echo "EMULATOR_ID=$EMULATOR_ID" >> $GITHUB_ENV
-          echo "✅ Emulator ready: $EMULATOR_ID"
-
-      - name: Build and install Android APK
+      - name: Build Android app
         run: |
           cd android
-          ./gradlew :app:assembleDebug
-          adb -s ${{ env.EMULATOR_ID }} install -r app/build/outputs/apk/debug/app-debug.apk
+          chmod +x scripts/*.sh
+          ./scripts/e2e-build.sh
 
-      - name: Run Android E2E Tests
+      - name: Run Android E2E tests
         run: |
           cd android
-          ./gradlew :app:connectedDebugAndroidTest \
-            -Pandroid.testInstrumentationRunnerArguments.API_URL=http://10.0.2.2:5092 \
-            --stacktrace
+          ./scripts/e2e-test.sh
         env:
           API_URL: "http://10.0.2.2:5092"
 
@@ -475,18 +429,8 @@ jobs:
 
       - name: Stop Android services
         if: always()
-        working-directory: .
         run: |
-          # Kill all related processes forcefully
-          pkill -9 -f "dotnet.*AliasVault.Api" || true
-          pkill -9 -f "AliasVault.Api" || true
-          pkill -9 -f "expo start" || true
-          pkill -9 -f "metro" || true
-          pkill -9 -f "@expo/metro-runtime" || true
-          pkill -9 -f "node.*8081" || true
-
-          # Clean up PID files
-          rm -f /tmp/api-server.pid /tmp/metro.pid
+          cd android && ./scripts/e2e-cleanup.sh
 
   # Cleanup job - stop shared services
   cleanup:

@@ -1,0 +1,151 @@
+#!/bin/bash
+# Run Android E2E tests
+# Usage: ./scripts/e2e-test.sh [EMULATOR_ID]
+#
+# Prerequisites:
+# - Run ./scripts/e2e-build.sh first to build the app and start emulator
+# - API server running on localhost:5092
+# - Metro bundler running on localhost:8081
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+ANDROID_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$ANDROID_DIR"
+
+# Ensure Android SDK tools are in PATH
+export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
+export ANDROID_SDK_ROOT="$ANDROID_HOME"
+export PATH="$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools"
+
+echo "=== Android E2E Tests ==="
+
+# Get emulator ID
+EMULATOR_ID="${1:-$EMULATOR_ID}"
+
+if [ -z "$EMULATOR_ID" ]; then
+    # Try to find a running emulator
+    EMULATOR_ID=$(adb devices 2>/dev/null | grep "emulator" | head -1 | awk '{print $1}')
+
+    if [ -z "$EMULATOR_ID" ]; then
+        echo "ERROR: No running emulator found!"
+        echo "Run ./scripts/e2e-build.sh first to build and start an emulator."
+        exit 1
+    fi
+    echo "Using running emulator: $EMULATOR_ID"
+fi
+
+# Verify prerequisites
+echo "Checking prerequisites..."
+
+if ! curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
+    echo "WARNING: API server not responding on localhost:5092"
+    echo "Start it with: cd apps/server/AliasVault.Api && dotnet run"
+fi
+
+if ! curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+    echo "WARNING: Metro bundler not responding on localhost:8081"
+    echo "Start it with: cd apps/mobile-app && npx expo start --offline"
+fi
+
+# Ensure port forwarding is set up
+echo "Ensuring port forwarding..."
+adb -s "$EMULATOR_ID" reverse tcp:5092 tcp:5092 2>/dev/null || true
+adb -s "$EMULATOR_ID" reverse tcp:8081 tcp:8081 2>/dev/null || true
+
+# Run tests
+echo ""
+echo "=== Running E2E Tests ==="
+TEST_EXIT_CODE=0
+TEST_OUTPUT_FILE="/tmp/android-test-output.log"
+
+./gradlew :app:connectedDebugAndroidTest \
+    -Pandroid.testInstrumentationRunnerArguments.API_URL=http://10.0.2.2:5092 \
+    --stacktrace 2>&1 | tee "$TEST_OUTPUT_FILE" || TEST_EXIT_CODE=$?
+
+# Parse and display test results summary
+echo ""
+echo "=============================================="
+echo "         Android E2E TEST RESULTS"
+echo "=============================================="
+
+# Parse test results from gradle output
+# Gradle format: "ClassName > testMethodName PASSED/FAILED"
+echo ""
+
+# Extract test results - gradle outputs "ClassName > methodName PASSED" or "FAILED"
+PASSED_TESTS=$(grep -E "> test[^ ]+ PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+FAILED_TESTS=$(grep -E "> test[^ ]+ FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+TOTAL_TESTS=$((PASSED_TESTS + FAILED_TESTS))
+
+echo "  Total:   $TOTAL_TESTS"
+echo "  Passed:  $PASSED_TESTS"
+echo "  Failed:  $FAILED_TESTS"
+echo ""
+
+# Show individual test results
+echo "--- Individual Tests ---"
+
+# Show passed tests (extract just the test name)
+grep -E "> test[^ ]+ PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+    sed 's/.*> \(test[^ ]*\) PASSED.*/  ✅ \1/' || true
+
+# Show failed tests
+grep -E "> test[^ ]+ FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+    sed 's/.*> \(test[^ ]*\) FAILED.*/  ❌ \1/' || true
+
+echo ""
+
+# If tests failed, show failure details
+if [ "$TEST_EXIT_CODE" -ne 0 ]; then
+    echo "--- Failure Details ---"
+    # Show assertion failures
+    grep -A5 "AssertionError\|AssertionFailedError\|junit.*Exception" "$TEST_OUTPUT_FILE" 2>/dev/null | head -30 || true
+    # Show test failure messages
+    grep -B2 -A3 "FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | grep -v "^--$" | head -20 || true
+    echo ""
+fi
+
+echo "=============================================="
+
+# Output for GitHub Actions job summary (if running in CI)
+if [ -n "$GITHUB_STEP_SUMMARY" ]; then
+    {
+        echo "## Android E2E Test Results"
+        echo ""
+        if [ "$TEST_EXIT_CODE" -eq 0 ]; then
+            echo "✅ **All tests passed**"
+        else
+            echo "❌ **Some tests failed**"
+        fi
+        echo ""
+        echo "| Metric | Count |"
+        echo "|--------|-------|"
+        echo "| Total | $TOTAL_TESTS |"
+        echo "| Passed | $PASSED_TESTS |"
+        echo "| Failed | $FAILED_TESTS |"
+        echo ""
+
+        # Add individual test results
+        echo "### Test Details"
+        echo ""
+
+        # Passed tests
+        if [ "$PASSED_TESTS" -gt 0 ]; then
+            grep -E "> test[^ ]+ PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+                sed 's/.*> \(test[^ ]*\) PASSED.*/- ✅ \1/' || true
+        fi
+
+        # Failed tests
+        if [ "$FAILED_TESTS" -gt 0 ]; then
+            grep -E "> test[^ ]+ FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+                sed 's/.*> \(test[^ ]*\) FAILED.*/- ❌ \1/' || true
+        fi
+
+        echo ""
+    } >> "$GITHUB_STEP_SUMMARY"
+fi
+
+# Clean up temp file
+rm -f "$TEST_OUTPUT_FILE"
+
+echo "Results available at: app/build/reports/androidTests/"
+exit $TEST_EXIT_CODE
