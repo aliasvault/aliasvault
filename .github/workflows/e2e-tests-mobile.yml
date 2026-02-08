@@ -244,11 +244,15 @@ jobs:
           ls -t "$PODS_CACHE_DIR" 2>/dev/null | tail -n +4 | xargs -I {} rm -rf "$PODS_CACHE_DIR/{}" || true
           cp -R Pods "$PODS_CACHE_DIR/$PODS_HASH"
 
-      - name: Build and run iOS E2E tests
+      - name: Build iOS app
         run: |
           cd ios
           chmod +x scripts/*.sh
           ./scripts/e2e-build.sh
+
+      - name: Run iOS E2E tests
+        run: |
+          cd ios
           ./scripts/e2e-test.sh
         env:
           API_URL: "http://localhost:5092"
