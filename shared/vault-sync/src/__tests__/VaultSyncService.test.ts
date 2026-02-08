@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { VaultSyncService } from '../VaultSyncService';
 import { VaultSyncError, VaultSyncErrorCodes } from '../errors';
 import { base64ToUint8Array, uint8ArrayToBase64, sha256, bytesToHex, hexToUint8Array } from '../utils';
-import type { VaultSyncProvider } from '../types';
+import type { VaultSyncProvider, VaultLoadProvider } from '../types';
 
 // --- Mock provider factory ---
 
@@ -30,9 +30,11 @@ describe('VaultSyncService', () => {
     service = new VaultSyncService(provider);
   });
 
-  it('should throw if provider is not provided', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(() => new VaultSyncService(null as any)).toThrow('VaultSyncProvider is required');
+  it('should throw if saveVault called without provider', async () => {
+    const serviceWithoutProvider = new VaultSyncService();
+    await expect(serviceWithoutProvider.saveVault(new Uint8Array([1, 2, 3]))).rejects.toThrow(
+      'VaultSyncProvider is required for saveVault()'
+    );
   });
 
   // Task 6.1: Full save pipeline with mock IPFS + contract
@@ -306,5 +308,216 @@ describe('secretKey round-trip', () => {
     }
 
     expect(decoded).toEqual(secretKey);
+  });
+});
+
+// --- Load pipeline mock factory ---
+
+const FAKE_CID = 'bafkreigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi';
+const FAKE_ENCRYPTED_BYTES = new Uint8Array([0xDE, 0xAD, 0xBE, 0xEF]);
+
+async function fakeCidHash(): Promise<Uint8Array> {
+  return await sha256(FAKE_CID);
+}
+
+function createMockLoadProvider(overrides?: Partial<VaultLoadProvider>): VaultLoadProvider {
+  return {
+    readContractCidHash: vi.fn().mockImplementation(async () => await fakeCidHash()),
+    getLocalCid: vi.fn().mockResolvedValue({ cid: FAKE_CID, cidHash: null }),
+    downloadFromIpfs: vi.fn().mockResolvedValue(FAKE_ENCRYPTED_BYTES),
+    discoverCidByHash: vi.fn().mockResolvedValue(FAKE_CID),
+    persistCid: vi.fn().mockResolvedValue(undefined),
+    ...overrides,
+  };
+}
+
+// --- VaultSyncService.loadVault() tests ---
+
+describe('VaultSyncService.loadVault', () => {
+  let saveProvider: VaultSyncProvider;
+  let service: VaultSyncService;
+
+  beforeEach(() => {
+    saveProvider = createMockProvider();
+    service = new VaultSyncService(saveProvider);
+  });
+
+  // Task 8.1: loadVault returns null (up to date) when cidHash matches local
+  it('should return null when on-chain cidHash matches local cidHash', async () => {
+    const cidHashHex = bytesToHex(await fakeCidHash());
+    const loadProvider = createMockLoadProvider({
+      getLocalCid: vi.fn().mockResolvedValue({ cid: FAKE_CID, cidHash: cidHashHex }),
+    });
+
+    const result = await service.loadVault(loadProvider);
+
+    expect(result).toBeNull();
+    expect(loadProvider.downloadFromIpfs).not.toHaveBeenCalled();
+  });
+
+  // Task 8.2: loadVault downloads from IPFS when cidHash differs from local
+  // H1 fix: stale local CID must NOT be reused — always discover new CID via Pinata
+  it('should download from IPFS when cidHash differs from local', async () => {
+    const loadProvider = createMockLoadProvider({
+      getLocalCid: vi.fn().mockResolvedValue({ cid: 'bafkstale-old-cid', cidHash: 'stale-hash-that-does-not-match' }),
+    });
+
+    const result = await service.loadVault(loadProvider);
+
+    expect(result).not.toBeNull();
+    expect(result!.encryptedBytes).toEqual(FAKE_ENCRYPTED_BYTES);
+    expect(result!.cid).toBe(FAKE_CID);
+    expect(result!.source).toBe('ipfs-download');
+    expect(loadProvider.discoverCidByHash).toHaveBeenCalled();
+    expect(loadProvider.downloadFromIpfs).toHaveBeenCalledWith(FAKE_CID);
+    expect(loadProvider.persistCid).toHaveBeenCalled();
+  });
+
+  // Task 8.3: loadVault triggers CID discovery when no local CID
+  it('should trigger CID discovery when no local CID (new device)', async () => {
+    const loadProvider = createMockLoadProvider({
+      getLocalCid: vi.fn().mockResolvedValue({ cid: null, cidHash: null }),
+    });
+
+    const result = await service.loadVault(loadProvider);
+
+    expect(result).not.toBeNull();
+    expect(result!.source).toBe('ipfs-download');
+    expect(loadProvider.discoverCidByHash).toHaveBeenCalled();
+    expect(loadProvider.downloadFromIpfs).toHaveBeenCalledWith(FAKE_CID);
+  });
+
+  // Task 8.4: loadVault throws VAULT_NOT_FOUND when no registration on-chain
+  it('should throw VAULT_NOT_FOUND when no registration on-chain', async () => {
+    const loadProvider = createMockLoadProvider({
+      readContractCidHash: vi.fn().mockResolvedValue(null),
+    });
+
+    try {
+      await service.loadVault(loadProvider);
+      expect.fail('Should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(VaultSyncError);
+      const syncError = error as VaultSyncError;
+      expect(syncError.code).toBe(VaultSyncErrorCodes.VAULT_NOT_FOUND);
+      expect(syncError.retryable).toBe(false);
+    }
+  });
+
+  // Task 8.5: CID discovery finds correct CID by hash matching
+  it('should use discovered CID for download when local CID is null', async () => {
+    const discoveredCid = 'bafkreidiscoveredcidtestvalue1234567890abcdefghijklmnopqrstuv';
+    const loadProvider = createMockLoadProvider({
+      getLocalCid: vi.fn().mockResolvedValue({ cid: null, cidHash: null }),
+      discoverCidByHash: vi.fn().mockResolvedValue(discoveredCid),
+    });
+
+    const result = await service.loadVault(loadProvider);
+
+    expect(result).not.toBeNull();
+    expect(result!.cid).toBe(discoveredCid);
+    expect(loadProvider.downloadFromIpfs).toHaveBeenCalledWith(discoveredCid);
+  });
+
+  // Task 8.6: CID discovery returns null when no matching pin
+  it('should throw CID_DISCOVERY_FAILED when no matching pin found', async () => {
+    const loadProvider = createMockLoadProvider({
+      getLocalCid: vi.fn().mockResolvedValue({ cid: null, cidHash: null }),
+      discoverCidByHash: vi.fn().mockResolvedValue(null),
+    });
+
+    try {
+      await service.loadVault(loadProvider);
+      expect.fail('Should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(VaultSyncError);
+      const syncError = error as VaultSyncError;
+      expect(syncError.code).toBe(VaultSyncErrorCodes.CID_DISCOVERY_FAILED);
+      expect(syncError.retryable).toBe(false);
+    }
+  });
+
+  // Task 8.7: download retry on transient failure (wrapped as IPFS_DOWNLOAD_FAILED)
+  it('should throw retryable IPFS_DOWNLOAD_FAILED on download failure', async () => {
+    const loadProvider = createMockLoadProvider({
+      getLocalCid: vi.fn().mockResolvedValue({ cid: FAKE_CID, cidHash: 'different-hash' }),
+      downloadFromIpfs: vi.fn().mockRejectedValue(new Error('Network timeout')),
+    });
+
+    try {
+      await service.loadVault(loadProvider);
+      expect.fail('Should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(VaultSyncError);
+      const syncError = error as VaultSyncError;
+      expect(syncError.code).toBe(VaultSyncErrorCodes.IPFS_DOWNLOAD_FAILED);
+      expect(syncError.retryable).toBe(true);
+      expect(syncError.cause?.message).toBe('Network timeout');
+    }
+  });
+
+  // LEDGER_READ_FAILED on indexer error
+  it('should throw retryable LEDGER_READ_FAILED on indexer error', async () => {
+    const loadProvider = createMockLoadProvider({
+      readContractCidHash: vi.fn().mockRejectedValue(new Error('Indexer unreachable')),
+    });
+
+    try {
+      await service.loadVault(loadProvider);
+      expect.fail('Should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(VaultSyncError);
+      const syncError = error as VaultSyncError;
+      expect(syncError.code).toBe(VaultSyncErrorCodes.LEDGER_READ_FAILED);
+      expect(syncError.retryable).toBe(true);
+    }
+  });
+
+  // CID_DISCOVERY_FAILED on discovery error (transient)
+  it('should throw retryable CID_DISCOVERY_FAILED on discovery error', async () => {
+    const loadProvider = createMockLoadProvider({
+      getLocalCid: vi.fn().mockResolvedValue({ cid: null, cidHash: null }),
+      discoverCidByHash: vi.fn().mockRejectedValue(new Error('Pinata API down')),
+    });
+
+    try {
+      await service.loadVault(loadProvider);
+      expect.fail('Should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(VaultSyncError);
+      const syncError = error as VaultSyncError;
+      expect(syncError.code).toBe(VaultSyncErrorCodes.CID_DISCOVERY_FAILED);
+      expect(syncError.retryable).toBe(true);
+    }
+  });
+
+  // Pipeline order: readContract → getLocal → discoverCid → download → persist
+  it('should call load providers in correct order', async () => {
+    const callOrder: string[] = [];
+    const loadProvider = createMockLoadProvider({
+      readContractCidHash: vi.fn().mockImplementation(async () => {
+        callOrder.push('readContract');
+        return await fakeCidHash();
+      }),
+      getLocalCid: vi.fn().mockImplementation(async () => {
+        callOrder.push('getLocal');
+        return { cid: 'bafkstale', cidHash: 'different' };
+      }),
+      discoverCidByHash: vi.fn().mockImplementation(async () => {
+        callOrder.push('discoverCid');
+        return FAKE_CID;
+      }),
+      downloadFromIpfs: vi.fn().mockImplementation(async () => {
+        callOrder.push('download');
+        return FAKE_ENCRYPTED_BYTES;
+      }),
+      persistCid: vi.fn().mockImplementation(async () => {
+        callOrder.push('persist');
+      }),
+    });
+
+    await service.loadVault(loadProvider);
+
+    expect(callOrder).toEqual(['readContract', 'getLocal', 'discoverCid', 'download', 'persist']);
   });
 });

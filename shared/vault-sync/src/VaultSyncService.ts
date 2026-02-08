@@ -1,4 +1,4 @@
-import type { VaultSyncProvider, VaultSyncResult } from './types.js';
+import type { VaultSyncProvider, VaultSyncResult, VaultLoadProvider, VaultLoadResult } from './types.js';
 import { VaultSyncError, VaultSyncErrorCodes } from './errors.js';
 import { sha256, bytesToHex } from './utils.js';
 
@@ -7,13 +7,112 @@ import { sha256, bytesToHex } from './utils.js';
  * Platform-agnostic — browser extension, CLI, and mobile app each provide their own VaultSyncProvider.
  */
 export class VaultSyncService {
-  private readonly provider: VaultSyncProvider;
+  private readonly provider: VaultSyncProvider | null;
 
-  constructor(provider: VaultSyncProvider) {
-    if (!provider) {
-      throw new Error('VaultSyncProvider is required');
+  constructor(provider?: VaultSyncProvider) {
+    this.provider = provider ?? null;
+  }
+
+  /**
+   * Load the latest vault from the blockchain + IPFS pipeline.
+   *
+   * Flow:
+   * 1. Read vaultCidHash from on-chain public ledger
+   * 2. Compare with locally cached cidHash
+   * 3. If same → vault is up to date, return null
+   * 4. If different → resolve CID (local cache or Pinata discovery) → download from IPFS
+   * 5. Persist new CID + cidHash locally
+   *
+   * @returns VaultLoadResult with encrypted bytes, or null if vault is up to date
+   * @throws VaultSyncError with VAULT_NOT_FOUND if no registration on-chain
+   */
+  async loadVault(loadProvider: VaultLoadProvider): Promise<VaultLoadResult | null> {
+    // Step 1: Read on-chain cidHash
+    let onChainCidHash: Uint8Array | null;
+    try {
+      onChainCidHash = await loadProvider.readContractCidHash();
+    } catch (error) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.LEDGER_READ_FAILED,
+        'Failed to read vaultCidHash from on-chain ledger',
+        true,
+        error instanceof Error ? error : undefined,
+      );
     }
-    this.provider = provider;
+
+    // Not registered on-chain → new user
+    if (!onChainCidHash) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.VAULT_NOT_FOUND,
+        'No vault registration found on-chain',
+        false,
+      );
+    }
+
+    const onChainCidHashHex = bytesToHex(onChainCidHash);
+
+    // Step 2: Compare with local cidHash
+    const local = await loadProvider.getLocalCid();
+
+    if (local.cidHash && local.cidHash === onChainCidHashHex) {
+      // Vault is up to date — no download needed
+      return null;
+    }
+
+    // Step 3: Discover the new CID via Pinata pin listing.
+    // IMPORTANT: When hashes differ, the local CID is stale (points to old vault).
+    // Always discover the current CID by matching the on-chain hash against Pinata pins.
+    let cid: string | null;
+    try {
+      cid = await loadProvider.discoverCidByHash(onChainCidHash);
+    } catch (error) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.CID_DISCOVERY_FAILED,
+        'Failed to discover CID from Pinata pin listing',
+        true,
+        error instanceof Error ? error : undefined,
+      );
+    }
+
+    if (!cid) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.CID_DISCOVERY_FAILED,
+        'No matching CID found in Pinata pins for on-chain hash',
+        false,
+      );
+    }
+
+    // Step 4: Download encrypted vault from IPFS
+    let encryptedBytes: Uint8Array;
+    try {
+      encryptedBytes = await loadProvider.downloadFromIpfs(cid);
+    } catch (error) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.IPFS_DOWNLOAD_FAILED,
+        'Failed to download encrypted vault from IPFS',
+        true,
+        error instanceof Error ? error : undefined,
+      );
+    }
+
+    // Step 5: Persist CID locally
+    try {
+      await loadProvider.persistCid(cid, onChainCidHashHex);
+    } catch (error) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.CID_PERSISTENCE_FAILED,
+        'Failed to persist CID locally after download',
+        true,
+        error instanceof Error ? error : undefined,
+      );
+    }
+
+    return {
+      encryptedBytes,
+      cid,
+      cidHash: onChainCidHashHex,
+      source: 'ipfs-download',
+    };
   }
 
   /**
@@ -26,6 +125,10 @@ export class VaultSyncService {
    * 4. Persist CID + cidHash locally for quick access
    */
   async saveVault(encryptedVaultBytes: Uint8Array): Promise<VaultSyncResult> {
+    if (!this.provider) {
+      throw new Error('VaultSyncProvider is required for saveVault(). Pass a provider to the constructor.');
+    }
+
     if (!encryptedVaultBytes || encryptedVaultBytes.length === 0) {
       throw new VaultSyncError(
         VaultSyncErrorCodes.INVALID_ENCRYPTED_DATA,

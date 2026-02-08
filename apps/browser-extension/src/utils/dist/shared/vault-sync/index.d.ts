@@ -19,6 +19,38 @@ interface VaultSyncResult {
     /** Hex-encoded SHA-256 hash of the CID string. */
     cidHash: string;
 }
+/**
+ * Platform-agnostic vault load provider interface.
+ * Browser extension, CLI, and mobile app each implement this differently.
+ */
+interface VaultLoadProvider {
+    /** Read the vaultCidHash from the on-chain public ledger. Returns null if not registered. */
+    readContractCidHash(): Promise<Uint8Array | null>;
+    /** Get the locally cached CID string. Returns null if no local CID (new device). */
+    getLocalCid(): Promise<{
+        cid: string | null;
+        cidHash: string | null;
+    }>;
+    /** Download encrypted vault bytes from IPFS by CID. */
+    downloadFromIpfs(cid: string): Promise<Uint8Array>;
+    /** Discover the CID by scanning Pinata pins and matching SHA-256 hash. Returns null if not found. */
+    discoverCidByHash(cidHash: Uint8Array): Promise<string | null>;
+    /** Persist CID and CID hash to local storage after successful download. */
+    persistCid(cid: string, cidHash: string): Promise<void>;
+}
+/**
+ * Result of a successful vault load operation.
+ */
+interface VaultLoadResult {
+    /** Raw encrypted vault bytes downloaded from IPFS. */
+    encryptedBytes: Uint8Array;
+    /** CIDv1 string of the vault blob. */
+    cid: string;
+    /** Hex-encoded SHA-256 hash of the CID string. */
+    cidHash: string;
+    /** How the vault was resolved. Always 'ipfs-download' since CID is always discovered fresh. */
+    source: 'ipfs-download';
+}
 
 /**
  * Orchestrates the vault save pipeline: IPFS upload → on-chain hash update → local CID persistence.
@@ -26,7 +58,21 @@ interface VaultSyncResult {
  */
 declare class VaultSyncService {
     private readonly provider;
-    constructor(provider: VaultSyncProvider);
+    constructor(provider?: VaultSyncProvider);
+    /**
+     * Load the latest vault from the blockchain + IPFS pipeline.
+     *
+     * Flow:
+     * 1. Read vaultCidHash from on-chain public ledger
+     * 2. Compare with locally cached cidHash
+     * 3. If same → vault is up to date, return null
+     * 4. If different → resolve CID (local cache or Pinata discovery) → download from IPFS
+     * 5. Persist new CID + cidHash locally
+     *
+     * @returns VaultLoadResult with encrypted bytes, or null if vault is up to date
+     * @throws VaultSyncError with VAULT_NOT_FOUND if no registration on-chain
+     */
+    loadVault(loadProvider: VaultLoadProvider): Promise<VaultLoadResult | null>;
     /**
      * Save an encrypted vault blob through the full pipeline.
      *
@@ -48,6 +94,10 @@ declare const VaultSyncErrorCodes: {
     readonly CID_PERSISTENCE_FAILED: "VAULT_SYNC_CID_PERSISTENCE_FAILED";
     readonly WALLET_NOT_CONNECTED: "VAULT_SYNC_WALLET_NOT_CONNECTED";
     readonly INVALID_ENCRYPTED_DATA: "VAULT_SYNC_INVALID_ENCRYPTED_DATA";
+    readonly VAULT_NOT_FOUND: "VAULT_SYNC_VAULT_NOT_FOUND";
+    readonly CID_DISCOVERY_FAILED: "VAULT_SYNC_CID_DISCOVERY_FAILED";
+    readonly IPFS_DOWNLOAD_FAILED: "VAULT_SYNC_IPFS_DOWNLOAD_FAILED";
+    readonly LEDGER_READ_FAILED: "VAULT_SYNC_LEDGER_READ_FAILED";
 };
 type VaultSyncErrorCode = typeof VaultSyncErrorCodes[keyof typeof VaultSyncErrorCodes];
 /**
@@ -84,4 +134,4 @@ declare function bytesToHex(bytes: Uint8Array): string;
  */
 declare function hexToUint8Array(hex: string): Uint8Array;
 
-export { VaultSyncError, type VaultSyncErrorCode, VaultSyncErrorCodes, type VaultSyncProvider, type VaultSyncResult, VaultSyncService, base64ToUint8Array, bytesToHex, hexToUint8Array, sha256, uint8ArrayToBase64 };
+export { type VaultLoadProvider, type VaultLoadResult, VaultSyncError, type VaultSyncErrorCode, VaultSyncErrorCodes, type VaultSyncProvider, type VaultSyncResult, VaultSyncService, base64ToUint8Array, bytesToHex, hexToUint8Array, sha256, uint8ArrayToBase64 };

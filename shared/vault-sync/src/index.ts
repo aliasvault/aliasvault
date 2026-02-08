@@ -5,4 +5,6 @@ export { base64ToUint8Array, uint8ArrayToBase64, sha256, bytesToHex, hexToUint8A
 export type {
   VaultSyncProvider,
   VaultSyncResult,
+  VaultLoadProvider,
+  VaultLoadResult,
 } from './types.js';

@@ -12,14 +12,6 @@ export interface VaultSyncProvider {
 }
 
 /**
- * Configuration for VaultSyncService.
- */
-export interface VaultSyncConfig {
-  /** Maximum number of retries for transient failures (inherited from IpfsService). */
-  maxRetries?: number;
-}
-
-/**
  * Result of a successful vault save operation.
  */
 export interface VaultSyncResult {
@@ -27,4 +19,35 @@ export interface VaultSyncResult {
   cid: string;
   /** Hex-encoded SHA-256 hash of the CID string. */
   cidHash: string;
+}
+
+/**
+ * Platform-agnostic vault load provider interface.
+ * Browser extension, CLI, and mobile app each implement this differently.
+ */
+export interface VaultLoadProvider {
+  /** Read the vaultCidHash from the on-chain public ledger. Returns null if not registered. */
+  readContractCidHash(): Promise<Uint8Array | null>;
+  /** Get the locally cached CID string. Returns null if no local CID (new device). */
+  getLocalCid(): Promise<{ cid: string | null; cidHash: string | null }>;
+  /** Download encrypted vault bytes from IPFS by CID. */
+  downloadFromIpfs(cid: string): Promise<Uint8Array>;
+  /** Discover the CID by scanning Pinata pins and matching SHA-256 hash. Returns null if not found. */
+  discoverCidByHash(cidHash: Uint8Array): Promise<string | null>;
+  /** Persist CID and CID hash to local storage after successful download. */
+  persistCid(cid: string, cidHash: string): Promise<void>;
+}
+
+/**
+ * Result of a successful vault load operation.
+ */
+export interface VaultLoadResult {
+  /** Raw encrypted vault bytes downloaded from IPFS. */
+  encryptedBytes: Uint8Array;
+  /** CIDv1 string of the vault blob. */
+  cid: string;
+  /** Hex-encoded SHA-256 hash of the CID string. */
+  cidHash: string;
+  /** How the vault was resolved. Always 'ipfs-download' since CID is always discovered fresh. */
+  source: 'ipfs-download';
 }

@@ -37,7 +37,11 @@ var VaultSyncErrorCodes = {
   CONTRACT_UPDATE_FAILED: "VAULT_SYNC_CONTRACT_UPDATE_FAILED",
   CID_PERSISTENCE_FAILED: "VAULT_SYNC_CID_PERSISTENCE_FAILED",
   WALLET_NOT_CONNECTED: "VAULT_SYNC_WALLET_NOT_CONNECTED",
-  INVALID_ENCRYPTED_DATA: "VAULT_SYNC_INVALID_ENCRYPTED_DATA"
+  INVALID_ENCRYPTED_DATA: "VAULT_SYNC_INVALID_ENCRYPTED_DATA",
+  VAULT_NOT_FOUND: "VAULT_SYNC_VAULT_NOT_FOUND",
+  CID_DISCOVERY_FAILED: "VAULT_SYNC_CID_DISCOVERY_FAILED",
+  IPFS_DOWNLOAD_FAILED: "VAULT_SYNC_IPFS_DOWNLOAD_FAILED",
+  LEDGER_READ_FAILED: "VAULT_SYNC_LEDGER_READ_FAILED"
 };
 var VaultSyncError = class extends Error {
   constructor(code, message, retryable, cause) {
@@ -84,10 +88,90 @@ function hexToUint8Array(hex) {
 // src/VaultSyncService.ts
 var VaultSyncService = class {
   constructor(provider) {
-    if (!provider) {
-      throw new Error("VaultSyncProvider is required");
+    this.provider = provider ?? null;
+  }
+  /**
+   * Load the latest vault from the blockchain + IPFS pipeline.
+   *
+   * Flow:
+   * 1. Read vaultCidHash from on-chain public ledger
+   * 2. Compare with locally cached cidHash
+   * 3. If same → vault is up to date, return null
+   * 4. If different → resolve CID (local cache or Pinata discovery) → download from IPFS
+   * 5. Persist new CID + cidHash locally
+   *
+   * @returns VaultLoadResult with encrypted bytes, or null if vault is up to date
+   * @throws VaultSyncError with VAULT_NOT_FOUND if no registration on-chain
+   */
+  async loadVault(loadProvider) {
+    let onChainCidHash;
+    try {
+      onChainCidHash = await loadProvider.readContractCidHash();
+    } catch (error) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.LEDGER_READ_FAILED,
+        "Failed to read vaultCidHash from on-chain ledger",
+        true,
+        error instanceof Error ? error : void 0
+      );
     }
-    this.provider = provider;
+    if (!onChainCidHash) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.VAULT_NOT_FOUND,
+        "No vault registration found on-chain",
+        false
+      );
+    }
+    const onChainCidHashHex = bytesToHex(onChainCidHash);
+    const local = await loadProvider.getLocalCid();
+    if (local.cidHash && local.cidHash === onChainCidHashHex) {
+      return null;
+    }
+    let cid;
+    try {
+      cid = await loadProvider.discoverCidByHash(onChainCidHash);
+    } catch (error) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.CID_DISCOVERY_FAILED,
+        "Failed to discover CID from Pinata pin listing",
+        true,
+        error instanceof Error ? error : void 0
+      );
+    }
+    if (!cid) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.CID_DISCOVERY_FAILED,
+        "No matching CID found in Pinata pins for on-chain hash",
+        false
+      );
+    }
+    let encryptedBytes;
+    try {
+      encryptedBytes = await loadProvider.downloadFromIpfs(cid);
+    } catch (error) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.IPFS_DOWNLOAD_FAILED,
+        "Failed to download encrypted vault from IPFS",
+        true,
+        error instanceof Error ? error : void 0
+      );
+    }
+    try {
+      await loadProvider.persistCid(cid, onChainCidHashHex);
+    } catch (error) {
+      throw new VaultSyncError(
+        VaultSyncErrorCodes.CID_PERSISTENCE_FAILED,
+        "Failed to persist CID locally after download",
+        true,
+        error instanceof Error ? error : void 0
+      );
+    }
+    return {
+      encryptedBytes,
+      cid,
+      cidHash: onChainCidHashHex,
+      source: "ipfs-download"
+    };
   }
   /**
    * Save an encrypted vault blob through the full pipeline.
@@ -99,6 +183,9 @@ var VaultSyncService = class {
    * 4. Persist CID + cidHash locally for quick access
    */
   async saveVault(encryptedVaultBytes) {
+    if (!this.provider) {
+      throw new Error("VaultSyncProvider is required for saveVault(). Pass a provider to the constructor.");
+    }
     if (!encryptedVaultBytes || encryptedVaultBytes.length === 0) {
       throw new VaultSyncError(
         VaultSyncErrorCodes.INVALID_ENCRYPTED_DATA,
