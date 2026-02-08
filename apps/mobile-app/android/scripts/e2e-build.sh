@@ -56,7 +56,11 @@ else
     echo "Using AVD: $AVD_NAME"
 
     # Start emulator in headless mode
-    "$ANDROID_HOME/emulator/emulator" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
+    # Use -gpu auto to pick best available GPU mode (host if available, otherwise swiftshader)
+    # -no-snapshot for clean state each run
+    # Note: -gpu host requires display, -gpu swiftshader_indirect is slow but works headless
+    # On macOS with Metal, -gpu auto should use hardware acceleration even headless
+    "$ANDROID_HOME/emulator/emulator" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -no-snapshot -gpu auto &
 
     EMULATOR_PID=$!
     echo $EMULATOR_PID > /tmp/android-emulator.pid
