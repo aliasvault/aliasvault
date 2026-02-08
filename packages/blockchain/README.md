@@ -90,20 +90,35 @@ packages/blockchain/
 ### Counter (starter example)
 Simple counter contract from the Midnight example-counter template. Used for SDK integration testing.
 
-### VaultRegistry (Story 2.1 — Private State)
-Vault registration contract with **private state** for CID storage and **owner access control**.
+### VaultRegistry (Full Specification — Story 2.6)
+Vault registration contract with **owner access control**, **backup wallet recovery**, and **on-chain time-locks**.
 
-- **Public ledger**: `registrations: Set<Bytes<32>>`, `totalVaults: Counter`, `owner: Bytes<32>`, `vaultCidHash: Bytes<32>`
-- **Private state** (off-chain): `secretKey` only — accessed via `local_secret_key()` witness
-- **Application-layer CID**: Full CID stored in TypeScript `Map`; on-chain `vaultCidHash` holds SHA-256 for integrity
-- **Circuits**:
+- **Public ledger** (8 fields):
+  - `registrations: Set<Bytes<32>>` — registered wallet address hashes
+  - `totalVaults: Counter` — total registered vaults
+  - `owner: Bytes<32>` — owner commitment (hiding, via `persistentCommit`)
+  - `vaultCidHash: Bytes<32>` — SHA-256 hash of current vault CID
+  - `recoveryKeyHash: Bytes<32>` — hash of recovery key (actual key in vault blob per ADR-006)
+  - `backupWallets: Set<Bytes<32>>` — authorized backup wallet commitments
+  - `transferInitiatedAt: Uint<64>` — Unix epoch seconds when backup transfer initiated
+  - `transferInitiator: Bytes<32>` — commitment of backup wallet that initiated transfer
+- **Witnesses**: `local_secret_key()`, `local_backup_key()`
+- **Circuits** (11 impure + 2 pure):
   - `registerVault(walletAddressHash)` — registers vault, sets owner commitment
   - `updateVault(newCidHash)` — owner-only, updates CID hash on-chain
-  - `isRegistered(walletAddressHash)` — checks registration
-  - `ownerCommitment(sk)` — pure circuit, derives hiding commitment via `persistentCommit`
-- **Owner identity**: `persistentCommit` with fixed domain separator (OpenZeppelin ZOwnablePK pattern)
+  - `transferOwnership(newOwnerCommitment)` — owner-only, transfers ownership, resets recovery state
+  - `storeRecoveryKeyHash(keyHash)` — owner-only, stores hash of recovery key
+  - `addBackupWallet(walletCommitment)` — owner-only, adds backup wallet
+  - `removeBackupWallet(walletCommitment)` — owner-only, removes backup wallet
+  - `initiateBackupTransfer(currentTime)` — backup-wallet-only, starts 72-hour time-lock
+  - `executeBackupTransfer(newOwnerCommitment)` — backup-wallet-only, completes transfer after time-lock
+  - `cancelBackupTransfer()` — owner-only, cancels pending transfer
+  - `isRegistered(walletAddressHash)` — public, checks registration
+  - `ownerCommitment(sk)` — pure, derives owner hiding commitment
+  - `backupCommitment(bk)` — pure, derives backup wallet commitment (different domain separator)
+- **Canonical spec**: `contract/src/VAULT-REGISTRY-SPEC.md`
 - **CIDv1 enforcement**: `assertCIDv1()` in `contract/src/cid-utils.ts` (canonical), re-exported via CLI
-- **Tests**: 13 contract unit tests (simulator) + 6 API-layer CID store tests
+- **Tests**: 36 contract unit tests (3 counter + 33 VR, 1 skipped) + 29 CLI tests (13 API + 16 deploy-utils)
 
 **Run test TUI:** `npm run vault-registry` (from `packages/blockchain/`)
 
