@@ -14,7 +14,10 @@
     "preview-ps": "docker compose -f proof-server.yml pull && node --experimental-specifier-resolution=node --loader ts-node/esm src/preview-start-proof-server.ts",
     "preprod": "node --experimental-specifier-resolution=node --loader ts-node/esm src/preprod.ts",
     "preprod-ps": "docker compose -f proof-server.yml pull && node --experimental-specifier-resolution=node --loader ts-node/esm src/preprod-start-proof-server.ts",
-    "vault-registry": "node --experimental-specifier-resolution=node --loader ts-node/esm src/tui_vault_registry.ts"
+    "vault-registry": "node --experimental-specifier-resolution=node --loader ts-node/esm src/tui_vault_registry.ts",
+    "deploy-local": "node --experimental-specifier-resolution=node --loader ts-node/esm src/deploy-vault-registry.ts --network=local",
+    "deploy-preview": "node --experimental-specifier-resolution=node --loader ts-node/esm src/deploy-vault-registry.ts --network=preview",
+    "deploy-preprod": "node --experimental-specifier-resolution=node --loader ts-node/esm src/deploy-vault-registry.ts --network=preprod"
   },
   "dependencies": {
     "@aliasvault/contract": "*"
