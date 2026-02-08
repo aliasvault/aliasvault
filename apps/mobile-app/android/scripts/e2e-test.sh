@@ -72,11 +72,12 @@ echo "=============================================="
 # Example: "net.aliasvault.app.AliasVaultUITests > test01CreateItem[Pixel_Pro_API_36(AVD) - 16] FAILED"
 echo ""
 
-# Extract test results - match lines containing test results
-# Use simpler patterns that match the actual output format
-PASSED_TESTS=$(grep -c "PASSED$" "$TEST_OUTPUT_FILE" 2>/dev/null || echo "0")
-FAILED_TESTS=$(grep -c "FAILED$" "$TEST_OUTPUT_FILE" 2>/dev/null || echo "0")
-SKIPPED_TESTS=$(grep -c "SKIPPED$" "$TEST_OUTPUT_FILE" 2>/dev/null || echo "0")
+# Extract test results - match the specific Gradle test output format
+# The format is: "ClassName > testName[device info] STATUS"
+# We need to match lines with " > test" and ending with the status
+PASSED_TESTS=$(grep -E " > test.*\] PASSED$" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+FAILED_TESTS=$(grep -E " > test.*\] FAILED$" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+SKIPPED_TESTS=$(grep -E " > test.*\] SKIPPED$" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
 TOTAL_TESTS=$((PASSED_TESTS + FAILED_TESTS + SKIPPED_TESTS))
 
 echo "  Total:   $TOTAL_TESTS"
@@ -89,15 +90,15 @@ echo ""
 echo "--- Individual Tests ---"
 
 # Show passed tests (extract test name from "ClassName > testName[device] PASSED")
-grep "PASSED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+grep -E " > test.*\] PASSED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
     sed 's/.*> \(test[^[]*\).*/  ✅ \1/' || true
 
 # Show failed tests
-grep "FAILED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+grep -E " > test.*\] FAILED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
     sed 's/.*> \(test[^[]*\).*/  ❌ \1/' || true
 
 # Show skipped tests
-grep "SKIPPED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+grep -E " > test.*\] SKIPPED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
     sed 's/.*> \(test[^[]*\).*/  ⏭️  \1/' || true
 
 echo ""
@@ -138,14 +139,14 @@ if [ -n "$GITHUB_STEP_SUMMARY" ]; then
 
         # Passed tests
         if [ "$PASSED_TESTS" -gt 0 ]; then
-            grep -E "> test[^\[]+\[.*\] PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
-                sed 's/.*> \(test[^\[]*\)\[.*/- ✅ \1/' || true
+            grep -E " > test.*\] PASSED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+                sed 's/.*> \(test[^[]*\).*/- ✅ \1/' || true
         fi
 
         # Failed tests
         if [ "$FAILED_TESTS" -gt 0 ]; then
-            grep -E "> test[^\[]+\[.*\] FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
-                sed 's/.*> \(test[^\[]*\)\[.*/- ❌ \1/' || true
+            grep -E " > test.*\] FAILED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+                sed 's/.*> \(test[^[]*\).*/- ❌ \1/' || true
         fi
 
         echo ""
