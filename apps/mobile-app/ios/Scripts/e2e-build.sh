@@ -22,14 +22,13 @@ if [ -z "$SIMULATOR_ID" ]; then
     # Shutdown any existing simulators first
     xcrun simctl shutdown all 2>/dev/null || true
 
-    # Find an iPhone simulator (prefer Pro models, then any iPhone)
-    for model in "iPhone 16 Pro" "iPhone 15 Pro" "iPhone 16" "iPhone 15" "iPhone"; do
-        SIMULATOR_ID=$(xcrun simctl list devices available | grep "$model" | head -1 | grep -oE '[A-F0-9-]{36}')
-        if [ -n "$SIMULATOR_ID" ]; then
-            echo "Found simulator matching '$model': $SIMULATOR_ID"
-            break
-        fi
-    done
+    # Find the highest numbered iPhone Pro simulator available
+    SIMULATOR_ID=$(xcrun simctl list devices available | grep -E "iPhone [0-9]+ Pro" | sort -t' ' -k2 -rn | head -1 | grep -oE '[A-F0-9-]{36}')
+
+    if [ -n "$SIMULATOR_ID" ]; then
+        MODEL=$(xcrun simctl list devices available | grep "$SIMULATOR_ID" | sed 's/(.*//' | xargs)
+        echo "Found simulator: $MODEL ($SIMULATOR_ID)"
+    fi
 
     if [ -z "$SIMULATOR_ID" ]; then
         echo "ERROR: No iPhone simulator found!"
