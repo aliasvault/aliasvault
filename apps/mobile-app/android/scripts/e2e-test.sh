@@ -68,29 +68,37 @@ echo "         Android E2E TEST RESULTS"
 echo "=============================================="
 
 # Parse test results from gradle output
-# Gradle format: "ClassName > testMethodName PASSED/FAILED"
+# Gradle format: "ClassName > testMethodName[device info] PASSED/FAILED"
+# Example: "net.aliasvault.app.AliasVaultUITests > test01CreateItem[Pixel_Pro_API_36(AVD) - 16] FAILED"
 echo ""
 
-# Extract test results - gradle outputs "ClassName > methodName[device] PASSED" or "FAILED"
-PASSED_TESTS=$(grep -E "> test[^\[]+\[.*\] PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
-FAILED_TESTS=$(grep -E "> test[^\[]+\[.*\] FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
-TOTAL_TESTS=$((PASSED_TESTS + FAILED_TESTS))
+# Extract test results - match lines containing test results
+# Use simpler patterns that match the actual output format
+PASSED_TESTS=$(grep -c "PASSED$" "$TEST_OUTPUT_FILE" 2>/dev/null || echo "0")
+FAILED_TESTS=$(grep -c "FAILED$" "$TEST_OUTPUT_FILE" 2>/dev/null || echo "0")
+SKIPPED_TESTS=$(grep -c "SKIPPED$" "$TEST_OUTPUT_FILE" 2>/dev/null || echo "0")
+TOTAL_TESTS=$((PASSED_TESTS + FAILED_TESTS + SKIPPED_TESTS))
 
 echo "  Total:   $TOTAL_TESTS"
 echo "  Passed:  $PASSED_TESTS"
 echo "  Failed:  $FAILED_TESTS"
+echo "  Skipped: $SKIPPED_TESTS"
 echo ""
 
 # Show individual test results
 echo "--- Individual Tests ---"
 
-# Show passed tests (extract just the test name without device info)
-grep -E "> test[^\[]+\[.*\] PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
-    sed 's/.*> \(test[^\[]*\)\[.*/  ✅ \1/' || true
+# Show passed tests (extract test name from "ClassName > testName[device] PASSED")
+grep "PASSED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+    sed 's/.*> \(test[^[]*\).*/  ✅ \1/' || true
 
 # Show failed tests
-grep -E "> test[^\[]+\[.*\] FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
-    sed 's/.*> \(test[^\[]*\)\[.*/  ❌ \1/' || true
+grep "FAILED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+    sed 's/.*> \(test[^[]*\).*/  ❌ \1/' || true
+
+# Show skipped tests
+grep "SKIPPED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+    sed 's/.*> \(test[^[]*\).*/  ⏭️  \1/' || true
 
 echo ""
 
