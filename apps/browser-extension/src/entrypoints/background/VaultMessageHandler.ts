@@ -3,6 +3,11 @@ import { storage } from 'wxt/utils/storage';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/shared/models/metadata';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/shared/models/webapi';
+import { VaultCidStore } from '@/services/VaultCidStore';
+import { PinataBrowserProvider } from '@/services/PinataBrowserProvider';
+import { MidnightContractService } from '@/services/MidnightContractService';
+import { BrowserVaultSyncProvider } from '@/services/BrowserVaultSyncProvider';
+import { VaultSyncService, VaultSyncError, base64ToUint8Array, hexToUint8Array } from '@/utils/dist/shared/vault-sync';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
@@ -261,9 +266,14 @@ export function handleClearVault(
     'session:vaultRevisionNumber'
   ]);
 
-  // Clear cached client since vault was cleared
+  // Clear blockchain-related CID and secret key cache on logout.
+  VaultCidStore.clear();
+
+  // Clear cached client and contract service since vault was cleared.
+  // Contract service must be re-joined with the new secretKey on next login.
   cachedSqliteClient = null;
   cachedVaultBlob = null;
+  cachedContractService = null;
 
   return { success: true };
 }
@@ -527,13 +537,19 @@ export async function handleUploadVault(
     // Persist the current updated vault blob in session storage.
     await storage.setItem('session:encryptedVault', message.vaultBlob);
 
-    // Upload the new vault to the server.
-    const sqliteClient = await createVaultSqliteClient();
-    const response = await uploadNewVaultToServer(sqliteClient);
-    return { success: true, status: response.status, newRevisionNumber: response.newRevisionNumber };
+    // Upload to blockchain (IPFS + contract).
+    const result = await handleUploadVaultToBlockchain(message.vaultBlob);
+    return { success: true, status: 0, cid: result.cid, cidHash: result.cidHash };
   } catch (error) {
     console.error('Failed to upload vault:', error);
-    return { success: false, error: await t('common.errors.unknownError') };
+    // M2: Use structured VaultSyncError.retryable instead of string matching
+    const syncError = error instanceof VaultSyncError ? error : null;
+    const errorMessage = error instanceof Error ? error.message : await t('common.errors.unknownError');
+    return {
+      success: false,
+      error: errorMessage,
+      retryable: syncError?.retryable ?? false,
+    };
   }
 }
 
@@ -587,8 +603,52 @@ export async function handleClearPersistedFormValues(): Promise<void> {
   await storage.removeItem('session:persistedFormValues');
 }
 
+// M4: Module-level cached MidnightContractService — join once, reuse across saves.
+let cachedContractService: MidnightContractService | null = null;
+
+/**
+ * Upload encrypted vault blob to IPFS and update the on-chain CID hash.
+ * Uses shared VaultSyncService (ADR-003) with BrowserVaultSyncProvider.
+ *
+ * Flow: base64→Uint8Array → VaultSyncService.saveVault() → { cid, cidHash }
+ */
+async function handleUploadVaultToBlockchain(
+  encryptedVaultBase64: string,
+): Promise<{ cid: string; cidHash: string }> {
+  // Convert encrypted vault from base64 to Uint8Array for IPFS upload
+  const encryptedBytes = base64ToUint8Array(encryptedVaultBase64);
+
+  // Initialize Pinata provider
+  // TODO: Move Pinata credentials to secure storage (future story)
+  const pinataJwt = import.meta.env.VITE_PINATA_JWT || '';
+  const pinataGateway = import.meta.env.VITE_PINATA_GATEWAY || '';
+
+  if (!pinataJwt || !pinataGateway) {
+    throw new Error('Pinata credentials not configured. Set VITE_PINATA_JWT and VITE_PINATA_GATEWAY in .env');
+  }
+
+  const pinataProvider = new PinataBrowserProvider({ pinataJwt, pinataGateway });
+
+  // Ensure contract service is joined (M4: cached, join once)
+  if (!cachedContractService || !cachedContractService.isJoined()) {
+    const secretKeyHex = await VaultCidStore.getSecretKey();
+    if (!secretKeyHex) {
+      throw new Error('Midnight secret key not available. Register vault first.');
+    }
+    cachedContractService = new MidnightContractService();
+    await cachedContractService.joinVaultRegistry(hexToUint8Array(secretKeyHex));
+  }
+
+  // Use VaultSyncService with BrowserVaultSyncProvider (H1: shared business logic)
+  const provider = new BrowserVaultSyncProvider(pinataProvider, cachedContractService);
+  const syncService = new VaultSyncService(provider);
+  return await syncService.saveVault(encryptedBytes);
+}
+
 /**
  * Upload a new version of the vault to the server using the provided sqlite client.
+ * @deprecated Replaced by handleUploadVaultToBlockchain() for blockchain flow.
+ * Kept temporarily for handleCreateIdentity() which still uses the centralized API.
  */
 async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<VaultPostResponse> {
   const updatedVaultData = sqliteClient.exportToBase64();

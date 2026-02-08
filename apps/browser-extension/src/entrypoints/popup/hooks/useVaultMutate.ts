@@ -41,15 +41,11 @@ export function useVaultMutate() : {
     // Execute the provided operation (e.g. create/update/delete credential)
     await operation();
 
-    setSyncStatus(t('common.uploadingVaultToServer'));
+    setSyncStatus(t('common.encryptingVault'));
 
-    // Upload the updated vault to the server.
+    // Encrypt vault locally before sending to background
     const base64Vault = dbContext.sqliteClient!.exportToBase64();
-
-    // Get encryption key from background worker
     const encryptionKey = await sendMessage('GET_ENCRYPTION_KEY', {}, 'background') as string;
-
-    // Encrypt the vault.
     const encryptedVaultBlob = await EncryptionUtility.symmetricEncrypt(
       base64Vault,
       encryptionKey
@@ -59,36 +55,17 @@ export function useVaultMutate() : {
       vaultBlob: encryptedVaultBlob,
     };
 
+    // Background handler does IPFS upload + contract update atomically
+    setSyncStatus(t('common.syncingToBlockchain'));
+
     const response = await sendMessage('UPLOAD_VAULT', request, 'background') as messageVaultUploadResponse;
 
-    /*
-     * If we get here, it means we have a valid connection to the server.
-     * TODO: offline mode is not implemented for browser extension yet.
-     * authContext.setOfflineMode(false);
-     */
-
-    if (response.status === 0 && response.newRevisionNumber) {
-      await dbContext.setCurrentVaultRevisionNumber(response.newRevisionNumber);
+    if (response.success) {
+      setSyncStatus(t('common.vaultSynced'));
       options.onSuccess?.();
-    } else if (response.status === 1) {
-      // Note: vault merge is no longer allowed by the API as of 0.20.0, updates with the same revision number are rejected. So this check can be removed later.
-      throw new Error('Vault merge required. Please login via the web app to merge the multiple pending updates to your vault.');
-    } else if (response.status === 2) {
-      throw new Error(t('common.errors.unknownError'));
     } else {
-      throw new Error(t('common.errors.unknownError'));
+      throw new Error(response.error ?? t('common.errors.unknownError'));
     }
-
-    // Check if it's a network error
-    /*
-     * if (error instanceof Error && (error.message.includes('network') || error.message.includes('timeout'))) {
-     *
-     * // Network error, mark as offline and track pending changes - TODO: offline mode is not implemented for browser extension yet.
-     * // authContext.setOfflineMode(true);
-     *options.onError?.(new Error('Network error'));
-     *return;
-     *}
-     */
   }, [dbContext, t]);
 
   /**
