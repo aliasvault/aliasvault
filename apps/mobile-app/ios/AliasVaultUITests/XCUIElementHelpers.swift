@@ -53,6 +53,7 @@ extension XCUIElement {
 
     /// Type text with keyboard wait to prevent missing characters.
     /// Use this instead of raw typeText() for more reliable input.
+    /// Types text in smaller chunks to prevent missing characters.
     @MainActor
     func typeTextNoIdle(_ text: String, app: XCUIApplication? = nil) {
         // Wait for keyboard to appear
@@ -64,11 +65,19 @@ extension XCUIElement {
             _ = application.keyboards.firstMatch.waitForExistenceNoIdle(timeout: 2)
         }
 
-        // Small delay to ensure keyboard is fully ready
-        Thread.sleep(forTimeInterval: 0.1)
+        // Delay to ensure keyboard is fully ready
+        Thread.sleep(forTimeInterval: 0.2)
 
-        // Type the text
-        self.typeText(text)
+        // Type text in small chunks to prevent missing characters
+        let chunkSize = 5
+        var index = text.startIndex
+        while index < text.endIndex {
+            let endIndex = text.index(index, offsetBy: chunkSize, limitedBy: text.endIndex) ?? text.endIndex
+            let chunk = String(text[index..<endIndex])
+            self.typeText(chunk)
+            Thread.sleep(forTimeInterval: 0.02)
+            index = endIndex
+        }
     }
 }
 

@@ -627,14 +627,15 @@ class AliasVaultUITests {
         device.tapTestId("item-name-input")
         device.typeIntoTestId("item-name-input", params.name)
 
-        // Fill service URL
-        device.scrollToTestId("service-url-input")
-        device.tapTestId("service-url-input")
-        device.typeIntoTestId("service-url-input", params.serviceUrl)
+        // Fill service URL (multi-value field, first input has index 0)
+        device.scrollToTestId("service-url-input-0")
+        device.tapTestId("service-url-input-0")
+        device.typeIntoTestId("service-url-input-0", params.serviceUrl)
 
-        // Add email
+        // Add email - click button and wait for field to appear
         device.scrollToTestId("add-email-button")
         device.tapTestId("add-email-button")
+        Thread.sleep(500) // Wait for field animation
 
         device.scrollToTestId("login-email-input")
         device.tapTestId("login-email-input")
