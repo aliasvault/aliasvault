@@ -998,7 +998,7 @@ final class AliasVaultUITests: XCTestCase {
         loginEmailInput.typeTextNoIdle(params.email)
 
         // Optionally add username
-        /*if let username = params.username {
+        if let username = params.username {
             let loginUsernameInput = app.findAndScrollToTextField(testID: "login-username-input")
             if loginUsernameInput.exists {
                 app.scrollToElement(loginUsernameInput)
@@ -1008,7 +1008,7 @@ final class AliasVaultUITests: XCTestCase {
                 Thread.sleep(forTimeInterval: 0.3) // Wait for focus to switch
                 loginUsernameInput.typeTextNoIdle(username)
             }
-        }*/
+        }
 
         app.hideKeyboardIfVisible()
 

@@ -150,11 +150,29 @@ extension XCUIApplication {
     /// Scroll to make an element visible within a scroll view.
     @MainActor
     func scrollToElement(_ element: XCUIElement, in scrollView: XCUIElement? = nil) {
+        let targetScrollView = scrollView ?? self.scrollViews.firstMatch
+
+        // Always do at least one small scroll to ensure element is fully visible
+        // (handles edge case where element is partially in view but not fully usable)
+        if element.exists {
+            // Calculate if element is in the lower half of the screen - if so, scroll it up
+            let elementFrame = element.frame
+            let scrollViewFrame = targetScrollView.frame
+            let elementCenterY = elementFrame.midY
+
+            // If element center is in lower 40% of scroll view, do a small scroll up
+            if elementCenterY > scrollViewFrame.minY + (scrollViewFrame.height * 0.6) {
+                let startPoint = targetScrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
+                let endPoint = targetScrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4))
+                startPoint.press(forDuration: 0.1, thenDragTo: endPoint)
+                Thread.sleep(forTimeInterval: 0.2)
+            }
+        }
+
+        // If still not hittable, scroll more aggressively
         guard !element.isHittable else { return }
 
-        let targetScrollView = scrollView ?? self.scrollViews.firstMatch
         var attempts = 0
-
         while !element.isHittable && attempts < 5 {
             let startPoint = targetScrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
             let endPoint = targetScrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
