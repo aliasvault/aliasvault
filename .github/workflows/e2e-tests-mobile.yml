@@ -82,8 +82,6 @@ jobs:
           pkill -f "expo start" || true
           pkill -f "metro" || true
           pkill -f "node.*react-native" || true
-          adb emu kill 2>/dev/null || true
-          xcrun simctl shutdown all 2>/dev/null || true
           # Give processes time to terminate
           sleep 2
 
@@ -154,7 +152,7 @@ jobs:
         working-directory: apps/server
         run: dotnet build AliasVault.Api
 
-  # iOS E2E Tests - runs in parallel with Android
+  # iOS E2E Tests
   ios-e2e:
     name: iOS E2E Tests
     needs: setup
@@ -166,9 +164,15 @@ jobs:
         working-directory: apps/mobile-app
 
     steps:
-      - name: Reset iOS simulator
+      - name: Cleanup any leftover processes and reset simulator
         working-directory: .
         run: |
+          pkill -9 -f "dotnet.*AliasVault.Api" || true
+          pkill -9 -f "expo start" || true
+          pkill -9 -f "metro" || true
+          pkill -9 -f "node.*8081" || true
+
+          # Reset simulator to clean state
           echo "Resetting iOS Simulator..."
           xcrun simctl shutdown all 2>/dev/null || true
           SIMULATOR_ID=$(xcrun simctl list devices available | grep -E "iPhone [0-9]+ Pro" | sort -t' ' -k2 -rn | head -1 | grep -oE '[A-F0-9-]{36}')
@@ -178,13 +182,13 @@ jobs:
           fi
           sleep 1
 
-      - name: Start API server for iOS
+      - name: Start API server
         working-directory: apps/server/AliasVault.Api
         run: |
-          dotnet run --no-build > /tmp/ios-api-server.log 2>&1 &
-          echo $! > /tmp/ios-api-server.pid
+          dotnet run --no-build > /tmp/api-server.log 2>&1 &
+          echo $! > /tmp/api-server.pid
 
-          echo "Waiting for API to start on port 5092..."
+          echo "Waiting for API to start..."
           for i in {1..30}; do
             if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
               echo "✅ API is ready!"
@@ -192,7 +196,7 @@ jobs:
             fi
             if [ $i -eq 30 ]; then
               echo "::error::API failed to start"
-              cat /tmp/ios-api-server.log
+              cat /tmp/api-server.log
               exit 1
             fi
             sleep 2
@@ -206,12 +210,12 @@ jobs:
           ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
           ASPNETCORE_URLS: "http://0.0.0.0:5092"
 
-      - name: Start Metro bundler for iOS
+      - name: Start Metro bundler
         run: |
-          npx expo start --offline --port 8081 > /tmp/ios-metro.log 2>&1 &
-          echo $! > /tmp/ios-metro.pid
+          npx expo start --offline > /tmp/metro.log 2>&1 &
+          echo $! > /tmp/metro.pid
 
-          echo "Waiting for Metro bundler to start on port 8081..."
+          echo "Waiting for Metro bundler to start..."
           for i in {1..30}; do
             if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
               echo "✅ Metro bundler is ready!"
@@ -219,7 +223,7 @@ jobs:
             fi
             if [ $i -eq 30 ]; then
               echo "::error::Metro bundler failed to start"
-              cat /tmp/ios-metro.log
+              cat /tmp/metro.log
               exit 1
             fi
             sleep 2
@@ -300,29 +304,21 @@ jobs:
         with:
           name: ios-e2e-test-logs
           path: |
-            /tmp/ios-api-server.log
-            /tmp/ios-metro.log
+            /tmp/api-server.log
+            /tmp/metro.log
           retention-days: 14
           if-no-files-found: ignore
 
       - name: Stop iOS services
         if: always()
         run: |
-          # Stop iOS-specific services
-          if [ -f /tmp/ios-api-server.pid ]; then
-            kill -9 $(cat /tmp/ios-api-server.pid) 2>/dev/null || true
-          fi
-          if [ -f /tmp/ios-metro.pid ]; then
-            kill -9 $(cat /tmp/ios-metro.pid) 2>/dev/null || true
-          fi
-          rm -f /tmp/ios-api-server.pid /tmp/ios-metro.pid
-          rm -f /tmp/ios-api-server.log /tmp/ios-metro.log
+          cd ios && ./scripts/e2e-cleanup.sh
 
-  # Android E2E Tests - runs in parallel with iOS
+  # Android E2E Tests (runs after iOS to avoid resource conflicts on single runner)
   android-e2e:
     name: Android E2E Tests
-    needs: setup
-    if: needs.setup.outputs.ready == 'true'
+    needs: [setup, ios-e2e]
+    if: always() && needs.setup.outputs.ready == 'true' && (needs.ios-e2e.result == 'success' || needs.ios-e2e.result == 'failure')
     runs-on: macOS-ci
     timeout-minutes: 45
     defaults:
@@ -330,23 +326,31 @@ jobs:
         working-directory: apps/mobile-app
 
     steps:
-      - name: Start API server for Android
+      - name: Cleanup any leftover processes
+        working-directory: .
+        run: |
+          pkill -f "dotnet.*AliasVault.Api" || true
+          pkill -f "expo start" || true
+          pkill -f "metro" || true
+          sleep 1
+
+      - name: Start API server
         working-directory: apps/server/AliasVault.Api
         run: |
-          dotnet run --no-build --urls "http://0.0.0.0:5093" > /tmp/android-api-server.log 2>&1 &
+          dotnet run --no-build > /tmp/api-server.log 2>&1 &
           API_PID=$!
-          echo $API_PID > /tmp/android-api-server.pid
+          echo $API_PID > /tmp/api-server.pid
 
           # Wait for API to be ready
-          echo "Waiting for API to start on port 5093..."
+          echo "Waiting for API to start..."
           for i in {1..30}; do
-            if curl -s http://localhost:5093/v1/ > /dev/null 2>&1; then
+            if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
               echo "✅ API is ready! (PID: $API_PID)"
               break
             fi
             if [ $i -eq 30 ]; then
               echo "::error::API failed to start within 60 seconds"
-              cat /tmp/android-api-server.log
+              cat /tmp/api-server.log
               exit 1
             fi
             echo "Attempt $i: API not ready yet..."
@@ -359,23 +363,24 @@ jobs:
           PUBLIC_REGISTRATION_ENABLED: "true"
           ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
           ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
+          ASPNETCORE_URLS: "http://0.0.0.0:5092"
 
-      - name: Start Metro bundler for Android
+      - name: Start Metro bundler
         run: |
-          npx expo start --offline --port 8082 > /tmp/android-metro.log 2>&1 &
+          npx expo start --offline > /tmp/metro.log 2>&1 &
           METRO_PID=$!
-          echo $METRO_PID > /tmp/android-metro.pid
+          echo $METRO_PID > /tmp/metro.pid
 
           # Wait for Metro to be ready
-          echo "Waiting for Metro bundler to start on port 8082..."
+          echo "Waiting for Metro bundler to start..."
           for i in {1..30}; do
-            if curl -s http://localhost:8082/status 2>/dev/null | grep -q "packager-status:running"; then
+            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
               echo "✅ Metro bundler is ready! (PID: $METRO_PID)"
               break
             fi
             if [ $i -eq 30 ]; then
               echo "::error::Metro bundler failed to start"
-              cat /tmp/android-metro.log
+              cat /tmp/metro.log
               exit 1
             fi
             echo "Attempt $i: Metro not ready yet..."
@@ -387,18 +392,10 @@ jobs:
           cd android
           chmod +x scripts/*.sh
           ./scripts/e2e-build.sh
-        env:
-          # Use different ports for Android
-          API_PORT: "5093"
-          METRO_PORT: "8082"
 
       - name: Run Android E2E tests
         run: |
           cd android
-          # Set up port forwarding to Android-specific ports
-          EMULATOR_ID=$(adb devices | grep "emulator" | head -1 | awk '{print $1}')
-          adb -s "$EMULATOR_ID" reverse tcp:5092 tcp:5093  # Map emulator's 5092 to host's 5093
-          adb -s "$EMULATOR_ID" reverse tcp:8081 tcp:8082  # Map emulator's 8081 to host's 8082
           ./scripts/e2e-test.sh
         env:
           API_URL: "http://10.0.2.2:5092"
@@ -425,25 +422,15 @@ jobs:
         with:
           name: android-e2e-test-logs
           path: |
-            /tmp/android-api-server.log
-            /tmp/android-metro.log
+            /tmp/api-server.log
+            /tmp/metro.log
           retention-days: 14
           if-no-files-found: ignore
 
       - name: Stop Android services
         if: always()
         run: |
-          # Stop emulator
-          adb emu kill 2>/dev/null || true
-          # Stop Android-specific services
-          if [ -f /tmp/android-api-server.pid ]; then
-            kill -9 $(cat /tmp/android-api-server.pid) 2>/dev/null || true
-          fi
-          if [ -f /tmp/android-metro.pid ]; then
-            kill -9 $(cat /tmp/android-metro.pid) 2>/dev/null || true
-          fi
-          rm -f /tmp/android-api-server.pid /tmp/android-metro.pid
-          rm -f /tmp/android-api-server.log /tmp/android-metro.log
+          cd android && ./scripts/e2e-cleanup.sh
 
   # Cleanup job - stop shared services
   cleanup:
@@ -463,14 +450,10 @@ jobs:
           pkill -9 -f "expo start" || true
           pkill -9 -f "metro" || true
           pkill -9 -f "node.*react-native" || true
-          adb emu kill 2>/dev/null || true
-          xcrun simctl shutdown all 2>/dev/null || true
 
           # Clean up PID and log files
-          rm -f /tmp/ios-api-server.pid /tmp/ios-metro.pid
-          rm -f /tmp/android-api-server.pid /tmp/android-metro.pid
-          rm -f /tmp/ios-api-server.log /tmp/ios-metro.log
-          rm -f /tmp/android-api-server.log /tmp/android-metro.log
+          rm -f /tmp/api-server.pid /tmp/metro.pid
+          rm -f /tmp/api-server.log /tmp/metro.log
 
           echo "✅ Cleanup complete"
 
