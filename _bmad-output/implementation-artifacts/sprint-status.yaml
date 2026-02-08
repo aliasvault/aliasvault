@@ -55,8 +55,8 @@ development_status:
   2-1-vaultregistry-smart-contract: done
   2-2-ipfs-service-pinata: done
   2-3-vault-sync-logic-save-flow: done
-  2-4-vault-sync-logic-load-flow: backlog
-  2-5-contract-deployment-scripts: backlog
+  2-4-vault-sync-logic-load-flow: done
+  2-5-contract-deployment-scripts: ready-for-dev
   2-6-vaultregistry-contract-full-specification: backlog
   epic-2-retrospective: optional
 
