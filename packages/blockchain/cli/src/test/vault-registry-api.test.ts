@@ -35,18 +35,35 @@ vi.mock('@aliasvault/contract', () => ({
 }));
 
 // Import the module under test (vitest hoists vi.mock calls above imports)
-import { updateVault, getVaultCID, initVaultRegistryLogger } from '../vault-registry-api';
+import {
+  updateVault,
+  getVaultCID,
+  initVaultRegistryLogger,
+  transferOwnership,
+  storeRecoveryKeyHash,
+  addBackupWallet,
+  removeBackupWallet,
+  initiateBackupTransfer,
+  executeBackupTransfer,
+  cancelBackupTransfer,
+} from '../vault-registry-api';
 
 // Minimal mock logger — prevents undefined access in API functions
 const mockLogger = { info: vi.fn(), trace: vi.fn(), error: vi.fn(), warn: vi.fn(), debug: vi.fn() } as unknown as Logger;
 
 // Minimal mock contract factory — each test gets a unique contract address
 let addressCounter = 0;
+const mockTxResult = { public: { txId: 'mock-tx', blockHeight: 1n } };
 const createMockContract = (address?: string) => ({
   callTx: {
-    updateVault: vi.fn().mockResolvedValue({
-      public: { txId: 'mock-tx', blockHeight: 1n },
-    }),
+    updateVault: vi.fn().mockResolvedValue(mockTxResult),
+    transferOwnership: vi.fn().mockResolvedValue(mockTxResult),
+    storeRecoveryKeyHash: vi.fn().mockResolvedValue(mockTxResult),
+    addBackupWallet: vi.fn().mockResolvedValue(mockTxResult),
+    removeBackupWallet: vi.fn().mockResolvedValue(mockTxResult),
+    initiateBackupTransfer: vi.fn().mockResolvedValue(mockTxResult),
+    executeBackupTransfer: vi.fn().mockResolvedValue(mockTxResult),
+    cancelBackupTransfer: vi.fn().mockResolvedValue(mockTxResult),
   },
   deployTxData: {
     public: { contractAddress: address ?? `mock-address-${++addressCounter}` },
@@ -107,5 +124,58 @@ describe('VaultRegistry API — CID store', () => {
 
     await updateVault(contract, cid2);
     expect(getVaultCID(contract)).toBe(cid2);
+  });
+});
+
+describe('VaultRegistry API — new circuits', () => {
+  beforeEach(() => {
+    initVaultRegistryLogger(mockLogger);
+  });
+
+  it('transferOwnership calls callTx.transferOwnership', async () => {
+    const contract = createMockContract();
+    const commitment = new Uint8Array(32).fill(0xaa);
+    await transferOwnership(contract, commitment);
+    expect(contract.callTx.transferOwnership).toHaveBeenCalledWith(commitment);
+  });
+
+  it('storeRecoveryKeyHash calls callTx.storeRecoveryKeyHash', async () => {
+    const contract = createMockContract();
+    const keyHash = new Uint8Array(32).fill(0xbb);
+    await storeRecoveryKeyHash(contract, keyHash);
+    expect(contract.callTx.storeRecoveryKeyHash).toHaveBeenCalledWith(keyHash);
+  });
+
+  it('addBackupWallet calls callTx.addBackupWallet', async () => {
+    const contract = createMockContract();
+    const commitment = new Uint8Array(32).fill(0xcc);
+    await addBackupWallet(contract, commitment);
+    expect(contract.callTx.addBackupWallet).toHaveBeenCalledWith(commitment);
+  });
+
+  it('removeBackupWallet calls callTx.removeBackupWallet', async () => {
+    const contract = createMockContract();
+    const commitment = new Uint8Array(32).fill(0xdd);
+    await removeBackupWallet(contract, commitment);
+    expect(contract.callTx.removeBackupWallet).toHaveBeenCalledWith(commitment);
+  });
+
+  it('initiateBackupTransfer calls callTx.initiateBackupTransfer with bigint', async () => {
+    const contract = createMockContract();
+    await initiateBackupTransfer(contract, 1700000000n);
+    expect(contract.callTx.initiateBackupTransfer).toHaveBeenCalledWith(1700000000n);
+  });
+
+  it('executeBackupTransfer calls callTx.executeBackupTransfer', async () => {
+    const contract = createMockContract();
+    const commitment = new Uint8Array(32).fill(0xee);
+    await executeBackupTransfer(contract, commitment);
+    expect(contract.callTx.executeBackupTransfer).toHaveBeenCalledWith(commitment);
+  });
+
+  it('cancelBackupTransfer calls callTx.cancelBackupTransfer', async () => {
+    const contract = createMockContract();
+    await cancelBackupTransfer(contract);
+    expect(contract.callTx.cancelBackupTransfer).toHaveBeenCalled();
   });
 });

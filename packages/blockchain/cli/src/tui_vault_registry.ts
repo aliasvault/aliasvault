@@ -134,8 +134,84 @@ try {
     console.log(`  Correctly rejected duplicate: ${msg}\n`);
   }
 
-  // Step 10: CIDv1 validation test
-  console.log('Step 10: Testing CIDv1 validation...');
+  // Step 10: Store recovery key hash
+  console.log('Step 10: Storing recovery key hash...');
+  const recoveryKeyHash = crypto.createHash('sha256').update('test-recovery-key').digest();
+  await api.withStatus('Storing recovery key hash', () =>
+    vrApi.storeRecoveryKeyHash(contract, recoveryKeyHash),
+  );
+  console.log('  Recovery key hash stored successfully!\n');
+
+  // Step 11: Verify recovery key hash in ledger
+  console.log('Step 11: Verifying recovery key hash in ledger...');
+  const stateAfterRecovery = await vrApi.getVaultRegistryLedgerState(providers, contractAddress);
+  const storedRecoveryHash = Buffer.from(stateAfterRecovery?.recoveryKeyHash ?? []).toString('hex');
+  const expectedRecoveryHash = recoveryKeyHash.toString('hex');
+  if (storedRecoveryHash === expectedRecoveryHash) {
+    console.log('  ✅ Recovery key hash matches!\n');
+  } else {
+    console.log('  ❌ Recovery key hash MISMATCH!\n');
+  }
+
+  // Step 12: Add a backup wallet
+  console.log('Step 12: Adding backup wallet...');
+  const backupSecretKey = crypto.randomBytes(32);
+  const { pureCircuits } = await import('@aliasvault/contract').then(m => m.VaultRegistry);
+  const backupWalletCommitment = pureCircuits.backupCommitment(backupSecretKey);
+  await api.withStatus('Adding backup wallet', () =>
+    vrApi.addBackupWallet(contract, backupWalletCommitment),
+  );
+  console.log('  Backup wallet added successfully!\n');
+
+  // Step 13: Verify backup wallet in ledger
+  console.log('Step 13: Verifying backup wallet in ledger...');
+  const stateAfterBackup = await vrApi.getVaultRegistryLedgerState(providers, contractAddress);
+  if (stateAfterBackup?.backupWalletsEmpty === false) {
+    console.log('  ✅ backupWallets is non-empty!\n');
+  } else {
+    console.log('  ❌ backupWallets should not be empty!\n');
+  }
+
+  // Step 14: Remove backup wallet (H1 mitigation — must remove before transferOwnership)
+  console.log('Step 14: Removing backup wallet (pre-transfer mitigation)...');
+  await api.withStatus('Removing backup wallet', () =>
+    vrApi.removeBackupWallet(contract, backupWalletCommitment),
+  );
+  const stateAfterRemove = await vrApi.getVaultRegistryLedgerState(providers, contractAddress);
+  if (stateAfterRemove?.backupWalletsEmpty === true) {
+    console.log('  ✅ backupWallets is now empty!\n');
+  } else {
+    console.log('  ❌ backupWallets should be empty after removal!\n');
+  }
+
+  // Step 15: Transfer ownership
+  console.log('Step 15: Testing transfer ownership...');
+  const newSecretKey = crypto.randomBytes(32);
+  const newOwnerCommitment = pureCircuits.ownerCommitment(newSecretKey);
+  await api.withStatus('Transferring ownership', () =>
+    vrApi.transferOwnership(contract, newOwnerCommitment),
+  );
+  console.log('  Ownership transferred successfully!\n');
+
+  // Step 16: Verify new owner in ledger and recovery state reset
+  console.log('Step 16: Verifying ownership transfer...');
+  const stateAfterTransfer = await vrApi.getVaultRegistryLedgerState(providers, contractAddress);
+  const newOwnerHex = Buffer.from(stateAfterTransfer?.owner ?? []).toString('hex');
+  const expectedOwnerHex = Buffer.from(newOwnerCommitment).toString('hex');
+  if (newOwnerHex === expectedOwnerHex) {
+    console.log('  ✅ New owner commitment matches!');
+  } else {
+    console.log('  ❌ New owner MISMATCH!');
+  }
+  const recoveryReset = Buffer.from(stateAfterTransfer?.recoveryKeyHash ?? []).toString('hex') === '0'.repeat(64);
+  if (recoveryReset) {
+    console.log('  ✅ Recovery state was reset on transfer!\n');
+  } else {
+    console.log('  ❌ Recovery state NOT reset!\n');
+  }
+
+  // Step 17: CIDv1 validation test
+  console.log('Step 17: Testing CIDv1 validation...');
   try {
     vrApi.assertCIDv1('QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG');
     console.log('  ERROR: CIDv0 should have been rejected!\n');
