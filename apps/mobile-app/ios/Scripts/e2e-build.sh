@@ -1,9 +1,13 @@
 #!/bin/bash
 # Build iOS app for E2E testing
-# Usage: ./scripts/e2e-build.sh [SIMULATOR_ID]
+# Usage: ./scripts/e2e-build.sh [SIMULATOR_ID] [--show-simulator]
 #
 # This script builds the iOS app for testing on a simulator.
 # If SIMULATOR_ID is not provided, it will find and boot a suitable simulator.
+#
+# Options:
+#   --show-simulator    Open Simulator.app to show the simulator UI (useful for debugging)
+#   SHOW_SIMULATOR=1    Environment variable alternative to --show-simulator
 
 set -e
 
@@ -11,10 +15,24 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IOS_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$IOS_DIR"
 
-echo "=== iOS E2E Build ==="
+# Parse arguments
+SHOW_SIMULATOR="${SHOW_SIMULATOR:-0}"
+SIMULATOR_ID=""
 
-# Get or find simulator
-SIMULATOR_ID="${1:-$SIMULATOR_ID}"
+for arg in "$@"; do
+    case $arg in
+        --show-simulator)
+            SHOW_SIMULATOR=1
+            ;;
+        *)
+            if [ -z "$SIMULATOR_ID" ]; then
+                SIMULATOR_ID="$arg"
+            fi
+            ;;
+    esac
+done
+
+echo "=== iOS E2E Build ==="
 
 if [ -z "$SIMULATOR_ID" ]; then
     echo "Finding available simulator..."
@@ -46,6 +64,13 @@ if [ "$BOOT_STATUS" -eq 0 ]; then
 
     echo "Waiting for simulator to be ready..."
     xcrun simctl bootstatus "$SIMULATOR_ID" -b
+fi
+
+# Open Simulator.app to show the UI if requested
+if [ "$SHOW_SIMULATOR" = "1" ]; then
+    echo "Opening Simulator.app to show simulator UI..."
+    open -a Simulator
+    sleep 2
 fi
 
 # Disable AutoFill to prevent "Save Password" prompts during tests
