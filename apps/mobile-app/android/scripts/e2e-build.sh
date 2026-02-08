@@ -1,14 +1,13 @@
 #!/bin/bash
 # Build Android app for E2E testing
-# Usage: ./scripts/e2e-build.sh [--show-emulator] [--avd AVD_NAME]
+# Usage: ./scripts/e2e-build.sh
 #
 # This script builds the Android app for testing on an emulator.
-# If no emulator is running, it will start one.
+# If no emulator is running, it will start a headless one.
 #
-# Options:
-#   --show-emulator     Show the emulator window (useful for debugging)
-#   SHOW_EMULATOR=1     Environment variable alternative to --show-emulator
-#   --avd AVD_NAME      Specify the AVD name to use (default: auto-detect)
+# To run with a visible emulator window for debugging:
+#   1. First run: ./scripts/e2e-show-emulator.sh
+#   2. Then run: ./scripts/e2e-build.sh (reuses the visible emulator)
 
 set -e
 
@@ -21,36 +20,6 @@ export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 export ANDROID_SDK_ROOT="$ANDROID_HOME"
 export PATH="$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools"
 
-# Parse arguments
-SHOW_EMULATOR="${SHOW_EMULATOR:-0}"
-AVD_NAME=""
-
-for arg in "$@"; do
-    case $arg in
-        --show-emulator)
-            SHOW_EMULATOR=1
-            ;;
-        --avd)
-            shift
-            AVD_NAME="$1"
-            ;;
-        --avd=*)
-            AVD_NAME="${arg#*=}"
-            ;;
-    esac
-    shift 2>/dev/null || true
-done
-
-# If --show-emulator is set, kill any existing headless emulator first
-if [ "$SHOW_EMULATOR" = "1" ]; then
-    EXISTING_EMULATOR=$(adb devices 2>/dev/null | grep "emulator" | head -1 | awk '{print $1}')
-    if [ -n "$EXISTING_EMULATOR" ]; then
-        echo "Killing existing emulator to restart with visible window..."
-        adb emu kill 2>/dev/null || true
-        sleep 3
-    fi
-fi
-
 echo "=== Android E2E Build ==="
 
 # Check if adb is available
@@ -59,45 +28,35 @@ if ! command -v adb &> /dev/null; then
     exit 1
 fi
 
-# Check if an emulator is already running
+# Check if an emulator is already running (could be visible from e2e-show-emulator.sh)
 EMULATOR_ID=$(adb devices 2>/dev/null | grep "emulator" | head -1 | awk '{print $1}')
 
 if [ -n "$EMULATOR_ID" ]; then
-    echo "Found running emulator: $EMULATOR_ID"
+    echo "Found running emulator: $EMULATOR_ID (reusing)"
 else
-    echo "No running emulator found, starting one..."
+    echo "No running emulator found, starting headless emulator..."
+    echo "(For visible emulator, run ./scripts/e2e-show-emulator.sh first)"
 
     # Find an AVD to use
-    if [ -z "$AVD_NAME" ]; then
-        # Try to find a suitable AVD
-        AVAILABLE_AVDS=$(emulator -list-avds 2>/dev/null || true)
+    AVAILABLE_AVDS=$(emulator -list-avds 2>/dev/null || true)
 
-        if [ -z "$AVAILABLE_AVDS" ]; then
-            echo "ERROR: No AVDs found. Please create an AVD using Android Studio."
-            echo "Recommended: Create a Pixel device with API 34+"
-            exit 1
-        fi
+    if [ -z "$AVAILABLE_AVDS" ]; then
+        echo "ERROR: No AVDs found. Please create an AVD using Android Studio."
+        echo "Recommended: Create a Pixel device with API 34+"
+        exit 1
+    fi
 
-        # Prefer Pixel_Pro_API_36 if available (matches CI), otherwise use first available
-        if echo "$AVAILABLE_AVDS" | grep -q "Pixel_Pro_API_36"; then
-            AVD_NAME="Pixel_Pro_API_36"
-        else
-            AVD_NAME=$(echo "$AVAILABLE_AVDS" | head -1)
-        fi
+    # Prefer Pixel_Pro_API_36 if available (matches CI), otherwise use first available
+    if echo "$AVAILABLE_AVDS" | grep -q "Pixel_Pro_API_36"; then
+        AVD_NAME="Pixel_Pro_API_36"
+    else
+        AVD_NAME=$(echo "$AVAILABLE_AVDS" | head -1)
     fi
 
     echo "Using AVD: $AVD_NAME"
 
-    # Start emulator
-    if [ "$SHOW_EMULATOR" = "1" ]; then
-        echo "Starting emulator with visible window..."
-        # Use -gpu host for better performance on macOS with visible window
-        # Don't use -no-audio or -no-boot-anim to ensure window appears properly
-        "$ANDROID_HOME/emulator/emulator" -avd "$AVD_NAME" -gpu host &
-    else
-        echo "Starting emulator in headless mode..."
-        "$ANDROID_HOME/emulator/emulator" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
-    fi
+    # Start emulator in headless mode
+    "$ANDROID_HOME/emulator/emulator" -avd "$AVD_NAME" -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect &
 
     EMULATOR_PID=$!
     echo $EMULATOR_PID > /tmp/android-emulator.pid
