@@ -394,6 +394,35 @@ await chrome.storage.local.set({ midnightSecretKey: hexEncode(secretKey) });
 
 ---
 
+### 13. pnpm Strict Hoisting & Transitive Dependencies (Story 2.5)
+
+**Rule:** When a package imports a module that is only a transitive dependency (not explicitly listed in its `package.json`), pnpm's strict hoisting may not make it available at runtime. Always add explicit dependencies for packages imported directly.
+
+**Why this matters:**
+- pnpm uses strict hoisting — transitive deps are stored in `.pnpm/` but not hoisted to `node_modules/`
+- If package A imports `rxjs` but only has it as a transitive dep via package B, the import fails at runtime
+- ESM module resolution is stricter than CommonJS and will NOT resolve transitive-only packages
+- This affects all packages using `npm` (not pnpm) within a pnpm monorepo workspace
+
+**Error pattern:**
+```
+Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'rxjs' imported from ...
+```
+
+**Fix:**
+```json
+// packages/blockchain/package.json
+{
+  "dependencies": {
+    "rxjs": "^7.8.2"  // Explicitly add even though it's already a transitive dep
+  }
+}
+```
+
+**Discovery:** Story 2.5 — `api.ts` imports `rxjs`, but `rxjs` was only listed as a transitive dependency of `@midnight-ntwrk/wallet-sdk-*` packages. Added `rxjs: ^7.8.2` to fix runtime resolution.
+
+---
+
 ## Development Workflow Rules
 
 ### Monorepo Package Dependencies
@@ -501,10 +530,11 @@ Before merging any PR that touches cryptography or guardian recovery:
 
 ---
 
-**Last Updated:** 2026-02-07  
-**Source:** Generated from [architecture.md](_bmad-output/architecture.md)  
-**Maintenance:** Update when implementing new patterns or discovering critical rules  
+**Last Updated:** 2026-02-08
+**Source:** Generated from [architecture.md](_bmad-output/architecture.md)
+**Maintenance:** Update when implementing new patterns or discovering critical rules
 **Change Log:**
+- 2026-02-08: Added Rule 13 (pnpm strict hoisting & transitive dependencies) from Story 2.5. pnpm doesn't hoist transitive deps — packages must declare explicit dependencies for modules they import directly.
 - 2026-02-07: Added Rules 9-11 (Compact ownership pattern, language gotchas, contract testing) from Story 2.1 implementation
 - 2026-02-07: Updated Rules 2, 3, 5 with Story 2.2 learnings (canonical assertCIDv1 location, actual IPFS error codes, shared package structure). Updated storage stack (ipfs-http-client → pinata SDK). Added shared/* to pnpm workspace note.
 - 2026-02-07: Added Rule 12 (Midnight Private State is Device-Local, ADR-006) from Story 2.3 architectural analysis. Midnight private state does NOT sync across devices — secrets must be stored in encrypted vault blob.
