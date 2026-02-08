@@ -15,7 +15,7 @@ package_name="identity-generator"
 package_path="."
 
 echo "📦 Building $package_name..."
-npm install && npm run lint && npm run test && npm run build
+pnpm install && pnpm run lint && pnpm run test && pnpm run build
 
 dist_path="dist"
 files_to_copy=("index.js" "index.mjs" "index.d.ts")

@@ -14,7 +14,7 @@ package_name="models"
 package_path="."
 
 echo "📦 Building $package_name..."
-npm install && npm run lint && npm run build
+pnpm install && pnpm run lint && pnpm run build
 
 dist_path="dist"
 files_to_copy=("webapi" "vault" "metadata")
