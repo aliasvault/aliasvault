@@ -36,8 +36,8 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - Node.js
 
 **Storage:**
-- IPFS (via ipfs-http-client)
-- Pinata (IPFS pinning service)
+- IPFS (via `pinata` SDK v1.10.1 — NOT deprecated `ipfs-http-client` or `@pinata/sdk`)
+- Pinata (IPFS pinning service, abstracted via `IpfsProvider` interface in `@aliasvault/ipfs-service`)
 - IndexedDB (client-side caching)
 
 **Cryptography:**
@@ -47,8 +47,9 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - secrets.js-34r7h (Shamir Secret Sharing)
 
 **Package Management:**
-- pnpm 8+ (monorepo workspace)
+- pnpm 8+ (monorepo workspace — `packages/*`, `packages/blockchain/*`, `shared/*`)
 - TurboRepo (build orchestration with caching)
+- Shared packages built with `tsup` (CJS + ESM + DTS), distributed via `build.sh` scripts
 
 **Testing:**
 - Jest / Vitest (unit tests)
@@ -89,32 +90,21 @@ await contract.storeRecoveryKey(recoveryKey)
 - CIDv1 (base32 encoded) is case-insensitive and URL-safe
 - Midnight contracts store CID **hashes** as `Bytes<32>` → the raw CID never goes on-chain; validated in TypeScript API layer before circuit call
 
-**Implementation:**
+**Canonical implementation** in `packages/blockchain/contract/src/cid-utils.ts`, re-exported via `@aliasvault/contract`:
 ```typescript
-// Define branded type
-type CIDv1String = string & { __brand: 'CIDv1' }
+import { assertCIDv1 } from '@aliasvault/contract';
 
-// Type guard (REQUIRED before storing)
-function assertCIDv1(cid: string): asserts cid is CIDv1String {
-  if (cid.startsWith('Qm')) {
-    throw new AppError(ErrorCodes.INVALID_CID_VERSION, 
-      'CIDv0 detected. Convert to CIDv1 using IPFS.CID.parse()')
-  }
-  if (!cid.match(/^[a-z2-7]/)) {
-    throw new AppError(ErrorCodes.INVALID_CID_FORMAT, 
-      'CID must be base32 encoded')
-  }
-}
-
-// Usage (MANDATORY)
-const cid = await ipfsClient.add(encrypted)
-assertCIDv1(cid) // Type guard REQUIRED
-await midnightClient.updateVault(cid)
+// Usage (MANDATORY before storing)
+const cid = await ipfsService.upload(encrypted);
+assertCIDv1(cid); // Throws if not CIDv1
+await midnightClient.updateVault(cid);
 ```
+
+**In `@aliasvault/ipfs-service`**, `assertCIDv1` is wrapped in `validateCIDv1()` which throws `IpfsError(IPFS_INVALID_CID)` for consistent error handling. `IpfsService.upload()` and `download()` call this automatically.
 
 ### 3. Shared Business Logic Enforcement (ADR-003)
 
-**Rule:** ALL business logic MUST be in `shared/logic/` as pure functions. Apps only handle UI and platform-specific APIs.
+**Rule:** ALL business logic MUST be in `shared/<package>/` as independent packages. Apps only handle UI and platform-specific APIs.
 
 **Why this matters:**
 - Prevents platform drift between browser extension and mobile app
@@ -195,33 +185,17 @@ if (CONTRACTS.VaultRegistry.version !== '2.0.0') {
 - Consistent retry behavior across all network calls
 
 **Implementation:**
+**Canonical implementation** in `@aliasvault/ipfs-service`:
 ```typescript
-// shared/constants/errorCodes.ts
-export const RETRYABLE_CODES = [
-  'NETWORK_TIMEOUT',
-  'IPFS_UNAVAILABLE',
-  'RPC_CONNECTION_FAILED'
-] as const
+import { withRetry, IpfsErrorCodes, RETRYABLE_CODES } from '@aliasvault/ipfs-service';
 
-// Retry logic (REQUIRED for all network calls)
-async function withRetry<T>(
-  fn: () => Promise<T>,
-  maxRetries = 3
-): Promise<T> {
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      return await fn()
-    } catch (error) {
-      if (!RETRYABLE_CODES.includes(error.code) || i === maxRetries - 1) {
-        throw error
-      }
-      await sleep(2 ** i * 1000) // Exponential backoff
-    }
-  }
-}
+// RETRYABLE (transient): IPFS_UPLOAD_FAILED, IPFS_DOWNLOAD_FAILED, IPFS_PIN_FAILED, IPFS_TIMEOUT
+// NOT RETRYABLE (permanent): IPFS_AUTH_FAILED, IPFS_INVALID_CID
 
-// Usage
-const cid = await withRetry(() => ipfsClient.add(encrypted))
+// withRetry is built into IpfsService.upload() and download() automatically.
+// For other network calls, use withRetry directly:
+const result = await withRetry(() => someNetworkCall(), 3, 1000);
+// Retries: 1s → 2s → 4s (exponential backoff)
 ```
 
 ### 6. Guardian Recovery Time-Lock (72 hours)
@@ -383,6 +357,41 @@ export class VaultRegistrySimulator {
 }
 ```
 
+### 12. Midnight Private State is Device-Local (ADR-006)
+
+**Rule:** Midnight private state (witnesses) NEVER syncs across devices. Any secret that must be available on multiple devices MUST be stored inside the encrypted vault blob (SQLite DB), not solely in `chrome.storage.local` or Midnight private state.
+
+**Why this matters:**
+- Midnight's ZK architecture keeps witnesses local — this is a privacy feature, not a bug
+- Every Midnight example (Sea Battle, Midnight Bank, bboard) confirms: private state is lost on device change/reload
+- The `secretKey` used for VaultRegistry owner proof must be recoverable on new devices
+
+**Correct pattern:**
+```typescript
+// ✅ CORRECT: Store secretKey in SQLite vault DB (travels with encrypted vault)
+sqliteClient.execute(
+  "INSERT OR REPLACE INTO Settings (Key, Value) VALUES ('midnightSecretKey', ?)",
+  [hexEncode(secretKey)]
+);
+// Vault export → encrypt → IPFS upload → secretKey is now in the backup
+
+// On new device: download vault → decrypt → extract secretKey
+const row = sqliteClient.execute("SELECT Value FROM Settings WHERE Key = 'midnightSecretKey'");
+const secretKey = hexDecode(row.Value);
+```
+
+**Anti-pattern:**
+```typescript
+// ❌ WRONG: secretKey only in chrome.storage.local — lost on new device
+await chrome.storage.local.set({ midnightSecretKey: hexEncode(secretKey) });
+// Second device with same wallet cannot call updateVault()
+```
+
+**Alternatives evaluated and rejected:**
+- ❌ Wallet signature derivation (`signData()` → SHA-256) — fragile, breaks on wallet change
+- ❌ Master password derivation — breaks on password change, unavailable when locked
+- See Story 2.3 for full analysis
+
 ---
 
 ## Development Workflow Rules
@@ -449,6 +458,10 @@ export class VaultRegistrySimulator {
 
 **Never** assume guardian shares are claimable immediately after approvals. Always respect the 72-hour time-lock (see Rule 6).
 
+### ❌ Device-Local-Only Storage of Cross-Device Secrets
+
+**Never** store the VaultRegistry `secretKey` (or any cross-device secret) solely in `chrome.storage.local` or Midnight private state. Always store in the encrypted vault DB so it syncs via IPFS (see Rule 12).
+
 ---
 
 ## Code Quality Standards
@@ -493,3 +506,5 @@ Before merging any PR that touches cryptography or guardian recovery:
 **Maintenance:** Update when implementing new patterns or discovering critical rules  
 **Change Log:**
 - 2026-02-07: Added Rules 9-11 (Compact ownership pattern, language gotchas, contract testing) from Story 2.1 implementation
+- 2026-02-07: Updated Rules 2, 3, 5 with Story 2.2 learnings (canonical assertCIDv1 location, actual IPFS error codes, shared package structure). Updated storage stack (ipfs-http-client → pinata SDK). Added shared/* to pnpm workspace note.
+- 2026-02-07: Added Rule 12 (Midnight Private State is Device-Local, ADR-006) from Story 2.3 architectural analysis. Midnight private state does NOT sync across devices — secrets must be stored in encrypted vault blob.

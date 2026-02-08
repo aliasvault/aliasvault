@@ -110,11 +110,11 @@ AliasVault 2.0 launches as a new decentralized product. Existing centralized inf
 
 **4. Gas Economics & User Experience:** Contract-sponsored transactions via protocol-owned NIGHT balance. Users receive 100 free transaction quota/year. After quota: purchase NIGHT or pay protocol.
 
-**5. IPFS + Midnight Hybrid Storage:** Encrypted vault blobs on IPFS (multi-device sync). IPFS CID in Midnight private state (never disclosed on public ledger). Provides metadata privacy + decentralized storage.
+**5. IPFS + Midnight Hybrid Storage:** Encrypted vault blobs on IPFS (multi-device sync). IPFS CID hash stored on public ledger as `Bytes<32>` (SHA-256 of CID string) for integrity verification. Full CID stored at the application layer (encrypted inside vault blob on IPFS). The `secretKey` (owner proof) is also stored inside the encrypted vault, enabling cross-device access after vault download and decryption.
 
 **6. SMTP Bridge Centralization:** MVP uses centralized Mox SMTP server + blockchain verification bridge. Post-MVP: tiered decentralization approach.
 
-**7. Multi-Device CID Distribution:** Midnight private state accessible to wallet owner via witness functions across all devices. Each device queries contract with wallet signature to retrieve private CID.
+**7. Multi-Device Private State & CID Distribution (ADR-006 — Corrected):** Midnight private state is **device-local by design** — witnesses never leave the user's machine. This is a privacy feature, not a limitation. Cross-device vault access is achieved through a layered approach: (1) the `vaultCidHash` is on the **public ledger** and readable by any device, (2) CID discovery uses Pinata pin listing + hash matching, (3) the owner's `secretKey` is stored inside the **encrypted vault blob** (SQLite Settings table) so it travels with the vault to new devices after download and decryption. See Story 2.3 ADR-006 for full analysis of alternatives evaluated.
 
 **8. Alias Ownership & Anti-Squatting:** First-come-first-served + 1 NIGHT fee per alias claim. Future: expiration for unused aliases, tiered pricing for short names.
 
@@ -178,7 +178,7 @@ We will combine the best of both worlds:
 
 2.  **Browser Extension Integration**:
     -   Refactor `apps/browser-extension`.
-    -   Add dependencies: `@meshsdk/core`, `@meshsdk/react`, `ipfs-http-client`, `@midnight-ntwrk/compact-sdk`, `secrets.js-34r7h`.
+    -   Add dependencies: `@meshsdk/core`, `@meshsdk/react`, `@aliasvault/ipfs-service`, `@midnight-ntwrk/compact-sdk`, `secrets.js-34r7h`.
     -   Integration: link build artifacts from `contracts/` into the extension.
 
 3.  **SMTP Bridge**:
@@ -262,9 +262,9 @@ contract VaultRegistry {
 ```
 
 **Multi-Device Flow:**
-1. User saves vault on Device A → Uploads to IPFS (CID: QmABC...), updates contract private state
-2. User opens vault on Device B → Connects wallet, queries contract witness function, retrieves QmABC... (still private to wallet owner)
-3. Device B fetches encrypted vault from IPFS using private CID
+1. User saves vault on Device A → Uploads to IPFS via `IpfsService` (CID: bafkrei... CIDv1), stores CID hash on-chain via `updateVault(sha256(cid))`
+2. User opens vault on Device B → Connects wallet, retrieves CID from app-layer store, verifies hash matches on-chain `vaultCidHash`
+3. Device B fetches encrypted vault from IPFS via `IpfsService.download(cid)` (CIDv1 validated)
 4. Decrypts locally with Master Password
 
 **Affects:** Vault storage, multi-device synchronization, privacy guarantees
@@ -280,32 +280,26 @@ contract VaultRegistry {
 - REST API integration well-documented and stable
 - Allows focus on core vault functionality vs infrastructure management
 
-**Configuration:**
+**Implementation (Story 2.2 — DONE):**
 
 ```typescript
-// Extension IPFS client configuration
-import { create } from 'ipfs-http-client'
+// Use @aliasvault/ipfs-service (NOT deprecated ipfs-http-client or @pinata/sdk)
+import { IpfsService, PinataProvider } from '@aliasvault/ipfs-service';
 
-const ipfsClient = create({
-  host: 'api.pinata.cloud',
-  port: 443,
-  protocol: 'https',
-  headers: {
-    authorization: `Bearer ${PINATA_JWT_TOKEN}`
-  }
-})
+const provider = new PinataProvider({
+  pinataJwt: process.env.PINATA_JWT!,
+  pinataGateway: process.env.PINATA_GATEWAY!,
+});
+const ipfs = new IpfsService(provider); // CIDv1 validation + retry built-in
 
-// Upload with explicit pinning
-async function uploadVaultToIPFS(encryptedVault: Uint8Array): Promise<string> {
-  const result = await ipfsClient.add(encryptedVault, {
-    pin: true, // Ensure pinned
-    cidVersion: 1 // Use CIDv1 for better compatibility
-  })
-  
-  // Pinata automatically replicates to multiple regions
-  return result.cid.toString()
-}
+// Upload — returns CIDv1 string, validated automatically
+const cid = await ipfs.upload(encryptedVault);
+
+// Download — CIDv1 validated before fetch
+const data = await ipfs.download(cid);
 ```
+
+**NOTE:** Pinata SDK v1.10.1 uses `pinata.upload.file(fileObject)` and `pinata.gateways.get(cid)` — no `.public` namespace. The `FileObject` is a custom type (not Web `File`).
 
 **Backup Strategy:**
 - Configure Pinata with 3 geographic regions (US East, EU West, Asia Pacific)
@@ -315,6 +309,15 @@ async function uploadVaultToIPFS(encryptedVault: Uint8Array): Promise<string> {
 **Post-MVP Options:**
 - V2: Hybrid approach with user-selected pinning service (Pinata, Web3.Storage, or self-hosted)
 - V3: Filecoin integration for long-term archival storage
+
+**Vendor Lock-in Mitigation (IMPLEMENTED — Story 2.2):**
+
+IPFS CIDs are content-addressed and provider-agnostic — the same CID resolves to the same content regardless of which node pins it. To protect against Pinata service discontinuation:
+
+1. **Provider abstraction** (DONE): `IpfsService` depends on `IpfsProvider` interface, not Pinata directly. `PinataProvider` is the current implementation in `@aliasvault/ipfs-service`. Swapping to another provider (web3.storage, Filebase, self-hosted IPFS node) requires only a new `IpfsProvider` implementation — zero changes to consumers.
+2. **Local cache** (MVP): IndexedDB stores the most recently loaded vault. If IPFS is unreachable, the user retains access to their last-synced credentials.
+3. **Multi-provider pinning** (V2): Pin to 2+ services simultaneously for redundancy. The `IpfsProvider` interface supports this via a future `CompositeProvider` that delegates to multiple backends.
+4. **CID portability**: Since on-chain state stores CID hashes (not provider URLs), migrating pinned content to a new provider preserves all existing vault references.
 
 **Affects:** Vault reliability, operational costs, decentralization degree
 
@@ -965,12 +968,15 @@ contract GuardianRecovery {
 // smtp-bridge/src/index.ts
 import express from 'express'
 import { MidnightRPC } from '@midnight-ntwrk/client-sdk'
-import { create as createIPFSClient } from 'ipfs-http-client'
+import { IpfsService, PinataProvider } from '@aliasvault/ipfs-service'
 import nodemailer from 'nodemailer'
 
 const app = express()
 const midnightRPC = new MidnightRPC(process.env.MIDNIGHT_RPC_URL)
-const ipfsClient = createIPFSClient(/* Pinata config */)
+const ipfs = new IpfsService(new PinataProvider({
+  pinataJwt: process.env.PINATA_JWT!,
+  pinataGateway: process.env.PINATA_GATEWAY!,
+}))
 
 // 1. Mox forwards emails to this webhook
 app.post('/receive-email', async (req, res) => {
@@ -1308,27 +1314,21 @@ interface CachedVault {
 
 ### Pattern 3: IPFS CID Handling
 
-**CID Version Standard:**
+**CID Version Standard (IMPLEMENTED — Story 2.2):**
 ```typescript
-// ALWAYS use CIDv1 for consistency
-import { create } from 'ipfs-http-client'
+// Use @aliasvault/ipfs-service — CIDv1 validation is automatic
+import { IpfsService, PinataProvider } from '@aliasvault/ipfs-service';
 
-const ipfsClient = create({
-  host: 'api.pinata.cloud',
-  port: 443,
-  protocol: 'https',
-  headers: { authorization: `Bearer ${PINATA_JWT}` }
-})
+const ipfs = new IpfsService(new PinataProvider({
+  pinataJwt: process.env.PINATA_JWT!,
+  pinataGateway: process.env.PINATA_GATEWAY!,
+}));
 
-// Upload with explicit CIDv1
-async function uploadToIPFS(data: Uint8Array): Promise<string> {
-  const result = await ipfsClient.add(data, {
-    pin: true,
-    cidVersion: 1  // MANDATORY: Always CIDv1
-  })
-  
-  return result.cid.toString() // Returns CIDv1 string: "bafybeig..."
-}
+// Upload — CIDv1 validated automatically via assertCIDv1
+const cid = await ipfs.upload(data); // Returns CIDv1: "bafkrei..."
+
+// Download — CIDv1 validated before fetch
+const data = await ipfs.download(cid);
 ```
 
 **CID Field Naming:**
@@ -2638,17 +2638,15 @@ export async function connectWallet(): Promise<WalletAddress> {
 }
 ```
 
-**Pinata IPFS:**
+**Pinata IPFS (via @aliasvault/ipfs-service):**
 ```typescript
-// apps/browser-extension/src/services/ipfsClient.ts
-import { create } from 'ipfs-http-client'
+// Use shared IPFS service — provider-agnostic with CIDv1 validation + retry
+import { IpfsService, PinataProvider } from '@aliasvault/ipfs-service';
 
-const client = create({
-  host: 'api.pinata.cloud',
-  port: 443,
-  protocol: 'https',
-  headers: { authorization: `Bearer ${PINATA_JWT}` }
-})
+const ipfs = new IpfsService(new PinataProvider({
+  pinataJwt: process.env.PINATA_JWT!,
+  pinataGateway: process.env.PINATA_GATEWAY!,
+}));
 ```
 
 **Midnight Network:**
