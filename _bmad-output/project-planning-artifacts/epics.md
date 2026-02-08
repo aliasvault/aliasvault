@@ -301,11 +301,11 @@ This document provides the complete epic and story breakdown for aliasvault, dec
 **So that** only I can access my data location
 
 **Acceptance Criteria:**
-- [ ] Contract tracks `owner` (public) and `vaultCID` (private)
-- [ ] `updateVault(cid)` function (only owner can call)
-- [ ] `getVaultCID()` witness function (returns private CID to owner)
-- [ ] `assertCIDv1` logic enforces CIDv1 format
-- [ ] Unit tests for ownership access control
+- [x] Contract tracks `owner` (public) and `vaultCidHash` (public) — **Deviation:** CID hash (SHA-256, Bytes<32>) stored on public ledger, not full CID in private state. Full CID stored at application layer (too large for Bytes<32>). ADR-006.
+- [x] `updateVault(newCidHash)` function (only owner can call) — **Deviation:** Takes CID hash (Bytes<32>), not raw CID string. Owner auth via `persistentCommit` pattern.
+- [x] CID retrieval via app-layer `getVaultCID()` API — **Deviation:** NOT a witness function. Full CID stored in TypeScript Map, not Midnight private state. Private state holds only `secretKey` for owner auth.
+- [x] `assertCIDv1` logic enforces CIDv1 format — canonical location: `contract/src/cid-utils.ts`
+- [x] Unit tests for ownership access control — 16/16 tests including non-owner rejection via circuitContext injection
 
 ---
 
@@ -316,11 +316,12 @@ This document provides the complete epic and story breakdown for aliasvault, dec
 **So that** vault data is reliably stored and retrieval strings are generated
 
 **Acceptance Criteria:**
-- [ ] `IpfsService.ts` created with Pinata SDK
-- [ ] Feature: Upload `Uint8Array` → returns `CID`
-- [ ] Feature: Download `CID` → returns `Uint8Array`
-- [ ] Error handling for network failures (retry logic)
-- [ ] Validation: Returned CID must be CIDv1
+- [x] `IpfsService.ts` created with Pinata SDK (`pinata` v1.10.1, unified SDK)
+- [x] Feature: Upload `Uint8Array` → returns CIDv1 string
+- [x] Feature: Download CID → returns `Uint8Array`
+- [x] Error handling for network failures — `withRetry()` exponential backoff (3 retries, 1s base)
+- [x] Validation: Returned CID must be CIDv1 — `assertCIDv1` from `@aliasvault/contract`
+- [x] Provider abstraction: `IpfsProvider` interface enables swapping Pinata for any pinning service
 
 ---
 
@@ -331,11 +332,11 @@ This document provides the complete epic and story breakdown for aliasvault, dec
 **So that** my credentials are backed up on the blockchain network
 
 **Acceptance Criteria:**
-- [ ] `SqliteClient.exportToBase64()` (existing) used to get blob
-- [ ] `EncryptionUtility.symmetricEncrypt()` (existing) used to encrypt blob
-- [ ] Upload encrypted blob to IPFS (Story 2.2)
-- [ ] Call `VaultRegistry.updateVault(cid)` (Story 2.1)
-- [ ] UI shows "Syncing..." → "Synced" status
+- [x] `SqliteClient.exportToBase64()` (existing) used to get blob
+- [x] `EncryptionUtility.symmetricEncrypt()` (existing) used to encrypt blob
+- [x] Upload encrypted blob to IPFS — via `PinataBrowserProvider` (browser-compatible REST API) + shared `VaultSyncService` (ADR-003)
+- [x] Call `VaultRegistry.updateVault(cidHash)` on-chain — **Deviation:** sends SHA-256 hash of CID (Bytes<32>), not raw CID string
+- [x] UI shows "Encrypting vault..." → "Syncing to blockchain..." → "Synced" status progression
 
 ---
 
