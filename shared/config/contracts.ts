@@ -19,7 +19,7 @@ export interface ContractConfig {
  */
 export const CONTRACTS: Record<string, ContractConfig> = {
   VaultRegistry: {
-    address: '', // Set after deployment (Story 2.5)
+    address: 'e386083d04bdf1820466c8e1ac395ef06ecc2688fc4816e175bef51cb537f868', // Set after deployment (Story 2.5)
     version: '0.1.0',
   },
 };
