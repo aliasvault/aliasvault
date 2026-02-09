@@ -139,31 +139,31 @@
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SavingCredentials" xml:space="preserve">
-    <value>Saving credentials to vault... {0} / {1}</value>
+    <value>Sparar uppgifter i valvet... {0} / {1}</value>
     <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
   </data>
   <data name="SyncingVault" xml:space="preserve">
-    <value>Syncing vault to server...</value>
+    <value>Synkroniserar valvet till servern...</value>
     <comment>Progress text when syncing vault to server after import</comment>
   </data>
   <data name="ImportSuccessMessage" xml:space="preserve">
-    <value>Successfully imported {0} credentials.</value>
+    <value>Importerade {0} uppgifter.</value>
     <comment>Success message after import completes. {0} is the credential count</comment>
   </data>
   <data name="ImportErrorGeneric" xml:space="preserve">
-    <value>An error occurred during import. Please try again.</value>
+    <value>Ett fel uppstod vid import. Försök igen.</value>
     <comment>Generic error message when import fails</comment>
   </data>
   <data name="ImportErrorInvalidFile" xml:space="preserve">
-    <value>Please select a valid export file to import.</value>
+    <value>Välj en giltig exportfil att importera.</value>
     <comment>Error message when invalid file is selected</comment>
   </data>
   <data name="ImportErrorZipFile" xml:space="preserve">
-    <value>Please unzip the export file before importing. See the instructions below for more information.</value>
+    <value>Packa upp exportfilen innan du importerar. Se anvisningarna nedan för mer information.</value>
     <comment>Error message when user tries to import a zip file</comment>
   </data>
   <data name="ImportErrorFileTooLarge" xml:space="preserve">
-    <value>File size exceeds 10MB limit.</value>
+    <value>Filstorleken överskrider gränsen på 10MB.</value>
     <comment>Error message when file is too large</comment>
   </data>
 </root>
