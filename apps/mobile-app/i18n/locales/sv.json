@@ -70,7 +70,7 @@
       "httpError": "HTTP-fel: {{status}}"
     },
     "confirmLogout": "Är du säker på att du vill logga ut? Du måste logga in igen med ditt huvudlösenord för att komma åt ditt valv.",
-    "noAccountYet": "Inget konto ännu?",
+    "noAccountYet": "Inget konto än?",
     "createNewVault": "Skapa ett nytt valv",
     "connectingTo": "Ansluter till",
     "loggedInAs": "Inloggad som"
@@ -132,7 +132,7 @@
       "step5": "5. Inaktivera andra lösenordshanterare (t.ex. \"iCloud-lösenord\") för att undvika konflikter",
       "openIosSettings": "Öppna iOS-inställningarna",
       "alreadyConfigured": "Jag har redan konfigurerat det",
-      "warningText": "Obs: Du måste autentisera med Face ID/Touch ID eller din enhets lösenord när du använder autofyll."
+      "warningText": "OBS: Du måste autentisera med Face ID/Touch ID eller din enhets lösenord när du använder autofyll."
     },
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Experimentell funktion",
@@ -154,7 +154,7 @@
     "autoLock": "Timeout för automatisk låsning",
     "clipboardClear": "Rensa urklipp",
     "clipboardClearDescription": "Rensa automatiskt kopierade lösenord och känslig information från urklipp efter en viss tidsperiod.",
-    "clipboardClearAndroidWarning": "Obs: vissa Android-enheter har urklipp historia aktiverad, som kan hålla reda på tidigare kopierade objekt, även efter AliasVault rensar urklipp. AliasVault kan bara skriva över det senaste objektet, men äldre poster kan förbli synliga i historiken. Av säkerhetsskäl rekommenderar vi att du inaktiverar alla funktioner för urklippshistorik i enhetens inställningar.",
+    "clipboardClearAndroidWarning": "OBS: Vissa Android-enheter har urklipp historia aktiverad, som kan hålla reda på tidigare kopierade objekt, även efter AliasVault rensar urklipp. AliasVault kan bara skriva över det senaste objektet, men äldre poster kan förbli synliga i historiken. Av säkerhetsskäl rekommenderar vi att du inaktiverar alla funktioner för urklippshistorik i enhetens inställningar.",
     "clipboardClearOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",
