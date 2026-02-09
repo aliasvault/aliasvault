@@ -19,12 +19,13 @@ import { getFieldValue, FieldKey } from '@/utils/dist/core/models/vault';
 type ItemCardProps = {
   item: Item;
   onItemDelete?: (itemId: string) => Promise<void>;
+  showFolderPath?: boolean;
 };
 
 /**
  * Item card component for displaying vault items in a list.
  */
-export function ItemCard({ item, onItemDelete }: ItemCardProps): React.ReactNode {
+export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCardProps): React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const { showConfirm } = useDialog();
@@ -257,6 +258,11 @@ export function ItemCard({ item, onItemDelete }: ItemCardProps): React.ReactNode
     serviceNameRow: {
       alignItems: 'center',
       flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+    folderPath: {
+      color: colors.textMuted,
+      fontSize: 14,
     },
   });
 
@@ -284,6 +290,9 @@ export function ItemCard({ item, onItemDelete }: ItemCardProps): React.ReactNode
             <ItemIcon item={item} style={styles.logo} />
             <View style={styles.itemInfo}>
               <View style={styles.serviceNameRow}>
+                {showFolderPath && item.FolderPath && (
+                  <Text style={styles.folderPath}>{item.FolderPath} &gt; </Text>
+                )}
                 <Text style={styles.serviceName}>
                   {getItemName(item)}
                 </Text>
