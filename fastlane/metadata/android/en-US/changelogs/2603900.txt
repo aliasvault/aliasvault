@@ -1,0 +1,6 @@
+- Add Swedish language option
+- Add option to show all items regardless of folders (new checkbox "folders" in items filter dropdown)
+- Improve autofill accuracy
+- Make item sort options also visible in folders
+- Fix attachment upload
+- Fix favicon extraction

@@ -248,6 +248,45 @@
     <value>Pentru a importa datele din Dropbox Passwords, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând Dropbox Passwords, mergând la „Account” > „Export” (în format .CSV).</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
+  <!-- RoboForm -->
+  <data name="RoboformDescription" xml:space="preserve">
+    <value>Importă parolele din RoboForm</value>
+    <comment>Description for RoboForm import service</comment>
+  </data>
+  <data name="RoboformInstructionsPart1" xml:space="preserve">
+    <value>Pentru a importa parolele tale RoboForm, trebuie să le exporți sub formă de fișier CSV. Poți face acest lucru deschizând RoboForm, mergând la meniul „RoboForm” > „Options” > „Account &amp; Data” > „Export” și selectând formatul CSV.</value>
+    <comment>RoboForm export instructions part 1</comment>
+  </data>
+  <data name="RoboformInstructionsPart2" xml:space="preserve">
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
+    <comment>RoboForm export instructions part 2</comment>
+  </data>
+  <!-- Edge -->
+  <data name="EdgeDescription" xml:space="preserve">
+    <value>Importă parolele din managerul de parole Microsoft Edge</value>
+    <comment>Description for Edge import service</comment>
+  </data>
+  <data name="EdgeInstructionsPart1" xml:space="preserve">
+    <value>Pentru a importa parolele din Microsoft Edge, trebuie să le exporți ca fișier CSV. Poți face acest lucru mergând la Meniu > Setări > Parole și completare automată > Managerul de parole Microsoft > … > Exportă parolele.</value>
+    <comment>Edge export instructions part 1</comment>
+  </data>
+  <data name="EdgeInstructionsPart2" xml:space="preserve">
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
+    <comment>Edge export instructions part 2</comment>
+  </data>
+  <!-- Enpass -->
+  <data name="EnpassDescription" xml:space="preserve">
+    <value>Importă parolele din Enpass</value>
+    <comment>Description for Enpass import service</comment>
+  </data>
+  <data name="EnpassInstructionsPart1" xml:space="preserve">
+    <value>Pentru a importa parolele din Enpass, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând Enpass, accesând Meniu > Fișier > Export și selectând Fișier CSV (.csv).</value>
+    <comment>Enpass export instructions part 1</comment>
+  </data>
+  <data name="EnpassInstructionsPart2" xml:space="preserve">
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
+    <comment>Enpass export instructions part 2</comment>
+  </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
     <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>

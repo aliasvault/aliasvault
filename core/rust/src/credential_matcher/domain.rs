@@ -131,7 +131,8 @@ pub fn extract_domain_with_port(url: &str) -> DomainWithPort {
 
     let mut domain = url.to_lowercase();
 
-    // Check if it has a protocol
+    // Check if it has a protocol - this is important for allowing single-word hostnames
+    // like "http://plex" or "https://nas" which are common in self-hosted/homelab setups
     let has_protocol = domain.starts_with("http://") || domain.starts_with("https://");
 
     // If no protocol and starts with TLD + dot, it's likely an app package name
@@ -179,15 +180,18 @@ pub fn extract_domain_with_port(url: &str) -> DomainWithPort {
         None
     };
 
-    // Basic domain validation - must contain at least one dot and valid characters
-    if !domain.contains('.') {
+    // Domain validation:
+    // - If URL had a protocol (http:// or https://), allow single-word hostnames
+    //   like "localhost", "plex", "nas", "router" - common in self-hosted/homelab setups
+    // - If no protocol, require at least one dot to distinguish from random text
+    if !domain.contains('.') && !has_protocol {
         return DomainWithPort {
             domain: String::new(),
             port: None,
         };
     }
 
-    // Check for valid domain characters
+    // Check for valid domain characters (alphanumeric, dots, hyphens)
     if !domain
         .chars()
         .all(|c| c.is_ascii_alphanumeric() || c == '.' || c == '-')
@@ -198,8 +202,16 @@ pub fn extract_domain_with_port(url: &str) -> DomainWithPort {
         };
     }
 
-    // Ensure valid domain structure
+    // Ensure valid domain structure (no leading/trailing dots, no consecutive dots)
     if domain.starts_with('.') || domain.ends_with('.') || domain.contains("..") {
+        return DomainWithPort {
+            domain: String::new(),
+            port: None,
+        };
+    }
+
+    // Ensure domain is not empty after all processing
+    if domain.is_empty() {
         return DomainWithPort {
             domain: String::new(),
             port: None,
@@ -315,6 +327,62 @@ mod tests {
         // Invalid domains
         assert_eq!(extract_domain(""), "");
         assert_eq!(extract_domain("nodot"), "");
+
+        // Single-word hostnames WITH protocol should be supported
+        // (common in self-hosted/homelab setups with local DNS or /etc/hosts)
+        assert_eq!(extract_domain("http://localhost"), "localhost");
+        assert_eq!(extract_domain("https://localhost"), "localhost");
+        assert_eq!(extract_domain("http://localhost/path"), "localhost");
+        assert_eq!(extract_domain("http://localhost?query=1"), "localhost");
+        assert_eq!(extract_domain("http://plex"), "plex");
+        assert_eq!(extract_domain("https://nas"), "nas");
+        assert_eq!(extract_domain("http://router"), "router");
+        assert_eq!(extract_domain("http://homeassistant"), "homeassistant");
+        assert_eq!(extract_domain("http://pihole/admin"), "pihole");
+
+        // Single-word hostnames WITHOUT protocol should NOT be accepted
+        // (to avoid matching random text as domains)
+        assert_eq!(extract_domain("localhost"), "");
+        assert_eq!(extract_domain("plex"), "");
+        assert_eq!(extract_domain("randomword"), "");
+    }
+
+    #[test]
+    fn test_extract_domain_single_word_hostname_with_port() {
+        // Single-word hostnames with port (common for self-hosted services)
+        assert_eq!(extract_domain("http://localhost:8080"), "localhost");
+        assert_eq!(extract_domain("http://localhost:81"), "localhost");
+        assert_eq!(extract_domain("http://localhost:3000/path"), "localhost");
+        assert_eq!(extract_domain("http://plex:32400"), "plex");
+        assert_eq!(extract_domain("https://nas:5001"), "nas");
+        assert_eq!(extract_domain("http://router:8080/admin"), "router");
+
+        // Without protocol - should NOT work (could be ambiguous)
+        assert_eq!(extract_domain("localhost:8080"), "");
+        assert_eq!(extract_domain("plex:32400"), "");
+
+        // Test DomainWithPort struct with localhost
+        let result = extract_domain_with_port("http://localhost:81");
+        assert_eq!(result.domain, "localhost");
+        assert_eq!(result.port, Some("81".to_string()));
+        assert_eq!(result.with_port(), "localhost:81");
+
+        let result = extract_domain_with_port("http://localhost:8080/path");
+        assert_eq!(result.domain, "localhost");
+        assert_eq!(result.port, Some("8080".to_string()));
+
+        let result = extract_domain_with_port("http://localhost/path");
+        assert_eq!(result.domain, "localhost");
+        assert_eq!(result.port, None);
+
+        // Test with other single-word hostnames
+        let result = extract_domain_with_port("http://plex:32400");
+        assert_eq!(result.domain, "plex");
+        assert_eq!(result.port, Some("32400".to_string()));
+
+        let result = extract_domain_with_port("https://nas:5001/files");
+        assert_eq!(result.domain, "nas");
+        assert_eq!(result.port, Some("5001".to_string()));
     }
 
     #[test]

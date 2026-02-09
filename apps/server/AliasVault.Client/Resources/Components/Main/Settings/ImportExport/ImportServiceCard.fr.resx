@@ -138,4 +138,32 @@
     <value>Extraction des icônes de favoris ... {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
+  <data name="SavingCredentials" xml:space="preserve">
+    <value>Enregistrement des identifiants dans le coffre... {0} / {1}</value>
+    <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SyncingVault" xml:space="preserve">
+    <value>Synchronisation du coffre vers le serveur...</value>
+    <comment>Progress text when syncing vault to server after import</comment>
+  </data>
+  <data name="ImportSuccessMessage" xml:space="preserve">
+    <value>{0} identifiants importés avec succès.</value>
+    <comment>Success message after import completes. {0} is the credential count</comment>
+  </data>
+  <data name="ImportErrorGeneric" xml:space="preserve">
+    <value>Une erreur s'est produite pendant l'importation. Veuillez réessayer.</value>
+    <comment>Generic error message when import fails</comment>
+  </data>
+  <data name="ImportErrorInvalidFile" xml:space="preserve">
+    <value>Veuillez sélectionner un fichier d'exportation valide à importer.</value>
+    <comment>Error message when invalid file is selected</comment>
+  </data>
+  <data name="ImportErrorZipFile" xml:space="preserve">
+    <value>Veuillez décompresser le fichier d'exportation avant d'importer. Consultez les instructions ci-dessous pour plus d'informations.</value>
+    <comment>Error message when user tries to import a zip file</comment>
+  </data>
+  <data name="ImportErrorFileTooLarge" xml:space="preserve">
+    <value>La taille du fichier dépasse la limite de 10 Mo.</value>
+    <comment>Error message when file is too large</comment>
+  </data>
 </root>

@@ -28,14 +28,7 @@
     "switchAccounts": "Switch accounts?",
     "loginWithMobile": "Log in using Mobile App",
     "unlockWithMobile": "Unlock using Mobile App",
-    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
-    "errors": {
-      "invalidCode": "Lütfen geçerli 6 haneli doğrulama kodunu girin.",
-      "serverError": "AliasVault sunucusuna ulaşılamadı. Lütfen daha sonra tekrar deneyin veya sorun devam ederse destek ile iletişime geçin.",
-      "wrongPassword": "Parola yanlış. Lütfen yeniden deneyin.",
-      "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
-    }
+    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault."
   },
   "menu": {
     "vault": "Vault",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "Vault is locked",
       "passwordChanged": "Parolanız, en son giriş yaptığınızdan bu yana değişti. Güvenlik nedeniyle lütfen tekrar giriş yapın.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again."
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "invalidCode": "Please enter a valid 6-digit authentication code.",
+      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
+      "wrongPassword": "Incorrect password. Please try again.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "An unknown error occurred. Please try again.",
@@ -202,7 +200,7 @@
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
-      "all": "(All) Items",
+      "folders": "Folders",
       "passkeys": "Passkeys"
     },
     "sort": {
@@ -515,5 +513,9 @@
     "unsyncedChangesTitle": "Unsynced Changes",
     "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
     "logoutAnyway": "Log out anyway"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }

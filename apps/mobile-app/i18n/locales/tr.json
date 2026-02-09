@@ -436,7 +436,8 @@
     "offlineMessage": "Çevrimdışısınız. E-postalarınızı yüklemek için lütfen internet bağlantısı sağlayın.",
     "switchBackToBrowser": "Tarayıcınıza geri dönerek devam edin.",
     "filters": {
-      "all": "(All) Items",
+      "all": "Items",
+      "showFolders": "Folders",
       "passkeys": "Passkeys",
       "attachments": "Ekler"
     },

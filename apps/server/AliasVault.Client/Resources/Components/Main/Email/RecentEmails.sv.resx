@@ -75,15 +75,15 @@
     <comment>Table column header for email date</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>Inga e-postmeddelanden mottagna (ännu).</value>
+    <value>Inga e-postmeddelanden mottagna (än).</value>
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
-    <value>Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna uppgiftsposten.</value>
+    <value>Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna posten.</value>
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
-    <value>Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara uppgiftsposten för att synkronisera databasen, och försök sedan igen.</value>
+    <value>Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara posten för att synkronisera databasen, och försök sedan igen.</value>
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">

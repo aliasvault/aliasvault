@@ -75,7 +75,7 @@
     <comment>Refresh button text</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
-    <value>Nu utiliza nicio adresă de e-mail privată (încă). Creează un alias nou și folosește o adresă de e-mail privată acceptată de AliasVault. Toate e-mailurile tale primite pe aceste adrese private vor apărea aici.</value>
+    <value>Nu utilizați nicio adresă de e-mail privată (încă). Creează un alias nou și folosește o adresă de e-mail privată acceptată de AliasVault. Toate e-mailurile tale primite pe aceste adrese private vor apărea aici.</value>
     <comment>Message when no email addresses are configured</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">

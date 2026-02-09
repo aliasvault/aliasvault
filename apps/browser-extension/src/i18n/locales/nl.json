@@ -28,14 +28,7 @@
     "switchAccounts": "Wisselen van account?",
     "loginWithMobile": "Log in via de mobiele app",
     "unlockWithMobile": "Ontgrendel met mobiele app",
-    "scanQrCode": "Scan deze QR-code met de AliasVault mobiele app om in te loggen en je kluis te ontgrendelen.",
-    "errors": {
-      "invalidCode": "Voer een geldige 6-cijferige code in.",
-      "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
-      "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
-      "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
-      "mobileLoginRequestExpired": "Time-out van de mobiele inlogaanvraag. Herlaad de pagina en probeer opnieuw."
-    }
+    "scanQrCode": "Scan deze QR-code met de AliasVault mobiele app om in te loggen en je kluis te ontgrendelen."
   },
   "menu": {
     "vault": "Vault",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "Vault is vergrendeld",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in.",
       "syncConflictMaxRetries": "Kan de vault niet synchroniseren na meerdere pogingen. Probeer het later opnieuw.",
-      "mergeFailed": "Samenvoegen vault wijzigingen mislukt. Probeer het opnieuw."
+      "mergeFailed": "Samenvoegen vault wijzigingen mislukt. Probeer het opnieuw.",
+      "invalidCode": "Voer een geldige 6-cijferige code in.",
+      "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
+      "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
+      "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
+      "mobileLoginRequestExpired": "De QR-code is verlopen. Herlaad de pagina en probeer opnieuw."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
@@ -202,7 +200,7 @@
     "deleteFolderAndItems": "Verwijder map en alle items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) zullen worden verplaatst naar recent verwijderd.",
     "filters": {
-      "all": "(Alle) Items",
+      "folders": "Mappen",
       "passkeys": "Passkeys"
     },
     "sort": {
@@ -515,5 +513,9 @@
     "unsyncedChangesTitle": "Niet-gesynchroniseerde wijzigingen",
     "unsyncedChangesWarning": "Er zijn niet gesynchroniseerde wijzigingen die verloren zullen gaan als je nu uitlogt. Weet je zeker dat je wilt doorgaan?",
     "logoutAnyway": "Toch uitloggen"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Probeer sync opnieuw"
   }
 }

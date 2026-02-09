@@ -248,6 +248,45 @@
     <value>Para importar sus contraseñas de Dropbox, necesita exportarlas como un archivo CSV. Puede hacerlo abriendo Dropbox Passwords, yendo a 'Cuenta' > 'Exportar' (a .CSV).</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
+  <!-- RoboForm -->
+  <data name="RoboformDescription" xml:space="preserve">
+    <value>Importar contraseñas de RoboForm</value>
+    <comment>Description for RoboForm import service</comment>
+  </data>
+  <data name="RoboformInstructionsPart1" xml:space="preserve">
+    <value>Para importar tus contraseñas de RoboForm, necesitas exportarlas como un archivo CSV. Puede hacerlo abriendo RoboForm, yendo al menú 'RoboForm' > 'Opciones' > 'Cuenta y datos' > 'Exportar' y seleccionando el formato CSV.</value>
+    <comment>RoboForm export instructions part 1</comment>
+  </data>
+  <data name="RoboformInstructionsPart2" xml:space="preserve">
+    <value>Una vez que hayas exportado el archivo, puedes subirlo a continuación.</value>
+    <comment>RoboForm export instructions part 2</comment>
+  </data>
+  <!-- Edge -->
+  <data name="EdgeDescription" xml:space="preserve">
+    <value>Importar contraseñas de su administrador de contraseñas Microsoft Edge</value>
+    <comment>Description for Edge import service</comment>
+  </data>
+  <data name="EdgeInstructionsPart1" xml:space="preserve">
+    <value>Para importar sus contraseñas de Microsoft Edge, necesita exportarlas como un archivo CSV. Puede hacerlo yendo a Menú > Configuración > Contraseña y autorrelleno > Microsoft Password Manager > ... > Exportar contraseñas.</value>
+    <comment>Edge export instructions part 1</comment>
+  </data>
+  <data name="EdgeInstructionsPart2" xml:space="preserve">
+    <value>Una vez que hayas exportado el archivo, puedes subirlo a continuación.</value>
+    <comment>Edge export instructions part 2</comment>
+  </data>
+  <!-- Enpass -->
+  <data name="EnpassDescription" xml:space="preserve">
+    <value>Importar contraseñas de Enpass</value>
+    <comment>Description for Enpass import service</comment>
+  </data>
+  <data name="EnpassInstructionsPart1" xml:space="preserve">
+    <value>Para importar sus contraseñas de Enpass, necesita exportarlas como un archivo CSV. Puede hacerlo abriendo Enpass, yendo a 'Menú' > 'Archivo' > 'Exportar' y seleccionando 'Archivo CSV (.csv)'.</value>
+    <comment>Enpass export instructions part 1</comment>
+  </data>
+  <data name="EnpassInstructionsPart2" xml:space="preserve">
+    <value>Una vez que hayas exportado el archivo, puedes subirlo a continuación.</value>
+    <comment>Enpass export instructions part 2</comment>
+  </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
     <value>Una vez que haya exportado el archivo, puede subirlo a continuación.</value>

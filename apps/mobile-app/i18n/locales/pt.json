@@ -436,15 +436,16 @@
     "offlineMessage": "Você está offline. Por favor conecte-se à internet para sincronizar seu cofre.",
     "switchBackToBrowser": "Volte ao navegador para continuar.",
     "filters": {
-      "all": "(Todos) Itens",
+      "all": "Items",
+      "showFolders": "Folders",
       "passkeys": "Passkeys",
       "attachments": "Anexos"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Ordenar por",
+      "oldestFirst": "Mais antigos primeiro",
+      "newestFirst": "Mais novos primeiro",
+      "alphabetical": "Ordem Alfabética (A-Z)"
     },
     "totpCode": "Código TOTP",
     "attachments": "Anexos",

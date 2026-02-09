@@ -367,47 +367,13 @@ export class FormFiller {
 
   /**
    * Fill a text field with character-by-character typing to better simulate human input.
-   * This method is similar to fillPasswordField but optimized for regular text fields.
    *
    * @param field The text field to fill.
    * @param text The text to fill the field with.
    */
   private async fillTextFieldWithTyping(field: HTMLInputElement, text: string): Promise<void> {
-    /*
-     * Find the actual input element (could be in shadow DOM).
-     * This ensures we only fill one element, avoiding duplicate fills.
-     */
-    let actualInput = field;
-
-    // Check for shadow DOM input
-    if (field.shadowRoot) {
-      const shadowInput = field.shadowRoot.querySelector('input, textarea') as HTMLInputElement;
-      if (shadowInput) {
-        actualInput = shadowInput;
-      }
-    } else if (field.tagName.toLowerCase() !== 'input' && field.tagName.toLowerCase() !== 'textarea') {
-      // Check for child input (non-shadow DOM) only if field is not already an input
-      const childInput = field.querySelector('input, textarea') as HTMLInputElement;
-      if (childInput) {
-        actualInput = childInput;
-      }
-    }
-
-    // Clear the field first without triggering events
-    actualInput.value = '';
-
-    // Type each character with a small delay
-    for (let i = 0; i < text.length; i++) {
-      actualInput.value += text[i];
-
-      /*
-       * Small delay between characters to simulate human typing
-       * This helps with sites that have input event handlers
-       */
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 10 + 10));
-    }
-
-    // Trigger events once after all typing is complete
+    const actualInput = this.findActualInputElement(field, 'input, textarea');
+    await this.typeTextIntoField(actualInput, text);
     this.triggerInputEvents(actualInput, true);
   }
 
@@ -434,50 +400,80 @@ export class FormFiller {
   }
 
   /**
-   * Fill the password field with the given password. This uses a small delay between each character to simulate human typing.
-   * Simulates actual keystroke behavior by appending characters one by one.
-   * Supports both regular inputs and custom elements with shadow DOM.
+   * Fill the password field with the given password using character-by-character typing.
    *
    * @param field The password field to fill.
    * @param password The password to fill the field with.
    */
   private async fillPasswordField(field: HTMLInputElement, password: string): Promise<void> {
-    /*
-     * Find the actual input element (could be in shadow DOM).
-     * This ensures we only fill one element, avoiding duplicate fills.
-     */
-    let actualInput = field;
+    const actualInput = this.findActualInputElement(field, 'input[type="password"], input');
+    await this.typeTextIntoField(actualInput, password);
+    this.triggerInputEvents(actualInput, true);
+  }
 
+  /**
+   * Find the actual input element, which could be in shadow DOM or a child element.
+   * This ensures we only fill one element, avoiding duplicate fills.
+   *
+   * @param field The field element to search within.
+   * @param selector The CSS selector to use for finding inputs.
+   * @returns The actual input element to fill.
+   */
+  private findActualInputElement(field: HTMLInputElement, selector: string): HTMLInputElement {
     // Check for shadow DOM input
     if (field.shadowRoot) {
-      const shadowInput = field.shadowRoot.querySelector('input[type="password"], input') as HTMLInputElement;
+      const shadowInput = field.shadowRoot.querySelector(selector) as HTMLInputElement;
       if (shadowInput) {
-        actualInput = shadowInput;
-      }
-    } else if (field.tagName.toLowerCase() !== 'input') {
-      // Check for child input (non-shadow DOM) only if field is not already an input
-      const childInput = field.querySelector('input[type="password"], input') as HTMLInputElement;
-      if (childInput) {
-        actualInput = childInput;
+        return shadowInput;
       }
     }
 
+    // Check for child input (non-shadow DOM) only if field is not already an input
+    const tagName = field.tagName.toLowerCase();
+    if (tagName !== 'input' && tagName !== 'textarea') {
+      const childInput = field.querySelector(selector) as HTMLInputElement;
+      if (childInput) {
+        return childInput;
+      }
+    }
+
+    return field;
+  }
+
+  /**
+   * Type text into a field character-by-character with small delays to simulate human typing.
+   * Includes protection against websites that clear/reset fields on first interaction.
+   *
+   * @param field The input field to type into.
+   * @param text The text to type.
+   */
+  private async typeTextIntoField(field: HTMLInputElement, text: string): Promise<void> {
     // Clear the field first without triggering events
-    actualInput.value = '';
+    field.value = '';
 
     // Type each character with a small delay
-    for (let i = 0; i < password.length; i++) {
-      actualInput.value += password[i];
+    for (let i = 0; i < text.length; i++) {
+      const expectedValue = text.substring(0, i + 1);
+      field.value += text[i];
+
+      // Small delay between characters to simulate human typing
+      await new Promise(resolve => setTimeout(resolve, Math.random() * 10 + 10));
 
       /*
-       * Small delay between characters to simulate human typing
-       * This helps with sites that have input event handlers
+       * Some websites have input event handlers that clear/reset the field
+       * (e.g., initialization logic on first interaction, or framework reactivity).
+       * After the delay (when handlers have had a chance to run), verify the value
+       * and correct it if it was unexpectedly modified.
        */
-      await new Promise(resolve => setTimeout(resolve, Math.random() * 10 + 10));
+      if (field.value !== expectedValue) {
+        field.value = expectedValue;
+      }
     }
 
-    // Trigger events once after all typing is complete
-    this.triggerInputEvents(actualInput, true);
+    // Final verification: if value doesn't match, set it directly
+    if (field.value !== text) {
+      field.value = text;
+    }
   }
 
   /**

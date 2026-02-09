@@ -60,197 +60,236 @@
   </resheader>
   <!-- 1Password -->
   <data name="OnePasswordDescription" xml:space="preserve">
-    <value>Import passwords from your 1Password vault</value>
+    <value>Importera lösenord från ditt 1Password-valv</value>
     <comment>Description for 1Password import service</comment>
   </data>
   <data name="OnePasswordInstructionsPart1" xml:space="preserve">
-    <value>In order to import your 1Password vault, you need to export it as a CSV file. You can do this by logging into your 1Password account in the 1Password 8 desktop app (Windows / MacOS / Linux), going to the 'File' menu and selecting 'Export' (to CSV).</value>
+    <value>För att importera ditt 1Password-valv måste du exportera det som en CSV-fil. Du kan göra detta genom att logga in på ditt 1Password-konto i 1Password 8-skrivbordsappen (Windows / MacOS / Linux), gå till menyn 'File' och välja 'Exportera' (till CSV).</value>
     <comment>1Password export instructions part 1</comment>
   </data>
   <data name="OnePasswordInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
     <comment>1Password export instructions part 2</comment>
   </data>
   <!-- Bitwarden -->
   <data name="BitwardenDescription" xml:space="preserve">
-    <value>Import passwords from your Bitwarden vault</value>
+    <value>Importera lösenord från ditt Bitwarden-valv</value>
     <comment>Description for Bitwarden import service</comment>
   </data>
   <data name="BitwardenInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Bitwarden vault, you need to export it as a CSV file. You can do this by logging into your Bitwarden account, going to the 'Tools' menu and selecting 'Export vault' (to CSV).</value>
+    <value>För att importera ditt Bitwarden-valv måste du exportera det som en CSV-fil. Du kan göra detta genom att logga in på ditt Bitwarden-konto, gå till menyn 'Verktyg' och välja 'Exportera valv' (till CSV).</value>
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
     <comment>Bitwarden export instructions part 2</comment>
   </data>
   <!-- LastPass -->
   <data name="LastPassDescription" xml:space="preserve">
-    <value>Import passwords from your LastPass vault</value>
+    <value>Importera lösenord från ditt LastPass-valv</value>
     <comment>Description for LastPass import service</comment>
   </data>
   <data name="LastPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your LastPass vault, you need to export it as a CSV file. You can do this by logging into your LastPass account, going to 'Advanced Options' in the left sidebar and selecting 'Export' > 'LastPass CSV File'.</value>
+    <value>För att importera ditt LastPass valv måste du exportera det som en CSV-fil. Du kan göra detta genom att logga in på ditt LastPass-konto, gå till "Avancerade alternativ" i vänstra sidofältet och välja "Exportera" > "LastPass CSV-fil".</value>
     <comment>LastPass export instructions part 1</comment>
   </data>
   <data name="LastPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
     <comment>LastPass export instructions part 2</comment>
   </data>
   <!-- Chrome -->
   <data name="ChromeDescription" xml:space="preserve">
-    <value>Import passwords from your Chrome Password Manager</value>
+    <value>Importera lösenord från Chrome Password Manager</value>
     <comment>Description for Chrome import service</comment>
   </data>
   <data name="ChromeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Chrome Password Manager, you need to export it as a CSV file. You can do this by logging into your Chrome browser, going to the 'Settings' menu > 'Password and AutoFill' > 'Google Password Manager'. Then click on 'Export passwords'.</value>
+    <value>För att importera från din Chrome Password Manager måste du exportera den som en CSV-fil. Du kan göra detta genom att logga in i Chrome-webbläsaren och gå till menyn "Inställningar" > "Lösenord och AutoFyll" > "Googles lösenordshanterare". Klicka sedan på "Exportera lösenord".</value>
     <comment>Chrome export instructions part 1</comment>
   </data>
   <data name="ChromeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen, kan du ladda upp den nedan.</value>
     <comment>Chrome export instructions part 2</comment>
   </data>
   <!-- KeePass -->
   <data name="KeePassDescription" xml:space="preserve">
-    <value>Import passwords from KeePass</value>
+    <value>Importera lösenord från KeePass</value>
     <comment>Description for KeePass import service</comment>
   </data>
   <data name="KeePassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your KeePass vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export' (to CSV).</value>
+    <value>För att importera ditt KeePass valv måste du exportera det som en CSV-fil. Du kan göra detta genom att gå till menyn 'File' och välja 'Exportera' (till CSV).</value>
     <comment>KeePass export instructions part 1</comment>
   </data>
   <data name="KeePassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
     <comment>KeePass export instructions part 2</comment>
   </data>
   <!-- Generic CSV -->
   <data name="GenericCsvDescription" xml:space="preserve">
-    <value>Import credentials using a template CSV format</value>
+    <value>Importera inloggningsuppgifter via en mall med CSV-format</value>
     <comment>Description for Generic CSV import service</comment>
   </data>
   <data name="GenericCsvInstructionsPart1" xml:space="preserve">
-    <value>Is the password manager you are using not supported? You can always import your credentials into AliasVault using a generic CSV template format instead.</value>
+    <value>Stöds inte lösenordshanteraren du använder? Du kan alltid importera dina uppgifter till AliasVault med ett generiskt CSV-mallformat istället.</value>
     <comment>Generic CSV instructions part 1</comment>
   </data>
   <data name="GenericCsvStep1" xml:space="preserve">
-    <value>Download the AliasVault Import CSV</value>
+    <value>Ladda ner AliasVault Import CSV</value>
     <comment>Generic CSV step 1</comment>
   </data>
   <data name="GenericCsvStep2" xml:space="preserve">
-    <value>Open it in a spreadsheet program (Microsoft Excel, Google Sheets, etc.)</value>
+    <value>Öppna den i ett kalkylprogram (Microsoft Excel, Google Kalkylark, etc.)</value>
     <comment>Generic CSV step 2</comment>
   </data>
   <data name="GenericCsvStep3" xml:space="preserve">
-    <value>Fill in your credentials (replace the example data)</value>
+    <value>Fyll i dina uppgifter (ersätt exempeldata)</value>
     <comment>Generic CSV step 3</comment>
   </data>
   <data name="GenericCsvStep4" xml:space="preserve">
-    <value>Save as CSV format and upload it below</value>
+    <value>Spara som CSV-format och ladda upp det nedan</value>
     <comment>Generic CSV step 4</comment>
   </data>
   <data name="GenericCsvTemplateDownloadError" xml:space="preserve">
-    <value>Failed to download CSV template. Please try again.</value>
+    <value>Det gick inte att ladda ner CSV-mall. Försök igen.</value>
     <comment>Error message for template download failure</comment>
   </data>
   <!-- Firefox -->
   <data name="FirefoxDescription" xml:space="preserve">
-    <value>Import passwords from your Firefox Password Manager</value>
+    <value>Importera lösenord från din Firefox Password Manager</value>
     <comment>Description for Firefox import service</comment>
   </data>
   <data name="FirefoxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Firefox passwords, you need to export it as a CSV file. You can do this by opening your Firefox browser, going to menu > 'Passwords'. Then click on the menu icon in the top right corner and select 'Export passwords'.</value>
+    <value>För att importera dina Firefox lösenord, måste du exportera dem som en CSV-fil. Du kan göra detta genom att öppna webbläsaren Firefox, gå till menyn > "Lösenord". Klicka sedan på menyikonen i det övre högra hörnet och välj "Exportera lösenord".</value>
     <comment>Firefox export instructions part 1</comment>
   </data>
   <data name="FirefoxInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
     <comment>Firefox export instructions part 2</comment>
   </data>
   <!-- Dashlane -->
   <data name="DashlaneDescription" xml:space="preserve">
-    <value>Import passwords from your Dashlane account</value>
+    <value>Importera lösenord från ditt Dashlane-konto</value>
     <comment>Description for Dashlane import service</comment>
   </data>
   <data name="DashlaneInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Dashlane passwords, you need to export it as a CSV file. You can do this by logging into your Dashlane account, going to the 'Account' > 'Settings' menu and selecting 'Export to CSV'.</value>
+    <value>För att importera dina Dashlane-lösenord måste du exportera dem som en CSV-fil. Du kan göra detta genom att logga in på ditt Dashlane-konto, gå till menyn 'Konto' > 'Inställningar' och välja 'Exportera till CSV'.</value>
     <comment>Dashlane export instructions part 1</comment>
   </data>
   <data name="DashlaneInstructionsPart2" xml:space="preserve">
-    <value>Note: the .zip file you download will contain a "credentials.csv" file. You need to unzip the archive first, and then upload the "credentials.csv" CSV file below.</value>
+    <value>Obs: .zip-filen du laddar ner kommer att innehålla en "credentials.csv" fil. Du måste först packa upp arkivet och sedan ladda upp CSV-filen "credentials.csv" nedan.</value>
     <comment>Dashlane export instructions part 2</comment>
   </data>
   <!-- KeePassXC -->
   <data name="KeePassXCDescription" xml:space="preserve">
-    <value>Import passwords from KeePassXC</value>
+    <value>Importera lösenord från KeePassXC</value>
     <comment>Description for KeePassXC import service</comment>
   </data>
   <data name="KeePassXCInstructionsPart1" xml:space="preserve">
-    <value>In order to import your KeePassXC vault, you need to export it as a CSV file. You can do this by going to the 'Database' menu and selecting 'Export' (CSV File).</value>
+    <value>För att importera ditt KeePassXC-valv måste du exportera det som en CSV-fil. Du kan göra detta genom att gå till 'Databas' menyn och välja 'Export' (CSV File).</value>
     <comment>KeePassXC export instructions part 1</comment>
   </data>
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
     <comment>KeePassXC export instructions part 2</comment>
   </data>
   <!-- NordPass -->
   <data name="NordPassDescription" xml:space="preserve">
-    <value>Import passwords from NordPass</value>
+    <value>Importera lösenord från NordPass</value>
     <comment>Description for NordPass import service</comment>
   </data>
   <data name="NordPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your NordPass passwords, you need to export them as a CSV file. You can do this by opening the NordPass app or web vault, going to 'Settings' > 'Export Items', and selecting the CSV format.</value>
+    <value>För att importera dina NordPass-lösenord måste du exportera dem som en CSV-fil. Det kan du göra genom att öppna NordPass-appen eller webbvalvet, gå till 'Inställningar' > 'Exportera föremål' och välja CSV-format.</value>
     <comment>NordPass export instructions part 1</comment>
   </data>
   <data name="NordPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
     <comment>NordPass export instructions part 2</comment>
   </data>
   <!-- Proton Pass -->
   <data name="ProtonPassDescription" xml:space="preserve">
-    <value>Import passwords from Proton Pass</value>
+    <value>Importera lösenord från Proton Pass</value>
     <comment>Description for Proton Pass import service</comment>
   </data>
   <data name="ProtonPassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Proton Pass passwords, you need to export it as a CSV file. You can do this by logging into Proton Pass (web), clicking on the 'Settings' menu > 'Export' > 'File format: CSV'. Then click on 'Export'.</value>
+    <value>För att importera ditt Proton Pass-lösenord måste du exportera det som en CSV-fil. Detta kan du göra genom att logga in på Proton Pass (webb), klicka på menyn "Inställningar" > "Exportera" > "Filformat: CSV". Klicka sedan på "Exportera".</value>
     <comment>Proton Pass export instructions part 1</comment>
   </data>
   <data name="ProtonPassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
     <comment>Proton Pass export instructions part 2</comment>
   </data>
   <!-- Strongbox -->
   <data name="StrongboxDescription" xml:space="preserve">
-    <value>Import passwords from Strongbox</value>
+    <value>Importera lösenord från Strongbox</value>
     <comment>Description for Strongbox import service</comment>
   </data>
   <data name="StrongboxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Strongbox vault, you need to export it as a CSV file. You can do this by going to the 'File' menu and selecting 'Export Database' (to CSV).</value>
+    <value>För att importera ditt Strongbox-valv måste du exportera det som en CSV-fil. Du kan göra detta genom att gå till menyn 'File' och välja 'Exportera databas' (till CSV).</value>
     <comment>Strongbox export instructions part 1</comment>
   </data>
   <data name="StrongboxInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
     <comment>Strongbox export instructions part 2</comment>
   </data>
   <!-- AliasVault -->
   <data name="AliasVaultDescription" xml:space="preserve">
-    <value>Import passwords from another AliasVault server or manual back-up</value>
+    <value>Importera lösenord från en annan AliasVault-server eller manuell säkerhetskopiering</value>
     <comment>Description for AliasVault import service</comment>
   </data>
   <data name="AliasVaultInstructionsPart1" xml:space="preserve">
-    <value>If you have a CSV file back-up of your AliasVault database (from a different AliasVault server), you can import it here.</value>
+    <value>Om du har en CSV-fil säkerhetskopiering av din AliasVault-databas (från en annan AliasVault-server) kan du importera den här.</value>
     <comment>AliasVault import instructions</comment>
   </data>
   <!-- Dropbox -->
   <data name="DropboxDescription" xml:space="preserve">
-    <value>Import passwords from Dropbox Passwords</value>
+    <value>Importera lösenord från Dropbox lösenord</value>
     <comment>Description for Dropbox import service</comment>
   </data>
   <data name="DropboxInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Dropbox Passwords, you need to export them as a CSV file. You can do this by opening Dropbox Passwords, going to 'Account' > 'Export' (to .CSV).</value>
+    <value>För att importera dina Dropbox-lösenord måste du exportera dem som en CSV-fil. Du kan göra detta genom att öppna Dropbox Lösenord, gå till "Konto" > "Exportera" (till .CSV).</value>
     <comment>Dropbox export instructions part 1</comment>
+  </data>
+  <!-- RoboForm -->
+  <data name="RoboformDescription" xml:space="preserve">
+    <value>Importera lösenord från RoboForm</value>
+    <comment>Description for RoboForm import service</comment>
+  </data>
+  <data name="RoboformInstructionsPart1" xml:space="preserve">
+    <value>För att importera dina lösenord från RoboForm måste du exportera dem som en CSV-fil. Du kan göra detta genom att öppna RoboForm, gå till menyn 'RoboForm' > 'Alternativ' > 'Konto och data' > 'Exportera' och välja CSV-format.</value>
+    <comment>RoboForm export instructions part 1</comment>
+  </data>
+  <data name="RoboformInstructionsPart2" xml:space="preserve">
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
+    <comment>RoboForm export instructions part 2</comment>
+  </data>
+  <!-- Edge -->
+  <data name="EdgeDescription" xml:space="preserve">
+    <value>Importera lösenord från Microsoft Edge</value>
+    <comment>Description for Edge import service</comment>
+  </data>
+  <data name="EdgeInstructionsPart1" xml:space="preserve">
+    <value>För att kunna importera dina lösenord i Microsoft Edge behöver du exportera dem som en CSV-fil. Det gör du i Edge genom att gå till Meny > Inställningar > Lösenord och autofyll > Microsoft lösenordshanterare > … > Exportera lösenord.</value>
+    <comment>Edge export instructions part 1</comment>
+  </data>
+  <data name="EdgeInstructionsPart2" xml:space="preserve">
+    <value>När du har exporterat filen, kan du ladda upp den nedan.</value>
+    <comment>Edge export instructions part 2</comment>
+  </data>
+  <!-- Enpass -->
+  <data name="EnpassDescription" xml:space="preserve">
+    <value>Importera lösenord från Enpass</value>
+    <comment>Description for Enpass import service</comment>
+  </data>
+  <data name="EnpassInstructionsPart1" xml:space="preserve">
+    <value>För att kunna importera dina Enpass-lösenord behöver du exportera dem som en CSV-fil. Det gör du genom att öppna Enpass, gå till Meny > Arkiv > Exportera och välja CSV-fil (.csv).</value>
+    <comment>Enpass export instructions part 1</comment>
+  </data>
+  <data name="EnpassInstructionsPart2" xml:space="preserve">
+    <value>När du har exporterat filen, kan du ladda upp den nedan.</value>
+    <comment>Enpass export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen kan du ladda upp den nedan.</value>
     <comment>Common instruction for file upload</comment>
   </data>
 </root>

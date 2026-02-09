@@ -87,7 +87,7 @@
     <comment>Import button text</comment>
   </data>
   <data name="ImportFoldersLabel" xml:space="preserve">
-    <value>Import folders</value>
+    <value>Importa cartelle</value>
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
@@ -95,23 +95,23 @@
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
   <data name="DuplicateCredentialsWarning" xml:space="preserve">
-    <value>{0} duplicate credential(s) were found and will not be imported.</value>
+    <value>{0} credenziali duplicate sono state trovate e non verranno importate.</value>
     <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
   </data>
   <data name="NoNewCredentials" xml:space="preserve">
-    <value>No new credentials were found to import.</value>
+    <value>Non sono state trovate nuove credenziali da importare.</value>
     <comment>Warning text when no new credentials are available for import</comment>
   </data>
   <data name="PreviewInstructions" xml:space="preserve">
-    <value>Check if the following detected credentials look correct before continuing:</value>
+    <value>Controlla se le seguenti credenziali rilevate siano corrette prima di continuare:</value>
     <comment>Instructions shown before the credential preview table</comment>
   </data>
   <data name="ServiceColumn" xml:space="preserve">
-    <value>Service</value>
+    <value>Servizio</value>
     <comment>Column header for service name in credential preview table</comment>
   </data>
   <data name="UsernameColumn" xml:space="preserve">
-    <value>Username</value>
+    <value>Nome utente</value>
     <comment>Column header for username in credential preview table</comment>
   </data>
   <data name="PasswordColumn" xml:space="preserve">
@@ -119,23 +119,51 @@
     <comment>Column header for password in credential preview table</comment>
   </data>
   <data name="MoreCredentials" xml:space="preserve">
-    <value>... and {0} more credentials</value>
+    <value>... e {0} altre credenziali</value>
     <comment>Text showing additional credentials not displayed. {0} is the count</comment>
   </data>
   <data name="ExtractFaviconsLabel" xml:space="preserve">
-    <value>Extract favicons for services with URLs</value>
+    <value>Estrai le icone preferenziali per i servizi con URL</value>
     <comment>Checkbox label for favicon extraction option</comment>
   </data>
   <data name="ConfirmImportText" xml:space="preserve">
-    <value>Are you sure you want to import ({0}) credentials? Note: the import process can take a short while.</value>
+    <value>Sei sicuro di voler importare ({0}) le credenziali? Nota: il processo di importazione può richiedere un po' di tempo.</value>
     <comment>Confirmation text before importing. {0} is the credential count</comment>
   </data>
   <data name="FaviconExtractionNote" xml:space="preserve">
-    <value>Note: Favicon extraction is enabled. This process can take several minutes depending on the number of credentials with URLs. Please keep the page open.</value>
+    <value>Nota: L'estrazione di Favicon è abilitata. Questo processo può richiedere diversi minuti a seconda del numero di credenziali con URL. Si prega di mantenere aperta la pagina.</value>
     <comment>Warning note about favicon extraction duration</comment>
   </data>
   <data name="ExtractingFavicons" xml:space="preserve">
-    <value>Extracting favicons... {0} / {1}</value>
+    <value>Estrazione delle favicons... {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SavingCredentials" xml:space="preserve">
+    <value>Salvataggio credenziali nella cassaforte. {0} / {1}</value>
+    <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SyncingVault" xml:space="preserve">
+    <value>Sincronizzazione della cassaforte sul server...</value>
+    <comment>Progress text when syncing vault to server after import</comment>
+  </data>
+  <data name="ImportSuccessMessage" xml:space="preserve">
+    <value>{0} credenziali importate con successo.</value>
+    <comment>Success message after import completes. {0} is the credential count</comment>
+  </data>
+  <data name="ImportErrorGeneric" xml:space="preserve">
+    <value>Si è verificato un errore durante l'importazione. Per favore riprova.</value>
+    <comment>Generic error message when import fails</comment>
+  </data>
+  <data name="ImportErrorInvalidFile" xml:space="preserve">
+    <value>Si prega di selezionare un file di esportazione valido da importare.</value>
+    <comment>Error message when invalid file is selected</comment>
+  </data>
+  <data name="ImportErrorZipFile" xml:space="preserve">
+    <value>Si prega di decomprimere il file di esportazione prima dell'importazione. Per maggiori informazioni, consultare le istruzioni riportate di seguito.</value>
+    <comment>Error message when user tries to import a zip file</comment>
+  </data>
+  <data name="ImportErrorFileTooLarge" xml:space="preserve">
+    <value>La dimensione del file supera il limite di 10MB.</value>
+    <comment>Error message when file is too large</comment>
   </data>
 </root>

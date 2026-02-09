@@ -95,7 +95,7 @@
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
   <data name="DuplicateCredentialsWarning" xml:space="preserve">
-    <value>{0} duplicate credential(s) were found and will not be imported.</value>
+    <value>Se han encontrado {0} credenciales duplicadas y no serán importadas.</value>
     <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
   </data>
   <data name="NoNewCredentials" xml:space="preserve">
@@ -127,15 +127,43 @@
     <comment>Checkbox label for favicon extraction option</comment>
   </data>
   <data name="ConfirmImportText" xml:space="preserve">
-    <value>Are you sure you want to import ({0}) credentials? Note: the import process can take a short while.</value>
+    <value>¿Está seguro que desea importar ({0}) credenciales? Nota: el proceso de importación puede tardar un poco.</value>
     <comment>Confirmation text before importing. {0} is the credential count</comment>
   </data>
   <data name="FaviconExtractionNote" xml:space="preserve">
-    <value>Note: Favicon extraction is enabled. This process can take several minutes depending on the number of credentials with URLs. Please keep the page open.</value>
+    <value>Nota: La extracción de Favicon está habilitada. Este proceso puede tardar varios minutos dependiendo del número de credenciales con URLs. Por favor, mantenga la página abierta.</value>
     <comment>Warning note about favicon extraction duration</comment>
   </data>
   <data name="ExtractingFavicons" xml:space="preserve">
-    <value>Extracting favicons... {0} / {1}</value>
+    <value>Extrayendo favicons... {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SavingCredentials" xml:space="preserve">
+    <value>Guardando credenciales en vault... {0} / {1}</value>
+    <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SyncingVault" xml:space="preserve">
+    <value>Sincronizando bóveda al servidor...</value>
+    <comment>Progress text when syncing vault to server after import</comment>
+  </data>
+  <data name="ImportSuccessMessage" xml:space="preserve">
+    <value>{0}  credenciales importadas correctamente.</value>
+    <comment>Success message after import completes. {0} is the credential count</comment>
+  </data>
+  <data name="ImportErrorGeneric" xml:space="preserve">
+    <value>Se ha producido un error durante la importación. Por favor, inténtelo de nuevo.</value>
+    <comment>Generic error message when import fails</comment>
+  </data>
+  <data name="ImportErrorInvalidFile" xml:space="preserve">
+    <value>Por favor, seleccione un archivo de exportación válido para importar.</value>
+    <comment>Error message when invalid file is selected</comment>
+  </data>
+  <data name="ImportErrorZipFile" xml:space="preserve">
+    <value>Por favor, descomprima el archivo antes de importar. Vea las instrucciones de abajo para más información.</value>
+    <comment>Error message when user tries to import a zip file</comment>
+  </data>
+  <data name="ImportErrorFileTooLarge" xml:space="preserve">
+    <value>El tamaño del archivo supera el límite de 10MB.</value>
+    <comment>Error message when file is too large</comment>
   </data>
 </root>

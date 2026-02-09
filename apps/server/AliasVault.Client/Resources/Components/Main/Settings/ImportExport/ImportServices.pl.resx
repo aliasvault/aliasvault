@@ -248,6 +248,45 @@
     <value>Aby zaimportować sejf z Dropbox Passwords, należy je wyeksportować jako plik CSV. Można to zrobić, otwierając Dropbox Passwords, przechodząc do „Konto” > „Eksportuj” (do pliku .CSV).</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
+  <!-- RoboForm -->
+  <data name="RoboformDescription" xml:space="preserve">
+    <value>Importuj hasła z RoboForm</value>
+    <comment>Description for RoboForm import service</comment>
+  </data>
+  <data name="RoboformInstructionsPart1" xml:space="preserve">
+    <value>Aby zaimportować hasła RoboForm musisz wyeksportować je jako plik CSV. Możesz to zrobić otwierając RoboForm, przejdź do menu 'RoboForm' > 'Opcje' > 'Konto i Dane' > 'Eksportuj' i wybierając format CSV.</value>
+    <comment>RoboForm export instructions part 1</comment>
+  </data>
+  <data name="RoboformInstructionsPart2" xml:space="preserve">
+    <value>Po wyeksportowaniu pliku, możesz go przesłać poniżej.</value>
+    <comment>RoboForm export instructions part 2</comment>
+  </data>
+  <!-- Edge -->
+  <data name="EdgeDescription" xml:space="preserve">
+    <value>Importuj hasła z Menedżera haseł Microsoft Edge</value>
+    <comment>Description for Edge import service</comment>
+  </data>
+  <data name="EdgeInstructionsPart1" xml:space="preserve">
+    <value>Aby zaimportować swoje hasła Microsoft Edge, musisz je wyeksportować jako plik CSV. Możesz to zrobić przechodząc do Menu > Ustawienia > Hasło i autouzupełnianie > Menedżer haseł Microsoft > ... > Eksport haseł.</value>
+    <comment>Edge export instructions part 1</comment>
+  </data>
+  <data name="EdgeInstructionsPart2" xml:space="preserve">
+    <value>Po wyeksportowaniu pliku, możesz go przesłać poniżej.</value>
+    <comment>Edge export instructions part 2</comment>
+  </data>
+  <!-- Enpass -->
+  <data name="EnpassDescription" xml:space="preserve">
+    <value>Importuj hasła z Enpass</value>
+    <comment>Description for Enpass import service</comment>
+  </data>
+  <data name="EnpassInstructionsPart1" xml:space="preserve">
+    <value>Aby zaimportować hasła z Enpass, należy je wyeksportować jako plik CSV. Można to zrobić otwierając Enpass, przejść do 'Menu' > 'Plik' > 'Eksport' i wybrać 'plik CSV (.csv)'.</value>
+    <comment>Enpass export instructions part 1</comment>
+  </data>
+  <data name="EnpassInstructionsPart2" xml:space="preserve">
+    <value>Po wyeksportowaniu pliku, można go przesłać poniżej.</value>
+    <comment>Enpass export instructions part 2</comment>
+  </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
     <value>Po wyeksportowaniu pliku możesz go przesłać poniżej.</value>

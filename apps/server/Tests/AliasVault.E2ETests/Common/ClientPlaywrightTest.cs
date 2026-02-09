@@ -501,7 +501,7 @@ public class ClientPlaywrightTest : PlaywrightTest
     {
         // Try to register a new account.
         await NavigateUsingBlazorRouter("user/register");
-        await WaitForUrlAsync("user/register");
+        await WaitForUrlAsync("user/register", "Create account");
 
         // Try to register an account with the generated test credentials.
         var emailField = await WaitForAndGetElement("input[id='email']");

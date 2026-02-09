@@ -248,6 +248,45 @@
     <value>要将您的 Dropbox Passwords 导入，需先将其导出为 CSV 文件。操作步骤为：打开 Dropbox Passwords，进入「账户」>「导出（至 .CSV 文件）」。</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
+  <!-- RoboForm -->
+  <data name="RoboformDescription" xml:space="preserve">
+    <value>从 RoboForm 导入密码</value>
+    <comment>Description for RoboForm import service</comment>
+  </data>
+  <data name="RoboformInstructionsPart1" xml:space="preserve">
+    <value>要导入您的 RoboForm 密码，您需要将其导出为 CSV 文件。您可以打开 RoboForm，依次点击“RoboForm”菜单 > “选项” > “账户和数据” > “导出”，然后选择 CSV 格式来完成此操作。</value>
+    <comment>RoboForm export instructions part 1</comment>
+  </data>
+  <data name="RoboformInstructionsPart2" xml:space="preserve">
+    <value>导出文件后，您可以在下方上传。</value>
+    <comment>RoboForm export instructions part 2</comment>
+  </data>
+  <!-- Edge -->
+  <data name="EdgeDescription" xml:space="preserve">
+    <value>从您的 Microsoft Edge 密码管理器导入密码</value>
+    <comment>Description for Edge import service</comment>
+  </data>
+  <data name="EdgeInstructionsPart1" xml:space="preserve">
+    <value>要导入您的 Microsoft Edge 密码，您需要将其导出为 CSV 文件。您可以依次点击“菜单”>“设置”>“密码和自动填充”>“Microsoft 密码管理器”>“…”>“导出密码”来完成此操作。</value>
+    <comment>Edge export instructions part 1</comment>
+  </data>
+  <data name="EdgeInstructionsPart2" xml:space="preserve">
+    <value>导出文件后，您可以在下方上传。</value>
+    <comment>Edge export instructions part 2</comment>
+  </data>
+  <!-- Enpass -->
+  <data name="EnpassDescription" xml:space="preserve">
+    <value>从 Enpass 导入密码</value>
+    <comment>Description for Enpass import service</comment>
+  </data>
+  <data name="EnpassInstructionsPart1" xml:space="preserve">
+    <value>要导入您的 Enpass 密码，您需要将其导出为 CSV 文件。您可以打开 Enpass，依次点击“菜单”>“文件”>“导出”，然后选择“CSV 文件 (.csv)”来完成此操作。</value>
+    <comment>Enpass export instructions part 1</comment>
+  </data>
+  <data name="EnpassInstructionsPart2" xml:space="preserve">
+    <value>导出文件后，您可以在下方上传。</value>
+    <comment>Enpass export instructions part 2</comment>
+  </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
     <value>导出文件后，您可以在下方上传。</value>

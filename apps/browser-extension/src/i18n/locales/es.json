@@ -28,14 +28,7 @@
     "switchAccounts": "¿Cambiar de cuenta?",
     "loginWithMobile": "Iniciar sesión con la aplicación móvil",
     "unlockWithMobile": "Desbloquear con la aplicación móvil",
-    "scanQrCode": "Escanea este código QR con tu aplicación móvil de AliasVault para iniciar sesión y desbloquear tu bóveda.",
-    "errors": {
-      "invalidCode": "Por favor, introduzca un código de autenticación de 6 dígitos válido.",
-      "serverError": "No se pudo llegar al servidor AliasVault. Por favor, inténtelo de nuevo más tarde o póngase en contacto con el soporte si el problema persiste.",
-      "wrongPassword": "Contraseña incorrecta. Por favor, inténtelo de nuevo.",
-      "sessionExpired": "Su sesión ha caducado. Por favor, inicie sesión de nuevo.",
-      "mobileLoginRequestExpired": "Se ha agotado el tiempo de inicio de sesión del móvil. Por favor, vuelva a cargar la página e inténtelo de nuevo."
-    }
+    "scanQrCode": "Escanea este código QR con tu aplicación móvil de AliasVault para iniciar sesión y desbloquear tu bóveda."
   },
   "menu": {
     "vault": "Bóveda",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "La bóveda está bloqueada",
       "passwordChanged": "Tu contraseña ha cambiado desde la última vez que iniciaste sesión. Por favor, inicia sesión de nuevo por razones de seguridad.",
       "syncConflictMaxRetries": "No se pudo sincronizar la bóveda después de múltiples intentos. Inténtalo de nuevo más tarde.",
-      "mergeFailed": "Error al combinar cambios en la bóveda. Por favor, inténtalo de nuevo."
+      "mergeFailed": "Error al combinar cambios en la bóveda. Por favor, inténtalo de nuevo.",
+      "invalidCode": "Por favor, introduzca un código de autenticación de 6 dígitos válido.",
+      "serverError": "No se pudo llegar al servidor AliasVault. Por favor, inténtelo de nuevo más tarde o póngase en contacto con el soporte si el problema persiste.",
+      "wrongPassword": "Contraseña incorrecta. Por favor, inténtelo de nuevo.",
+      "sessionExpired": "Su sesión ha caducado. Por favor, inicie sesión de nuevo.",
+      "mobileLoginRequestExpired": "Se ha agotado el tiempo de inicio de sesión del móvil. Por favor, vuelva a cargar la página e inténtelo de nuevo."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Se ha producido un error desconocido. Por favor, inténtelo de nuevo.",
@@ -202,14 +200,14 @@
     "deleteFolderAndItems": "Eliminar carpeta y todos los elementos",
     "deleteFolderAndItemsDescription": "{{count}} elemento(s) serán movidos a Borrados Recientemente.",
     "filters": {
-      "all": "(Todos) Elementos",
+      "folders": "Carpetas",
       "passkeys": "Llaves de acceso"
     },
     "sort": {
-      "title": "Sort by",
-      "oldestFirst": "Oldest first",
-      "newestFirst": "Newest first",
-      "alphabetical": "Alphabetical (A-Z)"
+      "title": "Ordenar por",
+      "oldestFirst": "Más antiguos primero",
+      "newestFirst": "Más nuevos primero",
+      "alphabetical": "Alfabéticamente (A-Z)"
     },
     "deleteItemTitle": "Eliminar elemento",
     "deleteItemConfirm": "¿Está seguro de querer borrar este ítem?",
@@ -515,5 +513,9 @@
     "unsyncedChangesTitle": "Cambios no sincronizados",
     "unsyncedChangesWarning": "Tienes cambios no sincronizados que se perderán si te desconectas ahora. ¿Estás seguro de que quieres continuar?",
     "logoutAnyway": "Cerrar sesión de todos modos"
+  },
+  "sync": {
+    "offline": "Sin conexión",
+    "tapToRetry": "Toca para reintentar sincronizar"
   }
 }

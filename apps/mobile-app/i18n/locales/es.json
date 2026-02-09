@@ -436,7 +436,8 @@
     "offlineMessage": "Estás desconectado. Por favor, conéctate a Internet para sincronizar tu bóveda.",
     "switchBackToBrowser": "Vuelva a su navegador para continuar.",
     "filters": {
-      "all": "(Todos) Elementos",
+      "all": "Elementos",
+      "showFolders": "Carpetas",
       "passkeys": "Llaves de acceso",
       "attachments": "Archivos adjuntos"
     },

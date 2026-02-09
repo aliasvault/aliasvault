@@ -138,4 +138,32 @@
     <value>Извлечение иконок... {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
+  <data name="SavingCredentials" xml:space="preserve">
+    <value>Сохранение в хранилище... {0} / {1}</value>
+    <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SyncingVault" xml:space="preserve">
+    <value>Синхронизация хранилища с сервером...</value>
+    <comment>Progress text when syncing vault to server after import</comment>
+  </data>
+  <data name="ImportSuccessMessage" xml:space="preserve">
+    <value>Импорт завершен. Добавлено записей: {0}.</value>
+    <comment>Success message after import completes. {0} is the credential count</comment>
+  </data>
+  <data name="ImportErrorGeneric" xml:space="preserve">
+    <value>Ошибка импорта. Повторите попытку.</value>
+    <comment>Generic error message when import fails</comment>
+  </data>
+  <data name="ImportErrorInvalidFile" xml:space="preserve">
+    <value>Выберите подходящий файл экспорта для импорта</value>
+    <comment>Error message when invalid file is selected</comment>
+  </data>
+  <data name="ImportErrorZipFile" xml:space="preserve">
+    <value>Распакуйте файл экспорта перед импортом. Подробности см. в инструкции ниже.</value>
+    <comment>Error message when user tries to import a zip file</comment>
+  </data>
+  <data name="ImportErrorFileTooLarge" xml:space="preserve">
+    <value>Файл слишком велик (максимум 10 МБ).</value>
+    <comment>Error message when file is too large</comment>
+  </data>
 </root>

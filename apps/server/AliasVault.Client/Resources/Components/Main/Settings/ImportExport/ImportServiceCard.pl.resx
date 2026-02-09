@@ -138,4 +138,32 @@
     <value>Rozpakowywanie favikonów... {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
   </data>
+  <data name="SavingCredentials" xml:space="preserve">
+    <value>Zapisywanie danych logowania do sejfu ... {0} / {1}</value>
+    <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SyncingVault" xml:space="preserve">
+    <value>Synchronizuję sejf z serwerem...</value>
+    <comment>Progress text when syncing vault to server after import</comment>
+  </data>
+  <data name="ImportSuccessMessage" xml:space="preserve">
+    <value>Pomyślnie zaimportowano {0} dane logowania.</value>
+    <comment>Success message after import completes. {0} is the credential count</comment>
+  </data>
+  <data name="ImportErrorGeneric" xml:space="preserve">
+    <value>Wystąpił błąd podczas importu. Proszę spróbować ponownie.</value>
+    <comment>Generic error message when import fails</comment>
+  </data>
+  <data name="ImportErrorInvalidFile" xml:space="preserve">
+    <value>Proszę wybrać prawidłowy plik eksportu do zaimportowania.</value>
+    <comment>Error message when invalid file is selected</comment>
+  </data>
+  <data name="ImportErrorZipFile" xml:space="preserve">
+    <value>Rozpakuj plik eksportu przed zaimportowaniem. Więcej informacji znajduje się w instrukcjach poniżej.</value>
+    <comment>Error message when user tries to import a zip file</comment>
+  </data>
+  <data name="ImportErrorFileTooLarge" xml:space="preserve">
+    <value>Rozmiar pliku przekracza limit 10 MB.</value>
+    <comment>Error message when file is too large</comment>
+  </data>
 </root>

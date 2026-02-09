@@ -248,6 +248,45 @@
     <value>Чтобы импортировать пароли из Dropbox Passwords, сначала экспортируйте их в CSV‑файл. Для этого откройте Dropbox Passwords, перейдите во вкладку «Аккаунт» и выберите «Экспортировать» (CSV).</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
+  <!-- RoboForm -->
+  <data name="RoboformDescription" xml:space="preserve">
+    <value>Импорт паролей из RoboForm</value>
+    <comment>Description for RoboForm import service</comment>
+  </data>
+  <data name="RoboformInstructionsPart1" xml:space="preserve">
+    <value>Чтобы импортировать пароли из RoboForm, вам нужно экспортировать их в CSV-файл. Для этого откройте RoboForm и перейдите в меню "RoboForm" > "Настройки" > "Аккаунт и данные" > "Экспорт", после чего выберите формат CSV</value>
+    <comment>RoboForm export instructions part 1</comment>
+  </data>
+  <data name="RoboformInstructionsPart2" xml:space="preserve">
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
+    <comment>RoboForm export instructions part 2</comment>
+  </data>
+  <!-- Edge -->
+  <data name="EdgeDescription" xml:space="preserve">
+    <value>Импорт паролей из менеджера паролей Microsoft Edge</value>
+    <comment>Description for Edge import service</comment>
+  </data>
+  <data name="EdgeInstructionsPart1" xml:space="preserve">
+    <value>Чтобы импортировать пароли из Microsoft Edge, вам необходимо экспортировать их в виде CSV-файла. Для этого перейдите в "Меню" > "Настройки" > "Профили" > "Пароли" > ... > "Экспорт паролей".</value>
+    <comment>Edge export instructions part 1</comment>
+  </data>
+  <data name="EdgeInstructionsPart2" xml:space="preserve">
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
+    <comment>Edge export instructions part 2</comment>
+  </data>
+  <!-- Enpass -->
+  <data name="EnpassDescription" xml:space="preserve">
+    <value>Импорт паролей из Enpass</value>
+    <comment>Description for Enpass import service</comment>
+  </data>
+  <data name="EnpassInstructionsPart1" xml:space="preserve">
+    <value>Чтобы импортировать пароли из Enpass, вам необходимо экспортировать их в виде CSV-файла. Для этого откройте Enpass, перейдите в 'Меню' > 'Файл' > 'Экспорт' и выберите 'CSV-файл (.csv)'.</value>
+    <comment>Enpass export instructions part 1</comment>
+  </data>
+  <data name="EnpassInstructionsPart2" xml:space="preserve">
+    <value>После экспорта файла вы можете загрузить его ниже.</value>
+    <comment>Enpass export instructions part 2</comment>
+  </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
     <value>После экспорта файла вы можете загрузить его ниже.</value>

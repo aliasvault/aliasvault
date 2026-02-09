@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Step titles -->
   <data name="TermsAndConditionsStepTitle">
-    <value>Using AliasVault</value>
+    <value>Användning av AliasVault</value>
     <comment>Title for the terms and conditions step</comment>
   </data>
   <data name="UsernameStepTitle">
@@ -29,11 +29,11 @@
     <comment>Title for the username selection step</comment>
   </data>
   <data name="PasswordStepTitle">
-    <value>Set Password</value>
+    <value>Ange lösenord</value>
     <comment>Title for the password creation step</comment>
   </data>
   <data name="CreatingStepTitle">
-    <value>Creating Vault</value>
+    <value>Skapa valv</value>
     <comment>Title for the vault creation step</comment>
   </data>
   <data name="SetupStepTitle">
@@ -42,7 +42,7 @@
   </data>
   <!-- Button text -->
   <data name="CreateAccountButton">
-    <value>Create Account</value>
+    <value>Skapa konto</value>
     <comment>Button text for creating account</comment>
   </data>
   <data name="ContinueButton">

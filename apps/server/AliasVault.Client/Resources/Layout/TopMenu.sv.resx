@@ -30,11 +30,11 @@
   </data>
   <!-- Settings menu items -->
   <data name="GeneralSettingsNav">
-    <value>General settings</value>
+    <value>Allmänna inställningar</value>
     <comment>Navigation link for general settings</comment>
   </data>
   <data name="SecuritySettingsNav">
-    <value>Security settings</value>
+    <value>Säkerhetsinställningar</value>
     <comment>Navigation link for security settings</comment>
   </data>
   <data name="ImportExportNav">
@@ -42,30 +42,30 @@
     <comment>Navigation link for import/export settings</comment>
   </data>
   <data name="ExtensionsAppsNav">
-    <value>Extensions &amp; Apps</value>
+    <value>Tillägg och appar</value>
     <comment>Navigation link for extensions and apps settings</comment>
   </data>
   <!-- Menu actions -->
   <data name="EnableLightMode">
-    <value>Switch to light mode</value>
+    <value>Byt till ljust läge</value>
     <comment>Button text for switching to light theme</comment>
   </data>
   <data name="EnableDarkMode">
-    <value>Switch to dark mode</value>
+    <value>Byt till mörkt läge</value>
     <comment>Button text for switching to dark theme</comment>
   </data>
   <data name="LogOut">
-    <value>Log out</value>
+    <value>Logga ut</value>
     <comment>Button text for logging out</comment>
   </data>
   <!-- Accessibility labels -->
   <data name="OpenMenuLabel">
-    <value>Open menu</value>
+    <value>Öppna meny</value>
     <comment>Screen reader label for mobile menu button</comment>
   </data>
   <!-- Status labels -->
   <data name="NewLabel">
-    <value>NEW</value>
+    <value>NYTT</value>
     <comment>Label for new features or menu items</comment>
   </data>
   <data name="BetaLabel">

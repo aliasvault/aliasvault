@@ -1177,7 +1177,7 @@ export default function ItemsScreen(): React.ReactNode {
             isLoadingItems ? (
               <SkeletonLoader count={1} height={60} parts={2} />
             ) : (
-              <ItemCard item={itm} onItemDelete={onItemDelete} />
+              <ItemCard item={itm} onItemDelete={onItemDelete} showFolderPath={!!searchQuery} />
             )
           }
           ListEmptyComponent={renderEmptyComponent() as React.ReactElement}

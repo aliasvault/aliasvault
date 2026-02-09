@@ -436,7 +436,8 @@
     "offlineMessage": "Vous êtes déconnecté. Veuillez vous connecter à internet pour synchroniser votre coffre.",
     "switchBackToBrowser": "Passez à votre navigateur pour continuer.",
     "filters": {
-      "all": "(Tous) Éléments",
+      "all": "Éléments",
+      "showFolders": "Dossiers",
       "passkeys": "Clés d'accès",
       "attachments": "Pièces jointes"
     },

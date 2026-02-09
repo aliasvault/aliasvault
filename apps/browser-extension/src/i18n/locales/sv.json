@@ -6,7 +6,7 @@
     "passwordPlaceholder": "Ange ditt lösenord",
     "rememberMe": "Förbli inloggad",
     "loginButton": "Logga in",
-    "noAccount": "Inget konto ännu?",
+    "noAccount": "Inget konto än?",
     "createVault": "Skapa ett nytt valv",
     "twoFactorTitle": "Vänligen ange autentiseringskoden från din autentiseringsapp.",
     "authCode": "Autentiseringskod",
@@ -28,14 +28,7 @@
     "switchAccounts": "Växla konton?",
     "loginWithMobile": "Logga in med hjälp av mobilapp",
     "unlockWithMobile": "Lås upp med hjälp av mobilapp",
-    "scanQrCode": "Skanna denna QR-kod med din AliasVault-mobilapp för att logga in och låsa upp ditt valv.",
-    "errors": {
-      "invalidCode": "Ange en giltig 6-siffrig autentiseringskod.",
-      "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta support om problemet kvarstår.",
-      "wrongPassword": "Felaktigt lösenord. Var god försök igen.",
-      "sessionExpired": "Din session har löpt ut. Vänligen logga in igen.",
-      "mobileLoginRequestExpired": "Mobil inloggningsbegäran har löpt ut. Ladda om sidan och försök igen."
-    }
+    "scanQrCode": "Skanna denna QR-kod med din AliasVault-mobilapp för att logga in och låsa upp ditt valv."
   },
   "menu": {
     "vault": "Valv",
@@ -74,7 +67,7 @@
     "loadingAttachments": "Laddar bifogade filer...",
     "settings": "Inställningar",
     "recentEmails": "Senaste e-postmeddelanden",
-    "credentials": "Användaruppgifter",
+    "credentials": "Inloggningsuppgifter",
     "customFields": "Anpassade fält",
     "twoFactorAuthentication": "Tvåfaktorsautentisering",
     "alias": "Alias",
@@ -106,7 +99,12 @@
       "vaultIsLocked": "Valvet är låst",
       "passwordChanged": "Ditt lösenord har ändrats sedan du senast loggade in. Vänligen logga in igen av säkerhetsskäl.",
       "syncConflictMaxRetries": "Kunde inte synkronisera valvet trots flera försök. Försök igen senare.",
-      "mergeFailed": "Det gick inte att sammanfoga valvförändringar. Försök igen."
+      "mergeFailed": "Det gick inte att sammanfoga valvförändringar. Försök igen.",
+      "invalidCode": "Ange en giltig 6-siffrig autentiseringskod.",
+      "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta support om problemet kvarstår.",
+      "wrongPassword": "Felaktigt lösenord. Försök igen.",
+      "sessionExpired": "Din session har löpt ut. Logga in igen.",
+      "mobileLoginRequestExpired": "Mobil inloggningsbegäran har löpt ut. Ladda om sidan och försök igen."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Ett okänt fel inträffade. Försök igen.",
@@ -186,7 +184,7 @@
     "folder": "Mapp",
     "welcomeTitle": "Välkommen till AliasVault!",
     "welcomeDescription": "För att använda webbläsartillägget AliasVault: navigera till en webbplats och använd AliasVault-popup-fönstret för att skapa en ny inloggningsuppgift.",
-    "noPasskeysFound": "Inga passkeys har skapats ännu. Passkeys skapas genom att besöka en webbplats som erbjuder passkeys som en autentiseringsmetod.",
+    "noPasskeysFound": "Inga passkeys har skapats än. Passkeys skapas genom att besöka en webbplats som erbjuder passkeys som en autentiseringsmetod.",
     "noAttachmentsFound": "Inga objekt med bifogade filer hittades",
     "noItemsOfTypeFound": "Inga {{type}} objekt hittades",
     "noMatchingItems": "Inga matchande objekt hittades",
@@ -202,7 +200,7 @@
     "deleteFolderAndItems": "Radera mapp och alla objekt",
     "deleteFolderAndItemsDescription": "{{count}} objekt kommer att flyttas till Nyligen borttagen.",
     "filters": {
-      "all": "(Alla) objekt",
+      "folders": "Mappar",
       "passkeys": "Passkeys"
     },
     "sort": {
@@ -322,8 +320,8 @@
       "yesterday": "igår"
     },
     "apiErrors": {
-      "CLAIM_DOES_NOT_MATCH_USER": "Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna uppgiftsposten.",
-      "CLAIM_DOES_NOT_EXIST": "Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara uppgiftsposten för att synkronisera databasen, och försök sedan igen."
+      "CLAIM_DOES_NOT_MATCH_USER": "Den aktuella valda e-postadressen används redan. Vänligen ändra e-postadressen genom att redigera denna post.",
+      "CLAIM_DOES_NOT_EXIST": "Ett fel inträffade när e-posten skulle laddas. Försök att redigera och spara posten för att synkronisera databasen, och försök sedan igen."
     }
   },
   "settings": {
@@ -440,7 +438,7 @@
   "passkeys": {
     "passkey": "Passkey",
     "site": "Webbplats",
-    "helpText": "Passkeys skapas på webbplatsen när du blir tillfrågad. De kan inte redigeras manuellt. För att radera denna passkey, kan du ta bort det från denna inloggning. För att byta ut denna passkey eller skapa en ny, besök webbplatsen och följ dess anvisningar.",
+    "helpText": "Passkeys skapas på webbplatsen när du blir tillfrågad. De kan inte redigeras manuellt. För att radera denna passkey, kan du ta bort det från denna posten. För att byta ut denna passkey eller skapa en ny, besök webbplatsen och följ dess anvisningar.",
     "passkeyMarkedForDeletion": "Passkey markerad för borttagning",
     "passkeyWillBeDeleted": "Denna passkey kommer att tas bort när du sparar dessa uppgifter.",
     "useBrowserPasskey": "Använd Webbläsar Passkey",
@@ -515,5 +513,9 @@
     "unsyncedChangesTitle": "Osynkade ändringar",
     "unsyncedChangesWarning": "Du har osynkade ändringar som kommer att gå förlorade om du loggar ut nu. Är du säker på att du vill fortsätta?",
     "logoutAnyway": "Logga ut ändå"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tryck för att försöka synka igen"
   }
 }

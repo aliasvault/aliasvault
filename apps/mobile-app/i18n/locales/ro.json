@@ -62,11 +62,11 @@
       "invalidAuthCode": "Introdu un cod de autentificare valid format din 6 cifre",
       "incorrectPassword": "Parolă incorectă. Încearcă din nou.",
       "enterPassword": "Introdu parola",
-      "serverError": "Conexiunea la serverul AliasVault a eșuat. Încearcă mai târziu sau contactați asistența dacă problema persistă.",
+      "serverError": "Nu s-a putut stabili conexiunea cu serverul AliasVault. Încearcă din nou mai târziu sau contactează asistența dacă problema persistă.",
       "serverErrorSelfHosted": "Nu s-a putut accesa API-ul. Pentru instanțele self-hosted, verifică dacă adresa API este accesibilă dintr-un browser: ar trebui să afișeze 'OK'.",
       "networkError": "Cererea de rețea a eșuat. Verifică conexiunea la internet și încearcă din nou.",
       "networkErrorSelfHosted": "Solicitarea de rețea a eșuat. Verificați conexiunea și disponibilitatea serverului. Pentru instanțele self-hosted, asigurați-vă că aveți un certificat SSL valid instalat. Certificatele de tip „self-signed” nu sunt acceptate pe dispozitivele mobile din motive de securitate.",
-      "sessionExpired": "Sesiunea a expirat. Autentifică-te din nou.",
+      "sessionExpired": "Sesiunea ta a expirat. Autentifică-te din nou.",
       "httpError": "Eroare HTTP: {{status}}"
     },
     "confirmLogout": "Sigur dorești să te deconectezi? Va trebui să te autentifici din nou cu parola principală pentru a accesa seiful.",
@@ -120,11 +120,11 @@
   },
   "settings": {
     "title": "Setări",
-    "autofill": "Completare automată și chei de acces",
+    "autofill": "Completare automată și Passkey",
     "iosAutofillSettings": {
-      "headerText": "Poți configura AliasVault pentru a beneficia de funcționalitatea nativă de completare automată a parolelor și a cheilor de acces în iOS. Urmează instrucțiunile de mai jos pentru a o activa.",
-      "passkeyNotice": "Cheile de acces sunt create prin iOS. Pentru a le stoca în AliasVault, asigură-te că funcția Completare automată este activată mai jos.",
-      "howToEnable": "Cum se activează completarea automată și cheile de acces:",
+      "headerText": "Poți configura AliasVault pentru a oferi funcționalitatea nativă de completare automată a parolelor și passkey-urilor în iOS. Urmează instrucțiunile de mai jos pentru a o activa.",
+      "passkeyNotice": "Passkey-urile sunt create prin iOS. Pentru a le stoca în AliasVault, asigură-te că funcția de completare automată de mai jos este activată.",
+      "howToEnable": "Cum se activează completarea automată și passkey-urile:",
       "step1": "1. Deschide Setările iOS prin butonul de mai jos",
       "step2": "2. Mergi la „General”",
       "step3": "3. Apasă pe „AutoFill & Passwords”",
@@ -136,19 +136,19 @@
     },
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Funcție Experimentală",
-      "warningDescription": "Completarea automată și cheile de acces pentru Android sunt momentan în fază experimentală.",
+      "warningDescription": "Funcționalitatea de completare automată și passkey pe Android se află în prezent într-o stare experimentală.",
       "warningLink": "Citește mai multe aici",
-      "headerText": "Poți configura AliasVault pentru a beneficia de funcționalitatea nativă de completare automată a parolelor și a cheilor de acces în Android. Urmează instrucțiunile de mai jos pentru a o activa.",
-      "passkeyNotice": "Cheile de acces sunt create prin Android Credential Manager (Android 14+). Pentru a le stoca în AliasVault, asigură-te că funcția de completare automată este activată.",
-      "howToEnable": "Cum se activează completarea automată și cheile de acces:",
+      "headerText": "Poți configura AliasVault pentru a oferi funcționalitatea nativă de completare automată a parolelor și passkey-urilor pe Android. Urmează instrucțiunile de mai jos pentru a o activa.",
+      "passkeyNotice": "Passkey-urile sunt create prin Android Credential Manager (Android 14+). Pentru a le stoca în AliasVault, asigură-te că funcția de completare automată de mai jos este activată.",
+      "howToEnable": "Cum se activează completarea automată și passkey-urile:",
       "step1": "1. Deschide setările Android folosind butonul de mai jos și schimbă „Serviciul de completare automată” în „AliasVault",
       "openAutofillSettings": "Deschide setările de completare automată",
       "buttonTip": "Dacă butonul de mai sus nu funcționează, ar putea fi blocat din cauza setărilor de securitate. Poți merge manual la Setări Android → Management general → Parole și completare automată.",
-      "step2": "2. Unele aplicații, cum ar fi Google Chrome, pot necesita configurare manuală în setările proprii pentru a permite servicii de completare automată de la terți. Totuși, majoritatea aplicațiilor ar trebui să funcționeze implicit.",
+      "step2": "2. Unele aplicații, de exemplu Google Chrome, pot necesita configurare manuală în setările lor pentru a permite aplicațiilor terțe de completare automată. Totuși, majoritatea aplicațiilor ar trebui să funcționeze cu completarea automată în mod implicit.",
       "alreadyConfigured": "Am configurat deja",
       "advancedOptions": "Opțiuni Avansate",
       "showSearchText": "Afișează textul căutat",
-      "showSearchTextDescription": "Include textul pe care AliasVault îl primește de la Android pentru a căuta date de autentificare corespondente"
+      "showSearchTextDescription": "Include textul pe care AliasVault îl primește de la Android și pe care îl folosește pentru a căuta datele de autentificare corespunzătoare"
     },
     "vaultUnlock": "Metodă deblocare seif",
     "autoLock": "Interval auto-blocare",
@@ -164,7 +164,7 @@
     },
     "batteryOptimizationHelpTitle": "Activează ștergerea clipboard-ului în fundal",
     "batteryOptimizationActive": "Optimizarea bateriei blochează sarcinile în fundal",
-    "batteryOptimizationDisabled": "Ștergerea clipboard-ului în fundal a fost activată",
+    "batteryOptimizationDisabled": "Ștergerea clipboard-ului în fundal este activată",
     "batteryOptimizationHelpDescription": "Optimizarea bateriei Android împiedică ștergerea fiabilă a clipboard-ului când aplicația rulează în fundal. Dezactivarea optimizării bateriei pentru AliasVault permite ștergerea precisă a clipboard-ului în fundal și acordă automat permisiunile necesare.",
     "disableBatteryOptimization": "Dezactivează optimizarea bateriei",
     "identityGenerator": "Generator de Identitate",
@@ -311,7 +311,7 @@
         "confirmTitle": "Confirmă Cererea de Autentificare",
         "confirmSubtitle": "Re-autentifică-te pentru a aproba logarea pe alt dispozitiv.",
         "confirmMessage": "Ești pe cale să te autentifici pe un dispozitiv la distanță. Acest dispozitiv va avea acces complet la seiful tău. Continuă doar dacă ai încredere în acel dispozitiv.",
-        "successDescription": "Dispozitivul la distanță a fost autentificat cu succes.",
+        "successDescription": "Dispozitivul de la distanță a fost autentificat cu succes.",
         "requestExpired": "Cererea de autentificare a expirat. Generează un cod QR nou."
       }
     }
@@ -408,7 +408,7 @@
     "noMatchingItems": "Nu s-au găsit elemente potrivite",
     "noMatchingItemsSearch": "Nu s-au găsit elemente pentru „{{search}}”",
     "noMatchingItemsWithFilter": "Niciun element {{filter}} nu se potrivește cu „{{search}}”",
-    "noItemsFound": "Nu s-a găsit nicio înregistrare. Creează una pentru a începe. Sfat: te poți autentifica în aplicația web AliasVault pentru a importa date de autentificare din alte managere de parole.",
+    "noItemsFound": "Nu s-a găsit niciun element. Creează unul pentru a începe. Sfat: te poți autentifica în aplicația web AliasVault pentru a importa date de autentificare din alte managere de parole.",
     "allItemsInFolders": "Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.",
     "noPasskeysFound": "Nu a fost creat niciun passkey încă. Passkey-urile se creează vizitând un site care oferă passkey ca metodă de autentificare.",
     "noAttachmentsFound": "Nu s-au găsit elemente cu atașamente",
@@ -432,11 +432,12 @@
     "errorLoadingItems": "Eroare la încărcarea elementelor",
     "vaultSyncFailed": "Sincronizarea seifului a eșuat",
     "vaultSyncedSuccessfully": "Seiful a fost sincronizat cu succes",
-    "vaultUpToDate": "Seiful este la zi",
+    "vaultUpToDate": "Seiful este actualizat",
     "offlineMessage": "Ești offline. Conectează-te la internet pentru a sincroniza seiful.",
     "switchBackToBrowser": "Revino în browser pentru a continua.",
     "filters": {
-      "all": "(Toate) Elementele",
+      "all": "Elemente",
+      "showFolders": "Dosare",
       "passkeys": "Passkeys",
       "attachments": "Atașamente"
     },
@@ -569,9 +570,9 @@
     "USERNAME_TOO_LONG": "Numele de utilizator este prea lung: nu poate depăși 40 de caractere.",
     "USERNAME_INVALID_EMAIL": "Adresă de e-mail invalidă.",
     "USERNAME_INVALID_CHARACTERS": "Numele de utilizator este invalid, folosește doar litere sau cifre.",
-    "VAULT_NOT_UP_TO_DATE": "Seiful tău nu este la zi. Sincronizarea seifului tău este necesară înainte de a reîncerca.",
+    "VAULT_NOT_UP_TO_DATE": "Seiful tău nu este actualizat. Sincronizează seiful și încearcă din nou.",
     "INTERNAL_SERVER_ERROR": "Eroare internă de server.",
-    "VAULT_ERROR": "Seiful tău local nu este la zi. Reîmprospătează pagina pentru a sincroniza seiful și reîncearcă."
+    "VAULT_ERROR": "Seiful local nu este actualizat. Sincronizează seiful prin reîmprospătarea paginii și încearcă din nou."
   },
   "sync": {
     "offline": "Offline",
@@ -636,7 +637,7 @@
     "noDescriptionAvailable": "Nicio descriere disponibilă pentru această versiune.",
     "status": {
       "preparingUpgrade": "Se pregătește actualizarea...",
-      "vaultAlreadyUpToDate": "Seiful este deja la zi",
+      "vaultAlreadyUpToDate": "Seiful este deja actualizat",
       "startingDatabaseTransaction": "Se inițiază tranzacția bazei de date...",
       "applyingDatabaseMigrations": "Se aplică migrările bazei de date...",
       "applyingMigration": "Se aplică migrarea {{current}} din {{total}}...",

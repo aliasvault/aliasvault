@@ -67,11 +67,11 @@
     <comment>Modal title for mobile unlock feature</comment>
   </data>
   <data name="ScanQrCodeDescription" xml:space="preserve">
-    <value>Scan this QR code with your AliasVault mobile app to login.</value>
+    <value>Skanna den här QR-koden med din AliasVault-mobilapp för att logga in.</value>
     <comment>Description instructing user to scan QR code</comment>
   </data>
   <data name="ScanQrCodeToUnlock" xml:space="preserve">
-    <value>Scan this QR code with your AliasVault mobile app to unlock your vault.</value>
+    <value>Skanna denna QR-kod med din AliasVault-mobilapp för att logga in och låsa upp ditt valv.</value>
     <comment>Description instructing user to scan QR code to unlock</comment>
   </data>
 </root>

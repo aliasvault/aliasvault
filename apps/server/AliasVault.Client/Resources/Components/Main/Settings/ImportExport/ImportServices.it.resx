@@ -248,6 +248,45 @@
     <value>Per importare le password di Dropbox, è necessario esportarle come file CSV Puoi farlo aprendo le password di Dropbox, andando su 'Account' > 'Esporta' (verso .CSV)</value>
     <comment>Dropbox export instructions part 1</comment>
   </data>
+  <!-- RoboForm -->
+  <data name="RoboformDescription" xml:space="preserve">
+    <value>Importa password da RoboForm</value>
+    <comment>Description for RoboForm import service</comment>
+  </data>
+  <data name="RoboformInstructionsPart1" xml:space="preserve">
+    <value>Per importare le password di RoboForm, è necessario esportarle come file CSV. Puoi farlo aprendo RoboForm, andando al menu 'RoboForm' > 'Opzioni' > 'Account &amp; Data' > 'Esporta' e selezionando il formato CSV.</value>
+    <comment>RoboForm export instructions part 1</comment>
+  </data>
+  <data name="RoboformInstructionsPart2" xml:space="preserve">
+    <value>Una volta esportato il file, puoi caricarlo qui sotto.</value>
+    <comment>RoboForm export instructions part 2</comment>
+  </data>
+  <!-- Edge -->
+  <data name="EdgeDescription" xml:space="preserve">
+    <value>Importa password dal tuo Microsoft Edge Password Manager</value>
+    <comment>Description for Edge import service</comment>
+  </data>
+  <data name="EdgeInstructionsPart1" xml:space="preserve">
+    <value>Per importare le password di Microsoft Edge, è necessario esportarle come file CSV. Puoi farlo andando su Menu > Impostazioni > Password e riempimento automatico > Microsoft Password Manager > ... > Esporta password.</value>
+    <comment>Edge export instructions part 1</comment>
+  </data>
+  <data name="EdgeInstructionsPart2" xml:space="preserve">
+    <value>Una volta esportato il file, puoi caricarlo qui sotto.</value>
+    <comment>Edge export instructions part 2</comment>
+  </data>
+  <!-- Enpass -->
+  <data name="EnpassDescription" xml:space="preserve">
+    <value>Importa password da Enpass</value>
+    <comment>Description for Enpass import service</comment>
+  </data>
+  <data name="EnpassInstructionsPart1" xml:space="preserve">
+    <value>Per importare le password di Enpass, è necessario esportarle come file CSV. Puoi farlo aprendo Enpass, andando a 'Menu' > 'File' > 'Esporta' e selezionando 'file CSV (.csv)'.</value>
+    <comment>Enpass export instructions part 1</comment>
+  </data>
+  <data name="EnpassInstructionsPart2" xml:space="preserve">
+    <value>Una volta esportato il file, puoi caricarlo qui sotto.</value>
+    <comment>Enpass export instructions part 2</comment>
+  </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">
     <value>Una volta esportato il file, puoi caricarlo qui sotto.</value>

@@ -59,15 +59,15 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NoLogoText" xml:space="preserve">
-    <value>No logo</value>
+    <value>Ingen logga</value>
     <comment>Text shown when service logo is not available</comment>
   </data>
   <data name="ImportFromServiceTitle" xml:space="preserve">
-    <value>Import from {0}</value>
+    <value>Importera från {0}</value>
     <comment>Modal title for importing from a service. {0} is placeholder for service name</comment>
   </data>
   <data name="UploadExportFileText" xml:space="preserve">
-    <value>Upload your {0} export file:</value>
+    <value>Ladda upp din {0} exportfil:</value>
     <comment>Text for file upload instruction. {0} is placeholder for service name</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
@@ -87,27 +87,27 @@
     <comment>Import button text</comment>
   </data>
   <data name="ImportFoldersLabel" xml:space="preserve">
-    <value>Import folders</value>
+    <value>Importera mappar</value>
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
-    <value>{0} folder(s) detected</value>
+    <value>{0} mapp(ar) upptäckta</value>
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
   </data>
   <data name="DuplicateCredentialsWarning" xml:space="preserve">
-    <value>{0} duplicate credential(s) were found and will not be imported.</value>
+    <value>{0} dubblett(er) hittades och kommer inte att importeras.</value>
     <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
   </data>
   <data name="NoNewCredentials" xml:space="preserve">
-    <value>No new credentials were found to import.</value>
+    <value>Inga nya autentiseringsuppgifter hittades för import.</value>
     <comment>Warning text when no new credentials are available for import</comment>
   </data>
   <data name="PreviewInstructions" xml:space="preserve">
-    <value>Check if the following detected credentials look correct before continuing:</value>
+    <value>Kontrollera om följande autentiseringsuppgifter ser korrekta ut innan du fortsätter:</value>
     <comment>Instructions shown before the credential preview table</comment>
   </data>
   <data name="ServiceColumn" xml:space="preserve">
-    <value>Service</value>
+    <value>Tjänst</value>
     <comment>Column header for service name in credential preview table</comment>
   </data>
   <data name="UsernameColumn" xml:space="preserve">
@@ -119,23 +119,51 @@
     <comment>Column header for password in credential preview table</comment>
   </data>
   <data name="MoreCredentials" xml:space="preserve">
-    <value>... and {0} more credentials</value>
+    <value>... och {0} fler inloggningsuppgifter</value>
     <comment>Text showing additional credentials not displayed. {0} is the count</comment>
   </data>
   <data name="ExtractFaviconsLabel" xml:space="preserve">
-    <value>Extract favicons for services with URLs</value>
+    <value>Extrahera favicons för tjänster med URL: er</value>
     <comment>Checkbox label for favicon extraction option</comment>
   </data>
   <data name="ConfirmImportText" xml:space="preserve">
-    <value>Are you sure you want to import ({0}) credentials? Note: the import process can take a short while.</value>
+    <value>Är du säker på att du vill importera ({0}) inloggningsuppgifter? Obs: importprocessen kan ta en kort stund.</value>
     <comment>Confirmation text before importing. {0} is the credential count</comment>
   </data>
   <data name="FaviconExtractionNote" xml:space="preserve">
-    <value>Note: Favicon extraction is enabled. This process can take several minutes depending on the number of credentials with URLs. Please keep the page open.</value>
+    <value>Obs: Favicon extrahering är aktiverad. Denna process kan ta flera minuter beroende på antalet inloggningsuppgifter med webbadresser. Håll sidan öppen.</value>
     <comment>Warning note about favicon extraction duration</comment>
   </data>
   <data name="ExtractingFavicons" xml:space="preserve">
-    <value>Extracting favicons... {0} / {1}</value>
+    <value>Extraherar favicons... {0} / {1}</value>
     <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SavingCredentials" xml:space="preserve">
+    <value>Sparar uppgifter i valvet... {0} / {1}</value>
+    <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SyncingVault" xml:space="preserve">
+    <value>Synkroniserar valvet till servern...</value>
+    <comment>Progress text when syncing vault to server after import</comment>
+  </data>
+  <data name="ImportSuccessMessage" xml:space="preserve">
+    <value>Importerade {0} uppgifter.</value>
+    <comment>Success message after import completes. {0} is the credential count</comment>
+  </data>
+  <data name="ImportErrorGeneric" xml:space="preserve">
+    <value>Ett fel uppstod vid import. Försök igen.</value>
+    <comment>Generic error message when import fails</comment>
+  </data>
+  <data name="ImportErrorInvalidFile" xml:space="preserve">
+    <value>Välj en giltig exportfil att importera.</value>
+    <comment>Error message when invalid file is selected</comment>
+  </data>
+  <data name="ImportErrorZipFile" xml:space="preserve">
+    <value>Packa upp exportfilen innan du importerar. Se anvisningarna nedan för mer information.</value>
+    <comment>Error message when user tries to import a zip file</comment>
+  </data>
+  <data name="ImportErrorFileTooLarge" xml:space="preserve">
+    <value>Filstorleken överskrider gränsen på 10MB.</value>
+    <comment>Error message when file is too large</comment>
   </data>
 </root>
