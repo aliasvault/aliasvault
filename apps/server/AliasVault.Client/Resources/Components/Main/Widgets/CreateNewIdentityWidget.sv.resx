@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>+ Ny</value>
+    <value>+ Nytt</value>
     <comment>Text for the new item button</comment>
   </data>
   <data name="NewAliasButtonShort" xml:space="preserve">
@@ -115,7 +115,7 @@
     <comment>Title for creating a new note item</comment>
   </data>
   <data name="TypeLogin" xml:space="preserve">
-    <value>Logga in</value>
+    <value>Inloggning</value>
     <comment>Login item type label</comment>
   </data>
   <data name="TypeAlias" xml:space="preserve">
