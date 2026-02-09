@@ -1,0 +1,7 @@
+- Nieuwe taaloptie: Zweeds
+- Optie toegevoegd om alle item weer te geven ongeacht de map
+- Autofill nauwkeurigheid verbeterd
+- Item sorteeroptie is nu ook zichtbaar in mappen
+- Probleem verholpen bij uploaden van bijlagen
+- Probleem verholpen bij ophalen van favicons
+- Probleem verholpen bij ontbrekende vertalingen
