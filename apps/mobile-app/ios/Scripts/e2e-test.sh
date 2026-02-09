@@ -50,12 +50,15 @@ echo "=== Running E2E Tests ==="
 TEST_EXIT_CODE=0
 TEST_OUTPUT_FILE="/tmp/xcodebuild-test-output.log"
 
+# Use the same derived data path as build script
+DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-$HOME/.cache/xcode-derived-data/AliasVault}"
+
 xcodebuild test-without-building \
     -workspace AliasVault.xcworkspace \
     -scheme AliasVault \
     -sdk iphonesimulator \
     -destination "id=$SIMULATOR_ID" \
-    -derivedDataPath build \
+    -derivedDataPath "$DERIVED_DATA_PATH" \
     -only-testing:AliasVaultUITests \
     -resultBundlePath TestResults.xcresult \
     -parallel-testing-enabled NO \

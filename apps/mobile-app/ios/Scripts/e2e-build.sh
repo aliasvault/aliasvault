@@ -81,19 +81,37 @@ rm -rf TestResults.xcresult
 # Note: We allow code signing for simulator to ensure app group entitlements work
 echo ""
 echo "=== Building iOS app for testing ==="
+
+# Determine number of parallel jobs (use all available cores)
+PARALLEL_JOBS=$(sysctl -n hw.ncpu 2>/dev/null || echo 4)
+
+# Use a persistent derived data path for faster incremental builds
+# This survives across CI runs on self-hosted runners
+DERIVED_DATA_PATH="${DERIVED_DATA_PATH:-$HOME/.cache/xcode-derived-data/AliasVault}"
+mkdir -p "$DERIVED_DATA_PATH"
+echo "Using derived data path: $DERIVED_DATA_PATH"
+
 xcodebuild build-for-testing \
     -workspace AliasVault.xcworkspace \
     -scheme AliasVault \
     -configuration Debug \
     -sdk iphonesimulator \
     -destination "id=$SIMULATOR_ID" \
-    -derivedDataPath build \
+    -derivedDataPath "$DERIVED_DATA_PATH" \
+    -parallelizeTargets \
+    -jobs "$PARALLEL_JOBS" \
+    -quiet \
     CODE_SIGN_IDENTITY="-" \
     CODE_SIGNING_REQUIRED=NO \
     CODE_SIGNING_ALLOWED=YES \
     IDEFileSystemSynchronizedGroupsAreEnabled=NO \
     COMPILER_INDEX_STORE_ENABLE=NO \
-    ONLY_ACTIVE_ARCH=YES
+    ONLY_ACTIVE_ARCH=YES \
+    DEBUG_INFORMATION_FORMAT=dwarf \
+    GCC_OPTIMIZATION_LEVEL=0 \
+    SWIFT_OPTIMIZATION_LEVEL=-Onone \
+    SWIFT_COMPILATION_MODE=singlefile \
+    ENABLE_TESTABILITY=YES
 
 echo ""
 echo "✅ Build complete!"
