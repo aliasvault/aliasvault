@@ -64,7 +64,7 @@
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Hitta alla dina objekt nedan.</value>
+    <value>Dina objekt visas nedan.</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -98,7 +98,7 @@
   </data>
   <!-- Empty State -->
   <data name="NoItemsTitle" xml:space="preserve">
-    <value>Inga objekt ännu</value>
+    <value>Inga objekt än</value>
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
@@ -169,7 +169,7 @@
   </data>
   <!-- Filtered Empty States -->
   <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Inga passkeys har skapats ännu. Passkeys läggs till genom webbläsartillägget eller mobilappar när du besöker en webbplats som stöder passkeys och erbjuder passkey-autentisering.</value>
+    <value>Inga passkeys har skapats än. Passkeys läggs till genom webbläsartillägget eller mobilappar när du besöker en webbplats som stöder passkeys och erbjuder passkey-autentisering.</value>
     <comment>Empty state message when no passkeys are found</comment>
   </data>
   <data name="NoAttachmentsFound" xml:space="preserve">
