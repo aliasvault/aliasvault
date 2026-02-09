@@ -42,7 +42,7 @@
     <comment>Status text when creating a new item</comment>
   </data>
   <data name="Editing">
-    <value>Redigera spellista</value>
+    <value>Redigerar</value>
     <comment>Status text when editing an existing item</comment>
   </data>
   <!-- Buttons -->
