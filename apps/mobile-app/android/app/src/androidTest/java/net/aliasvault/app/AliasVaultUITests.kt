@@ -20,7 +20,7 @@ import net.aliasvault.app.UITestHelpers.waitForTestId
 import net.aliasvault.app.UITestHelpers.waitForText
 import net.aliasvault.app.UITestHelpers.waitForTextContains
 import org.junit.After
-import org.junit.Assert.assertNotNull
+//import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Before
