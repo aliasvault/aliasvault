@@ -41,11 +41,16 @@ extension XCUIElement {
         // Small delay to ensure keyboard is fully ready
         Thread.sleep(forTimeInterval: 0.1)
 
-        // Clear existing text if any
-        if let currentValue = self.value as? String, !currentValue.isEmpty {
-            let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: currentValue.count)
-            self.typeText(deleteString)
-        }
+        // Move cursor to the end of the field by tapping at the far right edge
+        // This ensures delete key will remove all characters, not just those before cursor
+        self.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).press(forDuration: 0.01)
+        Thread.sleep(forTimeInterval: 0.1)
+
+        // Clear existing text by sending many delete key presses
+        // Use a fixed large count to ensure all text is cleared regardless of actual length
+        let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: 100)
+        self.typeText(deleteString)
+        Thread.sleep(forTimeInterval: 0.1)
 
         // Type the new text
         self.typeText(text)

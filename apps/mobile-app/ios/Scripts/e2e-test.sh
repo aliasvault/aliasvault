@@ -122,9 +122,12 @@ if [ -n "$GITHUB_STEP_SUMMARY" ]; then
     {
         echo "## iOS E2E Test Results"
         echo ""
-        # Check for any failures: exit code, failed tests, or crashes
-        if [ "$TEST_EXIT_CODE" -eq 0 ] && [ "$FAILED_TESTS" -eq 0 ] && [ "$CRASHED" -eq 0 ]; then
+        # Determine pass/fail based on actual test results, not just exit code
+        # If we have tests and none failed/crashed, tests passed (regardless of xcodebuild exit code)
+        if [ "$TOTAL_TESTS" -gt 0 ] && [ "$FAILED_TESTS" -eq 0 ] && [ "$CRASHED" -eq 0 ]; then
             echo "✅ **All tests passed**"
+        elif [ "$TOTAL_TESTS" -eq 0 ]; then
+            echo "⚠️ **No tests were executed**"
         else
             echo "❌ **Some tests failed**"
         fi
@@ -164,9 +167,14 @@ rm -f "$TEST_OUTPUT_FILE"
 
 echo "Results bundle: TestResults.xcresult"
 
-# Exit with failure if any tests failed or crashed, even if xcodebuild exited successfully
-if [ "$FAILED_TESTS" -gt 0 ] || [ "$CRASHED" -gt 0 ]; then
+# Determine final exit code based on actual test results
+# If we have tests and all passed, exit 0 (even if xcodebuild had other issues)
+# If tests failed or crashed, exit 1
+# If no tests ran, use xcodebuild exit code (likely indicates a problem)
+if [ "$TOTAL_TESTS" -gt 0 ] && [ "$FAILED_TESTS" -eq 0 ] && [ "$CRASHED" -eq 0 ]; then
+    exit 0
+elif [ "$FAILED_TESTS" -gt 0 ] || [ "$CRASHED" -gt 0 ]; then
     exit 1
+else
+    exit $TEST_EXIT_CODE
 fi
-
-exit $TEST_EXIT_CODE

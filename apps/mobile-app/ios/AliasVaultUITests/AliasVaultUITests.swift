@@ -512,7 +512,7 @@ final class AliasVaultUITests: XCTestCase {
     /// 6. Re-login with same credentials
     /// 7. Verify credential still exists (vault was recovered from local preserved copy)
     /// 8. Verify server revision is restored
-    /*@MainActor
+    @MainActor
     func test04ForcedLogoutRecovery() async throws {
         let testUser = try await createTestUser()
         let uniqueName = TestConfiguration.generateUniqueName(prefix: "Forced Logout Test")
@@ -733,7 +733,7 @@ final class AliasVaultUITests: XCTestCase {
 
         print("[Test04] SUCCESS - Forced logout recovery verified!")
         print("[Test04] Revision flow: \(revisionBeforeLogout) (before) → \(revisionAfterRollback) (rollback) → \(finalRevision) (recovered)")
-    }*/
+    }
 
     // MARK: - Helper Methods
 
