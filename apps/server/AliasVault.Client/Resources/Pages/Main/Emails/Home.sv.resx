@@ -75,11 +75,11 @@
     <comment>Refresh button text</comment>
   </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
-    <value>Du använder inga privata e-postadresser (ännu). Skapa ett nytt alias och använd en privat e-postadress som stöds av AliasVault. Alla e-postmeddelanden som tas emot av dessa privata e-postadresser kommer att visas här.</value>
+    <value>Du använder inga privata e-postadresser (än). Skapa ett nytt alias och använd en privat e-postadress som stöds av AliasVault. Alla e-postmeddelanden som tas emot av dessa privata e-postadresser kommer att visas här.</value>
     <comment>Message when no email addresses are configured</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>Inga e-postmeddelanden har tagits emot ännu.</value>
+    <value>Inga e-postmeddelanden har tagits emot än.</value>
     <comment>Message when no emails are received</comment>
   </data>
   <data name="LoadingText" xml:space="preserve">
