@@ -106,7 +106,7 @@ grep -E "Test Case.*failed" "$TEST_OUTPUT_FILE" 2>/dev/null | \
 echo ""
 
 # If tests failed or crashed, show failure details
-if [ "$TEST_EXIT_CODE" -ne 0 ]; then
+if [ "$TEST_EXIT_CODE" -ne 0 ] || [ "$FAILED_TESTS" -gt 0 ] || [ "$CRASHED" -gt 0 ]; then
     echo "--- Failure Details ---"
     # Show assertion failures
     grep -A2 "XCTAssert" "$TEST_OUTPUT_FILE" 2>/dev/null | head -20 || true
@@ -122,7 +122,8 @@ if [ -n "$GITHUB_STEP_SUMMARY" ]; then
     {
         echo "## iOS E2E Test Results"
         echo ""
-        if [ "$TEST_EXIT_CODE" -eq 0 ]; then
+        # Check for any failures: exit code, failed tests, or crashes
+        if [ "$TEST_EXIT_CODE" -eq 0 ] && [ "$FAILED_TESTS" -eq 0 ] && [ "$CRASHED" -eq 0 ]; then
             echo "✅ **All tests passed**"
         else
             echo "❌ **Some tests failed**"
@@ -162,4 +163,10 @@ fi
 rm -f "$TEST_OUTPUT_FILE"
 
 echo "Results bundle: TestResults.xcresult"
+
+# Exit with failure if any tests failed or crashed, even if xcodebuild exited successfully
+if [ "$FAILED_TESTS" -gt 0 ] || [ "$CRASHED" -gt 0 ]; then
+    exit 1
+fi
+
 exit $TEST_EXIT_CODE
