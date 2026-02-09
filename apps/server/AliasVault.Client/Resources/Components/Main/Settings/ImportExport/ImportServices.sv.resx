@@ -175,7 +175,7 @@
     <comment>Dashlane export instructions part 1</comment>
   </data>
   <data name="DashlaneInstructionsPart2" xml:space="preserve">
-    <value>Obs: .zip-filen du laddar ner kommer att innehålla en "credentials.csv" fil. Du måste först packa upp arkivet och sedan ladda upp CSV-filen "credentials.csv" nedan.</value>
+    <value>OBS: .zip-filen du laddar ner kommer att innehålla en "credentials.csv"-fil. Du måste först packa upp arkivet och sedan ladda upp CSV-filen "credentials.csv" nedan.</value>
     <comment>Dashlane export instructions part 2</comment>
   </data>
   <!-- KeePassXC -->
