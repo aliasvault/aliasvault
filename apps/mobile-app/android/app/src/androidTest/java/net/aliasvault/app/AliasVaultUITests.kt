@@ -40,7 +40,7 @@ import org.junit.runners.MethodSorters
  * - Android Emulator with the app installed
  *
  * Note: Tests use UI Automator for interacting with React Native views via accessibility
- * labels (testID in React Native maps to contentDescription in Android).
+ * labels (testID in React Native maps to contentDescription in Android)
  */
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
