@@ -100,11 +100,11 @@
       "passwordChanged": "Ditt lösenord har ändrats sedan du senast loggade in. Vänligen logga in igen av säkerhetsskäl.",
       "syncConflictMaxRetries": "Kunde inte synkronisera valvet trots flera försök. Försök igen senare.",
       "mergeFailed": "Det gick inte att sammanfoga valvförändringar. Försök igen.",
-      "invalidCode": "Please enter a valid 6-digit authentication code.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "wrongPassword": "Incorrect password. Please try again.",
-      "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "invalidCode": "Ange en giltig 6-siffrig autentiseringskod.",
+      "serverError": "Kunde inte nå AliasVault-servern. Försök igen senare eller kontakta support om problemet kvarstår.",
+      "wrongPassword": "Felaktigt lösenord. Försök igen.",
+      "sessionExpired": "Din session har löpt ut. Logga in igen.",
+      "mobileLoginRequestExpired": "Mobil inloggningsbegäran har löpt ut. Ladda om sidan och försök igen."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Ett okänt fel inträffade. Försök igen.",
@@ -516,6 +516,6 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Tryck för att försöka synka igen"
   }
 }
