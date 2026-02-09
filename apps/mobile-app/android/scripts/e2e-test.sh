@@ -74,10 +74,10 @@ echo ""
 
 # Extract test results - match the specific Gradle test output format
 # The format is: "ClassName > testName[device info] STATUS"
-# We need to match lines with " > test" and ending with the status
-PASSED_TESTS=$(grep -E " > test.*\] PASSED$" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
-FAILED_TESTS=$(grep -E " > test.*\] FAILED$" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
-SKIPPED_TESTS=$(grep -E " > test.*\] SKIPPED$" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+# We need to match lines with " > test" and the status (allowing trailing whitespace)
+PASSED_TESTS=$(grep -E " > test.*\] PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+FAILED_TESTS=$(grep -E " > test.*\] FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
+SKIPPED_TESTS=$(grep -E " > test.*\] SKIPPED" "$TEST_OUTPUT_FILE" 2>/dev/null | wc -l | tr -d ' ')
 TOTAL_TESTS=$((PASSED_TESTS + FAILED_TESTS + SKIPPED_TESTS))
 
 echo "  Total:   $TOTAL_TESTS"
@@ -90,15 +90,15 @@ echo ""
 echo "--- Individual Tests ---"
 
 # Show passed tests (extract test name from "ClassName > testName[device] PASSED")
-grep -E " > test.*\] PASSED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+grep -E " > test.*\] PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
     sed 's/.*> \(test[^[]*\).*/  ✅ \1/' || true
 
 # Show failed tests
-grep -E " > test.*\] FAILED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+grep -E " > test.*\] FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
     sed 's/.*> \(test[^[]*\).*/  ❌ \1/' || true
 
 # Show skipped tests
-grep -E " > test.*\] SKIPPED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+grep -E " > test.*\] SKIPPED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
     sed 's/.*> \(test[^[]*\).*/  ⏭️  \1/' || true
 
 echo ""
@@ -139,13 +139,13 @@ if [ -n "$GITHUB_STEP_SUMMARY" ]; then
 
         # Passed tests
         if [ "$PASSED_TESTS" -gt 0 ]; then
-            grep -E " > test.*\] PASSED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+            grep -E " > test.*\] PASSED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
                 sed 's/.*> \(test[^[]*\).*/- ✅ \1/' || true
         fi
 
         # Failed tests
         if [ "$FAILED_TESTS" -gt 0 ]; then
-            grep -E " > test.*\] FAILED$" "$TEST_OUTPUT_FILE" 2>/dev/null | \
+            grep -E " > test.*\] FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
                 sed 's/.*> \(test[^[]*\).*/- ❌ \1/' || true
         fi
 
