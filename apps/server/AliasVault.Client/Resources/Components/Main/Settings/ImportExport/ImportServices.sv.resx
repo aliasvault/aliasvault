@@ -263,28 +263,28 @@
   </data>
   <!-- Edge -->
   <data name="EdgeDescription" xml:space="preserve">
-    <value>Import passwords from your Microsoft Edge Password Manager</value>
+    <value>Importera lösenord från Microsoft Edge</value>
     <comment>Description for Edge import service</comment>
   </data>
   <data name="EdgeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.</value>
+    <value>För att kunna importera dina lösenord i Microsoft Edge behöver du exportera dem som en CSV-fil. Det gör du i Edge genom att gå till Meny > Inställningar > Lösenord och autofyll > Microsoft lösenordshanterare > … > Exportera lösenord.</value>
     <comment>Edge export instructions part 1</comment>
   </data>
   <data name="EdgeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen, kan du ladda upp den nedan.</value>
     <comment>Edge export instructions part 2</comment>
   </data>
   <!-- Enpass -->
   <data name="EnpassDescription" xml:space="preserve">
-    <value>Import passwords from Enpass</value>
+    <value>Importera lösenord från Enpass</value>
     <comment>Description for Enpass import service</comment>
   </data>
   <data name="EnpassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.</value>
+    <value>För att kunna importera dina Enpass-lösenord behöver du exportera dem som en CSV-fil. Det gör du genom att öppna Enpass, gå till Meny > Arkiv > Exportera och välja CSV-fil (.csv).</value>
     <comment>Enpass export instructions part 1</comment>
   </data>
   <data name="EnpassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>När du har exporterat filen, kan du ladda upp den nedan.</value>
     <comment>Enpass export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
