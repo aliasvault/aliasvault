@@ -61,12 +61,14 @@ export async function filterItems(
   await ensureInit();
 
   // Map Items to the format expected by the WASM filter
+  const credentials = items.map(item => ({
+    Id: item.Id,
+    ItemName: item.Name ?? '',
+    ItemUrls: getFieldValues(item, FieldKey.LoginUrl)
+  }));
+
   const result = wasmFilterItems({
-    credentials: items.map(item => ({
-      Id: item.Id,
-      ItemName: item.Name ?? '',
-      ItemUrls: getFieldValues(item, FieldKey.LoginUrl)
-    })),
+    credentials,
     current_url: currentUrl,
     page_title: pageTitle,
     matching_mode: matchingMode
