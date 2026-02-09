@@ -7,7 +7,7 @@
 #
 # To run with a visible simulator window for debugging:
 #   1. First run: ./scripts/e2e-show-simulator.sh
-#   2. Then run: ./scripts/e2e-build.sh (reuses the visible simulator)
+#   2. Then run: ./scripts/e2e-build.sh (reuses any visible simulator)
 
 set -e
 
