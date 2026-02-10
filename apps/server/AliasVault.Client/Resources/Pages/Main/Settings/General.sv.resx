@@ -79,7 +79,7 @@
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
-    <value>Ange det standardspråk som ska användas för att generera nya identiteter.</value>
+    <value>Ange standardspråk som ska användas vid generering av nya identiteter.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
@@ -107,7 +107,7 @@
     <comment>Label for alias generation age range setting</comment>
   </data>
   <data name="AliasGenerationAgeRangeDescription">
-    <value>Ange standardåldersintervallet för generering av nya identiteter. Detta påverkar födelsedatum som tilldelats den genererade identiteten.</value>
+    <value>Ange standardåldersintervall för nya identiteter. Detta påverkar födelsedatumet som tilldelas identiteten.</value>
     <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
