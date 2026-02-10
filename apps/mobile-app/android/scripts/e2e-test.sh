@@ -7,6 +7,9 @@
 # - API server running on localhost:5092
 # - Metro bundler running on localhost:8081
 
+# Enable pipefail so that pipeline exit code reflects gradle's exit code, not tee's
+set -o pipefail
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ANDROID_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$ANDROID_DIR"
