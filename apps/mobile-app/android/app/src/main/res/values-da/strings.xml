@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">AliasVault</string>
-  <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
-  <string name="aliasvault_icon">AliasVault icon</string>
+  <string name="autofill_service_description" translatable="true">AliasVault Auto Fyld</string>
+  <string name="aliasvault_icon">AliasVault ikon</string>
   <!-- Common strings -->
-  <string name="common_close">Close</string>
-  <string name="common_next">Next</string>
-  <string name="common_cancel">Cancel</string>
-  <string name="unknown_error">An unknown error occurred</string>
+  <string name="common_close">Luk</string>
+  <string name="common_next">Næste</string>
+  <string name="common_cancel">Annuller</string>
+  <string name="unknown_error">En ukendt fejl opstod</string>
   <!-- AutofillService strings -->
-  <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
-  <string name="autofill_no_match_found">No match found, create new?</string>
-  <string name="autofill_open_app">Open app</string>
-  <string name="autofill_vault_locked">Vault locked</string>
+  <string name="autofill_failed_to_retrieve">Kunne ikke hente, åben app</string>
+  <string name="autofill_no_match_found">Ingen match fundet, opret ny?</string>
+  <string name="autofill_open_app">Åbn app</string>
+  <string name="autofill_vault_locked">Boks låst</string>
   <!-- Biometric prompts -->
-  <string name="biometric_store_key_title">Store Encryption Key</string>
-  <string name="biometric_store_key_subtitle">Authenticate to securely store your encryption key in the Android Keystore. This enables secure access to your vault.</string>
-  <string name="biometric_unlock_vault_title">Unlock Vault</string>
+  <string name="biometric_store_key_title">Opbevar Krypteringsnøgle</string>
+  <string name="biometric_store_key_subtitle">Godkend for at gemme din krypteringsnøgle sikkert i Android Nøgledepot. Dette giver sikker adgang til din boks.</string>
+  <string name="biometric_unlock_vault_title">Lås Boks Op</string>
   <string name="biometric_unlock_vault_subtitle">Authenticate to access your vault</string>
   <!-- Passkey registration -->
   <string name="passkey_registration_title">Create Passkey</string>
