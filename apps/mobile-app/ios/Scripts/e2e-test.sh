@@ -7,6 +7,9 @@
 # - API server running on localhost:5092
 # - Metro bundler running on localhost:8081
 
+# Enable pipefail so that pipeline exit code reflects xcodebuild's exit code, not tee's
+set -o pipefail
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 IOS_DIR="$(dirname "$SCRIPT_DIR")"
 cd "$IOS_DIR"
