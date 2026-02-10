@@ -383,7 +383,7 @@
     "contextMenu": "Snabbmeny",
     "contextMenuEnabled": "Snabbmenyn är aktiverad",
     "contextMenuDisabled": "Snabbmenyn är inaktiverad",
-    "contextMenuDescription": "Högerklicka på inmatningsfält för att komma åt AliasVault alternativ",
+    "contextMenuDescription": "Högerklicka på inmatningsfält för att komma åt AliasVault-alternativ",
     "selectLanguage": "Välj Språk",
     "serverConfiguration": "Serverkonfiguration",
     "serverConfigurationDescription": "Konfigurera AliasVault-serverns URL för egenhostade instanser",
