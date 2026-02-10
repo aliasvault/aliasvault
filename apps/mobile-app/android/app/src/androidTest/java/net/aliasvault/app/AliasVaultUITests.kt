@@ -54,6 +54,26 @@ class AliasVaultUITests {
 
         // Wake up device if sleeping
         device.wakeUp()
+
+        // Clear app data to ensure clean state for each test
+        // This prevents state accumulation issues between tests
+        clearAppData()
+    }
+
+    /**
+     * Clears app data to ensure a clean state for each test.
+     * This is critical for test isolation and preventing flaky tests.
+     */
+    private fun clearAppData() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        try {
+            // Use pm clear to reset app state completely
+            instrumentation.uiAutomation.executeShellCommand("pm clear $packageName").close()
+            println("[Setup] App data cleared for clean test state")
+            Thread.sleep(1000) // Wait for clear to complete
+        } catch (e: Exception) {
+            println("[Setup] Warning: Could not clear app data: ${e.message}")
+        }
     }
 
     @After
@@ -610,38 +630,76 @@ class AliasVaultUITests {
     private fun createItem(params: CreateItemParams): Boolean {
         println("[Helper] Creating item: ${params.name}")
 
+        // Log current screen state for debugging
+        println("[Helper] Current screen state before add:")
+        println("[Helper]   - items-screen exists: ${device.existsByTestId("items-screen")}")
+        println("[Helper]   - add-item-button exists: ${device.existsByTestId("add-item-button")}")
+
+        // Wait for items screen to be fully loaded before attempting to add
+        if (device.waitForTestId("items-screen", TestConfiguration.DEFAULT_TIMEOUT_MS) == null) {
+            println("[Helper] Items screen not ready, waiting longer...")
+            Thread.sleep(2000)
+        }
+
         // Tap add button
         if (!device.tapTestId("add-item-button")) {
-            println("[Helper] Failed to tap add button")
-            return false
+            println("[Helper] Failed to tap add button - button may not be visible")
+            // Try scrolling to top and retry
+            device.swipe(
+                device.displayWidth / 2,
+                device.displayHeight / 4,
+                device.displayWidth / 2,
+                device.displayHeight * 3 / 4,
+                10,
+            )
+            Thread.sleep(500)
+            if (!device.tapTestId("add-item-button")) {
+                println("[Helper] Failed to tap add button after scroll retry")
+                return false
+            }
         }
 
+        println("[Helper] Tapped add button, waiting for add-edit-screen...")
         if (device.waitForTestId("add-edit-screen", TestConfiguration.DEFAULT_TIMEOUT_MS) == null) {
-            println("[Helper] Add/edit screen did not appear")
+            println("[Helper] Add/edit screen did not appear within timeout")
+            println("[Helper]   - add-edit-screen exists: ${device.existsByTestId("add-edit-screen")}")
+            println("[Helper]   - items-screen exists: ${device.existsByTestId("items-screen")}")
             return false
         }
+        println("[Helper] Add/edit screen appeared")
 
         // Fill item name
+        println("[Helper] Filling item name: ${params.name}")
         device.scrollToTestId("item-name-input")
         device.tapTestId("item-name-input")
-        device.typeIntoTestId("item-name-input", params.name)
+        if (!device.typeIntoTestId("item-name-input", params.name)) {
+            println("[Helper] Failed to type item name")
+            return false
+        }
 
         // Fill service URL (multi-value field, first input has index 0)
+        println("[Helper] Filling service URL: ${params.serviceUrl}")
         device.scrollToTestId("service-url-input-0")
         device.tapTestId("service-url-input-0")
         device.typeIntoTestId("service-url-input-0", params.serviceUrl)
 
         // Add email - click button and wait for field to appear
+        println("[Helper] Adding email field...")
         device.scrollToTestId("add-email-button")
-        device.tapTestId("add-email-button")
+        if (!device.tapTestId("add-email-button")) {
+            println("[Helper] Failed to tap add-email-button")
+            return false
+        }
         Thread.sleep(500) // Wait for field animation
 
+        println("[Helper] Filling email: ${params.email}")
         device.scrollToTestId("login-email-input")
         device.tapTestId("login-email-input")
         device.typeIntoTestId("login-email-input", params.email)
 
         // Optionally add username
         if (params.username != null) {
+            println("[Helper] Filling username: ${params.username}")
             device.scrollToTestId("login-username-input")
             if (device.existsByTestId("login-username-input")) {
                 device.tapTestId("login-username-input")
@@ -653,26 +711,32 @@ class AliasVaultUITests {
         Thread.sleep(500) // Wait for keyboard to fully hide
 
         // Save item - wait for button to be available then tap
+        println("[Helper] Looking for save button...")
         if (device.waitForTestId("save-button", TestConfiguration.DEFAULT_TIMEOUT_MS) == null) {
-            println("[Helper] Save button not found")
+            println("[Helper] Save button not found within timeout")
             return false
         }
+        println("[Helper] Tapping save button...")
         if (!device.tapTestId("save-button")) {
             println("[Helper] Failed to tap save button")
             return false
         }
 
+        println("[Helper] Waiting for item detail screen...")
         if (device.waitForText("Login credentials", TestConfiguration.DEFAULT_TIMEOUT_MS) == null) {
             println("[Helper] Item detail screen did not appear after save")
+            println("[Helper]   - Current UI may show error or different screen")
             return false
         }
+        println("[Helper] Item detail screen appeared")
 
         // Return to items list
         Thread.sleep(1000)
+        println("[Helper] Tapping back button to return to items list...")
         device.tapTestId("back-button")
 
         if (device.waitForTestId("items-screen", TestConfiguration.DEFAULT_TIMEOUT_MS) == null) {
-            println("[Helper] Did not return to items screen")
+            println("[Helper] Did not return to items screen after back button")
             return false
         }
 

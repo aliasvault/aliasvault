@@ -21,9 +21,16 @@ pkill -9 -f "metro" 2>/dev/null || true
 pkill -9 -f "@expo/metro-runtime" 2>/dev/null || true
 pkill -9 -f "node.*8081" 2>/dev/null || true
 
-# Stop emulator
-echo "Stopping Android emulator..."
-adb emu kill 2>/dev/null || true
+# Stop emulator only if it was started by e2e-build.sh (headless mode)
+# This preserves manually started visible emulators from e2e-show-emulator.sh
+if [ -f /tmp/android-emulator.pid ]; then
+    EMULATOR_PID=$(cat /tmp/android-emulator.pid)
+    echo "Stopping headless Android emulator (PID: $EMULATOR_PID)..."
+    kill -9 "$EMULATOR_PID" 2>/dev/null || true
+    adb emu kill 2>/dev/null || true
+else
+    echo "Skipping emulator shutdown (no headless emulator PID found - preserving visible emulator)"
+fi
 
 # Clean up PID and log files
 rm -f /tmp/api-server.pid /tmp/metro.pid /tmp/android-emulator.pid

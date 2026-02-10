@@ -57,9 +57,16 @@ echo "=== Running E2E Tests ==="
 TEST_EXIT_CODE=0
 TEST_OUTPUT_FILE="/tmp/android-test-output.log"
 
+# Use --console=plain to avoid ANSI escape codes that break parsing
 ./gradlew :app:connectedDebugAndroidTest \
     -Pandroid.testInstrumentationRunnerArguments.API_URL=http://10.0.2.2:5092 \
+    --console=plain \
     --stacktrace 2>&1 | tee "$TEST_OUTPUT_FILE" || TEST_EXIT_CODE=$?
+
+# Strip any remaining ANSI escape codes from the output file
+sed -i.bak 's/\x1b\[[0-9;]*m//g' "$TEST_OUTPUT_FILE" 2>/dev/null || \
+    sed -i '' 's/\x1b\[[0-9;]*m//g' "$TEST_OUTPUT_FILE" 2>/dev/null || true
+rm -f "$TEST_OUTPUT_FILE.bak" 2>/dev/null || true
 
 # Parse and display test results summary
 echo ""
