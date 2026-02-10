@@ -66,7 +66,7 @@
     <comment>Label for public domains group</comment>
   </data>
   <data name="AutoEmailRefreshLabel">
-    <value>Uppdatera listan för inkommen e-post automatiskt när nya kommer</value>
+    <value>Uppdatera e-postlistan automatiskt när nya e-postmeddelanden kommer in</value>
     <comment>Label for auto email refresh setting</comment>
   </data>
   <!-- Alias Settings Section -->
