@@ -1,75 +1,75 @@
 /* English localization strings for VaultUI */
-"error" = "Error";
-"cancel" = "Cancel";
-"back" = "Back";
-"next" = "Next";
-"edit" = "Edit";
-"website" = "Website";
-"username" = "Username";
-"title" = "Title";
-"unknown_error" = "An unknown error occurred";
+"error" = "Fejl";
+"cancel" = "Annuller";
+"back" = "Tilbage";
+"next" = "Næste";
+"edit" = "Rediger";
+"website" = "Webside";
+"username" = "Brugernavn";
+"title" = "Titel";
+"unknown_error" = "Der opstod en ukendt fejl";
 
-"loading_items" = "Loading items...";
-"no_items_found" = "No items found";
-"no_items_match" = "No existing items match your search";
-"create_new_item" = "Create New Item";
-"select_item" = "Select Item";
-"select_text_to_insert" = "Select Text to Insert";
-"choose_username" = "Choose Username";
-"select_text_to_insert_message" = "Select the text to insert into the focused input field";
-"choose_username_message" = "This website may require either your username or your email address to log in";
-"username_prefix" = "Username: ";
-"email_prefix" = "Email: ";
-"password" = "Password";
-"items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
-"no_item_selected" = "No item selected.";
+"loading_items" = "Indlæser elementer...";
+"no_items_found" = "Ingen elementer fundet";
+"no_items_match" = "Ingen eksisterende elementer matcher din søgning";
+"create_new_item" = "Opret nyt element";
+"select_item" = "Vælg element";
+"select_text_to_insert" = "Vælg tekst der skal indsættes";
+"choose_username" = "Vælg brugernavn";
+"select_text_to_insert_message" = "Vælg den tekst, der skal indsættes i det fokuserede inputfelt";
+"choose_username_message" = "Denne webside kræver muligvis enten dit brugernavn eller din e-mailadresse for at logge ind";
+"username_prefix" = "Brugernavn: ";
+"email_prefix" = "E-mail: ";
+"password" = "Adgangskode";
+"items_load_error" = "Kunne ikke indlæse elementer. Åbn venligst AliasVault-appen for at søge efter opdateringer.";
+"no_item_selected" = "Intet element valgt.";
 
 /* Context menu strings */
-"copy_username" = "Copy Username";
-"copy_password" = "Copy Password";
-"copy_email" = "Copy Email";
-"view_details" = "View Details";
-"username_copied" = "Username copied";
-"password_copied" = "Password copied";
-"email_copied" = "Email copied";
+"copy_username" = "Kopier brugernavn";
+"copy_password" = "Kopier adgangskode";
+"copy_email" = "Kopier e-mail";
+"view_details" = "Vis detaljer";
+"username_copied" = "Brugernavn kopieret";
+"password_copied" = "Adgangskode kopieret";
+"email_copied" = "E-mail kopieret";
 
 /* Search bar */
-"search_items" = "Search items...";
+"search_items" = "Søg i elementer...";
 
 /* Passkey registration */
-"create_passkey_title" = "Create New Passkey";
-"create_passkey_subtitle" = "Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.";
-"create_passkey_button_confirm" = "Create Passkey";
+"create_passkey_title" = "Opret ny passkey";
+"create_passkey_subtitle" = "Registrer en ny passkey for denne webside. Den vil blive opbevaret sikkert i din boks og automatisk synkroniseret på tværs af dine enheder med AliasVault.";
+"create_passkey_button_confirm" = "Opret passkey";
 
 /* Passkey provider */
 "passkey" = "Passkey";
-"loading_passkeys" = "Loading passkeys...";
-"no_passkeys_found" = "No passkeys found";
-"no_passkeys_match" = "No existing passkeys match your search";
-"select_passkey" = "Select Passkey";
-"passkeys_load_error" = "Failed to load passkeys. Please open the AliasVault app to check for updates.";
+"loading_passkeys" = "Indlæser passkeys...";
+"no_passkeys_found" = "Ingen passkeys fundet";
+"no_passkeys_match" = "Ingen eksisterende passkeys matcher din søgning";
+"select_passkey" = "Vælg passkey";
+"passkeys_load_error" = "Kunne ikke indlæse passkeys. Åbn venligst AliasVault-appen for at søge efter opdateringer.";
 
 /* Passkey replacement */
-"create_new_passkey" = "Create New Passkey";
-"select_passkey_to_replace" = "Or, replace an existing passkey";
-"replace_passkey" = "Replace Passkey";
-"replace_passkey_explanation" = "This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.";
-"create_passkey_explanation" = "This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.";
+"create_new_passkey" = "Opret ny passkey";
+"select_passkey_to_replace" = "Eller erstat en eksisterende passkey";
+"replace_passkey" = "Erstat passkey";
+"replace_passkey_explanation" = "Dette vil erstatte den eksisterende passkey med en ny. Vær opmærksom på, at din gamle passkey vil blive overskrevet og ikke længere vil være tilgængelig. Hvis du ønsker at oprette en separat passkey i stedet, skal du gå tilbage til den forrige skærm.";
+"create_passkey_explanation" = "Dette opretter en ny passkey og gemmer den i din boks. Den vil blive automatisk synkroniseret på tværs af alle dine enheder, der bruger AliasVault.";
 
 /* Passkey merge with existing item */
-"passkey_add_to_existing" = "Or, add passkey to an existing item";
-"add_passkey" = "Add Passkey";
-"merge_passkey_explanation" = "This will add a passkey to your existing item. Your password and other data will be preserved.";
+"passkey_add_to_existing" = "Eller føj passkey til et eksisterende element";
+"add_passkey" = "Tilføj passkey";
+"merge_passkey_explanation" = "Dette vil føje en passkey til dit eksisterende element. Din adgangskode og andre data vil blive bevaret.";
 
 /* PIN Unlock */
-"unlock_vault" = "Unlock Vault";
-"enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
-"pin_locked_max_attempts" = "PIN locked after too many failed attempts";
-"pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+"unlock_vault" = "Lås boks op";
+"enter_pin_to_unlock_vault" = "Indtast din PIN-kode for at låse din boks op";
+"pin_locked_max_attempts" = "PIN-kode låst efter for mange mislykkede forsøg";
+"pin_incorrect_attempts_remaining" = "Forkert PIN-kode. %d forsøg tilbage";
 
 /* PIN Setup */
-"pin_setup_title" = "Setup PIN";
-"pin_setup_subtitle" = "Choose a PIN to unlock your vault";
-"pin_confirm_title" = "Confirm PIN";
-"pin_confirm_subtitle" = "Re-enter your PIN to confirm";
-"pin_mismatch" = "PINs do not match. Please try again.";
+"pin_setup_title" = "Konfigurer PIN-kode";
+"pin_setup_subtitle" = "Vælg en PIN-kode til at låse din boks op";
+"pin_confirm_title" = "Bekræft PIN-kode";
+"pin_confirm_subtitle" = "Indtast din PIN-kode igen for at bekræfte";
+"pin_mismatch" = "PIN-koderne stemmer ikke overens. Prøv venligst igen.";
