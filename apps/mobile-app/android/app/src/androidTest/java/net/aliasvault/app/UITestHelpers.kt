@@ -485,25 +485,34 @@ object UITestHelpers {
     // region Debug Helpers
 
     /**
-     * Take a screenshot and save to file.
+     * Take a screenshot and save to file with error handling.
+     * Returns true if screenshot was saved successfully.
      */
-    fun UiDevice.takeScreenshot(file: File): Boolean {
+    fun UiDevice.saveScreenshot(file: File): Boolean {
         return try {
-            takeScreenshot(file)
-            Log.i(TAG, "Screenshot saved to: ${file.absolutePath}")
-            true
+            // Ensure parent directory exists
+            file.parentFile?.mkdirs()
+            // Use the UiDevice's built-in takeScreenshot method
+            val success = this.takeScreenshot(file)
+            if (success) {
+                Log.i(TAG, "Screenshot saved to: ${file.absolutePath}")
+            } else {
+                Log.e(TAG, "takeScreenshot returned false for: ${file.absolutePath}")
+            }
+            success
         } catch (e: Exception) {
             Log.e(TAG, "Failed to take screenshot: ${e.message}")
+            e.printStackTrace()
             false
         }
     }
 
     /**
-     * Dump the current window hierarchy for debugging.
+     * Dump the current window hierarchy for debugging with error handling.
      */
-    fun UiDevice.dumpWindowHierarchy(output: OutputStream) {
+    fun UiDevice.dumpHierarchy(output: OutputStream) {
         try {
-            dumpWindowHierarchy(output)
+            this.dumpWindowHierarchy(output)
         } catch (e: Exception) {
             Log.e(TAG, "Failed to dump window hierarchy: ${e.message}")
         }

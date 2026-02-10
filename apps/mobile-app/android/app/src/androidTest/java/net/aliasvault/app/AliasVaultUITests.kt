@@ -8,15 +8,15 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import kotlinx.coroutines.runBlocking
 import net.aliasvault.app.UITestHelpers.assertTestIdExists
-import net.aliasvault.app.UITestHelpers.dumpWindowHierarchy
+import net.aliasvault.app.UITestHelpers.dumpHierarchy
 import net.aliasvault.app.UITestHelpers.existsByTestId
 import net.aliasvault.app.UITestHelpers.findByTestId
 import net.aliasvault.app.UITestHelpers.findByText
 import net.aliasvault.app.UITestHelpers.hideKeyboard
 import net.aliasvault.app.UITestHelpers.longSleep
+import net.aliasvault.app.UITestHelpers.saveScreenshot
 import net.aliasvault.app.UITestHelpers.scrollToTestId
 import net.aliasvault.app.UITestHelpers.scrollToText
-import net.aliasvault.app.UITestHelpers.takeScreenshot
 import net.aliasvault.app.UITestHelpers.tapTestId
 import net.aliasvault.app.UITestHelpers.typeIntoTestId
 import net.aliasvault.app.UITestHelpers.waitForTestId
@@ -73,16 +73,17 @@ class AliasVaultUITests {
                 if (::device.isInitialized) {
                     // Take screenshot
                     val screenshotFile = File("/sdcard/Download/test-failure-$testName.png")
-                    device.takeScreenshot(screenshotFile)
-                    Log.e(TAG, "Screenshot saved to: ${screenshotFile.absolutePath}")
+                    val saved = device.saveScreenshot(screenshotFile)
+                    Log.e(TAG, "Screenshot saved: $saved to ${screenshotFile.absolutePath}")
 
                     // Dump UI hierarchy for debugging
                     Log.e(TAG, "=== UI Hierarchy at failure ===")
-                    device.dumpWindowHierarchy(System.err)
+                    device.dumpHierarchy(System.err)
                     Log.e(TAG, "=== End UI Hierarchy ===")
                 }
             } catch (ex: Exception) {
                 Log.e(TAG, "Failed to capture debug info: ${ex.message}")
+                ex.printStackTrace()
             }
         }
 
