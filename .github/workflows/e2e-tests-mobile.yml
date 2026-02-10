@@ -387,11 +387,31 @@ jobs:
             sleep 2
           done
 
+      - name: Setup Gradle cache
+        run: |
+          # Ensure Gradle cache directories exist and are preserved across runs
+          GRADLE_CACHE_DIR="/Users/ci/.gradle"
+          mkdir -p "$GRADLE_CACHE_DIR/caches"
+          mkdir -p "$GRADLE_CACHE_DIR/wrapper"
+
+          # Set GRADLE_USER_HOME to use persistent cache location
+          echo "GRADLE_USER_HOME=$GRADLE_CACHE_DIR" >> $GITHUB_ENV
+
+          # Show cache size for debugging
+          if [ -d "$GRADLE_CACHE_DIR/caches" ]; then
+            CACHE_SIZE=$(du -sh "$GRADLE_CACHE_DIR/caches" 2>/dev/null | cut -f1 || echo "unknown")
+            echo "✅ Gradle cache exists (size: $CACHE_SIZE)"
+          else
+            echo "No existing Gradle cache found"
+          fi
+
       - name: Build Android app
         run: |
           cd android
           chmod +x scripts/*.sh
           ./scripts/e2e-build.sh
+        env:
+          GRADLE_USER_HOME: /Users/ci/.gradle
 
       - name: Run Android E2E tests
         run: |
@@ -399,6 +419,7 @@ jobs:
           ./scripts/e2e-test.sh
         env:
           API_URL: "http://10.0.2.2:5092"
+          GRADLE_USER_HOME: /Users/ci/.gradle
 
       - name: Upload Android test results
         if: always()

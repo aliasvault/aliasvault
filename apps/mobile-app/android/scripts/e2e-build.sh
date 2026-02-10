@@ -99,7 +99,18 @@ echo "Emulator ready: $EMULATOR_ID"
 # Build the app
 echo ""
 echo "=== Building Android app for testing ==="
-./gradlew :app:assembleDebug :app:assembleDebugAndroidTest
+
+# Show Gradle cache status
+if [ -n "$GRADLE_USER_HOME" ]; then
+    echo "Using GRADLE_USER_HOME: $GRADLE_USER_HOME"
+    if [ -d "$GRADLE_USER_HOME/caches" ]; then
+        CACHE_SIZE=$(du -sh "$GRADLE_USER_HOME/caches" 2>/dev/null | cut -f1 || echo "unknown")
+        echo "Gradle cache size: $CACHE_SIZE"
+    fi
+fi
+
+# Build with caching enabled (--build-cache uses local and remote caches if configured)
+./gradlew :app:assembleDebug :app:assembleDebugAndroidTest --build-cache
 
 echo ""
 echo "=== Installing APKs ==="

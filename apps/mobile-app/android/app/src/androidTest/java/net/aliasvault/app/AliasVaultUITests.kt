@@ -55,25 +55,10 @@ class AliasVaultUITests {
         // Wake up device if sleeping
         device.wakeUp()
 
-        // Clear app data to ensure clean state for each test
-        // This prevents state accumulation issues between tests
-        clearAppData()
-    }
-
-    /**
-     * Clears app data to ensure a clean state for each test.
-     * This is critical for test isolation and preventing flaky tests.
-     */
-    private fun clearAppData() {
-        val instrumentation = InstrumentationRegistry.getInstrumentation()
-        try {
-            // Use pm clear to reset app state completely
-            instrumentation.uiAutomation.executeShellCommand("pm clear $packageName").close()
-            println("[Setup] App data cleared for clean test state")
-            Thread.sleep(1000) // Wait for clear to complete
-        } catch (e: Exception) {
-            println("[Setup] Warning: Could not clear app data: ${e.message}")
-        }
+        // Note: We don't clear app data here because pm clear kills the instrumentation process.
+        // Instead, each test creates its own isolated test user via the API, and loginWithTestUser()
+        // handles logging out any existing session before logging in with the new test user.
+        // This provides test isolation without crashing the test runner.
     }
 
     @After

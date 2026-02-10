@@ -51,6 +51,12 @@ echo "Ensuring port forwarding..."
 adb -s "$EMULATOR_ID" reverse tcp:5092 tcp:5092 2>/dev/null || true
 adb -s "$EMULATOR_ID" reverse tcp:8081 tcp:8081 2>/dev/null || true
 
+# Clear app data before running tests to ensure clean state
+# This must be done via adb (not from within instrumentation) to avoid crashing the test runner
+echo "Clearing app data for clean test state..."
+adb -s "$EMULATOR_ID" shell pm clear net.aliasvault.app 2>/dev/null || true
+sleep 1
+
 # Run tests
 echo ""
 echo "=== Running E2E Tests ==="
@@ -58,9 +64,11 @@ TEST_EXIT_CODE=0
 TEST_OUTPUT_FILE="/tmp/android-test-output.log"
 
 # Use --console=plain to avoid ANSI escape codes that break parsing
+# Use --build-cache to leverage cached compilation artifacts
 ./gradlew :app:connectedDebugAndroidTest \
     -Pandroid.testInstrumentationRunnerArguments.API_URL=http://10.0.2.2:5092 \
     --console=plain \
+    --build-cache \
     --stacktrace 2>&1 | tee "$TEST_OUTPUT_FILE" || TEST_EXIT_CODE=$?
 
 # Strip any remaining ANSI escape codes from the output file
