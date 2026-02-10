@@ -204,7 +204,7 @@ public sealed class ItemEdit
                         IsHidden = field.IsHidden,
                         IsMultiValue = false,
                         EnableHistory = false,
-                        Weight = 0,
+                        Weight = field.DisplayOrder,
                         CreatedAt = now,
                         UpdatedAt = now,
                     };
@@ -217,7 +217,7 @@ public sealed class ItemEdit
                         FieldDefinition = fieldDefinition,
                         FieldKey = null,
                         Value = field.Value,
-                        Weight = 0,
+                        Weight = field.DisplayOrder,
                     });
                 }
                 else
@@ -230,7 +230,7 @@ public sealed class ItemEdit
                         FieldDefinitionId = field.FieldDefinitionId,
                         FieldKey = null,
                         Value = field.Value,
-                        Weight = 0,
+                        Weight = field.DisplayOrder,
                     };
 
                     // Include FieldDefinition with potentially updated label
@@ -242,7 +242,7 @@ public sealed class ItemEdit
                         IsHidden = field.IsHidden,
                         IsMultiValue = false,
                         EnableHistory = false,
-                        Weight = 0,
+                        Weight = field.DisplayOrder,
                     };
 
                     item.FieldValues.Add(fieldValue);
@@ -430,12 +430,12 @@ public sealed class ItemEdit
     }
 
     /// <summary>
-    /// Gets all custom fields.
+    /// Gets all custom fields sorted by display order.
     /// </summary>
-    /// <returns>List of custom fields.</returns>
+    /// <returns>List of custom fields sorted by display order.</returns>
     public List<SystemFieldEdit> GetCustomFields()
     {
-        return Fields.Where(f => f.IsCustomField).ToList();
+        return Fields.Where(f => f.IsCustomField).OrderBy(f => f.DisplayOrder).ToList();
     }
 
     /// <summary>

@@ -359,7 +359,7 @@ else
                     </div>
                 }
 
-                @* Custom Fields Section *@
+                @* Custom Fields Section with Drag-and-Drop Reordering *@
                 @{
                     var customFields = Obj.GetCustomFields();
                 }
@@ -368,34 +368,11 @@ else
                     <div class="col-span-1 md:col-span-1 lg:col-span-2">
                         <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800">
                             <h3 class="mb-4 text-xl font-semibold dark:text-white">@Localizer["CustomFieldsSectionHeader"]</h3>
-                            <div class="grid gap-6">
-                                @foreach (var customField in customFields)
-                                {
-                                    <div class="col-span-6">
-                                        <EditableFieldLabel
-                                            HtmlFor="@($"custom-{customField.TempId ?? customField.FieldKey}")"
-                                            Label="@customField.Label"
-                                            LabelChanged="@((newLabel) => Obj.UpdateCustomFieldLabel(customField.FieldKey, newLabel))"
-                                            OnDelete="@(() => Obj.RemoveCustomField(customField.FieldKey))" />
-                                        @if (customField.FieldType == FieldType.TextArea)
-                                        {
-                                            <div class="relative">
-                                                <textarea id="@($"custom-{customField.TempId ?? customField.FieldKey}")" style="height: 200px;" class="outline-0 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" @bind="customField.Value"></textarea>
-                                            </div>
-                                        }
-                                        else if (customField.IsHidden || customField.FieldType == FieldType.Hidden || customField.FieldType == FieldType.Password)
-                                        {
-                                            <EditPasswordFormRow Id="@($"custom-{customField.TempId ?? customField.FieldKey}")" Label="" @bind-Value="customField.Value" ShowPassword="false"></EditPasswordFormRow>
-                                        }
-                                        else
-                                        {
-                                            <div class="relative">
-                                                <input type="text" id="@($"custom-{customField.TempId ?? customField.FieldKey}")" autocomplete="off" class="outline-0 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" @bind="customField.Value" autocapitalize="off" autocorrect="off">
-                                            </div>
-                                        }
-                                    </div>
-                                }
-                            </div>
+                            <DraggableCustomFieldsList
+                                CustomFields="@customFields"
+                                OnReorder="HandleCustomFieldsReorder"
+                                OnLabelChange="HandleCustomFieldLabelChange"
+                                OnDelete="HandleCustomFieldDelete" />
                         </div>
                     </div>
                 }
@@ -814,6 +791,39 @@ else
     private void AddCustomField((string Label, string FieldType) args)
     {
         Obj.AddCustomField(args.Label, args.FieldType);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles custom fields reorder (drag-and-drop).
+    /// Updates the Fields list with the reordered custom fields.
+    /// </summary>
+    private void HandleCustomFieldsReorder(List<SystemFieldEdit> reorderedFields)
+    {
+        // Remove all existing custom fields from the list
+        Obj.Fields.RemoveAll(f => f.IsCustomField);
+
+        // Add the reordered custom fields back
+        Obj.Fields.AddRange(reorderedFields);
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles custom field label change from the draggable list.
+    /// </summary>
+    private void HandleCustomFieldLabelChange((string fieldKey, string newLabel) args)
+    {
+        Obj.UpdateCustomFieldLabel(args.fieldKey, args.newLabel);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles custom field deletion from the draggable list.
+    /// </summary>
+    private void HandleCustomFieldDelete(string fieldKey)
+    {
+        Obj.RemoveCustomField(fieldKey);
         StateHasChanged();
     }
 
