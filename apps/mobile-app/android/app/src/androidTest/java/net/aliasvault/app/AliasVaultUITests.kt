@@ -2,11 +2,13 @@ package net.aliasvault.app
 
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import kotlinx.coroutines.runBlocking
 import net.aliasvault.app.UITestHelpers.assertTestIdExists
+import net.aliasvault.app.UITestHelpers.dumpWindowHierarchy
 import net.aliasvault.app.UITestHelpers.existsByTestId
 import net.aliasvault.app.UITestHelpers.findByTestId
 import net.aliasvault.app.UITestHelpers.findByText
@@ -14,6 +16,7 @@ import net.aliasvault.app.UITestHelpers.hideKeyboard
 import net.aliasvault.app.UITestHelpers.longSleep
 import net.aliasvault.app.UITestHelpers.scrollToTestId
 import net.aliasvault.app.UITestHelpers.scrollToText
+import net.aliasvault.app.UITestHelpers.takeScreenshot
 import net.aliasvault.app.UITestHelpers.tapTestId
 import net.aliasvault.app.UITestHelpers.typeIntoTestId
 import net.aliasvault.app.UITestHelpers.waitForTestId
@@ -24,9 +27,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Before
 import org.junit.FixMethodOrder
+import org.junit.Rule
 import org.junit.Test
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
 import org.junit.runner.RunWith
 import org.junit.runners.MethodSorters
+import java.io.File
 
 /**
  * E2E UI Tests for AliasVault Android app.
@@ -47,6 +54,53 @@ import org.junit.runners.MethodSorters
 class AliasVaultUITests {
     private lateinit var device: UiDevice
     private val packageName = "net.aliasvault.app"
+    private var currentTestName: String = ""
+
+    companion object {
+        private const val TAG = "AliasVaultUITests"
+    }
+
+    /**
+     * Rule to capture screenshots and UI hierarchy on test failure.
+     */
+    @get:Rule
+    val screenshotOnFailureRule = object : TestWatcher() {
+        override fun failed(e: Throwable?, description: Description?) {
+            val testName = description?.methodName ?: "unknown"
+            Log.e(TAG, "Test '$testName' FAILED - capturing debug info")
+
+            try {
+                if (::device.isInitialized) {
+                    // Take screenshot
+                    val screenshotFile = File("/sdcard/Download/test-failure-$testName.png")
+                    device.takeScreenshot(screenshotFile)
+                    Log.e(TAG, "Screenshot saved to: ${screenshotFile.absolutePath}")
+
+                    // Dump UI hierarchy for debugging
+                    Log.e(TAG, "=== UI Hierarchy at failure ===")
+                    device.dumpWindowHierarchy(System.err)
+                    Log.e(TAG, "=== End UI Hierarchy ===")
+                }
+            } catch (ex: Exception) {
+                Log.e(TAG, "Failed to capture debug info: ${ex.message}")
+            }
+        }
+
+        override fun starting(description: Description?) {
+            currentTestName = description?.methodName ?: "unknown"
+            Log.i(TAG, "=== Starting test: $currentTestName ===")
+            Log.i(TAG, "CI mode: ${TestConfiguration.isCI}")
+            Log.i(
+                TAG,
+                "Timeouts: DEFAULT=${TestConfiguration.DEFAULT_TIMEOUT_MS}ms, " +
+                    "EXTENDED=${TestConfiguration.EXTENDED_TIMEOUT_MS}ms",
+            )
+        }
+
+        override fun finished(description: Description?) {
+            Log.i(TAG, "=== Finished test: ${description?.methodName} ===")
+        }
+    }
 
     @Before
     fun setUp() {
@@ -54,6 +108,11 @@ class AliasVaultUITests {
 
         // Wake up device if sleeping
         device.wakeUp()
+
+        // Disable animations for more reliable tests in CI
+        // Note: Requires adb shell settings put global window_animation_scale 0 etc.
+        // This is done via the test script, but we log a reminder here
+        Log.i(TAG, "Ensure animations are disabled for reliable tests")
 
         // Note: We don't clear app data here because pm clear kills the instrumentation process.
         // Instead, each test creates its own isolated test user via the API, and loginWithTestUser()
@@ -63,7 +122,7 @@ class AliasVaultUITests {
 
     @After
     fun tearDown() {
-        // Take screenshot on failure would go here if needed
+        // Screenshots on failure are handled by the TestWatcher rule
     }
 
     // region Test Setup
@@ -170,6 +229,9 @@ class AliasVaultUITests {
 
         // Verify item exists in list
         assertTrue("Should find item in list", verifyItemExistsInList(uniqueName))
+
+        // Small delay before opening item - list may still be rendering
+        Thread.sleep(1000)
 
         // Open and verify item details
         assertTrue("Should verify item details", openAndVerifyItem(uniqueName, "e2e-test@example.com"))
@@ -752,6 +814,8 @@ class AliasVaultUITests {
      * Opens an item from the list and verifies its details.
      */
     private fun openAndVerifyItem(name: String, expectedEmail: String? = null): Boolean {
+        println("[Helper] Opening item '$name' to verify details")
+
         val itemCard = device.scrollToText(name) ?: device.findByText(name)
 
         if (itemCard == null) {
@@ -759,18 +823,29 @@ class AliasVaultUITests {
             return false
         }
 
+        println("[Helper] Found item card, clicking...")
         itemCard.click()
 
+        // Wait for detail screen - use longer timeout for screen transition
+        Thread.sleep(500) // Small delay for click to register
+        println("[Helper] Waiting for detail screen (Login credentials text)...")
         if (device.waitForText("Login credentials", TestConfiguration.DEFAULT_TIMEOUT_MS) == null) {
             println("[Helper] Item detail screen did not appear")
+            println("[Helper]   - items-screen visible: ${device.existsByTestId("items-screen")}")
+            println("[Helper]   - add-edit-screen visible: ${device.existsByTestId("add-edit-screen")}")
             return false
         }
+        println("[Helper] Detail screen appeared")
 
         if (expectedEmail != null) {
-            if (device.waitForTextContains(expectedEmail) == null) {
-                println("[Helper] Expected email '$expectedEmail' not found")
+            println("[Helper] Looking for email '$expectedEmail' on detail screen...")
+            // Use DEFAULT_TIMEOUT_MS instead of SHORT_TIMEOUT_MS for email verification
+            // In headless CI mode, content rendering can be slow
+            if (device.waitForTextContains(expectedEmail, TestConfiguration.DEFAULT_TIMEOUT_MS) == null) {
+                println("[Helper] Expected email '$expectedEmail' not found within timeout")
                 return false
             }
+            println("[Helper] Email found on detail screen")
         }
 
         println("[Helper] Item '$name' verified successfully")

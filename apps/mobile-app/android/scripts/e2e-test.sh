@@ -54,11 +54,21 @@ echo "Ensuring port forwarding..."
 adb -s "$EMULATOR_ID" reverse tcp:5092 tcp:5092 2>/dev/null || true
 adb -s "$EMULATOR_ID" reverse tcp:8081 tcp:8081 2>/dev/null || true
 
+# Disable animations for reliable UI testing (critical for headless CI)
+echo "Disabling animations for reliable testing..."
+adb -s "$EMULATOR_ID" shell settings put global window_animation_scale 0.0 2>/dev/null || true
+adb -s "$EMULATOR_ID" shell settings put global transition_animation_scale 0.0 2>/dev/null || true
+adb -s "$EMULATOR_ID" shell settings put global animator_duration_scale 0.0 2>/dev/null || true
+
 # Clear app data before running tests to ensure clean state
 # This must be done via adb (not from within instrumentation) to avoid crashing the test runner
 echo "Clearing app data for clean test state..."
 adb -s "$EMULATOR_ID" shell pm clear net.aliasvault.app 2>/dev/null || true
 sleep 1
+
+# Detect CI environment
+IS_CI="${CI:-${GITHUB_ACTIONS:-false}}"
+echo "CI mode: $IS_CI"
 
 # Run tests
 echo ""
@@ -68,8 +78,15 @@ TEST_OUTPUT_FILE="/tmp/android-test-output.log"
 
 # Use --console=plain to avoid ANSI escape codes that break parsing
 # Use --build-cache to leverage cached compilation artifacts
+# Pass CI environment variable to tests for timeout adjustments
+CI_ARG=""
+if [ "$IS_CI" = "true" ]; then
+    CI_ARG="-Pandroid.testInstrumentationRunnerArguments.CI=true"
+fi
+
 ./gradlew :app:connectedDebugAndroidTest \
     -Pandroid.testInstrumentationRunnerArguments.API_URL=http://10.0.2.2:5092 \
+    $CI_ARG \
     --console=plain \
     --build-cache \
     --stacktrace 2>&1 | tee "$TEST_OUTPUT_FILE" || TEST_EXIT_CODE=$?
@@ -121,13 +138,20 @@ grep -E " > test.*\] SKIPPED" "$TEST_OUTPUT_FILE" 2>/dev/null | \
 
 echo ""
 
-# If tests failed, show failure details
+# If tests failed, show failure details and pull screenshots
 if [ "$TEST_EXIT_CODE" -ne 0 ]; then
     echo "--- Failure Details ---"
     # Show assertion failures
     grep -A5 "AssertionError\|AssertionFailedError\|junit.*Exception" "$TEST_OUTPUT_FILE" 2>/dev/null | head -30 || true
     # Show test failure messages
     grep -B2 -A3 "FAILED" "$TEST_OUTPUT_FILE" 2>/dev/null | grep -v "^--$" | head -20 || true
+    echo ""
+
+    # Pull failure screenshots from device
+    echo "--- Pulling failure screenshots ---"
+    mkdir -p app/build/reports/androidTests/screenshots
+    adb -s "$EMULATOR_ID" pull /sdcard/Download/ app/build/reports/androidTests/screenshots/ 2>/dev/null || true
+    ls -la app/build/reports/androidTests/screenshots/*.png 2>/dev/null || echo "No screenshots found"
     echo ""
 fi
 
