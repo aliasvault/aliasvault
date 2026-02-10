@@ -72,7 +72,7 @@
   </data>
   <data name="DisabledDescription" xml:space="preserve">
     <value>Omladdning av AliasVault-sidan eller fliken kräver som standard att du anger ditt huvudlösenord igen. Med en passkey kan du låsa upp ditt valv omedelbart. När detta är aktiverat krypteras ditt huvudlösenord lokalt med passkeyns PRF-tillägg.
-Obs: Passkeyn fungerar endast för den enhet och webbläsare där du aktiverar den.</value>
+OBS: Passkeyn fungerar endast för den enhet och webbläsare där du aktiverar den.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
