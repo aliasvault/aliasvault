@@ -28,6 +28,7 @@ public class LanguageService(
     /// </summary>
     private static readonly List<LanguageConfig> SupportedLanguages = new()
     {
+        new LanguageConfig("da", "Dansk", "🇩🇰"),
         new LanguageConfig("de", "Deutsch", "🇩🇪"),
         new LanguageConfig("en", "English", "🇺🇸"),
         new LanguageConfig("es", "Español", "🇪🇸"),
