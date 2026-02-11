@@ -101,10 +101,10 @@
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "wrongPassword": "Incorrect password. Please try again.",
-      "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
+      "wrongPassword": "Невірний пароль. Будь ласка, спробуйте ще раз.",
+      "sessionExpired": "Час сеансу закінчився. Будь ласка, увійдіть знову.",
+      "mobileLoginRequestExpired": "Час очікування запиту на вхід у мобільний додаток закінчився. Перезавантажте сторінку та спробуйте ще раз."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
