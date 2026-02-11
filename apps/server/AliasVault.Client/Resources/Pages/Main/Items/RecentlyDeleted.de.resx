@@ -142,7 +142,7 @@
     <comment>Loading message while deleting</comment>
   </data>
   <data name="DeleteSuccess" xml:space="preserve">
-    <value>Item permanently deleted.</value>
+    <value>Eintrag dauerhaft gelöscht.</value>
     <comment>Success message after permanent deletion</comment>
   </data>
   <data name="DeleteFailed" xml:space="preserve">
@@ -150,7 +150,7 @@
     <comment>Error message when deletion fails</comment>
   </data>
   <data name="EmptyAllSuccess" xml:space="preserve">
-    <value>All items permanently deleted.</value>
+    <value>Alle Einträge dauerhaft gelöscht.</value>
     <comment>Success message after emptying trash</comment>
   </data>
   <data name="EmptyAllPartialFailed" xml:space="preserve">
