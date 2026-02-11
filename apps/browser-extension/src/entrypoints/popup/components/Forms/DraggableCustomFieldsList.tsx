@@ -16,7 +16,6 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import React, { useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 
 import type { FieldType } from '@/utils/dist/core/models/vault';
 import { FieldTypes } from '@/utils/dist/core/models/vault';
