@@ -289,14 +289,56 @@
             document.querySelector('.loading-progress-text').classList.add('hidden');
             document.querySelector('svg.animate-spin').classList.add('hidden');
         };
+        // Detect Blazor boot failures (e.g., after .NET version upgrades)
+        async function handleBlazorBootFailure() {
+            const RELOAD_ATTEMPTED_KEY = 'av-boot-reload-attempted';
+            const reloadAttempted = sessionStorage.getItem(RELOAD_ATTEMPTED_KEY);
+
+            if (reloadAttempted) {
+                // Already tried reloading, show error to user instead of infinite loop
+                sessionStorage.removeItem(RELOAD_ATTEMPTED_KEY);
+                showError('Failed to load application. Please clear your browser cache and reload the page (Ctrl+Shift+R or Cmd+Shift+R).');
+                return;
+            }
+
+            console.info('AliasVault: Blazor boot failure detected, clearing caches and reloading...');
+            sessionStorage.setItem(RELOAD_ATTEMPTED_KEY, 'true');
+
+            try {
+                // Clear all caches
+                if ('caches' in window) {
+                    const cacheKeys = await caches.keys();
+                    await Promise.all(cacheKeys.map(key => caches.delete(key)));
+                }
+
+                // Unregister service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(registrations.map(r => r.unregister()));
+                }
+            } catch (e) {
+                console.error('AliasVault: Failed to clear caches:', e);
+            }
+
+            // Force a hard reload bypassing cache
+            window.location.reload();
+        }
+
         window.addEventListener('error', function(event) {
             if (event.error && event.error.message && event.error.message.includes('WebAssembly')) {
                 showError(getTranslation('errors.webAssemblyError'));
             }
         });
         window.addEventListener('unhandledrejection', function(event) {
-            if (event.reason && event.reason.message && event.reason.message.includes('WebAssembly')) {
+            const errorMessage = event.reason?.message || String(event.reason) || '';
+
+            if (errorMessage.includes('WebAssembly')) {
                 showError(getTranslation('errors.webAssemblyError'));
+            }
+            // Detect Blazor boot failures (blazor.boot.json loading issues after version upgrades)
+            else if (errorMessage.includes('blazor.boot.json') || errorMessage.includes('Failed to load config file')) {
+                event.preventDefault();
+                handleBlazorBootFailure();
             }
         });
         window.addEventListener('load', manageLoadingScreen);
