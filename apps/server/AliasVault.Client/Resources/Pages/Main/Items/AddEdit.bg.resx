@@ -134,7 +134,7 @@
     <comment>Button text for saving an item</comment>
   </data>
   <data name="CancelButton">
-    <value>Cancel</value>
+    <value>Отмени</value>
     <comment>Button text for canceling the operation</comment>
   </data>
   <!-- Loading and status messages -->
