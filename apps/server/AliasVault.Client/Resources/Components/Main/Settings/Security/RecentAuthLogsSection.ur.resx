@@ -91,11 +91,11 @@
     <comment>Table column header</comment>
   </data>
   <data name="SuccessColumn" xml:space="preserve">
-    <value>Success</value>
+    <value>کامیابی</value>
     <comment>Table column header</comment>
   </data>
   <data name="SuccessStatus" xml:space="preserve">
-    <value>Success</value>
+    <value>کامیابی</value>
     <comment>Status indicator for successful login</comment>
   </data>
   <data name="FailedStatus" xml:space="preserve">
