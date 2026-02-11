@@ -39,9 +39,9 @@
   <string name="passkey_create_explanation">Dies erzeugt einen neuen Passkey und speichert ihn in Deinem Tresor. Er wird automatisch auf allen Geräten synchronisiert, die AliasVault verwenden.</string>
   <string name="passkey_create_new_button">Neuen Passkey erstellen</string>
   <string name="passkey_select_to_replace">Oder ersetze einen bestehenden Passkey:</string>
-  <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
+  <string name="passkey_add_to_existing">Oder füge den Passkey einem existierenden Eintrag hinzu:</string>
   <string name="passkey_replace_explanation">Dies wird den bestehenden Passkey durch einen neuen ersetzen. Bitte beachte, dass Dein alter Passkey überschrieben wird und nicht mehr zugänglich ist. Wenn Du stattdessen einen separaten Passkey erstellen möchtest, gehe zurück zum vorherigen Schritt.</string>
-  <string name="passkey_merge_explanation">This will add a passkey to your existing item. Your password and other data will be preserved.</string>
+  <string name="passkey_merge_explanation">Dies wird einem existierenden Eintrag einen Passkey hinzufügen. Dein Passwort und andere Daten werden beibehalten.</string>
   <string name="passkey_replacing">Passkey ersetzen…</string>
   <string name="add_passkey">Passkey hinzufügen</string>
   <string name="add_passkey_subtitle">Passkey zu existierendem Eintrag hinzufügen</string>
