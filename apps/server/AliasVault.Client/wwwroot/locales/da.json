@@ -1,25 +1,25 @@
 {
   "loading": {
-    "title": "AliasVault is loading",
-    "message": "Initializing secure environment. AliasVault prioritizes your privacy by running entirely in your browser. The first load might take a short while.",
-    "refreshText": "If loading seems stuck, you can click the button below to refresh the page.",
-    "refreshButtonText": "Refresh Page"
+    "title": "AliasVault indlæser",
+    "message": "Initialiserer sikkert miljø. AliasVault prioriterer dit privatliv ved at køre udelukkende i din browser. Den første indlæsning kan tage et øjeblik.",
+    "refreshText": "Hvis indlæsningen ser ud til at sidde fast, kan du klikke på knappen nedenfor for at opdatere siden.",
+    "refreshButtonText": "Opdater side"
   },
   "errors": {
-    "unhandledError": "An unhandled error has occurred. Please try reloading the page. If the issue persists, please contact support.",
-    "webAssemblyError": "AliasVault requires WebAssembly, which this browser does not support. Try using a more modern browser that supports WebAssembly.",
-    "reloadPageText": "Reload Page"
+    "unhandledError": "Der opstod en uventet fejl. Prøv venligst at genindlæse siden. Hvis problemet fortsætter, bedes du kontakte support.",
+    "webAssemblyError": "AliasVault kræver WebAssembly, som denne browser ikke understøtter. Prøv at bruge en mere moderne browser, der understøtter WebAssembly.",
+    "reloadPageText": "Genindlæs side"
   },
   "quotes": {
     "security": [
-      "Your identity is your most valuable asset. Protect it like one.",
-      "In the digital world, a strong password is your first line of defense.",
-      "Security is not a product, but a process.",
-      "The weakest link in the security chain is the human element.",
-      "Security is always excessive until it's not enough.",
-      "Trust, but verify - especially online.",
-      "Your data is only as secure as your weakest password.",
-      "The most secure password is the one you can't remember."
+      "Din identitet er din mest værdifulde aktiv. Beskyt den derefter.",
+      "I den digitale verden er en stærk adgangskode din første forsvarslinje.",
+      "Sikkerhed er ikke et produkt, men en proces.",
+      "Det svageste led i sikkerhedskæden er det menneskelige element.",
+      "Sikkerhed er altid overdreven, indtil det ikke er nok.",
+      "Tillid er godt, kontrol er bedre – især online.",
+      "Dine data er kun så sikre som din svageste adgangskode.",
+      "Den mest sikre adgangskode er den, du ikke kan huske."
     ]
   }
 }
