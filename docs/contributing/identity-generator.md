@@ -15,13 +15,17 @@ In AliasVault, when creating a new credential, AliasVault automatically generate
 
 The AliasVault identity generator uses lists (dictionaries) of possible names. Currently, AliasVault has name lists for the following languages:
 
+- 🇩🇰 **Danish** (da)
 - 🇬🇧 **English** (en)
-- 🇳🇱 **Dutch** (nl)
+- 🇫🇷 **French** (fr)
 - 🇩🇪 **German** (de)
 - 🇮🇹 **Italian** (it)
-- 🇪🇸 **Spanish** (es)
-- 🇷🇴 **Romanian** (ro)
+- 🇳🇱 **Dutch** (nl)
 - 🇮🇷 **Persian/Farsi** (fa)
+- 🇷🇴 **Romanian** (ro)
+- 🇪🇸 **Spanish** (es)
+- 🇸🇪 **Swedish** (sv)
+- 🇵🇰 **Urdu** (ur)
 
 **Your language not listed?** Help us add it!
 

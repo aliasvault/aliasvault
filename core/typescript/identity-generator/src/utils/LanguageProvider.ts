@@ -34,6 +34,12 @@ export interface ILanguageOption {
 export function getAvailableLanguages(): ILanguageOption[] {
   const languages: ILanguageOption[] = [
     {
+      value: 'da',
+      label: 'Dansk',
+      flag: '🇩🇰',
+      alternativeCodes: ['da-DK']
+    },
+    {
       value: 'de',
       label: 'Deutsch',
       flag: '🇩🇪',

@@ -84,27 +84,9 @@ declare abstract class IdentityGenerator implements IIdentityGenerator {
 }
 
 /**
- * Identity generator for English language using English word dictionaries.
+ * Identity generator for Danish language using Danish word dictionaries.
  */
-declare class IdentityGeneratorEn extends IdentityGenerator {
-    /**
-     * Get the male first names.
-     */
-    protected getFirstNamesMaleJson(): string[];
-    /**
-     * Get the female first names.
-     */
-    protected getFirstNamesFemaleJson(): string[];
-    /**
-     * Get the last names.
-     */
-    protected getLastNamesJson(): string[];
-}
-
-/**
- * Identity generator for Dutch language using Dutch word dictionaries.
- */
-declare class IdentityGeneratorNl extends IdentityGenerator {
+declare class IdentityGeneratorDa extends IdentityGenerator {
     /**
      * Get the male first names.
      */
@@ -149,6 +131,78 @@ declare class IdentityGeneratorDe extends IdentityGenerator {
 }
 
 /**
+ * Identity generator for English language using English word dictionaries.
+ */
+declare class IdentityGeneratorEn extends IdentityGenerator {
+    /**
+     * Get the male first names.
+     */
+    protected getFirstNamesMaleJson(): string[];
+    /**
+     * Get the female first names.
+     */
+    protected getFirstNamesFemaleJson(): string[];
+    /**
+     * Get the last names.
+     */
+    protected getLastNamesJson(): string[];
+}
+
+/**
+ * Identity generator for Spanish language using Spanish word dictionaries.
+ */
+declare class IdentityGeneratorEs extends IdentityGenerator {
+    /**
+     * Get the male first names.
+     */
+    protected getFirstNamesMaleJson(): string[];
+    /**
+     * Get the female first names.
+     */
+    protected getFirstNamesFemaleJson(): string[];
+    /**
+     * Get the last names.
+     */
+    protected getLastNamesJson(): string[];
+}
+
+/**
+ * Identity generator for Persian (Farsi) language using Persian word dictionaries.
+ */
+declare class IdentityGeneratorFa extends IdentityGenerator {
+    /**
+     * Get the male first names.
+     */
+    protected getFirstNamesMaleJson(): string[];
+    /**
+     * Get the female first names.
+     */
+    protected getFirstNamesFemaleJson(): string[];
+    /**
+     * Get the last names.
+     */
+    protected getLastNamesJson(): string[];
+}
+
+/**
+ * Identity generator for French language using French word dictionaries.
+ */
+declare class IdentityGeneratorFr extends IdentityGenerator {
+    /**
+     * Get the male first names.
+     */
+    protected getFirstNamesMaleJson(): string[];
+    /**
+     * Get the female first names.
+     */
+    protected getFirstNamesFemaleJson(): string[];
+    /**
+     * Get the last names.
+     */
+    protected getLastNamesJson(): string[];
+}
+
+/**
  * Identity generator for Italian language using Italian dictionaries with decade-based firstname support.
  * This implementation uses age-appropriate names based on birthdate.
  */
@@ -178,9 +232,9 @@ declare class IdentityGeneratorIt extends IdentityGenerator {
 }
 
 /**
- * Identity generator for Spanish language using Spanish word dictionaries.
+ * Identity generator for Dutch language using Dutch word dictionaries.
  */
-declare class IdentityGeneratorEs extends IdentityGenerator {
+declare class IdentityGeneratorNl extends IdentityGenerator {
     /**
      * Get the male first names.
      */
@@ -222,42 +276,6 @@ declare class IdentityGeneratorRo extends IdentityGenerator {
      * Each range covers a specific decade with names popular during that period.
      */
     protected getFirstNamesFemaleByDecade(): IDecadeFirstnames[];
-}
-
-/**
- * Identity generator for Persian (Farsi) language using Persian word dictionaries.
- */
-declare class IdentityGeneratorFa extends IdentityGenerator {
-    /**
-     * Get the male first names.
-     */
-    protected getFirstNamesMaleJson(): string[];
-    /**
-     * Get the female first names.
-     */
-    protected getFirstNamesFemaleJson(): string[];
-    /**
-     * Get the last names.
-     */
-    protected getLastNamesJson(): string[];
-}
-
-/**
- * Identity generator for French language using French word dictionaries.
- */
-declare class IdentityGeneratorFr extends IdentityGenerator {
-    /**
-     * Get the male first names.
-     */
-    protected getFirstNamesMaleJson(): string[];
-    /**
-     * Get the female first names.
-     */
-    protected getFirstNamesFemaleJson(): string[];
-    /**
-     * Get the last names.
-     */
-    protected getLastNamesJson(): string[];
 }
 
 /**
@@ -424,7 +442,7 @@ declare function mapUiLanguageToIdentityLanguage(uiLanguageCode: string | null |
 /**
  * Creates a new identity generator based on the language.
  * Falls back to English if the requested language is not supported.
- * @param language - The language to use for generating the identity (e.g. "en", "nl", "de", "it", "es", "ro", "fa", "fr", "sv", "ur").
+ * @param language - The language to use for generating the identity (e.g. "da", "de", "en", "es", "fa", "fr", "it", "nl", "ro", "sv", "ur").
  * @returns A new identity generator instance.
  */
 declare const CreateIdentityGenerator: (language: string) => IdentityGenerator;
@@ -436,4 +454,4 @@ declare const CreateIdentityGenerator: (language: string) => IdentityGenerator;
  */
 declare const CreateUsernameEmailGenerator: () => UsernameEmailGenerator;
 
-export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type ILanguageOption, type Identity, IdentityGenerator, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorEs, IdentityGeneratorFa, IdentityGeneratorFr, IdentityGeneratorIt, IdentityGeneratorNl, IdentityGeneratorRo, IdentityGeneratorSv, IdentityGeneratorUr, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages, mapUiLanguageToIdentityLanguage };
+export { CreateIdentityGenerator, CreateUsernameEmailGenerator, Gender, type IAgeRangeOption, type IBirthdateOptions, type IDecadeFirstnames, type IIdentityGenerator, type ILanguageOption, type Identity, IdentityGenerator, IdentityGeneratorDa, IdentityGeneratorDe, IdentityGeneratorEn, IdentityGeneratorEs, IdentityGeneratorFa, IdentityGeneratorFr, IdentityGeneratorIt, IdentityGeneratorNl, IdentityGeneratorRo, IdentityGeneratorSv, IdentityGeneratorUr, IdentityHelperUtils, UsernameEmailGenerator, convertAgeRangeToBirthdateOptions, getAvailableAgeRanges, getAvailableLanguages, mapUiLanguageToIdentityLanguage };
