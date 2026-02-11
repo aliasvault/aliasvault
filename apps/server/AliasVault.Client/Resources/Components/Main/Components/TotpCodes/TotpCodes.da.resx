@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
+    <value>To-faktor-godkendelse</value>
     <comment>Section title for 2FA codes</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
@@ -79,11 +79,11 @@
     <comment>Instructions for adding TOTP codes</comment>
   </data>
   <data name="NameOptionalLabel" xml:space="preserve">
-    <value>Name (optional)</value>
+    <value>Navn (valgfrit)</value>
     <comment>Label for optional name field</comment>
   </data>
   <data name="SecretKeyLabel" xml:space="preserve">
-    <value>Secret Key</value>
+    <value>Hemmelig nøgle (Secret Key)</value>
     <comment>Label for secret key field</comment>
   </data>
   <data name="SecretKeyPlaceholder" xml:space="preserve">
@@ -91,11 +91,11 @@
     <comment>Placeholder text for secret key input</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">
-    <value>Save</value>
+    <value>Gem</value>
     <comment>Save button text</comment>
   </data>
   <data name="SaveToViewCodeMessage" xml:space="preserve">
-    <value>Save to view code</value>
+    <value>Gem for at se kode</value>
     <comment>Message shown for unsaved TOTP codes</comment>
   </data>
   <data name="DeleteTotpCodeConfirmation" xml:space="preserve">
