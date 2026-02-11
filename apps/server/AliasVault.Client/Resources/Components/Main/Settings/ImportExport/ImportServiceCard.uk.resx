@@ -107,15 +107,15 @@
     <comment>Instructions shown before the credential preview table</comment>
   </data>
   <data name="ServiceColumn" xml:space="preserve">
-    <value>Service</value>
+    <value>Сервіс</value>
     <comment>Column header for service name in credential preview table</comment>
   </data>
   <data name="UsernameColumn" xml:space="preserve">
-    <value>Username</value>
+    <value>Ім'я користувача</value>
     <comment>Column header for username in credential preview table</comment>
   </data>
   <data name="PasswordColumn" xml:space="preserve">
-    <value>Password</value>
+    <value>Пароль</value>
     <comment>Column header for password in credential preview table</comment>
   </data>
   <data name="MoreCredentials" xml:space="preserve">
