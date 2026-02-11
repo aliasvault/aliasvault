@@ -20,51 +20,51 @@
     </xsd:element>
   </xsd:schema>
   <data name="ViewItemPageTitle">
-    <value>View item</value>
+    <value>Vis element</value>
     <comment>Page title for viewing an item</comment>
   </data>
   <data name="ViewItemTitle">
-    <value>View item</value>
+    <value>Vis element</value>
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
-    <value>Edit</value>
+    <value>Rediger</value>
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
-    <value>Edit item</value>
+    <value>Rediger element</value>
     <comment>Text for edit button on desktop</comment>
   </data>
   <data name="DeleteButtonMobile">
-    <value>Delete</value>
+    <value>Slet</value>
     <comment>Text for delete button on mobile</comment>
   </data>
   <data name="DeleteButtonDesktop">
-    <value>Delete item</value>
+    <value>Slet element</value>
     <comment>Text for delete button on desktop</comment>
   </data>
   <data name="LoginDetailsSection">
-    <value>Login details</value>
+    <value>Loginoplysninger</value>
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
-    <value>Below you can view and copy the generated details for this item. Any emails sent to the shown address will automatically appear on this page.</value>
+    <value>Nedenfor kan du se og kopiere de genererede detaljer for dette element. Alle e-mails sendt til den viste adresse vil automatisk fremgå på denne side.</value>
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
-    <value>Below you can view and copy the stored login details for this item.</value>
+    <value>Nedenfor kan du se og kopiere de gemte loginoplysninger for dette element.</value>
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
-    <value>Email</value>
+    <value>E-mail</value>
     <comment>Label for email field</comment>
   </data>
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>Brugernavn</value>
     <comment>Label for username field</comment>
   </data>
   <data name="PasswordLabel">
-    <value>Password</value>
+    <value>Adgangskode</value>
     <comment>Label for password field</comment>
   </data>
   <data name="AliasSection">
@@ -72,67 +72,67 @@
     <comment>Section header for alias information</comment>
   </data>
   <data name="FullNameLabel">
-    <value>Full name</value>
+    <value>Fulde navn</value>
     <comment>Label for full name field</comment>
   </data>
   <data name="FirstNameLabel">
-    <value>First name</value>
+    <value>Fornavn</value>
     <comment>Label for first name field</comment>
   </data>
   <data name="LastNameLabel">
-    <value>Last name</value>
+    <value>Efternavn</value>
     <comment>Label for last name field</comment>
   </data>
   <data name="BirthdateLabel">
-    <value>Birthdate</value>
+    <value>Fødselsdato</value>
     <comment>Label for birthdate field</comment>
   </data>
   <data name="NicknameLabel">
-    <value>Nickname</value>
+    <value>Kaldenavn</value>
     <comment>Label for nickname field</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Vis element</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">
-    <value>This item does not exist (anymore). Please try again.</value>
+    <value>Dette element eksisterer ikke (længere). Prøv venligst igen.</value>
     <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
-    <value>Passkey</value>
+    <value>Adgangsnøgle (Passkey)</value>
     <comment>Section header for passkey</comment>
   </data>
   <data name="PasskeyLabel">
-    <value>Passkey</value>
+    <value>Adgangsnøgle</value>
     <comment>Label for passkey</comment>
   </data>
   <data name="PasskeySiteLabel">
-    <value>Site</value>
+    <value>Websted</value>
     <comment>Label for passkey site/relying party ID</comment>
   </data>
   <data name="PasskeyDisplayNameLabel">
-    <value>Name</value>
+    <value>Navn</value>
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkeys are created through the browser extension or mobile apps when prompted by a website. They cannot be manually edited or created through the web app. To remove this passkey, edit this item and delete the passkey. To replace or create a new passkey, visit the website and follow its prompts.</value>
+    <value>Adgangsnøgler oprettes via browserudvidelsen eller mobilapps, når et websted beder om det. De kan ikke redigeres eller oprettes manuelt via webappen. For at fjerne denne adgangsnøgle skal du redigere dette element og slette adgangsnøglen. For at erstatte eller oprette en ny adgangsnøgle skal du besøge webstedet og følge dets anvisninger.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="Untitled">
-    <value>Untitled</value>
+    <value>Uden titel</value>
     <comment>Placeholder for items without a name</comment>
   </data>
   <data name="NotesSection">
-    <value>Notes</value>
+    <value>Noter</value>
     <comment>Section header for notes</comment>
   </data>
   <data name="CardSection">
-    <value>Card Details</value>
+    <value>Kortoplysninger</value>
     <comment>Section header for credit card details</comment>
   </data>
   <data name="CustomFieldsSection">
-    <value>Custom Fields</value>
+    <value>Brugerdefinerede felter</value>
     <comment>Section header for custom fields</comment>
   </data>
 </root>
