@@ -4,9 +4,9 @@
   <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
   <string name="aliasvault_icon">AliasVault icon</string>
   <!-- Common strings -->
-  <string name="common_close">Close</string>
-  <string name="common_next">Next</string>
-  <string name="common_cancel">Cancel</string>
+  <string name="common_close">بند کریں</string>
+  <string name="common_next">آگے جائیں</string>
+  <string name="common_cancel">منسوخ کریں</string>
   <string name="unknown_error">An unknown error occurred</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
@@ -25,13 +25,13 @@
   <string name="replace_passkey">Replace Passkey</string>
   <string name="passkey_display_name_label">Passkey Name</string>
   <string name="passkey_display_name_hint">Enter a name for this passkey</string>
-  <string name="passkey_website_label">Website</string>
-  <string name="passkey_username_label">Username</string>
+  <string name="passkey_website_label">ویب سائیٹ</string>
+  <string name="passkey_username_label">صارف کا نام</string>
   <string name="passkey_create_button">Create Passkey</string>
   <string name="passkey_creating">Creating passkey…</string>
   <string name="passkey_saving">Saving to vault…</string>
   <string name="passkey_syncing">Syncing with server…</string>
-  <string name="passkey_error_title">Error</string>
+  <string name="passkey_error_title">خرابی</string>
   <string name="passkey_error_empty_name">Please enter a name for the passkey</string>
   <string name="passkey_creation_failed">Failed to create passkey</string>
   <string name="passkey_retry_button">Retry</string>
