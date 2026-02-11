@@ -11,7 +11,6 @@ using AliasServerDb;
 using AliasVault.Shared.Providers.Time;
 using AliasVault.Shared.Server.Services;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -43,6 +42,11 @@ public abstract class WebApplicationFactoryFixture<TEntryPoint> : WebApplication
     /// The name of the temporary test database.
     /// </summary>
     private string? _tempDbName;
+
+    /// <summary>
+    /// Whether UseKestrel has been called.
+    /// </summary>
+    private bool _kestrelConfigured;
 
     /// <summary>
     /// Gets or sets the port the web application kestrel host will listen on.
@@ -120,15 +124,22 @@ public abstract class WebApplicationFactoryFixture<TEntryPoint> : WebApplication
         await base.DisposeAsync();
     }
 
+    /// <summary>
+    /// Initializes the factory with Kestrel on the specified port.
+    /// Must be called before CreateDefaultClient() in tests.
+    /// </summary>
+    public void InitializeKestrel()
+    {
+        if (!_kestrelConfigured)
+        {
+            UseKestrel(Port);
+            _kestrelConfigured = true;
+        }
+    }
+
     /// <inheritdoc />
     protected override IHost CreateHost(IHostBuilder builder)
     {
-        builder.ConfigureWebHost(webHostBuilder =>
-        {
-            webHostBuilder.UseKestrel(opt => opt.ListenLocalhost(Port));
-            webHostBuilder.ConfigureServices(s => s.AddSingleton<IServer, KestrelTestServer>());
-        });
-
         var host = base.CreateHost(builder);
 
         // Get the DbContextFactory instance and store it for later use during tests.

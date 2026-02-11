@@ -104,6 +104,15 @@ public abstract class PlaywrightTest
         }
     }
 
+    /// <summary>
+    /// Get the current relative URL.
+    /// </summary>
+    /// <returns>Current page as relative URL.</returns>
+    protected string GetCurrentRelativeUrl()
+    {
+        return Page.Url.Replace(AppBaseUrl, string.Empty);
+    }
+
      /// <summary>
     /// Navigate to a relative URL using Blazor's client-side router.
     /// </summary>

@@ -1,23 +1,23 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <IsPackable>false</IsPackable>
         <IsTestProject>true</IsTestProject>
-        <LangVersion>13</LangVersion>
+        <LangVersion>14</LangVersion>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-      <DocumentationFile>bin\Debug\net9.0\AliasVault.E2ETests.xml</DocumentationFile>
+      <DocumentationFile>bin\Debug\net10.0\AliasVault.E2ETests.xml</DocumentationFile>
       <DefineConstants>TRACE</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
       <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-      <DocumentationFile>bin\Release\net9.0\AliasVault.E2ETests.xml</DocumentationFile>
+      <DocumentationFile>bin\Release\net10.0\AliasVault.E2ETests.xml</DocumentationFile>
       <DefineConstants>TRACE</DefineConstants>
     </PropertyGroup>
 
@@ -30,15 +30,15 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.4" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
-        <PackageReference Include="NUnit" Version="4.3.2" />
-        <PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
-        <PackageReference Include="NUnit.Analyzers" Version="4.7.0">
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.2" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+        <PackageReference Include="NUnit" Version="4.4.0" />
+        <PackageReference Include="NUnit3TestAdapter" Version="6.1.0" />
+        <PackageReference Include="NUnit.Analyzers" Version="4.11.2">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.Playwright.NUnit" Version="1.51.0" />
+        <PackageReference Include="Microsoft.Playwright.NUnit" Version="1.57.0" />
         <PackageReference Include="coverlet.collector" Version="6.0.4">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

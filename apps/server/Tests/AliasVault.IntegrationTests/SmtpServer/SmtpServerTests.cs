@@ -331,14 +331,31 @@ public class SmtpServerTests
     }
 
     /// <summary>
-    /// Sends a message to the SMTP server.
+    /// Sends a message to the SMTP server with retry logic for connection.
     /// </summary>
     /// <param name="message">MimeMessage to send.</param>
     private static async Task SendMessageToSmtpServer(MimeMessage message)
     {
         using var client = new SmtpClient();
 
-        await client.ConnectAsync("localhost", 2525, SecureSocketOptions.None);
+        // Retry connection up to 10 times with 100ms delay to handle race condition
+        // where the SMTP server may not be fully started yet.
+        const int maxRetries = 10;
+        const int retryDelayMs = 100;
+
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
+        {
+            try
+            {
+                await client.ConnectAsync("localhost", 2525, SecureSocketOptions.None);
+                break;
+            }
+            catch (System.Net.Sockets.SocketException) when (attempt < maxRetries)
+            {
+                await Task.Delay(retryDelayMs);
+            }
+        }
+
         try
         {
             await client.SendAsync(message);

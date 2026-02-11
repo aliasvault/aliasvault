@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Import / Eksport</value>
+    <comment>Page title</comment>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>På denne side kan du importere og eksportere din boks.</value>
+    <comment>Page description</comment>
+  </data>
+  <data name="ImportSectionTitle" xml:space="preserve">
+    <value>Importér adgangskoder</value>
+    <comment>Import section title</comment>
+  </data>
+  <data name="ImportSectionDescription" xml:space="preserve">
+    <value>Vælg en tjeneste at importere fra. Hvis du bruger en tjeneste, der ikke er anført her, og gerne vil se den understøttet, bedes du oprette en sag på &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; eller kontakte os.</value>
+    <comment>Import section description with HTML link</comment>
+  </data>
+  <data name="ExportSectionTitle" xml:space="preserve">
+    <value>Eksportér boks</value>
+    <comment>Export section title</comment>
+  </data>
+  <data name="ExportSectionDescription" xml:space="preserve">
+    <value>Hvis du vil eksportere dine AliasVault-legitimationsoplysninger til en anden AliasVault-server (f.eks. fra cloud til self-hosted eller omvendt) eller til en helt anden tjeneste, kan du eksportere dem her. Bemærk, at alle eksporter er ukrypterede, så opbevar dem på et sikkert sted og slet dem, når du ikke længere har brug for dem.</value>
+    <comment>Export section description</comment>
+  </data>
+  <data name="ExportCsvButton" xml:space="preserve">
+    <value>Eksportér boks til ukrypteret CSV-fil</value>
+    <comment>Button to export as CSV</comment>
+  </data>
+  <data name="ExportSqliteButton" xml:space="preserve">
+    <value>Eksportér boks til ukrypteret SQLite-fil</value>
+    <comment>Button to export as SQLite</comment>
+  </data>
+  <data name="ExportConfirmTitle" xml:space="preserve">
+    <value>Eksportér boks</value>
+    <comment>Export confirmation dialog title</comment>
+  </data>
+  <data name="ExportWarningMessage" xml:space="preserve">
+    <value>Advarsel: Eksport af din boks til en ukrypteret fil vil blotlægge alle dine adgangskoder og følsomme oplysninger i klartekst. Gør kun dette på betroede computere og sørg for at:
+
+• Opbevare den eksporterede fil på en sikker placering
+• Slette filen, når du ikke længere har brug for den
+• Aldrig dele den eksporterede fil med andre
+
+Er du sikker på, at du vil fortsætte med eksporten?</value>
+    <comment>Export warning confirmation message</comment>
+  </data>
+  <data name="ResetVaultSectionTitle" xml:space="preserve">
+    <value>Nulstil boks</value>
+    <comment>Reset vault section title</comment>
+  </data>
+  <data name="ResetVaultSectionDescription" xml:space="preserve">
+    <value>Denne indstilling giver dig mulighed for at tømme din boks fuldstændigt, mens du beholder din konto og dine e-mail-aliaser. Brug dette, hvis du ønsker at starte forfra efter import af data fra en anden adgangskodeadministrator, eller hvis du vil rydde alle eksisterende legitimationsoplysninger for at begynde forfra.</value>
+    <comment>Reset vault section description</comment>
+  </data>
+</root>

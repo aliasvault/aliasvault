@@ -24,7 +24,7 @@ import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { AddFieldMenu, type OptionalSection } from '@/components/form/AddFieldMenu';
 import { AdvancedPasswordField } from '@/components/form/AdvancedPasswordField';
-import { EditableFieldLabel } from '@/components/form/EditableFieldLabel';
+import { DraggableCustomFieldsList, type CustomFieldDefinition } from '@/components/form/DraggableCustomFieldsList';
 import { EmailDomainField } from '@/components/form/EmailDomainField';
 import { FormField } from '@/components/form/FormField';
 import { FormSection } from '@/components/form/FormSection';
@@ -47,17 +47,6 @@ const VALID_ITEM_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemType
 
 // Default item type for new items
 const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
-
-/**
- * Temporary custom field definition (before persisting to database).
- */
-type CustomFieldDefinition = {
-  tempId: string;
-  label: string;
-  fieldType: FieldType;
-  isHidden: boolean;
-  displayOrder: number;
-};
 
 /**
  * Add or edit an item screen.
@@ -486,6 +475,8 @@ export default function AddEditItemScreen(): React.ReactNode {
         }
 
         setFieldValues(initialValues);
+        // Sort custom fields by displayOrder when loading
+        existingCustomFields.sort((a, b) => a.displayOrder - b.displayOrder);
         setCustomFields(existingCustomFields);
         setInitiallyVisibleFields(fieldsWithValues);
 
@@ -746,6 +737,15 @@ export default function AddEditItemScreen(): React.ReactNode {
     setCustomFields(prev => prev.map(f =>
       f.tempId === tempId ? { ...f, label: newLabel } : f
     ));
+    setHasUnsavedChanges(true);
+  }, []);
+
+  /**
+   * Handle custom fields reorder (drag-and-drop).
+   * Updates the displayOrder of all custom fields based on their new positions.
+   */
+  const handleCustomFieldsReorder = useCallback((reorderedFields: CustomFieldDefinition[]) => {
+    setCustomFields(reorderedFields);
     setHasUnsavedChanges(true);
   }, []);
 
@@ -1610,22 +1610,14 @@ export default function AddEditItemScreen(): React.ReactNode {
             {/* Custom Fields Section */}
             {customFields.length > 0 && (
               <FormSection title={t('itemTypes.customFields')}>
-                {customFields.map(field => (
-                  <View key={field.tempId}>
-                    <EditableFieldLabel
-                      label={field.label}
-                      onLabelChange={(newLabel) => handleUpdateCustomFieldLabel(field.tempId, newLabel)}
-                      onDelete={() => handleDeleteCustomField(field.tempId)}
-                    />
-                    {renderFieldInput(
-                      field.tempId,
-                      '', // Label is shown by EditableFieldLabel
-                      field.fieldType,
-                      field.isHidden,
-                      false
-                    )}
-                  </View>
-                ))}
+                <DraggableCustomFieldsList
+                  customFields={customFields}
+                  fieldValues={fieldValues}
+                  onFieldsReorder={handleCustomFieldsReorder}
+                  onFieldValueChange={(tempId, value) => handleFieldChange(tempId, value)}
+                  onFieldLabelChange={handleUpdateCustomFieldLabel}
+                  onFieldDelete={handleDeleteCustomField}
+                />
               </FormSection>
             )}
 

@@ -4,7 +4,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import Modal from '@/entrypoints/popup/components/Dialogs/Modal';
 import AddFieldMenu, { type OptionalSection } from '@/entrypoints/popup/components/Forms/AddFieldMenu';
-import EditableFieldLabel from '@/entrypoints/popup/components/Forms/EditableFieldLabel';
+import DraggableCustomFieldsList, { type CustomFieldDefinition } from '@/entrypoints/popup/components/Forms/DraggableCustomFieldsList';
 import EmailDomainField from '@/entrypoints/popup/components/Forms/EmailDomainField';
 import { FormInput } from '@/entrypoints/popup/components/Forms/FormInput';
 import FormSection from '@/entrypoints/popup/components/Forms/FormSection';
@@ -39,17 +39,6 @@ const VALID_ITEM_TYPES: ItemType[] = [ItemTypes.Login, ItemTypes.Alias, ItemType
 
 // Default item type for new items
 const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
-
-/**
- * Temporary custom field definition (before persisting to database)
- */
-type CustomFieldDefinition = {
-  tempId: string;
-  label: string;
-  fieldType: FieldType;
-  isHidden: boolean;
-  displayOrder: number;
-};
 
 /**
  * Persisted form data type used for JSON serialization.
@@ -427,6 +416,8 @@ const ItemAddEdit: React.FC = () => {
         });
 
         setFieldValues(initialValues);
+        // Sort custom fields by displayOrder when loading
+        existingCustomFields.sort((a, b) => a.displayOrder - b.displayOrder);
         setCustomFields(existingCustomFields);
         setInitiallyVisibleFields(fieldsWithValues);
 
@@ -809,6 +800,14 @@ const ItemAddEdit: React.FC = () => {
     setCustomFields(prev => prev.map(f =>
       f.tempId === tempId ? { ...f, label: newLabel } : f
     ));
+  }, []);
+
+  /**
+   * Handle custom fields reorder (drag-and-drop).
+   * Updates the displayOrder of all custom fields based on their new positions.
+   */
+  const handleCustomFieldsReorder = useCallback((reorderedFields: CustomFieldDefinition[]) => {
+    setCustomFields(reorderedFields);
   }, []);
 
   /**
@@ -1373,26 +1372,17 @@ const ItemAddEdit: React.FC = () => {
         </FormSection>
       )}
 
-      {/* Custom Fields Section */}
+      {/* Custom Fields Section with Drag-and-Drop Reordering */}
       {customFields.length > 0 && (
         <FormSection title={t('common.customFields')}>
-          {customFields.map(field => (
-            <div key={field.tempId}>
-              <EditableFieldLabel
-                htmlFor={field.tempId}
-                label={field.label}
-                onLabelChange={(newLabel) => handleUpdateCustomFieldLabel(field.tempId, newLabel)}
-                onDelete={() => handleDeleteCustomField(field.tempId)}
-              />
-              {renderFieldInput(
-                field.tempId,
-                '',
-                field.fieldType,
-                field.isHidden,
-                false
-              )}
-            </div>
-          ))}
+          <DraggableCustomFieldsList
+            customFields={customFields}
+            fieldValues={fieldValues}
+            onFieldsReorder={handleCustomFieldsReorder}
+            onFieldValueChange={(tempId, value) => handleFieldChange(tempId, value)}
+            onFieldLabelChange={handleUpdateCustomFieldLabel}
+            onFieldDelete={handleDeleteCustomField}
+          />
         </FormSection>
       )}
 

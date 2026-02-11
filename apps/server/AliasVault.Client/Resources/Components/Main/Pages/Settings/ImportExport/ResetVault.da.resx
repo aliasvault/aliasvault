@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="PageTitle" xml:space="preserve">
+    <value>Nulstil boks</value>
+    <comment>Page title</comment>
+  </data>
+  <data name="BreadcrumbImportExport" xml:space="preserve">
+    <value>Import / Eksport</value>
+    <comment>Breadcrumb for import export</comment>
+  </data>
+  <data name="BreadcrumbResetVault" xml:space="preserve">
+    <value>Nulstil boks</value>
+    <comment>Breadcrumb for reset vault</comment>
+  </data>
+  <data name="ResetVaultPleaseNote" xml:space="preserve">
+    <value>Bemærk venligst:</value>
+    <comment>Reset vault please note prefix</comment>
+  </data>
+  <data name="ResetVaultItemsDeletedNote" xml:space="preserve">
+    <value>Alle krypterede elementer i din boks vil blive slettet permanent</value>
+    <comment>Reset vault note about items being deleted</comment>
+  </data>
+  <data name="ResetVaultEmailAliasesKeptNote" xml:space="preserve">
+    <value>Dine e-mail-aliasser vil blive bevaret og kan genbruges efter nulstilling af din boks</value>
+    <comment>Reset vault note about email aliases being kept</comment>
+  </data>
+  <data name="ResetVaultSettingsKeptNote" xml:space="preserve">
+    <value>Dine kontoindstillinger og præferencer vil blive bevaret</value>
+    <comment>Reset vault note about settings being kept</comment>
+  </data>
+  <data name="ResetVaultIrreversibleNote" xml:space="preserve">
+    <value>Denne handling kan ikke fortrydes</value>
+    <comment>Reset vault note about action being irreversible</comment>
+  </data>
+  <data name="ResetVaultConfirmUsernameLabel" xml:space="preserve">
+    <value>Indtast dit brugernavn for at bekræfte og fortsætte</value>
+    <comment>Reset vault username confirmation label</comment>
+  </data>
+  <data name="ResetVaultContinueButton" xml:space="preserve">
+    <value>Fortsæt med nulstilling af boks</value>
+    <comment>Reset vault continue button</comment>
+  </data>
+  <data name="ResetVaultFinalWarning" xml:space="preserve">
+    <value>Sidste advarsel: Du er ved at slette alle dine elementer permanent!</value>
+    <comment>Reset vault final warning message</comment>
+  </data>
+  <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
+    <value>Denne sletning er irreversibel og kan ikke fortrydes</value>
+    <comment>Reset vault final step irreversible note</comment>
+  </data>
+  <data name="ResetVaultEnterPasswordLabel" xml:space="preserve">
+    <value>Indtast din adgangskode for at bekræfte</value>
+    <comment>Reset vault password confirmation label</comment>
+  </data>
+  <data name="ResetVaultConfirmButton" xml:space="preserve">
+    <value>Nulstil min boks</value>
+    <comment>Reset vault final confirmation button</comment>
+  </data>
+  <data name="ResetVaultUsernameRequired" xml:space="preserve">
+    <value>Brugernavn er påkrævet.</value>
+    <comment>Reset vault username required error</comment>
+  </data>
+  <data name="ResetVaultUsernameDoesNotMatch" xml:space="preserve">
+    <value>Det indtastede brugernavn stemmer ikke overens med dit kontobrugernavn.</value>
+    <comment>Reset vault username mismatch error</comment>
+  </data>
+  <data name="ResetVaultPasswordIncorrect" xml:space="preserve">
+    <value>Den indtastede adgangskode er forkert.</value>
+    <comment>Reset vault password incorrect error</comment>
+  </data>
+  <data name="ResetVaultProgressMessage" xml:space="preserve">
+    <value>Nulstiller boks...</value>
+    <comment>Reset vault progress message</comment>
+  </data>
+  <data name="ResetVaultSuccessMessage" xml:space="preserve">
+    <value>Din boks er blevet nulstillet. Alle elementer er blevet slettet, og du kan nu starte på en frisk.</value>
+    <comment>Reset vault success message</comment>
+  </data>
+  <data name="ResetVaultErrorMessage" xml:space="preserve">
+    <value>Der opstod en fejl under nulstilling af din boks. Prøv venligst igen.</value>
+    <comment>Reset vault error message</comment>
+  </data>
+</root>

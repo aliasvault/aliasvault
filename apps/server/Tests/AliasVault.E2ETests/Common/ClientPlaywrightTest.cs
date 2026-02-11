@@ -15,7 +15,7 @@ using Microsoft.Playwright;
 /// <summary>
 /// Base class for tests that use Playwright for E2E browser testing.
 /// </summary>
-public class ClientPlaywrightTest : PlaywrightTest
+public abstract class ClientPlaywrightTest : PlaywrightTest
 {
     private const int BasePort = 5600;
     private static int _currentPort = BasePort;
@@ -101,10 +101,12 @@ public class ClientPlaywrightTest : PlaywrightTest
 
         // Start WebAPI in-memory.
         _apiFactory.Port = apiPort;
+        _apiFactory.InitializeKestrel();
         _apiFactory.CreateDefaultClient();
 
         // Start Blazor WASM in-memory.
         _clientFactory.Port = appPort;
+        _clientFactory.InitializeKestrel();
         _clientFactory.CreateDefaultClient();
 
         await SetupPlaywrightBrowserAndContext();
@@ -187,7 +189,7 @@ public class ClientPlaywrightTest : PlaywrightTest
     protected async Task RefreshPageAndUnlockVault()
     {
         // Get current URL.
-        var currentUrl = Page.Url;
+        var currentUrl = GetCurrentRelativeUrl();
 
         // Hard refresh the page.
         await Page.ReloadAsync();
@@ -499,6 +501,12 @@ public class ClientPlaywrightTest : PlaywrightTest
     /// <returns>Async task.</returns>
     protected async Task Register(bool checkForSuccess = true, string? username = null, string? password = null)
     {
+        // Check that we are on the login page after navigating to the base URL.
+        // This hard navigation ensures the Blazor app is fully reset, which is important
+        // after logout to ensure the router is in a clean state.
+        await Page.GotoAsync(AppBaseUrl);
+        await WaitForUrlAsync("user/start", "Log in with");
+
         // Try to register a new account.
         await NavigateUsingBlazorRouter("user/register");
         await WaitForUrlAsync("user/register", "Create account");

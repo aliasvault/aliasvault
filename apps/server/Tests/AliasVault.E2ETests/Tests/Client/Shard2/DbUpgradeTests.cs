@@ -77,7 +77,7 @@ public class DbUpgradeTests : ClientPlaywrightTest
 
         // Soft navigate to items.
         await NavigateUsingBlazorRouter("items");
-        await WaitForUrlAsync(string.Empty, "Test credential 1");
+        await WaitForUrlAsync("**", "Test credential 1");
 
         // Wait for all item cards on the page to have fully rendered.
         await Task.Delay(500);

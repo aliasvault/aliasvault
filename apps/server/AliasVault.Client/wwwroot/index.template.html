@@ -31,7 +31,7 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" sizes="500x500" href="img/icon-500.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="img/icon-192.png" />
-    <link rel="preload" href="/wasm/aliasvault_core_bg.wasm?v=@CacheBuster" as="fetch" type="application/wasm" crossorigin />
+    <link rel="prefetch" href="/wasm/aliasvault_core_bg.wasm?v=@CacheBuster" as="fetch" type="application/wasm" crossorigin />
     <link rel="modulepreload" href="/wasm/aliasvault_core.js?v=@CacheBuster" />
 </head>
 
@@ -192,7 +192,9 @@
             let value = translations;
             for (const key of keys) {
                 value = value?.[key];
-                if (!value) break;
+                if (!value) {
+                    break;
+                }
             }
             return value || '';
         }
@@ -284,19 +286,71 @@
         const errorMessageElement = document.getElementById('error-message');
 
         const showError = (message) => {
-            errorMessageElement.textContent = message;
-            errorMessageElement.classList.remove('hidden');
-            document.querySelector('.loading-progress-text').classList.add('hidden');
-            document.querySelector('svg.animate-spin').classList.add('hidden');
+            if (errorMessageElement) {
+                errorMessageElement.textContent = message;
+                errorMessageElement.classList.remove('hidden');
+            }
+            const progressText = document.querySelector('.loading-progress-text');
+            if (progressText) progressText.classList.add('hidden');
         };
+
+        // Detect Blazor boot failures (e.g., after .NET version upgrades)
+        // This handles transitions between major .NET versions where boot format changes
+        let bootFailureHandled = false;
+        async function handleBlazorBootFailure() {
+            if (bootFailureHandled) return;
+            bootFailureHandled = true;
+
+            console.info('AliasVault: Blazor boot failure detected. Refreshing cached files...');
+
+            try {
+                // Clear service worker caches
+                if ('caches' in window) {
+                    const cacheKeys = await caches.keys();
+                    await Promise.all(cacheKeys.map(key => caches.delete(key)));
+                }
+
+                // Unregister service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(registrations.map(r => r.unregister()));
+                }
+
+                // Force browser to fetch fresh versions of critical files
+                // cache: 'reload' bypasses HTTP cache and updates it with fresh content
+                const criticalFiles = [
+                    '/',
+                    '/_framework/blazor.webassembly.js',
+                    '/_framework/dotnet.js'
+                ];
+                await Promise.all(criticalFiles.map(url =>
+                    fetch(url, { cache: 'reload' }).catch(() => {})
+                ));
+            } catch (e) {
+                console.error('AliasVault: Cache refresh failed:', e);
+            }
+
+            // Navigate to cache-busted URL to force complete reload with fresh resources
+            const url = new URL(window.location.href);
+            url.searchParams.set('_r', Date.now().toString());
+            window.location.replace(url.toString());
+        }
+
         window.addEventListener('error', function(event) {
             if (event.error && event.error.message && event.error.message.includes('WebAssembly')) {
                 showError(getTranslation('errors.webAssemblyError'));
             }
         });
         window.addEventListener('unhandledrejection', function(event) {
-            if (event.reason && event.reason.message && event.reason.message.includes('WebAssembly')) {
+            const errorMessage = event.reason?.message || String(event.reason) || '';
+
+            if (errorMessage.includes('WebAssembly')) {
                 showError(getTranslation('errors.webAssemblyError'));
+            }
+            // Detect Blazor boot failures
+            else if (errorMessage.includes('blazor.boot.json') || errorMessage.includes('Failed to load config file') || errorMessage.includes('Failed to start platform')) {
+                event.preventDefault();
+                handleBlazorBootFailure();
             }
         });
         window.addEventListener('load', manageLoadingScreen);
@@ -319,7 +373,14 @@
         }
     </script>
     <script src="js/bundle.min.js?v=@CacheBuster"></script>
-    <script src="_framework/blazor.webassembly.js?v=@CacheBuster" async></script>
+    <script src="_framework/blazor.webassembly.js?v=@CacheBuster" autostart="false"></script>
+    <script>
+        Blazor.start({
+            configureRuntime: runtime => runtime.withConfig({
+                loadAllSatelliteResources: true
+            })
+        })
+     </script>
 </body>
 
 </html>

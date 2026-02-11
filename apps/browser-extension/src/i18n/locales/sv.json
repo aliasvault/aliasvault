@@ -342,7 +342,7 @@
     "autofillMatchingDefault": "URL + subdomän + namn wildcard",
     "autofillMatchingUrlSubdomain": "URL + subdomän",
     "autofillMatchingUrlExact": "Endast exakt URL domän",
-    "siteSpecificSettings": "Site-specifika Inställningar",
+    "siteSpecificSettings": "Webbplatsspecifika inställningar",
     "autofillPopupOn": "Autofyll popup-fönster på: ",
     "enabledForThisSite": "Aktiverad för denna webbplats",
     "disabledForThisSite": "Inaktiverad för denna webbplats",
@@ -379,11 +379,11 @@
     "autofillSettings": "Inställningar för Autofyll",
     "clipboardSettings": "Urklippsinställningar",
     "contextMenuSettings": "Inställningar för snabbmenyn",
-    "passkeySettings": "Passkey inställningar",
+    "passkeySettings": "Passkey-inställningar",
     "contextMenu": "Snabbmeny",
     "contextMenuEnabled": "Snabbmenyn är aktiverad",
     "contextMenuDisabled": "Snabbmenyn är inaktiverad",
-    "contextMenuDescription": "Högerklicka på inmatningsfält för att komma åt AliasVault alternativ",
+    "contextMenuDescription": "Högerklicka på inmatningsfält för att komma åt AliasVault-alternativ",
     "selectLanguage": "Välj Språk",
     "serverConfiguration": "Serverkonfiguration",
     "serverConfigurationDescription": "Konfigurera AliasVault-serverns URL för egenhostade instanser",
@@ -443,7 +443,7 @@
     "passkeyWillBeDeleted": "Denna passkey kommer att tas bort när du sparar dessa uppgifter.",
     "useBrowserPasskey": "Använd Webbläsar Passkey",
     "bypass": {
-      "description": "Hur länge vill du använda webbläsarens passkey leverantör till {{origin}}?",
+      "description": "Hur länge vill du använda webbläsarens passkey-leverantör till {{origin}}?",
       "thisTimeOnly": "Endast denna gång",
       "alwaysForSite": "Alltid för denna webbplats"
     },
@@ -470,7 +470,7 @@
     },
     "settings": {
       "passkeyProvider": "Passkey-leverantör",
-      "passkeyProviderOn": "Passkey-Leverantör på "
+      "passkeyProviderOn": "Passkey-leverantör på "
     }
   },
   "recentlyDeleted": {

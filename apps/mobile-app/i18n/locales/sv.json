@@ -70,7 +70,7 @@
       "httpError": "HTTP-fel: {{status}}"
     },
     "confirmLogout": "Är du säker på att du vill logga ut? Du måste logga in igen med ditt huvudlösenord för att komma åt ditt valv.",
-    "noAccountYet": "Inget konto ännu?",
+    "noAccountYet": "Inget konto än?",
     "createNewVault": "Skapa ett nytt valv",
     "connectingTo": "Ansluter till",
     "loggedInAs": "Inloggad som"
@@ -132,7 +132,7 @@
       "step5": "5. Inaktivera andra lösenordshanterare (t.ex. \"iCloud-lösenord\") för att undvika konflikter",
       "openIosSettings": "Öppna iOS-inställningarna",
       "alreadyConfigured": "Jag har redan konfigurerat det",
-      "warningText": "Obs: Du måste autentisera med Face ID/Touch ID eller din enhets lösenord när du använder autofyll."
+      "warningText": "OBS: Du måste autentisera med Face ID/Touch ID eller din enhets lösenord när du använder autofyll."
     },
     "androidAutofillSettings": {
       "warningTitle": "⚠️ Experimentell funktion",
@@ -154,7 +154,7 @@
     "autoLock": "Timeout för automatisk låsning",
     "clipboardClear": "Rensa urklipp",
     "clipboardClearDescription": "Rensa automatiskt kopierade lösenord och känslig information från urklipp efter en viss tidsperiod.",
-    "clipboardClearAndroidWarning": "Obs: vissa Android-enheter har urklipp historia aktiverad, som kan hålla reda på tidigare kopierade objekt, även efter AliasVault rensar urklipp. AliasVault kan bara skriva över det senaste objektet, men äldre poster kan förbli synliga i historiken. Av säkerhetsskäl rekommenderar vi att du inaktiverar alla funktioner för urklippshistorik i enhetens inställningar.",
+    "clipboardClearAndroidWarning": "OBS: Vissa Android-enheter har urklipp historia aktiverad, som kan hålla reda på tidigare kopierade objekt, även efter AliasVault rensar urklipp. AliasVault kan bara skriva över det senaste objektet, men äldre poster kan förbli synliga i historiken. Av säkerhetsskäl rekommenderar vi att du inaktiverar alla funktioner för urklippshistorik i enhetens inställningar.",
     "clipboardClearOptions": {
       "never": "Aldrig",
       "5seconds": "5 sekunder",
@@ -167,7 +167,7 @@
     "batteryOptimizationDisabled": "Rensning av urklipp i bakgrunden aktiverad",
     "batteryOptimizationHelpDescription": "Androids batterioptimering förhindrar tillförlitlig rensning av urklipp när appen är i bakgrunden. Inaktivering av batterioptimering för AliasVault tillåter exakt rensning av urklipp och ger automatiskt nödvändiga larmbehörigheter.",
     "disableBatteryOptimization": "Inaktivera batterioptimering",
-    "identityGenerator": "Identitets Generator",
+    "identityGenerator": "Identitetsgenerator",
     "passwordGenerator": "Lösenordsgenerator",
     "importExport": "Importera / Exportera",
     "importSectionTitle": "Importera",
@@ -218,13 +218,13 @@
       "description": "Välj hur länge appen kan stanna i bakgrunden innan du behöver återautentisering. Du måste använda Face ID eller ange ditt lösenord för att låsa upp valvet igen."
     },
     "identityGeneratorSettings": {
-      "description": "Konfigurera standardspråk och könspreferens för att generera nya identiteter.",
+      "description": "Konfigurera standardspråk och könspreferens för generering av nya identiteter.",
       "languageSection": "Språk",
-      "languageDescription": "Ange det språk som ska användas för att generera nya identiteter.",
+      "languageDescription": "Ange vilket språk som ska användas vid generering av nya identiteter.",
       "genderSection": "Kön",
-      "genderDescription": "Ställ in könspreferensen för att generera nya identiteter.",
+      "genderDescription": "Ange könspreferens för generering av nya identiteter.",
       "ageRangeSection": "Åldersintervall",
-      "ageRangeDescription": "Ange åldersintervallet för att generera nya identiteter.",
+      "ageRangeDescription": "Ange åldersintervall för generering av nya identiteter.",
       "genderOptions": {
         "random": "Slumpad",
         "male": "Man",

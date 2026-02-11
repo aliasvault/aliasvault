@@ -75,7 +75,7 @@ jobs:
 
       - name: Ensure browsers are installed
         working-directory: apps/server
-        run: pwsh Tests/AliasVault.E2ETests/bin/Debug/net9.0/playwright.ps1 install --with-deps
+        run: pwsh Tests/AliasVault.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps
 
       - name: Run ExtensionTests with retry
         uses: nick-fields/retry@v3

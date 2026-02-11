@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Page title and breadcrumbs -->
+  <data name="PageTitle" xml:space="preserve">
+    <value>Slet konto</value>
+    <comment>Page title for the delete account page</comment>
+  </data>
+  <data name="BreadcrumbSecuritySettings" xml:space="preserve">
+    <value>Sikkerhedsindstillinger</value>
+    <comment>Breadcrumb text for security settings</comment>
+  </data>
+  <data name="BreadcrumbDeleteAccount" xml:space="preserve">
+    <value>Slet konto</value>
+    <comment>Breadcrumb text for delete account</comment>
+  </data>
+  <!-- Warning messages -->
+  <data name="PermanentActionWarning" xml:space="preserve">
+    <value>Advarsel: Denne handling er permanent og kan ikke fortrydes. Alle dine data vil blive slettet permanent.</value>
+    <comment>Warning message about permanent deletion</comment>
+  </data>
+  <data name="FinalWarning" xml:space="preserve">
+    <value>Sidste advarsel: Indtast din adgangskode for at slette din konto permanent.</value>
+    <comment>Final warning message before account deletion</comment>
+  </data>
+  <!-- Note sections -->
+  <data name="PleaseNote" xml:space="preserve">
+    <value>Bemærk venligst:</value>
+    <comment>Header for note section</comment>
+  </data>
+  <data name="VaultsDeletedNote" xml:space="preserve">
+    <value>Alle krypterede bokse, som indeholder alle dine loginoplysninger, vil blive slettet permanent</value>
+    <comment>Note about vault deletion</comment>
+  </data>
+  <data name="EmailAliasesOrphanedNote" xml:space="preserve">
+    <value>Dine e-mail-aliasser vil blive efterladt uden ejer og kan ikke gøres krav på af andre brugere</value>
+    <comment>Note about email aliases being orphaned</comment>
+  </data>
+  <data name="AccountCannotBeRecoveredNote" xml:space="preserve">
+    <value>Din konto kan ikke gendannes efter sletning</value>
+    <comment>Note about account recovery</comment>
+  </data>
+  <data name="DeletionIrreversibleNote" xml:space="preserve">
+    <value>Sletning af konto er uigenkaldelig og kan ikke fortrydes. Ved at trykke på knappen herunder slettes din konto med det samme og permanent.</value>
+    <comment>Note about deletion being irreversible</comment>
+  </data>
+  <!-- Form labels -->
+  <data name="ConfirmUsernameLabel" xml:space="preserve">
+    <value>Bekræft dit brugernavn</value>
+    <comment>Label for username confirmation input field</comment>
+  </data>
+  <data name="EnterPasswordLabel" xml:space="preserve">
+    <value>Indtast din adgangskode</value>
+    <comment>Label for password input field</comment>
+  </data>
+  <!-- Button text -->
+  <data name="ContinueWithAccountDeletion" xml:space="preserve">
+    <value>Fortsæt med sletning af konto</value>
+    <comment>Button text to continue with account deletion</comment>
+  </data>
+  <data name="DeleteMyAccount" xml:space="preserve">
+    <value>Slet min konto</value>
+    <comment>Button text to delete account</comment>
+  </data>
+  <!-- Loading and status messages -->
+  <data name="DeletingAccountMessage" xml:space="preserve">
+    <value>Sletter konto...</value>
+    <comment>Loading message displayed while deleting account</comment>
+  </data>
+  <data name="UsernameRequired" xml:space="preserve">
+    <value>Brugernavn er påkrævet</value>
+    <comment>Error message when username is not provided</comment>
+  </data>
+  <data name="UsernameDoesNotMatch" xml:space="preserve">
+    <value>Det indtastede brugernavn stemmer ikke overens med dit nuværende brugernavn. Prøv venligst igen.</value>
+    <comment>Error message when username doesn't match</comment>
+  </data>
+  <data name="ErrorProcessingRequest" xml:space="preserve">
+    <value>Der opstod en fejl under behandlingen af anmodningen.</value>
+    <comment>Generic error message for request processing</comment>
+  </data>
+</root>

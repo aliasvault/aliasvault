@@ -581,16 +581,17 @@ export class ItemRepository extends BaseRepository {
       FieldKey: string | null;
       FieldDefinitionId: string | null;
       Value: string;
+      Weight: number;
     }>(FieldValueQueries.GET_EXISTING_FOR_ITEM, [itemId]);
 
     // 2. Build lookup by composite key (FieldKey or FieldDefinitionId + index)
-    const existingByKey = new Map<string, { Id: string; Value: string }[]>();
+    const existingByKey = new Map<string, { Id: string; Value: string; Weight: number }[]>();
     for (const existing of existingFields) {
       const key = existing.FieldKey || existing.FieldDefinitionId || '';
       if (!existingByKey.has(key)) {
         existingByKey.set(key, []);
       }
-      existingByKey.get(key)!.push({ Id: existing.Id, Value: existing.Value });
+      existingByKey.get(key)!.push({ Id: existing.Id, Value: existing.Value, Weight: existing.Weight });
     }
 
     // 3. Track which existing IDs we've processed
@@ -622,16 +623,17 @@ export class ItemRepository extends BaseRepository {
 
       for (let j = 0; j < valuesToProcess.length; j++) {
         const value = valuesToProcess[j];
+        const newWeight = field.DisplayOrder ?? 0;
 
         const existingEntry = existingForKey[j];
 
         if (existingEntry) {
-          // Update existing if value changed
+          // Update existing if value or weight changed
           processedIds.add(existingEntry.Id);
-          if (existingEntry.Value !== value) {
+          if (existingEntry.Value !== value || existingEntry.Weight !== newWeight) {
             await this.client.executeUpdate(FieldValueQueries.UPDATE, [
               value,
-              (i * 100) + j,
+              newWeight,
               now,
               existingEntry.Id
             ]);
@@ -644,7 +646,7 @@ export class ItemRepository extends BaseRepository {
             fieldDefinitionId, // FieldDefinitionId for custom, null for system
             field.IsCustomField ? null : field.FieldKey, // FieldKey for system, null for custom
             value,
-            (i * 100) + j,
+            newWeight,
             now,
             now,
             0

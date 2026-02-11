@@ -12,6 +12,7 @@ Help make AliasVault accessible to users worldwide by translating the user inter
 AliasVault is currently available in the following languages. See how complete each language is on the [Crowdin project page](https://crowdin.com/project/aliasvault). **Don't see your language?** Contact us and we'll add it so you can get started translating.
 
 - 🇨🇳 Chinese (Simplified)
+- 🇩🇰 Danish
 - 🇳🇱 Dutch
 - 🇬🇧 English
 - 🇫🇮 Finnish
@@ -24,6 +25,7 @@ AliasVault is currently available in the following languages. See how complete e
 - 🇷🇴 Romanian
 - 🇷🇺 Russian
 - 🇪🇸 Spanish
+- 🇸🇪 Swedish
 - 🇺🇦 Ukrainian
 
 ---

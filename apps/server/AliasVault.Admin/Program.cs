@@ -127,7 +127,7 @@ var forwardedHeadersOptions = new ForwardedHeadersOptions
     ForwardedHostHeaderName = "X-Forwarded-Host",
     ForwardedForHeaderName = "X-Forwarded-For",
 };
-forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownIPNetworks.Clear();
 forwardedHeadersOptions.KnownProxies.Clear();
 app.UseForwardedHeaders(forwardedHeadersOptions);
 

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="app_name">AliasVault</string>
+  <string name="autofill_service_description" translatable="true">AliasVault Auto Fyld</string>
+  <string name="aliasvault_icon">AliasVault ikon</string>
+  <!-- Common strings -->
+  <string name="common_close">Luk</string>
+  <string name="common_next">Næste</string>
+  <string name="common_cancel">Annuller</string>
+  <string name="unknown_error">En ukendt fejl opstod</string>
+  <!-- AutofillService strings -->
+  <string name="autofill_failed_to_retrieve">Kunne ikke hente, åben app</string>
+  <string name="autofill_no_match_found">Ingen match fundet, opret ny?</string>
+  <string name="autofill_open_app">Åbn app</string>
+  <string name="autofill_vault_locked">Boks låst</string>
+  <!-- Biometric prompts -->
+  <string name="biometric_store_key_title">Opbevar Krypteringsnøgle</string>
+  <string name="biometric_store_key_subtitle">Godkend for at gemme din krypteringsnøgle sikkert i Android Nøgledepot. Dette giver sikker adgang til din boks.</string>
+  <string name="biometric_unlock_vault_title">Lås Boks Op</string>
+  <string name="biometric_unlock_vault_subtitle">Godkend for at få adgang til din boks</string>
+  <!-- Passkey registration -->
+  <string name="passkey_registration_title">Opret Passkey</string>
+  <string name="create_passkey_title">Opret ny passkey</string>
+  <string name="create_passkey_subtitle">Registrer en ny passkey til dette websted. Den vil blive opbevaret sikkert i din boks og automatisk synkroniseret på tværs af dine enheder med AliasVault.</string>
+  <string name="replace_passkey">Erstat passkey</string>
+  <string name="passkey_display_name_label">Navn på passkey</string>
+  <string name="passkey_display_name_hint">Indtast et navn til denne passkey</string>
+  <string name="passkey_website_label">Websted</string>
+  <string name="passkey_username_label">Brugernavn</string>
+  <string name="passkey_create_button">Opret passkey</string>
+  <string name="passkey_creating">Opretter passkey…</string>
+  <string name="passkey_saving">Gemmer i boks…</string>
+  <string name="passkey_syncing">Synkroniserer med server…</string>
+  <string name="passkey_error_title">Fejl</string>
+  <string name="passkey_error_empty_name">Indtast venligst et navn til din passkey</string>
+  <string name="passkey_creation_failed">Kunne ikke oprette passkey</string>
+  <string name="passkey_retry_button">Prøv igen</string>
+  <string name="passkey_info_icon">Info-ikon</string>
+  <string name="passkey_create_explanation">Dette skaber en ny adgangsnøgle og gemmer den i din boks. Den synkroniseres automatisk på tværs af alle dine enheder, der bruger AliasVault.</string>
+  <string name="passkey_create_new_button">Opret ny passkey</string>
+  <string name="passkey_select_to_replace">Eller erstat en eksisterende passkey:</string>
+  <string name="passkey_add_to_existing">Eller tilføj passkey til et eksisterende element:</string>
+  <string name="passkey_replace_explanation">Dette vil erstatte den eksisterende adgangsnøgle med en ny. Vær venligst opmærksom på at din gamle adgangsnøgle vil være overskrevet og ikke længere tilgængelig. Hvis du i stedet ønsker at oprette en separat adgangsnøgle, så gå tilbage til den forrige skærm.</string>
+  <string name="passkey_merge_explanation">Dette vil tilføje en adgangsnøgle til din eksisterende vare. Din adgangskode og andre data vil blive bevaret.</string>
+  <string name="passkey_replacing">Erstatter passkey…</string>
+  <string name="add_passkey">Tilføj passkey</string>
+  <string name="add_passkey_subtitle">Tilføjer passkey til eksisterende element</string>
+  <string name="passkey_checking_connection">Tjekker forbindelse…</string>
+  <string name="passkey_retrieving">Henter passkey…</string>
+  <string name="passkey_verifying">Verificerer…</string>
+  <string name="passkey_authenticating">Godkender…</string>
+  <!-- Vault sync error messages -->
+  <string name="connection_error_title">Forbindelsesfejl</string>
+  <string name="connection_error_message">Der kan ikke oprettes forbindelse til serveren. Kontroller din internetforbindelse og prøv at oprette adgangsnøgle igen.</string>
+  <string name="session_expired_title">Session udløbet</string>
+  <string name="session_expired_message">Din session er udløbet. Log venligst ind igen.</string>
+  <string name="password_changed_title">Adgangskode ændret</string>
+  <string name="password_changed_message">Din adgangskode er blevet ændret. Log venligst ind igen.</string>
+  <string name="version_not_supported_title">Opdatering påkrævet</string>
+  <string name="version_not_supported_message">Din app-version er ikke længere understøttet. Opdater venligst til den nyeste version.</string>
+  <string name="server_unavailable_title">Serveren er utilgængelig</string>
+  <string name="server_unavailable_message">Serveren er i øjeblikket ikke tilgængelig. Prøv igen senere.</string>
+  <string name="network_error_title">Netværksfejl</string>
+  <string name="network_error_message">Der opstod en netværksfejl. Kontroller venligst din forbindelse og prøv igen.</string>
+  <string name="server_version_not_supported_title">Serveropdatering påkrævet</string>
+  <string name="server_version_not_supported_message">Server versionen er forældet. Kontakt venligst din administrator for at opdatere serveren.</string>
+  <!-- Passkey authentication and unlock error messages -->
+  <string name="error_unlock_method_required">Aktiver venligst biometrisk- eller PIN-godkendelse i den primære AliasVault-app for at fortsætte</string>
+  <string name="error_unlock_vault_first">Lås venligst boksen op i AliasVault-appen først</string>
+  <string name="error_vault_decrypt_failed">Kunne ikke dekryptere boks</string>
+  <string name="error_biometric_cancelled">Biometrisk godkendelse annulleret</string>
+  <string name="error_encryption_key_failed">Kunne ikke hente krypteringsnøgle</string>
+  <!-- PIN unlock -->
+  <string name="pin_unlock_vault">Lås boks op</string>
+  <string name="pin_enter_to_unlock">Indtast din PIN-kode for at låse din boks op</string>
+  <string name="pin_locked_max_attempts">PIN-kode låst efter for mange mislykkede forsøg</string>
+  <string name="pin_incorrect_attempts_remaining">Forkert PIN-kode. %d forsøg tilbage</string>
+  <!-- PIN setup -->
+  <string name="pin_setup_title">Konfigurer PIN-kode</string>
+  <string name="pin_setup_description">Vælg en PIN-kode til at låse din boks op</string>
+  <string name="pin_confirm_title">Bekræft PIN-kode</string>
+  <string name="pin_confirm_description">Indtast din PIN-kode igen for at bekræfte</string>
+  <string name="pin_mismatch">Pinkoden stemmer ikke overens. Prøv venligst igen.</string>
+</resources>

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Step titles -->
+  <data name="WelcomeStepTitle">
+    <value>Velkommen til AliasVault</value>
+    <comment>Title for the welcome step</comment>
+  </data>
+  <data name="HowAliasVaultWorksStepTitle">
+    <value>Sådan fungerer AliasVault</value>
+    <comment>Title for the how it works step</comment>
+  </data>
+  <data name="TipsStepTitle">
+    <value>Tips</value>
+    <comment>Title for the tips step</comment>
+  </data>
+  <data name="GetStartedStepTitle">
+    <value>Kom i gang</value>
+    <comment>Title for the get started step</comment>
+  </data>
+  <data name="TutorialStepTitle">
+    <value>Vejledning</value>
+    <comment>Default tutorial step title</comment>
+  </data>
+  <!-- Welcome step content -->
+  <data name="WelcomeMessage">
+    <value>Din boks er blevet oprettet! Beskyt dit privatliv online ved at oprette unikke aliaser for hver tjeneste, du tilmelder dig. Lad os lære, hvordan AliasVault fungerer, og derefter oprette dit første sikre alias.</value>
+    <comment>Welcome message on the first tutorial step</comment>
+  </data>
+  <!-- How it works step content -->
+  <data name="HowItWorksIntro">
+    <value>Når du har brug for at tilmelde dig en ny tjeneste:</value>
+    <comment>Introduction text for how it works step</comment>
+  </data>
+  <data name="HowItWorksStep1">
+    <value>AliasVault genererer en tilfældig identitet med en sikker, privat e-mailadresse</value>
+    <comment>First step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep2">
+    <value>Brug disse oplysninger til at tilmelde dig tjenesten</value>
+    <comment>Second step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep3">
+    <value>Modtagne e-mails vises i denne app og kan åbnes i din browser</value>
+    <comment>Third step in how it works explanation</comment>
+  </data>
+  <data name="HowItWorksStep4">
+    <value>Din rigtige e-mailadresse og andre personlige oplysninger forbliver private</value>
+    <comment>Fourth step in how it works explanation</comment>
+  </data>
+  <!-- Tips step content -->
+  <data name="MasterPasswordTipTitle">
+    <value>Pas godt på din hovedadgangskode</value>
+    <comment>Title for master password tip</comment>
+  </data>
+  <data name="MasterPasswordTipContent">
+    <value>Din hovedadgangskode er påkrævet for at dekryptere din boks. Del den aldrig med nogen, og opbevar den på et sikkert sted. Advarsel: Hvis du mister din hovedadgangskode, kan dine data ikke gendannes – ikke engang af vores team.</value>
+    <comment>Content for master password tip</comment>
+  </data>
+  <data name="TwoFactorTipTitle">
+    <value>Aktivér totrinsautentificering i sikkerhedsindstillingerne</value>
+    <comment>Title for two-factor authentication tip</comment>
+  </data>
+  <data name="TwoFactorTipContent">
+    <value>Totrinsautentificering tilføjer et ekstra sikkerhedslag til din konto. Det kræver, at du indtaster en kode fra din autentificerings-app eller angiver en gendannelseskode, før din krypterede boks kan tilgås.</value>
+    <comment>Content for two-factor authentication tip</comment>
+  </data>
+  <data name="ExtensionsAppsTipTitle">
+    <value>Browserudvidelser og mobilapps</value>
+    <comment>Title for browser extensions and mobile apps tip</comment>
+  </data>
+  <data name="ExtensionsAppsTipContent">
+    <value>Installer AliasVault-browserudvidelsen og mobilappen for at oprette aliaser og udfylde formularer automatisk direkte fra din browser og smartphone.</value>
+    <comment>Content for browser extensions and mobile apps tip</comment>
+  </data>
+  <!-- Create first identity step content -->
+  <data name="ReadyToStartTitle">
+    <value>Klar til at starte?</value>
+    <comment>Title for ready to start section</comment>
+  </data>
+  <data name="ReadyToStartMessage">
+    <value>Nu hvor du ved, hvordan AliasVault fungerer, lad os oprette din første sikre identitet!</value>
+    <comment>Message encouraging user to create first identity</comment>
+  </data>
+  <data name="CreateFirstIdentityButton">
+    <value>Opret din første identitet</value>
+    <comment>Button text for creating first identity</comment>
+  </data>
+  <!-- Navigation buttons -->
+  <data name="ContinueButton">
+    <value>Fortsæt</value>
+    <comment>Continue button text</comment>
+  </data>
+  <data name="GetStartedButton">
+    <value>Kom i gang</value>
+    <comment>Get started button text</comment>
+  </data>
+  <!-- Loading and status messages -->
+  <data name="FinishingTutorialMessage">
+    <value>Afslutter vejledning...</value>
+    <comment>Loading message when finishing tutorial</comment>
+  </data>
+  <!-- Extension and app labels -->
+  <data name="ComingSoonLabel">
+    <value>Kommer snart</value>
+    <comment>Label for features coming soon</comment>
+  </data>
+  <data name="SoonSuffix">
+    <value>(Snart)</value>
+    <comment>Suffix indicating feature coming soon</comment>
+  </data>
+</root>

@@ -46,7 +46,7 @@
     <comment>Description for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescriptionNote">
-    <value>Obs: E-post som tas emot på privata domäner är end-to-end-krypterad och kan endast läsas av dig, medan e-post mottagen på offentliga domäner kan läsas av alla som känner den mottagande e-postadressen.</value>
+    <value>OBS: E-post som tas emot på privata domäner är end-to-end-krypterad och kan endast läsas av dig, medan e-post mottagen på offentliga domäner kan läsas av alla som känner den mottagande e-postadressen.</value>
     <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
   </data>
   <data name="DefaultEmailDomainLearnMore">
@@ -66,7 +66,7 @@
     <comment>Label for public domains group</comment>
   </data>
   <data name="AutoEmailRefreshLabel">
-    <value>Uppdatera e-postinnehåll automatiskt när nya kommer</value>
+    <value>Uppdatera e-postlistan automatiskt när nya e-postmeddelanden kommer in</value>
     <comment>Label for auto email refresh setting</comment>
   </data>
   <!-- Alias Settings Section -->
@@ -79,7 +79,7 @@
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
-    <value>Ange det standardspråk som ska användas för att generera nya identiteter.</value>
+    <value>Ange standardspråk som ska användas vid generering av nya identiteter.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
@@ -107,7 +107,7 @@
     <comment>Label for alias generation age range setting</comment>
   </data>
   <data name="AliasGenerationAgeRangeDescription">
-    <value>Ange standardåldersintervallet för generering av nya identiteter. Detta påverkar födelsedatum som tilldelats den genererade identiteten.</value>
+    <value>Ange standardåldersintervall för nya identiteter. Detta påverkar födelsedatumet som tilldelas identiteten.</value>
     <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
@@ -140,7 +140,7 @@
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
   <data name="ClipboardClearLimitationNote">
-    <value>Obs: att rensa urklipp i webbappen är endast möjligt när fliken är aktiv. Om fliken förlorar fokus, rensas urklippförst när den kommer tillbaka i fokus.</value>
+    <value>OBS: Att rensa urklipp i webbappen är endast möjligt när fliken är aktiv. Om fliken förlorar fokus, rensas urklipp först när den kommer tillbaka i fokus.</value>
     <comment>Note explaining limitations of clipboard clearing feature</comment>
   </data>
   <!-- Password Settings Section -->

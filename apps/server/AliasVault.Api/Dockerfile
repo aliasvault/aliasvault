@@ -1,4 +1,4 @@
-﻿FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+﻿FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
 ARG TARGETARCH
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
@@ -15,7 +15,7 @@ RUN dotnet publish "./AliasVault.Api.csproj" \
     /p:UseAppHost=false
 
 # Final stage
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
 
 # OCI Image Labels
 LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"

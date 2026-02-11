@@ -127,11 +127,11 @@
     <comment>Checkbox label for favicon extraction option</comment>
   </data>
   <data name="ConfirmImportText" xml:space="preserve">
-    <value>Är du säker på att du vill importera ({0}) inloggningsuppgifter? Obs: importprocessen kan ta en kort stund.</value>
+    <value>Är du säker på att du vill importera ({0}) inloggningsuppgifter? OBS: importprocessen kan ta en liten stund.</value>
     <comment>Confirmation text before importing. {0} is the credential count</comment>
   </data>
   <data name="FaviconExtractionNote" xml:space="preserve">
-    <value>Obs: Favicon extrahering är aktiverad. Denna process kan ta flera minuter beroende på antalet inloggningsuppgifter med webbadresser. Håll sidan öppen.</value>
+    <value>OBS: Favicon-extrahering är aktiverad. Denna process kan ta flera minuter beroende på antalet inloggningsuppgifter med webbadresser. Håll sidan öppen.</value>
     <comment>Warning note about favicon extraction duration</comment>
   </data>
   <data name="ExtractingFavicons" xml:space="preserve">

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Page title and description -->
+  <data name="PageTitle">
+    <value>Udvidelser &amp; apps</value>
+    <comment>Page title for extensions and apps</comment>
+  </data>
+  <data name="PageDescription">
+    <value>Installer browserudvidelser og mobilapps for at få adgang til din boks fra alle dine enheder og udfyld automatisk loginoplysninger på websteder.</value>
+    <comment>Page description for extensions and apps</comment>
+  </data>
+  <data name="BreadcrumbTitle">
+    <value>Udvidelser &amp; apps</value>
+    <comment>Breadcrumb title for extensions and apps</comment>
+  </data>
+  <!-- Browser Extensions Section -->
+  <data name="BrowserExtensionsTitle">
+    <value>Browserudvidelser</value>
+    <comment>Title for browser extensions section</comment>
+  </data>
+  <data name="BrowserExtensionsDescription">
+    <value>AliasVault-browserudvidelsen giver dig mulighed for automatisk at udfylde eksisterende loginoplysninger på ethvert websted. Den giver dig også mulighed for at generere nye aliaser under registrering, få adgang til modtagne e-mails på alle dine aliaser samt se dine aliaser og identiteter.</value>
+    <comment>Description for browser extensions</comment>
+  </data>
+  <data name="InstallButton">
+    <value>Installer</value>
+    <comment>Install button text</comment>
+  </data>
+  <data name="ComingSoonText">
+    <value>Kommer snart</value>
+    <comment>Coming soon text for unavailable extensions</comment>
+  </data>
+  <!-- Mobile Apps Section -->
+  <data name="MobileAppsTitle">
+    <value>Mobilapps</value>
+    <comment>Title for mobile apps section</comment>
+  </data>
+  <data name="MobileAppsDescription">
+    <value>AliasVault-mobilappen giver dig adgang til dine aliaser og identiteter på farten, mulighed for at læse og administrere modtagne e-mails samt generere nye aliaser når som helst. Dine data er fuldt beskyttet med biometrisk autentificering på enheden.</value>
+    <comment>Description for mobile apps</comment>
+  </data>
+  <data name="DownloadButton">
+    <value>Download</value>
+    <comment>Download button text</comment>
+  </data>
+</root>
