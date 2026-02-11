@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
+    <value>To-faktor-godkendelse</value>
     <comment>Section title for 2FA codes</comment>
   </data>
   <data name="NoTotpCodesMessage" xml:space="preserve">
@@ -67,7 +67,7 @@
     <comment>Message shown when no TOTP codes are configured</comment>
   </data>
   <data name="CopiedMessage" xml:space="preserve">
-    <value>Copied!</value>
+    <value>Kopieret!</value>
     <comment>Feedback message when TOTP code is copied to clipboard</comment>
   </data>
 </root>
