@@ -144,7 +144,7 @@
     <comment>Add button text</comment>
   </data>
   <data name="Cancel">
-    <value>Cancel</value>
+    <value>Отмени</value>
     <comment>Cancel button text</comment>
   </data>
   <!-- Default field label -->
