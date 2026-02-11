@@ -59,19 +59,19 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="FromLabel" xml:space="preserve">
-    <value>From:</value>
+    <value>Fra:</value>
     <comment>Email sender field label</comment>
   </data>
   <data name="ToLabel" xml:space="preserve">
-    <value>To:</value>
+    <value>Til:</value>
     <comment>Email recipient field label</comment>
   </data>
   <data name="DateLabel" xml:space="preserve">
-    <value>Date:</value>
+    <value>Dato:</value>
     <comment>Email date field label</comment>
   </data>
   <data name="ItemLabel" xml:space="preserve">
-    <value>Item:</value>
+    <value>Element:</value>
     <comment>Email item field label</comment>
   </data>
   <data name="NoneValue" xml:space="preserve">
@@ -79,7 +79,7 @@
     <comment>No item assigned value</comment>
   </data>
   <data name="AttachmentsLabel" xml:space="preserve">
-    <value>Attachments:</value>
+    <value>Vedhæftede filer:</value>
     <comment>Email attachments section header</comment>
   </data>
   <data name="SelectEmailMessage" xml:space="preserve">
@@ -87,7 +87,7 @@
     <comment>Empty state message when no email is selected</comment>
   </data>
   <data name="DeleteEmailTitle" xml:space="preserve">
-    <value>Delete Email</value>
+    <value>Slet e-mail</value>
     <comment>Delete email confirmation dialog title</comment>
   </data>
   <data name="DeleteEmailConfirmation" xml:space="preserve">
