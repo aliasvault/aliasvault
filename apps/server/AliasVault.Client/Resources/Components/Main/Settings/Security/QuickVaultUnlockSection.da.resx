@@ -59,43 +59,43 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Title" xml:space="preserve">
-    <value>Passkey unlock</value>
+    <value>Oplåsning med passkey</value>
     <comment>Title for passkey unlock section</comment>
   </data>
   <data name="EnabledDescription" xml:space="preserve">
-    <value>Your master password is encrypted with the passkey PRF and stored locally. When you reload the AliasVault page or tab, you can unlock your vault with your passkey. If you wish to disable passkey unlock, you can do so with the button below. Your master password will still work for unlocking the vault.</value>
+    <value>Din hovedadgangskode er krypteret med passkey PRF og gemt lokalt. Når du genindlæser AliasVault-siden eller fanen, kan du låse din boks op med din passkey. Hvis du ønsker at deaktivere oplåsning med passkey, kan du gøre det med knappen nedenfor. Din hovedadgangskode vil stadig fungere til oplåsning af boksen.</value>
     <comment>Description when passkey unlock is enabled</comment>
   </data>
   <data name="DisableButton" xml:space="preserve">
-    <value>Disable Passkey Unlock</value>
+    <value>Deaktiver oplåsning med passkey</value>
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>By default, reloading the AliasVault page or tab requires you to enter your master password again. With a passkey, you can unlock your vault instantly. When enabled, your master password is locally encrypted using the passkey's PRF extension. Note: the passkey will only work for the current device and browser that you enable it on.</value>
+    <value>Som standard kræver genindlæsning af AliasVault-siden eller fanen, at du indtaster din hovedadgangskode igen. Med en passkey kan du låse din boks op øjeblikkeligt. Når det er aktiveret, bliver din hovedadgangskode krypteret lokalt ved hjælp af passkey'ens PRF-udvidelse. Bemærk: passkey'en vil kun fungere på den aktuelle enhed og browser, hvor du aktiverer den.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
-    <value>This feature is currently supported by AliasVault browser extension and iOS app. Android support is coming soon. If you experience any issues, you can disable this feature at any time.</value>
+    <value>Denne funktion understøttes i øjeblikket af AliasVault browser-udvidelsen og iOS-appen. Understøttelse til Android kommer snart. Hvis du oplever problemer, kan du til enhver tid deaktivere denne funktion.</value>
     <comment>Warning about feature compatibility</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">
-    <value>Enable Passkey Unlock</value>
+    <value>Aktiver oplåsning med passkey</value>
     <comment>Button to enable passkey unlock</comment>
   </data>
   <data name="SuccessEnabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully enabled. The next time your vault is locked, you can unlock it with your created passkey.</value>
+    <value>Oplåsning med passkey er nu aktiveret. Næste gang din boks er låst, kan du låse den op med din oprettede passkey.</value>
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Passkey unlock is successfully disabled.</value>
+    <value>Oplåsning med passkey er deaktiveret.</value>
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
-    <value>Your current browser does not support the WebAuthn PRF extension. Please try again with a different browser.</value>
+    <value>Din nuværende browser understøtter ikke WebAuthn PRF-udvidelsen. Prøv venligst igen med en anden browser.</value>
     <comment>Error when WebAuthn is not supported</comment>
   </data>
   <data name="EnableErrorMessage" xml:space="preserve">
-    <value>An error occurred while trying to enable Quick Vault Unlock. Please try again (later).</value>
+    <value>Der opstod en fejl under forsøget på at aktivere hurtig oplåsning af boksen. Prøv venligst igen (senere).</value>
     <comment>Generic error message when enabling fails</comment>
   </data>
 </root>
