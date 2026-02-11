@@ -1,12 +1,12 @@
 /* English localization strings for VaultUI */
-"error" = "Error";
-"cancel" = "Cancel";
-"back" = "Back";
-"next" = "Next";
-"edit" = "Edit";
-"website" = "Website";
-"username" = "Username";
-"title" = "Title";
+"error" = "خرابی";
+"cancel" = "منسوخ کریں";
+"back" = "واپس جائیں";
+"next" = "آگے جائیں";
+"edit" = "ترمیم کریں";
+"website" = "ویب سائیٹ";
+"username" = "صارف کا نام";
+"title" = "عنوان";
 "unknown_error" = "An unknown error occurred";
 
 "loading_items" = "Loading items...";
@@ -18,9 +18,9 @@
 "choose_username" = "Choose Username";
 "select_text_to_insert_message" = "Select the text to insert into the focused input field";
 "choose_username_message" = "This website may require either your username or your email address to log in";
-"username_prefix" = "Username: ";
-"email_prefix" = "Email: ";
-"password" = "Password";
+"username_prefix" = "صارف کا نام: ";
+"email_prefix" = "ای میل: ";
+"password" = "پاس ورڈ";
 "items_load_error" = "Failed to load items. Please open the AliasVault app to check for updates.";
 "no_item_selected" = "No item selected.";
 
