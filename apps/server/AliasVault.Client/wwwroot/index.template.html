@@ -142,16 +142,6 @@
     </div>
 
     <script>
-        // Early check: if we already attempted a cache-clearing reload and still failing,
-        // show error immediately and don't load Blazor (prevents infinite loops)
-        const RELOAD_ATTEMPTED_KEY = 'av-boot-reload-attempted';
-        if (localStorage.getItem(RELOAD_ATTEMPTED_KEY) === 'true') {
-            // Clear the flag
-            localStorage.removeItem(RELOAD_ATTEMPTED_KEY);
-            // We'll show error after DOM loads - set a flag
-            window.__BOOT_RECOVERY_FAILED__ = true;
-        }
-
         let translations = {};
 
         function getCurrentLanguage() {
@@ -276,8 +266,6 @@
                 const hasContent = appElement.innerHTML.trim() !== '';
 
                 if (elapsedTime >= minDisplayTime && hasContent) {
-                    // App loaded successfully - clear any boot recovery flags
-                    localStorage.removeItem(RELOAD_ATTEMPTED_KEY);
                     loadingScreen.style.display = 'none';
                     appElement.style.removeProperty('visibility');
                     clearInterval(intervalId);
@@ -304,46 +292,30 @@
             if (progressText) progressText.classList.add('hidden');
         };
 
-        // Check if previous boot recovery failed - if so, show error immediately
-        if (window.__BOOT_RECOVERY_FAILED__) {
-            document.addEventListener('DOMContentLoaded', function() {
-                showError('Failed to load application. Please clear your browser cache and reload the page (Ctrl+Shift+R or Cmd+Shift+R).');
-            });
-        }
-
         // Detect Blazor boot failures (e.g., after .NET version upgrades)
         // This handles transitions between major .NET versions where boot format changes
         let bootFailureHandled = false;
         async function handleBlazorBootFailure() {
-            // Prevent multiple executions
             if (bootFailureHandled) return;
             bootFailureHandled = true;
 
-            // If we already tried recovery, don't loop - the early check will show error
-            if (window.__BOOT_RECOVERY_FAILED__) return;
-
-            console.info('AliasVault: Blazor boot failure detected. Clearing caches and reloading...');
-
-            // Mark that we're attempting a reload
-            localStorage.setItem(RELOAD_ATTEMPTED_KEY, 'true');
+            console.info('AliasVault: Blazor boot failure detected. Refreshing cached files...');
 
             try {
-                // Clear all Cache API caches (service worker caches)
+                // Clear service worker caches
                 if ('caches' in window) {
                     const cacheKeys = await caches.keys();
                     await Promise.all(cacheKeys.map(key => caches.delete(key)));
-                    console.info('AliasVault: Cleared ' + cacheKeys.length + ' cache(s)');
                 }
 
-                // Unregister all service workers
+                // Unregister service workers
                 if ('serviceWorker' in navigator) {
                     const registrations = await navigator.serviceWorker.getRegistrations();
                     await Promise.all(registrations.map(r => r.unregister()));
-                    console.info('AliasVault: Unregistered ' + registrations.length + ' service worker(s)');
                 }
 
-                // Force browser to fetch fresh versions of critical files by using cache: 'reload'
-                // This bypasses HTTP cache for these specific requests
+                // Force browser to fetch fresh versions of critical files
+                // cache: 'reload' bypasses HTTP cache and updates it with fresh content
                 const criticalFiles = [
                     '/',
                     '/_framework/blazor.webassembly.js',
@@ -352,13 +324,14 @@
                 await Promise.all(criticalFiles.map(url =>
                     fetch(url, { cache: 'reload' }).catch(() => {})
                 ));
-                console.info('AliasVault: Refreshed critical files');
             } catch (e) {
-                console.error('AliasVault: Failed to clear caches:', e);
+                console.error('AliasVault: Cache refresh failed:', e);
             }
 
-            // Force reload
-            window.location.reload();
+            // Navigate to cache-busted URL to force complete reload with fresh resources
+            const url = new URL(window.location.href);
+            url.searchParams.set('_r', Date.now().toString());
+            window.location.replace(url.toString());
         }
 
         window.addEventListener('error', function(event) {
