@@ -1,7 +1,7 @@
 {
   "common": {
-    "cancel": "Cancel",
-    "close": "Close",
+    "cancel": "Отмени",
+    "close": "Затвори",
     "delete": "Delete",
     "save": "Save",
     "yes": "Yes",
@@ -16,7 +16,7 @@
     "loadMore": "Load more",
     "use": "Use",
     "confirm": "Confirm",
-    "next": "Next",
+    "next": "Следващ",
     "notice": "Notice",
     "enabled": "Enabled",
     "disabled": "Disabled",
@@ -38,7 +38,7 @@
     "username": "Username or email",
     "password": "Password",
     "authCode": "Authentication Code",
-    "unlock": "Unlock",
+    "unlock": "Отключи",
     "unlocking": "Unlocking...",
     "loggingIn": "Logging in",
     "validatingCredentials": "Validating credentials",
