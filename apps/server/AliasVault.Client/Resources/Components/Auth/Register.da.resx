@@ -60,57 +60,57 @@
   </resheader>
   <!-- Page title -->
   <data name="PageTitle" xml:space="preserve">
-    <value>Create a new AliasVault account</value>
+    <value>Opret en ny AliasVault-konto</value>
     <comment>Main registration page title</comment>
   </data>
   <!-- Form labels -->
   <data name="UsernameOrEmailLabel" xml:space="preserve">
-    <value>Your username or email</value>
+    <value>Dit brugernavn eller e-mail</value>
     <comment>Label for username/email input field</comment>
   </data>
   <data name="PasswordLabel" xml:space="preserve">
-    <value>Your password</value>
+    <value>Din adgangskode</value>
     <comment>Label for password input field</comment>
   </data>
   <data name="ConfirmPasswordLabel" xml:space="preserve">
-    <value>Confirm password</value>
+    <value>Bekræft adgangskode</value>
     <comment>Label for password confirmation input field</comment>
   </data>
   <!-- Terms and conditions -->
   <data name="AcceptTermsLabel" xml:space="preserve">
-    <value>I accept the</value>
+    <value>Jeg accepterer</value>
     <comment>Text before terms and conditions link</comment>
   </data>
   <data name="TermsAndConditionsLink" xml:space="preserve">
-    <value>Terms and Conditions</value>
+    <value>Vilkår og betingelser</value>
     <comment>Link text for terms and conditions</comment>
   </data>
   <!-- Buttons -->
   <data name="CreateAccountButton" xml:space="preserve">
-    <value>Create account</value>
+    <value>Opret konto</value>
     <comment>Create account button text</comment>
   </data>
   <!-- Links -->
   <data name="AlreadyRegisteredText" xml:space="preserve">
-    <value>Already registered?</value>
+    <value>Allerede registreret?</value>
     <comment>Text before login link</comment>
   </data>
   <data name="LoginHereLink" xml:space="preserve">
-    <value>Login here</value>
+    <value>Log ind her</value>
     <comment>Link text for login page</comment>
   </data>
   <!-- Loading and status messages -->
   <data name="CreatingAccountMessage" xml:space="preserve">
-    <value>Creating account...</value>
+    <value>Opretter konto...</value>
     <comment>Loading message during account creation</comment>
   </data>
   <data name="RegistrationErrorMessage" xml:space="preserve">
-    <value>An error occurred during registration.</value>
+    <value>Der opstod en fejl under registreringen.</value>
     <comment>Generic registration error message</comment>
   </data>
   <!-- Placeholders -->
   <data name="UsernamePlaceholder" xml:space="preserve">
-    <value>name / name@company.com</value>
+    <value>navn / navn@firma.dk</value>
     <comment>Placeholder text for username input</comment>
   </data>
   <data name="PasswordPlaceholder" xml:space="preserve">
