@@ -88,7 +88,10 @@ FAILED_TESTS=$(grep -E "Test Case.*failed" "$TEST_OUTPUT_FILE" 2>/dev/null | wc 
 TOTAL_TESTS=$((PASSED_TESTS + FAILED_TESTS))
 
 # Check for crashes/timeouts
-CRASHED=$(grep -c "Restarting after unexpected exit, crash, or test timeout" "$TEST_OUTPUT_FILE" 2>/dev/null || echo "0")
+CRASHED=$(grep -c "Restarting after unexpected exit, crash, or test timeout" "$TEST_OUTPUT_FILE" 2>/dev/null || true)
+CRASHED=${CRASHED:-0}
+# Ensure CRASHED is a valid number (strip whitespace)
+CRASHED=$(echo "$CRASHED" | tr -d ' ')
 
 echo "  Total:   $TOTAL_TESTS"
 echo "  Passed:  $PASSED_TESTS"
@@ -130,9 +133,10 @@ if [ -n "$GITHUB_STEP_SUMMARY" ]; then
         echo ""
         # Determine pass/fail based on actual test results, not just exit code
         # If we have tests and none failed/crashed, tests passed (regardless of xcodebuild exit code)
-        if [ "$TOTAL_TESTS" -gt 0 ] && [ "$FAILED_TESTS" -eq 0 ] && [ "$CRASHED" -eq 0 ]; then
+        # Use -gt 0 for positive checks and ensure variables are treated as integers
+        if [ "${TOTAL_TESTS:-0}" -gt 0 ] && [ "${FAILED_TESTS:-0}" -eq 0 ] && [ "${CRASHED:-0}" -eq 0 ]; then
             echo "✅ **All tests passed**"
-        elif [ "$TOTAL_TESTS" -eq 0 ]; then
+        elif [ "${TOTAL_TESTS:-0}" -eq 0 ]; then
             echo "⚠️ **No tests were executed**"
         else
             echo "❌ **Some tests failed**"
@@ -177,9 +181,9 @@ echo "Results bundle: TestResults.xcresult"
 # If we have tests and all passed, exit 0 (even if xcodebuild had other issues)
 # If tests failed or crashed, exit 1
 # If no tests ran, use xcodebuild exit code (likely indicates a problem)
-if [ "$TOTAL_TESTS" -gt 0 ] && [ "$FAILED_TESTS" -eq 0 ] && [ "$CRASHED" -eq 0 ]; then
+if [ "${TOTAL_TESTS:-0}" -gt 0 ] && [ "${FAILED_TESTS:-0}" -eq 0 ] && [ "${CRASHED:-0}" -eq 0 ]; then
     exit 0
-elif [ "$FAILED_TESTS" -gt 0 ] || [ "$CRASHED" -gt 0 ]; then
+elif [ "${FAILED_TESTS:-0}" -gt 0 ] || [ "${CRASHED:-0}" -gt 0 ]; then
     exit 1
 else
     exit $TEST_EXIT_CODE
