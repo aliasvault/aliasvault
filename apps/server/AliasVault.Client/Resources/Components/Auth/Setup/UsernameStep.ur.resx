@@ -34,7 +34,7 @@
   </data>
   <!-- Form labels -->
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>صارف کا نام</value>
     <comment>Label for username input field</comment>
   </data>
   <data name="UsernamePlaceholder">
