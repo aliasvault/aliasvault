@@ -1,0 +1,518 @@
+# Mobile E2E tests (iOS and Android) on self-hosted Mac Mini M4
+#
+# RUNNER SETUP REQUIREMENTS:
+# This workflow requires a self-hosted macOS runner with the following:
+#
+# 1. Runner label: macOS-ci
+#
+# 2. Pre-installed dependencies:
+#    - Node.js 20+
+#    - .NET SDK 9.0
+#    - Rust with targets: aarch64-apple-ios, aarch64-apple-ios-sim, x86_64-apple-ios,
+#                         aarch64-linux-android, armv7-linux-androideabi, x86_64-linux-android, i686-linux-android
+#    - Xcode (latest stable)
+#    - CocoaPods
+#    - Android SDK with NDK 26.1.10909125
+#    - Android emulator AVD named "Pixel_Pro_API_36" (arm64-v8a for M4)
+#    - Docker Desktop
+#
+# 3. Development database running:
+#    ./install.sh configure-dev-db start
+#
+# 4. Environment variables in runner's shell profile:
+#    export ANDROID_HOME="$HOME/Library/Android/sdk"
+#    export ANDROID_SDK_ROOT="$ANDROID_HOME"
+#    export ANDROID_NDK_HOME="$ANDROID_HOME/ndk/26.1.10909125"
+#    export PATH="$PATH:$ANDROID_HOME/emulator:$ANDROID_HOME/platform-tools:$HOME/.cargo/bin"
+#
+name: E2E Tests - Mobile
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-mobile.yml'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'apps/mobile-app/**'
+      - 'core/**'
+      - '.github/workflows/e2e-tests-mobile.yml'
+  workflow_dispatch:
+
+# Only one mobile E2E test run at a time (across all branches/PRs)
+# This prevents resource conflicts on the self-hosted runner
+concurrency:
+  group: mobile-e2e-tests
+  cancel-in-progress: false  # Don't cancel running tests, queue instead
+
+# Environment variables for self-hosted runner
+env:
+  CARGO_HOME: /Users/ci/.cargo
+  RUSTUP_HOME: /Users/ci/.rustup
+  ANDROID_HOME: /Users/ci/Android/sdk
+  ANDROID_SDK_ROOT: /Users/ci/Android/sdk
+  ANDROID_NDK_HOME: /Users/ci/Android/sdk/ndk/26.1.10909125
+  PATH: /Users/ci/.cargo/bin:/opt/homebrew/bin:/usr/local/bin:/Applications/Docker.app/Contents/Resources/bin:/Users/ci/Library/Android/sdk/platform-tools:/Users/ci/Library/Android/sdk/emulator:/usr/bin:/bin:/usr/sbin:/sbin
+  # UTF-8 locale settings required for CocoaPods
+  LANG: en_US.UTF-8
+  LC_ALL: en_US.UTF-8
+
+jobs:
+  # Setup job - verify environment and start shared services
+  setup:
+    name: Setup Environment
+    runs-on: macOS-ci
+    timeout-minutes: 10
+    outputs:
+      ready: ${{ steps.verify.outputs.ready }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          clean: false  # Preserve caches
+
+      - name: Cleanup previous run processes
+        run: |
+          # Kill any leftover processes from previous runs
+          pkill -f "dotnet.*AliasVault.Api" || true
+          pkill -f "expo start" || true
+          pkill -f "metro" || true
+          pkill -f "node.*react-native" || true
+          # Give processes time to terminate
+          sleep 2
+
+      - name: Verify dev database is running
+        id: verify
+        run: |
+          echo "Checking if development database is running..."
+
+          # Check if docker is available
+          if ! command -v docker &> /dev/null; then
+            echo "::error::Docker is not installed or not in PATH"
+            echo "ready=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          # Check if dev database container is running
+          if docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev ps --status running 2>/dev/null | grep -q postgres-dev; then
+            echo "✅ Development database container is running"
+          else
+            echo "::error::Development database is not running!"
+            echo "::error::Please start it manually on the runner with: ./install.sh configure-dev-db start"
+            echo "ready=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          # Check if postgres-dev container is healthy
+          if docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev ps postgres-dev 2>/dev/null | grep -q "healthy"; then
+            echo "✅ Development PostgreSQL container is healthy"
+          else
+            echo "::error::Development PostgreSQL container is not healthy!"
+            echo "::error::Please check the logs with: docker compose -f dockerfiles/docker-compose.dev.yml -p aliasvault-dev logs postgres-dev"
+            echo "ready=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+          echo "ready=true" >> $GITHUB_OUTPUT
+          echo "🎉 Environment ready!"
+
+      - name: Build core libraries
+        run: |
+          cd core
+          chmod +x build-and-distribute.sh
+          # Build for both platforms
+          ./build-and-distribute.sh --ios --android
+
+      - name: Verify core library distribution
+        working-directory: apps/mobile-app
+        run: |
+          TARGET_DIRS=(
+            "utils/dist/core/identity-generator"
+            "utils/dist/core/password-generator"
+            "utils/dist/core/models"
+            "utils/dist/core/vault"
+          )
+          for dir in "${TARGET_DIRS[@]}"; do
+            if [ ! -d "$dir" ]; then
+              echo "Error: Directory $dir does not exist"
+              exit 1
+            fi
+          done
+          echo "✅ Core library distribution verified"
+
+      - name: Install mobile app dependencies
+        working-directory: apps/mobile-app
+        run: npm ci
+
+      - name: Build API server
+        working-directory: apps/server
+        run: dotnet build AliasVault.Api
+
+  # iOS E2E Tests
+  ios-e2e:
+    name: iOS E2E Tests
+    needs: setup
+    if: needs.setup.outputs.ready == 'true'
+    runs-on: macOS-ci
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/mobile-app
+
+    steps:
+      - name: Cleanup any leftover processes and reset simulator
+        working-directory: .
+        run: |
+          pkill -9 -f "dotnet.*AliasVault.Api" || true
+          pkill -9 -f "expo start" || true
+          pkill -9 -f "metro" || true
+          pkill -9 -f "node.*8081" || true
+
+          # Reset simulator to clean state
+          echo "Resetting iOS Simulator..."
+          xcrun simctl shutdown all 2>/dev/null || true
+          SIMULATOR_ID=$(xcrun simctl list devices available | grep -E "iPhone [0-9]+ Pro" | sort -t' ' -k2 -rn | head -1 | grep -oE '[A-F0-9-]{36}')
+          if [ -n "$SIMULATOR_ID" ]; then
+            echo "Erasing simulator $SIMULATOR_ID..."
+            xcrun simctl erase "$SIMULATOR_ID" || true
+          fi
+          sleep 1
+
+      - name: Start API server
+        working-directory: apps/server/AliasVault.Api
+        run: |
+          dotnet run --no-build > /tmp/api-server.log 2>&1 &
+          echo $! > /tmp/api-server.pid
+
+          echo "Waiting for API to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
+              echo "✅ API is ready!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::API failed to start"
+              cat /tmp/api-server.log
+              exit 1
+            fi
+            sleep 2
+          done
+        env:
+          ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5433;Database=aliasdb;Username=aliasvault;Password=password"
+          JWT_KEY: "12345678901234567890123456789012"
+          DATA_PROTECTION_CERT_PASS: "Development"
+          PUBLIC_REGISTRATION_ENABLED: "true"
+          ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
+          ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
+          ASPNETCORE_URLS: "http://0.0.0.0:5092"
+
+      - name: Start Metro bundler
+        run: |
+          npx expo start --offline > /tmp/metro.log 2>&1 &
+          echo $! > /tmp/metro.pid
+
+          echo "Waiting for Metro bundler to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+              echo "✅ Metro bundler is ready!"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::Metro bundler failed to start"
+              cat /tmp/metro.log
+              exit 1
+            fi
+            sleep 2
+          done
+
+      - name: Cache CocoaPods
+        id: pods-cache
+        run: |
+          PODS_CACHE_DIR="/Users/ci/.cache/pods"
+          PODS_HASH=$(md5 -q ios/Podfile.lock)
+          if [ -d "$PODS_CACHE_DIR/$PODS_HASH" ]; then
+            echo "✅ Restoring Pods from cache..."
+            rm -rf ios/Pods
+            cp -R "$PODS_CACHE_DIR/$PODS_HASH" ios/Pods
+            echo "cache-hit=true" >> $GITHUB_OUTPUT
+          else
+            echo "cache-hit=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Install CocoaPods dependencies
+        if: steps.pods-cache.outputs.cache-hit != 'true'
+        run: |
+          cd ios && pod install
+          PODS_CACHE_DIR="/Users/ci/.cache/pods"
+          PODS_HASH=$(md5 -q Podfile.lock)
+          mkdir -p "$PODS_CACHE_DIR"
+          ls -t "$PODS_CACHE_DIR" 2>/dev/null | tail -n +4 | xargs -I {} rm -rf "$PODS_CACHE_DIR/{}" || true
+          cp -R Pods "$PODS_CACHE_DIR/$PODS_HASH"
+
+      - name: Build iOS app
+        run: |
+          cd ios
+          chmod +x scripts/*.sh
+          ./scripts/e2e-build.sh
+
+      - name: Run iOS E2E tests
+        run: |
+          cd ios
+          ./scripts/e2e-test.sh
+        env:
+          API_URL: "http://localhost:5092"
+
+      - name: Shutdown iOS Simulator
+        if: always()
+        run: xcrun simctl shutdown all || true
+
+      - name: Extract attachments from xcresult
+        if: always()
+        run: |
+          mkdir -p /tmp/ios-test-attachments
+          if [ -d "ios/TestResults.xcresult" ]; then
+            xcrun xcresulttool get --path ios/TestResults.xcresult --format json > /tmp/ios-test-attachments/results.json 2>/dev/null || true
+            xcrun xcresulttool export --path ios/TestResults.xcresult --output-path /tmp/ios-test-attachments --type file 2>/dev/null || true
+            echo "Attachments found:"
+            ls -la /tmp/ios-test-attachments/ || true
+          fi
+
+      - name: Upload iOS test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-e2e-test-results
+          path: apps/mobile-app/ios/TestResults.xcresult
+          retention-days: 14
+
+      - name: Upload iOS test attachments
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-e2e-test-attachments
+          path: /tmp/ios-test-attachments/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Upload iOS logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-e2e-test-logs
+          path: |
+            /tmp/api-server.log
+            /tmp/metro.log
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Stop iOS services
+        if: always()
+        run: |
+          cd ios && ./scripts/e2e-cleanup.sh
+
+  # Android E2E Tests (runs after iOS to avoid resource conflicts on single runner)
+  android-e2e:
+    name: Android E2E Tests
+    needs: [setup, ios-e2e]
+    if: always() && needs.setup.outputs.ready == 'true' && (needs.ios-e2e.result == 'success' || needs.ios-e2e.result == 'failure')
+    runs-on: macOS-ci
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: apps/mobile-app
+
+    steps:
+      - name: Cleanup any leftover processes
+        working-directory: .
+        run: |
+          pkill -f "dotnet.*AliasVault.Api" || true
+          pkill -f "expo start" || true
+          pkill -f "metro" || true
+          sleep 1
+
+      - name: Start API server
+        working-directory: apps/server/AliasVault.Api
+        run: |
+          dotnet run --no-build > /tmp/api-server.log 2>&1 &
+          API_PID=$!
+          echo $API_PID > /tmp/api-server.pid
+
+          # Wait for API to be ready
+          echo "Waiting for API to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5092/v1/ > /dev/null 2>&1; then
+              echo "✅ API is ready! (PID: $API_PID)"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::API failed to start within 60 seconds"
+              cat /tmp/api-server.log
+              exit 1
+            fi
+            echo "Attempt $i: API not ready yet..."
+            sleep 2
+          done
+        env:
+          ConnectionStrings__AliasServerDbContext: "Host=localhost;Port=5433;Database=aliasdb;Username=aliasvault;Password=password"
+          JWT_KEY: "12345678901234567890123456789012"
+          DATA_PROTECTION_CERT_PASS: "Development"
+          PUBLIC_REGISTRATION_ENABLED: "true"
+          ADMIN_PASSWORD_HASH: "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag=="
+          ADMIN_PASSWORD_GENERATED: "2024-01-01T00:00:00Z"
+          ASPNETCORE_URLS: "http://0.0.0.0:5092"
+
+      - name: Start Metro bundler
+        run: |
+          npx expo start --offline > /tmp/metro.log 2>&1 &
+          METRO_PID=$!
+          echo $METRO_PID > /tmp/metro.pid
+
+          # Wait for Metro to be ready
+          echo "Waiting for Metro bundler to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:8081/status 2>/dev/null | grep -q "packager-status:running"; then
+              echo "✅ Metro bundler is ready! (PID: $METRO_PID)"
+              break
+            fi
+            if [ $i -eq 30 ]; then
+              echo "::error::Metro bundler failed to start"
+              cat /tmp/metro.log
+              exit 1
+            fi
+            echo "Attempt $i: Metro not ready yet..."
+            sleep 2
+          done
+
+      - name: Setup Gradle cache
+        run: |
+          # Ensure Gradle cache directories exist and are preserved across runs
+          GRADLE_CACHE_DIR="/Users/ci/.gradle"
+          mkdir -p "$GRADLE_CACHE_DIR/caches"
+          mkdir -p "$GRADLE_CACHE_DIR/wrapper"
+
+          # Set GRADLE_USER_HOME to use persistent cache location
+          echo "GRADLE_USER_HOME=$GRADLE_CACHE_DIR" >> $GITHUB_ENV
+
+          # Show cache size for debugging
+          if [ -d "$GRADLE_CACHE_DIR/caches" ]; then
+            CACHE_SIZE=$(du -sh "$GRADLE_CACHE_DIR/caches" 2>/dev/null | cut -f1 || echo "unknown")
+            echo "✅ Gradle cache exists (size: $CACHE_SIZE)"
+          else
+            echo "No existing Gradle cache found"
+          fi
+
+      - name: Build Android app
+        run: |
+          cd android
+          chmod +x scripts/*.sh
+          ./scripts/e2e-build.sh
+        env:
+          GRADLE_USER_HOME: /Users/ci/.gradle
+
+      - name: Run Android E2E tests
+        run: |
+          cd android
+          ./scripts/e2e-test.sh
+        env:
+          API_URL: "http://10.0.2.2:5092"
+          GRADLE_USER_HOME: /Users/ci/.gradle
+
+      - name: Upload Android test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-e2e-test-results
+          path: apps/mobile-app/android/app/build/reports/androidTests/
+          retention-days: 14
+
+      - name: Upload Android test outputs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-e2e-test-outputs
+          path: apps/mobile-app/android/app/build/outputs/androidTest-results/
+          retention-days: 14
+
+      - name: Upload Android logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-e2e-test-logs
+          path: |
+            /tmp/api-server.log
+            /tmp/metro.log
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Stop Android services
+        if: always()
+        run: |
+          cd android && ./scripts/e2e-cleanup.sh
+
+  # Cleanup job - stop shared services
+  cleanup:
+    name: Cleanup
+    needs: [setup, ios-e2e, android-e2e]
+    if: always()
+    runs-on: macOS-ci
+    timeout-minutes: 2
+    steps:
+      - name: Stop shared services
+        timeout-minutes: 1
+        run: |
+          echo "Cleaning up orphan processes..."
+
+          # Force kill everything immediately (no waiting)
+          pkill -9 -f "dotnet.*AliasVault.Api" || true
+          pkill -9 -f "expo start" || true
+          pkill -9 -f "metro" || true
+          pkill -9 -f "node.*react-native" || true
+
+          # Clean up PID and log files
+          rm -f /tmp/api-server.pid /tmp/metro.pid
+          rm -f /tmp/api-server.log /tmp/metro.log
+
+          echo "✅ Cleanup complete"
+
+      - name: Generate summary
+        run: |
+          echo "## Mobile E2E Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.setup.result }}" == "failure" ]; then
+            echo "❌ **Setup failed** - Development database may not be running" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please ensure the dev database is running on the self-hosted runner:" >> $GITHUB_STEP_SUMMARY
+            echo '```bash' >> $GITHUB_STEP_SUMMARY
+            echo './install.sh configure-dev-db start' >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+
+          echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.ios-e2e.result }}" == "success" ]; then
+            echo "| iOS | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.ios-e2e.result }}" == "failure" ]; then
+            echo "| iOS | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| iOS | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ "${{ needs.android-e2e.result }}" == "success" ]; then
+            echo "| Android | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ needs.android-e2e.result }}" == "failure" ]; then
+            echo "| Android | ❌ Failed |" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "| Android | ⏭️ Skipped |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          # Fail if either test failed
+          if [ "${{ needs.ios-e2e.result }}" == "failure" ] || [ "${{ needs.android-e2e.result }}" == "failure" ]; then
+            exit 1
+          fi

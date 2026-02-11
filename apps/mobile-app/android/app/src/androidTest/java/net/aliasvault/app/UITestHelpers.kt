@@ -5,6 +5,8 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
+import java.io.File
+import java.io.OutputStream
 
 /**
  * UI test helper functions for Android instrumented tests.
@@ -12,6 +14,12 @@ import androidx.test.uiautomator.Until
  */
 object UITestHelpers {
     private const val TAG = "UITestHelpers"
+
+    /**
+     * Enable verbose logging for CI debugging.
+     */
+    private val verboseLogging: Boolean
+        get() = TestConfiguration.isCI
 
     // region Element Finding
 
@@ -137,50 +145,105 @@ object UITestHelpers {
     // region Actions
 
     /**
+     * Maximum retries for flaky UI interactions in CI.
+     */
+    private val maxRetries: Int
+        get() = if (TestConfiguration.isCI) 3 else 1
+
+    /**
      * Tap on an element with testID.
+     * Includes retry logic for CI headless mode where taps can be flaky.
      */
     fun UiDevice.tapTestId(testId: String): Boolean {
-        // Try immediate find first (no waiting)
-        val element = findByTestId(testId)
-        return if (element != null) {
-            element.click()
-            true
-        } else {
-            Log.e(TAG, "Failed to tap testId: $testId - element not found")
-            false
+        repeat(maxRetries) { attempt ->
+            val element = findByTestId(testId)
+            if (element != null) {
+                try {
+                    element.click()
+                    if (verboseLogging) {
+                        Log.i(TAG, "Tapped testId: $testId (attempt ${attempt + 1})")
+                    }
+                    Thread.sleep(100) // Small delay after tap for UI to respond
+                    return true
+                } catch (e: Exception) {
+                    Log.w(TAG, "Tap failed on attempt ${attempt + 1}: ${e.message}")
+                    Thread.sleep(200)
+                }
+            } else if (attempt < maxRetries - 1) {
+                if (verboseLogging) {
+                    Log.w(TAG, "Element not found, waiting before retry ${attempt + 2}/$maxRetries")
+                }
+                Thread.sleep(500)
+            }
         }
+        Log.e(TAG, "Failed to tap testId: $testId after $maxRetries attempts")
+        return false
     }
 
     /**
      * Tap on an element with text.
+     * Includes retry logic for CI headless mode.
      */
     fun UiDevice.tapText(text: String): Boolean {
-        // Try immediate find first (no waiting)
-        val element = findByText(text)
-        return if (element != null) {
-            element.click()
-            true
-        } else {
-            Log.e(TAG, "Failed to tap text: $text - element not found")
-            false
+        repeat(maxRetries) { attempt ->
+            val element = findByText(text)
+            if (element != null) {
+                try {
+                    element.click()
+                    if (verboseLogging) {
+                        Log.i(TAG, "Tapped text: $text (attempt ${attempt + 1})")
+                    }
+                    Thread.sleep(100)
+                    return true
+                } catch (e: Exception) {
+                    Log.w(TAG, "Tap failed on attempt ${attempt + 1}: ${e.message}")
+                    Thread.sleep(200)
+                }
+            } else if (attempt < maxRetries - 1) {
+                Thread.sleep(500)
+            }
         }
+        Log.e(TAG, "Failed to tap text: $text after $maxRetries attempts")
+        return false
     }
 
     /**
      * Type text into an element with testID.
+     * Includes retry logic and verification for CI headless mode.
      */
     fun UiDevice.typeIntoTestId(testId: String, text: String): Boolean {
-        // Try immediate find first (no waiting)
-        val element = findByTestId(testId)
-        return if (element != null) {
-            element.click()
-            Thread.sleep(100) // Small delay for focus
-            element.text = text
-            true
-        } else {
-            Log.e(TAG, "Failed to type into testId: $testId - element not found")
-            false
+        repeat(maxRetries) { attempt ->
+            val element = findByTestId(testId)
+            if (element != null) {
+                try {
+                    element.click()
+                    Thread.sleep(150) // Slightly longer delay for focus in CI
+                    element.text = text
+                    Thread.sleep(100)
+
+                    // Verify text was entered (important for CI)
+                    val verifyElement = findByTestId(testId)
+                    if (verifyElement?.text == text) {
+                        if (verboseLogging) {
+                            Log.i(TAG, "Typed into testId: $testId (attempt ${attempt + 1})")
+                        }
+                        return true
+                    } else if (verboseLogging) {
+                        Log.w(
+                            TAG,
+                            "Text verification failed: expected '$text', got '${verifyElement?.text}'",
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.w(TAG, "Type failed on attempt ${attempt + 1}: ${e.message}")
+                }
+                Thread.sleep(300)
+            } else if (attempt < maxRetries - 1) {
+                Thread.sleep(500)
+            }
         }
+        Log.e(TAG, "Failed to type into testId: $testId after $maxRetries attempts")
+        return false
     }
 
     /**
@@ -211,8 +274,16 @@ object UITestHelpers {
         testId: String,
         maxScrolls: Int = 5,
     ): UiObject2? {
+        // Longer settle time in CI mode where rendering is slower
+        val settleTime = if (TestConfiguration.isCI) 500L else 300L
+
         repeat(maxScrolls) {
-            findByTestId(testId)?.let { return it }
+            findByTestId(testId)?.let {
+                if (verboseLogging) {
+                    Log.i(TAG, "Found testId '$testId' after scroll")
+                }
+                return it
+            }
             swipe(
                 displayWidth / 2,
                 displayHeight * 3 / 4,
@@ -220,7 +291,7 @@ object UITestHelpers {
                 displayHeight / 4,
                 10,
             )
-            Thread.sleep(300) // Wait for scroll to settle
+            Thread.sleep(settleTime)
         }
         return findByTestId(testId)
     }
@@ -232,8 +303,16 @@ object UITestHelpers {
         text: String,
         maxScrolls: Int = 5,
     ): UiObject2? {
+        // Longer settle time in CI mode where rendering is slower
+        val settleTime = if (TestConfiguration.isCI) 500L else 300L
+
         repeat(maxScrolls) {
-            findByText(text)?.let { return it }
+            findByText(text)?.let {
+                if (verboseLogging) {
+                    Log.i(TAG, "Found text '$text' after scroll")
+                }
+                return it
+            }
             swipe(
                 displayWidth / 2,
                 displayHeight * 3 / 4,
@@ -241,7 +320,7 @@ object UITestHelpers {
                 displayHeight / 4,
                 10,
             )
-            Thread.sleep(300) // Wait for scroll to settle
+            Thread.sleep(settleTime)
         }
         return findByText(text)
     }
@@ -355,10 +434,25 @@ object UITestHelpers {
 
     /**
      * Hide the keyboard if visible.
+     * Uses pressKeyCode for the BACK key which is safer than pressBack() for keyboard dismissal.
      */
     fun UiDevice.hideKeyboard() {
-        pressBack()
-        Thread.sleep(200)
+        // Check if any input field is focused (keyboard likely visible)
+        val focusedElement = findObject(By.focused(true))
+        if (focusedElement != null) {
+            // Press KEYCODE_ESCAPE to dismiss keyboard without triggering navigation
+            // Fallback to clicking outside if that doesn't work
+            pressKeyCode(android.view.KeyEvent.KEYCODE_ESCAPE)
+            Thread.sleep(200)
+
+            // If still focused, try clicking on the screen outside the keyboard area
+            val stillFocused = findObject(By.focused(true))
+            if (stillFocused != null) {
+                // Click near the top of the screen (header area) to dismiss keyboard
+                click(displayWidth / 2, 100)
+                Thread.sleep(200)
+            }
+        }
     }
 
     // endregion
@@ -384,6 +478,69 @@ object UITestHelpers {
      */
     fun longSleep() {
         Thread.sleep(2000)
+    }
+
+    // endregion
+
+    // region Debug Helpers
+
+    /**
+     * Take a screenshot and save to file with error handling.
+     * Returns true if screenshot was saved successfully.
+     */
+    fun UiDevice.saveScreenshot(file: File): Boolean {
+        return try {
+            // Ensure parent directory exists
+            file.parentFile?.mkdirs()
+            // Use the UiDevice's built-in takeScreenshot method
+            val success = this.takeScreenshot(file)
+            if (success) {
+                Log.i(TAG, "Screenshot saved to: ${file.absolutePath}")
+            } else {
+                Log.e(TAG, "takeScreenshot returned false for: ${file.absolutePath}")
+            }
+            success
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to take screenshot: ${e.message}")
+            e.printStackTrace()
+            false
+        }
+    }
+
+    /**
+     * Dump the current window hierarchy for debugging with error handling.
+     */
+    fun UiDevice.dumpHierarchy(output: OutputStream) {
+        try {
+            this.dumpWindowHierarchy(output)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to dump window hierarchy: ${e.message}")
+        }
+    }
+
+    /**
+     * Log current screen state for debugging.
+     */
+    fun UiDevice.logScreenState(context: String) {
+        if (!verboseLogging) return
+
+        Log.i(TAG, "=== Screen state at: $context ===")
+        Log.i(TAG, "  Display: ${displayWidth}x$displayHeight")
+
+        // Check common screens
+        val screens = listOf(
+            "login-screen",
+            "unlock-screen",
+            "items-screen",
+            "add-edit-screen",
+        )
+
+        for (screen in screens) {
+            if (findByTestId(screen) != null) {
+                Log.i(TAG, "  ✓ $screen is visible")
+            }
+        }
+        Log.i(TAG, "=== End screen state ===")
     }
 
     // endregion

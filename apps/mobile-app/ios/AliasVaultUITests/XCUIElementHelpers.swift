@@ -41,11 +41,16 @@ extension XCUIElement {
         // Small delay to ensure keyboard is fully ready
         Thread.sleep(forTimeInterval: 0.1)
 
-        // Clear existing text if any
-        if let currentValue = self.value as? String, !currentValue.isEmpty {
-            let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: currentValue.count)
-            self.typeText(deleteString)
-        }
+        // Move cursor to the end of the field by tapping at the far right edge
+        // This ensures delete key will remove all characters, not just those before cursor
+        self.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).press(forDuration: 0.01)
+        Thread.sleep(forTimeInterval: 0.1)
+
+        // Clear existing text by sending many delete key presses
+        // Use a fixed large count to ensure all text is cleared regardless of actual length
+        let deleteString = String(repeating: XCUIKeyboardKey.delete.rawValue, count: 100)
+        self.typeText(deleteString)
+        Thread.sleep(forTimeInterval: 0.1)
 
         // Type the new text
         self.typeText(text)
@@ -53,6 +58,7 @@ extension XCUIElement {
 
     /// Type text with keyboard wait to prevent missing characters.
     /// Use this instead of raw typeText() for more reliable input.
+    /// Types text in smaller chunks to prevent missing characters.
     @MainActor
     func typeTextNoIdle(_ text: String, app: XCUIApplication? = nil) {
         // Wait for keyboard to appear
@@ -64,11 +70,19 @@ extension XCUIElement {
             _ = application.keyboards.firstMatch.waitForExistenceNoIdle(timeout: 2)
         }
 
-        // Small delay to ensure keyboard is fully ready
-        Thread.sleep(forTimeInterval: 0.1)
+        // Delay to ensure keyboard is fully ready
+        Thread.sleep(forTimeInterval: 0.2)
 
-        // Type the text
-        self.typeText(text)
+        // Type text in small chunks to prevent missing characters
+        let chunkSize = 5
+        var index = text.startIndex
+        while index < text.endIndex {
+            let endIndex = text.index(index, offsetBy: chunkSize, limitedBy: text.endIndex) ?? text.endIndex
+            let chunk = String(text[index..<endIndex])
+            self.typeText(chunk)
+            Thread.sleep(forTimeInterval: 0.02)
+            index = endIndex
+        }
     }
 }
 
@@ -141,11 +155,29 @@ extension XCUIApplication {
     /// Scroll to make an element visible within a scroll view.
     @MainActor
     func scrollToElement(_ element: XCUIElement, in scrollView: XCUIElement? = nil) {
+        let targetScrollView = scrollView ?? self.scrollViews.firstMatch
+
+        // Always do at least one small scroll to ensure element is fully visible
+        // (handles edge case where element is partially in view but not fully usable)
+        if element.exists {
+            // Calculate if element is in the lower half of the screen - if so, scroll it up
+            let elementFrame = element.frame
+            let scrollViewFrame = targetScrollView.frame
+            let elementCenterY = elementFrame.midY
+
+            // If element center is in lower 40% of scroll view, do a small scroll up
+            if elementCenterY > scrollViewFrame.minY + (scrollViewFrame.height * 0.6) {
+                let startPoint = targetScrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.6))
+                let endPoint = targetScrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.4))
+                startPoint.press(forDuration: 0.1, thenDragTo: endPoint)
+                Thread.sleep(forTimeInterval: 0.2)
+            }
+        }
+
+        // If still not hittable, scroll more aggressively
         guard !element.isHittable else { return }
 
-        let targetScrollView = scrollView ?? self.scrollViews.firstMatch
         var attempts = 0
-
         while !element.isHittable && attempts < 5 {
             let startPoint = targetScrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.7))
             let endPoint = targetScrollView.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.3))
