@@ -118,7 +118,7 @@
     <comment>Text describing button location</comment>
   </data>
   <data name="OrText" xml:space="preserve">
-    <value>or</value>
+    <value>یا</value>
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
@@ -202,7 +202,7 @@
     <comment>Button text for deleting a folder</comment>
   </data>
   <data name="BackToRoot" xml:space="preserve">
-    <value>Back</value>
+    <value>واپس جائیں</value>
     <comment>Button text for navigating back to root</comment>
   </data>
   <data name="FailedToCreateFolder" xml:space="preserve">
