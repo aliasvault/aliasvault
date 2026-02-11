@@ -284,44 +284,57 @@
         const errorMessageElement = document.getElementById('error-message');
 
         const showError = (message) => {
-            errorMessageElement.textContent = message;
-            errorMessageElement.classList.remove('hidden');
-            document.querySelector('.loading-progress-text').classList.add('hidden');
-            document.querySelector('svg.animate-spin').classList.add('hidden');
+            if (errorMessageElement) {
+                errorMessageElement.textContent = message;
+                errorMessageElement.classList.remove('hidden');
+            }
+            const progressText = document.querySelector('.loading-progress-text');
+            if (progressText) progressText.classList.add('hidden');
         };
-        // Detect Blazor boot failures (e.g., after .NET version upgrades)
-        async function handleBlazorBootFailure() {
-            const RELOAD_ATTEMPTED_KEY = 'av-boot-reload-attempted';
-            const reloadAttempted = sessionStorage.getItem(RELOAD_ATTEMPTED_KEY);
 
-            if (reloadAttempted) {
-                // Already tried reloading, show error to user instead of infinite loop
-                sessionStorage.removeItem(RELOAD_ATTEMPTED_KEY);
+        // Detect Blazor boot failures (e.g., after .NET version upgrades where blazor.boot.json no longer exists)
+        // This handles the transition from .NET 9 to .NET 10 where the boot manifest was removed
+        let bootFailureHandled = false;
+        async function handleBlazorBootFailure() {
+            // Prevent multiple executions
+            if (bootFailureHandled) return;
+            bootFailureHandled = true;
+
+            const RELOAD_ATTEMPTED_KEY = 'av-boot-reload-attempted';
+            const reloadAttempted = localStorage.getItem(RELOAD_ATTEMPTED_KEY);
+
+            if (reloadAttempted === 'true') {
+                // Already tried reloading once, show error to user instead of infinite loop
+                localStorage.removeItem(RELOAD_ATTEMPTED_KEY);
                 showError('Failed to load application. Please clear your browser cache and reload the page (Ctrl+Shift+R or Cmd+Shift+R).');
                 return;
             }
 
-            console.info('AliasVault: Blazor boot failure detected, clearing caches and reloading...');
-            sessionStorage.setItem(RELOAD_ATTEMPTED_KEY, 'true');
+            console.info('AliasVault: Blazor boot failure detected (blazor.boot.json not found - .NET version upgrade). Clearing caches and reloading...');
+
+            // Mark that we're attempting a reload BEFORE clearing anything
+            localStorage.setItem(RELOAD_ATTEMPTED_KEY, 'true');
 
             try {
-                // Clear all caches
+                // Clear all Cache API caches
                 if ('caches' in window) {
                     const cacheKeys = await caches.keys();
                     await Promise.all(cacheKeys.map(key => caches.delete(key)));
+                    console.info('AliasVault: Cleared ' + cacheKeys.length + ' cache(s)');
                 }
 
-                // Unregister service workers
+                // Unregister all service workers
                 if ('serviceWorker' in navigator) {
                     const registrations = await navigator.serviceWorker.getRegistrations();
                     await Promise.all(registrations.map(r => r.unregister()));
+                    console.info('AliasVault: Unregistered ' + registrations.length + ' service worker(s)');
                 }
             } catch (e) {
                 console.error('AliasVault: Failed to clear caches:', e);
             }
 
-            // Force a hard reload bypassing cache
-            window.location.reload();
+            // Force reload
+            window.location.replace(window.location.href);
         }
 
         window.addEventListener('error', function(event) {
@@ -335,7 +348,7 @@
             if (errorMessage.includes('WebAssembly')) {
                 showError(getTranslation('errors.webAssemblyError'));
             }
-            // Detect Blazor boot failures (blazor.boot.json loading issues after version upgrades)
+            // Detect Blazor boot failures (blazor.boot.json no longer exists in .NET 10)
             else if (errorMessage.includes('blazor.boot.json') || errorMessage.includes('Failed to load config file')) {
                 event.preventDefault();
                 handleBlazorBootFailure();
