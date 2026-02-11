@@ -333,8 +333,11 @@
                 console.error('AliasVault: Failed to clear caches:', e);
             }
 
-            // Force reload
-            window.location.replace(window.location.href);
+            // Force a cache-busting reload by adding a unique query parameter
+            // This ensures the browser fetches fresh resources instead of using HTTP cache
+            const url = new URL(window.location.href);
+            url.searchParams.set('_refresh', Date.now().toString());
+            window.location.replace(url.toString());
         }
 
         window.addEventListener('error', function(event) {
