@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Step titles -->
   <data name="TermsAndConditionsStepTitle">
-    <value>Using AliasVault</value>
+    <value>Brug Af AliasVault</value>
     <comment>Title for the terms and conditions step</comment>
   </data>
   <data name="UsernameStepTitle">
@@ -29,20 +29,20 @@
     <comment>Title for the username selection step</comment>
   </data>
   <data name="PasswordStepTitle">
-    <value>Set Password</value>
+    <value>Vælg Adgangskode</value>
     <comment>Title for the password creation step</comment>
   </data>
   <data name="CreatingStepTitle">
-    <value>Creating Vault</value>
+    <value>Opretter Boks</value>
     <comment>Title for the vault creation step</comment>
   </data>
   <data name="SetupStepTitle">
-    <value>Setup</value>
+    <value>Opsætning</value>
     <comment>Default setup step title</comment>
   </data>
   <!-- Button text -->
   <data name="CreateAccountButton">
-    <value>Create Account</value>
+    <value>Opret konto</value>
     <comment>Button text for creating account</comment>
   </data>
   <data name="ContinueButton">
