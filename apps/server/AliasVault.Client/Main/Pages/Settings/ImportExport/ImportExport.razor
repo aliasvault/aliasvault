@@ -6,6 +6,9 @@
 @using Microsoft.Extensions.Localization
 @using AliasVault.RazorComponents.Services
 @using AliasVault.Client.Main.Pages.Settings.ImportExport.Components
+@using AliasVault.Client.Main.Components.Shared
+@using AliasVault.Client.Services.Auth
+@using AliasVault.Client.Services.Auth.Enums
 @using AliasVault.ImportExport
 
 <LayoutPageTitle>@Localizer["PageTitle"]</LayoutPageTitle>
@@ -59,7 +62,18 @@
 
 <ResetVaultSection />
 
+<PasswordConfirmationModal
+    IsOpen="@_showPasswordConfirmation"
+    Title="@Localizer["ExportPasswordConfirmTitle"]"
+    Description="@Localizer["ExportPasswordConfirmDescription"]"
+    ErrorMessage="@_passwordError"
+    OnPasswordSubmitted="@HandlePasswordSubmitted"
+    OnClose="@ClosePasswordConfirmation" />
+
 @code {
+    private string _username = string.Empty;
+    private bool _showPasswordConfirmation;
+    private string _passwordError = string.Empty;
     private IStringLocalizer Localizer => LocalizerFactory.Create("Pages.Main.Settings.ImportExport.ImportExport", "AliasVault.Client");
     private ExportType _currentExportType;
 
@@ -74,6 +88,9 @@
     {
         await base.OnInitializedAsync();
         BreadcrumbItems.Add(new BreadcrumbItem { DisplayName = Localizer["PageTitle"] });
+
+        // Get username for password verification
+        _username = await GetUsernameAsync();
     }
 
     private async Task ShowExportConfirmation(ExportType exportType)
@@ -87,7 +104,69 @@
             return;
         }
 
-        await HandleExportConfirmed();
+        // Show password confirmation modal
+        _passwordError = string.Empty;
+        _showPasswordConfirmation = true;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles the password submission - verifies password and proceeds with export.
+    /// </summary>
+    private async Task HandlePasswordSubmitted(string password)
+    {
+        // Close modal first and show global loading spinner
+        _showPasswordConfirmation = false;
+        _passwordError = string.Empty;
+        StateHasChanged();
+
+        GlobalLoadingSpinner.Show(Localizer["VerifyingPasswordMessage"]);
+
+        try
+        {
+            var result = await AuthService.VerifyPasswordAsync(_username, password);
+
+            switch (result)
+            {
+                case PasswordVerificationResult.Success:
+                    GlobalLoadingSpinner.Hide();
+                    await HandleExportConfirmed();
+                    break;
+
+                case PasswordVerificationResult.InvalidPassword:
+                    GlobalLoadingSpinner.Hide();
+                    _passwordError = Localizer["PasswordIncorrect"];
+                    _showPasswordConfirmation = true;
+                    StateHasChanged();
+                    break;
+
+                case PasswordVerificationResult.ServerError:
+                default:
+                    GlobalLoadingSpinner.Hide();
+                    _passwordError = Localizer["PasswordVerificationFailed"];
+                    _showPasswordConfirmation = true;
+                    StateHasChanged();
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error verifying password");
+            GlobalLoadingSpinner.Hide();
+            _passwordError = Localizer["PasswordVerificationFailed"];
+            _showPasswordConfirmation = true;
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// Closes the password confirmation modal.
+    /// </summary>
+    private void ClosePasswordConfirmation()
+    {
+        _showPasswordConfirmation = false;
+        _passwordError = string.Empty;
+        StateHasChanged();
     }
 
     private async Task HandleExportConfirmed()

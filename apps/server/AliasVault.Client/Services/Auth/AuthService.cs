@@ -9,6 +9,8 @@ namespace AliasVault.Client.Services.Auth;
 
 using System.Net.Http.Json;
 using System.Text.Json;
+using AliasVault.Client.Services.Auth.Enums;
+using AliasVault.Cryptography.Client;
 using AliasVault.Shared.Models.WebApi.Auth;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -279,6 +281,55 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
         {
             // Ignore errors, if decryption fails the encryption key is invalid.
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Verifies a password by deriving the encryption key and validating it against the stored test string.
+    /// This method handles all the heavy lifting of password verification including fetching encryption
+    /// parameters from the server and deriving the key.
+    /// </summary>
+    /// <param name="username">The username for the account.</param>
+    /// <param name="password">The password to verify.</param>
+    /// <returns>A result indicating success or the type of failure.</returns>
+    public async Task<PasswordVerificationResult> VerifyPasswordAsync(string username, string password)
+    {
+        try
+        {
+            // Get user's encryption parameters from server
+            var result = await httpClient.PostAsJsonAsync("v1/Auth/login", new LoginInitiateRequest(username));
+            var responseContent = await result.Content.ReadAsStringAsync();
+
+            if (!result.IsSuccessStatusCode)
+            {
+                return PasswordVerificationResult.ServerError;
+            }
+
+            var loginResponse = JsonSerializer.Deserialize<LoginInitiateResponse>(responseContent);
+            if (loginResponse == null)
+            {
+                return PasswordVerificationResult.ServerError;
+            }
+
+            // Derive password hash using server parameters
+            byte[] passwordHash = await Encryption.DeriveKeyFromPasswordAsync(
+                password,
+                loginResponse.Salt,
+                loginResponse.EncryptionType,
+                loginResponse.EncryptionSettings);
+
+            // Verify the password locally using the derived password hash
+            var isValidPassword = await ValidateEncryptionKeyAsync(passwordHash);
+            if (!isValidPassword)
+            {
+                return PasswordVerificationResult.InvalidPassword;
+            }
+
+            return PasswordVerificationResult.Success;
+        }
+        catch
+        {
+            return PasswordVerificationResult.ServerError;
         }
     }
 
