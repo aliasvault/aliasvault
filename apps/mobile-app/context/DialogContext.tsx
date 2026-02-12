@@ -204,9 +204,9 @@ export function DialogProvider({ children }: DialogProviderProps): React.ReactNo
         {
           text: confirmText,
           style: options?.confirmStyle ?? 'default',
-          onPress: async (): Promise<void> => {
-            await onConfirm();
+          onPress: (): void => {
             setDialogConfig(null);
+            onConfirm();
           },
         },
       ],

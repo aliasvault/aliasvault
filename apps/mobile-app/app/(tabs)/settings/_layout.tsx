@@ -156,6 +156,14 @@ export default function SettingsLayout(): React.ReactNode {
           ...defaultHeaderOptions,
         }}
       />
+      <Stack.Screen
+        name="password-confirm"
+        options={{
+          title: t('settings.passwordConfirm.title'),
+          headerBackTitle: t('settings.importExport'),
+          ...defaultHeaderOptions,
+        }}
+      />
     </Stack>
   );
 }

@@ -28,6 +28,7 @@ type DbContextType = {
   clearDatabase: () => void;
   getVaultMetadata: () => Promise<VaultMetadata | null>;
   testDatabaseConnection: (derivedKey: string) => Promise<boolean>;
+  verifyEncryptionKey: (derivedKey: string) => Promise<boolean>;
   unlockVault: () => Promise<boolean>;
   checkStoredVault: () => Promise<void>;
   setDatabaseAvailable: () => void;
@@ -244,6 +245,25 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     return false;
   }, [sqliteClient, unlockVault]);
 
+  /**
+   * Verify if the provided encryption key is valid.
+   * @param derivedKey The encryption key to verify
+   * @returns true if the key is valid, false if invalid (wrong password)
+   */
+  const verifyEncryptionKey = useCallback(async (derivedKey: string): Promise<boolean> => {
+    try {
+      await sqliteClient.storeEncryptionKeyInMemory(derivedKey);
+      await unlockVault();
+
+      const version = await sqliteClient.getDatabaseVersion();
+      return !!(version && version.version && version.version.length > 0);
+    } catch (error) {
+      // Unlock failed - likely wrong password/key
+      console.error('verifyEncryptionKey failed:', error);
+      return false;
+    }
+  }, [sqliteClient, unlockVault]);
+
   const contextValue = useMemo(() => ({
     sqliteClient,
     dbInitialized,
@@ -260,12 +280,13 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     clearDatabase,
     getVaultMetadata,
     testDatabaseConnection,
+    verifyEncryptionKey,
     unlockVault,
     storeEncryptionKey,
     storeEncryptionKeyDerivationParams,
     checkStoredVault,
     setDatabaseAvailable,
-  }), [sqliteClient, dbInitialized, dbAvailable, isDirty, isSyncing, isOffline, setIsSyncing, setIsOffline, shouldSuppressEmailErrors, refreshSyncState, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, unlockVault, storeEncryptionKey, storeEncryptionKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isDirty, isSyncing, isOffline, setIsSyncing, setIsOffline, shouldSuppressEmailErrors, refreshSyncState, hasPendingMigrations, clearDatabase, getVaultMetadata, testDatabaseConnection, verifyEncryptionKey, unlockVault, storeEncryptionKey, storeEncryptionKeyDerivationParams, checkStoredVault, setDatabaseAvailable]);
 
   return (
     <DbContext.Provider value={contextValue}>

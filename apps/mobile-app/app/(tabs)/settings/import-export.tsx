@@ -5,11 +5,13 @@ import { useState } from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 
 import type { Item } from '@/utils/dist/core/models/vault';
-import { FieldKey, getFieldValue, itemToCredential } from '@/utils/dist/core/models/vault';
+import { getFieldValue, itemToCredential } from '@/utils/dist/core/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { usePasswordConfirm } from '@/hooks/usePasswordConfirm';
 import { useTranslation } from '@/hooks/useTranslation';
 
+import LoadingOverlay from '@/components/LoadingOverlay';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -46,6 +48,7 @@ export default function ImportExportScreen(): React.ReactNode {
   const { t } = useTranslation();
   const dbContext = useDb();
   const { showAlert, showConfirm } = useDialog();
+  const { requestPasswordConfirm } = usePasswordConfirm();
   const [isExporting, setIsExporting] = useState(false);
 
   /**
@@ -97,8 +100,11 @@ export default function ImportExportScreen(): React.ReactNode {
       // Convert item to credential format for backward compatibility with CSV export
       const credential = itemToCredential(item);
 
-      // Get nickname from item fields (not in Credential type but needed for CSV)
-      const nickName = getFieldValue(item, FieldKey.AliasNickname) ?? '';
+      /*
+       * Get nickname from item fields (not in Credential type but needed for CSV)
+       * Note: AliasNickname is not a standard FieldKey, use string literal
+       */
+      const nickName = getFieldValue(item, 'alias.nickname') ?? '';
 
       const record: ICredentialCsvRecord = {
         Version: '1.5.0',
@@ -182,15 +188,26 @@ export default function ImportExportScreen(): React.ReactNode {
   };
 
   /**
-   * Show export confirmation dialog.
+   * Show export confirmation dialog, then password verification.
    */
   const showExportConfirmation = (): void => {
     showConfirm(
       t('settings.exportConfirmTitle'),
       t('settings.exportWarning'),
       t('common.confirm'),
-      () => {
-        handleExport();
+      async () => {
+        // Request password confirmation via modal page
+        const passwordHash = await requestPasswordConfirm({
+          description: t('settings.passwordConfirm.exportDescription'),
+        });
+
+        if (!passwordHash) {
+          // User cancelled
+          return;
+        }
+
+        // Password verified, proceed with export
+        await handleExport();
       },
       { confirmStyle: 'destructive' }
     );
@@ -259,33 +276,15 @@ export default function ImportExportScreen(): React.ReactNode {
   };
 
   const styles = StyleSheet.create({
-    section: {
-      backgroundColor: colors.accentBackground,
-      borderRadius: 10,
-      marginTop: 16,
-      padding: 16,
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: '600',
-      marginBottom: 8,
-      color: colors.text,
-    },
-    sectionDescription: {
-      fontSize: 14,
-      color: colors.textMuted,
-      marginBottom: 16,
-      lineHeight: 20,
-    },
     button: {
+      alignItems: 'center',
       backgroundColor: colors.primary,
       borderRadius: 8,
-      paddingVertical: 12,
-      paddingHorizontal: 16,
-      marginVertical: 8,
       flexDirection: 'row',
-      alignItems: 'center',
       justifyContent: 'center',
+      marginVertical: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
     },
     buttonDisabled: {
       opacity: 0.5,
@@ -299,58 +298,81 @@ export default function ImportExportScreen(): React.ReactNode {
     importNote: {
       backgroundColor: colors.tertiary + '20', // Use tertiary color with opacity
       borderRadius: 8,
-      padding: 12,
       marginTop: 8,
+      padding: 12,
     },
     importNoteText: {
-      fontSize: 14,
       color: colors.text,
+      fontSize: 14,
       lineHeight: 20,
+    },
+    section: {
+      backgroundColor: colors.accentBackground,
+      borderRadius: 10,
+      marginTop: 16,
+      padding: 16,
+    },
+    sectionDescription: {
+      color: colors.textMuted,
+      fontSize: 14,
+      lineHeight: 20,
+      marginBottom: 16,
+    },
+    sectionTitle: {
+      color: colors.text,
+      fontSize: 18,
+      fontWeight: '600',
+      marginBottom: 8,
     },
   });
 
   return (
-    <ThemedContainer>
-      <ThemedScrollView>
-        {/* Import Section */}
-        <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>
-            {t('settings.importSectionTitle')}
-          </ThemedText>
-          <ThemedText style={styles.sectionDescription}>
-            {t('settings.importSectionDescription')}
-          </ThemedText>
-          <View style={styles.importNote}>
-            <ThemedText style={styles.importNoteText}>
-              {t('settings.importWebNote')}
+    <>
+      {isExporting && (
+        <LoadingOverlay status={t('settings.exporting')} />
+      )}
+      <ThemedContainer>
+        <ThemedScrollView>
+          {/* Import Section */}
+          <View style={styles.section}>
+            <ThemedText style={styles.sectionTitle}>
+              {t('settings.importSectionTitle')}
             </ThemedText>
+            <ThemedText style={styles.sectionDescription}>
+              {t('settings.importSectionDescription')}
+            </ThemedText>
+            <View style={styles.importNote}>
+              <ThemedText style={styles.importNoteText}>
+                {t('settings.importWebNote')}
+              </ThemedText>
+            </View>
           </View>
-        </View>
 
-        {/* Export Section */}
-        <View style={styles.section}>
-          <ThemedText style={styles.sectionTitle}>
-            {t('settings.exportSectionTitle')}
-          </ThemedText>
-          <ThemedText style={styles.sectionDescription}>
-            {t('settings.exportSectionDescription')}
-          </ThemedText>
-
-          <TouchableOpacity
-            style={[styles.button, isExporting && styles.buttonDisabled]}
-            onPress={() => showExportConfirmation()}
-            disabled={isExporting}
-          >
-            <Ionicons name="document-text" size={20} color={colors.primarySurfaceText} />
-            <ThemedText style={styles.buttonText}>
-              {isExporting
-                ? (t('settings.exporting'))
-                : (t('settings.exportCsvButton'))
-              }
+          {/* Export Section */}
+          <View style={styles.section}>
+            <ThemedText style={styles.sectionTitle}>
+              {t('settings.exportSectionTitle')}
             </ThemedText>
-          </TouchableOpacity>
-        </View>
-      </ThemedScrollView>
-    </ThemedContainer>
+            <ThemedText style={styles.sectionDescription}>
+              {t('settings.exportSectionDescription')}
+            </ThemedText>
+
+            <TouchableOpacity
+              style={[styles.button, isExporting && styles.buttonDisabled]}
+              onPress={() => showExportConfirmation()}
+              disabled={isExporting}
+            >
+              <Ionicons name="document-text" size={20} color={colors.primarySurfaceText} />
+              <ThemedText style={styles.buttonText}>
+                {isExporting
+                  ? (t('settings.exporting'))
+                  : (t('settings.exportCsvButton'))
+                }
+              </ThemedText>
+            </TouchableOpacity>
+          </View>
+        </ThemedScrollView>
+      </ThemedContainer>
+    </>
   );
 }

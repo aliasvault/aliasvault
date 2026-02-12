@@ -389,9 +389,9 @@ export const AuthProvider: React.FC<{
 
     const currentPasswordHashBase64 = Buffer.from(passwordHash).toString('base64');
 
-    // Check if the current password is correct by attempting to decrypt the vault
-    const dbAvailable = await dbContext.testDatabaseConnection(currentPasswordHashBase64);
-    if (!dbAvailable) {
+    // Check if the current password is correct
+    const isValid = await dbContext.verifyEncryptionKey(currentPasswordHashBase64);
+    if (!isValid) {
       return null;
     }
 
