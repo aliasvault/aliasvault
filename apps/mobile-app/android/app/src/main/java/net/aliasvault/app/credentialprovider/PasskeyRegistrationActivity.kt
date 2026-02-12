@@ -22,6 +22,7 @@ import net.aliasvault.app.vaultstore.VaultStore
 import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
 import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 import org.json.JSONObject
+import java.net.URL
 
 /**
  * PasskeyRegistrationActivity
@@ -80,8 +81,15 @@ class PasskeyRegistrationActivity : FragmentActivity() {
 
             // Extract RP info
             val rpObj = requestObj.optJSONObject("rp")
-            viewModel.rpId = rpObj?.optString("id") ?: ""
             viewModel.rpName = rpObj?.optString("name")?.takeIf { it.isNotEmpty() }
+
+            /*
+             * Derive rpId: use explicit rp.id if provided, otherwise fall back to origin hostname.
+             * This matches WebAuthn spec behavior where rpId defaults to the origin's effective domain.
+             * Reference: browser extension PasskeyAuthenticator.ts and PasskeyCreate.tsx
+             */
+            val explicitRpId = rpObj?.optString("id")?.takeIf { it.isNotEmpty() }
+            viewModel.rpId = explicitRpId ?: ""
 
             // Extract user info
             val userObj = requestObj.optJSONObject("user")
@@ -89,8 +97,8 @@ class PasskeyRegistrationActivity : FragmentActivity() {
             viewModel.userDisplayName = userObj?.optString("displayName")?.takeIf { it.isNotEmpty() }
             val userIdB64 = userObj?.optString("id")
 
-            if (viewModel.rpId.isEmpty() || viewModel.requestJson.isEmpty()) {
-                Log.e(TAG, "Missing required parameters")
+            if (viewModel.requestJson.isEmpty()) {
+                Log.e(TAG, "Missing required parameters: requestJson is empty")
                 finish()
                 return
             }
@@ -171,6 +179,23 @@ class PasskeyRegistrationActivity : FragmentActivity() {
                         viewModel.isPrivilegedCaller = originResult.isPrivileged
                         Log.d(TAG, "Origin verified: ${originResult.origin} (privileged: ${originResult.isPrivileged})")
 
+                        /*
+                         * If rpId was not provided in the request, derive it from the verified origin.
+                         * This matches WebAuthn spec behavior where rpId defaults to origin's effective domain.
+                         * Reference: browser extension PasskeyAuthenticator.ts and PasskeyCreate.tsx
+                         */
+                        if (viewModel.rpId.isEmpty() && originResult.isPrivileged) {
+                            try {
+                                val originUrl = URL(originResult.origin)
+                                viewModel.rpId = originUrl.host
+                                Log.d(TAG, "Derived rpId from origin: ${viewModel.rpId}")
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Failed to derive rpId from origin", e)
+                                showError("Invalid origin URL")
+                                return@launch
+                            }
+                        }
+
                         // Initialize unlock coordinator
                         unlockCoordinator = UnlockCoordinator(
                             activity = this@PasskeyRegistrationActivity,
@@ -216,7 +241,6 @@ class PasskeyRegistrationActivity : FragmentActivity() {
                 // Get existing passkeys for the rpId (can be replaced)
                 viewModel.existingPasskeys = vaultStore.getPasskeysWithCredentialInfo(
                     rpId = viewModel.rpId,
-                    userName = viewModel.userName,
                     userId = viewModel.userId,
                 )
 

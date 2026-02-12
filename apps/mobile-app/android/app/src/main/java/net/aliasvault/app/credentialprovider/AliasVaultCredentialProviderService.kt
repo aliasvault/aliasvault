@@ -223,8 +223,8 @@ class AliasVaultCredentialProviderService : CredentialProviderService() {
 
             // Extract RP info
             val rpObj = requestObj.optJSONObject("rp")
-            val rpId = rpObj?.optString("id") ?: ""
-            val rpName = rpObj?.optString("name") ?: rpId
+            val rpId = rpObj?.optString("id")?.takeIf { it.isNotEmpty() } ?: ""
+            val rpName = rpObj?.optString("name")?.takeIf { it.isNotEmpty() } ?: rpId
 
             // Extract user info
             val userObj = requestObj.optJSONObject("user")
@@ -233,22 +233,25 @@ class AliasVaultCredentialProviderService : CredentialProviderService() {
 
             val createEntries = mutableListOf<CreateEntry>()
 
-            if (rpId.isNotEmpty()) {
-                // Create entry for saving passkey to AliasVault
-                // Using rpName or userDisplayName as the account name
-                val accountName = if (userDisplayName.isNotEmpty()) {
-                    "$userDisplayName@$rpName"
-                } else {
-                    rpName
-                }
-
-                val entry = CreateEntry(
-                    accountName = accountName,
-                    pendingIntent = createNewPendingIntent(rpId),
-                )
-
-                createEntries.add(entry)
+            /*
+             * Always create an entry for AliasVault, even if rpId is empty.
+             * Per WebAuthn spec, rpId defaults to the origin's effective domain when not provided.
+             * The actual rpId will be derived from the verified origin during registration.
+             * Reference: PasskeyRegistrationActivity.kt derives rpId from origin if empty.
+             */
+            val displayRpName = rpName.ifEmpty { "Passkey" }
+            val accountName = if (userDisplayName.isNotEmpty()) {
+                "$userDisplayName@$displayRpName"
+            } else {
+                displayRpName
             }
+
+            val entry = CreateEntry(
+                accountName = accountName,
+                pendingIntent = createNewPendingIntent(rpId.ifEmpty { "passkey-create" }),
+            )
+
+            createEntries.add(entry)
 
             return BeginCreateCredentialResponse(createEntries)
         } catch (e: Exception) {

@@ -285,7 +285,6 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
      * @param displayName The updated display name.
      * @param logo The updated logo bytes (optional).
      */
-    @Suppress("UNUSED_PARAMETER") // Logo update not yet implemented
     fun replace(
         oldPasskeyId: UUID,
         newPasskey: Passkey,
@@ -304,11 +303,31 @@ class PasskeyRepository(database: VaultDatabase) : BaseRepository(database) {
 
             // Update the item's name
             executeUpdate(
-                "UPDATE Items SET Name = ?, UpdatedAt = ? WHERE Id = ?",
-                arrayOf(displayName, timestamp, itemId.toString().uppercase()),
+                "UPDATE Items SET UpdatedAt = ? WHERE Id = ?",
+                arrayOf(timestamp, itemId.toString().uppercase()),
             )
 
-            // TODO: Update logo if provided
+            if (logo != null) {
+                val source = newPasskey.rpId.lowercase().replace("www.", "")
+                val itemResults = executeQuery(
+                    "SELECT LogoId FROM Items WHERE Id = ?",
+                    arrayOf(itemId.toString().uppercase()),
+                )
+                val existingLogoId = itemResults.firstOrNull()?.get("LogoId") as? String
+
+                if (existingLogoId != null) {
+                    executeUpdate(
+                        "UPDATE Logos SET FileData = ?, UpdatedAt = ? WHERE Id = ?",
+                        arrayOf(logo, timestamp, existingLogoId),
+                    )
+                } else {
+                    val newLogoId = getOrCreateLogo(source, logo, timestamp)
+                    executeUpdate(
+                        "UPDATE Items SET LogoId = ?, UpdatedAt = ? WHERE Id = ?",
+                        arrayOf(newLogoId, timestamp, itemId.toString().uppercase()),
+                    )
+                }
+            }
 
             // Soft delete the old passkey
             softDelete("Passkeys", oldPasskeyId.toString().uppercase())
