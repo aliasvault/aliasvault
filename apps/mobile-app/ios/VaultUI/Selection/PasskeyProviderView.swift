@@ -138,13 +138,11 @@ private struct PasskeyCredentialCard: View {
                         ZStack {
                             RoundedRectangle(cornerRadius: 8)
                                 .fill(colors.primary.opacity(0.1))
-                                .frame(width: 40, height: 40)
                             Image(systemName: "key.fill")
                                 .font(.system(size: 20))
                                 .foregroundColor(colors.primary)
                         }
                         .frame(width: 40, height: 40)
-                        .padding()
                     }
 
                     VStack(alignment: .leading, spacing: 4) {
