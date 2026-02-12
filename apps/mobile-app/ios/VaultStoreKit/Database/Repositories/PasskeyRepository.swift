@@ -227,7 +227,6 @@ public class PasskeyRepository: BaseRepository {
                 try updateItemLogoInternal(
                     itemId: newPasskey.parentItemId.uuidString.uppercased(),
                     logo: logo,
-                    displayName: displayName,
                     rpId: newPasskey.rpId,
                     now: now
                 )
@@ -364,28 +363,33 @@ public class PasskeyRepository: BaseRepository {
         }
     }
 
-    /// Update item logo when replacing a passkey.
+    /// Update item logo.
+    /// Note: This only updates the logo, NOT the item name.
     /// - Parameters:
     ///   - itemId: The item ID
     ///   - logo: The new logo data
-    ///   - displayName: The new display name
     ///   - rpId: The relying party ID for logo source
-    public func updateItemLogo(itemId: String, logo: Data, displayName: String, rpId: String) throws {
+    public func updateItemLogo(itemId: String, logo: Data, rpId: String) throws {
         try withTransaction {
             let now = self.now()
-            try updateItemLogoInternal(itemId: itemId, logo: logo, displayName: displayName, rpId: rpId, now: now)
+            try updateItemLogoInternal(itemId: itemId, logo: logo, rpId: rpId, now: now)
         }
     }
 
     /// Internal helper to update item logo without creating a transaction.
     /// Used within larger transactions to avoid nested transaction issues.
+    /// Note: This only updates the logo, never the item name.
     /// - Parameters:
     ///   - itemId: The item ID
     ///   - logo: The new logo data
-    ///   - displayName: The new display name
     ///   - rpId: The relying party ID for logo source (used when creating new logo)
     ///   - now: The current timestamp
-    private func updateItemLogoInternal(itemId: String, logo: Data, displayName: String, rpId: String, now: String) throws {
+    private func updateItemLogoInternal(
+        itemId: String,
+        logo: Data,
+        rpId: String,
+        now: String
+    ) throws {
         // Get current logo ID from item
         let itemResults = try client.executeQuery(
             "SELECT LogoId FROM Items WHERE Id = ?",
@@ -412,12 +416,6 @@ public class PasskeyRepository: BaseRepository {
                 params: [newLogoId, now, itemId]
             )
         }
-
-        // Update item name
-        try client.executeUpdate(
-            "UPDATE Items SET Name = ?, UpdatedAt = ? WHERE Id = ?",
-            params: [displayName, now, itemId]
-        )
     }
 
     /// Add a passkey to an existing Item (merge passkey into existing credential).
@@ -441,7 +439,6 @@ public class PasskeyRepository: BaseRepository {
                 try updateItemLogoInternal(
                     itemId: itemIdString,
                     logo: logo,
-                    displayName: passkey.displayName,
                     rpId: passkey.rpId,
                     now: now
                 )

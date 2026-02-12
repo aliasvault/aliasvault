@@ -35,7 +35,7 @@ const PasskeyQueries = {
       i.Name as ItemName,
       fv.Value as Username
     FROM Passkeys p
-    LEFT JOIN Items i ON p.ItemId = i.Id
+    INNER JOIN Items i ON p.ItemId = i.Id AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
     LEFT JOIN FieldValues fv ON fv.ItemId = i.Id AND fv.FieldKey = 'login.username' AND fv.IsDeleted = 0
     WHERE p.RpId = ? AND p.IsDeleted = 0
     ORDER BY p.CreatedAt DESC`,
@@ -61,7 +61,7 @@ const PasskeyQueries = {
       i.Name as ItemName,
       fv.Value as Username
     FROM Passkeys p
-    LEFT JOIN Items i ON p.ItemId = i.Id
+    INNER JOIN Items i ON p.ItemId = i.Id AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
     LEFT JOIN FieldValues fv ON fv.ItemId = i.Id AND fv.FieldKey = 'login.username' AND fv.IsDeleted = 0
     WHERE p.Id = ? AND p.IsDeleted = 0`,
 
@@ -86,7 +86,7 @@ const PasskeyQueries = {
       i.Name as ItemName,
       fv.Value as Username
     FROM Passkeys p
-    LEFT JOIN Items i ON p.ItemId = i.Id
+    INNER JOIN Items i ON p.ItemId = i.Id AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
     LEFT JOIN FieldValues fv ON fv.ItemId = i.Id AND fv.FieldKey = 'login.username' AND fv.IsDeleted = 0
     WHERE p.ItemId = ? AND p.IsDeleted = 0
     ORDER BY p.CreatedAt DESC`,

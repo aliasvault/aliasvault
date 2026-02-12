@@ -225,7 +225,7 @@ extension CredentialProviderViewController: PasskeyProviderDelegate {
         // Query for existing passkeys with this rpId and userName
         var existingPasskeys: [PasskeyWithCredentialInfo] = []
         do {
-            let results = try vaultStore.getPasskeysWithCredentialInfo(forRpId: rpId, userName: userName, userId: userId)
+            let results = try vaultStore.getPasskeysWithCredentialInfo(forRpId: rpId, userId: userId)
             existingPasskeys = results.map { result in
                 PasskeyWithCredentialInfo(
                     id: result.passkey.id,
