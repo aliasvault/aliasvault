@@ -20,15 +20,15 @@
     </xsd:element>
   </xsd:schema>
   <data name="FieldLabelPlaceholder">
-    <value>Field label</value>
+    <value>Feltnavn</value>
     <comment>Placeholder text for field label input</comment>
   </data>
   <data name="EditLabel">
-    <value>Edit label</value>
+    <value>Rediger label</value>
     <comment>Tooltip for edit label button</comment>
   </data>
   <data name="DeleteField">
-    <value>Delete field</value>
+    <value>Slet felt</value>
     <comment>Tooltip for delete field button</comment>
   </data>
 </root>
