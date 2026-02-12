@@ -79,9 +79,15 @@ const PasskeyCreate: React.FC = () => {
             const defaultName = data.publicKey?.rp?.name || data.publicKey?.rp?.id || 'Passkey';
             setDisplayName(defaultName);
 
+            /*
+             * Derive rpId: use explicit rp.id if provided, otherwise fall back to origin hostname.
+             * This matches WebAuthn spec and PasskeyAuthenticator behavior.
+             */
+            const effectiveRpId = data.publicKey?.rp?.id || new URL(data.origin).hostname;
+
             // Check for existing passkeys for this RP ID and user
-            if (dbContext.sqliteClient && data.publicKey?.rp?.id) {
-              const allPasskeysForRpId = dbContext.sqliteClient.passkeys.getByRpId(data.publicKey.rp.id);
+            if (dbContext.sqliteClient) {
+              const allPasskeysForRpId = dbContext.sqliteClient.passkeys.getByRpId(effectiveRpId);
 
               /**
                * Filter by user ID and/or username if provided
@@ -164,6 +170,8 @@ const PasskeyCreate: React.FC = () => {
                   setShowCreateForm(true);
                 }
               }
+            } else {
+              setShowCreateForm(true);
             }
           }
         } catch (error) {
