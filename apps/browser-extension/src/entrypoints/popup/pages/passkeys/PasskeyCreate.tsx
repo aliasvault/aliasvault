@@ -117,13 +117,6 @@ const PasskeyCreate: React.FC = () => {
                     }
                   }
 
-                  // Also match by username if available (from the credential)
-                  if (data.publicKey.user?.name && passkey.Username) {
-                    if (passkey.Username === data.publicKey.user.name) {
-                      return true;
-                    }
-                  }
-
                   // If neither user ID nor username match, exclude this passkey
                   return false;
                 });
