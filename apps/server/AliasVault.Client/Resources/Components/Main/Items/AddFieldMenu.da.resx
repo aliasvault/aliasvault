@@ -21,7 +21,7 @@
   </xsd:schema>
   <!-- Section options -->
   <data name="TwoFactorAuthentication">
-    <value>Two-Factor Authentication</value>
+    <value>To-faktor godkendelse</value>
     <comment>Option to add 2FA section</comment>
   </data>
   <data name="Attachments">
@@ -149,7 +149,7 @@
   </data>
   <!-- Default field label -->
   <data name="DefaultFieldLabel">
-    <value>Field {0}</value>
+    <value>Felt {0}</value>
     <comment>Default label for custom field, {0} is the field number</comment>
   </data>
 </root>
