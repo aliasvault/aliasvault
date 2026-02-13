@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Voit nyt käyttää automaattista täyttöä sisäänkirjautumislomakkeissa selaimessasi.",
     "closePopup": "Sulje tämä ponnahdusikkuna",
     "browseVault": "Selaa holvin sisältöä",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Yhdistetään kohteeseen",
     "switchAccounts": "Vaihdetaanko tiliä?",
     "loginWithMobile": "Kirjaudu sisään mobiilisovelluksella",
