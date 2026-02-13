@@ -121,7 +121,7 @@ Sei sicuro di voler continuare con l'esportazione?</value>
     <comment>Description for password confirmation modal during export</comment>
   </data>
   <data name="VerifyingPasswordMessage" xml:space="preserve">
-    <value>Verifying password...</value>
+    <value>Verifica password...</value>
     <comment>Message shown while verifying password</comment>
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
