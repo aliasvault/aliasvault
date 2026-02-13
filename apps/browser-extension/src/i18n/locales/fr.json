@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Vous pouvez maintenant utiliser le remplissage automatique des formulaires de connexion dans votre navigateur.",
     "closePopup": "Fermer cette popup",
     "browseVault": "Parcourir le contenu du coffre",
+    "autoCloseUnlockPopup": "Fermeture automatique lors des connexions futures",
+    "closingIn": "Fermeture dans {{seconds}}s...",
     "connectingTo": "Connexion à",
     "switchAccounts": "Changer de compte ?",
     "loginWithMobile": "Se connecter à l'aide de l'application mobile",
