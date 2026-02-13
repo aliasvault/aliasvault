@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Du kan nu bruge autofyld i login-formularer i din browser.",
     "closePopup": "Luk denne popup",
     "browseVault": "Gennemse boksens indhold",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Forbinder til",
     "switchAccounts": "Skift konto?",
     "loginWithMobile": "Log ind via mobilapp",
