@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Ahora puede utilizar el autocompletado en los formularios de inicio de sesión en su navegador.",
     "closePopup": "Cerrar esta ventana emergente",
     "browseVault": "Navegar en el contenido de la bóveda",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Conectando con",
     "switchAccounts": "¿Cambiar de cuenta?",
     "loginWithMobile": "Iniciar sesión con la aplicación móvil",
