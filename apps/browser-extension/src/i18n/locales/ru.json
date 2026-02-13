@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Теперь вы можете использовать автозаполнение форм входа в Вашем браузере.",
     "closePopup": "Закрыть окно",
     "browseVault": "Обзор содержимого хранилища",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Подключение к",
     "switchAccounts": "Переключить аккаунт?",
     "loginWithMobile": "Войти с помощью мобильного приложения",
