@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Możesz teraz używać automatycznego uzupełniania w formularzach logowania w przeglądarce.",
     "closePopup": "Zamknij to okno.",
     "browseVault": "Przeglądaj zawartość sejfu",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Łączenie z",
     "switchAccounts": "Przełącz konto",
     "loginWithMobile": "Zaloguj się za pomocą aplikacji mobilnej",
@@ -516,6 +518,6 @@
   },
   "sync": {
     "offline": "Jesteś w trybie offline",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Dotknij, aby ponowić synchronizację"
   }
 }
