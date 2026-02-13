@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Du kan nu använda autofyll av inloggningsformulär i din webbläsare.",
     "closePopup": "Stäng detta popup-fönster",
     "browseVault": "Bläddra bland valvets innehåll",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Ansluter till",
     "switchAccounts": "Växla konton?",
     "loginWithMobile": "Logga in med hjälp av mobilapp",
