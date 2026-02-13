@@ -113,15 +113,15 @@
     <comment>Reset vault section description</comment>
   </data>
   <data name="ExportPasswordConfirmTitle" xml:space="preserve">
-    <value>Confirm Export</value>
+    <value>确认导出</value>
     <comment>Title for password confirmation modal during export</comment>
   </data>
   <data name="ExportPasswordConfirmDescription" xml:space="preserve">
-    <value>For security reasons, please enter your master password to confirm this export.</value>
+    <value>出于安全考虑，请输入您的主密码以确认导出。</value>
     <comment>Description for password confirmation modal during export</comment>
   </data>
   <data name="VerifyingPasswordMessage" xml:space="preserve">
-    <value>Verifying password...</value>
+    <value>验证密码中…</value>
     <comment>Message shown while verifying password</comment>
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
