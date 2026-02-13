@@ -4,7 +4,7 @@
 
 import { onMessage, sendMessage } from "webext-bridge/background";
 
-import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout } from '@/entrypoints/background/AutolockTimeoutHandler';
+import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout, initializeAutoLockAlarm, handleAutoLockAlarm } from '@/entrypoints/background/AutolockTimeoutHandler';
 import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardClearTimeout, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData } from '@/entrypoints/background/PasskeyHandler';
@@ -88,6 +88,15 @@ export default defineBackground({
     if (isContextMenuEnabled) {
       await setupContextMenus();
     }
+
+    /*
+     * Initialize auto-lock alarm system.
+     * This ensures the alarm is restored if the service worker was terminated.
+     */
+    await initializeAutoLockAlarm();
+
+    // Register alarm listener for auto-lock
+    browser.alarms.onAlarm.addListener(handleAutoLockAlarm);
 
     // Listen for custom commands
     try {

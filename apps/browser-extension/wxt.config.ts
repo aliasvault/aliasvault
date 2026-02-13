@@ -10,7 +10,8 @@ export default defineConfig({
       "activeTab",
       "contextMenus",
       "scripting",
-      "clipboardWrite"
+      "clipboardWrite",
+      "alarms"
     ];
 
     // Only add offscreen permission for Chrome and Edge
