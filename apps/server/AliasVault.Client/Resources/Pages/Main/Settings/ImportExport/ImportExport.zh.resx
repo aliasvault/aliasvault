@@ -125,11 +125,11 @@
     <comment>Message shown while verifying password</comment>
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
-    <value>The password you entered is incorrect. Please try again.</value>
+    <value>您输入的密码不正确，请重试。</value>
     <comment>Error message when password verification fails</comment>
   </data>
   <data name="PasswordVerificationFailed" xml:space="preserve">
-    <value>An error occurred while verifying your password. Please try again.</value>
+    <value>验证密码时出错，请重试。</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
 </root>
