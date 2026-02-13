@@ -29,6 +29,7 @@ const KEYS = {
 
   // UI preferences
   SHOW_FOLDERS: 'local:aliasvault_show_folders',
+  AUTO_CLOSE_UNLOCK_POPUP: 'local:aliasvault_auto_close_unlock_popup',
 
   // Session/Navigation state
   PENDING_REDIRECT_URL: 'session:pendingRedirectUrl',
@@ -63,6 +64,22 @@ export const LocalPreferencesService = {
    */
   async setShowFolders(showFolders: boolean): Promise<void> {
     await storage.setItem(KEYS.SHOW_FOLDERS, showFolders);
+  },
+
+  /**
+   * Get the auto-close unlock popup preference.
+   * @returns Whether to auto-close the popup after unlocking. Defaults to true.
+   */
+  async getAutoCloseUnlockPopup(): Promise<boolean> {
+    const value = await storage.getItem(KEYS.AUTO_CLOSE_UNLOCK_POPUP) as boolean | null;
+    return value ?? true;
+  },
+
+  /**
+   * Set the auto-close unlock popup preference.
+   */
+  async setAutoCloseUnlockPopup(enabled: boolean): Promise<void> {
+    await storage.setItem(KEYS.AUTO_CLOSE_UNLOCK_POPUP, enabled);
   },
 
   /**
