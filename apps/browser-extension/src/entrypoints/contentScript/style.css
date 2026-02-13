@@ -1282,3 +1282,158 @@ body {
   width: 16px;
   height: 16px;
 }
+
+/* Save Prompt Banner Styles */
+.av-save-prompt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2147483647;
+  transform: translateY(-100%);
+  transition: transform 0.2s ease-out;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.av-save-prompt--visible {
+  transform: translateY(0);
+}
+
+.av-save-prompt__content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+  border-bottom: 1px solid #374151;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.av-save-prompt__icon {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.av-save-prompt__icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.av-save-prompt__text {
+  flex: 1;
+  min-width: 0;
+}
+
+.av-save-prompt__title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f8f9fa;
+  margin-bottom: 4px;
+}
+
+.av-save-prompt__details {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.av-save-prompt__username {
+  color: #9ca3af;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.av-save-prompt__separator {
+  color: #4b5563;
+}
+
+.av-save-prompt__service-input {
+  flex: 1;
+  min-width: 120px;
+  max-width: 200px;
+  padding: 4px 8px;
+  border: 1px solid #4b5563;
+  border-radius: 4px;
+  background: #374151;
+  color: #f8f9fa;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.av-save-prompt__service-input:focus {
+  border-color: #d68338;
+  box-shadow: 0 0 0 2px rgba(214, 131, 56, 0.2);
+}
+
+.av-save-prompt__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.av-save-prompt__btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.av-save-prompt__btn:hover {
+  transform: translateY(-1px);
+}
+
+.av-save-prompt__btn:active {
+  transform: translateY(0);
+}
+
+.av-save-prompt__btn--save {
+  background: #d68338;
+  color: white;
+}
+
+.av-save-prompt__btn--save:hover {
+  background: #c97731;
+}
+
+.av-save-prompt__btn--never {
+  background: #374151;
+  color: #9ca3af;
+}
+
+.av-save-prompt__btn--never:hover {
+  background: #4b5563;
+  color: #e5e7eb;
+}
+
+.av-save-prompt__btn--dismiss {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  background: transparent;
+  color: #6b7280;
+}
+
+.av-save-prompt__btn--dismiss:hover {
+  background: #374151;
+  color: #9ca3af;
+}
+
+.av-save-prompt__btn--dismiss svg {
+  width: 16px;
+  height: 16px;
+}

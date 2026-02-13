@@ -9,7 +9,7 @@ import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardCl
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision, handleFullVaultSync } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision, handleFullVaultSync, handleCheckLoginDuplicate, handleSaveLoginCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled } from '@/entrypoints/background/VaultMessageHandler';
 
 import { EncryptionKeyDerivationParams } from "@/utils/dist/core/models/metadata";
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
@@ -60,6 +60,12 @@ export default defineBackground({
     onMessage('PERSIST_FORM_VALUES', ({ data }) => handlePersistFormValues(data));
     onMessage('GET_PERSISTED_FORM_VALUES', () => handleGetPersistedFormValues());
     onMessage('CLEAR_PERSISTED_FORM_VALUES', () => handleClearPersistedFormValues());
+
+    // Remember login save messages
+    onMessage('CHECK_LOGIN_DUPLICATE', ({ data }) => handleCheckLoginDuplicate(data as { domain: string; username: string }));
+    onMessage('SAVE_LOGIN_CREDENTIAL', ({ data }) => handleSaveLoginCredential(data as { serviceName: string; username: string; password: string; url: string; domain: string; logoBase64?: string }));
+    onMessage('GET_LOGIN_SAVE_SETTINGS', () => handleGetLoginSaveSettings());
+    onMessage('SET_LOGIN_SAVE_ENABLED', ({ data }) => handleSetLoginSaveEnabled(data as boolean));
 
     // Clipboard management messages
     onMessage('CLIPBOARD_COPIED', () => handleClipboardCopied());

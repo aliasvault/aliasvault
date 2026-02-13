@@ -19,6 +19,14 @@ type AutofillSettingsType = {
 }
 
 /**
+ * Login save settings type.
+ */
+type LoginSaveSettingsType = {
+  isEnabled: boolean;
+  blockedDomains: string[];
+}
+
+/**
  * Autofill settings page component.
  */
 const AutofillSettings: React.FC = () => {
@@ -32,6 +40,10 @@ const AutofillSettings: React.FC = () => {
     isGloballyEnabled: true
   });
   const [autofillMatchingMode, setAutofillMatchingMode] = useState<AutofillMatchingMode>(AutofillMatchingMode.DEFAULT);
+  const [loginSaveSettings, setLoginSaveSettings] = useState<LoginSaveSettingsType>({
+    isEnabled: false,
+    blockedDomains: []
+  });
 
   /**
    * Get current tab in browser.
@@ -67,6 +79,14 @@ const AutofillSettings: React.FC = () => {
     // Load autofill matching mode
     const matchingModeValue = await LocalPreferencesService.getAutofillMatchingMode();
     setAutofillMatchingMode(matchingModeValue);
+
+    // Load login save settings
+    const loginSaveEnabled = await LocalPreferencesService.getLoginSaveEnabled();
+    const loginSaveBlockedDomains = await LocalPreferencesService.getLoginSaveBlockedDomains();
+    setLoginSaveSettings({
+      isEnabled: loginSaveEnabled,
+      blockedDomains: loginSaveBlockedDomains
+    });
 
     setSettings({
       disabledUrls,
@@ -152,6 +172,41 @@ const AutofillSettings: React.FC = () => {
     setAutofillMatchingMode(mode);
   };
 
+  /**
+   * Toggle login save feature.
+   */
+  const toggleLoginSave = async () : Promise<void> => {
+    const newEnabled = !loginSaveSettings.isEnabled;
+    await LocalPreferencesService.setLoginSaveEnabled(newEnabled);
+    setLoginSaveSettings(prev => ({
+      ...prev,
+      isEnabled: newEnabled
+    }));
+  };
+
+  /**
+   * Remove a domain from the blocked list.
+   */
+  const removeBlockedDomain = async (domain: string) : Promise<void> => {
+    const newBlockedDomains = loginSaveSettings.blockedDomains.filter(d => d !== domain);
+    await LocalPreferencesService.setLoginSaveBlockedDomains(newBlockedDomains);
+    setLoginSaveSettings(prev => ({
+      ...prev,
+      blockedDomains: newBlockedDomains
+    }));
+  };
+
+  /**
+   * Clear all blocked domains.
+   */
+  const clearAllBlockedDomains = async () : Promise<void> => {
+    await LocalPreferencesService.setLoginSaveBlockedDomains([]);
+    setLoginSaveSettings(prev => ({
+      ...prev,
+      blockedDomains: []
+    }));
+  };
+
   return (
     <div className="space-y-6">
       {/* Global Settings Section */}
@@ -177,6 +232,58 @@ const AutofillSettings: React.FC = () => {
                 {settings.isGloballyEnabled ? t('common.enabled') : t('common.disabled')}
               </button>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Login Save Settings Section */}
+      <section>
+        <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('settings.loginSave.title')}</h3>
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <div className="p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900 dark:text-white">{t('settings.loginSave.title')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.loginSave.description')}</p>
+              </div>
+              <button
+                onClick={toggleLoginSave}
+                className={`px-4 py-2 rounded-md transition-colors ${
+                  loginSaveSettings.isEnabled
+                    ? 'bg-green-500 hover:bg-green-600 text-white'
+                    : 'bg-red-500 hover:bg-red-600 text-white'
+                }`}
+              >
+                {loginSaveSettings.isEnabled ? t('common.enabled') : t('common.disabled')}
+              </button>
+            </div>
+
+            {/* Blocked domains list */}
+            {loginSaveSettings.blockedDomains.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <p className="font-medium text-gray-900 dark:text-white mb-2">{t('settings.loginSave.blockedSites')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('settings.loginSave.blockedSitesDescription')}</p>
+                <ul className="space-y-2">
+                  {loginSaveSettings.blockedDomains.map((domain) => (
+                    <li key={domain} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
+                      <span className="text-sm text-gray-900 dark:text-white truncate">{domain}</span>
+                      <button
+                        onClick={() => removeBlockedDomain(domain)}
+                        className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
+                      >
+                        {t('settings.loginSave.removeBlockedSite')}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={clearAllBlockedDomains}
+                  className="w-full mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
+                >
+                  {t('settings.loginSave.clearAllBlockedSites')}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </section>

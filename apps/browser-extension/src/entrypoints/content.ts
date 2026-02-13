@@ -1,20 +1,205 @@
 /**
- * Content script entry point - handles autofill UI and WebAuthn passkey interception
+ * Content script entry point - handles autofill UI, login detection, and WebAuthn passkey interception
  */
 
 import '@/entrypoints/contentScript/style.css';
-import { onMessage } from "webext-bridge/content-script";
+import { onMessage, sendMessage } from "webext-bridge/content-script";
 
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { isAutoShowPopupEnabled, openAutofillPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
+import { showSavePrompt, isSavePromptVisible } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { FormDetector } from '@/utils/formDetector/FormDetector';
+import { LoginDetector } from '@/utils/loginDetector';
+import type { CapturedLogin } from '@/utils/loginDetector';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 
 import { t } from '@/i18n/StandaloneI18n';
 
 import { defineContentScript, createShadowRootUi, storage } from '#imports';
+
+/** Global login detector instance */
+let loginDetector: LoginDetector | null = null;
+
+/**
+ * Handle save login request from the save prompt.
+ * Sends the captured credentials to the background script to save to the vault.
+ * @param login - The captured login credentials.
+ * @param serviceName - The user-specified service name.
+ */
+async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promise<void> {
+  console.debug('[AliasVault] Save requested:', {
+    serviceName,
+    username: login.username,
+    domain: login.domain,
+    hasFavicon: !!login.faviconUrl,
+  });
+
+  try {
+    const response = await sendMessage('SAVE_LOGIN_CREDENTIAL', {
+      serviceName,
+      username: login.username,
+      password: login.password,
+      url: login.url,
+      domain: login.domain,
+      faviconUrl: login.faviconUrl,
+    }, 'background') as { success: boolean; itemId?: string; error?: string };
+
+    if (response.success) {
+      console.debug('[AliasVault] Login saved successfully, itemId:', response.itemId);
+    } else {
+      console.error('[AliasVault] Failed to save login:', response.error);
+    }
+  } catch (error) {
+    console.error('[AliasVault] Error saving login:', error);
+  }
+}
+
+/**
+ * Handle "never save for this domain" request from the save prompt.
+ * @param domain - The domain to block from future save prompts.
+ */
+async function handleNeverSaveForDomain(domain: string): Promise<void> {
+  console.debug('[AliasVault] Never save for domain:', domain);
+
+  // Store the blocked domain in local storage
+  try {
+    const blockedDomains = await storage.getItem('local:loginSaveBlockedDomains') as string[] ?? [];
+    if (!blockedDomains.includes(domain)) {
+      blockedDomains.push(domain);
+      await storage.setItem('local:loginSaveBlockedDomains', blockedDomains);
+    }
+  } catch (error) {
+    console.error('[AliasVault] Error saving blocked domain:', error);
+  }
+}
+
+/**
+ * Handle save prompt dismissal.
+ */
+function handleSavePromptDismiss(): void {
+  console.debug('[AliasVault] Save prompt dismissed');
+}
+
+/**
+ * Check if the login save feature is enabled.
+ * @returns Whether the feature is enabled.
+ */
+async function isLoginSaveEnabled(): Promise<boolean> {
+  try {
+    const response = await sendMessage('GET_LOGIN_SAVE_SETTINGS', {}, 'background') as {
+      success: boolean;
+      enabled: boolean;
+      autoDismissSeconds: number;
+    };
+    return response.success && response.enabled;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if the domain is blocked from save prompts.
+ * @param domain - The domain to check.
+ * @returns Whether the domain is blocked.
+ */
+async function isDomainBlocked(domain: string): Promise<boolean> {
+  try {
+    const blockedDomains = await storage.getItem('local:loginSaveBlockedDomains') as string[] ?? [];
+    return blockedDomains.includes(domain);
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if the login already exists in the vault.
+ * @param domain - The domain of the login.
+ * @param username - The username of the login.
+ * @returns Whether a duplicate exists.
+ */
+async function isLoginDuplicate(domain: string, username: string): Promise<boolean> {
+  try {
+    const response = await sendMessage('CHECK_LOGIN_DUPLICATE', {
+      domain,
+      username,
+    }, 'background') as { success: boolean; isDuplicate: boolean };
+    return response.success && response.isDuplicate;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Initialize the login detector to capture form submissions.
+ * When a login is detected that's not in the vault, we can offer to save it.
+ */
+function initializeLoginDetector(container: HTMLElement): void {
+  // Clean up any existing detector
+  if (loginDetector) {
+    loginDetector.destroy();
+  }
+
+  loginDetector = new LoginDetector(document);
+  loginDetector.initialize();
+
+  loginDetector.onLoginCapture(async (login: CapturedLogin) => {
+    console.debug('[AliasVault] Login detected:', {
+      username: login.username,
+      domain: login.domain,
+      suggestedName: login.suggestedName,
+      hasPassword: !!login.password,
+    });
+
+    // Check if the feature is enabled
+    if (!await isLoginSaveEnabled()) {
+      console.debug('[AliasVault] Login save feature is disabled');
+      return;
+    }
+
+    // Check if a save prompt is already visible
+    if (isSavePromptVisible()) {
+      console.debug('[AliasVault] Save prompt already visible, skipping');
+      return;
+    }
+
+    // Check if the domain is blocked
+    if (await isDomainBlocked(login.domain)) {
+      console.debug('[AliasVault] Domain is blocked from save prompts');
+      return;
+    }
+
+    // Check if the login already exists in the vault
+    if (await isLoginDuplicate(login.domain, login.username)) {
+      console.debug('[AliasVault] Login already exists in vault, skipping save prompt');
+      return;
+    }
+
+    // Get auto-dismiss settings
+    let autoDismissMs = 15000;
+    try {
+      const settings = await sendMessage('GET_LOGIN_SAVE_SETTINGS', {}, 'background') as {
+        success: boolean;
+        autoDismissSeconds: number;
+      };
+      if (settings.success) {
+        autoDismissMs = settings.autoDismissSeconds * 1000;
+      }
+    } catch {
+      // Use default
+    }
+
+    // Show save prompt to offer saving the credentials
+    showSavePrompt(container, {
+      login,
+      onSave: handleSaveLogin,
+      onNeverSave: handleNeverSaveForDomain,
+      onDismiss: handleSavePromptDismiss,
+      autoDismissMs,
+    });
+  });
+}
 
 export default defineContentScript({
   matches: ['<all_urls>'],
@@ -116,6 +301,9 @@ export default defineContentScript({
 
           removeExistingPopup(container);
         });
+
+        // Initialize login detector to capture form submissions
+        initializeLoginDetector(container);
 
         // Listen for messages from the background script
         onMessage('OPEN_AUTOFILL_POPUP', async (message: { data: { elementIdentifier: string } }) : Promise<messageBoolResponse> => {

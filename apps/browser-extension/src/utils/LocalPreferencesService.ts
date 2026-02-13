@@ -31,6 +31,11 @@ const KEYS = {
   SHOW_FOLDERS: 'local:aliasvault_show_folders',
   AUTO_CLOSE_UNLOCK_POPUP: 'local:aliasvault_auto_close_unlock_popup',
 
+  // Login save feature
+  LOGIN_SAVE_ENABLED: 'local:loginSaveEnabled',
+  LOGIN_SAVE_AUTO_DISMISS_SECONDS: 'local:loginSaveAutoDismissSeconds',
+  LOGIN_SAVE_BLOCKED_DOMAINS: 'local:loginSaveBlockedDomains',
+
   // Session/Navigation state
   PENDING_REDIRECT_URL: 'session:pendingRedirectUrl',
   SKIP_FORM_RESTORE: 'local:aliasvault_skip_form_restore',
@@ -356,5 +361,59 @@ export const LocalPreferencesService = {
    */
   async setSkipFormRestore(skip: boolean): Promise<void> {
     await storage.setItem(KEYS.SKIP_FORM_RESTORE, skip);
+  },
+
+  /*
+   * ============================================
+   * Remember Login Save Feature Settings
+   * ============================================
+   */
+
+  /**
+   * Get whether the login save feature is enabled.
+   * @returns Whether login save is enabled. Defaults to false (disabled by default).
+   */
+  async getLoginSaveEnabled(): Promise<boolean> {
+    const value = await storage.getItem(KEYS.LOGIN_SAVE_ENABLED) as boolean | null;
+    return value === true;
+  },
+
+  /**
+   * Set whether the login save feature is enabled.
+   */
+  async setLoginSaveEnabled(enabled: boolean): Promise<void> {
+    await storage.setItem(KEYS.LOGIN_SAVE_ENABLED, enabled);
+  },
+
+  /**
+   * Get the auto-dismiss timeout for the login save prompt in seconds.
+   * @returns Timeout in seconds. Defaults to 15.
+   */
+  async getLoginSaveAutoDismissSeconds(): Promise<number> {
+    const value = await storage.getItem(KEYS.LOGIN_SAVE_AUTO_DISMISS_SECONDS) as number | null;
+    return value ?? 15;
+  },
+
+  /**
+   * Set the auto-dismiss timeout for the login save prompt in seconds.
+   */
+  async setLoginSaveAutoDismissSeconds(seconds: number): Promise<void> {
+    await storage.setItem(KEYS.LOGIN_SAVE_AUTO_DISMISS_SECONDS, seconds);
+  },
+
+  /**
+   * Get the list of blocked domains for login save.
+   * @returns Array of blocked domain URLs. Defaults to empty array.
+   */
+  async getLoginSaveBlockedDomains(): Promise<string[]> {
+    const value = await storage.getItem(KEYS.LOGIN_SAVE_BLOCKED_DOMAINS) as string[] | null;
+    return value ?? [];
+  },
+
+  /**
+   * Set the list of blocked domains for login save.
+   */
+  async setLoginSaveBlockedDomains(domains: string[]): Promise<void> {
+    await storage.setItem(KEYS.LOGIN_SAVE_BLOCKED_DOMAINS, domains);
   },
 };

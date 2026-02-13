@@ -12,9 +12,11 @@ import { AppErrorCode, formatErrorWithCode } from '@/utils/types/errors/AppError
 import { NetworkError } from '@/utils/types/errors/NetworkError';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
+import type { DuplicateCheckResponse } from '@/utils/types/messaging/DuplicateCheckResponse';
 import { IdentitySettingsResponse } from '@/utils/types/messaging/IdentitySettingsResponse';
 import { ItemsResponse as messageItemsResponse } from '@/utils/types/messaging/ItemsResponse';
 import { PasswordSettingsResponse as messagePasswordSettingsResponse } from '@/utils/types/messaging/PasswordSettingsResponse';
+import type { SaveLoginResponse } from '@/utils/types/messaging/SaveLoginResponse';
 import { StringResponse as stringResponse } from '@/utils/types/messaging/StringResponse';
 import { VaultResponse as messageVaultResponse } from '@/utils/types/messaging/VaultResponse';
 import { VaultUploadResponse as messageVaultUploadResponse } from '@/utils/types/messaging/VaultUploadResponse';
@@ -1215,5 +1217,268 @@ export async function handleFullVaultSync(): Promise<FullVaultSyncResult> {
       ? baseMessage
       : formatErrorWithCode(baseMessage, AppErrorCode.UNKNOWN_ERROR);
     return { success: false, hasNewVault: false, wasOffline: false, upgradeRequired: false, requiresLogout: false, error: errorMessage };
+  }
+}
+
+/**
+ * Check if a login credential already exists in the vault.
+ * Used by the save prompt to avoid offering to save duplicates.
+ *
+ * @param message - The domain and username to check.
+ * @returns Whether a duplicate exists and the matching item info if found.
+ */
+export async function handleCheckLoginDuplicate(
+  message: { domain: string; username: string }
+): Promise<DuplicateCheckResponse> {
+  const encryptionKey = await handleGetEncryptionKey();
+
+  if (!encryptionKey) {
+    return { success: false, isDuplicate: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    const allItems = sqliteClient.items.getAll();
+
+    const { FieldKey } = await import('@/utils/dist/core/models/vault');
+
+    // Find items with matching domain and username
+    const normalizedDomain = message.domain.toLowerCase();
+    const normalizedUsername = message.username.toLowerCase();
+
+    for (const item of allItems) {
+      // Check LoginUrl field for domain match
+      const urlField = item.Fields?.find((f: { FieldKey: string }) => f.FieldKey === FieldKey.LoginUrl);
+      const urlValue = urlField?.Value;
+      if (!urlValue || typeof urlValue !== 'string') {
+        continue;
+      }
+
+      // Extract domain from URL
+      let itemDomain: string;
+      try {
+        const url = new URL(urlValue.startsWith('http') ? urlValue : `https://${urlValue}`);
+        itemDomain = url.hostname.toLowerCase();
+      } catch {
+        // If URL parsing fails, try direct comparison
+        itemDomain = urlValue.toLowerCase();
+      }
+
+      // Check if domains match (including subdomains)
+      const domainsMatch = itemDomain === normalizedDomain ||
+        itemDomain.endsWith(`.${normalizedDomain}`) ||
+        normalizedDomain.endsWith(`.${itemDomain}`);
+
+      if (!domainsMatch) {
+        continue;
+      }
+
+      // Check LoginUsername or LoginEmail field for username match
+      const usernameField = item.Fields?.find((f: { FieldKey: string }) => f.FieldKey === FieldKey.LoginUsername);
+      const emailField = item.Fields?.find((f: { FieldKey: string }) => f.FieldKey === FieldKey.LoginEmail);
+
+      const usernameValue = usernameField?.Value;
+      const emailValue = emailField?.Value;
+
+      const itemUsername = (typeof usernameValue === 'string' ? usernameValue : '').toLowerCase();
+      const itemEmail = (typeof emailValue === 'string' ? emailValue : '').toLowerCase();
+
+      if (itemUsername === normalizedUsername || itemEmail === normalizedUsername) {
+        return {
+          success: true,
+          isDuplicate: true,
+          matchingItemId: item.Id,
+          matchingItemName: item.Name ?? undefined
+        };
+      }
+    }
+
+    return { success: true, isDuplicate: false };
+  } catch (error) {
+    console.error('Error checking for duplicate login:', error);
+    return { success: false, isDuplicate: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+  }
+}
+
+/**
+ * Save a captured login credential to the vault.
+ * Creates a new Login item with the provided credentials.
+ *
+ * @param message - The login details to save.
+ * @returns Success status and the new item ID if created.
+ */
+export async function handleSaveLoginCredential(
+  message: {
+    serviceName: string;
+    username: string;
+    password: string;
+    url: string;
+    domain: string;
+    logoBase64?: string;
+    faviconUrl?: string;
+  }
+): Promise<SaveLoginResponse> {
+  const encryptionKey = await handleGetEncryptionKey();
+
+  if (!encryptionKey) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
+  try {
+    const { ItemTypes, FieldKey, createSystemField } = await import('@/utils/dist/core/models/vault');
+
+    const sqliteClient = await createVaultSqliteClient();
+    const currentDateTime = new Date().toISOString();
+
+    // Build fields for the new item
+    const fields = [];
+
+    // Add URL field
+    if (message.url) {
+      fields.push(createSystemField(FieldKey.LoginUrl, { value: message.url }));
+    }
+
+    // Add username field
+    if (message.username) {
+      // Check if username looks like an email
+      if (message.username.includes('@')) {
+        fields.push(createSystemField(FieldKey.LoginEmail, { value: message.username }));
+      } else {
+        fields.push(createSystemField(FieldKey.LoginUsername, { value: message.username }));
+      }
+    }
+
+    // Add password field
+    if (message.password) {
+      fields.push(createSystemField(FieldKey.LoginPassword, { value: message.password }));
+    }
+
+    // Get logo from base64, favicon URL, or undefined
+    let logo: Uint8Array | undefined;
+
+    // First try direct base64 if provided
+    if (message.logoBase64) {
+      try {
+        const binaryString = atob(message.logoBase64);
+        const bytes = new Uint8Array(binaryString.length);
+        for (let i = 0; i < binaryString.length; i++) {
+          bytes[i] = binaryString.charCodeAt(i);
+        }
+        logo = bytes;
+      } catch {
+        // Logo decode failed, continue without logo
+      }
+    }
+
+    // If no direct logo, try fetching from favicon URL
+    if (!logo && message.faviconUrl) {
+      logo = await fetchFaviconAsBytes(message.faviconUrl);
+    }
+
+    // Create the new item
+    const newItem: Item = {
+      Id: '', // Will be generated by SQLite
+      Name: message.serviceName || message.domain,
+      ItemType: ItemTypes.Login,
+      Logo: logo,
+      Fields: fields,
+      CreatedAt: currentDateTime,
+      UpdatedAt: currentDateTime
+    };
+
+    // Add the item to the vault
+    await sqliteClient.items.create(newItem, [], []);
+
+    // Upload the updated vault to the server
+    await uploadNewVaultToServer(sqliteClient);
+
+    return { success: true, itemId: newItem.Id };
+  } catch (error) {
+    console.error('Failed to save login credential:', error);
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_CREATE_FAILED) };
+  }
+}
+
+/**
+ * Fetch a favicon from a URL and return it as a Uint8Array.
+ * Returns undefined if the fetch fails or returns an invalid response.
+ */
+async function fetchFaviconAsBytes(url: string): Promise<Uint8Array | undefined> {
+  try {
+    const response = await fetch(url, {
+      method: 'GET',
+      credentials: 'omit',
+      cache: 'force-cache',
+    });
+
+    if (!response.ok) {
+      return undefined;
+    }
+
+    // Check content type - should be an image
+    const contentType = response.headers.get('content-type');
+    if (contentType && !contentType.startsWith('image/')) {
+      return undefined;
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+
+    // Sanity check: favicon should be reasonably sized (< 1MB)
+    if (arrayBuffer.byteLength > 1024 * 1024) {
+      return undefined;
+    }
+
+    // Minimum size check - valid images should have some content
+    if (arrayBuffer.byteLength < 10) {
+      return undefined;
+    }
+
+    return new Uint8Array(arrayBuffer);
+  } catch {
+    // Fetch failed (network error, CORS, etc.)
+    return undefined;
+  }
+}
+
+/**
+ * Get the login save feature settings.
+ * Returns whether the feature is enabled and auto-dismiss timeout.
+ */
+export async function handleGetLoginSaveSettings(): Promise<{
+  success: boolean;
+  enabled: boolean;
+  autoDismissSeconds: number;
+  error?: string;
+}> {
+  try {
+    // Default to disabled (feature flag - can enable once tested)
+    const enabled = await storage.getItem('local:loginSaveEnabled') ?? false;
+    const autoDismissSeconds = await storage.getItem('local:loginSaveAutoDismissSeconds') ?? 15;
+
+    return {
+      success: true,
+      enabled: enabled as boolean,
+      autoDismissSeconds: autoDismissSeconds as number
+    };
+  } catch (error) {
+    console.error('Error getting login save settings:', error);
+    return { success: false, enabled: false, autoDismissSeconds: 15, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_READ_FAILED) };
+  }
+}
+
+/**
+ * Set the login save feature enabled state.
+ *
+ * @param enabled - Whether the feature should be enabled.
+ */
+export async function handleSetLoginSaveEnabled(
+  enabled: boolean
+): Promise<messageBoolResponse> {
+  try {
+    await storage.setItem('local:loginSaveEnabled', enabled);
+    return { success: true };
+  } catch (error) {
+    console.error('Error setting login save enabled:', error);
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_WRITE_FAILED) };
   }
 }
