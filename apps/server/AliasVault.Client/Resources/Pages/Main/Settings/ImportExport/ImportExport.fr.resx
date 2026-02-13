@@ -129,7 +129,7 @@
     <comment>Error message when password verification fails</comment>
   </data>
   <data name="PasswordVerificationFailed" xml:space="preserve">
-    <value>An error occurred while verifying your password. Please try again.</value>
+    <value>Une erreur s'est produite lors de la vérification de votre mot de passe. Veuillez réessayer.</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
 </root>
