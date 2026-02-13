@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Acum poți folosi completarea automată pentru câmpurile cu date de autentificare în browserul tău.",
     "closePopup": "Închide această fereastră",
     "browseVault": "Răsfoiește conținutul seifului",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Conectare la",
     "switchAccounts": "Treci la alt cont?",
     "loginWithMobile": "Autentificare prin aplicația mobilă",
