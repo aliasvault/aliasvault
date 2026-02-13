@@ -121,7 +121,7 @@
     <comment>Description for password confirmation modal during export</comment>
   </data>
   <data name="VerifyingPasswordMessage" xml:space="preserve">
-    <value>Verifying password...</value>
+    <value>Verifierar lösenord...</value>
     <comment>Message shown while verifying password</comment>
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
