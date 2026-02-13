@@ -179,6 +179,11 @@
     "exporting": "Se exportă...",
     "exportConfirmTitle": "Export Seif",
     "exportWarning": "Atenție: Exportul seifului într-un fișier necriptat va expune toate parolele în text clar. Fă acest lucru doar pe dispozitive de încredere și asigură-te că:\n\n• Stochezi fișierul într-un loc sigur\n• Ștergi fișierul imediat ce nu mai ai nevoie de el\n• Nu partajezi niciodată fișierul cu alții\n\nSigur dorești să continui exportul?",
+    "passwordConfirm": {
+      "title": "Confirm Password",
+      "defaultDescription": "Please enter your master password to continue.",
+      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+    },
     "security": "Securitate",
     "appVersion": "Versiune aplicație {{version}} ({{url}})",
     "autoLockOptions": {
