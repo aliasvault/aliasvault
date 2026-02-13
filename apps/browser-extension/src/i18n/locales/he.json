@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "מעתה ניתן להשתמש בהשלמה אוטומטית בטופסי כניסה בדפדפן שלך.",
     "closePopup": "סגירת החלונית הצצה הזאת",
     "browseVault": "עיון בתוכן הכספת",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "מתבצעת התחברות אל",
     "switchAccounts": "להחליף חשבונות?",
     "loginWithMobile": "Log in using Mobile App",
