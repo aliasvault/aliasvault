@@ -113,19 +113,19 @@
     <comment>Reset vault section description</comment>
   </data>
   <data name="ExportPasswordConfirmTitle" xml:space="preserve">
-    <value>Confirm Export</value>
+    <value>Confirmer l’exportation</value>
     <comment>Title for password confirmation modal during export</comment>
   </data>
   <data name="ExportPasswordConfirmDescription" xml:space="preserve">
-    <value>For security reasons, please enter your master password to confirm this export.</value>
+    <value>Pour des raisons de sécurité, veuillez entrer votre mot de passe maître pour confirmer l'exportation.</value>
     <comment>Description for password confirmation modal during export</comment>
   </data>
   <data name="VerifyingPasswordMessage" xml:space="preserve">
-    <value>Verifying password...</value>
+    <value>Vérification du mot de passe...</value>
     <comment>Message shown while verifying password</comment>
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
-    <value>The password you entered is incorrect. Please try again.</value>
+    <value>Le mot de passe que vous avez entré est incorrect. Veuillez réessayer.</value>
     <comment>Error message when password verification fails</comment>
   </data>
   <data name="PasswordVerificationFailed" xml:space="preserve">
