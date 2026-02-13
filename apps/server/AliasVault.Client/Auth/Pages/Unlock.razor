@@ -384,8 +384,8 @@ else
         {
             await StatusCheck();
 
-            // Revoke existing tokens
-            await AuthService.RemoveTokensAsync();
+            // Revoke only the current specific token before setting new ones.
+            await AuthService.RevokeCurrentTokenAsync();
 
             // Store the new tokens
             await AuthService.StoreAccessTokenAsync(result.Token);

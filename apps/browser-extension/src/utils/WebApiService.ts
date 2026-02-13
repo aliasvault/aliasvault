@@ -200,6 +200,7 @@ export class WebApiService {
 
   /**
    * Revoke tokens via WebApi called when logging out.
+   * This revokes all tokens for the current device.
    */
   public async revokeTokens(): Promise<void> {
     // Revoke tokens via WebApi.
@@ -213,6 +214,26 @@ export class WebApiService {
       }
     } catch (err) {
       console.error('WebApi revoke tokens error:', err);
+    }
+  }
+
+  /**
+   * Revoke only the current specific token via WebApi.
+   * Unlike revokeTokens(), this does NOT revoke other sessions for the same device.
+   * Used for mobile unlock flow where we want to replace the current session without
+   * affecting other browser sessions.
+   */
+  public async revokeCurrentTokens(): Promise<void> {
+    try {
+      const refreshToken = await this.getRefreshToken();
+      if (refreshToken) {
+        await this.post('Auth/revoke-token', {
+          token: await this.getAccessToken(),
+          refreshToken: refreshToken,
+        }, false);
+      }
+    } catch (err) {
+      console.error('WebApi revoke current token error:', err);
     }
   }
 

@@ -472,8 +472,11 @@ const Unlock: React.FC = () => {
   const handleMobileUnlockSuccess = async (result: MobileLoginResult): Promise<void> => {
     showLoading();
     try {
-      // Revoke current tokens before setting new ones (since we're already logged in)
-      await webApi.revokeTokens();
+      /*
+       * Revoke the old refresh token (from existing logged in session) before setting new ones
+       * that we get from the mobile login request.
+       */
+      await webApi.revokeCurrentTokens();
 
       // Set new auth tokens
       await authContext.setAuthTokens(result.username, result.token, result.refreshToken);

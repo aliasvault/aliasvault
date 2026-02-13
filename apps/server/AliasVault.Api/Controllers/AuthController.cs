@@ -367,7 +367,7 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
     }
 
     /// <summary>
-    /// Revoke endpoint used to revoke a refresh token.
+    /// Revoke endpoint used to revoke all refresh tokens for the current device.
     /// </summary>
     /// <param name="model">Token model.</param>
     /// <returns>IActionResult.</returns>
@@ -403,6 +403,41 @@ public class AuthController(IAliasServerDbContextFactory dbContextFactory, UserM
         await context.SaveChangesAsync();
 
         await authLoggingService.LogAuthEventSuccessAsync(user.UserName!, AuthEventType.Logout);
+        return Ok();
+    }
+
+    /// <summary>
+    /// Revoke endpoint used to revoke only a specific refresh token (not all device tokens).
+    /// This is useful for scenarios like mobile unlock where we want to revoke the old token
+    /// before receiving a new one, without affecting other sessions.
+    /// </summary>
+    /// <param name="model">Token model.</param>
+    /// <returns>IActionResult.</returns>
+    [HttpPost("revoke-token")]
+    public async Task<IActionResult> RevokeToken([FromBody] TokenModel model)
+    {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+
+        // If the refresh token is not provided, return bad request.
+        if (string.IsNullOrWhiteSpace(model.RefreshToken))
+        {
+            return BadRequest(ApiErrorCodeHelper.CreateErrorResponse(ApiErrorCode.REFRESH_TOKEN_REQUIRED, 400));
+        }
+
+        // Look up the refresh token directly.
+        var refreshTokenEntry = await context.AliasVaultUserRefreshTokens.Include(t => t.User).FirstOrDefaultAsync(t => t.Value == model.RefreshToken);
+
+        if (refreshTokenEntry == null)
+        {
+            // Token doesn't exist - could already be revoked or never existed.
+            // Return success to avoid leaking information about token validity.
+            return Ok();
+        }
+
+        // Remove only the specific token, not other device tokens
+        context.AliasVaultUserRefreshTokens.Remove(refreshTokenEntry);
+        await context.SaveChangesAsync();
+
         return Ok();
     }
 

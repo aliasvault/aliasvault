@@ -374,7 +374,33 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     }
 
     /// <summary>
+    /// Revokes only the current specific token on the server asynchronously.
+    /// Unlike RemoveTokensAsync/RevokeTokenAsync, this does NOT revoke other sessions for the same device.
+    /// Used for mobile unlock flow where we want to replace the current session without
+    /// affecting other browser sessions.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task RevokeCurrentTokenAsync()
+    {
+        var tokenInput = new TokenModel
+        {
+            Token = await GetAccessTokenAsync(),
+            RefreshToken = await GetRefreshTokenAsync(),
+        };
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "v1/Auth/revoke-token")
+        {
+            Content = JsonContent.Create(tokenInput),
+        };
+
+        // Add the X-Ignore-Failure header to the request so any failure does not trigger another refresh token request.
+        request.Headers.Add("X-Ignore-Failure", "true");
+        await httpClient.SendAsync(request);
+    }
+
+    /// <summary>
     /// Revokes the access and refresh tokens on the server asynchronously.
+    /// This revokes all tokens for the current device.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task RevokeTokenAsync()
