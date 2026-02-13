@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "现在您可以在浏览器的登录表单中使用自动填充功能了。",
     "closePopup": "关闭此弹窗",
     "browseVault": "浏览密码库内容",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "正在连接",
     "switchAccounts": "切换账户？",
     "loginWithMobile": "使用移动应用登录",
