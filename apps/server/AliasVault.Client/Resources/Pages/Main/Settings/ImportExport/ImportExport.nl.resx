@@ -113,23 +113,23 @@ Weet je zeker dat je wilt doorgaan met de export?</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ExportPasswordConfirmTitle" xml:space="preserve">
-    <value>Confirm Export</value>
+    <value>Export bevestigen</value>
     <comment>Title for password confirmation modal during export</comment>
   </data>
   <data name="ExportPasswordConfirmDescription" xml:space="preserve">
-    <value>For security reasons, please enter your master password to confirm this export.</value>
+    <value>Om veiligheidsredenen moet je je hoofdwachtwoord invoeren om deze export te bevestigen.</value>
     <comment>Description for password confirmation modal during export</comment>
   </data>
   <data name="VerifyingPasswordMessage" xml:space="preserve">
-    <value>Verifying password...</value>
+    <value>Wachtwoord verifiëren...</value>
     <comment>Message shown while verifying password</comment>
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
-    <value>The password you entered is incorrect. Please try again.</value>
+    <value>Het ingevoerde wachtwoord is onjuist. Probeer het opnieuw.</value>
     <comment>Error message when password verification fails</comment>
   </data>
   <data name="PasswordVerificationFailed" xml:space="preserve">
-    <value>An error occurred while verifying your password. Please try again.</value>
+    <value>Er is een fout opgetreden tijdens het verifiëren van je wachtwoord. Probeer het opnieuw.</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
 </root>
