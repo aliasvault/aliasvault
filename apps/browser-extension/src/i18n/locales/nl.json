@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Je kunt nu automatisch invullen gebruiken in inlogformulieren in je browser.",
     "closePopup": "Sluit deze popup",
     "browseVault": "Bekijk vault inhoud",
+    "autoCloseUnlockPopup": "Automatisch sluiten bij toekomstige logins",
+    "closingIn": "Sluiten in {{seconds}}s...",
     "connectingTo": "Verbinden met",
     "switchAccounts": "Wisselen van account?",
     "loginWithMobile": "Log in via de mobiele app",
