@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Du kannst jetzt die Autofill-Funktion in Anmeldeformularen in Deinem Browser nutzen.",
     "closePopup": "Popup schließen",
     "browseVault": "Tresor durchsuchen",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Verbinde zu",
     "switchAccounts": "Konto wechseln?",
     "loginWithMobile": "Mit mobiler App anmelden",
