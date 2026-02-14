@@ -42,6 +42,7 @@
     "error": "Erreur",
     "cancel": "Annuler",
     "confirm": "Confirmer",
+    "remove": "Remove",
     "back": "Retour",
     "next": "Suivant",
     "use": "Utiliser",
@@ -53,6 +54,7 @@
     "create": "Créer",
     "or": "Ou",
     "close": "Fermer",
+    "dismiss": "Dismiss",
     "logout": "Déconnexion",
     "copied": "Copié !",
     "openInNewWindow": "Ouvrir dans une nouvelle fenêtre",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Mot de passe copié dans le presse-papiers",
     "openAliasVaultToUpgrade": "Ouvrez AliasVault pour améliorer",
     "vaultUpgradeRequired": "Mise à niveau du coffre requise.",
-    "dismissPopup": "Fermer"
+    "dismissPopup": "Fermer",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Éléments",
@@ -350,6 +356,11 @@
     "disabledForThisSite": "Désactivé pour ce site",
     "temporarilyDisabledUntil": "Temporairement désactivé jusqu'au ",
     "resetAllSiteSettings": "Réinitialiser tous les paramètres spécifiques au site",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Apparence",
     "theme": "Thème",
     "useDefault": "Utiliser par défaut",
@@ -417,6 +428,13 @@
         "male": "Homme",
         "female": "Femme"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Méthode de déverrouillage du coffre",
