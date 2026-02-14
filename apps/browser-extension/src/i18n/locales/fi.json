@@ -42,6 +42,7 @@
     "error": "Virhe",
     "cancel": "Peruuta",
     "confirm": "Vahvista",
+    "remove": "Remove",
     "back": "Takaisin",
     "next": "Seuraava",
     "use": "Käytä",
@@ -53,6 +54,7 @@
     "create": "Luo",
     "or": "Tai",
     "close": "Sulje",
+    "dismiss": "Dismiss",
     "logout": "Uloskirjautuminen",
     "copied": "Kopioitu!",
     "openInNewWindow": "Avaa uudessa ikkunassa",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Salasana kopioitu leikepöydälle",
     "openAliasVaultToUpgrade": "Avaa AliasVault päivittääksesi",
     "vaultUpgradeRequired": "Holvin päivitys vaaditaan.",
-    "dismissPopup": "Hylkää ponnahdusikkuna"
+    "dismissPopup": "Hylkää ponnahdusikkuna",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Tiedot",
@@ -350,6 +356,11 @@
     "disabledForThisSite": "Poistettu käytöstä tällä sivustolla",
     "temporarilyDisabledUntil": "Väliaikaisesti pois käytöstä, kunnes ",
     "resetAllSiteSettings": "Nollaa kaikki sivustokohtaiset asetukset",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Ulkoasu",
     "theme": "Teema",
     "useDefault": "Käytä oletusta",
@@ -417,6 +428,13 @@
         "male": "Mies",
         "female": "Nainen"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Holvin lukituksen avausmenetelmä",
