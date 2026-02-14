@@ -42,6 +42,7 @@
     "error": "Ошибка",
     "cancel": "Отмена",
     "confirm": "Подтвердить",
+    "remove": "Remove",
     "back": "Назад",
     "next": "Далее",
     "use": "Использовать",
@@ -53,6 +54,7 @@
     "create": "Создать",
     "or": "Или",
     "close": "Закрыть",
+    "dismiss": "Dismiss",
     "logout": "Выйти",
     "copied": "Скопировано!",
     "openInNewWindow": "Открыть в новом окне",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Пароль скопирован в буфер обмена",
     "openAliasVaultToUpgrade": "Откройте AliasVault для обновления",
     "vaultUpgradeRequired": "Требуется обновление хранилища.",
-    "dismissPopup": "Закрыть окно"
+    "dismissPopup": "Закрыть окно",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Записи",
@@ -350,6 +356,11 @@
     "disabledForThisSite": "Отключено для этого сайта",
     "temporarilyDisabledUntil": "Временно отключен до тех пор, пока",
     "resetAllSiteSettings": "Сбросить все настройки для сайтов",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Внешний вид",
     "theme": "Тема",
     "useDefault": "Использовать по умолчанию",
@@ -417,6 +428,13 @@
         "male": "Мужской",
         "female": "Женский"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Способ разблокировки хранилища",
