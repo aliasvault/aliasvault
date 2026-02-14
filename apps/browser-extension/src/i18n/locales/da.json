@@ -42,6 +42,7 @@
     "error": "Fejl",
     "cancel": "Annuller",
     "confirm": "Bekræft",
+    "remove": "Remove",
     "back": "Tilbage",
     "next": "Næste",
     "use": "Brug",
@@ -53,6 +54,7 @@
     "create": "Opret",
     "or": "Eller",
     "close": "Luk",
+    "dismiss": "Dismiss",
     "logout": "Log ud",
     "copied": "Kopieret!",
     "openInNewWindow": "Åbn i nyt vindue",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Adgangskode kopieret til udklipsholder",
     "openAliasVaultToUpgrade": "Åbn AliasVault for at opgradere",
     "vaultUpgradeRequired": "Opgradering af boks påkrævet.",
-    "dismissPopup": "Luk popup"
+    "dismissPopup": "Luk popup",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Elementer",
@@ -350,6 +356,11 @@
     "disabledForThisSite": "Deaktiveret for dette websted",
     "temporarilyDisabledUntil": "Midlertidigt deaktiveret indtil ",
     "resetAllSiteSettings": "Nulstil alle webstedsspecifikke indstillinger",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Udseende",
     "theme": "Tema",
     "useDefault": "Brug standard",
@@ -417,6 +428,13 @@
         "male": "Mand",
         "female": "Kvinde"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Oplåsningsmetode for boks",
