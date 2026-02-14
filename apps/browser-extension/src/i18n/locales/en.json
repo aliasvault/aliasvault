@@ -390,7 +390,6 @@
     "autoLock24Hours": "24 hours",
     "versionPrefix": "Version ",
     "autofillSettings": "Autofill Settings",
-    "loginSaveSettings": "Login Save Settings",
     "clipboardSettings": "Clipboard Settings",
     "contextMenuSettings": "Context Menu Settings",
     "passkeySettings": "Passkey Settings",
@@ -433,8 +432,6 @@
     "loginSave": {
       "title": "Save Login Prompt",
       "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "enabled": "Save login prompt is enabled",
-      "disabled": "Save login prompt is disabled",
       "blockedSites": "Blocked sites",
       "blockedSitesDescription": "Sites where the save prompt will never appear.",
       "clearAllBlockedSites": "Clear all blocked sites"
