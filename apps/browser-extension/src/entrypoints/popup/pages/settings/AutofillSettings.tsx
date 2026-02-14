@@ -28,6 +28,7 @@ type LoginSaveSettingsType = {
 const AutofillSettings: React.FC = () => {
   const { t } = useTranslation();
   const { setIsInitialLoading } = useLoading();
+  const [isLoaded, setIsLoaded] = useState(false);
   const [settings, setSettings] = useState<AutofillSettingsType>({
     disabledUrls: [],
     temporaryDisabledUrls: {},
@@ -77,6 +78,7 @@ const AutofillSettings: React.FC = () => {
       temporaryDisabledUrls: cleanedTemporaryDisabledUrls,
       isGloballyEnabled
     });
+    setIsLoaded(true);
     setIsInitialLoading(false);
   }, [setIsInitialLoading]);
 
@@ -184,6 +186,10 @@ const AutofillSettings: React.FC = () => {
     return permanentCount + temporaryCount;
   };
 
+  if (!isLoaded) {
+    return null;
+  }
+
   return (
     <div className="space-y-6">
       {/* Autofill Popup Settings Section */}
@@ -193,7 +199,7 @@ const AutofillSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">{t('settings.autofillPopup')}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 me-1">{t('settings.autofillPopupDescription')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 me-2">{t('settings.autofillPopupDescription')}</p>
               </div>
               <button
                 onClick={toggleGlobalPopup}
@@ -280,7 +286,7 @@ const AutofillSettings: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">{t('settings.loginSave.title')}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 me-1">{t('settings.loginSave.description')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 me-2">{t('settings.loginSave.description')}</p>
               </div>
               <button
                 onClick={toggleLoginSave}
