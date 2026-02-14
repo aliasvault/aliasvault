@@ -169,7 +169,6 @@
     "dismissPopup": "Dismiss popup",
     "savePrompt": {
       "title": "Save to AliasVault?",
-      "save": "Save",
       "neverForThisSite": "Never for this site",
       "dismiss": "Dismiss"
     }
@@ -438,7 +437,6 @@
       "disabled": "Save login prompt is disabled",
       "blockedSites": "Blocked sites",
       "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "noBlockedSites": "No blocked sites",
       "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {

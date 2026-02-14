@@ -7,7 +7,7 @@ import { onMessage, sendMessage } from "webext-bridge/content-script";
 
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { isAutoShowPopupEnabled, openAutofillPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
-import { showSavePrompt, isSavePromptVisible, updateSavePromptLogin } from '@/entrypoints/contentScript/SavePrompt';
+import { showSavePrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { FormDetector } from '@/utils/formDetector/FormDetector';
@@ -131,6 +131,145 @@ async function isLoginDuplicate(domain: string, username: string): Promise<boole
   }
 }
 
+/** Track if we've already restored the save prompt early */
+let earlyRestoreCompleted = false;
+
+/**
+ * Check for and restore a persisted save prompt immediately on page load.
+ * Creates a temporary shadow root UI if the body is available.
+ * @param ctx - The content script context.
+ */
+async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShadowRootUi>[0]): Promise<void> {
+  try {
+    // First check if there's even state to restore (fast check)
+    const persistedState = await getPersistedSavePromptState();
+    if (!persistedState) {
+      return;
+    }
+
+    console.debug('[AliasVault] Found persisted save prompt state, attempting early restore');
+
+    // Wait for body to be available (poll quickly)
+    let attempts = 0;
+    while (!document.body && attempts < 50) {
+      await new Promise(resolve => setTimeout(resolve, 10));
+      attempts++;
+    }
+
+    if (!document.body || ctx.isInvalid) {
+      return;
+    }
+
+    // Check if the feature is still enabled
+    if (!await isLoginSaveEnabled()) {
+      return;
+    }
+
+    // Check if vault is still unlocked
+    try {
+      const authStatus = await sendMessage('CHECK_AUTH_STATUS', {}, 'background') as {
+        isLoggedIn: boolean;
+        isVaultLocked: boolean;
+      };
+      if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
+        return;
+      }
+    } catch {
+      return;
+    }
+
+    // Check if the domain is now blocked
+    if (await isDomainBlocked(persistedState.domain)) {
+      return;
+    }
+
+    // Create a shadow root UI specifically for the save prompt
+    const ui = await createShadowRootUi(ctx, {
+      name: 'aliasvault-save-prompt',
+      position: 'inline',
+      anchor: 'body',
+      mode: await storage.getItem('local:e2eTestMode') === true ? 'open' : 'closed',
+      /**
+       * Mount handler for early save prompt restore.
+       */
+      onMount(container) {
+        // Restore the save prompt with the remaining time
+        void restoreSavePromptFromState(
+          container,
+          persistedState,
+          handleSaveLogin,
+          handleNeverSaveForDomain,
+          handleSavePromptDismiss
+        );
+        earlyRestoreCompleted = true;
+      },
+    });
+
+    ui.mount();
+  } catch (error) {
+    console.error('[AliasVault] Error in early save prompt restore:', error);
+  }
+}
+
+/**
+ * Check for and restore a persisted save prompt from a previous page navigation.
+ * This handles traditional form submissions that cause page redirects.
+ * @param container - The shadow DOM container to append the prompt to.
+ */
+async function checkAndRestorePersistedSavePrompt(container: HTMLElement): Promise<void> {
+  // Skip if we already restored early
+  if (earlyRestoreCompleted) {
+    return;
+  }
+  try {
+    const persistedState = await getPersistedSavePromptState();
+
+    if (!persistedState) {
+      return;
+    }
+
+    console.debug('[AliasVault] Found persisted save prompt state, checking if we should restore');
+
+    // Check if the feature is still enabled
+    if (!await isLoginSaveEnabled()) {
+      console.debug('[AliasVault] Login save feature is disabled, not restoring prompt');
+      return;
+    }
+
+    // Check if vault is still unlocked
+    try {
+      const authStatus = await sendMessage('CHECK_AUTH_STATUS', {}, 'background') as {
+        isLoggedIn: boolean;
+        isVaultLocked: boolean;
+      };
+      if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
+        console.debug('[AliasVault] Vault is locked or not logged in, not restoring prompt');
+        return;
+      }
+    } catch {
+      console.debug('[AliasVault] Could not check auth status, not restoring prompt');
+      return;
+    }
+
+    // Check if the domain is now blocked
+    if (await isDomainBlocked(persistedState.domain)) {
+      console.debug('[AliasVault] Domain is now blocked, not restoring prompt');
+      return;
+    }
+
+    // Restore the save prompt with the remaining time
+    await restoreSavePromptFromState(
+      container,
+      persistedState,
+      handleSaveLogin,
+      handleNeverSaveForDomain,
+      handleSavePromptDismiss
+    );
+  } catch (error) {
+    console.error('[AliasVault] Error restoring persisted save prompt:', error);
+  }
+}
+
 /**
  * Initialize the login detector to capture form submissions.
  * When a login is detected that's not in the vault, we can offer to save it.
@@ -235,6 +374,12 @@ export default defineContentScript({
     // Initialize WebAuthn interceptor for passkey support
     await initializeWebAuthnInterceptor(ctx);
 
+    /*
+     * Check for persisted save prompt state immediately (before the 750ms delay).
+     * This ensures the save prompt reappears quickly after page navigation.
+     */
+    void checkAndRestoreSavePromptEarly(ctx);
+
     // Wait for 750ms to give the host page time to load and to increase the chance that the body is available and ready.
     await new Promise(resolve => setTimeout(resolve, 750));
 
@@ -320,6 +465,9 @@ export default defineContentScript({
 
         // Initialize login detector to capture form submissions
         initializeLoginDetector(container);
+
+        // Check for persisted save prompt state from previous page navigation
+        void checkAndRestorePersistedSavePrompt(container);
 
         // Listen for messages from the background script
         onMessage('OPEN_AUTOFILL_POPUP', async (message: { data: { elementIdentifier: string } }) : Promise<messageBoolResponse> => {

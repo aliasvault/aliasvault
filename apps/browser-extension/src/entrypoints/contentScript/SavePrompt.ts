@@ -3,8 +3,10 @@
  * Displays a non-intrusive banner at the top of the page when credentials are detected.
  */
 
+import { sendMessage } from 'webext-bridge/content-script';
+
 import { getLogoMarkSvg } from '@/utils/constants/logo';
-import type { CapturedLogin, SavePromptOptions } from '@/utils/loginDetector';
+import type { CapturedLogin, SavePromptOptions, SavePromptPersistedState } from '@/utils/loginDetector';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -13,6 +15,9 @@ let currentPrompt: HTMLElement | null = null;
 
 /** Auto-dismiss timer */
 let autoDismissTimer: number | null = null;
+
+/** Periodic state persistence timer */
+let persistenceTimer: number | null = null;
 
 /** Reference to the countdown bar element */
 let countdownBar: HTMLElement | null = null;
@@ -95,6 +100,14 @@ export async function showSavePrompt(container: HTMLElement, options: SavePrompt
 
   // Set up event listeners
   setupEventListeners(prompt, login, onSave, onNeverSave, onDismiss);
+
+  /*
+   * Persist state immediately so it survives navigation.
+   */
+  await persistSavePromptState();
+
+  // Set up periodic persistence to keep remaining time accurate
+  setupPeriodicPersistence();
 }
 
 /**
@@ -214,11 +227,19 @@ function setupPauseListeners(prompt: HTMLElement): void {
 
 /**
  * Remove the current save prompt.
+ * @param clearPersisted - Whether to also clear the persisted state (default: true).
+ *                         Set to false when restoring from persisted state.
  */
-export function removeSavePrompt(): void {
+export function removeSavePrompt(clearPersisted: boolean = true): void {
   if (autoDismissTimer) {
     clearTimeout(autoDismissTimer);
     autoDismissTimer = null;
+  }
+
+  // Clear persistence timer
+  if (persistenceTimer) {
+    clearInterval(persistenceTimer);
+    persistenceTimer = null;
   }
 
   // Reset countdown state
@@ -232,6 +253,11 @@ export function removeSavePrompt(): void {
   // Reset login state
   currentLogin = null;
   currentOnSave = null;
+
+  // Clear persisted state if user took an action
+  if (clearPersisted) {
+    void clearPersistedSavePromptState();
+  }
 
   // Stop countdown bar animation
   if (countdownBar) {
@@ -254,6 +280,101 @@ export function removeSavePrompt(): void {
  */
 export function isSavePromptVisible(): boolean {
   return currentPrompt !== null;
+}
+
+/**
+ * Restore a save prompt from persisted state.
+ * Used to continue showing the prompt after a page navigation.
+ * @param container - The shadow DOM container to append the prompt to.
+ * @param state - The persisted state to restore from.
+ * @param onSave - Callback when user clicks "Save".
+ * @param onNeverSave - Callback when user clicks "Never for this site".
+ * @param onDismiss - Callback when prompt is dismissed.
+ */
+export async function restoreSavePromptFromState(
+  container: HTMLElement,
+  state: SavePromptPersistedState,
+  onSave: (login: CapturedLogin, serviceName: string) => void,
+  onNeverSave: (domain: string) => void,
+  onDismiss: () => void
+): Promise<void> {
+  // Clear the persisted state now that we're restoring
+  await clearPersistedSavePromptState();
+
+  // Remove any existing prompt first (without clearing persisted state again)
+  removeSavePrompt(false);
+
+  const { login, remainingTimeMs: restoredRemainingTime, initialAutoDismissMs: restoredInitialMs } = state;
+
+  // Store current login and callback so they can be updated
+  currentLogin = login;
+  currentOnSave = onSave;
+
+  // Create prompt element
+  const prompt = document.createElement('div');
+  prompt.className = 'av-save-prompt';
+  prompt.innerHTML = await createPromptHTML(login);
+
+  // Add to container
+  container.appendChild(prompt);
+  currentPrompt = prompt;
+
+  // Trigger slide-in animation
+  requestAnimationFrame(() => {
+    prompt.classList.add('av-save-prompt--visible');
+  });
+
+  // Set up auto-dismiss with the remaining time from persisted state
+  if (restoredRemainingTime > 0) {
+    // Initialize countdown state with remaining time
+    initialAutoDismissMs = restoredInitialMs;
+    currentAutoDismissMs = restoredRemainingTime;
+    remainingTimeMs = restoredRemainingTime;
+    countdownStartTime = Date.now();
+    isAutoDismissPaused = false;
+    onAutoDismissCallback = onDismiss;
+
+    // Create countdown bar and start with adjusted width
+    countdownBar = prompt.querySelector('.av-save-prompt__countdown-bar') as HTMLElement;
+
+    // Calculate what percentage of time is remaining
+    const percentRemaining = (restoredRemainingTime / restoredInitialMs) * 100;
+
+    if (countdownBar) {
+      // Set initial width to reflect remaining time (no transition yet)
+      countdownBar.style.transition = 'none';
+      countdownBar.style.width = `${percentRemaining}%`;
+
+      /*
+       * Use double requestAnimationFrame to ensure the initial width is rendered
+       * before starting the transition. Single rAF can batch with the width set.
+       */
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (countdownBar) {
+            countdownBar.style.transition = `width ${restoredRemainingTime}ms linear`;
+            countdownBar.style.width = '0%';
+          }
+        });
+      });
+    }
+
+    autoDismissTimer = window.setTimeout(() => {
+      removeSavePrompt();
+      onDismiss();
+    }, restoredRemainingTime);
+
+    // Set up hover/focus listeners to pause countdown
+    setupPauseListeners(prompt);
+  }
+
+  // Set up event listeners
+  setupEventListeners(prompt, login, onSave, onNeverSave, onDismiss);
+
+  // Set up periodic persistence for subsequent navigations
+  setupPeriodicPersistence();
+
+  console.debug('[AliasVault] Restored save prompt from persisted state with', restoredRemainingTime, 'ms remaining');
 }
 
 /**
@@ -311,13 +432,16 @@ async function createPromptHTML(login: CapturedLogin): Promise<string> {
   // Create masked password display (show length but not actual characters)
   const maskedPassword = '•'.repeat(Math.min(login.password.length, 12));
 
-  // Get translated strings
+  // Get translated strings (reuse common.save for consistency)
   const titleText = await t('content.savePrompt.title');
-  const saveText = await t('content.savePrompt.save');
+  const saveText = await t('common.save');
   const neverText = await t('content.savePrompt.neverForThisSite');
   const dismissText = await t('content.savePrompt.dismiss');
 
   return `
+    <div class="av-save-prompt__countdown">
+      <div class="av-save-prompt__countdown-bar"></div>
+    </div>
     <div class="av-save-prompt__content">
       <div class="av-save-prompt__icon">
         ${getLogoMarkSvg(24, 24)}
@@ -341,9 +465,6 @@ async function createPromptHTML(login: CapturedLogin): Promise<string> {
           </svg>
         </button>
       </div>
-    </div>
-    <div class="av-save-prompt__countdown">
-      <div class="av-save-prompt__countdown-bar"></div>
     </div>
   `;
 }
@@ -417,4 +538,144 @@ function escapeHtml(text: string): string {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+/**
+ * Calculate the current remaining time for the countdown.
+ * @returns The remaining time in milliseconds, or 0 if expired.
+ */
+function calculateRemainingTime(): number {
+  if (!countdownStartTime || currentAutoDismissMs <= 0) {
+    return 0;
+  }
+
+  if (isAutoDismissPaused) {
+    return remainingTimeMs;
+  }
+
+  const elapsed = Date.now() - countdownStartTime;
+  return Math.max(0, currentAutoDismissMs - elapsed);
+}
+
+/**
+ * Persist the current save prompt state to the background script.
+ * The background script stores this in memory, which survives content script navigation.
+ */
+async function persistSavePromptState(): Promise<void> {
+  if (!currentLogin) {
+    return;
+  }
+
+  // Calculate current remaining time
+  const timeRemaining = calculateRemainingTime();
+
+  // Don't persist if time has expired
+  if (timeRemaining <= 0) {
+    return;
+  }
+
+  const state: SavePromptPersistedState = {
+    login: currentLogin,
+    remainingTimeMs: timeRemaining,
+    initialAutoDismissMs,
+    savedAt: Date.now(),
+    domain: currentLogin.domain,
+  };
+
+  try {
+    await sendMessage('STORE_SAVE_PROMPT_STATE', state, 'background');
+  } catch (error) {
+    console.error('[AliasVault] Error persisting save prompt state:', error);
+  }
+}
+
+/**
+ * Get persisted save prompt state from the background script.
+ * @returns The persisted state if valid, null otherwise.
+ */
+export async function getPersistedSavePromptState(): Promise<SavePromptPersistedState | null> {
+  try {
+    const response = await sendMessage('GET_SAVE_PROMPT_STATE', {}, 'background') as {
+      success: boolean;
+      state: SavePromptPersistedState | null;
+    };
+
+    if (!response.success || !response.state) {
+      return null;
+    }
+
+    const state = response.state;
+
+    // Validate the state is still relevant
+    const currentDomain = window.location.hostname;
+
+    // Check if we're on the same domain (or a related domain after redirect)
+    if (state.domain !== currentDomain) {
+      // Allow if we're on a subdomain or parent domain
+      const isRelatedDomain = currentDomain.endsWith(`.${state.domain}`) ||
+                              state.domain.endsWith(`.${currentDomain}`) ||
+                              // Also allow if they share the same base domain (e.g., login.example.com -> app.example.com)
+                              getBaseDomain(currentDomain) === getBaseDomain(state.domain);
+
+      if (!isRelatedDomain) {
+        console.debug('[AliasVault] Persisted state domain mismatch:', state.domain, 'vs', currentDomain);
+        await clearPersistedSavePromptState();
+        return null;
+      }
+    }
+
+    // The background script already adjusts the remaining time, but check if expired
+    if (state.remainingTimeMs <= 0) {
+      console.debug('[AliasVault] Persisted save prompt timer expired');
+      await clearPersistedSavePromptState();
+      return null;
+    }
+
+    return state;
+  } catch (error) {
+    console.error('[AliasVault] Error reading persisted save prompt state:', error);
+    return null;
+  }
+}
+
+/**
+ * Clear persisted save prompt state from the background script.
+ */
+export async function clearPersistedSavePromptState(): Promise<void> {
+  try {
+    await sendMessage('CLEAR_SAVE_PROMPT_STATE', {}, 'background');
+  } catch (error) {
+    console.error('[AliasVault] Error clearing persisted save prompt state:', error);
+  }
+}
+
+/**
+ * Extract the base domain from a hostname (e.g., "login.example.com" -> "example.com").
+ */
+function getBaseDomain(hostname: string): string {
+  const parts = hostname.split('.');
+  if (parts.length <= 2) {
+    return hostname;
+  }
+  // Return the last two parts (this is a simple heuristic, doesn't handle all TLDs)
+  return parts.slice(-2).join('.');
+}
+
+/**
+ * Set up periodic persistence to keep the remaining time accurate.
+ * This runs every 500ms to update the persisted state with the current remaining time.
+ * This approach is more reliable than beforeunload which may not complete async operations.
+ */
+function setupPeriodicPersistence(): void {
+  // Clear any existing timer
+  if (persistenceTimer) {
+    clearInterval(persistenceTimer);
+  }
+
+  // Persist state every 500ms to keep it fresh
+  persistenceTimer = window.setInterval(() => {
+    if (currentLogin && calculateRemainingTime() > 0) {
+      void persistSavePromptState();
+    }
+  }, 500);
 }
