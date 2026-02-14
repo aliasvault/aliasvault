@@ -347,9 +347,14 @@ export class LoginDetector {
    * Emit login with debouncing to prevent duplicates.
    */
   private emitLoginDebounced(login: CapturedLogin): void {
-    // Check if this is the same login we just captured
+    /*
+     * Check if this is the exact same login we just captured (including password).
+     * We include password in the comparison so that retries with different passwords
+     * are still emitted and can update the save prompt with new credentials.
+     */
     if (this.lastCapturedLogin &&
         this.lastCapturedLogin.username === login.username &&
+        this.lastCapturedLogin.password === login.password &&
         this.lastCapturedLogin.domain === login.domain &&
         Date.now() - this.lastCapturedLogin.timestamp < 5000) {
       // Skip duplicate within 5 seconds

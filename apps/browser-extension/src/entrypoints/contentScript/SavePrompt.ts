@@ -29,6 +29,9 @@ let countdownStartTime = 0;
 /** Current auto-dismiss duration */
 let currentAutoDismissMs = 0;
 
+/** Initial auto-dismiss duration (for resetting) */
+let initialAutoDismissMs = 0;
+
 /** Callback for when auto-dismiss triggers */
 let onAutoDismissCallback: (() => void) | null = null;
 
@@ -70,6 +73,7 @@ export async function showSavePrompt(container: HTMLElement, options: SavePrompt
   // Set up auto-dismiss with countdown bar
   if (autoDismissMs > 0) {
     // Initialize countdown state
+    initialAutoDismissMs = autoDismissMs;
     currentAutoDismissMs = autoDismissMs;
     remainingTimeMs = autoDismissMs;
     countdownStartTime = Date.now();
@@ -157,6 +161,43 @@ function resumeCountdown(): void {
 }
 
 /**
+ * Reset the countdown timer to the initial duration.
+ * Called when new credentials are detected to give user time to review.
+ */
+function resetCountdown(): void {
+  if (initialAutoDismissMs <= 0) {
+    return;
+  }
+
+  // Clear existing timer
+  if (autoDismissTimer) {
+    clearTimeout(autoDismissTimer);
+    autoDismissTimer = null;
+  }
+
+  // Reset countdown state
+  currentAutoDismissMs = initialAutoDismissMs;
+  remainingTimeMs = initialAutoDismissMs;
+  countdownStartTime = Date.now();
+  isAutoDismissPaused = false;
+
+  // Reset and restart countdown bar animation
+  if (countdownBar) {
+    countdownBar.style.transition = 'none';
+    countdownBar.style.width = '100%';
+    // Force reflow to restart animation
+    void countdownBar.offsetWidth;
+    startCountdownAnimation(initialAutoDismissMs);
+  }
+
+  // Set new timer
+  autoDismissTimer = window.setTimeout(() => {
+    removeSavePrompt();
+    onAutoDismissCallback?.();
+  }, initialAutoDismissMs);
+}
+
+/**
  * Set up listeners to pause/resume countdown on hover and focus.
  */
 function setupPauseListeners(prompt: HTMLElement): void {
@@ -185,6 +226,7 @@ export function removeSavePrompt(): void {
   remainingTimeMs = 0;
   countdownStartTime = 0;
   currentAutoDismissMs = 0;
+  initialAutoDismissMs = 0;
   onAutoDismissCallback = null;
 
   // Reset login state
@@ -252,6 +294,9 @@ export function updateSavePromptLogin(login: CapturedLogin): void {
       serviceInput.defaultValue = login.suggestedName;
     }
   }
+
+  // Reset the auto-dismiss timer to give user time to review new credentials
+  resetCountdown();
 
   console.debug('[AliasVault] Updated save prompt with new credentials');
 }

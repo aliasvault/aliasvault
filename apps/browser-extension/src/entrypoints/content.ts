@@ -158,6 +158,21 @@ function initializeLoginDetector(container: HTMLElement): void {
       return;
     }
 
+    // Check if vault is locked
+    try {
+      const authStatus = await sendMessage('CHECK_AUTH_STATUS', {}, 'background') as {
+        isLoggedIn: boolean;
+        isVaultLocked: boolean;
+      };
+      if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
+        console.debug('[AliasVault] Vault is locked or not logged in, skipping save prompt');
+        return;
+      }
+    } catch {
+      console.debug('[AliasVault] Could not check auth status, skipping save prompt');
+      return;
+    }
+
     // Check if a save prompt is already visible - if so, update it with new credentials
     if (isSavePromptVisible()) {
       console.debug('[AliasVault] Save prompt already visible, updating with new credentials');
