@@ -29,13 +29,6 @@ let loginDetector: LoginDetector | null = null;
  * @param serviceName - The user-specified service name.
  */
 async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promise<void> {
-  console.debug('[AliasVault] Save requested:', {
-    serviceName,
-    username: login.username,
-    domain: login.domain,
-    hasFavicon: !!login.faviconUrl,
-  });
-
   try {
     const response = await sendMessage('SAVE_LOGIN_CREDENTIAL', {
       serviceName,
@@ -46,9 +39,7 @@ async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promi
       faviconUrl: login.faviconUrl,
     }, 'background') as { success: boolean; itemId?: string; error?: string };
 
-    if (response.success) {
-      console.debug('[AliasVault] Login saved successfully, itemId:', response.itemId);
-    } else {
+    if (!response.success) {
       console.error('[AliasVault] Failed to save login:', response.error);
     }
   } catch (error) {
@@ -61,8 +52,6 @@ async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promi
  * @param domain - The domain to block from future save prompts.
  */
 async function handleNeverSaveForDomain(domain: string): Promise<void> {
-  console.debug('[AliasVault] Never save for domain:', domain);
-
   // Store the blocked domain in local storage
   try {
     const blockedDomains = await storage.getItem('local:loginSaveBlockedDomains') as string[] ?? [];
@@ -79,7 +68,7 @@ async function handleNeverSaveForDomain(domain: string): Promise<void> {
  * Handle save prompt dismissal.
  */
 function handleSavePromptDismiss(): void {
-  console.debug('[AliasVault] Save prompt dismissed');
+  // No action needed on dismiss
 }
 
 /**
@@ -146,8 +135,6 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
     if (!persistedState) {
       return;
     }
-
-    console.debug('[AliasVault] Found persisted save prompt state, attempting early restore');
 
     // Wait for body to be available (poll quickly)
     let attempts = 0;
@@ -228,11 +215,8 @@ async function checkAndRestorePersistedSavePrompt(container: HTMLElement): Promi
       return;
     }
 
-    console.debug('[AliasVault] Found persisted save prompt state, checking if we should restore');
-
     // Check if the feature is still enabled
     if (!await isLoginSaveEnabled()) {
-      console.debug('[AliasVault] Login save feature is disabled, not restoring prompt');
       return;
     }
 
@@ -243,17 +227,14 @@ async function checkAndRestorePersistedSavePrompt(container: HTMLElement): Promi
         isVaultLocked: boolean;
       };
       if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
-        console.debug('[AliasVault] Vault is locked or not logged in, not restoring prompt');
         return;
       }
     } catch {
-      console.debug('[AliasVault] Could not check auth status, not restoring prompt');
       return;
     }
 
     // Check if the domain is now blocked
     if (await isDomainBlocked(persistedState.domain)) {
-      console.debug('[AliasVault] Domain is now blocked, not restoring prompt');
       return;
     }
 
@@ -284,16 +265,8 @@ function initializeLoginDetector(container: HTMLElement): void {
   loginDetector.initialize();
 
   loginDetector.onLoginCapture(async (login: CapturedLogin) => {
-    console.debug('[AliasVault] Login detected:', {
-      username: login.username,
-      domain: login.domain,
-      suggestedName: login.suggestedName,
-      hasPassword: !!login.password,
-    });
-
     // Check if the feature is enabled
     if (!await isLoginSaveEnabled()) {
-      console.debug('[AliasVault] Login save feature is disabled');
       return;
     }
 
@@ -304,30 +277,25 @@ function initializeLoginDetector(container: HTMLElement): void {
         isVaultLocked: boolean;
       };
       if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
-        console.debug('[AliasVault] Vault is locked or not logged in, skipping save prompt');
         return;
       }
     } catch {
-      console.debug('[AliasVault] Could not check auth status, skipping save prompt');
       return;
     }
 
     // Check if a save prompt is already visible - if so, update it with new credentials
     if (isSavePromptVisible()) {
-      console.debug('[AliasVault] Save prompt already visible, updating with new credentials');
       updateSavePromptLogin(login);
       return;
     }
 
     // Check if the domain is blocked
     if (await isDomainBlocked(login.domain)) {
-      console.debug('[AliasVault] Domain is blocked from save prompts');
       return;
     }
 
     // Check if the login already exists in the vault
     if (await isLoginDuplicate(login.domain, login.username)) {
-      console.debug('[AliasVault] Login already exists in vault, skipping save prompt');
       return;
     }
 

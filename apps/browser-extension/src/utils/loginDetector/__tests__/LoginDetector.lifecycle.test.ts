@@ -56,9 +56,12 @@ describe('LoginDetector lifecycle', () => {
       expect(callback).not.toHaveBeenCalled();
     });
 
-    it('should skip initialization for localhost', () => {
+    it('should allow localhost (for self-hosted users)', () => {
       const { document, window } = createTestEnvironment(
-        '<html><body><form><input type="password"></form></body></html>',
+        `<html><body><form>
+          <input type="text" name="user" value="testuser">
+          <input type="password" name="pass" value="testpass">
+        </form></body></html>`,
         'https://localhost/login'
       );
       setGlobalWindow(window);
@@ -73,12 +76,15 @@ describe('LoginDetector lifecycle', () => {
       form?.dispatchEvent(new window.Event('submit', { bubbles: true }));
 
       vi.runAllTimers();
-      expect(callback).not.toHaveBeenCalled();
+      expect(callback).toHaveBeenCalled();
     });
 
-    it('should skip initialization for HTTP (non-HTTPS) pages', () => {
+    it('should allow HTTP pages (user choice to use insecure sites)', () => {
       const { document, window } = createTestEnvironment(
-        '<html><body><form><input type="password"></form></body></html>',
+        `<html><body><form>
+          <input type="text" name="user" value="testuser">
+          <input type="password" name="pass" value="testpass">
+        </form></body></html>`,
         'http://example.com/login'
       );
       setGlobalWindow(window);
@@ -93,7 +99,7 @@ describe('LoginDetector lifecycle', () => {
       form?.dispatchEvent(new window.Event('submit', { bubbles: true }));
 
       vi.runAllTimers();
-      expect(callback).not.toHaveBeenCalled();
+      expect(callback).toHaveBeenCalled();
     });
   });
 

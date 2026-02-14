@@ -17,8 +17,6 @@ describe('LoginDetector excluded domains', () => {
   const excludedUrls = [
     'https://aliasvault.net/login',
     'https://subdomain.aliasvault.net/login',
-    'https://127.0.0.1/login',
-    'https://0.0.0.0/login',
   ];
 
   excludedUrls.forEach((url) => {

@@ -26,12 +26,9 @@ export class LoginDetector {
   private captureDebounceTimer: number | null = null;
   private lastCapturedLogin: CapturedLogin | null = null;
 
-  /** Domains to exclude from login detection */
+  /** Domains to exclude from login detection (only AliasVault itself) */
   private static readonly EXCLUDED_DOMAINS = [
     'aliasvault.net',
-    'localhost',
-    '127.0.0.1',
-    '0.0.0.0',
   ];
 
   /**
@@ -112,11 +109,6 @@ export class LoginDetector {
       if (hostname === domain || hostname.endsWith(`.${domain}`)) {
         return true;
       }
-    }
-
-    // Skip non-HTTPS pages (configurable in future)
-    if (window.location.protocol !== 'https:') {
-      return true;
     }
 
     return false;

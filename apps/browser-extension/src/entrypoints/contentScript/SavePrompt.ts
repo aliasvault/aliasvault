@@ -373,8 +373,6 @@ export async function restoreSavePromptFromState(
 
   // Set up periodic persistence for subsequent navigations
   setupPeriodicPersistence();
-
-  console.debug('[AliasVault] Restored save prompt from persisted state with', restoredRemainingTime, 'ms remaining');
 }
 
 /**
@@ -418,8 +416,6 @@ export function updateSavePromptLogin(login: CapturedLogin): void {
 
   // Reset the auto-dismiss timer to give user time to review new credentials
   resetCountdown();
-
-  console.debug('[AliasVault] Updated save prompt with new credentials');
 }
 
 /**
@@ -616,7 +612,6 @@ export async function getPersistedSavePromptState(): Promise<SavePromptPersisted
                               getBaseDomain(currentDomain) === getBaseDomain(state.domain);
 
       if (!isRelatedDomain) {
-        console.debug('[AliasVault] Persisted state domain mismatch:', state.domain, 'vs', currentDomain);
         await clearPersistedSavePromptState();
         return null;
       }
@@ -624,7 +619,6 @@ export async function getPersistedSavePromptState(): Promise<SavePromptPersisted
 
     // The background script already adjusts the remaining time, but check if expired
     if (state.remainingTimeMs <= 0) {
-      console.debug('[AliasVault] Persisted save prompt timer expired');
       await clearPersistedSavePromptState();
       return null;
     }
