@@ -7,6 +7,7 @@ import { StyleSheet, View, TouchableOpacity, Switch, Platform } from 'react-nati
 
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
+import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/passwordLengthSlider';
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
@@ -60,7 +61,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           const passwordSettings = await dbContext.sqliteClient!.getPasswordSettings();
 
           setSettings(passwordSettings);
-          setSliderValue(passwordSettings.Length);
+          setSliderValue(lengthToSlider(passwordSettings.Length));
           initialValues.current = passwordSettings;
 
           // Generate initial preview password only once
@@ -119,19 +120,19 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
    * Handle slider value change.
    */
   const handleSliderChange = useCallback((value: number): void => {
-    const roundedLength = Math.round(value);
-    setSliderValue(roundedLength);
+    setSliderValue(value);
+    const passwordLength = sliderToLength(value);
 
     // Only generate if value actually changed and we're actively sliding
-    if (roundedLength !== lastGeneratedLength.current && isSliding.current && settings) {
-      lastGeneratedLength.current = roundedLength;
+    if (passwordLength !== lastGeneratedLength.current && isSliding.current && settings) {
+      lastGeneratedLength.current = passwordLength;
 
       // Update settings and regenerate password
-      const newSettings = { ...settings, Length: roundedLength };
+      const newSettings = { ...settings, Length: passwordLength };
       setSettings(newSettings);
 
       // Track the change
-      pendingChanges.current = { ...pendingChanges.current, Length: roundedLength };
+      pendingChanges.current = { ...pendingChanges.current, Length: passwordLength };
 
       // Generate new preview password
       try {
@@ -149,7 +150,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
    */
   const handleSliderStart = useCallback((): void => {
     isSliding.current = true;
-    lastGeneratedLength.current = sliderValue ?? 0;
+    lastGeneratedLength.current = sliderToLength(sliderValue ?? 0);
   }, [sliderValue]);
 
   /**
@@ -157,18 +158,18 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
    */
   const handleSliderComplete = useCallback((value: number): void => {
     isSliding.current = false;
-    const roundedLength = Math.round(value);
+    const passwordLength = sliderToLength(value);
 
     if (!settings) {
       return;
     }
 
     // Update settings with final value
-    const newSettings = { ...settings, Length: roundedLength };
+    const newSettings = { ...settings, Length: passwordLength };
     setSettings(newSettings);
 
     // Track the change
-    pendingChanges.current = { ...pendingChanges.current, Length: roundedLength };
+    pendingChanges.current = { ...pendingChanges.current, Length: passwordLength };
 
     // Generate password with final value
     try {
@@ -325,7 +326,7 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
         <View style={styles.previewContainer}>
           <ThemedText style={styles.previewLabel}>{t('settings.passwordGeneratorSettings.preview')}</ThemedText>
           <View style={styles.previewInputContainer}>
-            <ThemedText style={styles.previewInput}>{previewPassword}</ThemedText>
+            <ThemedText style={styles.previewInput} numberOfLines={1} ellipsizeMode="tail">{previewPassword}</ThemedText>
             <TouchableOpacity
               style={styles.refreshButton}
               onPress={handleRefreshPreview}
@@ -340,17 +341,16 @@ export default function PasswordGeneratorSettingsScreen(): React.ReactNode {
           <View style={styles.sliderContainer}>
             <View style={styles.sliderHeader}>
               <ThemedText style={styles.sliderLabel}>{t('items.passwordLength')}</ThemedText>
-              <ThemedText style={styles.sliderValue}>{sliderValue ?? 0}</ThemedText>
+              <ThemedText style={styles.sliderValue}>{sliderToLength(sliderValue ?? 0)}</ThemedText>
             </View>
             <Slider
               style={styles.slider}
-              minimumValue={8}
-              maximumValue={64}
+              minimumValue={SLIDER_MIN}
+              maximumValue={SLIDER_MAX}
               value={sliderValue ?? 0}
               onValueChange={handleSliderChange}
               onSlidingStart={handleSliderStart}
               onSlidingComplete={handleSliderComplete}
-              step={1}
               minimumTrackTintColor={colors.primary}
               maximumTrackTintColor={colors.accentBorder}
               thumbTintColor={colors.primary}
