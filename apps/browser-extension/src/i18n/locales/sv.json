@@ -42,6 +42,7 @@
     "error": "Fel",
     "cancel": "Avbryt",
     "confirm": "Bekräfta",
+    "remove": "Remove",
     "back": "Tillbaka",
     "next": "Nästa",
     "use": "Använd",
@@ -53,6 +54,7 @@
     "create": "Skapa",
     "or": "Eller",
     "close": "Stäng",
+    "dismiss": "Dismiss",
     "logout": "Logga ut",
     "copied": "Kopierad!",
     "openInNewWindow": "Öppna i nytt fönster",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Lösenord har kopierats till urklipp",
     "openAliasVaultToUpgrade": "Öppna AliasVault för att uppgradera",
     "vaultUpgradeRequired": "Uppgradering av valv krävs.",
-    "dismissPopup": "Avvisa popup"
+    "dismissPopup": "Avvisa popup",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Objekt",
@@ -350,6 +356,11 @@
     "disabledForThisSite": "Inaktiverad för denna webbplats",
     "temporarilyDisabledUntil": "Tillfälligt inaktiverad tills",
     "resetAllSiteSettings": "Återställ alla webbplatsspecifika inställningar",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Utseende",
     "theme": "Tema",
     "useDefault": "Använd standard",
@@ -417,6 +428,13 @@
         "male": "Man",
         "female": "Kvinna"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Valvupplåsningsmetod",
