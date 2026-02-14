@@ -42,7 +42,7 @@
     "error": "Fout",
     "cancel": "Annuleren",
     "confirm": "Bevestigen",
-    "remove": "Remove",
+    "remove": "Verwijderen",
     "back": "Terug",
     "next": "Volgende",
     "use": "Gebruik",
@@ -54,7 +54,7 @@
     "create": "Aanmaken",
     "or": "Of",
     "close": "Sluiten",
-    "dismiss": "Dismiss",
+    "dismiss": "Sluiten",
     "logout": "Uitloggen",
     "copied": "Gekopieerd!",
     "openInNewWindow": "Openen in nieuw venster",
@@ -169,8 +169,8 @@
     "vaultUpgradeRequired": "Update is vereist.",
     "dismissPopup": "Pop-up sluiten",
     "savePrompt": {
-      "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "title": "Opslaan in AliasVault?",
+      "neverForThisSite": "Nooit voor deze site"
     }
   },
   "items": {
@@ -356,11 +356,11 @@
     "disabledForThisSite": "Uitgeschakeld voor deze site",
     "temporarilyDisabledUntil": "Tijdelijk uitgeschakeld tot ",
     "resetAllSiteSettings": "Alle site-specifieke instellingen resetten",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
-    "disabledSites": "Disabled sites",
-    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "clearAllDisabledSites": "Clear all disabled sites",
-    "temporaryUntil": "until",
+    "autofillPopupDescription": "Toon de autofill popup wanneer login velden worden gedetecteerd.",
+    "disabledSites": "Uitgeschakelde sites",
+    "disabledSitesDescription": "Websites waar de autofill popup niet verschijnt.",
+    "clearAllDisabledSites": "Alle uitgeschakelde sites wissen",
+    "temporaryUntil": "tot",
     "appearance": "Uiterlijk",
     "theme": "Thema",
     "useDefault": "Standaard gebruiken",
@@ -430,11 +430,11 @@
       }
     },
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "title": "Inloggegevens opslaan",
+      "description": "Toon een melding om inloggegevens op te slaan wanneer je inlogt op een website.",
+      "blockedSites": "Geblokkeerde websites",
+      "blockedSitesDescription": "Sites waar de inloggegevens opslaan prompt niet zal verschijnen.",
+      "clearAllBlockedSites": "Alle uitgeschakelde sites wissen"
     },
     "unlockMethod": {
       "title": "Vault ontgrendelmethode",
