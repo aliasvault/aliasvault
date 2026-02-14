@@ -5,6 +5,7 @@ import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/met
 import type { Item } from '@/utils/dist/core/models/vault';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
@@ -288,7 +289,7 @@ export async function handleClearSession(): Promise<messageBoolResponse> {
 
 /**
  * Clear vault data and username.
- * This removes all persistent vault storage.
+ * This removes all persistent vault storage and local preferences.
  */
 export async function handleClearVaultData(): Promise<messageBoolResponse> {
   // Clear vault data
@@ -304,6 +305,9 @@ export async function handleClearVaultData(): Promise<messageBoolResponse> {
     'local:encryptionKeyDerivationParams',
     'local:username',
   ]);
+
+  // Clear all local preferences (site settings, login save settings, etc.)
+  await LocalPreferencesService.clearAll();
 
   return { success: true };
 }

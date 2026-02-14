@@ -310,21 +310,12 @@ export const LocalPreferencesService = {
 
   /**
    * Clear all preferences. Called on logout to reset everything.
+   * Clears all keys managed by this service.
    */
   async clearAll(): Promise<void> {
-    await Promise.all([
-      storage.removeItem(KEYS.SHOW_FOLDERS),
-      storage.removeItem(KEYS.DISABLED_SITES),
-      storage.removeItem(KEYS.TEMPORARY_DISABLED_SITES),
-      storage.removeItem(KEYS.PASSKEY_DISABLED_SITES),
-      storage.removeItem(KEYS.VAULT_LOCKED_DISMISS_UNTIL),
-      storage.removeItem(KEYS.CUSTOM_EMAIL_HISTORY),
-      storage.removeItem(KEYS.CUSTOM_USERNAME_HISTORY),
-      /*
-       * Note: We don't clear global settings like autofill enabled, clipboard timeout, etc.
-       * as those are user preferences that should persist across logins.
-       */
-    ]);
+    await Promise.all(
+      Object.values(KEYS).map(key => storage.removeItem(key))
+    );
   },
 
   /**
