@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { sendMessage } from 'webext-bridge/popup';
 
+import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 import Button from '@/entrypoints/popup/components/Button';
 import MobileUnlockModal from '@/entrypoints/popup/components/Dialogs/MobileUnlockModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
@@ -28,6 +29,9 @@ import { storage } from '#imports';
 
 /** Track if username prefill has been attempted (only do it once on mount) */
 let usernamePrefillAttempted = false;
+
+/** Track if 2FA state restoration has been attempted (only do it once on mount) */
+let twoFactorStateRestoreAttempted = false;
 
 /**
  * Login page
@@ -174,7 +178,7 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     /**
-     * Load the client URL and check for saved username (from forced logout).
+     * Load the client URL, check for saved username, and restore 2FA state if available.
      */
     const loadInitialData = async () : Promise<void> => {
       // Load client URL
@@ -184,6 +188,27 @@ const Login: React.FC = () => {
         clientUrl = settingClientUrl;
       }
       setClientUrl(clientUrl);
+
+      /*
+       * Check for persisted 2FA state (from popup close during 2FA entry).
+       * This allows users to close the popup to switch to their authenticator app
+       * and continue where they left off when reopening.
+       */
+      if (!twoFactorStateRestoreAttempted) {
+        twoFactorStateRestoreAttempted = true;
+        const savedState = await sendMessage('GET_TWO_FACTOR_STATE', null, 'background') as TwoFactorState | null;
+        if (savedState) {
+          // Restore the 2FA state
+          setCredentials({ username: savedState.username, password: '' });
+          setLoginResponse(savedState.loginResponse);
+          setPasswordHashString(savedState.passwordHashString);
+          setPasswordHashBase64(savedState.passwordHashBase64);
+          setRememberMe(savedState.rememberMe);
+          setTwoFactorRequired(true);
+          setIsInitialLoading(false);
+          return;
+        }
+      }
 
       /*
        * Check for saved username (from forced logout) and prefill once on mount
@@ -263,6 +288,19 @@ const Login: React.FC = () => {
         // Store password hash base64 as we need it for decryption
         setPasswordHashBase64(passwordHashBase64);
         setTwoFactorRequired(true);
+
+        /*
+         * Persist 2FA state to background script so user can
+         * close popup to switch to authenticator app and continue when reopening
+         */
+        await sendMessage('STORE_TWO_FACTOR_STATE', {
+          username: normalizedUsername,
+          loginResponse,
+          passwordHashString,
+          passwordHashBase64,
+          rememberMe,
+        }, 'background');
+
         // Show app.
         hideLoading();
         return;
@@ -328,6 +366,9 @@ const Login: React.FC = () => {
       if (!validationResponse.token) {
         throw new Error(t('common.errors.unknownError'));
       }
+
+      // Clear any persisted 2FA state since login is successful
+      await sendMessage('CLEAR_TWO_FACTOR_STATE', null, 'background');
 
       // Handle successful authentication
       await handleSuccessfulAuth(
@@ -449,8 +490,10 @@ const Login: React.FC = () => {
             </Button>
             <Button
               type="button"
-              onClick={() => {
-                // Reset the form.
+              onClick={async () => {
+                // Clear persisted 2FA state
+                await sendMessage('CLEAR_TWO_FACTOR_STATE', null, 'background');
+                // Reset the form
                 setCredentials({
                   username: '',
                   password: ''
