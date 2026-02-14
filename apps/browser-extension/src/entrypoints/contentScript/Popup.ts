@@ -7,6 +7,7 @@ import { ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
 import type { Item, ItemField } from '@/utils/dist/core/models/vault';
 import { ItemTypes, FieldKey, createSystemField } from '@/utils/dist/core/models/vault';
 import { CreatePasswordGenerator, PasswordGenerator, PasswordSettings } from '@/utils/dist/core/password-generator';
+import { getAllFaviconLinks } from '@/utils/favicon';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 import { ServiceDetectionUtility } from '@/utils/serviceDetection/ServiceDetectionUtility';
@@ -1768,26 +1769,16 @@ async function populateSuggestedNames(container: HTMLElement, suggestedNames: st
 
 /**
  * Get favicon bytes from page and resize if necessary.
+ * Uses the shared FaviconExtractor utility for consistent favicon URL extraction.
  */
-async function getFaviconBytes(document: Document): Promise<Uint8Array | null> {
+async function getFaviconBytes(doc: Document): Promise<Uint8Array | null> {
   const MAX_SIZE_BYTES = 50 * 1024; // 50KB max size before resizing
   const TARGET_WIDTH = 96; // Resize target width
 
-  const faviconLinks = [
-    ...Array.from(document.querySelectorAll('link[rel="icon"][type="image/svg+xml"]')),
-    ...Array.from(document.querySelectorAll('link[rel="icon"][sizes="96x96"]')),
-    ...Array.from(document.querySelectorAll('link[rel="icon"][sizes="128x128"]')),
-    ...Array.from(document.querySelectorAll('link[rel="icon"][sizes="48x48"]')),
-    ...Array.from(document.querySelectorAll('link[rel="icon"][sizes="32x32"]')),
-    ...Array.from(document.querySelectorAll('link[rel="icon"][sizes="192x192"]')),
-    ...Array.from(document.querySelectorAll('link[rel="apple-touch-icon"], link[rel="apple-touch-icon-precomposed"]')),
-    ...Array.from(document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]')),
-    { href: `${window.location.origin}/favicon.ico` }
-  ] as HTMLLinkElement[];
+  // Use shared utility for consistent favicon extraction across the extension
+  const faviconLinks = getAllFaviconLinks(doc);
 
-  const uniqueLinks = Array.from(new Map(faviconLinks.map(link => [link.href, link])).values());
-
-  for (const link of uniqueLinks) {
+  for (const link of faviconLinks) {
     const imageData = await fetchAndProcessFavicon(link.href, MAX_SIZE_BYTES, TARGET_WIDTH);
     if (imageData) {
       return imageData;

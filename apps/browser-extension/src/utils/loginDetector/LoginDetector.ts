@@ -1,3 +1,4 @@
+import { extractFaviconUrlSimple } from '@/utils/favicon';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 
 import type { CapturedLogin, LoginSubmissionEvent, LoginCaptureCallback } from './types';
@@ -320,27 +321,10 @@ export class LoginDetector {
 
   /**
    * Extract the page favicon URL.
-   * Looks for link[rel="icon"] or link[rel="shortcut icon"] elements.
-   * Falls back to default /favicon.ico location.
+   * Uses the shared FaviconExtractor utility for consistent extraction across the extension.
    */
   private extractFaviconUrl(): string | undefined {
-    // Find favicon link elements (various rel values used by different sites)
-    const iconSelectors = [
-      'link[rel="icon"]',
-      'link[rel="shortcut icon"]',
-      'link[rel="apple-touch-icon"]',
-      'link[rel="apple-touch-icon-precomposed"]',
-    ];
-
-    for (const selector of iconSelectors) {
-      const link = this.document.querySelector<HTMLLinkElement>(selector);
-      if (link?.href) {
-        return link.href;
-      }
-    }
-
-    // Fallback to default favicon location
-    return `${window.location.origin}/favicon.ico`;
+    return extractFaviconUrlSimple(this.document);
   }
 
   /**
