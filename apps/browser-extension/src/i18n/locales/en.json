@@ -42,6 +42,7 @@
     "error": "Error",
     "cancel": "Cancel",
     "confirm": "Confirm",
+    "remove": "Remove",
     "back": "Back",
     "next": "Next",
     "use": "Use",
@@ -165,7 +166,13 @@
     "passwordCopiedToClipboard": "Password copied to clipboard",
     "openAliasVaultToUpgrade": "Open AliasVault to upgrade",
     "vaultUpgradeRequired": "Vault upgrade required.",
-    "dismissPopup": "Dismiss popup"
+    "dismissPopup": "Dismiss popup",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "save": "Save",
+      "neverForThisSite": "Never for this site",
+      "dismiss": "Dismiss"
+    }
   },
   "items": {
     "title": "Items",
@@ -350,6 +357,11 @@
     "disabledForThisSite": "Disabled for this site",
     "temporarilyDisabledUntil": "Temporarily disabled until ",
     "resetAllSiteSettings": "Reset all site-specific settings",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Appearance",
     "theme": "Theme",
     "useDefault": "Use default",
@@ -427,7 +439,6 @@
       "blockedSites": "Blocked sites",
       "blockedSitesDescription": "Sites where the save prompt will never appear.",
       "noBlockedSites": "No blocked sites",
-      "removeBlockedSite": "Remove",
       "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {

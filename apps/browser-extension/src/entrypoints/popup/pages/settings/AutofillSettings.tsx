@@ -5,16 +5,12 @@ import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
 import { AutofillMatchingMode, LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
-import { browser } from "#imports";
-
 /**
  * Autofill settings type.
  */
 type AutofillSettingsType = {
   disabledUrls: string[];
   temporaryDisabledUrls: Record<string, number>;
-  currentUrl: string;
-  isEnabled: boolean;
   isGloballyEnabled: boolean;
 }
 
@@ -35,8 +31,6 @@ const AutofillSettings: React.FC = () => {
   const [settings, setSettings] = useState<AutofillSettingsType>({
     disabledUrls: [],
     temporaryDisabledUrls: {},
-    currentUrl: '',
-    isEnabled: true,
     isGloballyEnabled: true
   });
   const [autofillMatchingMode, setAutofillMatchingMode] = useState<AutofillMatchingMode>(AutofillMatchingMode.DEFAULT);
@@ -44,23 +38,13 @@ const AutofillSettings: React.FC = () => {
     isEnabled: false,
     blockedDomains: []
   });
-
-  /**
-   * Get current tab in browser.
-   */
-  const getCurrentTab = async () : Promise<chrome.tabs.Tab> => {
-    const queryOptions = { active: true, currentWindow: true };
-    const [tab] = await browser.tabs.query(queryOptions);
-    return tab;
-  };
+  const [showDisabledSites, setShowDisabledSites] = useState(false);
+  const [showBlockedDomains, setShowBlockedDomains] = useState(false);
 
   /**
    * Load settings.
    */
   const loadSettings = useCallback(async () : Promise<void> => {
-    const tab = await getCurrentTab();
-    const currentUrl = new URL(tab.url ?? '').hostname;
-
     // Load settings using LocalPreferencesService
     const disabledUrls = await LocalPreferencesService.getDisabledSites();
     const temporaryDisabledUrls = await LocalPreferencesService.getTemporaryDisabledSites();
@@ -91,8 +75,6 @@ const AutofillSettings: React.FC = () => {
     setSettings({
       disabledUrls,
       temporaryDisabledUrls: cleanedTemporaryDisabledUrls,
-      currentUrl,
-      isEnabled: !disabledUrls.includes(currentUrl) && !(currentUrl in cleanedTemporaryDisabledUrls),
       isGloballyEnabled
     });
     setIsInitialLoading(false);
@@ -101,39 +83,6 @@ const AutofillSettings: React.FC = () => {
   useEffect(() => {
     loadSettings();
   }, [loadSettings]);
-
-  /**
-   * Toggle current site.
-   */
-  const toggleCurrentSite = async () : Promise<void> => {
-    const { currentUrl, disabledUrls, temporaryDisabledUrls, isEnabled } = settings;
-
-    let newDisabledUrls = [...disabledUrls];
-    let newTemporaryDisabledUrls = { ...temporaryDisabledUrls };
-
-    if (isEnabled) {
-      // When disabling, add to permanent disabled list
-      if (!newDisabledUrls.includes(currentUrl)) {
-        newDisabledUrls.push(currentUrl);
-      }
-      // Also remove from temporary disabled list if present
-      delete newTemporaryDisabledUrls[currentUrl];
-    } else {
-      // When enabling, remove from both permanent and temporary disabled lists
-      newDisabledUrls = newDisabledUrls.filter(url => url !== currentUrl);
-      delete newTemporaryDisabledUrls[currentUrl];
-    }
-
-    await LocalPreferencesService.setDisabledSites(newDisabledUrls);
-    await LocalPreferencesService.setTemporaryDisabledSites(newTemporaryDisabledUrls);
-
-    setSettings(prev => ({
-      ...prev,
-      disabledUrls: newDisabledUrls,
-      temporaryDisabledUrls: newTemporaryDisabledUrls,
-      isEnabled: !isEnabled
-    }));
-  };
 
   /**
    * Reset settings.
@@ -145,8 +94,7 @@ const AutofillSettings: React.FC = () => {
     setSettings(prev => ({
       ...prev,
       disabledUrls: [],
-      temporaryDisabledUrls: {},
-      isEnabled: true
+      temporaryDisabledUrls: {}
     }));
   };
 
@@ -207,19 +155,45 @@ const AutofillSettings: React.FC = () => {
     }));
   };
 
+  /**
+   * Remove a site from the disabled list (permanent or temporary).
+   */
+  const removeDisabledSite = async (site: string) : Promise<void> => {
+    // Remove from permanent disabled list
+    const newDisabledUrls = settings.disabledUrls.filter(url => url !== site);
+    await LocalPreferencesService.setDisabledSites(newDisabledUrls);
+
+    // Remove from temporary disabled list
+    const newTemporaryDisabledUrls = { ...settings.temporaryDisabledUrls };
+    delete newTemporaryDisabledUrls[site];
+    await LocalPreferencesService.setTemporaryDisabledSites(newTemporaryDisabledUrls);
+
+    setSettings(prev => ({
+      ...prev,
+      disabledUrls: newDisabledUrls,
+      temporaryDisabledUrls: newTemporaryDisabledUrls
+    }));
+  };
+
+  /**
+   * Get total count of disabled sites (permanent + temporary).
+   */
+  const getDisabledSitesCount = () : number => {
+    const permanentCount = settings.disabledUrls.length;
+    const temporaryCount = Object.keys(settings.temporaryDisabledUrls).length;
+    return permanentCount + temporaryCount;
+  };
+
   return (
     <div className="space-y-6">
-      {/* Global Settings Section */}
+      {/* Autofill Popup Settings Section */}
       <section>
-        <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('settings.globalSettings')}</h3>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">{t('settings.autofillPopup')}</p>
-                <p className={`text-sm mt-1 ${settings.isGloballyEnabled ? 'text-gray-600 dark:text-gray-400' : 'text-red-600 dark:text-red-400'}`}>
-                  {settings.isGloballyEnabled ? t('settings.activeOnAllSites') : t('settings.disabledOnAllSites')}
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 me-1">{t('settings.autofillPopupDescription')}</p>
               </div>
               <button
                 onClick={toggleGlobalPopup}
@@ -232,19 +206,81 @@ const AutofillSettings: React.FC = () => {
                 {settings.isGloballyEnabled ? t('common.enabled') : t('common.disabled')}
               </button>
             </div>
+
+            {/* Disabled sites list */}
+            {getDisabledSitesCount() > 0 && (
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => setShowDisabledSites(!showDisabledSites)}
+                  className="flex items-center justify-between w-full text-left"
+                >
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {t('settings.disabledSites')} ({getDisabledSitesCount()})
+                  </span>
+                  <svg
+                    className={`w-5 h-5 text-gray-500 transition-transform ${showDisabledSites ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.disabledSitesDescription')}</p>
+
+                {showDisabledSites && (
+                  <div className="mt-3">
+                    <ul className="space-y-2">
+                      {settings.disabledUrls.map((site) => (
+                        <li key={site} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
+                          <span className="text-sm text-gray-900 dark:text-white truncate">{site}</span>
+                          <button
+                            onClick={() => removeDisabledSite(site)}
+                            className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
+                          >
+                            {t('common.remove')}
+                          </button>
+                        </li>
+                      ))}
+                      {Object.entries(settings.temporaryDisabledUrls).map(([site, expiry]) => (
+                        <li key={site} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
+                          <div className="truncate">
+                            <span className="text-sm text-gray-900 dark:text-white">{site}</span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400 ml-2">
+                              ({t('settings.temporaryUntil')} {new Date(expiry).toLocaleTimeString()})
+                            </span>
+                          </div>
+                          <button
+                            onClick={() => removeDisabledSite(site)}
+                            className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
+                          >
+                            {t('common.remove')}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={resetSettings}
+                      className="w-full mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
+                    >
+                      {t('settings.clearAllDisabledSites')}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>
 
       {/* Login Save Settings Section */}
       <section>
-        <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('settings.loginSave.title')}</h3>
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
           <div className="p-4">
             <div className="flex items-center justify-between">
               <div>
                 <p className="font-medium text-gray-900 dark:text-white">{t('settings.loginSave.title')}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.loginSave.description')}</p>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 me-1">{t('settings.loginSave.description')}</p>
               </div>
               <button
                 onClick={toggleLoginSave}
@@ -261,77 +297,52 @@ const AutofillSettings: React.FC = () => {
             {/* Blocked domains list */}
             {loginSaveSettings.blockedDomains.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                <p className="font-medium text-gray-900 dark:text-white mb-2">{t('settings.loginSave.blockedSites')}</p>
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{t('settings.loginSave.blockedSitesDescription')}</p>
-                <ul className="space-y-2">
-                  {loginSaveSettings.blockedDomains.map((domain) => (
-                    <li key={domain} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
-                      <span className="text-sm text-gray-900 dark:text-white truncate">{domain}</span>
-                      <button
-                        onClick={() => removeBlockedDomain(domain)}
-                        className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
-                      >
-                        {t('settings.loginSave.removeBlockedSite')}
-                      </button>
-                    </li>
-                  ))}
-                </ul>
                 <button
-                  onClick={clearAllBlockedDomains}
-                  className="w-full mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
+                  onClick={() => setShowBlockedDomains(!showBlockedDomains)}
+                  className="flex items-center justify-between w-full text-left"
                 >
-                  {t('settings.loginSave.clearAllBlockedSites')}
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {t('settings.loginSave.blockedSites')} ({loginSaveSettings.blockedDomains.length})
+                  </span>
+                  <svg
+                    className={`w-5 h-5 text-gray-500 transition-transform ${showBlockedDomains ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{t('settings.loginSave.blockedSitesDescription')}</p>
+
+                {showBlockedDomains && (
+                  <div className="mt-3">
+                    <ul className="space-y-2">
+                      {loginSaveSettings.blockedDomains.map((domain) => (
+                        <li key={domain} className="flex items-center justify-between bg-gray-50 dark:bg-gray-700 rounded-md px-3 py-2">
+                          <span className="text-sm text-gray-900 dark:text-white truncate">{domain}</span>
+                          <button
+                            onClick={() => removeBlockedDomain(domain)}
+                            className="text-sm text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 ml-2"
+                          >
+                            {t('common.remove')}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={clearAllBlockedDomains}
+                      className="w-full mt-3 px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
+                    >
+                      {t('settings.loginSave.clearAllBlockedSites')}
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
         </div>
       </section>
-
-      {/* Site-Specific Settings Section */}
-      {settings.isGloballyEnabled && (
-        <section>
-          <h3 className="text-md font-semibold text-gray-900 dark:text-white mb-3">{t('settings.siteSpecificSettings')}</h3>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{t('settings.autofillPopupOn')}{settings.currentUrl}</p>
-                  <p className={`text-sm mt-1 ${settings.isEnabled ? 'text-gray-600 dark:text-gray-400' : 'text-red-600 dark:text-red-400'}`}>
-                    {settings.isEnabled ? t('settings.enabledForThisSite') : t('settings.disabledForThisSite')}
-                  </p>
-                  {!settings.isEnabled && settings.temporaryDisabledUrls[settings.currentUrl] && (
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      {t('settings.temporarilyDisabledUntil')}{new Date(settings.temporaryDisabledUrls[settings.currentUrl]).toLocaleTimeString()}
-                    </p>
-                  )}
-                </div>
-                {settings.isGloballyEnabled && (
-                  <button
-                    onClick={toggleCurrentSite}
-                    className={`px-4 py-2 ml-1 rounded-md transition-colors ${
-                      settings.isEnabled
-                        ? 'bg-green-500 hover:bg-green-600 text-white'
-                        : 'bg-red-500 hover:bg-red-600 text-white'
-                    }`}
-                  >
-                    {settings.isEnabled ? t('common.enabled') : t('common.disabled')}
-                  </button>
-                )}
-              </div>
-
-              <div className="mt-4">
-                <button
-                  onClick={resetSettings}
-                  className="w-full px-4 py-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-md text-gray-700 dark:text-gray-300 transition-colors text-sm"
-                >
-                  {t('settings.resetAllSiteSettings')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Autofill Matching Settings Section */}
       <section>
