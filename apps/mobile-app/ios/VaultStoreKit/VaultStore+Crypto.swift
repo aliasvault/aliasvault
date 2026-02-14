@@ -174,7 +174,21 @@ extension VaultStore {
             #if targetEnvironment(simulator)
                 print("Simulator detected, skipping biometric policy evaluation check and continuing with key retrieval from keychain")
             #else
-                guard context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) else {
+                if !context.canEvaluatePolicy(.deviceOwnerAuthenticationWithBiometrics, error: &error) {
+                    // Map LAError codes to specific error types for better debugging
+                    if let laError = error as? LAError {
+                        switch laError.code {
+                        case .biometryNotAvailable:
+                            throw AppError.biometricNotAvailable
+                        case .biometryNotEnrolled:
+                            throw AppError.biometricNotEnrolled
+                        case .biometryLockout:
+                            throw AppError.biometricLockout
+                        default:
+                            print("LAError code: \(laError.code.rawValue), description: \(laError.localizedDescription)")
+                            throw AppError.biometricFailed
+                        }
+                    }
                     throw AppError.biometricFailed
                 }
             #endif
@@ -266,11 +280,31 @@ extension VaultStore {
 
         guard status == errSecSuccess,
               let keyData = result as? Data else {
-            if status == errSecUserCanceled {
+            // Map keychain status codes to specific errors for better debugging
+            switch status {
+            case errSecUserCanceled:
                 throw AppError.biometricCancelled
-            } else if status == errSecAuthFailed {
+            case errSecAuthFailed:
                 throw AppError.biometricFailed
-            } else {
+            case errSecItemNotFound:
+                // Key not found in keychain - user may need to re-login
+                print("Keychain item not found (errSecItemNotFound: \(status))")
+                throw AppError.keychainItemNotFound
+            case errSecInteractionNotAllowed:
+                // Access denied - may happen if app is in background or screen is locked
+                print("Keychain interaction not allowed (errSecInteractionNotAllowed: \(status))")
+                throw AppError.keychainAccessDenied(status: status)
+            case errSecMissingEntitlement:
+                // Missing keychain-access-groups entitlement or access group mismatch
+                print("Missing keychain entitlement (errSecMissingEntitlement: \(status))")
+                throw AppError.keychainAccessDenied(status: status)
+            case errSecDecode:
+                // Data corruption or format issue
+                print("Keychain decode error (errSecDecode: \(status))")
+                throw AppError.keychainAccessDenied(status: status)
+            default:
+                // Log the specific status code for debugging
+                print("Keychain error - status: \(status)")
                 throw AppError.keystoreKeyNotFound
             }
         }

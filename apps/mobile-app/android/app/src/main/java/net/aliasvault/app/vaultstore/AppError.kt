@@ -186,6 +186,46 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
         cause: Throwable? = null,
     ) : AppError(message, cause)
 
+    /**
+     * Error indicating keystore access was denied (permission or key invalidation).
+     */
+    class KeystoreAccessDenied(
+        message: String = "Keystore access denied",
+        cause: Throwable? = null,
+    ) : AppError(message, cause)
+
+    /**
+     * Error indicating keystore item was not found (may need re-login).
+     */
+    class KeystoreItemNotFound(
+        message: String = "Keystore item not found - may need to log out and back in",
+        cause: Throwable? = null,
+    ) : AppError(message, cause)
+
+    /**
+     * Error indicating biometric authentication is not available on the device.
+     */
+    class BiometricNotAvailable(
+        message: String = "Biometric authentication not available on this device",
+        cause: Throwable? = null,
+    ) : AppError(message, cause)
+
+    /**
+     * Error indicating no biometrics are enrolled on the device.
+     */
+    class BiometricNotEnrolled(
+        message: String = "No biometrics enrolled on device",
+        cause: Throwable? = null,
+    ) : AppError(message, cause)
+
+    /**
+     * Error indicating biometric authentication is locked out due to too many failed attempts.
+     */
+    class BiometricLockout(
+        message: String = "Biometric authentication locked out",
+        cause: Throwable? = null,
+    ) : AppError(message, cause)
+
     // Storage errors
     /**
      * Error indicating encryption key not available.
@@ -293,6 +333,11 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is BiometricCancelled -> "E-509"
             is BiometricFailed -> "E-510"
             is KeystoreKeyNotFound -> "E-511"
+            is KeystoreAccessDenied -> "E-512"
+            is KeystoreItemNotFound -> "E-513"
+            is BiometricNotAvailable -> "E-514"
+            is BiometricNotEnrolled -> "E-515"
+            is BiometricLockout -> "E-516"
             is VaultStoreFailed -> "E-604"
             is VaultMergeFailed -> "E-701"
             is MergeUploadFailed -> "E-705"

@@ -33,6 +33,11 @@ public enum AppError: Error {
     case biometricCancelled
     case biometricFailed
     case keystoreKeyNotFound
+    case keychainAccessDenied(status: OSStatus)
+    case keychainItemNotFound
+    case biometricNotAvailable
+    case biometricNotEnrolled
+    case biometricLockout
 
     // Storage errors
     case encryptionKeyNotFound
@@ -111,6 +116,16 @@ public enum AppError: Error {
             return "E-510"
         case .keystoreKeyNotFound:
             return "E-511"
+        case .keychainAccessDenied:
+            return "E-512"
+        case .keychainItemNotFound:
+            return "E-513"
+        case .biometricNotAvailable:
+            return "E-514"
+        case .biometricNotEnrolled:
+            return "E-515"
+        case .biometricLockout:
+            return "E-516"
         case .vaultStoreFailed:
             return "E-604"
         case .vaultMergeFailed:
@@ -175,6 +190,16 @@ public enum AppError: Error {
             return "Biometric authentication failed"
         case .keystoreKeyNotFound:
             return "Encryption key not found in keychain"
+        case .keychainAccessDenied(let status):
+            return "Keychain access denied (status: \(status))"
+        case .keychainItemNotFound:
+            return "Keychain item not found - may need to log out and back in"
+        case .biometricNotAvailable:
+            return "Biometric authentication not available on this device"
+        case .biometricNotEnrolled:
+            return "No biometrics enrolled on device"
+        case .biometricLockout:
+            return "Biometric authentication locked out"
         case .vaultStoreFailed(let message):
             return "Failed to store vault: \(message)"
         case .vaultMergeFailed(let message):

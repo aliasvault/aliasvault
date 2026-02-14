@@ -196,17 +196,7 @@ class AndroidKeystoreProvider(
                             errString: CharSequence,
                         ) {
                             Log.e(TAG, "Authentication error: $errorCode - $errString")
-                            val error = when (errorCode) {
-                                BiometricPrompt.ERROR_USER_CANCELED,
-                                BiometricPrompt.ERROR_NEGATIVE_BUTTON,
-                                BiometricPrompt.ERROR_CANCELED,
-                                -> AppError.BiometricCancelled(
-                                    "Biometric authentication cancelled: $errString",
-                                )
-                                else -> AppError.BiometricFailed(
-                                    "Biometric authentication error: $errString (code: $errorCode)",
-                                )
-                            }
+                            val error = mapBiometricErrorToAppError(errorCode, errString.toString())
                             callback.onError(error)
                         }
 
@@ -377,9 +367,7 @@ class AndroidKeystoreProvider(
                         -> AppError.BiometricCancelled(
                             "Biometric authentication cancelled: $errString",
                         )
-                        else -> AppError.BiometricFailed(
-                            "Biometric authentication error: $errString (code: $errorCode)",
-                        )
+                        else -> mapBiometricErrorToAppError(errorCode, errString.toString())
                     }
                     callback.onError(error)
                 }
@@ -487,6 +475,52 @@ class AndroidKeystoreProvider(
                 Log.e(TAG, "Error in biometric authentication", e)
                 callback.onFailure()
             }
+        }
+    }
+
+    /**
+     * Maps BiometricPrompt error codes to specific AppError types for better debugging.
+     */
+    private fun mapBiometricErrorToAppError(errorCode: Int, errString: String): AppError {
+        return when (errorCode) {
+            // User cancellation errors
+            BiometricPrompt.ERROR_USER_CANCELED,
+            BiometricPrompt.ERROR_NEGATIVE_BUTTON,
+            BiometricPrompt.ERROR_CANCELED,
+            -> AppError.BiometricCancelled("Biometric authentication cancelled: $errString")
+
+            // Hardware/availability errors
+            BiometricPrompt.ERROR_HW_NOT_PRESENT,
+            BiometricPrompt.ERROR_HW_UNAVAILABLE,
+            -> AppError.BiometricNotAvailable("Biometric hardware not available: $errString")
+
+            // Enrollment errors
+            BiometricPrompt.ERROR_NO_BIOMETRICS,
+            -> AppError.BiometricNotEnrolled("No biometrics enrolled: $errString")
+
+            // Lockout errors
+            BiometricPrompt.ERROR_LOCKOUT,
+            BiometricPrompt.ERROR_LOCKOUT_PERMANENT,
+            -> AppError.BiometricLockout("Biometric locked out: $errString (code: $errorCode)")
+
+            // Security/key errors - may need re-authentication
+            BiometricPrompt.ERROR_SECURITY_UPDATE_REQUIRED,
+            -> AppError.KeystoreAccessDenied("Security update required: $errString")
+
+            // Timeout and other errors
+            BiometricPrompt.ERROR_TIMEOUT,
+            -> AppError.BiometricFailed("Biometric authentication timed out: $errString")
+
+            BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL,
+            -> AppError.BiometricFailed("No device credential available: $errString")
+
+            BiometricPrompt.ERROR_UNABLE_TO_PROCESS,
+            BiometricPrompt.ERROR_NO_SPACE,
+            BiometricPrompt.ERROR_VENDOR,
+            -> AppError.BiometricFailed("Biometric error: $errString (code: $errorCode)")
+
+            // Default fallback
+            else -> AppError.BiometricFailed("Biometric authentication error: $errString (code: $errorCode)")
         }
     }
 }

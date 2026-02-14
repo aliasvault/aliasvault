@@ -176,10 +176,17 @@ export const useVaultSync = (): {
           return false;
         }
 
-        console.error('Failed to unlock vault:', err);
+        // Extract the specific error code from native layer if available
+        // This preserves detailed error info (E-501 to E-511) for debugging
+        const nativeErrorCode = getAppErrorCode(err);
+        const errorCode = nativeErrorCode ?? AppErrorCode.NATIVE_UNLOCK_FAILED;
+
+        console.error(`Failed to unlock vault (${errorCode}):`, err);
+
+        // Re-throw with the specific error code for proper handling
         throw new Error(formatErrorWithCode(
-          t('common.errors.unknownErrorTryAgain'),
-          AppErrorCode.NATIVE_UNLOCK_FAILED
+          t(getErrorTranslationKey(errorCode)),
+          errorCode
         ));
       }
     } catch (err) {

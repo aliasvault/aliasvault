@@ -57,6 +57,11 @@ export enum AppErrorCode {
   BIOMETRIC_CANCELLED = 'E-509', // AppError: biometric authentication cancelled
   BIOMETRIC_FAILED = 'E-510', // AppError: biometric authentication failed
   KEYSTORE_KEY_NOT_FOUND = 'E-511', // AppError: encryption key not found in keystore
+  KEYCHAIN_ACCESS_DENIED = 'E-512', // iOS: keychain access denied (entitlement or access group issue)
+  KEYCHAIN_ITEM_NOT_FOUND = 'E-513', // iOS: keychain item not found (may need re-login)
+  BIOMETRIC_NOT_AVAILABLE = 'E-514', // iOS: biometric not available on device
+  BIOMETRIC_NOT_ENROLLED = 'E-515', // iOS: no biometrics enrolled on device
+  BIOMETRIC_LOCKOUT = 'E-516', // iOS: biometric locked out due to too many failed attempts
 
   // Database/Storage errors (E-6xx) - from VaultSync.kt
   VAULT_STORE_FAILED = 'E-604', // AppError: failed to store vault
@@ -205,9 +210,14 @@ export function getErrorTranslationKey(code: AppErrorCode): string {
     [AppErrorCode.DATABASE_MEMORY_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.DATABASE_BACKUP_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.DATABASE_PRAGMA_FAILED]: 'common.errors.unknownErrorTryAgain',
-    [AppErrorCode.BIOMETRIC_CANCELLED]: 'auth.errors.biometricCancelled',
-    [AppErrorCode.BIOMETRIC_FAILED]: 'auth.errors.biometricFailed',
+    [AppErrorCode.BIOMETRIC_CANCELLED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.BIOMETRIC_FAILED]: 'common.errors.unknownErrorTryAgain',
     [AppErrorCode.KEYSTORE_KEY_NOT_FOUND]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.KEYCHAIN_ACCESS_DENIED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.KEYCHAIN_ITEM_NOT_FOUND]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.BIOMETRIC_NOT_AVAILABLE]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.BIOMETRIC_NOT_ENROLLED]: 'common.errors.unknownErrorTryAgain',
+    [AppErrorCode.BIOMETRIC_LOCKOUT]: 'common.errors.unknownErrorTryAgain',
 
     // Database/Storage errors
     [AppErrorCode.VAULT_STORE_FAILED]: 'common.errors.unknownErrorTryAgain',
