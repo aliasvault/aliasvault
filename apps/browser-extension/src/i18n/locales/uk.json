@@ -42,6 +42,7 @@
     "error": "Помилка",
     "cancel": "Скасувати",
     "confirm": "Підтвердити",
+    "remove": "Remove",
     "back": "Назад",
     "next": "Далі",
     "use": "Використовувати",
@@ -53,6 +54,7 @@
     "create": "Створити",
     "or": "Або",
     "close": "Закрити",
+    "dismiss": "Dismiss",
     "logout": "Вихід",
     "copied": "Скопійовано!",
     "openInNewWindow": "Відкрити у новому вікні",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Пароль скопійовано в буфер обміну",
     "openAliasVaultToUpgrade": "Відкрити AliasVault для покращення",
     "vaultUpgradeRequired": "Потрібне оновлення сховища.",
-    "dismissPopup": "Закрити спливаюче вікно"
+    "dismissPopup": "Закрити спливаюче вікно",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Items",
@@ -350,6 +356,11 @@
     "disabledForThisSite": "Вимкнено для цього сайту",
     "temporarilyDisabledUntil": "Тимчасово вимкнено до ",
     "resetAllSiteSettings": "Скинути всі налаштування, характерні для сайту",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Зовнішній вигляд",
     "theme": "Тема",
     "useDefault": "Використовувати за замовчуванням",
@@ -417,6 +428,13 @@
         "male": "Чоловіча",
         "female": "Жіноча"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Метод розблокування сховища",
