@@ -5,7 +5,8 @@ import type { CapturedLogin, LoginSubmissionEvent, LoginCaptureCallback } from '
 
 /**
  * Detects login form submissions and extracts credentials.
- * Currently supports traditional form submissions.
+ * Supports both traditional form submissions and AJAX-based logins
+ * (where submit buttons trigger JavaScript handlers instead of native form submit).
  *
  * When a login is detected and the credentials are not yet in the vault,
  * this enables offering to save them.
@@ -18,6 +19,9 @@ export class LoginDetector {
 
   /** Track forms we're monitoring to avoid duplicate listeners */
   private monitoredForms: WeakSet<HTMLFormElement> = new WeakSet();
+
+  /** Track buttons we're monitoring to avoid duplicate listeners */
+  private monitoredButtons: WeakSet<HTMLElement> = new WeakSet();
 
   /** MutationObserver for dynamically added forms */
   private mutationObserver: MutationObserver | null = null;
@@ -111,6 +115,12 @@ export class LoginDetector {
       }
     }
 
+    // Check if av-disable attribute is set on body or html element
+    const avDisable = (this.document.body?.getAttribute('av-disable') ?? this.document.documentElement.getAttribute('av-disable')) === 'true';
+    if (avDisable) {
+      return true;
+    }
+
     return false;
   }
 
@@ -123,7 +133,7 @@ export class LoginDetector {
   }
 
   /**
-   * Set up MutationObserver to detect dynamically added forms.
+   * Set up MutationObserver to detect dynamically added forms and buttons.
    */
   private setupMutationObserver(): void {
     this.mutationObserver = new MutationObserver((mutations) => {
@@ -135,6 +145,9 @@ export class LoginDetector {
             // Check for forms inside added elements
             const forms = node.querySelectorAll('form');
             forms.forEach(form => this.monitorForm(form));
+
+            // Check for buttons added to existing forms
+            this.checkForNewButtonsInForms(node);
           }
         }
       }
@@ -147,7 +160,50 @@ export class LoginDetector {
   }
 
   /**
-   * Add submit event listener to a form.
+   * Check if a newly added element contains buttons that belong to monitored forms.
+   */
+  private checkForNewButtonsInForms(element: HTMLElement): void {
+    // Check if the element itself is a button
+    if (this.isSubmitButton(element)) {
+      const form = element.closest('form');
+      if (form && this.monitoredForms.has(form)) {
+        this.monitorButton(element, form);
+      }
+    }
+
+    // Check for buttons inside the element
+    const buttons = element.querySelectorAll<HTMLElement>(
+      'button[type="submit"], input[type="submit"], button:not([type]), [role="button"]'
+    );
+
+    for (const button of buttons) {
+      const form = button.closest('form');
+      if (form && this.monitoredForms.has(form)) {
+        this.monitorButton(button, form);
+      }
+    }
+  }
+
+  /**
+   * Check if an element is a submit button.
+   */
+  private isSubmitButton(element: HTMLElement): boolean {
+    const tagName = element.tagName.toLowerCase();
+
+    if (tagName === 'button') {
+      const type = element.getAttribute('type');
+      return type === 'submit' || type === null;
+    }
+
+    if (tagName === 'input') {
+      return element.getAttribute('type') === 'submit';
+    }
+
+    return element.getAttribute('role') === 'button';
+  }
+
+  /**
+   * Add submit event listener to a form and monitor its submit buttons.
    */
   private monitorForm(form: HTMLFormElement): void {
     if (this.monitoredForms.has(form)) {
@@ -160,6 +216,69 @@ export class LoginDetector {
     form.addEventListener('submit', (event) => {
       this.handleFormSubmit(form, event);
     }, { capture: true });
+
+    // Also monitor submit buttons for AJAX-based logins
+    this.monitorSubmitButtons(form);
+  }
+
+  /**
+   * Find and monitor submit buttons within a form.
+   * This handles cases where sites use JavaScript to submit forms via AJAX
+   * instead of native form submission.
+   */
+  private monitorSubmitButtons(form: HTMLFormElement): void {
+    // Find all potential submit buttons
+    const buttons = form.querySelectorAll<HTMLElement>(
+      'button[type="submit"], input[type="submit"], button:not([type]), [role="button"]'
+    );
+
+    for (const button of buttons) {
+      this.monitorButton(button, form);
+    }
+  }
+
+  /**
+   * Add click listener to a submit button.
+   */
+  private monitorButton(button: HTMLElement, form: HTMLFormElement): void {
+    if (this.monitoredButtons.has(button)) {
+      return;
+    }
+
+    this.monitoredButtons.add(button);
+
+    // Use capture phase to catch the click before any preventDefault
+    button.addEventListener('click', () => {
+      this.handleButtonClick(form);
+    }, { capture: true });
+  }
+
+  /**
+   * Handle submit button click.
+   * This captures credentials when the button is clicked, which works for
+   * both native form submissions and AJAX-based logins.
+   */
+  private handleButtonClick(form: HTMLFormElement): void {
+    const credentials = this.extractCredentialsFromForm(form);
+
+    if (credentials) {
+      this.pendingSubmission = {
+        form,
+        fields: {
+          username: credentials.usernameField,
+          password: credentials.passwordField,
+        },
+        method: 'ajax',
+      };
+
+      // Build and emit the captured login
+      const capturedLogin = this.buildCapturedLogin(
+        credentials.username,
+        credentials.password
+      );
+
+      this.emitLoginDebounced(capturedLogin);
+    }
   }
 
   /**
