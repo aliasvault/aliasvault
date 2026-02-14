@@ -16,9 +16,6 @@ let currentPrompt: HTMLElement | null = null;
 /** Auto-dismiss timer */
 let autoDismissTimer: number | null = null;
 
-/** Periodic state persistence timer */
-let persistenceTimer: number | null = null;
-
 /** Reference to the countdown bar element */
 let countdownBar: HTMLElement | null = null;
 
@@ -105,9 +102,6 @@ export async function showSavePrompt(container: HTMLElement, options: SavePrompt
    * Persist state immediately so it survives navigation.
    */
   await persistSavePromptState();
-
-  // Set up periodic persistence to keep remaining time accurate
-  setupPeriodicPersistence();
 }
 
 /**
@@ -234,12 +228,6 @@ export function removeSavePrompt(clearPersisted: boolean = true): void {
   if (autoDismissTimer) {
     clearTimeout(autoDismissTimer);
     autoDismissTimer = null;
-  }
-
-  // Clear persistence timer
-  if (persistenceTimer) {
-    clearInterval(persistenceTimer);
-    persistenceTimer = null;
   }
 
   // Reset countdown state
@@ -370,9 +358,6 @@ export async function restoreSavePromptFromState(
 
   // Set up event listeners
   setupEventListeners(prompt, login, onSave, onNeverSave, onDismiss);
-
-  // Set up periodic persistence for subsequent navigations
-  setupPeriodicPersistence();
 }
 
 /**
@@ -653,21 +638,3 @@ function getBaseDomain(hostname: string): string {
   return parts.slice(-2).join('.');
 }
 
-/**
- * Set up periodic persistence to keep the remaining time accurate.
- * This runs every 500ms to update the persisted state with the current remaining time.
- * This approach is more reliable than beforeunload which may not complete async operations.
- */
-function setupPeriodicPersistence(): void {
-  // Clear any existing timer
-  if (persistenceTimer) {
-    clearInterval(persistenceTimer);
-  }
-
-  // Persist state every 500ms to keep it fresh
-  persistenceTimer = window.setInterval(() => {
-    if (currentLogin && calculateRemainingTime() > 0) {
-      void persistSavePromptState();
-    }
-  }, 500);
-}
