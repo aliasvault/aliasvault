@@ -65,8 +65,7 @@ extension VaultStore {
         self.userDefaults.removeObject(forKey: VaultConstants.mutationSequenceKey)
         self.userDefaults.removeObject(forKey: VaultConstants.isSyncingKey)
 
-        // Clear WebApiService keys (auth tokens, API URL)
-        self.userDefaults.removeObject(forKey: "apiUrl")
+        // Clear WebApiService keys
         self.userDefaults.removeObject(forKey: "accessToken")
         self.userDefaults.removeObject(forKey: "refreshToken")
 
