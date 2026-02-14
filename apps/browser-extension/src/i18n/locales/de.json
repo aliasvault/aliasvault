@@ -42,6 +42,7 @@
     "error": "Fehler",
     "cancel": "Abbrechen",
     "confirm": "Bestätigen",
+    "remove": "Remove",
     "back": "Zurück",
     "next": "Weiter",
     "use": "Benutzen",
@@ -53,6 +54,7 @@
     "create": "Erstellen",
     "or": "Oder",
     "close": "Schließen",
+    "dismiss": "Dismiss",
     "logout": "Abmelden",
     "copied": "Kopiert!",
     "openInNewWindow": "In neuem Fenster öffnen",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Passwort in die Zwischenablage kopiert",
     "openAliasVaultToUpgrade": "Zum Aktualisieren AliasVault öffnen ",
     "vaultUpgradeRequired": "Aktualisierung des Tresors erforderlich.",
-    "dismissPopup": "Popup schliessen"
+    "dismissPopup": "Popup schliessen",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Titel",
@@ -350,6 +356,11 @@
     "disabledForThisSite": "Für diese Seite deaktivieren",
     "temporarilyDisabledUntil": "Vorübergehend deaktiviert bis ",
     "resetAllSiteSettings": "Alle seitenspezifischen Einstellungen zurücksetzen",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Erscheinungsbild",
     "theme": "Thema",
     "useDefault": "Standard verwenden",
@@ -417,6 +428,13 @@
         "male": "Männlich",
         "female": "Weiblich"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Methode zum Entsperren des Tresors",
