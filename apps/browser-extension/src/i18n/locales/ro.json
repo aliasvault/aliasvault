@@ -42,6 +42,7 @@
     "error": "Eroare",
     "cancel": "Anulează",
     "confirm": "Confirmă",
+    "remove": "Remove",
     "back": "Înapoi",
     "next": "Înainte",
     "use": "Folosește",
@@ -53,6 +54,7 @@
     "create": "Creează",
     "or": "Sau",
     "close": "Închide",
+    "dismiss": "Dismiss",
     "logout": "Deconectare",
     "copied": "Copiat!",
     "openInNewWindow": "Deschide în fereastră nouă",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Parolă copiată în clipboard",
     "openAliasVaultToUpgrade": "Deschide AliasVault pentru actualizare",
     "vaultUpgradeRequired": "Este necesară actualizarea seifului.",
-    "dismissPopup": "Închide fereastra"
+    "dismissPopup": "Închide fereastra",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Elemente",
@@ -350,6 +356,11 @@
     "disabledForThisSite": "Dezactivat pentru acest site",
     "temporarilyDisabledUntil": "Dezactivat temporar până la ",
     "resetAllSiteSettings": "Resetează toate setările specifice site-ului",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Aspect",
     "theme": "Temă",
     "useDefault": "Implicită",
@@ -417,6 +428,13 @@
         "male": "Masculin",
         "female": "Feminin"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Metodă deblocare seif",
