@@ -113,4 +113,24 @@ Czy na pewno chcesz kontynuować eksport?</value>
     <value>Ta opcja pozwala całkowicie opróżnić sejf, zachowując jednocześnie konto i aliasy e-mail. Użyj jej, jeśli chcesz zacząć od nowa po zaimportowaniu danych z innego menedżera haseł lub jeśli chcesz wyczyścić wszystkie istniejące dane uwierzytelniające, aby zacząć od nowa.</value>
     <comment>Reset vault section description</comment>
   </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Potwierdź eksport</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>Ze względów bezpieczeństwa wprowadź swoje hasło główne, aby potwierdzić eksport.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>Weryfikacja hasła...</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>Podane hasło jest nieprawidłowe. Proszę spróbować jeszcze raz.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>Wystąpił błąd podczas weryfikacji hasła. Spróbuj ponownie.</value>
+    <comment>Generic error message for password verification failure</comment>
+  </data>
 </root>

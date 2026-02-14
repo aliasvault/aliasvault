@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Du kannst jetzt die Autofill-Funktion in Anmeldeformularen in Deinem Browser nutzen.",
     "closePopup": "Popup schließen",
     "browseVault": "Tresor durchsuchen",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Verbinde zu",
     "switchAccounts": "Konto wechseln?",
     "loginWithMobile": "Mit mobiler App anmelden",
@@ -40,6 +42,7 @@
     "error": "Fehler",
     "cancel": "Abbrechen",
     "confirm": "Bestätigen",
+    "remove": "Remove",
     "back": "Zurück",
     "next": "Weiter",
     "use": "Benutzen",
@@ -51,6 +54,7 @@
     "create": "Erstellen",
     "or": "Oder",
     "close": "Schließen",
+    "dismiss": "Dismiss",
     "logout": "Abmelden",
     "copied": "Kopiert!",
     "openInNewWindow": "In neuem Fenster öffnen",
@@ -100,11 +104,11 @@
       "passwordChanged": "Dein Passwort hat sich seit Deiner letzten Anmeldung geändert. Bitte melden Dich aus Sicherheitsgründen erneut an.",
       "syncConflictMaxRetries": "Tresor konnte nach mehreren Versuchen nicht synchronisiert werden. Bitte versuche es später erneut.",
       "mergeFailed": "Fehler beim Zusammenführen der Tresoränderungen. Bitte versuchen Sie es erneut.",
-      "invalidCode": "Please enter a valid 6-digit authentication code.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "wrongPassword": "Incorrect password. Please try again.",
-      "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "invalidCode": "Bitte gib einen gültigen 6-stelligen Sicherheits-Code ein.",
+      "serverError": "Der AliasVault-Server konnte nicht erreicht werden. Bitte versuche es später noch einmal oder kontaktiere den Support, falls das Problem weiterhin besteht.",
+      "wrongPassword": "Falsches Passwort. Bitte versuche es erneut.",
+      "sessionExpired": "Deine Sitzung ist abgelaufen. Bitte melde Dich erneut an.",
+      "mobileLoginRequestExpired": "Zeitüberschreitung für mobile Anmeldeanforderungen. Bitte lade die Seite neu und versuche es erneut."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Ein unbekannter Fehler ist aufgetreten. Bitte versuche es erneut.",
@@ -163,7 +167,11 @@
     "passwordCopiedToClipboard": "Passwort in die Zwischenablage kopiert",
     "openAliasVaultToUpgrade": "Zum Aktualisieren AliasVault öffnen ",
     "vaultUpgradeRequired": "Aktualisierung des Tresors erforderlich.",
-    "dismissPopup": "Popup schliessen"
+    "dismissPopup": "Popup schliessen",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Titel",
@@ -196,9 +204,9 @@
     "allItemsInFolders": "Alle Ihre Einträge sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Einträge zu finden.",
     "deleteFolder": "Ordner löschen",
     "deleteFolderKeepItems": "Nur Ordner löschen",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
+    "deleteFolderKeepItemsDescription": "Elemente werden zurück zur Hauptliste verschoben.",
     "deleteFolderAndItems": "Ordner und alle Einträge löschen",
-    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "deleteFolderAndItemsDescription": "{{count}} Elemente(n) werden nach kürzlich gelöschtem Element verschoben.",
     "filters": {
       "folders": "Folders",
       "passkeys": "Passkeys"
@@ -265,7 +273,7 @@
     }
   },
   "fieldLabels": {
-    "login.url": "Website URL",
+    "login.url": "Website-URL",
     "login.username": "Username",
     "login.password": "Passwort",
     "alias.first_name": "Vorname",
@@ -348,6 +356,11 @@
     "disabledForThisSite": "Für diese Seite deaktivieren",
     "temporarilyDisabledUntil": "Vorübergehend deaktiviert bis ",
     "resetAllSiteSettings": "Alle seitenspezifischen Einstellungen zurücksetzen",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Erscheinungsbild",
     "theme": "Thema",
     "useDefault": "Standard verwenden",
@@ -416,6 +429,13 @@
         "female": "Weiblich"
       }
     },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
+    },
     "unlockMethod": {
       "title": "Methode zum Entsperren des Tresors",
       "introText": "Wähle, wie Du Deinen Tresor entsperren möchtest. Du kannst Dein Master-Passwort verwenden (immer verfügbar) oder einen PIN-Code für einen schnelleren Zugriff einrichten. Nach drei fehlgeschlagenen PIN-Versuchen musst Du Dein Master-Passwort verwenden.",
@@ -477,11 +497,11 @@
     "title": "Kürzlich gelöscht",
     "noItems": "Keine gelöschten Elemente",
     "noItemsDescription": "Elemente, die du löscht, werden hier 30 Tage lang erscheinen, bevor sie endgültig entfernt werden.",
-    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
-    "restore": "Restore",
+    "description": "Diese Elemente werden nach 30 Tagen dauerhaft gelöscht. Sie können sie wiederherstellen oder sofort löschen.",
+    "restore": "Wiederherstellen",
     "deletePermanently": "Dauerhaft löschen",
-    "emptyAll": "Empty All",
-    "daysRemaining_one": "{{count}} day remaining",
+    "emptyAll": "Alle leeren",
+    "daysRemaining_one": "Noch {{count}} Tage",
     "daysRemaining_other": "Noch {{count}} Tage",
     "expiringSoon": "Läuft bald ab",
     "confirmDeleteTitle": "Dauerhaft löschen?",

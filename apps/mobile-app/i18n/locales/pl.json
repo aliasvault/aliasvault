@@ -179,6 +179,11 @@
     "exporting": "Eksportowanie...",
     "exportConfirmTitle": "Eksportuj sejf",
     "exportWarning": "Uwaga: Eksportowanie sejfu do niezaszyfrowanego pliku spowoduje zapisanie wszystkich haseł i poufnych informacji w postaci zwykłego tekstu. Wykonuj tę czynność wyłącznie na zaufanych urządzeniach i upewnij się, że:\n\n• Eksportowany plik jest przechowywany w bezpiecznej lokalizacji.\n• Plik zostanie usunięty, gdy nie będzie już potrzebny.\n• Eksportowany plik nie zostanie udostępniony innym osobom.\n\nCzy na pewno chcesz kontynuować eksport?",
+    "passwordConfirm": {
+      "title": "Potwierdź hasło",
+      "defaultDescription": "Proszę wprowadzić hasło główne, aby kontynuować.",
+      "exportDescription": "Ze względów bezpieczeństwa wprowadź swoje hasło główne, aby potwierdzić eksport."
+    },
     "security": "Bezpieczeństwo",
     "appVersion": "Wersja aplikacji {{version}} ({{url}})",
     "autoLockOptions": {

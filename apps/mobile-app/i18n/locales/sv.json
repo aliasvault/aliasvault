@@ -179,6 +179,11 @@
     "exporting": "Exporterar...",
     "exportConfirmTitle": "Exportera valv",
     "exportWarning": "Varning: Exportering av ditt valv till en okrypterad fil kommer exponera alla dina lösenord och känslig information i ren text. Gör endast detta på enheter du litar på och se till att du:\n\n• Lagrar den exporterade filen på en säker plats\n• Raderar filen när du inte behöver den längre\n• Aldrig delar den exporterade filen med andra\n\nÄr du säker på att du vill fortsätta med exporteringen?",
+    "passwordConfirm": {
+      "title": "Confirm Password",
+      "defaultDescription": "Please enter your master password to continue.",
+      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+    },
     "security": "Säkerhet",
     "appVersion": "Appversion {{version}} ({{url}})",
     "autoLockOptions": {

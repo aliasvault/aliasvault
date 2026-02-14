@@ -1,8 +1,8 @@
 /* English localization strings for VaultUI */
 "error" = "Error";
-"cancel" = "Cancel";
+"cancel" = "Отмени";
 "back" = "Back";
-"next" = "Next";
+"next" = "Следващ";
 "edit" = "Edit";
 "website" = "Website";
 "username" = "Username";
@@ -37,9 +37,9 @@
 "search_items" = "Search items...";
 
 /* Passkey registration */
-"create_passkey_title" = "Create New Passkey";
+"create_passkey_title" = "Създаване на ключ за достъп";
 "create_passkey_subtitle" = "Register a new passkey for this website. It will be securely stored in your vault and automatically synced across your devices with AliasVault.";
-"create_passkey_button_confirm" = "Create Passkey";
+"create_passkey_button_confirm" = "Създаване на ключ за достъп";
 
 /* Passkey provider */
 "passkey" = "Passkey";
@@ -50,7 +50,7 @@
 "passkeys_load_error" = "Failed to load passkeys. Please open the AliasVault app to check for updates.";
 
 /* Passkey replacement */
-"create_new_passkey" = "Create New Passkey";
+"create_new_passkey" = "Създаване на ключ за достъп";
 "select_passkey_to_replace" = "Or, replace an existing passkey";
 "replace_passkey" = "Replace Passkey";
 "replace_passkey_explanation" = "This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.";

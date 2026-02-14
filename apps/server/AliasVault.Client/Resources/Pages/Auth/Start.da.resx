@@ -63,23 +63,23 @@
     <comment>Main title of the application</comment>
   </data>
   <data name="TaglineText" xml:space="preserve">
-    <value>Your Privacy. Protected.</value>
+    <value>Dit Privatliv. Beskyttet.</value>
     <comment>Tagline emphasizing privacy protection</comment>
   </data>
   <data name="CreateNewVaultButton" xml:space="preserve">
-    <value>Create new vault</value>
+    <value>Opret ny boks</value>
     <comment>Button text for creating a new vault</comment>
   </data>
   <data name="LoginExistingAccountButton" xml:space="preserve">
-    <value>Log in with existing account</value>
+    <value>Log ind med en eksisterende konto</value>
     <comment>Button text for logging in with existing account</comment>
   </data>
   <data name="HttpsWarningTitle" xml:space="preserve">
-    <value>HTTPS Required</value>
+    <value>HTTPS påkrævet</value>
     <comment>Title for HTTPS warning banner</comment>
   </data>
   <data name="HttpsWarningMessage" xml:space="preserve">
-    <value>Browsers only allow secure crypto operations via HTTPS, except for localhost. Login/registration won't work over HTTP with the current hostname. Please switch to HTTPS.</value>
+    <value>Browsere tillader kun sikre kryptooperationer via HTTPS, undtagen for localhost. Login/registrering vil ikke virke over HTTP med det aktuelle værtsnavn. Skift til HTTPS.</value>
     <comment>Message explaining why HTTPS is required</comment>
   </data>
 </root>

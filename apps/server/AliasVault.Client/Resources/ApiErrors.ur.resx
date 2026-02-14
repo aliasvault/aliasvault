@@ -174,7 +174,7 @@
     <value>The local vault is not up-to-date. Please synchronize your vault by refreshing the page and try again.</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
-    <value>An unknown error occurred. Please try again.</value>
+    <value>ایک نامعلوم مسئلہ پیش آ گیا ہے۔ براہِ کرم دوبارہ کوشش کریں۔</value>
   </data>
   <data name="INVALID_AUTHENTICATOR_CODE" xml:space="preserve">
     <value>Invalid authenticator code. Please try again.</value>

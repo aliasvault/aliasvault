@@ -59,23 +59,23 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="CopyrightText" xml:space="preserve">
-    <value>All rights reserved.</value>
+    <value>Alle rettigheder forbeholdes.</value>
     <comment>Copyright text in footer</comment>
   </data>
   <data name="TipCreateShortcut" xml:space="preserve">
-    <value>Tip: Use the g+c (go create) keyboard shortcut to quickly create a new alias.</value>
+    <value>Tip: Brug tastaturgenvejen g+c (go create) for hurtigt at oprette et nyt alias.</value>
     <comment>Tip about keyboard shortcut for creating aliases</comment>
   </data>
   <data name="TipFindShortcut" xml:space="preserve">
-    <value>Tip: Use the g+f (go find) keyboard shortcut to focus the search field.</value>
+    <value>Tip: Brug tastaturgenvejen g+f (go find) for at fokusere på søgefeltet.</value>
     <comment>Tip about keyboard shortcut for search</comment>
   </data>
   <data name="TipHomeShortcut" xml:space="preserve">
-    <value>Tip: Use the g+h (go home) keyboard shortcut to go to the homepage.</value>
+    <value>Tip: Brug tastaturgenvejen g+h (go home) for at gå til startsiden.</value>
     <comment>Tip about keyboard shortcut for home</comment>
   </data>
   <data name="TipLockShortcut" xml:space="preserve">
-    <value>Tip: Use the g+l (go lock) keyboard shortcut to lock the vault.</value>
+    <value>Tip: Brug tastaturgenvejen g+l (go lock) for at låse boksen.</value>
     <comment>Tip about keyboard shortcut for locking vault</comment>
   </data>
 </root>

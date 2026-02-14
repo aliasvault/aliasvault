@@ -179,6 +179,11 @@
     "exporting": "Exporteren...",
     "exportConfirmTitle": "Vault exporteren",
     "exportWarning": "Waarschuwing: Het exporteren van je vault naar een onversleuteld bestand zal al je wachtwoorden en gevoelige informatie in platte tekst beschikbaar maken. Doe dit alleen op vertrouwde computers en zorg ervoor dat je:\n\n• Het geëxporteerde bestand op een veilige locatie opslaat\n• Het bestand verwijdert wanneer je het niet meer nodig hebt\n• Het geëxporteerde bestand nooit met anderen deelt\n\nWeet je zeker dat je wilt doorgaan met de export?",
+    "passwordConfirm": {
+      "title": "Bevestig wachtwoord",
+      "defaultDescription": "Voer je hoofdwachtwoord in om verder te gaan.",
+      "exportDescription": "Om veiligheidsredenen moet je je hoofdwachtwoord invoeren om deze export te bevestigen."
+    },
     "security": "Beveiliging",
     "appVersion": "App versie {{version}} ({{url}})",
     "autoLockOptions": {

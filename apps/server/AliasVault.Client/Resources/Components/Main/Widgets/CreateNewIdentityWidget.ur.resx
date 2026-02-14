@@ -71,7 +71,7 @@
     <comment>Title of the create new alias popup</comment>
   </data>
   <data name="NameLabel" xml:space="preserve">
-    <value>Name</value>
+    <value>نام</value>
     <comment>Label for name field</comment>
   </data>
   <data name="WebsiteUrlLabel" xml:space="preserve">
@@ -99,7 +99,7 @@
     <comment>Create button text</comment>
   </data>
   <data name="ContinueButton" xml:space="preserve">
-    <value>Continue</value>
+    <value>جاری رکھیں</value>
     <comment>Continue button text for non-alias types</comment>
   </data>
   <data name="CreateNewLoginTitle" xml:space="preserve">

@@ -179,6 +179,11 @@
     "exporting": "Viedään...",
     "exportConfirmTitle": "Vie holvi",
     "exportWarning": "Varoitus: Holvisi vienti salaamattomaan tiedostoon paljastaa kaikki salasanasi ja arkaluonteiset tiedot pelkässä tekstissä. Tee tämä vain luotettavilla tietokoneilla ja varmista, että:\n\n• Tallenna viety tiedosto turvalliseen paikkaan\n• Poista tiedosto, kun et enää tarvitse sitä\n• Älä koskaan jaa vietyä tiedostoa muiden kanssa\n\nOletko varma, että haluat jatkaa vientiä?",
+    "passwordConfirm": {
+      "title": "Confirm Password",
+      "defaultDescription": "Please enter your master password to continue.",
+      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+    },
     "security": "Turvallisuus",
     "appVersion": "Sovelluksen versio {{version}} ({{url}})",
     "autoLockOptions": {
@@ -436,7 +441,7 @@
     "offlineMessage": "Olet ei-verkkotilassa. Yhdistä internetiin synkronoidaksesi holvisi.",
     "switchBackToBrowser": "Siirry takaisin selaimeen jatkaaksesi.",
     "filters": {
-      "all": "Items",
+      "all": "Tiedot",
       "showFolders": "Folders",
       "passkeys": "Sala-avaimet",
       "attachments": "Liitteet"

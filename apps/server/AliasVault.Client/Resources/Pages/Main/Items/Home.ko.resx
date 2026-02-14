@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Page Header -->
+  <data name="PageTitle" xml:space="preserve">
+    <value>Vault</value>
+    <comment>Main vault page title</comment>
+  </data>
+  <data name="PageDescription" xml:space="preserve">
+    <value>Find all of your items below.</value>
+    <comment>Page description text</comment>
+  </data>
+  <!-- Settings Dropdown -->
+  <data name="ViewModeLabel" xml:space="preserve">
+    <value>View Mode</value>
+    <comment>Label for view mode dropdown</comment>
+  </data>
+  <data name="GridViewOption" xml:space="preserve">
+    <value>Grid View</value>
+    <comment>Grid view option in dropdown</comment>
+  </data>
+  <data name="TableViewOption" xml:space="preserve">
+    <value>Table View</value>
+    <comment>Table view option in dropdown</comment>
+  </data>
+  <data name="SortOrderLabel" xml:space="preserve">
+    <value>Sort Order</value>
+    <comment>Label for sort order dropdown</comment>
+  </data>
+  <data name="OldestFirstOption" xml:space="preserve">
+    <value>Oldest First</value>
+    <comment>Oldest first sort option</comment>
+  </data>
+  <data name="NewestFirstOption" xml:space="preserve">
+    <value>Newest First</value>
+    <comment>Newest first sort option</comment>
+  </data>
+  <data name="AlphabeticalOption" xml:space="preserve">
+    <value>Alphabetical</value>
+    <comment>Alphabetical sort option</comment>
+  </data>
+  <!-- Empty State -->
+  <data name="NoItemsTitle" xml:space="preserve">
+    <value>No items yet</value>
+    <comment>Title when no items exist</comment>
+  </data>
+  <data name="CreateFirstItemText" xml:space="preserve">
+    <value>Create your first item using the</value>
+    <comment>Text explaining how to create first item</comment>
+  </data>
+  <data name="NewAliasButtonText" xml:space="preserve">
+    <value>"+ New Alias"</value>
+    <comment>Text reference to the New Alias button (desktop)</comment>
+  </data>
+  <data name="NewAliasButtonTextMobile" xml:space="preserve">
+    <value>"+"</value>
+    <comment>Text reference to the New Alias button (mobile)</comment>
+  </data>
+  <data name="ButtonLocationText" xml:space="preserve">
+    <value>button in the top right corner.</value>
+    <comment>Text describing button location</comment>
+  </data>
+  <data name="OrText" xml:space="preserve">
+    <value>or</value>
+    <comment>Separator text between options</comment>
+  </data>
+  <data name="ImportItemsText" xml:space="preserve">
+    <value>If you previously used a different password manager, you can import your items from it.</value>
+    <comment>Text explaining import option</comment>
+  </data>
+  <data name="ImportButtonText" xml:space="preserve">
+    <value>Import from KeePass, Bitwarden, Chrome, Firefox...</value>
+    <comment>Import button text</comment>
+  </data>
+  <!-- Error Messages -->
+  <data name="FailedToLoadItemsMessage" xml:space="preserve">
+    <value>Failed to load items.</value>
+    <comment>Error message when items fail to load</comment>
+  </data>
+  <!-- Filter Options -->
+  <data name="FilterLabel" xml:space="preserve">
+    <value>Filter</value>
+    <comment>Label for filter dropdown</comment>
+  </data>
+  <data name="FilterAllOption" xml:space="preserve">
+    <value>Items</value>
+    <comment>Filter option to show all items</comment>
+  </data>
+  <data name="ShowFoldersOption" xml:space="preserve">
+    <value>Folders</value>
+    <comment>Toggle option to show or hide folder structure</comment>
+  </data>
+  <data name="FilterPasskeysOption" xml:space="preserve">
+    <value>Passkeys</value>
+    <comment>Filter option to show only passkeys</comment>
+  </data>
+  <data name="FilterAliasesOption" xml:space="preserve">
+    <value>Aliases</value>
+    <comment>Filter option to show only aliases</comment>
+  </data>
+  <data name="FilterUserpassOption" xml:space="preserve">
+    <value>Passwords</value>
+    <comment>Filter option to show only username/passwords</comment>
+  </data>
+  <data name="FilterAttachmentsOption" xml:space="preserve">
+    <value>Attachments</value>
+    <comment>Filter option to show only items with attachments</comment>
+  </data>
+  <data name="FilterRecentlyDeletedOption" xml:space="preserve">
+    <value>Recently Deleted</value>
+    <comment>Filter option to show recently deleted items</comment>
+  </data>
+  <!-- Filtered Empty States -->
+  <data name="NoPasskeysFound" xml:space="preserve">
+    <value>No passkeys have been created yet. Passkeys are added through the browser extension or mobile apps when visiting a website that supports passkeys and offers passkey authentication.</value>
+    <comment>Empty state message when no passkeys are found</comment>
+  </data>
+  <data name="NoAttachmentsFound" xml:space="preserve">
+    <value>No items with attachments found.</value>
+    <comment>Empty state message when no items with attachments are found</comment>
+  </data>
+  <data name="NoItemsFound" xml:space="preserve">
+    <value>No items match the selected filter.</value>
+    <comment>Empty state message when no items match the filter</comment>
+  </data>
+  <data name="EmptyFolderMessage" xml:space="preserve">
+    <value>This folder is empty.</value>
+    <comment>Empty state message when folder has no items</comment>
+  </data>
+  <data name="AllItemsInFoldersMessage" xml:space="preserve">
+    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <comment>Empty state message when all items are in folders and none at root level</comment>
+  </data>
+  <!-- Folder Management -->
+  <data name="NewFolder" xml:space="preserve">
+    <value>New Folder</value>
+    <comment>Button text for creating a new folder</comment>
+  </data>
+  <data name="EditFolder" xml:space="preserve">
+    <value>Edit Folder</value>
+    <comment>Button text for editing a folder</comment>
+  </data>
+  <data name="DeleteFolder" xml:space="preserve">
+    <value>Delete Folder</value>
+    <comment>Button text for deleting a folder</comment>
+  </data>
+  <data name="BackToRoot" xml:space="preserve">
+    <value>Back</value>
+    <comment>Button text for navigating back to root</comment>
+  </data>
+  <data name="FailedToCreateFolder" xml:space="preserve">
+    <value>Failed to create folder.</value>
+    <comment>Error message when folder creation fails</comment>
+  </data>
+  <data name="FailedToDeleteFolder" xml:space="preserve">
+    <value>Failed to delete folder.</value>
+    <comment>Error message when folder deletion fails</comment>
+  </data>
+  <!-- Infinite Scroll -->
+  <data name="LoadingMore" xml:space="preserve">
+    <value>Loading more...</value>
+    <comment>Text shown when loading more items during infinite scroll</comment>
+  </data>
+  <!-- Clear Filter -->
+  <data name="ClearFilter" xml:space="preserve">
+    <value>Clear filter</value>
+    <comment>Button text for clearing the active filter</comment>
+  </data>
+  <data name="FilteringBy" xml:space="preserve">
+    <value>Filtering by:</value>
+    <comment>Label shown when a filter is active</comment>
+  </data>
+</root>

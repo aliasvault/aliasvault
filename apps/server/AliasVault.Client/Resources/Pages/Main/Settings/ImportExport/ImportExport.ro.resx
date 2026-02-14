@@ -112,4 +112,24 @@ Ești sigur că vrei să continui exportul?</value>
     <value>Această opțiune îți permite să golești complet seiful, păstrând în același timp contul și aliasurile de e-mail. Folosește-o dacă vrei să inițiezi o configurare nouă după un import din alt manager sau dacă vrei să ștergi toate datele de autentificare pentru a reîncepe procesul.</value>
     <comment>Reset vault section description</comment>
   </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Confirmă exportul</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>Din motive de securitate, introdu parola ta principală pentru a confirma acest export.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>Se verifică parola...</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>Parola introdusă este incorectă. Încearcă din nou.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>A apărut o eroare la verificarea parolei. Încearcă din nou.</value>
+    <comment>Generic error message for password verification failure</comment>
+  </data>
 </root>

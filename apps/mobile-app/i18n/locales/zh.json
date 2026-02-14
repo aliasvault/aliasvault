@@ -179,6 +179,11 @@
     "exporting": "导出中…",
     "exportConfirmTitle": "导出密码库",
     "exportWarning": "警告：将您的密码库导出到未加密文件将以明文形式暴露您的所有密码和敏感信息。仅在受信任的计算机上执行此操作，并确保您：\n\n• 将导出的文件存储在安全的位置\n• 不再需要时删除该文件\n• 切勿与他人共享导出的文件\n\n您确定要继续导出吗？",
+    "passwordConfirm": {
+      "title": "确认密码",
+      "defaultDescription": "请输入您的主密码以继续。",
+      "exportDescription": "出于安全考虑，请输入您的主密码以确认导出。"
+    },
     "security": "安全",
     "appVersion": "应用版本 {{version}}（{{url}}）",
     "autoLockOptions": {

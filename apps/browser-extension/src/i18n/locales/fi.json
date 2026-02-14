@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Voit nyt käyttää automaattista täyttöä sisäänkirjautumislomakkeissa selaimessasi.",
     "closePopup": "Sulje tämä ponnahdusikkuna",
     "browseVault": "Selaa holvin sisältöä",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Yhdistetään kohteeseen",
     "switchAccounts": "Vaihdetaanko tiliä?",
     "loginWithMobile": "Kirjaudu sisään mobiilisovelluksella",
@@ -40,6 +42,7 @@
     "error": "Virhe",
     "cancel": "Peruuta",
     "confirm": "Vahvista",
+    "remove": "Remove",
     "back": "Takaisin",
     "next": "Seuraava",
     "use": "Käytä",
@@ -51,6 +54,7 @@
     "create": "Luo",
     "or": "Tai",
     "close": "Sulje",
+    "dismiss": "Dismiss",
     "logout": "Uloskirjautuminen",
     "copied": "Kopioitu!",
     "openInNewWindow": "Avaa uudessa ikkunassa",
@@ -100,11 +104,11 @@
       "passwordChanged": "Salasanasi on muuttunut edellisen sisäänkirjautumisen jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
-      "invalidCode": "Please enter a valid 6-digit authentication code.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "wrongPassword": "Incorrect password. Please try again.",
-      "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "invalidCode": "Syötä kelvollinen 6-numeroinen tunnistautumiskoodi.",
+      "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
+      "wrongPassword": "Virheellinen salasana. Yritä uudelleen. ",
+      "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
+      "mobileLoginRequestExpired": "Mobiilikirjautumispyyntö aikakatkaistiin. Lataa sivu uudelleen ja yritä uudelleen."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Tapahtui tuntematon virhe. Yritä uudelleen.",
@@ -163,7 +167,11 @@
     "passwordCopiedToClipboard": "Salasana kopioitu leikepöydälle",
     "openAliasVaultToUpgrade": "Avaa AliasVault päivittääksesi",
     "vaultUpgradeRequired": "Holvin päivitys vaaditaan.",
-    "dismissPopup": "Hylkää ponnahdusikkuna"
+    "dismissPopup": "Hylkää ponnahdusikkuna",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Tiedot",
@@ -348,6 +356,11 @@
     "disabledForThisSite": "Poistettu käytöstä tällä sivustolla",
     "temporarilyDisabledUntil": "Väliaikaisesti pois käytöstä, kunnes ",
     "resetAllSiteSettings": "Nollaa kaikki sivustokohtaiset asetukset",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Ulkoasu",
     "theme": "Teema",
     "useDefault": "Käytä oletusta",
@@ -415,6 +428,13 @@
         "male": "Mies",
         "female": "Nainen"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Holvin lukituksen avausmenetelmä",

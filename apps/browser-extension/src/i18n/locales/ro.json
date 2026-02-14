@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Acum poți folosi completarea automată pentru câmpurile cu date de autentificare în browserul tău.",
     "closePopup": "Închide această fereastră",
     "browseVault": "Răsfoiește conținutul seifului",
+    "autoCloseUnlockPopup": "Închidere automată la următoarele autentificări",
+    "closingIn": "Se închide în {{seconds}}s...",
     "connectingTo": "Conectare la",
     "switchAccounts": "Treci la alt cont?",
     "loginWithMobile": "Autentificare prin aplicația mobilă",
@@ -40,6 +42,7 @@
     "error": "Eroare",
     "cancel": "Anulează",
     "confirm": "Confirmă",
+    "remove": "Remove",
     "back": "Înapoi",
     "next": "Înainte",
     "use": "Folosește",
@@ -51,6 +54,7 @@
     "create": "Creează",
     "or": "Sau",
     "close": "Închide",
+    "dismiss": "Dismiss",
     "logout": "Deconectare",
     "copied": "Copiat!",
     "openInNewWindow": "Deschide în fereastră nouă",
@@ -163,7 +167,11 @@
     "passwordCopiedToClipboard": "Parolă copiată în clipboard",
     "openAliasVaultToUpgrade": "Deschide AliasVault pentru actualizare",
     "vaultUpgradeRequired": "Este necesară actualizarea seifului.",
-    "dismissPopup": "Închide fereastra"
+    "dismissPopup": "Închide fereastra",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Elemente",
@@ -333,7 +341,7 @@
     "lock": "Blochează",
     "globalSettings": "Setări Globale",
     "autofillPopup": "Fereastra de completare automată",
-    "activeOnAllSites": "Activă pe toate site-urile (cu excepțiile de mai jos)",
+    "activeOnAllSites": "Activ pe toate site-urile (cu excepția cazului în care este dezactivat mai jos)",
     "disabledOnAllSites": "Dezactivat pe toate site-urile",
     "rightClickContextMenu": "Meniu contextual (clic dreapta)",
     "autofillMatching": "Potrivire completare automată",
@@ -348,6 +356,11 @@
     "disabledForThisSite": "Dezactivat pentru acest site",
     "temporarilyDisabledUntil": "Dezactivat temporar până la ",
     "resetAllSiteSettings": "Resetează toate setările specifice site-ului",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Aspect",
     "theme": "Temă",
     "useDefault": "Implicită",
@@ -415,6 +428,13 @@
         "male": "Masculin",
         "female": "Feminin"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Metodă deblocare seif",

@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "You can now use autofill in login forms in your browser.",
     "closePopup": "Close this popup",
     "browseVault": "Browse vault contents",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Connecting to",
     "switchAccounts": "Switch accounts?",
     "loginWithMobile": "Log in using Mobile App",
@@ -38,10 +40,11 @@
     "loading": "Loading...",
     "notice": "Notice",
     "error": "Error",
-    "cancel": "Cancel",
+    "cancel": "Отмени",
     "confirm": "Confirm",
+    "remove": "Remove",
     "back": "Back",
-    "next": "Next",
+    "next": "Следващ",
     "use": "Use",
     "add": "Add",
     "delete": "Delete",
@@ -50,7 +53,8 @@
     "saving": "Saving...",
     "create": "Create",
     "or": "Or",
-    "close": "Close",
+    "close": "Затвори",
+    "dismiss": "Dismiss",
     "logout": "Logout",
     "copied": "Copied!",
     "openInNewWindow": "Open in new window",
@@ -163,7 +167,11 @@
     "passwordCopiedToClipboard": "Password copied to clipboard",
     "openAliasVaultToUpgrade": "Open AliasVault to upgrade",
     "vaultUpgradeRequired": "Vault upgrade required.",
-    "dismissPopup": "Dismiss popup"
+    "dismissPopup": "Dismiss popup",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Items",
@@ -348,6 +356,11 @@
     "disabledForThisSite": "Disabled for this site",
     "temporarilyDisabledUntil": "Temporarily disabled until ",
     "resetAllSiteSettings": "Reset all site-specific settings",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Appearance",
     "theme": "Theme",
     "useDefault": "Use default",
@@ -416,6 +429,13 @@
         "female": "Female"
       }
     },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
+    },
     "unlockMethod": {
       "title": "Vault Unlock Method",
       "introText": "Choose how you want to unlock your vault. You can use your master password (always available) or set up a PIN code for faster access. After 3 failed PIN attempts, you'll need to use your master password.",
@@ -454,13 +474,13 @@
       "noPasskeysFound": "No passkeys found for this site"
     },
     "create": {
-      "title": "Create Passkey",
+      "title": "Създаване на ключ за достъп",
       "createFor": "Create a new passkey for",
       "titleLabel": "Title",
       "titlePlaceholder": "Enter a name for this passkey",
-      "createButton": "Create Passkey",
+      "createButton": "Създаване на ключ за достъп",
       "selectPasskeyToReplace": "Select a passkey to replace:",
-      "createNewPasskey": "Create New Passkey",
+      "createNewPasskey": "Създаване на ключ за достъп",
       "replacingPasskey": "Replacing passkey: {{displayName}}",
       "confirmReplace": "Confirm Replace",
       "selectExistingLogin": "Add to existing login:",

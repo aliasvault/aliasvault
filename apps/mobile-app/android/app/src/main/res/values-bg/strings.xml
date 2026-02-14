@@ -27,7 +27,7 @@
   <string name="passkey_display_name_hint">Enter a name for this passkey</string>
   <string name="passkey_website_label">Website</string>
   <string name="passkey_username_label">Username</string>
-  <string name="passkey_create_button">Create Passkey</string>
+  <string name="passkey_create_button">Създаване на ключ за достъп</string>
   <string name="passkey_creating">Creating passkey…</string>
   <string name="passkey_saving">Saving to vault…</string>
   <string name="passkey_syncing">Syncing with server…</string>
@@ -37,7 +37,7 @@
   <string name="passkey_retry_button">Retry</string>
   <string name="passkey_info_icon">Info icon</string>
   <string name="passkey_create_explanation">This creates a new passkey and stores it in your vault. It will be automatically synced across all your devices that use AliasVault.</string>
-  <string name="passkey_create_new_button">Create New Passkey</string>
+  <string name="passkey_create_new_button">Създаване на ключ за достъп</string>
   <string name="passkey_select_to_replace">Or, replace an existing passkey:</string>
   <string name="passkey_add_to_existing">Or, add passkey to an existing item:</string>
   <string name="passkey_replace_explanation">This will replace the existing passkey with a new one. Please be aware that your old passkey will be overwritten and no longer accessible. If you wish to create a separate passkey instead, go back to the previous screen.</string>

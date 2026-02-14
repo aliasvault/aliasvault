@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Możesz teraz używać automatycznego uzupełniania w formularzach logowania w przeglądarce.",
     "closePopup": "Zamknij to okno.",
     "browseVault": "Przeglądaj zawartość sejfu",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Zamknięcie w {{seconds}}s...",
     "connectingTo": "Łączenie z",
     "switchAccounts": "Przełącz konto",
     "loginWithMobile": "Zaloguj się za pomocą aplikacji mobilnej",
@@ -40,6 +42,7 @@
     "error": "Błąd",
     "cancel": "Anuluj",
     "confirm": "Potwierdź",
+    "remove": "Remove",
     "back": "Powrót",
     "next": "Dalej",
     "use": "Użyj",
@@ -51,6 +54,7 @@
     "create": "Utwórz",
     "or": "lub",
     "close": "Zamknąć",
+    "dismiss": "Dismiss",
     "logout": "Wyloguj się",
     "copied": "Skopiowano",
     "openInNewWindow": "Otwórz w nowym oknie.",
@@ -100,11 +104,11 @@
       "passwordChanged": "Twoje hasło uległo zmianie od czasu ostatniego logowania. Ze względów bezpieczeństwa prosimy o ponowne zalogowanie się.",
       "syncConflictMaxRetries": "Nie można zsynchronizować sejfu po wielu próbach. Spróbuj ponownie później.",
       "mergeFailed": "Nie udało się scalić zmian w sejfie. Spróbuj ponownie.",
-      "invalidCode": "Please enter a valid 6-digit authentication code.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "wrongPassword": "Incorrect password. Please try again.",
-      "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "invalidCode": "Wprowadź prawidłowy 6-cyfrowy kod uwierzytelniający.",
+      "serverError": "Nie można połączyć się z serwerem AliasVault. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną, jeśli problem nadal występuje.",
+      "wrongPassword": "Nieprawidłowe hasło. Spróbuj ponownie.",
+      "sessionExpired": "Twoja sesja wygasła. Prosimy o zalogowanie się ponownie.",
+      "mobileLoginRequestExpired": "Limit czasu logowania upłynął. Proszę odświeżyć stronę i spróbować ponownie."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Wystąpił nieznany błąd. Spróbuj ponownie.",
@@ -163,7 +167,11 @@
     "passwordCopiedToClipboard": "Hasło skopiowane do schowka",
     "openAliasVaultToUpgrade": "Otwórz AliasVault, aby dokonać aktualizacji",
     "vaultUpgradeRequired": "Wymagana aktualizacja sejfu.",
-    "dismissPopup": "Zamknij wyskakujące okienko"
+    "dismissPopup": "Zamknij wyskakujące okienko",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Elementy",
@@ -348,6 +356,11 @@
     "disabledForThisSite": "Wyłączone dla tej witryny",
     "temporarilyDisabledUntil": "Tymczasowo nieaktywne do ",
     "resetAllSiteSettings": "Zresetuj wszystkie ustawienia witryny",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Wygląd",
     "theme": "Motyw",
     "useDefault": "Użyj domyślnego",
@@ -415,6 +428,13 @@
         "male": "Mężczyzna",
         "female": "Kobieta"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Metoda odblokowania skarbca",
@@ -516,6 +536,6 @@
   },
   "sync": {
     "offline": "Jesteś w trybie offline",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Dotknij, aby ponowić synchronizację"
   }
 }

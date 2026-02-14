@@ -112,4 +112,24 @@ Er du sikker på, at du vil fortsætte med eksporten?</value>
     <value>Denne indstilling giver dig mulighed for at tømme din boks fuldstændigt, mens du beholder din konto og dine e-mail-aliaser. Brug dette, hvis du ønsker at starte forfra efter import af data fra en anden adgangskodeadministrator, eller hvis du vil rydde alle eksisterende legitimationsoplysninger for at begynde forfra.</value>
     <comment>Reset vault section description</comment>
   </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Bekræft Eksport</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>Af sikkerhedshensyn skal du indtaste din hovedadgangskode for at bekræfte denne eksport.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>Verificerer adgangskode...</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>Den indtastede adgangskode er forkert. Prøv venligst igen.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>Der opstod en fejl under verificering af din adgangskode. Prøv venligst igen.</value>
+    <comment>Generic error message for password verification failure</comment>
+  </data>
 </root>

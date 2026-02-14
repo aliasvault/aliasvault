@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="NewAliasButtonText" xml:space="preserve">
-    <value>+ New</value>
+    <value>+ Ny</value>
     <comment>Text for the new item button</comment>
   </data>
   <data name="NewAliasButtonShort" xml:space="preserve">
@@ -67,55 +67,55 @@
     <comment>Short text for the new alias button on mobile</comment>
   </data>
   <data name="CreateNewAliasTitle" xml:space="preserve">
-    <value>Create New Alias</value>
+    <value>Opret nyt alias</value>
     <comment>Title of the create new alias popup</comment>
   </data>
   <data name="NameLabel" xml:space="preserve">
-    <value>Name</value>
+    <value>Navn</value>
     <comment>Label for name field</comment>
   </data>
   <data name="WebsiteUrlLabel" xml:space="preserve">
-    <value>Website URL</value>
+    <value>Websted-URL</value>
     <comment>Label for website URL field</comment>
   </data>
   <data name="NamePlaceholderLogin" xml:space="preserve">
-    <value>E.g. Facebook</value>
+    <value>F.eks. Facebook</value>
     <comment>Placeholder text for login name field</comment>
   </data>
   <data name="NamePlaceholderAlias" xml:space="preserve">
-    <value>E.g. Facebook</value>
+    <value>F.eks. Facebook</value>
     <comment>Placeholder text for alias name field</comment>
   </data>
   <data name="NamePlaceholderCard" xml:space="preserve">
-    <value>E.g. Mastercard</value>
+    <value>F.eks. Mastercard</value>
     <comment>Placeholder text for card name field</comment>
   </data>
   <data name="NamePlaceholderNote" xml:space="preserve">
-    <value>E.g. Passport Details</value>
+    <value>F.eks. Pasoplysninger</value>
     <comment>Placeholder text for note name field</comment>
   </data>
   <data name="CreateButton" xml:space="preserve">
-    <value>Create</value>
+    <value>Opret</value>
     <comment>Create button text</comment>
   </data>
   <data name="ContinueButton" xml:space="preserve">
-    <value>Continue</value>
+    <value>Fortsæt</value>
     <comment>Continue button text for non-alias types</comment>
   </data>
   <data name="CreateNewLoginTitle" xml:space="preserve">
-    <value>Create New Login</value>
+    <value>Opret nyt login</value>
     <comment>Title for creating a new login item</comment>
   </data>
   <data name="CreateNewCreditCardTitle" xml:space="preserve">
-    <value>Create New Card</value>
+    <value>Opret nyt kort</value>
     <comment>Title for creating a new credit card item</comment>
   </data>
   <data name="CreateNewNoteTitle" xml:space="preserve">
-    <value>Create New Note</value>
+    <value>Opret ny note</value>
     <comment>Title for creating a new note item</comment>
   </data>
   <data name="TypeLogin" xml:space="preserve">
-    <value>Login</value>
+    <value>Log på</value>
     <comment>Login item type label</comment>
   </data>
   <data name="TypeAlias" xml:space="preserve">
@@ -123,7 +123,7 @@
     <comment>Alias item type label</comment>
   </data>
   <data name="TypeCard" xml:space="preserve">
-    <value>Card</value>
+    <value>Kort</value>
     <comment>Credit card item type label (short)</comment>
   </data>
   <data name="TypeNote" xml:space="preserve">
@@ -131,15 +131,15 @@
     <comment>Note item type label</comment>
   </data>
   <data name="CreatingNewAliasMessage" xml:space="preserve">
-    <value>Creating new alias...</value>
+    <value>Opretter nyt alias...</value>
     <comment>Loading message while creating alias</comment>
   </data>
   <data name="CreateItemErrorMessage" xml:space="preserve">
-    <value>Error creating a new item. Please try again (later) or log-out and in again.</value>
+    <value>Der opstod en fejl under oprettelse af elementet. Prøv venligst igen senere, eller log ud og ind igen.</value>
     <comment>Error message when item creation fails</comment>
   </data>
   <data name="ItemCreatedSuccessMessage" xml:space="preserve">
-    <value>Item created successfully.</value>
+    <value>Elementet blev oprettet korrekt.</value>
     <comment>Success message when item is created</comment>
   </data>
 </root>

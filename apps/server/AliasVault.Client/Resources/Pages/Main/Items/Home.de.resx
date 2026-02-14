@@ -140,7 +140,7 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>Items</value>
+    <value>Titel</value>
     <comment>Filter option to show all items</comment>
   </data>
   <data name="ShowFoldersOption" xml:space="preserve">
@@ -190,11 +190,11 @@
   </data>
   <!-- Folder Management -->
   <data name="NewFolder" xml:space="preserve">
-    <value>New Folder</value>
+    <value>Neuer Ordner</value>
     <comment>Button text for creating a new folder</comment>
   </data>
   <data name="EditFolder" xml:space="preserve">
-    <value>Edit Folder</value>
+    <value>Ordner bearbeiten</value>
     <comment>Button text for editing a folder</comment>
   </data>
   <data name="DeleteFolder" xml:space="preserve">

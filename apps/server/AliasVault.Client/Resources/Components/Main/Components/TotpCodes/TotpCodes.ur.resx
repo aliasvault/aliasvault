@@ -91,7 +91,7 @@
     <comment>Placeholder text for secret key input</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">
-    <value>Save</value>
+    <value>محفوظ کریں</value>
     <comment>Save button text</comment>
   </data>
   <data name="SaveToViewCodeMessage" xml:space="preserve">

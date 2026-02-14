@@ -59,31 +59,31 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeleteFolderTitle" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>Slet mappe</value>
     <comment>Title for delete folder modal</comment>
   </data>
   <data name="DeleteFolderDescription" xml:space="preserve">
-    <value>How would you like to delete the folder "{0}"?</value>
+    <value>Hvordan vil du slette mappen "{0}"?</value>
     <comment>Description for delete folder modal. {0} is the folder name.</comment>
   </data>
   <data name="DeleteFolderOnlyTitle" xml:space="preserve">
-    <value>Delete folder only</value>
+    <value>Slet kun mappe</value>
     <comment>Title for delete folder only option</comment>
   </data>
   <data name="DeleteFolderOnlyDescription" xml:space="preserve">
-    <value>Items in this folder will be moved to root</value>
+    <value>Elementer i denne mappe vil blive flyttet til rodmappen</value>
     <comment>Description for delete folder only option</comment>
   </data>
   <data name="DeleteFolderAndContentsTitle" xml:space="preserve">
-    <value>Delete folder and contents</value>
+    <value>Slet mappe og indhold</value>
     <comment>Title for delete folder and contents option</comment>
   </data>
   <data name="DeleteFolderAndContentsDescription" xml:space="preserve">
-    <value>Move {0} item(s) to trash</value>
+    <value>Flyt {0} element(er) til papirkurven</value>
     <comment>Description for delete folder and contents option. {0} is item count.</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Annuller</value>
     <comment>Cancel button text</comment>
   </data>
 </root>

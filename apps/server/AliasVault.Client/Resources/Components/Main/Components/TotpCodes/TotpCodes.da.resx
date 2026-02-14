@@ -59,51 +59,51 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
-    <value>Two-factor authentication</value>
+    <value>To-faktor-godkendelse</value>
     <comment>Section title for 2FA codes</comment>
   </data>
   <data name="AddTotpCodeDescription" xml:space="preserve">
-    <value>Add a two-factor authenticator code</value>
+    <value>Tilføj en to-faktor-godkendelseskode</value>
     <comment>Description for adding TOTP codes</comment>
   </data>
   <data name="AddTotpCodeModalTitle" xml:space="preserve">
-    <value>Add 2FA TOTP Code</value>
+    <value>Tilføj 2FA TOTP-kode</value>
     <comment>Modal title for adding TOTP code</comment>
   </data>
   <data name="CloseFormButton" xml:space="preserve">
-    <value>Close form</value>
+    <value>Luk formular</value>
     <comment>Button to close the add TOTP form</comment>
   </data>
   <data name="TotpInstructions" xml:space="preserve">
-    <value>If the website offers or requires 2FA for your account, copy the secret key or QR code URI and paste it below.</value>
+    <value>Hvis webstedet tilbyder eller kræver 2FA for din konto, skal du kopiere den hemmelige nøgle eller QR-kode-URI og indsætte den nedenfor.</value>
     <comment>Instructions for adding TOTP codes</comment>
   </data>
   <data name="NameOptionalLabel" xml:space="preserve">
-    <value>Name (optional)</value>
+    <value>Navn (valgfrit)</value>
     <comment>Label for optional name field</comment>
   </data>
   <data name="SecretKeyLabel" xml:space="preserve">
-    <value>Secret Key</value>
+    <value>Hemmelig nøgle (Secret Key)</value>
     <comment>Label for secret key field</comment>
   </data>
   <data name="SecretKeyPlaceholder" xml:space="preserve">
-    <value>Enter secret key (manual entry)</value>
+    <value>Indtast hemmelig nøgle (manuel indtastning)</value>
     <comment>Placeholder text for secret key input</comment>
   </data>
   <data name="SaveButton" xml:space="preserve">
-    <value>Save</value>
+    <value>Gem</value>
     <comment>Save button text</comment>
   </data>
   <data name="SaveToViewCodeMessage" xml:space="preserve">
-    <value>Save to view code</value>
+    <value>Gem for at se kode</value>
     <comment>Message shown for unsaved TOTP codes</comment>
   </data>
   <data name="DeleteTotpCodeConfirmation" xml:space="preserve">
-    <value>Are you sure you want to delete this TOTP code?</value>
+    <value>Er du sikker på, at du vil slette denne TOTP-kode?</value>
     <comment>Confirmation message for deleting TOTP code</comment>
   </data>
   <data name="DeleteTotpCodeTitle" xml:space="preserve">
-    <value>Delete TOTP code</value>
+    <value>Slet TOTP-kode</value>
     <comment>Title for delete TOTP code action</comment>
   </data>
 </root>

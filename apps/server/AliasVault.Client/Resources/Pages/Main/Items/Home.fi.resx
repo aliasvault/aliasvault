@@ -140,7 +140,7 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>Items</value>
+    <value>Tiedot</value>
     <comment>Filter option to show all items</comment>
   </data>
   <data name="ShowFoldersOption" xml:space="preserve">

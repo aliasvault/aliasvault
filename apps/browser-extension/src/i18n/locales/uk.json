@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Тепер ви можете використовувати автозаповнення форм входу у вашому браузері.",
     "closePopup": "Закрити цю підказку",
     "browseVault": "Переглянути вміст сховища",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Підключення до",
     "switchAccounts": "Змінити обліковий запис?",
     "loginWithMobile": "Увійти за допомогою мобільного додатку",
@@ -40,6 +42,7 @@
     "error": "Помилка",
     "cancel": "Скасувати",
     "confirm": "Підтвердити",
+    "remove": "Remove",
     "back": "Назад",
     "next": "Далі",
     "use": "Використовувати",
@@ -51,6 +54,7 @@
     "create": "Створити",
     "or": "Або",
     "close": "Закрити",
+    "dismiss": "Dismiss",
     "logout": "Вихід",
     "copied": "Скопійовано!",
     "openInNewWindow": "Відкрити у новому вікні",
@@ -101,10 +105,10 @@
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
       "invalidCode": "Please enter a valid 6-digit authentication code.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "wrongPassword": "Incorrect password. Please try again.",
-      "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
+      "serverError": "Не вдалося зв’язатися зі сервером AliasVault. Будь ласка, спробуйте пізніше або зверніться до служби підтримки, якщо проблема не зникне.",
+      "wrongPassword": "Невірний пароль. Будь ласка, спробуйте ще раз.",
+      "sessionExpired": "Час сеансу закінчився. Будь ласка, увійдіть знову.",
+      "mobileLoginRequestExpired": "Час очікування запиту на вхід у мобільний додаток закінчився. Перезавантажте сторінку та спробуйте ще раз."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Сталася невідома помилка. Будь ласка, спробуйте ще раз.",
@@ -163,7 +167,11 @@
     "passwordCopiedToClipboard": "Пароль скопійовано в буфер обміну",
     "openAliasVaultToUpgrade": "Відкрити AliasVault для покращення",
     "vaultUpgradeRequired": "Потрібне оновлення сховища.",
-    "dismissPopup": "Закрити спливаюче вікно"
+    "dismissPopup": "Закрити спливаюче вікно",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Items",
@@ -348,6 +356,11 @@
     "disabledForThisSite": "Вимкнено для цього сайту",
     "temporarilyDisabledUntil": "Тимчасово вимкнено до ",
     "resetAllSiteSettings": "Скинути всі налаштування, характерні для сайту",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Зовнішній вигляд",
     "theme": "Тема",
     "useDefault": "Використовувати за замовчуванням",
@@ -415,6 +428,13 @@
         "male": "Чоловіча",
         "female": "Жіноча"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Метод розблокування сховища",

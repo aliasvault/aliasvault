@@ -60,19 +60,19 @@
   </resheader>
   <!-- Login Field Labels -->
   <data name="FieldLabel_login_username" xml:space="preserve">
-    <value>Username</value>
+    <value>صارف کا نام</value>
     <comment>Label for username field</comment>
   </data>
   <data name="FieldLabel_login_password" xml:space="preserve">
-    <value>Password</value>
+    <value>پاس ورڈ</value>
     <comment>Label for password field</comment>
   </data>
   <data name="FieldLabel_login_email" xml:space="preserve">
-    <value>Email</value>
+    <value>ای میل</value>
     <comment>Label for email field</comment>
   </data>
   <data name="FieldLabel_login_url" xml:space="preserve">
-    <value>Website</value>
+    <value>ویب سائیٹ</value>
     <comment>Label for URL field</comment>
   </data>
   <!-- Alias Field Labels -->
@@ -119,7 +119,7 @@
   </data>
   <!-- Notes Field Labels -->
   <data name="FieldLabel_notes_content" xml:space="preserve">
-    <value>Notes</value>
+    <value>نوٹس</value>
     <comment>Label for notes content field</comment>
   </data>
   <!-- History -->

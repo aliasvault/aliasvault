@@ -179,6 +179,11 @@
     "exporting": "Exporting...",
     "exportConfirmTitle": "Export Vault",
     "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "passwordConfirm": {
+      "title": "Confirm Password",
+      "defaultDescription": "Please enter your master password to continue.",
+      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+    },
     "security": "Güvenlik",
     "appVersion": "Uygulama sürümü {{version}} ({{url}})",
     "autoLockOptions": {
@@ -383,7 +388,7 @@
     "untitled": "Untitled",
     "name": "Ad",
     "url": "URL",
-    "itemName": "Name",
+    "itemName": "Ad",
     "serviceUrl": "Hizmet URL'i",
     "loginCredentials": "Giriş bilgileri",
     "cardInformation": "Card Information",

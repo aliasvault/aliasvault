@@ -63,23 +63,23 @@
     <comment>Label for alias mode toggle</comment>
   </data>
   <data name="PrivateEmailTitle" xml:space="preserve">
-    <value>Private Email</value>
+    <value>Privat e-mail</value>
     <comment>Title for private email domains section</comment>
   </data>
   <data name="PrivateEmailDescription" xml:space="preserve">
-    <value>E2E encrypted, fully private.</value>
+    <value>E2E-krypteret, fuldstændig privat.</value>
     <comment>Description of private email domains</comment>
   </data>
   <data name="PublicEmailTitle" xml:space="preserve">
-    <value>Public Temp Email Providers</value>
+    <value>Offentlige midlertidige e-mail-udbydere</value>
     <comment>Title for public email domains section</comment>
   </data>
   <data name="PublicEmailDescription" xml:space="preserve">
-    <value>Anonymous but limited privacy. Email content is readable by anyone that knows the address.</value>
+    <value>Anonym men begrænset privatliv. E-mail-indhold kan læses af alle, der kender adressen.</value>
     <comment>Description of public email domains</comment>
   </data>
   <data name="PrivateEmailAliasVaultServer" xml:space="preserve">
-    <value>AliasVault server</value>
+    <value>AliasVault-server</value>
     <comment>Subtitle for private email domains section</comment>
   </data>
 </root>

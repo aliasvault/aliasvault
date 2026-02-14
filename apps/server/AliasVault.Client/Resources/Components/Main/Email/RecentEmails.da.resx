@@ -59,35 +59,35 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="EmailSectionTitle" xml:space="preserve">
-    <value>Email</value>
+    <value>E-mail</value>
     <comment>Section title for email panel</comment>
   </data>
   <data name="AutoRefreshEnabledTooltip" xml:space="preserve">
-    <value>Auto-refresh enabled</value>
+    <value>Autoopfrisk aktiveret</value>
     <comment>Tooltip for auto-refresh indicator</comment>
   </data>
   <data name="SubjectColumn" xml:space="preserve">
-    <value>Subject</value>
+    <value>Emne</value>
     <comment>Table column header for email subject</comment>
   </data>
   <data name="DateColumn" xml:space="preserve">
-    <value>Date</value>
+    <value>Dato</value>
     <comment>Table column header for email date</comment>
   </data>
   <data name="NoEmailsReceivedMessage" xml:space="preserve">
-    <value>No emails received (yet).</value>
+    <value>Ingen e-mails modtaget (endnu).</value>
     <comment>Message when no emails are available</comment>
   </data>
   <data name="EmailAddressInUseError" xml:space="preserve">
-    <value>The current chosen email address is already in use. Please change the email address by editing this credential.</value>
+    <value>Den valgte e-mailadresse er allerede i brug. Skift venligst e-mailadressen ved at redigere denne post.</value>
     <comment>Error message when email address is already in use</comment>
   </data>
   <data name="EmailLoadError" xml:space="preserve">
-    <value>An error occurred while trying to load the emails. Please try to edit and save the credential entry to synchronize the database, then try again.</value>
+    <value>Der opstod en fejl under forsøg på at indlæse e-mails. Prøv at redigere og gemme posten for at synkronisere databasen, og prøv derefter igen.</value>
     <comment>Error message when email loading fails</comment>
   </data>
   <data name="LoadMoreButton" xml:space="preserve">
-    <value>Load more</value>
+    <value>Indlæs flere</value>
     <comment>Button text to load more emails</comment>
   </data>
 </root>

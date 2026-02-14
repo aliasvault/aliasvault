@@ -177,8 +177,13 @@
     "exportSectionDescription": "Exportă datele din seif într-un fișier CSV. Acest fișier poate fi folosit ca backup sau pentru import în alte aplicații.",
     "exportCsvButton": "Exportă seiful în fișier CSV",
     "exporting": "Se exportă...",
-    "exportConfirmTitle": "Export Seif",
+    "exportConfirmTitle": "Exportă seiful",
     "exportWarning": "Atenție: Exportul seifului într-un fișier necriptat va expune toate parolele în text clar. Fă acest lucru doar pe dispozitive de încredere și asigură-te că:\n\n• Stochezi fișierul într-un loc sigur\n• Ștergi fișierul imediat ce nu mai ai nevoie de el\n• Nu partajezi niciodată fișierul cu alții\n\nSigur dorești să continui exportul?",
+    "passwordConfirm": {
+      "title": "Confirmă parola",
+      "defaultDescription": "Introdu parola ta principală pentru a continua.",
+      "exportDescription": "Din motive de securitate, introdu parola ta principală pentru a confirma acest export."
+    },
     "security": "Securitate",
     "appVersion": "Versiune aplicație {{version}} ({{url}})",
     "autoLockOptions": {

@@ -125,7 +125,7 @@
     <comment>Loading message displayed while deleting account</comment>
   </data>
   <data name="UsernameRequired" xml:space="preserve">
-    <value>Username is required</value>
+    <value>یوزرنیم(Username) درج کرنا ضروری ہے۔</value>
     <comment>Error message when username is not provided</comment>
   </data>
   <data name="UsernameDoesNotMatch" xml:space="preserve">

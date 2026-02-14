@@ -63,7 +63,7 @@
     <comment>Header for the alias information section</comment>
   </data>
   <data name="NotesSectionHeader">
-    <value>Notes</value>
+    <value>نوٹس</value>
     <comment>Header for the notes section</comment>
   </data>
   <data name="AttachmentsSectionHeader">
@@ -72,7 +72,7 @@
   </data>
   <!-- Form labels -->
   <data name="ServiceNameLabel">
-    <value>Name</value>
+    <value>نام</value>
     <comment>Label for item name input</comment>
   </data>
   <data name="ServiceUrlLabel">
@@ -80,15 +80,15 @@
     <comment>Label for website URL input</comment>
   </data>
   <data name="EmailLabel">
-    <value>Email</value>
+    <value>ای میل</value>
     <comment>Label for email input</comment>
   </data>
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>صارف کا نام</value>
     <comment>Label for username input</comment>
   </data>
   <data name="PasswordLabel">
-    <value>Password</value>
+    <value>پاس ورڈ</value>
     <comment>Label for password input</comment>
   </data>
   <data name="FirstNameLabel">
@@ -112,7 +112,7 @@
     <comment>Label for birth date input</comment>
   </data>
   <data name="NotesLabel">
-    <value>Notes</value>
+    <value>نوٹس</value>
     <comment>Label for notes input</comment>
   </data>
   <!-- Placeholders -->
@@ -134,7 +134,7 @@
     <comment>Button text for saving an item</comment>
   </data>
   <data name="CancelButton">
-    <value>Cancel</value>
+    <value>منسوخ کریں</value>
     <comment>Button text for canceling the operation</comment>
   </data>
   <!-- Loading and status messages -->
@@ -174,7 +174,7 @@
     <comment>Label for passkey site/relying party ID</comment>
   </data>
   <data name="PasskeyDisplayNameLabel">
-    <value>Name</value>
+    <value>نام</value>
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">

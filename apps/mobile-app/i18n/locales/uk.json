@@ -179,6 +179,11 @@
     "exporting": "Експортування...",
     "exportConfirmTitle": "Експорт сховища",
     "exportWarning": "Попередження: експортування сховища в незашифрований файл призведе до розкриття всіх ваших паролів і конфіденційної інформації у вигляді звичайного тексту. Робіть це лише на надійних пристроях і переконайтеся, що ви:\n\n• Зберігати експортований файл у безпечному місці;\n• Видаляйте файл, коли він вам більше не потрібен;\n• Ніколи не діліться експортованим файлом з іншими.\n\nВи справді бажаєте продовжити експорт?",
+    "passwordConfirm": {
+      "title": "Confirm Password",
+      "defaultDescription": "Please enter your master password to continue.",
+      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+    },
     "security": "Безпека",
     "appVersion": "Версія додатку {{version}} ({{url}})",
     "autoLockOptions": {

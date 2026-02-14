@@ -112,4 +112,24 @@
     <value>Cette option vous permet de vider complètement votre coffre tout en conservant vos alias de compte et de courriel. Utilisez ceci si vous voulez commencer à nouveau après l'importation de données depuis un autre gestionnaire de mots de passe ou si vous voulez effacer tous les identifiants existants pour recommencer.</value>
     <comment>Reset vault section description</comment>
   </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Confirmer l’exportation</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>Pour des raisons de sécurité, veuillez entrer votre mot de passe maître pour confirmer l'exportation.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>Vérification du mot de passe...</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>Le mot de passe que vous avez entré est incorrect. Veuillez réessayer.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>Une erreur s'est produite lors de la vérification de votre mot de passe. Veuillez réessayer.</value>
+    <comment>Generic error message for password verification failure</comment>
+  </data>
 </root>

@@ -179,6 +179,11 @@
     "exporting": "Wird exportiert...",
     "exportConfirmTitle": "Tresor exportieren",
     "exportWarning": "Warnung: Beim Exportieren Deines Tresors in eine unverschlüsselte Datei werden alle Deine Passwörter und sensiblen Daten im Klartext sichtbar.\nFühre diesen Vorgang nur auf vertrauenswürdigen Geräten aus und stelle sicher, dass Du:\n\n• die exportierte Datei an einem sicheren Ort speicherst.\n• die Datei löschst, sobald Du sie nicht mehr brauchst.\n• die Datei niemals mit anderen teilst.\n\nBist Du sicher, dass Du mit dem Export fortfahren möchtest?",
+    "passwordConfirm": {
+      "title": "Confirm Password",
+      "defaultDescription": "Please enter your master password to continue.",
+      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+    },
     "security": "Sicherheit",
     "appVersion": "App-Version {{version}} ({{url}})",
     "autoLockOptions": {
@@ -436,7 +441,7 @@
     "offlineMessage": "Keine Verbindung. Bitte verbinde Dich mit dem Internet, um Deinen Tresor zu synchronisieren.",
     "switchBackToBrowser": "Wechsle zurück zu Deinem Browser, um fortzufahren",
     "filters": {
-      "all": "Items",
+      "all": "Titel",
       "showFolders": "Folders",
       "passkeys": "Passkeys",
       "attachments": "Anhänge"

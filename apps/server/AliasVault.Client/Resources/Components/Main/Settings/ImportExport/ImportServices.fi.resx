@@ -258,7 +258,7 @@
     <comment>RoboForm export instructions part 1</comment>
   </data>
   <data name="RoboformInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Kun olet vienyt tiedoston, voit ladata sen ulospäin alta.</value>
     <comment>RoboForm export instructions part 2</comment>
   </data>
   <!-- Edge -->
@@ -271,7 +271,7 @@
     <comment>Edge export instructions part 1</comment>
   </data>
   <data name="EdgeInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Kun olet vienyt tiedoston, voit ladata sen ulospäin alta.</value>
     <comment>Edge export instructions part 2</comment>
   </data>
   <!-- Enpass -->
@@ -284,7 +284,7 @@
     <comment>Enpass export instructions part 1</comment>
   </data>
   <data name="EnpassInstructionsPart2" xml:space="preserve">
-    <value>Once you have exported the file, you can upload it below.</value>
+    <value>Kun olet vienyt tiedoston, voit ladata sen ulospäin alta.</value>
     <comment>Enpass export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->

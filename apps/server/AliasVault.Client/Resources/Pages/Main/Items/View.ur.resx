@@ -28,7 +28,7 @@
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
-    <value>Edit</value>
+    <value>ترمیم کریں</value>
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
@@ -36,7 +36,7 @@
     <comment>Text for edit button on desktop</comment>
   </data>
   <data name="DeleteButtonMobile">
-    <value>Delete</value>
+    <value>ڈیلیٹ کریں</value>
     <comment>Text for delete button on mobile</comment>
   </data>
   <data name="DeleteButtonDesktop">
@@ -56,15 +56,15 @@
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
-    <value>Email</value>
+    <value>ای میل</value>
     <comment>Label for email field</comment>
   </data>
   <data name="UsernameLabel">
-    <value>Username</value>
+    <value>صارف کا نام</value>
     <comment>Label for username field</comment>
   </data>
   <data name="PasswordLabel">
-    <value>Password</value>
+    <value>پاس ورڈ</value>
     <comment>Label for password field</comment>
   </data>
   <data name="AliasSection">
@@ -112,7 +112,7 @@
     <comment>Label for passkey site/relying party ID</comment>
   </data>
   <data name="PasskeyDisplayNameLabel">
-    <value>Name</value>
+    <value>نام</value>
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
@@ -124,7 +124,7 @@
     <comment>Placeholder for items without a name</comment>
   </data>
   <data name="NotesSection">
-    <value>Notes</value>
+    <value>نوٹس</value>
     <comment>Section header for notes</comment>
   </data>
   <data name="CardSection">

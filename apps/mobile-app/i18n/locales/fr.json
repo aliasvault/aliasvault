@@ -179,6 +179,11 @@
     "exporting": "Exportation en cours...",
     "exportConfirmTitle": "Exporter le coffre",
     "exportWarning": "Attention : L'exportation de votre coffre-fort vers un fichier non chiffré exposera tous vos mots de passe et informations sensibles en texte clair. Effectuez cette opération uniquement sur un appareil de confiance et veillez à : \n• Stocker le fichier exporté dans un emplacement sécurisé \n• Supprimer le fichier dès que vous n'en avez plus besoin \n• Ne jamais partager le fichier exporté avec d'autres personnes \n\nÊtes-vous sûr de vouloir poursuivre l'exportation ?",
+    "passwordConfirm": {
+      "title": "Confirmez le mot de passe",
+      "defaultDescription": "Veuillez entrer votre mot de passe maître pour continuer.",
+      "exportDescription": "Pour des raisons de sécurité, veuillez entrer votre mot de passe maître pour confirmer l'exportation."
+    },
     "security": "Sécurité",
     "appVersion": "Version de l'application {{version}} ({{url}})",
     "autoLockOptions": {

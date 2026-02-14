@@ -179,6 +179,11 @@
     "exporting": "Exportando...",
     "exportConfirmTitle": "Exportar bóveda",
     "exportWarning": "Advertencia: Exportando su bóveda a un archivo no cifrado expondrá todas sus contraseñas e información sensible en texto plano. Solo haga esto en dispositivos de confianza y asegúrese de que:\n\n• Almacene el archivo exportado en una ubicación segura\n• Elimine el archivo cuando ya no lo necesite\n• Nunca comparta el archivo exportado con otros\n\n¿Está seguro de que desea continuar con la exportación?",
+    "passwordConfirm": {
+      "title": "Confirm Password",
+      "defaultDescription": "Please enter your master password to continue.",
+      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+    },
     "security": "Seguridad",
     "appVersion": "Versión de la aplicación {{version}} ({{url}})",
     "autoLockOptions": {

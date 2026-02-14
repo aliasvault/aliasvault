@@ -112,4 +112,24 @@ Weet je zeker dat je wilt doorgaan met de export?</value>
     <value>Met deze optie kun je je vault volledig legen en tegelijkertijd je account en e-mail aliassen behouden. Gebruik deze optie als je alle geïmporteerde en aangemaakte credentials wilt verwijderen en opnieuw wilt beginnen.</value>
     <comment>Reset vault section description</comment>
   </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Export bevestigen</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>Om veiligheidsredenen moet je je hoofdwachtwoord invoeren om deze export te bevestigen.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>Wachtwoord verifiëren...</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>Het ingevoerde wachtwoord is onjuist. Probeer het opnieuw.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>Er is een fout opgetreden tijdens het verifiëren van je wachtwoord. Probeer het opnieuw.</value>
+    <comment>Generic error message for password verification failure</comment>
+  </data>
 </root>

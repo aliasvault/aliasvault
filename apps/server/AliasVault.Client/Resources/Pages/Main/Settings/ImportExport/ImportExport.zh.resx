@@ -112,4 +112,24 @@
     <value>此选项允许您完全清空您的密码库，同时保留您的账户和邮件别名。如果您想从另一密码管理器导入数据后重新开始，或者想清除所有现有凭据重新开始，请使用此选项。</value>
     <comment>Reset vault section description</comment>
   </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>确认导出</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>出于安全考虑，请输入您的主密码以确认导出。</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>验证密码中…</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>您输入的密码不正确，请重试。</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>验证密码时出错，请重试。</value>
+    <comment>Generic error message for password verification failure</comment>
+  </data>
 </root>

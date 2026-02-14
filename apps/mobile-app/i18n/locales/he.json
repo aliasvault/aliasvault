@@ -179,6 +179,11 @@
     "exporting": "מתבצע ייצוא…",
     "exportConfirmTitle": "ייצוא כספת",
     "exportWarning": "אזהרה: ייצוא הכספת שלך לקובץ לא מוצפן תחשוף את כל הסיסמאות והפרטים הרגישים שלך בטקסט גלוי. יש לעשות זאת על מכשירים מהימנים וגם לוודא:\n\n• שאחסנת את הקובץ המיוצר במקום בטוח\n• שמחקת את הקובץ אם אין בו צורך עוד\n • לעולם לא לשתף את הקובץ המיוצא עם אחרים\n\nלהמשיך בייצוא?",
+    "passwordConfirm": {
+      "title": "Confirm Password",
+      "defaultDescription": "Please enter your master password to continue.",
+      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+    },
     "security": "אבטחה",
     "appVersion": "גרסת היישום היא {{version}} ({{url}})",
     "autoLockOptions": {

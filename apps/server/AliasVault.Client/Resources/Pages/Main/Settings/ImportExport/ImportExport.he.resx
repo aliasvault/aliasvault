@@ -112,4 +112,24 @@
     <value>האפשרות הזאת מאפשרת לך לרוקן את הכספת שלך לחלוטין תוך שמירה על החשבון וכינויי הדוא״ל שלך. יש להשתמש בזה כדי להתחיל מחדש לאחר ייבוא נתונים ממנהל סיסמאות אחר או כדי לרוקן את כל פרטי הגישה הקיימים ולהתחיל מחדש.</value>
     <comment>Reset vault section description</comment>
   </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Confirm Export</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>For security reasons, please enter your master password to confirm this export.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>הסיסמה נבדקת…</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>The password you entered is incorrect. Please try again.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>An error occurred while verifying your password. Please try again.</value>
+    <comment>Generic error message for password verification failure</comment>
+  </data>
 </root>

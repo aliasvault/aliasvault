@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Ora puoi usare l'auto-riempimento nei moduli di accesso nel tuo browser.",
     "closePopup": "Chiudi questo popup",
     "browseVault": "Sfoglia i contenuti della cassaforte",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Connessione a",
     "switchAccounts": "Cambia account",
     "loginWithMobile": "Accedi con l'App Mobile",
@@ -40,6 +42,7 @@
     "error": "Errore",
     "cancel": "Annulla",
     "confirm": "Conferma",
+    "remove": "Remove",
     "back": "Indietro",
     "next": "Avanti",
     "use": "Usa",
@@ -51,6 +54,7 @@
     "create": "Creare",
     "or": "O",
     "close": "Chiudi",
+    "dismiss": "Dismiss",
     "logout": "Esci",
     "copied": "Copiato!",
     "openInNewWindow": "Apri in una nuova finestra",
@@ -163,7 +167,11 @@
     "passwordCopiedToClipboard": "Password copiata negli appunti",
     "openAliasVaultToUpgrade": "Apri AliasVault per aggiornare",
     "vaultUpgradeRequired": "Aggiornamento della cassaforte richiesto.",
-    "dismissPopup": "Chiudi finestra"
+    "dismissPopup": "Chiudi finestra",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Elementi",
@@ -348,6 +356,11 @@
     "disabledForThisSite": "Disabilitato per questo sito",
     "temporarilyDisabledUntil": "Disabilitato temporaneamente fino a ",
     "resetAllSiteSettings": "Reimposta tutte le impostazioni specifiche per sito",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Aspetto",
     "theme": "Tema",
     "useDefault": "Usa predefinito",
@@ -415,6 +428,13 @@
         "male": "Maschio",
         "female": "Femmina"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Metodo di sblocco cassaforte",

@@ -123,7 +123,7 @@
     <comment>Button text for saving changes</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Cancel</value>
+    <value>Отмени</value>
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Generate" xml:space="preserve">
@@ -139,7 +139,7 @@
     <comment>Button text for editing an item</comment>
   </data>
   <data name="Close" xml:space="preserve">
-    <value>Close</value>
+    <value>Затвори</value>
     <comment>Button text for closing a dialog or modal</comment>
   </data>
   <data name="Back" xml:space="preserve">
@@ -147,7 +147,7 @@
     <comment>Button text for going back</comment>
   </data>
   <data name="Next" xml:space="preserve">
-    <value>Next</value>
+    <value>Следващ</value>
     <comment>Button text for proceeding to the next step</comment>
   </data>
   <data name="Loading" xml:space="preserve">

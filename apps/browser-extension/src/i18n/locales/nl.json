@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Je kunt nu automatisch invullen gebruiken in inlogformulieren in je browser.",
     "closePopup": "Sluit deze popup",
     "browseVault": "Bekijk vault inhoud",
+    "autoCloseUnlockPopup": "Automatisch sluiten bij toekomstige logins",
+    "closingIn": "Sluiten in {{seconds}}s...",
     "connectingTo": "Verbinden met",
     "switchAccounts": "Wisselen van account?",
     "loginWithMobile": "Log in via de mobiele app",
@@ -40,6 +42,7 @@
     "error": "Fout",
     "cancel": "Annuleren",
     "confirm": "Bevestigen",
+    "remove": "Verwijderen",
     "back": "Terug",
     "next": "Volgende",
     "use": "Gebruik",
@@ -51,6 +54,7 @@
     "create": "Aanmaken",
     "or": "Of",
     "close": "Sluiten",
+    "dismiss": "Sluiten",
     "logout": "Uitloggen",
     "copied": "Gekopieerd!",
     "openInNewWindow": "Openen in nieuw venster",
@@ -163,7 +167,11 @@
     "passwordCopiedToClipboard": "Wachtwoord gekopieerd naar klembord",
     "openAliasVaultToUpgrade": "Open AliasVault om te upgraden",
     "vaultUpgradeRequired": "Update is vereist.",
-    "dismissPopup": "Pop-up sluiten"
+    "dismissPopup": "Pop-up sluiten",
+    "savePrompt": {
+      "title": "Opslaan in AliasVault?",
+      "neverForThisSite": "Nooit voor deze site"
+    }
   },
   "items": {
     "title": "Items",
@@ -348,6 +356,11 @@
     "disabledForThisSite": "Uitgeschakeld voor deze site",
     "temporarilyDisabledUntil": "Tijdelijk uitgeschakeld tot ",
     "resetAllSiteSettings": "Alle site-specifieke instellingen resetten",
+    "autofillPopupDescription": "Toon de autofill popup wanneer login velden worden gedetecteerd.",
+    "disabledSites": "Uitgeschakelde sites",
+    "disabledSitesDescription": "Websites waar de autofill popup niet verschijnt.",
+    "clearAllDisabledSites": "Alle uitgeschakelde sites wissen",
+    "temporaryUntil": "tot",
     "appearance": "Uiterlijk",
     "theme": "Thema",
     "useDefault": "Standaard gebruiken",
@@ -415,6 +428,13 @@
         "male": "Mannelijk",
         "female": "Vrouwelijk"
       }
+    },
+    "loginSave": {
+      "title": "Inloggegevens opslaan",
+      "description": "Toon een melding om inloggegevens op te slaan wanneer je inlogt op een website.",
+      "blockedSites": "Geblokkeerde websites",
+      "blockedSitesDescription": "Sites waar de inloggegevens opslaan prompt niet zal verschijnen.",
+      "clearAllBlockedSites": "Alle uitgeschakelde sites wissen"
     },
     "unlockMethod": {
       "title": "Vault ontgrendelmethode",

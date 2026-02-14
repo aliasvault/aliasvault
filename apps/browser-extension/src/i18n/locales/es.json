@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "Ahora puede utilizar el autocompletado en los formularios de inicio de sesión en su navegador.",
     "closePopup": "Cerrar esta ventana emergente",
     "browseVault": "Navegar en el contenido de la bóveda",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Conectando con",
     "switchAccounts": "¿Cambiar de cuenta?",
     "loginWithMobile": "Iniciar sesión con la aplicación móvil",
@@ -40,6 +42,7 @@
     "error": "Error",
     "cancel": "Cancelar",
     "confirm": "Confirmar",
+    "remove": "Remove",
     "back": "Atrás",
     "next": "Siguiente",
     "use": "Usar",
@@ -51,6 +54,7 @@
     "create": "Crear",
     "or": "O",
     "close": "Cerrar",
+    "dismiss": "Dismiss",
     "logout": "Cerrar sesión",
     "copied": "¡Copiado!",
     "openInNewWindow": "Abrir en una ventana nueva",
@@ -163,7 +167,11 @@
     "passwordCopiedToClipboard": "Contraseña copiada al portapapeles",
     "openAliasVaultToUpgrade": "Abrir AliasVault para actualizar",
     "vaultUpgradeRequired": "Actualización de bóveda requerida.",
-    "dismissPopup": "Descartar aviso"
+    "dismissPopup": "Descartar aviso",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Elementos",
@@ -348,6 +356,11 @@
     "disabledForThisSite": "Deshabilitado para este sitio",
     "temporarilyDisabledUntil": "Deshabilitado temporalmente hasta ",
     "resetAllSiteSettings": "Reiniciar todos los ajustes específicos del sitio",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Apariencia",
     "theme": "Tema",
     "useDefault": "Uso por defecto",
@@ -415,6 +428,13 @@
         "male": "Hombre",
         "female": "Mujer"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Método de desbloqueo de la bóveda",

@@ -24,6 +24,8 @@
     "unlockSuccessDescription": "מעתה ניתן להשתמש בהשלמה אוטומטית בטופסי כניסה בדפדפן שלך.",
     "closePopup": "סגירת החלונית הצצה הזאת",
     "browseVault": "עיון בתוכן הכספת",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "מתבצעת התחברות אל",
     "switchAccounts": "להחליף חשבונות?",
     "loginWithMobile": "Log in using Mobile App",
@@ -40,6 +42,7 @@
     "error": "שגיאה",
     "cancel": "ביטול",
     "confirm": "אישור",
+    "remove": "Remove",
     "back": "חזרה",
     "next": "הבא",
     "use": "להשתמש",
@@ -51,6 +54,7 @@
     "create": "יצירה",
     "or": "או",
     "close": "סגירה",
+    "dismiss": "Dismiss",
     "logout": "יציאה",
     "copied": "הועתק!",
     "openInNewWindow": "פתיחה בחלון חדש",
@@ -100,10 +104,10 @@
       "passwordChanged": "הסיסמה שלך השתנתה מאז הפעם האחרונה שנכנסת למערכת. נא להיכנס שוב מטעמי אבטחת מידע.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
       "mergeFailed": "Failed to merge vault changes. Please try again.",
-      "invalidCode": "Please enter a valid 6-digit authentication code.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "wrongPassword": "Incorrect password. Please try again.",
-      "sessionExpired": "Your session has expired. Please log in again.",
+      "invalidCode": "נא למלא קוד אימות באורך 6 ספרות.",
+      "serverError": "לא ניתן ליצור קשר עם השרת של AliasVault. נא לנסות שוב מאוחר יותר או ליצור קשר עם התמיכה אם הבעיה נשנית.",
+      "wrongPassword": "סיסמה שגויה. נא לנסות שוב.",
+      "sessionExpired": "תוקף ההפעלה שלך פג. נא להיכנס מחדש.",
       "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
     },
     "apiErrors": {
@@ -163,7 +167,11 @@
     "passwordCopiedToClipboard": "הסיסמה הועתקה ללוח הגזירים",
     "openAliasVaultToUpgrade": "יש לפתוח את AliasVault כדי לשדרג",
     "vaultUpgradeRequired": "יש לשדרג את הכספת.",
-    "dismissPopup": "התעלמות מחלונית"
+    "dismissPopup": "התעלמות מחלונית",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Items",
@@ -348,6 +356,11 @@
     "disabledForThisSite": "כבוי לאתר הזה",
     "temporarilyDisabledUntil": "כבוי זמנית עד ",
     "resetAllSiteSettings": "איפוס כל ההגדרות הנקודתיות לאתרים",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "מראה",
     "theme": "ערכת עיצוב",
     "useDefault": "להשתמש בברירת המחדל",
@@ -415,6 +428,13 @@
         "male": "זכר",
         "female": "נקבה"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "שיטת שחרור נעילת כספת",
