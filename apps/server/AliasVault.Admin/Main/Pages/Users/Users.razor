@@ -1,7 +1,9 @@
 ﻿@page "/users"
 @using AliasVault.RazorComponents.Tables
+@using AliasVault.RazorComponents.Utilities
 @using AliasVault.Shared.Server.Services
 @inject ServerSettingsService SettingsService
+@inject NavigationManager NavigationManager
 @inherits MainBase
 
 <LayoutPageTitle>Users</LayoutPageTitle>
@@ -55,16 +57,11 @@ else
         <SortableTable Columns="@_tableColumns" SortColumn="@SortColumn" SortDirection="@SortDirection" OnSortChanged="HandleSortChanged">
             @foreach (var user in UserList)
             {
-                <SortableTableRow>
+                <SortableTableRow OnClick="@(() => NavigateToUser(user.Id))">
                     <SortableTableColumn IsPrimary="true">@user.CreatedAt.ToString("yyyy-MM-dd HH:mm")</SortableTableColumn>
-                    <SortableTableColumn>@user.UserName</SortableTableColumn>
-                    <SortableTableColumn>@user.VaultCount</SortableTableColumn>
-                    <SortableTableColumn>@user.CredentialCount</SortableTableColumn>
-                    <SortableTableColumn>@user.EmailClaimCount</SortableTableColumn>
-                    <SortableTableColumn>@Math.Round((double)user.VaultStorageInKb / 1024, 1) MB</SortableTableColumn>
-                    <SortableTableColumn>@(user.LastActivityDate?.ToString("yyyy-MM-dd HH:mm") ?? "Never")</SortableTableColumn>
                     <SortableTableColumn>
-                        <div class="flex flex-wrap gap-1">
+                        <div class="flex items-center gap-2">
+                            <span>@user.UserName</span>
                             @if (user.IsInactive)
                             {
                                 <StatusPill Enabled="false" TextFalse="Inactive" />
@@ -75,13 +72,15 @@ else
                             }
                             @if (user.TwoFactorEnabled)
                             {
-                                <StatusPill Enabled="true" TextTrue="2FA enabled" />
+                                <StatusPill Enabled="true" TextTrue="2FA" />
                             }
                         </div>
                     </SortableTableColumn>
-                    <SortableTableColumn>
-                        <LinkButton Color="primary" Href="@($"users/{user.Id}")" Text="View" />
-                    </SortableTableColumn>
+                    <SortableTableColumn>@RelativeTimeFormatter.Format(user.LastActivityDate)</SortableTableColumn>
+                    <SortableTableColumn>@user.CredentialCount</SortableTableColumn>
+                    <SortableTableColumn>@user.EmailClaimCount</SortableTableColumn>
+                    <SortableTableColumn>@user.VaultCount</SortableTableColumn>
+                    <SortableTableColumn>@Math.Round((double)user.VaultStorageInKb / 1024, 1) MB</SortableTableColumn>
                 </SortableTableRow>
             }
         </SortableTable>
@@ -92,13 +91,11 @@ else
     private readonly List<TableColumn> _tableColumns = [
         new TableColumn { Title = "Registered", PropertyName = "CreatedAt" },
         new TableColumn { Title = "Username", PropertyName = "UserName" },
-        new TableColumn { Title = "# Vaults", PropertyName = "VaultCount" },
+        new TableColumn { Title = "Last Activity", PropertyName = "LastActivityDate" },
         new TableColumn { Title = "# Credentials", PropertyName = "CredentialCount" },
         new TableColumn { Title = "# Email claims", PropertyName = "EmailClaimCount" },
+        new TableColumn { Title = "# Vaults", PropertyName = "VaultCount" },
         new TableColumn { Title = "Storage", PropertyName = "VaultStorageInKb" },
-        new TableColumn { Title = "Last Activity", PropertyName = "LastActivityDate" },
-        new TableColumn { Title = "Status", Sortable = false },
-        new TableColumn { Title = "Actions", Sortable = false},
     ];
 
     private List<UserViewModel> UserList { get; set; } = [];
@@ -156,6 +153,11 @@ else
         SortColumn = sort.column;
         SortDirection = sort.direction;
         await RefreshData(CancellationToken.None);
+    }
+
+    private void NavigateToUser(string userId)
+    {
+        NavigationManager.NavigateTo($"users/{userId}");
     }
 
     /// <inheritdoc />

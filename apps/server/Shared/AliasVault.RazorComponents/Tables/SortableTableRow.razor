@@ -1,4 +1,4 @@
-﻿<tr @onclick="HandleClick" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 @(Class)">
+﻿<tr @onclick="HandleClick" class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 @(OnClick.HasDelegate ? "cursor-pointer" : "") @(Class)">
     @ChildContent
 </tr>
 
