@@ -12,4 +12,5 @@ export type {
   SitePreference,
   LoginSaveSettings,
   LoginCaptureCallback,
+  SavePromptPersistedState,
 } from './types';

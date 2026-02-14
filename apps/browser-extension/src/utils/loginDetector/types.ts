@@ -93,3 +93,20 @@ export type LoginSaveSettings = {
  * Callback type for login capture events.
  */
 export type LoginCaptureCallback = (login: CapturedLogin) => void;
+
+/**
+ * Persisted state for save prompt across page navigations.
+ * Used to restore the prompt on traditional form submissions with redirects.
+ */
+export type SavePromptPersistedState = {
+  /** The captured login credentials */
+  login: CapturedLogin;
+  /** Remaining time in milliseconds when the page navigated */
+  remainingTimeMs: number;
+  /** Initial auto-dismiss duration (for resetting if needed) */
+  initialAutoDismissMs: number;
+  /** Timestamp when this state was saved */
+  savedAt: number;
+  /** The domain where the prompt was shown (to validate on restore) */
+  domain: string;
+};
