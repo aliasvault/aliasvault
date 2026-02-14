@@ -6,6 +6,7 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
+import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/passwordLengthSlider';
 
 interface IPasswordFieldProps {
   id: string;
@@ -98,7 +99,8 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
     if (!currentSettings) {
       return;
     }
-    const length = parseInt(e.target.value, 10);
+    const sliderValue = parseFloat(e.target.value);
+    const length = sliderToLength(sliderValue);
     const newSettings = { ...currentSettings, Length: length };
     setCurrentSettings(newSettings);
 
@@ -226,9 +228,10 @@ const PasswordField: React.FC<IPasswordFieldProps> = ({
         <input
           type="range"
           id={`${id}-length`}
-          min="8"
-          max="64"
-          value={currentSettings.Length}
+          min={SLIDER_MIN}
+          max={SLIDER_MAX}
+          step="0.1"
+          value={lengthToSlider(currentSettings.Length)}
           onChange={handleLengthChange}
           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
         />
