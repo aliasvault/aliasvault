@@ -429,14 +429,12 @@ async function createPromptHTML(login: CapturedLogin): Promise<string> {
   const escapedUsername = escapeHtml(login.username);
   const escapedSuggestedName = escapeHtml(login.suggestedName);
   const escapedDomain = escapeHtml(login.domain);
-  // Create masked password display (show length but not actual characters)
-  const maskedPassword = '•'.repeat(Math.min(login.password.length, 12));
+  const maskedPassword = '•'.repeat(12); // Static 12 characters for password display
 
-  // Get translated strings (reuse common.save for consistency)
   const titleText = await t('content.savePrompt.title');
   const saveText = await t('common.save');
   const neverText = await t('content.savePrompt.neverForThisSite');
-  const dismissText = await t('content.savePrompt.dismiss');
+  const dismissText = await t('common.dismiss');
 
   return `
     <div class="av-save-prompt__countdown">

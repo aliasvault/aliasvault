@@ -54,6 +54,7 @@
     "create": "Create",
     "or": "Or",
     "close": "Close",
+    "dismiss": "Dismiss",
     "logout": "Logout",
     "copied": "Copied!",
     "openInNewWindow": "Open in new window",
@@ -169,8 +170,7 @@
     "dismissPopup": "Dismiss popup",
     "savePrompt": {
       "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site",
-      "dismiss": "Dismiss"
+      "neverForThisSite": "Never for this site"
     }
   },
   "items": {
