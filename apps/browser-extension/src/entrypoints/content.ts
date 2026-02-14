@@ -7,7 +7,7 @@ import { onMessage, sendMessage } from "webext-bridge/content-script";
 
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { isAutoShowPopupEnabled, openAutofillPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
-import { showSavePrompt, isSavePromptVisible } from '@/entrypoints/contentScript/SavePrompt';
+import { showSavePrompt, isSavePromptVisible, updateSavePromptLogin } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { FormDetector } from '@/utils/formDetector/FormDetector';
@@ -158,9 +158,10 @@ function initializeLoginDetector(container: HTMLElement): void {
       return;
     }
 
-    // Check if a save prompt is already visible
+    // Check if a save prompt is already visible - if so, update it with new credentials
     if (isSavePromptVisible()) {
-      console.debug('[AliasVault] Save prompt already visible, skipping');
+      console.debug('[AliasVault] Save prompt already visible, updating with new credentials');
+      updateSavePromptLogin(login);
       return;
     }
 

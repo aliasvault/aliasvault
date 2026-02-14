@@ -32,6 +32,12 @@ let currentAutoDismissMs = 0;
 /** Callback for when auto-dismiss triggers */
 let onAutoDismissCallback: (() => void) | null = null;
 
+/** Current login data - can be updated while prompt is visible */
+let currentLogin: CapturedLogin | null = null;
+
+/** Current callbacks - stored so we can use them with updated login */
+let currentOnSave: ((login: CapturedLogin, serviceName: string) => void) | null = null;
+
 /**
  * Create and show the save prompt banner.
  * @param container - The shadow DOM container to append the prompt to.
@@ -42,6 +48,10 @@ export async function showSavePrompt(container: HTMLElement, options: SavePrompt
   removeSavePrompt();
 
   const { login, onSave, onNeverSave, onDismiss, autoDismissMs = 10000 } = options;
+
+  // Store current login and callback so they can be updated
+  currentLogin = login;
+  currentOnSave = onSave;
 
   // Create prompt element
   const prompt = document.createElement('div');
@@ -177,6 +187,10 @@ export function removeSavePrompt(): void {
   currentAutoDismissMs = 0;
   onAutoDismissCallback = null;
 
+  // Reset login state
+  currentLogin = null;
+  currentOnSave = null;
+
   // Stop countdown bar animation
   if (countdownBar) {
     countdownBar.style.transition = 'none';
@@ -198,6 +212,48 @@ export function removeSavePrompt(): void {
  */
 export function isSavePromptVisible(): boolean {
   return currentPrompt !== null;
+}
+
+/**
+ * Update the currently visible save prompt with new login credentials.
+ * This allows subsequent login attempts to update the credentials that will be saved.
+ * @param login - The new captured login credentials.
+ */
+export function updateSavePromptLogin(login: CapturedLogin): void {
+  if (!currentPrompt) {
+    return;
+  }
+
+  // Update the stored login
+  currentLogin = login;
+
+  // Update the UI to reflect the new credentials
+  const usernameSpan = currentPrompt.querySelector('.av-save-prompt__username');
+  const passwordSpan = currentPrompt.querySelector('.av-save-prompt__password');
+  const serviceInput = currentPrompt.querySelector('.av-save-prompt__service-input') as HTMLInputElement;
+
+  if (usernameSpan) {
+    usernameSpan.textContent = login.username;
+  }
+
+  if (passwordSpan) {
+    // Create masked password display
+    const maskedPassword = '•'.repeat(Math.min(login.password.length, 12));
+    passwordSpan.textContent = maskedPassword;
+  }
+
+  // Update service name input if it still has the default value
+  if (serviceInput && serviceInput.dataset.domain === login.domain) {
+    // Only update if user hasn't modified the input
+    const currentValue = serviceInput.value;
+    const previousSuggestedName = serviceInput.defaultValue;
+    if (currentValue === previousSuggestedName) {
+      serviceInput.value = login.suggestedName;
+      serviceInput.defaultValue = login.suggestedName;
+    }
+  }
+
+  console.debug('[AliasVault] Updated save prompt with new credentials');
 }
 
 /**
@@ -263,14 +319,19 @@ function setupEventListeners(
   const serviceInput = prompt.querySelector('.av-save-prompt__service-input') as HTMLInputElement;
 
   saveBtn?.addEventListener('click', () => {
-    const serviceName = serviceInput?.value || login.suggestedName;
+    // Use currentLogin to get the latest credentials (may have been updated)
+    const loginToSave = currentLogin || login;
+    const saveCallback = currentOnSave || onSave;
+    const serviceName = serviceInput?.value || loginToSave.suggestedName;
     removeSavePrompt();
-    onSave(login, serviceName);
+    saveCallback(loginToSave, serviceName);
   });
 
   neverBtn?.addEventListener('click', () => {
+    // Use currentLogin to get the latest domain
+    const loginToUse = currentLogin || login;
     removeSavePrompt();
-    onNeverSave(login.domain);
+    onNeverSave(loginToUse.domain);
   });
 
   dismissBtn?.addEventListener('click', () => {
@@ -282,9 +343,12 @@ function setupEventListeners(
   serviceInput?.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      const serviceName = serviceInput.value || login.suggestedName;
+      // Use currentLogin to get the latest credentials
+      const loginToSave = currentLogin || login;
+      const saveCallback = currentOnSave || onSave;
+      const serviceName = serviceInput.value || loginToSave.suggestedName;
       removeSavePrompt();
-      onSave(login, serviceName);
+      saveCallback(loginToSave, serviceName);
     } else if (e.key === 'Escape') {
       e.preventDefault();
       removeSavePrompt();
