@@ -14,6 +14,24 @@ let currentPrompt: HTMLElement | null = null;
 /** Auto-dismiss timer */
 let autoDismissTimer: number | null = null;
 
+/** Reference to the countdown bar element */
+let countdownBar: HTMLElement | null = null;
+
+/** Track if auto-dismiss is paused (user is interacting) */
+let isAutoDismissPaused = false;
+
+/** Remaining time when paused */
+let remainingTimeMs = 0;
+
+/** Timestamp when countdown started/resumed */
+let countdownStartTime = 0;
+
+/** Current auto-dismiss duration */
+let currentAutoDismissMs = 0;
+
+/** Callback for when auto-dismiss triggers */
+let onAutoDismissCallback: (() => void) | null = null;
+
 /**
  * Create and show the save prompt banner.
  * @param container - The shadow DOM container to append the prompt to.
@@ -23,7 +41,7 @@ export async function showSavePrompt(container: HTMLElement, options: SavePrompt
   // Remove any existing prompt first
   removeSavePrompt();
 
-  const { login, onSave, onNeverSave, onDismiss, autoDismissMs = 15000 } = options;
+  const { login, onSave, onNeverSave, onDismiss, autoDismissMs = 10000 } = options;
 
   // Create prompt element
   const prompt = document.createElement('div');
@@ -39,16 +57,108 @@ export async function showSavePrompt(container: HTMLElement, options: SavePrompt
     prompt.classList.add('av-save-prompt--visible');
   });
 
-  // Set up event listeners
-  setupEventListeners(prompt, login, onSave, onNeverSave, onDismiss);
-
-  // Set up auto-dismiss
+  // Set up auto-dismiss with countdown bar
   if (autoDismissMs > 0) {
+    // Initialize countdown state
+    currentAutoDismissMs = autoDismissMs;
+    remainingTimeMs = autoDismissMs;
+    countdownStartTime = Date.now();
+    isAutoDismissPaused = false;
+    onAutoDismissCallback = onDismiss;
+
+    // Create and start countdown bar animation
+    countdownBar = prompt.querySelector('.av-save-prompt__countdown-bar') as HTMLElement;
+    startCountdownAnimation(autoDismissMs);
+
     autoDismissTimer = window.setTimeout(() => {
       removeSavePrompt();
       onDismiss();
     }, autoDismissMs);
+
+    // Set up hover/focus listeners to pause countdown
+    setupPauseListeners(prompt);
   }
+
+  // Set up event listeners
+  setupEventListeners(prompt, login, onSave, onNeverSave, onDismiss);
+}
+
+/**
+ * Start the countdown bar animation.
+ */
+function startCountdownAnimation(durationMs: number): void {
+  if (countdownBar) {
+    requestAnimationFrame(() => {
+      if (countdownBar) {
+        countdownBar.style.transition = `width ${durationMs}ms linear`;
+        countdownBar.style.width = '0%';
+      }
+    });
+  }
+}
+
+/**
+ * Pause the countdown (when user hovers or focuses on the prompt).
+ */
+function pauseCountdown(): void {
+  if (isAutoDismissPaused || !autoDismissTimer) {
+    return;
+  }
+
+  isAutoDismissPaused = true;
+
+  // Calculate remaining time
+  const elapsed = Date.now() - countdownStartTime;
+  remainingTimeMs = Math.max(0, currentAutoDismissMs - elapsed);
+
+  // Clear the timer
+  clearTimeout(autoDismissTimer);
+  autoDismissTimer = null;
+
+  // Pause the CSS animation by getting current width and freezing it
+  if (countdownBar) {
+    const computedStyle = window.getComputedStyle(countdownBar);
+    const currentWidth = computedStyle.width;
+    countdownBar.style.transition = 'none';
+    countdownBar.style.width = currentWidth;
+  }
+}
+
+/**
+ * Resume the countdown (when user stops hovering/focusing).
+ */
+function resumeCountdown(): void {
+  if (!isAutoDismissPaused || remainingTimeMs <= 0) {
+    return;
+  }
+
+  isAutoDismissPaused = false;
+  countdownStartTime = Date.now();
+  currentAutoDismissMs = remainingTimeMs;
+
+  // Resume the CSS animation
+  startCountdownAnimation(remainingTimeMs);
+
+  // Set new timer for remaining time
+  autoDismissTimer = window.setTimeout(() => {
+    removeSavePrompt();
+    onAutoDismissCallback?.();
+  }, remainingTimeMs);
+}
+
+/**
+ * Set up listeners to pause/resume countdown on hover and focus.
+ */
+function setupPauseListeners(prompt: HTMLElement): void {
+  prompt.addEventListener('mouseenter', pauseCountdown);
+  prompt.addEventListener('mouseleave', resumeCountdown);
+  prompt.addEventListener('focusin', pauseCountdown);
+  prompt.addEventListener('focusout', (e: FocusEvent) => {
+    // Only resume if focus moved outside the prompt
+    if (!prompt.contains(e.relatedTarget as Node)) {
+      resumeCountdown();
+    }
+  });
 }
 
 /**
@@ -58,6 +168,19 @@ export function removeSavePrompt(): void {
   if (autoDismissTimer) {
     clearTimeout(autoDismissTimer);
     autoDismissTimer = null;
+  }
+
+  // Reset countdown state
+  isAutoDismissPaused = false;
+  remainingTimeMs = 0;
+  countdownStartTime = 0;
+  currentAutoDismissMs = 0;
+  onAutoDismissCallback = null;
+
+  // Stop countdown bar animation
+  if (countdownBar) {
+    countdownBar.style.transition = 'none';
+    countdownBar = null;
   }
 
   if (currentPrompt) {
@@ -84,6 +207,8 @@ async function createPromptHTML(login: CapturedLogin): Promise<string> {
   const escapedUsername = escapeHtml(login.username);
   const escapedSuggestedName = escapeHtml(login.suggestedName);
   const escapedDomain = escapeHtml(login.domain);
+  // Create masked password display (show length but not actual characters)
+  const maskedPassword = '•'.repeat(Math.min(login.password.length, 12));
 
   // Get translated strings
   const titleText = await t('content.savePrompt.title');
@@ -96,13 +221,11 @@ async function createPromptHTML(login: CapturedLogin): Promise<string> {
       <div class="av-save-prompt__icon">
         ${getLogoMarkSvg(24, 24)}
       </div>
-      <div class="av-save-prompt__text">
-        <div class="av-save-prompt__title">${titleText}</div>
-        <div class="av-save-prompt__details">
-          <span class="av-save-prompt__username">${escapedUsername}</span>
-          <span class="av-save-prompt__separator">•</span>
-          <input type="text" class="av-save-prompt__service-input" value="${escapedSuggestedName}" data-domain="${escapedDomain}" />
-        </div>
+      <div class="av-save-prompt__title">${titleText}</div>
+      <div class="av-save-prompt__fields">
+        <input type="text" class="av-save-prompt__service-input" value="${escapedSuggestedName}" data-domain="${escapedDomain}" placeholder="Service name" />
+        <span class="av-save-prompt__username">${escapedUsername}</span>
+        <span class="av-save-prompt__password">${maskedPassword}</span>
       </div>
       <div class="av-save-prompt__actions">
         <button class="av-save-prompt__btn av-save-prompt__btn--save">
@@ -117,6 +240,9 @@ async function createPromptHTML(login: CapturedLogin): Promise<string> {
           </svg>
         </button>
       </div>
+    </div>
+    <div class="av-save-prompt__countdown">
+      <div class="av-save-prompt__countdown-bar"></div>
     </div>
   `;
 }

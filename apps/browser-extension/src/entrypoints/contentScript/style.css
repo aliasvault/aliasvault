@@ -1300,6 +1300,7 @@ body {
 }
 
 .av-save-prompt__content {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1323,42 +1324,25 @@ body {
   height: 100%;
 }
 
-.av-save-prompt__text {
-  flex: 1;
-  min-width: 0;
-}
-
 .av-save-prompt__title {
   font-size: 14px;
   font-weight: 600;
   color: #f8f9fa;
-  margin-bottom: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.av-save-prompt__details {
+.av-save-prompt__fields {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-}
-
-.av-save-prompt__username {
-  color: #9ca3af;
-  max-width: 180px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.av-save-prompt__separator {
-  color: #4b5563;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
 }
 
 .av-save-prompt__service-input {
-  flex: 1;
-  min-width: 120px;
-  max-width: 200px;
-  padding: 4px 8px;
+  width: 140px;
+  padding: 5px 10px;
   border: 1px solid #4b5563;
   border-radius: 4px;
   background: #374151;
@@ -1367,11 +1351,29 @@ body {
   font-family: inherit;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
 .av-save-prompt__service-input:focus {
   border-color: #d68338;
   box-shadow: 0 0 0 2px rgba(214, 131, 56, 0.2);
+}
+
+.av-save-prompt__username {
+  color: #9ca3af;
+  font-size: 13px;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.av-save-prompt__password {
+  color: #6b7280;
+  font-size: 13px;
+  font-family: monospace;
+  letter-spacing: 1px;
 }
 
 .av-save-prompt__actions {
@@ -1436,4 +1438,16 @@ body {
 .av-save-prompt__btn--dismiss svg {
   width: 16px;
   height: 16px;
+}
+
+/* Save Prompt Countdown Bar */
+.av-save-prompt__countdown {
+  height: 3px;
+  background: rgba(75, 85, 99, 0.5);
+}
+
+.av-save-prompt__countdown-bar {
+  height: 100%;
+  width: 100%;
+  background: #d68338;
 }
