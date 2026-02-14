@@ -42,6 +42,7 @@
     "error": "错误",
     "cancel": "取消",
     "confirm": "确认",
+    "remove": "Remove",
     "back": "返回",
     "next": "下一步",
     "use": "使用",
@@ -53,6 +54,7 @@
     "create": "创建",
     "or": "或",
     "close": "关闭",
+    "dismiss": "Dismiss",
     "logout": "退出登录",
     "copied": "已复制！",
     "openInNewWindow": "在新窗口中打开",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "密码已复制到剪贴板",
     "openAliasVaultToUpgrade": "打开AliasVault进行升级",
     "vaultUpgradeRequired": "需要升级密码库。",
-    "dismissPopup": "关闭弹窗"
+    "dismissPopup": "关闭弹窗",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "项目",
@@ -350,6 +356,11 @@
     "disabledForThisSite": "对此网站禁用",
     "temporarilyDisabledUntil": "暂时禁用至 ",
     "resetAllSiteSettings": "重置所有网站特定设置",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "外观",
     "theme": "主题",
     "useDefault": "使用默认",
@@ -417,6 +428,13 @@
         "male": "男",
         "female": "女"
       }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "密码库解锁方式",
