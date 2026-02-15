@@ -24,8 +24,8 @@
     "unlockSuccessDescription": "Теперь вы можете использовать автозаполнение форм входа в Вашем браузере.",
     "closePopup": "Закрыть окно",
     "browseVault": "Обзор содержимого хранилища",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
-    "closingIn": "Closing in {{seconds}}s...",
+    "autoCloseUnlockPopup": "Закрывать окно после входа",
+    "closingIn": "Закроется через {{seconds}}с...",
     "connectingTo": "Подключение к",
     "switchAccounts": "Переключить аккаунт?",
     "loginWithMobile": "Войти с помощью мобильного приложения",
@@ -42,7 +42,7 @@
     "error": "Ошибка",
     "cancel": "Отмена",
     "confirm": "Подтвердить",
-    "remove": "Remove",
+    "remove": "Удалить",
     "back": "Назад",
     "next": "Далее",
     "use": "Использовать",
@@ -54,7 +54,7 @@
     "create": "Создать",
     "or": "Или",
     "close": "Закрыть",
-    "dismiss": "Dismiss",
+    "dismiss": "Закрыть",
     "logout": "Выйти",
     "copied": "Скопировано!",
     "openInNewWindow": "Открыть в новом окне",
@@ -169,8 +169,8 @@
     "vaultUpgradeRequired": "Требуется обновление хранилища.",
     "dismissPopup": "Закрыть окно",
     "savePrompt": {
-      "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "title": "Сохранить в AliasVault?",
+      "neverForThisSite": "Никогда для этого сайта"
     }
   },
   "items": {
@@ -356,11 +356,11 @@
     "disabledForThisSite": "Отключено для этого сайта",
     "temporarilyDisabledUntil": "Временно отключен до тех пор, пока",
     "resetAllSiteSettings": "Сбросить все настройки для сайтов",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
-    "disabledSites": "Disabled sites",
-    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "clearAllDisabledSites": "Clear all disabled sites",
-    "temporaryUntil": "until",
+    "autofillPopupDescription": "Показывать автозаполнение при обнаружении полей входа.",
+    "disabledSites": "Исключения",
+    "disabledSitesDescription": "Сайты, на которых не будет появляться автозаполнение.",
+    "clearAllDisabledSites": "Очистить список исключений",
+    "temporaryUntil": "До",
     "appearance": "Внешний вид",
     "theme": "Тема",
     "useDefault": "Использовать по умолчанию",
@@ -430,11 +430,11 @@
       }
     },
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "title": "Запрос на сохранение",
+      "description": "Запрашивать сохранение пароля после входа на сайт.",
+      "blockedSites": "Заблокированные сайты",
+      "blockedSitesDescription": "Сайты, где запрос на сохранение никогда не появится.",
+      "clearAllBlockedSites": "Очистить весь список"
     },
     "unlockMethod": {
       "title": "Способ разблокировки хранилища",
