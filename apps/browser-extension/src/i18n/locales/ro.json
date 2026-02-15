@@ -42,7 +42,7 @@
     "error": "Eroare",
     "cancel": "Anulează",
     "confirm": "Confirmă",
-    "remove": "Remove",
+    "remove": "Elimină",
     "back": "Înapoi",
     "next": "Înainte",
     "use": "Folosește",
@@ -54,7 +54,7 @@
     "create": "Creează",
     "or": "Sau",
     "close": "Închide",
-    "dismiss": "Dismiss",
+    "dismiss": "Închide",
     "logout": "Deconectare",
     "copied": "Copiat!",
     "openInNewWindow": "Deschide în fereastră nouă",
@@ -169,8 +169,8 @@
     "vaultUpgradeRequired": "Este necesară actualizarea seifului.",
     "dismissPopup": "Închide fereastra",
     "savePrompt": {
-      "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "title": "Salvează în AliasVault?",
+      "neverForThisSite": "Niciodată pentru acest site"
     }
   },
   "items": {
