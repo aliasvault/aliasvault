@@ -17,6 +17,7 @@ import { join } from 'path';
 
 import argon2 from 'argon2';
 import Database from 'better-sqlite3';
+import * as OTPAuth from 'otpauth';
 import * as srp from 'secure-remote-password/client.js';
 
 // Get the vault schema SQL from the core vault package
@@ -37,6 +38,8 @@ export type TestUser = {
   username: string;
   password: string;
   token?: TokenModel;
+  /** TOTP secret if 2FA is enabled */
+  totpSecret?: string;
 };
 
 /**
@@ -424,4 +427,101 @@ export async function isApiAvailable(apiBaseUrl: string): Promise<boolean> {
   } catch {
     return false;
   }
+}
+
+/**
+ * Enables two-factor authentication for a user.
+ *
+ * @param apiBaseUrl - The base URL of the API
+ * @param token - The authentication token
+ * @returns The TOTP secret that can be used to generate codes
+ */
+export async function enableTwoFactor(apiBaseUrl: string, token: string): Promise<string> {
+  const baseUrl = apiBaseUrl.replace(/\/$/, '') + '/v1/';
+
+  // Step 1: Enable 2FA to get the secret
+  const enableResponse = await fetch(`${baseUrl}TwoFactorAuth/enable`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!enableResponse.ok) {
+    const errorText = await enableResponse.text();
+    throw new Error(`Failed to enable 2FA: ${enableResponse.status} ${errorText}`);
+  }
+
+  const responseJson = await enableResponse.json();
+  // Handle both PascalCase (C#) and camelCase (serialization might vary)
+  const secret = responseJson.Secret || responseJson.secret;
+  if (!secret) {
+    throw new Error(`2FA enable response missing secret. Got: ${JSON.stringify(responseJson)}`);
+  }
+
+  // Step 2: Generate a TOTP code and verify it to complete 2FA setup
+  const totp = new OTPAuth.TOTP({
+    secret: secret,
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+  });
+  const code = totp.generate();
+
+  const verifyResponse = await fetch(`${baseUrl}TwoFactorAuth/verify`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(code),
+  });
+
+  if (!verifyResponse.ok) {
+    const errorText = await verifyResponse.text();
+    throw new Error(`Failed to verify 2FA: ${verifyResponse.status} ${errorText}`);
+  }
+
+  return secret;
+}
+
+/**
+ * Generates a TOTP code from a secret.
+ * Uses the same otpauth library as the browser extension.
+ *
+ * @param secret - The TOTP secret
+ * @returns A 6-digit TOTP code
+ */
+export function generateTotpCode(secret: string): string {
+  const totp = new OTPAuth.TOTP({
+    secret: secret,
+    algorithm: 'SHA1',
+    digits: 6,
+    period: 30,
+  });
+  return totp.generate();
+}
+
+/**
+ * Creates a test user with 2FA enabled.
+ *
+ * @param apiBaseUrl - The base URL of the API
+ * @returns A TestUser object with credentials, token, and TOTP secret
+ */
+export async function createTestUserWith2FA(apiBaseUrl: string): Promise<TestUser> {
+  const username = generateTestUsername();
+  const password = generateTestPassword();
+
+  const token = await registerTestUser(apiBaseUrl, username, password);
+
+  // Enable 2FA for the user
+  const totpSecret = await enableTwoFactor(apiBaseUrl, token.token);
+
+  return {
+    username,
+    password,
+    token,
+    totpSecret,
+  };
 }
