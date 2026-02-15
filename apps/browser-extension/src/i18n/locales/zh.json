@@ -42,7 +42,7 @@
     "error": "错误",
     "cancel": "取消",
     "confirm": "确认",
-    "remove": "Remove",
+    "remove": "移除",
     "back": "返回",
     "next": "下一步",
     "use": "使用",
@@ -54,7 +54,7 @@
     "create": "创建",
     "or": "或",
     "close": "关闭",
-    "dismiss": "Dismiss",
+    "dismiss": "取消",
     "logout": "退出登录",
     "copied": "已复制！",
     "openInNewWindow": "在新窗口中打开",
@@ -169,8 +169,8 @@
     "vaultUpgradeRequired": "需要升级密码库。",
     "dismissPopup": "关闭弹窗",
     "savePrompt": {
-      "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "title": "保存到 AliasVault？",
+      "neverForThisSite": "此网站不再显示"
     }
   },
   "items": {
@@ -356,11 +356,11 @@
     "disabledForThisSite": "对此网站禁用",
     "temporarilyDisabledUntil": "暂时禁用至 ",
     "resetAllSiteSettings": "重置所有网站特定设置",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
-    "disabledSites": "Disabled sites",
-    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "clearAllDisabledSites": "Clear all disabled sites",
-    "temporaryUntil": "until",
+    "autofillPopupDescription": "检测到登录字段时，显示自动填充弹窗。",
+    "disabledSites": "禁用的网站",
+    "disabledSitesDescription": "自动填充弹窗不会出现的网站。",
+    "clearAllDisabledSites": "清除所有禁用的网站",
+    "temporaryUntil": "直到",
     "appearance": "外观",
     "theme": "主题",
     "useDefault": "使用默认",
@@ -430,11 +430,11 @@
       }
     },
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "title": "保存登录提示",
+      "description": "在网站上提交登录表单时，显示保存登录凭据的提示。",
+      "blockedSites": "屏蔽的网站",
+      "blockedSitesDescription": "永远不会出现保存提示的网站。",
+      "clearAllBlockedSites": "清除所有屏蔽的网站"
     },
     "unlockMethod": {
       "title": "密码库解锁方式",
