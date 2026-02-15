@@ -42,7 +42,7 @@
     "error": "Erreur",
     "cancel": "Annuler",
     "confirm": "Confirmer",
-    "remove": "Remove",
+    "remove": "Supprimer",
     "back": "Retour",
     "next": "Suivant",
     "use": "Utiliser",
@@ -54,7 +54,7 @@
     "create": "Créer",
     "or": "Ou",
     "close": "Fermer",
-    "dismiss": "Dismiss",
+    "dismiss": "Ignorer",
     "logout": "Déconnexion",
     "copied": "Copié !",
     "openInNewWindow": "Ouvrir dans une nouvelle fenêtre",
@@ -169,8 +169,8 @@
     "vaultUpgradeRequired": "Mise à niveau du coffre requise.",
     "dismissPopup": "Fermer",
     "savePrompt": {
-      "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "title": "Enregistrer dans AliasVault?",
+      "neverForThisSite": "Jamais pour ce site"
     }
   },
   "items": {
@@ -356,11 +356,11 @@
     "disabledForThisSite": "Désactivé pour ce site",
     "temporarilyDisabledUntil": "Temporairement désactivé jusqu'au ",
     "resetAllSiteSettings": "Réinitialiser tous les paramètres spécifiques au site",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
-    "disabledSites": "Disabled sites",
-    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "clearAllDisabledSites": "Clear all disabled sites",
-    "temporaryUntil": "until",
+    "autofillPopupDescription": "Afficher la fenêtre de saisie automatique lorsque les champs de connexion sont détectés.",
+    "disabledSites": "Sites désactivés",
+    "disabledSitesDescription": "Les sites où la fenêtre de saisie automatique n'apparaîtra pas.",
+    "clearAllDisabledSites": "Effacer tous les sites désactivés",
+    "temporaryUntil": "jusqu'au",
     "appearance": "Apparence",
     "theme": "Thème",
     "useDefault": "Utiliser par défaut",
@@ -430,11 +430,11 @@
       }
     },
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "title": "Enregistrer l'invite de connexion",
+      "description": "Afficher une invite pour enregistrer les identifiants de connexion lorsque vous soumettez un formulaire de connexion sur un site Web.",
+      "blockedSites": "Sites bloqués",
+      "blockedSitesDescription": "Les sites où l'invite de sauvegarde n'apparaîtra jamais.",
+      "clearAllBlockedSites": "Effacer tous les sites bloqués"
     },
     "unlockMethod": {
       "title": "Méthode de déverrouillage du coffre",
