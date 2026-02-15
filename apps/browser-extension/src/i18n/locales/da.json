@@ -42,7 +42,7 @@
     "error": "Fejl",
     "cancel": "Annuller",
     "confirm": "Bekræft",
-    "remove": "Remove",
+    "remove": "Fjern",
     "back": "Tilbage",
     "next": "Næste",
     "use": "Brug",
@@ -54,7 +54,7 @@
     "create": "Opret",
     "or": "Eller",
     "close": "Luk",
-    "dismiss": "Dismiss",
+    "dismiss": "Afvis",
     "logout": "Log ud",
     "copied": "Kopieret!",
     "openInNewWindow": "Åbn i nyt vindue",
@@ -169,8 +169,8 @@
     "vaultUpgradeRequired": "Opgradering af boks påkrævet.",
     "dismissPopup": "Luk popup",
     "savePrompt": {
-      "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "title": "Gem i AliasVault?",
+      "neverForThisSite": "Aldrig for dette websted"
     }
   },
   "items": {
@@ -356,11 +356,11 @@
     "disabledForThisSite": "Deaktiveret for dette websted",
     "temporarilyDisabledUntil": "Midlertidigt deaktiveret indtil ",
     "resetAllSiteSettings": "Nulstil alle webstedsspecifikke indstillinger",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
-    "disabledSites": "Disabled sites",
-    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "clearAllDisabledSites": "Clear all disabled sites",
-    "temporaryUntil": "until",
+    "autofillPopupDescription": "Vis popup for autofyld når login-felter detekteres.",
+    "disabledSites": "Deaktiverede websteder",
+    "disabledSitesDescription": "Websteder hvor popup-vinduet for autofyld ikke vises.",
+    "clearAllDisabledSites": "Ryd alle deaktiverede websteder",
+    "temporaryUntil": "indtil",
     "appearance": "Udseende",
     "theme": "Tema",
     "useDefault": "Brug standard",
@@ -430,11 +430,11 @@
       }
     },
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "title": "Gem Login-prompt",
+      "description": "Vis en prompt for at gemme loginoplysninger, når du indsender en login-formular på et websted.",
+      "blockedSites": "Blokerede websteder",
+      "blockedSitesDescription": "Websteder, hvor den gemte prompt aldrig vises.",
+      "clearAllBlockedSites": "Slet alle blokerede websteder"
     },
     "unlockMethod": {
       "title": "Oplåsningsmetode for boks",
