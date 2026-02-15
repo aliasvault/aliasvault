@@ -356,11 +356,11 @@
     "disabledForThisSite": "Dezactivat pentru acest site",
     "temporarilyDisabledUntil": "Dezactivat temporar până la ",
     "resetAllSiteSettings": "Resetează toate setările specifice site-ului",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
-    "disabledSites": "Disabled sites",
-    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "clearAllDisabledSites": "Clear all disabled sites",
-    "temporaryUntil": "until",
+    "autofillPopupDescription": "Afișează fereastra pop-up de completare automată când sunt detectate câmpurile de autentificare.",
+    "disabledSites": "Site-uri dezactivate",
+    "disabledSitesDescription": "Site-uri unde fereastra pop-up de completare automată nu va apărea.",
+    "clearAllDisabledSites": "Șterge toate site-urile dezactivate",
+    "temporaryUntil": "până",
     "appearance": "Aspect",
     "theme": "Temă",
     "useDefault": "Implicită",
@@ -430,11 +430,11 @@
       }
     },
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "title": "Salvează solicitarea de autentificare",
+      "description": "Afișează o solicitare de salvare a datelor de autentificare când trimiți un formular de conectare pe un site.",
+      "blockedSites": "Site-uri blocate",
+      "blockedSitesDescription": "Site-uri unde solicitarea de salvare nu va apărea niciodată.",
+      "clearAllBlockedSites": "Șterge toate site-urile blocate"
     },
     "unlockMethod": {
       "title": "Metodă deblocare seif",
