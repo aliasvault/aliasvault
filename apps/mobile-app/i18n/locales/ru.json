@@ -180,9 +180,9 @@
     "exportConfirmTitle": "Экспортировать хранилище",
     "exportWarning": "Предупреждение: Экспорт хранилища в незашифрованный файл приведёт к тому, что все ваши пароли и конфиденциальная информация будут доступны в открытом виде. Делайте это только на доверенных устройствах и убедитесь, что вы:\n\n• Храните экспортированный файл в безопасном месте\n• Удаляете файл, когда он больше не нужен\n• Никогда не передаёте файл другим людям\n\nВы уверены, что хотите продолжить экспорт?",
     "passwordConfirm": {
-      "title": "Confirm Password",
-      "defaultDescription": "Please enter your master password to continue.",
-      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+      "title": "Подтверждение пароля",
+      "defaultDescription": "Введите мастер-пароль, чтобы продолжить.",
+      "exportDescription": "Для безопасности введите мастер-пароль для подтверждения экспорта."
     },
     "security": "Безопасность",
     "appVersion": "Версия приложения {{version}} ({{url}})",
