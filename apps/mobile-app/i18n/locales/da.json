@@ -305,8 +305,7 @@
         "verifyingWithServer": "Verificerer med server",
         "deletingAccount": "Sletter konto",
         "accountDeleted": "Konto slettet korrekt",
-        "failedToDelete": "Kunne ikke slette konto. Prøv venligst igen.",
-        "usernameNotFound": "Brugernavn ikke fundet. Log venligst ind igen."
+        "failedToDelete": "Kunne ikke slette konto. Prøv venligst igen."
       }
     },
     "qrScanner": {
