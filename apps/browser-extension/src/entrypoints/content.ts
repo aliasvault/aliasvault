@@ -516,7 +516,7 @@ export default defineContentScript({
             // No upgrade required, show normal autofill popup
             openAutofillPopup(inputElement, container);
           } catch (error) {
-            console.error('Error checking vault status:', error);
+            console.error('[AliasVault] Error checking vault status:', error);
             // Fall back to normal autofill popup if check fails
             openAutofillPopup(inputElement, container);
           }

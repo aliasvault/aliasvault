@@ -120,14 +120,27 @@ export function createBasePopup(input: HTMLInputElement, rootContainer: HTMLElem
   const rootContainerRect = rootContainer.getBoundingClientRect();
 
   /*
-   * Calculate the position relative to the root container
-   * This accounts for any offset the shadow root might have in the page
+   * Calculate the position relative to the root container.
+   * The shadow container should be fixed at top:0, left:0, so we can use
+   * viewport-relative coordinates directly.
+   *
+   * If the rootContainer is unexpectedly positioned due to client-side
+   * modifications like ad-blockers, fall back to using
+   * fixed positioning relative to viewport.
    */
-  const relativeTop = inputRect.bottom - rootContainerRect.top;
-  const relativeLeft = inputRect.left - rootContainerRect.left;
+  let relativeTop = inputRect.bottom - rootContainerRect.top;
+  let relativeLeft = inputRect.left - rootContainerRect.left;
+  let useFixedPositioning = false;
+
+  // If the container is not at top-left (within tolerance), use fixed positioning
+  if (Math.abs(rootContainerRect.top) > 10 || Math.abs(rootContainerRect.left) > 10) {
+    useFixedPositioning = true;
+    relativeTop = inputRect.bottom;
+    relativeLeft = inputRect.left;
+  }
 
   // Set the position
-  popup.style.position = 'absolute';
+  popup.style.position = useFixedPositioning ? 'fixed' : 'absolute';
   popup.style.top = `${relativeTop}px`;
   popup.style.left = `${relativeLeft}px`;
 
