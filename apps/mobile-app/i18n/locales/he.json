@@ -305,8 +305,7 @@
         "verifyingWithServer": "מתבצע אימות מול השרת",
         "deletingAccount": "מחיקת חשבון",
         "accountDeleted": "החשבון נמחק בהצלחה",
-        "failedToDelete": "מחיקת החשבון נכשלה. נא לנסות שוב.",
-        "usernameNotFound": "שם המשתמש לא נמצא. נא להיכנס שוב."
+        "failedToDelete": "מחיקת החשבון נכשלה. נא לנסות שוב."
       }
     },
     "qrScanner": {
