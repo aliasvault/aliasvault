@@ -305,8 +305,7 @@
         "verifyingWithServer": "与服务器验证中",
         "deletingAccount": "删除账户中",
         "accountDeleted": "账户已成功删除",
-        "failedToDelete": "删除账户失败。请重试。",
-        "usernameNotFound": "用户名不存在。请重新登录。"
+        "failedToDelete": "删除账户失败。请重试。"
       }
     },
     "qrScanner": {
