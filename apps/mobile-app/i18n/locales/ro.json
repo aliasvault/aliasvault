@@ -305,8 +305,7 @@
         "verifyingWithServer": "Se verifică cu serverul",
         "deletingAccount": "Se șterge contul",
         "accountDeleted": "Cont șters cu succes",
-        "failedToDelete": "Ștergerea contului a eșuat. Încearcă din nou.",
-        "usernameNotFound": "Utilizatorul nu a fost găsit. Autentifică-te din nou."
+        "failedToDelete": "Ștergerea contului a eșuat. Încearcă din nou."
       }
     },
     "qrScanner": {
