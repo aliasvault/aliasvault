@@ -1,0 +1,4 @@
+- Optie toegevoegd om de volgorde van custom velden handmatig aan te passen
+- Wachtwoordgenerator max lengte verhoogd van 64 naar 256 karakters
+- Deense taaloptie toegevoegd aan app en identiteitgenerator
+- Stabiliteit en veiligheidsverbeteringen

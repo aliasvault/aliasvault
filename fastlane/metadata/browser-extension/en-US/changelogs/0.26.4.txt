@@ -1,0 +1,6 @@
+- Add option to automatically save login credentials after logging in on a new website (enable in settings)
+- Add option to manually change sort order of custom fields
+- Increase password generator max length from 64 to 256 chars
+- Improve passkey creation compatibility so it works with more websites
+- Added Danish language option to app and identity generator
+- Various stability and security improvements

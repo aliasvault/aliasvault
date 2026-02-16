@@ -1,0 +1,4 @@
+- Add option to manually change sort order of custom fields
+- Increase password generator max length from 64 to 256 chars
+- Added Danish language option to app and identity generator
+- Various stability and security improvements
