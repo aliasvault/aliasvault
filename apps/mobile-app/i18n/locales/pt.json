@@ -180,9 +180,9 @@
     "exportConfirmTitle": "Exportar Cofre",
     "exportWarning": "Aviso: Exportar seu cofre para um arquivo descriptografado vai expor todas as suas senhas e dados sensíveis em texto. Realize isso apenas em dispositivos confiados e garanta que:\n\n• Guarde o arquivo em um local seguro\n• Exclua o arquivo quando não precisar mais\n• Nunca compartilhe o arquivo exportado com outras pessoas\n\nTem certeza que deseja continuar com o exporte?",
     "passwordConfirm": {
-      "title": "Confirm Password",
-      "defaultDescription": "Please enter your master password to continue.",
-      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+      "title": "Confirmar Senha",
+      "defaultDescription": "Por favor, digite sua senha mestre para continuar.",
+      "exportDescription": "Por questões de segurança, por favor, digite sua senha mestre para confirmar esta exportação."
     },
     "security": "Segurança",
     "appVersion": "Versão do aplicativo {{version}} ({{url}})",
@@ -442,7 +442,7 @@
     "switchBackToBrowser": "Volte ao navegador para continuar.",
     "filters": {
       "all": "Itens",
-      "showFolders": "Folders",
+      "showFolders": "Pastas",
       "passkeys": "Passkeys",
       "attachments": "Anexos"
     },
