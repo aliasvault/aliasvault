@@ -45,7 +45,7 @@ extension VaultStore {
     }
 
     /// Remove the encrypted database from the local filesystem
-    internal func removeEncryptedDatabase() throws {
+    public func removeEncryptedDatabase() throws {
         try FileManager.default.removeItem(at: getEncryptedDbPath())
     }
 

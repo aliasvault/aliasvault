@@ -253,26 +253,29 @@ export default function LoginScreen() : React.ReactNode {
     /*
      * Forced logout recovery check:
      * If there's an existing local vault (from forced logout), try to unlock it.
+     * First check if it belongs to the same user - if different user, clear and download fresh.
      * If decryption fails (password changed or corrupted), reset sync state so
      * sync will do a clean download instead of trying to merge.
      */
     const hasExistingVault = await NativeVaultManager.hasEncryptedDatabase();
     if (hasExistingVault) {
-      try {
-        await NativeVaultManager.unlockVault();
-        /*
-         * Decryption succeeded - local vault is valid, sync will handle it.
-         * The sync will compare revisions and decide whether to keep local or download.
-         */
-        console.info('Existing local vault (after forced logout) decrypted successfully, syncing with server');
-      } catch {
-        /*
-         * Decryption failed (password changed or corrupted).
-         * Reset sync state so sync will do a clean download instead of trying to merge.
-         * This matches the browser extension behavior in persistAndLoadVault().
-         */
-        console.info('Existing vault could not be decrypted (password changed or corrupted), resetting for fresh download');
-        await NativeVaultManager.resetSyncStateForFreshDownload();
+      const storedUsername = await NativeVaultManager.getUsername();
+      const normalizedLoginUsername = ConversionUtility.normalizeUsername(credentials.username);
+
+      if (storedUsername && storedUsername !== normalizedLoginUsername) {
+        // Different user: clear vault and download fresh
+        console.info(`Existing vault belongs to different user (${storedUsername}), clearing for fresh download`);
+        await NativeVaultManager.clearEncryptedVaultForFreshDownload();
+      } else {
+        try {
+          await NativeVaultManager.unlockVault();
+          // Decryption succeeded, local vault is valid, sync will handle it
+          console.info('Existing local vault (after forced logout) decrypted successfully, syncing with server');
+        } catch {
+          // Decryption failed (password changed or corrupted), clear vault and download fresh
+          console.info('Existing vault could not be decrypted (password changed or corrupted), clearing for fresh download');
+          await NativeVaultManager.clearEncryptedVaultForFreshDownload();
+        }
       }
     }
 

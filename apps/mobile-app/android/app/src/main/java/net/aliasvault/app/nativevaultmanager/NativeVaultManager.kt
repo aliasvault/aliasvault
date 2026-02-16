@@ -1477,18 +1477,32 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Reset sync state to force a fresh download on next sync.
-     * Clears isDirty flag so sync will download instead of trying to merge.
+     * Clear encrypted vault and reset sync state to force a fresh download on next sync.
+     * Deletes the corrupted vault and resets sync state so sync will download fresh.
+     * Called when existing vault cannot be decrypted (e.g. password changed).
      * @param promise The promise to resolve when complete.
      */
     @ReactMethod
-    override fun resetSyncStateForFreshDownload(promise: Promise) {
+    override fun clearEncryptedVaultForFreshDownload(promise: Promise) {
         try {
+            // Delete only the encrypted database file (not all storage)
+            val encryptedDbFile = java.io.File(reactApplicationContext.filesDir, "encrypted_database.db")
+            if (encryptedDbFile.exists()) {
+                encryptedDbFile.delete()
+                Log.d(TAG, "Deleted corrupted encrypted database for fresh download")
+            }
+
+            // Close in-memory database connection if open
+            vaultStore.clearCache()
+
+            // Reset sync state - set isDirty=false and revision=0 so sync sees server as newer
             vaultStore.metadata.setIsDirty(false)
+            vaultStore.setVaultRevisionNumber(0)
+
             promise.resolve(null)
         } catch (e: Exception) {
-            Log.e(TAG, "Error resetting sync state", e)
-            promise.reject("ERR_RESET_SYNC_STATE", "Failed to reset sync state: ${e.message}", e)
+            Log.e(TAG, "Error clearing encrypted vault for fresh download", e)
+            promise.reject("ERR_CLEAR_VAULT_FOR_DOWNLOAD", "Failed to clear vault for fresh download: ${e.message}", e)
         }
     }
 

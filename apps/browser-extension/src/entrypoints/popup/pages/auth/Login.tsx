@@ -63,49 +63,59 @@ const Login: React.FC = () => {
   /**
    * Helper to persist and load vault after successful authentication.
    * Checks if local vault exists from forced logout and preserves it if more advanced.
+   * Also checks if the vault belongs to the same user - if different user, uses server vault.
    */
-  const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string): Promise<void> => {
+  const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string, loginUsername: string): Promise<void> => {
     // Check if there's existing vault data (from forced logout)
     const existingVault = await storage.getItem('local:encryptedVault') as string | null;
     const existingRevision = await storage.getItem('local:serverRevision') as number | null;
+    const storedUsername = await storage.getItem('local:username') as string | null;
 
     let vaultToLoad = vaultResponse.vault.blob;
 
     if (existingVault && existingRevision !== null) {
-      // Try to decrypt existing vault to verify it's valid
-      try {
-        const decryptedExisting = await EncryptionUtility.symmetricDecrypt(existingVault, encryptionKey);
+      // Check if the existing vault belongs to a different user
+      const normalizedLoginUsername = loginUsername.toLowerCase().trim();
+      const normalizedStoredUsername = storedUsername?.toLowerCase().trim();
 
-        // Check if existing vault is more advanced than server
-        if (existingRevision >= vaultResponse.vault.currentRevisionNumber) {
-          console.info(
-            `Existing vault is more advanced (rev ${existingRevision} >= ${vaultResponse.vault.currentRevisionNumber}), ` +
-            `preserving local vault and will upload to server`
-          );
-
-          /*
-           * Don't overwrite the vault - it will be uploaded via sync flow
-           * Just update metadata and load existing vault
-           */
-          vaultToLoad = existingVault;
-          await sendMessage('STORE_VAULT_METADATA', {
-            publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
-            privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
-            hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
-          }, 'background');
-
-          await dbContext.loadDatabase(decryptedExisting);
-          return;
-        }
-
-        // Server is more advanced - will overwrite local
+      if (storedUsername && normalizedStoredUsername !== normalizedLoginUsername) {
+        // Different user
         console.info(
-          `Server vault is more advanced (rev ${vaultResponse.vault.currentRevisionNumber} > ${existingRevision}), ` +
-          `using server vault`
+          `Existing vault belongs to different user (${storedUsername}), using server vault for ${loginUsername}`
         );
-      } catch {
-        // Decryption failed - password changed or corrupt vault
-        console.info('Existing vault could not be decrypted (password changed), using server vault');
+      } else {
+        // Same user (or no stored username)
+        try {
+          const decryptedExisting = await EncryptionUtility.symmetricDecrypt(existingVault, encryptionKey);
+
+          // Check if existing vault is more advanced than server
+          if (existingRevision >= vaultResponse.vault.currentRevisionNumber) {
+            console.info(
+              `Existing vault is more advanced (rev ${existingRevision} >= ${vaultResponse.vault.currentRevisionNumber}), ` +
+              `preserving local vault and will upload to server`
+            );
+
+            // Update metadata and load existing vault
+            vaultToLoad = existingVault;
+            await sendMessage('STORE_VAULT_METADATA', {
+              publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
+              privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
+              hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
+            }, 'background');
+
+            await dbContext.loadDatabase(decryptedExisting);
+            return;
+          }
+
+          // Server is more advanced, fetch server vault
+          console.info(
+            `Server vault is more advanced (rev ${vaultResponse.vault.currentRevisionNumber} > ${existingRevision}), ` +
+            `using server vault`
+          );
+        } catch {
+          // Decryption failed, password changed or corrupt vault
+          console.info('Existing vault could not be decrypted (password changed), using server vault');
+        }
       }
     }
 
@@ -155,11 +165,12 @@ const Login: React.FC = () => {
     /*
      * Persist and load the vault.
      * If there was a forced logout, persistAndLoadVault checks existing vault data:
+     * - If different user → uses server vault
      * - If local vault is more advanced → preserves it (will upload via sync in /reinitialize)
      * - If server is more advanced → uses server vault
      * - If password changed (can't decrypt) → uses server vault
      */
-    await persistAndLoadVault(vaultResponseJson, passwordHashBase64);
+    await persistAndLoadVault(vaultResponseJson, passwordHashBase64, username);
 
     // Reset prefill flag so next logout will prefill again
     usernamePrefillAttempted = false;
@@ -429,7 +440,7 @@ const Login: React.FC = () => {
       });
 
       // Persist and load the vault
-      await persistAndLoadVault(vaultResponse, result.decryptionKey);
+      await persistAndLoadVault(vaultResponse, result.decryptionKey, result.username);
 
       /*
        * Navigate to reinitialize page which will:
