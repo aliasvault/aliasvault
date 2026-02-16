@@ -305,8 +305,7 @@
         "verifyingWithServer": "Varmistetaan palvelimella",
         "deletingAccount": "Poistetaan tiliä",
         "accountDeleted": "Tili poistettu onnistuneesti.",
-        "failedToDelete": "Tilin poistaminen ei onnistunut. Yritä uudelleen.",
-        "usernameNotFound": "Käyttäjänimeä ei löydy. Yritä kirjautua uudelleen."
+        "failedToDelete": "Tilin poistaminen ei onnistunut. Yritä uudelleen."
       }
     },
     "qrScanner": {
