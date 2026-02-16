@@ -8,6 +8,8 @@
 namespace AliasVault.Client.Auth.Services;
 
 using System.Net.Http.Json;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -29,6 +31,7 @@ public sealed class MobileLoginUtility : IDisposable
     private Timer? _pollingTimer;
     private string? _requestId;
     private string? _privateKey;
+    private string? _publicKeyHash;
     private CancellationTokenSource? _cancellationTokenSource;
 
     /// <summary>
@@ -45,17 +48,21 @@ public sealed class MobileLoginUtility : IDisposable
     }
 
     /// <summary>
-    /// Initiates a mobile login request and returns the request ID for QR code generation.
+    /// Initiates a mobile login request and returns the request ID and public key hash for QR code generation.
     /// </summary>
-    /// <returns>The request ID.</returns>
+    /// <returns>Tuple containing the request ID and public key hash.</returns>
     /// <exception cref="MobileLoginException">Thrown when the request fails.</exception>
-    public async Task<string> InitiateAsync()
+    public async Task<(string RequestId, string PublicKeyHash)> InitiateAsync()
     {
         try
         {
             // Generate RSA key pair
             var keyPair = await _jsInteropService.GenerateRsaKeyPair();
             _privateKey = keyPair.PrivateKey;
+
+            // Compute hash of public key for QR code binding
+            // This allows mobile app to verify the public key hasn't been swapped by the server
+            _publicKeyHash = ComputePublicKeyHash(keyPair.PublicKey);
 
             // Send public key to server
             var request = new MobileLoginInitiateRequest
@@ -76,7 +83,7 @@ public sealed class MobileLoginUtility : IDisposable
             }
 
             _requestId = result.RequestId;
-            return _requestId;
+            return (_requestId, _publicKeyHash);
         }
         catch (MobileLoginException)
         {
@@ -143,12 +150,28 @@ public sealed class MobileLoginUtility : IDisposable
         StopPolling();
         _privateKey = null;
         _requestId = null;
+        _publicKeyHash = null;
     }
 
     /// <inheritdoc/>
     public void Dispose()
     {
         Cleanup();
+    }
+
+    /// <summary>
+    /// Computes a SHA-256 hash of the public key and returns the first 16 characters.
+    /// </summary>
+    /// <param name="publicKey">The public key to hash.</param>
+    /// <returns>First 16 characters of the hex-encoded SHA-256 hash.</returns>
+    private static string ComputePublicKeyHash(string publicKey)
+    {
+        var bytes = Encoding.UTF8.GetBytes(publicKey);
+        var hashBytes = SHA256.HashData(bytes);
+        var hashHex = Convert.ToHexString(hashBytes).ToLowerInvariant();
+
+        // Return first 16 characters for a compact but secure fingerprint
+        return hashHex[..16];
     }
 
     private async Task PollServerAsync(Func<MobileLoginResult, Task> onSuccess, Action<MobileLoginErrorCode> onError)

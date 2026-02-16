@@ -15,6 +15,7 @@ export class MobileLoginUtility {
   private pollingInterval: NodeJS.Timeout | null = null;
   private requestId: string | null = null;
   private privateKey: string | null = null;
+  private publicKeyHash: string | null = null;
 
   /**
    * Constructor for the MobileLoginUtility class.
@@ -26,14 +27,31 @@ export class MobileLoginUtility {
   }
 
   /**
+   * Computes a SHA-256 hash of the public key and returns the first 16 characters.
+   */
+  private async computePublicKeyHash(publicKey: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(publicKey);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    // Return first 16 characters for a compact but secure fingerprint
+    return hashHex.substring(0, 16);
+  }
+
+  /**
    * Initiates a mobile login request and returns the QR code data
+   * @returns Object containing requestId and publicKeyHash for QR code generation
    * @throws {MobileLoginErrorCode} If initiation fails
    */
-  public async initiate(): Promise<string> {
+  public async initiate(): Promise<{ requestId: string; publicKeyHash: string }> {
     try {
       // Generate RSA key pair
       const keyPair = await EncryptionUtility.generateRsaKeyPair();
       this.privateKey = keyPair.privateKey;
+
+      // Compute hash of public key for QR code binding
+      this.publicKeyHash = await this.computePublicKeyHash(keyPair.publicKey);
 
       // Send public key to server (no auth required)
       const response = await this.webApi.rawFetch('auth/mobile-login/initiate', {
@@ -53,8 +71,11 @@ export class MobileLoginUtility {
       const data = await response.json() as MobileLoginInitiateResponse;
       this.requestId = data.requestId;
 
-      // Return QR code data (request ID)
-      return this.requestId;
+      // Return QR code data (request ID and public key hash)
+      return {
+        requestId: this.requestId,
+        publicKeyHash: this.publicKeyHash,
+      };
     } catch (error) {
       if (typeof error === 'string' && Object.values(MobileLoginErrorCode).includes(error as MobileLoginErrorCode)) {
         throw error;
@@ -197,5 +218,6 @@ export class MobileLoginUtility {
     this.stopPolling();
     this.privateKey = null;
     this.requestId = null;
+    this.publicKeyHash = null;
   }
 }

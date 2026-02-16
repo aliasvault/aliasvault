@@ -41,7 +41,7 @@
                 @if (!string.IsNullOrEmpty(_qrCodeUrl))
                 {
                     <div class="flex flex-col items-center mb-4">
-                        <div id="@_qrElementId" data-url="@_qrCodeUrl" class="@(_isLoading ? "hidden" : "") mb-3 p-4 bg-white rounded-lg border-4 border-gray-200 dark:border-gray-600">
+                        <div id="@_qrElementId" data-url="@_qrCodeUrl" class="@(_isLoading ? "hidden" : "") mb-3 bg-white rounded-lg border-4 border-gray-200 dark:border-gray-600">
                             <!-- QR code will be rendered here -->
                         </div>
                         @if (!_isLoading)
@@ -167,10 +167,11 @@
             _mobileLoginUtility = new MobileLoginUtility(Http, JsInteropService, utilityLogger);
 
             // Initiate mobile login and get QR code data
-            var requestId = await _mobileLoginUtility.InitiateAsync();
+            var (requestId, publicKeyHash) = await _mobileLoginUtility.InitiateAsync();
 
             // Generate QR code with AliasVault prefix for mobile login
-            _qrCodeUrl = $"aliasvault://open/mobile-unlock/{requestId}";
+            // Include public key hash as query parameter for security verification
+            _qrCodeUrl = $"aliasvault://open/mobile-unlock/{requestId}?pk={publicKeyHash}";
 
             // Render QR code while showing loading
             StateHasChanged();
