@@ -305,8 +305,7 @@
         "verifyingWithServer": "Sunucu ile doğrulanıyor…",
         "deletingAccount": "Hesap siliniyor",
         "accountDeleted": "Hesap başarıyla silindi",
-        "failedToDelete": "Hesap silinemedi. Lütfen tekrar deneyin.",
-        "usernameNotFound": "Kullanıcı adı bulunamadı. Lütfen tekrar giriş yapın."
+        "failedToDelete": "Hesap silinemedi. Lütfen tekrar deneyin."
       }
     },
     "qrScanner": {
