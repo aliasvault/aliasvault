@@ -263,11 +263,11 @@
   </data>
   <!-- Edge -->
   <data name="EdgeDescription" xml:space="preserve">
-    <value>Import passwords from your Microsoft Edge Password Manager</value>
+    <value>Importe senhas do Gerenciador de Senhas do Microsoft Edge</value>
     <comment>Description for Edge import service</comment>
   </data>
   <data name="EdgeInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.</value>
+    <value>Para importar suas senhas do Microsoft Edge, você precisa exportá-las como um arquivo CSV. Você pode fazer isso indo ao Menu > Configurações > Senha e autopreenchimento > Gerenciador de Senhas Microsoft > ... > Exportar senhas.</value>
     <comment>Edge export instructions part 1</comment>
   </data>
   <data name="EdgeInstructionsPart2" xml:space="preserve">
@@ -276,11 +276,11 @@
   </data>
   <!-- Enpass -->
   <data name="EnpassDescription" xml:space="preserve">
-    <value>Import passwords from Enpass</value>
+    <value>Importar senhas do Enpass</value>
     <comment>Description for Enpass import service</comment>
   </data>
   <data name="EnpassInstructionsPart1" xml:space="preserve">
-    <value>In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.</value>
+    <value>Para importar suas senhas do Enpass, você precisa exportá-las como um arquivo CSV. Você pode fazer isso abrindo o Enpass, indo em 'Menu' > 'Arquivo' > 'Exportar' e selecionando 'Arquivo CSV (.csv)'.</value>
     <comment>Enpass export instructions part 1</comment>
   </data>
   <data name="EnpassInstructionsPart2" xml:space="preserve">
