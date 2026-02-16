@@ -305,8 +305,7 @@
         "verifyingWithServer": "Verifiëren met server",
         "deletingAccount": "Account verwijderen",
         "accountDeleted": "Account succesvol verwijderd",
-        "failedToDelete": "Account verwijderen mislukt. Probeer het opnieuw.",
-        "usernameNotFound": "Gebruikersnaam niet gevonden. Log opnieuw in."
+        "failedToDelete": "Account verwijderen mislukt. Probeer het opnieuw."
       }
     },
     "qrScanner": {
