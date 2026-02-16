@@ -305,8 +305,7 @@
         "verifyingWithServer": "Vérification par le serveur",
         "deletingAccount": "Suppression du compte",
         "accountDeleted": "Votre compte a été supprimé avec succès",
-        "failedToDelete": "Échec de la suppression du compte. Veuillez réessayer.",
-        "usernameNotFound": "Nom d'utilisateur introuvable. Veuillez vous reconnecter."
+        "failedToDelete": "Échec de la suppression du compte. Veuillez réessayer."
       }
     },
     "qrScanner": {
