@@ -305,8 +305,7 @@
         "verifyingWithServer": "Verificando con el servidor",
         "deletingAccount": "Eliminando cuenta",
         "accountDeleted": "Cuenta eliminada con éxito",
-        "failedToDelete": "Error al eliminar la cuenta. Por favor, inténtelo de nuevo.",
-        "usernameNotFound": "Nombre de usuario no encontrado. Por favor, vuelva a iniciar sesión."
+        "failedToDelete": "Error al eliminar la cuenta. Por favor, inténtelo de nuevo."
       }
     },
     "qrScanner": {
