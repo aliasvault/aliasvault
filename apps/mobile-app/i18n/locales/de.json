@@ -305,8 +305,7 @@
         "verifyingWithServer": "Server-Verifizierung läuft",
         "deletingAccount": "Konto wird gelöscht",
         "accountDeleted": "Konto wurde erfolgreich gelöscht.",
-        "failedToDelete": "Kontolöschung fehlgeschlagen. Bitte versuche es erneut.",
-        "usernameNotFound": "Benutzername konnte nicht gefunden werden. Bitte melde Dich erneut an."
+        "failedToDelete": "Kontolöschung fehlgeschlagen. Bitte versuche es erneut."
       }
     },
     "qrScanner": {
