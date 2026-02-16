@@ -2,7 +2,7 @@
   "name": "aliasvault-browser-extension",
   "description": "AliasVault Browser Extension",
   "private": true,
-  "version": "0.27.0",
+  "version": "0.26.4",
   "type": "module",
   "scripts": {
     "build:rust": "cd ../../core/rust && ./build.sh --browser",
