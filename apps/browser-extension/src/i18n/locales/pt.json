@@ -24,8 +24,8 @@
     "unlockSuccessDescription": "Agora você pode utilizar o preenchimento automático nos formulários de login no seu navegador.",
     "closePopup": "Fechar este pop-up",
     "browseVault": "Navegar por conteúdo do cofre",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
-    "closingIn": "Closing in {{seconds}}s...",
+    "autoCloseUnlockPopup": "Fechar automaticamente nos próximos acessos",
+    "closingIn": "Fechando em {{seconds}}s...",
     "connectingTo": "Conectando à",
     "switchAccounts": "Mudar de conta?",
     "loginWithMobile": "Entrar utilizado Dispositivo Móvel",
@@ -42,7 +42,7 @@
     "error": "Erro",
     "cancel": "Cancelar",
     "confirm": "Confirmar",
-    "remove": "Remove",
+    "remove": "Remover",
     "back": "Voltar",
     "next": "Próximo",
     "use": "Utilizar",
@@ -54,7 +54,7 @@
     "create": "Criar",
     "or": "Ou",
     "close": "Fechar",
-    "dismiss": "Dismiss",
+    "dismiss": "Ignorar",
     "logout": "Sair",
     "copied": "Copiado!",
     "openInNewWindow": "Abrir em uma nova janela",
@@ -169,8 +169,8 @@
     "vaultUpgradeRequired": "Atualização de cofre necessária.",
     "dismissPopup": "Ignorar pop-up",
     "savePrompt": {
-      "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "title": "Salvar no AliasVault?",
+      "neverForThisSite": "Nunca para este site"
     }
   },
   "items": {
@@ -208,7 +208,7 @@
     "deleteFolderAndItems": "Excluir pasta e todos os itens",
     "deleteFolderAndItemsDescription": "{{count}} item(s) será(ão) movido(s) para Recentemente Excluídos.",
     "filters": {
-      "folders": "Folders",
+      "folders": "Pastas",
       "passkeys": "Passkeys"
     },
     "sort": {
@@ -356,11 +356,11 @@
     "disabledForThisSite": "Desabilitado para este site",
     "temporarilyDisabledUntil": "Temporariamente desabilitado até ",
     "resetAllSiteSettings": "Redefinir todas as configurações específicas do site",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
-    "disabledSites": "Disabled sites",
-    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "clearAllDisabledSites": "Clear all disabled sites",
-    "temporaryUntil": "until",
+    "autofillPopupDescription": "Mostrar o popup de autopreenchimento quando campos de login forem detectados.",
+    "disabledSites": "Sites desabilitados",
+    "disabledSitesDescription": "Sites onde o popup de autopreenchimento não vão aparecer.",
+    "clearAllDisabledSites": "Limpar todos os sites desabilitados",
+    "temporaryUntil": "até",
     "appearance": "Aparência",
     "theme": "Tema",
     "useDefault": "Utilizar padrão",
@@ -430,11 +430,11 @@
       }
     },
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "title": "Salvar Prompt de Login",
+      "description": "Mostra um prompt para salvar credenciais de login quando você faz login em algum website.",
+      "blockedSites": "Sites bloqueados",
+      "blockedSitesDescription": "Sites onde o prompt para salvar nunca vão aparecer.",
+      "clearAllBlockedSites": "Limpar todos os sites bloqueados"
     },
     "unlockMethod": {
       "title": "Método de Desbloqueio do Cofre",
@@ -536,6 +536,6 @@
   },
   "sync": {
     "offline": "Offline",
-    "tapToRetry": "Tap to retry sync"
+    "tapToRetry": "Toque para tentar sincronizar novamente"
   }
 }
