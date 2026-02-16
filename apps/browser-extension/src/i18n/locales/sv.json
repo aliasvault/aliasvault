@@ -24,8 +24,8 @@
     "unlockSuccessDescription": "Du kan nu använda autofyll av inloggningsformulär i din webbläsare.",
     "closePopup": "Stäng detta popup-fönster",
     "browseVault": "Bläddra bland valvets innehåll",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
-    "closingIn": "Closing in {{seconds}}s...",
+    "autoCloseUnlockPopup": "Stäng automatiskt vid framtida inloggningar",
+    "closingIn": "Stänger om {{seconds}}...",
     "connectingTo": "Ansluter till",
     "switchAccounts": "Växla konton?",
     "loginWithMobile": "Logga in med hjälp av mobilapp",
@@ -42,7 +42,7 @@
     "error": "Fel",
     "cancel": "Avbryt",
     "confirm": "Bekräfta",
-    "remove": "Remove",
+    "remove": "Ta bort",
     "back": "Tillbaka",
     "next": "Nästa",
     "use": "Använd",
@@ -54,7 +54,7 @@
     "create": "Skapa",
     "or": "Eller",
     "close": "Stäng",
-    "dismiss": "Dismiss",
+    "dismiss": "Avfärda",
     "logout": "Logga ut",
     "copied": "Kopierad!",
     "openInNewWindow": "Öppna i nytt fönster",
@@ -169,8 +169,8 @@
     "vaultUpgradeRequired": "Uppgradering av valv krävs.",
     "dismissPopup": "Avvisa popup",
     "savePrompt": {
-      "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "title": "Spara till AliasVault?",
+      "neverForThisSite": "Aldrig för denna webbplats"
     }
   },
   "items": {
@@ -356,11 +356,11 @@
     "disabledForThisSite": "Inaktiverad för denna webbplats",
     "temporarilyDisabledUntil": "Tillfälligt inaktiverad tills",
     "resetAllSiteSettings": "Återställ alla webbplatsspecifika inställningar",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
-    "disabledSites": "Disabled sites",
-    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "clearAllDisabledSites": "Clear all disabled sites",
-    "temporaryUntil": "until",
+    "autofillPopupDescription": "Visa autofyll när inloggningsfält upptäcks.",
+    "disabledSites": "Inaktiverade webbplatser",
+    "disabledSitesDescription": "Webbplatser där autofyll inte kommer att visas.",
+    "clearAllDisabledSites": "Rensa alla inaktiverade sajter",
+    "temporaryUntil": "fram till",
     "appearance": "Utseende",
     "theme": "Tema",
     "useDefault": "Använd standard",
@@ -430,11 +430,11 @@
       }
     },
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "title": "Spara Inloggningsdialog",
+      "description": "Visa en dialogruta för att spara inloggningsuppgifter när du skickar in ett inloggningsformulär på en webbplats.",
+      "blockedSites": "Blockerade webbplatser",
+      "blockedSitesDescription": "Webbplatser där dialogrutan för att spara inloggning aldrig kommer att visas.",
+      "clearAllBlockedSites": "Rensa alla blockerade webbplatser"
     },
     "unlockMethod": {
       "title": "Valvupplåsningsmetod",
