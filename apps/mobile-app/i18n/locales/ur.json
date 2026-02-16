@@ -305,8 +305,7 @@
         "verifyingWithServer": "Verifying with server",
         "deletingAccount": "Deleting account",
         "accountDeleted": "Account deleted successfully",
-        "failedToDelete": "Failed to delete account. Please try again.",
-        "usernameNotFound": "Username not found. Please login again."
+        "failedToDelete": "Failed to delete account. Please try again."
       }
     },
     "qrScanner": {
