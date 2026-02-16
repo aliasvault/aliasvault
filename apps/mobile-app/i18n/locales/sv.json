@@ -305,8 +305,7 @@
         "verifyingWithServer": "Verifierar med servern",
         "deletingAccount": "Raderar konto",
         "accountDeleted": "Kontot har raderats",
-        "failedToDelete": "Det gick inte att ta bort kontot. Försök igen.",
-        "usernameNotFound": "Användarnamnet hittades inte. Logga in igen."
+        "failedToDelete": "Det gick inte att ta bort kontot. Försök igen."
       }
     },
     "qrScanner": {
