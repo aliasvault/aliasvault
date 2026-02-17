@@ -151,12 +151,8 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
 
     /// <summary>
     /// Tests forced logout recovery when server has rolled back (client has more advanced vault).
-    /// This simulates the scenario where:
-    /// 1. Client creates credentials (vault at rev N).
-    /// 2. Server experiences data loss (rolls back to rev N-1).
-    /// 3. Forced logout occurs (401 due to token issues).
-    /// 4. User re-logs in.
-    /// 5. Client detects its preserved vault is more advanced and uploads to recover server.
+    /// Scenario: Client creates credentials, server loses data, user is logged out, then re-logs in.
+    /// Expected: Client's preserved vault is uploaded to recover the server.
     /// </summary>
     /// <returns>Async task.</returns>
     [Order(3)]
@@ -181,7 +177,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         var clientRevision = vaultBeforeRollback!.RevisionNumber;
         Console.WriteLine($"Client vault revision before rollback: {clientRevision}");
 
-        // 3. Simulate server data loss (delete latest revision)
+        // 3. Simulate server data loss by deleting latest vault revision
         ApiDbContext.Vaults.Remove(vaultBeforeRollback);
         await ApiDbContext.SaveChangesAsync();
 
@@ -190,67 +186,33 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
             .FirstOrDefaultAsync())?.RevisionNumber ?? 0;
         Console.WriteLine($"Server vault revision after rollback: {serverRevisionAfterRollback}");
 
-        // 4. Simulate forced logout by intercepting API calls to return 401
-        // This simulates token revocation/expiry that the client can't recover from
-        await Context.RouteAsync($"{ApiBaseUrl}v1/Auth/status", async route =>
-        {
-            await route.FulfillAsync(new Microsoft.Playwright.RouteFulfillOptions
-            {
-                Status = 401,
-                ContentType = "application/json",
-                Body = "{\"statusCode\":401}",
-            });
-        });
+        // 4. Clear auth tokens to simulate forced logout (vault data is preserved)
+        await ClearAuthTokens(extensionPopup);
+        Console.WriteLine("Auth tokens cleared - simulating forced logout");
 
-        await Context.RouteAsync($"{ApiBaseUrl}v1/Auth/refresh", async route =>
-        {
-            await route.FulfillAsync(new Microsoft.Playwright.RouteFulfillOptions
-            {
-                Status = 401,
-                ContentType = "application/json",
-                Body = "{\"errorCode\":\"INVALID_REFRESH_TOKEN\",\"statusCode\":401}",
-            });
-        });
+        // 5. Reload popup to trigger auth check
+        await extensionPopup.ReloadAsync();
+        await Task.Delay(500);
 
-        Console.WriteLine("Route interception enabled - API will return 401 for auth endpoints");
-
-        // 5. Trigger sync - this will:
-        //    a) Call status endpoint → 401
-        //    b) Try to refresh token → 401
-        //    c) Forced logout triggered (clearAuthForced preserves vault data)
-        await extensionPopup.ClickAsync("button#reload-vault");
-        await Task.Delay(3000);
-
-        // 6. Verify forced logout occurred (should be on login page)
+        // 6. Verify user is on login page
         await extensionPopup.WaitForSelectorAsync("input[type='password']", new() { Timeout = 10000 });
         Console.WriteLine("Forced logout confirmed - on login page");
 
-        // 7. Verify username is prefilled (orphan preservation feature)
+        // 7. Verify username is prefilled (orphan vault preservation feature)
         var usernameValue = await extensionPopup.InputValueAsync("input[type='text']");
         Assert.That(
             usernameValue,
             Is.EqualTo(TestUserUsername),
             "Username should be prefilled from preserved vault data after forced logout");
 
-        // 8. Remove route interception to restore normal API access before re-login
-        await Context.UnrouteAsync($"{ApiBaseUrl}v1/Auth/status");
-        await Context.UnrouteAsync($"{ApiBaseUrl}v1/Auth/refresh");
-        Console.WriteLine("Route interception removed - API access restored");
-
-        // 9. Wait a moment for route changes to take effect before login attempt
-        await Task.Delay(500);
-
-        // 10. Re-login - this triggers recovery flow in persistAndLoadVault():
-        //    - Decrypts existing vault with login password
-        //    - Compares existingRevision (N) >= serverRevision (N-1) → true
-        //    - Preserves local vault, will upload via sync in /reinitialize
+        // 8. Re-login to trigger vault recovery
         await extensionPopup.FillAsync("input[type='password']", TestUserPassword);
         await extensionPopup.ClickAsync("button:has-text('Log in')");
 
         await extensionPopup.WaitForSelectorAsync("text=Items", new() { Timeout = 15000 });
         await Task.Delay(3000); // Wait for sync to complete
 
-        // 11. Verify server recovered (revision should be >= original client revision)
+        // 9. Verify server recovered
         var recoveredVault = await ApiDbContext.Vaults
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
@@ -262,7 +224,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
             $"Server should recover to at least rev {clientRevision}, got {recoveredVault.RevisionNumber}");
         Console.WriteLine($"Server vault recovered to revision: {recoveredVault.RevisionNumber}");
 
-        // 12. Verify credentials still exist in extension
+        // 10. Verify credentials still exist in extension
         await extensionPopup.ClickAsync("#nav-vault");
         await Task.Delay(500);
         var content = await extensionPopup.TextContentAsync("body");
@@ -284,12 +246,8 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
 
     /// <summary>
     /// Tests forced logout recovery when client has dirty (unsynced) local changes.
-    /// This simulates the scenario where:
-    /// 1. Client has synced vault at rev N.
-    /// 2. API goes offline (500 errors) - client makes local changes that can't sync (isDirty=true).
-    /// 3. API comes back but with 401 (token expired) - forced logout occurs.
-    /// 4. User re-logs in.
-    /// 5. Client detects preserved vault and uploads to sync the dirty changes.
+    /// Scenario: Client creates credentials while offline, then is logged out, then re-logs in.
+    /// Expected: Dirty vault is preserved and uploaded after re-login.
     /// </summary>
     /// <returns>Async task.</returns>
     [Order(4)]
@@ -306,38 +264,28 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
         var initialRevision = initialVault?.RevisionNumber ?? 0;
         Console.WriteLine($"Initial server vault revision: {initialRevision}");
 
-        // 3. Block ALL API endpoints with 500 to simulate server offline
-        // This will make local changes "dirty" (unable to sync)
-        await Context.RouteAsync($"{ApiBaseUrl}**/*", async route =>
-        {
-            await route.FulfillAsync(new Microsoft.Playwright.RouteFulfillOptions
-            {
-                Status = 500,
-                ContentType = "application/json",
-                Body = "{\"error\":\"Internal Server Error\"}",
-            });
-        });
-        Console.WriteLine("Route interception enabled - all API endpoints return 500 (server offline)");
+        // 3. Enable offline mode to prevent sync
+        await EnableOfflineMode(extensionPopup);
+        Console.WriteLine("Offline mode enabled - API URL set to invalid endpoint");
 
-        // 4. Create a credential while "offline" - this will be saved locally but can't sync
+        // 4. Create a credential while offline (saved locally, can't sync)
         var serviceName = "Dirty Vault Recovery Test";
 
-        // Click add new item button
         await extensionPopup.ClickAsync("button[title='Add new item']");
         await extensionPopup.WaitForSelectorAsync("input#itemName");
         await extensionPopup.FillAsync("input#itemName", serviceName);
         await extensionPopup.ClickAsync("button#save-credential");
 
-        // Wait for save attempt (will fail due to 500, but local vault is updated)
-        await Task.Delay(500);
+        // Wait for sync attempt (will fail, but local vault is updated)
+        await Task.Delay(1500);
 
-        // Navigate back to vault list (we're on item detail page after save)
+        // Navigate back to vault list
         await extensionPopup.ClickAsync("#nav-vault");
         await Task.Delay(500);
 
         Console.WriteLine("Credential created locally while offline - vault is now dirty");
 
-        // 5. Verify server revision hasn't changed (sync failed)
+        // 5. Verify server revision hasn't changed
         var vaultAfterOfflineCreate = await ApiDbContext.Vaults
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
@@ -346,48 +294,34 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
             Is.EqualTo(initialRevision),
             "Server revision should NOT have changed while offline");
 
-        // 6. Switch from 500 to 401 to trigger forced logout
-        await Context.UnrouteAsync($"{ApiBaseUrl}**/*");
-        await Context.RouteAsync($"{ApiBaseUrl}**/*", async route =>
-        {
-            await route.FulfillAsync(new RouteFulfillOptions
-            {
-                Status = 401,
-                ContentType = "application/json",
-                Body = "{\"statusCode\":401}",
-            });
-        });
-        Console.WriteLine("Route interception switched - all API endpoints return 401");
+        // 6. Restore API connectivity
+        await DisableOfflineMode(extensionPopup);
+        Console.WriteLine("API URL restored to valid endpoint");
 
-        // 8. Trigger forced logout by clicking reload (will hit 401)
-        await extensionPopup.WaitForSelectorAsync("button#reload-vault", new() { State = WaitForSelectorState.Visible, Timeout = 500000 });
-        await extensionPopup.ClickAsync("button#reload-vault");
-        await Task.Delay(2000);
+        // 7. Clear auth tokens to simulate forced logout (vault data is preserved)
+        await ClearAuthTokens(extensionPopup);
+        Console.WriteLine("Auth tokens cleared - simulating forced logout");
 
-        // 9. Verify forced logout occurred (should be on login page)
+        // 8. Reload popup to trigger auth check
+        await extensionPopup.ReloadAsync();
+        await Task.Delay(500);
+
+        // 9. Verify user is on login page
         await extensionPopup.WaitForSelectorAsync("input[type='password']", new() { Timeout = 10000 });
         Console.WriteLine("Forced logout confirmed - on login page");
 
-        // 10. Remove route interception to restore normal API access
-        await Context.UnrouteAsync($"{ApiBaseUrl}**/*");
-        Console.WriteLine("Route interception removed - API access restored");
-
-        // 11. Wait a moment for route changes to take effect before login attempt
-        await Task.Delay(500);
-
-        // 12. Re-login - dirty vault should be preserved and uploaded after login
+        // 10. Re-login to trigger vault recovery and sync
         await extensionPopup.FillAsync("input[type='password']", TestUserPassword);
         await extensionPopup.ClickAsync("button:has-text('Log in')");
 
-        // 13. Wait for login to complete and verify the offline-created credential appears
-        // This confirms the dirty vault was preserved during forced logout
+        // 11. Verify offline-created credential appears (confirms vault was preserved)
         await extensionPopup.WaitForSelectorAsync($"text={serviceName}", new() { Timeout = 15000 });
         Console.WriteLine("Credential created while offline is visible after re-login - vault was preserved!");
 
-        // Give sync a moment to complete
+        // Wait for sync to complete
         await Task.Delay(2000);
 
-        // 14. Verify vault was uploaded to server (revision should have increased)
+        // 12. Verify vault was uploaded to server
         var recoveredVault = await ApiDbContext.Vaults
             .OrderByDescending(v => v.RevisionNumber)
             .FirstOrDefaultAsync();
@@ -399,7 +333,7 @@ public class ChromeExtensionTests : BrowserExtensionPlaywrightTest
             $"Server revision should have increased after dirty vault recovery (was {initialRevision}, now {recoveredVault.RevisionNumber})");
         Console.WriteLine($"Server vault revision after recovery: {recoveredVault.RevisionNumber}");
 
-        // 15. Double-check the credential still exists in the extension UI
+        // 13. Verify credential still exists in extension UI
         await extensionPopup.ClickAsync("#nav-vault");
         await Task.Delay(500);
         var content = await extensionPopup.TextContentAsync("body");

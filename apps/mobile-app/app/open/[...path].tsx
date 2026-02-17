@@ -1,6 +1,7 @@
 import { Href, useRouter, useLocalSearchParams, useGlobalSearchParams } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
+import { useNavigation } from '@/context/NavigationContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
 // Declare __DEV__ global for TypeScript (provided by React Native runtime)
@@ -25,10 +26,11 @@ export default function ActionHandler() : null {
   const router = useRouter();
   const params = useGlobalSearchParams();
   const localParams = useLocalSearchParams();
-  const [hasNavigated, setHasNavigated] = useState(false);
+  const { setReturnUrl } = useNavigation();
+  const hasNavigated = useRef<boolean>(false);
 
   useEffect(() => {
-    if (hasNavigated) {
+    if (hasNavigated.current) {
       return;
     }
 
@@ -39,7 +41,7 @@ export default function ActionHandler() : null {
     if (pathArray.length === 0) {
       // No action specified, go to items
       router.replace('/(tabs)/items');
-      setHasNavigated(true);
+      hasNavigated.current = true;
       return;
     }
 
@@ -53,13 +55,38 @@ export default function ActionHandler() : null {
         if (!requestId) {
           console.error('[ActionHandler] mobile-unlock requires requestId');
           router.replace('/(tabs)/settings');
-          setHasNavigated(true);
+          hasNavigated.current = true;
           return;
         }
 
-        // First navigate to settings tab to establish correct navigation stack
-        router.replace(`/(tabs)/settings/mobile-unlock/${requestId}` as Href);
-        setHasNavigated(true);
+        /*
+         * Check if vault is unlocked. If the app was opened via deep link while auto-locked,
+         * the vault will be locked. In this case, redirect to /reinitialize first to unlock
+         * the vault, then forward to the mobile-unlock URL.
+         */
+        NativeVaultManager.isVaultUnlocked().then((isUnlocked: boolean) => {
+          if (hasNavigated.current) {
+            // Already navigated, skip
+            return;
+          }
+
+          if (!isUnlocked) {
+            // Set return URL to forward to mobile-unlock after reinitialize completes
+            setReturnUrl({
+              path: `/(tabs)/settings/mobile-unlock/${requestId}`,
+              params: params.pk ? { pk: params.pk as string } : undefined,
+            });
+            router.replace('/reinitialize');
+          } else {
+            // Vault is unlocked, navigate directly to mobile-unlock
+            router.replace(`/(tabs)/settings/mobile-unlock/${requestId}` as Href);
+          }
+          hasNavigated.current = true;
+        }).catch(() => {
+          // Error checking vault status, try navigating anyway
+          router.replace(`/(tabs)/settings/mobile-unlock/${requestId}` as Href);
+          hasNavigated.current = true;
+        });
         break;
       }
 
@@ -72,7 +99,7 @@ export default function ActionHandler() : null {
         if (!__DEV__) {
           console.warn('[ActionHandler] Debug actions only available in development');
           router.replace('/(tabs)/items');
-          setHasNavigated(true);
+          hasNavigated.current = true;
           return;
         }
 
@@ -91,7 +118,7 @@ export default function ActionHandler() : null {
                 console.error('[ActionHandler] Failed to set offline mode:', error);
               });
             router.replace('/(tabs)/items');
-            setHasNavigated(true);
+            hasNavigated.current = true;
             break;
           }
 
@@ -104,7 +131,7 @@ export default function ActionHandler() : null {
             if (debugParams.length === 0) {
               console.error('[ActionHandler] set-api-url requires URL parameter');
               router.replace('/(tabs)/items');
-              setHasNavigated(true);
+              hasNavigated.current = true;
               return;
             }
             // Join params back together (handles both encoded and unencoded slashes)
@@ -119,14 +146,14 @@ export default function ActionHandler() : null {
                 console.error('[ActionHandler] Failed to set API URL:', error);
               });
             router.replace('/(tabs)/items');
-            setHasNavigated(true);
+            hasNavigated.current = true;
             break;
           }
 
           default:
             console.warn('[ActionHandler] Unknown debug action:', debugAction);
             router.replace('/(tabs)/items');
-            setHasNavigated(true);
+            hasNavigated.current = true;
             break;
         }
         break;
@@ -136,10 +163,10 @@ export default function ActionHandler() : null {
         // Unknown action, log and go to items
         console.warn('[ActionHandler] Unknown action:', action);
         router.replace('/(tabs)/items');
-        setHasNavigated(true);
+        hasNavigated.current = true;
         break;
     }
-  }, [params, localParams, router, hasNavigated]);
+  }, [params, localParams, router, hasNavigated, setReturnUrl]);
 
   return null;
 }

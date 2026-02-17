@@ -13,18 +13,16 @@
 @using AliasClientDb
 @using AliasClientDb.Models
 
-<div @onclick="OpenImportModal" class="flex flex-col p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer">
+<div @onclick="OpenImportModal" class="flex flex-col p-4 bg-white border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-200">
     <div class="flex items-center">
-        <div class="w-12 h-12 mr-3 flex-shrink-0">
+        <div class="w-12 h-12 mr-3 flex-shrink-0 rounded-md flex items-center justify-center">
             @if (!string.IsNullOrEmpty(LogoUrl))
             {
                 <img src="@LogoUrl" alt="@ServiceName logo" class="w-full h-full object-contain" />
             }
             else
             {
-                <div class="w-full h-full bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center">
-                    <span class="text-gray-500 dark:text-gray-400 text-xs">@Localizer["NoLogoText"]</span>
-                </div>
+                <span class="text-gray-500 dark:text-gray-400 text-xs">@Localizer["NoLogoText"]</span>
             }
         </div>
         <div>
@@ -89,25 +87,25 @@
                                 @if (DuplicateCredentialsCount > 0)
                                 {
                                     <div class="p-4 mb-4 text-blue-700 bg-blue-100 rounded-lg dark:bg-blue-800/30 dark:text-blue-300" role="alert">
-                                        <p>@DuplicateCredentialsCount duplicate credential(s) were found and will not be imported.</p>
+                                        <p>@string.Format(Localizer["DuplicateCredentialsWarning"], DuplicateCredentialsCount)</p>
                                     </div>
                                 }
 
                                 @if (ImportedCredentials.Count == 0)
                                 {
                                     <div class="p-4 mb-4 text-amber-700 bg-amber-100 rounded-lg dark:bg-amber-800/30 dark:text-amber-300" role="alert">
-                                        <p>No new credentials were found to import.</p>
+                                        <p>@Localizer["NoNewCredentials"]</p>
                                     </div>
                                 }
                                 else
                                 {
-                                    <p class="mb-4 text-gray-700 dark:text-gray-300">Check if the following detected credentials look correct before continuing:</p>
+                                    <p class="mb-4 text-gray-700 dark:text-gray-300">@Localizer["PreviewInstructions"]</p>
                                     <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                                         <thead class="bg-gray-50 dark:bg-gray-700">
                                             <tr>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Service</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Username</th>
-                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Password</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">@Localizer["ServiceColumn"]</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">@Localizer["UsernameColumn"]</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">@Localizer["PasswordColumn"]</th>
                                             </tr>
                                         </thead>
                                         <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -123,7 +121,7 @@
                                     </table>
                                     @if (ImportedCredentials.Count > 3)
                                     {
-                                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">... and @(ImportedCredentials.Count - 3) more credentials</p>
+                                        <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">@string.Format(Localizer["MoreCredentials"], ImportedCredentials.Count - 3)</p>
                                     }
                                 }
                             </div>
@@ -132,7 +130,7 @@
                                 <div class="mb-4 space-y-2">
                                     <label class="flex items-center">
                                         <input type="checkbox" @bind="ExtractFavicons" class="form-checkbox h-4 w-4 text-primary-600 rounded border-gray-300 dark:border-gray-600 dark:bg-gray-700">
-                                        <span class="ml-2 text-gray-700 dark:text-gray-300">Extract favicons for services with URLs</span>
+                                        <span class="ml-2 text-gray-700 dark:text-gray-300">@Localizer["ExtractFaviconsLabel"]</span>
                                     </label>
                                     @if (DetectedFolderCount > 0)
                                     {
@@ -145,7 +143,7 @@
                                 </div>
                             }
                             <div class="flex justify-end mt-6 space-x-2">
-                                <Button OnClick="@HandlePreviousStep" Color="secondary">Back</Button>
+                                <Button OnClick="@HandlePreviousStep" Color="secondary">@Localizer["BackButton"]</Button>
                                 @if (ImportedCredentials.Count > 0)
                                 {
                                     <Button OnClick="@HandleNextStep" Color="primary">@Localizer["NextButton"]</Button>
@@ -161,10 +159,24 @@
                                     {
                                         <div class="text-center">
                                             <LoadingIndicator />
-                                            <p class="mt-4 text-gray-700 dark:text-gray-300">Extracting favicons... @(FaviconExtractionProgress) / @(TotalFaviconsToExtract)</p>
+                                            <p class="mt-4 text-gray-700 dark:text-gray-300">@string.Format(Localizer["ExtractingFavicons"], FaviconExtractionProgress, TotalFaviconsToExtract)</p>
                                             <div class="mt-4">
-                                                <Button OnClick="@CancelFaviconExtraction" Color="secondary">Cancel</Button>
+                                                <Button OnClick="@CancelFaviconExtraction" Color="secondary">@Localizer["CancelButton"]</Button>
                                             </div>
+                                        </div>
+                                    }
+                                    else if (IsSavingCredentials)
+                                    {
+                                        <div class="text-center">
+                                            <LoadingIndicator />
+                                            <p class="mt-4 text-gray-700 dark:text-gray-300">@string.Format(Localizer["SavingCredentials"], CredentialSaveProgress, TotalCredentialsToSave)</p>
+                                        </div>
+                                    }
+                                    else if (IsSyncingVault)
+                                    {
+                                        <div class="text-center">
+                                            <LoadingIndicator />
+                                            <p class="mt-4 text-gray-700 dark:text-gray-300">@Localizer["SyncingVault"]</p>
                                         </div>
                                     }
                                     else
@@ -174,11 +186,11 @@
                                 }
                                 else {
                                     <div class="mb-4">
-                                        <p class="mb-4 text-gray-700 dark:text-gray-300">Are you sure you want to import (@ImportedCredentials.Count) credentials? Note: the import process can take a short while.</p>
+                                        <p class="mb-4 text-gray-700 dark:text-gray-300">@string.Format(Localizer["ConfirmImportText"], ImportedCredentials.Count)</p>
                                         @if (ExtractFavicons)
                                         {
                                             <div class="p-4 mb-4 text-amber-700 bg-amber-100 rounded-lg dark:bg-amber-800/30 dark:text-amber-300" role="alert">
-                                                <p>Note: Favicon extraction is enabled. This process can take several minutes depending on the number of credentials with URLs. Please keep the page open.</p>
+                                                <p>@Localizer["FaviconExtractionNote"]</p>
                                             </div>
                                         }
                                     </div>
@@ -262,6 +274,12 @@
     private int TotalFaviconsToExtract { get; set; }
     private CancellationTokenSource? FaviconExtractionCancellation { get; set; }
     private Dictionary<string, byte[]> ExtractedFavicons { get; set; } = new();
+
+    private bool IsSavingCredentials { get; set; }
+    private int CredentialSaveProgress { get; set; }
+    private int TotalCredentialsToSave { get; set; }
+    private bool IsSyncingVault { get; set; }
+    private Dictionary<string, Guid> ImportSessionLogoIds { get; set; } = new();
 
     private int DuplicateCredentialsCount { get; set; } = 0;
 
@@ -367,7 +385,8 @@
         }
         catch (Exception ex)
         {
-            ImportError = $"Error importing credentials: {ex.Message}";
+            ImportError = Localizer["ImportErrorGeneric"];
+            Logger.LogError(ex, "Error during import");
         }
         finally
         {
@@ -396,6 +415,8 @@
     {
         IsImporting = false;
         IsExtractingFavicons = false;
+        IsSavingCredentials = false;
+        IsSyncingVault = false;
         StateHasChanged();
     }
 
@@ -411,12 +432,16 @@
         FaviconExtractionCancellation = new CancellationTokenSource();
         StateHasChanged();
 
-        var credentialsWithUrls = ImportedCredentials.Where(c => !string.IsNullOrEmpty(c.ServiceUrl)).ToList();
+        var credentialsWithUrls = ImportedCredentials.Where(c => c.ServiceUrls?.FirstOrDefault() != null).ToList();
 
         // Group credentials by normalized domain to avoid duplicate fetches
         var processedDomains = new HashSet<string>();
 
-        TotalFaviconsToExtract = credentialsWithUrls.Count;
+        TotalFaviconsToExtract = credentialsWithUrls.Count();
+
+        // Update UI every N items - Task.Delay(1) is required to let browser actually render
+        // Task.Yield() doesn't work because it doesn't give the browser event loop time to paint
+        const int updateEveryNItems = 10;
 
         foreach (var credential in credentialsWithUrls)
         {
@@ -428,7 +453,7 @@
             // Extract normalized domain for deduplication
             try
             {
-                var domain = new Uri(credential.ServiceUrl!).Host.ToLowerInvariant();
+                var domain = new Uri(credential.ServiceUrls!.First()).Host.ToLowerInvariant();
                 if (domain.StartsWith("www."))
                 {
                     domain = domain[4..];
@@ -443,12 +468,25 @@
             }
             catch
             {
-                // Invalid URL - skip
+                // Invalid URL
             }
 
             FaviconExtractionProgress++;
-            StateHasChanged();
+
+            // Update UI periodically
+            if (FaviconExtractionProgress % updateEveryNItems == 0)
+            {
+                StateHasChanged();
+                await Task.Delay(1);
+            }
         }
+
+        // Final update to show 100% completion before transitioning to next phase
+        StateHasChanged();
+        await Task.Delay(50);
+
+        IsExtractingFavicons = false;
+        StateHasChanged();
     }
 
     /// <summary>
@@ -460,13 +498,14 @@
         try
         {
             // Extract normalized domain for storage key
-            var domain = new Uri(credential.ServiceUrl!).Host.ToLowerInvariant();
+            var url = credential.ServiceUrls!.First();
+            var domain = new Uri(url).Host.ToLowerInvariant();
             if (domain.StartsWith("www."))
             {
                 domain = domain[4..];
             }
 
-            var apiReturn = await HttpClient.GetFromJsonAsync<FaviconExtractModel>($"v1/Favicon/Extract?url={Uri.EscapeDataString(credential.ServiceUrl!)}");
+            var apiReturn = await HttpClient.GetFromJsonAsync<FaviconExtractModel>($"v1/Favicon/Extract?url={Uri.EscapeDataString(url)}");
             if (apiReturn?.Image is not null)
             {
                 // Store by normalized domain for deduplication
@@ -492,21 +531,45 @@
         }
 
         var items = BaseImporter.ConvertToItem(ImportedCredentials, folderNameToId);
+
+        // Clear logo tracking for this import session
+        ImportSessionLogoIds.Clear();
+
+        // Show saving credentials progress
+        IsSavingCredentials = true;
+        CredentialSaveProgress = 0;
+        TotalCredentialsToSave = items.Count;
+        StateHasChanged();
+
+        const int updateEveryNItems = 10;
         foreach (var item in items)
         {
             await ProcessSingleItem(item);
-            await Task.Delay(2); // Small delay to avoid blocking the UI thread
+            CredentialSaveProgress++;
+
+            if (CredentialSaveProgress % updateEveryNItems == 0)
+            {
+                StateHasChanged();
+                await Task.Delay(1);
+            }
         }
+
+        StateHasChanged();
+        await Task.Delay(50);
+
+        IsSavingCredentials = false;
+        IsSyncingVault = true;
+        StateHasChanged();
 
         var success = await DbService.SaveDatabaseAsync();
         if (success)
         {
-            GlobalNotificationService.AddSuccessMessage($"Successfully imported {ImportedCredentials.Count} credentials.");
+            GlobalNotificationService.AddSuccessMessage(string.Format(Localizer["ImportSuccessMessage"], ImportedCredentials.Count));
             NavigationManager.NavigateTo("/items");
         }
         else
         {
-            ImportError = "Error saving database.";
+            ImportError = Localizer["ImportErrorGeneric"];
         }
     }
 
@@ -530,7 +593,7 @@
             }
             else
             {
-                // Create new folder - CreateAsync returns the new folder ID directly
+                // Create new folder
                 var newFolderId = await FolderService.CreateAsync(folderName);
                 folderNameToId[folderName] = newFolderId;
             }
@@ -557,37 +620,49 @@
                     domain = domain[4..];
                 }
 
-                var context = await DbService.GetDbContextAsync();
-
-                // Check if logo already exists for this source (deduplication)
-                var existingLogo = await context.Logos.FirstOrDefaultAsync(l => l.Source == domain);
-                if (existingLogo != null)
+                // First check if we already created a logo for this domain in this import session
+                if (ImportSessionLogoIds.TryGetValue(domain, out var sessionLogoId))
                 {
-                    // Reuse existing logo
-                    item.LogoId = existingLogo.Id;
+                    item.LogoId = sessionLogoId;
                 }
-                else if (ExtractedFavicons.TryGetValue(domain, out var favicon))
+                else
                 {
-                    // Create new logo from extracted favicon
-                    var logo = new Logo
+                    var context = await DbService.GetDbContextAsync();
+
+                    var existingLogo = await context.Logos.FirstOrDefaultAsync(l => l.Source == domain);
+                    if (existingLogo != null)
                     {
-                        Id = Guid.NewGuid(),
-                        Source = domain,
-                        FileData = favicon,
-                        MimeType = "image/png",
-                        FetchedAt = DateTime.UtcNow,
-                        CreatedAt = DateTime.UtcNow,
-                        UpdatedAt = DateTime.UtcNow
-                    };
-                    context.Logos.Add(logo);
-                    item.LogoId = logo.Id;
+                        // Reuse existing logo
+                        item.LogoId = existingLogo.Id;
+                        ImportSessionLogoIds[domain] = existingLogo.Id;
+                    }
+                    else if (ExtractedFavicons.TryGetValue(domain, out var favicon))
+                    {
+                        // Create new logo
+                        var logo = new Logo
+                        {
+                            Id = Guid.NewGuid(),
+                            Source = domain,
+                            FileData = favicon,
+                            MimeType = "image/png",
+                            FetchedAt = DateTime.UtcNow,
+                            CreatedAt = DateTime.UtcNow,
+                            UpdatedAt = DateTime.UtcNow
+                        };
+                        context.Logos.Add(logo);
+                        item.LogoId = logo.Id;
+
+                        // Track this logo for subsequent items with same domain
+                        ImportSessionLogoIds[domain] = logo.Id;
+                    }
                 }
             }
             catch
             {
-                // Invalid URL - skip logo assignment
+                // Invalid URL
             }
         }
+
         await ItemService.InsertEntryAsync(item, false, false);
     }
 
@@ -598,13 +673,13 @@
     {
         if (string.IsNullOrEmpty(e.File.Name))
         {
-            ImportError = $"Please select a valid {ServiceName} export file to import";
+            ImportError = Localizer["ImportErrorInvalidFile"];
             return;
         }
 
         if (e.File.Name.EndsWith(".zip"))
         {
-            ImportError = $"Please unzip the {ServiceName} export file before importing, please read the instructions below for more information.";
+            ImportError = Localizer["ImportErrorZipFile"];
             return;
         }
 
@@ -616,7 +691,8 @@
             // Limit file size to 10MB
             if (e.File.Size > 10 * 1024 * 1024)
             {
-                throw new ArgumentException("File size exceeds 10MB limit");
+                ImportError = Localizer["ImportErrorFileTooLarge"];
+                return;
             }
 
             await using var stream = e.File.OpenReadStream(maxAllowedSize: 10 * 1024 * 1024);
@@ -637,7 +713,7 @@
         }
         catch (Exception ex)
         {
-            ImportError = $"Error processing {ServiceName} export file. Please check the file format and try again.";
+            ImportError = Localizer["ImportErrorGeneric"];
             Logger.LogError(ex, "Error processing {ServiceName} export file", ServiceName);
         }
         finally

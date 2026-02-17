@@ -1,0 +1,5 @@
+﻿Name,Url,MatchUrl,Login,Pwd,Note,Folder,RfFieldsV2
+Com,https://www.example.com.com,https://www.example.com,username1,password1,,,"User ID$,,,txt,username1","Password$,,,pwd,password1","Test,,,txt,Test"
+Example,https://www.example.com,https://www.example.com,exampleusername,examplepassword,Examplenote,,"User ID$,,,txt,exampleusername","Password$,,,pwd,examplepassword"
+Safenotename,,,,,Safenote content example here,
+Business,https://www.business.com,https://www.business.com,businessusername,businesspassword,,/Business,"User ID$,,,txt,businessusername","Password$,,,pwd,businesspassword"

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 
-import { SKIP_FORM_RESTORE_KEY } from '@/utils/Constants';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { BoolResponse } from '@/utils/types/messaging/BoolResponse';
 
 import { browser } from '#imports';
@@ -60,7 +60,7 @@ export function handleOpenPopupCreateCredential(message: any) : Promise<BoolResp
     }
 
     // Set a localStorage flag to skip restoring previously persisted form values as we want to start fresh with this explicit create item request.
-    await browser.storage.local.set({ [SKIP_FORM_RESTORE_KEY]: true });
+    await LocalPreferencesService.setSkipFormRestore(true);
 
     const urlParams = new URLSearchParams();
     urlParams.set('expanded', 'true');

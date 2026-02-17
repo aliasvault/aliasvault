@@ -33,21 +33,21 @@
     <comment>Credit Card item type name</comment>
   </data>
   <data name="TypeNote">
-    <value>Secure Note</value>
+    <value>安全笔记</value>
     <comment>Secure Note item type name</comment>
   </data>
   <!-- Status text -->
   <data name="Creating">
-    <value>创建</value>
+    <value>创建中</value>
     <comment>Status text when creating a new item</comment>
   </data>
   <data name="Editing">
-    <value>编辑</value>
+    <value>编辑中</value>
     <comment>Status text when editing an existing item</comment>
   </data>
   <!-- Buttons -->
   <data name="RegenerateAlias">
-    <value>Regenerate Alias</value>
+    <value>重新生成别名</value>
     <comment>Tooltip for regenerate alias button</comment>
   </data>
 </root>

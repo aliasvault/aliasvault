@@ -9,6 +9,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Toast from 'react-native-toast-message';
 
 import type { Folder } from '@/utils/db/repositories/FolderRepository';
+import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { getFieldValue, FieldKey, ItemTypes } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
@@ -24,6 +25,7 @@ import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { FolderModal } from '@/components/folders/FolderModal';
 import { FolderPill, type FolderWithCount } from '@/components/folders/FolderPill';
 import { ItemCard } from '@/components/items/ItemCard';
+import { SortMenu } from '@/components/items/SortMenu';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
@@ -33,11 +35,12 @@ import { RobustPressable } from '@/components/ui/RobustPressable';
 import { SkeletonLoader } from '@/components/ui/SkeletonLoader';
 import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
+import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
 /**
  * Filter types for the items list.
  */
-type FilterType = 'all' | 'passkeys' | 'attachments' | ItemType;
+type FilterType = 'all' | 'passkeys' | 'attachments' | 'totp' | ItemType;
 
 /**
  * Check if a filter is an item type filter.
@@ -90,6 +93,9 @@ export default function ItemsScreen(): React.ReactNode {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState<FilterType>('all');
   const [showFilterMenu, setShowFilterMenu] = useState(false);
+  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('OldestFirst');
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showFolderItems, setShowFolderItems] = useState(true);
 
   // Recently deleted count state
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
@@ -117,6 +123,22 @@ export default function ItemsScreen(): React.ReactNode {
       setSearchQuery(decodedUrl);
     }
   }, [itemUrl]);
+
+  // Load saved showFolderItems preference from LocalPreferencesService
+  useEffect(() => {
+    /**
+     * Load the show folders preference from LocalPreferencesService.
+     */
+    const loadShowFoldersPreference = async (): Promise<void> => {
+      try {
+        const stored = await LocalPreferencesService.getShowFolders();
+        setShowFolderItems(stored);
+      } catch {
+        // Ignore storage errors, use default value
+      }
+    };
+    loadShowFoldersPreference();
+  }, []);
 
   /**
    * Get folders with item counts for display.
@@ -153,6 +175,8 @@ export default function ItemsScreen(): React.ReactNode {
         return t('items.filters.passkeys');
       case 'attachments':
         return t('common.attachments');
+      case 'totp':
+        return t('items.filters.totp');
       case 'all':
         return t('items.title');
       default:
@@ -179,11 +203,14 @@ export default function ItemsScreen(): React.ReactNode {
    */
   const filteredItems = useMemo(() => {
     return itemsList.filter(item => {
-      // Root view (no search): exclude items in folders
-      if (!searchQuery && item.FolderId) {
+      /*
+       * When showing folders (checkbox ON): only show root items (exclude items in folders)
+       * When not showing folders (checkbox OFF): show all items flat
+       */
+      if (!searchQuery && showFolderItems && item.FolderId) {
         return false;
       }
-      // When searching: show all matching items regardless of folder
+      // When searching or not showing folders: show all matching items regardless of folder
 
       // Apply type filter
       let passesTypeFilter = true;
@@ -192,6 +219,8 @@ export default function ItemsScreen(): React.ReactNode {
         passesTypeFilter = item.HasPasskey === true;
       } else if (filterType === 'attachments') {
         passesTypeFilter = item.HasAttachment === true;
+      } else if (filterType === 'totp') {
+        passesTypeFilter = item.HasTotp === true;
       } else if (isItemTypeFilter(filterType)) {
         passesTypeFilter = item.ItemType === filterType;
       }
@@ -221,21 +250,45 @@ export default function ItemsScreen(): React.ReactNode {
         searchableFields.some(field => field.includes(word))
       );
     });
-  }, [itemsList, searchQuery, filterType]);
+  }, [itemsList, searchQuery, filterType, showFolderItems]);
+
+  /**
+   * Sort the filtered items based on the current sort order.
+   */
+  const sortedItems = useMemo(() => {
+    const itemsCopy = [...filteredItems];
+    switch (sortOrder) {
+      case 'NewestFirst':
+        return itemsCopy.sort((a, b) =>
+          new Date(b.CreatedAt || 0).getTime() - new Date(a.CreatedAt || 0).getTime()
+        );
+      case 'Alphabetical':
+        return itemsCopy.sort((a, b) =>
+          (a.Name || '').localeCompare(b.Name || '')
+        );
+      case 'OldestFirst':
+      default:
+        return itemsCopy.sort((a, b) =>
+          new Date(a.CreatedAt || 0).getTime() - new Date(b.CreatedAt || 0).getTime()
+        );
+    }
+  }, [filteredItems, sortOrder]);
 
   /**
    * Load items (credentials), folders, and recently deleted count.
    */
   const loadItems = useCallback(async (): Promise<void> => {
     try {
-      const [items, loadedFolders, deletedCount] = await Promise.all([
+      const [items, loadedFolders, deletedCount, savedSortOrder] = await Promise.all([
         dbContext.sqliteClient!.items.getAll(),
         dbContext.sqliteClient!.folders.getAll(),
-        dbContext.sqliteClient!.items.getRecentlyDeletedCount()
+        dbContext.sqliteClient!.items.getRecentlyDeletedCount(),
+        dbContext.sqliteClient!.settings.getCredentialsSortOrder()
       ]);
       setItemsList(items);
       setFolders(loadedFolders);
       setRecentlyDeletedCount(deletedCount);
+      setSortOrder(savedSortOrder);
       setIsLoadingItems(false);
     } catch (err) {
       console.error('Error loading items:', err);
@@ -360,6 +413,25 @@ export default function ItemsScreen(): React.ReactNode {
     loadItems();
   }, [isAuthenticated, isDatabaseAvailable, loadItems, setIsLoadingItems]);
 
+  /**
+   * Track previous syncing state to detect when sync completes.
+   */
+  const wasSyncingRef = useRef(dbContext.isSyncing);
+
+  /**
+   * Reload items when background sync completes (isSyncing goes from true to false).
+   * This ensures newly synced data is displayed without requiring manual pull-to-refresh.
+   */
+  useEffect(() => {
+    const wasSyncing = wasSyncingRef.current;
+    wasSyncingRef.current = dbContext.isSyncing;
+
+    // Only reload when sync just completed (was syncing, now not syncing)
+    if (wasSyncing && !dbContext.isSyncing && isAuthenticated && isDatabaseAvailable) {
+      loadItems();
+    }
+  }, [dbContext.isSyncing, isAuthenticated, isDatabaseAvailable, loadItems]);
+
   // Set header for Android
   useEffect(() => {
     navigation.setOptions({
@@ -368,17 +440,6 @@ export default function ItemsScreen(): React.ReactNode {
        */
       headerTitle: (): React.ReactNode => {
         if (Platform.OS === 'android') {
-          // When all items are in folders, show simple title without dropdown
-          if (hasItemsInFoldersOnly) {
-            return (
-              <AndroidHeader
-                title={t('items.title')}
-                subtitle=""
-                onTitlePress={undefined}
-                isDropdownOpen={false}
-              />
-            );
-          }
           return (
             <AndroidHeader
               title={getFilterTitle()}
@@ -390,8 +451,24 @@ export default function ItemsScreen(): React.ReactNode {
         }
         return <Text>{t('items.title')}</Text>;
       },
+      /**
+       * Sort button in the header (Android only, iOS uses inline button).
+       */
+      headerRight: (): React.ReactNode => {
+        if (Platform.OS === 'android') {
+          return (
+            <TouchableOpacity
+              style={{ padding: 8, marginRight: 8 }}
+              onPress={() => setShowSortMenu(prev => !prev)}
+            >
+              <MaterialIcons name="sort" size={24} color={colors.text} />
+            </TouchableOpacity>
+          );
+        }
+        return null;
+      },
     });
-  }, [navigation, t, getFilterTitle, filteredItems.length, showFilterMenu, hasItemsInFoldersOnly]);
+  }, [navigation, t, getFilterTitle, filteredItems.length, showFilterMenu, colors.text]);
 
   /**
    * Delete an item (move to trash).
@@ -455,12 +532,22 @@ export default function ItemsScreen(): React.ReactNode {
       paddingHorizontal: 14,
       paddingTop: Platform.OS === 'ios' ? 42 : 8,
     },
+    // Header row styles
+    headerRow: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      marginBottom: 16,
+    },
     // Filter button styles
     filterButton: {
       alignItems: 'center',
       flexDirection: 'row',
-      marginBottom: 16,
+      flex: 1,
       gap: 8,
+    },
+    sortButton: {
+      padding: 8,
     },
     filterButtonText: {
       color: colors.text,
@@ -532,6 +619,24 @@ export default function ItemsScreen(): React.ReactNode {
       flexDirection: 'row',
       justifyContent: 'space-between',
       width: '100%',
+    },
+    filterMenuItemWithToggle: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    filterMenuItemLabel: {
+      flex: 1,
+    },
+    filterMenuItemToggle: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 6,
+      padding: 4,
+    },
+    filterMenuToggleHint: {
+      color: colors.textMuted,
+      fontSize: 12,
     },
     filterMenuItemBadge: {
       color: colors.textMuted,
@@ -677,7 +782,7 @@ export default function ItemsScreen(): React.ReactNode {
    * Render the filter menu as an absolute overlay.
    */
   const renderFilterOverlay = (): React.ReactNode => {
-    if (!showFilterMenu || hasItemsInFoldersOnly) {
+    if (!showFilterMenu) {
       return null;
     }
 
@@ -691,24 +796,48 @@ export default function ItemsScreen(): React.ReactNode {
         />
         {/* Menu content */}
         <ThemedView style={styles.filterMenuOverlay}>
-          {/* All items filter */}
-          <TouchableOpacity
+          {/* Items filter with include folders toggle */}
+          <View
             style={[
               styles.filterMenuItem,
+              styles.filterMenuItemWithToggle,
               filterType === 'all' && styles.filterMenuItemActive
             ]}
-            onPress={() => {
-              setFilterType('all');
-              setShowFilterMenu(false);
-            }}
           >
-            <ThemedText style={[
-              styles.filterMenuItemText,
-              filterType === 'all' && styles.filterMenuItemTextActive
-            ]}>
-              {t('items.filters.all')}
-            </ThemedText>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.filterMenuItemLabel}
+              onPress={() => {
+                setFilterType('all');
+                setShowFilterMenu(false);
+              }}
+            >
+              <ThemedText style={[
+                styles.filterMenuItemText,
+                filterType === 'all' && styles.filterMenuItemTextActive
+              ]}>
+                {t('items.filters.all')}
+              </ThemedText>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.filterMenuItemToggle}
+              onPress={() => {
+                const newValue = !showFolderItems;
+                setShowFolderItems(newValue);
+                LocalPreferencesService.setShowFolders(newValue);
+                setShowFilterMenu(false);
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <ThemedText style={styles.filterMenuToggleHint}>
+                {t('items.filters.showFolders')}
+              </ThemedText>
+              <MaterialIcons
+                name={showFolderItems ? 'check-box' : 'check-box-outline-blank'}
+                size={20}
+                color={showFolderItems ? colors.primary : colors.textMuted}
+              />
+            </TouchableOpacity>
+          </View>
 
           <ThemedView style={styles.filterMenuSeparator} />
 
@@ -781,6 +910,25 @@ export default function ItemsScreen(): React.ReactNode {
             </ThemedText>
           </TouchableOpacity>
 
+          {/* TOTP filter */}
+          <TouchableOpacity
+            style={[
+              styles.filterMenuItem,
+              filterType === 'totp' && styles.filterMenuItemActive
+            ]}
+            onPress={() => {
+              setFilterType('totp');
+              setShowFilterMenu(false);
+            }}
+          >
+            <ThemedText style={[
+              styles.filterMenuItemText,
+              filterType === 'totp' && styles.filterMenuItemTextActive
+            ]}>
+              {t('items.filters.totp')}
+            </ThemedText>
+          </TouchableOpacity>
+
           <ThemedView style={styles.filterMenuSeparator} />
 
           {/* Recently deleted */}
@@ -815,16 +963,7 @@ export default function ItemsScreen(): React.ReactNode {
       <ThemedView>
         {/* Large header with logo (iOS only) */}
         {Platform.OS === 'ios' && (
-          hasItemsInFoldersOnly ? (
-            /* When all items are in folders, show simple title without dropdown */
-            <View style={styles.filterButton}>
-              <Logo width={40} height={40} />
-              <ThemedText style={styles.filterButtonText}>
-                {t('items.title')}
-              </ThemedText>
-            </View>
-          ) : (
-            /* Normal filter dropdown when there are items at root */
+          <View style={styles.headerRow}>
             <TouchableOpacity
               style={styles.filterButton}
               onPress={() => setShowFilterMenu(!showFilterMenu)}
@@ -842,7 +981,18 @@ export default function ItemsScreen(): React.ReactNode {
                 color={colors.text}
               />
             </TouchableOpacity>
-          )
+            {/* Sort button */}
+            <TouchableOpacity
+              style={styles.sortButton}
+              onPress={() => setShowSortMenu(!showSortMenu)}
+            >
+              <MaterialIcons
+                name="sort"
+                size={24}
+                color={colors.textMuted}
+              />
+            </TouchableOpacity>
+          </View>
         )}
 
         {/* Search input */}
@@ -877,8 +1027,8 @@ export default function ItemsScreen(): React.ReactNode {
           )}
         </ThemedView>
 
-        {/* Folder pills (shown below search when not searching) */}
-        {!searchQuery && (
+        {/* Folder pills (shown below search when not searching and showing folder items) */}
+        {!searchQuery && showFolderItems && (
           <View style={styles.folderPillsContainer}>
             {foldersWithCounts.map((folder) => (
               <FolderPill
@@ -921,14 +1071,8 @@ export default function ItemsScreen(): React.ReactNode {
         return t('items.noMatchingItemsSearch', { search: searchQuery });
       }
       // Only filter active (no search)
-      if (filterType === 'passkeys') {
-        return t('items.noPasskeysFound');
-      }
-      if (filterType === 'attachments') {
-        return t('items.noAttachmentsFound');
-      }
-      if (isItemTypeFilter(filterType)) {
-        return t('items.noItemsOfTypeFound', { type: getFilterTitle() });
+      if (filterType !== 'all') {
+        return t('items.noMatchingItems');
       }
       // All items are in folders - show helpful message
       if (hasItemsInFoldersOnly) {
@@ -1023,7 +1167,7 @@ export default function ItemsScreen(): React.ReactNode {
         <Animated.FlatList
           ref={flatListRef}
           testID="items-list"
-          data={isLoadingItems ? Array(4).fill(null) : filteredItems}
+          data={isLoadingItems ? Array(4).fill(null) : sortedItems}
           keyExtractor={(itm, index) => itm?.Id ?? `skeleton-${index}`}
           keyboardShouldPersistTaps='handled'
           onScroll={Animated.event(
@@ -1050,7 +1194,7 @@ export default function ItemsScreen(): React.ReactNode {
             isLoadingItems ? (
               <SkeletonLoader count={1} height={60} parts={2} />
             ) : (
-              <ItemCard item={itm} onItemDelete={onItemDelete} />
+              <ItemCard item={itm} onItemDelete={onItemDelete} showFolderPath={!!searchQuery} />
             )
           }
           ListEmptyComponent={renderEmptyComponent() as React.ReactElement}
@@ -1060,6 +1204,20 @@ export default function ItemsScreen(): React.ReactNode {
 
       {/* Filter menu overlay */}
       {renderFilterOverlay()}
+
+      {/* Sort menu overlay */}
+      <SortMenu
+        visible={showSortMenu}
+        sortOrder={sortOrder}
+        onSelect={async (order: CredentialSortOrder) => {
+          setSortOrder(order);
+          // Save to settings and trigger vault sync
+          await executeVaultMutation(async () => {
+            await dbContext.sqliteClient?.settings.setCredentialsSortOrder(order);
+          });
+        }}
+        onClose={() => setShowSortMenu(false)}
+      />
 
       {/* Create folder modal */}
       <FolderModal

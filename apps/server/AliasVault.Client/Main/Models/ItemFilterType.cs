@@ -46,4 +46,9 @@ public enum ItemFilterType
     /// Show only items with attachments.
     /// </summary>
     Attachments,
+
+    /// <summary>
+    /// Show only items with TOTP codes (2FA).
+    /// </summary>
+    Totp,
 }

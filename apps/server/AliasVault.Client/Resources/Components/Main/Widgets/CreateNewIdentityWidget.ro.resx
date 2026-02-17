@@ -67,7 +67,7 @@
     <comment>Short text for the new alias button on mobile</comment>
   </data>
   <data name="CreateNewAliasTitle" xml:space="preserve">
-    <value>Creați un alias nou</value>
+    <value>Creează un alias nou</value>
     <comment>Title of the create new alias popup</comment>
   </data>
   <data name="NameLabel" xml:space="preserve">
@@ -103,15 +103,15 @@
     <comment>Continue button text for non-alias types</comment>
   </data>
   <data name="CreateNewLoginTitle" xml:space="preserve">
-    <value>Creați o nouă autentificare</value>
+    <value>Creează o nouă autentificare</value>
     <comment>Title for creating a new login item</comment>
   </data>
   <data name="CreateNewCreditCardTitle" xml:space="preserve">
-    <value>Creați un card nou</value>
+    <value>Creează un card nou</value>
     <comment>Title for creating a new credit card item</comment>
   </data>
   <data name="CreateNewNoteTitle" xml:space="preserve">
-    <value>Creați o notiță nouă</value>
+    <value>Creează o notiță nouă</value>
     <comment>Title for creating a new note item</comment>
   </data>
   <data name="TypeLogin" xml:space="preserve">

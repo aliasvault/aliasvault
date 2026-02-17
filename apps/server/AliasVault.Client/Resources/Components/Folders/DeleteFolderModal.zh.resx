@@ -59,27 +59,27 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DeleteFolderTitle" xml:space="preserve">
-    <value>Delete Folder</value>
+    <value>删除文件夹</value>
     <comment>Title for delete folder modal</comment>
   </data>
   <data name="DeleteFolderDescription" xml:space="preserve">
-    <value>How would you like to delete the folder "{0}"?</value>
+    <value>您想如何删除文件夹“{0}”？</value>
     <comment>Description for delete folder modal. {0} is the folder name.</comment>
   </data>
   <data name="DeleteFolderOnlyTitle" xml:space="preserve">
-    <value>Delete folder only</value>
+    <value>仅删除文件夹</value>
     <comment>Title for delete folder only option</comment>
   </data>
   <data name="DeleteFolderOnlyDescription" xml:space="preserve">
-    <value>Items in this folder will be moved to root</value>
+    <value>此文件夹中的项目将被移动到根目录</value>
     <comment>Description for delete folder only option</comment>
   </data>
   <data name="DeleteFolderAndContentsTitle" xml:space="preserve">
-    <value>Delete folder and contents</value>
+    <value>删除文件夹及其内容</value>
     <comment>Title for delete folder and contents option</comment>
   </data>
   <data name="DeleteFolderAndContentsDescription" xml:space="preserve">
-    <value>Move {0} item(s) to trash</value>
+    <value>将 {0} 个项目移至回收站</value>
     <comment>Description for delete folder and contents option. {0} is item count.</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">

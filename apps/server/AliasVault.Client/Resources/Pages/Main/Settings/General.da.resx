@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Page title and description -->
+  <data name="PageTitle">
+    <value>Generelle indstillinger</value>
+    <comment>Page title for general settings</comment>
+  </data>
+  <data name="PageDescription">
+    <value>Konfigurer generelle AliasVault-indstillinger.</value>
+    <comment>Page description for general settings</comment>
+  </data>
+  <data name="BreadcrumbTitle">
+    <value>Generelle indstillinger</value>
+    <comment>Breadcrumb title for general settings</comment>
+  </data>
+  <!-- Email Settings Section -->
+  <data name="EmailSettingsTitle">
+    <value>E-mail-indstillinger</value>
+    <comment>Title for email settings section</comment>
+  </data>
+  <data name="DefaultEmailDomainLabel">
+    <value>Standard e-maildomæne</value>
+    <comment>Label for default email domain setting</comment>
+  </data>
+  <data name="DefaultEmailDomainDescription">
+    <value>Indstil det standard e-maildomæne, der skal bruges ved oprettelse af nye legitimationsoplysninger.</value>
+    <comment>Description for default email domain setting</comment>
+  </data>
+  <data name="DefaultEmailDomainDescriptionNote">
+    <value>Bemærk: E-mail modtaget på private domæner er end-to-end krypteret og kan kun læses af dig, mens e-mail modtaget på offentlige domæner kan læses af alle, der kender den modtagende e-mailadresse.</value>
+    <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
+  </data>
+  <data name="DefaultEmailDomainLearnMore">
+    <value>Læs mere om forskellen</value>
+    <comment>Link to documentation for default email domain setting</comment>
+  </data>
+  <data name="PrivateDomainsLabel">
+    <value>Private domæner</value>
+    <comment>Label for private domains group</comment>
+  </data>
+  <data name="PrivateDomainsDisabledLabel">
+    <value>Ingen private e-maildomæner konfigureret</value>
+    <comment>Label for private domains group when no private email domains are configured</comment>
+  </data>
+  <data name="PublicDomainsLabel">
+    <value>Offentlige domæner</value>
+    <comment>Label for public domains group</comment>
+  </data>
+  <data name="AutoEmailRefreshLabel">
+    <value>Opdater automatisk e-mailindhold, når der kommer nye beskeder</value>
+    <comment>Label for auto email refresh setting</comment>
+  </data>
+  <!-- Alias Settings Section -->
+  <data name="AliasSettingsTitle">
+    <value>Indstillinger for identitetsgenerator</value>
+    <comment>Title for identity generator settings section</comment>
+  </data>
+  <data name="AliasGenerationLanguageLabel">
+    <value>Sprog</value>
+    <comment>Label for alias generation language setting</comment>
+  </data>
+  <data name="AliasGenerationLanguageDescription">
+    <value>Indstil det standardsprog, der skal bruges ved generering af nye identiteter.</value>
+    <comment>Description for alias generation language setting</comment>
+  </data>
+  <data name="AliasGenerationGenderLabel">
+    <value>Køn</value>
+    <comment>Label for alias generation gender setting</comment>
+  </data>
+  <data name="AliasGenerationGenderDescription">
+    <value>Indstil standardpræference for køn ved generering af nye identiteter.</value>
+    <comment>Description for alias generation gender setting</comment>
+  </data>
+  <data name="RandomOption">
+    <value>Tilfældig</value>
+    <comment>Random gender option</comment>
+  </data>
+  <data name="MaleOption">
+    <value>Mand</value>
+    <comment>Male gender option</comment>
+  </data>
+  <data name="FemaleOption">
+    <value>Kvinde</value>
+    <comment>Female gender option</comment>
+  </data>
+  <data name="AliasGenerationAgeRangeLabel">
+    <value>Aldersgruppe</value>
+    <comment>Label for alias generation age range setting</comment>
+  </data>
+  <data name="AliasGenerationAgeRangeDescription">
+    <value>Indstil standardaldersgruppen for generering af nye identiteter. Dette påvirker den fødselsdato, der tildeles den genererede identitet.</value>
+    <comment>Description for alias generation age range setting</comment>
+  </data>
+  <!-- Clipboard Settings Section -->
+  <data name="ClipboardSettingsTitle">
+    <value>Indstillinger for udklipsholder</value>
+    <comment>Title for clipboard settings section</comment>
+  </data>
+  <data name="ClipboardClearSecondsLabel">
+    <value>Ryd automatisk udklipsholder efter kopiering</value>
+    <comment>Label for clipboard clear seconds setting</comment>
+  </data>
+  <data name="ClipboardClearSecondsDescription">
+    <value>Ryd automatisk indholdet af udklipsholderen efter kopiering af adgangskoder eller andre følsomme data.</value>
+    <comment>Description for clipboard clear seconds setting</comment>
+  </data>
+  <data name="ClipboardClearDisabledOption">
+    <value>Deaktiveret</value>
+    <comment>Option to disable clipboard clearing</comment>
+  </data>
+  <data name="ClipboardClear5SecondsOption">
+    <value>5 sekunder</value>
+    <comment>Option to clear clipboard after 5 seconds</comment>
+  </data>
+  <data name="ClipboardClear10SecondsOption">
+    <value>10 sekunder</value>
+    <comment>Option to clear clipboard after 10 seconds</comment>
+  </data>
+  <data name="ClipboardClear15SecondsOption">
+    <value>15 sekunder</value>
+    <comment>Option to clear clipboard after 15 seconds</comment>
+  </data>
+  <data name="ClipboardClearLimitationNote">
+    <value>Bemærk: Rydning af udklipsholderen i webappen er kun mulig, når fanen er aktiv. Hvis fanen mister fokus, vil udklipsholderen blive ryddet, når den igen kommer i fokus.</value>
+    <comment>Note explaining limitations of clipboard clearing feature</comment>
+  </data>
+  <!-- Password Settings Section -->
+  <data name="PasswordSettingsTitle">
+    <value>Indstillinger for adgangskode</value>
+    <comment>Title for password settings section</comment>
+  </data>
+  <!-- App Language Settings Section -->
+  <data name="AppLanguageTitle">
+    <value>Applikationssprog</value>
+    <comment>Title for app language settings section</comment>
+  </data>
+  <data name="AppLanguageLabel">
+    <value>Sprog</value>
+    <comment>Label for app language setting</comment>
+  </data>
+  <data name="AppLanguageDescription">
+    <value>Indstil sproget for applikationens brugerflade.</value>
+    <comment>Description for app language setting</comment>
+  </data>
+</root>

@@ -1,26 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!--
-    ==========================================================================================================
-
-           db         88  88                       8b           d8                         88
-          d88b        88  ""                       `8b         d8'                         88    ,d
-         d8'`8b       88                            `8b       d8'                          88    88
-        d8'  `8b      88  88  ,adPPYYba,  ,adPPYba,  `8b     d8'  ,adPPYYba,  88       88  88  MM88MMM
-       d8YaaaaY8b     88  88  ""     `Y8  I8[    ""   `8b   d8'   ""     `Y8  88       88  88    88
-      d8""""""""8b    88  88  ,adPPPPP88   `"Y8ba,     `8b d8'    ,adPPPPP88  88       88  88    88
-     d8'        `8b   88  88  88,    ,88  aa    ]8I     `888'     88,    ,88  "8a,   ,a88  88    88,
-    d8'          `8b  88  88  `"8bbdP"Y8  `"YbbdP"'      `8'      `"8bbdP"Y8   `"YbbdP'Y8  88    "Y888
-
-    ==========================================================================================================
-
-    AliasVault - Privacy-first password manager with built-in email aliasing. Fully encrypted and self-hostable.
-    Build (UTC): @BuildVersion
-
-    Source code: https://github.com/aliasvault/aliasvault
-    License: AGPLv3
-    -->
+<!--
+╔═════════════════════════════════════════════════╗
+║     _    _ _         __     __         _ _      ║
+║    / \  | (_) __ _ __\ \   / /_ _ _   _| | |_   ║
+║   / _ \ | | |/ _` / __\ \ / / _` | | | | | __|  ║
+║  / ___ \| | | (_| \__ \\ V / (_| | |_| | | |_   ║
+║ /_/   \_\_|_|\__,_|___/ \_/ \__,_|\__,_|_|\__|  ║
+║                                                 ║
+╚═════════════════════════════════════════════════╝
+AliasVault - Privacy-first password manager
+https://github.com/aliasvault/aliasvault | AGPLv3
+Build: @BuildVersion
+-->
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
     <title>AliasVault</title>
@@ -31,7 +24,7 @@
     <link rel="manifest" href="manifest.json" />
     <link rel="apple-touch-icon" sizes="500x500" href="img/icon-500.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="img/icon-192.png" />
-    <link rel="preload" href="/wasm/aliasvault_core_bg.wasm?v=@CacheBuster" as="fetch" type="application/wasm" crossorigin />
+    <link rel="prefetch" href="/wasm/aliasvault_core_bg.wasm?v=@CacheBuster" as="fetch" type="application/wasm" crossorigin />
     <link rel="modulepreload" href="/wasm/aliasvault_core.js?v=@CacheBuster" />
 </head>
 
@@ -157,7 +150,6 @@
                 if (response.ok) {
                     translations = await response.json();
                 } else {
-                    // Fallback to English if the language file is not found
                     const fallbackResponse = await fetch('/locales/en.json');
                     translations = await fallbackResponse.json();
                 }
@@ -192,13 +184,14 @@
             let value = translations;
             for (const key of keys) {
                 value = value?.[key];
-                if (!value) break;
+                if (!value) {
+                    break;
+                }
             }
             return value || '';
         }
 
         function localizeContent() {
-            // Localize loading screen
             const localizations = [
                 { id: 'loading-title', key: 'loading.title' },
                 { id: 'loading-message', key: 'loading.message' },
@@ -215,7 +208,6 @@
                 }
             });
 
-            // Set random security quote
             const securityQuotes = getTranslation('quotes.security');
             if (securityQuotes && securityQuotes.length > 0) {
                 const quoteElement = document.getElementById('security-quote');
@@ -243,7 +235,7 @@
             const minDisplayTime = 1000;
             const checkInterval = 500;
             const refreshButtonTimeout = 300000;
-            const scriptsCheckTimeout = 5000; // Check for blocked scripts after 5 seconds
+            const scriptsCheckTimeout = 5000;
 
             const appElement = document.getElementById('app');
             const refreshButton = document.getElementById('refresh-button');
@@ -284,19 +276,73 @@
         const errorMessageElement = document.getElementById('error-message');
 
         const showError = (message) => {
-            errorMessageElement.textContent = message;
-            errorMessageElement.classList.remove('hidden');
-            document.querySelector('.loading-progress-text').classList.add('hidden');
-            document.querySelector('svg.animate-spin').classList.add('hidden');
+            if (errorMessageElement) {
+                errorMessageElement.textContent = message;
+                errorMessageElement.classList.remove('hidden');
+            }
+            const progressText = document.querySelector('.loading-progress-text');
+            if (progressText) progressText.classList.add('hidden');
         };
+
+        let bootFailureHandled = false;
+        async function handleBlazorBootFailure() {
+            if (bootFailureHandled) return;
+            bootFailureHandled = true;
+
+            console.info('AliasVault: Blazor boot failure detected. Refreshing cached files...');
+
+            try {
+                if ('caches' in window) {
+                    const cacheKeys = await caches.keys();
+                    await Promise.all(cacheKeys.map(key => caches.delete(key)));
+                }
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    await Promise.all(registrations.map(r => r.unregister()));
+                }
+                const criticalFiles = [
+                    '/',
+                    '/_framework/blazor.webassembly.js',
+                    '/_framework/dotnet.js'
+                ];
+                await Promise.all(criticalFiles.map(url =>
+                    fetch(url, { cache: 'reload' }).catch(() => {})
+                ));
+            } catch (e) {
+                console.error('AliasVault: Cache refresh failed:', e);
+            }
+            const url = new URL(window.location.href);
+            url.searchParams.set('_r', Date.now().toString());
+            window.location.replace(url.toString());
+        }
+
         window.addEventListener('error', function(event) {
-            if (event.error && event.error.message && event.error.message.includes('WebAssembly')) {
+            const errorMessage = event.error?.message || event.message || '';
+            if (errorMessage.includes('WebAssembly')) {
                 showError(getTranslation('errors.webAssemblyError'));
+            }
+            else if (
+                errorMessage.includes('Argument_InvalidHandle') ||
+                errorMessage.includes('Failed to start platform')
+            ) {
+                event.preventDefault();
+                handleBlazorBootFailure();
             }
         });
         window.addEventListener('unhandledrejection', function(event) {
-            if (event.reason && event.reason.message && event.reason.message.includes('WebAssembly')) {
+            const errorMessage = event.reason?.message || String(event.reason) || '';
+
+            if (errorMessage.includes('WebAssembly')) {
                 showError(getTranslation('errors.webAssemblyError'));
+            }
+            else if (
+                errorMessage.includes('blazor.boot.json') ||
+                errorMessage.includes('Failed to load config file') ||
+                errorMessage.includes('Failed to start platform') ||
+                errorMessage.includes('Argument_InvalidHandle')
+            ) {
+                event.preventDefault();
+                handleBlazorBootFailure();
             }
         });
         window.addEventListener('load', manageLoadingScreen);
@@ -319,7 +365,13 @@
         }
     </script>
     <script src="js/bundle.min.js?v=@CacheBuster"></script>
-    <script src="_framework/blazor.webassembly.js?v=@CacheBuster" async></script>
+    <script src="_framework/blazor.webassembly.js?v=@CacheBuster" autostart="false"></script>
+    <script>
+        Blazor.start({
+            configureRuntime: runtime => runtime.withConfig({
+                loadAllSatelliteResources: true
+            })
+        })
+     </script>
 </body>
-
 </html>

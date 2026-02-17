@@ -1,0 +1,11 @@
+- Nieuwe item types (credit card, secure note)
+- Mappen
+- Aangepaste velden
+- Veld geschiedenis tracking
+- Recent verwijderde items
+- Volledige offline modus
+- Roemeense app taaloptie toegevoegd
+- Italiaanse identiteit generator taaloptie toegevoegd
+- Verbeterde autofill matching
+- Passkey toevoegen wizard toont nu suggesties voor toevoegen aan bestaande credentials
+- Android app backup veiligheid verbeterd

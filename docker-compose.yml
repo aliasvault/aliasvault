@@ -85,6 +85,7 @@ services:
             - ./database:/database:rw
             - ./logs:/logs:rw
             - ./secrets:/secrets:ro
+            - ./certificates/smtp:/certificates/smtp:ro
         restart: always
         env_file:
             - .env

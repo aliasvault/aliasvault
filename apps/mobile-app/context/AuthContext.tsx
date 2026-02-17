@@ -4,12 +4,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { NavigationContainerRef, ParamListBase } from '@react-navigation/native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { Alert, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import EncryptionUtility from '@/utils/EncryptionUtility';
 
 import { useDb } from '@/context/DbContext';
+import { dialogEventEmitter } from '@/events/DialogEventEmitter';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import i18n from '@/i18n';
+import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
 // Create a navigation reference
 export const navigationRef = React.createRef<NavigationContainerRef<ParamListBase>>();
@@ -40,8 +42,6 @@ type AuthContextType = {
   getAuthMethodDisplayKey: () => Promise<string>;
   getAutoLockTimeout: () => Promise<number>;
   setAutoLockTimeout: (timeout: number) => Promise<void>;
-  getClipboardClearTimeout: () => Promise<number>;
-  setClipboardClearTimeout: (timeout: number) => Promise<void>;
   getBiometricDisplayName: () => Promise<string>;
   isBiometricsEnabledOnDevice: () => Promise<boolean>;
   setOfflineMode: (isOffline: boolean) => void;
@@ -52,8 +52,6 @@ type AuthContextType = {
   markAutofillConfigured: () => Promise<void>;
 }
 
-const AUTOFILL_CONFIGURED_KEY = 'autofill_configured';
-const CLIPBOARD_TIMEOUT_KEY = 'clipboard_clear_timeout';
 
 /**
  * Auth context.
@@ -221,11 +219,9 @@ export const AuthProvider: React.FC<{
     await AsyncStorage.multiRemove(['accessToken', 'refreshToken', 'authMethods']);
 
     if (errorMessage) {
-      Alert.alert(
-        i18n.t('common.error'),
-        errorMessage,
-        [{ text: i18n.t('common.ok'), style: 'default' }]
-      );
+      // Use event emitter to show dialog via DialogContext
+      // This allows Android to use the custom styled dialog
+      dialogEventEmitter.emitAlert(i18n.t('common.error'), errorMessage);
     }
 
     setIsLoggedIn(false);
@@ -353,30 +349,6 @@ export const AuthProvider: React.FC<{
   }, []);
 
   /**
-   * Get the clipboard clear timeout from AsyncStorage
-   */
-  const getClipboardClearTimeout = useCallback(async (): Promise<number> => {
-    try {
-      const timeoutStr = await AsyncStorage.getItem(CLIPBOARD_TIMEOUT_KEY);
-      return timeoutStr ? parseInt(timeoutStr, 10) : 15;
-    } catch (error) {
-      console.error('Failed to get clipboard clear timeout:', error);
-      return 10;
-    }
-  }, []);
-
-  /**
-   * Set the clipboard clear timeout in AsyncStorage
-   */
-  const setClipboardClearTimeout = useCallback(async (timeout: number): Promise<void> => {
-    try {
-      await AsyncStorage.setItem(CLIPBOARD_TIMEOUT_KEY, timeout.toString());
-    } catch (error) {
-      console.error('Failed to set clipboard clear timeout:', error);
-    }
-  }, []);
-
-  /**
    * Get the encryption key derivation parameters from native storage.
    * Returns parsed parameters or null if not available.
    */
@@ -417,9 +389,9 @@ export const AuthProvider: React.FC<{
 
     const currentPasswordHashBase64 = Buffer.from(passwordHash).toString('base64');
 
-    // Check if the current password is correct by attempting to decrypt the vault
-    const dbAvailable = await dbContext.testDatabaseConnection(currentPasswordHashBase64);
-    if (!dbAvailable) {
+    // Check if the current password is correct
+    const isValid = await dbContext.verifyEncryptionKey(currentPasswordHashBase64);
+    if (!isValid) {
       return null;
     }
 
@@ -430,15 +402,15 @@ export const AuthProvider: React.FC<{
    * Load autofill state from storage
    */
   const loadAutofillState = useCallback(async () => {
-    const configured = await AsyncStorage.getItem(AUTOFILL_CONFIGURED_KEY);
-    setShouldShowAutofillReminder(configured !== 'true');
+    const configured = await LocalPreferencesService.getAutofillConfigured();
+    setShouldShowAutofillReminder(!configured);
   }, []);
 
   /**
    * Mark autofill as configured for the current platform
    */
   const markAutofillConfigured = useCallback(async () => {
-    await AsyncStorage.setItem(AUTOFILL_CONFIGURED_KEY, 'true');
+    await LocalPreferencesService.setAutofillConfigured(true);
     setShouldShowAutofillReminder(false);
   }, []);
 
@@ -473,8 +445,6 @@ export const AuthProvider: React.FC<{
     isBiometricsEnabledOnDevice,
     getAutoLockTimeout,
     setAutoLockTimeout,
-    getClipboardClearTimeout,
-    setClipboardClearTimeout,
     getBiometricDisplayName,
     markAutofillConfigured,
     verifyPassword,
@@ -498,8 +468,6 @@ export const AuthProvider: React.FC<{
     isBiometricsEnabledOnDevice,
     getAutoLockTimeout,
     setAutoLockTimeout,
-    getClipboardClearTimeout,
-    setClipboardClearTimeout,
     getBiometricDisplayName,
     markAutofillConfigured,
     verifyPassword,

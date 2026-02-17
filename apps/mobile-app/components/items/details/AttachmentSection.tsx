@@ -44,10 +44,11 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
    */
   const handleAttachment = async (attachment: Attachment): Promise<void> => {
     try {
-      const filename = attachment.Filename;
-      const fileExtension = filename.split('.').pop()?.toLowerCase() ?? '';
+      // Sanitize filename
+      const sanitizedFilename = attachment.Filename.replace(/[/\\]/g, '_');
+      const fileExtension = sanitizedFilename.split('.').pop()?.toLowerCase() ?? '';
       const downloadsDir = FileSystem.documentDirectory + 'Downloads/';
-      const filePath = downloadsDir + filename;
+      const filePath = downloadsDir + sanitizedFilename;
 
       // Ensure Downloads directory exists
       const dirInfo = await FileSystem.getInfoAsync(downloadsDir);
@@ -55,19 +56,21 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
         await FileSystem.makeDirectoryAsync(downloadsDir, { intermediates: true });
       }
 
-      // Check if file already exists, if not, create it
+      // Always recreate file to ensure fresh data
       const fileInfo = await FileSystem.getInfoAsync(filePath);
-      if (!fileInfo.exists) {
-        if (typeof attachment.Blob === 'string') {
-          await FileSystem.writeAsStringAsync(filePath, attachment.Blob, {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-        } else {
-          const base64Data = Buffer.from(attachment.Blob as unknown as string, 'base64');
-          await FileSystem.writeAsStringAsync(filePath, base64Data.toString(), {
-            encoding: FileSystem.EncodingType.Base64,
-          });
-        }
+      if (fileInfo.exists) {
+        await FileSystem.deleteAsync(filePath);
+      }
+
+      if (typeof attachment.Blob === 'string') {
+        await FileSystem.writeAsStringAsync(filePath, attachment.Blob, {
+          encoding: FileSystem.EncodingType.Base64,
+        });
+      } else {
+        const base64Data = Buffer.from(attachment.Blob as unknown as string, 'base64');
+        await FileSystem.writeAsStringAsync(filePath, base64Data.toString(), {
+          encoding: FileSystem.EncodingType.Base64,
+        });
       }
 
       // Define supported file types
@@ -78,14 +81,14 @@ export const AttachmentSection: React.FC<AttachmentSectionProps> = ({ item }): R
       if (previewableExtensions.includes(fileExtension)) {
         // Show preview modal for supported file types
         setSelectedFile({
-          name: filename,
+          name: sanitizedFilename,
           path: filePath,
           extension: fileExtension,
         });
         setPreviewModalVisible(true);
       } else {
         // For other file types, offer download directly
-        await downloadFileToSystem(filePath, filename);
+        await downloadFileToSystem(filePath, sanitizedFilename);
       }
     } catch (error) {
       console.error('Error handling attachment:', error);

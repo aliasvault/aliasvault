@@ -1,0 +1,11 @@
+- Nieuwe item types (credit card, secure note)
+- Mappen
+- Aangepaste velden
+- Veld geschiedenis tracking
+- Recent verwijderde items
+- Volledige offline modus: bekijk en wijzig je vault compleet offline, veranderingen syncen automatisch wanneer je weer online bent
+- Roemeense app taaloptie toegevoegd
+- Italiaanse identiteit generator taaloptie toegevoegd
+- Verbeterde autofill matching
+- Passkey toevoegen wizard toont nu suggesties voor toevoegen aan bestaande credentials
+- iOS app backup veiligheid verbeterd

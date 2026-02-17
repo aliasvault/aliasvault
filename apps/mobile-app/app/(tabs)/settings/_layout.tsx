@@ -79,6 +79,15 @@ export default function SettingsLayout(): React.ReactNode {
         name="identity-generator"
         options={{
           title: t('settings.identityGenerator'),
+          headerBackTitle: t('settings.title'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="identity-generator-language"
+        options={{
+          title: t('settings.identityGeneratorSettings.languageSection'),
+          headerBackTitle: t('settings.identityGenerator'),
           ...defaultHeaderOptions,
         }}
       />
@@ -144,6 +153,14 @@ export default function SettingsLayout(): React.ReactNode {
         name="mobile-unlock/result"
         options={{
           title: t('common.success'),
+          ...defaultHeaderOptions,
+        }}
+      />
+      <Stack.Screen
+        name="password-confirm"
+        options={{
+          title: t('settings.passwordConfirm.title'),
+          headerBackTitle: t('settings.importExport'),
           ...defaultHeaderOptions,
         }}
       />

@@ -24,8 +24,6 @@ type AppContextType = {
   getAuthMethodDisplayKey: () => Promise<string>;
   getAutoLockTimeout: () => Promise<number>;
   setAutoLockTimeout: (timeout: number) => Promise<void>;
-  getClipboardClearTimeout: () => Promise<number>;
-  setClipboardClearTimeout: (timeout: number) => Promise<void>;
   getBiometricDisplayName: () => Promise<string>;
   isBiometricsEnabledOnDevice: () => Promise<boolean>;
   setOfflineMode: (isOffline: boolean) => void;
@@ -116,8 +114,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     getAuthMethodDisplayKey: auth.getAuthMethodDisplayKey,
     getAutoLockTimeout: auth.getAutoLockTimeout,
     setAutoLockTimeout: auth.setAutoLockTimeout,
-    getClipboardClearTimeout: auth.getClipboardClearTimeout,
-    setClipboardClearTimeout: auth.setClipboardClearTimeout,
     getBiometricDisplayName: auth.getBiometricDisplayName,
     isBiometricsEnabledOnDevice: auth.isBiometricsEnabledOnDevice,
     setOfflineMode: auth.setOfflineMode,
@@ -139,8 +135,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     auth.getAuthMethodDisplayKey,
     auth.getAutoLockTimeout,
     auth.setAutoLockTimeout,
-    auth.getClipboardClearTimeout,
-    auth.setClipboardClearTimeout,
     auth.getBiometricDisplayName,
     auth.isBiometricsEnabledOnDevice,
     auth.setOfflineMode,

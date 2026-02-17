@@ -74,8 +74,6 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
     }
   };
 
-  const hasHeader = title || showCloseButton;
-
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       {/* Backdrop */}
@@ -90,15 +88,12 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
         onClick={handleContainerClick}
       >
         <div className={`relative transform overflow-hidden rounded-lg bg-white dark:bg-gray-800 shadow-xl transition-all w-full ${maxWidth} mx-4`}>
-          {/* Header */}
-          {hasHeader && (
+          {/* Header - only show as block if title exists */}
+          {title && (
             <div className={`px-6 py-4 flex items-center justify-between ${showHeaderBorder ? 'border-b border-gray-200 dark:border-gray-700' : ''}`}>
-              {title && (
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {title}
-                </h2>
-              )}
-              {!title && <div />}
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {title}
+              </h2>
               {showCloseButton && (
                 <button
                   type="button"
@@ -112,6 +107,20 @@ const ModalWrapper: React.FC<ModalWrapperProps> = ({
                 </button>
               )}
             </div>
+          )}
+
+          {/* Floating close button when no title */}
+          {!title && showCloseButton && (
+            <button
+              type="button"
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-500 focus:outline-none z-10"
+              onClick={onClose}
+            >
+              <span className="sr-only">{t('common.close')}</span>
+              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           )}
 
           {/* Body */}

@@ -24,18 +24,13 @@
     "unlockSuccessDescription": "Agora você pode utilizar o preenchimento automático nos formulários de login no seu navegador.",
     "closePopup": "Fechar este pop-up",
     "browseVault": "Navegar por conteúdo do cofre",
+    "autoCloseUnlockPopup": "Fechar automaticamente nos próximos acessos",
+    "closingIn": "Fechando em {{seconds}}s...",
     "connectingTo": "Conectando à",
     "switchAccounts": "Mudar de conta?",
     "loginWithMobile": "Entrar utilizado Dispositivo Móvel",
     "unlockWithMobile": "Desbloquear utilizando Dispositivo Móvel",
-    "scanQrCode": "Escaneie este código QR com seu aplicativo AliasVault para dispositivo móvel para entrar e desbloquear seu cofre.",
-    "errors": {
-      "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
-      "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
-      "wrongPassword": "Senha incorreta. Por favor tente novamente.",
-      "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
-      "mobileLoginRequestExpired": "Requisição de login pelo dispositivo móvel demorou muito. Por favor, atualize a página e tente novamente."
-    }
+    "scanQrCode": "Escaneie este código QR com seu aplicativo AliasVault para dispositivo móvel para entrar e desbloquear seu cofre."
   },
   "menu": {
     "vault": "Cofre",
@@ -47,6 +42,7 @@
     "error": "Erro",
     "cancel": "Cancelar",
     "confirm": "Confirmar",
+    "remove": "Remover",
     "back": "Voltar",
     "next": "Próximo",
     "use": "Utilizar",
@@ -58,6 +54,7 @@
     "create": "Criar",
     "or": "Ou",
     "close": "Fechar",
+    "dismiss": "Ignorar",
     "logout": "Sair",
     "copied": "Copiado!",
     "openInNewWindow": "Abrir em uma nova janela",
@@ -82,7 +79,7 @@
     "email": "E-mail",
     "username": "Nome de Usuário",
     "password": "Senha",
-    "generate": "Generate",
+    "generate": "Gerar",
     "serviceName": "Nome do Serviço",
     "loggedIn": "Logado",
     "syncingVault": "Sincronizando cofre",
@@ -106,7 +103,12 @@
       "vaultIsLocked": "O cofre está bloqueado",
       "passwordChanged": "Sua senha mudou desde o último login. Por favor, realize login novamente por questões de segurança.",
       "syncConflictMaxRetries": "Não foi possível sincronizar seu cofre após várias tentativas. Por favor, tente novamente mais tarde.",
-      "mergeFailed": "Falha ao combinar mudanças do cofre. Por favor, tente novamente."
+      "mergeFailed": "Falha ao combinar mudanças do cofre. Por favor, tente novamente.",
+      "invalidCode": "Por favor digite o código de autenticação de 6 dígitos.",
+      "serverError": "Não foi possível conectar ao servidor do AliasVault. Por favor tente novamente mais tarde ou entre em contato com o suporte caso o problema persista.",
+      "wrongPassword": "Senha incorreta. Por favor tente novamente.",
+      "sessionExpired": "Sua sessão expirou. Por favor, faça login novamente.",
+      "mobileLoginRequestExpired": "Requisição de login pelo dispositivo móvel demorou muito. Por favor, atualize a página e tente novamente."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Um erro desconhecido ocorreu. Por favor, tente novamente.",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Senha copiada para a área de transferência",
     "openAliasVaultToUpgrade": "Abra o AliasVault para atualizar",
     "vaultUpgradeRequired": "Atualização de cofre necessária.",
-    "dismissPopup": "Ignorar pop-up"
+    "dismissPopup": "Ignorar pop-up",
+    "savePrompt": {
+      "title": "Salvar no AliasVault?",
+      "neverForThisSite": "Nunca para este site"
+    }
   },
   "items": {
     "title": "Itens",
@@ -195,15 +201,21 @@
     "clearSearch": "Limpar pesquisa",
     "clearFilter": "Limpar filtro",
     "emptyFolderHint": "Esta pasta está vazia. Para mover itens para esta pasta, edite o item e toque no ícone da pasta no campo de nome.",
-    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
+    "allItemsInFolders": "Todos os seus itens estão organizados em pastas. Clique em uma pasta acima para ver suas credenciais, ou utilize a busca para encontrar itens específicos.",
     "deleteFolder": "Excluir Pasta",
     "deleteFolderKeepItems": "Excluir apenas a pasta",
     "deleteFolderKeepItemsDescription": "Itens serão movidos de volta para a lista principal.",
     "deleteFolderAndItems": "Excluir pasta e todos os itens",
     "deleteFolderAndItemsDescription": "{{count}} item(s) será(ão) movido(s) para Recentemente Excluídos.",
     "filters": {
-      "all": "(Todos os) Itens",
+      "folders": "Pastas",
       "passkeys": "Passkeys"
+    },
+    "sort": {
+      "title": "Ordenar por",
+      "oldestFirst": "Mais antigos primeiro",
+      "newestFirst": "Mais novos primeiro",
+      "alphabetical": "Ordem Alfabética (A-Z)"
     },
     "deleteItemTitle": "Excluir Item",
     "deleteItemConfirm": "Tem certeza que deseja excluir este item?",
@@ -292,8 +304,8 @@
     "uploading": "Fazendo upload...",
     "uploadSuccess": "Arquivos enviados com sucesso.",
     "deleteSuccess": "Anexo excluído com sucesso.",
-    "firefoxExpandRequired": "To upload files, use the expanded window.",
-    "openExpandedWindow": "Open Expanded Window"
+    "firefoxExpandRequired": "Para fazer o upload dr arquivos, use a tela expandida.",
+    "openExpandedWindow": "Abrir Tela Expandida"
   },
   "emails": {
     "title": "E-mails",
@@ -344,6 +356,11 @@
     "disabledForThisSite": "Desabilitado para este site",
     "temporarilyDisabledUntil": "Temporariamente desabilitado até ",
     "resetAllSiteSettings": "Redefinir todas as configurações específicas do site",
+    "autofillPopupDescription": "Mostrar o popup de autopreenchimento quando campos de login forem detectados.",
+    "disabledSites": "Sites desabilitados",
+    "disabledSitesDescription": "Sites onde o popup de autopreenchimento não vão aparecer.",
+    "clearAllDisabledSites": "Limpar todos os sites desabilitados",
+    "temporaryUntil": "até",
     "appearance": "Aparência",
     "theme": "Tema",
     "useDefault": "Utilizar padrão",
@@ -396,6 +413,28 @@
       "apiUrlInvalid": "Por favor, digite um URL de API válido",
       "clientUrlRequired": "URL de Cliente é obrigatório",
       "clientUrlInvalid": "Por favor, digite um URL de cliente válido"
+    },
+    "identityGenerator": "Gerador de Identidade",
+    "identityGeneratorSettings": {
+      "description": "Configure o idioma padrão e preferência de gênero para geração de novas identidades.",
+      "languageSection": "Idioma",
+      "languageDescription": "Defina o idioma que será utilizado ao gerar novas identidades.",
+      "genderSection": "Gênero",
+      "genderDescription": "Defina a preferência de gênero para geração de novas identidades.",
+      "ageRangeSection": "Faixa Etária",
+      "ageRangeDescription": "Selecione a faixa etária para geração de novas identidades.",
+      "genderOptions": {
+        "random": "Aleatório",
+        "male": "Masculino",
+        "female": "Feminino"
+      }
+    },
+    "loginSave": {
+      "title": "Salvar Prompt de Login",
+      "description": "Mostra um prompt para salvar credenciais de login quando você faz login em algum website.",
+      "blockedSites": "Sites bloqueados",
+      "blockedSitesDescription": "Sites onde o prompt para salvar nunca vão aparecer.",
+      "clearAllBlockedSites": "Limpar todos os sites bloqueados"
     },
     "unlockMethod": {
       "title": "Método de Desbloqueio do Cofre",
@@ -494,5 +533,9 @@
     "unsyncedChangesTitle": "Alterações Dessincronizadas",
     "unsyncedChangesWarning": "Você tem alterações dessincronizadas que serão perdidas caso você saia da sua conta agora. Têm certeza que deseja continuar?",
     "logoutAnyway": "Sair assim mesmo"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Toque para tentar sincronizar novamente"
   }
 }

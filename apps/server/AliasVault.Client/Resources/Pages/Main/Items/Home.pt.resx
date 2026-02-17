@@ -140,8 +140,12 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>(Todos os) Itens</value>
+    <value>Itens</value>
     <comment>Filter option to show all items</comment>
+  </data>
+  <data name="ShowFoldersOption" xml:space="preserve">
+    <value>Pastas</value>
+    <comment>Toggle option to show or hide folder structure</comment>
   </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
     <value>Passkeys</value>
@@ -181,7 +185,7 @@
     <comment>Empty state message when folder has no items</comment>
   </data>
   <data name="AllItemsInFoldersMessage" xml:space="preserve">
-    <value>All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.</value>
+    <value>Todos os seus itens estão organizados em pastas. Clique em uma pasta acima para ver suas credenciais, ou utilize a busca para encontrar itens específicos.</value>
     <comment>Empty state message when all items are in folders and none at root level</comment>
   </data>
   <!-- Folder Management -->

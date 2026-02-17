@@ -1,5 +1,5 @@
-import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import React, { useRef, useEffect } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 
 import { ClipboardCountdownBar } from '@/entrypoints/popup/components/ClipboardCountdownBar';
 import BottomNav from '@/entrypoints/popup/components/Layout/BottomNav';
@@ -30,6 +30,16 @@ type DefaultLayoutProps = {
  * This is the main layout used for most pages in the extension.
  */
 const DefaultLayout: React.FC<DefaultLayoutProps> = ({ routes, headerButtons, message, children }) => {
+  const mainRef = useRef<HTMLElement>(null);
+  const location = useLocation();
+
+  // Reset scroll position when route changes
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTop = 0;
+    }
+  }, [location.pathname]);
+
   return (
     <div className="min-h-screen min-w-[350px] bg-white dark:bg-gray-900 flex flex-col max-h-[600px]">
       <ClipboardCountdownBar />
@@ -40,6 +50,7 @@ const DefaultLayout: React.FC<DefaultLayoutProps> = ({ routes, headerButtons, me
       />
 
       <main
+        ref={mainRef}
         className="flex-1 overflow-y-auto bg-gray-100 dark:bg-gray-900"
         style={{
           paddingTop: '64px',

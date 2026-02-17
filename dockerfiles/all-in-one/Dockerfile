@@ -3,7 +3,9 @@
 # ============================================
 # Stage 1: Build core libraries
 # ============================================
-FROM rust:1-slim-bookworm AS core-builder
+# Use BUILDPLATFORM to run on native arch (amd64) instead of emulating arm64.
+# WASM output is platform-independent, so we only need to build once.
+FROM --platform=$BUILDPLATFORM rust:1-slim-bookworm AS core-builder
 
 # Install Node.js and wasm-pack (Rust already included in base image)
 RUN apt-get update && \
@@ -28,7 +30,7 @@ RUN cd ./core && \
 # ============================================
 # Stage 2: Build .NET applications
 # ============================================
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS dotnet-builder
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS dotnet-builder
 
 # Install Python (required for WASM compilation) and Node.js (required by JS bundler)
 RUN apt-get update && \
@@ -114,7 +116,7 @@ RUN ARCH="${TARGETARCH}"; \
 # ============================================
 # Stage 4: Final runtime image
 # ============================================
-FROM mcr.microsoft.com/dotnet/aspnet:9.0-bookworm-slim
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble
 
 # OCI Image Labels
 LABEL org.opencontainers.image.source="https://github.com/aliasvault/aliasvault"
@@ -224,5 +226,5 @@ ENV ALIASVAULT_VERBOSITY=0 \
 EXPOSE 80 443 25 587
 VOLUME ["/database", "/logs", "/secrets"]
 HEALTHCHECK --interval=30s --timeout=10s --start-period=90s --retries=3 \
-    CMD curl -f http://localhost/api || exit 1
+    CMD curl -f http://127.0.0.1/api || exit 1
 ENTRYPOINT ["/init"]

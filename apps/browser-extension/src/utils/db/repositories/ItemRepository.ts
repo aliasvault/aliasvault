@@ -534,16 +534,17 @@ export class ItemRepository extends BaseRepository {
       FieldKey: string | null;
       FieldDefinitionId: string | null;
       Value: string;
+      Weight: number;
     }>(FieldValueQueries.GET_EXISTING_FOR_ITEM, [item.Id]);
 
     // Build a map of existing FieldValues by key:index
-    const existingByKey = new Map<string, { Id: string; Value: string }>();
+    const existingByKey = new Map<string, { Id: string; Value: string; Weight: number }>();
     const fieldValueCounts = new Map<string, number>();
 
     for (const fv of existingFieldValues) {
       const key = fv.FieldKey || fv.FieldDefinitionId || '';
       const count = fieldValueCounts.get(key) || 0;
-      existingByKey.set(`${key}:${count}`, { Id: fv.Id, Value: fv.Value });
+      existingByKey.set(`${key}:${count}`, { Id: fv.Id, Value: fv.Value, Weight: fv.Weight });
       fieldValueCounts.set(key, count + 1);
     }
 
@@ -581,10 +582,11 @@ export class ItemRepository extends BaseRepository {
 
           if (existing) {
             processedIds.add(existing.Id);
-            if (existing.Value !== value) {
+            const newWeight = field.DisplayOrder ?? 0;
+            if (existing.Value !== value || existing.Weight !== newWeight) {
               this.client.executeUpdate(FieldValueQueries.UPDATE, [
                 value,
-                field.DisplayOrder ?? 0,
+                newWeight,
                 currentDateTime,
                 existing.Id
               ]);

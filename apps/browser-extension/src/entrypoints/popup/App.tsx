@@ -31,6 +31,7 @@ import AutofillSettings from '@/entrypoints/popup/pages/settings/AutofillSetting
 import AutoLockSettings from '@/entrypoints/popup/pages/settings/AutoLockSettings';
 import ClipboardSettings from '@/entrypoints/popup/pages/settings/ClipboardSettings';
 import ContextMenuSettings from '@/entrypoints/popup/pages/settings/ContextMenuSettings';
+import IdentityGeneratorSettings from '@/entrypoints/popup/pages/settings/IdentityGeneratorSettings';
 import LanguageSettings from '@/entrypoints/popup/pages/settings/LanguageSettings';
 import PasskeySettings from '@/entrypoints/popup/pages/settings/PasskeySettings';
 import Settings from '@/entrypoints/popup/pages/settings/Settings';
@@ -203,6 +204,7 @@ const App: React.FC = () => {
     { path: '/settings/language', element: <LanguageSettings />, showBackButton: true, title: t('settings.language') },
     { path: '/settings/auto-lock', element: <AutoLockSettings />, showBackButton: true, title: t('settings.autoLockTimeout') },
     { path: '/settings/passkeys', element: <PasskeySettings />, showBackButton: true, title: t('settings.passkeySettings') },
+    { path: '/settings/identity-generator', element: <IdentityGeneratorSettings />, showBackButton: true, title: t('settings.identityGenerator') },
   ], [t]);
 
   useEffect(() => {

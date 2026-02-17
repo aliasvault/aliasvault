@@ -8,7 +8,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
 import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
-import { useAuth } from '@/context/AuthContext';
+import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
@@ -25,7 +25,6 @@ export default function ClipboardClearScreen(): React.ReactNode {
     { value: 15, label: t('settings.clipboardClearOptions.15seconds') },
     { value: 30, label: t('settings.clipboardClearOptions.30seconds') },
   ];
-  const { getClipboardClearTimeout, setClipboardClearTimeout } = useAuth();
   const [selectedTimeout, setSelectedTimeout] = useState<number>(10);
   const [isIgnoringBatteryOptimizations, setIsIgnoringBatteryOptimizations] = useState<boolean>(true);
   const appState = useRef(AppState.currentState);
@@ -35,7 +34,7 @@ export default function ClipboardClearScreen(): React.ReactNode {
      * Load the current clipboard clear timeout.
      */
     const loadCurrentTimeout = async (): Promise<void> => {
-      const timeout = await getClipboardClearTimeout();
+      const timeout = await LocalPreferencesService.getClipboardClearTimeout();
       setSelectedTimeout(timeout);
     };
 
@@ -72,13 +71,13 @@ export default function ClipboardClearScreen(): React.ReactNode {
     return (): void => {
       subscription.remove();
     };
-  }, [getClipboardClearTimeout]);
+  }, []);
 
   /**
    * Handle timeout change.
    */
   const handleTimeoutChange = async (timeout: number): Promise<void> => {
-    await setClipboardClearTimeout(timeout);
+    await LocalPreferencesService.setClipboardClearTimeout(timeout);
     setSelectedTimeout(timeout);
   };
 

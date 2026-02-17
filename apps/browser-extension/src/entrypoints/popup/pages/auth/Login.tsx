@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { sendMessage } from 'webext-bridge/popup';
 
+import type { TwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
 import Button from '@/entrypoints/popup/components/Button';
 import MobileUnlockModal from '@/entrypoints/popup/components/Dialogs/MobileUnlockModal';
 import HeaderButton from '@/entrypoints/popup/components/HeaderButton';
@@ -20,11 +21,17 @@ import { AppInfo } from '@/utils/AppInfo';
 import { SrpAuthService } from '@/utils/auth/SrpAuthService';
 import type { VaultResponse, LoginResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-import SqliteClient from '@/utils/SqliteClient';
 import { ApiAuthError } from '@/utils/types/errors/ApiAuthError';
+import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
 
 import { storage } from '#imports';
+
+/** Track if username prefill has been attempted (only do it once on mount) */
+let usernamePrefillAttempted = false;
+
+/** Track if 2FA state restoration has been attempted (only do it once on mount) */
+let twoFactorStateRestoreAttempted = false;
 
 /**
  * Login page
@@ -56,49 +63,59 @@ const Login: React.FC = () => {
   /**
    * Helper to persist and load vault after successful authentication.
    * Checks if local vault exists from forced logout and preserves it if more advanced.
-   * @returns The initialized SqliteClient
+   * Also checks if the vault belongs to the same user - if different user, uses server vault.
    */
-  const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string): Promise<SqliteClient> => {
+  const persistAndLoadVault = async (vaultResponse: VaultResponse, encryptionKey: string, loginUsername: string): Promise<void> => {
     // Check if there's existing vault data (from forced logout)
     const existingVault = await storage.getItem('local:encryptedVault') as string | null;
     const existingRevision = await storage.getItem('local:serverRevision') as number | null;
+    const storedUsername = await storage.getItem('local:username') as string | null;
 
     let vaultToLoad = vaultResponse.vault.blob;
 
     if (existingVault && existingRevision !== null) {
-      // Try to decrypt existing vault to verify it's valid
-      try {
-        const decryptedExisting = await EncryptionUtility.symmetricDecrypt(existingVault, encryptionKey);
+      // Check if the existing vault belongs to a different user
+      const normalizedLoginUsername = loginUsername.toLowerCase().trim();
+      const normalizedStoredUsername = storedUsername?.toLowerCase().trim();
 
-        // Check if existing vault is more advanced than server
-        if (existingRevision >= vaultResponse.vault.currentRevisionNumber) {
-          console.info(
-            `Existing vault is more advanced (rev ${existingRevision} >= ${vaultResponse.vault.currentRevisionNumber}), ` +
-            `preserving local vault and will upload to server`
-          );
-
-          /*
-           * Don't overwrite the vault - it will be uploaded via sync flow
-           * Just update metadata and load existing vault
-           */
-          vaultToLoad = existingVault;
-          await sendMessage('STORE_VAULT_METADATA', {
-            publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
-            privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
-            hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
-          }, 'background');
-
-          return dbContext.loadDatabase(decryptedExisting);
-        }
-
-        // Server is more advanced - will overwrite local
+      if (storedUsername && normalizedStoredUsername !== normalizedLoginUsername) {
+        // Different user
         console.info(
-          `Server vault is more advanced (rev ${vaultResponse.vault.currentRevisionNumber} > ${existingRevision}), ` +
-          `using server vault`
+          `Existing vault belongs to different user (${storedUsername}), using server vault for ${loginUsername}`
         );
-      } catch {
-        // Decryption failed - password changed or corrupt vault
-        console.info('Existing vault could not be decrypted (password changed), using server vault');
+      } else {
+        // Same user (or no stored username)
+        try {
+          const decryptedExisting = await EncryptionUtility.symmetricDecrypt(existingVault, encryptionKey);
+
+          // Check if existing vault is more advanced than server
+          if (existingRevision >= vaultResponse.vault.currentRevisionNumber) {
+            console.info(
+              `Existing vault is more advanced (rev ${existingRevision} >= ${vaultResponse.vault.currentRevisionNumber}), ` +
+              `preserving local vault and will upload to server`
+            );
+
+            // Update metadata and load existing vault
+            vaultToLoad = existingVault;
+            await sendMessage('STORE_VAULT_METADATA', {
+              publicEmailDomainList: vaultResponse.vault.publicEmailDomainList,
+              privateEmailDomainList: vaultResponse.vault.privateEmailDomainList,
+              hiddenPrivateEmailDomainList: vaultResponse.vault.hiddenPrivateEmailDomainList,
+            }, 'background');
+
+            await dbContext.loadDatabase(decryptedExisting);
+            return;
+          }
+
+          // Server is more advanced, fetch server vault
+          console.info(
+            `Server vault is more advanced (rev ${vaultResponse.vault.currentRevisionNumber} > ${existingRevision}), ` +
+            `using server vault`
+          );
+        } catch {
+          // Decryption failed, password changed or corrupt vault
+          console.info('Existing vault could not be decrypted (password changed), using server vault');
+        }
       }
     }
 
@@ -116,7 +133,7 @@ const Login: React.FC = () => {
 
     // Decrypt and load the vault into memory
     const decryptedVault = await EncryptionUtility.symmetricDecrypt(vaultToLoad, encryptionKey);
-    return dbContext.loadDatabase(decryptedVault);
+    await dbContext.loadDatabase(decryptedVault);
   };
 
   /**
@@ -146,29 +163,24 @@ const Login: React.FC = () => {
     });
 
     /*
-     * Persist and load the vault
+     * Persist and load the vault.
      * If there was a forced logout, persistAndLoadVault checks existing vault data:
+     * - If different user → uses server vault
      * - If local vault is more advanced → preserves it (will upload via sync in /reinitialize)
      * - If server is more advanced → uses server vault
      * - If password changed (can't decrypt) → uses server vault
      */
-    const sqliteClient = await persistAndLoadVault(vaultResponseJson, passwordHashBase64);
+    await persistAndLoadVault(vaultResponseJson, passwordHashBase64, username);
 
-    // If there are pending migrations, redirect to the upgrade page.
-    try {
-      if (await sqliteClient.hasPendingMigrations()) {
-        navigate('/upgrade', { replace: true });
-        hideLoading();
-        return;
-      }
-    } catch (err) {
-      await app.logout();
-      setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
-      hideLoading();
-      return;
-    }
+    // Reset prefill flag so next logout will prefill again
+    usernamePrefillAttempted = false;
 
-    // Navigate to reinitialize page which will take care of the proper redirect.
+    /*
+     * Navigate to reinitialize page which will:
+     * 1. Call syncVault() to check version compatibility
+     * 2. Handle pending migrations via onUpgradeRequired callback
+     * 3. Navigate to appropriate page
+     */
     navigate('/reinitialize', { replace: true });
 
     // Show app.
@@ -177,7 +189,7 @@ const Login: React.FC = () => {
 
   useEffect(() => {
     /**
-     * Load the client URL and check for saved username (from forced logout).
+     * Load the client URL, check for saved username, and restore 2FA state if available.
      */
     const loadInitialData = async () : Promise<void> => {
       // Load client URL
@@ -188,10 +200,37 @@ const Login: React.FC = () => {
       }
       setClientUrl(clientUrl);
 
-      // Check for saved username (from forced logout) and prefill
-      const savedUsername = await storage.getItem('local:username') as string | null;
-      if (savedUsername) {
-        setCredentials(prev => ({ ...prev, username: savedUsername }));
+      /*
+       * Check for persisted 2FA state (from popup close during 2FA entry).
+       * This allows users to close the popup to switch to their authenticator app
+       * and continue where they left off when reopening.
+       */
+      if (!twoFactorStateRestoreAttempted) {
+        twoFactorStateRestoreAttempted = true;
+        const savedState = await sendMessage('GET_TWO_FACTOR_STATE', null, 'background') as TwoFactorState | null;
+        if (savedState) {
+          // Restore the 2FA state
+          setCredentials({ username: savedState.username, password: '' });
+          setLoginResponse(savedState.loginResponse);
+          setPasswordHashString(savedState.passwordHashString);
+          setPasswordHashBase64(savedState.passwordHashBase64);
+          setRememberMe(savedState.rememberMe);
+          setTwoFactorRequired(true);
+          setIsInitialLoading(false);
+          return;
+        }
+      }
+
+      /*
+       * Check for saved username (from forced logout) and prefill once on mount
+       * If user clears it, don't repopulate
+       */
+      if (!usernamePrefillAttempted) {
+        usernamePrefillAttempted = true;
+        const savedUsername = await storage.getItem('local:username') as string | null;
+        if (savedUsername) {
+          setCredentials(prev => ({ ...prev, username: savedUsername }));
+        }
       }
 
       setIsInitialLoading(false);
@@ -260,6 +299,19 @@ const Login: React.FC = () => {
         // Store password hash base64 as we need it for decryption
         setPasswordHashBase64(passwordHashBase64);
         setTwoFactorRequired(true);
+
+        /*
+         * Persist 2FA state to background script so user can
+         * close popup to switch to authenticator app and continue when reopening
+         */
+        await sendMessage('STORE_TWO_FACTOR_STATE', {
+          username: normalizedUsername,
+          loginResponse,
+          passwordHashString,
+          passwordHashBase64,
+          rememberMe,
+        }, 'background');
+
         // Show app.
         hideLoading();
         return;
@@ -282,8 +334,11 @@ const Login: React.FC = () => {
       // Show API authentication errors as-is.
       if (err instanceof ApiAuthError) {
         setError(t('common.apiErrors.' + err.message));
+      } else if (hasErrorCode(err)) {
+        // Error contains an error code (E-XXX), show the formatted message as-is
+        setError(getErrorMessage(err, t('common.errors.serverError')));
       } else {
-        setError(t('auth.errors.serverError'));
+        setError(t('common.errors.serverError'));
       }
       hideLoading();
     }
@@ -306,7 +361,7 @@ const Login: React.FC = () => {
       // Validate that 2FA code is a 6-digit number
       const code = twoFactorCode.trim();
       if (!/^\d{6}$/.test(code)) {
-        throw new Error(t('auth.errors.invalidCode'));
+        throw new Error(t('common.errors.invalidCode'));
       }
 
       const twoFaUsername = SrpAuthService.normalizeUsername(credentials.username);
@@ -322,6 +377,9 @@ const Login: React.FC = () => {
       if (!validationResponse.token) {
         throw new Error(t('common.errors.unknownError'));
       }
+
+      // Clear any persisted 2FA state since login is successful
+      await sendMessage('CLEAR_TWO_FACTOR_STATE', null, 'background');
 
       // Handle successful authentication
       await handleSuccessfulAuth(
@@ -343,8 +401,11 @@ const Login: React.FC = () => {
       console.error('2FA error:', err);
       if (err instanceof ApiAuthError) {
         setError(t('common.apiErrors.' + err.message));
+      } else if (hasErrorCode(err)) {
+        // Error contains an error code (E-XXX), show the formatted message as-is
+        setError(getErrorMessage(err, t('common.errors.serverError')));
       } else {
-        setError(t('auth.errors.serverError'));
+        setError(t('common.errors.serverError'));
       }
       hideLoading();
     }
@@ -379,24 +440,14 @@ const Login: React.FC = () => {
       });
 
       // Persist and load the vault
-      const sqliteClient = await persistAndLoadVault(vaultResponse, result.decryptionKey);
+      await persistAndLoadVault(vaultResponse, result.decryptionKey, result.username);
 
-      // Check for pending migrations
-      try {
-        if (await sqliteClient.hasPendingMigrations()) {
-          navigate('/upgrade', { replace: true });
-          hideLoading();
-          setIsInitialLoading(false);
-          return;
-        }
-      } catch (err) {
-        await app.logout();
-        setError(err instanceof Error ? err.message : t('common.errors.unknownError'));
-        hideLoading();
-        return;
-      }
-
-      // Navigate to reinitialize page
+      /*
+       * Navigate to reinitialize page which will:
+       * 1. Call syncVault() to check version compatibility
+       * 2. Handle pending migrations via onUpgradeRequired callback
+       * 3. Navigate to appropriate page
+       */
       hideLoading();
       setIsInitialLoading(false);
       navigate('/reinitialize', { replace: true });
@@ -450,8 +501,10 @@ const Login: React.FC = () => {
             </Button>
             <Button
               type="button"
-              onClick={() => {
-                // Reset the form.
+              onClick={async () => {
+                // Clear persisted 2FA state
+                await sendMessage('CLEAR_TWO_FACTOR_STATE', null, 'background');
+                // Reset the form
                 setCredentials({
                   username: '',
                   password: ''

@@ -15,7 +15,14 @@
                 @foreach (var attachment in Attachments.Where(x => !x.IsDeleted))
                 {
                     <li class="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400">
-                        <span>@attachment.Filename</span>
+                        @if (attachment.Blob != null && attachment.Blob.Length > 0)
+                        {
+                            <span>@attachment.Filename</span>
+                        }
+                        else
+                        {
+                            <span class="text-gray-400 dark:text-gray-500" title="Attachment data unavailable">@attachment.Filename (unavailable)</span>
+                        }
                         <button type="button" @onclick="() => DeleteAttachment(attachment)" class="text-red-500 hover:text-red-700">
                             Delete
                         </button>

@@ -70,10 +70,9 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
         super.viewWillAppear(animated)
 
         // Check if we're in quick return mode
-        // Don't show any UI - Face ID will appear immediately with no background
+        // Show branded loading view while Face ID authentication is in progress
         if isQuickReturnMode {
-            // Make the view transparent so system UI shows through
-            view.backgroundColor = .clear
+            showBrandedLoadingView()
             return
         }
 
@@ -142,48 +141,85 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
                     return
                 }
 
-                // If PIN is enabled, show PIN unlock immediately (PIN takes priority)
+                // Priority: Biometric -> PIN -> Error
+                // Try biometric first if enabled
+                if biometricEnabled {
+                    do {
+                        // Try to unlock the vault with biometric
+                        try vaultStore.unlockVault()
+
+                        // Unlock succeeded - process the credential request
+                        if let passkeyRequest = self.quickReturnPasskeyRequest {
+                            self.handleQuickReturnPasskeyCredential(vaultStore: vaultStore, request: passkeyRequest)
+                        } else if let passwordRequest = self.quickReturnPasswordRequest {
+                            self.handleQuickReturnPasswordCredential(vaultStore: vaultStore, request: passwordRequest)
+                        }
+                        return
+                    } catch let error as NSError {
+                        print("Quick return biometric unlock failed: \(error)")
+
+                        // Biometric failed - try PIN fallback if available
+                        if pinEnabled {
+                            print("Falling back to PIN unlock")
+                            self.showQuickReturnPinUnlock(vaultStore: vaultStore)
+                            return
+                        }
+
+                        // No PIN fallback - report the error
+                        var errorMessage = error.localizedDescription
+                        if error.domain == "VaultStore" {
+                            switch error.code {
+                            case 3:
+                                errorMessage = NSLocalizedString("no_encryption_key_message", comment: "No encryption key found. Please unlock the vault in the main AliasVault app first.")
+                            case 8, 9:
+                                errorMessage = NSLocalizedString("keychain_error_message", comment: "Failed to retrieve encryption key. This may be due to cancelled biometric authentication.")
+                            default:
+                                break
+                            }
+                        }
+
+                        self.extensionContext.cancelRequest(withError: NSError(
+                            domain: ASExtensionErrorDomain,
+                            code: ASExtensionError.failed.rawValue,
+                            userInfo: [NSLocalizedDescriptionKey: errorMessage]
+                        ))
+                        return
+                    }
+                }
+
+                // Biometric not enabled - try PIN directly
                 if pinEnabled {
                     self.showQuickReturnPinUnlock(vaultStore: vaultStore)
                     return
                 }
 
-                // Only biometric is enabled - try to unlock with biometric
-                // No loading view shown - Face ID will appear immediately on clean background
-                do {
-                    // Try to unlock the vault with biometric
-                    try vaultStore.unlockVault()
-
-                    // Unlock succeeded - process the credential request
-                    if let passkeyRequest = self.quickReturnPasskeyRequest {
-                        self.handleQuickReturnPasskeyCredential(vaultStore: vaultStore, request: passkeyRequest)
-                    } else if let passwordRequest = self.quickReturnPasswordRequest {
-                        self.handleQuickReturnPasswordCredential(vaultStore: vaultStore, request: passwordRequest)
-                    }
-                } catch let error as NSError {
-                    print("Quick return vault unlock failed: \(error)")
-
-                    // Provide specific error message based on error code
-                    var errorMessage = error.localizedDescription
-                    if error.domain == "VaultStore" {
-                        switch error.code {
-                        case 3:
-                            errorMessage = NSLocalizedString("no_encryption_key_message", comment: "No encryption key found. Please unlock the vault in the main AliasVault app first.")
-                        case 8, 9:
-                            errorMessage = NSLocalizedString("keychain_error_message", comment: "Failed to retrieve encryption key. This may be due to cancelled biometric authentication.")
-                        default:
-                            break
-                        }
-                    }
-
-                    self.extensionContext.cancelRequest(withError: NSError(
-                        domain: ASExtensionErrorDomain,
-                        code: ASExtensionError.failed.rawValue,
-                        userInfo: [NSLocalizedDescriptionKey: errorMessage]
-                    ))
-                }
+                // This shouldn't happen as we check both above, but handle gracefully
+                self.extensionContext.cancelRequest(withError: NSError(
+                    domain: ASExtensionErrorDomain,
+                    code: ASExtensionError.failed.rawValue,
+                    userInfo: [NSLocalizedDescriptionKey: NSLocalizedString("auth_required_message", comment: "Please enable Face ID or PIN unlock in the main AliasVault app to use autofill.")]
+                ))
             }
         }
+    }
+
+    /// Show branded loading view with AliasVault logo during biometric authentication
+    private func showBrandedLoadingView() {
+        let loadingView = BrandedLoadingView(message: nil, showLoadingAnimation: false)
+        let hostingController = UIHostingController(rootView: loadingView)
+        addChild(hostingController)
+        view.addSubview(hostingController.view)
+
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor),
+            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+        ])
+
+        hostingController.didMove(toParent: self)
+        currentHostingController = hostingController
     }
 
     /// Show PIN unlock for quick return mode when biometric fails
@@ -538,8 +574,8 @@ public class CredentialProviderViewController: ASCredentialProviderViewControlle
         var title = NSLocalizedString("connection_error_title", comment: "Connection Error")
         var message = NSLocalizedString("connection_error_message", comment: "No connection to the server can be made.")
 
-        // Check if it's a VaultSyncError and customize message accordingly
-        if let syncError = error as? VaultSyncError {
+        // Check if it's a AppError and customize message accordingly
+        if let syncError = error as? AppError {
             switch syncError {
             case .sessionExpired, .authenticationFailed:
                 title = NSLocalizedString("session_expired_title", comment: "Session Expired")

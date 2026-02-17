@@ -484,6 +484,10 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
     update_version "../core/rust/Cargo.toml" \
         "^version = \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"" \
         "version = \"$version\""
+
+    # Update Rust core Cargo.lock (aliasvault-core package version)
+    echo "Updating Rust core Cargo.lock version..."
+    sed -i '' '/^name = "aliasvault-core"$/{n;s/version = "[^"]*"/version = "'"$version"'"/;}' "../core/rust/Cargo.lock"
 fi
 
 # Handle build numbers with semantic versioning

@@ -4,9 +4,9 @@
   <string name="autofill_service_description" translatable="true">AliasVault AutoFill</string>
   <string name="aliasvault_icon">AliasVault icon</string>
   <!-- Common strings -->
-  <string name="common_close">Close</string>
-  <string name="common_next">Next</string>
-  <string name="common_cancel">Cancel</string>
+  <string name="common_close">Tanca</string>
+  <string name="common_next">Següent</string>
+  <string name="common_cancel">Cancel·la</string>
   <string name="unknown_error">An unknown error occurred</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
@@ -26,7 +26,7 @@
   <string name="passkey_display_name_label">Passkey Name</string>
   <string name="passkey_display_name_hint">Enter a name for this passkey</string>
   <string name="passkey_website_label">Website</string>
-  <string name="passkey_username_label">Username</string>
+  <string name="passkey_username_label">Nom d’usuari</string>
   <string name="passkey_create_button">Create Passkey</string>
   <string name="passkey_creating">Creating passkey…</string>
   <string name="passkey_saving">Saving to vault…</string>

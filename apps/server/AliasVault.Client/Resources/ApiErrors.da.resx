@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="REFRESH_TOKEN_REQUIRED" xml:space="preserve">
+    <value>Refresh token er påkrævet.</value>
+  </data>
+  <data name="ACCOUNT_BLOCKED" xml:space="preserve">
+    <value>Din konto er blevet deaktiveret. Hvis du mener, at dette er en fejl, bedes du kontakte support.</value>
+  </data>
+  <data name="INVALID_REFRESH_TOKEN" xml:space="preserve">
+    <value>Ugyldig refresh token</value>
+  </data>
+  <data name="PUBLIC_REGISTRATION_DISABLED" xml:space="preserve">
+    <value>Ny brugeroprettelse er i øjeblikket deaktiveret på denne server. Kontakt venligst administratoren.</value>
+  </data>
+  <data name="USER_NOT_FOUND" xml:space="preserve">
+    <value>Ugyldigt brugernavn eller adgangskode. Prøv venligst igen.</value>
+  </data>
+  <data name="USERNAME_REQUIRED" xml:space="preserve">
+    <value>Brugernavn er påkrævet.</value>
+  </data>
+  <data name="USERNAME_ALREADY_IN_USE" xml:space="preserve">
+    <value>Brugernavnet er allerede i brug.</value>
+  </data>
+  <data name="USERNAME_AVAILABLE" xml:space="preserve">
+    <value>Brugernavnet er ledigt.</value>
+  </data>
+  <data name="USERNAME_MISMATCH" xml:space="preserve">
+    <value>Brugernavnet matcher ikke den nuværende bruger.</value>
+  </data>
+  <data name="PASSWORD_MISMATCH" xml:space="preserve">
+    <value>Den angivne adgangskode matcher ikke din nuværende adgangskode.</value>
+  </data>
+  <data name="ACCOUNT_SUCCESSFULLY_DELETED" xml:space="preserve">
+    <value>Kontoen er blevet slettet.</value>
+  </data>
+  <data name="USERNAME_EMPTY_OR_WHITESPACE" xml:space="preserve">
+    <value>Brugernavn kan ikke være tomt eller bestå af mellemrum.</value>
+  </data>
+  <data name="USERNAME_TOO_SHORT" xml:space="preserve">
+    <value>Brugernavn er for kort: skal være mindst 3 tegn langt.</value>
+  </data>
+  <data name="USERNAME_TOO_LONG" xml:space="preserve">
+    <value>Brugernavn er for langt: kan ikke være længere end 40 tegn.</value>
+  </data>
+  <data name="USERNAME_INVALID_EMAIL" xml:space="preserve">
+    <value>Ugyldig e-mailadresse.</value>
+  </data>
+  <data name="USERNAME_INVALID_CHARACTERS" xml:space="preserve">
+    <value>Brugernavnet er ugyldigt, det må kun indeholde bogstaver eller tal.</value>
+  </data>
+  <data name="PENDING_MIGRATIONS" xml:space="preserve">
+    <value>Der er udestående migreringer. Kør venligst 'dotnet ef database update' for at anvende dem.</value>
+  </data>
+  <data name="INTERNAL_SERVER_ERROR" xml:space="preserve">
+    <value>Intern serverfejl</value>
+  </data>
+  <data name="VAULT_ERROR" xml:space="preserve">
+    <value>Den lokale boks er ikke opdateret. Synkroniser venligst din boks ved at opdatere siden, og prøv igen.</value>
+  </data>
+  <data name="UNKNOWN_ERROR" xml:space="preserve">
+    <value>Der opstod en ukendt fejl. Prøv venligst igen.</value>
+  </data>
+  <data name="INVALID_AUTHENTICATOR_CODE" xml:space="preserve">
+    <value>Ugyldig godkendelseskode. Prøv venligst igen.</value>
+  </data>
+  <data name="INVALID_RECOVERY_CODE" xml:space="preserve">
+    <value>Ugyldig gendannelseskode. Prøv venligst igen.</value>
+  </data>
+  <data name="VAULT_NOT_UP_TO_DATE" xml:space="preserve">
+    <value>Din boks er ikke opdateret. Synkroniser venligst din boks og prøv igen.</value>
+  </data>
+  <data name="ACCOUNT_LOCKED" xml:space="preserve">
+    <value>Du har indtastet en forkert adgangskode for mange gange, og din konto er nu blevet låst. Du kan prøve igen om 30 minutter.</value>
+  </data>
+</root>

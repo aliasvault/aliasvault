@@ -60,15 +60,15 @@
   </resheader>
   <!-- Login Field Labels -->
   <data name="FieldLabel_login_username" xml:space="preserve">
-    <value>Username</value>
+    <value>Nom d’usuari</value>
     <comment>Label for username field</comment>
   </data>
   <data name="FieldLabel_login_password" xml:space="preserve">
-    <value>Password</value>
+    <value>Contrasenya</value>
     <comment>Label for password field</comment>
   </data>
   <data name="FieldLabel_login_email" xml:space="preserve">
-    <value>Email</value>
+    <value>Correu electrònic</value>
     <comment>Label for email field</comment>
   </data>
   <data name="FieldLabel_login_url" xml:space="preserve">

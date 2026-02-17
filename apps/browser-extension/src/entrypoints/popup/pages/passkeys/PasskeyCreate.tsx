@@ -14,15 +14,13 @@ import { useWebApi } from '@/entrypoints/popup/context/WebApiContext';
 import { useVaultLockRedirect } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 
-import { PASSKEY_DISABLED_SITES_KEY } from '@/utils/Constants';
 import type { Item, Passkey } from '@/utils/dist/core/models/vault';
 import { FieldKey, ItemTypes, getFieldValue, createSystemField } from '@/utils/dist/core/models/vault';
 import { extractDomain, extractRootDomain, filterItems, AutofillMatchingMode } from '@/utils/itemMatcher/ItemMatcher';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { PasskeyAuthenticator } from '@/utils/passkey/PasskeyAuthenticator';
 import { PasskeyHelper } from '@/utils/passkey/PasskeyHelper';
 import type { CreateRequest, PasskeyCreateCredentialResponse, PendingPasskeyCreateRequest } from '@/utils/passkey/types';
-
-import { storage } from "#imports";
 
 /**
  * PasskeyCreate
@@ -81,9 +79,15 @@ const PasskeyCreate: React.FC = () => {
             const defaultName = data.publicKey?.rp?.name || data.publicKey?.rp?.id || 'Passkey';
             setDisplayName(defaultName);
 
+            /*
+             * Derive rpId: use explicit rp.id if provided, otherwise fall back to origin hostname.
+             * This matches WebAuthn spec and PasskeyAuthenticator behavior.
+             */
+            const effectiveRpId = data.publicKey?.rp?.id || new URL(data.origin).hostname;
+
             // Check for existing passkeys for this RP ID and user
-            if (dbContext.sqliteClient && data.publicKey?.rp?.id) {
-              const allPasskeysForRpId = dbContext.sqliteClient.passkeys.getByRpId(data.publicKey.rp.id);
+            if (dbContext.sqliteClient) {
+              const allPasskeysForRpId = dbContext.sqliteClient.passkeys.getByRpId(effectiveRpId);
 
               /**
                * Filter by user ID and/or username if provided
@@ -110,13 +114,6 @@ const PasskeyCreate: React.FC = () => {
                       }
                     } catch {
                       // If conversion fails, skip this passkey
-                    }
-                  }
-
-                  // Also match by username if available (from the credential)
-                  if (data.publicKey.user?.name && passkey.Username) {
-                    if (passkey.Username === data.publicKey.user.name) {
-                      return true;
                     }
                   }
 
@@ -166,6 +163,8 @@ const PasskeyCreate: React.FC = () => {
                   setShowCreateForm(true);
                 }
               }
+            } else {
+              setShowCreateForm(true);
             }
           }
         } catch (error) {
@@ -495,10 +494,10 @@ const PasskeyCreate: React.FC = () => {
       const hostname = new URL(request.origin).hostname;
       const baseDomain = await extractRootDomain(await extractDomain(hostname));
 
-      const disabledSites = await storage.getItem(PASSKEY_DISABLED_SITES_KEY) as string[] ?? [];
+      const disabledSites = await LocalPreferencesService.getPasskeyDisabledSites();
       if (!disabledSites.includes(baseDomain)) {
         disabledSites.push(baseDomain);
-        await storage.setItem(PASSKEY_DISABLED_SITES_KEY, disabledSites);
+        await LocalPreferencesService.setPasskeyDisabledSites(disabledSites);
       }
     }
     // For 'once', we don't store anything - just bypass this one time

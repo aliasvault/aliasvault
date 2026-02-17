@@ -55,7 +55,7 @@ public static class NordPassImporter
             var credential = new ImportedCredential
             {
                 ServiceName = record.Name,
-                ServiceUrl = string.IsNullOrWhiteSpace(record.Url) ? null : record.Url,
+                ServiceUrls = BaseImporter.ParseUrls(record.Url),
                 Email = record.Email,
                 Username = record.Username,
                 Password = record.Password,

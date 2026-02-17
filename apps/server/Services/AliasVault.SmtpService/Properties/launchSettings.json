@@ -5,7 +5,8 @@
       "environmentVariables": {
         "DOTNET_ENVIRONMENT": "Development",
         "PRIVATE_EMAIL_DOMAINS": "example.tld,example2.tld,disabled.tld",
-        "SMTP_TLS_ENABLED": "false"
+        "SMTP_TLS_ENABLED": "false",
+        "SMTP_CERTIFICATES_PATH": "Certificates"
       },
       "dotnetRunMessages": true
     },

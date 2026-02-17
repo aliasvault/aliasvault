@@ -4,7 +4,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { StyleSheet, View, Text, SafeAreaView, TextInput, ActivityIndicator, Animated, ScrollView, KeyboardAvoidingView, Platform, Dimensions } from 'react-native';
 
 import { useApiUrl } from '@/utils/ApiUrlUtility';
@@ -38,40 +38,94 @@ export default function LoginScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
   const { showAlert, showDialog } = useDialog();
-  const [fadeAnim] = useState(new Animated.Value(0));
+
+  // Animation values for entrance effects
+  const logoScale = useRef(new Animated.Value(0.3)).current;
+  const logoOpacity = useRef(new Animated.Value(0)).current;
+  const titleTranslateY = useRef(new Animated.Value(20)).current;
+  const titleOpacity = useRef(new Animated.Value(0)).current;
+  const formOpacity = useRef(new Animated.Value(0)).current;
+  const formTranslateY = useRef(new Animated.Value(30)).current;
+
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
 
+  // Track if username prefill has been attempted (only do it once on mount)
+  const usernamePrefillAttemptedRef = useRef(false);
+
   useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 1000,
-      useNativeDriver: true,
-    }).start();
+    /* Staggered entrance animations - Logo: scale up with spring + fade in */
+    Animated.parallel([
+      Animated.spring(logoScale, {
+        toValue: 1,
+        friction: 5,
+        tension: 80,
+        useNativeDriver: true,
+      }),
+      Animated.timing(logoOpacity, {
+        toValue: 1,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    // App name: slide up + fade in (slight delay after logo starts)
+    Animated.sequence([
+      Animated.delay(150),
+      Animated.parallel([
+        Animated.timing(titleTranslateY, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+        Animated.timing(titleOpacity, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
+    // Form slides up shortly after
+    Animated.sequence([
+      Animated.delay(300),
+      Animated.parallel([
+        Animated.timing(formOpacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(formTranslateY, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+
     loadApiUrl();
 
     /**
      * Check for saved username (from forced logout) and prefill the username field.
      * This enables users to easily re-login after a forced logout.
-     * Only prefill if the username field is empty (user hasn't started typing).
+     * Only prefill once on mount - if user clears it, don't repopulate.
      */
     const loadSavedUsername = async () : Promise<void> => {
+      if (usernamePrefillAttemptedRef.current) {
+        return;
+      }
+      usernamePrefillAttemptedRef.current = true;
+
       try {
         const savedUsername = await NativeVaultManager.getUsername();
         if (savedUsername) {
-          setCredentials(prev => {
-            // Only prefill if username is empty - don't overwrite user input
-            if (prev.username === '') {
-              return { ...prev, username: savedUsername };
-            }
-            return prev;
-          });
+          setCredentials(prev => ({ ...prev, username: savedUsername }));
         }
       } catch {
         // Ignore errors - username prefill is optional
       }
     };
     loadSavedUsername();
-  }, [fadeAnim, loadApiUrl]);
+  }, [loadApiUrl, logoScale, logoOpacity, titleTranslateY, titleOpacity, formOpacity, formTranslateY]);
 
   // Update URL when returning from settings
   useFocusEffect(() => {
@@ -199,37 +253,43 @@ export default function LoginScreen() : React.ReactNode {
     /*
      * Forced logout recovery check:
      * If there's an existing local vault (from forced logout), try to unlock it.
+     * First check if it belongs to the same user - if different user, clear and download fresh.
      * If decryption fails (password changed or corrupted), reset sync state so
      * sync will do a clean download instead of trying to merge.
      */
     const hasExistingVault = await NativeVaultManager.hasEncryptedDatabase();
     if (hasExistingVault) {
-      try {
-        await NativeVaultManager.unlockVault();
-        /*
-         * Decryption succeeded - local vault is valid, sync will handle it.
-         * The sync will compare revisions and decide whether to keep local or download.
-         */
-        console.info('Existing local vault (after forced logout) decrypted successfully, syncing with server');
-      } catch {
-        /*
-         * Decryption failed (password changed or corrupted).
-         * Reset sync state so sync will do a clean download instead of trying to merge.
-         * This matches the browser extension behavior in persistAndLoadVault().
-         */
-        console.info('Existing vault could not be decrypted (password changed or corrupted), resetting for fresh download');
-        await NativeVaultManager.resetSyncStateForFreshDownload();
+      const storedUsername = await NativeVaultManager.getUsername();
+      const normalizedLoginUsername = ConversionUtility.normalizeUsername(credentials.username);
+
+      if (storedUsername && storedUsername !== normalizedLoginUsername) {
+        // Different user: clear vault and download fresh
+        console.info(`Existing vault belongs to different user (${storedUsername}), clearing for fresh download`);
+        await NativeVaultManager.clearEncryptedVaultForFreshDownload();
+      } else {
+        try {
+          await NativeVaultManager.unlockVault();
+          // Decryption succeeded, local vault is valid, sync will handle it
+          console.info('Existing local vault (after forced logout) decrypted successfully, syncing with server');
+        } catch {
+          // Decryption failed (password changed or corrupted), clear vault and download fresh
+          console.info('Existing vault could not be decrypted (password changed or corrupted), clearing for fresh download');
+          await NativeVaultManager.clearEncryptedVaultForFreshDownload();
+        }
       }
     }
 
-    let checkSuccess = true;
+    let upgradeRequired = false;
 
     /*
      * Sync vault from server (downloads, stores, and validates compatibility)
      * This will handle the forced logout recovery check in case our local vault is dirty
      * or is ahead of server in case of RPO event.
+     *
+     * Critical errors (auth, version) are handled internally via app.logout(message)
+     * which shows a native alert. We check the return value to know if sync succeeded.
      */
-    await syncVault({
+    const syncSuccess = await syncVault({
       /**
        * Update login status during sync.
        */
@@ -237,21 +297,18 @@ export default function LoginScreen() : React.ReactNode {
         setLoginStatus(status);
       },
       /**
-       * Handle the status update.
+       * Handle non-critical errors (shown via custom dialog).
        */
       onError: (message) => {
-        checkSuccess = false;
-
-        // Show modal with error message
+        // Show modal with error message for non-critical errors
         showAlert(t('common.error'), message);
-        // Error will trigger logout through the sync process
         setIsLoading(false);
       },
       /**
        * On upgrade required.
        */
       onUpgradeRequired: async () : Promise<void> => {
-        checkSuccess = false;
+        upgradeRequired = true;
 
         // Still login to ensure the user is logged in.
         await authContext.login();
@@ -262,8 +319,12 @@ export default function LoginScreen() : React.ReactNode {
       },
     });
 
-    if (!checkSuccess) {
-      // If the syncvault checks have failed, we can't continue with the login process.
+    if (!syncSuccess || upgradeRequired) {
+      /*
+       * Sync failed or upgrade required - don't continue with login
+       * Critical errors already showed alert via app.logout()
+       */
+      setIsLoading(false);
       return;
     }
 
@@ -274,6 +335,9 @@ export default function LoginScreen() : React.ReactNode {
     dbContext.setDatabaseAvailable();
 
     await authContext.login();
+
+    // Reset prefill flag so next logout will prefill again
+    usernamePrefillAttemptedRef.current = false;
 
     authContext.setOfflineMode(false);
     setTwoFactorRequired(false);
@@ -568,18 +632,31 @@ export default function LoginScreen() : React.ReactNode {
             colors={[colors.loginHeader, colors.background]}
             style={styles.gradientContainer}
           />
-          <Animated.View style={[styles.headerSection, { opacity: fadeAnim }]}>
+          <View style={styles.headerSection}>
             <View style={styles.logoContainer}>
-              <Logo width={80} height={80} />
-              <Text style={styles.appName}>{t('app.appName')}</Text>
+              <Animated.View style={{
+                opacity: logoOpacity,
+                transform: [{ scale: logoScale }],
+              }}>
+                <Logo width={80} height={80} />
+              </Animated.View>
+              <Animated.Text style={[styles.appName, {
+                opacity: titleOpacity,
+                transform: [{ translateY: titleTranslateY }],
+              }]}>
+                {t('app.appName')}
+              </Animated.Text>
             </View>
-          </Animated.View>
+          </View>
         </SafeAreaView>
         <ThemedView style={styles.content}>
           {isLoading ? (
             <LoadingIndicator status={loginStatus ?? t('common.loading')} />
           ) : (
-            <>
+            <Animated.View style={{
+              opacity: formOpacity,
+              transform: [{ translateY: formTranslateY }],
+            }}>
               <View style={styles.headerContainer}>
                 <Text style={styles.headerTitle}>{t('auth.login')}</Text>
                 <View style={styles.headerSubtitleContainer}>
@@ -735,7 +812,7 @@ export default function LoginScreen() : React.ReactNode {
                   </View>
                 </View>
               )}
-            </>
+            </Animated.View>
           )}
         </ThemedView>
       </ScrollView>

@@ -360,11 +360,53 @@ export class FormDetector {
         continue;
       }
 
+      /**
+       * Check autocomplete attribute for direct field type matching.
+       * First check our custom data-av-autocomplete attribute (set by AliasVault when disabling
+       * native browser autofill), then fall back to the regular autocomplete attribute.
+       */
+      const autocomplete = (input.getAttribute('data-av-autocomplete') ?? input.getAttribute('autocomplete'))?.toLowerCase() ?? '';
+
+      // Direct autocomplete matches take highest priority (score -2, higher than type=email at -1)
+      if (autocomplete) {
+        // Match autocomplete="username" for username patterns
+        if (patterns === CombinedFieldPatterns.username && autocomplete === 'username') {
+          matches.push({ input: input as HTMLInputElement, score: -2 });
+          continue;
+        }
+        // Match autocomplete="email" for email patterns
+        if (patterns === CombinedFieldPatterns.email && autocomplete === 'email') {
+          matches.push({ input: input as HTMLInputElement, score: -2 });
+          continue;
+        }
+        // Match autocomplete="current-password" or "new-password" for password patterns
+        if (patterns === CombinedFieldPatterns.password &&
+            (autocomplete === 'current-password' || autocomplete === 'new-password')) {
+          matches.push({ input: input as HTMLInputElement, score: -2 });
+          continue;
+        }
+      }
+
+      /**
+       * Check aria-describedby ID for direct field type matching (e.g., aria-describedby="usernameMessage")
+       * Only match if it's a clear username indicator (not usernameConfirm, etc.)
+       */
+      const ariaDescribedById = input.getAttribute('aria-describedby')?.toLowerCase() ?? '';
+      if (ariaDescribedById) {
+        // Match aria-describedby containing "username" for username patterns
+        if (patterns === CombinedFieldPatterns.username &&
+            ariaDescribedById.includes('username')) {
+          matches.push({ input: input as HTMLInputElement, score: -2 });
+          continue;
+        }
+      }
+
       // Collect all text attributes to check
       const attributesToCheck = [
         input.id,
         input.getAttribute('name'),
-        input.getAttribute('placeholder')
+        input.getAttribute('placeholder'),
+        autocomplete
       ]
         .map(a => a?.toLowerCase() ?? '');
 
@@ -374,6 +416,25 @@ export class FormDetector {
         if (label) {
           attributesToCheck.push(label.textContent?.toLowerCase() ?? '');
         }
+      }
+
+      // Check aria-describedby for additional field hints
+      const ariaDescribedBy = input.getAttribute('aria-describedby');
+      if (ariaDescribedBy) {
+        // aria-describedby can contain multiple space-separated IDs
+        const describedByIds = ariaDescribedBy.split(/\s+/);
+        for (const descId of describedByIds) {
+          const describedByElement = this.document.getElementById(descId);
+          if (describedByElement) {
+            attributesToCheck.push(describedByElement.textContent?.toLowerCase() ?? '');
+          }
+        }
+      }
+
+      // Check aria-label attribute
+      const ariaLabel = input.getAttribute('aria-label');
+      if (ariaLabel) {
+        attributesToCheck.push(ariaLabel.toLowerCase());
       }
 
       /**
@@ -845,15 +906,39 @@ export class FormDetector {
    * Check if a field is an autofill-triggerable field (username, email, or password).
    */
   public isAutofillTriggerableField(): boolean {
-    // Check if it's a username, email or password field by reusing the existing detection logic
-    const formWrapper = this.getFormWrapper();
+    return this.getDetectedFieldType() !== null;
+  }
 
+  /**
+   * Get the detected field type for the clicked element.
+   * Returns 'username', 'password', or 'email' if detected, null otherwise.
+   * First checks for our custom data-av-field-type attribute (set on previous interactions),
+   * then falls back to full field detection.
+   */
+  public getDetectedFieldType(): string | null {
     if (!this.clickedElement) {
-      return false;
+      return null;
+    }
+
+    // First check if we already detected and stored the field type
+    const storedFieldType = this.clickedElement.getAttribute('data-av-field-type');
+    if (storedFieldType) {
+      return storedFieldType;
     }
 
     // Get the actual input element (handles shadow DOM)
     const actualElement = this.getActualInputElement(this.clickedElement);
+
+    // Also check the actual element for stored field type
+    if (actualElement !== this.clickedElement) {
+      const actualStoredFieldType = actualElement.getAttribute('data-av-field-type');
+      if (actualStoredFieldType) {
+        return actualStoredFieldType;
+      }
+    }
+
+    // Fall back to full field detection
+    const formWrapper = this.getFormWrapper();
 
     // Check both the clicked element and the actual input element
     const elementsToCheck = [this.clickedElement, actualElement].filter((el, index, arr) =>
@@ -863,23 +948,23 @@ export class FormDetector {
     // Check if any of the elements is a username field
     const usernameFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text']);
     if (usernameFields.some(input => elementsToCheck.includes(input))) {
-      return true;
+      return 'username';
     }
 
     // Check if any of the elements is a password field
     const passwordField = this.findPasswordField(formWrapper as HTMLFormElement | null);
     if ((passwordField.primary && elementsToCheck.includes(passwordField.primary)) ||
         (passwordField.confirm && elementsToCheck.includes(passwordField.confirm))) {
-      return true;
+      return 'password';
     }
 
     // Check if any of the elements is an email field
     const emailFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.email, ['text', 'email']);
     if (emailFields.some(input => elementsToCheck.includes(input))) {
-      return true;
+      return 'email';
     }
 
-    return false;
+    return null;
   }
 
   /**

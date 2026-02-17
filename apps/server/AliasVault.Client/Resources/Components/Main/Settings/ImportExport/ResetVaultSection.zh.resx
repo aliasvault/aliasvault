@@ -63,7 +63,7 @@
     <comment>Reset vault section title</comment>
   </data>
   <data name="Description" xml:space="preserve">
-    <value>这个选项可以让您完全清空密码库，同时保留您的账户和电子邮件别名。如果您想从其他密码管理器导入数据后重新开始，或者想清除所有现有凭据重新来过，可以使用此功能。</value>
+    <value>这个选项可以让您完全清空密码库，同时保留您的账户和邮件别名。如果您想从其他密码管理器导入数据后重新开始，或者想清除所有现有凭据重新来过，可以使用此功能。</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ResetVaultButton" xml:space="preserve">

@@ -28,7 +28,7 @@
     <comment>Page header title for deleting item</comment>
   </data>
   <data name="DeleteItemDescription">
-    <value>Puteți șterge elementul de mai jos.</value>
+    <value>Poți șterge elementul de mai jos.</value>
     <comment>Page description for deleting item</comment>
   </data>
   <data name="ItemEntrySection">
@@ -48,7 +48,7 @@
     <comment>Confirmation button text</comment>
   </data>
   <data name="NoCancelButton">
-    <value>Nu, anulați</value>
+    <value>Nu, anulează</value>
     <comment>Cancel button text</comment>
   </data>
   <data name="ViewItemBreadcrumb">

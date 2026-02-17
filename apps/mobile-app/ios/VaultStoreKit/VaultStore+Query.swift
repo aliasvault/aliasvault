@@ -78,6 +78,9 @@ extension VaultStore {
     }
 
     /// Execute a raw SQL command on the database without parameters (for DDL operations like CREATE TABLE).
+    ///
+    /// Note: Migration SQL scripts handle their own transactions and PRAGMA statements.
+    /// PRAGMA foreign_keys statements MUST be executed outside of transactions to take effect.
     public func executeRaw(_ query: String) throws {
         guard let dbConnection = self.dbConnection else {
             throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
@@ -89,14 +92,13 @@ extension VaultStore {
         for statement in statements {
             let trimmedStatement = statement.smartTrim()
 
-            // Skip empty statements and transaction control statements (handled externally)
-            if trimmedStatement.isEmpty ||
-               trimmedStatement.uppercased().hasPrefix("BEGIN TRANSACTION") ||
-               trimmedStatement.uppercased().hasPrefix("COMMIT") ||
-               trimmedStatement.uppercased().hasPrefix("ROLLBACK") {
+            // Skip empty statements and SQL comments
+            if trimmedStatement.isEmpty || trimmedStatement.hasPrefix("--") {
                 continue
             }
 
+            // Execute all statements including PRAGMA and transaction control
+            // This allows migration SQL to properly control its own transactions and PRAGMA settings
             try dbConnection.execute(trimmedStatement)
         }
     }
@@ -196,6 +198,18 @@ extension VaultStore {
             throw NSError(domain: "VaultStore", code: 4, userInfo: [NSLocalizedDescriptionKey: "Database not initialized"])
         }
         try dbConnection.execute("ROLLBACK")
+    }
+
+    /// Persist the in-memory database to encrypted storage and mark as dirty.
+    /// Used after migrations where SQL handles its own transactions but we need to persist and sync.
+    /// This does NOT commit any SQL transaction - it just persists the current state of the database.
+    public func persistAndMarkDirty() throws {
+        try persistDatabaseToEncryptedStorage()
+
+        // Atomically mark vault as dirty and increment mutation sequence
+        // This ensures sync can properly detect local changes
+        setIsDirty(true)
+        _ = incrementMutationSequence()
     }
 
     // MARK: - Items (Using Repository Pattern)

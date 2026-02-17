@@ -24,18 +24,13 @@
     "unlockSuccessDescription": "You can now use autofill in login forms in your browser.",
     "closePopup": "Close this popup",
     "browseVault": "Browse vault contents",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Bağlanıyor",
     "switchAccounts": "Switch accounts?",
     "loginWithMobile": "Log in using Mobile App",
     "unlockWithMobile": "Unlock using Mobile App",
-    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
-    "errors": {
-      "invalidCode": "Lütfen geçerli 6 haneli doğrulama kodunu girin.",
-      "serverError": "AliasVault sunucusuna ulaşılamadı. Lütfen daha sonra tekrar deneyin veya sorun devam ederse destek ile iletişime geçin.",
-      "wrongPassword": "Parola yanlış. Lütfen yeniden deneyin.",
-      "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
-    }
+    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault."
   },
   "menu": {
     "vault": "Vault",
@@ -47,6 +42,7 @@
     "error": "Hata",
     "cancel": "İptal",
     "confirm": "Onayla",
+    "remove": "Remove",
     "back": "Geri",
     "next": "İleri",
     "use": "Kullan",
@@ -58,6 +54,7 @@
     "create": "Create",
     "or": "Or",
     "close": "Kapat",
+    "dismiss": "Dismiss",
     "logout": "Çıkış yap",
     "copied": "Copied!",
     "openInNewWindow": "Open in new window",
@@ -106,7 +103,12 @@
       "vaultIsLocked": "Vault is locked",
       "passwordChanged": "Parolanız, en son giriş yaptığınızdan bu yana değişti. Güvenlik nedeniyle lütfen tekrar giriş yapın.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again."
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "invalidCode": "Lütfen geçerli 6 haneli doğrulama kodunu girin.",
+      "serverError": "AliasVault sunucusuna ulaşılamadı. Lütfen daha sonra tekrar deneyin veya sorun devam ederse destek ile iletişime geçin.",
+      "wrongPassword": "Parola yanlış. Lütfen yeniden deneyin.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "An unknown error occurred. Please try again.",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Password copied to clipboard",
     "openAliasVaultToUpgrade": "Open AliasVault to upgrade",
     "vaultUpgradeRequired": "Vault upgrade required.",
-    "dismissPopup": "Dismiss popup"
+    "dismissPopup": "Dismiss popup",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Items",
@@ -202,8 +208,14 @@
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
-      "all": "(All) Items",
+      "folders": "Folders",
       "passkeys": "Passkeys"
+    },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
     },
     "deleteItemTitle": "Delete Item",
     "deleteItemConfirm": "Are you sure you want to delete this item?",
@@ -306,7 +318,7 @@
     "emailNotFound": "E-posta bulunamadı",
     "noEmails": "No emails found",
     "noEmailsDescription": "Özel e-posta adreslerinize henüz bir e-posta gelmedi. Yeni bir e-posta aldığınızda burada görünecektir.",
-    "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
+    "offlineMessage": "Çevrimdışısınız. E-postalarınızı yüklemek için lütfen internet bağlantısı sağlayın.",
     "dateFormat": {
       "justNow": "biraz önce",
       "minutesAgo_single": "{{count}} dakika önce",
@@ -344,6 +356,11 @@
     "disabledForThisSite": "Disabled for this site",
     "temporarilyDisabledUntil": "Temporarily disabled until ",
     "resetAllSiteSettings": "Reset all site-specific settings",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Appearance",
     "theme": "Theme",
     "useDefault": "Use default",
@@ -396,6 +413,28 @@
       "apiUrlInvalid": "Please enter a valid API URL",
       "clientUrlRequired": "Client URL is required",
       "clientUrlInvalid": "Please enter a valid client URL"
+    },
+    "identityGenerator": "Kimlik Oluşturucu",
+    "identityGeneratorSettings": {
+      "description": "Yeni kimlikler oluştururken varsayılan dil ve cinsiyet tercihlerini yapılandırın.",
+      "languageSection": "Dil",
+      "languageDescription": "Yeni kimlikler oluşturulurken kullanılacak dili belirleyin.",
+      "genderSection": "Cinsiyet",
+      "genderDescription": "Yeni kimlikler oluştururken cinsiyet tercihlerini belirleyin.",
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
+      "genderOptions": {
+        "random": "Rastgele",
+        "male": "Erkek",
+        "female": "Kadın"
+      }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Kasa Açma Yöntemi",
@@ -494,5 +533,9 @@
     "unsyncedChangesTitle": "Unsynced Changes",
     "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
     "logoutAnyway": "Log out anyway"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }

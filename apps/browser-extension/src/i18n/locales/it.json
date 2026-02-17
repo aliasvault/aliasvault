@@ -24,18 +24,13 @@
     "unlockSuccessDescription": "Ora puoi usare l'auto-riempimento nei moduli di accesso nel tuo browser.",
     "closePopup": "Chiudi questo popup",
     "browseVault": "Sfoglia i contenuti della cassaforte",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Connessione a",
     "switchAccounts": "Cambia account",
     "loginWithMobile": "Accedi con l'App Mobile",
     "unlockWithMobile": "Sblocca con l'App Mobile",
-    "scanQrCode": "Scansiona questo codice QR con l'app mobile di AliasVault per accedere e sbloccare la cassaforte.",
-    "errors": {
-      "invalidCode": "Inserisci un codice di autenticazione a 6 cifre valido.",
-      "serverError": "Impossibile connettersi al server di AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
-      "wrongPassword": "Password non corretta. Riprova nuovamente.",
-      "sessionExpired": "La tua sessione è scaduta. Effettua di nuovo il login.",
-      "mobileLoginRequestExpired": "Richiesta di accesso mobile scaduta. Per favore ricarica la pagina e riprova."
-    }
+    "scanQrCode": "Scansiona questo codice QR con l'app mobile di AliasVault per accedere e sbloccare la cassaforte."
   },
   "menu": {
     "vault": "Cassaforte",
@@ -47,6 +42,7 @@
     "error": "Errore",
     "cancel": "Annulla",
     "confirm": "Conferma",
+    "remove": "Remove",
     "back": "Indietro",
     "next": "Avanti",
     "use": "Usa",
@@ -58,6 +54,7 @@
     "create": "Creare",
     "or": "O",
     "close": "Chiudi",
+    "dismiss": "Dismiss",
     "logout": "Esci",
     "copied": "Copiato!",
     "openInNewWindow": "Apri in una nuova finestra",
@@ -82,7 +79,7 @@
     "email": "E-mail",
     "username": "Nome utente",
     "password": "Password",
-    "generate": "Generate",
+    "generate": "Genera",
     "serviceName": "Nome Servizio",
     "loggedIn": "Accesso effettuato",
     "syncingVault": "Sincronizzazione cassaforte",
@@ -106,7 +103,12 @@
       "vaultIsLocked": "La cassaforte è bloccata",
       "passwordChanged": "La tua password è cambiata dall'ultima volta che hai effettuato l'accesso. Effettua nuovamente l'accesso per motivi di sicurezza.",
       "syncConflictMaxRetries": "Impossibile sincronizzare la cassaforte dopo più tentativi. Riprova più tardi.",
-      "mergeFailed": "Sincronizzazione della cassaforte non riuscita. Riprovare."
+      "mergeFailed": "Sincronizzazione della cassaforte non riuscita. Riprovare.",
+      "invalidCode": "Inserisci un codice di autenticazione a 6 cifre valido.",
+      "serverError": "Impossibile raggiungere il server AliasVault. Riprova più tardi o contatta il supporto se il problema persiste.",
+      "wrongPassword": "Password errata. Riprovare.",
+      "sessionExpired": "La tua sessione è scaduta. Effettua di nuovo il login.",
+      "mobileLoginRequestExpired": "Richiesta di accesso mobile scaduta. Ricarica la pagina e riprova."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Si è verificato un errore sconosciuto. Riprova.",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Password copiata negli appunti",
     "openAliasVaultToUpgrade": "Apri AliasVault per aggiornare",
     "vaultUpgradeRequired": "Aggiornamento della cassaforte richiesto.",
-    "dismissPopup": "Chiudi finestra"
+    "dismissPopup": "Chiudi finestra",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Elementi",
@@ -202,8 +208,14 @@
     "deleteFolderAndItems": "Elimina cartella e tutti gli elementi",
     "deleteFolderAndItemsDescription": "{{count}} oggetto(i) verrà spostato in Eliminato Recentemente.",
     "filters": {
-      "all": "(Tutti) Elementi",
+      "folders": "Cartelle",
       "passkeys": "Passkey"
+    },
+    "sort": {
+      "title": "Ordina per",
+      "oldestFirst": "Prima i più vecchi",
+      "newestFirst": "Prima i più recenti",
+      "alphabetical": "Alfabetico (A-Z)"
     },
     "deleteItemTitle": "Elimina elemento",
     "deleteItemConfirm": "Sei sicuro di voler rimuovere questo elemento?",
@@ -344,6 +356,11 @@
     "disabledForThisSite": "Disabilitato per questo sito",
     "temporarilyDisabledUntil": "Disabilitato temporaneamente fino a ",
     "resetAllSiteSettings": "Reimposta tutte le impostazioni specifiche per sito",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Aspetto",
     "theme": "Tema",
     "useDefault": "Usa predefinito",
@@ -396,6 +413,28 @@
       "apiUrlInvalid": "Inserisci un URL API valido",
       "clientUrlRequired": "L'URL del client è obbligatorio",
       "clientUrlInvalid": "Inserisci un URL del client valido"
+    },
+    "identityGenerator": "Generatore di identità",
+    "identityGeneratorSettings": {
+      "description": "Configura lingua e preferenze di genere per la generazione di nuove identità.",
+      "languageSection": "Lingua",
+      "languageDescription": "Imposta la lingua usata per generare nuove identità.",
+      "genderSection": "Genere",
+      "genderDescription": "Imposta la preferenza di genere per generare nuove identità.",
+      "ageRangeSection": "Fascia d'età",
+      "ageRangeDescription": "Imposta la fascia di età per generare nuove identità.",
+      "genderOptions": {
+        "random": "Casuale",
+        "male": "Maschio",
+        "female": "Femmina"
+      }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Metodo di sblocco cassaforte",
@@ -494,5 +533,9 @@
     "unsyncedChangesTitle": "Modifiche non Sincronizzate",
     "unsyncedChangesWarning": "Hai delle modifiche non sincronizzate che andranno perse se ti disconnetti ora. Sei sicuro di voler continuare?",
     "logoutAnyway": "Esci comunque"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tocca per riprovare la sincronizzazione"
   }
 }

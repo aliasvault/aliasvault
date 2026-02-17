@@ -71,7 +71,7 @@
     <comment>Label for folder name input</comment>
   </data>
   <data name="FolderNamePlaceholder" xml:space="preserve">
-    <value>Enter folder name</value>
+    <value>Введите название папки</value>
     <comment>Placeholder for folder name input</comment>
   </data>
   <data name="FolderNameRequired" xml:space="preserve">

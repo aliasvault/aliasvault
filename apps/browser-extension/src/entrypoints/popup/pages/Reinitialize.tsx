@@ -33,7 +33,7 @@ const Reinitialize: React.FC = () => {
 
   // Auth and DB state
   const { isInitialized: authInitialized, isLoggedIn } = useApp();
-  const { dbInitialized, dbAvailable } = useDb();
+  const { dbInitialized, dbAvailable, refreshSyncState, hasPendingMigrations } = useDb();
 
   // Derived state
   const isFullyInitialized = authInitialized && dbInitialized;
@@ -109,6 +109,13 @@ const Reinitialize: React.FC = () => {
         // Only perform vault sync once during initialization
         hasInitialized.current = true;
 
+        // Check for pending migrations before navigating
+        if (await hasPendingMigrations()) {
+          setIsInitialLoading(false);
+          navigate('/upgrade', { replace: true });
+          return;
+        }
+
         /*
          * Navigate immediately using local vault - don't block on sync.
          * This ensures the UI is responsive even if server is slow.
@@ -127,8 +134,18 @@ const Reinitialize: React.FC = () => {
          * 1. Download and merge (if needed)
          * 2. Call dbContext.loadDatabase() which updates sqliteClient
          * 3. ItemsList reacts to sqliteClient changes and auto-refreshes
+         *
+         * Note: onSuccess triggers refreshSyncState to ensure any UI components
+         * watching sync state will re-render with the updated vault data.
          */
         syncVault({
+          /**
+           * Handle successful sync - refresh sync state to trigger UI updates.
+           * @param _hasNewVault Whether a new vault was downloaded
+           */
+          onSuccess: async (_hasNewVault) => {
+            await refreshSyncState();
+          },
           /**
            * Handle upgrade required - redirect to upgrade page.
            */
@@ -151,7 +168,7 @@ const Reinitialize: React.FC = () => {
     };
 
     handleInitialization();
-  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, navigate, setIsInitialLoading, syncVault, restoreLastPage]);
+  }, [isFullyInitialized, requiresAuth, isLoggedIn, dbAvailable, navigate, setIsInitialLoading, syncVault, restoreLastPage, refreshSyncState, hasPendingMigrations]);
 
   // This component doesn't render anything visible - it just handles initialization
   return null;

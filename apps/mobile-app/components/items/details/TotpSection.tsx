@@ -11,8 +11,8 @@ import { useColors } from '@/hooks/useColorScheme';
 
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
-import { useAuth } from '@/context/AuthContext';
 import { useDb } from '@/context/DbContext';
+import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
 type TotpSectionProps = {
   item: Item;
@@ -27,7 +27,6 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
   const colors = useColors();
   const dbContext = useDb();
   const { t } = useTranslation();
-  const { getClipboardClearTimeout } = useAuth();
 
   /**
    * Get the remaining seconds.
@@ -74,7 +73,7 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
   const copyToClipboardWithClear = async (code: string): Promise<void> => {
     try {
       // Get clipboard clear timeout from settings
-      const timeoutSeconds = await getClipboardClearTimeout();
+      const timeoutSeconds = await LocalPreferencesService.getClipboardClearTimeout();
 
       // Use centralized clipboard utility
       await copyToClipboardWithExpiration(code, timeoutSeconds);

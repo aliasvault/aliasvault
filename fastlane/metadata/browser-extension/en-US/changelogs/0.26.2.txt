@@ -1,0 +1,5 @@
+- Fix data migrations which could result in missing TOTP codes and Passkeys
+- Fixes issues with passkey creation that could sometimes result in errors
+- Make sure UI correctly refreshes after the vault has synced
+- Add Spanish, Romanian and Persian languages to the identity generator
+- Add item sorting

@@ -20,22 +20,40 @@ public struct PasskeyQueries {
         FROM Passkeys p
         """
 
+    /// Base SELECT for passkeys joined with Items to check parent item deletion status.
+    public static let baseSelectWithItemCheck = """
+        SELECT
+          p.Id,
+          p.ItemId,
+          p.RpId,
+          p.UserHandle,
+          p.PublicKey,
+          p.PrivateKey,
+          p.PrfKey,
+          p.DisplayName,
+          p.CreatedAt,
+          p.UpdatedAt,
+          p.IsDeleted
+        FROM Passkeys p
+        INNER JOIN Items i ON p.ItemId = i.Id AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
+        """
+
     /// Get a passkey by its ID (credential ID).
     public static let getById = """
-        \(baseSelect)
+        \(baseSelectWithItemCheck)
         WHERE p.Id = ? AND p.IsDeleted = 0
         """
 
     /// Get all passkeys for an item.
     public static let getByItemId = """
-        \(baseSelect)
+        \(baseSelectWithItemCheck)
         WHERE p.ItemId = ? AND p.IsDeleted = 0
         ORDER BY p.CreatedAt DESC
         """
 
     /// Get all passkeys for a relying party (rpId).
     public static let getByRpId = """
-        \(baseSelect)
+        \(baseSelectWithItemCheck)
         WHERE p.RpId = ? AND p.IsDeleted = 0
         ORDER BY p.CreatedAt DESC
         """
@@ -60,7 +78,7 @@ public struct PasskeyQueries {
         FROM Passkeys p
         INNER JOIN Items i ON p.ItemId = i.Id
         LEFT JOIN FieldValues fv ON fv.ItemId = i.Id AND fv.FieldKey = 'login.username' AND fv.IsDeleted = 0
-        WHERE p.RpId = ? AND p.IsDeleted = 0 AND i.IsDeleted = 0
+        WHERE p.RpId = ? AND p.IsDeleted = 0 AND i.IsDeleted = 0 AND i.DeletedAt IS NULL
         ORDER BY p.CreatedAt DESC
         """
 

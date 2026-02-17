@@ -179,6 +179,11 @@
     "exporting": "Exporting...",
     "exportConfirmTitle": "Export Vault",
     "exportWarning": "Warning: Exporting your vault to an unencrypted file will expose all of your passwords and sensitive information in plain text. Only do this on trusted devices and ensure you:\n\n• Store the exported file in a secure location\n• Delete the file when you no longer need it\n• Never share the exported file with others\n\nAre you sure you want to continue with the export?",
+    "passwordConfirm": {
+      "title": "Confirm Password",
+      "defaultDescription": "Please enter your master password to continue.",
+      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+    },
     "security": "Security",
     "appVersion": "App version {{version}} ({{url}})",
     "autoLockOptions": {
@@ -300,8 +305,7 @@
         "verifyingWithServer": "Verifying with server",
         "deletingAccount": "Deleting account",
         "accountDeleted": "Account deleted successfully",
-        "failedToDelete": "Failed to delete account. Please try again.",
-        "usernameNotFound": "Username not found. Please login again."
+        "failedToDelete": "Failed to delete account. Please try again."
       }
     },
     "qrScanner": {
@@ -405,14 +409,12 @@
     "publicEmailTitle": "Public Temp Email Providers",
     "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
     "searchPlaceholder": "Search vault...",
-    "noMatchingItems": "No matching items found",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
     "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
     "clearSearch": "Clear search",
     "clearFilter": "Clear filter",
     "recentEmails": "Recent emails",
@@ -436,9 +438,17 @@
     "offlineMessage": "You are offline. Please connect to the internet to sync your vault.",
     "switchBackToBrowser": "Switch back to your browser to continue.",
     "filters": {
-      "all": "(All) Items",
+      "all": "Items",
+      "showFolders": "Folders",
       "passkeys": "Passkeys",
-      "attachments": "Attachments"
+      "attachments": "Attachments",
+      "totp": "2FA Codes"
+    },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
     },
     "totpCode": "TOTP Code",
     "attachments": "Attachments",

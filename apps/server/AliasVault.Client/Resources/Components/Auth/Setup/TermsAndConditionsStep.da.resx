@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Instructions -->
+  <data name="PleaseReadAndAgree">
+    <value>Læs og accepter venligst følgende vilkår og betingelser, før du fortsætter.</value>
+    <comment>Instructions to read and agree to terms</comment>
+  </data>
+  <!-- Terms and Conditions title -->
+  <data name="TermsAndConditionsTitle">
+    <value>Vilkår og betingelser</value>
+    <comment>Title for the terms and conditions section</comment>
+  </data>
+  <!-- Terms content -->
+  <data name="TermsContent">
+    <value>AliasVault er designet til at forbedre din online sikkerhed og beskytte dit privatliv. Med AliasVault kan du oprette unikke identiteter og e-mail-aliaser til dine forskellige online-konti, hvilket hjælper dig med at bevare kontrollen over dine personlige oplysninger og reducere risikoen for identitetstyveri.
+
+Ved at bruge AliasVault accepterer du følgende vilkår:
+
+1. Du må ikke bruge AliasVault til ulovlige formål, herunder men ikke begrænset til svindel, identitetstyveri eller udgivelse for at være rigtige personer.
+2. Du er ansvarlig for at opretholde fortroligheden af din konto og eventuelle aliaser oprettet via AliasVault.
+3. AliasVault forbeholder sig retten til at opsige din konto, hvis vi har mistanke om misbrug eller overtrædelse af disse vilkår.
+4. Du er indforstået med, at selvom AliasVault forbedrer dit privatliv, er intet system fuldstændig fejlfrit, og du bruger tjenesten på eget ansvar.</value>
+    <comment>Full terms and conditions content</comment>
+  </data>
+  <!-- Agreement checkbox -->
+  <data name="AgreementCheckboxLabel">
+    <value>Jeg har læst og accepterer vilkårene og betingelserne</value>
+    <comment>Label for the agreement checkbox</comment>
+  </data>
+</root>

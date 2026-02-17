@@ -92,4 +92,10 @@ describe('FormDetector English tests', () => {
     testField(FormField.BirthYear, 'YearDropdown', htmlFile);
   });
 
+  describe('French login form 1 detection (France Tax Authority)', () => {
+    const htmlFile = 'fr-login-form1.html';
+
+    testField(FormField.Username, 'spi_tmp', htmlFile);
+  });
+
 });

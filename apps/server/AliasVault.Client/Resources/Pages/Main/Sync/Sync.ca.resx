@@ -67,7 +67,7 @@
     <comment>Text before logout link</comment>
   </data>
   <data name="LogoutLink" xml:space="preserve">
-    <value>Logout</value>
+    <value>Tanca la sessió</value>
     <comment>Link text for logout</comment>
   </data>
 </root>

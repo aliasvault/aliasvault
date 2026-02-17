@@ -59,4 +59,36 @@ public static class VersionHelper
         // Compare the versions
         return v1 >= v2;
     }
+
+    /// <summary>
+    /// Checks if a version is blocked for a specific platform.
+    /// Checks both platform-specific blocks and global blocks (using "*" key).
+    /// </summary>
+    /// <param name="platform">The platform to check (e.g., "chrome", "ios").</param>
+    /// <param name="version">The version to check.</param>
+    /// <param name="blockedVersions">Dictionary of platform to blocked versions. Use "*" for global blocks.</param>
+    /// <returns>True if the version is blocked for this platform, false otherwise.</returns>
+    public static bool IsVersionBlocked(string platform, string version, IReadOnlyDictionary<string, HashSet<string>> blockedVersions)
+    {
+        if (string.IsNullOrEmpty(version) || blockedVersions == null || blockedVersions.Count == 0)
+        {
+            return false;
+        }
+
+        // Check global blocks (applies to all platforms)
+        if (blockedVersions.TryGetValue("*", out var globalBlocked) && globalBlocked.Contains(version))
+        {
+            return true;
+        }
+
+        // Check platform-specific blocks
+        if (!string.IsNullOrEmpty(platform) &&
+            blockedVersions.TryGetValue(platform, out var platformBlocked) &&
+            platformBlocked.Contains(version))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

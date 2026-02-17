@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 
 import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
+import { hasErrorCode, getErrorMessage } from '@/utils/types/errors/AppErrorCodes';
+
 type FolderModalProps = {
   isOpen: boolean;
   onClose: () => void;
@@ -52,7 +54,11 @@ const FolderModal: React.FC<FolderModalProps> = ({
       await onSave(trimmedName);
       onClose();
     } catch (err) {
-      setError(t('common.errors.unknownErrorTryAgain'));
+      if (hasErrorCode(err)) {
+        setError(getErrorMessage(err, t('common.errors.unknownErrorTryAgain')));
+      } else {
+        setError(t('common.errors.unknownErrorTryAgain'));
+      }
       console.error('Error saving folder:', err);
     } finally {
       setIsSubmitting(false);

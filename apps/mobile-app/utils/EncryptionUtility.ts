@@ -333,6 +333,19 @@ class EncryptionUtility {
       throw new Error(err instanceof Error ? err.message : 'Failed to decrypt attachment');
     }
   }
+
+  /**
+   * Computes a SHA-256 hash of a string and returns the first 16 characters of the hex digest.
+   * Used for verifying public key integrity in mobile login QR codes.
+   */
+  public static async computeSha256Hash(data: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const dataBytes = encoder.encode(data);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBytes);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    return hashHex.substring(0, 16);
+  }
 }
 
 export default EncryptionUtility;

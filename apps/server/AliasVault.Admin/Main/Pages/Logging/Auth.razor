@@ -241,8 +241,17 @@ else
                 // If the search term starts with "client:", we search for the client header.
                 if (SearchTerm.StartsWith("client:", StringComparison.OrdinalIgnoreCase))
                 {
-                    var clientSearchTerm = SearchTerm.Substring(7).ToLower();
-                    query = query.Where(x => EF.Functions.Like((x.Client ?? string.Empty).ToLower(), "%" + clientSearchTerm + "%"));
+                    var clientSearchTerm = SearchTerm.Substring(7);
+
+                    // Special case: "client:_" means filter for empty/whitespace clients.
+                    if (clientSearchTerm == "_")
+                    {
+                        query = query.Where(x => x.Client == null || x.Client.Trim() == string.Empty);
+                    }
+                    else
+                    {
+                        query = query.Where(x => EF.Functions.Like((x.Client ?? string.Empty).ToLower(), "%" + clientSearchTerm.ToLower() + "%"));
+                    }
                 }
                 else
                 {

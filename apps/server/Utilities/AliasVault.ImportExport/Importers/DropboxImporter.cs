@@ -36,7 +36,7 @@ public static class DropboxImporter
             var credential = new ImportedCredential
             {
                 ServiceName = record.Name,
-                ServiceUrl = NormalizeUrl(record.Url),
+                ServiceUrls = BaseImporter.ParseUrls(record.Url),
                 Username = record.Username,
                 Password = record.Password,
                 Notes = record.Notes
@@ -46,20 +46,5 @@ public static class DropboxImporter
         }
 
         return credentials;
-    }
-
-    /// <summary>
-    /// Normalizes URL values from Dropbox CSV format.
-    /// </summary>
-    /// <param name="url">The URL from the CSV record.</param>
-    /// <returns>The normalized URL or null if it's empty or invalid.</returns>
-    private static string? NormalizeUrl(string? url)
-    {
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            return null;
-        }
-
-        return url;
     }
 }

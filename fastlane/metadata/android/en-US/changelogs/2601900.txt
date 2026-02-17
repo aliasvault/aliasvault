@@ -1,0 +1,1 @@
+- Fix issue where app could fail to startup after vault upgrade

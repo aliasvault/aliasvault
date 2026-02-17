@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Title" xml:space="preserve">
+    <value>Oplåsning med passkey</value>
+    <comment>Title for passkey unlock section</comment>
+  </data>
+  <data name="EnabledDescription" xml:space="preserve">
+    <value>Din hovedadgangskode er krypteret med passkey PRF og gemt lokalt. Når du genindlæser AliasVault-siden eller fanen, kan du låse din boks op med din passkey. Hvis du ønsker at deaktivere oplåsning med passkey, kan du gøre det med knappen nedenfor. Din hovedadgangskode vil stadig fungere til oplåsning af boksen.</value>
+    <comment>Description when passkey unlock is enabled</comment>
+  </data>
+  <data name="DisableButton" xml:space="preserve">
+    <value>Deaktiver oplåsning med passkey</value>
+    <comment>Button to disable passkey unlock</comment>
+  </data>
+  <data name="DisabledDescription" xml:space="preserve">
+    <value>Som standard kræver genindlæsning af AliasVault-siden eller fanen, at du indtaster din hovedadgangskode igen. Med en passkey kan du låse din boks op øjeblikkeligt. Når det er aktiveret, bliver din hovedadgangskode krypteret lokalt ved hjælp af passkey'ens PRF-udvidelse. Bemærk: passkey'en vil kun fungere på den aktuelle enhed og browser, hvor du aktiverer den.</value>
+    <comment>Description when passkey unlock is disabled</comment>
+  </data>
+  <data name="ExperimentalWarning" xml:space="preserve">
+    <value>Denne funktion understøttes i øjeblikket af AliasVault browser-udvidelsen og iOS-appen. Understøttelse til Android kommer snart. Hvis du oplever problemer, kan du til enhver tid deaktivere denne funktion.</value>
+    <comment>Warning about feature compatibility</comment>
+  </data>
+  <data name="EnableButton" xml:space="preserve">
+    <value>Aktiver oplåsning med passkey</value>
+    <comment>Button to enable passkey unlock</comment>
+  </data>
+  <data name="SuccessEnabledMessage" xml:space="preserve">
+    <value>Oplåsning med passkey er nu aktiveret. Næste gang din boks er låst, kan du låse den op med din oprettede passkey.</value>
+    <comment>Success message when passkey unlock is enabled</comment>
+  </data>
+  <data name="SuccessDisabledMessage" xml:space="preserve">
+    <value>Oplåsning med passkey er deaktiveret.</value>
+    <comment>Success message when passkey unlock is disabled</comment>
+  </data>
+  <data name="WebAuthnNotSupportedError" xml:space="preserve">
+    <value>Din nuværende browser understøtter ikke WebAuthn PRF-udvidelsen. Prøv venligst igen med en anden browser.</value>
+    <comment>Error when WebAuthn is not supported</comment>
+  </data>
+  <data name="EnableErrorMessage" xml:space="preserve">
+    <value>Der opstod en fejl under forsøget på at aktivere hurtig oplåsning af boksen. Prøv venligst igen (senere).</value>
+    <comment>Generic error message when enabling fails</comment>
+  </data>
+</root>

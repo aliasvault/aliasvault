@@ -256,9 +256,10 @@ const EmailDetails: React.FC = (): React.ReactElement => {
         <div className="bg-white mt-4">
           {email.messageHtml ? (
             <iframe
-              srcDoc={ConversionUtility.convertAnchorTagsToOpenInNewTab(email.messageHtml)}
+              srcDoc={ConversionUtility.sanitizeAndPrepareEmailHtml(email.messageHtml)}
               className="w-full min-h-[500px] border-0"
               title={t('emails.emailContent')}
+              sandbox="allow-popups allow-popups-to-escape-sandbox"
             />
           ) : (
             <pre className="whitespace-pre-wrap text-gray-800 p-3">

@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import { useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -17,10 +18,18 @@ import { ThemedText } from '@/components/themed/ThemedText';
 export default function MobileUnlockResultScreen() : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
+  const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { success, message } = useLocalSearchParams<{ success: string; message?: string }>();
 
   const isSuccess = success === 'true';
+
+  // Set dynamic header title based on success/error state
+  useEffect(() => {
+    navigation.setOptions({
+      title: isSuccess ? t('common.success') : t('common.error'),
+    });
+  }, [navigation, isSuccess, t]);
 
   /**
    * Handle dismiss - navigate to settings tab.

@@ -19,8 +19,10 @@ import { useVaultMutate } from '@/entrypoints/popup/hooks/useVaultMutate';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 
+import type { CredentialSortOrder } from '@/utils/db/repositories/SettingsRepository';
 import type { Item, ItemType } from '@/utils/dist/core/models/vault';
 import { ItemTypes } from '@/utils/dist/core/models/vault';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
 
@@ -29,12 +31,22 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
  * - 'all': Show all items
  * - 'passkeys': Show only items with passkeys
  * - 'attachments': Show only items with attachments
+ * - 'totp': Show only items with 2FA codes
  * - ItemType values: Filter by specific item type (Login, Alias, CreditCard, Note)
  */
-type FilterType = 'all' | 'passkeys' | 'attachments' | ItemType;
+type FilterType = 'all' | 'passkeys' | 'attachments' | 'totp' | ItemType;
 
 const FILTER_STORAGE_KEY = 'items-filter';
 const FILTER_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
+
+/**
+ * Sort order options with their translation keys
+ */
+const SORT_OPTIONS: { value: CredentialSortOrder; labelKey: string }[] = [
+  { value: 'OldestFirst', labelKey: 'items.sort.oldestFirst' },
+  { value: 'NewestFirst', labelKey: 'items.sort.newestFirst' },
+  { value: 'Alphabetical', labelKey: 'items.sort.alphabetical' },
+];
 
 /**
  * Get stored filter from localStorage if not expired
@@ -113,7 +125,15 @@ const ItemsList: React.FC = () => {
   const [showEditFolderModal, setShowEditFolderModal] = useState(false);
   const [recentlyDeletedCount, setRecentlyDeletedCount] = useState(0);
   const [folderRefreshKey, setFolderRefreshKey] = useState(0);
+  const [sortOrder, setSortOrder] = useState<CredentialSortOrder>('OldestFirst');
+  const [showSortMenu, setShowSortMenu] = useState(false);
+  const [showFolders, setShowFolders] = useState(true);
   const { setIsInitialLoading } = useLoading();
+
+  // Load showFolders preference from storage on mount
+  useEffect(() => {
+    LocalPreferencesService.getShowFolders().then(setShowFolders);
+  }, []);
 
   // Derive current folder from URL params
   const currentFolderId = folderIdParam ?? null;
@@ -342,6 +362,9 @@ const ItemsList: React.FC = () => {
         // Also get recently deleted count
         const deletedCount = dbContext.sqliteClient?.items.getRecentlyDeletedCount() ?? 0;
         setRecentlyDeletedCount(deletedCount);
+        // Load sort order from settings
+        const savedSortOrder = dbContext.sqliteClient?.settings.getCredentialsSortOrder() ?? 'OldestFirst';
+        setSortOrder(savedSortOrder);
         setIsLoading(false);
         setIsInitialLoading(false);
       }
@@ -363,6 +386,8 @@ const ItemsList: React.FC = () => {
         return t('items.filters.passkeys');
       case 'attachments':
         return t('common.attachments');
+      case 'totp':
+        return t('items.filters.totp');
       case 'all':
         return t('items.title');
       default:
@@ -427,8 +452,11 @@ const ItemsList: React.FC = () => {
       if (item.FolderId !== currentFolderId) {
         return false;
       }
-    } else if (!searchTerm) {
-      // In root view without search, exclude items that are in folders
+    } else if (!searchTerm && showFolders) {
+      /*
+       * When showing folders (checkbox ON): only show root items (exclude items in folders)
+       * When not showing folders (checkbox OFF): show all items flat
+       */
       if (item.FolderId) {
         return false;
       }
@@ -440,6 +468,8 @@ const ItemsList: React.FC = () => {
       passesTypeFilter = item.HasPasskey === true;
     } else if (filterType === 'attachments') {
       passesTypeFilter = item.HasAttachment === true;
+    } else if (filterType === 'totp') {
+      passesTypeFilter = item.HasTotp === true;
     } else if (isItemTypeFilter(filterType)) {
       // Filter by item type (Login, Alias, CreditCard, Note)
       passesTypeFilter = item.ItemType === filterType;
@@ -476,6 +506,28 @@ const ItemsList: React.FC = () => {
     return false;
   });
 
+  /**
+   * Sort the filtered items based on the current sort order.
+   */
+  const sortedItems = useMemo(() => {
+    const itemsCopy = [...filteredItems];
+    switch (sortOrder) {
+      case 'NewestFirst':
+        return itemsCopy.sort((a, b) =>
+          new Date(b.CreatedAt || 0).getTime() - new Date(a.CreatedAt || 0).getTime()
+        );
+      case 'Alphabetical':
+        return itemsCopy.sort((a, b) =>
+          (a.Name || '').localeCompare(b.Name || '')
+        );
+      case 'OldestFirst':
+      default:
+        return itemsCopy.sort((a, b) =>
+          new Date(a.CreatedAt || 0).getTime() - new Date(b.CreatedAt || 0).getTime()
+        );
+    }
+  }, [filteredItems, sortOrder]);
+
   const folders = getFoldersWithCounts();
 
   /**
@@ -496,35 +548,28 @@ const ItemsList: React.FC = () => {
     <div>
       <div className="flex justify-between items-center gap-2 mb-4">
         <div className="relative min-w-0 flex-1 flex items-center gap-2">
-          {/* When all items are in folders at root level, show simple title without dropdown */}
-          {hasItemsInFoldersOnly && !currentFolderId ? (
-            <h2 className="text-gray-900 dark:text-white text-xl min-w-0">
-              <span className="truncate">{t('items.title')}</span>
+          <button
+            onClick={() => setShowFilterMenu(!showFilterMenu)}
+            className="flex items-center gap-1 text-gray-900 dark:text-white text-xl hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none min-w-0"
+          >
+            <h2 className="flex items-baseline gap-1.5 min-w-0 overflow-hidden">
+              <span className="truncate">{getFilterTitle()}</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400 shrink-0">
+                ({filteredItems.length})
+              </span>
             </h2>
-          ) : (
-            <button
-              onClick={() => setShowFilterMenu(!showFilterMenu)}
-              className="flex items-center gap-1 text-gray-900 dark:text-white text-xl hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none min-w-0"
+            <svg
+              className="w-4 h-4 mt-1 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
             >
-              <h2 className="flex items-baseline gap-1.5 min-w-0 overflow-hidden">
-                <span className="truncate">{getFilterTitle()}</span>
-                <span className="text-sm text-gray-500 dark:text-gray-400 shrink-0">
-                  ({filteredItems.length})
-                </span>
-              </h2>
-              <svg
-                className="w-4 h-4 mt-1 shrink-0"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <polyline points="6 9 12 15 18 9" />
-              </svg>
-            </button>
-          )}
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
           {/* Edit and Delete buttons when inside a folder */}
           {currentFolderId && (
             <div className="flex items-center gap-1 shrink-0">
@@ -549,28 +594,58 @@ const ItemsList: React.FC = () => {
               </button>
             </div>
           )}
-          {showFilterMenu && !(hasItemsInFoldersOnly && !currentFolderId) && (
+          {showFilterMenu && (
             <>
               <div
                 className="fixed inset-0 z-10"
-                onClick={() => setShowFilterMenu(false)}
+                onClick={() => {
+                  setShowFilterMenu(false);
+                }}
               />
-              <div className="absolute left-0 top-full mt-1 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-20">
+              <div className="absolute left-0 top-full mt-1 w-72 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10 z-20">
                 <div className="py-1">
-                  {/* All items filter */}
-                  <button
-                    onClick={() => {
-                      const newFilter = 'all';
-                      setFilterType(newFilter);
-                      storeFilter(newFilter);
-                      setShowFilterMenu(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
-                      filterType === 'all' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
-                    }`}
-                  >
-                    {t('items.filters.all')}
-                  </button>
+                  {/* All items filter with show folders toggle (only show toggle on root view) */}
+                  <div className="relative">
+                    <button
+                      onClick={() => {
+                        const newFilter = 'all';
+                        setFilterType(newFilter);
+                        storeFilter(newFilter);
+                        setShowFilterMenu(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                        filterType === 'all' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      {t('items.title')}
+                    </button>
+                    {!currentFolderId && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const newValue = !showFolders;
+                          setShowFolders(newValue);
+                          LocalPreferencesService.setShowFolders(newValue);
+                          setShowFilterMenu(false);
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2 py-1 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 rounded hover:bg-gray-200 dark:hover:bg-gray-600"
+                      >
+                        <span>{t('items.filters.folders')}</span>
+                        <svg
+                          className={`w-5 h-5 ${showFolders ? 'text-orange-500 dark:text-orange-400' : 'text-gray-400 dark:text-gray-500'}`}
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                        >
+                          <rect x="3" y="3" width="18" height="18" rx="2" />
+                          {showFolders && (
+                            <polyline points="7 12 10 15 17 8" />
+                          )}
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                   <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
                   {/* Item type filters - dynamically generated from ItemTypes */}
                   {ITEM_TYPE_OPTIONS.map((option) => (
@@ -621,6 +696,20 @@ const ItemsList: React.FC = () => {
                   >
                     {t('common.attachments')}
                   </button>
+                  {/* TOTP filter */}
+                  <button
+                    onClick={() => {
+                      const newFilter = 'totp';
+                      setFilterType(newFilter);
+                      storeFilter(newFilter);
+                      setShowFilterMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                      filterType === 'totp' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {t('items.filters.totp')}
+                  </button>
                   <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
                   {/* Recently deleted link */}
                   <button
@@ -642,7 +731,62 @@ const ItemsList: React.FC = () => {
             </>
           )}
         </div>
-        <ReloadButton onClick={syncVaultAndRefresh} />
+        <div className="flex items-center gap-1">
+          {/* Sort button */}
+          <div className="relative">
+            <button
+              onClick={() => setShowSortMenu(!showSortMenu)}
+              className="p-1.5 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              title={t('items.sort.title')}
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="4" y1="6" x2="16" y2="6" />
+                <line x1="4" y1="12" x2="12" y2="12" />
+                <line x1="4" y1="18" x2="8" y2="18" />
+                <polyline points="15 15 18 18 21 15" />
+                <line x1="18" y1="12" x2="18" y2="18" />
+              </svg>
+            </button>
+            {showSortMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setShowSortMenu(false)}
+                />
+                <div className="absolute right-0 top-full mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl ring-1 ring-black/5 dark:ring-white/10 z-20">
+                  <div className="py-1">
+                    {SORT_OPTIONS.map((option) => (
+                      <button
+                        key={option.value}
+                        onClick={async () => {
+                          setSortOrder(option.value);
+                          setShowSortMenu(false);
+                          // Save to settings and trigger vault sync
+                          await executeVaultMutationAsync(async () => {
+                            dbContext.sqliteClient?.settings.setCredentialsSortOrder(option.value);
+                          });
+                        }}
+                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2 ${
+                          sortOrder === option.value ? 'text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                        }`}
+                      >
+                        {sortOrder === option.value ? (
+                          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : (
+                          <span className="w-4" />
+                        )}
+                        <span>{t(option.labelKey)}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+          <ReloadButton onClick={syncVaultAndRefresh} />
+        </div>
       </div>
 
       {items.length > 0 ? (
@@ -685,13 +829,9 @@ const ItemsList: React.FC = () => {
                     // Only search active
                     ? t('items.noMatchingItemsSearch', { search: searchTerm })
                     // Only filter active (no search)
-                    : filterType === 'passkeys'
-                      ? t('items.noPasskeysFound')
-                      : filterType === 'attachments'
-                        ? t('items.noAttachmentsFound')
-                        : isItemTypeFilter(filterType)
-                          ? t('items.noItemsOfTypeFound', { type: getFilterTitle() })
-                          : t('items.noMatchingItems')
+                    : filterType !== 'all'
+                      ? t('items.noMatchingItems')
+                      : t('items.noMatchingItems')
                 }
               </p>
               {/* Clear filter/search buttons */}
@@ -764,8 +904,8 @@ const ItemsList: React.FC = () => {
         </>
       ) : (
         <>
-          {/* Folders as inline pills (only show at root level when not searching) */}
-          {!currentFolderId && !searchTerm && (
+          {/* Folders as inline pills (only show at root level when not searching and showFolders is enabled) */}
+          {!currentFolderId && !searchTerm && showFolders && (
             <div className="flex flex-wrap items-center gap-2 mb-4">
               {folders.map(folder => (
                 <FolderPill
@@ -801,9 +941,9 @@ const ItemsList: React.FC = () => {
           )}
 
           {/* Items */}
-          {filteredItems.length > 0 && (
+          {sortedItems.length > 0 && (
             <ul id="items-list" className="space-y-2">
-              {filteredItems.map(item => (
+              {sortedItems.map(item => (
                 <ItemCard
                   key={item.Id}
                   item={item}

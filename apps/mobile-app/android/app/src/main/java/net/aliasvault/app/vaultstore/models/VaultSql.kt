@@ -685,6 +685,11 @@ CREATE INDEX "IX_Passkeys_RpId" ON "Passkeys" ("RpId");
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20251014122838_1.6.0-AddPasskeys', '9.0.4');
 
+COMMIT;
+
+PRAGMA foreign_keys = OFF;
+
+BEGIN TRANSACTION;
 ALTER TABLE "TotpCodes" RENAME COLUMN "CredentialId" TO "ItemId";
 
 DROP INDEX IF EXISTS "IX_TotpCodes_CredentialId";
@@ -1040,7 +1045,7 @@ CREATE INDEX "IX_Tags_Name" ON "Tags" ("Name");
                         SUBSTR(hex(randomblob(6)), 1, 12)) AS Id,
                   c.Id AS ItemId,
                   NULL AS FieldDefinitionId,
-                  'login.notes' AS FieldKey,
+                  'notes.content' AS FieldKey,
                   c.Notes AS Value,
                   0 AS Weight,
                   c.UpdatedAt AS CreatedAt,
@@ -1189,6 +1194,11 @@ DROP TABLE "Aliases";
 
 DROP TABLE "Services";
 
+COMMIT;
+
+PRAGMA foreign_keys = ON;
+
+BEGIN TRANSACTION;
 CREATE TABLE "ef_temp_Attachments" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Attachments" PRIMARY KEY,
     "Blob" BLOB NOT NULL,
@@ -1273,6 +1283,12 @@ COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20251213111207_1.7.0-FieldBasedDataModelUpdate', '9.0.4');
+
+BEGIN TRANSACTION;
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260130221620_2.0.0-MajorVersionBump', '9.0.4');
+
+COMMIT;
     """.trimIndent()
 
     /**
@@ -1907,6 +1923,8 @@ VALUES ('20251014122838_1.6.0-AddPasskeys', '9.0.4');
 COMMIT;
         """.trimIndent(),
         11 to """
+PRAGMA foreign_keys = OFF;
+
 BEGIN TRANSACTION;
 ALTER TABLE "TotpCodes" RENAME COLUMN "CredentialId" TO "ItemId";
 
@@ -2263,7 +2281,7 @@ CREATE INDEX "IX_Tags_Name" ON "Tags" ("Name");
                         SUBSTR(hex(randomblob(6)), 1, 12)) AS Id,
                   c.Id AS ItemId,
                   NULL AS FieldDefinitionId,
-                  'login.notes' AS FieldKey,
+                  'notes.content' AS FieldKey,
                   c.Notes AS Value,
                   0 AS Weight,
                   c.UpdatedAt AS CreatedAt,
@@ -2412,6 +2430,11 @@ DROP TABLE "Aliases";
 
 DROP TABLE "Services";
 
+COMMIT;
+
+PRAGMA foreign_keys = ON;
+
+BEGIN TRANSACTION;
 CREATE TABLE "ef_temp_Attachments" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Attachments" PRIMARY KEY,
     "Blob" BLOB NOT NULL,
@@ -2496,6 +2519,13 @@ COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20251213111207_1.7.0-FieldBasedDataModelUpdate', '9.0.4');
+        """.trimIndent(),
+        12 to """
+BEGIN TRANSACTION;
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260130221620_2.0.0-MajorVersionBump', '9.0.4');
+
+COMMIT;
         """.trimIndent(),
     )
 

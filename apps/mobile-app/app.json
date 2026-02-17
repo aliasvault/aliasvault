@@ -2,7 +2,7 @@
   "expo": {
     "name": "AliasVault",
     "slug": "AliasVault",
-    "version": "0.26.0-alpha",
+    "version": "0.27.0-alpha",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "aliasvault",

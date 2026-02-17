@@ -7,7 +7,13 @@ import { useApp } from '@/context/AppContext';
 import { useDb } from '@/context/DbContext';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
-import { VaultSyncErrorCode, getVaultSyncErrorCode } from '@/utils/types/errors/VaultSyncErrorCodes';
+import {
+  AppErrorCode,
+  getAppErrorCode,
+  extractErrorCode,
+  formatErrorWithCode,
+  getErrorTranslationKey,
+} from '@/utils/types/errors/AppErrorCodes';
 
 /**
  * Sync state tracking for race detection and offline support.
@@ -96,7 +102,7 @@ export const useVaultSync = (): {
       if (!result.success) {
         // Check for specific error conditions
         if (result.error) {
-          const errorCode = getVaultSyncErrorCodeFromString(result.error);
+          const errorCode = extractErrorCode(result.error) ?? getAppErrorCode(result.error);
           if (errorCode) {
             return await handleSyncError(result.error, errorCode, app, dbContext, t, onError, onOffline);
           }
@@ -104,12 +110,19 @@ export const useVaultSync = (): {
 
         if (result.wasOffline) {
           await dbContext.setIsOffline(true);
+          console.log('[useVaultSync] Set offline mode');
           onOffline?.();
           // Return true to continue with local vault
           return true;
         }
 
-        onError?.(result.error ?? t('common.errors.unknownError'));
+        // For unrecognized errors (no error code found), use translated fallback with error code
+        // This ensures users always see a translated message with a code they can report
+        const fallbackError = formatErrorWithCode(
+          t('common.errors.unknownErrorTryAgain'),
+          AppErrorCode.UNKNOWN_ERROR
+        );
+        onError?.(fallbackError);
         return false;
       }
 
@@ -155,15 +168,26 @@ export const useVaultSync = (): {
           console.warn('Vault sync: Failed to register credential identities:', error);
         }
 
-        return hasNewVault;
+        // Return true for successful sync (regardless of whether vault changed)
+        return true;
       } catch (err) {
         if (err instanceof VaultVersionIncompatibleError) {
           await app.logout(t(err.message));
           return false;
         }
 
-        console.error('Failed to unlock vault:', err);
-        throw new Error(t('common.errors.unknownErrorTryAgain'));
+        // Extract the specific error code from native layer if available
+        // This preserves detailed error info (E-501 to E-511) for debugging
+        const nativeErrorCode = getAppErrorCode(err);
+        const errorCode = nativeErrorCode ?? AppErrorCode.NATIVE_UNLOCK_FAILED;
+
+        console.error(`Failed to unlock vault (${errorCode}):`, err);
+
+        // Re-throw with the specific error code for proper handling
+        throw new Error(formatErrorWithCode(
+          t(getErrorTranslationKey(errorCode)),
+          errorCode
+        ));
       }
     } catch (err) {
       console.error('Vault sync error:', err);
@@ -179,13 +203,18 @@ export const useVaultSync = (): {
         return false;
       }
 
-      // Check if it's a vault sync error with error code
-      const errorCode = getVaultSyncErrorCode(err);
+      // Check if it's a vault sync error with error code (from error object or message)
+      const errorCode = getAppErrorCode(err);
       if (errorCode) {
         return await handleSyncError(err, errorCode, app, dbContext, t, onError, onOffline);
       }
 
-      const errorMessage = err instanceof Error ? err.message : t('common.errors.unknownError');
+      // For unrecognized errors, always use translated message with error code
+      // This ensures users never see raw English error messages from native layer
+      const extractedCode = err instanceof Error ? extractErrorCode(err.message) : null;
+      const fallbackCode = extractedCode ?? AppErrorCode.UNKNOWN_ERROR;
+      const translationKey = getErrorTranslationKey(fallbackCode);
+      const errorMessage = formatErrorWithCode(t(translationKey), fallbackCode);
       onError?.(errorMessage);
       return false;
     } finally {
@@ -197,73 +226,60 @@ export const useVaultSync = (): {
 };
 
 /**
- * Map error string from native to VaultSyncErrorCode.
- */
-function getVaultSyncErrorCodeFromString(error: string): VaultSyncErrorCode | null {
-  switch (error) {
-    case VaultSyncErrorCode.SESSION_EXPIRED:
-      return VaultSyncErrorCode.SESSION_EXPIRED;
-    case VaultSyncErrorCode.AUTHENTICATION_FAILED:
-      return VaultSyncErrorCode.AUTHENTICATION_FAILED;
-    case VaultSyncErrorCode.PASSWORD_CHANGED:
-      return VaultSyncErrorCode.PASSWORD_CHANGED;
-    case VaultSyncErrorCode.CLIENT_VERSION_NOT_SUPPORTED:
-      return VaultSyncErrorCode.CLIENT_VERSION_NOT_SUPPORTED;
-    case VaultSyncErrorCode.SERVER_VERSION_NOT_SUPPORTED:
-      return VaultSyncErrorCode.SERVER_VERSION_NOT_SUPPORTED;
-    case VaultSyncErrorCode.SERVER_UNAVAILABLE:
-      return VaultSyncErrorCode.SERVER_UNAVAILABLE;
-    case VaultSyncErrorCode.NETWORK_ERROR:
-      return VaultSyncErrorCode.NETWORK_ERROR;
-    case VaultSyncErrorCode.TIMEOUT:
-      return VaultSyncErrorCode.TIMEOUT;
-    default:
-      return null;
-  }
-}
-
-/**
  * Handle sync errors by mapping error codes to appropriate actions.
+ *
+ * For critical errors requiring logout (auth, version), we ALWAYS use app.logout(message)
+ * which shows a native Alert.alert that persists through navigation on both platforms.
+ * The onError callback is only used for non-critical errors that don't require logout.
+ *
+ * Error codes are included in messages to help users report issues for debugging.
  */
 async function handleSyncError(
-  err: unknown,
-  errorCode: VaultSyncErrorCode | null,
+  _err: unknown,
+  errorCode: AppErrorCode,
   app: ReturnType<typeof useApp>,
   dbContext: ReturnType<typeof useDb>,
   t: (key: string) => string,
   onError?: (error: string) => void,
   onOffline?: () => void
 ): Promise<boolean> {
+  // Get the translated message for this error code
+  const translationKey = getErrorTranslationKey(errorCode);
+  const translatedMessage = t(translationKey);
+
+  // Format with error code for user reporting
+  const messageWithCode = formatErrorWithCode(translatedMessage, errorCode);
+
   switch (errorCode) {
-    case VaultSyncErrorCode.SESSION_EXPIRED:
-    case VaultSyncErrorCode.AUTHENTICATION_FAILED:
-      await app.logout('Your session has expired. Please login again.');
+    // Authentication errors - logout with message (shows native alert)
+    case AppErrorCode.SESSION_EXPIRED:
+    case AppErrorCode.AUTHENTICATION_FAILED:
+      await app.logout(messageWithCode);
       return false;
 
-    case VaultSyncErrorCode.PASSWORD_CHANGED:
-      await app.logout(t('vault.errors.passwordChanged'));
+    case AppErrorCode.PASSWORD_CHANGED:
+      await app.logout(messageWithCode);
       return false;
 
-    case VaultSyncErrorCode.CLIENT_VERSION_NOT_SUPPORTED:
-      onError?.(t('vault.errors.versionNotSupported'));
+    // Version compatibility errors - logout with message (shows native alert)
+    case AppErrorCode.CLIENT_VERSION_NOT_SUPPORTED:
+    case AppErrorCode.SERVER_VERSION_NOT_SUPPORTED:
+    case AppErrorCode.VAULT_VERSION_INCOMPATIBLE:
+      await app.logout(messageWithCode);
       return false;
 
-    case VaultSyncErrorCode.SERVER_VERSION_NOT_SUPPORTED:
-      await app.logout(t('vault.errors.serverVersionNotSupported'));
-      return false;
-
-    case VaultSyncErrorCode.SERVER_UNAVAILABLE:
-    case VaultSyncErrorCode.NETWORK_ERROR:
-    case VaultSyncErrorCode.TIMEOUT:
+    // Network errors - set offline mode, don't logout
+    case AppErrorCode.SERVER_UNAVAILABLE:
+    case AppErrorCode.NETWORK_ERROR:
+    case AppErrorCode.TIMEOUT:
       await dbContext.setIsOffline(true);
       onOffline?.();
       // Return true to continue with local vault
       return true;
 
+    // All other errors - show error with code for debugging
     default:
-      // Unknown error
-      const errorMessage = err instanceof Error ? err.message : t('common.errors.unknownError');
-      onError?.(errorMessage);
+      onError?.(messageWithCode);
       return false;
   }
 }

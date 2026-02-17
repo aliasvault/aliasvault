@@ -25,24 +25,14 @@ Builds:
       - echo "76272878069683c3a36b933d2f4842436a26b527daa930ae9346b477011ee2f3 node.tar.gz"
         | sha256sum -c -
       - tar xzf node.tar.gz --strip-components=1 -C /usr/local/
-    gradle:
-      - yes
-    srclibs:
-      - rustup@1.27.1
-    ndk: 28.0.12433566
     init:
       - cd ../..
       - sed -i -e '/signingConfig /d' android/app/build.gradle
       - npm install --production --build-from-source
-    build:
-      - cd ../..
-      - $$rustup$$/rustup-init.sh -y --default-toolchain stable -t aarch64-linux-android
-        armv7-linux-androideabi x86_64-linux-android
-      - source $HOME/.cargo/env
-      - export ANDROID_NDK_HOME=${ANDROID_NDK}
-      - cd ../../core
-      - chmod +x build-and-distribute.sh
-      - ./build-and-distribute.sh --android
+    gradle:
+      - yes
+    srclibs:
+      - rustup@1.27.1
     scanignore:
       - apps/mobile-app/android/build.gradle
       - apps/mobile-app/node_modules/react-native/sdks/hermesc/linux64-bin/hermesc
@@ -60,6 +50,16 @@ Builds:
       - apps/mobile-app/node_modules/react-native-svg/android/build.gradle
     scandelete:
       - apps/mobile-app/node_modules/
+    build:
+      - cd ../..
+      - $$rustup$$/rustup-init.sh -y --default-toolchain stable -t aarch64-linux-android
+        armv7-linux-androideabi x86_64-linux-android
+      - source $HOME/.cargo/env
+      - export ANDROID_NDK_HOME=${ANDROID_NDK}
+      - cd ../../core
+      - chmod +x build-and-distribute.sh
+      - ./build-and-distribute.sh --android
+    ndk: 28.0.12433566
 
 AutoUpdateMode: None
 UpdateCheckMode: None

@@ -86,6 +86,8 @@ public sealed class ItemEdit
 
     /// <summary>
     /// Creates an ItemEdit instance from an Item entity.
+    /// Creates clones of Attachments, TotpCodes, and Passkeys to avoid modifying EF-tracked entities.
+    /// Handles null navigation properties defensively to prevent errors from incomplete data loads.
     /// </summary>
     /// <param name="item">The item entity to convert.</param>
     /// <returns>A new ItemEdit instance.</returns>
@@ -99,15 +101,15 @@ public sealed class ItemEdit
             LogoId = item.LogoId,
             ServiceLogo = item.Logo?.FileData,
             FolderId = item.FolderId,
-            Attachments = item.Attachments.Where(a => !a.IsDeleted).ToList(),
-            TotpCodes = item.TotpCodes.Where(t => !t.IsDeleted).ToList(),
-            Passkeys = item.Passkeys.Where(p => !p.IsDeleted).ToList(),
+            Attachments = item.Attachments?.Where(a => !a.IsDeleted).Select(CloneAttachment).ToList() ?? [],
+            TotpCodes = item.TotpCodes?.Where(t => !t.IsDeleted).Select(CloneTotpCode).ToList() ?? [],
+            Passkeys = item.Passkeys?.Where(p => !p.IsDeleted).Select(ClonePasskey).ToList() ?? [],
             CreateDate = item.CreatedAt,
             LastUpdate = item.UpdatedAt,
         };
 
         // Group field values by FieldKey to handle multi-value fields
-        var groupedFields = item.FieldValues
+        var groupedFields = (item.FieldValues ?? [])
             .Where(f => !f.IsDeleted)
             .GroupBy(f => f.FieldKey ?? f.FieldDefinitionId?.ToString() ?? string.Empty);
 
@@ -202,7 +204,7 @@ public sealed class ItemEdit
                         IsHidden = field.IsHidden,
                         IsMultiValue = false,
                         EnableHistory = false,
-                        Weight = 0,
+                        Weight = field.DisplayOrder,
                         CreatedAt = now,
                         UpdatedAt = now,
                     };
@@ -215,7 +217,7 @@ public sealed class ItemEdit
                         FieldDefinition = fieldDefinition,
                         FieldKey = null,
                         Value = field.Value,
-                        Weight = 0,
+                        Weight = field.DisplayOrder,
                     });
                 }
                 else
@@ -228,7 +230,7 @@ public sealed class ItemEdit
                         FieldDefinitionId = field.FieldDefinitionId,
                         FieldKey = null,
                         Value = field.Value,
-                        Weight = 0,
+                        Weight = field.DisplayOrder,
                     };
 
                     // Include FieldDefinition with potentially updated label
@@ -240,7 +242,7 @@ public sealed class ItemEdit
                         IsHidden = field.IsHidden,
                         IsMultiValue = false,
                         EnableHistory = false,
-                        Weight = 0,
+                        Weight = field.DisplayOrder,
                     };
 
                     item.FieldValues.Add(fieldValue);
@@ -428,12 +430,12 @@ public sealed class ItemEdit
     }
 
     /// <summary>
-    /// Gets all custom fields.
+    /// Gets all custom fields sorted by display order.
     /// </summary>
-    /// <returns>List of custom fields.</returns>
+    /// <returns>List of custom fields sorted by display order.</returns>
     public List<SystemFieldEdit> GetCustomFields()
     {
-        return Fields.Where(f => f.IsCustomField).ToList();
+        return Fields.Where(f => f.IsCustomField).OrderBy(f => f.DisplayOrder).ToList();
     }
 
     /// <summary>
@@ -568,5 +570,68 @@ public sealed class ItemEdit
         // For unknown fields with a system field prefix, this might be a new system field
         // not yet in the registry - treat as custom for now
         return FieldCategory.Custom;
+    }
+
+    /// <summary>
+    /// Creates a clone of an Attachment entity to avoid modifying EF-tracked entities.
+    /// Handles null blob data defensively to prevent errors from corrupted sync data.
+    /// </summary>
+    /// <param name="attachment">The attachment to clone.</param>
+    /// <returns>A new Attachment instance with copied values.</returns>
+    private static Attachment CloneAttachment(Attachment attachment)
+    {
+        return new Attachment
+        {
+            Id = attachment.Id,
+            Filename = attachment.Filename ?? string.Empty,
+            Blob = attachment.Blob ?? [],
+            ItemId = attachment.ItemId,
+            CreatedAt = attachment.CreatedAt,
+            UpdatedAt = attachment.UpdatedAt,
+            IsDeleted = attachment.IsDeleted,
+        };
+    }
+
+    /// <summary>
+    /// Creates a clone of a TotpCode entity to avoid modifying EF-tracked entities.
+    /// </summary>
+    /// <param name="totpCode">The TOTP code to clone.</param>
+    /// <returns>A new TotpCode instance with copied values.</returns>
+    private static TotpCode CloneTotpCode(TotpCode totpCode)
+    {
+        return new TotpCode
+        {
+            Id = totpCode.Id,
+            Name = totpCode.Name,
+            SecretKey = totpCode.SecretKey,
+            ItemId = totpCode.ItemId,
+            CreatedAt = totpCode.CreatedAt,
+            UpdatedAt = totpCode.UpdatedAt,
+            IsDeleted = totpCode.IsDeleted,
+        };
+    }
+
+    /// <summary>
+    /// Creates a clone of a Passkey entity to avoid modifying EF-tracked entities.
+    /// </summary>
+    /// <param name="passkey">The passkey to clone.</param>
+    /// <returns>A new Passkey instance with copied values.</returns>
+    private static Passkey ClonePasskey(Passkey passkey)
+    {
+        return new Passkey
+        {
+            Id = passkey.Id,
+            RpId = passkey.RpId,
+            UserHandle = passkey.UserHandle,
+            PublicKey = passkey.PublicKey,
+            PrivateKey = passkey.PrivateKey,
+            PrfKey = passkey.PrfKey,
+            DisplayName = passkey.DisplayName,
+            AdditionalData = passkey.AdditionalData,
+            ItemId = passkey.ItemId,
+            CreatedAt = passkey.CreatedAt,
+            UpdatedAt = passkey.UpdatedAt,
+            IsDeleted = passkey.IsDeleted,
+        };
     }
 }

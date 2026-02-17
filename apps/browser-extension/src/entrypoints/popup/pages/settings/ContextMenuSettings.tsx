@@ -4,9 +4,7 @@ import { sendMessage } from 'webext-bridge/popup';
 
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import { GLOBAL_CONTEXT_MENU_ENABLED_KEY } from '@/utils/Constants';
-
-import { storage } from "#imports";
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 /**
  * Context menu settings page component.
@@ -20,7 +18,7 @@ const ContextMenuSettings: React.FC = () => {
    * Load settings.
    */
   const loadSettings = useCallback(async () : Promise<void> => {
-    const isEnabled = await storage.getItem(GLOBAL_CONTEXT_MENU_ENABLED_KEY) !== false; // Default to true if not set
+    const isEnabled = await LocalPreferencesService.getGlobalContextMenuEnabled();
     setIsContextMenuEnabled(isEnabled);
     setIsInitialLoading(false);
   }, [setIsInitialLoading]);
@@ -35,7 +33,7 @@ const ContextMenuSettings: React.FC = () => {
   const toggleContextMenu = async () : Promise<void> => {
     const newContextMenuEnabled = !isContextMenuEnabled;
 
-    await storage.setItem(GLOBAL_CONTEXT_MENU_ENABLED_KEY, newContextMenuEnabled);
+    await LocalPreferencesService.setGlobalContextMenuEnabled(newContextMenuEnabled);
     await sendMessage('TOGGLE_CONTEXT_MENU', { enabled: newContextMenuEnabled }, 'background');
 
     setIsContextMenuEnabled(newContextMenuEnabled);

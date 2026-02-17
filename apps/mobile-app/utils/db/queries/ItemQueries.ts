@@ -240,7 +240,7 @@ export class FieldValueQueries {
    * Get existing field values for an item.
    */
   public static readonly GET_EXISTING_FOR_ITEM = `
-    SELECT Id, FieldKey, FieldDefinitionId, Value
+    SELECT Id, FieldKey, FieldDefinitionId, Value, Weight
     FROM FieldValues
     WHERE ItemId = ? AND IsDeleted = 0`;
 

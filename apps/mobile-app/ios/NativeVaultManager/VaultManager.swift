@@ -61,6 +61,21 @@ public class VaultManager: NSObject {
         }
     }
 
+    /// Store encryption key in memory only (no keychain persistence).
+    /// Use this to test if a password-derived key is valid before persisting.
+    @objc
+    func storeEncryptionKeyInMemory(_ base64EncryptionKey: String,
+                                    resolver resolve: @escaping RCTPromiseResolveBlock,
+                                    rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            try vaultStore.storeEncryptionKeyInMemory(base64Key: base64EncryptionKey)
+            resolve(nil)
+        } catch {
+            reject("ERR_STORE_KEY_MEMORY", "Failed to store encryption key in memory: \(error.localizedDescription)", error)
+        }
+    }
+
+    /// Store encryption key in memory AND persist to keychain if Face ID is enabled.
     @objc
     func storeEncryptionKey(_ base64EncryptionKey: String,
                             resolver resolve: @escaping RCTPromiseResolveBlock,
@@ -71,6 +86,15 @@ public class VaultManager: NSObject {
         } catch {
             reject("KEYCHAIN_ERROR", "Failed to store encryption key: \(error.localizedDescription)", error)
         }
+    }
+
+    /// Clear the encryption key from memory.
+    /// This forces getEncryptionKey() to fetch from keychain on next biometric access.
+    @objc
+    func clearEncryptionKeyFromMemory(_ resolve: @escaping RCTPromiseResolveBlock,
+                                      rejecter reject: @escaping RCTPromiseRejectBlock) {
+        vaultStore.clearEncryptionKeyFromMemory()
+        resolve(nil)
     }
 
     @objc
@@ -225,23 +249,12 @@ public class VaultManager: NSObject {
         do {
             try vaultStore.unlockVault()
             resolve(true)
+        } catch let vaultError as AppError {
+            // Propagate AppError with proper error code
+            reject(vaultError.code, vaultError.message, vaultError)
         } catch let error as NSError {
-            if error.domain == "VaultStore" {
-                // These are our known error codes for initialization failures (non-critical)
-                if error.code == 1 || error.code == 2 || error.code == 8 || error.code == 10 {
-                    resolve(false)
-                    return
-                }
-
-                // Pass through detailed error messages for database setup failures (codes 11-18)
-                if error.code >= 11 && error.code <= 18 {
-                    reject("DATABASE_SETUP_ERROR", error.localizedDescription, error)
-                    return
-                }
-            }
-
-            // Default error handling
-            reject("INIT_ERROR", "Failed to unlock vault: \(error.localizedDescription)", error)
+            // Default error handling for non-AppError errors
+            reject("E-001", "Failed to unlock vault: \(error.localizedDescription)", error)
         }
     }
 
@@ -306,6 +319,17 @@ public class VaultManager: NSObject {
             resolve(nil)
         } catch {
             reject("TRANSACTION_ERROR", "Failed to rollback transaction: \(error.localizedDescription)", error)
+        }
+    }
+
+    @objc
+    func persistAndMarkDirty(_ resolve: @escaping RCTPromiseResolveBlock,
+                            rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            try vaultStore.persistAndMarkDirty()
+            resolve(nil)
+        } catch {
+            reject("PERSIST_ERROR", "Failed to persist and mark dirty: \(error.localizedDescription)", error)
         }
     }
 
@@ -913,9 +937,22 @@ public class VaultManager: NSObject {
     }
 
     @objc
-    func resetSyncStateForFreshDownload(_ resolve: @escaping RCTPromiseResolveBlock,
-                                        rejecter reject: @escaping RCTPromiseRejectBlock) {
+    func clearEncryptedVaultForFreshDownload(_ resolve: @escaping RCTPromiseResolveBlock,
+                                             rejecter reject: @escaping RCTPromiseRejectBlock) {
+        do {
+            try vaultStore.removeEncryptedDatabase()
+            print("Deleted corrupted encrypted database for fresh download")
+        } catch {
+            print("Could not delete encrypted database (may not exist): \(error)")
+        }
+
+        // Close in-memory database connection if open
+        vaultStore.clearCache()
+
+        // Reset sync state - set isDirty=false and revision=0 so sync sees server as newer
         vaultStore.setIsDirty(false)
+        vaultStore.setCurrentVaultRevisionNumber(0)
+
         resolve(nil)
     }
 

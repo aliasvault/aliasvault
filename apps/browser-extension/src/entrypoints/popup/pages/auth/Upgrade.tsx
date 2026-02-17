@@ -131,12 +131,14 @@ const Upgrade: React.FC = () => {
         return;
       }
 
-      // Use the useVaultMutate hook to handle the upgrade and vault upload
+      /**
+       * Use the useVaultMutate hook to handle the upgrade and vault upload.
+       * IMPORTANT: Do NOT wrap migration SQL in beginTransaction/commitTransaction!
+       * The migration SQL contains PRAGMA foreign_keys statements that MUST be executed
+       * outside of any transaction to take effect. The SQL handles its own transactions.
+       */
       await executeVaultMutationAsync(async () => {
-        // Begin transaction
-        sqliteClient.beginTransaction();
-
-        // Execute each SQL command
+        // Execute each SQL command (each migration script handles its own transactions)
         for (let i = 0; i < upgradeResult.sqlCommands.length; i++) {
           const sqlCommand = upgradeResult.sqlCommands[i];
 
@@ -144,13 +146,9 @@ const Upgrade: React.FC = () => {
             sqliteClient.executeRaw(sqlCommand);
           } catch (error) {
             console.error(`Error executing SQL command ${i + 1}:`, sqlCommand, error);
-            sqliteClient.rollbackTransaction();
             throw new Error(t('upgrade.alerts.failedToApplyMigration', { current: i + 1, total: upgradeResult.sqlCommands.length }));
           }
         }
-
-        // Commit transaction
-        sqliteClient.commitTransaction();
       });
 
       await handleUpgradeSuccess();

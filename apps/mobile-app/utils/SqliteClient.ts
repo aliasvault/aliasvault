@@ -183,7 +183,22 @@ class SqliteClient implements IDatabaseClient {
   }
 
   /**
-   * Store the encryption key in the native keychain
+   * Store the encryption key in memory only (no keychain persistence).
+   * Use this to test if a password-derived key is valid before persisting.
+   *
+   * @param base64EncryptionKey The base64 encoded encryption key
+   */
+  public async storeEncryptionKeyInMemory(base64EncryptionKey: string): Promise<void> {
+    try {
+      await NativeVaultManager.storeEncryptionKeyInMemory(base64EncryptionKey);
+    } catch (error) {
+      console.error('Error storing encryption key in memory:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Store the encryption key in memory AND persist to keychain (may trigger biometric prompt).
    *
    * @param base64EncryptionKey The base64 encoded encryption key
    */

@@ -1,40 +1,32 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { onMessage, sendMessage } from 'webext-bridge/popup';
 
+import { CountdownBar, ICountdownBarHandle } from './CountdownBar';
+
 /**
  * Clipboard countdown bar component.
+ * Listens for clipboard countdown events from the background script and displays the countdown bar.
  */
 export const ClipboardCountdownBar: React.FC = () => {
   const [isVisible, setIsVisible] = useState<boolean>(false);
-  const animationRef = useRef<HTMLDivElement>(null);
+  const countdownBarRef = useRef<ICountdownBarHandle>(null);
   const currentCountdownIdRef = useRef<number>(0);
 
   /**
-   * Starts the countdown animation.
+   * Starts the countdown animation with remaining time.
    */
-  const startAnimation = (remaining: number, total: number) : void => {
-    // Use a small delay to ensure the component is fully rendered
-    setTimeout(() => {
-      if (animationRef.current) {
-        // Calculate the starting percentage based on remaining time
-        const percentage = (remaining / total) * 100;
+  const startAnimation = (remaining: number, total: number): void => {
+    // Calculate the starting percentage based on remaining time
+    const percentage = remaining / total;
+    // Start animation for the remaining duration
+    countdownBarRef.current?.startAnimation(remaining * percentage);
+  };
 
-        // Reset any existing animation
-        animationRef.current.style.transition = 'none';
-        animationRef.current.style.width = `${percentage}%`;
-
-        // Force browser to flush styles
-        void animationRef.current.offsetHeight;
-
-        // Start animation from current position to 0
-        requestAnimationFrame(() => {
-          if (animationRef.current) {
-            animationRef.current.style.transition = `width ${remaining}s linear`;
-            animationRef.current.style.width = '0%';
-          }
-        });
-      }
-    }, 10);
+  /**
+   * Stops the animation.
+   */
+  const stopAnimation = (): void => {
+    countdownBarRef.current?.stopAnimation();
   };
 
   useEffect(() => {
@@ -44,11 +36,15 @@ export const ClipboardCountdownBar: React.FC = () => {
       if (countdownState && countdownState.remaining > 0) {
         currentCountdownIdRef.current = countdownState.id;
         setIsVisible(true);
-        startAnimation(countdownState.remaining, countdownState.total);
+        // Use setTimeout to ensure the component has rendered
+        setTimeout(() => {
+          startAnimation(countdownState.remaining, countdownState.total);
+        }, 0);
       }
     }).catch(() => {
       // No active countdown
     });
+
     // Listen for countdown updates from background script
     const unsubscribe = onMessage('CLIPBOARD_COUNTDOWN', ({ data }) => {
       const { remaining, total, id } = data as { remaining: number; total: number; id: number };
@@ -60,7 +56,10 @@ export const ClipboardCountdownBar: React.FC = () => {
       // Start animation when new countdown begins
       if (isNewCountdown && remaining > 0) {
         currentCountdownIdRef.current = id;
-        startAnimation(remaining, total);
+        // Use setTimeout to ensure visibility state has updated
+        setTimeout(() => {
+          startAnimation(remaining, total);
+        }, 0);
       }
     });
 
@@ -68,23 +67,17 @@ export const ClipboardCountdownBar: React.FC = () => {
     const unsubscribeClear = onMessage('CLIPBOARD_CLEARED', () => {
       setIsVisible(false);
       currentCountdownIdRef.current = 0;
-      if (animationRef.current) {
-        animationRef.current.style.transition = 'none';
-        animationRef.current.style.width = '0%';
-      }
+      stopAnimation();
     });
 
     // Listen for countdown cancelled message
     const unsubscribeCancel = onMessage('CLIPBOARD_COUNTDOWN_CANCELLED', () => {
       setIsVisible(false);
       currentCountdownIdRef.current = 0;
-      if (animationRef.current) {
-        animationRef.current.style.transition = 'none';
-        animationRef.current.style.width = '0%';
-      }
+      stopAnimation();
     });
 
-    return () : void => {
+    return (): void => {
       // Clean up listeners
       unsubscribe();
       unsubscribeClear();
@@ -92,17 +85,11 @@ export const ClipboardCountdownBar: React.FC = () => {
     };
   }, []);
 
-  if (!isVisible) {
-    return null;
-  }
-
   return (
-    <div className="fixed top-0 left-0 right-0 z-[60] h-1 bg-gray-200 dark:bg-gray-700">
-      <div
-        ref={animationRef}
-        className="h-full bg-orange-500"
-        style={{ width: '100%', transition: 'none' }}
-      />
-    </div>
+    <CountdownBar
+      ref={countdownBarRef}
+      isVisible={isVisible}
+      colorClass="bg-orange-500"
+    />
   );
 };

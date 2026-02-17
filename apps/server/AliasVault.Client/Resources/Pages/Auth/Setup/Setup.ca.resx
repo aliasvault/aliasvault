@@ -46,7 +46,7 @@
     <comment>Button text for creating account</comment>
   </data>
   <data name="ContinueButton">
-    <value>Continue</value>
+    <value>Continua</value>
     <comment>Continue button text</comment>
   </data>
 </root>

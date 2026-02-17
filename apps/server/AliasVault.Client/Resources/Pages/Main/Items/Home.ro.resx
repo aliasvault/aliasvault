@@ -64,7 +64,7 @@
     <comment>Main vault page title</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Găsește toate elementele tale mai jos.</value>
+    <value>Toate elementele tale sunt afișate mai jos.</value>
     <comment>Page description text</comment>
   </data>
   <!-- Settings Dropdown -->
@@ -102,7 +102,7 @@
     <comment>Title when no items exist</comment>
   </data>
   <data name="CreateFirstItemText" xml:space="preserve">
-    <value>Creează primul tău element folosind butonul</value>
+    <value>Creează primul tău element folosind</value>
     <comment>Text explaining how to create first item</comment>
   </data>
   <data name="NewAliasButtonText" xml:space="preserve">
@@ -122,7 +122,7 @@
     <comment>Separator text between options</comment>
   </data>
   <data name="ImportItemsText" xml:space="preserve">
-    <value>Dacă ați utilizat anterior un alt manager de parole, vă puteți importa elementele din acesta.</value>
+    <value>Dacă ai utilizat anterior un alt manager de parole, poți importa elementele din acesta.</value>
     <comment>Text explaining import option</comment>
   </data>
   <data name="ImportButtonText" xml:space="preserve">
@@ -140,11 +140,15 @@
     <comment>Label for filter dropdown</comment>
   </data>
   <data name="FilterAllOption" xml:space="preserve">
-    <value>(Toate) elementele</value>
+    <value>Elemente</value>
     <comment>Filter option to show all items</comment>
   </data>
+  <data name="ShowFoldersOption" xml:space="preserve">
+    <value>Dosare</value>
+    <comment>Toggle option to show or hide folder structure</comment>
+  </data>
   <data name="FilterPasskeysOption" xml:space="preserve">
-    <value>Passkey-uri</value>
+    <value>Passkeys</value>
     <comment>Filter option to show only passkeys</comment>
   </data>
   <data name="FilterAliasesOption" xml:space="preserve">

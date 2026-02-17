@@ -3,6 +3,7 @@
  * Add new languages here to make them available throughout the application
  */
 
+import daTranslations from './locales/da.json';
 import deTranslations from './locales/de.json';
 import enTranslations from './locales/en.json';
 import esTranslations from './locales/es.json';
@@ -15,6 +16,7 @@ import plTranslations from './locales/pl.json';
 import ptTranslations from './locales/pt.json';
 import roTranslations from './locales/ro.json';
 import ruTranslations from './locales/ru.json';
+import svTranslations from './locales/sv.json';
 import ukTranslations from './locales/uk.json';
 import zhTranslations from './locales/zh.json';
 
@@ -23,6 +25,9 @@ import zhTranslations from './locales/zh.json';
  * When adding a new language, add the translation JSON file to the locales folder and add the language to the map here.
  */
 export const LANGUAGE_RESOURCES = {
+  da: {
+    translation: daTranslations
+  },
   de: {
     translation: deTranslations
   },
@@ -59,6 +64,9 @@ export const LANGUAGE_RESOURCES = {
   ru: {
     translation: ruTranslations
   },
+  sv: {
+    translation: svTranslations
+  },
   uk: {
     translation: ukTranslations
   },
@@ -72,6 +80,12 @@ export const LANGUAGE_RESOURCES = {
  * When adding a new language, add the language to the map here.
  */
 export const AVAILABLE_LANGUAGES: ILanguageConfig[] = [
+  {
+    code: 'da',
+    name: 'Danish',
+    nativeName: 'Dansk',
+    flag: '🇩🇰'
+  },
   {
     code: 'de',
     name: 'German',
@@ -143,6 +157,12 @@ export const AVAILABLE_LANGUAGES: ILanguageConfig[] = [
     name: 'Russian',
     nativeName: 'Русский',
     flag: '🇷🇺'
+  },
+  {
+    code: 'sv',
+    name: 'Swedish',
+    nativeName: 'Svenska',
+    flag: '🇸🇪'
   },
   {
     code: 'uk',

@@ -439,4 +439,90 @@ public class AttachmentTests : ClientPlaywrightTest
             File.Delete(downloadedFilePath);
         }
     }
+
+    /// <summary>
+    /// Test that deleting an attachment and then canceling the edit does not persist the deletion.
+    /// This verifies that attachment deletions only happen in-memory until the save button is pressed.
+    /// </summary>
+    /// <returns>Async task.</returns>
+    [Test]
+    [Order(7)]
+    public async Task DeleteAttachmentCancelDoesNotPersist()
+    {
+        // Create a new alias with an attachment.
+        var serviceName = "Test Service Delete Cancel";
+        await CreateItemEntry(
+            new Dictionary<string, string>
+            {
+                { "service-name", serviceName },
+            },
+            async () =>
+            {
+                // Add the attachments section via the + menu
+                await AddFieldSectionAsync("Attachments");
+
+                // Wait for the file input to appear
+                await Page.WaitForSelectorAsync("input[type='file']");
+
+                // Upload file.
+                var fileInput = Page.Locator("input[type='file']");
+                var fileContent = await ResourceReaderUtility.ReadEmbeddedResourceBytesAsync("AliasVault.E2ETests.TestData.TestAttachment.txt");
+
+                // Create a temporary file with the content and original file name
+                var originalFileName = "TestAttachmentCancel.txt";
+                var tempFilePath = Path.Combine(Path.GetTempPath(), originalFileName);
+                await File.WriteAllBytesAsync(tempFilePath, fileContent);
+
+                // Set the file input using the temporary file
+                await fileInput.SetInputFilesAsync(tempFilePath);
+
+                // Wait for the file to be uploaded
+                await Page.WaitForSelectorAsync("text=TestAttachmentCancel.txt");
+
+                // Delete the temporary file
+                File.Delete(tempFilePath);
+            });
+
+        // Check that the attachment name appears on the view page.
+        var pageContent = await Page.TextContentAsync("body");
+        Assert.That(pageContent, Does.Contain("TestAttachmentCancel.txt"), "Uploaded attachment name does not appear on view page.");
+
+        // Click the edit button
+        await Page.ClickAsync("text=Edit");
+        await WaitForUrlAsync("items/**/edit", "Edit the existing item");
+
+        // Verify attachment appears on edit page
+        pageContent = await Page.TextContentAsync("body");
+        Assert.That(pageContent, Does.Contain("TestAttachmentCancel.txt"), "Attachment name does not appear on edit page.");
+
+        // Find and click the delete button for the attachment
+        var deleteButton = Page.Locator("button:has-text('Delete')").First;
+        await deleteButton.ClickAsync();
+
+        // Wait a moment for the UI to update
+        await Task.Delay(200);
+
+        // Check that the attachment name no longer appears on the edit page
+        pageContent = await Page.TextContentAsync("body");
+        Assert.That(pageContent, Does.Not.Contain("TestAttachmentCancel.txt"), "Deleted attachment name still appears on edit page after deletion.");
+
+        // Click the cancel button instead of save
+        var cancelButton = Page.Locator("text=Cancel").First;
+        await cancelButton.ClickAsync();
+
+        // Wait for the view page to load
+        await WaitForUrlAsync("items/**", "View item");
+
+        // Check that the attachment name STILL appears on the view page (deletion was not persisted)
+        pageContent = await Page.TextContentAsync("body");
+        Assert.That(pageContent, Does.Contain("TestAttachmentCancel.txt"), "Attachment was deleted despite canceling the edit. Deletions should only persist on save.");
+
+        // Edit the item again to double-check the attachment is still there
+        await Page.ClickAsync("text=Edit");
+        await WaitForUrlAsync("items/**/edit", "Edit the existing item");
+
+        // Verify attachment still appears on edit page
+        pageContent = await Page.TextContentAsync("body");
+        Assert.That(pageContent, Does.Contain("TestAttachmentCancel.txt"), "Attachment name does not appear on edit page after canceling deletion. Deletion was incorrectly persisted.");
+    }
 }

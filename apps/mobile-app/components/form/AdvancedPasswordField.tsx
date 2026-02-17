@@ -6,6 +6,7 @@ import { View, TextInput, TextInputProps, StyleSheet, TouchableOpacity, Platform
 
 import type { PasswordSettings } from '@/utils/dist/core/models/vault';
 import { CreatePasswordGenerator } from '@/utils/dist/core/password-generator';
+import { sliderToLength, lengthToSlider, SLIDER_MIN, SLIDER_MAX } from '@/utils/passwordLengthSlider';
 
 import { useColors } from '@/hooks/useColorScheme';
 
@@ -58,12 +59,12 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
   // Initialize slider value immediately from initialSettings or value length, otherwise default to 16
   const [sliderValue, setSliderValue] = useState<number>(() => {
     if (initialSettings) {
-      return initialSettings.Length;
+      return lengthToSlider(initialSettings.Length);
     }
     if (!isNewCredential && value && value.length > 0) {
-      return value.length;
+      return lengthToSlider(value.length);
     }
-    return 16;
+    return lengthToSlider(16);
   });
   const lastGeneratedLength = useRef<number>(0);
   const isSliding = useRef(false);
@@ -92,7 +93,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
           setCurrentSettings(settings);
           // Only update slider if we haven't set it from value yet
           if (!hasSetInitialLength.current) {
-            setSliderValue(settings.Length);
+            setSliderValue(lengthToSlider(settings.Length));
             hasSetInitialLength.current = true;
           }
         }
@@ -107,7 +108,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
   useEffect(() => {
     if (!hasSetInitialLength.current) {
       if (!isNewCredential && value && value.length > 0) {
-        setSliderValue(value.length);
+        setSliderValue(lengthToSlider(value.length));
         hasSetInitialLength.current = true;
       } else if (isNewCredential) {
         hasSetInitialLength.current = true;
@@ -146,17 +147,17 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
   }, [currentSettings, generatePassword, onChangeText, setShowPasswordState]);
 
   const handleSliderChange = useCallback((sliderVal: number) => {
-    const roundedLength = Math.round(sliderVal);
-    setSliderValue(roundedLength);
+    setSliderValue(sliderVal);
+    const passwordLength = sliderToLength(sliderVal);
 
-    if (roundedLength !== lastGeneratedLength.current && isSliding.current) {
-      lastGeneratedLength.current = roundedLength;
+    if (passwordLength !== lastGeneratedLength.current && isSliding.current) {
+      lastGeneratedLength.current = passwordLength;
 
       if (!showPassword) {
         setShowPasswordState(true);
       }
 
-      const newSettings = { ...(currentSettings || {}), Length: roundedLength } as PasswordSettings;
+      const newSettings = { ...(currentSettings || {}), Length: passwordLength } as PasswordSettings;
       if (currentSettings) {
         const password = generatePassword(newSettings);
         if (password) {
@@ -168,14 +169,14 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
 
   const handleSliderStart = useCallback(() => {
     isSliding.current = true;
-    lastGeneratedLength.current = sliderValue;
+    lastGeneratedLength.current = sliderToLength(sliderValue);
   }, [sliderValue]);
 
   const handleSliderComplete = useCallback((sliderVal: number) => {
     isSliding.current = false;
-    const roundedLength = Math.round(sliderVal);
+    const passwordLength = sliderToLength(sliderVal);
     if (currentSettings) {
-      const newSettings = { ...currentSettings, Length: roundedLength };
+      const newSettings = { ...currentSettings, Length: passwordLength };
       setCurrentSettings(newSettings);
     }
     lastGeneratedLength.current = 0;
@@ -531,7 +532,7 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
         <View style={styles.sliderHeader}>
           <ThemedText style={styles.sliderLabel}>{t('items.passwordLength')}</ThemedText>
           <View style={styles.sliderValueContainer}>
-            <ThemedText style={styles.sliderValue}>{sliderValue}</ThemedText>
+            <ThemedText style={styles.sliderValue}>{sliderToLength(sliderValue)}</ThemedText>
             <TouchableOpacity
               style={styles.settingsButton}
               onPress={handleOpenSettings}
@@ -544,13 +545,12 @@ const AdvancedPasswordFieldComponent = forwardRef<AdvancedPasswordFieldRef, Adva
 
         <Slider
           style={styles.slider}
-          minimumValue={8}
-          maximumValue={64}
+          minimumValue={SLIDER_MIN}
+          maximumValue={SLIDER_MAX}
           value={sliderValue}
           onValueChange={handleSliderChange}
           onSlidingStart={handleSliderStart}
           onSlidingComplete={handleSliderComplete}
-          step={1}
           minimumTrackTintColor={colors.primary}
           maximumTrackTintColor={colors.accentBorder}
           thumbTintColor={colors.primary}

@@ -167,9 +167,9 @@ public class UserManagementTests : AdminPlaywrightTest
         await NavigateUsingBlazorRouter("users");
         await WaitForUrlAsync("users", "Users");
 
-        // Find the <a> tag in the test user's table row and click it
-        var userLink = Page.Locator("tr", new() { HasText = _testUserEmail }).Locator("a");
-        await userLink.ClickAsync();
+        // Click on the test user table row
+        var userRow = Page.Locator("tr", new() { HasText = _testUserEmail });
+        await userRow.ClickAsync();
 
         // Wait for the user details page to load
         await WaitForUrlAsync($"users/{_testUserId}**", _testUserEmail);

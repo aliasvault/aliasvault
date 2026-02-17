@@ -1,4 +1,6 @@
-﻿BEGIN TRANSACTION;
+﻿PRAGMA foreign_keys = OFF;
+
+BEGIN TRANSACTION;
 ALTER TABLE "TotpCodes" RENAME COLUMN "CredentialId" TO "ItemId";
 
 DROP INDEX IF EXISTS "IX_TotpCodes_CredentialId";
@@ -354,7 +356,7 @@ CREATE INDEX "IX_Tags_Name" ON "Tags" ("Name");
                         SUBSTR(hex(randomblob(6)), 1, 12)) AS Id,
                   c.Id AS ItemId,
                   NULL AS FieldDefinitionId,
-                  'login.notes' AS FieldKey,
+                  'notes.content' AS FieldKey,
                   c.Notes AS Value,
                   0 AS Weight,
                   c.UpdatedAt AS CreatedAt,
@@ -503,6 +505,11 @@ DROP TABLE "Aliases";
 
 DROP TABLE "Services";
 
+COMMIT;
+
+PRAGMA foreign_keys = ON;
+
+BEGIN TRANSACTION;
 CREATE TABLE "ef_temp_Attachments" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Attachments" PRIMARY KEY,
     "Blob" BLOB NOT NULL,

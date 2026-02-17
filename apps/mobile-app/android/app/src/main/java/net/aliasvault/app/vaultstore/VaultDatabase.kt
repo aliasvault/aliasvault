@@ -85,52 +85,88 @@ class VaultDatabase(
         var tempDbFile: File? = null
         var sourceDb: io.requery.android.database.sqlite.SQLiteDatabase? = null
         try {
-            val decryptedDbData = Base64.decode(decryptedDbBase64, Base64.NO_WRAP)
+            // Step 1: Decode base64
+            val decryptedDbData = try {
+                Base64.decode(decryptedDbBase64, Base64.NO_WRAP)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to decode base64 data after decryption", e)
+                throw AppError.Base64DecodeFailed(cause = e)
+            }
 
-            // Write decrypted data to temp file
+            // Step 2: Write decrypted data to temp file
             tempDbFile = File.createTempFile("temp_db", ".sqlite")
             tempDbFile.deleteOnExit()
-            tempDbFile.writeBytes(decryptedDbData)
+            try {
+                tempDbFile.writeBytes(decryptedDbData)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to write decrypted data to temp file", e)
+                throw AppError.DatabaseTempWriteFailed(cause = e)
+            }
 
-            // Close any existing connection
+            // Step 3: Close any existing connection
             dbConnection?.close()
             dbConnection = null
 
-            // Open the source database from file using requery's SQLite (read-only)
-            sourceDb = io.requery.android.database.sqlite.SQLiteDatabase.openDatabase(
-                tempDbFile.path,
-                null,
-                io.requery.android.database.sqlite.SQLiteDatabase.OPEN_READONLY,
-            )
+            // Step 4: Open the source database from file using requery's SQLite (read-only)
+            sourceDb = try {
+                io.requery.android.database.sqlite.SQLiteDatabase.openDatabase(
+                    tempDbFile.path,
+                    null,
+                    io.requery.android.database.sqlite.SQLiteDatabase.OPEN_READONLY,
+                )
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to open source database (file may be corrupt)", e)
+                throw AppError.DatabaseOpenFailed(cause = e)
+            }
 
             // Close source database before we attach it to memory db
             sourceDb.close()
             sourceDb = null
 
-            // Create in-memory database using requery's SQLite
-            dbConnection = SQLiteDatabase.create(null)
-
-            // Attach the temp file as 'source' to copy from
-            val attachSql = "ATTACH DATABASE '${tempDbFile.path}' AS source"
-            dbConnection?.compileStatement(attachSql)?.execute()
-
-            // Copy entire database using sqlite_master (preserves all schema)
-            dbConnection?.beginTransaction()
-            try {
-                copyCompleteDatabase()
-                dbConnection?.setTransactionSuccessful()
-            } finally {
-                dbConnection?.endTransaction()
+            // Step 5: Create in-memory database using requery's SQLite
+            dbConnection = try {
+                SQLiteDatabase.create(null)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to create in-memory database connection", e)
+                throw AppError.DatabaseMemoryFailed(cause = e)
             }
 
-            // Detach source
-            dbConnection?.compileStatement("DETACH DATABASE source")?.execute()
+            // Step 6: Attach and copy database
+            try {
+                // Attach the temp file as 'source' to copy from
+                val attachSql = "ATTACH DATABASE '${tempDbFile.path}' AS source"
+                dbConnection?.compileStatement(attachSql)?.execute()
 
-            // Set pragmas for optimal performance and safety
-            // PRAGMA statements must use rawQuery, not compileStatement
-            dbConnection?.rawQuery("PRAGMA journal_mode = WAL", null)
-            dbConnection?.rawQuery("PRAGMA synchronous = NORMAL", null)
-            dbConnection?.rawQuery("PRAGMA foreign_keys = ON", null)
+                // Copy entire database using sqlite_master (preserves all schema)
+                dbConnection?.beginTransaction()
+                try {
+                    copyCompleteDatabase()
+                    dbConnection?.setTransactionSuccessful()
+                } finally {
+                    dbConnection?.endTransaction()
+                }
+
+                // Detach source
+                dbConnection?.compileStatement("DETACH DATABASE source")?.execute()
+            } catch (e: AppError) {
+                throw e
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to backup database to memory", e)
+                throw AppError.DatabaseBackupFailed(cause = e)
+            }
+
+            // Step 7: Set pragmas for optimal performance and safety
+            try {
+                // PRAGMA statements must use rawQuery, not compileStatement
+                dbConnection?.rawQuery("PRAGMA journal_mode = WAL", null)
+                dbConnection?.rawQuery("PRAGMA synchronous = NORMAL", null)
+                dbConnection?.rawQuery("PRAGMA foreign_keys = ON", null)
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to set database pragmas", e)
+                throw AppError.DatabasePragmaFailed(cause = e)
+            }
+        } catch (e: AppError) {
+            throw e
         } catch (e: Exception) {
             Log.e(TAG, "Error setting up database with decrypted data", e)
             throw e

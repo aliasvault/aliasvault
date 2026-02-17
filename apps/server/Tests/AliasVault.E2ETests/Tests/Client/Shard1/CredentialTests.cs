@@ -67,6 +67,11 @@ public class CredentialTests : ClientPlaywrightTest
         Assert.That(widgetButton, Is.Not.Null, "Create new identity widget button not found.");
         await widgetButton.ClickAsync();
 
+        // Select "Alias" type (default is now "Login" which navigates to AddEdit page instead of quick-creating)
+        var aliasTypeButton = Page.Locator("button[id='quickIdentityType_Alias']");
+        await aliasTypeButton.ClickAsync();
+        await Task.Delay(100);
+
         await InputHelper.FillInputFields(new Dictionary<string, string>
         {
             { "serviceName", serviceName },

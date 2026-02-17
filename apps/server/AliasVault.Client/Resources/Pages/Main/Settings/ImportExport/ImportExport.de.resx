@@ -114,4 +114,24 @@ Bist Du sicher, dass Du mit dem Export fortfahren möchtest?</value>
     <value>Mit dieser Option kannst Du Deinen Tresor komplett leeren und gleichzeitig Deinen Account und E-Mail-Aliase beibehalten. Verwende dies, wenn Du nach dem Importieren von Daten von einem anderen Passwort-Manager neu starten möchten oder wenn Du alle vorhandenen Zugangsdaten löschen möchten, um neu zu starten.</value>
     <comment>Reset vault section description</comment>
   </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Confirm Export</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>For security reasons, please enter your master password to confirm this export.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>Das Passwort wird überprüft...</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>The password you entered is incorrect. Please try again.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>An error occurred while verifying your password. Please try again.</value>
+    <comment>Generic error message for password verification failure</comment>
+  </data>
 </root>

@@ -19,24 +19,15 @@
     Description="@Localizer["PageDescription"]">
     <TitleActions>
         <div class="relative flex items-center gap-2">
-            @if (IsInFolder || HasRootItems)
-            {
-                <button @onclick="ToggleFilterDropdown" id="filterButton" class="flex items-center gap-2 text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none">
-                    <h1 class="flex items-baseline gap-1.5 text-xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
-                        <span>@GetFilterTitle()</span>
-                        <span class="text-base text-gray-500 dark:text-gray-400">(@TotalFilteredItems)</span>
-                    </h1>
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <polyline points="6 9 12 15 18 9" />
-                    </svg>
-                </button>
-            }
-            else
-            {
-                <h1 class="text-xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
-                    @GetFilterTitle()
+            <button @onclick="ToggleFilterDropdown" id="filterButton" class="flex items-center gap-2 text-gray-900 dark:text-white hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none">
+                <h1 class="flex items-baseline gap-1.5 text-xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-2xl">
+                    <span>@GetFilterTitle()</span>
+                    <span class="text-base text-gray-500 dark:text-gray-400">(@TotalFilteredItems)</span>
                 </h1>
-            }
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9" />
+                </svg>
+            </button>
             @if (IsInFolder)
             {
                 <button @onclick="ShowEditFolderModal" title="@Localizer["EditFolder"]" class="p-1.5 text-gray-400 hover:text-orange-500 dark:text-gray-500 dark:hover:text-orange-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
@@ -57,10 +48,25 @@
                 <ClickOutsideHandler OnClose="CloseFilterDropdown" ContentId="filterDropdown,filterButton">
                     <div id="filterDropdown" class="absolute left-0 top-full z-10 mt-2 w-56 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-gray-700">
                         <div class="py-1">
-                            @* All items filter *@
-                            <button @onclick="() => SetFilter(ItemFilterType.All)" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 @(FilterType == ItemFilterType.All ? "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400" : "text-gray-700 dark:text-gray-300")">
-                                @Localizer["FilterAllOption"]
-                            </button>
+                            @* All items filter with show folders toggle (only show toggle on root view) *@
+                            <div class="flex items-center justify-between px-4 py-2 @(FilterType == ItemFilterType.All ? "bg-orange-50 dark:bg-orange-900/20" : "")">
+                                <button @onclick="() => SetFilter(ItemFilterType.All)" class="text-left text-sm hover:text-gray-900 dark:hover:text-white @(FilterType == ItemFilterType.All ? "text-orange-600 dark:text-orange-400" : "text-gray-700 dark:text-gray-300")">
+                                    @Localizer["FilterAllOption"]
+                                </button>
+                                @if (!IsInFolder)
+                                {
+                                    <button @onclick="ToggleShowFoldersAsync" @onclick:stopPropagation="true" class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                                        <span>@Localizer["ShowFoldersOption"]</span>
+                                        <svg class="w-5 h-5 @(ShowFolders ? "text-orange-500 dark:text-orange-400" : "text-gray-400 dark:text-gray-500")" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="3" y="3" width="18" height="18" rx="2" />
+                                            @if (ShowFolders)
+                                            {
+                                                <polyline points="7 12 10 15 17 8" />
+                                            }
+                                        </svg>
+                                    </button>
+                                }
+                            </div>
                             <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
 
                             @* Item type filters with icons *@
@@ -97,6 +103,9 @@
                             </button>
                             <button @onclick="() => SetFilter(ItemFilterType.Attachments)" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 @(FilterType == ItemFilterType.Attachments ? "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400" : "text-gray-700 dark:text-gray-300")">
                                 @Localizer["FilterAttachmentsOption"]
+                            </button>
+                            <button @onclick="() => SetFilter(ItemFilterType.Totp)" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 @(FilterType == ItemFilterType.Totp ? "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400" : "text-gray-700 dark:text-gray-300")">
+                                @Localizer["FilterTotpOption"]
                             </button>
 
                             <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
@@ -158,84 +167,56 @@
 }
 else
 {
-    @if (DbService.Settings.CredentialsViewMode == "table")
-    {
-        <div class="px-4 min-h-[250px]">
-            @* Active filter indicator - show persistently when a filter is active *@
-            @if (FilterType != ItemFilterType.All)
-            {
-                <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">@Localizer["FilteringBy"]</span>
-                    <button @onclick="ClearFilter" class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors">
-                        <span>@GetFilterTitle()</span>
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                    </button>
-                </div>
-            }
-            <ItemsTable Credentials="@FilteredAndSortedItems.ToList()" SortOrder="@SortOrder" />
-            @* Infinite scroll sentinel for table view *@
-            @if (HasMoreItems)
-            {
-                <div @ref="_scrollSentinel" class="flex justify-center py-4 min-h-[40px]">
-                    @if (IsLoadingMore)
-                    {
-                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span>@Localizer["LoadingMore"]</span>
-                        </div>
-                    }
-                </div>
-            }
-        </div>
-    }
-    else
-    {
-        <div class="px-4 mb-4 min-h-[250px]">
-            @* Active filter indicator - show persistently when a filter is active *@
-            @if (FilterType != ItemFilterType.All)
-            {
-                <div class="flex flex-wrap items-center gap-2 mb-4">
-                    <span class="text-sm text-gray-500 dark:text-gray-400">@Localizer["FilteringBy"]</span>
-                    <button @onclick="ClearFilter" class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors">
-                        <span>@GetFilterTitle()</span>
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18" />
-                            <line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                    </button>
-                </div>
-            }
+    <div class="px-4 mb-4 min-h-[350px]">
+        @* Active filter indicator - show persistently when a filter is active *@
+        @if (FilterType != ItemFilterType.All)
+        {
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+                <span class="text-sm text-gray-500 dark:text-gray-400">@Localizer["FilteringBy"]</span>
+                <button @onclick="ClearFilter" class="inline-flex items-center gap-1 px-3 py-1.5 text-sm bg-orange-100 dark:bg-orange-900/30 hover:bg-orange-200 dark:hover:bg-orange-900/50 text-orange-700 dark:text-orange-300 rounded-lg transition-colors">
+                    <span>@GetFilterTitle()</span>
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+            </div>
+        }
 
-            @* Folders section - only show at root level *@
-            @if (!IsInFolder && !IsSearching)
-            {
-                <div class="flex flex-wrap items-center gap-2 mb-4">
-                    @foreach (var folder in Folders)
+        @* Folders section - only show at root level when ShowFolders is enabled *@
+        @if (!IsInFolder && !IsSearching && ShowFolders)
+        {
+            <div class="flex flex-wrap items-center gap-2 mb-4">
+                @foreach (var folder in Folders)
+                {
+                    <FolderPill Folder="@folder" OnClick="() => NavigateToFolder(folder.Id)" />
+                }
+                <button @onclick="ShowCreateFolderModal" class="@GetAddFolderButtonClass()">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                    </svg>
+                    <svg class="w-3.5 h-3.5 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                    @if (Folders.Count == 0)
                     {
-                        <FolderPill Folder="@folder" OnClick="() => NavigateToFolder(folder.Id)" />
+                        <span>@Localizer["NewFolder"]</span>
                     }
-                    <button @onclick="ShowCreateFolderModal" class="@GetAddFolderButtonClass()">
-                        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
-                        </svg>
-                        <svg class="w-3.5 h-3.5 -ml-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                            <line x1="12" y1="5" x2="12" y2="19" />
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                        </svg>
-                        @if (Folders.Count == 0)
-                        {
-                            <span>@Localizer["NewFolder"]</span>
-                        }
-                    </button>
-                </div>
-            }
+                </button>
+            </div>
+        }
 
+        @if (DbService.Settings.CredentialsViewMode == "table")
+        {
+            <ItemsTable
+                Credentials="@FilteredAndSortedItems.ToList()"
+                SortColumn="@TableSortColumn"
+                CurrentSortDirection="@TableSortDirection"
+                OnTableSortChanged="HandleTableSortChanged" />
+        }
+        else
+        {
             <div class="grid gap-4 md:grid-cols-4 xl:grid-cols-6">
                 @if (Items.Count == 0 && !IsInFolder)
                 {
@@ -268,13 +249,9 @@ else
                 {
                     <div class="credential-card col-span-full p-4 space-y-2 bg-amber-50 border border-primary-500 rounded-lg shadow-sm dark:border-primary-700 dark:bg-gray-800">
                         <div class="px-4 py-6 text-gray-700 dark:text-gray-200 rounded text-center">
-                            @if (FilterType == ItemFilterType.Passkeys)
+                            @if (FilterType != ItemFilterType.All)
                             {
-                                <p>@Localizer["NoPasskeysFound"]</p>
-                            }
-                            else if (FilterType == ItemFilterType.Attachments)
-                            {
-                                <p>@Localizer["NoAttachmentsFound"]</p>
+                                <p>@Localizer["NoItemsFound"]</p>
                             }
                             else if (IsInFolder)
                             {
@@ -296,25 +273,25 @@ else
                     <ItemCard Obj="@item" ShowFolderPath="@IsSearching" />
                 }
             </div>
+        }
 
-            @* Infinite scroll sentinel - triggers loading more items when visible *@
-            @if (HasMoreItems)
-            {
-                <div @ref="_scrollSentinel" class="flex justify-center py-4 min-h-[40px]">
-                    @if (IsLoadingMore)
-                    {
-                        <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-                            <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            <span>@Localizer["LoadingMore"]</span>
-                        </div>
-                    }
-                </div>
-            }
-        </div>
-    }
+        @* Infinite scroll sentinel - triggers loading more items when visible *@
+        @if (HasMoreItems)
+        {
+            <div @ref="_scrollSentinel" class="flex justify-center py-4 min-h-[40px]">
+                @if (IsLoadingMore)
+                {
+                    <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                        <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>@Localizer["LoadingMore"]</span>
+                    </div>
+                }
+            </div>
+        }
+    </div>
 }
 
 @* Create Folder Modal *@
@@ -412,6 +389,16 @@ else
     private ItemFilterType FilterType { get; set; } = ItemFilterType.All;
 
     /// <summary>
+    /// LocalStorage key for the show folders preference.
+    /// </summary>
+    private const string ShowFoldersStorageKey = "items-show-folders";
+
+    /// <summary>
+    /// Gets or sets whether to show folders (true) or show all items flat (false).
+    /// </summary>
+    private bool ShowFolders { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets the number of visible items for infinite scroll.
     /// </summary>
     private int VisibleItemCount { get; set; } = 200;
@@ -455,6 +442,16 @@ else
     }
 
     /// <summary>
+    /// Gets or sets the current table sort column (for table view column header sorting).
+    /// </summary>
+    private string TableSortColumn { get; set; } = "CreatedAt";
+
+    /// <summary>
+    /// Gets or sets the current table sort direction (for table view column header sorting).
+    /// </summary>
+    private SortDirection TableSortDirection { get; set; } = SortDirection.Ascending;
+
+    /// <summary>
     /// Gets whether we're currently in a folder view.
     /// </summary>
     private bool IsInFolder => FolderId.HasValue;
@@ -489,9 +486,10 @@ else
                 // Show only items in this folder
                 filtered = filtered.Where(x => x.FolderId == FolderId);
             }
-            else if (!IsSearching)
+            else if (!IsSearching && ShowFolders)
             {
-                // At root level, exclude items that are in folders
+                // When showing folders (checkbox ON): only show root items (exclude items in folders)
+                // When not showing folders (checkbox OFF): show all items flat
                 filtered = filtered.Where(x => x.FolderId == null);
             }
 
@@ -500,6 +498,7 @@ else
             {
                 ItemFilterType.Passkeys => filtered.Where(x => x.HasPasskey),
                 ItemFilterType.Attachments => filtered.Where(x => x.HasAttachment),
+                ItemFilterType.Totp => filtered.Where(x => x.HasTotp),
                 ItemFilterType.Login => filtered.Where(x => x.ItemType == ItemType.Login),
                 ItemFilterType.Alias => filtered.Where(x => x.ItemType == ItemType.Alias),
                 ItemFilterType.CreditCard => filtered.Where(x => x.ItemType == ItemType.CreditCard),
@@ -507,7 +506,12 @@ else
                 _ => filtered, // All
             };
 
-            // Then apply sort
+            // Apply sort - use table column sort if in table view, otherwise use settings dropdown sort
+            if (ViewMode == "table")
+            {
+                return ApplyTableSort(filtered);
+            }
+
             return SortOrder switch
             {
                 CredentialSortOrder.NewestFirst => filtered.OrderByDescending(x => x.CreatedAt),
@@ -515,6 +519,31 @@ else
                 _ => filtered.OrderBy(x => x.CreatedAt), // OldestFirst (default)
             };
         }
+    }
+
+    /// <summary>
+    /// Applies table column sorting to the filtered items.
+    /// </summary>
+    /// <param name="items">The items to sort.</param>
+    /// <returns>The sorted items.</returns>
+    private IEnumerable<ItemListEntry> ApplyTableSort(IEnumerable<ItemListEntry> items)
+    {
+        return TableSortColumn switch
+        {
+            "Service" => TableSortDirection == SortDirection.Ascending
+                ? items.OrderBy(x => x.Service ?? string.Empty)
+                : items.OrderByDescending(x => x.Service ?? string.Empty),
+            "Username" => TableSortDirection == SortDirection.Ascending
+                ? items.OrderBy(x => x.Username ?? string.Empty)
+                : items.OrderByDescending(x => x.Username ?? string.Empty),
+            "Email" => TableSortDirection == SortDirection.Ascending
+                ? items.OrderBy(x => x.Email ?? string.Empty)
+                : items.OrderByDescending(x => x.Email ?? string.Empty),
+            "CreatedAt" => TableSortDirection == SortDirection.Ascending
+                ? items.OrderBy(x => x.CreatedAt)
+                : items.OrderByDescending(x => x.CreatedAt),
+            _ => items.OrderBy(x => x.CreatedAt), // Default
+        };
     }
 
     /// <summary>
@@ -547,6 +576,7 @@ else
         {
             ItemFilterType.Passkeys => Localizer["FilterPasskeysOption"],
             ItemFilterType.Attachments => Localizer["FilterAttachmentsOption"],
+            ItemFilterType.Totp => Localizer["FilterTotpOption"],
             ItemFilterType.Login => ItemTypeSelectorLocalizer["TypeLogin"],
             ItemFilterType.Alias => ItemTypeSelectorLocalizer["TypeAlias"],
             ItemFilterType.CreditCard => ItemTypeSelectorLocalizer["TypeCreditCard"],
@@ -608,6 +638,31 @@ else
     }
 
     /// <summary>
+    /// Toggles the show folders setting.
+    /// </summary>
+    private async Task ToggleShowFoldersAsync()
+    {
+        ShowFolders = !ShowFolders;
+        ShowFilterDropdown = false; // Close dropdown so user can see the change
+        VisibleItemCount = BatchSize; // Reset visible items when setting changes
+        await LocalStorage.SetItemAsync(ShowFoldersStorageKey, ShowFolders);
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Handles the table column sort changed event.
+    /// This applies sorting to ALL items before pagination.
+    /// </summary>
+    /// <param name="sort">The sort column and direction.</param>
+    private void HandleTableSortChanged((string Column, SortDirection Direction) sort)
+    {
+        TableSortColumn = sort.Column;
+        TableSortDirection = sort.Direction;
+        VisibleItemCount = BatchSize; // Reset visible items when sort changes to show first N sorted items
+        StateHasChanged();
+    }
+
+    /// <summary>
     /// Loads more items for infinite scroll. Called from JavaScript via IntersectionObserver.
     /// </summary>
     [JSInvokable]
@@ -643,8 +698,25 @@ else
     {
         ShowSettingsDropdown = false;
 
+        // Sync table sort state with the dropdown sort order
+        SyncTableSortWithSortOrder();
+
         // Reload the items in case the settings were changed.
         await LoadItemsAsync();
+    }
+
+    /// <summary>
+    /// Synchronizes the table sort column and direction with the settings dropdown sort order.
+    /// Called when the user changes the sort order via the settings dropdown.
+    /// </summary>
+    private void SyncTableSortWithSortOrder()
+    {
+        (TableSortColumn, TableSortDirection) = SortOrder switch
+        {
+            CredentialSortOrder.NewestFirst => ("CreatedAt", SortDirection.Descending),
+            CredentialSortOrder.Alphabetical => ("Service", SortDirection.Ascending),
+            _ => ("CreatedAt", SortDirection.Ascending), // OldestFirst (default)
+        };
     }
 
     /// <summary>
@@ -813,6 +885,13 @@ else
     {
         await base.OnParametersSetAsync();
 
+        // Initialize table sort state from saved sort order
+        SyncTableSortWithSortOrder();
+
+        // Load show folders preference from local storage
+        var storedShowFolders = await LocalStorage.GetItemAsync<bool?>(ShowFoldersStorageKey);
+        ShowFolders = storedShowFolders ?? true;
+
         // Load folder name if in folder view
         if (FolderId.HasValue)
         {
@@ -827,6 +906,11 @@ else
         await LoadItemsAsync();
     }
 
+    /// <summary>
+    /// Tracks whether the IntersectionObserver is currently set up.
+    /// </summary>
+    private bool _isObserverSetup;
+
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -835,14 +919,28 @@ else
         if (firstRender)
         {
             await LoadItemsAsync();
-
-            // Set up IntersectionObserver for infinite scroll (only if there are more items to load).
-            // The sentinel element only exists when HasMoreItems is true.
             _dotNetRef = DotNetObjectReference.Create(this);
-            if (HasMoreItems)
+        }
+
+        // Set up or re-attach the IntersectionObserver after every render if there are more items.
+        // The sentinel element is only in the DOM when HasMoreItems is true, and it gets
+        // re-created on each render, so we need to re-attach the observer.
+        if (HasMoreItems && !IsLoading && !IsLoadingMore && _dotNetRef != null)
+        {
+            // Always tear down and re-setup to handle the new sentinel element reference
+            if (_isObserverSetup)
             {
-                await JsInteropService.SetupInfiniteScroll(_scrollSentinel, _dotNetRef);
+                await JsInteropService.TeardownInfiniteScroll(_scrollSentinel);
             }
+
+            await JsInteropService.SetupInfiniteScroll(_scrollSentinel, _dotNetRef);
+            _isObserverSetup = true;
+        }
+        else if (!HasMoreItems && _isObserverSetup)
+        {
+            // No more items - clean up the observer
+            await JsInteropService.TeardownInfiniteScroll(_scrollSentinel);
+            _isObserverSetup = false;
         }
     }
 
@@ -851,7 +949,12 @@ else
     {
         if (_dotNetRef != null)
         {
-            await JsInteropService.TeardownInfiniteScroll(_scrollSentinel);
+            if (_isObserverSetup)
+            {
+                await JsInteropService.TeardownInfiniteScroll(_scrollSentinel);
+                _isObserverSetup = false;
+            }
+
             _dotNetRef.Dispose();
             _dotNetRef = null;
         }

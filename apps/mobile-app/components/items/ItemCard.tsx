@@ -9,8 +9,8 @@ import type { NativeSyntheticEvent } from 'react-native';
 import Toast from 'react-native-toast-message';
 
 import { ItemIcon } from '@/components/items/ItemIcon';
-import { useAuth } from '@/context/AuthContext';
 import { useDialog } from '@/context/DialogContext';
+import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 import { useColors } from '@/hooks/useColorScheme';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { Item } from '@/utils/dist/core/models/vault';
@@ -19,15 +19,15 @@ import { getFieldValue, FieldKey } from '@/utils/dist/core/models/vault';
 type ItemCardProps = {
   item: Item;
   onItemDelete?: (itemId: string) => Promise<void>;
+  showFolderPath?: boolean;
 };
 
 /**
  * Item card component for displaying vault items in a list.
  */
-export function ItemCard({ item, onItemDelete }: ItemCardProps): React.ReactNode {
+export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCardProps): React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
-  const { getClipboardClearTimeout } = useAuth();
   const { showConfirm } = useDialog();
 
   /**
@@ -68,7 +68,7 @@ export function ItemCard({ item, onItemDelete }: ItemCardProps): React.ReactNode
   const copyToClipboard = async (text: string): Promise<void> => {
     try {
       // Get clipboard clear timeout from settings
-      const timeoutSeconds = await getClipboardClearTimeout();
+      const timeoutSeconds = await LocalPreferencesService.getClipboardClearTimeout();
 
       // Use centralized clipboard utility
       await copyToClipboardWithExpiration(text, timeoutSeconds);
@@ -258,6 +258,11 @@ export function ItemCard({ item, onItemDelete }: ItemCardProps): React.ReactNode
     serviceNameRow: {
       alignItems: 'center',
       flexDirection: 'row',
+      flexWrap: 'wrap',
+    },
+    folderPath: {
+      color: colors.textMuted,
+      fontSize: 14,
     },
   });
 
@@ -285,6 +290,9 @@ export function ItemCard({ item, onItemDelete }: ItemCardProps): React.ReactNode
             <ItemIcon item={item} style={styles.logo} />
             <View style={styles.itemInfo}>
               <View style={styles.serviceNameRow}>
+                {showFolderPath && item.FolderPath && (
+                  <Text style={styles.folderPath}>{item.FolderPath} &gt; </Text>
+                )}
                 <Text style={styles.serviceName}>
                   {getItemName(item)}
                 </Text>

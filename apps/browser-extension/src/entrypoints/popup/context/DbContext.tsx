@@ -169,11 +169,18 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
 
   /**
    * Load the stored (encrypted) vault from background storage into memory.
-   * Returns the SqliteClient if vault was loaded successfully, null otherwise.
+   * Returns the SqliteClient if vault was loaded successfully.
+   * Throws an error if the background returns an error (all errors now have E-XXX codes).
    */
   const loadStoredDatabase = useCallback(async (): Promise<SqliteClient | null> => {
     try {
       const response = await sendMessage('GET_VAULT', {}, 'background') as messageVaultResponse;
+
+      // Check if response contains an error - throw it so callers can handle
+      if (!response?.success && response?.error) {
+        throw new Error(response.error);
+      }
+
       if (response?.vault) {
         const client = new SqliteClient();
         await client.initializeFromBase64(response.vault);
@@ -183,6 +190,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
         setDbAvailable(true);
         return client;
       } else {
+        // No vault and no error - this shouldn't happen but handle gracefully
         setDbInitialized(true);
         setDbAvailable(false);
         return null;
@@ -191,7 +199,8 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
       console.error('Error retrieving vault from background:', error);
       setDbInitialized(true);
       setDbAvailable(false);
-      return null;
+      // Re-throw all errors so callers can display them with proper codes
+      throw error;
     }
   }, []);
 

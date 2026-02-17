@@ -17,7 +17,14 @@
                     {
                         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                             <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                <span @onclick="() => DownloadAttachment(attachment)" class="text-primary cursor-pointer">@attachment.Filename</span>
+                                @if (attachment.Blob != null && attachment.Blob.Length > 0)
+                                {
+                                    <span @onclick="() => DownloadAttachment(attachment)" class="text-primary cursor-pointer">@attachment.Filename</span>
+                                }
+                                else
+                                {
+                                    <span class="text-gray-400 dark:text-gray-500" title="Attachment data unavailable">@attachment.Filename (unavailable)</span>
+                                }
                             </td>
                             <td class="px-6 py-4">
                                 @attachment.CreatedAt.ToLocalTime().ToString("g")

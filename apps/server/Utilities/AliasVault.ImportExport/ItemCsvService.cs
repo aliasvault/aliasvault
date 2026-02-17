@@ -9,6 +9,7 @@ namespace AliasVault.ImportExport;
 
 using AliasClientDb;
 using AliasClientDb.Models;
+using AliasVault.ImportExport.Importers;
 using AliasVault.ImportExport.Models;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -98,7 +99,7 @@ public static class ItemCsvService
             var credential = new ImportedCredential
             {
                 ServiceName = record.ServiceName,
-                ServiceUrl = record.ServiceUrl,
+                ServiceUrls = BaseImporter.ParseUrls(record.ServiceUrl),
                 Username = record.Username,
                 Password = record.CurrentPassword,
                 Email = record.AliasEmail,

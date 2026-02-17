@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Autentificare folosind aplicația mobilă</value>
+    <value>Autentificare prin aplicația mobilă</value>
     <comment>Page title for mobile unlock feature</comment>
   </data>
   <data name="UnlockTitle" xml:space="preserve">
@@ -67,7 +67,7 @@
     <comment>Modal title for mobile unlock feature</comment>
   </data>
   <data name="ScanQrCodeDescription" xml:space="preserve">
-    <value>Scanați acest cod QR cu aplicația mobilă AliasVault pentru a vă autentifica și a vă debloca seiful.</value>
+    <value>Scanează acest cod QR cu aplicația mobilă AliasVault pentru a te autentifica și debloca seiful.</value>
     <comment>Description instructing user to scan QR code</comment>
   </data>
 </root>

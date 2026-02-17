@@ -24,18 +24,13 @@
     "unlockSuccessDescription": "You can now use autofill in login forms in your browser.",
     "closePopup": "Close this popup",
     "browseVault": "Browse vault contents",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Connecting to",
     "switchAccounts": "Switch accounts?",
     "loginWithMobile": "Log in using Mobile App",
     "unlockWithMobile": "Unlock using Mobile App",
-    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault.",
-    "errors": {
-      "invalidCode": "Please enter a valid 6-digit authentication code.",
-      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
-      "wrongPassword": "Incorrect password. Please try again.",
-      "sessionExpired": "Your session has expired. Please log in again.",
-      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
-    }
+    "scanQrCode": "Scan this QR code with your AliasVault mobile app to log in and unlock your vault."
   },
   "menu": {
     "vault": "Vault",
@@ -47,6 +42,7 @@
     "error": "Error",
     "cancel": "Cancel",
     "confirm": "Confirm",
+    "remove": "Remove",
     "back": "Back",
     "next": "Next",
     "use": "Use",
@@ -58,6 +54,7 @@
     "create": "Create",
     "or": "Or",
     "close": "Close",
+    "dismiss": "Dismiss",
     "logout": "Logout",
     "copied": "Copied!",
     "openInNewWindow": "Open in new window",
@@ -106,7 +103,12 @@
       "vaultIsLocked": "Vault is locked",
       "passwordChanged": "Your password has changed since the last time you logged in. Please login again for security reasons.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again."
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "invalidCode": "Please enter a valid 6-digit authentication code.",
+      "serverError": "Could not reach AliasVault server. Please try again later or contact support if the problem persists.",
+      "wrongPassword": "Incorrect password. Please try again.",
+      "sessionExpired": "Your session has expired. Please log in again.",
+      "mobileLoginRequestExpired": "Mobile login request timed out. Please reload the page and try again."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "An unknown error occurred. Please try again.",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Password copied to clipboard",
     "openAliasVaultToUpgrade": "Open AliasVault to upgrade",
     "vaultUpgradeRequired": "Vault upgrade required.",
-    "dismissPopup": "Dismiss popup"
+    "dismissPopup": "Dismiss popup",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Items",
@@ -187,9 +193,7 @@
     "welcomeTitle": "Welcome to AliasVault!",
     "welcomeDescription": "To use the AliasVault browser extension: navigate to a website and use the AliasVault autofill popup to create a new credential.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
-    "noMatchingItems": "No matching items found",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "clearSearch": "Clear search",
@@ -202,8 +206,15 @@
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
-      "all": "(All) Items",
-      "passkeys": "Passkeys"
+      "folders": "Folders",
+      "passkeys": "Passkeys",
+      "totp": "2FA Codes"
+    },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
     },
     "deleteItemTitle": "Delete Item",
     "deleteItemConfirm": "Are you sure you want to delete this item?",
@@ -344,6 +355,11 @@
     "disabledForThisSite": "Disabled for this site",
     "temporarilyDisabledUntil": "Temporarily disabled until ",
     "resetAllSiteSettings": "Reset all site-specific settings",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Appearance",
     "theme": "Theme",
     "useDefault": "Use default",
@@ -396,6 +412,28 @@
       "apiUrlInvalid": "Please enter a valid API URL",
       "clientUrlRequired": "Client URL is required",
       "clientUrlInvalid": "Please enter a valid client URL"
+    },
+    "identityGenerator": "Identity Generator",
+    "identityGeneratorSettings": {
+      "description": "Configure the default language and gender preference for generating new identities.",
+      "languageSection": "Language",
+      "languageDescription": "Set the language that will be used when generating new identities.",
+      "genderSection": "Gender",
+      "genderDescription": "Set the gender preference for generating new identities.",
+      "ageRangeSection": "Age Range",
+      "ageRangeDescription": "Set the age range for generating new identities.",
+      "genderOptions": {
+        "random": "Random",
+        "male": "Male",
+        "female": "Female"
+      }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Vault Unlock Method",
@@ -494,5 +532,9 @@
     "unsyncedChangesTitle": "Unsynced Changes",
     "unsyncedChangesWarning": "You have unsynced changes that will be lost if you log out now. Are you sure you want to continue?",
     "logoutAnyway": "Log out anyway"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }

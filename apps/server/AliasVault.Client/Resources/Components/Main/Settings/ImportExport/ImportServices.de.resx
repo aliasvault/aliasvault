@@ -193,6 +193,19 @@
     <value>Sobald Du die Datei exportiert hast, kannst Du sie nachfolgend hochladen.</value>
     <comment>KeePassXC export instructions part 2</comment>
   </data>
+  <!-- NordPass -->
+  <data name="NordPassDescription" xml:space="preserve">
+    <value>Importiere Deine Passwörter aus Nordpass</value>
+    <comment>Description for NordPass import service</comment>
+  </data>
+  <data name="NordPassInstructionsPart1" xml:space="preserve">
+    <value>Um Ihre NordPass Passwörter zu importieren, müssen Sie diese als CSV Datei exportieren. Sie können dies tun, indem Sie die NordPass App oder Web-Tresor öffnen, in "Einstellungen" > "Elemente exportieren" gehen und das CSV-Format auswählen.</value>
+    <comment>NordPass export instructions part 1</comment>
+  </data>
+  <data name="NordPassInstructionsPart2" xml:space="preserve">
+    <value>Sobald Du die Datei exportiert hast, kannst Du sie nachfolgend hochladen.</value>
+    <comment>NordPass export instructions part 2</comment>
+  </data>
   <!-- Proton Pass -->
   <data name="ProtonPassDescription" xml:space="preserve">
     <value>Importiere Deine Passwörter aus Proton Pass.</value>
@@ -236,6 +249,45 @@
   <data name="DropboxInstructionsPart1" xml:space="preserve">
     <value>Um Deine Dropbox-Passwörter zu importieren, musst Du diese zuerst als CSV-Datei exportieren. Melde Dich dazu in Deinem Dropbox-Konto an und wähle "Account" > "Exportieren" (als CSV-Datei).</value>
     <comment>Dropbox export instructions part 1</comment>
+  </data>
+  <!-- RoboForm -->
+  <data name="RoboformDescription" xml:space="preserve">
+    <value>Import passwords from RoboForm</value>
+    <comment>Description for RoboForm import service</comment>
+  </data>
+  <data name="RoboformInstructionsPart1" xml:space="preserve">
+    <value>In order to import your RoboForm passwords, you need to export them as a CSV file. You can do this by opening RoboForm, going to 'RoboForm' menu > 'Options' > 'Account &amp; Data' > 'Export' and selecting CSV format.</value>
+    <comment>RoboForm export instructions part 1</comment>
+  </data>
+  <data name="RoboformInstructionsPart2" xml:space="preserve">
+    <value>Sobald Du die Datei exportiert hast, kannst Du sie nachfolgend hochladen.</value>
+    <comment>RoboForm export instructions part 2</comment>
+  </data>
+  <!-- Edge -->
+  <data name="EdgeDescription" xml:space="preserve">
+    <value>Import passwords from your Microsoft Edge Password Manager</value>
+    <comment>Description for Edge import service</comment>
+  </data>
+  <data name="EdgeInstructionsPart1" xml:space="preserve">
+    <value>In order to import your Microsoft Edge passwords, you need to export them as a CSV file. You can do this by going to Menu > Settings > Password and autofill > Microsoft Password Manager > ... > Export passwords.</value>
+    <comment>Edge export instructions part 1</comment>
+  </data>
+  <data name="EdgeInstructionsPart2" xml:space="preserve">
+    <value>Sobald Du die Datei exportiert hast, kannst Du sie nachfolgend hochladen.</value>
+    <comment>Edge export instructions part 2</comment>
+  </data>
+  <!-- Enpass -->
+  <data name="EnpassDescription" xml:space="preserve">
+    <value>Import passwords from Enpass</value>
+    <comment>Description for Enpass import service</comment>
+  </data>
+  <data name="EnpassInstructionsPart1" xml:space="preserve">
+    <value>In order to import your Enpass passwords, you need to export them as a CSV file. You can do this by opening Enpass, going to 'Menu' > 'File' > 'Export' and selecting 'CSV file (.csv)'.</value>
+    <comment>Enpass export instructions part 1</comment>
+  </data>
+  <data name="EnpassInstructionsPart2" xml:space="preserve">
+    <value>Sobald Du die Datei exportiert hast, kannst Du sie nachfolgend hochladen.</value>
+    <comment>Enpass export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">

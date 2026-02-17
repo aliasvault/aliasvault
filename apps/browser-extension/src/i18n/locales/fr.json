@@ -6,7 +6,7 @@
     "passwordPlaceholder": "Saisissez votre mot de passe",
     "rememberMe": "Se souvenir de moi",
     "loginButton": "Se connecter",
-    "noAccount": "Pas de compte?",
+    "noAccount": "Pas de compte ?",
     "createVault": "Créer un nouveau coffre",
     "twoFactorTitle": "Veuillez entrer le code d'authentification de votre application d'authentification.",
     "authCode": "Code d'authentification",
@@ -24,18 +24,13 @@
     "unlockSuccessDescription": "Vous pouvez maintenant utiliser le remplissage automatique des formulaires de connexion dans votre navigateur.",
     "closePopup": "Fermer cette popup",
     "browseVault": "Parcourir le contenu du coffre",
+    "autoCloseUnlockPopup": "Fermeture automatique lors des connexions futures",
+    "closingIn": "Fermeture dans {{seconds}}s...",
     "connectingTo": "Connexion à",
     "switchAccounts": "Changer de compte ?",
     "loginWithMobile": "Se connecter à l'aide de l'application mobile",
     "unlockWithMobile": "Déverrouiller en utilisant l'application mobile",
-    "scanQrCode": "Scannez ce code QR avec votre application mobile AliasVault pour vous connecter et déverrouiller votre coffre.",
-    "errors": {
-      "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
-      "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
-      "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
-      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
-      "mobileLoginRequestExpired": "La demande de connexion de l'application mobile a expiré. Veuillez recharger la page et réessayer."
-    }
+    "scanQrCode": "Scannez ce code QR avec votre application mobile AliasVault pour vous connecter et déverrouiller votre coffre."
   },
   "menu": {
     "vault": "Coffre-fort",
@@ -47,6 +42,7 @@
     "error": "Erreur",
     "cancel": "Annuler",
     "confirm": "Confirmer",
+    "remove": "Supprimer",
     "back": "Retour",
     "next": "Suivant",
     "use": "Utiliser",
@@ -58,6 +54,7 @@
     "create": "Créer",
     "or": "Ou",
     "close": "Fermer",
+    "dismiss": "Ignorer",
     "logout": "Déconnexion",
     "copied": "Copié !",
     "openInNewWindow": "Ouvrir dans une nouvelle fenêtre",
@@ -106,7 +103,12 @@
       "vaultIsLocked": "Le coffre est verrouillé",
       "passwordChanged": "Votre mot de passe a changé depuis la dernière fois que vous vous êtes connecté. Veuillez vous reconnecter pour des raisons de sécurité.",
       "syncConflictMaxRetries": "Impossible de synchroniser le coffre après plusieurs tentatives. Veuillez réessayer plus tard.",
-      "mergeFailed": "Impossible de fusionner les modifications du coffre. Veuillez réessayer."
+      "mergeFailed": "Impossible de fusionner les modifications du coffre. Veuillez réessayer.",
+      "invalidCode": "Veuillez entrer un code d'authentification valide à 6 chiffres.",
+      "serverError": "Impossible d'accéder au serveur AliasVault. Veuillez réessayer plus tard ou contacter le support si le problème persiste.",
+      "wrongPassword": "Mot de passe incorrect, veuillez réessayer.",
+      "sessionExpired": "Votre session a expiré. Veuillez vous reconnecter.",
+      "mobileLoginRequestExpired": "La demande de connexion de l'application mobile a expiré. Veuillez recharger la page et réessayer."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Une erreur inconnue s'est produite. Merci de réessayer.",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Mot de passe copié dans le presse-papiers",
     "openAliasVaultToUpgrade": "Ouvrez AliasVault pour améliorer",
     "vaultUpgradeRequired": "Mise à niveau du coffre requise.",
-    "dismissPopup": "Fermer"
+    "dismissPopup": "Fermer",
+    "savePrompt": {
+      "title": "Enregistrer dans AliasVault?",
+      "neverForThisSite": "Jamais pour ce site"
+    }
   },
   "items": {
     "title": "Éléments",
@@ -202,8 +208,14 @@
     "deleteFolderAndItems": "Supprimer le dossier et tous les éléments",
     "deleteFolderAndItemsDescription": "{{count}} élément(s) vont être déplacés vers Récemment supprimés.",
     "filters": {
-      "all": "(Tous) Éléments",
+      "folders": "Dossiers",
       "passkeys": "Clés d'accès"
+    },
+    "sort": {
+      "title": "Trier par",
+      "oldestFirst": "Plus anciens en premier",
+      "newestFirst": "Les plus récents en premier",
+      "alphabetical": "Alphabétique (A-Z)"
     },
     "deleteItemTitle": "Supprimer l'élement",
     "deleteItemConfirm": "Êtes-vous certain de vouloir supprimer cet élément?",
@@ -344,6 +356,11 @@
     "disabledForThisSite": "Désactivé pour ce site",
     "temporarilyDisabledUntil": "Temporairement désactivé jusqu'au ",
     "resetAllSiteSettings": "Réinitialiser tous les paramètres spécifiques au site",
+    "autofillPopupDescription": "Afficher la fenêtre de saisie automatique lorsque les champs de connexion sont détectés.",
+    "disabledSites": "Sites désactivés",
+    "disabledSitesDescription": "Les sites où la fenêtre de saisie automatique n'apparaîtra pas.",
+    "clearAllDisabledSites": "Effacer tous les sites désactivés",
+    "temporaryUntil": "jusqu'au",
     "appearance": "Apparence",
     "theme": "Thème",
     "useDefault": "Utiliser par défaut",
@@ -396,6 +413,28 @@
       "apiUrlInvalid": "Veuillez entrer une URL d'API valide",
       "clientUrlRequired": "L'URL du client est requise",
       "clientUrlInvalid": "Veuillez entrer une URL de client valide"
+    },
+    "identityGenerator": "Générateur d'identité",
+    "identityGeneratorSettings": {
+      "description": "Configurer la langue par défaut et la préférence de genre pour la génération de nouvelles identités.",
+      "languageSection": "Langue",
+      "languageDescription": "Définit la langue qui sera utilisée lors de la génération de nouvelles identités.",
+      "genderSection": "Genre",
+      "genderDescription": "Définissez la préférence de genre pour la génération de nouvelles identités.",
+      "ageRangeSection": "Tranche d'âge",
+      "ageRangeDescription": "Définit la tranche d'âge pour la génération de nouvelles identités.",
+      "genderOptions": {
+        "random": "Aléatoire",
+        "male": "Homme",
+        "female": "Femme"
+      }
+    },
+    "loginSave": {
+      "title": "Enregistrer l'invite de connexion",
+      "description": "Afficher une invite pour enregistrer les identifiants de connexion lorsque vous soumettez un formulaire de connexion sur un site Web.",
+      "blockedSites": "Sites bloqués",
+      "blockedSitesDescription": "Les sites où l'invite de sauvegarde n'apparaîtra jamais.",
+      "clearAllBlockedSites": "Effacer tous les sites bloqués"
     },
     "unlockMethod": {
       "title": "Méthode de déverrouillage du coffre",
@@ -494,5 +533,9 @@
     "unsyncedChangesTitle": "Changements non synchronisés",
     "unsyncedChangesWarning": "Vous avez des modifications non synchronisées qui seront perdues si vous vous déconnectez maintenant. Êtes-vous sûr de vouloir continuer ?",
     "logoutAnyway": "Se déconnecter quand même"
+  },
+  "sync": {
+    "offline": "Hors ligne",
+    "tapToRetry": "Appuyez pour réessayer"
   }
 }

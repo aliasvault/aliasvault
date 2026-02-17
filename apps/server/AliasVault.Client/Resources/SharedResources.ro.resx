@@ -123,7 +123,7 @@
     <comment>Button text for saving changes</comment>
   </data>
   <data name="Cancel" xml:space="preserve">
-    <value>Anulați</value>
+    <value>Anulează</value>
     <comment>Button text for canceling an action</comment>
   </data>
   <data name="Generate" xml:space="preserve">
@@ -175,7 +175,7 @@
     <comment>Button text to confirm an action</comment>
   </data>
   <data name="Refresh" xml:space="preserve">
-    <value>Actualizați</value>
+    <value>Actualizează</value>
     <comment>Button text to refresh content</comment>
   </data>
   <!-- Common form elements -->
@@ -213,11 +213,11 @@
   </data>
   <!-- Common error messages -->
   <data name="ErrorGeneric" xml:space="preserve">
-    <value>A apărut o eroare. Încercați din nou.</value>
+    <value>A apărut o eroare. Încearcă din nou.</value>
     <comment>Generic error message</comment>
   </data>
   <data name="ErrorUnknown" xml:space="preserve">
-    <value>A apărut o eroare necunoscută. Încercați din nou.</value>
+    <value>A apărut o eroare necunoscută. Încearcă din nou.</value>
     <comment>Generic unknown error message</comment>
   </data>
   <data name="ErrorValidation" xml:space="preserve">
@@ -229,7 +229,7 @@
     <comment>Required field validation error</comment>
   </data>
   <data name="ErrorInvalidEmail" xml:space="preserve">
-    <value>Introduceți o adresă de e-mail validă.</value>
+    <value>Introdu o adresă de e-mail validă.</value>
     <comment>Invalid email validation error</comment>
   </data>
   <data name="ErrorPasswordMismatch" xml:space="preserve">
@@ -250,12 +250,12 @@
     <comment>Error status message</comment>
   </data>
   <data name="Info" xml:space="preserve">
-    <value>Informație</value>
+    <value>Informații</value>
     <comment>Information status message</comment>
   </data>
   <!-- Loading screen messages -->
   <data name="RefreshPageText" xml:space="preserve">
-    <value>Dacă încărcarea pare blocată, puteți apăsa butonul de mai jos pentru a reîmprospăta pagina.</value>
+    <value>Dacă încărcarea pare blocată, poți apăsa butonul de mai jos pentru a reîmprospăta pagina.</value>
     <comment>Text shown above refresh button on loading screen</comment>
   </data>
   <!-- Validation error messages for forms -->
@@ -297,7 +297,7 @@
     <comment>Divider text between options</comment>
   </data>
   <data name="LockVault" xml:space="preserve">
-    <value>Blocați seiful</value>
+    <value>Blochează seiful</value>
     <comment>Tooltip text for lock vault button</comment>
   </data>
   <data name="Home" xml:space="preserve">

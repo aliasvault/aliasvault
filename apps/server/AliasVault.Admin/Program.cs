@@ -12,6 +12,7 @@ using AliasServerDb.Configuration;
 using AliasVault.Admin;
 using AliasVault.Admin.Auth.Providers;
 using AliasVault.Admin.Main;
+using AliasVault.Admin.Middleware;
 using AliasVault.Admin.Services;
 using AliasVault.Auth;
 using AliasVault.Cryptography.Server;
@@ -126,7 +127,7 @@ var forwardedHeadersOptions = new ForwardedHeadersOptions
     ForwardedHostHeaderName = "X-Forwarded-Host",
     ForwardedForHeaderName = "X-Forwarded-For",
 };
-forwardedHeadersOptions.KnownNetworks.Clear();
+forwardedHeadersOptions.KnownIPNetworks.Clear();
 forwardedHeadersOptions.KnownProxies.Clear();
 app.UseForwardedHeaders(forwardedHeadersOptions);
 
@@ -151,6 +152,7 @@ if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_PATHBAS
 
 app.UseStaticFiles();
 app.UseRouting();
+app.UseMiddleware<AntiforgeryTokenMiddleware>();
 app.UseAntiforgery();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -1,0 +1,186 @@
+@using AliasVault.Client.Main.Models
+@using AliasClientDb.Models
+@using Microsoft.JSInterop
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+@* Draggable Custom Fields List *@
+<div id="@_containerId" class="space-y-4">
+    @foreach (var customField in CustomFields)
+    {
+        <div data-drag-item
+             data-field-key="@customField.FieldKey"
+             class="relative bg-white dark:bg-gray-800 rounded-lg group">
+            @* Draggable label row *@
+            <div class="cursor-grab active:cursor-grabbing">
+                <EditableFieldLabel
+                    HtmlFor="@($"custom-{customField.TempId ?? customField.FieldKey}")"
+                    Label="@customField.Label"
+                    LabelChanged="@((newLabel) => OnLabelChange.InvokeAsync((customField.FieldKey, newLabel)))"
+                    OnDelete="@(() => OnDelete.InvokeAsync(customField.FieldKey))"/>
+            </div>
+
+            @* Input field *@
+            @if (customField.FieldType == FieldType.TextArea)
+            {
+                <div class="relative">
+                    <textarea
+                        id="@($"custom-{customField.TempId ?? customField.FieldKey}")"
+                        style="height: 200px;"
+                        class="outline-0 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                        @bind="customField.Value">
+                    </textarea>
+                </div>
+            }
+            else if (customField.IsHidden || customField.FieldType == FieldType.Hidden || customField.FieldType == FieldType.Password)
+            {
+                <EditPasswordFormRow
+                    Id="@($"custom-{customField.TempId ?? customField.FieldKey}")"
+                    Label=""
+                    @bind-Value="customField.Value"
+                    ShowPassword="false"/>
+            }
+            else
+            {
+                <div class="relative">
+                    <input
+                        type="text"
+                        id="@($"custom-{customField.TempId ?? customField.FieldKey}")"
+                        autocomplete="off"
+                        class="outline-0 shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white"
+                        @bind="customField.Value"
+                        autocapitalize="off"
+                        autocorrect="off"/>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private readonly string _containerId = $"draggable-fields-{Guid.NewGuid():N}";
+    private IJSObjectReference? _jsModule;
+    private IJSObjectReference? _dragDropInstance;
+    private DotNetObjectReference<DraggableCustomFieldsList>? _dotNetRef;
+
+    /// <summary>
+    /// Gets or sets the list of custom fields to display.
+    /// </summary>
+    [Parameter]
+    public List<SystemFieldEdit> CustomFields { get; set; } = new();
+
+    /// <summary>
+    /// Event callback when fields are reordered.
+    /// </summary>
+    [Parameter]
+    public EventCallback<List<SystemFieldEdit>> OnReorder { get; set; }
+
+    /// <summary>
+    /// Event callback when a field label is changed.
+    /// </summary>
+    [Parameter]
+    public EventCallback<(string fieldKey, string newLabel)> OnLabelChange { get; set; }
+
+    /// <summary>
+    /// Event callback when a field is deleted.
+    /// </summary>
+    [Parameter]
+    public EventCallback<string> OnDelete { get; set; }
+
+    private int _lastFieldCount;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            try
+            {
+                _jsModule = await JSRuntime.InvokeAsync<IJSObjectReference>(
+                    "import",
+                    "./js/modules/dragAndDrop.js"
+                );
+
+                _dotNetRef = DotNetObjectReference.Create(this);
+                _dragDropInstance = await _jsModule.InvokeAsync<IJSObjectReference>(
+                    "initDragAndDrop",
+                    _containerId,
+                    _dotNetRef
+                );
+                _lastFieldCount = CustomFields.Count;
+            }
+            catch (Exception)
+            {
+                // JavaScript module not available - graceful degradation
+            }
+        }
+        else if (_dragDropInstance is not null && CustomFields.Count != _lastFieldCount)
+        {
+            // Refresh drag-drop when items are added or removed
+            try
+            {
+                await _dragDropInstance.InvokeVoidAsync("refresh");
+                _lastFieldCount = CustomFields.Count;
+            }
+            catch (Exception)
+            {
+                // Ignore refresh errors
+            }
+        }
+    }
+
+    /// <summary>
+    /// Called from JavaScript when items are reordered via drag and drop.
+    /// </summary>
+    /// <param name="fromIndex">The original index of the dragged item.</param>
+    /// <param name="toIndex">The target index where the item was dropped.</param>
+    [JSInvokable]
+    public async Task OnItemReordered(int fromIndex, int toIndex)
+    {
+        if (fromIndex < 0 || fromIndex >= CustomFields.Count ||
+            toIndex < 0 || toIndex >= CustomFields.Count ||
+            fromIndex == toIndex)
+        {
+            return;
+        }
+
+        // Reorder the list
+        var reorderedFields = new List<SystemFieldEdit>(CustomFields);
+        var movedItem = reorderedFields[fromIndex];
+        reorderedFields.RemoveAt(fromIndex);
+        reorderedFields.Insert(toIndex, movedItem);
+
+        // Update display order for all fields
+        for (int i = 0; i < reorderedFields.Count; i++)
+        {
+            reorderedFields[i].DisplayOrder = i;
+        }
+
+        await OnReorder.InvokeAsync(reorderedFields);
+        StateHasChanged();
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_dragDropInstance is not null)
+            {
+                await _dragDropInstance.InvokeVoidAsync("dispose");
+                await _dragDropInstance.DisposeAsync();
+            }
+
+            if (_jsModule is not null)
+            {
+                await _jsModule.DisposeAsync();
+            }
+
+            _dotNetRef?.Dispose();
+        }
+        catch (JSDisconnectedException)
+        {
+            // Connection already closed, ignore
+        }
+    }
+}

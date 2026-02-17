@@ -21,6 +21,7 @@ docker run -d \
   -v ./database:/database \
   -v ./logs:/logs \
   -v ./secrets:/secrets \
+  -v ./certificates:/certificates
   aliasvault-allinone:local
 ```
 

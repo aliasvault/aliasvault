@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Page titles and descriptions -->
+  <data name="AddItemTitle">
+    <value>Tilføj element</value>
+    <comment>Title for adding a new item</comment>
+  </data>
+  <data name="EditItemTitle">
+    <value>Rediger element</value>
+    <comment>Title for editing an existing item</comment>
+  </data>
+  <data name="AddItemDescription">
+    <value>Opret et nyt element nedenfor.</value>
+    <comment>Description for adding a new item</comment>
+  </data>
+  <data name="EditItemDescription">
+    <value>Rediger det eksisterende element nedenfor.</value>
+    <comment>Description for editing an existing item</comment>
+  </data>
+  <!-- Breadcrumb items -->
+  <data name="ViewItemBreadcrumb">
+    <value>Vis element</value>
+    <comment>Breadcrumb text for viewing an item</comment>
+  </data>
+  <data name="EditItemBreadcrumb">
+    <value>Rediger element</value>
+    <comment>Breadcrumb text for editing an item</comment>
+  </data>
+  <data name="AddNewItemBreadcrumb">
+    <value>Tilføj nyt element</value>
+    <comment>Breadcrumb text for adding a new item</comment>
+  </data>
+  <!-- Section headers -->
+  <data name="ServiceSectionHeader">
+    <value>Element</value>
+    <comment>Header for the item information section</comment>
+  </data>
+  <data name="LoginDetailsSectionHeader">
+    <value>Logonoplysninger</value>
+    <comment>Header for the login credentials section</comment>
+  </data>
+  <data name="AliasSectionHeader">
+    <value>Alias</value>
+    <comment>Header for the alias information section</comment>
+  </data>
+  <data name="NotesSectionHeader">
+    <value>Noter</value>
+    <comment>Header for the notes section</comment>
+  </data>
+  <data name="AttachmentsSectionHeader">
+    <value>Vedhæftede filer</value>
+    <comment>Header for the attachments section</comment>
+  </data>
+  <!-- Form labels -->
+  <data name="ServiceNameLabel">
+    <value>Navn</value>
+    <comment>Label for item name input</comment>
+  </data>
+  <data name="ServiceUrlLabel">
+    <value>Websteds-URL</value>
+    <comment>Label for website URL input</comment>
+  </data>
+  <data name="EmailLabel">
+    <value>E-mail</value>
+    <comment>Label for email input</comment>
+  </data>
+  <data name="UsernameLabel">
+    <value>Brugernavn</value>
+    <comment>Label for username input</comment>
+  </data>
+  <data name="PasswordLabel">
+    <value>Adgangskode</value>
+    <comment>Label for password input</comment>
+  </data>
+  <data name="FirstNameLabel">
+    <value>Fornavn</value>
+    <comment>Label for first name input</comment>
+  </data>
+  <data name="LastNameLabel">
+    <value>Efternavn</value>
+    <comment>Label for last name input</comment>
+  </data>
+  <data name="NickNameLabel">
+    <value>Kaldenavn</value>
+    <comment>Label for nick name input</comment>
+  </data>
+  <data name="GenderLabel">
+    <value>Køn</value>
+    <comment>Label for gender input</comment>
+  </data>
+  <data name="BirthDateLabel">
+    <value>Fødselsdato</value>
+    <comment>Label for birth date input</comment>
+  </data>
+  <data name="NotesLabel">
+    <value>Noter</value>
+    <comment>Label for notes input</comment>
+  </data>
+  <!-- Placeholders -->
+  <data name="ServiceNamePlaceholder">
+    <value>F.eks. Facebook</value>
+    <comment>Placeholder text for service name input</comment>
+  </data>
+  <!-- Button text -->
+  <data name="GenerateRandomAliasButton">
+    <value>Generer tilfældigt alias</value>
+    <comment>Button text for generating a random alias</comment>
+  </data>
+  <data name="ClearAliasFieldsButton">
+    <value>Ryd alias-felter</value>
+    <comment>Button text for clearing alias fields</comment>
+  </data>
+  <data name="SaveItemButton">
+    <value>Gem element</value>
+    <comment>Button text for saving an item</comment>
+  </data>
+  <data name="CancelButton">
+    <value>Annuller</value>
+    <comment>Button text for canceling the operation</comment>
+  </data>
+  <!-- Loading and status messages -->
+  <data name="SavingVaultMessage">
+    <value>Gemmer boks...</value>
+    <comment>Loading message when saving vault</comment>
+  </data>
+  <!-- Error messages -->
+  <data name="ItemNotExistError">
+    <value>Dette element eksisterer ikke (længere). Prøv venligst igen.</value>
+    <comment>Error message when item doesn't exist</comment>
+  </data>
+  <data name="ErrorSavingItem">
+    <value>Fejl ved gemning af element. Prøv venligst igen.</value>
+    <comment>Error message when saving item fails</comment>
+  </data>
+  <!-- Success messages -->
+  <data name="ItemUpdatedSuccess">
+    <value>Elementet blev opdateret korrekt.</value>
+    <comment>Success message when item is updated</comment>
+  </data>
+  <data name="ItemCreatedSuccess">
+    <value>Elementet blev oprettet korrekt.</value>
+    <comment>Success message when item is created</comment>
+  </data>
+  <!-- Passkey labels -->
+  <data name="PasskeySectionHeader">
+    <value>Passkey</value>
+    <comment>Section header for passkey</comment>
+  </data>
+  <data name="PasskeyLabel">
+    <value>Passkey</value>
+    <comment>Label for passkey</comment>
+  </data>
+  <data name="PasskeySiteLabel">
+    <value>Websted</value>
+    <comment>Label for passkey site/relying party ID</comment>
+  </data>
+  <data name="PasskeyDisplayNameLabel">
+    <value>Navn</value>
+    <comment>Label for passkey display name</comment>
+  </data>
+  <data name="PasskeyHelpText">
+    <value>Passkeys oprettes via browserudvidelsen eller mobilapps, når et websted beder om det. De kan ikke redigeres eller oprettes manuelt via webappen. For at fjerne denne passkey skal du bruge slet-knappen nedenfor. For at erstatte eller oprette en ny passkey skal du besøge webstedet og følge dets anvisninger.</value>
+    <comment>Help text explaining how passkeys work</comment>
+  </data>
+  <data name="DeletePasskeyButton">
+    <value>Slet passkey</value>
+    <comment>Button to delete passkey</comment>
+  </data>
+  <data name="PasskeyMarkedForDeletion">
+    <value>Passkey markeret til sletning</value>
+    <comment>Header when passkey is marked for deletion</comment>
+  </data>
+  <data name="PasskeyWillBeDeleted">
+    <value>Denne passkey slettes, når du gemmer dette element.</value>
+    <comment>Message explaining passkey will be deleted on save</comment>
+  </data>
+  <data name="UndoButton">
+    <value>Fortryd</value>
+    <comment>Button to undo passkey deletion</comment>
+  </data>
+  <!-- Card section fields -->
+  <data name="CardDetailsSectionHeader">
+    <value>Kortoplysninger</value>
+    <comment>Header for the credit card details section</comment>
+  </data>
+  <data name="CardholderNameLabel">
+    <value>Kortholders navn</value>
+    <comment>Label for cardholder name input</comment>
+  </data>
+  <data name="CardNumberLabel">
+    <value>Kortnummer</value>
+    <comment>Label for card number input</comment>
+  </data>
+  <data name="ExpiryMonthLabel">
+    <value>Udløbsmåned</value>
+    <comment>Label for expiry month input</comment>
+  </data>
+  <data name="ExpiryYearLabel">
+    <value>Udløbsår</value>
+    <comment>Label for expiry year input</comment>
+  </data>
+  <data name="CardCvvLabel">
+    <value>CVV</value>
+    <comment>Label for CVV input</comment>
+  </data>
+  <data name="CardPinLabel">
+    <value>PIN-kode</value>
+    <comment>Label for PIN input</comment>
+  </data>
+  <!-- Custom fields section -->
+  <data name="CustomFieldsSectionHeader">
+    <value>Brugerdefinerede felter</value>
+    <comment>Header for the custom fields section</comment>
+  </data>
+  <data name="RemoveField">
+    <value>Fjern felt</value>
+    <comment>Tooltip for removing a field</comment>
+  </data>
+  <data name="AddEmailField">
+    <value>Tilføj e-mail</value>
+    <comment>Button text for adding email field</comment>
+  </data>
+</root>

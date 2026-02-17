@@ -48,7 +48,7 @@
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
-    <value>您可以在下方查看和复制此项目的详情。发送到所示地址的任何电子邮件都将自动显示在此页面上。</value>
+    <value>您可以在下方查看和复制此项目的详情。发送到所示地址的任何邮件都将自动显示在此页面上。</value>
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
@@ -56,7 +56,7 @@
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
-    <value>电子邮箱</value>
+    <value>邮箱</value>
     <comment>Label for email field</comment>
   </data>
   <data name="UsernameLabel">

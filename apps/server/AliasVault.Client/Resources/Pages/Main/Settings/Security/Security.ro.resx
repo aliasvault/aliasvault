@@ -63,11 +63,11 @@
     <comment>Title for the security settings page</comment>
   </data>
   <data name="PageDescription" xml:space="preserve">
-    <value>Configurați setările de securitate.</value>
+    <value>Configurează setările de securitate.</value>
     <comment>Description for the security settings page</comment>
   </data>
   <data name="RefreshButton" xml:space="preserve">
-    <value>Actualizați</value>
+    <value>Actualizează</value>
     <comment>Refresh button text</comment>
   </data>
   <data name="BreadcrumbTitle" xml:space="preserve">

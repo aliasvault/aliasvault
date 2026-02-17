@@ -112,4 +112,24 @@ Sei sicuro di voler continuare con l'esportazione?</value>
     <value>Questa opzione ti permette di svuotare completamente la tua cassaforte mantenendo il tuo account e gli alias e-mail. Usa questa funzione se desideri  ricominciare da capo dopo aver importato i dati da un altro gestore di password o se desideri cancellare tutte le credenziali esistenti per ricominciare.</value>
     <comment>Reset vault section description</comment>
   </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Confirm Export</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>For security reasons, please enter your master password to confirm this export.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>Verifica password...</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>The password you entered is incorrect. Please try again.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>An error occurred while verifying your password. Please try again.</value>
+    <comment>Generic error message for password verification failure</comment>
+  </data>
 </root>

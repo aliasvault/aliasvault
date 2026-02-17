@@ -80,13 +80,7 @@ class VaultSync(
 
         // Prevent infinite recursion
         if (retryCount >= maxRetries) {
-            return VaultSyncResult(
-                success = false,
-                action = SyncAction.ERROR,
-                newRevision = metadata.getVaultRevisionNumber(),
-                wasOffline = metadata.getOfflineMode(),
-                error = "Max sync retries reached",
-            )
+            return handleSyncError(AppError.MaxRetriesReached())
         }
 
         // Mark as syncing
@@ -143,18 +137,13 @@ class VaultSync(
                     )
                 }
             }
-        } catch (e: VaultSyncError) {
+        } catch (e: AppError) {
             metadata.setIsSyncing(false)
             handleSyncError(e)
         } catch (e: Exception) {
             metadata.setIsSyncing(false)
-            VaultSyncResult(
-                success = false,
-                action = SyncAction.ERROR,
-                newRevision = metadata.getVaultRevisionNumber(),
-                wasOffline = metadata.getOfflineMode(),
-                error = e.message ?: "Unknown error",
-            )
+            Log.e(TAG, "Sync error: ${e.message}", e)
+            handleSyncError(AppError.UnknownError(e.message ?: "Unknown sync error", e))
         }
     }
 
@@ -212,18 +201,13 @@ class VaultSync(
                 wasOffline = false,
                 error = null,
             )
-        } catch (e: VaultSyncError) {
+        } catch (e: AppError) {
             metadata.setIsSyncing(false)
             handleSyncError(e)
         } catch (e: Exception) {
             metadata.setIsSyncing(false)
-            VaultSyncResult(
-                success = false,
-                action = SyncAction.ERROR,
-                newRevision = metadata.getVaultRevisionNumber(),
-                wasOffline = metadata.getOfflineMode(),
-                error = e.message ?: "Unknown error",
-            )
+            Log.e(TAG, "Download sync error: ${e.message}", e)
+            handleSyncError(AppError.VaultStoreFailed("Download sync failed: ${e.message}", e))
         }
     }
 
@@ -259,24 +243,14 @@ class VaultSync(
                 }
                 else -> {
                     metadata.setIsSyncing(false)
-                    VaultSyncResult(
-                        success = false,
-                        action = SyncAction.ERROR,
-                        newRevision = metadata.getVaultRevisionNumber(),
-                        wasOffline = false,
-                        error = uploadResult.error ?: "Upload failed",
-                    )
+                    Log.e(TAG, "Upload failed: ${uploadResult.error}")
+                    handleSyncError(AppError.VaultUploadFailed("Upload failed: ${uploadResult.error}"))
                 }
             }
         } catch (e: Exception) {
             metadata.setIsSyncing(false)
-            VaultSyncResult(
-                success = false,
-                action = SyncAction.ERROR,
-                newRevision = metadata.getVaultRevisionNumber(),
-                wasOffline = metadata.getOfflineMode(),
-                error = e.message ?: "Unknown error",
-            )
+            Log.e(TAG, "Upload sync error: ${e.message}", e)
+            handleSyncError(AppError.VaultUploadFailed("Upload sync error: ${e.message}", e))
         }
     }
 
@@ -296,13 +270,8 @@ class VaultSync(
             val localVault = database.getEncryptedDatabase()
             if (localVault.isEmpty()) {
                 metadata.setIsSyncing(false)
-                return VaultSyncResult(
-                    success = false,
-                    action = SyncAction.ERROR,
-                    newRevision = metadata.getVaultRevisionNumber(),
-                    wasOffline = false,
-                    error = "No local vault available for merge",
-                )
+                Log.e(TAG, "No local vault available for merge")
+                return handleSyncError(AppError.VaultMergeFailed("No local vault available for merge"))
             }
 
             // Perform LWW merge using Rust core library
@@ -353,27 +322,17 @@ class VaultSync(
                 }
                 else -> {
                     metadata.setIsSyncing(false)
-                    VaultSyncResult(
-                        success = false,
-                        action = SyncAction.ERROR,
-                        newRevision = metadata.getVaultRevisionNumber(),
-                        wasOffline = false,
-                        error = uploadResult.error ?: "Upload after merge failed",
-                    )
+                    Log.e(TAG, "Upload after merge failed: ${uploadResult.error}")
+                    handleSyncError(AppError.MergeUploadFailed("Upload after merge failed: ${uploadResult.error}"))
                 }
             }
-        } catch (e: VaultSyncError) {
+        } catch (e: AppError) {
             metadata.setIsSyncing(false)
             handleSyncError(e)
         } catch (e: Exception) {
             metadata.setIsSyncing(false)
-            VaultSyncResult(
-                success = false,
-                action = SyncAction.ERROR,
-                newRevision = metadata.getVaultRevisionNumber(),
-                wasOffline = metadata.getOfflineMode(),
-                error = e.message ?: "Unknown error",
-            )
+            Log.e(TAG, "Merge sync error: ${e.message}", e)
+            handleSyncError(AppError.VaultMergeFailed("Merge sync error: ${e.message}", e))
         }
     }
 
@@ -386,7 +345,7 @@ class VaultSync(
      */
     private fun performLWWMerge(localVault: String, serverVault: String): String {
         val encryptionKey = crypto.encryptionKey
-            ?: throw VaultOperationException("Encryption key not available for merge")
+            ?: throw AppError.EncryptionKeyNotFound("Encryption key not available for merge")
 
         return try {
             VaultMergeService.mergeVaults(
@@ -397,7 +356,7 @@ class VaultSync(
             )
         } catch (e: VaultMergeService.VaultMergeException) {
             Log.e(TAG, "Rust merge failed: ${e.message}", e)
-            throw VaultOperationException("Vault merge failed: ${e.message}", e)
+            throw AppError.VaultMergeFailed("Rust merge failed: ${e.message}", e)
         }
     }
 
@@ -605,11 +564,13 @@ class VaultSync(
     /**
      * Handle sync errors and return appropriate result.
      */
-    private fun handleSyncError(error: VaultSyncError): VaultSyncResult {
+    private fun handleSyncError(error: AppError): VaultSyncResult {
+        Log.e(TAG, "Sync error: ${error.message}", error)
+
         return when (error) {
-            is VaultSyncError.NetworkError,
-            is VaultSyncError.ServerUnavailable,
-            is VaultSyncError.Timeout,
+            is AppError.NetworkError,
+            is AppError.ServerUnavailable,
+            is AppError.Timeout,
             -> {
                 metadata.setOfflineMode(true)
                 VaultSyncResult(
@@ -617,18 +578,6 @@ class VaultSync(
                     action = SyncAction.ERROR,
                     newRevision = metadata.getVaultRevisionNumber(),
                     wasOffline = true,
-                    error = error.message,
-                )
-            }
-            is VaultSyncError.SessionExpired,
-            is VaultSyncError.AuthenticationFailed,
-            is VaultSyncError.PasswordChanged,
-            -> {
-                VaultSyncResult(
-                    success = false,
-                    action = SyncAction.ERROR,
-                    newRevision = metadata.getVaultRevisionNumber(),
-                    wasOffline = false,
                     error = error.code,
                 )
             }
@@ -638,7 +587,7 @@ class VaultSync(
                     action = SyncAction.ERROR,
                     newRevision = metadata.getVaultRevisionNumber(),
                     wasOffline = metadata.getOfflineMode(),
-                    error = error.message,
+                    error = error.code,
                 )
             }
         }
@@ -679,14 +628,14 @@ class VaultSync(
                 requiresAuth = true,
             )
         } catch (e: Exception) {
-            throw VaultSyncError.NetworkError(e)
+            throw AppError.NetworkError(e)
         }
 
         if (vaultResponse.statusCode != 200) {
             if (vaultResponse.statusCode == 401) {
-                throw VaultSyncError.SessionExpired()
+                throw AppError.SessionExpired()
             }
-            throw VaultSyncError.ServerUnavailable(vaultResponse.statusCode)
+            throw AppError.ServerUnavailable(vaultResponse.statusCode)
         }
 
         return parseVaultResponsePublic(vaultResponse.body)
@@ -706,16 +655,16 @@ class VaultSync(
                 requiresAuth = true,
             )
         } catch (e: Exception) {
-            throw VaultSyncError.NetworkError(e)
+            throw AppError.NetworkError(e)
         }
 
         if (statusResponse.statusCode != 200) {
             if (statusResponse.statusCode == 401) {
                 Log.e(TAG, "Authentication failed (401) - token refresh also failed")
-                throw VaultSyncError.SessionExpired()
+                throw AppError.SessionExpired()
             }
             metadata.setOfflineMode(true)
-            throw VaultSyncError.ServerUnavailable(statusResponse.statusCode)
+            throw AppError.ServerUnavailable(statusResponse.statusCode)
         }
 
         val status = try {
@@ -729,16 +678,16 @@ class VaultSync(
         } catch (e: Exception) {
             Log.e(TAG, "Failed to decode status response", e)
             Log.e(TAG, "Response body: '${statusResponse.body}'")
-            throw VaultSyncError.ParseError("Failed to decode status response: ${e.message}", e)
+            throw AppError.ParseError("Failed to decode status response: ${e.message}", e)
         }
 
         if (!status.clientVersionSupported) {
-            throw VaultSyncError.ClientVersionNotSupported()
+            throw AppError.ClientVersionNotSupported()
         }
 
         if (!VersionComparison.isServerVersionSupported(status.serverVersion)) {
             Log.e(TAG, "Server version ${status.serverVersion} does not meet minimum requirement ${AppInfo.MIN_SERVER_VERSION}")
-            throw VaultSyncError.ServerVersionNotSupported()
+            throw AppError.ServerVersionNotSupported()
         }
 
         // Store server version in metadata
@@ -759,9 +708,9 @@ class VaultSync(
             val json = JSONObject(keyDerivationParams)
             val salt = json.optString("salt", "")
             if (srpSalt.isNotEmpty() && srpSalt != salt) {
-                throw VaultSyncError.PasswordChanged()
+                throw AppError.PasswordChanged()
             }
-        } catch (e: VaultSyncError.PasswordChanged) {
+        } catch (e: AppError.PasswordChanged) {
             throw e
         } catch (e: Exception) {
             // Ignore generic parsing errors

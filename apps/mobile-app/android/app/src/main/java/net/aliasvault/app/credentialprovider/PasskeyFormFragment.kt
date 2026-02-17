@@ -875,38 +875,38 @@ class PasskeyFormFragment : Fragment() {
         var title = getString(R.string.connection_error_title)
         var message = getString(R.string.connection_error_message)
 
-        // Check if it's a VaultSyncError and customize message accordingly
-        if (error is net.aliasvault.app.vaultstore.VaultSyncError) {
+        // Check if it's a AppError and customize message accordingly
+        if (error is net.aliasvault.app.vaultstore.AppError) {
             when (error) {
-                is net.aliasvault.app.vaultstore.VaultSyncError.SessionExpired,
-                is net.aliasvault.app.vaultstore.VaultSyncError.AuthenticationFailed,
+                is net.aliasvault.app.vaultstore.AppError.SessionExpired,
+                is net.aliasvault.app.vaultstore.AppError.AuthenticationFailed,
                 -> {
                     title = getString(R.string.session_expired_title)
                     message = getString(R.string.session_expired_message)
                 }
 
-                is net.aliasvault.app.vaultstore.VaultSyncError.PasswordChanged -> {
+                is net.aliasvault.app.vaultstore.AppError.PasswordChanged -> {
                     title = getString(R.string.password_changed_title)
                     message = getString(R.string.password_changed_message)
                 }
 
-                is net.aliasvault.app.vaultstore.VaultSyncError.ClientVersionNotSupported -> {
+                is net.aliasvault.app.vaultstore.AppError.ClientVersionNotSupported -> {
                     title = getString(R.string.version_not_supported_title)
                     message = getString(R.string.version_not_supported_message)
                 }
 
-                is net.aliasvault.app.vaultstore.VaultSyncError.ServerVersionNotSupported -> {
+                is net.aliasvault.app.vaultstore.AppError.ServerVersionNotSupported -> {
                     title = getString(R.string.server_version_not_supported_title)
                     message = getString(R.string.server_version_not_supported_message)
                 }
 
-                is net.aliasvault.app.vaultstore.VaultSyncError.ServerUnavailable -> {
+                is net.aliasvault.app.vaultstore.AppError.ServerUnavailable -> {
                     title = getString(R.string.server_unavailable_title)
                     message = getString(R.string.server_unavailable_message)
                 }
 
-                is net.aliasvault.app.vaultstore.VaultSyncError.NetworkError,
-                is net.aliasvault.app.vaultstore.VaultSyncError.Timeout,
+                is net.aliasvault.app.vaultstore.AppError.NetworkError,
+                is net.aliasvault.app.vaultstore.AppError.Timeout,
                 -> {
                     title = getString(R.string.network_error_title)
                     message = getString(R.string.network_error_message)

@@ -4,17 +4,21 @@
 
 import { onMessage, sendMessage } from "webext-bridge/background";
 
-import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout } from '@/entrypoints/background/AutolockTimeoutHandler';
+import { handleResetAutoLockTimer, handlePopupHeartbeat, handleSetAutoLockTimeout, initializeAutoLockAlarm, handleAutoLockAlarm } from '@/entrypoints/background/AutolockTimeoutHandler';
 import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardClearTimeout, handleSetClipboardClearTimeout, handleGetClipboardCountdownState } from '@/entrypoints/background/ClipboardClearHandler';
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision } from '@/entrypoints/background/VaultMessageHandler';
+import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
+import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision, handleFullVaultSync, handleCheckLoginDuplicate, handleSaveLoginCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled } from '@/entrypoints/background/VaultMessageHandler';
 
-import { GLOBAL_CONTEXT_MENU_ENABLED_KEY } from '@/utils/Constants';
 import { EncryptionKeyDerivationParams } from "@/utils/dist/core/models/metadata";
+import type { LoginResponse } from "@/utils/dist/core/models/webapi";
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
+import type { SavePromptPersistedState } from "@/utils/loginDetector";
 
-import { defineBackground, storage, browser } from '#imports';
+import { defineBackground, browser } from '#imports';
 
 export default defineBackground({
   /**
@@ -47,6 +51,7 @@ export default defineBackground({
     onMessage('CREATE_ITEM', ({ data }) => handleCreateItem(data));
     onMessage('UPLOAD_VAULT', () => handleUploadVault());
     onMessage('SYNC_VAULT', () => handleSyncVault());
+    onMessage('FULL_VAULT_SYNC', () => handleFullVaultSync());
     onMessage('LOCK_VAULT', () => handleLockVault());
     onMessage('CLEAR_SESSION', () => handleClearSession());
     onMessage('CLEAR_VAULT_DATA', () => handleClearVaultData());
@@ -59,6 +64,22 @@ export default defineBackground({
     onMessage('PERSIST_FORM_VALUES', ({ data }) => handlePersistFormValues(data));
     onMessage('GET_PERSISTED_FORM_VALUES', () => handleGetPersistedFormValues());
     onMessage('CLEAR_PERSISTED_FORM_VALUES', () => handleClearPersistedFormValues());
+
+    // Remember login save messages
+    onMessage('CHECK_LOGIN_DUPLICATE', ({ data }) => handleCheckLoginDuplicate(data as { domain: string; username: string }));
+    onMessage('SAVE_LOGIN_CREDENTIAL', ({ data }) => handleSaveLoginCredential(data as { serviceName: string; username: string; password: string; url: string; domain: string; logoBase64?: string }));
+    onMessage('GET_LOGIN_SAVE_SETTINGS', () => handleGetLoginSaveSettings());
+    onMessage('SET_LOGIN_SAVE_ENABLED', ({ data }) => handleSetLoginSaveEnabled(data as boolean));
+
+    // Remember login save state (for surviving page navigation)
+    onMessage('STORE_SAVE_PROMPT_STATE', ({ data, sender }) => handleStoreSavePromptState({ tabId: sender.tabId!, state: data as SavePromptPersistedState }));
+    onMessage('GET_SAVE_PROMPT_STATE', ({ sender }) => handleGetSavePromptState({ tabId: sender.tabId! }));
+    onMessage('CLEAR_SAVE_PROMPT_STATE', ({ sender }) => handleClearSavePromptState({ tabId: sender.tabId! }));
+
+    // Two-factor authentication state persistence
+    onMessage('STORE_TWO_FACTOR_STATE', ({ data }) => handleStoreTwoFactorState(data as { username: string; loginResponse: LoginResponse; passwordHashString: string; passwordHashBase64: string; rememberMe: boolean }));
+    onMessage('GET_TWO_FACTOR_STATE', () => handleGetTwoFactorState());
+    onMessage('CLEAR_TWO_FACTOR_STATE', () => handleClearTwoFactorState());
 
     // Clipboard management messages
     onMessage('CLIPBOARD_COPIED', () => handleClipboardCopied());
@@ -83,10 +104,19 @@ export default defineBackground({
     onMessage('GET_REQUEST_DATA', ({ data }) => handleGetRequestData(data));
 
     // Setup context menus
-    const isContextMenuEnabled = await storage.getItem(GLOBAL_CONTEXT_MENU_ENABLED_KEY) ?? true;
+    const isContextMenuEnabled = await LocalPreferencesService.getGlobalContextMenuEnabled();
     if (isContextMenuEnabled) {
       await setupContextMenus();
     }
+
+    /*
+     * Initialize auto-lock alarm system.
+     * This ensures the alarm is restored if the service worker was terminated.
+     */
+    await initializeAutoLockAlarm();
+
+    // Register alarm listener for auto-lock
+    browser.alarms.onAlarm.addListener(handleAutoLockAlarm);
 
     // Listen for custom commands
     try {

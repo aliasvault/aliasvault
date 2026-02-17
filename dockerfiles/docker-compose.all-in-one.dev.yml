@@ -39,6 +39,7 @@ services:
       - ../database:/database
       - ../logs:/logs
       - ../secrets:/secrets
+      - ../certificates:/certificates
 
     env_file:
       - ../.env

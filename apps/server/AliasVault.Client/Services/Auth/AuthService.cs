@@ -9,6 +9,8 @@ namespace AliasVault.Client.Services.Auth;
 
 using System.Net.Http.Json;
 using System.Text.Json;
+using AliasVault.Client.Services.Auth.Enums;
+using AliasVault.Cryptography.Client;
 using AliasVault.Shared.Models.WebApi.Auth;
 using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -24,14 +26,11 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 /// <param name="jsInteropService">JSInteropService instance.</param>
 public sealed class AuthService(HttpClient httpClient, ILocalStorageService localStorage, IWebAssemblyHostEnvironment environment, Config config, JsInteropService jsInteropService)
 {
-    private const string AccessTokenKey = "token";
-    private const string RefreshTokenKey = "refreshToken";
-
     /// <summary>
-    /// Test string that is stored in local storage in encrypted state. This is used to validate the encryption key
+    /// Test string value that is stored in local storage in encrypted state. This is used to validate the encryption key
     /// locally during future vault unlocks.
     /// </summary>
-    private const string EncryptionTestString = "aliasvault-test-string";
+    private const string EncryptionTestStringValue = "aliasvault-test-string";
 
     /// <summary>
     /// The username of the currently logged-in user to prevent any conflicts during future vault saves.
@@ -105,7 +104,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     /// <returns>The stored access token.</returns>
     public async Task<string> GetAccessTokenAsync()
     {
-        return await localStorage.GetItemAsStringAsync(AccessTokenKey) ?? string.Empty;
+        return await localStorage.GetItemAsStringAsync(StorageKeys.AccessToken) ?? string.Empty;
     }
 
     /// <summary>
@@ -115,7 +114,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task StoreAccessTokenAsync(string newToken)
     {
-        await localStorage.SetItemAsStringAsync(AccessTokenKey, newToken);
+        await localStorage.SetItemAsStringAsync(StorageKeys.AccessToken, newToken);
     }
 
     /// <summary>
@@ -172,10 +171,10 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
 
         // When storing a new encryption key, encrypt a test string and save it to local storage.
         // This test string can then be used to locally validate the password during future unlocks.
-        var encryptedTestString = await jsInteropService.SymmetricEncrypt(EncryptionTestString, GetEncryptionKeyAsBase64Async());
+        var encryptedTestString = await jsInteropService.SymmetricEncrypt(EncryptionTestStringValue, GetEncryptionKeyAsBase64Async());
 
         // Store the encrypted test string in local storage.
-        await localStorage.SetItemAsStringAsync("encryptionTestString", encryptedTestString);
+        await localStorage.SetItemAsStringAsync(StorageKeys.EncryptionTestString, encryptedTestString);
     }
 
     /// <summary>
@@ -184,8 +183,8 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     /// <returns>True if WebAuthn is enabled, otherwise false.</returns>
     public async Task<bool> IsWebAuthnEnabledAsync()
     {
-        await localStorage.GetItemAsStringAsync("webAuthnEnabled");
-        return await localStorage.GetItemAsStringAsync("webAuthnEnabled") == "true";
+        await localStorage.GetItemAsStringAsync(StorageKeys.WebAuthnEnabled);
+        return await localStorage.GetItemAsStringAsync(StorageKeys.WebAuthnEnabled) == "true";
     }
 
     /// <summary>
@@ -195,9 +194,9 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     /// <returns>Decrypted encryption key.</returns>
     public async Task<byte[]> GetDecryptedWebAuthnEncryptionKeyAsync(string username)
     {
-        var encryptedEncryptionKey = await localStorage.GetItemAsStringAsync("webAuthnEncryptedEncryptionKey");
-        var webauthnCredentialId = await localStorage.GetItemAsStringAsync("webAuthnCredentialId");
-        var webauthnSalt = await localStorage.GetItemAsStringAsync("webAuthnSalt");
+        var encryptedEncryptionKey = await localStorage.GetItemAsStringAsync(StorageKeys.WebAuthnEncryptedEncryptionKey);
+        var webauthnCredentialId = await localStorage.GetItemAsStringAsync(StorageKeys.WebAuthnCredentialId);
+        var webauthnSalt = await localStorage.GetItemAsStringAsync(StorageKeys.WebAuthnSalt);
         if (string.IsNullOrEmpty(encryptedEncryptionKey) || string.IsNullOrEmpty(webauthnCredentialId) || string.IsNullOrEmpty(webauthnSalt))
         {
             throw new InvalidOperationException("WebAuthn encrypted encryption key is not set or WebAuthn credential ID is not set.");
@@ -222,24 +221,24 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     /// <returns>Task.</returns>
     public async Task SetWebAuthnEnabledAsync(bool enabled, string? webauthCredentialId = null, string? webauthSalt = null, string? webauthCredentialDerivedKey = null)
     {
-        await localStorage.SetItemAsStringAsync("webAuthnEnabled", enabled.ToString().ToLower());
+        await localStorage.SetItemAsStringAsync(StorageKeys.WebAuthnEnabled, enabled.ToString().ToLower());
 
         // Encrypt the current encryption key with the webauthn derived key and store it in local storage.
         if (enabled && !string.IsNullOrEmpty(webauthCredentialId) && !string.IsNullOrEmpty(webauthSalt) && !string.IsNullOrEmpty(webauthCredentialDerivedKey))
         {
             var encryptionKeyBase64 = Convert.ToBase64String(GetEncryptionKey());
             var encryptedEncryptionKey = await jsInteropService.SymmetricEncrypt(encryptionKeyBase64, webauthCredentialDerivedKey);
-            await localStorage.SetItemAsStringAsync("webAuthnCredentialId", webauthCredentialId);
-            await localStorage.SetItemAsStringAsync("webAuthnSalt", webauthSalt);
-            await localStorage.SetItemAsStringAsync("webAuthnEncryptedEncryptionKey", encryptedEncryptionKey);
+            await localStorage.SetItemAsStringAsync(StorageKeys.WebAuthnCredentialId, webauthCredentialId);
+            await localStorage.SetItemAsStringAsync(StorageKeys.WebAuthnSalt, webauthSalt);
+            await localStorage.SetItemAsStringAsync(StorageKeys.WebAuthnEncryptedEncryptionKey, encryptedEncryptionKey);
         }
         else
         {
             // Clear the WebAuthn credential ID, salt and derived key if WebAuthn is disabled.
-            await localStorage.RemoveItemAsync("webAuthnCredentialId");
-            await localStorage.RemoveItemAsync("webAuthnSalt");
-            await localStorage.RemoveItemAsync("webAuthnCredentialDerivedKey");
-            await localStorage.RemoveItemAsync("webAuthnEncryptedEncryptionKey");
+            await localStorage.RemoveItemAsync(StorageKeys.WebAuthnCredentialId);
+            await localStorage.RemoveItemAsync(StorageKeys.WebAuthnSalt);
+            await localStorage.RemoveItemAsync(StorageKeys.WebAuthnCredentialDerivedKey);
+            await localStorage.RemoveItemAsync(StorageKeys.WebAuthnEncryptedEncryptionKey);
         }
     }
 
@@ -251,7 +250,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     /// <returns>Task.</returns>
     public async Task<bool> HasEncryptionKeyTestStringAsync()
     {
-        return await localStorage.GetItemAsStringAsync("encryptionTestString") != null;
+        return await localStorage.GetItemAsStringAsync(StorageKeys.EncryptionTestString) != null;
     }
 
     /// <summary>
@@ -262,7 +261,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     public async Task<bool> ValidateEncryptionKeyAsync(byte[] encryptionKey)
     {
         // Get the encrypted test string from local storage.
-        var encryptedTestString = await localStorage.GetItemAsStringAsync("encryptionTestString");
+        var encryptedTestString = await localStorage.GetItemAsStringAsync(StorageKeys.EncryptionTestString);
         if (encryptedTestString == null)
         {
             return false;
@@ -276,12 +275,61 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
             var decryptedTestString = await jsInteropService.SymmetricDecrypt(encryptedTestString, base64EncryptionKey);
 
             // If the decrypted test string is not equal to the test string, the encryption key is invalid.
-            return decryptedTestString == EncryptionTestString;
+            return decryptedTestString == EncryptionTestStringValue;
         }
         catch
         {
             // Ignore errors, if decryption fails the encryption key is invalid.
             return false;
+        }
+    }
+
+    /// <summary>
+    /// Verifies a password by deriving the encryption key and validating it against the stored test string.
+    /// This method handles all the heavy lifting of password verification including fetching encryption
+    /// parameters from the server and deriving the key.
+    /// </summary>
+    /// <param name="username">The username for the account.</param>
+    /// <param name="password">The password to verify.</param>
+    /// <returns>A result indicating success or the type of failure.</returns>
+    public async Task<PasswordVerificationResult> VerifyPasswordAsync(string username, string password)
+    {
+        try
+        {
+            // Get user's encryption parameters from server
+            var result = await httpClient.PostAsJsonAsync("v1/Auth/login", new LoginInitiateRequest(username));
+            var responseContent = await result.Content.ReadAsStringAsync();
+
+            if (!result.IsSuccessStatusCode)
+            {
+                return PasswordVerificationResult.ServerError;
+            }
+
+            var loginResponse = JsonSerializer.Deserialize<LoginInitiateResponse>(responseContent);
+            if (loginResponse == null)
+            {
+                return PasswordVerificationResult.ServerError;
+            }
+
+            // Derive password hash using server parameters
+            byte[] passwordHash = await Encryption.DeriveKeyFromPasswordAsync(
+                password,
+                loginResponse.Salt,
+                loginResponse.EncryptionType,
+                loginResponse.EncryptionSettings);
+
+            // Verify the password locally using the derived password hash
+            var isValidPassword = await ValidateEncryptionKeyAsync(passwordHash);
+            if (!isValidPassword)
+            {
+                return PasswordVerificationResult.InvalidPassword;
+            }
+
+            return PasswordVerificationResult.Success;
+        }
+        catch
+        {
+            return PasswordVerificationResult.ServerError;
         }
     }
 
@@ -292,7 +340,7 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     public async Task StoreRefreshTokenAsync(string newToken)
     {
-        await localStorage.SetItemAsStringAsync(RefreshTokenKey, newToken);
+        await localStorage.SetItemAsStringAsync(StorageKeys.RefreshToken, newToken);
     }
 
     /// <summary>
@@ -313,8 +361,8 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
 
         // Remove the tokens from local storage.
         _username = string.Empty;
-        await localStorage.RemoveItemAsync(AccessTokenKey);
-        await localStorage.RemoveItemAsync(RefreshTokenKey);
+        await localStorage.RemoveItemAsync(StorageKeys.AccessToken);
+        await localStorage.RemoveItemAsync(StorageKeys.RefreshToken);
     }
 
     /// <summary>
@@ -326,7 +374,33 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     }
 
     /// <summary>
+    /// Revokes only the current specific token on the server asynchronously.
+    /// Unlike RemoveTokensAsync/RevokeTokenAsync, this does NOT revoke other sessions for the same device.
+    /// Used for mobile unlock flow where we want to replace the current session without
+    /// affecting other browser sessions.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
+    public async Task RevokeCurrentTokenAsync()
+    {
+        var tokenInput = new TokenModel
+        {
+            Token = await GetAccessTokenAsync(),
+            RefreshToken = await GetRefreshTokenAsync(),
+        };
+
+        using var request = new HttpRequestMessage(HttpMethod.Post, "v1/Auth/revoke-token")
+        {
+            Content = JsonContent.Create(tokenInput),
+        };
+
+        // Add the X-Ignore-Failure header to the request so any failure does not trigger another refresh token request.
+        request.Headers.Add("X-Ignore-Failure", "true");
+        await httpClient.SendAsync(request);
+    }
+
+    /// <summary>
     /// Revokes the access and refresh tokens on the server asynchronously.
+    /// This revokes all tokens for the current device.
     /// </summary>
     /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
     private async Task RevokeTokenAsync()
@@ -356,6 +430,6 @@ public sealed class AuthService(HttpClient httpClient, ILocalStorageService loca
     /// <returns>The stored refresh token.</returns>
     private async Task<string> GetRefreshTokenAsync()
     {
-        return await localStorage.GetItemAsStringAsync(RefreshTokenKey) ?? string.Empty;
+        return await localStorage.GetItemAsStringAsync(StorageKeys.RefreshToken) ?? string.Empty;
     }
 }

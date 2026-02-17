@@ -112,4 +112,24 @@ Tem certeza que deseja continuar com o exporte?</value>
     <value>Esta opção permite que você limpe totalmente seu cofre, enquanto mantém sua conta e seus aliases de e-mail. Utilize isto se você quer iniciar do zero após importar dados de outros gerenciadores de senhas ou se você quiser limpar todas as credenciais existentes para começar novamente.</value>
     <comment>Reset vault section description</comment>
   </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Confirmar Exportação</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>Por questões de segurança, por favor, digite sua senha mestra para confirmar esta exportação.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>Verificando senha...</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>A senha que você digitou está incorreta. Por favor, tente novamente.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>Ocorreu um erro ao verificar sua senha. Por favor, tente novamente.</value>
+    <comment>Generic error message for password verification failure</comment>
+  </data>
 </root>

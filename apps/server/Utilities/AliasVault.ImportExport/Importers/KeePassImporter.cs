@@ -81,7 +81,7 @@ public static class KeePassImporter
             var credential = new ImportedCredential
             {
                 ServiceName = record.Account ?? string.Empty,
-                ServiceUrl = record.Website,
+                ServiceUrls = BaseImporter.ParseUrls(record.Website),
                 Username = record.LoginName,
                 Password = record.Password,
                 Notes = record.Comments

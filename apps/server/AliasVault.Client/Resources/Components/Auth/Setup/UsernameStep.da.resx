@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <!-- Assistant messages -->
+  <data name="GreatNowLetsSetupUsername">
+    <value>Godt! Lad os nu opsætte dit brugernavn til AliasVault.</value>
+    <comment>Assistant message about setting up username</comment>
+  </data>
+  <data name="EnterUsernameInstructions">
+    <value>Indtast venligst det brugernavn, du ønsker at bruge. Dette kan være din e-mailadresse eller et unikt navn efter eget valg.</value>
+    <comment>Instructions for entering username</comment>
+  </data>
+  <data name="RememberUsernameNote">
+    <value>Husk: Det er dette navn, du skal bruge til at logge ind senere, så sørg for at vælge noget, du kan huske!</value>
+    <comment>Important note about remembering username</comment>
+  </data>
+  <!-- Form labels -->
+  <data name="UsernameLabel">
+    <value>Brugernavn</value>
+    <comment>Label for username input field</comment>
+  </data>
+  <data name="UsernamePlaceholder">
+    <value>Indtast dit ønskede brugernavn eller e-mail</value>
+    <comment>Placeholder text for username input</comment>
+  </data>
+  <!-- Validation messages -->
+  <data name="ValidatingUsernameMessage">
+    <value>Validerer brugernavn...</value>
+    <comment>Message shown while validating username</comment>
+  </data>
+  <data name="UsernameAvailableMessage">
+    <value>Brugernavnet er ledigt!</value>
+    <comment>Message shown when username is available</comment>
+  </data>
+  <data name="UsernameRequiredError">
+    <value>Brugernavn er påkrævet.</value>
+    <comment>Error message when username is empty</comment>
+  </data>
+  <data name="ServerCommunicationError">
+    <value>Der opstod en fejl under kommunikationen med AliasVault-serveren.</value>
+    <comment>Error message for server communication issues</comment>
+  </data>
+  <!-- Alt text -->
+  <data name="AssistantAvatarAlt">
+    <value>AliasVault-assistent</value>
+    <comment>Alt text for assistant avatar image</comment>
+  </data>
+</root>

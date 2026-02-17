@@ -104,6 +104,15 @@ public abstract class PlaywrightTest
         }
     }
 
+    /// <summary>
+    /// Get the current relative URL.
+    /// </summary>
+    /// <returns>Current page as relative URL.</returns>
+    protected string GetCurrentRelativeUrl()
+    {
+        return Page.Url.Replace(AppBaseUrl, string.Empty);
+    }
+
      /// <summary>
     /// Navigate to a relative URL using Blazor's client-side router.
     /// </summary>
@@ -111,17 +120,21 @@ public abstract class PlaywrightTest
     /// <returns>Task.</returns>
     protected async Task NavigateUsingBlazorRouter(string relativeUrl)
     {
-        // Navigate to the app's base URL initially if not already there
-        if (!Page.Url.StartsWith(AppBaseUrl))
+        const int maxRetries = 3;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
-            await Page.GotoAsync(AppBaseUrl);
-
-            // Wait for Blazor to load completely
-            await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+            try
+            {
+                await NavigateUsingBlazorRouterInternal(relativeUrl);
+                return;
+            }
+            catch (TimeoutException) when (attempt < maxRetries)
+            {
+                Console.WriteLine($"Navigation to '{relativeUrl}' failed (attempt {attempt}/{maxRetries}), retrying...");
+                await Task.Delay(500);
+            }
         }
-
-        // Perform soft navigation within the app
-        await Page.EvaluateAsync($"window.blazorNavigate('{relativeUrl}')");
     }
 
     /// <summary>
@@ -259,4 +272,40 @@ public abstract class PlaywrightTest
     /// </summary>
     /// <returns>Async task.</returns>
     protected abstract Task SetupEnvironment();
+
+    /// <summary>
+    /// Internal navigation implementation.
+    /// </summary>
+    /// <param name="relativeUrl">Relative URL.</param>
+    /// <returns>Task.</returns>
+    private async Task NavigateUsingBlazorRouterInternal(string relativeUrl)
+    {
+        // Navigate to the app's base URL initially if not already there
+        if (!Page.Url.StartsWith(AppBaseUrl))
+        {
+            await Page.GotoAsync(AppBaseUrl);
+
+            // Wait for Blazor to load completely
+            await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        }
+
+        // Check if we're already on the target URL (pattern matching)
+        var targetPattern = new System.Text.RegularExpressions.Regex(@".*/" + System.Text.RegularExpressions.Regex.Escape(relativeUrl) + @"(\?.*)?$");
+        var alreadyOnTarget = targetPattern.IsMatch(Page.Url);
+
+        // Perform soft navigation within the app
+        await Page.EvaluateAsync($"window.blazorNavigate('{relativeUrl}')");
+
+        // Only wait for URL change if we weren't already on the target URL
+        if (!alreadyOnTarget)
+        {
+            await Page.WaitForURLAsync("**/" + relativeUrl, new PageWaitForURLOptions
+            {
+                Timeout = TestDefaults.DefaultTimeout,
+            });
+        }
+
+        // Always wait for the network to settle after navigation
+        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+    }
 }

@@ -192,6 +192,13 @@ const Settings: React.FC = () => {
     navigate('/settings/passkeys');
   };
 
+  /**
+   * Navigate to identity generator settings.
+   */
+  const navigateToIdentityGeneratorSettings = () : void => {
+    navigate('/settings/identity-generator');
+  };
+
   return (
     <>
       {/* Logout Confirmation Modal */}
@@ -279,60 +286,6 @@ const Settings: React.FC = () => {
         <section>
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
             <div className="divide-y divide-gray-200 dark:divide-gray-700">
-              {/* Vault Unlock Method */}
-              <button
-                onClick={navigateToUnlockMethodSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round"  d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.unlockMethod.title')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
-              {/* Auto-lock Settings */}
-              <button
-                onClick={navigateToAutoLockSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.autoLockTimeout')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
               {/* Autofill Settings */}
               <button
                 onClick={navigateToAutofillSettings}
@@ -396,14 +349,61 @@ const Settings: React.FC = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
                 </svg>
               </button>
-            </div>
-          </div>
-        </section>
 
-        {/* Additional Settings Section */}
-        <section>
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {/* Vault Unlock Method */}
+              <button
+                onClick={navigateToUnlockMethodSettings}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="flex items-center">
+                  <svg className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round"  d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                  </svg>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.unlockMethod.title')}</span>
+                </div>
+                <svg
+                  className="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Auto-lock Settings */}
+              <button
+                onClick={navigateToAutoLockSettings}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
+                  </svg>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.autoLockTimeout')}</span>
+                </div>
+                <svg
+                  className="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
               {/* Clipboard Settings */}
               <button
                 onClick={navigateToClipboardSettings}
@@ -436,38 +436,6 @@ const Settings: React.FC = () => {
                 </svg>
               </button>
 
-              {/* Context Menu Settings */}
-              <button
-                onClick={navigateToContextMenuSettings}
-                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-              >
-                <div className="flex items-center">
-                  <svg
-                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4 6h16M4 12h16m-7 6h7"
-                    />
-                  </svg>
-                  <span className="text-gray-900 dark:text-white text-left">{t('settings.contextMenuSettings')}</span>
-                </div>
-                <svg
-                  className="w-4 h-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-
               {/* Language Settings */}
               <button
                 onClick={navigateToLanguageSettings}
@@ -488,6 +456,77 @@ const Settings: React.FC = () => {
                     />
                   </svg>
                   <span className="text-gray-900 dark:text-white text-left">{t('settings.language')}</span>
+                </div>
+                <svg
+                  className="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Generator Settings Section */}
+        <section>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
+              {/* Identity Generator Settings */}
+              <button
+                onClick={navigateToIdentityGeneratorSettings}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                    />
+                  </svg>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.identityGenerator')}</span>
+                </div>
+                <svg
+                  className="w-4 h-4 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+
+              {/* Context Menu Settings */}
+              <button
+                onClick={navigateToContextMenuSettings}
+                className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+              >
+                <div className="flex items-center">
+                  <svg
+                    className="w-5 h-5 mr-3 text-gray-600 dark:text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M4 6h16M4 12h16m-7 6h7"
+                    />
+                  </svg>
+                  <span className="text-gray-900 dark:text-white text-left">{t('settings.contextMenuSettings')}</span>
                 </div>
                 <svg
                   className="w-4 h-4 text-gray-400"

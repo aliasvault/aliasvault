@@ -6,7 +6,7 @@ public enum AppInfo {
     /// The minimum supported AliasVault server (API) version.
     ///
     /// If the server version is below this minimum, the client will reject the connection
-    /// and throw a `VaultSyncError.serverVersionNotSupported` error, indicating that the
+    /// and throw a `AppError.serverVersionNotSupported` error, indicating that the
     /// server should be updated to a newer version.
     ///
     /// This ensures that the mobile app only communicates with servers that support

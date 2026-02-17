@@ -90,7 +90,7 @@
     <comment>Note about vault deletion</comment>
   </data>
   <data name="EmailAliasesOrphanedNote" xml:space="preserve">
-    <value>您的电子邮件别名将成为无主状态，且不能被其他用户认领</value>
+    <value>您的邮件别名将成为无主状态，且不能被其他用户认领</value>
     <comment>Note about email aliases being orphaned</comment>
   </data>
   <data name="AccountCannotBeRecoveredNote" xml:space="preserve">

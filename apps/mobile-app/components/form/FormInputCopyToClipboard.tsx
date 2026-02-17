@@ -8,8 +8,8 @@ import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 
 import { useColors } from '@/hooks/useColorScheme';
 
-import { useAuth } from '@/context/AuthContext';
 import { useClipboardCountdown } from '@/context/ClipboardCountdownContext';
+import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 
 type FormInputCopyToClipboardProps = {
   label: string;
@@ -31,7 +31,6 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const colors = useColors();
   const { t } = useTranslation();
-  const { getClipboardClearTimeout } = useAuth();
   const { activeFieldId, setActiveField } = useClipboardCountdown();
 
   const animatedWidth = useRef(new Animated.Value(0)).current;
@@ -57,7 +56,7 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
       animatedWidth.setValue(100);
 
       // Get timeout and start animation
-      getClipboardClearTimeout().then((timeoutSeconds) => {
+      LocalPreferencesService.getClipboardClearTimeout().then((timeoutSeconds) => {
         if (!isCancelled && timeoutSeconds > 0 && activeFieldId === fieldId) {
           animationRef = Animated.timing(animatedWidth, {
             toValue: 0,
@@ -92,7 +91,7 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
       }
       animatedWidth.stopAnimation();
     };
-  }, [isCountingDown, activeFieldId, fieldId, animatedWidth, setActiveField, getClipboardClearTimeout]);
+  }, [isCountingDown, activeFieldId, fieldId, animatedWidth, setActiveField]);
 
   /**
    * Copy the value to the clipboard.
@@ -101,7 +100,7 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
     if (value) {
       try {
         // Get clipboard clear timeout from settings
-        const timeoutSeconds = await getClipboardClearTimeout();
+        const timeoutSeconds = await LocalPreferencesService.getClipboardClearTimeout();
 
         // Use centralized clipboard utility
         await copyToClipboardWithExpiration(value, timeoutSeconds);

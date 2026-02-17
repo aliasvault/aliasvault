@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
@@ -21,6 +21,7 @@ import { useDialog } from '@/context/DialogContext';
 export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
+  const router = useRouter();
   const dbContext = useDb();
   const { showAlert } = useDialog();
   const { executeVaultMutation } = useVaultMutate();
@@ -31,9 +32,9 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   const [languageOptions, setLanguageOptions] = useState<ILanguageOption[]>([]);
   const [ageRangeOptions, setAgeRangeOptions] = useState<IAgeRangeOption[]>([]);
 
-  // Store pending changes and initial values
-  const pendingChanges = useRef<{ language?: string; gender?: string; ageRange?: string }>({});
-  const initialValues = useRef<{ language: string; gender: string; ageRange: string }>({ language: 'en', gender: 'random', ageRange: 'random' });
+  // Store pending changes and initial values (language is managed in subview)
+  const pendingChanges = useRef<{ gender?: string; ageRange?: string }>({});
+  const initialValues = useRef<{ gender: string; ageRange: string }>({ gender: 'random', ageRange: 'random' });
 
   const GENDER_OPTIONS = [
     { label: t('settings.identityGeneratorSettings.genderOptions.random'), value: 'random' },
@@ -65,8 +66,8 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
           setLanguage(currentLanguage);
           setGender(currentGender);
           setAgeRange(currentAgeRange);
-          // Store initial values
-          initialValues.current = { language: currentLanguage, gender: currentGender, ageRange: currentAgeRange };
+          // Store initial values (language is managed in subview)
+          initialValues.current = { gender: currentGender, ageRange: currentAgeRange };
           // Clear pending changes when screen loads
           pendingChanges.current = {};
         } catch (error) {
@@ -91,11 +92,8 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
           }
 
           try {
-            // Save all pending changes in a single vault mutation
+            // Save all pending changes in a single vault mutation (language is managed in subview)
             await executeVaultMutation(async () => {
-              if (pendingChanges.current.language !== undefined) {
-                await dbContext.sqliteClient!.updateSetting('DefaultIdentityLanguage', pendingChanges.current.language);
-              }
               if (pendingChanges.current.gender !== undefined) {
                 await dbContext.sqliteClient!.updateSetting('DefaultIdentityGender', pendingChanges.current.gender);
               }
@@ -119,12 +117,19 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   );
 
   /**
-   * Handle language change
+   * Navigate to language selection subview
    */
-  const handleLanguageChange = useCallback((newLanguage: string): void => {
-    setLanguage(newLanguage);
-    pendingChanges.current.language = newLanguage;
-  }, []);
+  const handleLanguagePress = useCallback((): void => {
+    router.push('/(tabs)/settings/identity-generator-language');
+  }, [router]);
+
+  /**
+   * Get the display label for the current language
+   */
+  const getLanguageDisplayLabel = useCallback((): string => {
+    const option = languageOptions.find(opt => opt.value === language);
+    return option ? `${option.flag} ${option.label}` : language;
+  }, [language, languageOptions]);
 
   /**
    * Handle gender change
@@ -143,6 +148,10 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
   }, []);
 
   const styles = StyleSheet.create({
+    chevron: {
+      color: colors.textMuted,
+      marginLeft: 8,
+    },
     descriptionText: {
       color: colors.textMuted,
       fontSize: 14,
@@ -152,6 +161,24 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
       color: colors.textMuted,
       fontSize: 13,
       marginBottom: 8,
+    },
+    navRow: {
+      alignItems: 'center',
+      backgroundColor: colors.accentBackground,
+      borderRadius: 10,
+      flexDirection: 'row',
+      marginTop: 8,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    navRowLabel: {
+      color: colors.text,
+      flex: 1,
+      fontSize: 16,
+    },
+    navRowValue: {
+      color: colors.textMuted,
+      fontSize: 16,
     },
     option: {
       alignItems: 'center',
@@ -198,23 +225,11 @@ export default function IdentityGeneratorSettingsScreen(): React.ReactNode {
         <ThemedText style={styles.descriptionText}>
           {t('settings.identityGeneratorSettings.languageDescription')}
         </ThemedText>
-        <View style={styles.optionContainer}>
-          {languageOptions.map((option, index) => {
-            const isLast = index === languageOptions.length - 1;
-            return (
-              <TouchableOpacity
-                key={option.value}
-                style={[styles.option, isLast && styles.optionLast]}
-                onPress={() => handleLanguageChange(option.value)}
-              >
-                <ThemedText style={styles.optionText}>{option.flag} {option.label}</ThemedText>
-                {language === option.value && (
-                  <Ionicons name="checkmark" size={20} style={styles.selectedIcon} />
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </View>
+        <TouchableOpacity style={styles.navRow} onPress={handleLanguagePress}>
+          <ThemedText style={styles.navRowLabel}>{t('settings.identityGeneratorSettings.languageSection')}</ThemedText>
+          <ThemedText style={styles.navRowValue}>{getLanguageDisplayLabel()}</ThemedText>
+          <Ionicons name="chevron-forward" size={20} style={styles.chevron} />
+        </TouchableOpacity>
 
         <ThemedText style={styles.sectionTitle}>{t('settings.identityGeneratorSettings.genderSection')}</ThemedText>
         <ThemedText style={styles.descriptionText}>

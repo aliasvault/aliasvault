@@ -20,11 +20,11 @@
     </xsd:element>
   </xsd:schema>
   <data name="DeleteItemPageTitle">
-    <value>Delete item</value>
+    <value>Element entfernen</value>
     <comment>Page title for deleting items</comment>
   </data>
   <data name="DeleteItemTitle">
-    <value>Delete item</value>
+    <value>Element entfernen</value>
     <comment>Page header title for deleting item</comment>
   </data>
   <data name="DeleteItemDescription">
@@ -52,11 +52,11 @@
     <comment>Cancel button text</comment>
   </data>
   <data name="ViewItemBreadcrumb">
-    <value>View item</value>
+    <value>Eintrag anzeigen</value>
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="DeleteItemBreadcrumb">
-    <value>Delete item</value>
+    <value>Element entfernen</value>
     <comment>Breadcrumb text for delete item page</comment>
   </data>
   <data name="DeleteItemNotFoundError">

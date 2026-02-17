@@ -3,9 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
-import { PENDING_REDIRECT_URL_KEY } from '@/utils/Constants';
-
-import { storage } from '#imports';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 /**
  * Hook to handle vault lock redirects.
@@ -27,7 +25,7 @@ export function useVaultLockRedirect(options: { enabled?: boolean } = {}): { isL
     if (!dbAvailable) {
       // Store the full current URL (pathname + search) for restoration after unlock
       const currentUrl = `${location.pathname}${location.search}`;
-      storage.setItem(PENDING_REDIRECT_URL_KEY, currentUrl);
+      LocalPreferencesService.setPendingRedirectUrl(currentUrl);
 
       // Navigate to unlock without redirect in URL - we use storage instead
       navigate('/unlock');
@@ -46,9 +44,9 @@ export function useVaultLockRedirect(options: { enabled?: boolean } = {}): { isL
  * @returns The pending redirect URL, or null if none exists
  */
 export async function consumePendingRedirectUrl(): Promise<string | null> {
-  const url = await storage.getItem<string>(PENDING_REDIRECT_URL_KEY);
+  const url = await LocalPreferencesService.getPendingRedirectUrl();
   if (url) {
-    await storage.removeItem(PENDING_REDIRECT_URL_KEY);
+    await LocalPreferencesService.setPendingRedirectUrl(null);
   }
   return url;
 }
@@ -58,5 +56,5 @@ export async function consumePendingRedirectUrl(): Promise<string | null> {
  * Used when popup is opened without a specific hash path to clear stale redirects.
  */
 export async function clearPendingRedirectUrl(): Promise<void> {
-  await storage.removeItem(PENDING_REDIRECT_URL_KEY);
+  await LocalPreferencesService.setPendingRedirectUrl(null);
 }

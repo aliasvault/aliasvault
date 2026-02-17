@@ -25,11 +25,11 @@
     <comment>Title for the terms and conditions step</comment>
   </data>
   <data name="UsernameStepTitle">
-    <value>Alegeți numele de utilizator</value>
+    <value>Alege numele de utilizator</value>
     <comment>Title for the username selection step</comment>
   </data>
   <data name="PasswordStepTitle">
-    <value>Setați parola</value>
+    <value>Setează parola</value>
     <comment>Title for the password creation step</comment>
   </data>
   <data name="CreatingStepTitle">
@@ -42,7 +42,7 @@
   </data>
   <!-- Button text -->
   <data name="CreateAccountButton">
-    <value>Creați cont</value>
+    <value>Creează cont</value>
     <comment>Button text for creating account</comment>
   </data>
   <data name="ContinueButton">

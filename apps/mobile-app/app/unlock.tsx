@@ -7,6 +7,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, View, TextInput, KeyboardAvoidingView, Platform, ScrollView, Dimensions, Text, Pressable } from 'react-native';
 
 import EncryptionUtility from '@/utils/EncryptionUtility';
+import { AppErrorCode, getAppErrorCode, getErrorTranslationKey, formatErrorWithCode } from '@/utils/types/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -137,22 +138,23 @@ export default function UnlockScreen() : React.ReactNode {
 
       const passwordHashBase64 = Buffer.from(passwordHash).toString('base64');
 
-      // Test the database connection with the derived encryption key
-      if (await dbContext.testDatabaseConnection(passwordHashBase64)) {
-        // Check if the vault is up to date, if not, redirect to the upgrade page.
-        if (await dbContext.hasPendingMigrations()) {
-          router.replace('/upgrade');
-          return;
-        }
+      /*
+       * Test the database connection with the derived encryption key.
+       * This throws an error if it fails (with error codes for specific failures).
+       */
+      await dbContext.testDatabaseConnection(passwordHashBase64);
 
-        /*
-         * Navigate to reinitialize which will sync vault with server
-         * and then navigate to the appropriate destination.
-         */
-        router.replace('/reinitialize');
-      } else {
-        showAlert(t('common.error'), t('auth.errors.incorrectPassword'));
+      // Check if the vault is up to date, if not, redirect to the upgrade page.
+      if (await dbContext.hasPendingMigrations()) {
+        router.replace('/upgrade');
+        return;
       }
+
+      /*
+       * Navigate to reinitialize which will sync vault with server
+       * and then navigate to the appropriate destination.
+       */
+      router.replace('/reinitialize');
     } catch (err) {
       if (err instanceof VaultVersionIncompatibleError) {
         // Vault version incompatible - force logout without confirmation
@@ -161,17 +163,113 @@ export default function UnlockScreen() : React.ReactNode {
       }
 
       console.error('Unlock error:', err);
-      showAlert(t('common.error'), t('auth.errors.incorrectPassword'));
+
+      // Try to extract error code from the error
+      const errorCode = getAppErrorCode(err);
+
+      /*
+       * During unlock, VAULT_DECRYPT_FAILED indicates wrong password.
+       * This is thrown when decryption fails due to incorrect encryption key.
+       */
+      if (!errorCode || errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
+        // Treat as incorrect password
+        showAlert(t('common.error'), t('auth.errors.incorrectPassword'));
+      } else {
+        // Other error codes: show the formatted message with raw error code
+        const translationKey = getErrorTranslationKey(errorCode);
+        showAlert(t('common.error'), formatErrorWithCode(t(translationKey), errorCode));
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   /**
-   * Handle the biometrics retry.
+   * Internal PIN unlock handler - performs PIN unlock and navigates on success.
+   * Returns true if unlock succeeded, false otherwise.
    */
-  const handleUnlockRetry = async () : Promise<void> => {
-    router.replace('/reinitialize');
+  const performPinUnlock = async () : Promise<boolean> => {
+    try {
+      await NativeVaultManager.showPinUnlock();
+
+      // Check if vault is now unlocked
+      const isNowUnlocked = await NativeVaultManager.isVaultUnlocked();
+      if (isNowUnlocked) {
+        // Check if the vault is up to date
+        if (await dbContext.hasPendingMigrations()) {
+          router.replace('/upgrade');
+          return true;
+        }
+        router.replace('/reinitialize');
+        return true;
+      }
+      // Not unlocked means user cancelled - return false but don't show error
+      return false;
+    } catch (err) {
+      // User cancelled or PIN unlock failed
+      const errorMessage = err instanceof Error ? err.message : '';
+      if (!errorMessage.includes('cancelled') && !errorMessage.includes('canceled')) {
+        console.error('PIN unlock error:', err);
+        setError(t('auth.errors.pinFailed'));
+      }
+      return false;
+    }
+  };
+
+  /**
+   * Handle the biometrics retry - directly triggers biometric unlock.
+   * If biometric fails and PIN is available, automatically falls back to PIN.
+   */
+  const handleBiometricRetry = async () : Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      /*
+       * Clear any wrong key from memory first (e.g., from failed password attempt).
+       * This forces getEncryptionKey() to fetch from keychain via biometrics.
+       */
+      await NativeVaultManager.clearEncryptionKeyFromMemory();
+
+      // unlockVault now throws errors instead of returning false
+      await dbContext.unlockVault();
+
+      // Check if the vault is up to date
+      if (await dbContext.hasPendingMigrations()) {
+        router.replace('/upgrade');
+        return;
+      }
+      router.replace('/reinitialize');
+    } catch (err) {
+      console.error('Biometric retry error:', err);
+
+      // Check if this is a cancellation - don't show error, just allow retry
+      const errorCode = getAppErrorCode(err);
+      if (errorCode === 'E-509') { // BIOMETRIC_CANCELLED
+        // User cancelled - don't show error, just stay on screen
+        return;
+      }
+
+      // For other errors, try PIN fallback if available
+      if (pinAvailable) {
+        await performPinUnlock();
+      } else if (errorCode) {
+        // Show the error with code if no PIN fallback
+        const translationKey = getErrorTranslationKey(errorCode);
+        setError(formatErrorWithCode(t(translationKey), errorCode));
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Handle the PIN retry button - directly triggers PIN unlock flow.
+   */
+  const handlePinRetry = async () : Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    await performPinUnlock();
+    setIsLoading(false);
   };
 
   const styles = StyleSheet.create({
@@ -211,7 +309,7 @@ export default function UnlockScreen() : React.ReactNode {
       width: '100%',
     },
     errorText: {
-      color: colors.errorBorder,
+      color: colors.errorText,
       fontSize: 14,
       marginBottom: 12,
       textAlign: 'center',
@@ -396,7 +494,7 @@ export default function UnlockScreen() : React.ReactNode {
               {isBiometricsAvailable && (
                 <RobustPressable
                   style={styles.faceIdButton}
-                  onPress={handleUnlockRetry}
+                  onPress={handleBiometricRetry}
                 >
                   <ThemedText style={styles.faceIdButtonText}>{t('auth.tryBiometricAgain', { biometric: biometricDisplayName })}</ThemedText>
                 </RobustPressable>
@@ -406,7 +504,7 @@ export default function UnlockScreen() : React.ReactNode {
               {pinAvailable && (
                 <RobustPressable
                   style={styles.faceIdButton}
-                  onPress={handleUnlockRetry}
+                  onPress={handlePinRetry}
                 >
                   <ThemedText style={styles.faceIdButtonText}>{t('auth.tryPinAgain')}</ThemedText>
                 </RobustPressable>

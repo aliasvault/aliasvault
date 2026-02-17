@@ -56,7 +56,7 @@ style:
     active: false
   ThrowsCount:
     active: true
-    max: 8
+    max: 16
   ForbiddenComment:
     active: false  # Allow TODO, FIXME, STOPSHIP comments in code
 

@@ -81,7 +81,7 @@
     <comment>Bitwarden export instructions part 1</comment>
   </data>
   <data name="BitwardenInstructionsPart2" xml:space="preserve">
-    <value>După ce ai exportat fiierul, îl poți încărca mai jos.</value>
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
     <comment>Bitwarden export instructions part 2</comment>
   </data>
   <!-- LastPass -->
@@ -129,7 +129,7 @@
     <comment>Description for Generic CSV import service</comment>
   </data>
   <data name="GenericCsvInstructionsPart1" xml:space="preserve">
-    <value>Managerul de parole pe care îl folosiți nu este acceptat? Puteți oricând să importați parolele în AliasVault folosind un șablon CSV generic.</value>
+    <value>Managerul de parole pe care îl folosești nu este acceptat? Poți oricând să imporți parolele în AliasVault folosind un șablon CSV generic.</value>
     <comment>Generic CSV instructions part 1</comment>
   </data>
   <data name="GenericCsvStep1" xml:space="preserve">
@@ -141,7 +141,7 @@
     <comment>Generic CSV step 2</comment>
   </data>
   <data name="GenericCsvStep3" xml:space="preserve">
-    <value>Completați datele de autentificare (înlocuiți datele de exemplu)</value>
+    <value>Completează datele de autentificare (înlocuiește datele de exemplu)</value>
     <comment>Generic CSV step 3</comment>
   </data>
   <data name="GenericCsvStep4" xml:space="preserve">
@@ -158,7 +158,7 @@
     <comment>Description for Firefox import service</comment>
   </data>
   <data name="FirefoxInstructionsPart1" xml:space="preserve">
-    <value>Pentru a importa parolele din Firefox, trebuie să le exportați într-un fișier CSV. Puteți face acest lucru deschizând browserul Firefox și accesând Meniu > „Parole”. Apoi dă clic pe pictograma de meniu din colțul din dreapta sus și selectați 'Export passwords'.</value>
+    <value>Pentru a importa parolele din Firefox, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând browserul Firefox și accesând Meniu > „Parole”. Apoi dă clic pe pictograma de meniu din colțul din dreapta sus și selectează 'Export passwords'.</value>
     <comment>Firefox export instructions part 1</comment>
   </data>
   <data name="FirefoxInstructionsPart2" xml:space="preserve">
@@ -190,6 +190,19 @@
   <data name="KeePassXCInstructionsPart2" xml:space="preserve">
     <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
     <comment>KeePassXC export instructions part 2</comment>
+  </data>
+  <!-- NordPass -->
+  <data name="NordPassDescription" xml:space="preserve">
+    <value>Importă parolele din NordPass</value>
+    <comment>Description for NordPass import service</comment>
+  </data>
+  <data name="NordPassInstructionsPart1" xml:space="preserve">
+    <value>Pentru a importa parolele din NordPass, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând aplicația NordPass sau seiful web și accesând „Setări” > „Exportă elemente”. Apoi, selectează formatul CSV pentru a finaliza exportul.</value>
+    <comment>NordPass export instructions part 1</comment>
+  </data>
+  <data name="NordPassInstructionsPart2" xml:space="preserve">
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
+    <comment>NordPass export instructions part 2</comment>
   </data>
   <!-- Proton Pass -->
   <data name="ProtonPassDescription" xml:space="preserve">
@@ -234,6 +247,45 @@
   <data name="DropboxInstructionsPart1" xml:space="preserve">
     <value>Pentru a importa datele din Dropbox Passwords, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând Dropbox Passwords, mergând la „Account” > „Export” (în format .CSV).</value>
     <comment>Dropbox export instructions part 1</comment>
+  </data>
+  <!-- RoboForm -->
+  <data name="RoboformDescription" xml:space="preserve">
+    <value>Importă parolele din RoboForm</value>
+    <comment>Description for RoboForm import service</comment>
+  </data>
+  <data name="RoboformInstructionsPart1" xml:space="preserve">
+    <value>Pentru a importa parolele tale RoboForm, trebuie să le exporți sub formă de fișier CSV. Poți face acest lucru deschizând RoboForm, mergând la meniul „RoboForm” > „Options” > „Account &amp; Data” > „Export” și selectând formatul CSV.</value>
+    <comment>RoboForm export instructions part 1</comment>
+  </data>
+  <data name="RoboformInstructionsPart2" xml:space="preserve">
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
+    <comment>RoboForm export instructions part 2</comment>
+  </data>
+  <!-- Edge -->
+  <data name="EdgeDescription" xml:space="preserve">
+    <value>Importă parolele din managerul de parole Microsoft Edge</value>
+    <comment>Description for Edge import service</comment>
+  </data>
+  <data name="EdgeInstructionsPart1" xml:space="preserve">
+    <value>Pentru a importa parolele din Microsoft Edge, trebuie să le exporți ca fișier CSV. Poți face acest lucru mergând la Meniu > Setări > Parole și completare automată > Managerul de parole Microsoft > … > Exportă parolele.</value>
+    <comment>Edge export instructions part 1</comment>
+  </data>
+  <data name="EdgeInstructionsPart2" xml:space="preserve">
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
+    <comment>Edge export instructions part 2</comment>
+  </data>
+  <!-- Enpass -->
+  <data name="EnpassDescription" xml:space="preserve">
+    <value>Importă parolele din Enpass</value>
+    <comment>Description for Enpass import service</comment>
+  </data>
+  <data name="EnpassInstructionsPart1" xml:space="preserve">
+    <value>Pentru a importa parolele din Enpass, trebuie să le exporți ca fișier CSV. Poți face acest lucru deschizând Enpass, accesând Meniu > Fișier > Export și selectând Fișier CSV (.csv).</value>
+    <comment>Enpass export instructions part 1</comment>
+  </data>
+  <data name="EnpassInstructionsPart2" xml:space="preserve">
+    <value>După ce ai exportat fișierul, îl poți încărca mai jos.</value>
+    <comment>Enpass export instructions part 2</comment>
   </data>
   <!-- Common text that can be reused -->
   <data name="UploadFileInstructionCommon" xml:space="preserve">

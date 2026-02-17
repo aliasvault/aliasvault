@@ -30,18 +30,41 @@ type ScannedQRCode = {
   type: QRCodeType | null;
   payload: string;
   rawData: string;
+  /** Public key hash from QR code for security verification (if present) */
+  publicKeyHash?: string;
 }
 
 /**
  * Parse QR code data and determine its type.
+ * Extracts public key hash from query parameter if present for security verification.
  */
 function parseQRCode(data: string): ScannedQRCode {
   for (const [type, prefix] of Object.entries(QR_CODE_PREFIXES)) {
     if (data.startsWith(prefix)) {
+      const afterPrefix = data.substring(prefix.length);
+
+      /*
+       * Parse the path and query parameters
+       * Format: {requestId} or {requestId}?pk={hash}
+       */
+      const queryIndex = afterPrefix.indexOf('?');
+      let payload: string;
+      let publicKeyHash: string | undefined;
+
+      if (queryIndex !== -1) {
+        payload = afterPrefix.substring(0, queryIndex);
+        const queryString = afterPrefix.substring(queryIndex + 1);
+        const params = new URLSearchParams(queryString);
+        publicKeyHash = params.get('pk') ?? undefined;
+      } else {
+        payload = afterPrefix;
+      }
+
       return {
         type: type as QRCodeType,
-        payload: data.substring(prefix.length),
+        payload,
         rawData: data,
+        publicKeyHash,
       };
     }
   }
@@ -83,7 +106,11 @@ export default function QRScannerScreen() : React.ReactNode {
      * This creates a smoother transition without returning to settings first
      */
     if (parsedData.type === 'MOBILE_UNLOCK') {
-      router.push(`/(tabs)/settings/mobile-unlock/${parsedData.payload}` as Href);
+      // Pass public key hash as query parameter if present for security verification
+      const route = parsedData.publicKeyHash
+        ? `/(tabs)/settings/mobile-unlock/${parsedData.payload}?pk=${parsedData.publicKeyHash}`
+        : `/(tabs)/settings/mobile-unlock/${parsedData.payload}`;
+      router.push(route as Href);
     }
   }, []);
 

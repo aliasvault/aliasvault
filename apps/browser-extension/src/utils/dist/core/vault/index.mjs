@@ -676,6 +676,11 @@ CREATE INDEX "IX_Passkeys_RpId" ON "Passkeys" ("RpId");
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20251014122838_1.6.0-AddPasskeys', '9.0.4');
 
+COMMIT;
+
+PRAGMA foreign_keys = OFF;
+
+BEGIN TRANSACTION;
 ALTER TABLE "TotpCodes" RENAME COLUMN "CredentialId" TO "ItemId";
 
 DROP INDEX IF EXISTS "IX_TotpCodes_CredentialId";
@@ -1031,7 +1036,7 @@ CREATE INDEX "IX_Tags_Name" ON "Tags" ("Name");
                         SUBSTR(hex(randomblob(6)), 1, 12)) AS Id,
                   c.Id AS ItemId,
                   NULL AS FieldDefinitionId,
-                  'login.notes' AS FieldKey,
+                  'notes.content' AS FieldKey,
                   c.Notes AS Value,
                   0 AS Weight,
                   c.UpdatedAt AS CreatedAt,
@@ -1180,6 +1185,11 @@ DROP TABLE "Aliases";
 
 DROP TABLE "Services";
 
+COMMIT;
+
+PRAGMA foreign_keys = ON;
+
+BEGIN TRANSACTION;
 CREATE TABLE "ef_temp_Attachments" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Attachments" PRIMARY KEY,
     "Blob" BLOB NOT NULL,
@@ -1264,6 +1274,12 @@ COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20251213111207_1.7.0-FieldBasedDataModelUpdate', '9.0.4');
+
+BEGIN TRANSACTION;
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260130221620_2.0.0-MajorVersionBump', '9.0.4');
+
+COMMIT;
 `;
 var MIGRATION_SCRIPTS = {
   1: `\uFEFFBEGIN TRANSACTION;
@@ -1872,7 +1888,9 @@ INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
 VALUES ('20251014122838_1.6.0-AddPasskeys', '9.0.4');
 
 COMMIT;`,
-  11: `\uFEFFBEGIN TRANSACTION;
+  11: `\uFEFFPRAGMA foreign_keys = OFF;
+
+BEGIN TRANSACTION;
 ALTER TABLE "TotpCodes" RENAME COLUMN "CredentialId" TO "ItemId";
 
 DROP INDEX IF EXISTS "IX_TotpCodes_CredentialId";
@@ -2228,7 +2246,7 @@ CREATE INDEX "IX_Tags_Name" ON "Tags" ("Name");
                         SUBSTR(hex(randomblob(6)), 1, 12)) AS Id,
                   c.Id AS ItemId,
                   NULL AS FieldDefinitionId,
-                  'login.notes' AS FieldKey,
+                  'notes.content' AS FieldKey,
                   c.Notes AS Value,
                   0 AS Weight,
                   c.UpdatedAt AS CreatedAt,
@@ -2377,6 +2395,11 @@ DROP TABLE "Aliases";
 
 DROP TABLE "Services";
 
+COMMIT;
+
+PRAGMA foreign_keys = ON;
+
+BEGIN TRANSACTION;
 CREATE TABLE "ef_temp_Attachments" (
     "Id" TEXT NOT NULL CONSTRAINT "PK_Attachments" PRIMARY KEY,
     "Blob" BLOB NOT NULL,
@@ -2460,7 +2483,12 @@ CREATE INDEX "IX_TotpCodes_ItemId" ON "TotpCodes" ("ItemId");
 COMMIT;
 
 INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-VALUES ('20251213111207_1.7.0-FieldBasedDataModelUpdate', '9.0.4');`
+VALUES ('20251213111207_1.7.0-FieldBasedDataModelUpdate', '9.0.4');`,
+  12: `\uFEFFBEGIN TRANSACTION;
+INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+VALUES ('20260130221620_2.0.0-MajorVersionBump', '9.0.4');
+
+COMMIT;`
 };
 
 // src/sql/VaultVersions.ts
@@ -2547,7 +2575,14 @@ var VAULT_VERSIONS = [
     version: "1.7.0",
     description: "Update to Field-Based Data Model",
     releaseVersion: "0.26.0",
-    compatibleUpToVersion: "0.26.0"
+    compatibleUpToVersion: "0.25.0"
+  },
+  {
+    revision: 13,
+    version: "2.0.0",
+    description: "Update to Field-Based Data Model",
+    releaseVersion: "0.26.1",
+    compatibleUpToVersion: "0.25.0"
   }
 ];
 

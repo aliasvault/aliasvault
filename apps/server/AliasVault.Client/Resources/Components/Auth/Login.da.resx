@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" id="root">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace"/>
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string"/>
+              <xsd:attribute name="name" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+              <xsd:attribute name="type" type="xsd:string"/>
+              <xsd:attribute name="mimetype" type="xsd:string"/>
+              <xsd:attribute ref="xml:space"/>
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1"/>
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string"/>
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <!-- Page titles -->
+  <data name="PageTitle" xml:space="preserve">
+    <value>Log ind på AliasVault</value>
+    <comment>Main login page title</comment>
+  </data>
+  <data name="TwoFactorAuthenticationTitle" xml:space="preserve">
+    <value>To-faktor-godkendelse</value>
+    <comment>Title for 2FA step</comment>
+  </data>
+  <data name="RecoveryCodeVerificationTitle" xml:space="preserve">
+    <value>Bekræftelse af gendannelseskode</value>
+    <comment>Title for recovery code step</comment>
+  </data>
+  <!-- Form labels -->
+  <data name="UsernameOrEmailLabel" xml:space="preserve">
+    <value>Dit brugernavn eller e-mail</value>
+    <comment>Label for username/email input field</comment>
+  </data>
+  <data name="PasswordLabel" xml:space="preserve">
+    <value>Din adgangskode</value>
+    <comment>Label for password input field</comment>
+  </data>
+  <data name="AuthenticatorCodeLabel" xml:space="preserve">
+    <value>Authenticator-kode</value>
+    <comment>Label for 2FA code input field</comment>
+  </data>
+  <data name="RecoveryCodeLabel" xml:space="preserve">
+    <value>Gendannelseskode</value>
+    <comment>Label for recovery code input field</comment>
+  </data>
+  <data name="RememberMeLabel" xml:space="preserve">
+    <value>Husk mig</value>
+    <comment>Label for remember me checkbox</comment>
+  </data>
+  <data name="RememberMachineLabel" xml:space="preserve">
+    <value>Husk denne enhed</value>
+    <comment>Label for remember machine checkbox</comment>
+  </data>
+  <!-- Buttons -->
+  <data name="LoginButton" xml:space="preserve">
+    <value>Log ind</value>
+    <comment>Login button text</comment>
+  </data>
+  <!-- Links -->
+  <data name="LostPasswordLink" xml:space="preserve">
+    <value>Glemt adgangskode?</value>
+    <comment>Link text for password recovery</comment>
+  </data>
+  <data name="CreateNewVaultLink" xml:space="preserve">
+    <value>Opret ny boks</value>
+    <comment>Link text for creating a new vault</comment>
+  </data>
+  <data name="LoginWithRecoveryCodeLink" xml:space="preserve">
+    <value>Log ind med en gendannelseskode i stedet.</value>
+    <comment>Link text for logging in with recovery code</comment>
+  </data>
+  <data name="LoginWithAuthenticatorLink" xml:space="preserve">
+    <value>Log ind med en authenticator-kode i stedet.</value>
+    <comment>Link text for logging in with authenticator</comment>
+  </data>
+  <data name="MobileDeviceLink" xml:space="preserve">
+    <value>Log ind med mobil-app</value>
+    <comment>Link text for mobile device login</comment>
+  </data>
+  <!-- Descriptions and help text -->
+  <data name="TwoFactorAuthenticationDescription" xml:space="preserve">
+    <value>Dit login er beskyttet med en authenticator-app. Indtast din authenticator-kode nedenfor.</value>
+    <comment>Description for 2FA step</comment>
+  </data>
+  <data name="RecoveryCodeDescription" xml:space="preserve">
+    <value>Du har anmodet om at logge ind med en gendannelseskode. En gendannelseskode er en engangskode, der kan bruges til at logge ind på din konto. Bemærk, at hvis du ikke manuelt deaktiverer 2FA efter login, vil du blive bedt om en authenticator-kode igen ved næste login.</value>
+    <comment>Description for recovery code step</comment>
+  </data>
+  <data name="NoAccountYetText" xml:space="preserve">
+    <value>Har du endnu ikke en konto?</value>
+    <comment>Text before registration link</comment>
+  </data>
+  <data name="DontHaveAuthenticatorText" xml:space="preserve">
+    <value>Har du ikke adgang til din authenticator-enhed?</value>
+    <comment>Question text about not having access to authenticator</comment>
+  </data>
+  <data name="RegainedAccessText" xml:space="preserve">
+    <value>Har du fået adgang til din authenticator-enhed igen?</value>
+    <comment>Question text about regaining access to authenticator</comment>
+  </data>
+  <!-- Loading and status messages -->
+  <data name="LoggingInMessage" xml:space="preserve">
+    <value>Logger ind...</value>
+    <comment>Loading message during login process</comment>
+  </data>
+  <data name="VerifyingTwoFactorCodeMessage" xml:space="preserve">
+    <value>Verificerer 2FA-kode...</value>
+    <comment>Loading message during 2FA verification</comment>
+  </data>
+  <data name="VerifyingRecoveryCodeMessage" xml:space="preserve">
+    <value>Verificerer gendannelseskode...</value>
+    <comment>Loading message during recovery code verification</comment>
+  </data>
+  <!-- Error messages -->
+  <data name="LoginErrorMessage" xml:space="preserve">
+    <value>Der opstod en fejl under behandlingen af login-anmodningen. Prøv igen (senere).</value>
+    <comment>Generic login error message</comment>
+  </data>
+  <data name="LoginRequestErrorMessage" xml:space="preserve">
+    <value>Der opstod en fejl under behandlingen af login-anmodningen.</value>
+    <comment>Login request processing error message</comment>
+  </data>
+  <!-- Placeholders -->
+  <data name="UsernamePlaceholder" xml:space="preserve">
+    <value>navn / navn@firma.dk</value>
+    <comment>Placeholder text for username input</comment>
+  </data>
+  <data name="PasswordPlaceholder" xml:space="preserve">
+    <value>••••••••</value>
+    <comment>Placeholder text for password input</comment>
+  </data>
+</root>

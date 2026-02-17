@@ -41,6 +41,13 @@ class VaultStore(
         private var instance: VaultStore? = null
 
         /**
+         * Prefix used to identify base64-encoded blob data from React Native.
+         * The React Native side prefixes base64 strings with this to indicate
+         * they should be converted to ByteArray for SQLite BLOB storage.
+         */
+        private const val BASE64_BLOB_PREFIX = "av-base64-to-blob:"
+
+        /**
          * Get the instance of the vault store.
          * @param keystoreProvider The keystore provider
          * @param storageProvider The storage provider
@@ -156,10 +163,18 @@ class VaultStore(
     }
 
     /**
-     * Initialize the encryption key.
+     * Store the encryption key in memory only.
      */
-    fun initEncryptionKey(base64EncryptionKey: String) {
-        crypto.initEncryptionKey(base64EncryptionKey)
+    fun storeEncryptionKeyInMemory(base64EncryptionKey: String) {
+        crypto.storeEncryptionKeyInMemory(base64EncryptionKey)
+    }
+
+    /**
+     * Clear the encryption key from memory.
+     * This forces getEncryptionKey() to fetch from keystore on next biometric access.
+     */
+    fun clearEncryptionKeyFromMemory() {
+        crypto.clearEncryptionKeyFromMemory()
     }
 
     /**
@@ -258,11 +273,15 @@ class VaultStore(
     fun executeQuery(queryString: String, params: Array<Any?>): List<Map<String, Any?>> {
         val db = databaseComponent.dbConnection ?: error("Database not initialized")
 
-        // Convert params to strings for SQLite
+        // Process params - convert base64-prefixed strings to ByteArray for blob binding
         val convertedParams = params.map { param ->
-            when (param) {
-                null -> null
-                is ByteArray -> String(param, Charsets.UTF_8)
+            when {
+                param == null -> null
+                param is String && param.startsWith(BASE64_BLOB_PREFIX) -> {
+                    val base64 = param.removePrefix(BASE64_BLOB_PREFIX)
+                    android.util.Base64.decode(base64, android.util.Base64.NO_WRAP)
+                }
+                param is ByteArray -> param
                 else -> param.toString()
             }
         }.toTypedArray()
@@ -275,20 +294,14 @@ class VaultStore(
             while (it.moveToNext()) {
                 val row = mutableMapOf<String, Any?>()
                 for (columnName in columnNames) {
-                    when (it.getType(it.getColumnIndexOrThrow(columnName))) {
+                    val colIndex = it.getColumnIndexOrThrow(columnName)
+                    val colType = it.getType(colIndex)
+                    when (colType) {
                         android.database.Cursor.FIELD_TYPE_NULL -> row[columnName] = null
-                        android.database.Cursor.FIELD_TYPE_INTEGER -> row[columnName] = it.getLong(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_FLOAT -> row[columnName] = it.getDouble(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_STRING -> row[columnName] = it.getString(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
-                        android.database.Cursor.FIELD_TYPE_BLOB -> row[columnName] = it.getBlob(
-                            it.getColumnIndexOrThrow(columnName),
-                        )
+                        android.database.Cursor.FIELD_TYPE_INTEGER -> row[columnName] = it.getLong(colIndex)
+                        android.database.Cursor.FIELD_TYPE_FLOAT -> row[columnName] = it.getDouble(colIndex)
+                        android.database.Cursor.FIELD_TYPE_STRING -> row[columnName] = it.getString(colIndex)
+                        android.database.Cursor.FIELD_TYPE_BLOB -> row[columnName] = it.getBlob(colIndex)
                     }
                 }
                 results.add(row)
@@ -304,23 +317,32 @@ class VaultStore(
     fun executeUpdate(queryString: String, params: Array<Any?>): Int {
         val db = databaseComponent.dbConnection ?: error("Database not initialized")
 
-        val convertedParams = params.map { param ->
-            when (param) {
-                null -> null
-                is ByteArray -> String(param, Charsets.UTF_8)
+        // Process params - convert base64-prefixed strings to ByteArray for blob binding
+        val processedParams = params.map { param ->
+            when {
+                param == null -> null
+                param is String && param.startsWith(BASE64_BLOB_PREFIX) -> {
+                    val base64 = param.removePrefix(BASE64_BLOB_PREFIX)
+                    android.util.Base64.decode(base64, android.util.Base64.NO_WRAP)
+                }
+                param is ByteArray -> param
                 else -> param.toString()
             }
-        }.toTypedArray()
+        }
 
         val stmt = db.compileStatement(queryString)
-        convertedParams.forEachIndexed { index, value ->
-            if (value == null) {
-                stmt.bindNull(index + 1)
-            } else {
-                stmt.bindString(index + 1, value)
+        try {
+            processedParams.forEachIndexed { index, value ->
+                when (value) {
+                    null -> stmt.bindNull(index + 1)
+                    is ByteArray -> stmt.bindBlob(index + 1, value)
+                    else -> stmt.bindString(index + 1, value.toString())
+                }
             }
+            stmt.execute()
+        } finally {
+            stmt.close()
         }
-        stmt.execute()
 
         // Get the number of affected rows
         val affectedCursor = db.rawQuery("SELECT changes()", null)
@@ -334,9 +356,11 @@ class VaultStore(
 
     /**
      * Execute a raw SQL command on the vault without parameters.
-     * Splits the query by semicolons to handle multiple statements and
-     * skips transaction control statements (BEGIN TRANSACTION, COMMIT, ROLLBACK)
-     * as those are handled externally by the caller.
+     * Splits the query by semicolons to handle multiple statements.
+     *
+     * Note: Migration SQL scripts handle their own transactions and PRAGMA statements.
+     * PRAGMA foreign_keys statements MUST be executed outside of transactions to take effect,
+     * which is why we execute them using rawQuery instead of compileStatement.
      */
     fun executeRaw(queryString: String) {
         val db = databaseComponent.dbConnection ?: error("Database not initialized")
@@ -344,24 +368,31 @@ class VaultStore(
         // Strip BOM (U+FEFF) that may be present at the start of SQL strings.
         val cleanedQuery = queryString.trimStart('\uFEFF')
 
-        // Split by semicolons to handle multiple statements
-        val statements = cleanedQuery.split(";")
-
-        for (statement in statements) {
-            val trimmed = statement.trim().trimStart('\uFEFF')
-
-            // Skip empty statements and transaction control statements (handled externally)
-            if (trimmed.isEmpty() ||
-                trimmed.uppercase().startsWith("BEGIN TRANSACTION") ||
-                trimmed.uppercase().startsWith("COMMIT") ||
-                trimmed.uppercase().startsWith("ROLLBACK")
-            ) {
-                continue
+        // Split by semicolons to handle multiple statements and filter out empty ones
+        cleanedQuery.split(";")
+            .map { it.trim().trimStart('\uFEFF') }
+            .filter { it.isNotEmpty() && !it.startsWith("--") }
+            .forEach { trimmed ->
+                val upperTrimmed = trimmed.uppercase()
+                when {
+                    // Handle PRAGMA statements using rawQuery (required for PRAGMA to work properly)
+                    upperTrimmed.startsWith("PRAGMA") -> db.rawQuery(trimmed, null)?.close()
+                    // Handle transaction control statements using execSQL
+                    isTransactionControlStatement(upperTrimmed) -> db.execSQL(trimmed)
+                    // Use compileStatement for all other SQL (DDL and DML)
+                    else -> db.compileStatement(trimmed).execute()
+                }
             }
+    }
 
-            val stmt = db.compileStatement(trimmed)
-            stmt.execute()
-        }
+    /**
+     * Check if a SQL statement is a transaction control statement.
+     */
+    private fun isTransactionControlStatement(upperStatement: String): Boolean {
+        return upperStatement.startsWith("BEGIN TRANSACTION") ||
+            upperStatement.startsWith("BEGIN") ||
+            upperStatement.startsWith("COMMIT") ||
+            upperStatement.startsWith("ROLLBACK")
     }
 
     /**
@@ -390,6 +421,20 @@ class VaultStore(
      */
     fun rollbackTransaction() {
         databaseComponent.rollbackTransaction()
+    }
+
+    /**
+     * Persist the in-memory database to encrypted storage and mark as dirty.
+     * Used after migrations where SQL handles its own transactions but we need to persist and sync.
+     * This does NOT commit any SQL transaction - it just persists the current state of the database.
+     */
+    fun persistAndMarkDirty() {
+        databaseComponent.persistDatabaseToEncryptedStorage()
+
+        // Atomically mark vault as dirty and increment mutation sequence
+        // This ensures sync can properly detect local changes
+        metadata.setIsDirty(true)
+        metadata.incrementMutationSequence()
     }
 
     /**

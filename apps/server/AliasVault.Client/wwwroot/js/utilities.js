@@ -308,6 +308,7 @@ window.initTopMenu = function() {
 
 /**
  * Generate a QR code for the given id element that has a data-url attribute.
+ * Includes proper quiet zone (white padding) for reliable scanning in dark mode.
  * @param id
  */
 function generateQrCode(id) {
@@ -327,10 +328,20 @@ function generateQrCode(id) {
         return;
     }
 
+    // Create a wrapper with white background and padding for the quiet zone.
+    // QR code best practices require at least 4 modules of quiet zone (white space)
+    // around the code for reliable scanning, especially important in dark mode.
+    const qrWrapper = document.createElement('div');
+    qrWrapper.style.display = 'inline-block';
+    qrWrapper.style.padding = '16px';
+    qrWrapper.style.backgroundColor = '#ffffff';
+    qrWrapper.style.borderRadius = '8px';
+
     // Create a container for the QR code
     const qrContainer = document.createElement('div');
     qrContainer.id = `qrcode-${id}`;
-    element.appendChild(qrContainer);
+    qrWrapper.appendChild(qrContainer);
+    element.appendChild(qrWrapper);
 
     // Initialize QRCode object
     let qrcode = new QRCode(qrContainer, {

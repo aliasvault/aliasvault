@@ -24,18 +24,13 @@
     "unlockSuccessDescription": "Voit nyt käyttää automaattista täyttöä sisäänkirjautumislomakkeissa selaimessasi.",
     "closePopup": "Sulje tämä ponnahdusikkuna",
     "browseVault": "Selaa holvin sisältöä",
+    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "closingIn": "Closing in {{seconds}}s...",
     "connectingTo": "Yhdistetään kohteeseen",
     "switchAccounts": "Vaihdetaanko tiliä?",
     "loginWithMobile": "Kirjaudu sisään mobiilisovelluksella",
     "unlockWithMobile": "Avaa käyttämällä mobiilisovellusta",
-    "scanQrCode": "Skannaa tämä QR-koodi AliasVault-mobiilisovelluksellasi kirjautuaksesi sisään ja avataksesi holvisi.",
-    "errors": {
-      "invalidCode": "Syötä kelvollinen 6-numeroinen tunnistautumiskoodi.",
-      "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
-      "wrongPassword": "Virheellinen salasana. Yritä uudelleen.",
-      "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
-      "mobileLoginRequestExpired": "Mobiilikirjautumispyyntö aikakatkaistiin. Lataa sivu uudelleen ja yritä uudelleen."
-    }
+    "scanQrCode": "Skannaa tämä QR-koodi AliasVault-mobiilisovelluksellasi kirjautuaksesi sisään ja avataksesi holvisi."
   },
   "menu": {
     "vault": "Holvi",
@@ -47,6 +42,7 @@
     "error": "Virhe",
     "cancel": "Peruuta",
     "confirm": "Vahvista",
+    "remove": "Remove",
     "back": "Takaisin",
     "next": "Seuraava",
     "use": "Käytä",
@@ -58,6 +54,7 @@
     "create": "Luo",
     "or": "Tai",
     "close": "Sulje",
+    "dismiss": "Dismiss",
     "logout": "Uloskirjautuminen",
     "copied": "Kopioitu!",
     "openInNewWindow": "Avaa uudessa ikkunassa",
@@ -106,7 +103,12 @@
       "vaultIsLocked": "Holvi on lukittu",
       "passwordChanged": "Salasanasi on muuttunut edellisen sisäänkirjautumisen jälkeen. Kirjaudu sisään uudelleen turvallisuussyistä.",
       "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again."
+      "mergeFailed": "Failed to merge vault changes. Please try again.",
+      "invalidCode": "Syötä kelvollinen 6-numeroinen tunnistautumiskoodi.",
+      "serverError": "AliasVault-palvelimeen ei saatu yhteyttä. Yritä myöhemmin uudelleen tai ota yhteyttä tukeen, jos ongelma jatkuu.",
+      "wrongPassword": "Virheellinen salasana. Yritä uudelleen. ",
+      "sessionExpired": "Istuntosi on vanhentunut. Kirjaudu sisään uudelleen.",
+      "mobileLoginRequestExpired": "Mobiilikirjautumispyyntö aikakatkaistiin. Lataa sivu uudelleen ja yritä uudelleen."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Tapahtui tuntematon virhe. Yritä uudelleen.",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Salasana kopioitu leikepöydälle",
     "openAliasVaultToUpgrade": "Avaa AliasVault päivittääksesi",
     "vaultUpgradeRequired": "Holvin päivitys vaaditaan.",
-    "dismissPopup": "Hylkää ponnahdusikkuna"
+    "dismissPopup": "Hylkää ponnahdusikkuna",
+    "savePrompt": {
+      "title": "Save to AliasVault?",
+      "neverForThisSite": "Never for this site"
+    }
   },
   "items": {
     "title": "Tiedot",
@@ -202,8 +208,14 @@
     "deleteFolderAndItems": "Delete folder and all items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
-      "all": "(Kaikki) tiedot",
+      "folders": "Folders",
       "passkeys": "Sala-avaimet"
+    },
+    "sort": {
+      "title": "Sort by",
+      "oldestFirst": "Oldest first",
+      "newestFirst": "Newest first",
+      "alphabetical": "Alphabetical (A-Z)"
     },
     "deleteItemTitle": "Poista kohde",
     "deleteItemConfirm": "Haluatko varmasti poistaa tämän kohteen?",
@@ -344,6 +356,11 @@
     "disabledForThisSite": "Poistettu käytöstä tällä sivustolla",
     "temporarilyDisabledUntil": "Väliaikaisesti pois käytöstä, kunnes ",
     "resetAllSiteSettings": "Nollaa kaikki sivustokohtaiset asetukset",
+    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
+    "disabledSites": "Disabled sites",
+    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
+    "clearAllDisabledSites": "Clear all disabled sites",
+    "temporaryUntil": "until",
     "appearance": "Ulkoasu",
     "theme": "Teema",
     "useDefault": "Käytä oletusta",
@@ -396,6 +413,28 @@
       "apiUrlInvalid": "Syötä kelvollinen API-URL-osoite",
       "clientUrlRequired": "Asiakkaan URL-osoite vaaditaan",
       "clientUrlInvalid": "Syötä kelvollinen asiakas-URL-osoite"
+    },
+    "identityGenerator": "Identiteetin luonti",
+    "identityGeneratorSettings": {
+      "description": "Määritä oletuskieli- ja sukupuoliasetukset uusien käyttäjätunnusten luontia varten.",
+      "languageSection": "Kieli",
+      "languageDescription": "Aseta kieli, jota käytetään luotaessa uusia henkilöllisyyksiä.",
+      "genderSection": "Sukupuoli",
+      "genderDescription": "Aseta oletussukupuoli uusien henkilöllisyyksien luomiseksi. ",
+      "ageRangeSection": "Ikähaarukka",
+      "ageRangeDescription": "Aseta ikähaarukka uusia henkilöllisyyksien luomisessa",
+      "genderOptions": {
+        "random": "Satunnainen",
+        "male": "Mies",
+        "female": "Nainen"
+      }
+    },
+    "loginSave": {
+      "title": "Save Login Prompt",
+      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
+      "blockedSites": "Blocked sites",
+      "blockedSitesDescription": "Sites where the save prompt will never appear.",
+      "clearAllBlockedSites": "Clear all blocked sites"
     },
     "unlockMethod": {
       "title": "Holvin lukituksen avausmenetelmä",
@@ -494,5 +533,9 @@
     "unsyncedChangesTitle": "Synkronoimattomat muutokset",
     "unsyncedChangesWarning": "Sinulla on synkronoimattomia muutoksia, jotka menetetään, jos kirjaudut ulos nyt. Oletko varma, että haluat jatkaa?",
     "logoutAnyway": "Kirjaudu ulos joka tapauksessa"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Tap to retry sync"
   }
 }

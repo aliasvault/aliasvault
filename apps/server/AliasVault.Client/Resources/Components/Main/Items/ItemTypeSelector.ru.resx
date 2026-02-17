@@ -33,7 +33,7 @@
     <comment>Credit Card item type name</comment>
   </data>
   <data name="TypeNote">
-    <value>Secure Note</value>
+    <value>Защищенная заметка</value>
     <comment>Secure Note item type name</comment>
   </data>
   <!-- Status text -->
@@ -47,7 +47,7 @@
   </data>
   <!-- Buttons -->
   <data name="RegenerateAlias">
-    <value>Regenerate Alias</value>
+    <value>Перегенерировать псевдоним</value>
     <comment>Tooltip for regenerate alias button</comment>
   </data>
 </root>

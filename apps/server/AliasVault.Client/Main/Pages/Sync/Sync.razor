@@ -1,8 +1,8 @@
 ﻿@page "/sync"
 @layout EmptyLayout
 @implements IDisposable
-@using AliasVault.Client.Auth.Pages.Base
 @using AliasVault.Client.Main.Pages.Sync.StatusMessages
+@using AliasVault.Client.Services
 @inject DbService DbService
 @inject AuthService AuthService
 @inject ILocalStorageService LocalStorage
@@ -130,7 +130,7 @@
         }
 
         var disallowedUrls = new[] { "/sync", "/unlock", "/user/logout" };
-        var localStorageReturnUrl = await LocalStorage.GetItemAsync<string>(LoginBase.ReturnUrlKey);
+        var localStorageReturnUrl = await LocalStorage.GetItemAsync<string>(StorageKeys.ReturnUrl);
 
         if (string.IsNullOrEmpty(localStorageReturnUrl))
         {
@@ -143,7 +143,7 @@
         if (!string.IsNullOrEmpty(trimmedUrl) && !disallowedUrls.Contains(localStorageReturnUrl))
         {
             // If an explicit return URL has been configured, redirect to that URL.
-            await LocalStorage.RemoveItemAsync(LoginBase.ReturnUrlKey);
+            await LocalStorage.RemoveItemAsync(StorageKeys.ReturnUrl);
             NavigationManager.NavigateTo(localStorageReturnUrl);
         }
         else

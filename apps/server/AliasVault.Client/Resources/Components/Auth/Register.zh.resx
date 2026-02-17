@@ -65,7 +65,7 @@
   </data>
   <!-- Form labels -->
   <data name="UsernameOrEmailLabel" xml:space="preserve">
-    <value>您的用户名或电子邮箱</value>
+    <value>您的用户名或邮箱</value>
     <comment>Label for username/email input field</comment>
   </data>
   <data name="PasswordLabel" xml:space="preserve">

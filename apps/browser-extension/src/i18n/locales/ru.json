@@ -24,18 +24,13 @@
     "unlockSuccessDescription": "Теперь вы можете использовать автозаполнение форм входа в Вашем браузере.",
     "closePopup": "Закрыть окно",
     "browseVault": "Обзор содержимого хранилища",
+    "autoCloseUnlockPopup": "Закрывать окно после входа",
+    "closingIn": "Закроется через {{seconds}}с...",
     "connectingTo": "Подключение к",
     "switchAccounts": "Переключить аккаунт?",
     "loginWithMobile": "Войти с помощью мобильного приложения",
     "unlockWithMobile": "Разблокировать через мобильное приложение",
-    "scanQrCode": "Сканируйте QR-код в приложении AliasVault, чтобы войти.",
-    "errors": {
-      "invalidCode": "Пожалуйста, введите правильный 6-значный код аутентификации.",
-      "serverError": "Не удалось подключиться к серверу AliasVault. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
-      "wrongPassword": "Неверный пароль. Пожалуйста, повторите попытку.",
-      "sessionExpired": "Время сеанса истекло. Пожалуйста, войдите снова.",
-      "mobileLoginRequestExpired": "Истекло время ожидания входа. Перезагрузите страницу и повторите попытку."
-    }
+    "scanQrCode": "Сканируйте QR-код в приложении AliasVault, чтобы войти."
   },
   "menu": {
     "vault": "Хранилище",
@@ -47,6 +42,7 @@
     "error": "Ошибка",
     "cancel": "Отмена",
     "confirm": "Подтвердить",
+    "remove": "Удалить",
     "back": "Назад",
     "next": "Далее",
     "use": "Использовать",
@@ -54,10 +50,11 @@
     "delete": "Удалить",
     "undo": "Отменить",
     "save": "Сохранить",
-    "saving": "Saving...",
+    "saving": "Сохраняем...",
     "create": "Создать",
     "or": "Или",
     "close": "Закрыть",
+    "dismiss": "Закрыть",
     "logout": "Выйти",
     "copied": "Скопировано!",
     "openInNewWindow": "Открыть в новом окне",
@@ -75,14 +72,14 @@
     "settings": "Настройки",
     "recentEmails": "Последние письма",
     "credentials": "Учетные записи",
-    "customFields": "Custom Fields",
+    "customFields": "Пользовательские поля",
     "twoFactorAuthentication": "Двухфакторная аутентификация",
     "alias": "Псевдоним",
     "notes": "Заметки",
     "email": "Электронная почта",
     "username": "Имя пользователя",
     "password": "Пароль",
-    "generate": "Generate",
+    "generate": "Сгенерировать",
     "serviceName": "Название сервиса",
     "loggedIn": "Вход выполнен",
     "syncingVault": "Синхронизация хранилища",
@@ -90,10 +87,10 @@
     "syncingUpdatedVault": "Синхронизация обновленного хранилища",
     "loadMore": "Загрузить ещё",
     "offline": "Офлайн",
-    "offlineMode": "Operating in offline mode",
+    "offlineMode": "Работа в автономном режиме",
     "pendingSync": "Синхронизация...",
     "mergingVaultChanges": "Объединение изменений в хранилище...",
-    "uploadingVault": "Uploading vault...",
+    "uploadingVault": "Загрузка хранилища...",
     "errors": {
       "serverNotAvailable": "Сервер AliasVault недоступен. Пожалуйста, повторите попытку позже или обратитесь в службу поддержки, если проблема не устранится.",
       "clientVersionNotSupported": "Эта версия браузерного расширения AliasVault больше не поддерживается сервером. Пожалуйста, обновите расширение вашего браузера до последней версии.",
@@ -105,8 +102,13 @@
       "vaultNotAvailable": "Хранилище недоступно",
       "vaultIsLocked": "Хранилище заблокировано",
       "passwordChanged": "С момента вашего последнего входа ваш пароль изменился. Пожалуйста, войдите еще раз в целях безопасности.",
-      "syncConflictMaxRetries": "Could not sync vault after multiple attempts. Please try again later.",
-      "mergeFailed": "Failed to merge vault changes. Please try again."
+      "syncConflictMaxRetries": "Ошибка синхронизации хранилища. Повторите попытку позже.",
+      "mergeFailed": "Не удалось объединить изменения. Попробуйте снова.",
+      "invalidCode": "Введите корректный 6-значный код подтверждения.",
+      "serverError": "Сервер AliasVault недоступен. Повторите попытку позже или свяжитесь с техподдержкой.",
+      "wrongPassword": "Неверный пароль. Повторите попытку.",
+      "sessionExpired": "Срок действия сессии истек. Войдите снова.",
+      "mobileLoginRequestExpired": "Срок запроса на вход истек. Обновите страницу и попробуйте снова."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Произошла неизвестная ошибка. Пожалуйста, попробуйте снова.",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Пароль скопирован в буфер обмена",
     "openAliasVaultToUpgrade": "Откройте AliasVault для обновления",
     "vaultUpgradeRequired": "Требуется обновление хранилища.",
-    "dismissPopup": "Закрыть окно"
+    "dismissPopup": "Закрыть окно",
+    "savePrompt": {
+      "title": "Сохранить в AliasVault?",
+      "neverForThisSite": "Никогда для этого сайта"
+    }
   },
   "items": {
     "title": "Записи",
@@ -173,8 +179,8 @@
     "loginCredentials": "Учетные данные для авторизации",
     "cardInformation": "Данные карты",
     "addItem": "Добавить запись",
-    "addNewItem": "Add new item",
-    "saveItem": "Save Item",
+    "addNewItem": "Добавить запись",
+    "saveItem": "Сохранить запись",
     "itemDetails": "Детали записи",
     "editItem": "Редактировать запись",
     "untitled": "Без названия",
@@ -190,20 +196,26 @@
     "noAttachmentsFound": "Элементы с вложениями не найдены",
     "noItemsOfTypeFound": "Элементы типа «{{type}}» не найдены",
     "noMatchingItems": "Совпадений не найдено",
-    "noMatchingItemsSearch": "No items matching \"{{search}}\"",
-    "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
-    "clearSearch": "Clear search",
-    "clearFilter": "Clear filter",
-    "emptyFolderHint": "This folder is empty. To move items to this folder, edit the item and tap the folder icon in the name field.",
-    "allItemsInFolders": "All your items are organized in folders. Click a folder above to view your credentials, or use the search to find specific items.",
-    "deleteFolder": "Delete Folder",
-    "deleteFolderKeepItems": "Delete folder only",
-    "deleteFolderKeepItemsDescription": "Items will be moved back to the main list.",
-    "deleteFolderAndItems": "Delete folder and all items",
-    "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
+    "noMatchingItemsSearch": "По запросу \"{{search}}\" ничего не найдено",
+    "noMatchingItemsWithFilter": "Ничего не найдено в \"{{filter}}\" по запросу \"{{search}}\"",
+    "clearSearch": "Очистить поиск",
+    "clearFilter": "Сбросить фильтр",
+    "emptyFolderHint": "Эта папка пуста. Чтобы переместить сюда записи, перейдите в режим редактирования записи и нажмите на иконку папки в поле имени.",
+    "allItemsInFolders": "Все ваши данные разложены по папкам. Выберите нужную папку выше или воспользуйтесь поиском, чтобы найти конкретную запись.",
+    "deleteFolder": "Удалить папку",
+    "deleteFolderKeepItems": "Удалить только папку",
+    "deleteFolderKeepItemsDescription": "Элементы будут перемещены обратно в основной список.",
+    "deleteFolderAndItems": "Удалить папку и все элементы",
+    "deleteFolderAndItemsDescription": "{{count}} объект(ов) будет перемещено в раздел «Недавно удалённые».",
     "filters": {
-      "all": "(Все) Записи",
+      "folders": "Папки",
       "passkeys": "Ключи доступа"
+    },
+    "sort": {
+      "title": "Сортировка",
+      "oldestFirst": "Сначала старые",
+      "newestFirst": "Сначала новые",
+      "alphabetical": "По алфавиту (А–Я)"
     },
     "deleteItemTitle": "Удалить элемент",
     "deleteItemConfirm": "Вы уверены, что хотите удалить этот элемент?",
@@ -228,18 +240,18 @@
     }
   },
   "itemTypes": {
-    "selectType": "Add New Item",
-    "typeLabel": "Item Type",
+    "selectType": "Добавить новую запись",
+    "typeLabel": "Тип записи",
     "creating": "Создание",
     "editing": "Редактирование",
-    "regenerateAlias": "Regenerate alias",
-    "addCustomField": "Add custom field",
+    "regenerateAlias": "Перегенерировать псевдоним",
+    "addCustomField": "Добавить свое поле",
     "fieldLabel": "Название поля",
     "enterFieldName": "Введите название поля",
     "fieldType": "Тип поля",
     "fieldTypes": {
       "text": "Текст",
-      "hidden": "Hidden (masked text)",
+      "hidden": "Скрыто (маскированный текст)",
       "email": "Почта",
       "url": "URL",
       "phone": "Телефон",
@@ -257,7 +269,7 @@
       "title": "Банковская карта"
     },
     "note": {
-      "title": "Secure Note"
+      "title": "Защищенная заметка"
     }
   },
   "fieldLabels": {
@@ -283,17 +295,17 @@
     "nameOptional": "Имя (необязательно)",
     "secretKey": "Секретный ключ",
     "saveToViewCode": "Сохранить для просмотра кода",
-    "defaultName": "Authenticator",
+    "defaultName": "Аутентификатор",
     "errors": {
       "invalidSecretKey": "Неверный формат секретного ключа."
     }
   },
   "attachmentUploader": {
-    "uploading": "Uploading...",
-    "uploadSuccess": "Files uploaded successfully.",
-    "deleteSuccess": "Attachment deleted successfully.",
-    "firefoxExpandRequired": "To upload files, use the expanded window.",
-    "openExpandedWindow": "Open Expanded Window"
+    "uploading": "Загрузка...",
+    "uploadSuccess": "Файлы успешно загружены.",
+    "deleteSuccess": "Вложение успешно удалено.",
+    "firefoxExpandRequired": "Для загрузки файлов используйте расширенное окно.",
+    "openExpandedWindow": "Открыть расширенное окно"
   },
   "emails": {
     "title": "Письма",
@@ -306,7 +318,7 @@
     "emailNotFound": "Адрес электронной почты не найден",
     "noEmails": "Электронные письма не найдены",
     "noEmailsDescription": "Вы еще не получали никаких электронных писем на свои личные адреса электронной почты. Когда вы получите новое электронное письмо, оно появится здесь.",
-    "offlineMessage": "You are offline. Please connect to the internet to load your emails.",
+    "offlineMessage": "Вы не в сети. Пожалуйста, подключитесь к Интернету, чтобы загрузить свои электронные письма.",
     "dateFormat": {
       "justNow": "прямо сейчас",
       "minutesAgo_single": "{{count}} мин назад",
@@ -344,6 +356,11 @@
     "disabledForThisSite": "Отключено для этого сайта",
     "temporarilyDisabledUntil": "Временно отключен до тех пор, пока",
     "resetAllSiteSettings": "Сбросить все настройки для сайтов",
+    "autofillPopupDescription": "Показывать автозаполнение при обнаружении полей входа.",
+    "disabledSites": "Исключения",
+    "disabledSitesDescription": "Сайты, на которых не будет появляться автозаполнение.",
+    "clearAllDisabledSites": "Очистить список исключений",
+    "temporaryUntil": "До",
     "appearance": "Внешний вид",
     "theme": "Тема",
     "useDefault": "Использовать по умолчанию",
@@ -397,6 +414,28 @@
       "clientUrlRequired": "Требуется URL-адрес клиента",
       "clientUrlInvalid": "Пожалуйста, введите корректный URL-адрес клиента"
     },
+    "identityGenerator": "Генератор личности",
+    "identityGeneratorSettings": {
+      "description": "Настройте язык и гендерные предпочтения по умолчанию для создания новых личностей.",
+      "languageSection": "Язык",
+      "languageDescription": "Установите язык, который будет использоваться при создании новых личностей.",
+      "genderSection": "Пол",
+      "genderDescription": "Установите гендерные предпочтения для создания новых личностей.",
+      "ageRangeSection": "Возрастной диапазон",
+      "ageRangeDescription": "Установите диапазон возраста для генерации новых личностей.",
+      "genderOptions": {
+        "random": "Случайный",
+        "male": "Мужской",
+        "female": "Женский"
+      }
+    },
+    "loginSave": {
+      "title": "Запрос на сохранение",
+      "description": "Запрашивать сохранение пароля после входа на сайт.",
+      "blockedSites": "Заблокированные сайты",
+      "blockedSitesDescription": "Сайты, где запрос на сохранение никогда не появится.",
+      "clearAllBlockedSites": "Очистить весь список"
+    },
     "unlockMethod": {
       "title": "Способ разблокировки хранилища",
       "introText": "Выберите способ разблокировки хранилища. Вы можете использовать свой мастер-пароль (он доступен всегда) или установить ПИН-код для быстрого доступа. После 3 неудачных попыток ввода ПИН-кода необходимо будет ввести мастер-пароль.",
@@ -444,10 +483,10 @@
       "createNewPasskey": "Создать новый ключ доступа",
       "replacingPasskey": "Замена ключа доступа: {{displayName}}",
       "confirmReplace": "Подтвердить замену",
-      "selectExistingLogin": "Add to existing login:",
-      "selectExistingLoginDescription": "Attach this passkey to an existing login credential for this site.",
-      "attachingToCredential": "Adding passkey to: {{serviceName}}",
-      "attachPasskey": "Add Passkey"
+      "selectExistingLogin": "Привязать к логину:",
+      "selectExistingLoginDescription": "Привяжите этот ключ доступа к существующей учетной записи для этого сайта.",
+      "attachingToCredential": "Добавление ключа доступа для: {{serviceName}}",
+      "attachPasskey": "Добавить ключ доступа"
     },
     "settings": {
       "passkeyProvider": "Провайдер ключей доступа",
@@ -455,20 +494,20 @@
     }
   },
   "recentlyDeleted": {
-    "title": "Recently Deleted",
-    "noItems": "No deleted items",
-    "noItemsDescription": "Items you delete will appear here for 30 days before being permanently removed.",
-    "description": "These items will be permanently deleted after 30 days. You can restore them or delete them immediately.",
-    "restore": "Restore",
-    "deletePermanently": "Delete Permanently",
-    "emptyAll": "Empty All",
+    "title": "Недавно удаленные",
+    "noItems": "Нет удаленных элементов",
+    "noItemsDescription": "Удаленные элементы будут храниться здесь 30 дней, после чего они будут удалены безвозвратно.",
+    "description": "Эти элементы будут безвозвратно удалены через 30 дней. Вы можете восстановить их или удалить немедленно.",
+    "restore": "Восстановить",
+    "deletePermanently": "Удалить безвозвратно",
+    "emptyAll": "Очистить все",
     "daysRemaining_one": "Остался {{count}} день",
     "daysRemaining_other": "Осталось {{count}} дней",
-    "expiringSoon": "Expiring soon",
-    "confirmDeleteTitle": "Delete Permanently?",
-    "confirmDeleteMessage": "This item will be permanently deleted and cannot be recovered.",
-    "confirmEmptyAllTitle": "Empty Recently Deleted?",
-    "confirmEmptyAllMessage": "All {{count}} items will be permanently deleted and cannot be recovered."
+    "expiringSoon": "Скоро будут удалены",
+    "confirmDeleteTitle": "Удалить безвозвратно?",
+    "confirmDeleteMessage": "Этот элемент будет удален навсегда без возможности восстановления.",
+    "confirmEmptyAllTitle": "Очистить «Недавно удалённые»?",
+    "confirmEmptyAllMessage": "Все элементы {{count}} будут удалены навсегда без возможности восстановления."
   },
   "upgrade": {
     "title": "Обновить хранилище",
@@ -494,5 +533,9 @@
     "unsyncedChangesTitle": "Несинхронизированные изменения",
     "unsyncedChangesWarning": "У вас есть несинхронизированные изменения, которые будут потеряны, если вы выйдете из аккаунта сейчас. Вы уверены, что хотите продолжить?",
     "logoutAnyway": "Все равно выйти"
+  },
+  "sync": {
+    "offline": "Офлайн",
+    "tapToRetry": "Повторить синхронизацию"
   }
 }

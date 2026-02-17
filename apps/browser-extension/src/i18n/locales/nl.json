@@ -24,18 +24,13 @@
     "unlockSuccessDescription": "Je kunt nu automatisch invullen gebruiken in inlogformulieren in je browser.",
     "closePopup": "Sluit deze popup",
     "browseVault": "Bekijk vault inhoud",
+    "autoCloseUnlockPopup": "Automatisch sluiten bij toekomstige logins",
+    "closingIn": "Sluiten in {{seconds}}s...",
     "connectingTo": "Verbinden met",
     "switchAccounts": "Wisselen van account?",
     "loginWithMobile": "Log in via de mobiele app",
     "unlockWithMobile": "Ontgrendel met mobiele app",
-    "scanQrCode": "Scan deze QR-code met de AliasVault mobiele app om in te loggen en je kluis te ontgrendelen.",
-    "errors": {
-      "invalidCode": "Voer een geldige 6-cijferige code in.",
-      "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
-      "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
-      "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
-      "mobileLoginRequestExpired": "Time-out van de mobiele inlogaanvraag. Herlaad de pagina en probeer opnieuw."
-    }
+    "scanQrCode": "Scan deze QR-code met de AliasVault mobiele app om in te loggen en je kluis te ontgrendelen."
   },
   "menu": {
     "vault": "Vault",
@@ -47,6 +42,7 @@
     "error": "Fout",
     "cancel": "Annuleren",
     "confirm": "Bevestigen",
+    "remove": "Verwijderen",
     "back": "Terug",
     "next": "Volgende",
     "use": "Gebruik",
@@ -58,6 +54,7 @@
     "create": "Aanmaken",
     "or": "Of",
     "close": "Sluiten",
+    "dismiss": "Sluiten",
     "logout": "Uitloggen",
     "copied": "Gekopieerd!",
     "openInNewWindow": "Openen in nieuw venster",
@@ -82,7 +79,7 @@
     "email": "E-mail",
     "username": "Gebruikersnaam",
     "password": "Wachtwoord",
-    "generate": "Generate",
+    "generate": "Genereren",
     "serviceName": "Naam",
     "loggedIn": "Ingelogd",
     "syncingVault": "Vault synchroniseren",
@@ -106,7 +103,12 @@
       "vaultIsLocked": "Vault is vergrendeld",
       "passwordChanged": "Je wachtwoord is veranderd sinds de laatste keer dat je bent ingelogd. Log opnieuw in.",
       "syncConflictMaxRetries": "Kan de vault niet synchroniseren na meerdere pogingen. Probeer het later opnieuw.",
-      "mergeFailed": "Samenvoegen vault wijzigingen mislukt. Probeer het opnieuw."
+      "mergeFailed": "Samenvoegen vault wijzigingen mislukt. Probeer het opnieuw.",
+      "invalidCode": "Voer een geldige 6-cijferige code in.",
+      "serverError": "Kon de AliasVault server niet bereiken. Probeer het later opnieuw of neem contact op met support als het probleem aanhoudt.",
+      "wrongPassword": "Onjuist wachtwoord. Probeer het opnieuw.",
+      "sessionExpired": "Je sessie is verlopen. Log opnieuw in.",
+      "mobileLoginRequestExpired": "De QR-code is verlopen. Herlaad de pagina en probeer opnieuw."
     },
     "apiErrors": {
       "UNKNOWN_ERROR": "Er is een onbekende fout opgetreden. Probeer het opnieuw.",
@@ -165,7 +167,11 @@
     "passwordCopiedToClipboard": "Wachtwoord gekopieerd naar klembord",
     "openAliasVaultToUpgrade": "Open AliasVault om te upgraden",
     "vaultUpgradeRequired": "Update is vereist.",
-    "dismissPopup": "Pop-up sluiten"
+    "dismissPopup": "Pop-up sluiten",
+    "savePrompt": {
+      "title": "Opslaan in AliasVault?",
+      "neverForThisSite": "Nooit voor deze site"
+    }
   },
   "items": {
     "title": "Items",
@@ -202,8 +208,14 @@
     "deleteFolderAndItems": "Verwijder map en alle items",
     "deleteFolderAndItemsDescription": "{{count}} item(s) zullen worden verplaatst naar recent verwijderd.",
     "filters": {
-      "all": "(Alle) Items",
+      "folders": "Mappen",
       "passkeys": "Passkeys"
+    },
+    "sort": {
+      "title": "Sorteren op",
+      "oldestFirst": "Oudste eerst",
+      "newestFirst": "Nieuwste eerst",
+      "alphabetical": "Alfabetisch (A-Z)"
     },
     "deleteItemTitle": "Verwijder item",
     "deleteItemConfirm": "Weet je zeker dat je dit item wilt verwijderen?",
@@ -344,6 +356,11 @@
     "disabledForThisSite": "Uitgeschakeld voor deze site",
     "temporarilyDisabledUntil": "Tijdelijk uitgeschakeld tot ",
     "resetAllSiteSettings": "Alle site-specifieke instellingen resetten",
+    "autofillPopupDescription": "Toon de autofill popup wanneer login velden worden gedetecteerd.",
+    "disabledSites": "Uitgeschakelde sites",
+    "disabledSitesDescription": "Websites waar de autofill popup niet verschijnt.",
+    "clearAllDisabledSites": "Alle uitgeschakelde sites wissen",
+    "temporaryUntil": "tot",
     "appearance": "Uiterlijk",
     "theme": "Thema",
     "useDefault": "Standaard gebruiken",
@@ -396,6 +413,28 @@
       "apiUrlInvalid": "Voer een geldige API URL in",
       "clientUrlRequired": "Client URL is vereist",
       "clientUrlInvalid": "Voer een geldige client URL in"
+    },
+    "identityGenerator": "Identiteit generator",
+    "identityGeneratorSettings": {
+      "description": "Configureer de standaardtaal en geslachtsvoorkeur voor het genereren van nieuwe identiteiten.",
+      "languageSection": "Taal",
+      "languageDescription": "Stel de taal in die wordt gebruikt bij het genereren van nieuwe identiteiten.",
+      "genderSection": "Geslacht",
+      "genderDescription": "Stel de geslachtsvoorkeur in voor het genereren van nieuwe identiteiten.",
+      "ageRangeSection": "Leeftijdsrange",
+      "ageRangeDescription": "Stel de standaard leeftijdsrange in voor het genereren van nieuwe identiteiten.",
+      "genderOptions": {
+        "random": "Willekeurig",
+        "male": "Mannelijk",
+        "female": "Vrouwelijk"
+      }
+    },
+    "loginSave": {
+      "title": "Inloggegevens opslaan",
+      "description": "Toon een melding om inloggegevens op te slaan wanneer je inlogt op een website.",
+      "blockedSites": "Geblokkeerde websites",
+      "blockedSitesDescription": "Sites waar de inloggegevens opslaan prompt niet zal verschijnen.",
+      "clearAllBlockedSites": "Alle uitgeschakelde sites wissen"
     },
     "unlockMethod": {
       "title": "Vault ontgrendelmethode",
@@ -494,5 +533,9 @@
     "unsyncedChangesTitle": "Niet-gesynchroniseerde wijzigingen",
     "unsyncedChangesWarning": "Er zijn niet gesynchroniseerde wijzigingen die verloren zullen gaan als je nu uitlogt. Weet je zeker dat je wilt doorgaan?",
     "logoutAnyway": "Toch uitloggen"
+  },
+  "sync": {
+    "offline": "Offline",
+    "tapToRetry": "Probeer sync opnieuw"
   }
 }

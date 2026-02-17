@@ -28,7 +28,7 @@
     <comment>Page header title for viewing an item</comment>
   </data>
   <data name="EditButtonMobile">
-    <value>Editați</value>
+    <value>Editează</value>
     <comment>Text for edit button on mobile</comment>
   </data>
   <data name="EditButtonDesktop">
@@ -44,15 +44,15 @@
     <comment>Text for delete button on desktop</comment>
   </data>
   <data name="LoginDetailsSection">
-    <value>Detalii de conectare</value>
+    <value>Date de autentificare</value>
     <comment>Section header for login details</comment>
   </data>
   <data name="GeneratedItemDescription">
-    <value>Mai jos puteți vizualiza și copia detaliile generate pentru acest element. Orice e-mail trimis la adresa afișată va apărea automat pe această pagină.</value>
+    <value>Mai jos poți vizualiza și copia detaliile generate pentru acest element. Orice e-mail trimis la adresa afișată va apărea automat pe această pagină.</value>
     <comment>Description for generated item with email support</comment>
   </data>
   <data name="StoredItemDescription">
-    <value>Mai jos puteți vizualiza și copia detaliile de conectare salvate pentru acest element.</value>
+    <value>Mai jos poți vizualiza și copia datele de autentificare salvate pentru acest element.</value>
     <comment>Description for stored item without email support</comment>
   </data>
   <data name="EmailLabel">
@@ -96,7 +96,7 @@
     <comment>Breadcrumb text for view item page</comment>
   </data>
   <data name="ItemNotFoundError">
-    <value>Acest element nu (mai) există. Încearcă din nou.</value>
+    <value>Acest element nu mai există. Încearcă din nou.</value>
     <comment>Error message when item is not found</comment>
   </data>
   <data name="PasskeySectionHeader">
@@ -116,7 +116,7 @@
     <comment>Label for passkey display name</comment>
   </data>
   <data name="PasskeyHelpText">
-    <value>Passkey-urile sunt create prin extensia de browser sau aplicațiile mobile la solicitarea unui site web. Acestea nu pot fi editate sau create manual prin aplicația web. Pentru a elimina acest passkey, editați elementul și ștergeți passkey-ul. Pentru a înlocui sau a crea un passkey nou, vizitați site-ul respectiv și urmați instrucțiunile acestuia.</value>
+    <value>Passkey-urile sunt create prin extensia de browser sau aplicațiile mobile la solicitarea unui site web. Nu poți să le editezi sau să le creezi manual prin aplicația web. Pentru a elimina un passkey, editează elementul și șterge passkey-ul. Pentru a înlocui sau a crea un passkey nou, vizitează site-ul respectiv și urmează instrucțiunile acestuia.</value>
     <comment>Help text explaining how passkeys work</comment>
   </data>
   <data name="Untitled">

@@ -59,7 +59,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="PageTitle" xml:space="preserve">
-    <value>Resetați seiful</value>
+    <value>Resetează seiful</value>
     <comment>Page title</comment>
   </data>
   <data name="BreadcrumbImportExport" xml:space="preserve">
@@ -67,7 +67,7 @@
     <comment>Breadcrumb for import export</comment>
   </data>
   <data name="BreadcrumbResetVault" xml:space="preserve">
-    <value>Resetați seiful</value>
+    <value>Resetează seiful</value>
     <comment>Breadcrumb for reset vault</comment>
   </data>
   <data name="ResetVaultPleaseNote" xml:space="preserve">
@@ -91,7 +91,7 @@
     <comment>Reset vault note about action being irreversible</comment>
   </data>
   <data name="ResetVaultConfirmUsernameLabel" xml:space="preserve">
-    <value>Pentru a continua, introduceți numele de utilizator pentru confirmare</value>
+    <value>Pentru a continua, introdu numele de utilizator pentru confirmare</value>
     <comment>Reset vault username confirmation label</comment>
   </data>
   <data name="ResetVaultContinueButton" xml:space="preserve">
@@ -99,7 +99,7 @@
     <comment>Reset vault continue button</comment>
   </data>
   <data name="ResetVaultFinalWarning" xml:space="preserve">
-    <value>Avertisment final: Sunteți pe cale să ștergeți definitiv toate elementele!</value>
+    <value>Avertisment final: Ești pe cale să ștergi definitiv toate elementele!</value>
     <comment>Reset vault final warning message</comment>
   </data>
   <data name="ResetVaultDeletionIrreversibleNote" xml:space="preserve">
@@ -107,7 +107,7 @@
     <comment>Reset vault final step irreversible note</comment>
   </data>
   <data name="ResetVaultEnterPasswordLabel" xml:space="preserve">
-    <value>Introduceți parola pentru confirmare</value>
+    <value>Introdu parola pentru confirmare</value>
     <comment>Reset vault password confirmation label</comment>
   </data>
   <data name="ResetVaultConfirmButton" xml:space="preserve">

@@ -37,7 +37,7 @@ public static class FirefoxImporter
             var credential = new ImportedCredential
             {
                 ServiceName = serviceName,
-                ServiceUrl = record.Url,
+                ServiceUrls = BaseImporter.ParseUrls(record.Url),
                 Username = record.Username,
                 Password = record.Password
             };

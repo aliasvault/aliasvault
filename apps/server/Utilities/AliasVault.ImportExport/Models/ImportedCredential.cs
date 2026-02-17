@@ -20,9 +20,9 @@ public class ImportedCredential
     public string? ServiceName { get; set; }
 
     /// <summary>
-    /// Gets or sets the service URL.
+    /// Gets or sets the service URLs.
     /// </summary>
-    public string? ServiceUrl { get; set; }
+    public List<string>? ServiceUrls { get; set; }
 
     /// <summary>
     /// Gets or sets the username or email.

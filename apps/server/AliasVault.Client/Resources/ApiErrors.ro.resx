@@ -144,13 +144,13 @@
     <value>Numele de utilizator nu coincide cu utilizatorul curent.</value>
   </data>
   <data name="PASSWORD_MISMATCH" xml:space="preserve">
-    <value>Parola furnizată nu coincide cu parola ta curentă.</value>
+    <value>Parola furnizată nu se potrivește cu parola ta curentă.</value>
   </data>
   <data name="ACCOUNT_SUCCESSFULLY_DELETED" xml:space="preserve">
     <value>Cont șters cu succes.</value>
   </data>
   <data name="USERNAME_EMPTY_OR_WHITESPACE" xml:space="preserve">
-    <value>Numele de utilizator nu poate fi gol sau format doar din spații.</value>
+    <value>Numele de utilizator nu poate fi necompletat sau format doar din spații.</value>
   </data>
   <data name="USERNAME_TOO_SHORT" xml:space="preserve">
     <value>Numele de utilizator este prea scurt: trebuie să aibă cel puțin 3 caractere.</value>
@@ -171,7 +171,7 @@
     <value>Eroare internă de server</value>
   </data>
   <data name="VAULT_ERROR" xml:space="preserve">
-    <value>Seiful local nu este actualizat. Sincronizează seiful reîmprospătând pagina și încearcă din nou.</value>
+    <value>Seiful local nu este actualizat. Sincronizează seiful prin reîmprospătarea paginii și încearcă din nou.</value>
   </data>
   <data name="UNKNOWN_ERROR" xml:space="preserve">
     <value>A apărut o eroare necunoscută. Încearcă din nou.</value>
@@ -186,6 +186,6 @@
     <value>Seiful tău nu este actualizat. Sincronizează seiful și încearcă din nou.</value>
   </data>
   <data name="ACCOUNT_LOCKED" xml:space="preserve">
-    <value>Ai introdus o parolă greșită de prea multe ori, iar contul tău a fost blocat. Poți încerca din nou peste 30 de minute.</value>
+    <value>Ai introdus o parolă greșită de prea multe ori, iar contul tău a fost blocat. Încearcă din nou peste 30 de minute.</value>
   </data>
 </root>

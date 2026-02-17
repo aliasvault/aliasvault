@@ -1,29 +1,32 @@
 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
     <PropertyGroup>
         <RootNamespace>AliasVault.Client</RootNamespace>
-        <TargetFramework>net9.0</TargetFramework>
+        <TargetFramework>net10.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
         <BuildVersion>$([System.DateTime]::UtcNow.ToString("yyyy-MM-dd HH:mm:ss"))</BuildVersion>
         <WasmBuildNative>true</WasmBuildNative>
-        <LangVersion>13</LangVersion>
+        <LangVersion>14</LangVersion>
         <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-        <DocumentationFile>bin\Debug\net9.0\AliasVault.Client.xml</DocumentationFile>
+        <DocumentationFile>bin\Debug\net10.0\AliasVault.Client.xml</DocumentationFile>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <CacheBuster>dev</CacheBuster>
+        <NoWarn>NU1903</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
         <DebugSymbols>false</DebugSymbols>
-        <DocumentationFile>bin\Release\net9.0\AliasVault.Client.xml</DocumentationFile>
+        <DocumentationFile>bin\Release\net10.0\AliasVault.Client.xml</DocumentationFile>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <Optimize>True</Optimize>
         <CacheBuster>$([System.DateTime]::UtcNow.ToString("yyyyMMddHHmmss"))</CacheBuster>
         <WasmDebugLevel>0</WasmDebugLevel>
+        <!-- Suppress IL2037 linker errors for EF Core reflection-based APIs -->
+        <NoWarn>NU1903;IL2037</NoWarn>
     </PropertyGroup>
 
     <UsingTask TaskName="ReplaceText" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
@@ -32,14 +35,83 @@
             <OutputFile ParameterType="System.String" Required="true" />
             <CacheBuster ParameterType="System.String" Required="true" />
             <BuildVersion ParameterType="System.String" Required="true" />
+            <Minify ParameterType="System.Boolean" Required="false" />
         </ParameterGroup>
         <Task>
             <Code Type="Fragment" Language="cs">
                 <![CDATA[
         string content = File.ReadAllText(InputFile);
         content = content.Replace("@CacheBuster", CacheBuster).Replace("@BuildVersion", BuildVersion);
+
+        if (Minify)
+        {
+            // Extract and preserve script/style blocks
+            var scriptBlocks = new System.Collections.Generic.List<string>();
+            var styleBlocks = new System.Collections.Generic.List<string>();
+
+            content = System.Text.RegularExpressions.Regex.Replace(content, @"(<script[^>]*>)(.*?)(</script>)",
+                m => { scriptBlocks.Add(m.Groups[2].Value); return m.Groups[1].Value + "___SCRIPT_" + (scriptBlocks.Count - 1) + "___" + m.Groups[3].Value; },
+                System.Text.RegularExpressions.RegexOptions.Singleline);
+
+            content = System.Text.RegularExpressions.Regex.Replace(content, @"(<style[^>]*>)(.*?)(</style>)",
+                m => { styleBlocks.Add(m.Groups[2].Value); return m.Groups[1].Value + "___STYLE_" + (styleBlocks.Count - 1) + "___" + m.Groups[3].Value; },
+                System.Text.RegularExpressions.RegexOptions.Singleline);
+
+            // Extract and preserve the header comment (contains ASCII art and license)
+            var headerMatch = System.Text.RegularExpressions.Regex.Match(content, @"(<!--\s*╔[\s\S]*?Build:[\s\S]*?-->)");
+            string headerComment = headerMatch.Success ? headerMatch.Groups[1].Value : "";
+            if (headerMatch.Success)
+            {
+                content = content.Replace(headerComment, "___HEADER_COMMENT___");
+            }
+
+            // Remove all other HTML comments
+            content = System.Text.RegularExpressions.Regex.Replace(content, @"<!--.*?-->", "", System.Text.RegularExpressions.RegexOptions.Singleline);
+
+            // Collapse whitespace between tags
+            content = System.Text.RegularExpressions.Regex.Replace(content, @">\s+<", "><");
+
+            // Remove leading/trailing whitespace from lines and collapse newlines
+            content = System.Text.RegularExpressions.Regex.Replace(content, @"^\s+", "", System.Text.RegularExpressions.RegexOptions.Multiline);
+            content = System.Text.RegularExpressions.Regex.Replace(content, @"\s+$", "", System.Text.RegularExpressions.RegexOptions.Multiline);
+            content = System.Text.RegularExpressions.Regex.Replace(content, @"\r?\n", "");
+            content = System.Text.RegularExpressions.Regex.Replace(content, @"  +", " ");
+
+            // Restore script blocks (minify each one)
+            for (int i = 0; i < scriptBlocks.Count; i++)
+            {
+                var script = scriptBlocks[i];
+                // Remove JS single-line comments (but not URLs with //)
+                script = System.Text.RegularExpressions.Regex.Replace(script, @"(?<!:)//[^\n]*", "");
+                // Remove JS multi-line comments
+                script = System.Text.RegularExpressions.Regex.Replace(script, @"/\*.*?\*/", "", System.Text.RegularExpressions.RegexOptions.Singleline);
+                // Collapse all whitespace including newlines
+                script = System.Text.RegularExpressions.Regex.Replace(script, @"\s+", " ");
+                script = script.Trim();
+                content = content.Replace("___SCRIPT_" + i + "___", script);
+            }
+
+            // Restore style blocks (minify each one)
+            for (int i = 0; i < styleBlocks.Count; i++)
+            {
+                var style = styleBlocks[i];
+                // Remove CSS comments
+                style = System.Text.RegularExpressions.Regex.Replace(style, @"/\*.*?\*/", "", System.Text.RegularExpressions.RegexOptions.Singleline);
+                style = System.Text.RegularExpressions.Regex.Replace(style, @"\s+", " ");
+                style = System.Text.RegularExpressions.Regex.Replace(style, @"\s*([{};:,>+~])\s*", "$1");
+                style = style.Trim();
+                content = content.Replace("___STYLE_" + i + "___", style);
+            }
+
+            // Restore header comment at the end (preserving its formatting)
+            if (headerMatch.Success)
+            {
+                content = content.Replace("___HEADER_COMMENT___", "\n" + headerComment + "\n");
+            }
+        }
+
         File.WriteAllText(OutputFile, content);
-        Log.LogMessage(MessageImportance.High, "Replaced content in " + OutputFile);
+        Log.LogMessage(MessageImportance.High, (Minify ? "Minified and replaced" : "Replaced") + " content in " + OutputFile);
 ]]>
             </Code>
         </Task>
@@ -54,32 +126,30 @@
     </Target>
 
     <Target Name="GenerateCacheBustedIndexHtml" BeforeTargets="Build">
-        <ReplaceText InputFile="wwwroot/index.template.html" OutputFile="wwwroot/index.html" CacheBuster="$(CacheBuster)" BuildVersion="$(BuildVersion)" />
+        <ReplaceText InputFile="wwwroot/index.template.html" OutputFile="wwwroot/index.html" CacheBuster="$(CacheBuster)" BuildVersion="$(BuildVersion)" Minify="true" />
     </Target>
 
     <ItemGroup>
-        <PackageReference Include="Blazor.WebAssembly.DynamicCulture" Version="3.1.0" />
         <PackageReference Include="Blazored.LocalStorage" Version="4.5.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="9.0.4" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.4" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="9.0.4" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.4" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.4" />
-        <PackageReference Include="Microsoft.Extensions.Localization" Version="9.0.4" />
-        <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="9.0.4" />
+        <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="10.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.2" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.2" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Localization" Version="10.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="10.0.2" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.556">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4">
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0">
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.102">
           <PrivateAssets>all</PrivateAssets>
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="System.Private.Uri" Version="4.3.2" />
     </ItemGroup>
 
     <ItemGroup>

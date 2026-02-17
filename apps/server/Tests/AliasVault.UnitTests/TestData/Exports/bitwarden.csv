@@ -4,6 +4,6 @@ Business,,login,Item for business folder,,,0,,crisply,4CSp43uhSZri8A,
 ,,login,Test,,,0,,test2,asdasd,
 Business,,login,TutaNota,,,0,,avtest2@tutamail.com,blabla,otpauth://totp/Strongbox?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&algorithm=SHA1&digits=6&period=30
 Business,,login,Aliasvault.net,,,0,https://www.aliasvault.net,root,toor,
-Business,,login,TutaNota3,,,0,,avtest3@tutamail.com,blabla,otpauth://totp/Test%20name%3Atest%40test.org?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&issuer=Alias%20Vault
+Business,,login,TutaNota3,,,0,"https://www.aliasvault.net,https://app.aliasvault.net,https://downloads.aliasvault.net",avtest3@tutamail.com,blabla,otpauth://totp/Test%20name%3Atest%40test.org?secret=PLW4SB3PQ7MKVXY2MXF4NEXS6Y&issuer=Alias%20Vault
 Business,,login,TutaNota4,,,0,,avtest4@tutamail.com,blabla,otpauth://totp/my.email@gmail.com?secret=TEST!INVALID&issuer=Alias%20Vault&algorithm=SHA1&digits=6&period=30
 Business,,login,TutaNota5,,,0,,avtest5@tutamail.com,blabla,incorrectstring

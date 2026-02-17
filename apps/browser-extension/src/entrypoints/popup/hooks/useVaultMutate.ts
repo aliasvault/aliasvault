@@ -1,11 +1,10 @@
-import { useCallback, useRef } from 'react';
+import { useCallback } from 'react';
 import { sendMessage } from 'webext-bridge/popup';
 
+import type { FullVaultSyncResult } from '@/entrypoints/background/VaultMessageHandler';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
-
-import { useVaultSync } from './useVaultSync';
 
 /**
  * Hook to execute a vault mutation.
@@ -19,15 +18,14 @@ import { useVaultSync } from './useVaultSync';
  * - Each mutation increments the sequence
  * - Sync captures sequence at start, only clears dirty if sequence unchanged
  * - This ensures we never lose local changes during concurrent operations
+ *
+ * The sync is truly fire-and-forget: it runs in the background script and continues
+ * even if the popup closes. This ensures vault changes are always synced to the server.
  */
 export function useVaultMutate(): {
     executeVaultMutationAsync: (operation: () => Promise<void>) => Promise<void>;
     } {
   const dbContext = useDb();
-  const { syncVault } = useVaultSync();
-
-  // Track if a sync is currently in progress
-  const isSyncingRef = useRef(false);
 
   /**
    * Execute the provided operation and save locally.
@@ -56,52 +54,30 @@ export function useVaultMutate(): {
   }, [dbContext]);
 
   /**
-   * Trigger a sync cycle. If sync is already in progress, it will be queued.
-   * After sync completes, checks if more mutations happened and re-syncs if needed.
+   * Trigger a sync in the background script.
+   * This is fire-and-forget - the sync runs entirely in the background context
+   * and continues even if the popup closes.
+   *
+   * If a merge happened during sync (hasNewVault=true), reload the database
+   * so the popup shows the merged data.
    */
-  const triggerSync = useCallback(async (): Promise<void> => {
-    if (isSyncingRef.current) {
-      // Sync already in progress - it will re-sync if dirty when done
-      return;
-    }
-
-    isSyncingRef.current = true;
-
-    try {
-      await syncVault({
-        /**
-         * Handle successful sync completion.
-         */
-        onSuccess: async () => {
-          await dbContext.refreshSyncState();
-
-          // Skip re-sync if offline - vault stays dirty until server is reachable
-          if (!dbContext.getIsOffline()) {
-            const syncState = await sendMessage('GET_SYNC_STATE', {}, 'background') as { isDirty: boolean };
-            if (syncState.isDirty) {
-              isSyncingRef.current = false;
-              await triggerSync();
-            }
-          }
-        },
-        /**
-         * Offline mode - no re-sync needed, vault stays dirty until online.
-         */
-        onOffline: () => {},
-        /**
-         * Handle sync errors.
-         * @param error - Error message from sync
-         */
-        onError: (error) => {
-          console.error('Background sync error:', error);
-        }
-      });
-    } catch (error) {
-      console.error('Error during background sync:', error);
-    } finally {
-      isSyncingRef.current = false;
-    }
-  }, [dbContext, syncVault]);
+  const triggerBackgroundSync = useCallback((): void => {
+    /*
+     * Fire-and-forget: send message to background without awaiting.
+     * The background script will handle the full sync orchestration
+     * and will re-sync if mutations happened during the sync.
+     */
+    sendMessage('FULL_VAULT_SYNC', {}, 'background').then(async (result: FullVaultSyncResult) => {
+      // If a merge happened, reload the database to show merged data
+      if (result.hasNewVault) {
+        await dbContext.loadStoredDatabase();
+      }
+      // Refresh sync state if popup is still open
+      await dbContext.refreshSyncState();
+    }).catch((error) => {
+      console.error('Background sync error:', error);
+    });
+  }, [dbContext]);
 
   /**
    * Execute a vault mutation asynchronously: save locally immediately, then
@@ -113,9 +89,9 @@ export function useVaultMutate(): {
     // 1. Execute mutation and save locally (fast, doesn't block)
     await saveLocally(operation);
 
-    // 2. Trigger sync in background
-    void triggerSync();
-  }, [saveLocally, triggerSync]);
+    // 2. Trigger sync in background (fire-and-forget, continues even if popup closes)
+    triggerBackgroundSync();
+  }, [saveLocally, triggerBackgroundSync]);
 
   return {
     executeVaultMutationAsync,

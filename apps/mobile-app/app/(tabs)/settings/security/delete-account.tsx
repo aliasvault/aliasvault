@@ -143,7 +143,7 @@ export default function DeleteAccountScreen(): React.ReactNode {
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       if (!username) {
-        throw new Error(t('settings.securitySettings.deleteAccount.usernameNotFound'));
+        throw new Error(t('common.errors.unknownErrorTryAgain'));
       }
 
       const deleteAccountInitiateRequest: DeleteAccountInitiateRequest = {
@@ -154,6 +154,7 @@ export default function DeleteAccountScreen(): React.ReactNode {
       const data = await webApi.post<DeleteAccountInitiateRequest, DeleteAccountInitiateResponse>('Auth/delete-account/initiate', deleteAccountInitiateRequest);
       const currentSalt = data.salt;
       const currentServerEphemeral = data.serverEphemeral;
+      const srpIdentity = data.srpIdentity;
 
       setLoadingStatus(t('settings.securitySettings.deleteAccount.verifyingWithServer'));
       // Convert base64 string to hex string
@@ -162,23 +163,17 @@ export default function DeleteAccountScreen(): React.ReactNode {
       // Generate client ephemeral and session using native SRP
       const newClientEphemeral = await NativeVaultManager.srpGenerateEphemeral();
 
-      // Get username from the auth context, always lowercase and trimmed which is required for the argon2id key derivation
-      const sanitizedUsername = username?.toLowerCase().trim();
-      if (!sanitizedUsername) {
-        throw new Error(t('settings.securitySettings.deleteAccount.usernameNotFound'));
-      }
-
-      const privateKey = await NativeVaultManager.srpDerivePrivateKey(currentSalt, sanitizedUsername, currentPasswordHashString);
+      const privateKey = await NativeVaultManager.srpDerivePrivateKey(currentSalt, srpIdentity, currentPasswordHashString);
       const newClientSession = await NativeVaultManager.srpDeriveSession(
         newClientEphemeral.secret,
         currentServerEphemeral,
         currentSalt,
-        sanitizedUsername,
+        srpIdentity,
         privateKey
       );
 
       const deleteAccountRequest: DeleteAccountRequest = {
-        username: sanitizedUsername,
+        username: username,
         clientPublicEphemeral: newClientEphemeral.public,
         clientSessionProof: newClientSession.proof,
       };

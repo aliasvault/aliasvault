@@ -67,11 +67,11 @@
     <comment>Modal title for importing from a service. {0} is placeholder for service name</comment>
   </data>
   <data name="UploadExportFileText" xml:space="preserve">
-    <value>Încărcați fișierul de export {0}:</value>
+    <value>Încarcă fișierul de export {0}:</value>
     <comment>Text for file upload instruction. {0} is placeholder for service name</comment>
   </data>
   <data name="CancelButton" xml:space="preserve">
-    <value>Anulați</value>
+    <value>Anulează</value>
     <comment>Cancel button text</comment>
   </data>
   <data name="BackButton" xml:space="preserve">
@@ -87,11 +87,83 @@
     <comment>Import button text</comment>
   </data>
   <data name="ImportFoldersLabel" xml:space="preserve">
-    <value>Importă dosarele (dacă sunt disponibile)</value>
+    <value>Importă dosarele</value>
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
     <value>{0} dosar(e) detectate</value>
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
+  </data>
+  <data name="DuplicateCredentialsWarning" xml:space="preserve">
+    <value>Au fost găsite {0} date de autentificare duplicate, care nu vor fi importate.</value>
+    <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
+  </data>
+  <data name="NoNewCredentials" xml:space="preserve">
+    <value>Nu au fost găsite date de autentificare noi de importat.</value>
+    <comment>Warning text when no new credentials are available for import</comment>
+  </data>
+  <data name="PreviewInstructions" xml:space="preserve">
+    <value>Verifică dacă următoarele date de autentificare detectate sunt corecte înainte de a continua:</value>
+    <comment>Instructions shown before the credential preview table</comment>
+  </data>
+  <data name="ServiceColumn" xml:space="preserve">
+    <value>Serviciu</value>
+    <comment>Column header for service name in credential preview table</comment>
+  </data>
+  <data name="UsernameColumn" xml:space="preserve">
+    <value>Nume utilizator</value>
+    <comment>Column header for username in credential preview table</comment>
+  </data>
+  <data name="PasswordColumn" xml:space="preserve">
+    <value>Parolă</value>
+    <comment>Column header for password in credential preview table</comment>
+  </data>
+  <data name="MoreCredentials" xml:space="preserve">
+    <value>... și încă {0} date de autentificare</value>
+    <comment>Text showing additional credentials not displayed. {0} is the count</comment>
+  </data>
+  <data name="ExtractFaviconsLabel" xml:space="preserve">
+    <value>Extrage pictogramele pentru serviciile cu URL-uri</value>
+    <comment>Checkbox label for favicon extraction option</comment>
+  </data>
+  <data name="ConfirmImportText" xml:space="preserve">
+    <value>Ești sigur că vrei să imporți ({0}) date de autentificare? Atenție: procesul de import poate dura puțin timp.</value>
+    <comment>Confirmation text before importing. {0} is the credential count</comment>
+  </data>
+  <data name="FaviconExtractionNote" xml:space="preserve">
+    <value>Notă: Extragerea pictogramelor este activată. Acest proces poate dura câteva minute, în funcție de numărul de date de autentificare cu URL-uri. Păstrează pagina deschisă.</value>
+    <comment>Warning note about favicon extraction duration</comment>
+  </data>
+  <data name="ExtractingFavicons" xml:space="preserve">
+    <value>Se extrag pictogramele… {0} / {1}</value>
+    <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SavingCredentials" xml:space="preserve">
+    <value>Se salvează datele de autentificare în seif… {0} / {1}</value>
+    <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SyncingVault" xml:space="preserve">
+    <value>Se sincronizează seiful cu serverul...</value>
+    <comment>Progress text when syncing vault to server after import</comment>
+  </data>
+  <data name="ImportSuccessMessage" xml:space="preserve">
+    <value>Au fost importate cu succes {0} date de autentificare.</value>
+    <comment>Success message after import completes. {0} is the credential count</comment>
+  </data>
+  <data name="ImportErrorGeneric" xml:space="preserve">
+    <value>A apărut o eroare în timpul importului. Încearcă din nou.</value>
+    <comment>Generic error message when import fails</comment>
+  </data>
+  <data name="ImportErrorInvalidFile" xml:space="preserve">
+    <value>Selectează un fișier de export valid pentru import.</value>
+    <comment>Error message when invalid file is selected</comment>
+  </data>
+  <data name="ImportErrorZipFile" xml:space="preserve">
+    <value>Dezarhivează fișierul de export înainte de import. Vezi instrucțiunile de mai jos pentru detalii.</value>
+    <comment>Error message when user tries to import a zip file</comment>
+  </data>
+  <data name="ImportErrorFileTooLarge" xml:space="preserve">
+    <value>Mărimea fișierului depășește limita de 10MB.</value>
+    <comment>Error message when file is too large</comment>
   </data>
 </root>

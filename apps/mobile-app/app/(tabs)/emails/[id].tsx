@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { StyleSheet, View, ActivityIndicator, Share, useColorScheme, Linking, Text, TextInput, Platform } from 'react-native';
 import { WebView } from 'react-native-webview';
 
+import ConversionUtility from '@/utils/ConversionUtility';
 import type { Item } from '@/utils/dist/core/models/vault';
 import type { Email } from '@/utils/dist/core/models/webapi';
 import EncryptionUtility from '@/utils/EncryptionUtility';
@@ -481,11 +482,14 @@ export default function EmailDetailsScreen() : React.ReactNode {
 
   let emailView = null;
   if (isHtmlView && email.messageHtml) {
+    // Sanitize HTML
+    const sanitizedHtml = ConversionUtility.sanitizeHtmlForEmailViewing(email.messageHtml);
     emailView = (
       <WebView
         style={styles.webView}
-        source={{ html: email.messageHtml }}
+        source={{ html: sanitizedHtml }}
         scrollEnabled={true}
+        javaScriptEnabled={false}
         onNavigationStateChange={(event) => {
           if (event.url !== 'about:blank') {
             // Open the URL in the browser

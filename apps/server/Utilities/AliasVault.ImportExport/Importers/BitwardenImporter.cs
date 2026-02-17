@@ -33,7 +33,7 @@ public static class BitwardenImporter
             var credential = new ImportedCredential
             {
                 ServiceName = record.Title,
-                ServiceUrl = record.URL,
+                ServiceUrls = BaseImporter.ParseUrls(record.URL),
                 Username = record.Username,
                 Password = record.Password,
                 TwoFactorSecret = record.OTPAuth,

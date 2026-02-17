@@ -87,11 +87,83 @@
     <comment>Import button text</comment>
   </data>
   <data name="ImportFoldersLabel" xml:space="preserve">
-    <value>Import folders (if available)</value>
+    <value>导入文件夹</value>
     <comment>Checkbox label for importing folder structure from the source password manager</comment>
   </data>
   <data name="FoldersDetected" xml:space="preserve">
-    <value>{0} folder(s) detected</value>
+    <value>检测到 {0} 个文件夹</value>
     <comment>Info text showing number of folders detected in the import. {0} is the count</comment>
+  </data>
+  <data name="DuplicateCredentialsWarning" xml:space="preserve">
+    <value>发现 {0} 个重复凭据，将不会导入。</value>
+    <comment>Warning text when duplicate credentials are detected. {0} is the count</comment>
+  </data>
+  <data name="NoNewCredentials" xml:space="preserve">
+    <value>未找到需要导入的新凭据。</value>
+    <comment>Warning text when no new credentials are available for import</comment>
+  </data>
+  <data name="PreviewInstructions" xml:space="preserve">
+    <value>在继续之前，请检查以下检测到的凭据是否正确：</value>
+    <comment>Instructions shown before the credential preview table</comment>
+  </data>
+  <data name="ServiceColumn" xml:space="preserve">
+    <value>服务</value>
+    <comment>Column header for service name in credential preview table</comment>
+  </data>
+  <data name="UsernameColumn" xml:space="preserve">
+    <value>用户名</value>
+    <comment>Column header for username in credential preview table</comment>
+  </data>
+  <data name="PasswordColumn" xml:space="preserve">
+    <value>密码</value>
+    <comment>Column header for password in credential preview table</comment>
+  </data>
+  <data name="MoreCredentials" xml:space="preserve">
+    <value>以及 {0} 个其他凭证</value>
+    <comment>Text showing additional credentials not displayed. {0} is the count</comment>
+  </data>
+  <data name="ExtractFaviconsLabel" xml:space="preserve">
+    <value>提取具有 URL 的服务的网站图标</value>
+    <comment>Checkbox label for favicon extraction option</comment>
+  </data>
+  <data name="ConfirmImportText" xml:space="preserve">
+    <value>您确定要导入（{0}）个凭据吗？注意：导入过程可能需要一些时间。</value>
+    <comment>Confirmation text before importing. {0} is the credential count</comment>
+  </data>
+  <data name="FaviconExtractionNote" xml:space="preserve">
+    <value>注意：已启用网站图标提取。此过程可能需要几分钟，具体时间取决于包含 URL 的凭据数量。请保持页面处于打开状态。</value>
+    <comment>Warning note about favicon extraction duration</comment>
+  </data>
+  <data name="ExtractingFavicons" xml:space="preserve">
+    <value>正在提取网站图标… {0} / {1}</value>
+    <comment>Progress text during favicon extraction. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SavingCredentials" xml:space="preserve">
+    <value>正在将凭据保存到密码库… {0} / {1}</value>
+    <comment>Progress text during credential save. {0} is current progress, {1} is total</comment>
+  </data>
+  <data name="SyncingVault" xml:space="preserve">
+    <value>正在将密码库同步到服务器…</value>
+    <comment>Progress text when syncing vault to server after import</comment>
+  </data>
+  <data name="ImportSuccessMessage" xml:space="preserve">
+    <value>已成功导入 {0} 个凭据。</value>
+    <comment>Success message after import completes. {0} is the credential count</comment>
+  </data>
+  <data name="ImportErrorGeneric" xml:space="preserve">
+    <value>导入过程中发生错误，请重试。</value>
+    <comment>Generic error message when import fails</comment>
+  </data>
+  <data name="ImportErrorInvalidFile" xml:space="preserve">
+    <value>请选择有效的导出文件进行导入。</value>
+    <comment>Error message when invalid file is selected</comment>
+  </data>
+  <data name="ImportErrorZipFile" xml:space="preserve">
+    <value>请先解压导出文件再进行导入，更多信息请参见以下说明。</value>
+    <comment>Error message when user tries to import a zip file</comment>
+  </data>
+  <data name="ImportErrorFileTooLarge" xml:space="preserve">
+    <value>文件大小超过 10MB 限制。</value>
+    <comment>Error message when file is too large</comment>
   </data>
 </root>

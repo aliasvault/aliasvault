@@ -149,10 +149,18 @@ class VaultCrypto(
     }
 
     /**
-     * Initialize the encryption key.
+     * Store the encryption key in memory only.
      */
-    fun initEncryptionKey(base64EncryptionKey: String) {
+    fun storeEncryptionKeyInMemory(base64EncryptionKey: String) {
         this.encryptionKey = Base64.decode(base64EncryptionKey, Base64.NO_WRAP)
+    }
+
+    /**
+     * Clear the encryption key from memory.
+     * This forces getEncryptionKey() to fetch from keystore on next biometric access.
+     */
+    fun clearEncryptionKeyFromMemory() {
+        this.encryptionKey = null
     }
 
     /**
@@ -200,12 +208,13 @@ class VaultCrypto(
 
                     override fun onError(e: Exception) {
                         Log.e(TAG, "Error retrieving key", e)
+                        // Pass through the error - AndroidKeystoreProvider now throws proper AppError types
                         callback.onError(e)
                     }
                 },
             )
         } else {
-            callback.onError(Exception("No encryption key found"))
+            callback.onError(AppError.KeystoreKeyNotFound("No encryption key found in memory or keystore"))
         }
     }
 
@@ -247,7 +256,7 @@ class VaultCrypto(
                         val decrypted = cipher.doFinal(encryptedContent)
                         decryptedResult = String(decrypted, Charsets.UTF_8)
                     } catch (e: Exception) {
-                        error = e
+                        error = AppError.VaultDecryptFailed(cause = e)
                         Log.e(TAG, "Error decrypting data", e)
                     } finally {
                         latch.countDown()

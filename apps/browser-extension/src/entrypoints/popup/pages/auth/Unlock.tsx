@@ -20,8 +20,8 @@ import { PopoutUtility } from '@/entrypoints/popup/utils/PopoutUtility';
 import SrpUtility from '@/entrypoints/popup/utils/SrpUtility';
 
 import { SrpAuthService } from '@/utils/auth/SrpAuthService';
-import { VAULT_LOCKED_DISMISS_UNTIL_KEY } from '@/utils/Constants';
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import {
   getPinLength,
   isPinEnabled,
@@ -31,10 +31,9 @@ import {
   resetFailedAttempts,
   unlockWithPin
 } from '@/utils/PinUnlockService';
+import { hasErrorCode, getErrorMessage, extractErrorCode, AppErrorCode } from '@/utils/types/errors/AppErrorCodes';
 import { VaultVersionIncompatibleError } from '@/utils/types/errors/VaultVersionIncompatibleError';
 import type { MobileLoginResult } from '@/utils/types/messaging/MobileLoginResult';
-
-import { storage } from '#imports';
 
 /**
  * Unlock mode type
@@ -275,13 +274,14 @@ const Unlock: React.FC = () => {
       // Store the encryption key in session storage.
       await dbContext.storeEncryptionKey(passwordHashBase64);
 
-      // Load the stored vault from background (decrypts using stored encryption key)
+      /*
+       * Load the stored vault from background (decrypts using stored encryption key).
+       * Throws an error with E-XXX code if decryption fails.
+       */
       const sqliteClient = await dbContext.loadStoredDatabase();
       if (!sqliteClient) {
-        // Decryption failed - likely wrong password
-        setError(t('auth.errors.wrongPassword'));
-        hideLoading();
-        return;
+        // Edge case: no vault loaded but no error thrown (shouldn't happen)
+        throw new Error(t('common.errors.wrongPassword'));
       }
 
       // Check if there are pending migrations
@@ -292,7 +292,7 @@ const Unlock: React.FC = () => {
       }
 
       // Clear dismiss until
-      await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
+      await LocalPreferencesService.setVaultLockedDismissUntil(0);
 
       // Reset PIN failed attempts on successful password unlock
       await resetFailedAttempts();
@@ -303,8 +303,17 @@ const Unlock: React.FC = () => {
       // Check if it's a version incompatibility error
       if (err instanceof VaultVersionIncompatibleError) {
         await app.logout(err.message);
+      } else if (hasErrorCode(err)) {
+        // Check if it's a decryption failure (E-203): this means wrong password
+        const errorCode = extractErrorCode(getErrorMessage(err, ''));
+        if (errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
+          setError(t('common.errors.wrongPassword'));
+        } else {
+          // Other error codes, show the formatted message as-is
+          setError(getErrorMessage(err, t('common.errors.wrongPassword')));
+        }
       } else {
-        setError(t('auth.errors.wrongPassword'));
+        setError(t('common.errors.wrongPassword'));
       }
       console.error('Unlock error:', err);
     } finally {
@@ -375,10 +384,12 @@ const Unlock: React.FC = () => {
        * - Checking if server has newer version
        * - Merging local changes with server if isDirty is true
        * - Overwriting local with server if no local changes
+       *
+       * Throws an error with E-XXX code if decryption fails.
        */
       const sqliteClient = await dbContext.loadStoredDatabase();
       if (!sqliteClient) {
-        // Decryption failed - likely wrong PIN
+        // Edge case: no vault loaded but no error thrown (shouldn't happen)
         throw new IncorrectPinError(3);
       }
 
@@ -390,7 +401,7 @@ const Unlock: React.FC = () => {
       }
 
       // Clear dismiss until
-      await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
+      await LocalPreferencesService.setVaultLockedDismissUntil(0);
 
       // Navigate to reinitialize which will call syncVault to sync with server
       navigate('/reinitialize', { replace: true });
@@ -411,6 +422,19 @@ const Unlock: React.FC = () => {
         setPin('');
       } else if (err instanceof InvalidPinFormatError) {
         setError(t('settings.unlockMethod.invalidPinFormat'));
+        setPin('');
+      } else if (hasErrorCode(err)) {
+        // Check if it's a decryption failure, this means wrong PIN
+        const errorCode = extractErrorCode(getErrorMessage(err, ''));
+        if (errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
+          // Decryption failed during PIN unlock = wrong PIN, treat as incorrect PIN
+          console.error('PIN unlock failed (decryption error):', err);
+          setError(t('settings.unlockMethod.incorrectPin', { attemptsRemaining: 3 }));
+        } else {
+          // Other error codes: show the formatted message as-is
+          console.error('PIN unlock failed:', err);
+          setError(getErrorMessage(err, t('common.errors.unknownErrorTryAgain')));
+        }
         setPin('');
       } else {
         console.error('PIN unlock failed:', err);
@@ -448,8 +472,11 @@ const Unlock: React.FC = () => {
   const handleMobileUnlockSuccess = async (result: MobileLoginResult): Promise<void> => {
     showLoading();
     try {
-      // Revoke current tokens before setting new ones (since we're already logged in)
-      await webApi.revokeTokens();
+      /*
+       * Revoke the old refresh token (from existing logged in session) before setting new ones
+       * that we get from the mobile login request.
+       */
+      await webApi.revokeCurrentTokens();
 
       // Set new auth tokens
       await authContext.setAuthTokens(result.username, result.token, result.refreshToken);
@@ -468,13 +495,13 @@ const Unlock: React.FC = () => {
        * - Checking if server has newer version
        * - Merging local changes with server if isDirty is true
        * - Overwriting local with server if no local changes
+       *
+       * Throws an error with E-XXX code if decryption fails.
        */
       const sqliteClient = await dbContext.loadStoredDatabase();
       if (!sqliteClient) {
-        // Decryption failed
-        setError(t('common.errors.unknownErrorTryAgain'));
-        hideLoading();
-        return;
+        // Edge case: no vault loaded but no error thrown (shouldn't happen)
+        throw new Error(t('common.errors.unknownErrorTryAgain'));
       }
 
       // Check if there are pending migrations
@@ -485,7 +512,7 @@ const Unlock: React.FC = () => {
       }
 
       // Clear dismiss until
-      await storage.setItem(VAULT_LOCKED_DISMISS_UNTIL_KEY, 0);
+      await LocalPreferencesService.setVaultLockedDismissUntil(0);
 
       // Reset PIN failed attempts on successful unlock
       await resetFailedAttempts();
@@ -496,6 +523,9 @@ const Unlock: React.FC = () => {
       // Check if it's a version incompatibility error
       if (err instanceof VaultVersionIncompatibleError) {
         await app.logout(err.message);
+      } else if (hasErrorCode(err)) {
+        // Error contains an error code (E-XXX), show the formatted message as-is
+        setError(getErrorMessage(err, t('common.errors.unknownErrorTryAgain')));
       } else {
         setError(t('common.errors.unknownErrorTryAgain'));
       }

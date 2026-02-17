@@ -3,13 +3,10 @@ import { useTranslation } from 'react-i18next';
 
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import {
-  PASSKEY_PROVIDER_ENABLED_KEY,
-  PASSKEY_DISABLED_SITES_KEY
-} from '@/utils/Constants';
 import { extractDomain, extractRootDomain } from '@/utils/itemMatcher/ItemMatcher';
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
-import { storage, browser } from "#imports";
+import { browser } from "#imports";
 
 /**
  * Passkey settings type.
@@ -51,9 +48,9 @@ const PasskeySettings: React.FC = () => {
     const hostname = new URL(tab.url ?? '').hostname;
     const baseDomain = await extractRootDomain(await extractDomain(hostname));
 
-    // Load settings from local storage
-    const disabledUrls = await storage.getItem(PASSKEY_DISABLED_SITES_KEY) as string[] ?? [];
-    const isGloballyEnabled = await storage.getItem(PASSKEY_PROVIDER_ENABLED_KEY) !== false; // Default to true if not set
+    // Load settings using LocalPreferencesService
+    const disabledUrls = await LocalPreferencesService.getPasskeyDisabledSites();
+    const isGloballyEnabled = await LocalPreferencesService.getPasskeyProviderEnabled();
 
     // Check if current base domain is disabled
     const isEnabled = !disabledUrls.includes(baseDomain);
@@ -89,7 +86,7 @@ const PasskeySettings: React.FC = () => {
       newDisabledUrls = newDisabledUrls.filter(url => url !== currentUrl);
     }
 
-    await storage.setItem(PASSKEY_DISABLED_SITES_KEY, newDisabledUrls);
+    await LocalPreferencesService.setPasskeyDisabledSites(newDisabledUrls);
 
     setSettings(prev => ({
       ...prev,
@@ -102,7 +99,7 @@ const PasskeySettings: React.FC = () => {
    * Reset settings.
    */
   const resetSettings = async () : Promise<void> => {
-    await storage.setItem(PASSKEY_DISABLED_SITES_KEY, []);
+    await LocalPreferencesService.setPasskeyDisabledSites([]);
 
     setSettings(prev => ({
       ...prev,
@@ -117,7 +114,7 @@ const PasskeySettings: React.FC = () => {
   const toggleGlobalPasskeyProvider = async () : Promise<void> => {
     const newGloballyEnabled = !settings.isGloballyEnabled;
 
-    await storage.setItem(PASSKEY_PROVIDER_ENABLED_KEY, newGloballyEnabled);
+    await LocalPreferencesService.setPasskeyProviderEnabled(newGloballyEnabled);
 
     setSettings(prev => ({
       ...prev,

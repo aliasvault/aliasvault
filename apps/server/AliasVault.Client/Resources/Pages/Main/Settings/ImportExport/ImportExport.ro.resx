@@ -71,7 +71,7 @@
     <comment>Import section title</comment>
   </data>
   <data name="ImportSectionDescription" xml:space="preserve">
-    <value>Selectați un serviciu din care doriți să importați. Dacă folosiți un serviciu care nu este listat aici și doriți să fie acceptat, deschide o sesizare pe &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; sau contactează-ne.</value>
+    <value>Selectează un serviciu din care dorești să imporți. Dacă folosești un serviciu care nu este listat aici și dorești să fie acceptat, poți deschide o sesizare pe &lt;a href="https://github.com/aliasvault/aliasvault/issues" target="_blank" class="text-primary-500 hover:text-primary-700"&gt;GitHub&lt;/a&gt; sau ne poți contacta.</value>
     <comment>Import section description with HTML link</comment>
   </data>
   <data name="ExportSectionTitle" xml:space="preserve">
@@ -79,7 +79,7 @@
     <comment>Export section title</comment>
   </data>
   <data name="ExportSectionDescription" xml:space="preserve">
-    <value>Dacă doriți să exportați detaliile de conectare AliasVault către un alt server AliasVault (ex: de la cloud la self-hosting sau invers) sau către un alt serviciu, puteți face exportul aici. Rețineți că toate fișierele exportate sunt necriptate, așa că păstrați-le într-un loc sigur și ștergeți-le când nu mai aveți nevoie de ele.</value>
+    <value>Dacă vrei să exporți datele de autentificare AliasVault către un alt server AliasVault (de exemplu, din cloud către self-hosting sau invers) ori către un alt serviciu, poți face exportul aici. Reține că toate fișierele exportate sunt necriptate, așa că păstrează-le într-un loc sigur și șterge-le când nu mai ai nevoie de ele.</value>
     <comment>Export section description</comment>
   </data>
   <data name="ExportCsvButton" xml:space="preserve">
@@ -95,21 +95,41 @@
     <comment>Export confirmation dialog title</comment>
   </data>
   <data name="ExportWarningMessage" xml:space="preserve">
-    <value>Atenție: Exportarea seifului într-un fișier necriptat va expune toate parolele și informațiile sensibile în format text simplu. Faceți acest lucru doar pe computere de încredere și asigurați-vă că:
+    <value>Atenție: Exportarea seifului într-un fișier necriptat va expune toate parolele și informațiile sensibile în format text simplu. Fă acest lucru doar pe computere de încredere și asigură-te că:
 
-• Păstrați fișierul exportat într-o locație sigură
-• Ștergeți fișierul atunci când nu mai aveți nevoie de el
-• Nu partajați niciodată fișierul exportat cu alte persoane
+• Păstrezi fișierul exportat într-o locație sigură
+• Ștergi fișierul atunci când nu mai ai nevoie de el
+• Nu partajezi niciodată fișierul exportat cu alte persoane
 
-Sunteți sigur că doriți să continuați exportul?</value>
+Ești sigur că vrei să continui exportul?</value>
     <comment>Export warning confirmation message</comment>
   </data>
   <data name="ResetVaultSectionTitle" xml:space="preserve">
-    <value>Resetați seiful</value>
+    <value>Resetează seiful</value>
     <comment>Reset vault section title</comment>
   </data>
   <data name="ResetVaultSectionDescription" xml:space="preserve">
-    <value>Această opțiune îți permite să golești complet seiful, păstrând în același timp contul și aliasurile de e-mail. Folosește-o dacă dorești să inițiezi o configurare nouă după un import din alt manager sau dacă vrei să ștergi toate datele de autentificare pentru a reîncepe procesul.</value>
+    <value>Această opțiune îți permite să golești complet seiful, păstrând în același timp contul și aliasurile de e-mail. Folosește-o dacă vrei să inițiezi o configurare nouă după un import din alt manager sau dacă vrei să ștergi toate datele de autentificare pentru a reîncepe procesul.</value>
     <comment>Reset vault section description</comment>
+  </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Confirmă exportul</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>Din motive de securitate, introdu parola ta principală pentru a confirma acest export.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>Se verifică parola...</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>Parola introdusă este incorectă. Încearcă din nou.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>A apărut o eroare la verificarea parolei. Încearcă din nou.</value>
+    <comment>Generic error message for password verification failure</comment>
   </data>
 </root>

@@ -95,11 +95,11 @@
     <comment>Export confirmation dialog title</comment>
   </data>
   <data name="ExportWarningMessage" xml:space="preserve">
-    <value>Предупреждение: Экспорт хранилища в незашифрованный файл приведёт к тому, что все ваши пароли и конфиденциальная информация будут доступны в открытом виде. Делайте это только на доверенных устройствах и убедитесь, что вы:
+    <value>Экспорт хранилища в незашифрованный файл сделает все ваши пароли и конфиденциальную информацию доступными в виде обычного текста. Делайте это только на доверенных устройствах и убедитесь, что вы:
 
-• Храните экспортированный файл в безопасном месте
+• Храните экспортированный файл в надежном месте
 • Удаляете файл, когда он больше не нужен
-• Никогда не передаёте файл другим людям
+• Никогда не делитесь экспортированным файлом с другими
 
 Вы уверены, что хотите продолжить экспорт?</value>
     <comment>Export warning confirmation message</comment>
@@ -111,5 +111,25 @@
   <data name="ResetVaultSectionDescription" xml:space="preserve">
     <value>Эта опция позволяет полностью очистить хранилище, сохранив ваш аккаунт и почтовые псевдонимы. Выберите её, если хотите начать с чистого листа после импорта данных из другого менеджера паролей или просто удалить все сохранённые данные и начать заново.</value>
     <comment>Reset vault section description</comment>
+  </data>
+  <data name="ExportPasswordConfirmTitle" xml:space="preserve">
+    <value>Подтверждение экспорта</value>
+    <comment>Title for password confirmation modal during export</comment>
+  </data>
+  <data name="ExportPasswordConfirmDescription" xml:space="preserve">
+    <value>Для безопасности введите мастер-пароль для подтверждения экспорта.</value>
+    <comment>Description for password confirmation modal during export</comment>
+  </data>
+  <data name="VerifyingPasswordMessage" xml:space="preserve">
+    <value>Проверка пароля...</value>
+    <comment>Message shown while verifying password</comment>
+  </data>
+  <data name="PasswordIncorrect" xml:space="preserve">
+    <value>Пароль введен неверно. Попробуйте снова.</value>
+    <comment>Error message when password verification fails</comment>
+  </data>
+  <data name="PasswordVerificationFailed" xml:space="preserve">
+    <value>Не удалось проверить пароль. Повторите попытку.</value>
+    <comment>Generic error message for password verification failure</comment>
   </data>
 </root>

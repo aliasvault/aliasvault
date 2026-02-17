@@ -5,9 +5,7 @@ import { sendMessage } from 'webext-bridge/popup';
 import HelpModal from '@/entrypoints/popup/components/Dialogs/HelpModal';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
 
-import { AUTO_LOCK_TIMEOUT_KEY } from '@/utils/Constants';
-
-import { storage } from "#imports";
+import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 
 /**
  * Auto-lock settings page component.
@@ -23,7 +21,7 @@ const AutoLockSettings: React.FC = () => {
      */
     const loadSettings = async () : Promise<void> => {
       // Load auto-lock timeout
-      const autoLockTimeoutValue = await storage.getItem(AUTO_LOCK_TIMEOUT_KEY) as number ?? 0;
+      const autoLockTimeoutValue = await LocalPreferencesService.getAutoLockTimeout();
       setAutoLockTimeout(autoLockTimeoutValue);
       setIsInitialLoading(false);
     };
@@ -35,7 +33,7 @@ const AutoLockSettings: React.FC = () => {
    * Set auto-lock timeout.
    */
   const setAutoLockTimeoutSetting = async (timeout: number) : Promise<void> => {
-    await storage.setItem(AUTO_LOCK_TIMEOUT_KEY, timeout);
+    await LocalPreferencesService.setAutoLockTimeout(timeout);
     await sendMessage('SET_AUTO_LOCK_TIMEOUT', timeout, 'background');
     setAutoLockTimeout(timeout);
   };

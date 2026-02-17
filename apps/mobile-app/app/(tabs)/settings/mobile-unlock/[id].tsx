@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import EncryptionUtility from '@/utils/EncryptionUtility';
 import { VaultUnlockHelper } from '@/utils/VaultUnlockHelper';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -27,8 +28,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
   const { showAlert } = useDialog();
   const webApi = useWebApi();
   const insets = useSafeAreaInsets();
-  const { id } = useLocalSearchParams();
-
+  const { id, pk } = useLocalSearchParams<{ id: string; pk?: string }>();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isValidating, setIsValidating] = useState(true);
 
@@ -79,17 +79,34 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
 
   /**
    * Handle mobile login QR code.
+   * @param requestId - The request ID from the QR code
+   * @param expectedPublicKeyHash - Optional public key hash from QR code for security verification
    */
-  const handleMobileLogin = async (id: string) : Promise<void> => {
+  const handleMobileLogin = async (requestId: string, expectedPublicKeyHash?: string) : Promise<void> => {
     try {
       // Fetch the public key from server
       const response = await webApi.authFetch<{ clientPublicKey: string }>(
-        `auth/mobile-login/request/${id}`,
+        `auth/mobile-login/request/${requestId}`,
         { method: 'GET' }
       );
 
       const publicKeyJWK = response.clientPublicKey;
 
+      /*
+       * Security verification: if QR code contained a public key hash, verify it matches what
+       * the server provided.
+       */
+      if (expectedPublicKeyHash) {
+        const computedHash = await EncryptionUtility.computeSha256Hash(publicKeyJWK);
+        if (computedHash !== expectedPublicKeyHash) {
+          console.error('Public key hash mismatch - possible security attack');
+          throw new Error('PUBLIC_KEY_MISMATCH');
+        }
+      }
+      /*
+       * TODO: In v1.0+, remove backwards compatibility and require public key hash verification
+       * for all QR codes.
+       */
       // Encrypt the decryption key using native module
       const encryptedKey = await NativeVaultManager.encryptDecryptionKeyForMobileLogin(publicKeyJWK);
 
@@ -102,7 +119,7 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            requestId: id,
+            requestId: requestId,
             encryptedDecryptionKey: encryptedKey,
           }),
         }
@@ -118,14 +135,13 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
       });
     } catch (error) {
       console.error('Mobile login error:', error);
-      let errorMsg = t('common.errors.unknownErrorTryAgain');
 
       // Error! Navigate to result page
       router.replace({
         pathname: '/(tabs)/settings/mobile-unlock/result',
         params: {
           success: 'false',
-          message: errorMsg,
+          message: t('common.errors.unknownErrorTryAgain'),
         },
       });
     }
@@ -153,8 +169,8 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
         return;
       }
 
-      // Process the mobile login
-      await handleMobileLogin(id as string);
+      // Process the mobile login with optional public key hash verification
+      await handleMobileLogin(id as string, pk);
     } catch (error) {
       console.error('Authentication or QR code processing error:', error);
       showAlert(t('common.error'), error instanceof Error ? error.message : t('common.errors.unknownError'));

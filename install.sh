@@ -1,5 +1,5 @@
 #!/bin/bash
-# @version 20260128
+# @version 20260130
 
 # Repository information used for downloading files and images from GitHub
 REPO_OWNER="aliasvault"
@@ -10,6 +10,7 @@ GITHUB_CONTAINER_REGISTRY="ghcr.io/$(echo "$REPO_OWNER" | tr '[:upper:]' '[:lowe
 # Required files and directories
 REQUIRED_DIRS=(
     "certificates/ssl"
+    "certificates/smtp"
     "certificates/letsencrypt"
     "certificates/letsencrypt/www"
     "database"
@@ -52,7 +53,7 @@ show_usage() {
     printf "  install                   Install AliasVault by pulling pre-built images from GitHub Container Registry (recommended)\n"
     printf "  build                     Build AliasVault containers locally from source (takes longer and requires sufficient specs)\n"
     printf "  start                     Start AliasVault containers\n"
-    printf "  restart                   Restart AliasVault containers\n"
+    printf "  restart [container]       Restart AliasVault containers (optionally specify a single container)\n"
     printf "  stop                      Stop AliasVault containers\n"
     printf "\n"
     printf "  configure-hostname        Configure the hostname where AliasVault can be accessed from\n"
@@ -174,6 +175,11 @@ parse_args() {
         restart|r)
             COMMAND="restart"
             shift
+            # Check for optional container name argument
+            if [ $# -gt 0 ] && [[ ! "$1" =~ ^- ]]; then
+                COMMAND_ARG="$1"
+                shift
+            fi
             ;;
         update|up)
             COMMAND="update"
@@ -779,6 +785,57 @@ retry_command() {
     return 1
 }
 
+# Check that all Docker images are available in the registry before proceeding
+# Fails immediately if any image is missing (e.g., CI still building images for a new release)
+# Runs checks in parallel for faster execution
+check_images_available() {
+    local version="$1"
+    shift
+    local images=("$@")
+    local missing_images=()
+    local temp_dir=$(mktemp -d)
+
+    printf "${CYAN}ℹ Checking if all Docker images are available for version ${version}...${NC}\n"
+
+    # Check all images in parallel
+    for image in "${images[@]}"; do
+        local image_name=$(basename "$image")
+        (
+            if ! docker manifest inspect "$image" > /dev/null 2>&1; then
+                echo "$image_name" > "$temp_dir/$image_name"
+            fi
+        ) &
+    done
+
+    # Wait for all background checks to complete
+    wait
+
+    # Collect results
+    for image in "${images[@]}"; do
+        local image_name=$(basename "$image")
+        if [ -f "$temp_dir/$image_name" ]; then
+            missing_images+=("$image_name")
+        fi
+    done
+
+    # Cleanup
+    rm -rf "$temp_dir"
+
+    if [ ${#missing_images[@]} -eq 0 ]; then
+        printf "${GREEN}✓ All Docker images are available${NC}\n"
+        return 0
+    fi
+
+    printf "${RED}✗ The following Docker images are not available:${NC}\n"
+    for img in "${missing_images[@]}"; do
+        printf "${RED}    - $img${NC}\n"
+    done
+    printf "\n"
+    printf "${YELLOW}This usually means the CI pipeline is still building the images for version ${version}.${NC}\n"
+    printf "${YELLOW}Please try again in a few minutes or check your internet connection.${NC}\n"
+    return 1
+}
+
 # Enhanced docker pull with progress
 enhanced_docker_pull() {
     local image="$1"
@@ -821,8 +878,18 @@ validate_semver() {
     fi
 }
 
+# Cleanup function for signal handling
+cleanup_and_exit() {
+    printf "\n${YELLOW}Script interrupted by user.${NC}\n" >&2
+    exit 130  # 128 + SIGINT(2) = 130, standard exit code for Ctrl+C
+}
+
 # Main function
 main() {
+    # Set up global trap for clean exit on Ctrl+C or termination signals
+    # This ensures the script completely exits instead of continuing to the next command
+    trap cleanup_and_exit INT TERM
+
     parse_args "$@"
 
     # Check if command is empty (should not happen with updated parse_args)
@@ -910,7 +977,7 @@ main() {
             handle_stop
             ;;
         "restart")
-            handle_restart
+            handle_restart "$COMMAND_ARG"
             ;;
         "update")
             handle_update
@@ -2054,9 +2121,6 @@ handle_ssl_configuration() {
 
 # Function to handle email server configuration
 handle_email_configuration() {
-    # Setup trap for Ctrl+C and other interrupts
-    trap 'printf "\n${YELLOW}Configuration cancelled by user.${NC}\n"; exit 1' INT TERM
-
     printf "${YELLOW}+++ Email Server Configuration +++${NC}\n"
     printf "\n"
 
@@ -2190,9 +2254,6 @@ handle_email_configuration() {
             exit 1
             ;;
     esac
-
-    # Remove the trap before normal exit
-    trap - INT TERM
 }
 
 # Function to configure Let's Encrypt
@@ -2349,10 +2410,27 @@ handle_stop() {
 }
 
 handle_restart() {
-    printf "\n${CYAN}> Restarting AliasVault containers...${NC}\n"
-    eval "$(get_docker_compose_command) down"
-    eval "$(get_docker_compose_command) up -d"
-    printf "${GREEN}> AliasVault containers restarted successfully.${NC}\n"
+    local container_name="$1"
+
+    if [ -n "$container_name" ]; then
+        # Validate container name against known services
+        local valid_services="postgres client api admin reverse-proxy smtp task-runner"
+        if ! echo "$valid_services" | grep -qw "$container_name"; then
+            printf "${RED}Error: Invalid container name '${container_name}'${NC}\n"
+            printf "Valid containers: ${valid_services}\n"
+            exit 1
+        fi
+
+        printf "\n${CYAN}> Restarting ${container_name} container...${NC}\n"
+        eval "$(get_docker_compose_command) stop ${container_name}"
+        eval "$(get_docker_compose_command) up -d ${container_name}"
+        printf "${GREEN}> ${container_name} container restarted successfully.${NC}\n"
+    else
+        printf "\n${CYAN}> Restarting AliasVault containers...${NC}\n"
+        eval "$(get_docker_compose_command) down"
+        eval "$(get_docker_compose_command) up -d"
+        printf "${GREEN}> AliasVault containers restarted successfully.${NC}\n"
+    fi
 }
 
 # Function to handle updates
@@ -2628,11 +2706,26 @@ handle_install_version() {
         "${GITHUB_CONTAINER_REGISTRY}/task-runner:${target_version}"
     )
 
+    # Check all images are available in the registry before pulling
+    # This handles the case where CI is still building images for a new release
+    if ! check_images_available "$target_version" "${images[@]}"; then
+        log_error "Cannot proceed with installation - required Docker images are not available"
+        exit 1
+    fi
+
+    # Now pull all images
+    local pull_failed=false
     for image in "${images[@]}"; do
         if ! retry_command 3 5 enhanced_docker_pull "$image"; then
-            log_warning "Failed to pull image: $image - continuing anyway"
+            log_error "Failed to pull image: $image"
+            pull_failed=true
         fi
     done
+
+    if [ "$pull_failed" = true ]; then
+        log_error "One or more Docker images failed to pull. Please check your internet connection and try again."
+        exit 1
+    fi
 
     printf "${GREEN}✓ Docker image pulling completed${NC}\n"
 
@@ -2985,8 +3078,9 @@ handle_db_import() {
 
     # Create a temporary file to store the input
     temp_file=$(mktemp)
-    # Set up trap to ensure temp file cleanup on exit
-    trap 'rm -f "$temp_file"' EXIT INT TERM
+    # Set up trap to ensure temp file cleanup on exit, then call global cleanup
+    trap 'rm -f "$temp_file"; cleanup_and_exit' INT TERM
+    trap 'rm -f "$temp_file"' EXIT
 
     cat <&3 > "$temp_file"  # Read from fd 3 instead of stdin
     exec 3<&-  # Close fd 3

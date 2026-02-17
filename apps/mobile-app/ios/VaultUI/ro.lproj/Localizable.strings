@@ -1,6 +1,6 @@
 /* English localization strings for VaultUI */
 "error" = "Eroare";
-"cancel" = "Anulați";
+"cancel" = "Anulează";
 "back" = "Înapoi";
 "next" = "Înainte";
 "edit" = "Editează";
@@ -13,10 +13,10 @@
 "no_items_found" = "Nu s-au găsit elemente";
 "no_items_match" = "Niciun element existent nu corespunde căutării tale";
 "create_new_item" = "Creează element nou";
-"select_item" = "Selectați elementul";
-"select_text_to_insert" = "Selectați textul de inserat";
+"select_item" = "Selectează elementul";
+"select_text_to_insert" = "Selectează textul de inserat";
 "choose_username" = "Alege numele de utilizator";
-"select_text_to_insert_message" = "Selectați textul pe care doriți să îl inserați în câmpul selectat";
+"select_text_to_insert_message" = "Selectează textul pe care dorești să îl inserezi în câmpul selectat";
 "choose_username_message" = "Acest site web poate necesita fie numele de utilizator, fie adresa de e-mail pentru autentificare";
 "username_prefix" = "Utilizator: ";
 "email_prefix" = "E-mail: ";
@@ -46,7 +46,7 @@
 "loading_passkeys" = "Se încarcă Passkey-urile...";
 "no_passkeys_found" = "Nu s-au găsit Passkey-uri";
 "no_passkeys_match" = "Niciun Passkey existent nu corespunde căutării tale";
-"select_passkey" = "Selectați passkey-ul";
+"select_passkey" = "Selectează passkey-ul";
 "passkeys_load_error" = "Încărcarea passkey-urilor a eșuat. Această versiune poate fi incompatibilă. Deschide aplicația AliasVault pentru actualizări.";
 
 /* Passkey replacement */
@@ -62,7 +62,7 @@
 "merge_passkey_explanation" = "Această acțiune va adăuga un Passkey la elementul tău existent. Parola și celelalte date vor fi păstrate.";
 
 /* PIN Unlock */
-"unlock_vault" = "Deblocați seiful";
+"unlock_vault" = "Deblochează seiful";
 "enter_pin_to_unlock_vault" = "Introdu PIN-ul pentru a debloca seiful";
 "pin_locked_max_attempts" = "PIN blocat după prea multe încercări eșuate";
 "pin_incorrect_attempts_remaining" = "PIN incorect. Mai ai %d încercări";

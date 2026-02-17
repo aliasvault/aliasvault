@@ -51,7 +51,7 @@
             <div class="flex-1 overflow-y-auto p-4">
                 <div class="text-gray-700 dark:text-gray-300">
                     <div>
-                        <iframe class="w-full overscroll-y-auto" style="height:500px;" srcdoc="@EmailBody">
+                        <iframe class="w-full overscroll-y-auto" style="height:500px;" srcdoc="@EmailBody" sandbox="allow-popups allow-popups-to-escape-sandbox">
                         </iframe>
                     </div>
                 </div>
@@ -248,8 +248,8 @@
             // Check if there is HTML content, if not, then set default viewtype to plain
             if (Email.MessageHtml is not null && !string.IsNullOrWhiteSpace(Email.MessageHtml))
             {
-                // HTML is available
-                EmailBody = ConversionUtility.ConvertAnchorTagsToOpenInNewTab(Email.MessageHtml);
+                // HTML is available, sanitize and prepare for display
+                EmailBody = ConversionUtility.SanitizeAndPrepareEmailHtml(Email.MessageHtml);
             }
             else if (Email.MessagePlain is not null)
             {

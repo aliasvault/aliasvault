@@ -54,3 +54,8 @@ url: "https://docs.aliasvault.net"
 plugins:
   - jekyll-sitemap
   - jekyll-redirect-from
+
+markdown: kramdown
+
+kramdown:
+  toc_levels: [2, 3]

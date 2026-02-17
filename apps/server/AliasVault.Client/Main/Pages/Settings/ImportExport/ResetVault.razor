@@ -1,14 +1,11 @@
 @page "/settings/import-export/reset-vault"
 @inherits MainBase
-@inject HttpClient Http
 @inject ItemService ItemService
 @inject ILogger<ResetVault> Logger
-@using System.Text.Json
-@using AliasVault.Client.Utilities
-@using AliasVault.Shared.Models.WebApi.Auth
-@using AliasVault.Cryptography.Client
 @using System.ComponentModel.DataAnnotations
 @using AliasVault.Client.Resources
+@using AliasVault.Client.Services.Auth
+@using AliasVault.Client.Services.Auth.Enums
 @using Microsoft.Extensions.Localization
 
 <LayoutPageTitle>@Localizer["PageTitle"]</LayoutPageTitle>
@@ -85,7 +82,6 @@
     private readonly ResetVaultPasswordModel _passwordModel = new();
 
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Pages.Settings.ImportExport.ResetVault", "AliasVault.Client");
-    private IStringLocalizer ApiErrorLocalizer => LocalizerFactory.Create("ApiErrors", "AliasVault.Client");
 
     /// <summary>
     /// Whether to show the password confirmation step.
@@ -139,36 +135,22 @@
             // Get current username
             var username = await GetUsernameAsync();
 
-            // Send request to server to get user salt and encryption parameters
-            var result = await Http.PostAsJsonAsync("v1/Auth/login", new LoginInitiateRequest(username));
-            var responseContent = await result.Content.ReadAsStringAsync();
+            // Verify the password using centralized service
+            var verificationResult = await AuthService.VerifyPasswordAsync(username, _passwordModel.Password);
 
-            if (!result.IsSuccessStatusCode)
+            switch (verificationResult)
             {
-                var errors = ApiResponseUtility.ParseErrorResponse(responseContent, ApiErrorLocalizer);
-                foreach (var error in errors)
-                {
-                    GlobalNotificationService.AddErrorMessage(error, true);
-                }
-                return;
-            }
+                case PasswordVerificationResult.InvalidPassword:
+                    GlobalNotificationService.AddErrorMessage(Localizer["ResetVaultPasswordIncorrect"], true);
+                    return;
 
-            var loginResponse = JsonSerializer.Deserialize<LoginInitiateResponse>(responseContent);
-            if (loginResponse == null)
-            {
-                GlobalNotificationService.AddErrorMessage(Localizer["ResetVaultErrorMessage"], true);
-                return;
-            }
+                case PasswordVerificationResult.ServerError:
+                    GlobalNotificationService.AddErrorMessage(Localizer["ResetVaultErrorMessage"], true);
+                    return;
 
-            // Derive password hash using server parameters
-            byte[] passwordHash = await Encryption.DeriveKeyFromPasswordAsync(_passwordModel.Password, loginResponse.Salt, loginResponse.EncryptionType, loginResponse.EncryptionSettings);
-
-            // Verify the password locally using the derived password hash
-            var isValidPassword = await AuthService.ValidateEncryptionKeyAsync(passwordHash);
-            if (!isValidPassword)
-            {
-                GlobalNotificationService.AddErrorMessage(Localizer["ResetVaultPasswordIncorrect"], true);
-                return;
+                case PasswordVerificationResult.Success:
+                    // Continue with vault reset
+                    break;
             }
 
             // Clear local vault data by hard-deleting all items

@@ -1,10 +1,12 @@
-﻿FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+﻿FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble AS base
 WORKDIR /app
 
 # ============================================
 # Stage: Build core libraries
 # ============================================
-FROM rust:1-slim-bookworm AS core-builder
+# Use BUILDPLATFORM to run on native arch (amd64) instead of emulating arm64.
+# WASM output is platform-independent, so we only need to build once.
+FROM --platform=$BUILDPLATFORM rust:1-slim-bookworm AS core-builder
 
 # Install Node.js and wasm-pack (Rust already included in base image)
 RUN apt-get update && \
@@ -29,7 +31,7 @@ RUN cd ./core && \
 # ============================================
 # Stage: Build .NET application
 # ============================================
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build
 ARG TARGETARCH
 ARG BUILD_CONFIGURATION=Release
 ENV DOTNET_CLI_TELEMETRY_OPTOUT=1

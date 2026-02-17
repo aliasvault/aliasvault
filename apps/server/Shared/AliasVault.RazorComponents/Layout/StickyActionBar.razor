@@ -1,0 +1,93 @@
+@* StickyActionBar component - provides a fixed action bar at the bottom of the viewport *@
+@* Only appears when user has scrolled down past a threshold or page is scrollable *@
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div class="sticky-action-bar-wrapper" style="display: none;">
+    @* Spacer div to prevent content from being hidden behind the fixed bar *@
+    <div class="h-20"></div>
+
+    @* Fixed action bar *@
+    <div class="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 shadow-lg">
+        <div class="max-w-screen-2xl mx-auto px-4 py-3">
+            <div class="flex flex-wrap items-center justify-end gap-2">
+                @ChildContent
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>
+    /// Gets or sets the content to be displayed inside the sticky action bar.
+    /// Typically contains buttons like Save and Cancel.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Gets or sets the scroll threshold in pixels before showing the bar.
+    /// Default is 75 pixels.
+    /// </summary>
+    [Parameter]
+    public int ScrollThreshold { get; set; } = 75;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("eval", $@"
+                (function() {{
+                    if (window._stickyBarCleanup) {{
+                        window._stickyBarCleanup();
+                    }}
+
+                    const threshold = {ScrollThreshold};
+
+                    function checkScroll() {{
+                        const scrollY = window.scrollY || document.documentElement.scrollTop;
+                        const docHeight = document.documentElement.scrollHeight;
+                        const viewHeight = window.innerHeight;
+                        const canScroll = docHeight > viewHeight + 50;
+                        const shouldShow = canScroll && scrollY > threshold;
+
+                        const bar = document.querySelector('.sticky-action-bar-wrapper');
+                        if (bar) {{
+                            bar.style.display = shouldShow ? 'block' : 'none';
+                        }}
+                    }}
+
+                    window.addEventListener('scroll', checkScroll);
+                    window.addEventListener('resize', checkScroll);
+
+                    window._stickyBarCleanup = function() {{
+                        window.removeEventListener('scroll', checkScroll);
+                        window.removeEventListener('resize', checkScroll);
+                    }};
+
+                    // Initial check after a small delay to ensure DOM is ready
+                    setTimeout(checkScroll, 100);
+                }})();
+            ");
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("eval", @"
+                if (window._stickyBarCleanup) {
+                    window._stickyBarCleanup();
+                    window._stickyBarCleanup = null;
+                }
+            ");
+        }
+        catch
+        {
+            // Ignore errors during disposal
+        }
+    }
+}

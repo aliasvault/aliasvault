@@ -40,7 +40,7 @@ const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
   const getErrorMessage = (errorCode: MobileLoginErrorCode): string => {
     switch (errorCode) {
       case MobileLoginErrorCode.TIMEOUT:
-        return t('auth.errors.mobileLoginRequestExpired');
+        return t('common.errors.mobileLoginRequestExpired');
       case MobileLoginErrorCode.GENERIC:
       default:
         return t('common.errors.unknownError');
@@ -91,10 +91,13 @@ const MobileUnlockModal: React.FC<IMobileUnlockModalProps> = ({
         }
 
         // Initiate mobile login and get QR code data
-        const requestId = await mobileLoginRef.current.initiate();
+        const { requestId, publicKeyHash } = await mobileLoginRef.current.initiate();
 
-        // Generate QR code with AliasVault prefix for mobile login
-        const qrData = `aliasvault://open/mobile-unlock/${requestId}`;
+        /*
+         * Generate QR code with AliasVault prefix for mobile login.
+         * Include public key hash as query parameter for security verification.
+         */
+        const qrData = `aliasvault://open/mobile-unlock/${requestId}?pk=${publicKeyHash}`;
         const qrDataUrl = await QRCode.toDataURL(qrData, {
           width: 256,
           margin: 2,

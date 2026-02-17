@@ -25,7 +25,7 @@
     <comment>Page title for general settings</comment>
   </data>
   <data name="PageDescription">
-    <value>Configurați setările generale AliasVault.</value>
+    <value>Configurează setările generale AliasVault.</value>
     <comment>Page description for general settings</comment>
   </data>
   <data name="BreadcrumbTitle">
@@ -42,7 +42,7 @@
     <comment>Label for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescription">
-    <value>Setați domeniul de e-mail implicit care va fi utilizat la crearea noilor date de autentificare.</value>
+    <value>Setează domeniul de e-mail implicit care va fi utilizat la crearea noilor date de autentificare.</value>
     <comment>Description for default email domain setting</comment>
   </data>
   <data name="DefaultEmailDomainDescriptionNote">
@@ -50,7 +50,7 @@
     <comment>Note for default email domain setting explaining the difference between private and public domains.</comment>
   </data>
   <data name="DefaultEmailDomainLearnMore">
-    <value>Aflați mai multe despre diferențe</value>
+    <value>Află mai multe despre diferențe</value>
     <comment>Link to documentation for default email domain setting</comment>
   </data>
   <data name="PrivateDomainsLabel">
@@ -79,7 +79,7 @@
     <comment>Label for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationLanguageDescription">
-    <value>Setați limba implicită care va fi utilizată la generarea de noi identități.</value>
+    <value>Setează limba implicită care va fi utilizată la generarea de noi identități.</value>
     <comment>Description for alias generation language setting</comment>
   </data>
   <data name="AliasGenerationGenderLabel">
@@ -87,7 +87,7 @@
     <comment>Label for alias generation gender setting</comment>
   </data>
   <data name="AliasGenerationGenderDescription">
-    <value>Setați preferința implicită de gen pentru generarea de noi identități.</value>
+    <value>Setează preferința implicită de gen pentru generarea noilor identități.</value>
     <comment>Description for alias generation gender setting</comment>
   </data>
   <data name="RandomOption">
@@ -107,7 +107,7 @@
     <comment>Label for alias generation age range setting</comment>
   </data>
   <data name="AliasGenerationAgeRangeDescription">
-    <value>Setați intervalul de vârstă implicit pentru generarea de noi identități. Acest lucru afectează data nașterii atribuită identității generate.</value>
+    <value>Setează intervalul de vârstă implicit pentru generarea noilor identități. Acest lucru afectează data nașterii atribuită identității generate.</value>
     <comment>Description for alias generation age range setting</comment>
   </data>
   <!-- Clipboard Settings Section -->
@@ -120,7 +120,7 @@
     <comment>Label for clipboard clear seconds setting</comment>
   </data>
   <data name="ClipboardClearSecondsDescription">
-    <value>Goliți automat conținutul clipboard-ului după copierea parolelor sau a altor date sensibile.</value>
+    <value>Golește automat conținutul clipboard-ului după copierea parolelor sau a altor date sensibile.</value>
     <comment>Description for clipboard clear seconds setting</comment>
   </data>
   <data name="ClipboardClearDisabledOption">
@@ -140,7 +140,7 @@
     <comment>Option to clear clipboard after 15 seconds</comment>
   </data>
   <data name="ClipboardClearLimitationNote">
-    <value>Notă: golirea clipboard-ului în aplicația web este posibilă doar când tab-ul este activ. Dacă părăsiți tab-ul, clipboard-ul va fi golit automat în momentul în care reveniți.</value>
+    <value>Notă: Golirea clipboard-ului în aplicația web este posibilă doar când tab-ul este activ. Dacă părăsești tab-ul, clipboard-ul va fi golit automat când revii.</value>
     <comment>Note explaining limitations of clipboard clearing feature</comment>
   </data>
   <!-- Password Settings Section -->
@@ -158,7 +158,7 @@
     <comment>Label for app language setting</comment>
   </data>
   <data name="AppLanguageDescription">
-    <value>Setați limba pentru interfața aplicației.</value>
+    <value>Setează limba interfeței aplicației.</value>
     <comment>Description for app language setting</comment>
   </data>
 </root>
