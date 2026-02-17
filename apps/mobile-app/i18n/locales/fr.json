@@ -409,14 +409,12 @@
     "publicEmailTitle": "Fournisseurs d'email public temporaires",
     "publicEmailDescription": "Anonyme mais confidentiel limitée. Le contenu des e-mails est lisible par toute personne qui connaît l'adresse.",
     "searchPlaceholder": "Rechercher dans le coffre...",
-    "noMatchingItems": "Aucun élément correspondant trouvé",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
     "noItemsFound": "Aucun élément trouvé. Créez en un pour commencer. Astuce : vous pouvez également vous connecter à l'application Web AliasVault pour importer les identifiants depuis d'autres gestionnaires de mots de passe.",
     "allItemsInFolders": "Tous vos éléments sont organisés dans des dossiers. Appuyez sur un dossier ci-dessus pour voir vos identifiants, ou utilisez la recherche pour trouver des éléments spécifiques.",
     "noPasskeysFound": "Aucune clé d'accès n'a encore été créée. Les clés d'accès sont créés en visitant un site Web qui propose des clés d'accès comme méthode d'authentification.",
-    "noAttachmentsFound": "Aucun élément avec pièces jointes trouvé",
-    "noItemsOfTypeFound": "Aucun élément {{type}} trouvé",
     "clearSearch": "Effacer la recherche",
     "clearFilter": "Effacer le filtre",
     "recentEmails": "E-mails récents",
@@ -443,7 +441,8 @@
       "all": "Éléments",
       "showFolders": "Dossiers",
       "passkeys": "Clés d'accès",
-      "attachments": "Pièces jointes"
+      "attachments": "Pièces jointes",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Trier par",
