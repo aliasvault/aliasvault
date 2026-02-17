@@ -193,7 +193,7 @@
     "welcomeTitle": "Välkommen till AliasVault!",
     "welcomeDescription": "För att använda webbläsartillägget AliasVault: navigera till en webbplats och använd AliasVault-autofyllrutan för att skapa en ny inloggningsuppgift.",
     "noPasskeysFound": "Inga passkeys har skapats än. Passkeys skapas genom att besöka en webbplats som erbjuder passkeys som en autentiseringsmetod.",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Inga objekt matchar de valda filtren",
     "noMatchingItemsSearch": "Inga objekt matchar \"{{search}}\"",
     "noMatchingItemsWithFilter": "Inga {{filter}} objekt som matchar \"{{search}}\"",
     "clearSearch": "Rensa sökning",
