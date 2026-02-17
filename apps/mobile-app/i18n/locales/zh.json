@@ -409,7 +409,7 @@
     "publicEmailTitle": "公共临时邮箱提供商",
     "publicEmailDescription": "匿名但隐私性有限，任何知晓其地址的人均可读取邮件内容。",
     "searchPlaceholder": "搜索密码库…",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "没有项目符合所选筛选器。",
     "noMatchingItemsSearch": "未找到匹配“{{search}}”的项目",
     "noMatchingItemsWithFilter": "未找到匹配“{{search}}”的 {{filter}} 项目",
     "noItemsFound": "未找到项目。请创建一个以开始使用。提示：您也可以登录 AliasVault 网页应用，从其他密码管理器导入凭据。",
