@@ -193,9 +193,7 @@
     "welcomeTitle": "Tervetuloa AliasVaultiin!",
     "welcomeDescription": "Käyttääksesi AliasVault-selainlaajennusta, siirry jollekin verkkosivustolle ja käytä AliasVaultin automaattisen täytön ponnahdusikkunaa luodaksesi uuden tunnistetiedon.",
     "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
-    "noAttachmentsFound": "Liitteitä sisältäviä tietoja ei löytynyt",
-    "noItemsOfTypeFound": "No {{type}} tietoja ei löydy",
-    "noMatchingItems": "Vastaavia tietoja ei löytynyt",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "clearSearch": "Clear search",
@@ -209,7 +207,8 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Sala-avaimet"
+      "passkeys": "Sala-avaimet",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sort by",
