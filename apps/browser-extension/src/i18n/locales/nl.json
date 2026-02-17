@@ -193,7 +193,7 @@
     "welcomeTitle": "Welkom bij AliasVault!",
     "welcomeDescription": "Om de AliasVault browser extensie te gebruiken: navigeer naar een website en gebruik de AliasVault autofill popup om nieuwe credentials aan te maken.",
     "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Geen items gevonden die overeenkomen met het geselecteerde filter.",
     "noMatchingItemsSearch": "Geen items die overeenkomen met \"{{search}}\"",
     "noMatchingItemsWithFilter": "Geen {{filter}} items die overeenkomen met \"{{search}}\"",
     "clearSearch": "Wis zoekopdracht",
@@ -208,7 +208,7 @@
     "filters": {
       "folders": "Mappen",
       "passkeys": "Passkeys",
-      "totp": "2FA Codes"
+      "totp": "2FA codes"
     },
     "sort": {
       "title": "Sorteren op",
