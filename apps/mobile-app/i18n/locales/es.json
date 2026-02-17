@@ -409,7 +409,7 @@
     "publicEmailTitle": "Proveedores de Correo Temporal Públicos",
     "publicEmailDescription": "Privacidad anónima pero limitada. Contenido de correo electrónico puede ser leído por cualquiera que conozca la dirección.",
     "searchPlaceholder": "Buscar bóveda...",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "No hay elementos que coincidan con el filtro.",
     "noMatchingItemsSearch": "No hay elementos que coincidan con \"{{search}}\"",
     "noMatchingItemsWithFilter": "No hay elementos {{filter}} que coincidan con \"{{search}}\"",
     "noItemsFound": "No se han encontrado elementos. Crea una para empezar. Consejo: también puedes iniciar sesión en la aplicación web de AliasVault para importar credenciales de otros gestores de contraseñas.",
@@ -442,7 +442,7 @@
       "showFolders": "Carpetas",
       "passkeys": "Llaves de acceso",
       "attachments": "Archivos adjuntos",
-      "totp": "2FA Codes"
+      "totp": "Códigos 2FA"
     },
     "sort": {
       "title": "Ordenar por",
