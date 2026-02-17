@@ -24,8 +24,8 @@
     "unlockSuccessDescription": "Ahora puede utilizar el autocompletado en los formularios de inicio de sesión en su navegador.",
     "closePopup": "Cerrar esta ventana emergente",
     "browseVault": "Navegar en el contenido de la bóveda",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
-    "closingIn": "Closing in {{seconds}}s...",
+    "autoCloseUnlockPopup": "Auto-cerrar en futuros inicios de sesión",
+    "closingIn": "Cerrando en {{seconds}}...",
     "connectingTo": "Conectando con",
     "switchAccounts": "¿Cambiar de cuenta?",
     "loginWithMobile": "Iniciar sesión con la aplicación móvil",
@@ -42,7 +42,7 @@
     "error": "Error",
     "cancel": "Cancelar",
     "confirm": "Confirmar",
-    "remove": "Remove",
+    "remove": "Eliminar",
     "back": "Atrás",
     "next": "Siguiente",
     "use": "Usar",
@@ -54,7 +54,7 @@
     "create": "Crear",
     "or": "O",
     "close": "Cerrar",
-    "dismiss": "Dismiss",
+    "dismiss": "Descartar",
     "logout": "Cerrar sesión",
     "copied": "¡Copiado!",
     "openInNewWindow": "Abrir en una ventana nueva",
@@ -169,8 +169,8 @@
     "vaultUpgradeRequired": "Actualización de bóveda requerida.",
     "dismissPopup": "Descartar aviso",
     "savePrompt": {
-      "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "title": "¿Guardar en AliasVault?",
+      "neverForThisSite": "Nunca para este sitio"
     }
   },
   "items": {
@@ -193,9 +193,7 @@
     "welcomeTitle": "¡Bienvenido a AliasVault!",
     "welcomeDescription": "Para utilizar la extensión del navegador AliasVault: vaya a un sitio web y utilice la ventana de autocompletado de AliasVault para crear una nueva credencial.",
     "noPasskeysFound": "No se han creado llaves de acceso todavía. Las llaves se crean visitando un sitio web que ofrece llaves de acceso como método de autenticación.",
-    "noAttachmentsFound": "No hay elementos con archivos adjuntos",
-    "noItemsOfTypeFound": "No se encontraron elementos {{type}}",
-    "noMatchingItems": "No hay elementos coincidentes",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No hay elementos que coincidan con \"{{search}}\"",
     "noMatchingItemsWithFilter": "No hay elementos {{filter}} que coincidan con \"{{search}}\"",
     "clearSearch": "Limpiar búsqueda",
@@ -209,7 +207,8 @@
     "deleteFolderAndItemsDescription": "{{count}} elemento(s) serán movidos a Borrados Recientemente.",
     "filters": {
       "folders": "Carpetas",
-      "passkeys": "Llaves de acceso"
+      "passkeys": "Llaves de acceso",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Ordenar por",
@@ -356,11 +355,11 @@
     "disabledForThisSite": "Deshabilitado para este sitio",
     "temporarilyDisabledUntil": "Deshabilitado temporalmente hasta ",
     "resetAllSiteSettings": "Reiniciar todos los ajustes específicos del sitio",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
-    "disabledSites": "Disabled sites",
-    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "clearAllDisabledSites": "Clear all disabled sites",
-    "temporaryUntil": "until",
+    "autofillPopupDescription": "Mostrar el popup de autorrelleno cuando se detectan los campos de inicio de sesión.",
+    "disabledSites": "Sitios desactivados",
+    "disabledSitesDescription": "Sitios donde el popup de autorrelleno no aparecerá.",
+    "clearAllDisabledSites": "Borrar todos los sitios desactivados",
+    "temporaryUntil": "hasta",
     "appearance": "Apariencia",
     "theme": "Tema",
     "useDefault": "Uso por defecto",
@@ -430,11 +429,11 @@
       }
     },
     "loginSave": {
-      "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "title": "Guardar registro",
+      "description": "Mostrar un mensaje para guardar las credenciales de inicio de sesión cuando envíe un formulario de inicio de sesión en un sitio web.",
+      "blockedSites": "Sitios bloqueados",
+      "blockedSitesDescription": "Sitios donde el indicador de guardado nunca aparecerá.",
+      "clearAllBlockedSites": "Borrar todos los sitios bloqueados"
     },
     "unlockMethod": {
       "title": "Método de desbloqueo de la bóveda",
