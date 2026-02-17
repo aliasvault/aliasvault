@@ -193,9 +193,7 @@
     "welcomeTitle": "Boas-vindas ao AliasVault!",
     "welcomeDescription": "Para utilizar a extensão de navegador do AliasVault: navegue para um site e utilize o pop-up de preenchimento automático do AliasVault para criar uma nova credencial.",
     "noPasskeysFound": "Nenhuma passkey foi criada ainda. Passkeys são veiadas visitando um website que ofereça passkey como método de autenticação.",
-    "noAttachmentsFound": "Nenhum item com anexos foi encontrado",
-    "noItemsOfTypeFound": "Nenhum item do tipo {{type}} foi encontrado",
-    "noMatchingItems": "Nenhum ítem correspondente encontrado",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "Nenhum item corresponde à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
     "clearSearch": "Limpar pesquisa",
@@ -209,7 +207,8 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) será(ão) movido(s) para Recentemente Excluídos.",
     "filters": {
       "folders": "Pastas",
-      "passkeys": "Passkeys"
+      "passkeys": "Passkeys",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Ordenar por",
