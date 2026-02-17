@@ -409,14 +409,12 @@
     "publicEmailTitle": "Publiczni dostawcy tymczasowych adresów e-mail",
     "publicEmailDescription": "Anonimowe, ale ograniczają prywatność. Treść wiadomości e-mail jest dostępna dla każdego, kto zna adres.",
     "searchPlaceholder": "Wyszukaj w sejfie...",
-    "noMatchingItems": "Nie znaleziono pasujących elementów",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "Nie znaleziono żadnych elementów pasujących do „{{search}}”",
     "noMatchingItemsWithFilter": "Brak elementów {{filter}} pasujących do „{{search}}”",
     "noItemsFound": "Nie znaleziono żadnych elementów. Utwórz jeden, aby rozpocząć. Wskazówka: możesz również zalogować się do aplikacji internetowej AliasVault, aby zaimportować dane uwierzytelniające z innych menedżerów haseł.",
     "allItemsInFolders": "Wszystkie Twoje elementy są uporządkowane w folderach. Dotknij folderu powyżej, aby wyświetlić swoje poświadczenia, lub skorzystaj z wyszukiwania, aby znaleźć konkretne elementy.",
     "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
-    "noAttachmentsFound": "Nie znaleziono żadnych elementów z załącznikami.",
-    "noItemsOfTypeFound": "Nie znaleziono elementów {{type}}",
     "clearSearch": "Wyczyść wyszukiwanie",
     "clearFilter": "Wyczyść filtr",
     "recentEmails": "Ostatnie wiadomości e-mail",
@@ -443,7 +441,8 @@
       "all": "Elementy",
       "showFolders": "Foldery",
       "passkeys": "Klucze dostępu",
-      "attachments": "Załączniki"
+      "attachments": "Załączniki",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sortuj według",
