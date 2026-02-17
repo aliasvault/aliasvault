@@ -193,9 +193,7 @@
     "welcomeTitle": "Velkommen til AliasVault!",
     "welcomeDescription": "For at bruge AliasVault-browserudvidelsen: Gå til et websted og brug AliasVault-autofyld-popup'en til at oprette en ny logonoplysning.",
     "noPasskeysFound": "Der er endnu ikke oprettet nogen passkeys. Passkeys oprettes ved at besøge et websted, der tilbyder passkeys som autentificeringsmetode.",
-    "noAttachmentsFound": "Ingen elementer med vedhæftede filer fundet",
-    "noItemsOfTypeFound": "Ingen {{type}}-elementer fundet",
-    "noMatchingItems": "Ingen matchende elementer fundet",
+    "noMatchingItems": "Ingen elementer matcher det valgte filter.",
     "noMatchingItemsSearch": "Ingen elementer matcher \"{{search}}\"",
     "noMatchingItemsWithFilter": "Ingen {{filter}}-elementer matcher \"{{search}}\"",
     "clearSearch": "Ryd søgning",
@@ -209,7 +207,8 @@
     "deleteFolderAndItemsDescription": "{{count}} element(er) vil blive flyttet til Senest Slettede.",
     "filters": {
       "folders": "Mapper",
-      "passkeys": "Passkeys"
+      "passkeys": "Passkeys",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sorter efter",
