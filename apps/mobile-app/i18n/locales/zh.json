@@ -409,14 +409,12 @@
     "publicEmailTitle": "公共临时邮箱提供商",
     "publicEmailDescription": "匿名但隐私性有限，任何知晓其地址的人均可读取邮件内容。",
     "searchPlaceholder": "搜索密码库…",
-    "noMatchingItems": "未找到匹配的项目",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "未找到匹配“{{search}}”的项目",
     "noMatchingItemsWithFilter": "未找到匹配“{{search}}”的 {{filter}} 项目",
     "noItemsFound": "未找到项目。请创建一个以开始使用。提示：您也可以登录 AliasVault 网页应用，从其他密码管理器导入凭据。",
     "allItemsInFolders": "您的所有项目都已整理到文件夹中。点击上方文件夹即可查看您的凭据，或使用搜索查找特定的项目。",
     "noPasskeysFound": "尚未创建通行密钥。访问以通行密钥为认证方式的网站才能创建通行密钥。",
-    "noAttachmentsFound": "未找到带附件的项目",
-    "noItemsOfTypeFound": "未找到 {{type}} 项目",
     "clearSearch": "清除搜索",
     "clearFilter": "清除筛选器",
     "recentEmails": "近期邮件",
@@ -443,7 +441,8 @@
       "all": "项目",
       "showFolders": "文件夹",
       "passkeys": "通行密钥",
-      "attachments": "附件"
+      "attachments": "附件",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "排序方式",
