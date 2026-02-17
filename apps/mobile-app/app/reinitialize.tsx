@@ -155,7 +155,7 @@ export default function ReinitializeScreen() : React.ReactNode {
         }
       })();
 
-      // Navigate immediately - don't wait for sync
+      // Navigate immediately
       navigation.navigateAfterUnlock();
     };
 
