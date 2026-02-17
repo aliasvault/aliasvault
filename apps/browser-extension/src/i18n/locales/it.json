@@ -193,9 +193,7 @@
     "welcomeTitle": "Benvenuto in AliasVault!",
     "welcomeDescription": "Per usare l'estensione browser AliasVault: naviga su un sito e usa la finestra di compilazione automatica per creare una nuova credenziale.",
     "noPasskeysFound": "Non sono state ancora create passkey. Le passkey vengono create visitando un sito web che offre le passkey come metodo di autenticazione.",
-    "noAttachmentsFound": "Nessun elemento con allegati trovato",
-    "noItemsOfTypeFound": "Nessun elemento {{type}} trovato",
-    "noMatchingItems": "Nessun elemento corrispondente trovato",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "Nessun elemento corrispondente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nessun elemento {{filter}} corrispondente \"{{search}}\"",
     "clearSearch": "Cancella ricerca",
@@ -209,7 +207,8 @@
     "deleteFolderAndItemsDescription": "{{count}} oggetto(i) verrà spostato in Eliminato Recentemente.",
     "filters": {
       "folders": "Cartelle",
-      "passkeys": "Passkey"
+      "passkeys": "Passkey",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Ordina per",
