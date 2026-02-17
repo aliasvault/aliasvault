@@ -40,7 +40,7 @@ import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 /**
  * Filter types for the items list.
  */
-type FilterType = 'all' | 'passkeys' | 'attachments' | ItemType;
+type FilterType = 'all' | 'passkeys' | 'attachments' | 'totp' | ItemType;
 
 /**
  * Check if a filter is an item type filter.
@@ -175,6 +175,8 @@ export default function ItemsScreen(): React.ReactNode {
         return t('items.filters.passkeys');
       case 'attachments':
         return t('common.attachments');
+      case 'totp':
+        return t('items.filters.totp');
       case 'all':
         return t('items.title');
       default:
@@ -217,6 +219,8 @@ export default function ItemsScreen(): React.ReactNode {
         passesTypeFilter = item.HasPasskey === true;
       } else if (filterType === 'attachments') {
         passesTypeFilter = item.HasAttachment === true;
+      } else if (filterType === 'totp') {
+        passesTypeFilter = item.HasTotp === true;
       } else if (isItemTypeFilter(filterType)) {
         passesTypeFilter = item.ItemType === filterType;
       }
@@ -906,6 +910,25 @@ export default function ItemsScreen(): React.ReactNode {
             </ThemedText>
           </TouchableOpacity>
 
+          {/* TOTP filter */}
+          <TouchableOpacity
+            style={[
+              styles.filterMenuItem,
+              filterType === 'totp' && styles.filterMenuItemActive
+            ]}
+            onPress={() => {
+              setFilterType('totp');
+              setShowFilterMenu(false);
+            }}
+          >
+            <ThemedText style={[
+              styles.filterMenuItemText,
+              filterType === 'totp' && styles.filterMenuItemTextActive
+            ]}>
+              {t('items.filters.totp')}
+            </ThemedText>
+          </TouchableOpacity>
+
           <ThemedView style={styles.filterMenuSeparator} />
 
           {/* Recently deleted */}
@@ -1048,14 +1071,8 @@ export default function ItemsScreen(): React.ReactNode {
         return t('items.noMatchingItemsSearch', { search: searchQuery });
       }
       // Only filter active (no search)
-      if (filterType === 'passkeys') {
-        return t('items.noPasskeysFound');
-      }
-      if (filterType === 'attachments') {
-        return t('items.noAttachmentsFound');
-      }
-      if (isItemTypeFilter(filterType)) {
-        return t('items.noItemsOfTypeFound', { type: getFilterTitle() });
+      if (filterType !== 'all') {
+        return t('items.noMatchingItems');
       }
       // All items are in folders - show helpful message
       if (hasItemsInFoldersOnly) {

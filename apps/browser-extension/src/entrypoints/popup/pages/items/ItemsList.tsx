@@ -31,9 +31,10 @@ import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
  * - 'all': Show all items
  * - 'passkeys': Show only items with passkeys
  * - 'attachments': Show only items with attachments
+ * - 'totp': Show only items with 2FA codes
  * - ItemType values: Filter by specific item type (Login, Alias, CreditCard, Note)
  */
-type FilterType = 'all' | 'passkeys' | 'attachments' | ItemType;
+type FilterType = 'all' | 'passkeys' | 'attachments' | 'totp' | ItemType;
 
 const FILTER_STORAGE_KEY = 'items-filter';
 const FILTER_EXPIRY_MS = 5 * 60 * 1000; // 5 minutes
@@ -385,6 +386,8 @@ const ItemsList: React.FC = () => {
         return t('items.filters.passkeys');
       case 'attachments':
         return t('common.attachments');
+      case 'totp':
+        return t('items.filters.totp');
       case 'all':
         return t('items.title');
       default:
@@ -465,6 +468,8 @@ const ItemsList: React.FC = () => {
       passesTypeFilter = item.HasPasskey === true;
     } else if (filterType === 'attachments') {
       passesTypeFilter = item.HasAttachment === true;
+    } else if (filterType === 'totp') {
+      passesTypeFilter = item.HasTotp === true;
     } else if (isItemTypeFilter(filterType)) {
       // Filter by item type (Login, Alias, CreditCard, Note)
       passesTypeFilter = item.ItemType === filterType;
@@ -691,6 +696,20 @@ const ItemsList: React.FC = () => {
                   >
                     {t('common.attachments')}
                   </button>
+                  {/* TOTP filter */}
+                  <button
+                    onClick={() => {
+                      const newFilter = 'totp';
+                      setFilterType(newFilter);
+                      storeFilter(newFilter);
+                      setShowFilterMenu(false);
+                    }}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 ${
+                      filterType === 'totp' ? 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400' : 'text-gray-700 dark:text-gray-300'
+                    }`}
+                  >
+                    {t('items.filters.totp')}
+                  </button>
                   <div className="border-t border-gray-200 dark:border-gray-700 my-1" />
                   {/* Recently deleted link */}
                   <button
@@ -810,13 +829,9 @@ const ItemsList: React.FC = () => {
                     // Only search active
                     ? t('items.noMatchingItemsSearch', { search: searchTerm })
                     // Only filter active (no search)
-                    : filterType === 'passkeys'
-                      ? t('items.noPasskeysFound')
-                      : filterType === 'attachments'
-                        ? t('items.noAttachmentsFound')
-                        : isItemTypeFilter(filterType)
-                          ? t('items.noItemsOfTypeFound', { type: getFilterTitle() })
-                          : t('items.noMatchingItems')
+                    : filterType !== 'all'
+                      ? t('items.noMatchingItems')
+                      : t('items.noMatchingItems')
                 }
               </p>
               {/* Clear filter/search buttons */}

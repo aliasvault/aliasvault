@@ -104,6 +104,9 @@
                             <button @onclick="() => SetFilter(ItemFilterType.Attachments)" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 @(FilterType == ItemFilterType.Attachments ? "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400" : "text-gray-700 dark:text-gray-300")">
                                 @Localizer["FilterAttachmentsOption"]
                             </button>
+                            <button @onclick="() => SetFilter(ItemFilterType.Totp)" class="w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-600 @(FilterType == ItemFilterType.Totp ? "bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400" : "text-gray-700 dark:text-gray-300")">
+                                @Localizer["FilterTotpOption"]
+                            </button>
 
                             <div class="border-t border-gray-200 dark:border-gray-600 my-1"></div>
 
@@ -246,13 +249,9 @@ else
                 {
                     <div class="credential-card col-span-full p-4 space-y-2 bg-amber-50 border border-primary-500 rounded-lg shadow-sm dark:border-primary-700 dark:bg-gray-800">
                         <div class="px-4 py-6 text-gray-700 dark:text-gray-200 rounded text-center">
-                            @if (FilterType == ItemFilterType.Passkeys)
+                            @if (FilterType != ItemFilterType.All)
                             {
-                                <p>@Localizer["NoPasskeysFound"]</p>
-                            }
-                            else if (FilterType == ItemFilterType.Attachments)
-                            {
-                                <p>@Localizer["NoAttachmentsFound"]</p>
+                                <p>@Localizer["NoItemsFound"]</p>
                             }
                             else if (IsInFolder)
                             {
@@ -499,6 +498,7 @@ else
             {
                 ItemFilterType.Passkeys => filtered.Where(x => x.HasPasskey),
                 ItemFilterType.Attachments => filtered.Where(x => x.HasAttachment),
+                ItemFilterType.Totp => filtered.Where(x => x.HasTotp),
                 ItemFilterType.Login => filtered.Where(x => x.ItemType == ItemType.Login),
                 ItemFilterType.Alias => filtered.Where(x => x.ItemType == ItemType.Alias),
                 ItemFilterType.CreditCard => filtered.Where(x => x.ItemType == ItemType.CreditCard),
@@ -576,6 +576,7 @@ else
         {
             ItemFilterType.Passkeys => Localizer["FilterPasskeysOption"],
             ItemFilterType.Attachments => Localizer["FilterAttachmentsOption"],
+            ItemFilterType.Totp => Localizer["FilterTotpOption"],
             ItemFilterType.Login => ItemTypeSelectorLocalizer["TypeLogin"],
             ItemFilterType.Alias => ItemTypeSelectorLocalizer["TypeAlias"],
             ItemFilterType.CreditCard => ItemTypeSelectorLocalizer["TypeCreditCard"],

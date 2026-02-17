@@ -409,14 +409,12 @@
     "publicEmailTitle": "Public Temp Email Providers",
     "publicEmailDescription": "Anonymous but limited privacy. Email content is readable by anyone that knows the address.",
     "searchPlaceholder": "Search vault...",
-    "noMatchingItems": "No matching items found",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
     "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
     "clearSearch": "Clear search",
     "clearFilter": "Clear filter",
     "recentEmails": "Recent emails",
@@ -443,7 +441,8 @@
       "all": "Items",
       "showFolders": "Folders",
       "passkeys": "Passkeys",
-      "attachments": "Attachments"
+      "attachments": "Attachments",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sort by",
