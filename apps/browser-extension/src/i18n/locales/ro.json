@@ -193,9 +193,7 @@
     "welcomeTitle": "Bun venit în AliasVault!",
     "welcomeDescription": "Pentru a utiliza extensia de browser AliasVault: accesează un site web și folosește fereastra pop-up de completare automată AliasVault pentru a crea noi date de autentificare.",
     "noPasskeysFound": "Nu a fost creat niciun passkey încă. Passkey-urile sunt create vizitând site-uri care oferă această metodă de autentificare.",
-    "noAttachmentsFound": "Nu s-au găsit elemente cu atașamente",
-    "noItemsOfTypeFound": "Nu s-au găsit elemente de tip {{type}}",
-    "noMatchingItems": "Nu s-au găsit elemente care să se potrivească",
+    "noMatchingItems": "Niciun element nu corespunde filtrului selectat.",
     "noMatchingItemsSearch": "Nu s-au găsit elemente pentru „{{search}}”",
     "noMatchingItemsWithFilter": "Niciun element {{filter}} nu se potrivește cu „{{search}}”",
     "clearSearch": "Șterge căutarea",
@@ -209,7 +207,8 @@
     "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
     "filters": {
       "folders": "Dosare",
-      "passkeys": "Passkeys"
+      "passkeys": "Passkeys",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Filtrează după",
