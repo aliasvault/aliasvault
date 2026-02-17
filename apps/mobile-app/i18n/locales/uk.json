@@ -409,14 +409,12 @@
     "publicEmailTitle": "Публічні тимчасові постачальники електронної пошти",
     "publicEmailDescription": "Анонімно, але обмежена конфіденційність. Зміст електронного листа може прочитати будь-хто, хто знає адресу.",
     "searchPlaceholder": "Пошук сховища...",
-    "noMatchingItems": "No matching items found",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "No items found. Create one to get started. Tip: you can also login to the AliasVault web app to import credentials from other password managers.",
     "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
     "noPasskeysFound": "Ключі доступу ще не створено. Ключі доступу створюються під час відвідування вебсайту, який пропонує ключі доступу як спосіб автентифікації.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
     "clearSearch": "Clear search",
     "clearFilter": "Clear filter",
     "recentEmails": "Недавні електронні листи",
@@ -443,7 +441,8 @@
       "all": "Items",
       "showFolders": "Folders",
       "passkeys": "Ключі доступу",
-      "attachments": "Вкладення"
+      "attachments": "Вкладення",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sort by",
