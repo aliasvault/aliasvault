@@ -193,7 +193,7 @@
     "welcomeTitle": "¡Bienvenido a AliasVault!",
     "welcomeDescription": "Para utilizar la extensión del navegador AliasVault: vaya a un sitio web y utilice la ventana de autocompletado de AliasVault para crear una nueva credencial.",
     "noPasskeysFound": "No se han creado llaves de acceso todavía. Las llaves se crean visitando un sitio web que ofrece llaves de acceso como método de autenticación.",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "No hay elementos que coincidan con el filtro.",
     "noMatchingItemsSearch": "No hay elementos que coincidan con \"{{search}}\"",
     "noMatchingItemsWithFilter": "No hay elementos {{filter}} que coincidan con \"{{search}}\"",
     "clearSearch": "Limpiar búsqueda",
@@ -208,7 +208,7 @@
     "filters": {
       "folders": "Carpetas",
       "passkeys": "Llaves de acceso",
-      "totp": "2FA Codes"
+      "totp": "Códigos 2FA"
     },
     "sort": {
       "title": "Ordenar por",
