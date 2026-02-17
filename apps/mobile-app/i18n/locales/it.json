@@ -409,14 +409,12 @@
     "publicEmailTitle": "Fornitori Pubblici di Email Temporanee",
     "publicEmailDescription": "Anonimi ma con privacy ridotta. Accessibile a chiunque conosca l'indirizzo.",
     "searchPlaceholder": "Ricerca cassaforte ...",
-    "noMatchingItems": "Nessun elemento corrispondente trovato",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "Nessun elemento corrispondente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nessun elemento {{filter}} corrispondente \"{{search}}\"",
     "noItemsFound": "Nessuna credenziale trovata. Creane una per iniziare. Consiglio: puoi anche accedere al sito AliasVault per importare credenziali da altri gestori password.",
     "allItemsInFolders": "Tutti i tuoi oggetti sono organizzati in cartelle. Tocca una cartella qui sopra per visualizzare le tue credenziali o usa la ricerca per trovare elementi specifici.",
     "noPasskeysFound": "Non sono state ancora create passkey. Le passkey vengono create visitando un sito web che offre le passkey come metodo di autenticazione.",
-    "noAttachmentsFound": "Nessun elemento con allegati trovato",
-    "noItemsOfTypeFound": "Nessun elemento {{type}} trovato",
     "clearSearch": "Cancella ricerca",
     "clearFilter": "Cancella filtro",
     "recentEmails": "Email recenti",
@@ -443,7 +441,8 @@
       "all": "Elementi",
       "showFolders": "Cartelle",
       "passkeys": "Passkey",
-      "attachments": "Allegati"
+      "attachments": "Allegati",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Ordina per",
