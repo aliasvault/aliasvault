@@ -180,9 +180,9 @@
     "exportConfirmTitle": "Esporta cassaforte",
     "exportWarning": "Attenzione: Esportare la cassaforte in un file non cifrato esporrà tutte le password e le informazioni sensibili in testo semplice. Fallo solo su computer affidabili e assicurarti di:\n\n• Conservare il file esportato in una posizione sicura\n• Eliminare il file quando non ne hai più bisogno\n• Non condividere mai il file esportato con altri\n\nSei sicuro di voler continuare con l'esportazione?",
     "passwordConfirm": {
-      "title": "Confirm Password",
-      "defaultDescription": "Please enter your master password to continue.",
-      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+      "title": "Conferma Password",
+      "defaultDescription": "Inserisci la tua password principale per continuare.",
+      "exportDescription": "Per motivi di sicurezza, inserisci la tua password principale per confermare questa esportazione."
     },
     "security": "Sicurezza",
     "appVersion": "Versione app {{version}} ({{url}})",
@@ -409,7 +409,7 @@
     "publicEmailTitle": "Fornitori Pubblici di Email Temporanee",
     "publicEmailDescription": "Anonimi ma con privacy ridotta. Accessibile a chiunque conosca l'indirizzo.",
     "searchPlaceholder": "Ricerca cassaforte ...",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Nessun elemento corrisponde ai filtri selezionati",
     "noMatchingItemsSearch": "Nessun elemento corrispondente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nessun elemento {{filter}} corrispondente \"{{search}}\"",
     "noItemsFound": "Nessuna credenziale trovata. Creane una per iniziare. Consiglio: puoi anche accedere al sito AliasVault per importare credenziali da altri gestori password.",
@@ -442,7 +442,7 @@
       "showFolders": "Cartelle",
       "passkeys": "Passkey",
       "attachments": "Allegati",
-      "totp": "2FA Codes"
+      "totp": "Codici 2FA"
     },
     "sort": {
       "title": "Ordina per",
