@@ -193,7 +193,7 @@
     "welcomeTitle": "Bienvenue dans AliasVault !",
     "welcomeDescription": "Pour utiliser l'extension de navigateur AliasVault : accédez à un site web et utilisez la fenêtre de saisie automatique AliasVault pour créer un nouvel identifiant.",
     "noPasskeysFound": "Aucune clé d'accès n'a encore été créée. Les clés d'accès sont créés en visitant un site Web qui propose des clés d'accès comme méthode d'authentification.",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Aucun identifiant ne correspond au filtre sélectionné.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
     "clearSearch": "Effacer la recherche",
