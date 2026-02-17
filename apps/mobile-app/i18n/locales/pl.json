@@ -409,7 +409,7 @@
     "publicEmailTitle": "Publiczni dostawcy tymczasowych adresów e-mail",
     "publicEmailDescription": "Anonimowe, ale ograniczają prywatność. Treść wiadomości e-mail jest dostępna dla każdego, kto zna adres.",
     "searchPlaceholder": "Wyszukaj w sejfie...",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Żaden element nie pasuje do wybranego filtra.",
     "noMatchingItemsSearch": "Nie znaleziono żadnych elementów pasujących do „{{search}}”",
     "noMatchingItemsWithFilter": "Brak elementów {{filter}} pasujących do „{{search}}”",
     "noItemsFound": "Nie znaleziono żadnych elementów. Utwórz jeden, aby rozpocząć. Wskazówka: możesz również zalogować się do aplikacji internetowej AliasVault, aby zaimportować dane uwierzytelniające z innych menedżerów haseł.",
