@@ -409,14 +409,12 @@
     "publicEmailTitle": "Provedores Públicos de E-mail Temporário",
     "publicEmailDescription": "Anônimo mas com privacidade limitada. Conteúdo do e-mail pode ser lido por qualquer um que souber o endereço.",
     "searchPlaceholder": "Pesquisar cofre...",
-    "noMatchingItems": "Nenhum ítem correspondente encontrado",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "Nenhum item corresponde à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
     "noItemsFound": "Nenhum item encontrado. Crie um para iniciar. Dica: você também pode fazer login no aplicativo web do AliasVault para importar credenciais de outros gerenciadores de senhas.",
     "allItemsInFolders": "Todos os seus itens estão organizados em pastas. Toque em uma pasta acima para ver suas credenciais, ou utilize a busca para encontrar itens específicos.",
     "noPasskeysFound": "Nenhuma passkey foi criada ainda. Passkeys são veiadas visitando um website que ofereça passkey como método de autenticação.",
-    "noAttachmentsFound": "Nenhum item com anexos encontrado",
-    "noItemsOfTypeFound": "Nenhum item do tipo {{type}} encontrado",
     "clearSearch": "Limpar busca",
     "clearFilter": "Limpar filtro",
     "recentEmails": "E-mails recentes",
@@ -443,7 +441,8 @@
       "all": "Itens",
       "showFolders": "Pastas",
       "passkeys": "Passkeys",
-      "attachments": "Anexos"
+      "attachments": "Anexos",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Ordenar por",
