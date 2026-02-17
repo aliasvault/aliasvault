@@ -163,19 +163,15 @@
     <value>Вложения</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
+  <data name="FilterTotpOption" xml:space="preserve">
+    <value>2FA Codes</value>
+    <comment>Filter option to show only items with TOTP codes</comment>
+  </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
     <value>Недавно удаленные</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
-  <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Ключи доступа ещё не созданы. Они добавляются через расширение для браузера или мобильные приложения при посещении веб-сайта, который поддерживает ключи доступа и предлагает аутентификацию с их помощью.</value>
-    <comment>Empty state message when no passkeys are found</comment>
-  </data>
-  <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>Элементы с вложениями не найдены.</value>
-    <comment>Empty state message when no items with attachments are found</comment>
-  </data>
   <data name="NoItemsFound" xml:space="preserve">
     <value>Нет записей, соответствующих выбранному фильтру.</value>
     <comment>Empty state message when no items match the filter</comment>
