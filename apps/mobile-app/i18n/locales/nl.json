@@ -409,7 +409,7 @@
     "publicEmailTitle": "Publieke tijdelijke e-mailproviders",
     "publicEmailDescription": "Anoniem maar beperkte privacy. E-mail inhoud is leesbaar door iedereen die het adres kent.",
     "searchPlaceholder": "Vault doorzoeken...",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Geen items gevonden die overeenkomen met het geselecteerde filter.",
     "noMatchingItemsSearch": "Geen items die overeenkomen met \"{{search}}\"",
     "noMatchingItemsWithFilter": "Geen {{filter}} items die overeenkomen met \"{{search}}\"",
     "noItemsFound": "Geen items gevonden. Maak er een aan om te beginnen. Tip: je kunt ook inloggen op de AliasVault webapp om items te importeren uit andere wachtwoord-managers.",
@@ -442,7 +442,7 @@
       "showFolders": "Mappen",
       "passkeys": "Passkeys",
       "attachments": "Bijlagen",
-      "totp": "2FA Codes"
+      "totp": "2FA codes"
     },
     "sort": {
       "title": "Sorteren op",
