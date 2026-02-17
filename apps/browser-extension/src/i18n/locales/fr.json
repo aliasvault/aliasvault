@@ -193,9 +193,7 @@
     "welcomeTitle": "Bienvenue dans AliasVault !",
     "welcomeDescription": "Pour utiliser l'extension de navigateur AliasVault : accédez à un site web et utilisez la fenêtre de saisie automatique AliasVault pour créer un nouvel identifiant.",
     "noPasskeysFound": "Aucune clé d'accès n'a encore été créée. Les clés d'accès sont créés en visitant un site Web qui propose des clés d'accès comme méthode d'authentification.",
-    "noAttachmentsFound": "Aucun élément avec pièces jointes trouvé",
-    "noItemsOfTypeFound": "Aucun élément {{type}} trouvé",
-    "noMatchingItems": "Aucun élément correspondant trouvé",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
     "clearSearch": "Effacer la recherche",
@@ -209,7 +207,8 @@
     "deleteFolderAndItemsDescription": "{{count}} élément(s) vont être déplacés vers Récemment supprimés.",
     "filters": {
       "folders": "Dossiers",
-      "passkeys": "Clés d'accès"
+      "passkeys": "Clés d'accès",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Trier par",
