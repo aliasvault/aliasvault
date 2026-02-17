@@ -409,7 +409,7 @@
     "publicEmailTitle": "Offentliga Temp e-postleverantörer",
     "publicEmailDescription": "Anonym men begränsad integritet. E-postinnehåll kan läsas av alla som känner till adressen.",
     "searchPlaceholder": "Sök i valvet...",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Inga objekt matchar de valda filtren",
     "noMatchingItemsSearch": "Inga objekt matchar \"{{search}}\"",
     "noMatchingItemsWithFilter": "Inga {{filter}} objekt som matchar \"{{search}}\"",
     "noItemsFound": "Inga objekt hittades. Skapa ett för att komma igång. Tips: du kan även logga in på AliasVault webbapp för att importera inloggningsuppgifter från andra lösenordshanterare.",
