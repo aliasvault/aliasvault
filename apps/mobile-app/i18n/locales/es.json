@@ -180,9 +180,9 @@
     "exportConfirmTitle": "Exportar bóveda",
     "exportWarning": "Advertencia: Exportando su bóveda a un archivo no cifrado expondrá todas sus contraseñas e información sensible en texto plano. Solo haga esto en dispositivos de confianza y asegúrese de que:\n\n• Almacene el archivo exportado en una ubicación segura\n• Elimine el archivo cuando ya no lo necesite\n• Nunca comparta el archivo exportado con otros\n\n¿Está seguro de que desea continuar con la exportación?",
     "passwordConfirm": {
-      "title": "Confirm Password",
-      "defaultDescription": "Please enter your master password to continue.",
-      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+      "title": "Confirmar Contraseña",
+      "defaultDescription": "Por favor, introduzca su contraseña maestra para continuar.",
+      "exportDescription": "Por razones de seguridad, por favor ingrese su contraseña maestra para confirmar esta exportación."
     },
     "security": "Seguridad",
     "appVersion": "Versión de la aplicación {{version}} ({{url}})",
@@ -409,14 +409,12 @@
     "publicEmailTitle": "Proveedores de Correo Temporal Públicos",
     "publicEmailDescription": "Privacidad anónima pero limitada. Contenido de correo electrónico puede ser leído por cualquiera que conozca la dirección.",
     "searchPlaceholder": "Buscar bóveda...",
-    "noMatchingItems": "No hay elementos coincidentes",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No hay elementos que coincidan con \"{{search}}\"",
     "noMatchingItemsWithFilter": "No hay elementos {{filter}} que coincidan con \"{{search}}\"",
     "noItemsFound": "No se han encontrado elementos. Crea una para empezar. Consejo: también puedes iniciar sesión en la aplicación web de AliasVault para importar credenciales de otros gestores de contraseñas.",
     "allItemsInFolders": "Todos sus elementos están organizados en carpetas. Haga clic en una carpeta para ver sus credenciales o utilice la búsqueda para encontrar elementos específicos.",
     "noPasskeysFound": "No se han creado llaves de acceso todavía. Las llaves se crean visitando un sitio web que ofrece llaves de acceso como método de autenticación.",
-    "noAttachmentsFound": "No hay elementos con archivos adjuntos",
-    "noItemsOfTypeFound": "No se encontraron elementos {{type}}",
     "clearSearch": "Limpiar búsqueda",
     "clearFilter": "Eliminar filtros",
     "recentEmails": "Correos recientes",
@@ -443,7 +441,8 @@
       "all": "Elementos",
       "showFolders": "Carpetas",
       "passkeys": "Llaves de acceso",
-      "attachments": "Archivos adjuntos"
+      "attachments": "Archivos adjuntos",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Ordenar por",
