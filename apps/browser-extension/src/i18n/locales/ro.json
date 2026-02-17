@@ -208,7 +208,7 @@
     "filters": {
       "folders": "Dosare",
       "passkeys": "Passkeys",
-      "totp": "2FA Codes"
+      "totp": "Coduri 2FA"
     },
     "sort": {
       "title": "Filtrează după",
