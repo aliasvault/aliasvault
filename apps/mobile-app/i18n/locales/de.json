@@ -409,14 +409,12 @@
     "publicEmailTitle": "Öffentliche Temp-E-Mail-Anbieter",
     "publicEmailDescription": "Anonyme, aber beschränkte Privatsphäre. E-Mail-Inhalt ist für jeden lesbar, der die Adresse kennt.",
     "searchPlaceholder": "Tresor durchsuchen...",
-    "noMatchingItems": "Kein passendes Element gefunden",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "Keine passenden Elemente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Keine {{filter}} Elemente passend zu \"{{search}}\"",
     "noItemsFound": "Keine Einträge gefunden. Erstellen Sie einen, um zu beginnen. Tipp: Sie können sich auch in der AliasVault-Webapp anmelden, um Anmeldedaten aus anderen Passwort-Managern zu importieren.",
     "allItemsInFolders": "Alle Ihre Einträge sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Einträge zu finden.",
     "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
-    "noAttachmentsFound": "Keine Elemente mit Anhängen gefunden",
-    "noItemsOfTypeFound": "Keine {{type}} Einträge gefunden",
     "clearSearch": "Suche löschen",
     "clearFilter": "Filter löschen",
     "recentEmails": "Neueste E-Mails",
@@ -443,7 +441,8 @@
       "all": "Titel",
       "showFolders": "Folders",
       "passkeys": "Passkeys",
-      "attachments": "Anhänge"
+      "attachments": "Anhänge",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sortieren nach",
