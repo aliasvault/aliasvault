@@ -409,7 +409,7 @@
     "publicEmailTitle": "Provedores Públicos de E-mail Temporário",
     "publicEmailDescription": "Anônimo mas com privacidade limitada. Conteúdo do e-mail pode ser lido por qualquer um que souber o endereço.",
     "searchPlaceholder": "Pesquisar cofre...",
-    "noMatchingItems": "No items match the selected filter.",
+    "noMatchingItems": "Nenhum item corresponde ao filtro selecionado.",
     "noMatchingItemsSearch": "Nenhum item corresponde à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
     "noItemsFound": "Nenhum item encontrado. Crie um para iniciar. Dica: você também pode fazer login no aplicativo web do AliasVault para importar credenciais de outros gerenciadores de senhas.",
