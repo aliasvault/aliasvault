@@ -14,6 +14,7 @@ export type FieldPatterns = {
     birthDateDay: string[];
     birthDateMonth: string[];
     birthDateYear: string[];
+    totp: string[];
 }
 
 /**
@@ -48,7 +49,8 @@ export const EnglishFieldPatterns: FieldPatterns = {
   gender: ['gender', 'sex'],
   birthDateDay: ['-day', 'birthdate_d', 'birthdayday', '_day', 'day'],
   birthDateMonth: ['-month', 'birthdate_m', 'birthdaymonth', '_month', 'month'],
-  birthDateYear: ['-year', 'birthdate_y', 'birthdayyear', '_year', 'year']
+  birthDateYear: ['-year', 'birthdate_y', 'birthdayyear', '_year', 'year'],
+  totp: ['totp', 'otp', 'one-time', 'onetime', 'token', 'authenticator', '2fa', 'twofa', 'two-factor', 'mfa', 'security-code', 'auth-code', 'passcode', 'pin-code', 'pincode']
 };
 
 /**
@@ -123,7 +125,8 @@ export const DutchFieldPatterns: FieldPatterns = {
   gender: ['geslacht', 'aanhef'],
   birthDateDay: ['dag'],
   birthDateMonth: ['maand'],
-  birthDateYear: ['jaar']
+  birthDateYear: ['jaar'],
+  totp: ['verificatiecode', 'eenmalig', 'authenticatie', 'tweefactor', 'beveiligingscode']
 };
 
 /**
@@ -204,7 +207,8 @@ export const CombinedFieldPatterns: FieldPatterns = {
   gender: [...new Set([...EnglishFieldPatterns.gender, ...DutchFieldPatterns.gender])],
   birthDateDay: [...new Set([...EnglishFieldPatterns.birthDateDay, ...DutchFieldPatterns.birthDateDay])],
   birthDateMonth: [...new Set([...EnglishFieldPatterns.birthDateMonth, ...DutchFieldPatterns.birthDateMonth])],
-  birthDateYear: [...new Set([...EnglishFieldPatterns.birthDateYear, ...DutchFieldPatterns.birthDateYear])]
+  birthDateYear: [...new Set([...EnglishFieldPatterns.birthDateYear, ...DutchFieldPatterns.birthDateYear])],
+  totp: [...new Set([...EnglishFieldPatterns.totp, ...DutchFieldPatterns.totp])]
 };
 
 /**

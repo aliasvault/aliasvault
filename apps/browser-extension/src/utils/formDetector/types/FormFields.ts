@@ -30,4 +30,7 @@ export type FormFields = {
         other: HTMLInputElement | null;
       };
     };
+
+    // TOTP/2FA field for one-time codes
+    totpField: HTMLInputElement | null;
   }

@@ -42,8 +42,8 @@ export class FormDetector {
       return false;
     }
 
-    // Check if the wrapper contains a password or likely username field before processing.
-    if (this.containsPasswordField(formWrapper) || this.containsLikelyUsernameOrEmailField(formWrapper)) {
+    // Check if the wrapper contains a password, likely username field, or TOTP field before processing.
+    if (this.containsPasswordField(formWrapper) || this.containsLikelyUsernameOrEmailField(formWrapper) || this.containsTotpField(formWrapper)) {
       return true;
     }
 
@@ -872,6 +872,66 @@ export class FormDetector {
   }
 
   /**
+   * Check if a form contains a TOTP/2FA field.
+   */
+  private containsTotpField(wrapper: HTMLElement): boolean {
+    const totpField = this.findTotpField(wrapper as HTMLFormElement | null);
+    return totpField !== null && this.isElementVisible(totpField);
+  }
+
+  /**
+   * Find a TOTP/2FA input field in the form.
+   * Uses pattern matching and heuristics specific to TOTP fields.
+   */
+  private findTotpField(form: HTMLFormElement | null): HTMLInputElement | null {
+    // First try pattern-based detection
+    const candidates = this.findAllInputFields(
+      form,
+      CombinedFieldPatterns.totp,
+      ['text', 'number']
+    );
+
+    // Filter out parent-child duplicates
+    const filteredCandidates = this.filterOutNestedDuplicates(candidates);
+
+    if (filteredCandidates.length > 0) {
+      return filteredCandidates[0];
+    }
+
+    // Additional heuristics for TOTP fields that may not match patterns
+    const allInputs = form
+      ? Array.from(form.querySelectorAll<HTMLInputElement>('input'))
+      : Array.from(this.document.querySelectorAll<HTMLInputElement>('input'));
+
+    for (const input of allInputs) {
+      if (!this.isElementVisible(input)) {
+        continue;
+      }
+
+      // Check for autocomplete="one-time-code"
+      const autocomplete = input.getAttribute('autocomplete')?.toLowerCase() ?? '';
+      if (autocomplete === 'one-time-code') {
+        return input;
+      }
+
+      // Check for maxLength=6 combined with inputmode="numeric"
+      const maxLength = input.maxLength;
+      const inputMode = input.getAttribute('inputmode');
+      if (maxLength === 6 && inputMode === 'numeric') {
+        return input;
+      }
+
+      // Check for numeric pattern attribute with length constraint
+      const pattern = input.getAttribute('pattern');
+      if (pattern && /^\[0-9\]/.test(pattern) && maxLength === 6) {
+        return input;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Check if a form contains a likely username or email field.
    */
   private containsLikelyUsernameOrEmailField(wrapper: HTMLElement): boolean {
@@ -964,6 +1024,12 @@ export class FormDetector {
       return 'email';
     }
 
+    // Check if any of the elements is a TOTP field
+    const totpField = this.findTotpField(formWrapper as HTMLFormElement | null);
+    if (totpField && elementsToCheck.includes(totpField)) {
+      return 'totp';
+    }
+
     return null;
   }
 
@@ -1030,6 +1096,11 @@ export class FormDetector {
       detectedFields.push(genderField.field as HTMLInputElement);
     }
 
+    const totpField = this.findTotpField(wrapper as HTMLFormElement | null);
+    if (totpField) {
+      detectedFields.push(totpField);
+    }
+
     return {
       form: wrapper as HTMLFormElement,
       emailField: emailFields.primary,
@@ -1041,7 +1112,8 @@ export class FormDetector {
       firstNameField,
       lastNameField,
       birthdateField,
-      genderField
+      genderField,
+      totpField
     };
   }
 }
