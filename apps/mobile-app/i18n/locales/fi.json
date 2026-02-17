@@ -409,14 +409,12 @@
     "publicEmailTitle": "Julkiset väliaikaisten sähköpostiosoitteiden tarjoajat (PTEP)",
     "publicEmailDescription": "Anonyymi, mutta rajoitettu yksityisyys. Sähköpostin sisällön voi lukea kuka tahansa, joka tietää osoitteen.",
     "searchPlaceholder": "Etsitään holvia...",
-    "noMatchingItems": "Vastaavia tietoja ei löytynyt",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "Tietoja ei löytynyt. Luo sellainen aloittaaksesi. Vinkki: voit myös kirjautua AliasVaultin web-sovellukseen tuodaksesi käyttäjätietoja muista salasananhallintalaitteista.",
     "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
     "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
-    "noAttachmentsFound": "Liitteitä sisältäviä tietoja ei löytynyt",
-    "noItemsOfTypeFound": "No {{type}} tietoja ei löydy",
     "clearSearch": "Clear search",
     "clearFilter": "Clear filter",
     "recentEmails": "Viimeaikaiset sähköpostit",
@@ -443,7 +441,8 @@
       "all": "Tiedot",
       "showFolders": "Folders",
       "passkeys": "Sala-avaimet",
-      "attachments": "Liitteet"
+      "attachments": "Liitteet",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sort by",
