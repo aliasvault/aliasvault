@@ -168,6 +168,8 @@
     "openAliasVaultToUpgrade": "Ouvrez AliasVault pour améliorer",
     "vaultUpgradeRequired": "Mise à niveau du coffre requise.",
     "dismissPopup": "Fermer",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Enregistrer dans AliasVault?",
       "neverForThisSite": "Jamais pour ce site"
