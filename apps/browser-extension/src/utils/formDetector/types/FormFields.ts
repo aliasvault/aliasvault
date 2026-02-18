@@ -1,3 +1,14 @@
+/**
+ * Detected field type for autofill trigger fields.
+ * Used to determine which popup to show and how to handle the field.
+ */
+export enum DetectedFieldType {
+  Username = 'username',
+  Password = 'password',
+  Email = 'email',
+  Totp = 'totp'
+}
+
 export type FormFields = {
     form: HTMLFormElement | null;
     emailField: HTMLInputElement | null;

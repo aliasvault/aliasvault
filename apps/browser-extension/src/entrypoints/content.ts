@@ -6,11 +6,12 @@ import '@/entrypoints/contentScript/style.css';
 import { onMessage, sendMessage } from "webext-bridge/content-script";
 
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
-import { isAutoShowPopupEnabled, openAutofillPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
+import { isAutoShowPopupEnabled, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
 import { showSavePrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { FormDetector } from '@/utils/formDetector/FormDetector';
+import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
 import { LoginDetector } from '@/utils/loginDetector';
 import type { CapturedLogin } from '@/utils/loginDetector';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
@@ -407,7 +408,7 @@ export default defineContentScript({
 
               // Only show popup if debounce time has passed
               if (popupDebounceTimeHasPassed()) {
-                await showPopupWithAuthCheck(inputElement, container);
+                await showPopupWithAuthCheck(inputElement, container, detectedFieldType);
               }
             }
           }
@@ -468,6 +469,8 @@ export default defineContentScript({
             return;
           }
 
+          const detectedFieldType = formDetector.getDetectedFieldType();
+
           /**
            * By default we check if the popup is not disabled (for current site) and if the field is autofill-triggerable
            * but if forceShow is true, we show the popup regardless.
@@ -476,14 +479,17 @@ export default defineContentScript({
 
           if (canShowPopup) {
             injectIcon(inputElement, container);
-            await showPopupWithAuthCheck(inputElement, container);
+            await showPopupWithAuthCheck(inputElement, container, detectedFieldType ?? undefined);
           }
         }
 
         /**
          * Show popup with auth check.
+         * @param inputElement - The input element to show the popup for.
+         * @param container - The container element.
+         * @param fieldType - The detected field type (optional, defaults to regular autofill).
          */
-        async function showPopupWithAuthCheck(inputElement: HTMLInputElement, container: HTMLElement) : Promise<void> {
+        async function showPopupWithAuthCheck(inputElement: HTMLInputElement, container: HTMLElement, fieldType?: DetectedFieldType) : Promise<void> {
           try {
             // Check auth status and pending migrations in a single call
             const { sendMessage } = await import('webext-bridge/content-script');
@@ -513,8 +519,12 @@ export default defineContentScript({
               return;
             }
 
-            // No upgrade required, show normal autofill popup
-            openAutofillPopup(inputElement, container);
+            // Show appropriate popup based on field type
+            if (fieldType === DetectedFieldType.Totp) {
+              openTotpPopup(inputElement, container);
+            } else {
+              openAutofillPopup(inputElement, container);
+            }
           } catch (error) {
             console.error('[AliasVault] Error checking vault status:', error);
             // Fall back to normal autofill popup if check fails

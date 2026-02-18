@@ -1,5 +1,5 @@
 import { CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords } from "./FieldPatterns";
-import { FormFields } from "./types/FormFields";
+import { DetectedFieldType, FormFields } from "./types/FormFields";
 
 /**
  * Form detector.
@@ -971,19 +971,19 @@ export class FormDetector {
 
   /**
    * Get the detected field type for the clicked element.
-   * Returns 'username', 'password', or 'email' if detected, null otherwise.
+   * Returns a DetectedFieldType enum value if detected, null otherwise.
    * First checks for our custom data-av-field-type attribute (set on previous interactions),
    * then falls back to full field detection.
    */
-  public getDetectedFieldType(): string | null {
+  public getDetectedFieldType(): DetectedFieldType | null {
     if (!this.clickedElement) {
       return null;
     }
 
     // First check if we already detected and stored the field type
     const storedFieldType = this.clickedElement.getAttribute('data-av-field-type');
-    if (storedFieldType) {
-      return storedFieldType;
+    if (storedFieldType && Object.values(DetectedFieldType).includes(storedFieldType as DetectedFieldType)) {
+      return storedFieldType as DetectedFieldType;
     }
 
     // Get the actual input element (handles shadow DOM)
@@ -992,8 +992,8 @@ export class FormDetector {
     // Also check the actual element for stored field type
     if (actualElement !== this.clickedElement) {
       const actualStoredFieldType = actualElement.getAttribute('data-av-field-type');
-      if (actualStoredFieldType) {
-        return actualStoredFieldType;
+      if (actualStoredFieldType && Object.values(DetectedFieldType).includes(actualStoredFieldType as DetectedFieldType)) {
+        return actualStoredFieldType as DetectedFieldType;
       }
     }
 
@@ -1008,26 +1008,26 @@ export class FormDetector {
     // Check if any of the elements is a username field
     const usernameFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text']);
     if (usernameFields.some(input => elementsToCheck.includes(input))) {
-      return 'username';
+      return DetectedFieldType.Username;
     }
 
     // Check if any of the elements is a password field
     const passwordField = this.findPasswordField(formWrapper as HTMLFormElement | null);
     if ((passwordField.primary && elementsToCheck.includes(passwordField.primary)) ||
         (passwordField.confirm && elementsToCheck.includes(passwordField.confirm))) {
-      return 'password';
+      return DetectedFieldType.Password;
     }
 
     // Check if any of the elements is an email field
     const emailFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.email, ['text', 'email']);
     if (emailFields.some(input => elementsToCheck.includes(input))) {
-      return 'email';
+      return DetectedFieldType.Email;
     }
 
     // Check if any of the elements is a TOTP field
     const totpField = this.findTotpField(formWrapper as HTMLFormElement | null);
     if (totpField && elementsToCheck.includes(totpField)) {
-      return 'totp';
+      return DetectedFieldType.Totp;
     }
 
     return null;

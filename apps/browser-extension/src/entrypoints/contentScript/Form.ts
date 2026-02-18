@@ -273,6 +273,41 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement): voi
 }
 
 /**
+ * Fill TOTP code into the input field.
+ * Generates the code via background script and fills it.
+ *
+ * @param itemId - The item ID to generate TOTP code for.
+ * @param input - The input element to fill the TOTP code into.
+ */
+export async function fillTotpCode(itemId: string, input: HTMLInputElement): Promise<void> {
+  // Set debounce time to 300ms to prevent the popup from being shown again within 300ms because of autofill events.
+  hidePopupFor(300);
+
+  // Reset auto-lock timer when autofilling
+  sendMessage('RESET_AUTO_LOCK_TIMER', {}, 'background').catch(() => {
+    // Ignore errors as background script might not be ready
+  });
+
+  // Generate TOTP code via background
+  const response = await sendMessage('GENERATE_TOTP_CODE', { itemId }, 'background') as {
+    success: boolean;
+    code?: string;
+    error?: string;
+  };
+
+  if (!response.success || !response.code) {
+    console.error('Failed to generate TOTP code:', response.error);
+    return;
+  }
+
+  // Fill the TOTP field
+  input.value = response.code;
+
+  // Trigger input events for form validation
+  triggerInputEvents(input);
+}
+
+/**
  * Trigger input events for an element to trigger form validation
  * which some websites require before the "continue" button is enabled.
  */
