@@ -367,7 +367,7 @@ Build: @BuildVersion
         }
     </script>
     <script src="js/bundle.min.js?v=@CacheBuster"></script>
-    <script src="_framework/blazor.webassembly#[.{fingerprint}].js" autostart="false"></script>
+    <script src="@BlazorScript" autostart="false"></script>
     <script>
         Blazor.start({
             configureRuntime: runtime => runtime.withConfig({
