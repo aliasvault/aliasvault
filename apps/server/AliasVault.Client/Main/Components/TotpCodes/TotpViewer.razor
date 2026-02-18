@@ -140,11 +140,11 @@
     }
 
     /// <summary>
-    /// Gets the TOTP code for a given secret key from the cached current codes dictionary.
+    /// Gets the raw TOTP code for a given secret key from the cached current codes dictionary.
     /// </summary>
     /// <param name="secretKey">The secret key to get the code for.</param>
-    /// <returns>The TOTP code.</returns>
-    private string GetTotpCode(string secretKey)
+    /// <returns>The raw TOTP code without formatting.</returns>
+    private string GetRawTotpCode(string secretKey)
     {
         if (_currentCodes.TryGetValue(secretKey, out var code))
         {
@@ -157,12 +157,37 @@
     }
 
     /// <summary>
+    /// Gets the formatted TOTP code for a given secret key from the cached current codes dictionary.
+    /// </summary>
+    /// <param name="secretKey">The secret key to get the code for.</param>
+    /// <returns>The formatted TOTP code.</returns>
+    private string GetTotpCode(string secretKey)
+    {
+        return FormatTotpCode(GetRawTotpCode(secretKey));
+    }
+
+    /// <summary>
+    /// Formats a TOTP code as "XXX XXX" with a space in the middle for better readability.
+    /// </summary>
+    /// <param name="code">The raw TOTP code.</param>
+    /// <returns>The formatted TOTP code.</returns>
+    private static string FormatTotpCode(string code)
+    {
+        if (code.Length == 6)
+        {
+            return $"{code[..3]} {code[3..]}";
+        }
+
+        return code;
+    }
+
+    /// <summary>
     /// Copies the TOTP code to the clipboard.
     /// </summary>
     /// <param name="totpCode">The TOTP code to copy.</param>
     private async Task CopyToClipboard(TotpCode totpCode)
     {
-        var code = GetTotpCode(totpCode.SecretKey);
+        var code = GetRawTotpCode(totpCode.SecretKey);
         await JsInteropService.CopyToClipboard(code);
         ClipboardCopyService.SetCopied(totpCode.Id.ToString());
         StateHasChanged();
