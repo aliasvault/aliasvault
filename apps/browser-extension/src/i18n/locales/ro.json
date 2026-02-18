@@ -169,7 +169,7 @@
     "vaultUpgradeRequired": "Este necesară actualizarea seifului.",
     "dismissPopup": "Închide fereastra",
     "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "close": "Închide",
     "savePrompt": {
       "title": "Salvează în AliasVault?",
       "neverForThisSite": "Niciodată pentru acest site"
