@@ -21,13 +21,14 @@ const MIN_SYNC_DISPLAY_TIME = 1500;
 
 /**
  * Floating sync status indicator component.
- * Displays sync state badges for offline mode, syncing, and pending sync.
+ * Displays sync state badges for offline mode, syncing, uploading, and pending sync.
  *
  * Priority order (highest to lowest):
  * 1. Offline (amber) - network unavailable
- * 2. Syncing (green spinner) - sync in progress (minimum 1.5s display)
- * 3. Pending (blue spinner) - local changes waiting to be uploaded
- * 4. Hidden - when synced
+ * 2. Syncing (green spinner) - downloading new vault from server (minimum 1.5s display)
+ * 3. Uploading (blue spinner) - uploading local changes to server
+ * 4. Pending (blue icon) - local changes waiting to be uploaded, tappable to retry
+ * 5. Hidden - when synced
  */
 export function ServerSyncIndicator(): React.ReactNode {
   const { t } = useTranslation();
@@ -219,7 +220,19 @@ export function ServerSyncIndicator(): React.ReactNode {
     );
   }
 
-  // Priority 3: Pending indicator (tappable to force sync)
+  // Priority 3: Uploading indicator (not tappable, shows progress)
+  if (dbContext.isUploading) {
+    return (
+      <View style={[styles.container, styles.pending]} testID="sync-indicator-uploading">
+        <ActivityIndicator size="small" color={colors.info} />
+        <ThemedText style={[styles.text, styles.pendingText]}>
+          {t('sync.syncing')}
+        </ThemedText>
+      </View>
+    );
+  }
+
+  // Priority 4: Pending indicator (tappable to force sync)
   if (dbContext.isDirty) {
     return (
       <RobustPressable

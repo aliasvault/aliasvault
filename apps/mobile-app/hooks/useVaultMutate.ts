@@ -91,7 +91,8 @@ export function useVaultMutate() : {
    * This is fire-and-forget - the ServerSyncIndicator shows progress.
    */
   const triggerBackgroundSync = useCallback(async (options: VaultMutationOptions): Promise<void> => {
-    dbContext.setIsSyncing(true);
+    // Show uploading indicator since we're uploading local changes
+    dbContext.setIsUploading(true);
 
     try {
       await syncVault({
@@ -118,7 +119,7 @@ export function useVaultMutate() : {
         }
       });
     } finally {
-      dbContext.setIsSyncing(false);
+      dbContext.setIsUploading(false);
       await dbContext.refreshSyncState();
     }
   }, [syncVault, dbContext]);

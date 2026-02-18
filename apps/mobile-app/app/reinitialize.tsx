@@ -115,7 +115,6 @@ export default function ReinitializeScreen() : React.ReactNode {
        * The ServerSyncIndicator will show sync progress/offline status.
        * This also handles uploading pending local changes (isDirty) from previous sessions.
        */
-      dbContext.setIsSyncing(true);
       void (async (): Promise<void> => {
         try {
           await syncVault({
@@ -150,7 +149,6 @@ export default function ReinitializeScreen() : React.ReactNode {
             },
           });
         } finally {
-          dbContext.setIsSyncing(false);
           await dbContext.refreshSyncState();
         }
       })();

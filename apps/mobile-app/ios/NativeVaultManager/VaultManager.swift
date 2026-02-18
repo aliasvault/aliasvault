@@ -637,6 +637,70 @@ public class VaultManager: NSObject {
     // MARK: - Vault Sync
 
     @objc
+    func checkSyncStatus(_ resolve: @escaping RCTPromiseResolveBlock,
+                         rejecter reject: @escaping RCTPromiseRejectBlock) {
+        Task {
+            do {
+                let versionCheck = try await vaultStore.checkVaultVersion(using: webApiService)
+                await MainActor.run {
+                    let response: [String: Any] = [
+                        "success": true,
+                        "hasNewerVault": versionCheck.isNewVersionAvailable,
+                        "hasDirtyChanges": versionCheck.syncState.isDirty,
+                        "isOffline": false,
+                        "requiresLogout": false,
+                        "errorKey": NSNull()
+                    ]
+                    resolve(response)
+                }
+            } catch let error as AppError {
+                await MainActor.run {
+                    // Check for specific error types that require logout
+                    let requiresLogout = error.isAuthenticationError || error.isVersionError
+                    let errorKey = error.translationKey
+
+                    // Check if offline
+                    let isOffline = error.isNetworkError
+                    if isOffline {
+                        let syncState = vaultStore.getSyncState()
+                        let response: [String: Any] = [
+                            "success": true,
+                            "hasNewerVault": false,
+                            "hasDirtyChanges": syncState.isDirty,
+                            "isOffline": true,
+                            "requiresLogout": false,
+                            "errorKey": NSNull()
+                        ]
+                        resolve(response)
+                    } else {
+                        let response: [String: Any] = [
+                            "success": !requiresLogout,
+                            "hasNewerVault": false,
+                            "hasDirtyChanges": false,
+                            "isOffline": false,
+                            "requiresLogout": requiresLogout,
+                            "errorKey": errorKey as Any
+                        ]
+                        resolve(response)
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    let response: [String: Any] = [
+                        "success": false,
+                        "hasNewerVault": false,
+                        "hasDirtyChanges": false,
+                        "isOffline": false,
+                        "requiresLogout": false,
+                        "errorKey": NSNull()
+                    ]
+                    resolve(response)
+                }
+            }
+        }
+    }
+
+    @objc
     func syncVaultWithServer(_ resolve: @escaping RCTPromiseResolveBlock,
                             rejecter reject: @escaping RCTPromiseRejectBlock) {
         Task {

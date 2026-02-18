@@ -26,6 +26,10 @@ export interface Spec extends TurboModule {
   // Returns detailed result about what action was taken
   syncVaultWithServer(): Promise<{ success: boolean; action: 'uploaded' | 'downloaded' | 'merged' | 'already_in_sync' | 'error'; newRevision: number; wasOffline: boolean; error: string | null }>;
 
+  // Quick check if sync is needed without doing the actual sync
+  // Used to show appropriate UI indicator before starting sync
+  checkSyncStatus(): Promise<{ success: boolean; hasNewerVault: boolean; hasDirtyChanges: boolean; isOffline: boolean; requiresLogout: boolean; errorKey: string | null }>;
+
   // Sync state management (kept for local mutation tracking)
   getSyncState(): Promise<{isDirty: boolean; mutationSequence: number; serverRevision: number; isSyncing: boolean}>;
   markVaultClean(mutationSeqAtStart: number, newServerRevision: number): Promise<boolean>;

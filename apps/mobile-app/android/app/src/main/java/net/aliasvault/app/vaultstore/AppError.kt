@@ -346,4 +346,37 @@ sealed class AppError(message: String, cause: Throwable? = null) : Exception(mes
             is UnknownError -> "E-001"
             is ParseError -> "E-002"
         }
+
+    /**
+     * Check if this is an authentication error that requires logout.
+     */
+    val isAuthenticationError: Boolean
+        get() = when (this) {
+            is AuthenticationFailed, is SessionExpired, is PasswordChanged -> true
+            else -> false
+        }
+
+    /**
+     * Check if this is a version/compatibility error that requires logout.
+     */
+    val isVersionError: Boolean
+        get() = when (this) {
+            is ClientVersionNotSupported, is ServerVersionNotSupported, is VaultVersionIncompatible -> true
+            else -> false
+        }
+
+    /**
+     * Check if this is a network error (offline mode).
+     */
+    val isNetworkError: Boolean
+        get() = when (this) {
+            is ServerUnavailable, is NetworkError, is Timeout -> true
+            else -> false
+        }
+
+    /**
+     * Get the translation key for this error (error code format for lookup in translation files).
+     */
+    val translationKey: String?
+        get() = code
 }

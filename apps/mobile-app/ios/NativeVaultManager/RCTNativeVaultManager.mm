@@ -241,6 +241,10 @@
 
 // MARK: - Vault Sync
 
+- (void)checkSyncStatus:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager checkSyncStatus:resolve rejecter:reject];
+}
+
 - (void)syncVaultWithServer:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager syncVaultWithServer:resolve rejecter:reject];
 }

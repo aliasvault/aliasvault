@@ -1209,6 +1209,78 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     // MARK: - Vault Sync and Mutate
 
     /**
+     * Quick check if sync is needed without doing the actual sync.
+     * Used to show appropriate UI indicator before starting sync.
+     * @param promise The promise to resolve with sync status.
+     */
+    @ReactMethod
+    override fun checkSyncStatus(promise: Promise) {
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val versionCheck = vaultStore.checkVaultVersion(webApiService)
+                val resultMap = Arguments.createMap().apply {
+                    putBoolean("success", true)
+                    putBoolean("hasNewerVault", versionCheck.isNewVersionAvailable)
+                    putBoolean("hasDirtyChanges", versionCheck.syncState.isDirty)
+                    putBoolean("isOffline", false)
+                    putBoolean("requiresLogout", false)
+                    putNull("errorKey")
+                }
+                withContext(Dispatchers.Main) {
+                    promise.resolve(resultMap)
+                }
+            } catch (e: AppError) {
+                withContext(Dispatchers.Main) {
+                    // Check for specific error types that require logout
+                    val requiresLogout = e.isAuthenticationError || e.isVersionError
+                    val errorKey = e.translationKey
+                    val isOffline = e.isNetworkError
+
+                    if (isOffline) {
+                        val syncState = vaultStore.getSyncState()
+                        val resultMap = Arguments.createMap().apply {
+                            putBoolean("success", true)
+                            putBoolean("hasNewerVault", false)
+                            putBoolean("hasDirtyChanges", syncState.isDirty)
+                            putBoolean("isOffline", true)
+                            putBoolean("requiresLogout", false)
+                            putNull("errorKey")
+                        }
+                        promise.resolve(resultMap)
+                    } else {
+                        val resultMap = Arguments.createMap().apply {
+                            putBoolean("success", !requiresLogout)
+                            putBoolean("hasNewerVault", false)
+                            putBoolean("hasDirtyChanges", false)
+                            putBoolean("isOffline", false)
+                            putBoolean("requiresLogout", requiresLogout)
+                            if (errorKey != null) {
+                                putString("errorKey", errorKey)
+                            } else {
+                                putNull("errorKey")
+                            }
+                        }
+                        promise.resolve(resultMap)
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Log.e(TAG, "Error checking sync status", e)
+                    val resultMap = Arguments.createMap().apply {
+                        putBoolean("success", false)
+                        putBoolean("hasNewerVault", false)
+                        putBoolean("hasDirtyChanges", false)
+                        putBoolean("isOffline", false)
+                        putBoolean("requiresLogout", false)
+                        putNull("errorKey")
+                    }
+                    promise.resolve(resultMap)
+                }
+            }
+        }
+    }
+
+    /**
      * Unified vault sync method that handles all sync scenarios.
      * @param promise The promise to resolve with VaultSyncResult.
      */

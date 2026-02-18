@@ -216,4 +216,39 @@ public enum AppError: Error {
             return "Parse error: \(message)"
         }
     }
+
+    /// Check if this is an authentication error that requires logout.
+    public var isAuthenticationError: Bool {
+        switch self {
+        case .authenticationFailed, .sessionExpired, .passwordChanged:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Check if this is a version/compatibility error that requires logout.
+    public var isVersionError: Bool {
+        switch self {
+        case .clientVersionNotSupported, .serverVersionNotSupported, .vaultVersionIncompatible:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Check if this is a network error (offline mode).
+    public var isNetworkError: Bool {
+        switch self {
+        case .serverUnavailable, .networkError, .timeout:
+            return true
+        default:
+            return false
+        }
+    }
+
+    /// Get the translation key for this error (error code format for lookup in translation files).
+    public var translationKey: String? {
+        return code
+    }
 }

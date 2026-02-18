@@ -89,8 +89,27 @@ export const useVaultSync = (): {
 
       onStatus?.(t('vault.checkingVaultUpdates'));
 
+      /*
+       * Quick check if sync is needed - this tells us if server has newer vault
+       * or if we have local changes to upload, so we can show the appropriate indicator.
+       */
+      const statusCheck = await NativeVaultManager.checkSyncStatus();
+
+      // Handle logout requirement from status check
+      if (statusCheck.requiresLogout) {
+        const errorMessage = statusCheck.errorKey ? t(getErrorTranslationKey(extractErrorCode(statusCheck.errorKey) ?? AppErrorCode.UNKNOWN_ERROR)) : undefined;
+        await app.logout(errorMessage);
+        return false;
+      }
+
+      // Show appropriate indicator based on what sync will do
+      if (statusCheck.hasNewerVault) {
+        dbContext.setIsSyncing(true);
+      } else if (statusCheck.hasDirtyChanges && !statusCheck.isOffline) {
+        dbContext.setIsUploading(true);
+      }
+
       // Call the unified native sync method
-      // This handles all sync scenarios: download, upload, merge, race detection
       const result = await NativeVaultManager.syncVaultWithServer();
 
       if (abortSignal?.aborted) {
@@ -219,6 +238,9 @@ export const useVaultSync = (): {
       return false;
     } finally {
       syncInProgressRef.current = false;
+      // Always clear syncing/uploading states when done
+      dbContext.setIsSyncing(false);
+      dbContext.setIsUploading(false);
     }
   }, [app, dbContext, t]);
 
