@@ -168,6 +168,8 @@
     "openAliasVaultToUpgrade": "Avaa AliasVault päivittääksesi",
     "vaultUpgradeRequired": "Holvin päivitys vaaditaan.",
     "dismissPopup": "Hylkää ponnahdusikkuna",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site"
