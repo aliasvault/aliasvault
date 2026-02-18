@@ -168,6 +168,8 @@
     "openAliasVaultToUpgrade": "Abrir AliasVault para actualizar",
     "vaultUpgradeRequired": "Actualización de bóveda requerida.",
     "dismissPopup": "Descartar aviso",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "¿Guardar en AliasVault?",
       "neverForThisSite": "Nunca para este sitio"
