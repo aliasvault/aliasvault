@@ -168,6 +168,8 @@
     "openAliasVaultToUpgrade": "Abra o AliasVault para atualizar",
     "vaultUpgradeRequired": "Atualização de cofre necessária.",
     "dismissPopup": "Ignorar pop-up",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Salvar no AliasVault?",
       "neverForThisSite": "Nunca para este site"
