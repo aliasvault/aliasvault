@@ -168,6 +168,8 @@
     "openAliasVaultToUpgrade": "Öppna AliasVault för att uppgradera",
     "vaultUpgradeRequired": "Uppgradering av valv krävs.",
     "dismissPopup": "Avvisa popup",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Spara till AliasVault?",
       "neverForThisSite": "Aldrig för denna webbplats"
