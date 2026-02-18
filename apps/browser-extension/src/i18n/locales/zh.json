@@ -172,7 +172,9 @@
     "close": "关闭",
     "savePrompt": {
       "title": "保存到 AliasVault？",
-      "neverForThisSite": "此网站不再显示"
+      "neverForThisSite": "此网站不再显示",
+      "addUrlTitle": "Add URL to credential?",
+      "addUrl": "Add URL"
     }
   },
   "items": {
