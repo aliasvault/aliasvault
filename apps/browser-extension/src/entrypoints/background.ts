@@ -9,14 +9,14 @@ import { handleClipboardCopied, handleCancelClipboardClear, handleGetClipboardCl
 import { setupContextMenus } from '@/entrypoints/background/ContextMenu';
 import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, handlePasskeyPopupResponse, handleGetRequestData } from '@/entrypoints/background/PasskeyHandler';
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
-import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
+import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState, handleStoreLastAutofilled, handleGetLastAutofilled, handleClearLastAutofilled } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision, handleFullVaultSync, handleCheckLoginDuplicate, handleSaveLoginCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision, handleFullVaultSync, handleCheckLoginDuplicate, handleSaveLoginCredential, handleAddUrlToCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode } from '@/entrypoints/background/VaultMessageHandler';
 
 import { EncryptionKeyDerivationParams } from "@/utils/dist/core/models/metadata";
 import type { LoginResponse } from "@/utils/dist/core/models/webapi";
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
-import type { SavePromptPersistedState } from "@/utils/loginDetector";
+import type { SavePromptPersistedState, LastAutofilledCredential } from "@/utils/loginDetector";
 
 import { defineBackground, browser } from '#imports';
 
@@ -68,6 +68,7 @@ export default defineBackground({
     // Remember login save messages
     onMessage('CHECK_LOGIN_DUPLICATE', ({ data }) => handleCheckLoginDuplicate(data as { domain: string; username: string }));
     onMessage('SAVE_LOGIN_CREDENTIAL', ({ data }) => handleSaveLoginCredential(data as { serviceName: string; username: string; password: string; url: string; domain: string; logoBase64?: string }));
+    onMessage('ADD_URL_TO_CREDENTIAL', ({ data }) => handleAddUrlToCredential(data as { itemId: string; url: string }));
     onMessage('GET_LOGIN_SAVE_SETTINGS', () => handleGetLoginSaveSettings());
     onMessage('SET_LOGIN_SAVE_ENABLED', ({ data }) => handleSetLoginSaveEnabled(data as boolean));
 
@@ -81,6 +82,11 @@ export default defineBackground({
     onMessage('STORE_SAVE_PROMPT_STATE', ({ data, sender }) => handleStoreSavePromptState({ tabId: sender.tabId!, state: data as SavePromptPersistedState }));
     onMessage('GET_SAVE_PROMPT_STATE', ({ sender }) => handleGetSavePromptState({ tabId: sender.tabId! }));
     onMessage('CLEAR_SAVE_PROMPT_STATE', ({ sender }) => handleClearSavePromptState({ tabId: sender.tabId! }));
+
+    // Track last autofilled credential (for "Add URL to existing credential" prompt)
+    onMessage('STORE_LAST_AUTOFILLED', ({ data, sender }) => handleStoreLastAutofilled({ tabId: sender.tabId!, credential: data as LastAutofilledCredential }));
+    onMessage('GET_LAST_AUTOFILLED', ({ data, sender }) => handleGetLastAutofilled({ tabId: sender.tabId!, ...(data as { domain?: string; username?: string }) }));
+    onMessage('CLEAR_LAST_AUTOFILLED', ({ sender }) => handleClearLastAutofilled({ tabId: sender.tabId! }));
 
     // Two-factor authentication state persistence
     onMessage('STORE_TWO_FACTOR_STATE', ({ data }) => handleStoreTwoFactorState(data as { username: string; loginResponse: LoginResponse; passwordHashString: string; passwordHashBase64: string; rememberMe: boolean }));

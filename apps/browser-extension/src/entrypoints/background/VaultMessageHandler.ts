@@ -1253,27 +1253,39 @@ export async function handleCheckLoginDuplicate(
     const normalizedUsername = message.username.toLowerCase();
 
     for (const item of allItems) {
-      // Check LoginUrl field for domain match
+      // Check LoginUrl field for domain match (supports multi-value URLs)
       const urlField = item.Fields?.find((f: { FieldKey: string }) => f.FieldKey === FieldKey.LoginUrl);
       const urlValue = urlField?.Value;
-      if (!urlValue || typeof urlValue !== 'string') {
+      if (!urlValue) {
         continue;
       }
 
-      // Extract domain from URL
-      let itemDomain: string;
-      try {
-        const url = new URL(urlValue.startsWith('http') ? urlValue : `https://${urlValue}`);
-        itemDomain = url.hostname.toLowerCase();
-      } catch {
-        // If URL parsing fails, try direct comparison
-        itemDomain = urlValue.toLowerCase();
-      }
+      // Normalize URL value to array for consistent handling
+      const urls = Array.isArray(urlValue) ? urlValue : [urlValue];
 
-      // Check if domains match (including subdomains)
-      const domainsMatch = itemDomain === normalizedDomain ||
-        itemDomain.endsWith(`.${normalizedDomain}`) ||
-        normalizedDomain.endsWith(`.${itemDomain}`);
+      // Check if any URL matches the domain
+      let domainsMatch = false;
+      for (const singleUrl of urls) {
+        if (typeof singleUrl !== 'string') {
+          continue;
+        }
+
+        // Extract domain from URL
+        let itemDomain: string;
+        try {
+          const url = new URL(singleUrl.startsWith('http') ? singleUrl : `https://${singleUrl}`);
+          itemDomain = url.hostname.toLowerCase();
+        } catch {
+          // If URL parsing fails, try direct comparison
+          itemDomain = singleUrl.toLowerCase();
+        }
+
+        // Check if domains match (including subdomains)
+        if (itemDomain === normalizedDomain || itemDomain.endsWith(`.${normalizedDomain}`) || normalizedDomain.endsWith(`.${itemDomain}`)) {
+          domainsMatch = true;
+          break;
+        }
+      }
 
       if (!domainsMatch) {
         continue;
@@ -1400,6 +1412,78 @@ export async function handleSaveLoginCredential(
   } catch (error) {
     console.error('Failed to save login credential:', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_CREATE_FAILED) };
+  }
+}
+
+/**
+ * Add a URL to an existing credential in the vault.
+ * This is used when a user autofills from an existing credential on a new site
+ * and wants to add that URL to the credential instead of creating a new one.
+ *
+ * @param message - The item ID and URL to add.
+ * @returns Success status.
+ */
+export async function handleAddUrlToCredential(message: { itemId: string; url: string }): Promise<{ success: boolean; error?: string }> {
+  const encryptionKey = await handleGetEncryptionKey();
+
+  if (!encryptionKey) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+
+    // Get the existing item
+    const item = sqliteClient.items.getById(message.itemId);
+    if (!item) {
+      return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+    }
+
+    // Find the existing URL field
+    const urlFieldIndex = item.Fields?.findIndex(f => f.FieldKey === FieldKey.LoginUrl);
+
+    if (urlFieldIndex !== undefined && urlFieldIndex >= 0) {
+      // URL field exists - add to it
+      const existingField = item.Fields![urlFieldIndex];
+      const existingUrls = Array.isArray(existingField.Value)
+        ? existingField.Value
+        : (existingField.Value ? [existingField.Value] : []);
+
+      // Check if URL already exists (normalize for comparison)
+      const normalizedNewUrl = message.url.toLowerCase().replace(/\/$/, '');
+      const urlExists = existingUrls.some(url =>
+        url.toLowerCase().replace(/\/$/, '') === normalizedNewUrl
+      );
+
+      if (urlExists) {
+        // URL already exists, nothing to do
+        return { success: true };
+      }
+
+      // Add the new URL
+      item.Fields![urlFieldIndex].Value = [...existingUrls, message.url];
+    } else {
+      // No URL field exists - create one
+      const newUrlField = createSystemField(FieldKey.LoginUrl, { value: message.url });
+      if (!item.Fields) {
+        item.Fields = [];
+      }
+      item.Fields.push(newUrlField);
+    }
+
+    // Update the item's timestamp
+    item.UpdatedAt = new Date().toISOString();
+
+    // Update the item in the vault
+    await sqliteClient.items.update(item, [], [], [], []);
+
+    // Upload the updated vault to the server
+    await uploadNewVaultToServer(sqliteClient);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to add URL to credential:', error);
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_UPDATE_FAILED) };
   }
 }
 

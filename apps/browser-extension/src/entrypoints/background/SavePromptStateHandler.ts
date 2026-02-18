@@ -1,15 +1,25 @@
 /**
  * Background script handler for save prompt state persistence.
  * Stores save prompt state in memory so it survives content script navigation.
+ * Also tracks the last autofilled credential per tab for the "Add URL" feature.
  */
 
-import type { SavePromptPersistedState } from '@/utils/loginDetector';
+import type { SavePromptPersistedState, LastAutofilledCredential } from '@/utils/loginDetector';
 
 /** In-memory storage for save prompt state, keyed by tab ID */
 const savePromptStateByTab: Map<number, SavePromptPersistedState> = new Map();
 
 /** Timeout handles for auto-clearing state after expiry */
 const stateExpiryTimers: Map<number, ReturnType<typeof setTimeout>> = new Map();
+
+/** In-memory storage for last autofilled credential, keyed by tab ID */
+const lastAutofilledByTab: Map<number, LastAutofilledCredential> = new Map();
+
+/** Timeout handles for auto-clearing autofill state after expiry */
+const autofillExpiryTimers: Map<number, ReturnType<typeof setTimeout>> = new Map();
+
+/** How long to remember the last autofilled credential (5 minutes, to allow for extended prompt focus) */
+const AUTOFILL_STATE_EXPIRY_MS = 5 * 60 * 1000;
 
 /**
  * Store save prompt state for a tab.
@@ -103,3 +113,96 @@ export function handleClearSavePromptState(
 
   return { success: true };
 }
+
+/**
+ * Store last autofilled credential for a tab.
+ * This tracks which credential was used for autofill so we can offer
+ * "Add URL to existing credential" instead of "Save new credential".
+ * @param data - The tab ID and credential info.
+ * @returns Success response.
+ */
+export function handleStoreLastAutofilled(
+  data: { tabId: number; credential: LastAutofilledCredential }
+): { success: boolean } {
+  const { tabId, credential } = data;
+
+  // Clear any existing expiry timer for this tab
+  const existingTimer = autofillExpiryTimers.get(tabId);
+  if (existingTimer) {
+    clearTimeout(existingTimer);
+  }
+
+  // Store the credential
+  lastAutofilledByTab.set(tabId, credential);
+
+  // Set up auto-expiry
+  const timer = setTimeout(() => {
+    lastAutofilledByTab.delete(tabId);
+    autofillExpiryTimers.delete(tabId);
+  }, AUTOFILL_STATE_EXPIRY_MS);
+
+  autofillExpiryTimers.set(tabId, timer);
+
+  return { success: true };
+}
+
+/**
+ * Get last autofilled credential for a tab.
+ * @param data - The tab ID and optional domain to match.
+ * @returns The stored credential or null.
+ */
+export function handleGetLastAutofilled(
+  data: { tabId: number; domain?: string; username?: string }
+): { success: boolean; credential: LastAutofilledCredential | null } {
+  const { tabId, domain, username } = data;
+  const credential = lastAutofilledByTab.get(tabId) || null;
+
+  if (credential) {
+    // Sanity check: Check if the credential has expired, if so, clear it immediately.
+    if (Date.now() - credential.timestamp > AUTOFILL_STATE_EXPIRY_MS) {
+      lastAutofilledByTab.delete(tabId);
+      const timer = autofillExpiryTimers.get(tabId);
+      if (timer) {
+        clearTimeout(timer);
+        autofillExpiryTimers.delete(tabId);
+      }
+      return { success: true, credential: null };
+    }
+
+    // If domain is provided, check for exact match (both values come from window.location.hostname)
+    if (domain && credential.domain.toLowerCase() !== domain.toLowerCase()) {
+      return { success: true, credential: null };
+    }
+
+    // If username is provided, check if it matches
+    if (username && credential.username.toLowerCase() !== username.toLowerCase()) {
+      return { success: true, credential: null };
+    }
+
+    return { success: true, credential };
+  }
+
+  return { success: true, credential: null };
+}
+
+/**
+ * Clear last autofilled credential for a tab.
+ * @param data - The tab ID.
+ * @returns Success response.
+ */
+export function handleClearLastAutofilled(
+  data: { tabId: number }
+): { success: boolean } {
+  const { tabId } = data;
+
+  lastAutofilledByTab.delete(tabId);
+
+  const timer = autofillExpiryTimers.get(tabId);
+  if (timer) {
+    clearTimeout(timer);
+    autofillExpiryTimers.delete(tabId);
+  }
+
+  return { success: true };
+}
+
