@@ -280,7 +280,8 @@ jobs:
 
   build-and-push-docker-multi-container:
     needs: [valid-release, detect-version]
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container)
+    # Skip if images already exist during release (just tag them as latest instead), but allow manual rebuild via workflow_dispatch
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && (github.event_name != 'release' || needs.detect-version.outputs.multi_container_exists != 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -538,7 +539,8 @@ jobs:
 
   build-and-push-docker-all-in-one:
     needs: [valid-release, detect-version]
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_all_in_one)
+    # Skip if images already exist during release (just tag them as latest instead), but allow manual rebuild via workflow_dispatch
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_all_in_one) && (github.event_name != 'release' || needs.detect-version.outputs.all_in_one_exists != 'true')
     runs-on: ubuntu-latest
     permissions:
       contents: read
