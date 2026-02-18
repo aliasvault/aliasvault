@@ -168,7 +168,7 @@
     "openAliasVaultToUpgrade": "Deschide AliasVault pentru actualizare",
     "vaultUpgradeRequired": "Este necesară actualizarea seifului.",
     "dismissPopup": "Închide fereastra",
-    "noTotpItemsFound": "No 2FA code matches found",
+    "noTotpItemsFound": "Nu s-a găsit niciun cod 2FA corespunzător",
     "close": "Închide",
     "savePrompt": {
       "title": "Salvează în AliasVault?",
