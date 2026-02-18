@@ -1,6 +1,7 @@
+import * as OTPAuth from 'otpauth';
 import { sendMessage } from 'webext-bridge/content-script';
 
-import { fillItem } from '@/entrypoints/contentScript/Form';
+import { fillItem, fillTotpCode } from '@/entrypoints/contentScript/Form';
 
 import { CreateIdentityGenerator, IdentityHelperUtils } from '@/utils/dist/core/identity-generator';
 import { ItemTypeIconSvgs } from '@/utils/dist/core/models/icons';
@@ -29,6 +30,47 @@ let popupListeners = new WeakMap<HTMLElement, EventListener>();
  * Global ClickValidator instance for content script security
  */
 const clickValidator = ClickValidator.getInstance();
+
+/**
+ * Active TOTP update interval ID for cleanup
+ */
+let totpUpdateIntervalId: ReturnType<typeof setInterval> | null = null;
+
+/**
+ * Cleanup TOTP update interval
+ */
+function cleanupTotpInterval(): void {
+  if (totpUpdateIntervalId !== null) {
+    clearInterval(totpUpdateIntervalId);
+    totpUpdateIntervalId = null;
+  }
+}
+
+/**
+ * Generate TOTP code from secret key
+ */
+function generateTotpCode(secretKey: string): string {
+  try {
+    const totp = new OTPAuth.TOTP({
+      secret: secretKey,
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30
+    });
+    const code = totp.generate();
+    // Format as "XXX XXX" with space in middle
+    return `${code.slice(0, 3)} ${code.slice(3)}`;
+  } catch {
+    return '--- ---';
+  }
+}
+
+/**
+ * Get remaining seconds until next TOTP code
+ */
+function getTotpRemainingSeconds(): number {
+  return 30 - (Math.floor(Date.now() / 1000) % 30);
+}
 
 /**
  * Create a suggestion pill element using safe DOM methods.
@@ -100,6 +142,441 @@ export function openAutofillPopup(input: HTMLInputElement, container: HTMLElemen
       await createVaultLockedPopup(input, container);
     }
   })();
+}
+
+/**
+ * Open (or refresh) the TOTP autofill popup for 2FA code fields.
+ * Shows only items that have TOTP codes stored.
+ */
+export function openTotpPopup(input: HTMLInputElement, container: HTMLElement) : void {
+  createLoadingPopup(input, '', container);
+
+  /**
+   * Handle the Enter key.
+   */
+  const handleEnterKey = (e: KeyboardEvent) : void => {
+    if (e.key === 'Enter') {
+      removeExistingPopup(container);
+      document.body.removeEventListener('keydown', handleEnterKey);
+    }
+  };
+
+  document.addEventListener('keydown', handleEnterKey);
+
+  (async () : Promise<void> => {
+    const matchingMode = await LocalPreferencesService.getAutofillMatchingMode();
+
+    const response = await sendMessage('GET_ITEMS_WITH_TOTP', {
+      currentUrl: window.location.href,
+      pageTitle: document.title,
+      matchingMode: matchingMode
+    }, 'background') as ItemsResponse;
+
+    if (response.success) {
+      await createTotpPopup(input, response.items, container);
+    } else {
+      await createVaultLockedPopup(input, container);
+    }
+  })();
+}
+
+/**
+ * Create TOTP autofill popup showing items with 2FA codes.
+ * Matches the styling of the regular autofill popup.
+ */
+async function createTotpPopup(input: HTMLInputElement, items: Item[] | undefined, rootContainer: HTMLElement) : Promise<void> {
+  const searchPlaceholder = await t('content.searchVault');
+  const hideFor1HourText = await t('content.hideFor1Hour');
+  const hidePermanentlyText = await t('content.hidePermanently');
+  const noTotpItemsText = await t('content.noTotpItemsFound');
+
+  const popup = createBasePopup(input, rootContainer);
+
+  // Create credential list container with ID
+  const credentialList = document.createElement('div');
+  credentialList.id = 'aliasvault-credential-list';
+  credentialList.className = 'av-credential-list';
+  popup.appendChild(credentialList);
+
+  // Add initial items
+  if (!items) {
+    items = [];
+  }
+
+  updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText);
+
+  // Add divider
+  const divider = document.createElement('div');
+  divider.className = 'av-divider';
+  popup.appendChild(divider);
+
+  // Add action buttons container (matches regular autofill popup)
+  const actionContainer = document.createElement('div');
+  actionContainer.className = 'av-action-container';
+
+  // Create search input with native placeholder
+  const searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.placeholder = searchPlaceholder;
+  searchInput.dataset.avDisable = 'true';
+  searchInput.id = 'aliasvault-search-input';
+  searchInput.className = 'av-search-input';
+
+  // Handle search input - search only TOTP items
+  let searchTimeout: NodeJS.Timeout | null = null;
+  searchInput.addEventListener('input', async () => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    const searchTerm = searchInput.value.trim();
+
+    if (searchTerm === '') {
+      // If search is empty, show the initially URL-filtered items
+      updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText);
+    } else {
+      // Search in TOTP items only
+      const response = await sendMessage('SEARCH_ITEMS_WITH_TOTP', {
+        searchTerm: searchTerm
+      }, 'background') as ItemsResponse;
+
+      if (response.success && response.items) {
+        updateTotpPopupContent(response.items, credentialList, input, rootContainer, noTotpItemsText);
+      } else {
+        // On error, fallback to showing initial filtered items
+        updateTotpPopupContent(items, credentialList, input, rootContainer, noTotpItemsText);
+      }
+    }
+  });
+
+  // Close button (matches regular autofill popup)
+  const closeButton = document.createElement('button');
+  closeButton.className = 'av-button av-button-close';
+  closeButton.innerHTML = `
+    <svg class="av-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  `;
+
+  /**
+   * Handle close button click - show context menu for hide options
+   */
+  const handleCloseClick = (e: Event): void => {
+    e.stopPropagation();
+    const rect = closeButton.getBoundingClientRect();
+    const contextMenu = document.createElement('div');
+    contextMenu.className = 'av-context-menu';
+    contextMenu.style.position = 'fixed';
+    contextMenu.style.left = `${rect.left}px`;
+    contextMenu.style.top = `${rect.bottom + 4}px`;
+    contextMenu.innerHTML = `
+      <button class="av-context-menu-item" data-action="temporary">
+        <svg class="av-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        ${hideFor1HourText}
+      </button>
+      <button class="av-context-menu-item" data-action="permanent">
+        <svg class="av-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 18L18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        ${hidePermanentlyText}
+      </button>
+    `;
+
+    // Remove any existing context menu
+    const existingMenu = document.querySelector('.av-context-menu');
+    if (existingMenu) {
+      existingMenu.remove();
+    }
+
+    // Add the new context menu
+    popup.appendChild(contextMenu);
+
+    /**
+     * Handle clicks on context menu items
+     */
+    const handleContextMenuClick = (e: Event): void => {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      const target = e.target as HTMLElement;
+      const menuItem = target.closest('.av-context-menu-item') as HTMLElement;
+      if (!menuItem) {
+        // Clicked outside the menu, close everything
+        contextMenu.remove();
+        removeExistingPopup(rootContainer);
+        document.removeEventListener('click', handleContextMenuClick);
+        return;
+      }
+
+      const action = menuItem.dataset.action;
+      if (action === 'temporary') {
+        disableAutoShowPopup(true);
+      } else if (action === 'permanent') {
+        disableAutoShowPopup(false);
+      }
+      contextMenu.remove();
+      removeExistingPopup(rootContainer);
+      document.removeEventListener('click', handleContextMenuClick);
+    };
+
+    // Add click listener to handle menu item clicks
+    addReliableClickHandler(contextMenu, handleContextMenuClick);
+  };
+
+  // Add click handlers with security validation
+  addReliableClickHandler(closeButton, (e: Event) => {
+    handleCloseClick(e);
+  });
+
+  actionContainer.appendChild(searchInput);
+  actionContainer.appendChild(closeButton);
+  popup.appendChild(actionContainer);
+
+  /**
+   * Handle clicking outside the popup.
+   */
+  const handleClickOutside = (event: MouseEvent) : void => {
+    const popupElement = rootContainer.querySelector('#aliasvault-credential-popup');
+    const target = event.target as Node;
+    const targetElement = event.target as HTMLElement;
+    // If popup doesn't exist, remove the listener
+    if (!popupElement) {
+      document.removeEventListener('mousedown', handleClickOutside);
+      return;
+    }
+
+    // Check if the click is outside the popup and outside the shadow UI
+    if (popupElement && !popupElement.contains(target) && !input.contains(target) && targetElement.tagName !== 'ALIASVAULT-UI') {
+      removeExistingPopup(rootContainer);
+    }
+  };
+
+  // Add the event listener for clicking outside
+  document.addEventListener('mousedown', handleClickOutside);
+  rootContainer.appendChild(popup);
+}
+
+/**
+ * Update the TOTP item list content in the popup with live code preview.
+ *
+ * @param items - The items to display.
+ * @param itemList - The item list element.
+ * @param input - The input element that triggered the popup.
+ * @param rootContainer - The root container element.
+ * @param noMatchesText - Text to show when no items match.
+ */
+function updateTotpPopupContent(items: Item[], itemList: HTMLElement | null, input: HTMLInputElement, rootContainer: HTMLElement, noMatchesText?: string) : void {
+  if (!itemList) {
+    itemList = document.getElementById('aliasvault-credential-list') as HTMLElement;
+  }
+
+  if (!itemList) {
+    return;
+  }
+
+  // Cleanup any existing interval before creating new items
+  cleanupTotpInterval();
+
+  // Clear existing content
+  itemList.innerHTML = '';
+
+  if (items.length === 0) {
+    const noMatches = document.createElement('div');
+    noMatches.className = 'av-no-matches';
+    noMatches.textContent = noMatchesText || 'No credentials with 2FA codes found';
+    itemList.appendChild(noMatches);
+    return;
+  }
+
+  // Fetch TOTP secrets and create items with live codes
+  (async (): Promise<void> => {
+    const itemIds = items.map(item => item.Id);
+    const secretsResponse = await sendMessage('GET_TOTP_SECRETS', { itemIds }, 'background') as {
+      success: boolean;
+      secrets?: Record<string, string>;
+      error?: string;
+    };
+
+    const secrets = secretsResponse.success && secretsResponse.secrets ? secretsResponse.secrets : {};
+    const hasSecrets = Object.keys(secrets).length > 0;
+
+    // Create items (with live codes if secrets available, static otherwise)
+    const codeElements: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }> = new Map();
+
+    items.forEach(item => {
+      const secret = secrets[item.Id];
+      const itemElement = createTotpItem(item, secret, input, rootContainer, hasSecrets ? codeElements : undefined);
+      itemList!.appendChild(itemElement);
+    });
+
+    // Set up live updates only if we have secrets
+    if (hasSecrets) {
+      // Initial update
+      updateTotpCodes(codeElements, secrets);
+
+      // Set up interval to update codes every second
+      totpUpdateIntervalId = setInterval(() => {
+        updateTotpCodes(codeElements, secrets);
+      }, 1000);
+    }
+  })();
+}
+
+/**
+ * Create SVG path for a pie slice starting from top, going counter-clockwise.
+ * @param cx - Center X
+ * @param cy - Center Y
+ * @param r - Radius
+ * @param fraction - Fraction of the pie to show (0 to 1)
+ */
+function createPieSlicePath(cx: number, cy: number, r: number, fraction: number): string {
+  if (fraction <= 0) {
+    return '';
+  }
+  if (fraction >= 1) {
+    return `M ${cx},${cy} m 0,-${r} a ${r},${r} 0 1,0 0,${r * 2} a ${r},${r} 0 1,0 0,-${r * 2} Z`;
+  }
+
+  const angle = fraction * 2 * Math.PI;
+  // Start from top (12 o'clock position)
+  const startX = cx;
+  const startY = cy - r;
+  // End point going counter-clockwise
+  const endX = cx - r * Math.sin(angle);
+  const endY = cy - r * Math.cos(angle);
+  // Large arc flag: 1 if angle > 180 degrees
+  const largeArc = fraction > 0.5 ? 1 : 0;
+
+  return `M ${cx},${cy} L ${startX},${startY} A ${r},${r} 0 ${largeArc},0 ${endX},${endY} Z`;
+}
+
+/**
+ * Update TOTP codes and pie chart countdown for all items.
+ */
+function updateTotpCodes(
+  codeElements: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }>,
+  secrets: Record<string, string>
+): void {
+  const remainingSeconds = getTotpRemainingSeconds();
+  const fraction = remainingSeconds / 30;
+
+  codeElements.forEach((elements, itemId) => {
+    const secret = secrets[itemId];
+    if (secret) {
+      elements.codeSpan.textContent = generateTotpCode(secret);
+    }
+    elements.pieChart.setAttribute('d', createPieSlicePath(6, 6, 5, fraction));
+  });
+}
+
+/**
+ * Create a TOTP item element.
+ * If secret is provided, shows live code with pie chart countdown.
+ * If secret is undefined, shows static "000 000" placeholder.
+ */
+function createTotpItem(
+  item: Item,
+  secret: string | undefined,
+  input: HTMLInputElement,
+  rootContainer: HTMLElement,
+  codeElements?: Map<string, { codeSpan: HTMLSpanElement; pieChart: SVGPathElement }>
+): HTMLElement {
+  const itemElement = document.createElement('div');
+  itemElement.className = 'av-credential-item';
+
+  // Create container for item info (logo + name)
+  const itemInfo = document.createElement('div');
+  itemInfo.className = 'av-credential-info';
+
+  const logoSrc = SqliteClient.imgSrcFromBytes(item.Logo);
+  const logoContainer = document.createElement('div');
+  logoContainer.className = 'av-credential-logo';
+  if (logoSrc) {
+    logoContainer.innerHTML = `<img src="${logoSrc}" alt="" style="width:100%;height:100%;">`;
+  } else {
+    logoContainer.innerHTML = ItemTypeIconSvgs.Placeholder;
+  }
+  itemInfo.appendChild(logoContainer);
+
+  const itemTextContainer = document.createElement('div');
+  itemTextContainer.className = 'av-credential-text';
+
+  // Service name (primary text)
+  const serviceName = document.createElement('div');
+  serviceName.className = 'av-service-name';
+  serviceName.textContent = item.Name || '';
+
+  // TOTP code display beneath title (like username in normal credentials)
+  const detailsContainer = document.createElement('div');
+  detailsContainer.className = 'av-service-details';
+  detailsContainer.style.display = 'flex';
+  detailsContainer.style.alignItems = 'center';
+  detailsContainer.style.gap = '6px';
+
+  // TOTP code span - show generated code or static placeholder
+  const codeSpan = document.createElement('span');
+  codeSpan.textContent = secret ? generateTotpCode(secret) : '000 000';
+
+  // Pie chart countdown - blue pie that shrinks clockwise from top
+  const remainingSeconds = getTotpRemainingSeconds();
+  const fraction = secret ? remainingSeconds / 30 : 1; // Static shows full pie
+
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('width', '14');
+  svg.setAttribute('height', '14');
+  svg.setAttribute('viewBox', '0 0 12 12');
+  svg.style.flexShrink = '0';
+
+  // Blue pie slice that shrinks clockwise from top (like a clock)
+  const pieChart = document.createElementNS(svgNS, 'path');
+  pieChart.setAttribute('fill', secret ? '#3b82f6' : '#9ca3af'); // Gray for static
+  pieChart.setAttribute('d', createPieSlicePath(6, 6, 5, fraction));
+
+  svg.appendChild(pieChart);
+
+  detailsContainer.appendChild(codeSpan);
+  detailsContainer.appendChild(svg);
+
+  itemTextContainer.appendChild(serviceName);
+  itemTextContainer.appendChild(detailsContainer);
+  itemInfo.appendChild(itemTextContainer);
+
+  // Store references for live updates (only if secret exists and codeElements provided)
+  if (secret && codeElements) {
+    codeElements.set(item.Id, { codeSpan, pieChart });
+  }
+
+  // Add popout icon
+  const popoutIcon = document.createElement('div');
+  popoutIcon.className = 'av-popout-icon';
+  popoutIcon.innerHTML = `
+      <svg class="av-icon" viewBox="0 0 24 24">
+        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <line x1="10" y1="14" x2="21" y2="3"></line>
+      </svg>
+    `;
+
+  addReliableClickHandler(popoutIcon, (e) => {
+    e.stopPropagation();
+    sendMessage('OPEN_POPUP_WITH_ITEM', { itemId: item.Id }, 'background');
+    removeExistingPopup(rootContainer);
+  });
+
+  itemElement.appendChild(itemInfo);
+  itemElement.appendChild(popoutIcon);
+
+  // Handle click to fill TOTP code
+  addReliableClickHandler(itemInfo, async () => {
+    await fillTotpCode(item.Id, input);
+    removeExistingPopup(rootContainer);
+  });
+
+  return itemElement;
 }
 
 /**
@@ -210,6 +687,9 @@ export function removeExistingPopup(container: HTMLElement) : void {
         popupListeners.delete(container);
       }
     }
+
+    // Cleanup TOTP interval
+    cleanupTotpInterval();
 
     existingInContainer.remove();
   }
