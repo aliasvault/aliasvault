@@ -67,6 +67,10 @@ export function useVaultMutate(): {
      * The background script will handle the full sync orchestration
      * and will re-sync if mutations happened during the sync.
      */
+
+    // Show uploading indicator while sync is in progress
+    dbContext.setIsUploading(true);
+
     sendMessage('FULL_VAULT_SYNC', {}, 'background').then(async (result: FullVaultSyncResult) => {
       // If a merge happened, reload the database to show merged data
       if (result.hasNewVault) {
@@ -76,6 +80,9 @@ export function useVaultMutate(): {
       await dbContext.refreshSyncState();
     }).catch((error) => {
       console.error('Background sync error:', error);
+    }).finally(() => {
+      // Clear uploading indicator when sync completes
+      dbContext.setIsUploading(false);
     });
   }, [dbContext]);
 
