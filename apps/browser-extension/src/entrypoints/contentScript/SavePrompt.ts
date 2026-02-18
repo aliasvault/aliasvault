@@ -6,7 +6,7 @@
 import { sendMessage } from 'webext-bridge/content-script';
 
 import { getLogoMarkSvg } from '@/utils/constants/logo';
-import type { CapturedLogin, SavePromptOptions, SavePromptPersistedState } from '@/utils/loginDetector';
+import type { CapturedLogin, SavePromptOptions, SavePromptPersistedState, AddUrlPromptOptions } from '@/utils/loginDetector';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -404,6 +404,60 @@ export function updateSavePromptLogin(login: CapturedLogin): void {
 }
 
 /**
+ * Button configuration for the prompt template.
+ */
+interface IPromptButton {
+  className: string;
+  label: string;
+}
+
+/**
+ * Configuration for creating a prompt using the generic template.
+ */
+interface IPromptTemplateConfig {
+  title: string;
+  content: string;
+  buttons: IPromptButton[];
+}
+
+/**
+ * Create the HTML for a prompt using the generic template.
+ * @param config - The prompt configuration with title, content, and buttons.
+ * @returns The HTML string for the prompt.
+ */
+async function createPromptFromTemplate(config: IPromptTemplateConfig): Promise<string> {
+  const dismissText = await t('common.dismiss');
+  const dismissButton = `
+    <button class="av-save-prompt__btn av-save-prompt__btn--dismiss" aria-label="${dismissText}">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M18 6L6 18M6 6l12 12"/>
+      </svg>
+    </button>
+  `;
+
+  const buttonsHtml = config.buttons
+    .map(btn => `<button class="av-save-prompt__btn ${btn.className}">${btn.label}</button>`)
+    .join('\n');
+
+  return `
+    <div class="av-save-prompt__countdown">
+      <div class="av-save-prompt__countdown-bar"></div>
+    </div>
+    <div class="av-save-prompt__content">
+      <div class="av-save-prompt__icon">
+        ${getLogoMarkSvg(24, 24)}
+      </div>
+      <div class="av-save-prompt__title">${config.title}</div>
+      ${config.content}
+      <div class="av-save-prompt__actions">
+        ${buttonsHtml}
+        ${dismissButton}
+      </div>
+    </div>
+  `;
+}
+
+/**
  * Create the HTML for the save prompt.
  */
 async function createPromptHTML(login: CapturedLogin): Promise<string> {
@@ -415,37 +469,23 @@ async function createPromptHTML(login: CapturedLogin): Promise<string> {
   const titleText = await t('content.savePrompt.title');
   const saveText = await t('common.save');
   const neverText = await t('content.savePrompt.neverForThisSite');
-  const dismissText = await t('common.dismiss');
 
-  return `
-    <div class="av-save-prompt__countdown">
-      <div class="av-save-prompt__countdown-bar"></div>
-    </div>
-    <div class="av-save-prompt__content">
-      <div class="av-save-prompt__icon">
-        ${getLogoMarkSvg(24, 24)}
-      </div>
-      <div class="av-save-prompt__title">${titleText}</div>
-      <div class="av-save-prompt__fields">
-        <input type="text" class="av-save-prompt__service-input" value="${escapedSuggestedName}" data-domain="${escapedDomain}" placeholder="Service name" />
-        <span class="av-save-prompt__username">${escapedUsername}</span>
-        <span class="av-save-prompt__password">${maskedPassword}</span>
-      </div>
-      <div class="av-save-prompt__actions">
-        <button class="av-save-prompt__btn av-save-prompt__btn--save">
-          ${saveText}
-        </button>
-        <button class="av-save-prompt__btn av-save-prompt__btn--never">
-          ${neverText}
-        </button>
-        <button class="av-save-prompt__btn av-save-prompt__btn--dismiss" aria-label="${dismissText}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M18 6L6 18M6 6l12 12"/>
-          </svg>
-        </button>
-      </div>
+  const content = `
+    <div class="av-save-prompt__fields">
+      <input type="text" class="av-save-prompt__service-input" value="${escapedSuggestedName}" data-domain="${escapedDomain}" placeholder="Service name" />
+      <span class="av-save-prompt__username">${escapedUsername}</span>
+      <span class="av-save-prompt__password">${maskedPassword}</span>
     </div>
   `;
+
+  return createPromptFromTemplate({
+    title: titleText,
+    content,
+    buttons: [
+      { className: 'av-save-prompt__btn--save', label: saveText },
+      { className: 'av-save-prompt__btn--never', label: neverText },
+    ],
+  });
 }
 
 /**
@@ -636,5 +676,134 @@ function getBaseDomain(hostname: string): string {
   }
   // Return the last two parts (this is a simple heuristic, doesn't handle all TLDs)
   return parts.slice(-2).join('.');
+}
+
+/**
+ * Create and show the "Add URL to existing credential" prompt banner.
+ * This is shown when a user logs in using an autofilled credential that doesn't have a URL match.
+ * @param container - The shadow DOM container to append the prompt to.
+ * @param options - Configuration options for the prompt.
+ */
+export async function showAddUrlPrompt(container: HTMLElement, options: AddUrlPromptOptions): Promise<void> {
+  // Remove any existing prompt first
+  removeSavePrompt();
+
+  const { login, existingCredential, onAddUrl, onDismiss, autoDismissMs = 10000 } = options;
+
+  // Store current login
+  currentLogin = login;
+
+  // Create prompt element
+  const prompt = document.createElement('div');
+  prompt.className = 'av-save-prompt';
+  prompt.innerHTML = await createAddUrlPromptHTML(login, existingCredential);
+
+  // Add to container
+  container.appendChild(prompt);
+  currentPrompt = prompt;
+
+  // Trigger slide-in animation
+  requestAnimationFrame(() => {
+    prompt.classList.add('av-save-prompt--visible');
+  });
+
+  // Set up auto-dismiss with countdown bar
+  if (autoDismissMs > 0) {
+    // Initialize countdown state
+    initialAutoDismissMs = autoDismissMs;
+    currentAutoDismissMs = autoDismissMs;
+    remainingTimeMs = autoDismissMs;
+    countdownStartTime = Date.now();
+    isAutoDismissPaused = false;
+    onAutoDismissCallback = onDismiss;
+
+    // Create and start countdown bar animation
+    countdownBar = prompt.querySelector('.av-save-prompt__countdown-bar') as HTMLElement;
+    startCountdownAnimation(autoDismissMs);
+
+    autoDismissTimer = window.setTimeout(() => {
+      removeSavePrompt();
+      onDismiss();
+    }, autoDismissMs);
+
+    // Set up hover/focus listeners to pause countdown
+    setupPauseListeners(prompt);
+  }
+
+  // Set up event listeners for add URL prompt
+  setupAddUrlEventListeners(prompt, login, existingCredential, onAddUrl, onDismiss);
+}
+
+/**
+ * Create the HTML for the "Add URL" prompt.
+ */
+async function createAddUrlPromptHTML(login: CapturedLogin, existingCredential: { itemName: string }): Promise<string> {
+  const escapedCredentialName = escapeHtml(existingCredential.itemName);
+
+  // Show origin (protocol + hostname) for clarity
+  const urlObj = new URL(login.url);
+  const escapedUrl = escapeHtml(urlObj.origin);
+
+  // Use favicon from login if available
+  const faviconHtml = login.faviconUrl
+    ? `<img class="av-save-prompt__credential-favicon" src="${escapeHtml(login.faviconUrl)}" alt="" width="14" height="14" />`
+    : '';
+
+  const addUrlTitleText = await t('content.savePrompt.addUrlTitle');
+  const addUrlText = await t('common.confirm');
+
+  const content = `
+    <div class="av-save-prompt__add-url-info">
+      <span class="av-save-prompt__url-pill">
+        <svg class="av-save-prompt__plus-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        ${escapedUrl}
+      </span>
+      <span class="av-save-prompt__url-arrow">→</span>
+      <span class="av-save-prompt__credential-pill">${faviconHtml}${escapedCredentialName}</span>
+    </div>
+  `;
+
+  return createPromptFromTemplate({
+    title: addUrlTitleText,
+    content,
+    buttons: [
+      { className: 'av-save-prompt__btn--add-url', label: addUrlText },
+    ],
+  });
+}
+
+/**
+ * Set up event listeners for the "Add URL" prompt buttons.
+ */
+function setupAddUrlEventListeners(
+  prompt: HTMLElement,
+  login: CapturedLogin,
+  existingCredential: { itemId: string; itemName: string },
+  onAddUrl: (itemId: string, url: string) => void,
+  onDismiss: () => void
+): void {
+  const addUrlBtn = prompt.querySelector('.av-save-prompt__btn--add-url');
+  const dismissBtn = prompt.querySelector('.av-save-prompt__btn--dismiss');
+
+  addUrlBtn?.addEventListener('click', () => {
+    const loginToUse = currentLogin || login;
+    removeSavePrompt();
+    onAddUrl(existingCredential.itemId, loginToUse.url);
+  });
+
+  dismissBtn?.addEventListener('click', () => {
+    removeSavePrompt();
+    onDismiss();
+  });
+
+  // Handle Escape key anywhere in the prompt
+  prompt.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      removeSavePrompt();
+      onDismiss();
+    }
+  });
 }
 

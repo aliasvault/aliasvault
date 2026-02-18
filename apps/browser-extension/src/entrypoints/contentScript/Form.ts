@@ -4,9 +4,10 @@ import { openAutofillPopup } from '@/entrypoints/contentScript/Popup';
 
 import { LOGO_MARK_SVG } from '@/utils/constants/logo';
 import type { Item } from '@/utils/dist/core/models/vault';
-import { itemToCredential } from '@/utils/dist/core/models/vault';
+import { itemToCredential, FieldKey } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFiller } from '@/utils/formDetector/FormFiller';
+import type { LastAutofilledCredential } from '@/utils/loginDetector';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 
 /**
@@ -114,6 +115,24 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
   const credential = itemToCredential(item);
   const formFiller = new FormFiller(form, triggerInputEvents);
   await formFiller.fillFields(credential);
+
+  // Track this autofill for the "Add URL to existing credential" feature
+  const usernameField = item.Fields?.find(f => f.FieldKey === FieldKey.LoginUsername);
+  const emailField = item.Fields?.find(f => f.FieldKey === FieldKey.LoginEmail);
+  const usernameValue = usernameField?.Value ?? emailField?.Value;
+  const username = typeof usernameValue === 'string' ? usernameValue : '';
+
+  const lastAutofilled: LastAutofilledCredential = {
+    itemId: item.Id,
+    itemName: item.Name || '',
+    username,
+    domain: window.location.hostname,
+    timestamp: Date.now(),
+  };
+
+  sendMessage('STORE_LAST_AUTOFILLED', lastAutofilled, 'background').catch(() => {
+    // Ignore errors as background script might not be ready
+  });
 }
 
 /**
