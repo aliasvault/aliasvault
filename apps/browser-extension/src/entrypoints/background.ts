@@ -11,7 +11,7 @@ import { handleGetWebAuthnSettings, handleWebAuthnCreate, handleWebAuthnGet, han
 import { handleOpenPopup, handlePopupWithItem, handleOpenPopupCreateCredential, handleToggleContextMenu } from '@/entrypoints/background/PopupMessageHandler';
 import { handleStoreSavePromptState, handleGetSavePromptState, handleClearSavePromptState } from '@/entrypoints/background/SavePromptStateHandler';
 import { handleStoreTwoFactorState, handleGetTwoFactorState, handleClearTwoFactorState } from '@/entrypoints/background/TwoFactorStateHandler';
-import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision, handleFullVaultSync, handleCheckLoginDuplicate, handleSaveLoginCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled } from '@/entrypoints/background/VaultMessageHandler';
+import { handleCheckAuthStatus, handleClearPersistedFormValues, handleClearSession, handleClearVaultData, handleLockVault, handleCreateItem, handleGetFilteredItems, handleGetSearchItems, handleGetDefaultEmailDomain, handleGetDefaultIdentitySettings, handleGetEncryptionKey, handleGetEncryptionKeyDerivationParams, handleGetPasswordSettings, handleGetPersistedFormValues, handleGetVault, handlePersistFormValues, handleStoreEncryptionKey, handleStoreEncryptionKeyDerivationParams, handleStoreVaultMetadata, handleSyncVault, handleUploadVault, handleGetEncryptedVault, handleStoreEncryptedVault, handleGetSyncState, handleMarkVaultClean, handleGetServerRevision, handleFullVaultSync, handleCheckLoginDuplicate, handleSaveLoginCredential, handleGetLoginSaveSettings, handleSetLoginSaveEnabled, handleGetItemsWithTotp, handleSearchItemsWithTotp, handleGetTotpSecrets, handleGenerateTotpCode } from '@/entrypoints/background/VaultMessageHandler';
 
 import { EncryptionKeyDerivationParams } from "@/utils/dist/core/models/metadata";
 import type { LoginResponse } from "@/utils/dist/core/models/webapi";
@@ -70,6 +70,12 @@ export default defineBackground({
     onMessage('SAVE_LOGIN_CREDENTIAL', ({ data }) => handleSaveLoginCredential(data as { serviceName: string; username: string; password: string; url: string; domain: string; logoBase64?: string }));
     onMessage('GET_LOGIN_SAVE_SETTINGS', () => handleGetLoginSaveSettings());
     onMessage('SET_LOGIN_SAVE_ENABLED', ({ data }) => handleSetLoginSaveEnabled(data as boolean));
+
+    // TOTP autofill messages
+    onMessage('GET_ITEMS_WITH_TOTP', ({ data }) => handleGetItemsWithTotp(data as { currentUrl: string, pageTitle: string, matchingMode?: string }));
+    onMessage('SEARCH_ITEMS_WITH_TOTP', ({ data }) => handleSearchItemsWithTotp(data as { searchTerm: string }));
+    onMessage('GET_TOTP_SECRETS', ({ data }) => handleGetTotpSecrets(data as { itemIds: string[] }));
+    onMessage('GENERATE_TOTP_CODE', ({ data }) => handleGenerateTotpCode(data as { itemId: string }));
 
     // Remember login save state (for surviving page navigation)
     onMessage('STORE_SAVE_PROMPT_STATE', ({ data, sender }) => handleStoreSavePromptState({ tabId: sender.tabId!, state: data as SavePromptPersistedState }));
