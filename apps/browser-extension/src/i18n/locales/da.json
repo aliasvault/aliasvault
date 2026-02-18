@@ -172,7 +172,9 @@
     "close": "Close",
     "savePrompt": {
       "title": "Gem i AliasVault?",
-      "neverForThisSite": "Aldrig for dette websted"
+      "neverForThisSite": "Aldrig for dette websted",
+      "addUrlTitle": "Add URL to credential?",
+      "addUrl": "Add URL"
     }
   },
   "items": {
