@@ -9,6 +9,8 @@
         <WasmBuildNative>true</WasmBuildNative>
         <LangVersion>14</LangVersion>
         <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+        <!-- Enable .NET 10 static asset fingerprinting for cache busting -->
+        <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
