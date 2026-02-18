@@ -172,7 +172,9 @@
     "close": "Close",
     "savePrompt": {
       "title": "Salvare su AliasVault?",
-      "neverForThisSite": "Mai per questo sito"
+      "neverForThisSite": "Mai per questo sito",
+      "addUrlTitle": "Add URL to credential?",
+      "addUrl": "Add URL"
     }
   },
   "items": {
