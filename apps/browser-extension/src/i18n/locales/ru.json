@@ -168,6 +168,8 @@
     "openAliasVaultToUpgrade": "Откройте AliasVault для обновления",
     "vaultUpgradeRequired": "Требуется обновление хранилища.",
     "dismissPopup": "Закрыть окно",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Сохранить в AliasVault?",
       "neverForThisSite": "Никогда для этого сайта"
