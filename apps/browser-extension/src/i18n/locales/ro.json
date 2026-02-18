@@ -168,6 +168,8 @@
     "openAliasVaultToUpgrade": "Deschide AliasVault pentru actualizare",
     "vaultUpgradeRequired": "Este necesară actualizarea seifului.",
     "dismissPopup": "Închide fereastra",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Salvează în AliasVault?",
       "neverForThisSite": "Niciodată pentru acest site"
