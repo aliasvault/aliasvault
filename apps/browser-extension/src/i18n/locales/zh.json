@@ -168,6 +168,8 @@
     "openAliasVaultToUpgrade": "打开AliasVault进行升级",
     "vaultUpgradeRequired": "需要升级密码库。",
     "dismissPopup": "关闭弹窗",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "保存到 AliasVault？",
       "neverForThisSite": "此网站不再显示"
