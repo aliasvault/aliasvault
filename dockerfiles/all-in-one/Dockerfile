@@ -75,7 +75,10 @@ RUN dotnet publish AliasVault.Api/AliasVault.Api.csproj \
         -c Release -o /app/api --no-restore
 
 # Build Client (contains WASM which can be slow)
-RUN dotnet publish AliasVault.Client/AliasVault.Client.csproj \
+# Note: Must run build first before publish, to trigger index.html generation for correct fingerprinting
+RUN dotnet build AliasVault.Client/AliasVault.Client.csproj \
+        -c Release --no-restore && \
+    dotnet publish AliasVault.Client/AliasVault.Client.csproj \
         -c Release -o /app/client --no-restore
 
 # Build Admin
