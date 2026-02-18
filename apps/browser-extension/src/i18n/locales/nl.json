@@ -168,8 +168,8 @@
     "openAliasVaultToUpgrade": "Open AliasVault om te upgraden",
     "vaultUpgradeRequired": "Update is vereist.",
     "dismissPopup": "Pop-up sluiten",
-    "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "noTotpItemsFound": "Geen 2FA code overeenkomsten gevonden",
+    "close": "Sluiten",
     "savePrompt": {
       "title": "Opslaan in AliasVault?",
       "neverForThisSite": "Nooit voor deze site"
