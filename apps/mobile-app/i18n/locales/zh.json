@@ -442,7 +442,7 @@
       "showFolders": "文件夹",
       "passkeys": "通行密钥",
       "attachments": "附件",
-      "totp": "2FA Codes"
+      "totp": "两步验证码"
     },
     "sort": {
       "title": "排序方式",
