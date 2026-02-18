@@ -168,6 +168,8 @@
     "openAliasVaultToUpgrade": "Åbn AliasVault for at opgradere",
     "vaultUpgradeRequired": "Opgradering af boks påkrævet.",
     "dismissPopup": "Luk popup",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Gem i AliasVault?",
       "neverForThisSite": "Aldrig for dette websted"
