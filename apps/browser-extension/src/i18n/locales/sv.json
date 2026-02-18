@@ -168,11 +168,13 @@
     "openAliasVaultToUpgrade": "Öppna AliasVault för att uppgradera",
     "vaultUpgradeRequired": "Uppgradering av valv krävs.",
     "dismissPopup": "Avvisa popup",
-    "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "noTotpItemsFound": "Inga matchande 2FA-koder funna",
+    "close": "Stäng",
     "savePrompt": {
       "title": "Spara till AliasVault?",
-      "neverForThisSite": "Aldrig för denna webbplats"
+      "neverForThisSite": "Aldrig för denna webbplats",
+      "addUrlTitle": "Add URL to credential?",
+      "addUrl": "Add URL"
     }
   },
   "items": {
@@ -210,7 +212,7 @@
     "filters": {
       "folders": "Mappar",
       "passkeys": "Passkeys",
-      "totp": "2FA Codes"
+      "totp": "2FA-Koder"
     },
     "sort": {
       "title": "Sortera efter",
