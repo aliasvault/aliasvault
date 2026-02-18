@@ -30,7 +30,7 @@ public static class AppInfo
     /// <summary>
     /// Gets the patch version number.
     /// </summary>
-    public const int VersionPatch = 4;
+    public const int VersionPatch = 5;
 
     /// <summary>
     /// Gets the version stage (e.g., "", "-alpha", "-beta", "-rc").
