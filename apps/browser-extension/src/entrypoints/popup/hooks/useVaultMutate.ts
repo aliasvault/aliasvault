@@ -62,6 +62,8 @@ export function useVaultMutate(): {
    * so the popup shows the merged data.
    */
   const triggerBackgroundSync = useCallback((): void => {
+    dbContext.setIsUploading(true);
+
     /*
      * Fire-and-forget: send message to background without awaiting.
      * The background script will handle the full sync orchestration
@@ -76,6 +78,8 @@ export function useVaultMutate(): {
       await dbContext.refreshSyncState();
     }).catch((error) => {
       console.error('Background sync error:', error);
+    }).finally(() => {
+      dbContext.setIsUploading(false);
     });
   }, [dbContext]);
 

@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { sendMessage } from 'webext-bridge/popup';
 
-import type { FullVaultSyncResult } from '@/entrypoints/background/VaultMessageHandler';
+import type { FullVaultSyncResult, SyncStatusCheckResult } from '@/entrypoints/background/VaultMessageHandler';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 
@@ -48,6 +48,26 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
 
       onStatus?.(t('common.checkingVaultUpdates'));
 
+      /*
+       * Quick check if sync is needed, this tells us if server has newer vault
+       * or if we have local changes to upload, so we can show the appropriate indicator in UI.
+       */
+      const statusCheck = await sendMessage('CHECK_SYNC_STATUS', {}, 'background') as SyncStatusCheckResult;
+
+      // Handle logout requirement from status check
+      if (statusCheck.requiresLogout) {
+        const errorMessage = statusCheck.errorKey ? t('common.errors.' + statusCheck.errorKey) : undefined;
+        await app.logout(errorMessage);
+        return false;
+      }
+
+      // Show appropriate indicator based on what sync will do
+      if (statusCheck.hasNewerVault) {
+        dbContext.setIsSyncing(true);
+      } else if (statusCheck.hasDirtyChanges && !statusCheck.isOffline) {
+        dbContext.setIsUploading(true);
+      }
+
       // Delegate to background script for full sync orchestration
       const result = await sendMessage('FULL_VAULT_SYNC', {}, 'background') as FullVaultSyncResult;
 
@@ -85,9 +105,8 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
         return false;
       }
 
-      // If we got a new vault, show syncing indicator and reload database into memory
+      // If we got a new vault, reload database into memory
       if (result.hasNewVault) {
-        dbContext.setIsSyncing(true);
         onStatus?.(t('common.syncingUpdatedVault'));
         await dbContext.loadStoredDatabase();
       }
@@ -103,8 +122,9 @@ export const useVaultSync = (): { syncVault: (options?: VaultSyncOptions) => Pro
       onError?.(errorMessage);
       return false;
     } finally {
-      // Always clear syncing state when done
+      // Always clear syncing/uploading states when done
       dbContext.setIsSyncing(false);
+      dbContext.setIsUploading(false);
     }
   }, [app, dbContext, t]);
 

@@ -19,8 +19,9 @@ const MIN_SYNC_DISPLAY_TIME = 1000;
  * Priority order (highest to lowest):
  * 1. Offline (amber) - network unavailable, clickable to retry
  * 2. Syncing (green spinner) - downloading new vault (minimum display time)
- * 3. Pending (blue) - local changes waiting to be uploaded, clickable to retry
- * 4. Hidden - when synced
+ * 3. Uploading (blue spinner) - uploading local changes to server
+ * 4. Pending (blue pulsing) - local changes waiting to be uploaded, clickable to retry
+ * 5. Hidden - when synced
  *
  * Note: The syncing indicator only appears when actually downloading a new vault,
  * not during routine checks where nothing changed.
@@ -75,6 +76,11 @@ const ServerSyncIndicator: React.FC = () => {
 
     setIsRetrying(true);
 
+    // If we have local changes, show uploading indicator
+    if (dbContext.isDirty) {
+      dbContext.setIsUploading(true);
+    }
+
     try {
       const result = await sendMessage('FULL_VAULT_SYNC', {}, 'background') as FullVaultSyncResult;
 
@@ -105,6 +111,7 @@ const ServerSyncIndicator: React.FC = () => {
       console.error('Retry sync error:', error);
     } finally {
       setIsRetrying(false);
+      dbContext.setIsUploading(false);
     }
   }, [isRetrying, dbContext, app, t]);
 
@@ -178,7 +185,25 @@ const ServerSyncIndicator: React.FC = () => {
     );
   }
 
-  // Priority 3: Pending indicator (clickable to force sync) - icon only
+  // Priority 3: Uploading indicator (not clickable, shows progress)
+  if (dbContext.isUploading) {
+    return (
+      <div
+        className="flex items-center gap-1.5 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-md text-xs font-medium"
+      >
+        <svg className="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          />
+        </svg>
+      </div>
+    );
+  }
+
+  // Priority 4: Pending indicator (clickable to force sync) - icon only
   if (dbContext.isDirty) {
     return (
       <button

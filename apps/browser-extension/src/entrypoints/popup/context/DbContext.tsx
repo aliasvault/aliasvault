@@ -32,18 +32,26 @@ type DbContextType = {
    */
   isDirty: boolean;
   /**
-   * True if a background sync is in progress.
+   * True if a background sync (download) is in progress.
    */
   isSyncing: boolean;
+  /**
+   * True if an upload to server is in progress.
+   */
+  isUploading: boolean;
   /**
    * Current server revision number.
    */
   serverRevision: number;
   setIsOffline: (offline: boolean) => Promise<void>;
   /**
-   * Set the syncing state.
+   * Set the syncing (download) state.
    */
   setIsSyncing: (syncing: boolean) => void;
+  /**
+   * Set the uploading state.
+   */
+  setIsUploading: (uploading: boolean) => void;
   /**
    * Check if email errors should be suppressed.
    * Errors are suppressed when vault has local changes not yet synced,
@@ -104,9 +112,14 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
   const [isDirty, setIsDirty] = useState(false);
 
   /**
-   * Syncing state - true if a background sync is in progress.
+   * Syncing state - true if a background sync (download) is in progress.
    */
   const [isSyncing, setIsSyncing] = useState(false);
+
+  /**
+   * Uploading state - true if an upload to server is in progress.
+   */
+  const [isUploading, setIsUploading] = useState(false);
 
   /**
    * Server revision number.
@@ -298,9 +311,11 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     getIsOffline,
     isDirty,
     isSyncing,
+    isUploading,
     serverRevision,
     setIsOffline,
     setIsSyncing,
+    setIsUploading,
     shouldSuppressEmailErrors,
     loadDatabase,
     loadStoredDatabase,
@@ -310,7 +325,7 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
     getVaultMetadata,
     refreshSyncState,
     hasPendingMigrations,
-  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, isDirty, isSyncing, serverRevision, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, hasPendingMigrations]);
+  }), [sqliteClient, dbInitialized, dbAvailable, isOffline, getIsOffline, isDirty, isSyncing, isUploading, serverRevision, setIsOffline, shouldSuppressEmailErrors, loadDatabase, loadStoredDatabase, storeEncryptionKey, storeEncryptionKeyDerivationParams, clearDatabase, getVaultMetadata, refreshSyncState, hasPendingMigrations]);
 
   return (
     <DbContext.Provider value={contextValue}>

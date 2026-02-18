@@ -918,6 +918,24 @@ export async function handleGetServerRevision(): Promise<number> {
 }
 
 /**
+ * Result of a sync status check (without doing actual sync).
+ */
+export type SyncStatusCheckResult = {
+  /** True if check succeeded */
+  success: boolean;
+  /** True if server has a newer vault to download */
+  hasNewerVault: boolean;
+  /** True if we have local changes to upload */
+  hasDirtyChanges: boolean;
+  /** True if offline (server unavailable) */
+  isOffline: boolean;
+  /** True if user needs to be logged out */
+  requiresLogout: boolean;
+  /** Error key for translation */
+  errorKey?: string;
+};
+
+/**
  * Result of a full vault sync operation.
  */
 export type FullVaultSyncResult = {
@@ -935,6 +953,64 @@ export type FullVaultSyncResult = {
   /** True if user needs to be logged out */
   requiresLogout: boolean;
 };
+
+/**
+ * Quick check if a sync is needed without doing the actual sync.
+ * Used by popup to show syncing indicator before starting the actual sync.
+ */
+export async function handleCheckSyncStatus(): Promise<SyncStatusCheckResult> {
+  const webApi = new WebApiService();
+
+  try {
+    // Check if user is logged in
+    const authStatus = await handleCheckAuthStatus();
+    if (!authStatus.isLoggedIn || authStatus.isVaultLocked) {
+      return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: false };
+    }
+
+    // Get current sync state
+    const syncState = await handleGetSyncState();
+
+    // Check app status and vault revision
+    const statusResponse = await webApi.getStatus();
+
+    // Check if server is unavailable
+    if (statusResponse.serverVersion === '0.0.0') {
+      return { success: true, hasNewerVault: false, hasDirtyChanges: syncState.isDirty, isOffline: true, requiresLogout: false };
+    }
+
+    // Validate status response
+    const statusError = webApi.validateStatusResponse(statusResponse);
+    if (statusError) {
+      if (statusError === 'clientVersionNotSupported' || statusError === 'serverVersionNotSupported') {
+        return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: true, errorKey: statusError };
+      }
+      return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: false, errorKey: statusError };
+    }
+
+    // Check if the SRP salt has changed (password change detection)
+    const storedEncryptionParams = await handleGetEncryptionKeyDerivationParams();
+    if (storedEncryptionParams && statusResponse.srpSalt && statusResponse.srpSalt !== storedEncryptionParams.salt) {
+      return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: true, errorKey: 'passwordChanged' };
+    }
+
+    return {
+      success: true,
+      hasNewerVault: statusResponse.vaultRevision > syncState.serverRevision,
+      hasDirtyChanges: syncState.isDirty,
+      isOffline: false,
+      requiresLogout: false
+    };
+  } catch (err) {
+    // Network error - treat as offline
+    if (err instanceof NetworkError) {
+      const syncState = await handleGetSyncState();
+      return { success: true, hasNewerVault: false, hasDirtyChanges: syncState.isDirty, isOffline: true, requiresLogout: false };
+    }
+
+    return { success: false, hasNewerVault: false, hasDirtyChanges: false, isOffline: false, requiresLogout: false };
+  }
+}
 
 /**
  * Full vault sync orchestration that runs entirely in background context.
