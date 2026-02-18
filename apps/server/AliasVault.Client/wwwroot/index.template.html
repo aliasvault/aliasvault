@@ -21,11 +21,13 @@ Build: @BuildVersion
     <link rel="stylesheet" href="css/app.css?v=@CacheBuster" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="css/tailwind.css?v=@CacheBuster" rel="stylesheet">
-    <link rel="manifest" href="manifest.json" />
+    <link rel="manifest" href="manifest.json?v=@CacheBuster" />
     <link rel="apple-touch-icon" sizes="500x500" href="img/icon-500.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="img/icon-192.png" />
     <link rel="prefetch" href="/wasm/aliasvault_core_bg.wasm?v=@CacheBuster" as="fetch" type="application/wasm" crossorigin />
     <link rel="modulepreload" href="/wasm/aliasvault_core.js?v=@CacheBuster" />
+    <!-- Import map for .NET 10 fingerprinted static assets -->
+    <script type="importmap"></script>
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900" av-disable="true">
@@ -135,6 +137,9 @@ Build: @BuildVersion
     </div>
 
     <script>
+        // Cache buster value for dynamic fetches (set early for use in loadTranslations)
+        window.__CACHE_BUSTER__ = '@CacheBuster';
+
         let translations = {};
 
         function getCurrentLanguage() {
@@ -146,11 +151,11 @@ Build: @BuildVersion
         async function loadTranslations() {
             const lang = getCurrentLanguage();
             try {
-                const response = await fetch(`/locales/${lang}.json`);
+                const response = await fetch(`/locales/${lang}.json?v=${window.__CACHE_BUSTER__}`);
                 if (response.ok) {
                     translations = await response.json();
                 } else {
-                    const fallbackResponse = await fetch('/locales/en.json');
+                    const fallbackResponse = await fetch(`/locales/en.json?v=${window.__CACHE_BUSTER__}`);
                     translations = await fallbackResponse.json();
                 }
             } catch (error) {
@@ -284,63 +289,61 @@ Build: @BuildVersion
             if (progressText) progressText.classList.add('hidden');
         };
 
+        // Boot failure recovery for stale service worker cache or network issues
         let bootFailureHandled = false;
         async function handleBlazorBootFailure() {
             if (bootFailureHandled) return;
             bootFailureHandled = true;
 
-            console.info('AliasVault: Blazor boot failure detected. Refreshing cached files...');
+            console.info('AliasVault: Blazor boot failure detected. Clearing caches and reloading...');
 
             try {
+                // Clear all browser caches (Cache API)
                 if ('caches' in window) {
                     const cacheKeys = await caches.keys();
                     await Promise.all(cacheKeys.map(key => caches.delete(key)));
                 }
+                // Unregister service workers to prevent stale cache serving
                 if ('serviceWorker' in navigator) {
                     const registrations = await navigator.serviceWorker.getRegistrations();
                     await Promise.all(registrations.map(r => r.unregister()));
                 }
-                const criticalFiles = [
-                    '/',
-                    '/_framework/blazor.webassembly.js',
-                    '/_framework/dotnet.js'
-                ];
-                await Promise.all(criticalFiles.map(url =>
-                    fetch(url, { cache: 'reload' }).catch(() => {})
-                ));
             } catch (e) {
-                console.error('AliasVault: Cache refresh failed:', e);
+                console.error('AliasVault: Cache clear failed:', e);
             }
+            // Force reload bypassing cache
             const url = new URL(window.location.href);
             url.searchParams.set('_r', Date.now().toString());
             window.location.replace(url.toString());
+        }
+
+        // Detect Blazor boot failures and trigger recovery
+        function isBlazorBootError(message) {
+            const bootErrorPatterns = [
+                'Failed to start platform',
+                'Argument_InvalidHandle',
+                'Failed to load resource',
+                'integrity',
+                'TypeError: Failed to fetch'
+            ];
+            return bootErrorPatterns.some(pattern => message.includes(pattern));
         }
 
         window.addEventListener('error', function(event) {
             const errorMessage = event.error?.message || event.message || '';
             if (errorMessage.includes('WebAssembly')) {
                 showError(getTranslation('errors.webAssemblyError'));
-            }
-            else if (
-                errorMessage.includes('Argument_InvalidHandle') ||
-                errorMessage.includes('Failed to start platform')
-            ) {
+            } else if (isBlazorBootError(errorMessage)) {
                 event.preventDefault();
                 handleBlazorBootFailure();
             }
         });
+
         window.addEventListener('unhandledrejection', function(event) {
             const errorMessage = event.reason?.message || String(event.reason) || '';
-
             if (errorMessage.includes('WebAssembly')) {
                 showError(getTranslation('errors.webAssemblyError'));
-            }
-            else if (
-                errorMessage.includes('blazor.boot.json') ||
-                errorMessage.includes('Failed to load config file') ||
-                errorMessage.includes('Failed to start platform') ||
-                errorMessage.includes('Argument_InvalidHandle')
-            ) {
+            } else if (isBlazorBootError(errorMessage)) {
                 event.preventDefault();
                 handleBlazorBootFailure();
             }
@@ -356,16 +359,15 @@ Build: @BuildVersion
                 localStorage.setItem('blazorCulture', culture);
             }
         };
-        window.__CACHE_BUSTER__ = '@CacheBuster';
         if (typeof window.rustCoreIsAvailable === 'function') {
             window.rustCoreIsAvailable().catch(() => {});
         }
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('service-worker.js');
+            navigator.serviceWorker.register(`service-worker.js?v=${window.__CACHE_BUSTER__}`);
         }
     </script>
     <script src="js/bundle.min.js?v=@CacheBuster"></script>
-    <script src="_framework/blazor.webassembly.js?v=@CacheBuster" autostart="false"></script>
+    <script src="_framework/blazor.webassembly#[.{fingerprint}].js" autostart="false"></script>
     <script>
         Blazor.start({
             configureRuntime: runtime => runtime.withConfig({
