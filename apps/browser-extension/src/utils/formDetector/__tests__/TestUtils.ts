@@ -26,7 +26,8 @@ export enum FormField {
   Gender = 'gender',
   GenderMale = 'genderMale',
   GenderFemale = 'genderFemale',
-  GenderOther = 'genderOther'
+  GenderOther = 'genderOther',
+  Totp = 'totp'
 }
 
 /**
@@ -199,7 +200,8 @@ export const createMockFormFields = (document: Document): FormFields => ({
   genderField: {
     type: 'select',
     field: document.createElement('select')
-  }
+  },
+  totpField: null
 });
 
 /**

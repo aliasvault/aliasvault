@@ -9,8 +9,10 @@ export type {
   LoginSubmissionEvent,
   SavePromptConfig,
   SavePromptOptions,
+  AddUrlPromptOptions,
   SitePreference,
   LoginSaveSettings,
   LoginCaptureCallback,
   SavePromptPersistedState,
+  LastAutofilledCredential,
 } from './types';

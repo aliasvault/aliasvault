@@ -16,9 +16,14 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <CacheBuster>dev</CacheBuster>
         <NoWarn>NU1903</NoWarn>
+        <!-- No fingerprinting in debug mode -->
+        <BlazorScript>_framework/blazor.webassembly.js</BlazorScript>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <!-- Enable .NET 10 static asset fingerprinting for cache busting (only in Release) -->
+        <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+        <BlazorScript>_framework/blazor.webassembly#[.{fingerprint}].js</BlazorScript>
         <DebugSymbols>false</DebugSymbols>
         <DocumentationFile>bin\Release\net10.0\AliasVault.Client.xml</DocumentationFile>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -35,13 +40,14 @@
             <OutputFile ParameterType="System.String" Required="true" />
             <CacheBuster ParameterType="System.String" Required="true" />
             <BuildVersion ParameterType="System.String" Required="true" />
+            <BlazorScript ParameterType="System.String" Required="true" />
             <Minify ParameterType="System.Boolean" Required="false" />
         </ParameterGroup>
         <Task>
             <Code Type="Fragment" Language="cs">
                 <![CDATA[
         string content = File.ReadAllText(InputFile);
-        content = content.Replace("@CacheBuster", CacheBuster).Replace("@BuildVersion", BuildVersion);
+        content = content.Replace("@CacheBuster", CacheBuster).Replace("@BuildVersion", BuildVersion).Replace("@BlazorScript", BlazorScript);
 
         if (Minify)
         {
@@ -126,7 +132,7 @@
     </Target>
 
     <Target Name="GenerateCacheBustedIndexHtml" BeforeTargets="Build">
-        <ReplaceText InputFile="wwwroot/index.template.html" OutputFile="wwwroot/index.html" CacheBuster="$(CacheBuster)" BuildVersion="$(BuildVersion)" Minify="true" />
+        <ReplaceText InputFile="wwwroot/index.template.html" OutputFile="wwwroot/index.html" CacheBuster="$(CacheBuster)" BuildVersion="$(BuildVersion)" BlazorScript="$(BlazorScript)" Minify="true" />
     </Target>
 
     <ItemGroup>

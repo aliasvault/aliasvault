@@ -1451,3 +1451,71 @@ body {
   width: 100%;
   background: #d68338;
 }
+
+/* Add URL Prompt Specific Styles */
+.av-save-prompt__add-url-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
+}
+
+.av-save-prompt__url-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #065f46;
+  border: 1px solid #059669;
+  border-radius: 16px;
+  color: #6ee7b7;
+  font-size: 13px;
+  font-weight: 500;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.av-save-prompt__plus-icon {
+  flex-shrink: 0;
+  color: #6ee7b7;
+}
+
+.av-save-prompt__url-arrow {
+  color: #6b7280;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.av-save-prompt__credential-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: #374151;
+  border: 1px solid #4b5563;
+  border-radius: 16px;
+  color: #f3f4f6;
+  font-size: 13px;
+  font-weight: 500;
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.av-save-prompt__credential-favicon {
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+
+.av-save-prompt__btn--add-url {
+  background: #059669;
+  color: white;
+}
+
+.av-save-prompt__btn--add-url:hover {
+  background: #047857;
+}

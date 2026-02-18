@@ -1,5 +1,5 @@
 import { CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords } from "./FieldPatterns";
-import { FormFields } from "./types/FormFields";
+import { DetectedFieldType, FormFields } from "./types/FormFields";
 
 /**
  * Form detector.
@@ -42,8 +42,8 @@ export class FormDetector {
       return false;
     }
 
-    // Check if the wrapper contains a password or likely username field before processing.
-    if (this.containsPasswordField(formWrapper) || this.containsLikelyUsernameOrEmailField(formWrapper)) {
+    // Check if the wrapper contains a password, likely username field, or TOTP field before processing.
+    if (this.containsPasswordField(formWrapper) || this.containsLikelyUsernameOrEmailField(formWrapper) || this.containsTotpField(formWrapper)) {
       return true;
     }
 
@@ -872,6 +872,66 @@ export class FormDetector {
   }
 
   /**
+   * Check if a form contains a TOTP/2FA field.
+   */
+  private containsTotpField(wrapper: HTMLElement): boolean {
+    const totpField = this.findTotpField(wrapper as HTMLFormElement | null);
+    return totpField !== null && this.isElementVisible(totpField);
+  }
+
+  /**
+   * Find a TOTP/2FA input field in the form.
+   * Uses pattern matching and heuristics specific to TOTP fields.
+   */
+  private findTotpField(form: HTMLFormElement | null): HTMLInputElement | null {
+    // First try pattern-based detection
+    const candidates = this.findAllInputFields(
+      form,
+      CombinedFieldPatterns.totp,
+      ['text', 'number']
+    );
+
+    // Filter out parent-child duplicates
+    const filteredCandidates = this.filterOutNestedDuplicates(candidates);
+
+    if (filteredCandidates.length > 0) {
+      return filteredCandidates[0];
+    }
+
+    // Additional heuristics for TOTP fields that may not match patterns
+    const allInputs = form
+      ? Array.from(form.querySelectorAll<HTMLInputElement>('input'))
+      : Array.from(this.document.querySelectorAll<HTMLInputElement>('input'));
+
+    for (const input of allInputs) {
+      if (!this.isElementVisible(input)) {
+        continue;
+      }
+
+      // Check for autocomplete="one-time-code"
+      const autocomplete = input.getAttribute('autocomplete')?.toLowerCase() ?? '';
+      if (autocomplete === 'one-time-code') {
+        return input;
+      }
+
+      // Check for maxLength=6 combined with inputmode="numeric"
+      const maxLength = input.maxLength;
+      const inputMode = input.getAttribute('inputmode');
+      if (maxLength === 6 && inputMode === 'numeric') {
+        return input;
+      }
+
+      // Check for numeric pattern attribute with length constraint
+      const pattern = input.getAttribute('pattern');
+      if (pattern && /^\[0-9\]/.test(pattern) && maxLength === 6) {
+        return input;
+      }
+    }
+
+    return null;
+  }
+
+  /**
    * Check if a form contains a likely username or email field.
    */
   private containsLikelyUsernameOrEmailField(wrapper: HTMLElement): boolean {
@@ -911,19 +971,19 @@ export class FormDetector {
 
   /**
    * Get the detected field type for the clicked element.
-   * Returns 'username', 'password', or 'email' if detected, null otherwise.
+   * Returns a DetectedFieldType enum value if detected, null otherwise.
    * First checks for our custom data-av-field-type attribute (set on previous interactions),
    * then falls back to full field detection.
    */
-  public getDetectedFieldType(): string | null {
+  public getDetectedFieldType(): DetectedFieldType | null {
     if (!this.clickedElement) {
       return null;
     }
 
     // First check if we already detected and stored the field type
     const storedFieldType = this.clickedElement.getAttribute('data-av-field-type');
-    if (storedFieldType) {
-      return storedFieldType;
+    if (storedFieldType && Object.values(DetectedFieldType).includes(storedFieldType as DetectedFieldType)) {
+      return storedFieldType as DetectedFieldType;
     }
 
     // Get the actual input element (handles shadow DOM)
@@ -932,8 +992,8 @@ export class FormDetector {
     // Also check the actual element for stored field type
     if (actualElement !== this.clickedElement) {
       const actualStoredFieldType = actualElement.getAttribute('data-av-field-type');
-      if (actualStoredFieldType) {
-        return actualStoredFieldType;
+      if (actualStoredFieldType && Object.values(DetectedFieldType).includes(actualStoredFieldType as DetectedFieldType)) {
+        return actualStoredFieldType as DetectedFieldType;
       }
     }
 
@@ -948,20 +1008,26 @@ export class FormDetector {
     // Check if any of the elements is a username field
     const usernameFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text']);
     if (usernameFields.some(input => elementsToCheck.includes(input))) {
-      return 'username';
+      return DetectedFieldType.Username;
     }
 
     // Check if any of the elements is a password field
     const passwordField = this.findPasswordField(formWrapper as HTMLFormElement | null);
     if ((passwordField.primary && elementsToCheck.includes(passwordField.primary)) ||
         (passwordField.confirm && elementsToCheck.includes(passwordField.confirm))) {
-      return 'password';
+      return DetectedFieldType.Password;
     }
 
     // Check if any of the elements is an email field
     const emailFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.email, ['text', 'email']);
     if (emailFields.some(input => elementsToCheck.includes(input))) {
-      return 'email';
+      return DetectedFieldType.Email;
+    }
+
+    // Check if any of the elements is a TOTP field
+    const totpField = this.findTotpField(formWrapper as HTMLFormElement | null);
+    if (totpField && elementsToCheck.includes(totpField)) {
+      return DetectedFieldType.Totp;
     }
 
     return null;
@@ -1030,6 +1096,11 @@ export class FormDetector {
       detectedFields.push(genderField.field as HTMLInputElement);
     }
 
+    const totpField = this.findTotpField(wrapper as HTMLFormElement | null);
+    if (totpField) {
+      detectedFields.push(totpField);
+    }
+
     return {
       form: wrapper as HTMLFormElement,
       emailField: emailFields.primary,
@@ -1041,7 +1112,8 @@ export class FormDetector {
       firstNameField,
       lastNameField,
       birthdateField,
-      genderField
+      genderField,
+      totpField
     };
   }
 }

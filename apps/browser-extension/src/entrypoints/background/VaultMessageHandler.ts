@@ -1,10 +1,12 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import * as OTPAuth from 'otpauth';
 import { storage } from 'wxt/utils/storage';
 
 import type { EncryptionKeyDerivationParams } from '@/utils/dist/core/models/metadata';
-import type { Item } from '@/utils/dist/core/models/vault';
+import { FieldKey, ItemTypes, createSystemField, type Item } from '@/utils/dist/core/models/vault';
 import type { Vault, VaultResponse, VaultPostResponse } from '@/utils/dist/core/models/webapi';
 import { EncryptionUtility } from '@/utils/EncryptionUtility';
+import { filterItems, AutofillMatchingMode } from '@/utils/itemMatcher/ItemMatcher';
 import { LocalPreferencesService } from '@/utils/LocalPreferencesService';
 import { SqliteClient } from '@/utils/SqliteClient';
 import { getItemWithFallback } from '@/utils/StorageUtility';
@@ -344,6 +346,59 @@ export async function handleCreateItem(
 }
 
 /**
+ * Filter items by URL matching.
+ *
+ * @param items - The items to filter
+ * @param currentUrl - The current URL of the page
+ * @param pageTitle - The title of the page
+ * @param matchingModeStr - The matching mode to use (default: DEFAULT)
+ * @returns The filtered items
+ */
+function filterItemsByUrl(items: Item[], currentUrl: string, pageTitle: string, matchingModeStr?: string): Promise<Item[]> {
+  const matchingMode = matchingModeStr ? (matchingModeStr as typeof AutofillMatchingMode[keyof typeof AutofillMatchingMode]) : AutofillMatchingMode.DEFAULT;
+  return filterItems(items, currentUrl, pageTitle, matchingMode);
+}
+
+/**
+ * Filter items by search term.
+ *
+ * @param items - The items to filter
+ * @param searchTerm - The search term to use
+ * @returns The filtered items
+ */
+function filterItemsBySearchTerm(items: Item[], searchTerm: string): Item[] {
+  if (!searchTerm || searchTerm.trim() === '') {
+    return [];
+  }
+
+  const normalizedTerm = searchTerm.toLowerCase().trim();
+
+  const searchableFieldKeys = [
+    FieldKey.LoginUsername,
+    FieldKey.LoginEmail,
+    FieldKey.LoginUrl,
+    FieldKey.AliasFirstName,
+    FieldKey.AliasLastName
+  ];
+
+  return items.filter((item: Item) => {
+    // Search in item name
+    if (item.Name?.toLowerCase().includes(normalizedTerm)) {
+      return true;
+    }
+
+    // Search in field values
+    return item.Fields?.some((field: { FieldKey: string; Value: string | string[] }) => {
+      if ((searchableFieldKeys as string[]).includes(field.FieldKey)) {
+        const value = Array.isArray(field.Value) ? field.Value.join(' ') : field.Value;
+        return value?.toLowerCase().includes(normalizedTerm);
+      }
+      return false;
+    });
+  }).sort((a: Item, b: Item) => (a.Name ?? '').localeCompare(b.Name ?? ''));
+}
+
+/**
  * Get items filtered by URL matching (for autofill).
  * Filters items in the background script before sending to reduce message payload size.
  *
@@ -362,22 +417,7 @@ export async function handleGetFilteredItems(
   try {
     const sqliteClient = await createVaultSqliteClient();
     const allItems = sqliteClient.items.getAll();
-
-    const { filterItems, AutofillMatchingMode } = await import('@/utils/itemMatcher/ItemMatcher');
-
-    // Parse matching mode from string
-    let matchingMode = AutofillMatchingMode.DEFAULT;
-    if (message.matchingMode) {
-      matchingMode = message.matchingMode as typeof AutofillMatchingMode[keyof typeof AutofillMatchingMode];
-    }
-
-    // Filter items in background to reduce payload size (~95% reduction)
-    const filteredItems = await filterItems(
-      allItems,
-      message.currentUrl,
-      message.pageTitle,
-      matchingMode
-    );
+    const filteredItems = await filterItemsByUrl(allItems, message.currentUrl, message.pageTitle, message.matchingMode);
 
     return { success: true, items: filteredItems };
   } catch (error) {
@@ -406,42 +446,7 @@ export async function handleGetSearchItems(
   try {
     const sqliteClient = await createVaultSqliteClient();
     const allItems = sqliteClient.items.getAll();
-
-    // If search term is empty, return empty array
-    if (!message.searchTerm || message.searchTerm.trim() === '') {
-      return { success: true, items: [] };
-    }
-
-    const searchTerm = message.searchTerm.toLowerCase().trim();
-    const { FieldKey } = await import('@/utils/dist/core/models/vault');
-
-    // Filter items by search term across multiple fields
-    const searchResults = allItems.filter((item: Item) => {
-      // Search in item name
-      if (item.Name?.toLowerCase().includes(searchTerm)) {
-        return true;
-      }
-
-      // Search in field values
-      const searchableFieldKeys = [
-        FieldKey.LoginUsername,
-        FieldKey.LoginEmail,
-        FieldKey.LoginUrl,
-        FieldKey.AliasFirstName,
-        FieldKey.AliasLastName
-      ];
-
-      return item.Fields?.some((field: { FieldKey: string; Value: string | string[] }) => {
-        if ((searchableFieldKeys as string[]).includes(field.FieldKey)) {
-          const value = Array.isArray(field.Value) ? field.Value.join(' ') : field.Value;
-          return value?.toLowerCase().includes(searchTerm);
-        }
-        return false;
-      });
-    }).sort((a: Item, b: Item) => {
-      // Sort by name
-      return (a.Name ?? '').localeCompare(b.Name ?? '');
-    });
+    const searchResults = filterItemsBySearchTerm(allItems, message.searchTerm);
 
     return { success: true, items: searchResults };
   } catch (error) {
@@ -662,7 +667,6 @@ async function uploadNewVaultToServer(sqliteClient: SqliteClient) : Promise<Vaul
    * are permanently deleted (IsDeleted = true) as part of the sync process.
    */
   try {
-    const { vaultMergeService } = await import('@/utils/VaultMergeService');
     const pruneResult = await vaultMergeService.prune(updatedVaultData, 30);
     if (pruneResult.success && pruneResult.statementCount > 0) {
       console.info(`[VaultSync] Pruned expired items from trash (${pruneResult.statementCount} statements)`);
@@ -1244,34 +1248,44 @@ export async function handleCheckLoginDuplicate(
     const sqliteClient = await createVaultSqliteClient();
     const allItems = sqliteClient.items.getAll();
 
-    const { FieldKey } = await import('@/utils/dist/core/models/vault');
-
     // Find items with matching domain and username
     const normalizedDomain = message.domain.toLowerCase();
     const normalizedUsername = message.username.toLowerCase();
 
     for (const item of allItems) {
-      // Check LoginUrl field for domain match
+      // Check LoginUrl field for domain match (supports multi-value URLs)
       const urlField = item.Fields?.find((f: { FieldKey: string }) => f.FieldKey === FieldKey.LoginUrl);
       const urlValue = urlField?.Value;
-      if (!urlValue || typeof urlValue !== 'string') {
+      if (!urlValue) {
         continue;
       }
 
-      // Extract domain from URL
-      let itemDomain: string;
-      try {
-        const url = new URL(urlValue.startsWith('http') ? urlValue : `https://${urlValue}`);
-        itemDomain = url.hostname.toLowerCase();
-      } catch {
-        // If URL parsing fails, try direct comparison
-        itemDomain = urlValue.toLowerCase();
-      }
+      // Normalize URL value to array for consistent handling
+      const urls = Array.isArray(urlValue) ? urlValue : [urlValue];
 
-      // Check if domains match (including subdomains)
-      const domainsMatch = itemDomain === normalizedDomain ||
-        itemDomain.endsWith(`.${normalizedDomain}`) ||
-        normalizedDomain.endsWith(`.${itemDomain}`);
+      // Check if any URL matches the domain
+      let domainsMatch = false;
+      for (const singleUrl of urls) {
+        if (typeof singleUrl !== 'string') {
+          continue;
+        }
+
+        // Extract domain from URL
+        let itemDomain: string;
+        try {
+          const url = new URL(singleUrl.startsWith('http') ? singleUrl : `https://${singleUrl}`);
+          itemDomain = url.hostname.toLowerCase();
+        } catch {
+          // If URL parsing fails, try direct comparison
+          itemDomain = singleUrl.toLowerCase();
+        }
+
+        // Check if domains match (including subdomains)
+        if (itemDomain === normalizedDomain || itemDomain.endsWith(`.${normalizedDomain}`) || normalizedDomain.endsWith(`.${itemDomain}`)) {
+          domainsMatch = true;
+          break;
+        }
+      }
 
       if (!domainsMatch) {
         continue;
@@ -1329,8 +1343,6 @@ export async function handleSaveLoginCredential(
   }
 
   try {
-    const { ItemTypes, FieldKey, createSystemField } = await import('@/utils/dist/core/models/vault');
-
     const sqliteClient = await createVaultSqliteClient();
     const currentDateTime = new Date().toISOString();
 
@@ -1400,6 +1412,78 @@ export async function handleSaveLoginCredential(
   } catch (error) {
     console.error('Failed to save login credential:', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_CREATE_FAILED) };
+  }
+}
+
+/**
+ * Add a URL to an existing credential in the vault.
+ * This is used when a user autofills from an existing credential on a new site
+ * and wants to add that URL to the credential instead of creating a new one.
+ *
+ * @param message - The item ID and URL to add.
+ * @returns Success status.
+ */
+export async function handleAddUrlToCredential(message: { itemId: string; url: string }): Promise<{ success: boolean; error?: string }> {
+  const encryptionKey = await handleGetEncryptionKey();
+
+  if (!encryptionKey) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+
+    // Get the existing item
+    const item = sqliteClient.items.getById(message.itemId);
+    if (!item) {
+      return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+    }
+
+    // Find the existing URL field
+    const urlFieldIndex = item.Fields?.findIndex(f => f.FieldKey === FieldKey.LoginUrl);
+
+    if (urlFieldIndex !== undefined && urlFieldIndex >= 0) {
+      // URL field exists - add to it
+      const existingField = item.Fields![urlFieldIndex];
+      const existingUrls = Array.isArray(existingField.Value)
+        ? existingField.Value
+        : (existingField.Value ? [existingField.Value] : []);
+
+      // Check if URL already exists (normalize for comparison)
+      const normalizedNewUrl = message.url.toLowerCase().replace(/\/$/, '');
+      const urlExists = existingUrls.some(url =>
+        url.toLowerCase().replace(/\/$/, '') === normalizedNewUrl
+      );
+
+      if (urlExists) {
+        // URL already exists, nothing to do
+        return { success: true };
+      }
+
+      // Add the new URL
+      item.Fields![urlFieldIndex].Value = [...existingUrls, message.url];
+    } else {
+      // No URL field exists - create one
+      const newUrlField = createSystemField(FieldKey.LoginUrl, { value: message.url });
+      if (!item.Fields) {
+        item.Fields = [];
+      }
+      item.Fields.push(newUrlField);
+    }
+
+    // Update the item's timestamp
+    item.UpdatedAt = new Date().toISOString();
+
+    // Update the item in the vault
+    await sqliteClient.items.update(item, [], [], [], []);
+
+    // Upload the updated vault to the server
+    await uploadNewVaultToServer(sqliteClient);
+
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to add URL to credential:', error);
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_UPDATE_FAILED) };
   }
 }
 
@@ -1484,5 +1568,139 @@ export async function handleSetLoginSaveEnabled(
   } catch (error) {
     console.error('Error setting login save enabled:', error);
     return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.STORAGE_WRITE_FAILED) };
+  }
+}
+
+/**
+ * Get items that have TOTP codes, filtered by URL matching.
+ * Used for TOTP autofill popup to show only items with 2FA codes.
+ *
+ * @param message - Filtering parameters: currentUrl, pageTitle, matchingMode
+ */
+export async function handleGetItemsWithTotp(
+  message: { currentUrl: string, pageTitle: string, matchingMode?: string }
+): Promise<messageItemsResponse> {
+  const encryptionKey = await handleGetEncryptionKey();
+
+  if (!encryptionKey) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    const allItems = sqliteClient.items.getAll();
+
+    // Filter to only items with TOTP codes
+    const itemsWithTotp = allItems.filter((item: Item) => item.HasTotp === true);
+
+    // Then filter by URL matching using shared logic
+    const filteredItems = await filterItemsByUrl(itemsWithTotp, message.currentUrl, message.pageTitle, message.matchingMode);
+
+    return { success: true, items: filteredItems };
+  } catch (error) {
+    console.error('Error getting items with TOTP:', error);
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+  }
+}
+
+/**
+ * Search items that have TOTP codes by search term.
+ * Used for TOTP autofill popup search functionality.
+ *
+ * @param message - Search parameters: searchTerm
+ */
+export async function handleSearchItemsWithTotp(
+  message: { searchTerm: string }
+): Promise<messageItemsResponse> {
+  const encryptionKey = await handleGetEncryptionKey();
+
+  if (!encryptionKey) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    const allItems = sqliteClient.items.getAll();
+
+    // Filter to only items with TOTP codes
+    const itemsWithTotp = allItems.filter((item: Item) => item.HasTotp === true);
+
+    // Then search using shared logic
+    const searchResults = filterItemsBySearchTerm(itemsWithTotp, message.searchTerm);
+
+    return { success: true, items: searchResults };
+  } catch (error) {
+    console.error('Error searching items with TOTP:', error);
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+  }
+}
+
+/**
+ * Get TOTP secret keys for items.
+ * Used by content script to generate codes locally for live preview.
+ *
+ * @param message - Array of item IDs to get TOTP secrets for
+ */
+export async function handleGetTotpSecrets(
+  message: { itemIds: string[] }
+): Promise<{ success: boolean; secrets?: Record<string, string>; error?: string }> {
+  const encryptionKey = await handleGetEncryptionKey();
+
+  if (!encryptionKey) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    const secrets: Record<string, string> = {};
+
+    for (const itemId of message.itemIds) {
+      const totpCodes = sqliteClient.settings.getTotpCodesForItem(itemId);
+      if (totpCodes.length > 0) {
+        secrets[itemId] = totpCodes[0].SecretKey;
+      }
+    }
+
+    return { success: true, secrets };
+  } catch (error) {
+    console.error('Error getting TOTP secrets:', error);
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
+  }
+}
+
+/**
+ * Generate a TOTP code for a specific item.
+ * Used by content script to fill TOTP fields.
+ *
+ * @param message - The item ID to generate TOTP code for
+ */
+export async function handleGenerateTotpCode(
+  message: { itemId: string }
+): Promise<{ success: boolean; code?: string; error?: string }> {
+  const encryptionKey = await handleGetEncryptionKey();
+
+  if (!encryptionKey) {
+    return { success: false, error: formatErrorWithCode(await t('common.errors.vaultIsLocked'), AppErrorCode.VAULT_LOCKED) };
+  }
+
+  try {
+    const sqliteClient = await createVaultSqliteClient();
+    const totpCodes = sqliteClient.settings.getTotpCodesForItem(message.itemId);
+
+    if (totpCodes.length === 0) {
+      return { success: false, error: 'No TOTP codes found for this item' };
+    }
+
+    const totp = new OTPAuth.TOTP({
+      secret: totpCodes[0].SecretKey,
+      algorithm: 'SHA1',
+      digits: 6,
+      period: 30
+    });
+
+    return { success: true, code: totp.generate() };
+  } catch (error) {
+    console.error('Error generating TOTP code:', error);
+    return { success: false, error: formatErrorWithCode(await t('common.errors.unknownError'), AppErrorCode.ITEM_READ_FAILED) };
   }
 }

@@ -4,9 +4,10 @@ import { openAutofillPopup } from '@/entrypoints/contentScript/Popup';
 
 import { LOGO_MARK_SVG } from '@/utils/constants/logo';
 import type { Item } from '@/utils/dist/core/models/vault';
-import { itemToCredential } from '@/utils/dist/core/models/vault';
+import { itemToCredential, FieldKey } from '@/utils/dist/core/models/vault';
 import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFiller } from '@/utils/formDetector/FormFiller';
+import type { LastAutofilledCredential } from '@/utils/loginDetector';
 import { ClickValidator } from '@/utils/security/ClickValidator';
 
 /**
@@ -114,6 +115,24 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
   const credential = itemToCredential(item);
   const formFiller = new FormFiller(form, triggerInputEvents);
   await formFiller.fillFields(credential);
+
+  // Track this autofill for the "Add URL to existing credential" feature
+  const usernameField = item.Fields?.find(f => f.FieldKey === FieldKey.LoginUsername);
+  const emailField = item.Fields?.find(f => f.FieldKey === FieldKey.LoginEmail);
+  const usernameValue = usernameField?.Value ?? emailField?.Value;
+  const username = typeof usernameValue === 'string' ? usernameValue : '';
+
+  const lastAutofilled: LastAutofilledCredential = {
+    itemId: item.Id,
+    itemName: item.Name || '',
+    username,
+    domain: window.location.hostname,
+    timestamp: Date.now(),
+  };
+
+  sendMessage('STORE_LAST_AUTOFILLED', lastAutofilled, 'background').catch(() => {
+    // Ignore errors as background script might not be ready
+  });
 }
 
 /**
@@ -270,6 +289,41 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement): voi
 
   actualInput.addEventListener('blur', handleBlur);
   actualInput.addEventListener('keydown', handleKeyPress);
+}
+
+/**
+ * Fill TOTP code into the input field.
+ * Generates the code via background script and fills it.
+ *
+ * @param itemId - The item ID to generate TOTP code for.
+ * @param input - The input element to fill the TOTP code into.
+ */
+export async function fillTotpCode(itemId: string, input: HTMLInputElement): Promise<void> {
+  // Set debounce time to 300ms to prevent the popup from being shown again within 300ms because of autofill events.
+  hidePopupFor(300);
+
+  // Reset auto-lock timer when autofilling
+  sendMessage('RESET_AUTO_LOCK_TIMER', {}, 'background').catch(() => {
+    // Ignore errors as background script might not be ready
+  });
+
+  // Generate TOTP code via background
+  const response = await sendMessage('GENERATE_TOTP_CODE', { itemId }, 'background') as {
+    success: boolean;
+    code?: string;
+    error?: string;
+  };
+
+  if (!response.success || !response.code) {
+    console.error('Failed to generate TOTP code:', response.error);
+    return;
+  }
+
+  // Fill the TOTP field
+  input.value = response.code;
+
+  // Trigger input events for form validation
+  triggerInputEvents(input);
 }
 
 /**

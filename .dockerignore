@@ -36,3 +36,6 @@ certificates/
 *.log
 *.env
 *.env.*
+
+# Exclude local built web app index.html, must be generated fresh during Docker build for correct fingerprinting
+apps/server/AliasVault.Client/wwwroot/index.html

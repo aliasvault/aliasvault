@@ -1,0 +1,9 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>TOTP Form 2</title>
+</head>
+<body>
+  <form action="https://example.com/2fa/challenge/authenticator" method="POST"><input type="hidden" name="csrf_token" value="token123"> <input type="hidden" name="post_2fa_challenge_redirect_uri" value="https://example.com/"> <input type="hidden" name="auth_state_context"> <input type="hidden" name="post_federation_reauthenticate" value="0"> <div class="c-setting"><div class="c-setting_body"><div class="c-settingForm"><div class="c-settingForm_fieldGroup"><label class="c-formLabel">Code</label> <input id="two-fa-challenge-authenticator_pc_input_0" type="text" name="otp" value="" placeholder="- - - - - -" autocomplete="off" required="required" class="is-error"> <div class="c-formError"><p class="c-formErrorMsg is-show">No verification code has been entered.</p> <p class="c-formErrorMsg">The verification code is incorrect.</p> <!----></div></div></div></div></div> <div class="c-btnBlock"><a id="two-fa-challenge-backup-code_pc_a_0" href="https://example.com/" class="c-btn c-btn-medium c-btn-secondary">Cancel</a> <button id="two-fa-challenge-authenticator_pc_button_0" type="submit" class="c-btn c-btn-primary c-btn-medium is-disabled" disabled="disabled">Verify</button></div></form>
+</body>
+</html>

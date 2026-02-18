@@ -68,6 +68,22 @@ export type SavePromptOptions = {
 };
 
 /**
+ * Options for showing the "Add URL to existing credential" prompt.
+ */
+export type AddUrlPromptOptions = {
+  /** The captured login credentials */
+  login: CapturedLogin;
+  /** The existing credential that was autofilled */
+  existingCredential: LastAutofilledCredential;
+  /** Callback when user clicks "Add URL" */
+  onAddUrl: (itemId: string, url: string) => void;
+  /** Callback when prompt is dismissed */
+  onDismiss: () => void;
+  /** Auto-dismiss timeout in milliseconds (default: 15000) */
+  autoDismissMs?: number;
+};
+
+/**
  * Site preferences for login saving.
  */
 export type SitePreference = {
@@ -109,4 +125,22 @@ export type SavePromptPersistedState = {
   savedAt: number;
   /** The domain where the prompt was shown (to validate on restore) */
   domain: string;
+};
+
+/**
+ * Tracks the last credential that was autofilled in a tab.
+ * Used to offer "Add URL to existing credential" when the user logs in
+ * with a credential that was manually selected (no URL match).
+ */
+export type LastAutofilledCredential = {
+  /** The ID of the item that was autofilled */
+  itemId: string;
+  /** The name of the item (for display in the prompt) */
+  itemName: string;
+  /** The username that was filled */
+  username: string;
+  /** The domain where the autofill occurred */
+  domain: string;
+  /** Timestamp when the autofill happened */
+  timestamp: number;
 };

@@ -6,13 +6,14 @@ import '@/entrypoints/contentScript/style.css';
 import { onMessage, sendMessage } from "webext-bridge/content-script";
 
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
-import { isAutoShowPopupEnabled, openAutofillPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
-import { showSavePrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState } from '@/entrypoints/contentScript/SavePrompt';
+import { isAutoShowPopupEnabled, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
+import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { FormDetector } from '@/utils/formDetector/FormDetector';
+import { DetectedFieldType } from '@/utils/formDetector/types/FormFields';
 import { LoginDetector } from '@/utils/loginDetector';
-import type { CapturedLogin } from '@/utils/loginDetector';
+import type { CapturedLogin, LastAutofilledCredential } from '@/utils/loginDetector';
 import { BoolResponse as messageBoolResponse } from '@/utils/types/messaging/BoolResponse';
 
 import { t } from '@/i18n/StandaloneI18n';
@@ -42,6 +43,9 @@ async function handleSaveLogin(login: CapturedLogin, serviceName: string): Promi
     if (!response.success) {
       console.error('[AliasVault] Failed to save login:', response.error);
     }
+
+    // Clear the last autofilled state after save
+    await sendMessage('CLEAR_LAST_AUTOFILLED', {}, 'background');
   } catch (error) {
     console.error('[AliasVault] Error saving login:', error);
   }
@@ -67,8 +71,32 @@ async function handleNeverSaveForDomain(domain: string): Promise<void> {
 /**
  * Handle save prompt dismissal.
  */
-function handleSavePromptDismiss(): void {
-  // No action needed on dismiss
+async function handleSavePromptDismiss(): Promise<void> {
+  // Clear the last autofilled state on dismiss
+  await sendMessage('CLEAR_LAST_AUTOFILLED', {}, 'background');
+}
+
+/**
+ * Handle adding URL to an existing credential.
+ * @param itemId - The ID of the credential to add the URL to.
+ * @param url - The URL to add.
+ */
+async function handleAddUrlToCredential(itemId: string, url: string): Promise<void> {
+  try {
+    const response = await sendMessage('ADD_URL_TO_CREDENTIAL', {
+      itemId,
+      url,
+    }, 'background') as { success: boolean; error?: string };
+
+    if (!response.success) {
+      console.error('[AliasVault] Failed to add URL to credential:', response.error);
+    }
+
+    // Clear the last autofilled state after successful add
+    await sendMessage('CLEAR_LAST_AUTOFILLED', {}, 'background');
+  } catch (error) {
+    console.error('[AliasVault] Error adding URL to credential:', error);
+  }
 }
 
 /**
@@ -294,7 +322,7 @@ function initializeLoginDetector(container: HTMLElement): void {
       return;
     }
 
-    // Check if the login already exists in the vault
+    // Check if the login already exists in the vault (exact URL + username match)
     if (await isLoginDuplicate(login.domain, login.username)) {
       return;
     }
@@ -311,6 +339,31 @@ function initializeLoginDetector(container: HTMLElement): void {
       }
     } catch {
       // Use default
+    }
+
+    /*
+     * Check if user recently autofilled from an existing credential.
+     * If so, offer to add the current URL to that credential instead of creating a new one.
+     */
+    try {
+      const lastAutofilledResponse = await sendMessage('GET_LAST_AUTOFILLED', {
+        domain: login.domain,
+        username: login.username,
+      }, 'background') as { success: boolean; credential: LastAutofilledCredential | null };
+
+      if (lastAutofilledResponse.success && lastAutofilledResponse.credential) {
+        // User used an existing credential: offer to add URL to it
+        showAddUrlPrompt(container, {
+          login,
+          existingCredential: lastAutofilledResponse.credential,
+          onAddUrl: handleAddUrlToCredential,
+          onDismiss: handleSavePromptDismiss,
+          autoDismissMs,
+        });
+        return;
+      }
+    } catch {
+      // If check fails, fall back to normal save prompt
     }
 
     // Show save prompt to offer saving the credentials
@@ -407,7 +460,7 @@ export default defineContentScript({
 
               // Only show popup if debounce time has passed
               if (popupDebounceTimeHasPassed()) {
-                await showPopupWithAuthCheck(inputElement, container);
+                await showPopupWithAuthCheck(inputElement, container, detectedFieldType);
               }
             }
           }
@@ -468,6 +521,8 @@ export default defineContentScript({
             return;
           }
 
+          const detectedFieldType = formDetector.getDetectedFieldType();
+
           /**
            * By default we check if the popup is not disabled (for current site) and if the field is autofill-triggerable
            * but if forceShow is true, we show the popup regardless.
@@ -476,14 +531,17 @@ export default defineContentScript({
 
           if (canShowPopup) {
             injectIcon(inputElement, container);
-            await showPopupWithAuthCheck(inputElement, container);
+            await showPopupWithAuthCheck(inputElement, container, detectedFieldType ?? undefined);
           }
         }
 
         /**
          * Show popup with auth check.
+         * @param inputElement - The input element to show the popup for.
+         * @param container - The container element.
+         * @param fieldType - The detected field type (optional, defaults to regular autofill).
          */
-        async function showPopupWithAuthCheck(inputElement: HTMLInputElement, container: HTMLElement) : Promise<void> {
+        async function showPopupWithAuthCheck(inputElement: HTMLInputElement, container: HTMLElement, fieldType?: DetectedFieldType) : Promise<void> {
           try {
             // Check auth status and pending migrations in a single call
             const { sendMessage } = await import('webext-bridge/content-script');
@@ -513,8 +571,12 @@ export default defineContentScript({
               return;
             }
 
-            // No upgrade required, show normal autofill popup
-            openAutofillPopup(inputElement, container);
+            // Show appropriate popup based on field type
+            if (fieldType === DetectedFieldType.Totp) {
+              openTotpPopup(inputElement, container);
+            } else {
+              openAutofillPopup(inputElement, container);
+            }
           } catch (error) {
             console.error('[AliasVault] Error checking vault status:', error);
             // Fall back to normal autofill popup if check fails
