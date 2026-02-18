@@ -8,11 +8,23 @@ import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { Item, TotpCode } from '@/utils/dist/core/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
-
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { useDb } from '@/context/DbContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
+
+/**
+ * Formats a TOTP code as "XXX XXX" with a space in the middle for better readability.
+ */
+const formatTotpCode = (code: string | undefined): string => {
+  if (!code) {
+    return '';
+  }
+  if (code.length === 6) {
+    return `${code.slice(0, 3)} ${code.slice(3)}`;
+  }
+  return code;
+};
 
 type TotpSectionProps = {
   item: Item;
@@ -207,7 +219,7 @@ export const TotpSection: React.FC<TotpSectionProps> = ({ item }) : React.ReactN
                 {t('items.totpCode')}
               </ThemedText>
               <ThemedText style={styles.code}>
-                {currentCodes[totpCode.Id]}
+                {formatTotpCode(currentCodes[totpCode.Id])}
               </ThemedText>
             </View>
             <View style={styles.timerContainer}>

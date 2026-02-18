@@ -7,6 +7,19 @@ import { useDb } from '@/entrypoints/popup/context/DbContext';
 
 import type { TotpCode } from '@/utils/dist/core/models/vault';
 
+/**
+ * Formats a TOTP code as "XXX XXX" with a space in the middle for better readability.
+ */
+const formatTotpCode = (code: string | undefined): string => {
+  if (!code) {
+    return '';
+  }
+  if (code.length === 6) {
+    return `${code.slice(0, 3)} ${code.slice(3)}`;
+  }
+  return code;
+};
+
 type TotpBlockProps = {
   itemId: string;
 }
@@ -173,7 +186,7 @@ const TotpBlock: React.FC<TotpBlockProps> = ({ itemId }) => {
                 <div className="flex items-center gap-2">
                   <div className="flex flex-col items-end">
                     <span className="text-lg font-bold text-gray-900 dark:text-white">
-                      {currentCodes[totpCode.Id]}
+                      {formatTotpCode(currentCodes[totpCode.Id])}
                     </span>
                     <div className="text-xs">
                       {copiedId === totpCode.Id ? (
