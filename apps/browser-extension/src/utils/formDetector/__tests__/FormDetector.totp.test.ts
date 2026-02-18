@@ -18,4 +18,10 @@ describe('FormDetector TOTP tests', () => {
 
     testField(FormField.Totp, 'otp', htmlFile);
   });
+
+  describe('English TOTP form 2 detection (Nintendo style)', () => {
+    const htmlFile = 'en-totp-form2.html';
+
+    testField(FormField.Totp, 'two-fa-challenge-authenticator_pc_input_0', htmlFile);
+  });
 });
