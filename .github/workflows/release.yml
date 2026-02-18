@@ -280,7 +280,7 @@ jobs:
 
   build-and-push-docker-multi-container:
     needs: [valid-release, detect-version]
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container) && needs.detect-version.outputs.multi_container_exists != 'true'
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_multi_container)
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -538,7 +538,7 @@ jobs:
 
   build-and-push-docker-all-in-one:
     needs: [valid-release, detect-version]
-    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_all_in_one) && needs.detect-version.outputs.all_in_one_exists != 'true'
+    if: always() && (github.event_name != 'release' || needs.valid-release.result == 'success') && (github.event_name == 'release' || inputs.build_all_in_one)
     runs-on: ubuntu-latest
     permissions:
       contents: read
