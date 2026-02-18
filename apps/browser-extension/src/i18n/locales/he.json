@@ -168,6 +168,8 @@
     "openAliasVaultToUpgrade": "יש לפתוח את AliasVault כדי לשדרג",
     "vaultUpgradeRequired": "יש לשדרג את הכספת.",
     "dismissPopup": "התעלמות מחלונית",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site"
