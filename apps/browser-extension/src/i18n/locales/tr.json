@@ -168,6 +168,8 @@
     "openAliasVaultToUpgrade": "Open AliasVault to upgrade",
     "vaultUpgradeRequired": "Vault upgrade required.",
     "dismissPopup": "Dismiss popup",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site"
