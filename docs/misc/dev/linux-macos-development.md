@@ -12,13 +12,13 @@ This guide will help you set up AliasVault for development on Linux or MacOS sys
 
 ## Prerequisites
 
-1. **Install .NET 9 SDK**
+1. **Install .NET 10 SDK**
    ```bash
    # On MacOS via brew:
    brew install --cask dotnet-sdk
 
    # On Linux:
-   # Follow instructions at https://dotnet.microsoft.com/download/dotnet/9.0
+   # Follow instructions at https://dotnet.microsoft.com/download/dotnet/10.0
    ```
 
 2. **Install Docker**
@@ -68,7 +68,7 @@ This guide will help you set up AliasVault for development on Linux or MacOS sys
    dotnet tool install --global Microsoft.Playwright.CLI
 
    # Install browsers
-   pwsh apps/server/Tests/AliasVault.E2ETests/bin/Debug/net9.0/playwright.ps1 install
+   pwsh apps/server/Tests/AliasVault.E2ETests/bin/Debug/net10.0/playwright.ps1 install
    ```
 
 6. **Configure Development Settings**
@@ -82,6 +82,22 @@ This guide will help you set up AliasVault for development on Linux or MacOS sys
        "CryptographyOverrideType": "Argon2Id",
        "CryptographyOverrideSettings": "{\"DegreeOfParallelism\":1,\"MemorySize\":1024,\"Iterations\":1}"
    }
+   ```
+
+7. **Install rustup & compile from Rust to WebAssembly**
+   - Needed for AliasVault.Client module in case you want to run it directly from the code on your IDE (e.g. not using Docker)
+   - Follow instructions at [rustup](https://rustup.rs) and install it.
+   - Add `wasm32-unknown-unknown` and `wasm-pack`:
+    ```bash
+    # Add wasm32-unknown-unknown target to your Rust installation
+    rustup target add wasm32-unknown-unknown
+
+    # Install wasm-pack
+    cargo install wasm-pack
+    ```
+   - Run AliasVault Rust Core Build Script:
+   ```bash
+   ./core/rust/build.sh --browser
    ```
 
 ## Running the Application

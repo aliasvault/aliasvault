@@ -28,8 +28,8 @@ This guide will help you set up AliasVault for development on Windows using WSL 
      - .NET WebAssembly development tools
      - .NET cross-platform development
 
-3. **Install .NET 9 SDK**
-   - Download from [.NET Downloads](https://dotnet.microsoft.com/download/dotnet/9.0)
+3. **Install .NET 10 SDK**
+   - Download from [.NET Downloads](https://dotnet.microsoft.com/download/dotnet/10.0)
    - Install both Windows and Linux versions (you'll need both)
 
 ## Setup Steps
