@@ -5,6 +5,7 @@ import { sendMessage } from 'webext-bridge/popup';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
 import { useDb } from '@/entrypoints/popup/context/DbContext';
 import { useLoading } from '@/entrypoints/popup/context/LoadingContext';
+import useCurrentTabMatching from '@/entrypoints/popup/hooks/useCurrentTabMatching';
 import { consumePendingRedirectUrl } from '@/entrypoints/popup/hooks/useVaultLockRedirect';
 import { useVaultSync } from '@/entrypoints/popup/hooks/useVaultSync';
 
@@ -29,6 +30,7 @@ const Reinitialize: React.FC = () => {
   const navigate = useNavigate();
   const { setIsInitialLoading } = useLoading();
   const { syncVault } = useVaultSync();
+  const { matchCurrentTab } = useCurrentTabMatching();
   const hasInitialized = useRef(false);
 
   // Auth and DB state
@@ -40,9 +42,48 @@ const Reinitialize: React.FC = () => {
   const requiresAuth = isFullyInitialized && (!isLoggedIn || !dbAvailable);
 
   /**
+   * Get the expected navigation path based on URL matching result.
+   */
+  const getMatchedPath = useCallback((matchResult: { items: { Id: string }[]; domain: string } | null): string => {
+    if (matchResult && matchResult.items.length === 1) {
+      return `/items/${matchResult.items[0].Id}`;
+    } else if (matchResult && matchResult.items.length > 1) {
+      /*
+       * For multiple matches, we navigate to /items with search param,
+       * but the saved lastPage won't have the param, so we just check against /items
+       */
+      return '/items';
+    } else {
+      return '/items';
+    }
+  }, []);
+
+  /**
+   * Navigate based on URL matching for the current tab.
+   */
+  const navigateWithUrlMatching = useCallback(async (matchResult: { items: { Id: string }[]; domain: string } | null): Promise<void> => {
+    if (matchResult && matchResult.items.length === 1) {
+      // Single match - navigate to items first, then to the item (for back button support)
+      navigate('/items', { replace: true });
+      navigate(`/items/${matchResult.items[0].Id}`, { replace: false });
+    } else if (matchResult && matchResult.items.length > 1) {
+      // Multiple matches - navigate to items list with domain search
+      navigate(`/items?search=${encodeURIComponent(matchResult.domain)}`, { replace: true });
+    } else {
+      // No matches or matching failed - navigate to items page as default
+      navigate('/items', { replace: true });
+    }
+  }, [navigate]);
+
+  /**
    * Restore the last visited page and navigation history if it was visited within the memory duration.
+   * Compares with URL matching result - if user navigated away from matched page, restore their navigation.
    */
   const restoreLastPage = useCallback(async (): Promise<void> => {
+    // First, run URL matching to see what we would auto-navigate to
+    const matchResult = await matchCurrentTab();
+    const matchedPath = getMatchedPath(matchResult);
+
     const [lastPage, lastVisitTime, savedHistory] = await Promise.all([
       storage.getItem(LAST_VISITED_PAGE_KEY) as Promise<string>,
       storage.getItem(LAST_VISITED_TIME_KEY) as Promise<number>,
@@ -52,21 +93,36 @@ const Reinitialize: React.FC = () => {
     if (lastPage && lastVisitTime) {
       const timeSinceLastVisit = Date.now() - lastVisitTime;
       if (timeSinceLastVisit <= PAGE_MEMORY_DURATION) {
-        // For nested routes, build up the navigation history properly
-        if (savedHistory?.length > 1) {
-          // Navigate to the base route first
-          navigate(savedHistory[0].pathname, { replace: true });
-          // Then navigate to the final destination
-          navigate(lastPage, { replace: false });
-        } else {
-          // Simple navigation for non-nested routes
-          navigate(lastPage, { replace: true });
+        /*
+         * Check if user navigated away from the auto-matched page to a specific different page.
+         * Use fresh URL matching if:
+         * - lastPage matches what URL matching would show (user stayed on auto-matched page)
+         * - lastPage is /items (default index page - treat as "home" state)
+         *
+         * Restore user's navigation only if they navigated to a specific different page like:
+         * - Settings, add/edit forms, a different item, folder view, etc.
+         */
+        const isOnMatchedPage = lastPage === matchedPath;
+        const isOnDefaultIndexPage = lastPage === '/items';
+        const shouldUseFreshMatch = isOnMatchedPage || isOnDefaultIndexPage;
+
+        if (!shouldUseFreshMatch) {
+          // Restore user's navigation since they navigated away from auto-matched page
+          if (savedHistory?.length > 1) {
+            // Navigate to the base route first
+            navigate(savedHistory[0].pathname, { replace: true });
+            // Then navigate to the final destination
+            navigate(lastPage, { replace: false });
+          } else {
+            // Simple navigation for non-nested routes
+            navigate(lastPage, { replace: true });
+          }
+          return;
         }
-        return;
       }
     }
 
-    // Duration has expired, clear all stored navigation data
+    // Clear stored navigation data since we're using fresh URL matching
     await Promise.all([
       storage.removeItem(LAST_VISITED_PAGE_KEY),
       storage.removeItem(LAST_VISITED_TIME_KEY),
@@ -74,9 +130,9 @@ const Reinitialize: React.FC = () => {
       sendMessage('CLEAR_PERSISTED_FORM_VALUES', null, 'background'),
     ]);
 
-    // Navigate to the items page as default entry page
-    navigate('/items', { replace: true });
-  }, [navigate]);
+    // Navigate based on URL matching
+    await navigateWithUrlMatching(matchResult);
+  }, [navigate, matchCurrentTab, getMatchedPath, navigateWithUrlMatching]);
 
   useEffect(() => {
     /**

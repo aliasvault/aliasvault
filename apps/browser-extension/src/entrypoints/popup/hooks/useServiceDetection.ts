@@ -21,20 +21,6 @@ type ServiceDetectionResult = {
  * Service detection sources (in priority order):
  * 1. URL parameters (serviceName, serviceUrl, currentUrl) - e.g., from content script popout
  * 2. Active browser tab - for dashboard/popup opened directly
- *
- * @example
- * ```tsx
- * const { detectService } = useServiceDetection();
- *
- * useEffect(() => {
- *   const init = async () => {
- *     const { serviceName, serviceUrl } = await detectService(itemNameParam);
- *     setItem({ ...item, Name: serviceName });
- *     setFieldValues(prev => ({ ...prev, 'login.url': serviceUrl }));
- *   };
- *   init();
- * }, []);
- * ```
  */
 const useServiceDetection = (): {
   detectService: (fallbackName?: string | null) => Promise<ServiceDetectionResult>;

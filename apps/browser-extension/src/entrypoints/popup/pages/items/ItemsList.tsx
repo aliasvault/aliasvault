@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 
 import DeleteFolderModal from '@/entrypoints/popup/components/Folders/DeleteFolderModal';
 import FolderModal from '@/entrypoints/popup/components/Folders/FolderModal';
@@ -110,6 +110,7 @@ const ItemsList: React.FC = () => {
   const { t } = useTranslation();
   const { folderId: folderIdParam } = useParams<{ folderId?: string }>();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const dbContext = useDb();
   const app = useApp();
   const navigate = useNavigate();
@@ -117,7 +118,8 @@ const ItemsList: React.FC = () => {
   const { executeVaultMutationAsync } = useVaultMutate();
   const { setHeaderButtons } = useHeaderButtons();
   const [items, setItems] = useState<Item[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
+  // Initialize searchTerm from URL query parameter if present
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '');
   const [filterType, setFilterType] = useState<FilterType>(getStoredFilter());
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -154,6 +156,17 @@ const ItemsList: React.FC = () => {
    * Loading state with minimum duration for more fluid UX.
    */
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 100);
+
+  /**
+   * Clear search param from URL after reading it (to prevent it from persisting in browser history).
+   */
+  useEffect(() => {
+    const searchFromUrl = searchParams.get('search');
+    if (searchFromUrl) {
+      // Remove the search param from URL while preserving the current path
+      navigate(location.pathname, { replace: true });
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- Only run once on mount
 
   /**
    * Reset search and filter when navigating via the vault tab (with resetFilters state).
