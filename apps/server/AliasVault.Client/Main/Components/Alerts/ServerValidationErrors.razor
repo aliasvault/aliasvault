@@ -1,9 +1,11 @@
 @if (_errors.Any())
 {
-    @foreach (var error in _errors)
-    {
-        <AlertMessageError Message="@error" />
-    }
+    <div class="messages-container">
+        @foreach (var error in _errors)
+        {
+            <AlertMessageError Message="@error" />
+        }
+    </div>
 }
 
 @code {

@@ -40,6 +40,7 @@ public sealed class DbService : IDisposable
     private readonly ILogger<DbService> _logger;
     private readonly GlobalNotificationService _globalNotificationService;
     private readonly IStringLocalizer _sharedLocalizer;
+    private readonly CancellationTokenSource _backgroundSyncCts = new();
     private SettingsService _settingsService = new();
     private SqliteConnection? _sqlConnection;
     private AliasClientDbContext _dbContext;
@@ -210,44 +211,79 @@ public sealed class DbService : IDisposable
         // Set state to indicate background sync is pending
         _state.UpdateState(DbServiceState.DatabaseStatus.BackgroundSyncPending);
 
+        // Capture cancellation token for this background operation
+        var cancellationToken = _backgroundSyncCts.Token;
+
         // Fire and forget the background save operation
-        _ = Task.Run(async () =>
-        {
-            try
+        _ = Task.Run(
+            async () =>
             {
-                // Prune expired items from trash before saving.
-                await PruneExpiredTrashItemsAsync();
-
-                // Make sure a public/private RSA encryption key exists before saving the database.
-                await GetOrCreateEncryptionKeyAsync();
-
-                var encryptedBase64String = await GetEncryptedDatabaseBase64String();
-
-                // Update state to show we're actively syncing
-                _state.UpdateState(DbServiceState.DatabaseStatus.SavingToServer);
-
-                // Save to webapi.
-                var success = await SaveToServerAsync(encryptedBase64String);
-                if (success)
+                try
                 {
-                    _logger.LogInformation("Database successfully saved to server (background sync).");
+                    if (cancellationToken.IsCancellationRequested || _disposed)
+                    {
+                        return;
+                    }
+
+                    // Prune expired items from trash before saving.
+                    await PruneExpiredTrashItemsAsync();
+
+                    if (cancellationToken.IsCancellationRequested || _disposed)
+                    {
+                        return;
+                    }
+
+                    // Make sure a public/private RSA encryption key exists before saving the database.
+                    await GetOrCreateEncryptionKeyAsync();
+
+                    if (cancellationToken.IsCancellationRequested || _disposed)
+                    {
+                        return;
+                    }
+
+                    var encryptedBase64String = await GetEncryptedDatabaseBase64String();
+
+                    if (cancellationToken.IsCancellationRequested || _disposed)
+                    {
+                        return;
+                    }
+
+                    // Update state to show we're actively syncing
+                    _state.UpdateState(DbServiceState.DatabaseStatus.SavingToServer);
+
+                    // Save to webapi.
+                    var success = await SaveToServerAsync(encryptedBase64String);
+                    if (success)
+                    {
+                        _logger.LogInformation("Database successfully saved to server (background sync).");
+                        _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Background sync to server failed.");
+                        _globalNotificationService.AddErrorMessage(
+                            "Failed to sync changes to server. Your changes are saved locally and will be synced on next refresh.");
+                        _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                    // Background sync was cancelled (e.g., during logout), this is expected
+                    _logger.LogDebug("Background database sync was cancelled.");
+                }
+                catch (Exception ex) when (_disposed || cancellationToken.IsCancellationRequested)
+                {
+                    // Service was disposed during sync, silently ignore
+                    _logger.LogDebug(ex, "Background database sync aborted due to disposal.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during background database sync.");
+                    _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"]);
                     _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
                 }
-                else
-                {
-                    _logger.LogWarning("Background sync to server failed.");
-                    _globalNotificationService.AddErrorMessage(
-                        "Failed to sync changes to server. Your changes are saved locally and will be synced on next refresh.");
-                    _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error during background database sync.");
-                _globalNotificationService.AddErrorMessage(_sharedLocalizer["ErrorUnknown"]);
-                _state.UpdateState(DbServiceState.DatabaseStatus.Ready);
-            }
-        });
+            },
+            cancellationToken);
     }
 
     /// <summary>
@@ -1127,6 +1163,9 @@ public sealed class DbService : IDisposable
 
         if (disposing)
         {
+            // Cancel any pending background sync operations first
+            _backgroundSyncCts.Cancel();
+            _backgroundSyncCts.Dispose();
             _sqlConnection?.Dispose();
         }
 

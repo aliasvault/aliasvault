@@ -42,16 +42,16 @@ public class TwoFactorAuthBase : ClientPlaywrightTest
             // Press the confirm disable button as well.
             await confirmButton.ClickAsync();
 
-            // Check if the success message is displayed.
+            // Check if the success message is displayed
             var expectedMessage = "Two-factor authentication is now successfully disabled.";
-            var successMessageLocator = Page.Locator($"div[role='alert']:has-text('{expectedMessage}')");
+            var successMessageLocator = Page.Locator($".messages-container div[role='alert']:has-text('{expectedMessage}')");
             await successMessageLocator.WaitForAsync(new LocatorWaitForOptions
             {
                 State = WaitForSelectorState.Visible,
                 Timeout = 5000,
             });
 
-            var message = await Page.TextContentAsync("div[role='alert']");
+            var message = await successMessageLocator.TextContentAsync();
             Assert.That(message, Does.Contain("Two-factor authentication is now successfully disabled."), "No two-factor auth disable success message displayed.");
         }
     }
