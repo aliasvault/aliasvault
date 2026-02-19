@@ -160,7 +160,8 @@ public class AuthTests : ClientPlaywrightTest
         await deleteButton.ClickAsync();
 
         // Check for error message about wrong username
-        var warning = await Page.TextContentAsync("div[role='alert']");
+        var warningLocator = Page.Locator(".messages-container div[role='alert']");
+        var warning = await warningLocator.TextContentAsync();
         Assert.That(warning, Does.Contain("The username you entered does not match your current username"), "No warning shown when attempting to delete account with wrong username.");
 
         // Try with correct username
@@ -178,7 +179,7 @@ public class AuthTests : ClientPlaywrightTest
         await confirmButton.ClickAsync();
 
         // Check for error message about wrong password
-        warning = await Page.TextContentAsync("div[role='alert']");
+        warning = await warningLocator.TextContentAsync();
         Assert.That(warning, Does.Contain("The provided password does not match"), "No warning shown when attempting to delete account with wrong password.");
 
         // Fill in correct password
@@ -201,7 +202,7 @@ public class AuthTests : ClientPlaywrightTest
         var loginButton = await WaitForAndGetElement("button[type='submit']");
         await loginButton.ClickAsync();
 
-        warning = await Page.TextContentAsync("div[role='alert']");
+        warning = await warningLocator.TextContentAsync();
         Assert.That(warning, Does.Contain("Invalid username or password"), "No error shown when attempting to login with deleted account.");
     }
 

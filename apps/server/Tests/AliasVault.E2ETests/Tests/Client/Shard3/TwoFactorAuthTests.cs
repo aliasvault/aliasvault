@@ -27,14 +27,14 @@ public class TwoFactorAuthTests : TwoFactorAuthBase
         await DisableTwoFactorIfEnabled();
         var (totpCode, _) = await EnableTwoFactor();
 
-        // Check if the success message is displayed.
-        var successMessage = Page.Locator("div[role='alert']");
+        // Check if the success message is displayed (target the app notification area, not the error UI in index.html).
+        var successMessage = Page.Locator(".messages-container div[role='alert']");
         await successMessage.WaitForAsync(new LocatorWaitForOptions
         {
             State = WaitForSelectorState.Visible,
             Timeout = 5000,
         });
-        var message = await Page.TextContentAsync("div[role='alert']");
+        var message = await successMessage.TextContentAsync();
         Assert.That(message, Does.Contain("Two-factor authentication is now successfully enabled."), "No success message displayed.");
 
         await Logout();
