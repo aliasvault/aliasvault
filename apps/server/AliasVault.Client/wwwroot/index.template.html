@@ -28,6 +28,40 @@ Build: @BuildVersion
     <script type="importmap"></script>
     <link rel="prefetch" href="/wasm/aliasvault_core_bg.wasm?v=@CacheBuster" as="fetch" type="application/wasm" crossorigin="anonymous" />
     <link rel="modulepreload" href="/wasm/aliasvault_core.js?v=@CacheBuster" />
+    <style>
+        .index-aliasvault-inline-spinner {
+            height: 51px;
+            width: 112px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .index-cloud-shape-inline {
+            border: 6px solid #eabf69;
+            border-radius: 9999px;
+            padding: 13px 26px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            background-color: transparent;
+            box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.1);
+        }
+        .index-dot-inline {
+            width: 10px;
+            height: 10px;
+            border-radius: 9999px;
+            background-color: #eabf69;
+            animation: index-pulse-inverted 1.4s infinite ease-in-out;
+        }
+        .index-delay-1 { animation-delay: 0s; }
+        .index-delay-2 { animation-delay: 0.2s; }
+        .index-delay-3 { animation-delay: 0.4s; }
+        .index-delay-4 { animation-delay: 0.6s; }
+        @keyframes index-pulse-inverted {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+    </style>
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900" av-disable="true">
@@ -56,45 +90,6 @@ Build: @BuildVersion
                             <div id="error-message" class="hidden text-red-600 dark:text-red-400 mt-4"></div>
                         </div>
                     </div>
-
-                    <style>
-                    .index-aliasvault-inline-spinner {
-                        height: 51px;
-                        width: 112px;
-                        display: flex;
-                        justify-content: center;
-                        align-items: center;
-                    }
-
-                    .index-cloud-shape-inline {
-                        border: 6px solid #eabf69;
-                        border-radius: 9999px;
-                        padding: 13px 26px;
-                        display: flex;
-                        gap: 10px;
-                        align-items: center;
-                        background-color: transparent;
-                        box-shadow: 0 0 4px 2px rgba(0, 0, 0, 0.1);
-                    }
-
-                    .index-dot-inline {
-                        width: 10px;
-                        height: 10px;
-                        border-radius: 9999px;
-                        background-color: #eabf69;
-                        animation: index-pulse-inverted 1.4s infinite ease-in-out;
-                    }
-
-                    .index-delay-1 { animation-delay: 0s; }
-                    .index-delay-2 { animation-delay: 0.2s; }
-                    .index-delay-3 { animation-delay: 0.4s; }
-                    .index-delay-4 { animation-delay: 0.6s; }
-
-                    @keyframes index-pulse-inverted {
-                        0%, 100% { opacity: 0.3; transform: scale(1); }
-                        50% { opacity: 1; transform: scale(1.3); }
-                    }
-                    </style>
                 </div>
 
                 <div id="refresh-button" class="text-center w-full mt-4 p-6 sm:p-8 bg-white rounded-lg shadow dark:bg-gray-800 hidden">
@@ -113,24 +108,24 @@ Build: @BuildVersion
     <div id="blazor-error-ui" class="text-white bg-red-700 dark:bg-red-900 p-6 border-t-2 border-red-500 dark:border-red-800">
         <div class="container mx-auto max-w-screen-xl px-4">
             <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div class="flex items-center">
-                    <svg class="w-8 h-8 text-white mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="flex items-center" role="alert">
+                    <svg class="w-8 h-8 text-white mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                     </svg>
                     <span id="unhandled-error-text">An unhandled error has occurred. Please try reloading the page. If the issue persists, please contact support.</span>
                 </div>
                 <div class="flex items-center gap-4">
-                    <a href="" class="reload flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-150">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="javascript:location.reload()" class="reload flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 rounded-md transition-colors duration-150">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
                         </svg>
                         <span id="reload-page-text">Reload Page</span>
                     </a>
-                    <a class="dismiss hover:text-red-200">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button type="button" class="dismiss hover:text-red-200" aria-label="Dismiss error">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                         </svg>
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -228,7 +223,7 @@ Build: @BuildVersion
             localizeContent();
         }
 
-        document.addEventListener('DOMContentLoaded', initializeLocalization);
+        // Initialize localization
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initializeLocalization);
         } else {
@@ -290,10 +285,19 @@ Build: @BuildVersion
         };
 
         // Boot failure recovery for stale service worker cache or network issues
-        let bootFailureHandled = false;
+        // Use sessionStorage to prevent redirect loops - flag persists across page reloads within session
+        const BOOT_FAILURE_KEY = 'aliasvault_boot_failure_handled';
+        let bootFailureHandled = sessionStorage.getItem(BOOT_FAILURE_KEY) === 'true';
+
         async function handleBlazorBootFailure() {
-            if (bootFailureHandled) return;
+            if (bootFailureHandled) {
+                // Already attempted recovery once this session, don't loop
+                console.warn('AliasVault: Boot failure recovery already attempted. Showing error to user.');
+                showError('Failed to load application. Please try clearing your browser cache and refreshing the page.');
+                return;
+            }
             bootFailureHandled = true;
+            sessionStorage.setItem(BOOT_FAILURE_KEY, 'true');
 
             console.info('AliasVault: Blazor boot failure detected. Clearing caches and reloading...');
 
@@ -315,6 +319,11 @@ Build: @BuildVersion
             const url = new URL(window.location.href);
             url.searchParams.set('_r', Date.now().toString());
             window.location.replace(url.toString());
+        }
+
+        // Clear the boot failure flag on successful Blazor start
+        function clearBootFailureFlag() {
+            sessionStorage.removeItem(BOOT_FAILURE_KEY);
         }
 
         // Detect Blazor boot failures and trigger recovery
@@ -373,7 +382,10 @@ Build: @BuildVersion
             configureRuntime: runtime => runtime.withConfig({
                 loadAllSatelliteResources: true
             })
-        })
+        }).then(function() {
+            // Blazor started successfully, clear any previous set boot failure flag
+            clearBootFailureFlag();
+        });
      </script>
 </body>
 </html>
