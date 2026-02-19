@@ -24,10 +24,10 @@ Build: @BuildVersion
     <link rel="manifest" href="manifest.json?v=@CacheBuster" />
     <link rel="apple-touch-icon" sizes="500x500" href="img/icon-500.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="img/icon-192.png" />
-    <link rel="prefetch" href="/wasm/aliasvault_core_bg.wasm?v=@CacheBuster" as="fetch" type="application/wasm" crossorigin />
-    <link rel="modulepreload" href="/wasm/aliasvault_core.js?v=@CacheBuster" />
     <!-- Import map for .NET 10 fingerprinted static assets -->
     <script type="importmap"></script>
+    <link rel="prefetch" href="/wasm/aliasvault_core_bg.wasm?v=@CacheBuster" as="fetch" type="application/wasm" crossorigin="anonymous" />
+    <link rel="modulepreload" href="/wasm/aliasvault_core.js?v=@CacheBuster" />
 </head>
 
 <body class="bg-gray-100 dark:bg-gray-900" av-disable="true">
