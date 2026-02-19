@@ -209,5 +209,20 @@
                 "cwd": "${workspaceFolder}/docs"
             }
         },
+        {
+            "label": "Run Client (Release mode)",
+            "type": "shell",
+            "command": "dotnet",
+            "args": ["run", "-c", "Release"],
+            "problemMatcher": [],
+            "options": {
+                "cwd": "${workspaceFolder}/apps/server/AliasVault.Client"
+            },
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": []
+        },
     ]
 }
