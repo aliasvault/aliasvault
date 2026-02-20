@@ -236,8 +236,10 @@ describe('Dutch login form 1 detection and filling', () => {
         const allInputs = Array.from(doc.querySelectorAll('input[type="text"]')) as HTMLInputElement[];
         const filledInputs = allInputs.filter(input => input.value !== '');
 
-        // Should have exactly one filled text input (the username field)
-        // Session name field should remain empty
+        /*
+         * Should have exactly one filled text input (the username field)
+         * Session name field should remain empty
+         */
         expect(filledInputs.length).toBe(1);
         expect(filledInputs[0]).toBe(usernameInput);
       }
