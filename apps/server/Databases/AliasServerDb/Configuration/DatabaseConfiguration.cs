@@ -7,8 +7,11 @@
 
 namespace AliasServerDb.Configuration;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Npgsql;
 
 /// <summary>
 /// Database configuration class.
@@ -66,5 +69,54 @@ public static class DatabaseConfiguration
         });
 
         return services;
+    }
+
+    /// <summary>
+    /// Waits for the database to be ready by checking if all migrations have been applied.
+    /// This is useful for services that should not run migrations themselves but need to wait
+    /// for another service (typically the API) to complete migrations first.
+    /// </summary>
+    /// <param name="context">The database context to check.</param>
+    /// <param name="logger">Optional logger for diagnostics.</param>
+    /// <param name="timeoutSeconds">Maximum time to wait in seconds (default: 60).</param>
+    /// <param name="checkIntervalMs">Interval between checks in milliseconds (default: 2000).</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    public static async Task WaitForDatabaseReadyAsync(this DbContext context, ILogger? logger = null, int timeoutSeconds = 60, int checkIntervalMs = 2000)
+    {
+        var timeout = DateTime.UtcNow.AddSeconds(timeoutSeconds);
+        var attempt = 0;
+
+        while (DateTime.UtcNow < timeout)
+        {
+            attempt++;
+
+            try
+            {
+                // Check if database is accessible and all migrations are applied
+                var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+                if (!pendingMigrations.Any())
+                {
+                    logger?.LogInformation("Database is ready. All migrations have been applied.");
+                    return;
+                }
+
+                logger?.LogInformation(
+                    "Waiting for database migrations to complete. {PendingCount} migrations pending. Attempt {Attempt}.",
+                    pendingMigrations.Count(),
+                    attempt);
+            }
+            catch (Exception ex)
+            {
+                logger?.LogWarning(
+                    ex,
+                    "Database not yet accessible. Attempt {Attempt}. Waiting {Interval}ms before retry...",
+                    attempt,
+                    checkIntervalMs);
+            }
+
+            await Task.Delay(checkIntervalMs);
+        }
+
+        throw new TimeoutException($"Database did not become ready within {timeoutSeconds} seconds. Migrations may not have completed.");
     }
 }

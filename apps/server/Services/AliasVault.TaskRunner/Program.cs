@@ -42,8 +42,11 @@ using (var scope = host.Services.CreateScope())
 {
     var container = scope.ServiceProvider;
     var factory = container.GetRequiredService<IAliasServerDbContextFactory>();
+    var logger = container.GetRequiredService<ILogger<Program>>();
     await using var context = await factory.CreateDbContextAsync();
-    await context.Database.MigrateAsync();
+
+    // Wait for migrations to be applied (API project runs them centrally)
+    await context.WaitForDatabaseReadyAsync(logger);
 }
 
 await host.RunAsync();

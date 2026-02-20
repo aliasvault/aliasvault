@@ -163,8 +163,11 @@ app.MapRazorComponents<App>()
 using (var scope = app.Services.CreateScope())
 {
     var container = scope.ServiceProvider;
+    var logger = container.GetRequiredService<ILogger<Program>>();
     await using var db = await container.GetRequiredService<IAliasServerDbContextFactory>().CreateDbContextAsync();
-    await db.Database.MigrateAsync();
+
+    // Wait for migrations to be applied (API project runs them centrally)
+    await db.WaitForDatabaseReadyAsync(logger);
 
     await StartupTasks.CreateRolesIfNotExist(scope.ServiceProvider);
     await StartupTasks.SetAdminUser(scope.ServiceProvider);
