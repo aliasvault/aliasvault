@@ -498,25 +498,25 @@ const ItemsList: React.FC = () => {
       return true;
     }
 
-    // Search in item name and fields
-    const itemName = item.Name?.toLowerCase() || '';
-    if (itemName.includes(searchLower)) {
-      return true;
-    }
+    // Split search query into individual words
+    const searchWords = searchLower.split(/\s+/).filter(word => word.length > 0);
 
-    // Search in field values
-    const fieldMatches = item.Fields?.some(field => {
-      const value = Array.isArray(field.Value)
-        ? field.Value.join(' ').toLowerCase()
-        : (field.Value || '').toLowerCase();
-      return value.includes(searchLower) || field.Label.toLowerCase().includes(searchLower);
+    // Build searchable fields array
+    const searchableFields: string[] = [
+      item.Name?.toLowerCase() || '',
+    ];
+
+    // Add field values to searchable fields
+    item.Fields?.forEach(field => {
+      const value = Array.isArray(field.Value) ? field.Value.join(' ').toLowerCase() : (field.Value || '').toLowerCase();
+      searchableFields.push(value);
+      searchableFields.push(field.Label.toLowerCase());
     });
 
-    if (fieldMatches) {
-      return true;
-    }
-
-    return false;
+    // Every word must appear in at least one searchable field (order doesn't matter)
+    return searchWords.every(word =>
+      searchableFields.some(field => field.includes(word))
+    );
   });
 
   /**
