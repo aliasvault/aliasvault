@@ -73,12 +73,12 @@ public class AntiforgeryTokenMiddleware
                         protector.Unprotect(bytes);
                     }
                 }
-                catch (CryptographicException ex)
+                catch (CryptographicException)
                 {
-                    _logger.LogWarning(
-                        "Invalid antiforgery cookie detected (cannot decrypt). Clearing cookies and redirecting. Path: {Path}, Error: {Error}",
-                        context.Request.Path,
-                        ex.Message);
+                    // Expected after server restart with old cookies
+                    _logger.LogDebug(
+                        "Stale antiforgery cookie detected (key not in ring). Clearing cookies and redirecting. Path: {Path}",
+                        context.Request.Path);
 
                     ClearCookiesAndRedirect(context);
                     return;
@@ -86,7 +86,7 @@ public class AntiforgeryTokenMiddleware
                 catch (FormatException)
                 {
                     // Cookie value is not valid base64, clear it
-                    _logger.LogWarning(
+                    _logger.LogDebug(
                         "Invalid antiforgery cookie format detected. Clearing cookies and redirecting. Path: {Path}",
                         context.Request.Path);
 
@@ -95,10 +95,10 @@ public class AntiforgeryTokenMiddleware
                 }
                 catch (Exception ex)
                 {
-                    // Any other exception during decryption, clear cookies
+                    // Unexpected exception during decryption
                     _logger.LogWarning(
                         ex,
-                        "Error validating antiforgery cookie. Clearing cookies and redirecting. Path: {Path}",
+                        "Unexpected error validating antiforgery cookie. Clearing cookies and redirecting. Path: {Path}",
                         context.Request.Path);
 
                     ClearCookiesAndRedirect(context);

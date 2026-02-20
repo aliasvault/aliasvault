@@ -92,7 +92,41 @@ public static class DatabaseConfiguration
 
             try
             {
-                // Check if database is accessible and all migrations are applied
+                // First check if database is accessible
+                var canConnect = await context.Database.CanConnectAsync();
+                if (!canConnect)
+                {
+                    logger?.LogInformation(
+                        "Database not yet accessible. Attempt {Attempt}. Waiting {Interval}ms...",
+                        attempt,
+                        checkIntervalMs);
+                    await Task.Delay(checkIntervalMs);
+                    continue;
+                }
+
+                // Check if migrations history table exists to avoid PostgreSQL logging errors
+                var connection = context.Database.GetDbConnection();
+                await using var command = connection.CreateCommand();
+                command.CommandText = "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = '__EFMigrationsHistory')";
+
+                if (connection.State != System.Data.ConnectionState.Open)
+                {
+                    await connection.OpenAsync();
+                }
+
+                var tableExists = (bool)(await command.ExecuteScalarAsync() ?? false);
+
+                if (!tableExists)
+                {
+                    logger?.LogInformation(
+                        "Database accessible but migrations not yet started. Attempt {Attempt}. Waiting {Interval}ms...",
+                        attempt,
+                        checkIntervalMs);
+                    await Task.Delay(checkIntervalMs);
+                    continue;
+                }
+
+                // Now safe to check pending migrations without PostgreSQL logging errors
                 var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
                 if (!pendingMigrations.Any())
                 {
@@ -109,7 +143,7 @@ public static class DatabaseConfiguration
             {
                 logger?.LogWarning(
                     ex,
-                    "Database not yet accessible. Attempt {Attempt}. Waiting {Interval}ms before retry...",
+                    "Error checking database status. Attempt {Attempt}. Waiting {Interval}ms before retry...",
                     attempt,
                     checkIntervalMs);
             }
