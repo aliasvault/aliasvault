@@ -217,12 +217,14 @@ public class StatusWorker(ILogger<StatusWorker> logger, Func<IWorkerStatusDbCont
         var entry = new WorkerServiceStatus
         {
             ServiceName = globalServiceStatus.ServiceName,
-            CurrentStatus = Status.Started.ToString(),
-            DesiredStatus = string.Empty,
+            CurrentStatus = Status.Stopped.ToString(),
+            DesiredStatus = Status.Started.ToString(),
             Heartbeat = DateTime.UtcNow,
         };
         _dbContext.WorkerServiceStatuses.Add(entry);
         await _dbContext.SaveChangesAsync();
+
+        logger.LogInformation("Created initial status record for service {ServiceName} with CurrentStatus={CurrentStatus}, DesiredStatus={DesiredStatus}", globalServiceStatus.ServiceName, entry.CurrentStatus, entry.DesiredStatus);
 
         return entry;
     }

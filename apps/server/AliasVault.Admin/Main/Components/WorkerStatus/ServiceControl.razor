@@ -128,7 +128,7 @@
         {
             buttonClass += "bg-emerald-500";
         }
-        else if (service.DesiredStatus == "Stopped" && (service.DesiredStatus == string.Empty || service.DesiredStatus == "Stopped"))
+        else if (service.CurrentStatus == "Stopped" && (service.DesiredStatus == string.Empty || service.DesiredStatus == "Stopped"))
         {
             buttonClass += "bg-red-600";
         }
