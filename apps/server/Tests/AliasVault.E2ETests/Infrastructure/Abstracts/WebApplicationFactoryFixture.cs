@@ -184,5 +184,6 @@ public abstract class WebApplicationFactoryFixture<TEntryPoint> : WebApplication
         Environment.SetEnvironmentVariable("PUBLIC_REGISTRATION_ENABLED", "true");
         Environment.SetEnvironmentVariable("ADMIN_PASSWORD_HASH", "AQAAAAIAAYagAAAAEKWfKfa2gh9Z72vjAlnNP1xlME7FsunRznzyrfqFte40FToufRwa3kX8wwDwnEXZag==");
         Environment.SetEnvironmentVariable("ADMIN_PASSWORD_GENERATED", "2024-01-01T00:00:00Z");
+        Environment.SetEnvironmentVariable("ALIASVAULT_TEST_MODE", "true");
     }
 }

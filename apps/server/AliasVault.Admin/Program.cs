@@ -166,8 +166,18 @@ using (var scope = app.Services.CreateScope())
     var logger = container.GetRequiredService<ILogger<Program>>();
     await using var db = await container.GetRequiredService<IAliasServerDbContextFactory>().CreateDbContextAsync();
 
-    // Wait for migrations to be applied (API project runs them centrally)
-    await db.WaitForDatabaseReadyAsync(logger);
+    // In test mode, run migrations directly. Otherwise, wait for API to run them.
+    var isTestMode = Environment.GetEnvironmentVariable("ALIASVAULT_TEST_MODE") == "true";
+    if (isTestMode)
+    {
+        logger.LogInformation("Test mode detected. Running migrations directly.");
+        await db.Database.MigrateAsync();
+    }
+    else
+    {
+        // Wait for migrations to be applied (API project runs them centrally)
+        await db.WaitForDatabaseReadyAsync(logger);
+    }
 
     await StartupTasks.CreateRolesIfNotExist(scope.ServiceProvider);
     await StartupTasks.SetAdminUser(scope.ServiceProvider);
