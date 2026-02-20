@@ -173,8 +173,8 @@
     "savePrompt": {
       "title": "Salvează în AliasVault?",
       "neverForThisSite": "Niciodată pentru acest site",
-      "addUrlTitle": "Add URL to credential?",
-      "addUrl": "Add URL"
+      "addUrlTitle": "Adaugă URL la datele de autentificare?",
+      "addUrl": "Adaugă URL"
     }
   },
   "items": {
