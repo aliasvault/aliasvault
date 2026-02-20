@@ -10,6 +10,7 @@ import ItemIcon from './ItemIcon';
 type ItemCardProps = {
   item: Item;
   showFolderPath?: boolean;
+  searchTerm?: string;
 };
 
 /**
@@ -19,7 +20,7 @@ type ItemCardProps = {
  * It allows the user to navigate to the item details page when clicked.
  *
  */
-const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false }) => {
+const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false, searchTerm = '' }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
@@ -66,7 +67,11 @@ const ItemCard: React.FC<ItemCardProps> = ({ item, showFolderPath = false }) => 
   return (
     <li>
       <button
-        onClick={() => navigate(`/items/${item.Id}`)}
+        onClick={() => {
+          // Build URL with search query parameter if present
+          const url = searchTerm ? `/items/${item.Id}?returnSearch=${encodeURIComponent(searchTerm)}` : `/items/${item.Id}`;
+          navigate(url);
+        }}
         className="w-full p-2 border dark:border-gray-600 rounded flex items-center bg-white dark:bg-gray-800 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         <div className="w-8 h-8 mr-2 flex-shrink-0">

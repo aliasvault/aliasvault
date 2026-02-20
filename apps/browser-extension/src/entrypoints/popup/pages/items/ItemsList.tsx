@@ -118,8 +118,10 @@ const ItemsList: React.FC = () => {
   const { executeVaultMutationAsync } = useVaultMutate();
   const { setHeaderButtons } = useHeaderButtons();
   const [items, setItems] = useState<Item[]>([]);
-  // Initialize searchTerm from URL query parameter if present
-  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('search') || '');
+  // Initialize searchTerm from URL query parameter (restored from back navigation or popup restore)
+  const [searchTerm, setSearchTerm] = useState(() => {
+    return searchParams.get('search') || '';
+  });
   const [filterType, setFilterType] = useState<FilterType>(getStoredFilter());
   const [showFilterMenu, setShowFilterMenu] = useState(false);
   const [showFolderModal, setShowFolderModal] = useState(false);
@@ -158,15 +160,18 @@ const ItemsList: React.FC = () => {
   const [isLoading, setIsLoading] = useMinDurationLoading(true, 100);
 
   /**
-   * Clear search param from URL after reading it (to prevent it from persisting in browser history).
+   * Update URL when search term changes to persist it in navigation history.
    */
   useEffect(() => {
-    const searchFromUrl = searchParams.get('search');
-    if (searchFromUrl) {
-      // Remove the search param from URL while preserving the current path
-      navigate(location.pathname, { replace: true });
+    // Build the new URL with or without search param
+    const newUrl = searchTerm ? `${location.pathname}?search=${encodeURIComponent(searchTerm)}` : location.pathname;
+
+    // Only update if the URL actually changed
+    const currentUrl = location.pathname + location.search;
+    if (newUrl !== currentUrl) {
+      navigate(newUrl, { replace: true });
     }
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps -- Only run once on mount
+  }, [searchTerm, location.pathname, location.search, navigate]);
 
   /**
    * Reset search and filter when navigating via the vault tab (with resetFilters state).
@@ -961,6 +966,7 @@ const ItemsList: React.FC = () => {
                   key={item.Id}
                   item={item}
                   showFolderPath={!!searchTerm && !!item.FolderPath}
+                  searchTerm={searchTerm}
                 />
               ))}
             </ul>

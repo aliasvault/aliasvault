@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 
 import Logo from '@/entrypoints/popup/components/Logo';
 import { useApp } from '@/entrypoints/popup/context/AppContext';
@@ -31,6 +31,7 @@ const Header: React.FC<HeaderProps> = ({
   const app = useApp();
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
 
   // Updated route matching logic to handle URL parameters
   const currentRoute = routes?.find(route => {
@@ -49,13 +50,20 @@ const Header: React.FC<HeaderProps> = ({
     // Check if we have a returnTo path (set when opening expanded popup)
     const returnPath = PopoutUtility.getReturnPath();
 
-    // If we're in an expanded popup with a returnTo path and no history, use it
-    if (returnPath && PopoutUtility.isPopup() && window.history.length <= 2) {
+    // Check if we're on an item details page with a returnSearch param
+    const returnSearch = searchParams.get('returnSearch');
+    const isItemDetailsPage = /^\/items\/[^/]+$/.test(location.pathname);
+
+    if (isItemDetailsPage && returnSearch) {
+      // Navigate back to items list with search query
+      navigate(`/items?search=${encodeURIComponent(returnSearch)}`);
+    } else if (returnPath && PopoutUtility.isPopup() && window.history.length <= 2) {
+      // If we're in an expanded popup with a returnTo path and no history, use it
       navigate(returnPath);
     } else {
       navigate(-1);
     }
-  }, [navigate]);
+  }, [navigate, searchParams, location.pathname]);
 
   /**
    * Handle settings.

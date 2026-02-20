@@ -96,26 +96,33 @@ const Reinitialize: React.FC = () => {
         /*
          * Check if user navigated away from the auto-matched page to a specific different page.
          * Use fresh URL matching if:
-         * - lastPage matches what URL matching would show (user stayed on auto-matched page)
-         * - lastPage is /items (default index page - treat as "home" state)
+         * - lastPage matches what URL matching would show AND has no search query (user stayed on auto-matched page)
+         * - lastPage is /items with no search query (default index page - treat as "home" state)
          *
          * Restore user's navigation only if they navigated to a specific different page like:
-         * - Settings, add/edit forms, a different item, folder view, etc.
+         * - Settings, add/edit forms, a different item, folder view, search queries, etc.
          */
-        const isOnMatchedPage = lastPage === matchedPath;
-        const isOnDefaultIndexPage = lastPage === '/items';
+        // Check if it's the default index page (no search query or other params)
+        const lastHistoryEntry = savedHistory?.[savedHistory.length - 1];
+        const hasSearchQuery = lastHistoryEntry?.search && lastHistoryEntry.search.length > 0;
+        const isOnMatchedPage = lastPage === matchedPath && !hasSearchQuery;
+        const isOnDefaultIndexPage = lastPage === '/items' && !hasSearchQuery;
         const shouldUseFreshMatch = isOnMatchedPage || isOnDefaultIndexPage;
 
         if (!shouldUseFreshMatch) {
           // Restore user's navigation since they navigated away from auto-matched page
           if (savedHistory?.length > 1) {
             // Navigate to the base route first
-            navigate(savedHistory[0].pathname, { replace: true });
-            // Then navigate to the final destination
-            navigate(lastPage, { replace: false });
+            const firstEntry = savedHistory[0];
+            const firstPath = firstEntry.pathname + (firstEntry.search || '');
+            navigate(firstPath, { replace: true });
+            // Then navigate to the final destination with search params
+            const finalPath = lastPage + (lastHistoryEntry?.search || '');
+            navigate(finalPath, { replace: false });
           } else {
             // Simple navigation for non-nested routes
-            navigate(lastPage, { replace: true });
+            const fullPath = lastPage + (lastHistoryEntry?.search || '');
+            navigate(fullPath, { replace: true });
           }
           return;
         }
