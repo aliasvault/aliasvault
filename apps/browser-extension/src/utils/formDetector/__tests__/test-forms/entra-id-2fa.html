@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Microsoft Entra ID - 2FA Code Entry</title>
+</head>
+<body>
+    <div id="lightbox" class="sign-in-box">
+        <div class="lightbox-cover"></div>
+
+        <div>
+            <div class="identityBanner">
+                <div id="displayName" class="identity" title="user@example.com">user@example.com</div>
+            </div>
+
+            <div class="pagination-view animate has-identity-banner">
+                <div data-viewid="1">
+                    <input type="hidden" name="type" value="19">
+                    <input type="hidden" name="GeneralVerify" value="false">
+                    <input type="hidden" name="request" value="[redacted]">
+                    <input type="hidden" name="mfaLastPollStart" value="1771596350142">
+                    <input type="hidden" name="mfaLastPollEnd" value="1771596350326">
+                    <input type="hidden" name="mfaAuthMethod" value="PhoneAppOTP">
+
+                    <div id="idDiv_SAOTCC_Title" class="row text-title" role="heading" aria-level="1">Enter code</div>
+
+                    <div class="row text-body">
+                        <div id="idDiv_SAOTCC_Description" class="text-block-body overflow-hidden">
+                            Enter the code displayed in the authenticator app on your mobile device
+                        </div>
+                    </div>
+
+                    <div class="text-block-body">
+                        <div id="idDiv_SAOTCC_OTCRow" class="form-group">
+                            <div role="alert" aria-live="assertive"></div>
+                            <div id="idDiv_SAOTCC_Success_OTC" class="errorDiv" style="display: none;">
+                                <span id="idSpan_SAOTCC_Success_OTC" class="success"></span>
+                            </div>
+
+                            <div id="idDiv_SAOTCC_OTC" class="textbox form-group">
+                                <div class="placeholderContainer">
+                                    <input
+                                        id="idTxtBx_SAOTCC_OTC"
+                                        name="otc"
+                                        class="form-control"
+                                        type="tel"
+                                        autocomplete="off"
+                                        aria-required="true"
+                                        maxlength="6"
+                                        aria-labelledby="idDiv_SAOTCC_Title"
+                                        aria-describedby="idDiv_SAOTCS_Title idDiv_SAOTCC_Description idSpan_SAOTCC_Error_OTC"
+                                        aria-label="Code"
+                                        placeholder="Code">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="win-button-pin-bottom">
+                        <div class="row">
+                            <div class="button-container">
+                                <input type="button" id="idBtn_Back" class="win-button button-secondary" value="Cancel">
+                                <input type="submit" id="idSubmit_SAOTCC_Continue" class="win-button button_primary" value="Verify">
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="hidden" name="login" value="user@example.com">
+                    <input type="hidden" name="flowToken" value="[redacted]">
+                    <input type="hidden" name="hpgrequestid" value="[redacted]">
+                    <input type="hidden" name="canary" value="[redacted]">
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

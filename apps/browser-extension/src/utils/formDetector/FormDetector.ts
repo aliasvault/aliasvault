@@ -977,6 +977,12 @@ export class FormDetector {
         return input;
       }
 
+      // Check for type="tel" with maxLength=6 (common for 2FA codes like Entra ID)
+      const inputType = input.type?.toLowerCase();
+      if (inputType === 'tel' && maxLength === 6) {
+        return input;
+      }
+
       // Check for numeric pattern attribute with length constraint
       const pattern = input.getAttribute('pattern');
       if (pattern && /^\[0-9\]/.test(pattern) && maxLength === 6) {
