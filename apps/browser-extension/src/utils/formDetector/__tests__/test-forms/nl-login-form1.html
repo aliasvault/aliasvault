@@ -1,0 +1,88 @@
+<!--
+Dutch login form with multiple hidden fields and session options.
+This form has a username/email field with autocomplete="off"
+and a password field with autocomplete="current-password".
+The form contains multiple hidden fields and session configuration options
+that should not interfere with field detection.
+Tests for edge case where username field should still be detected despite autocomplete="off".
+-->
+<div id="layout" class="content-grid ">
+    <div id="contentArea">
+            <div id="header">
+
+                            <h1>Inloggen</h1>
+
+        </div>
+
+
+    <div id="mytnet" class="small">
+
+        <form name="login_form" method="post" action="https://example.com/login/?location=https%3A%2F%2Fexample.com%2F" id="loginForm">
+
+        <table class="profileLabels formTable" width="100%" cellspacing="0">
+            <tbody><tr>
+                <td class="label"><label for="login_form_user" class="required">Gebruikersnaam / e-mailadres</label></td>
+                <td>
+                    <input type="text" id="login_form_user" name="login_form[user]" required="required" autofocus="autofocus" class="text" autocomplete="off">
+                    <div class="light-account-notice" style="display:none">
+                        <p>Er is nog geen account actief op dit e-mailadres, maar het adres is al wel in gebruik bij een of meerdere prijsalerts. Om het e-mailadres van je prijsalert te wijzigen heb je een account nodig. Met een account kun je:</p>
+                        <ul>
+                            <li>op artikelen reageren en meepraten op het forum</li>
+                            <li>wenslijsten en inventarissen bijhouden</li>
+                            <li>productreviews schrijven en advertenties plaatsen</li>
+                        </ul>
+                        <p><a href="https://example.com/register/?email=__EMAIL__&amp;location=https://example.com/" class="ctaButton">Maak account aan</a></p>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label"><label for="login_form_password" class="required">Wachtwoord</label></td>
+                <td>
+                    <input type="password" id="login_form_password" name="login_form[password]" required="required" class="text" autocomplete="current-password"><br>
+
+                    <details>
+                        <summary class="simple-accordion">Inlogopties</summary>
+                        <div id="showMoreOptions">
+                            <div class="row">
+                                                                <input type="checkbox" id="login_form_lock" name="login_form[lock]" autocomplete="off" value="1">
+
+
+                                <label class="sublabel" for="login_form_lock">Vergrendel deze sessie aan mijn IP (xxx.xxx.xxx.xxx)</label>
+                                <br><br>
+                                                                <input type="checkbox" id="login_form_terminate" name="login_form[terminate]" autocomplete="off" value="1">
+
+
+                                <label class="sublabel" for="login_form_terminate">Alle voorgaande sessies beëindigen</label>
+                            </div>
+
+                            <div class="row">
+                                                                <div class="label"><label class="sublabel required" for="login_form_duration">Sessie levensduur</label></div>
+                                <select id="login_form_duration" name="login_form[duration]" class="text" autocomplete="off"><option value="five_minutes">5 min</option><option value="one_hour">1 uur</option><option value="six_hours">6 uur</option><option value="one_day">1 dag</option><option value="one_week">1 week</option><option value="thirty_days">30 dagen</option><option value="one_year" selected="selected">1 jaar</option></select>
+                            </div>
+
+                            <div class="row">
+                                                                <div class="label"><label for="login_form_sessionName">Sessie naam</label></div>
+                                <input type="text" id="login_form_sessionName" name="login_form[sessionName]" class="text" autocomplete="off">
+                            </div>
+                        </div>
+                    </details>
+                </td>
+            </tr>
+
+                    </tbody></table>
+
+        <p class="submit">
+            <a href="https://example.com/passmailer/">Wachtwoord vergeten</a><br><br>
+            <input type="submit" value="Inloggen" class="ctaButton" accesskey="s">
+        </p>
+        <p class="subtext">
+            Heb je nog geen account? <a href="https://example.com/register/">Registreren</a>!
+        </p>
+
+        <input type="hidden" id="login_form_location" name="login_form[location]" value="https://example.com/"><input type="hidden" id="login_form__token" name="login_form[_token]" data-controller="csrf-protection" value="aoA+NBvZaZhw1I8p9IFVaRfwny3psttvL0hTKlTq6iyKV0BSzxOuTCFw">
+        </form>
+    </div>
+<div class="clear"></div>
+    </div>
+</div>

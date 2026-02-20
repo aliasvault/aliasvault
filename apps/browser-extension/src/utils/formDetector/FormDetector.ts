@@ -568,9 +568,65 @@ export class FormDetector {
       ['text', 'email']
     );
 
-    // Filter out parent-child relationships
+    /*
+     * Filter out parent-child relationships
+     */
     const filteredEmailFields = this.filterOutNestedDuplicates(emailFields);
-    const primaryEmail = filteredEmailFields[0] ?? null;
+
+    /*
+     * Filter out fields that are more likely to be username fields.
+     * Some forms have labels like "Username / Email" or "Gebruikersnaam / e-mailadres"
+     * which can match both patterns. We need to check if the label contains BOTH
+     * username and email keywords to determine if this is a dual-purpose field.
+     */
+    const emailFieldsWithoutUsernamePriority = filteredEmailFields.filter(field => {
+      const fieldName = (field.getAttribute('name') || '').toLowerCase();
+      const fieldId = (field.id || '').toLowerCase();
+      const fieldAttributes = `${fieldName} ${fieldId}`;
+
+      /*
+       * Get the label text for this field
+       */
+      let labelText = '';
+      if (field.id || fieldName) {
+        const label = this.document.querySelector(`label[for="${field.id || fieldName}"]`);
+        if (label) {
+          labelText = (label.textContent || '').toLowerCase();
+        }
+      }
+
+      /*
+       * Check if label contains BOTH username and email patterns (dual-purpose field)
+       */
+      const labelHasUsername = CombinedFieldPatterns.username.some(pattern =>
+        labelText.includes(pattern)
+      );
+      const labelHasEmail = CombinedFieldPatterns.email.some(pattern =>
+        labelText.includes(pattern)
+      );
+
+      /*
+       * Only filter out if:
+       * 1. Label contains BOTH username and email keywords (dual-purpose label)
+       * 2. AND the field's name/id contains username pattern but NOT email pattern
+       */
+      if (labelHasUsername && labelHasEmail) {
+        const hasUsernameInNameOrId = CombinedFieldPatterns.username.some(pattern =>
+          fieldAttributes.includes(pattern)
+        );
+        const hasEmailInNameOrId = CombinedFieldPatterns.email.some(pattern =>
+          fieldAttributes.includes(pattern)
+        );
+
+        if (hasUsernameInNameOrId && !hasEmailInNameOrId) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+
+    const primaryEmail = emailFieldsWithoutUsernamePriority[0] ?? null;
 
     /*
      * Find confirmation email field if primary exists
@@ -1072,7 +1128,17 @@ export class FormDetector {
       detectedFields.push(lastNameField);
     }
 
-    const firstNameField = this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.firstName, ['text'], detectedFields);
+    /*
+     * For login forms (username + password WITHOUT email or confirmation fields),
+     * skip firstName detection to avoid matching session fields or other inputs.
+     * If there's an email field alongside username, it's likely a registration form.
+     */
+    const isLikelyLoginForm = usernameField && passwordFields.primary &&
+                               !emailFields.primary &&
+                               !emailFields.confirm && !passwordFields.confirm;
+
+    const firstNameField = !isLikelyLoginForm ?
+      this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.firstName, ['text'], detectedFields) : null;
     if (firstNameField) {
       detectedFields.push(firstNameField);
     }
