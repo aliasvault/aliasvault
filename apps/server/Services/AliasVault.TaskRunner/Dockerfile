@@ -23,6 +23,9 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0"
 LABEL org.opencontainers.image.title="AliasVault TaskRunner"
 LABEL org.opencontainers.image.description="Background task runner for AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)"
 
+# Install Kerberos libraries to prevent .NET 10 GSSAPI warnings
+RUN apk add --no-cache krb5-libs
+
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "AliasVault.TaskRunner.dll"]

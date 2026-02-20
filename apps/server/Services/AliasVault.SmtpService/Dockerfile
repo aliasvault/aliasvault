@@ -25,6 +25,9 @@ LABEL org.opencontainers.image.licenses="AGPL-3.0"
 LABEL org.opencontainers.image.title="AliasVault SMTP Service"
 LABEL org.opencontainers.image.description="SMTP service for email alias functionality in AliasVault. Part of multi-container setup and can be deployed via install.sh (see docs.aliasvault.net)"
 
+# Install Kerberos libraries to prevent .NET 10 GSSAPI warnings
+RUN apk add --no-cache krb5-libs
+
 WORKDIR /app
 COPY --from=build /app/publish .
 ENTRYPOINT ["dotnet", "AliasVault.SmtpService.dll"]

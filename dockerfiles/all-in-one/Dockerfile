@@ -150,7 +150,9 @@ RUN apt-get update && \
         xz-utils \
         netcat-openbsd \
         gettext-base \
-        locales && \
+        locales \
+        libkrb5-3 \
+        libgssapi-krb5-2 && \
     apt-mark hold postgresql-16 postgresql-client-16 && \
     # Create postgres user and configure locale
     useradd -r -s /bin/bash -d /var/lib/postgresql postgres 2>/dev/null || true && \
