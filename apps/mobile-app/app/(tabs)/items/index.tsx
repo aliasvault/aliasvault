@@ -116,13 +116,43 @@ export default function ItemsScreen(): React.ReactNode {
   const isAuthenticated = authContext.isLoggedIn;
   const isDatabaseAvailable = dbContext.dbAvailable;
 
-  // Handle deep link itemUrl parameter - populate search field
+  /*
+   * Handle deep link itemUrl parameter - populate search field.
+   */
   useEffect(() => {
     if (itemUrl) {
       const decodedUrl = decodeURIComponent(itemUrl);
       setSearchQuery(decodedUrl);
     }
   }, [itemUrl]);
+
+  /*
+   * Save search query to local storage whenever it changes.
+   * This allows restoring it when navigating back from item details.
+   */
+  useEffect(() => {
+    LocalPreferencesService.setLastSearchQuery(searchQuery);
+  }, [searchQuery]);
+
+  /*
+   * Restore search query when screen gains focus (e.g., coming back from item details).
+   */
+  useEffect(() => {
+    const unsubscribeFocus = navigation.addListener('focus', async () => {
+      /*
+       * Only restore search query if we don't have a deep link.
+       * Deep links should take precedence.
+       */
+      if (!itemUrl) {
+        const savedQuery = await LocalPreferencesService.getLastSearchQuery();
+        if (savedQuery) {
+          setSearchQuery(savedQuery);
+        }
+      }
+    });
+
+    return unsubscribeFocus;
+  }, [navigation, itemUrl]);
 
   // Load saved showFolderItems preference from LocalPreferencesService
   useEffect(() => {

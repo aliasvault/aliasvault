@@ -13,6 +13,7 @@ const KEYS = {
 
   // UI preferences
   SHOW_FOLDERS: 'items-show-folders',
+  LAST_SEARCH_QUERY: 'items-last-search-query',
 } as const;
 
 /**
@@ -70,6 +71,26 @@ export const LocalPreferencesService = {
    */
   async setShowFolders(showFolders: boolean): Promise<void> {
     await AsyncStorage.setItem(KEYS.SHOW_FOLDERS, showFolders.toString());
+  },
+
+  /**
+   * Get the last search query from the items list.
+   * @returns The last search query, or empty string if not set.
+   */
+  async getLastSearchQuery(): Promise<string> {
+    const value = await AsyncStorage.getItem(KEYS.LAST_SEARCH_QUERY);
+    return value || '';
+  },
+
+  /**
+   * Set the last search query from the items list.
+   */
+  async setLastSearchQuery(query: string): Promise<void> {
+    if (query) {
+      await AsyncStorage.setItem(KEYS.LAST_SEARCH_QUERY, query);
+    } else {
+      await AsyncStorage.removeItem(KEYS.LAST_SEARCH_QUERY);
+    }
   },
 
   /**
