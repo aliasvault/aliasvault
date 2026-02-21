@@ -442,7 +442,7 @@
       "showFolders": "Pastas",
       "passkeys": "Passkeys",
       "attachments": "Anexos",
-      "totp": "2FA Codes"
+      "totp": "Códigos de 2FA"
     },
     "sort": {
       "title": "Ordenar por",
