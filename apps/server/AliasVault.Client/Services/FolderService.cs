@@ -32,8 +32,10 @@ public sealed class FolderService(DbService dbService)
         var folders = await context.Folders
             .Where(f => !f.IsDeleted)
             .Include(f => f.Items.Where(i => !i.IsDeleted && i.DeletedAt == null))
-            .OrderBy(f => f.Name)
             .ToListAsync();
+
+        // Sort case-insensitively
+        folders = folders.OrderBy(f => f.Name, StringComparer.OrdinalIgnoreCase).ToList();
 
         return folders.Select(f => new FolderWithCount
         {
