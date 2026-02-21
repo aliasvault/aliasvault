@@ -168,9 +168,13 @@
     "openAliasVaultToUpgrade": "Otwórz AliasVault, aby dokonać aktualizacji",
     "vaultUpgradeRequired": "Wymagana aktualizacja sejfu.",
     "dismissPopup": "Zamknij wyskakujące okienko",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "neverForThisSite": "Never for this site",
+      "addUrlTitle": "Add URL to credential?",
+      "addUrl": "Add URL"
     }
   },
   "items": {
@@ -193,9 +197,7 @@
     "welcomeTitle": "Witamy w AliasVault!",
     "welcomeDescription": "Aby skorzystać z rozszerzenia przeglądarki AliasVault - przejdź do strony internetowej i użyj okienka autozupelniania, aby utworzyć nowa tożsamość.",
     "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
-    "noAttachmentsFound": "Nie znaleziono żadnych elementów z załącznikami.",
-    "noItemsOfTypeFound": "Nie znaleziono elementów {{type}}",
-    "noMatchingItems": "Nie znaleziono pasujących elementów",
+    "noMatchingItems": "Żaden element nie pasuje do wybranego filtra.",
     "noMatchingItemsSearch": "Nie znaleziono żadnych elementów pasujących do „{{search}}”",
     "noMatchingItemsWithFilter": "Brak elementów {{filter}} pasujących do „{{search}}”",
     "clearSearch": "Wyczyść wyszukiwanie",
@@ -209,7 +211,8 @@
     "deleteFolderAndItemsDescription": "{{count}} element(ów) zostaną przeniesione do Ostatnio usunięte.",
     "filters": {
       "folders": "Foldery",
-      "passkeys": "Klucze dostępu"
+      "passkeys": "Klucze dostępu",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sortuj według",

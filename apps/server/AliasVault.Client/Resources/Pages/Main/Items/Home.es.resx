@@ -163,19 +163,15 @@
     <value>Archivos adjuntos</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
+  <data name="FilterTotpOption" xml:space="preserve">
+    <value>Códigos 2FA</value>
+    <comment>Filter option to show only items with TOTP codes</comment>
+  </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
     <value>Eliminados recientemente</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
-  <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Aún no se han creado claves de acceso. Las llaves se añaden a través de la extensión del navegador o de las aplicaciones móviles cuando visitan un sitio web que soporta contraseñas y ofrece autenticación de contraseñas.</value>
-    <comment>Empty state message when no passkeys are found</comment>
-  </data>
-  <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>Sin elementos con archivos adjuntos.</value>
-    <comment>Empty state message when no items with attachments are found</comment>
-  </data>
   <data name="NoItemsFound" xml:space="preserve">
     <value>No hay elementos que coincidan con el filtro.</value>
     <comment>Empty state message when no items match the filter</comment>

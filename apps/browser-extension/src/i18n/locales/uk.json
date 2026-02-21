@@ -168,9 +168,13 @@
     "openAliasVaultToUpgrade": "Відкрити AliasVault для покращення",
     "vaultUpgradeRequired": "Потрібне оновлення сховища.",
     "dismissPopup": "Закрити спливаюче вікно",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "neverForThisSite": "Never for this site",
+      "addUrlTitle": "Add URL to credential?",
+      "addUrl": "Add URL"
     }
   },
   "items": {
@@ -193,9 +197,7 @@
     "welcomeTitle": "Ласкаво просимо до AliasVult!",
     "welcomeDescription": "Щоб скористатися розширенням браузера AliasVault: перейдіть на вебсайт і скористайтеся спливаючим вікном автозаповнення AliasVault, щоб створити нові облікові дані.",
     "noPasskeysFound": "Ключі доступу ще не створено. Ключі доступу створюються під час відвідування вебсайту, який пропонує ключі доступу як спосіб автентифікації.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
-    "noMatchingItems": "No matching items found",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "clearSearch": "Clear search",
@@ -209,7 +211,8 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Ключі доступу"
+      "passkeys": "Ключі доступу",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sort by",

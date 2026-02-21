@@ -163,19 +163,15 @@
     <value>Bijlagen</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
+  <data name="FilterTotpOption" xml:space="preserve">
+    <value>2FA codes</value>
+    <comment>Filter option to show only items with TOTP codes</comment>
+  </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
     <value>Recent verwijderd</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
-  <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Er zijn nog geen passkeys aangemaakt. Passkeys worden toegevoegd via de browserextensie of mobiele apps als je een website bezoekt die passkeys ondersteunt.</value>
-    <comment>Empty state message when no passkeys are found</comment>
-  </data>
-  <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>Geen items gevonden met bijlagen.</value>
-    <comment>Empty state message when no items with attachments are found</comment>
-  </data>
   <data name="NoItemsFound" xml:space="preserve">
     <value>Geen items gevonden die overeenkomen met het geselecteerde filter.</value>
     <comment>Empty state message when no items match the filter</comment>

@@ -163,19 +163,15 @@
     <value>Liitteet</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
+  <data name="FilterTotpOption" xml:space="preserve">
+    <value>2FA Codes</value>
+    <comment>Filter option to show only items with TOTP codes</comment>
+  </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
     <value>Recently Deleted</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
-  <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Todennusavaimia ei ole vielä luotu. Salasanat lisätään selaimen laajennuksen tai mobiilisovellusten kautta vierailtaessa verkkosivustolla, joka tukee todennusavaimia ja tarjoaa todennusavaimella todennuksen.</value>
-    <comment>Empty state message when no passkeys are found</comment>
-  </data>
-  <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>Liitteitä sisältäviä tietoja ei löytynyt.</value>
-    <comment>Empty state message when no items with attachments are found</comment>
-  </data>
   <data name="NoItemsFound" xml:space="preserve">
     <value>No items match the selected filter.</value>
     <comment>Empty state message when no items match the filter</comment>

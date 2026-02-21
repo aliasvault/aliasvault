@@ -113,11 +113,11 @@ Sei sicuro di voler continuare con l'esportazione?</value>
     <comment>Reset vault section description</comment>
   </data>
   <data name="ExportPasswordConfirmTitle" xml:space="preserve">
-    <value>Confirm Export</value>
+    <value>Conferma esportazione</value>
     <comment>Title for password confirmation modal during export</comment>
   </data>
   <data name="ExportPasswordConfirmDescription" xml:space="preserve">
-    <value>For security reasons, please enter your master password to confirm this export.</value>
+    <value>Per motivi di sicurezza, inserisci la tua password principale per confermare questa esportazione.</value>
     <comment>Description for password confirmation modal during export</comment>
   </data>
   <data name="VerifyingPasswordMessage" xml:space="preserve">
@@ -125,11 +125,11 @@ Sei sicuro di voler continuare con l'esportazione?</value>
     <comment>Message shown while verifying password</comment>
   </data>
   <data name="PasswordIncorrect" xml:space="preserve">
-    <value>The password you entered is incorrect. Please try again.</value>
+    <value>La password inserita non è corretta. Si prega di riprovare.</value>
     <comment>Error message when password verification fails</comment>
   </data>
   <data name="PasswordVerificationFailed" xml:space="preserve">
-    <value>An error occurred while verifying your password. Please try again.</value>
+    <value>Si è verificato un errore durante la verifica della password. Per favore riprova.</value>
     <comment>Generic error message for password verification failure</comment>
   </data>
 </root>
