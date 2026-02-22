@@ -81,19 +81,33 @@ test.describe.serial('6. Field-Level Merge', () => {
       .then((c) => c.fillNotes(clientBNotes))
       .then((c) => c.screenshot('6.4-client-b-before-save.png'))
       .then((c) => c.saveCredential())
-      .then((c) => c.screenshot('6.4-client-b-after-save.png'))
-      // Wait for background sync (including merge) to complete before next test
-      .then((c) => c.triggerSync());
+      .then((c) => c.screenshot('6.4-client-b-after-save.png'));
+
+    // Wait for the save operation to be persisted before moving to next test
+    await clientB.popup.waitForTimeout(1000);
   });
 
   test('6.5 Client B verifies field-level merge result', async () => {
-    // Sync to get the merged result from server after Client B's save triggered the merge
+    // Trigger sync to get the merged result from server
+    // The save in 6.4 triggered background sync+merge on server
+    await clientB.triggerSync();
+
+    // Navigate to vault to ensure we're in a stable state
+    await clientB.goToVault();
+
+    // Click credential and open edit form
     await clientB
-      .triggerSync()
-      .then((c) => c.clickCredential(credentialName))
+      .clickCredential(credentialName)
       .then((c) => c.openEditForm())
       .then((c) => c.screenshot('6.5-client-b-merged-form.png'));
 
+    // Wait for merged values to appear (polling until sync completes)
+    await clientB
+      .waitForFieldValue(FieldSelectors.LOGIN_USERNAME, clientAUsername)
+      .then((c) => c.waitForFieldValue(FieldSelectors.LOGIN_PASSWORD, clientBPassword))
+      .then((c) => c.waitForFieldValue(FieldSelectors.LOGIN_NOTES, clientBNotes));
+
+    // Verify the values are correct
     const usernameValue = await clientB.getFieldValue(FieldSelectors.LOGIN_USERNAME);
     expect(usernameValue).toBe(clientAUsername);
 
@@ -108,12 +122,25 @@ test.describe.serial('6. Field-Level Merge', () => {
   });
 
   test('6.6 Client A syncs and verifies merged credential', async () => {
+    // Trigger sync to get the merged result from server
+    await clientA.triggerSync();
+
+    // Navigate to vault to ensure we're in a stable state
+    await clientA.goToVault();
+
+    // Click credential and open edit form
     await clientA
-      .triggerSync()
-      .then((c) => c.clickCredential(credentialName))
+      .clickCredential(credentialName)
       .then((c) => c.openEditForm())
       .then((c) => c.screenshot('6.6-client-a-synced-form.png'));
 
+    // Wait for merged values to appear (polling until sync completes)
+    await clientA
+      .waitForFieldValue(FieldSelectors.LOGIN_USERNAME, clientAUsername)
+      .then((c) => c.waitForFieldValue(FieldSelectors.LOGIN_PASSWORD, clientBPassword))
+      .then((c) => c.waitForFieldValue(FieldSelectors.LOGIN_NOTES, clientBNotes));
+
+    // Verify the values are correct
     const usernameValue = await clientA.getFieldValue(FieldSelectors.LOGIN_USERNAME);
     expect(usernameValue).toBe(clientAUsername);
 

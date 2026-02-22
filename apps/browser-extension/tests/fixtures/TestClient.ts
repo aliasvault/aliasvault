@@ -344,6 +344,22 @@ export class TestClient {
   }
 
   /**
+   * Wait for a field to have a specific value.
+   * Useful for waiting for sync/merge operations to complete.
+   */
+  async waitForFieldValue(selector: string, expectedValue: string, timeout: number = Timeouts.LONG): Promise<this> {
+    await this.popup.waitForFunction(
+      ({ sel, expected }) => {
+        const input = document.querySelector(sel) as HTMLInputElement | HTMLTextAreaElement;
+        return input?.value === expected;
+      },
+      { timeout },
+      { sel: selector, expected: expectedValue }
+    );
+    return this;
+  }
+
+  /**
    * Verify a credential exists in the vault list.
    */
   async verifyCredentialExists(name: string, timeout: number = Timeouts.MEDIUM): Promise<this> {
