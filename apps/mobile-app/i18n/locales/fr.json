@@ -467,7 +467,8 @@
       "itemDeleted": "Élément supprimé avec succès",
       "usernameCopied": "Nom d'utilisateur copié dans le presse-papiers",
       "emailCopied": "E-mail copié dans le presse-papiers",
-      "passwordCopied": "Mot de passe copié dans le presse-papiers"
+      "passwordCopied": "Mot de passe copié dans le presse-papiers",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Créer un nouvel alias pour",
     "contextMenu": {
@@ -477,6 +478,12 @@
       "copyUsername": "Copier le nom d'utilisateur",
       "copyEmail": "Copier l'e-mail",
       "copyPassword": "Copier le mot de passe"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "Voir l'historique",
     "history": "Historique",
