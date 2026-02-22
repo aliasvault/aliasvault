@@ -467,7 +467,8 @@
       "itemDeleted": "Element slettet korrekt",
       "usernameCopied": "Brugernavn kopieret til udklipsholder",
       "emailCopied": "E-mail kopieret til udklipsholder",
-      "passwordCopied": "Adgangskode kopieret til udklipsholder"
+      "passwordCopied": "Adgangskode kopieret til udklipsholder",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Opret nyt alias for",
     "contextMenu": {
@@ -477,6 +478,12 @@
       "copyUsername": "Kopier brugernavn",
       "copyEmail": "Kopier e-mail",
       "copyPassword": "Kopier adgangskode"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "Vis historik",
     "history": "Historik",
