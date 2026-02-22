@@ -467,7 +467,8 @@
       "itemDeleted": "项目删除成功",
       "usernameCopied": "用户名已复制到剪贴板",
       "emailCopied": "邮箱已复制到剪贴板",
-      "passwordCopied": "密码已复制到剪贴板"
+      "passwordCopied": "密码已复制到剪贴板",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "创建新别名用于",
     "contextMenu": {
@@ -477,6 +478,12 @@
       "copyUsername": "复制用户名",
       "copyEmail": "复制邮箱",
       "copyPassword": "复制密码"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "查看历史记录",
     "history": "历史记录",
