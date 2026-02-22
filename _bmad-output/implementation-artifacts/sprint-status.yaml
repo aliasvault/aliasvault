@@ -63,7 +63,7 @@ development_status:
   # Epic 3: Recovery & Breach Defense
   epic-3: in-progress
   3-1-guardian-smart-contract: done
-  3-2-shamir-secret-splitting-pattern-6: backlog
+  3-2-shamir-secret-splitting-pattern-6: done
   3-3-guardian-portal: backlog
   3-4-recovery-claim-flow-pattern-6: backlog
   3-5-ownership-transfer: backlog

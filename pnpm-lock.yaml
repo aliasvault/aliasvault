@@ -68,12 +68,18 @@ importers:
       '@midnight-ntwrk/wallet-sdk-unshielded-wallet':
         specifier: 1.0.0
         version: 1.0.0(ws@8.19.0)
+      '@rollup/rollup-linux-x64-gnu':
+        specifier: ^4.58.0
+        version: 4.59.0
       pino:
         specifier: ^10.3.0
         version: 10.3.0
       pino-pretty:
         specifier: ^13.1.3
         version: 13.1.3
+      rxjs:
+        specifier: ^7.8.2
+        version: 7.8.2
       ws:
         specifier: ^8.19.0
         version: 8.19.0
@@ -120,6 +126,12 @@ importers:
       '@aliasvault/contract':
         specifier: '*'
         version: link:../contract
+      long:
+        specifier: ^5.3.2
+        version: 5.3.2
+      protobufjs:
+        specifier: ^7.5.4
+        version: 7.5.4
 
   packages/blockchain/contract: {}
 
@@ -314,6 +326,9 @@ importers:
       '@aliasvault/ipfs-service':
         specifier: workspace:*
         version: link:../ipfs-service
+      secrets.js-34r7h:
+        specifier: ^2.0.2
+        version: 2.0.2
     devDependencies:
       '@eslint/js':
         specifier: ^9.19.0
@@ -2206,6 +2221,12 @@ packages:
     os: [linux]
     requiresBuild: true
     optional: true
+
+  /@rollup/rollup-linux-x64-gnu@4.59.0:
+    resolution: {integrity: sha512-3AHmtQq/ppNuUspKAlvA8HtLybkDflkMuLK4DPo77DfthRb71V84/c4MlWJXixZz4uruIH4uaa07IqoAkG64fg==}
+    cpu: [x64]
+    os: [linux]
+    dev: false
 
   /@rollup/rollup-linux-x64-musl@4.55.1:
     resolution: {integrity: sha512-bD+zjpFrMpP/hqkfEcnjXWHMw5BIghGisOKPj+2NaNDuVT+8Ds4mPf3XcPHuat1tz89WRL+1wbcxKY3WSbiT7w==}
@@ -5661,6 +5682,10 @@ packages:
 
   /scale-ts@1.6.1:
     resolution: {integrity: sha512-PBMc2AWc6wSEqJYBDPcyCLUj9/tMKnLX70jLOSndMtcUoLQucP/DM0vnQo1wJAYjTrQiq8iG9rD0q6wFzgjH7g==}
+    dev: false
+
+  /secrets.js-34r7h@2.0.2:
+    resolution: {integrity: sha512-NwB4tLBs7soL6lYgGslTVllvMVEnSOjw79xI/yy4DAg86FXkVe1cLLMfhqreLgwY/zmGryqn5njYOGRjKuZzUg==}
     dev: false
 
   /secure-json-parse@4.1.0:

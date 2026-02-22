@@ -59,26 +59,33 @@ _This file contains critical rules and patterns that AI agents must follow when 
 
 ## Critical Implementation Rules
 
-### 1. Wallet-Independent Recovery Key (CRITICAL - Pattern 6)
+### 1. Inverted Shamir Recovery (CRITICAL - Pattern 6 v2, ADR-007)
 
-**Rule:** The master password is encrypted with a wallet-independent recovery key stored in the Midnight contract's PRIVATE state, NOT directly with the wallet.
+**Rule:** The master password is encrypted with an **ephemeral** key derived from a random Shamir secret. The Shamir secret is split into 2-of-3 shares, each encrypted per guardian. The encrypted password is bundled with the shares in a single IPFS package. The recovery key is **never stored** — it is reconstructed from guardian shares during recovery. Only `SHA-256(shamirSecret)` goes on-chain for verification.
+
+> **ADR-007 (2026-02-22):** Replaces original "dual-layer" design which stored recovery key in vault blob (circular dependency — vault blob encrypted with master password the user lost) or Midnight private state (device-local, doesn't sync — ADR-006). See [sources](https://docs.metamask.io/embedded-wallets/infrastructure/sss-architecture/).
 
 **Why this matters:**
-- ❌ **WRONG:** Encrypting master password directly with wallet → catastrophic loss if wallet lost
-- ✅ **CORRECT:** Encrypt with recovery key → store recovery key in contract → backup wallet can transfer ownership
+- ❌ **WRONG:** Storing recovery key in vault blob → circular dependency (vault encrypted with master password)
+- ❌ **WRONG:** Storing recovery key in Midnight private state → device-local, lost on new device (ADR-006)
+- ✅ **CORRECT:** Recovery key is ephemeral, derived from Shamir secret → reconstructed from guardian shares during recovery → works cross-device
 
 **Implementation:**
 ```typescript
-// CORRECT: Dual-layer encryption
-const recoveryKey = generateRecoveryKey() // AES-256 key
-const encryptedPassword = aesEncrypt(masterPassword, recoveryKey)
-const shares = shamirSplit(encryptedPassword, 2, 3) // Split encrypted password
-const guardianShares = shares.map((share, i) => 
+// CORRECT: Pattern 6 v2 — Inverted Shamir
+const shamirSecret = crypto.getRandomValues(new Uint8Array(32)) // ephemeral
+const encryptionKey = await sha256('aliasvault:rk:' + bytesToHex(shamirSecret))
+const encryptedPassword = await encryptWithRecoveryKey(masterPassword, encryptionKey)
+const shares = shamirSplit(bytesToHex(shamirSecret), 3, 2) // Split the SECRET
+const guardianShares = shares.map((share, i) =>
   rsaEncrypt(share, guardians[i].publicKey)
 )
 
-// Store recovery key in Midnight private state
-await contract.storeRecoveryKey(recoveryKey)
+// Package: encrypted password + encrypted shares → single IPFS blob
+const pkg = { version: 2, encryptedPassword, shares: guardianShares }
+await provider.uploadToIpfs(pkg)
+await contract.storeRecoveryKeyHash(sha256(bytesToHex(shamirSecret))) // verification hash
+// shamirSecret is DISCARDED — never stored anywhere
 ```
 
 ### 2. CIDv1 Enforcement (CRITICAL - Pattern 3)
@@ -494,6 +501,48 @@ backupCommitment(bk):   persistentCommit<Bytes<32>>(pad(32, "vault:backup:"), bk
 - Contract: 72 total (69 passed, 3 skipped — blockTimeGte simulator limitation)
 - CLI API: 12 passed (8 circuit wrappers + 2 deploy/join + 2 ledger state query)
 
+### 16. Shamir & RSA-OAEP Implementation Patterns (Story 3.2)
+
+**Rule:** When using `secrets.js-34r7h` for Shamir Secret Sharing and RSA-OAEP for per-guardian share encryption, handle these non-obvious constraints:
+
+**secrets.js-34r7h specifics:**
+- Latest version is **2.0.2** (not 2.1.0 — does not exist on npm)
+- Input to `secrets.share()` MUST be hex-encoded strings
+- Output shares can have **odd-length hex strings** — downstream code must handle this
+- No `@types` package exists — use a local `secrets-types.d.ts` declaration file
+
+**RSA-OAEP 2048-bit + SHA-256 payload limit:**
+- Maximum plaintext is **190 bytes** (256 - 2*32 - 2 = 190 with SHA-256)
+- Text-encoding hex shares (1 byte per hex char) wastes half the capacity
+- **Binary-encode** shares (`hexToUint8Array`) to double capacity (~160-char passwords vs ~66)
+- Shamir shares with odd-length hex need a **1-byte flag prefix** to preserve the odd nibble:
+```typescript
+// Encode: [1 byte: isOdd flag][binary share data]
+const isOdd = shareHex.length % 2 !== 0;
+const paddedHex = isOdd ? '0' + shareHex : shareHex;
+const shareData = hexToUint8Array(paddedHex);
+const payload = new Uint8Array(1 + shareData.length);
+payload[0] = isOdd ? 1 : 0;
+payload.set(shareData, 1);
+
+// Decode: check flag, strip leading zero if odd
+const isOdd = decryptedArray[0] === 1;
+const hex = bytesToHex(decryptedArray.slice(1));
+return isOdd ? hex.slice(1) : hex;
+```
+
+**Web Crypto API TypeScript strict mode:**
+- TS5+ strict mode does not assign `Uint8Array` to `BufferSource` (due to `SharedArrayBuffer` union)
+- All `crypto.subtle.encrypt/decrypt/importKey` calls need `as BufferSource` cast on `Uint8Array` arguments
+
+**RecoveryPersistProvider abstraction:**
+- Platform-specific I/O (IPFS upload, contract calls) is abstracted behind an interface
+- Enables pure unit testing with mocks — no live IPFS or blockchain needed
+- Browser extension and guardian portal implement the interface differently
+- **v2 change (ADR-007):** `persistRecoveryKey()` removed from interface — recovery key is ephemeral, derived from Shamir shares during recovery. No local storage of recovery key needed.
+
+**Test counts:** 28 new tests across 3 files (15 crypto, 7 setup, 6 persist). Full roundtrip test validates: setup → decrypt 2-of-3 shares → Shamir combine → AES-GCM decrypt → original password.
+
 ---
 
 ## Development Workflow Rules
@@ -594,7 +643,7 @@ backupCommitment(bk):   persistentCommit<Bytes<32>>(pad(32, "vault:backup:"), bk
 Before merging any PR that touches cryptography or guardian recovery:
 
 - [ ] Zero-knowledge principles maintained (no plaintext master password in contracts)
-- [ ] Recovery key hash stored on public ledger; actual recovery key stored in encrypted vault blob (ADR-006), NOT in Midnight private state (device-local)
+- [ ] Recovery key hash (`SHA-256(shamirSecret)`) stored on public ledger for verification; actual recovery key is ephemeral (ADR-007), derived from Shamir shares during recovery — NOT stored in vault blob or Midnight private state
 - [ ] CIDv1 format enforced with type guards
 - [ ] Guardian shares encrypted with RSA-OAEP
 - [ ] Time-lock logic tested with multiple scenarios
@@ -603,10 +652,12 @@ Before merging any PR that touches cryptography or guardian recovery:
 
 ---
 
-**Last Updated:** 2026-02-21
+**Last Updated:** 2026-02-22
 **Source:** Generated from [architecture.md](_bmad-output/architecture.md)
 **Maintenance:** Update when implementing new patterns or discovering critical rules
 **Change Log:**
+- 2026-02-22: **ADR-007 — Pattern 6 v2 (Inverted Shamir).** Rewrote Rule 1 to reflect ephemeral recovery key architecture. Updated Rule 16 and Security Checklist. Recovery key is no longer stored anywhere — derived from Shamir shares during recovery. Eliminates circular dependency (vault blob encrypted with lost master password) and ADR-006 private state device-local limitation. Sources: [Web3Auth/MetaMask SSS](https://docs.metamask.io/embedded-wallets/infrastructure/sss-architecture/), [ANARKey](https://eprint.iacr.org/2025/551), [Argent recovery](https://support.argent.xyz/hc/en-us/articles/360022631412-About-wallet-recovery).
+- 2026-02-22: Added Rule 16 (Shamir & RSA-OAEP implementation patterns) from Story 3.2. secrets.js-34r7h v2.0.2 specifics, odd-length hex handling with 1-byte flag prefix for binary RSA payloads, RSA-OAEP 190-byte limit workaround, TS5+ BufferSource cast requirement, RecoveryPersistProvider abstraction pattern.
 - 2026-02-21: Added Rule 15 (GuardianRecovery contract patterns) from Story 3.1. Per-vault deployment model, guardian-specific domain separators, state mutation guards during active recovery, post-recovery terminal state, and idempotency guard on claimRecovery.
 - 2026-02-08: Added Rule 14 (Compact Set limitations, sentinel values, multi-role domain separators) from Story 2.6. Updated Rule 11 simulator pattern with backupKey param, multi-role testing, and block-time limitation note.
 - 2026-02-08: Updated Rule 10 with `blockTimeGte/Gt/Lt/Lte(Uint<64>)` discovery (Compact 0.17+) and `Uint<64>` arithmetic cast pattern. Fixed Security Checklist recovery key storage (ADR-006). From Story 2.6 validation.

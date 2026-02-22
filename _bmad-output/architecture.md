@@ -404,131 +404,115 @@ async function resolveVaultConflict(
 
 ### 4. Guardian Recovery Configuration
 
-**Decision:** **3 guardians with 2-of-3 threshold** using **dual-layer encryption** with wallet-independent recovery key for true zero-knowledge protection.
+**Decision:** **3 guardians with 2-of-3 threshold** using **inverted Shamir** with ephemeral encryption key for cross-device recovery.
+
+> **ADR-007 Amendment (2026-02-22):** Pattern 6 v2 replaces the original design which stored a recovery key in Midnight private state. ADR-006 (Story 2.3) proved private state is device-local and does not sync across devices, creating a circular dependency where the recovery key was inaccessible during the exact scenario it was designed for. v2 eliminates the persistent recovery key entirely — the decryption capability is derived from the Shamir shares themselves. This follows the same trust model used by [Argent](https://support.argent.xyz/hc/en-us/articles/360022631412-About-wallet-recovery), [Web3Auth/MetaMask SSS](https://docs.metamask.io/embedded-wallets/infrastructure/sss-architecture/), and ERC-4337 social recovery wallets, where the 72-hour time-lock (not cryptographic impossibility) is the guardian collusion protection. See also: [ANARKey (ePrint 2025/551)](https://eprint.iacr.org/2025/551) for formal analysis of social recovery circular dependencies.
 
 **Rationale:**
 - 2-of-3 threshold balances security vs practicality (easier to coordinate 2 guardians than 3-of-5)
-- **Dual-layer encryption:** Master password encrypted with wallet-independent key (stored in private state)
-- **True zero-knowledge:** Guardians CANNOT reconstruct master password even if ALL collude
-- **Supports catastrophic loss:** Backup wallet can transfer ownership and access recovery key
-- **Supports ownership transfer:** New wallet owner can access same recovery key via witness function
+- **Inverted Shamir:** A random secret is Shamir-split; the encrypted password is bundled alongside on IPFS. No persistent recovery key to store or lose.
+- **Cross-device recovery:** Everything needed for recovery lives on IPFS + on-chain. No device-local state dependency.
+- **72-hour time-lock:** Protects against guardian collusion — user is notified on-chain and can cancel.
+- **Supports catastrophic loss:** Backup wallet can transfer ownership, then proceed with guardian recovery.
 
-**Architecture Overview:**
+**Architecture Overview (Pattern 6 v2):**
 
 ```
 Master Password
-    ↓ (encrypt with recovery key)
-Encrypted Password
-    ↓ (Shamir split 3 shares, 2 threshold)
-Shares [S1, S2, S3]
-    ↓ (encrypt each with guardian's public key)
-Encrypted Shares → Midnight Private State
-
-Recovery Key (wallet-independent) → Midnight Private State
+    ↓ (encrypt with derived key)
+Encrypted Password ──────────────────────┐
+                                         │
+Random Shamir Secret (32 bytes)          │
+    ↓ (Shamir split 3 shares, 2 threshold)│
+Shares [S1, S2, S3]                     │
+    ↓ (encrypt each with guardian's RSA key)│
+Encrypted Shares ───────────────────────┤
+                                         ↓
+                              IPFS Package (v2):
+                              { encryptedPassword, shares[] }
+                                         ↓
+                              SHA-256(CID) → on-chain
+                              SHA-256(shamirSecret) → on-chain (verification)
 ```
 
-**Implementation:**
+**Implementation (Pattern 6 v2):**
 
 ```typescript
-// During vault setup
 import * as secrets from 'secrets.js-34r7h'
-import { randomBytes } from 'crypto'
 
 async function setupGuardianRecovery(
   masterPassword: string,
-  guardianWallets: [WalletAddress, WalletAddress, WalletAddress],
-  backupWallet?: WalletAddress  // Optional: for catastrophic loss recovery
-): Promise<void> {
-  // 1. Generate wallet-independent recovery key
-  const recoveryKey = randomBytes(32) // AES-256 key
-  
-  // 2. Store recovery key in VaultRegistry private state
-  await vaultRegistry.storeRecoveryKey({
-    owner: userWalletAddress,
-    recoveryKey: recoveryKey
-  })
-  
-  // 3. Encrypt master password with recovery key
-  const encryptedPassword = await aesEncrypt(masterPassword, recoveryKey)
-  
-  // 4. Split ENCRYPTED password into 3 shares (threshold: 2)
-  const passwordHex = Buffer.from(encryptedPassword).toString('hex')
-  const shares = secrets.share(passwordHex, 3, 2)
-  
-  // 5. Encrypt each share with guardian's public key
+  guardianPublicKeys: [JsonWebKey, JsonWebKey, JsonWebKey],
+  ownerCommitment: string
+): Promise<{ recoveryKeyHash: Uint8Array, sharePackage: GuardianSharePackage }> {
+  // 1. Generate ephemeral Shamir secret (32 bytes)
+  const shamirSecret = crypto.getRandomValues(new Uint8Array(32))
+
+  // 2. Derive encryption key from Shamir secret (domain-separated)
+  const encryptionKey = await sha256('aliasvault:rk:' + bytesToHex(shamirSecret))
+
+  // 3. Encrypt master password with derived key (AES-256-GCM)
+  const encryptedPassword = await encryptWithRecoveryKey(masterPassword, encryptionKey)
+
+  // 4. Split Shamir SECRET (not encrypted password) into 2-of-3 shares
+  const shares = secrets.share(bytesToHex(shamirSecret), 3, 2)
+
+  // 5. Encrypt each share with guardian's RSA public key
+  const encryptedShares = []
   for (let i = 0; i < 3; i++) {
-    const guardianPublicKey = await fetchGuardianPublicKey(guardianWallets[i])
-    const encryptedShare = await rsaEncrypt(shares[i], guardianPublicKey)
-    
-    // 6. Store encrypted share in GuardianRecovery contract private state
-    await guardianRecoveryContract.storeShare({
-      vaultOwner: userWalletAddress,
-      guardianWallet: guardianWallets[i],
-      encryptedShare: encryptedShare,
-      shareIndex: i
-    })
+    const encrypted = await encryptShareForGuardian(shares[i], guardianPublicKeys[i])
+    encryptedShares.push({ index: i, encryptedShare: uint8ArrayToBase64(encrypted) })
   }
-  
-  // 7. If backup wallet provided, grant it transfer permission
-  if (backupWallet) {
-    await vaultRegistry.setBackupWallet(backupWallet)
+
+  // 6. Hash the Shamir secret for on-chain verification
+  const recoveryKeyHash = await sha256(bytesToHex(shamirSecret))
+
+  // 7. Package: encrypted password + encrypted shares → single IPFS blob
+  const sharePackage = {
+    version: 2,
+    vaultOwnerCommitment: ownerCommitment,
+    threshold: 2, totalShares: 3,
+    encryptedPassword: uint8ArrayToBase64(encryptedPassword),  // NEW in v2
+    shares: encryptedShares
   }
+
+  // 8. shamirSecret is EPHEMERAL — discarded after this function returns
+  return { recoveryKeyHash, sharePackage }
 }
 
-// During recovery (normal flow - wallet intact)
+// Recovery: Normal flow (wallet intact) or backup wallet flow
 async function recoverMasterPassword(
-  guardianApprovals: [GuardianSignature, GuardianSignature]
+  sharesCid: string,              // Known from recovery initiation
+  guardianPrivateKeys: JsonWebKey[] // At least 2 guardian decryption keys
 ): Promise<string> {
-  // 1. After 72-hour time-lock, guardians approve recovery
-  const shares: string[] = []
-  
-  for (const approval of guardianApprovals) {
-    // 2. Each guardian's signature permits share release
-    const encryptedShare = await guardianRecoveryContract.claimShare(approval)
-    
-    // 3. User decrypts share with their wallet
-    const decryptedShare = await rsaDecrypt(encryptedShare, userWalletPrivateKey)
-    shares.push(decryptedShare)
-  }
-  
-  // 4. Combine 2 shares to reconstruct ENCRYPTED password
-  const encryptedPasswordHex = secrets.combine(shares)
-  const encryptedPassword = Buffer.from(encryptedPasswordHex, 'hex')
-  
-  // 5. Fetch recovery key from contract (owner-only via witness function)
-  const recoveryKey = await vaultRegistry.getRecoveryKey()
-  
-  // 6. Decrypt password with recovery key
-  const masterPassword = await aesDecrypt(encryptedPassword, recoveryKey)
-  
-  return masterPassword
-}
+  // 1. Fetch package from IPFS (contains encrypted password + encrypted shares)
+  const packageBytes = await ipfsService.download(sharesCid)
+  const pkg = JSON.parse(new TextDecoder().decode(packageBytes))
 
-// Catastrophic loss recovery (lost primary wallet + password)
-async function recoverWithBackupWallet(
-  backupWallet: Wallet,
-  guardianApprovals: [GuardianSignature, GuardianSignature]
-): Promise<string> {
-  // 1. Backup wallet transfers ownership to itself
-  await vaultRegistry.transferOwnershipFromBackup(backupWallet.address)
-  
-  // 2. Now backup wallet is owner, can access recovery key
-  const recoveryKey = await vaultRegistry.getRecoveryKey()
-  
-  // 3. Get guardian shares and combine
-  const shares: string[] = []
-  for (const approval of guardianApprovals) {
-    const encryptedShare = await guardianRecoveryContract.claimShare(approval)
-    const decryptedShare = await rsaDecrypt(encryptedShare, backupWallet.privateKey)
-    shares.push(decryptedShare)
+  // 2. Decrypt 2+ shares with guardian private keys
+  const decryptedShares: string[] = []
+  for (const share of pkg.shares) {
+    if (decryptedShares.length >= pkg.threshold) break
+    const decrypted = await decryptShareFromGuardian(
+      base64ToUint8Array(share.encryptedShare),
+      guardianPrivateKeys[share.index]
+    )
+    decryptedShares.push(decrypted)
   }
-  
-  const encryptedPasswordHex = secrets.combine(shares)
-  const encryptedPassword = Buffer.from(encryptedPasswordHex, 'hex')
-  
-  // 4. Decrypt password with recovery key (KEY is wallet-independent!)
-  const masterPassword = await aesDecrypt(encryptedPassword, recoveryKey)
-  
+
+  // 3. Reconstruct Shamir secret
+  const shamirSecretHex = secrets.combine(decryptedShares)
+
+  // 4. Verify against on-chain hash (integrity check)
+  const recoveryKeyHash = await sha256(shamirSecretHex)
+  const onChainHash = await vaultRegistry.getRecoveryKeyHash()
+  assert(bytesToHex(recoveryKeyHash) === bytesToHex(onChainHash), 'Hash mismatch')
+
+  // 5. Derive encryption key and decrypt password
+  const encryptionKey = await sha256('aliasvault:rk:' + shamirSecretHex)
+  const encryptedPassword = base64ToUint8Array(pkg.encryptedPassword)
+  const masterPassword = await decryptWithRecoveryKey(encryptedPassword, encryptionKey)
+
   return masterPassword
 }
 ```
@@ -540,13 +524,13 @@ async function recoverWithBackupWallet(
 - Recommended: family members, trusted friends with Cardano wallets
 - Warning: "Your guardians can help you recover, but they CANNOT see your master password. Configure a backup wallet for maximum protection."
 
-**Security Properties:**
-- **1 guardian alone:** Cannot recover (needs 2)
-- **2 guardians collude:** ✅ CANNOT reconstruct password (only get encrypted version, no recovery key)
-- **All 3 guardians collude:** ✅ CANNOT reconstruct password (true zero-knowledge achieved)
-- **Backup wallet alone:** ✅ CANNOT access vault (needs guardians for password recovery)
-- **User loses primary wallet + password:** ✅ Backup wallet + 2 guardians = full recovery
-- **Ownership transfer:** ✅ New owner can access recovery key, re-encrypt shares if needed
+**Security Properties (Pattern 6 v2):**
+- **1 guardian alone:** Cannot recover (needs 2) ✅
+- **2+ guardians collude:** Can reconstruct — BUT only through 72h time-locked on-chain flow; user can cancel ✅
+- **External attacker (IPFS blob):** AES-256-GCM encrypted password + RSA-OAEP encrypted shares — computationally infeasible ✅
+- **Backup wallet alone:** Cannot access vault (needs guardians for password recovery) ✅
+- **User loses primary wallet + password:** Backup wallet + 2 guardians = full recovery ✅
+- **Cross-device recovery:** Everything on IPFS + on-chain — no device-local dependency ✅
 
 **Advanced Mechanisms:**
 
@@ -663,52 +647,33 @@ contract VaultRegistry {
 }
 ```
 
-**4. Recovery Key Rotation**
+**4. Recovery Rotation (Pattern 6 v2)**
 ```typescript
-async function rotateRecoveryKey(
+// In v2, "rotation" means re-running setupGuardianRecovery with a fresh
+// Shamir secret. The old IPFS package is unpinned, old on-chain hashes
+// are overwritten. No persistent recovery key to rotate.
+async function rotateGuardianRecovery(
   masterPassword: string,  // User must know password
-  rotateGuardians?: boolean  // Optional: also rotate guardians
+  guardianPublicKeys: [JsonWebKey, JsonWebKey, JsonWebKey],
+  ownerCommitment: string
 ): Promise<void> {
   // 1. Verify user knows password
   const isValid = await verifyMasterPassword(masterPassword)
   require(isValid, "Invalid password")
-  
-  // 2. Generate new recovery key
-  const newRecoveryKey = randomBytes(32)
-  
-  // 3. Re-encrypt master password with new key
-  const iv = randomBytes(16)
-  const cipher = createCipheriv('aes-256-gcm', newRecoveryKey, iv)
-  const newEncryptedPassword = Buffer.concat([
-    iv,
-    cipher.update(masterPassword, 'utf8'),
-    cipher.final(),
-    cipher.getAuthTag()
-  ])
-  
-  // 4. Re-split into Shamir shares
-  const encryptedHex = newEncryptedPassword.toString('hex')
-  const newShares = secrets.share(encryptedHex, 3, 2)
-  
-  // 5. Re-encrypt shares with guardian public keys
-  const guardians = await guardianContract.getGuardians(userWalletAddress)
-  for (let i = 0; i < 3; i++) {
-    const guardianPublicKey = await fetchPublicKeyFromWallet(guardians[i])
-    const encryptedShare = await rsaEncrypt(newShares[i], guardianPublicKey)
-    
-    await guardianContract.updateShare({
-      vaultOwner: userWalletAddress,
-      guardianWallet: guardians[i],
-      encryptedShare,
-      shareIndex: i
-    })
-  }
-  
-  // 6. Update contract with new recovery key
-  await vaultRegistry.updateRecoveryKey(newRecoveryKey)
+
+  // 2. Full re-setup with fresh Shamir secret
+  const { recoveryKeyHash, sharePackage } = await setupGuardianRecovery(
+    masterPassword, guardianPublicKeys, ownerCommitment
+  )
+
+  // 3. Upload new package, overwrite on-chain hashes
+  await persistGuardianRecovery({ recoveryKeyHash, sharePackage }, provider)
+
+  // 4. Unpin old IPFS CID (optional, reduces storage costs)
+  await ipfsService.unpin(oldSharesCid)
 }
 
-// Recommended: Rotate recovery key every 12 months
+// Recommended: Rotate every 12 months or when changing guardians
 ```
 
 **5. Guardian Notification Protocol (IPFS Portal)**
@@ -1651,236 +1616,141 @@ async function notifyMergeComplete(changes: ConflictNotification['changes']) {
 - Last-write-wins MUST be determined by `updatedAt` timestamp
 - User MUST be notified of merge results (non-blocking)
 
-### Pattern 6: Guardian Share Encryption (Dual-Layer)
+### Pattern 6: Guardian Share Encryption (Inverted Shamir v2)
 
-**Architecture: Dual-Layer Encryption with Wallet-Independent Recovery Key**
+> **ADR-007 (2026-02-22):** v2 replaces original "dual-layer" design. See Section 4 for rationale and sources.
+
+**Architecture: Inverted Shamir with Ephemeral Encryption Key**
 
 ```typescript
 /**
- * Layer 1: Master password encrypted with recovery key (stored in contract)
- * Layer 2: Encrypted password split into Shamir shares
- * Layer 3: Each share encrypted with guardian's public key
- * 
- * Security: Guardians cannot access password even if all collude
- * Recovery: Backup wallet can transfer ownership and access recovery key
+ * Pattern 6 v2 — Inverted Shamir:
+ *   1. Random Shamir secret → Shamir-split into 2-of-3 shares
+ *   2. Encryption key derived from Shamir secret (SHA-256, domain-separated)
+ *   3. Master password encrypted with derived key (AES-256-GCM)
+ *   4. Each share encrypted with guardian's RSA public key
+ *   5. Encrypted password + encrypted shares bundled into single IPFS package
+ *   6. Shamir secret is EPHEMERAL — discarded after setup, never stored
+ *
+ * Recovery: reconstruct Shamir secret from 2+ shares → derive key → decrypt password
+ * Security: 72-hour on-chain time-lock protects against guardian collusion
+ * Cross-device: everything on IPFS + on-chain — no device-local dependency
  */
 
 import * as secrets from 'secrets.js-34r7h'
-import { randomBytes, createCipheriv, createDecipheriv } from 'crypto'
 
-interface GuardianShare {
-  vaultOwner: WalletAddress
-  guardianWallet: WalletAddress
-  encryptedShare: Uint8Array
-  shareIndex: number  // 0, 1, or 2 (for 2-of-3 threshold)
+interface GuardianSharePackage {
+  version: 2
+  vaultOwnerCommitment: string
+  threshold: number            // 2
+  totalShares: number          // 3
+  encryptedPassword: string    // base64 of AES-256-GCM encrypted master password
+  shares: Array<{
+    index: number              // 0, 1, or 2
+    encryptedShare: string     // base64 of RSA-OAEP encrypted Shamir share
+  }>
 }
 
-interface RecoveryKey {
-  owner: WalletAddress
-  key: Uint8Array  // AES-256 key, wallet-independent
-}
-
-// Setup: Generate recovery key and encrypt password
+// Setup: Inverted Shamir — split secret, encrypt password, bundle to IPFS
 async function setupGuardianRecovery(
   masterPassword: string,
-  guardianWallets: [WalletAddress, WalletAddress, WalletAddress],
-  backupWallet: WalletAddress  // REQUIRED for catastrophic loss
-): Promise<void> {
-  // 1. Generate wallet-independent recovery key (AES-256)
-  const recoveryKey = randomBytes(32)
-  
-  // 2. Store recovery key in VaultRegistry private state
-  await vaultRegistry.storeRecoveryKey({
-    owner: userWalletAddress,
-    key: recoveryKey
-  })
-  
-  // 3. Encrypt master password with recovery key (Layer 1)
-  const iv = randomBytes(16)
-  const cipher = createCipheriv('aes-256-gcm', recoveryKey, iv)
-  const encryptedPassword = Buffer.concat([
-    iv,  // Prepend IV for decryption
-    cipher.update(masterPassword, 'utf8'),
-    cipher.final(),
-    cipher.getAuthTag()
-  ])
-  
-  // 4. Split ENCRYPTED password into Shamir shares (Layer 2)
-  const encryptedHex = encryptedPassword.toString('hex')
-  const shares = secrets.share(encryptedHex, 3, 2)
-  
-  // 5. Encrypt each share with guardian's public key (Layer 3)
+  guardianPublicKeys: [JsonWebKey, JsonWebKey, JsonWebKey],
+  ownerCommitment: string
+): Promise<{ recoveryKeyHash: Uint8Array, sharePackage: GuardianSharePackage }> {
+  // 1. Generate ephemeral Shamir secret (32 bytes, random)
+  const shamirSecret = crypto.getRandomValues(new Uint8Array(32))
+
+  // 2. Derive AES-256 key from Shamir secret (domain-separated)
+  const encryptionKey = await sha256('aliasvault:rk:' + bytesToHex(shamirSecret))
+
+  // 3. Encrypt master password with derived key (AES-256-GCM)
+  const encryptedPassword = await encryptWithRecoveryKey(masterPassword, encryptionKey)
+
+  // 4. Shamir-split the SECRET (not the encrypted password)
+  const shares = secrets.share(bytesToHex(shamirSecret), 3, 2)
+
+  // 5. RSA-OAEP encrypt each share with respective guardian's public key
+  const encryptedShares = []
   for (let i = 0; i < 3; i++) {
-    const guardianPublicKey = await fetchPublicKeyFromWallet(guardianWallets[i])
-    const encryptedShare = await rsaEncrypt(shares[i], guardianPublicKey)
-    
-    await guardianContract.storeShare({
-      vaultOwner: userWalletAddress,
-      guardianWallet: guardianWallets[i],
-      encryptedShare,
-      shareIndex: i
-    })
+    const encrypted = await encryptShareForGuardian(shares[i], guardianPublicKeys[i])
+    encryptedShares.push({ index: i, encryptedShare: uint8ArrayToBase64(encrypted) })
   }
-  
-  // 6. Grant backup wallet transfer permissions
-  await vaultRegistry.setBackupWallet(backupWallet)
+
+  // 6. Hash Shamir secret for on-chain verification
+  const recoveryKeyHash = await sha256(bytesToHex(shamirSecret))
+
+  // 7. Bundle into IPFS package — encrypted password travels with shares
+  const sharePackage: GuardianSharePackage = {
+    version: 2,
+    vaultOwnerCommitment: ownerCommitment,
+    threshold: 2, totalShares: 3,
+    encryptedPassword: uint8ArrayToBase64(encryptedPassword),
+    shares: encryptedShares
+  }
+
+  // 8. shamirSecret + encryptionKey are EPHEMERAL — discarded here
+  return { recoveryKeyHash, sharePackage }
 }
 
-// RSA encryption helper
-async function rsaEncrypt(
-  data: string,
-  publicKey: CryptoKey
-): Promise<Uint8Array> {
-  return new Uint8Array(
-    await crypto.subtle.encrypt(
-      { name: 'RSA-OAEP', hash: 'SHA-256' },
-      publicKey,
-      Buffer.from(data, 'hex')
-    )
-  )
+// Persistence: upload to IPFS, store hashes on-chain
+async function persistGuardianRecovery(
+  setupResult: { recoveryKeyHash: Uint8Array, sharePackage: GuardianSharePackage },
+  provider: RecoveryPersistProvider
+): Promise<{ sharesCid: string }> {
+  const bytes = new TextEncoder().encode(JSON.stringify(setupResult.sharePackage))
+  const sharesCid = await provider.uploadToIpfs(bytes)
+  assertCIDv1(sharesCid)
+  await provider.storeSharesCidHash(await sha256(sharesCid))
+  await provider.storeRecoveryKeyHash(setupResult.recoveryKeyHash)
+  // NOTE: No persistRecoveryKey() — recovery key is ephemeral in v2
+  return { sharesCid }
 }
 
-// Recovery: Normal flow (wallet intact)
+// Recovery: fetch package, decrypt shares, reconstruct, decrypt password
 async function recoverMasterPassword(
-  guardianApprovals: [GuardianSignature, GuardianSignature]
+  sharesCid: string,
+  guardianPrivateKeys: JsonWebKey[]  // At least 2
 ): Promise<string> {
-  const shares: string[] = []
-  
-  // 1. Decrypt shares from guardians (Layer 3)
-  for (const approval of guardianApprovals) {
-    const encryptedShare = await guardianContract.claimShare(approval)
-    const decryptedShare = await rsaDecrypt(encryptedShare, userWalletPrivateKey)
-    shares.push(decryptedShare)
-  }
-  
-  // 2. Combine shares to get encrypted password (Layer 2)
-  const encryptedPasswordHex = secrets.combine(shares)
-  const encryptedPassword = Buffer.from(encryptedPasswordHex, 'hex')
-  
-  // 3. Fetch recovery key from contract (owner-only witness function)
-  const recoveryKey = await vaultRegistry.getRecoveryKey()
-  
-  // 4. Decrypt password with recovery key (Layer 1)
-  const iv = encryptedPassword.slice(0, 16)
-  const authTag = encryptedPassword.slice(-16)
-  const ciphertext = encryptedPassword.slice(16, -16)
-  
-  const decipher = createDecipheriv('aes-256-gcm', recoveryKey, iv)
-  decipher.setAuthTag(authTag)
-  
-  const masterPassword = Buffer.concat([
-    decipher.update(ciphertext),
-    decipher.final()
-  ]).toString('utf8')
-  
-  return masterPassword
-}
+  // 1. Fetch IPFS package (encrypted password + encrypted shares)
+  const packageBytes = await ipfsService.download(sharesCid)
+  const pkg: GuardianSharePackage = JSON.parse(new TextDecoder().decode(packageBytes))
 
-// Recovery: Catastrophic loss (lost primary wallet + password)
-async function recoverWithBackupWallet(
-  backupWallet: Wallet,
-  guardianApprovals: [GuardianSignature, GuardianSignature]
-): Promise<string> {
-  // 1. Transfer ownership using backup wallet's special permission
-  await vaultRegistry.transferOwnershipFromBackup(
-    backupWallet.address,
-    backupWallet.signature
-  )
-  
-  // 2. Now backup wallet is owner, access recovery key
-  const recoveryKey = await vaultRegistry.getRecoveryKey()
-  
-  // 3. Decrypt shares and combine (same as normal recovery)
-  const shares: string[] = []
-  for (const approval of guardianApprovals) {
-    const encryptedShare = await guardianContract.claimShare(approval)
-    const decryptedShare = await rsaDecrypt(encryptedShare, backupWallet.privateKey)
-    shares.push(decryptedShare)
+  // 2. Decrypt 2+ shares with guardian private keys
+  const decryptedShares: string[] = []
+  for (const share of pkg.shares) {
+    if (decryptedShares.length >= pkg.threshold) break
+    const decrypted = await decryptShareFromGuardian(
+      base64ToUint8Array(share.encryptedShare),
+      guardianPrivateKeys[share.index]
+    )
+    decryptedShares.push(decrypted)
   }
-  
-  const encryptedPasswordHex = secrets.combine(shares)
-  const encryptedPassword = Buffer.from(encryptedPasswordHex, 'hex')
-  
-  // 4. Decrypt password with recovery key
-  // (Recovery key is wallet-independent - works with any owner!)
-  const iv = encryptedPassword.slice(0, 16)
-  const authTag = encryptedPassword.slice(-16)
-  const ciphertext = encryptedPassword.slice(16, -16)
-  
-  const decipher = createDecipheriv('aes-256-gcm', recoveryKey, iv)
-  decipher.setAuthTag(authTag)
-  
-  const masterPassword = Buffer.concat([
-    decipher.update(ciphertext),
-    decipher.final()
-  ]).toString('utf8')
-  
-  return masterPassword
-}
 
-// Ownership transfer: Re-encrypt shares for new wallet
-async function transferOwnershipWithReencryption(
-  newWallet: WalletAddress,
-  masterPassword: string  // User must know password
-): Promise<void> {
-  // 1. Fetch recovery key (current owner only)
-  const recoveryKey = await vaultRegistry.getRecoveryKey()
-  
-  // 2. Re-encrypt password with same recovery key (key is portable)
-  const iv = randomBytes(16)
-  const cipher = createCipheriv('aes-256-gcm', recoveryKey, iv)
-  const encryptedPassword = Buffer.concat([
-    iv,
-    cipher.update(masterPassword, 'utf8'),
-    cipher.final(),
-    cipher.getAuthTag()
-  ])
-  
-  // 3. Re-split and re-encrypt shares for new guardians (if different)
-  const encryptedHex = encryptedPassword.toString('hex')
-  const shares = secrets.share(encryptedHex, 3, 2)
-  
-  // ... encrypt shares with guardian keys and store
-  
-  // 4. Transfer ownership (recovery key stays the same!)
-  await vaultRegistry.transferOwnership(newWallet)
-}
-```
+  // 3. Reconstruct Shamir secret
+  const shamirSecretHex = secrets.combine(decryptedShares)
 
-**Midnight Smart Contract Updates:**
+  // 4. Verify against on-chain hash (integrity check)
+  const computedHash = await sha256(shamirSecretHex)
+  const onChainHash = await vaultRegistry.getRecoveryKeyHash()
+  assert(bytesToHex(computedHash) === bytesToHex(onChainHash), 'Shamir secret hash mismatch')
 
-```typescript
-// VaultRegistry.compact (updated)
-contract VaultRegistry {
-  private state {
-    vaultCID: String
-    encryptionPublicKey: Bytes
-    recoveryKey: Bytes  // NEW: Wallet-independent recovery key
-    backupWallet: WalletAddress  // NEW: For catastrophic loss
-  }
-  
-  @witness
-  function getRecoveryKey(): Bytes {
-    // Only current owner can access
-    require(this.sender == this.public.owner, "Not owner")
-    return this.private.recoveryKey
-  }
-  
-  function transferOwnershipFromBackup(newOwner: WalletAddress) {
-    // Allow backup wallet to transfer in emergency
-    require(this.sender == this.private.backupWallet, "Not backup wallet")
-    this.public.owner = newOwner
-  }
+  // 5. Derive encryption key and decrypt master password
+  const encryptionKey = await sha256('aliasvault:rk:' + shamirSecretHex)
+  const encryptedPassword = base64ToUint8Array(pkg.encryptedPassword)
+  return await decryptWithRecoveryKey(encryptedPassword, encryptionKey)
 }
 ```
 
 **Enforcement:**
-- Recovery key MUST be 32 bytes (AES-256)
-- Recovery key MUST be stored in contract private state (never exposed)
-- Master password MUST be encrypted before Shamir splitting
-- Backup wallet MUST be configured during setup (cannot be optional)
+- Shamir secret MUST be 32 bytes (random, ephemeral — never stored)
+- Encryption key MUST be derived via `SHA-256("aliasvault:rk:" + hex(shamirSecret))` (domain separation)
+- Master password MUST be encrypted with derived key before packaging
+- Encrypted password MUST be included in the IPFS share package (v2 format)
+- `recoveryKeyHash` on-chain is `SHA-256(hex(shamirSecret))` — for verification only
+- Backup wallet MUST be configured during setup (for catastrophic loss recovery)
 - Share indices MUST be 0, 1, 2 (for 2-of-3 threshold)
-- Each share MUST be encrypted with guardian's public key (RSA-OAEP-SHA256)
+- Each share MUST be encrypted with guardian's RSA public key (RSA-OAEP-SHA256)
+- No `getRecoveryKey()` witness function — recovery key is derived from shares during recovery
 
 **Testing Requirements:**
 
@@ -2428,7 +2298,7 @@ aliasvault/
 - `VaultRegistry.updateVault(newCID: String)` - Update vault CID
 - `VaultRegistry.getVaultCID(): String` (witness) - Retrieve vault CID
 - `VaultRegistry.transferOwnership(newOwner: WalletAddress)` - Transfer vault
-- `VaultRegistry.getRecoveryKey(): Bytes` (witness) - Fetch recovery key
+- `VaultRegistry.storeRecoveryKeyHash(keyHash: Bytes<32>)` - Store recovery key hash (owner-only) _(ADR-007: no getRecoveryKey witness — recovery key is ephemeral, derived from Shamir shares during recovery)_
 - `GuardianRecovery.initiateRecovery(guardians: WalletAddress[])` - Start recovery
 - `GuardianRecovery.approveRecovery(vaultOwner: WalletAddress)` - Guardian approval
 - `GuardianRecovery.claimShares(vaultOwner: WalletAddress): GuardianShare[]` (witness)
@@ -2490,7 +2360,7 @@ aliasvault/
 
 **On-Chain (Midnight Private State):**
 - Vault CID (encrypted location)
-- Recovery key (wallet-independent AES-256 key)
+- ~~Recovery key~~ _(ADR-007: recovery key is ephemeral — derived from Shamir shares during recovery. Only SHA-256 hash stored on public ledger for verification.)_
 - Guardian encrypted shares
 - Backup wallet addresses
 
@@ -2540,7 +2410,7 @@ aliasvault/
 
 **Contracts:**
 - `contracts/GuardianRecovery.compact` - Share storage, 72-hour time-lock
-- `contracts/VaultRegistry.compact` - Recovery key storage
+- `contracts/VaultRegistry.compact` - Recovery key hash verification (ADR-007: actual key is ephemeral)
 
 **Guardian Portal:**
 - `guardian-portal/src/pages/ApprovalPage.tsx` - Guardian approval UI
@@ -2721,17 +2591,18 @@ Guardians visit portal → Connect wallet → Approve
 After 72 hours: User claims shares
   ↓
 ┌─────────────────────────────────┐
-│ 5. Combine shares → encrypted   │ (shamirSharing.ts)
-│    password                      │
+│ 5. Combine shares → reconstruct │ (shamirSharing.ts)
+│    Shamir secret                 │
 └─────────────────────────────────┘
   ↓
 ┌─────────────────────────────────┐
-│ 6. Get recovery key from        │ (midnightClient.getRecoveryKey)
-│    contract                      │
+│ 6. Verify hash vs on-chain,     │ (recovery-setup.ts)
+│    derive encryption key         │
 └─────────────────────────────────┘
   ↓
 ┌─────────────────────────────────┐
-│ 7. Decrypt password             │ (encryption.aesDecrypt)
+│ 7. Decrypt password from IPFS   │ (recovery-crypto.ts)
+│    package                       │
 └─────────────────────────────────┘
   ↓
 User resets master password
@@ -2908,7 +2779,7 @@ All architectural decisions work together harmoniously:
 - ✅ **pnpm Workspace + TurboRepo:** Package manager supports build orchestration. Workspace protocol enables cross-package dependencies (contracts → shared → apps).
 - ✅ **Midnight SDK + Lace Wallet:** Wallet abstracts proof server interaction. Midnight RPC configured in `shared/config/`. Version compatibility ensured via shared config.
 - ✅ **IPFS + Pinata:** CIDv1 enforcement consistent. Client-side encryption (AES-256-GCM) before upload. No version conflicts.
-- ✅ **Guardian Recovery Stack:** Shamir Secret Sharing (`secrets.js-34r7h`) + RSA-OAEP + Midnight private state storage work together. 72-hour time-lock compatible with contract design.
+- ✅ **Guardian Recovery Stack:** Shamir Secret Sharing (`secrets.js-34r7h`) + RSA-OAEP + IPFS package storage (Pattern 6 v2). 72-hour time-lock compatible with contract design. No Midnight private state dependency for recovery key (ADR-007).
 - ✅ **React + WXT + Vite:** Browser extension uses WXT with React. Guardian portal uses Vite with React. Consistent UI framework reduces cognitive load.
 
 **Pattern Consistency:**
@@ -2920,7 +2791,7 @@ Implementation patterns fully support architectural decisions:
 - ✅ **Pattern 3 (CID Handling):** CIDv1 enforcement with type guards (`assertCIDv1`) matches IPFS decision. String storage format consistent.
 - ✅ **Pattern 4 (Error Handling):** `RETRYABLE_CODES` array supports retry logic. Error factory compatible with async operations.
 - ✅ **Pattern 5 (Conflict Resolution):** Credential-level merge supports multi-device requirement. Last-write-wins aligns with timestamp tracking.
-- ✅ **Pattern 6 (Guardian Encryption):** Triple-layer encryption (master password → recovery key → Shamir → RSA-OAEP) matches guardian recovery decision.
+- ✅ **Pattern 6 (Guardian Encryption):** Inverted Shamir v2 (Shamir secret → derive key → encrypt password → RSA-OAEP per guardian) with ephemeral recovery key and cross-device recovery (ADR-007).
 - ✅ **Pattern 7 (Test Organization):** Co-located unit tests + separate integration tests matches monorepo structure.
 
 **Structure Alignment:**
@@ -2957,7 +2828,7 @@ All FR1-FR25 from PRD are architecturally supported:
 - ✅ FR12 (Share claim): `ShareClaim.tsx`, `guardianService.ts`
 - ✅ FR13 (Master password recovery): `recoverMasterPassword()` function, Pattern 6
 - ✅ FR14 (Backup wallet transfer): `VaultRegistry.transferOwnership()`, backup wallet config
-- ✅ FR15 (Recovery key access): Dual-layer encryption, `getRecoveryKey()` witness function
+- ✅ FR15 (Recovery key access): Pattern 6 v2 inverted Shamir — recovery key derived from guardian shares during recovery, no persistent storage needed (ADR-007)
 
 **FR16-FR19: Multi-Device Security**
 - ✅ FR16 (Cross-device sync): `syncManager.ts`, `midnightClient.getVaultCID()`
@@ -2976,7 +2847,7 @@ All FR1-FR25 from PRD are architecturally supported:
 **Non-Functional Requirements Coverage:**
 
 - ✅ **Performance:** Client-side encryption (<2s decryption target), IndexedDB caching, TurboRepo build caching
-- ✅ **Security:** Zero-knowledge principles enforced, dual-layer recovery key encryption, guardian approvals on-chain, Argon2id password derivation
+- ✅ **Security:** Zero-knowledge principles enforced, inverted Shamir with ephemeral recovery key (ADR-007), guardian approvals on-chain with 72h time-lock, Argon2id password derivation
 - ✅ **Scalability:** Midnight private state is off-chain (no bloat), IPFS distributed storage, multi-device support via contract CID
 - ✅ **Compliance:** Zero-knowledge aligns with privacy regulations, IPFS data portable (GDPR right to delete = user controls private keys)
 - ✅ **Reliability:** SMTP bridge health checks, guardian portal pin monitoring, multi-backup wallet support
@@ -3103,7 +2974,7 @@ The architecture is comprehensive, coherent, and validated across all dimensions
 
 **Key Strengths:**
 
-1. **Zero-Knowledge Integrity:** Dual-layer encryption with wallet-independent recovery key achieves both true zero-knowledge (guardians can't reconstruct password) AND catastrophic loss recovery (backup wallet can transfer ownership)
+1. **Cross-Device Recovery Integrity (ADR-007):** Inverted Shamir v2 with ephemeral recovery key eliminates the original circular dependency (ADR-006 private state is device-local). Guardian collusion protected by 72-hour on-chain time-lock. Backup wallet + 2 guardians = full catastrophic loss recovery across any device.
 
 2. **MeshJS Template Compatibility:** Following official Midnight conventions reduces onboarding friction and enables upstream updates
 

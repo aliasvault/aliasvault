@@ -8,3 +8,17 @@ export type {
   VaultLoadProvider,
   VaultLoadResult,
 } from './types.js';
+export {
+  generateRecoveryKey,
+  encryptWithRecoveryKey,
+  decryptWithRecoveryKey,
+  splitIntoShares,
+  combineShares,
+  encryptShareForGuardian,
+  decryptShareFromGuardian,
+  generateGuardianKeyPair,
+} from './recovery-crypto.js';
+export { setupGuardianRecovery } from './recovery-setup.js';
+export type { GuardianSharePackage, SetupGuardianRecoveryParams, SetupResult } from './recovery-setup.js';
+export { persistGuardianRecovery } from './recovery-persist.js';
+export type { RecoveryPersistProvider, PersistResult } from './recovery-persist.js';

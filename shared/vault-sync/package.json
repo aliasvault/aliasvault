@@ -18,7 +18,8 @@
   "license": "AGPL-3.0",
   "dependencies": {
     "@aliasvault/contract": "workspace:*",
-    "@aliasvault/ipfs-service": "workspace:*"
+    "@aliasvault/ipfs-service": "workspace:*",
+    "secrets.js-34r7h": "^2.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",

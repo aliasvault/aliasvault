@@ -378,8 +378,8 @@ This document provides the complete epic and story breakdown for aliasvault, dec
 - `registerVault(walletAddress)` - Epic 1.4
 - `updateVault(cid)` - Epic 2.1
 - `getVaultCID()` witness - Epic 2.1
-- `storeRecoveryKey(key)` - Epic 3.2
-- `getRecoveryKey()` witness - Epic 3.4
+- `storeRecoveryKeyHash(keyHash)` - Epic 3.2 _(ADR-007: stores SHA-256(shamirSecret) for verification; actual key is ephemeral)_
+- ~~`getRecoveryKey()` witness~~ _(ADR-007: removed — recovery key derived from Shamir shares during recovery)_
 - `transferOwnership(newWallet)` - Epic 3.5
 - `addBackupWallets(wallets[])` - Epic 3.6
 - `initiateBackupTransfer()` - Epic 3.6
@@ -390,7 +390,7 @@ This document provides the complete epic and story breakdown for aliasvault, dec
 - [x] All functions documented in contract header — 80-line spec header + VAULT-REGISTRY-SPEC.md canonical doc
 - [x] Access control matrix defined (owner-only vs public vs witness) — in contract header + SPEC.md
 - [x] State variables: owner (public), vaultCID (private), recoveryKey (private), backupWallets (private), emailCIDs (private)
-  - **Deviation (Story 2.6):** `recoveryKeyHash` and `backupWallets` are on the **public ledger**, not private state. Compact has no `private state {}` block — all private state is TypeScript-only (ADR-006). Only the *hash* of the recovery key is stored on-chain; the actual key is in the encrypted vault blob. `emailCIDs` deferred to Epic 5.
+  - **Deviation (Story 2.6):** `recoveryKeyHash` and `backupWallets` are on the **public ledger**, not private state. Compact has no `private state {}` block — all private state is TypeScript-only (ADR-006). Only the *hash* of the recovery key is stored on-chain; the actual key is ephemeral — derived from Shamir shares during recovery (ADR-007, Pattern 6 v2). `emailCIDs` deferred to Epic 5.
 - [x] Unit tests for each function — 33 VR tests (1 skipped due to simulator block-time limitation)
 
 > **Note:** This story consolidates contract work from Epics 1-5. Implement incrementally per epic.
@@ -461,20 +461,21 @@ This document provides the complete epic and story breakdown for aliasvault, dec
 
 ---
 
-#### Story 3.2: Shamir Secret Splitting (Pattern 6)
+#### Story 3.2: Shamir Secret Splitting (Pattern 6 v2)
 
-**As a** user setting up guardians  
-**I want** to encrypt my Master Password with a Recovery Key, then split the Encrypted Password into shares  
-**So that** no single guardian can access my password
+**As a** user setting up guardians
+**I want** to encrypt my Master Password with an ephemeral key derived from a Shamir secret, then split that secret into shares
+**So that** no single guardian can access my password and recovery works cross-device
 
-**Acceptance Criteria:**
-- [ ] Generate `RecoveryKey` (AES-256, 32 bytes)
-- [ ] Store `RecoveryKey` in `VaultRegistry` private state
-- [ ] Encrypt `MasterPassword` with `RecoveryKey` → `EncryptedPassword`
-- [ ] Split `EncryptedPassword` into 3 shares (2-of-3 threshold) using `secrets.js-34r7h`
-- [ ] Encrypt each share with respective Guardian's public key (RSA-OAEP)
-- [ ] Upload encrypted shares to IPFS
-- [ ] Store share CIDs in `GuardianRecovery` contract
+**Acceptance Criteria (ADR-007 — Pattern 6 v2):**
+- [x] Generate ephemeral Shamir secret (32 bytes, random) — never stored
+- [x] Derive encryption key via `SHA-256("aliasvault:rk:" + hex(shamirSecret))`
+- [x] Encrypt `MasterPassword` with derived key (AES-256-GCM) → `EncryptedPassword`
+- [x] Shamir-split the secret (not encrypted password) into 3 shares (2-of-3 threshold) using `secrets.js-34r7h`
+- [x] Encrypt each share with respective Guardian's RSA public key (RSA-OAEP-SHA256)
+- [x] Bundle `EncryptedPassword` + encrypted shares into single IPFS package (v2 format)
+- [x] Store `SHA-256(CID)` on-chain via `GuardianRecovery.storeSharesCidHash()`
+- [x] Store `SHA-256(hex(shamirSecret))` on-chain via `VaultRegistry.storeRecoveryKeyHash()` for verification
 
 ---
 
@@ -493,18 +494,20 @@ This document provides the complete epic and story breakdown for aliasvault, dec
 
 ---
 
-#### Story 3.4: Recovery Claim Flow (Pattern 6)
+#### Story 3.4: Recovery Claim Flow (Pattern 6 v2)
 
-**As a** user recovering my account  
-**I want** to reconstruct the Encrypted Password from shares, then use the Recovery Key to decrypt it  
-**So that** I can recover my Master Password
+**As a** user recovering my account
+**I want** to reconstruct the Shamir secret from guardian shares, then derive the key and decrypt my password
+**So that** I can recover my Master Password on any device
 
-**Acceptance Criteria:**
+**Acceptance Criteria (ADR-007 — Pattern 6 v2):**
 - [ ] UI monitors `GuardianRecovery` for approval events
-- [ ] Once 2+ shares approved: Download and decrypt them
-- [ ] Recombine shares using Shamir combine → Get `EncryptedPassword`
-- [ ] Call `VaultRegistry.getRecoveryKey()` witness → Get `RecoveryKey`
-- [ ] Decrypt `EncryptedPassword` with `RecoveryKey` → Get `MasterPassword`
+- [ ] Once 2+ shares approved and 72h time-lock expired: Fetch IPFS package (contains encrypted password + encrypted shares)
+- [ ] Decrypt 2+ shares with guardian private keys
+- [ ] Recombine shares using Shamir combine → Get `shamirSecret`
+- [ ] Verify `SHA-256(hex(shamirSecret))` matches on-chain `recoveryKeyHash` (integrity check)
+- [ ] Derive encryption key: `SHA-256("aliasvault:rk:" + hex(shamirSecret))`
+- [ ] Decrypt `encryptedPassword` from IPFS package with derived key → Get `MasterPassword`
 - [ ] Display recovered password (user copies or resets)
 
 ---

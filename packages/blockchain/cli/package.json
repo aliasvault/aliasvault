@@ -20,6 +20,8 @@
     "deploy-preprod": "node --experimental-specifier-resolution=node --loader ts-node/esm src/deploy-vault-registry.ts --network=preprod"
   },
   "dependencies": {
-    "@aliasvault/contract": "*"
+    "@aliasvault/contract": "*",
+    "protobufjs": "^7.5.4",
+    "long": "^5.3.2"
   }
 }

@@ -94,13 +94,13 @@ The architecture.md (Sections 1, 4) contains pseudocode that uses constructs Com
 | `currentTimestamp()` | Compact 0.17+ has `blockTimeGt/Gte/Lt/Lte(time: Uint<64>)` — compares against block time (Unix epoch seconds). | Time-locks enforced **on-chain** via `blockTimeGte(unlockTime)`. Store initiation timestamp as `Uint<64>` ledger field. |
 | `Map<WalletAddress, BackupConfig>` in private state | Maps exist in Compact but ONLY as ledger (public) state. Private state is TypeScript-only. | Backup wallet data that must be on-chain goes in public ledger. Sensitive data goes in encrypted vault blob. |
 | `this.private.backupWallets.includes(this.sender)` | No array iteration in Compact circuits. No `this.sender`. | Backup wallet verification via witness + `Set.member()` on public ledger. |
-| `function storeRecoveryKey(key)` storing actual key | Storing actual recovery key on-chain (even private state) is device-local (ADR-006) — lost on new device. | Store recovery key INSIDE encrypted vault blob. On-chain, store only a `recoveryKeyHash` for verification. |
+| `function storeRecoveryKey(key)` storing actual key | Storing actual recovery key on-chain (even private state) is device-local (ADR-006) — lost on new device. | **ADR-007 (Pattern 6 v2):** Recovery key is ephemeral — derived from Shamir shares during recovery. On-chain, store only `recoveryKeyHash = SHA-256(hex(shamirSecret))` for verification. No `getRecoveryKey()` witness needed. |
 
 #### ADR-006: Private State is Device-Local (Reinforced)
 
 - Midnight private state NEVER syncs across devices — confirmed by Sea Battle, Midnight Bank, and official SDK
 - The `secretKey` for owner proof is already stored in the SQLite vault blob (Story 2.3)
-- The `recoveryKey` (Epic 3.2) MUST also be stored in the vault blob, NOT in Midnight private state
+- **ADR-007 (Pattern 6 v2):** The `recoveryKey` is now ephemeral — derived from Shamir shares during recovery, never stored anywhere. `storeRecoveryKeyHash` stores the verification hash on-chain. No `getRecoveryKey()` witness function exists or is needed.
 - On-chain, we store only HASHES/COMMITMENTS for verification — never the actual keys
 
 #### ADR-004: Contract Address Management
@@ -229,7 +229,7 @@ export circuit cancelBackupTransfer(): [] {
 |----------|------|---------------------|
 | `getPublicKey(wallet)` witness | 5.5 | Requires AliasRegistry contract + encryption public key infrastructure not yet built |
 | `notifyNewMail(owner, emailCID)` | 5.6 | Requires SMTP bridge + email storage pipeline from Epic 5 |
-| `getRecoveryKey()` witness | 3.4 | Recovery key stored in vault blob (ADR-006), not Midnight private state. The "witness" becomes a TypeScript API that reads from decrypted vault DB |
+| ~~`getRecoveryKey()` witness~~ | ~~3.4~~ | **ADR-007:** No longer needed. Recovery key is ephemeral in Pattern 6 v2 — derived from Shamir shares during recovery. `storeRecoveryKeyHash` (already implemented) is the only on-chain interaction needed. |
 
 > **Epic AC #3 deviation:** The epic lists `emailCIDs (private)` as a required state variable. Email-related state (`notifyNewMail`, `emailCIDs`) is deferred to Epic 5.6 — requires SMTP bridge + email storage pipeline infrastructure not yet built.
 
