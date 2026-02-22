@@ -1419,6 +1419,8 @@ const ItemAddEdit: React.FC = () => {
           isAddFormVisible={totpEditorState.isAddFormVisible}
           formData={totpEditorState.formData}
           onStateChange={setTotpEditorState}
+          itemDisplayName={item?.Name || undefined}
+          itemUsername={(fieldValues['login.username'] as string) || (fieldValues['login.email'] as string)}
         />
       )}
 
