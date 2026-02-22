@@ -442,7 +442,7 @@
       "showFolders": "Mapper",
       "passkeys": "Passkeys",
       "attachments": "Vedhæftede filer",
-      "totp": "2FA Codes"
+      "totp": "2FA Koder"
     },
     "sort": {
       "title": "Sorter efter",
