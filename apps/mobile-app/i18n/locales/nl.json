@@ -468,7 +468,7 @@
       "usernameCopied": "Gebruikersnaam gekopieerd naar klembord",
       "emailCopied": "E-mail gekopieerd naar klembord",
       "passwordCopied": "Wachtwoord gekopieerd naar klembord",
-      "urlCopied": "URL copied to clipboard"
+      "urlCopied": "URL gekopieerd naar klembord"
     },
     "createNewAliasFor": "Nieuwe alias maken voor",
     "contextMenu": {
@@ -480,10 +480,10 @@
       "copyPassword": "Kopieer wachtwoord"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "URL opties",
+      "copyLink": "Kopieer link",
+      "openLink": "Open link",
+      "shareLink": "Link delen"
     },
     "viewHistory": "Toon geschiedenis",
     "history": "Geschiedenis",
