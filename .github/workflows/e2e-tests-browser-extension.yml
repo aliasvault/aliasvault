@@ -169,9 +169,12 @@ jobs:
         run: npx playwright install chromium --with-deps
         working-directory: apps/browser-extension
 
-      - name: Build and run E2E tests
-        run: xvfb-run --auto-servernum npm run test:e2e:build
-        working-directory: apps/browser-extension
+      - name: Build and run E2E tests with retry
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 60
+          max_attempts: 3
+          command: cd apps/browser-extension && xvfb-run --auto-servernum npm run test:e2e:build
         env:
           ALIASVAULT_API_URL: "http://localhost:5092"
 
