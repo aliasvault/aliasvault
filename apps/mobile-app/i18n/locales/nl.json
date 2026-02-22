@@ -467,7 +467,8 @@
       "itemDeleted": "Item succesvol verwijderd",
       "usernameCopied": "Gebruikersnaam gekopieerd naar klembord",
       "emailCopied": "E-mail gekopieerd naar klembord",
-      "passwordCopied": "Wachtwoord gekopieerd naar klembord"
+      "passwordCopied": "Wachtwoord gekopieerd naar klembord",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Nieuwe alias maken voor",
     "contextMenu": {
@@ -477,6 +478,12 @@
       "copyUsername": "Kopieer gebruikersnaam",
       "copyEmail": "Kopieer e-mail",
       "copyPassword": "Kopieer wachtwoord"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "Toon geschiedenis",
     "history": "Geschiedenis",
