@@ -2,9 +2,11 @@
 @inject GlobalNotificationService GlobalNotificationService
 @inject ConfirmModalService ConfirmModalService
 @inject IStringLocalizerFactory LocalizerFactory
+@inject IJSRuntime JSRuntime
 @using AliasVault.RazorComponents.Services
 @using TotpGenerator
 @using Microsoft.Extensions.Localization
+@using AliasVault.Client.Main.Components.Layout
 
 <div class="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 sm:p-6 dark:bg-gray-800 relative">
     <div class="flex justify-between items-start">
@@ -82,6 +84,11 @@
                             <div class="flex flex-col items-end">
                                 <div class="text-sm text-gray-500 dark:text-gray-400">@Localizer["SaveToViewCodeMessage"]</div>
                             </div>
+                            <button type="button" @onclick="() => ShowEditModal(totpCode)" class="edit-totp-code text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" title="@SharedLocalizer["Edit"]">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                </svg>
+                            </button>
                             <button type="button" @onclick="() => DeleteTotpCode(totpCode)" class="delete-totp-code text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400">
                                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                     <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
@@ -93,6 +100,47 @@
             }
         </div>
 </div>
+
+@* Edit TOTP Modal *@
+<FormModal IsOpen="@IsEditModalOpen"
+           Title="@SharedLocalizer["Edit"]"
+           ShowDefaultFooter="false"
+           MaxWidth="lg"
+           OnClose="CloseEditModal">
+    <div class="space-y-4">
+        @if (EditingTotpCode != null)
+        {
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-900 dark:text-white mb-2">@Localizer["NameOptionalLabel"]</label>
+                    <input type="text" @bind="EditName" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="@Localizer["NameOptionalLabel"]" />
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="text-sm font-medium text-gray-900 dark:text-white">@Localizer["SecretKeyLabel"]</label>
+                        <button type="button" @onclick="ToggleQrCode" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1" title="@(ShowQrCode ? SharedLocalizer["Hide"] : SharedLocalizer["Show"]) QR Code">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <input type="text" @bind="EditSecret" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white font-mono" placeholder="@Localizer["SecretKeyLabel"]" />
+                    @if (ShowQrCode)
+                    {
+                        <div class="flex justify-center mt-3">
+                            <div id="totp-qrcode-container" data-url="@GetTotpUri(EditingTotpCode)"></div>
+                        </div>
+                    }
+                </div>
+
+                <button type="button" @onclick="SaveEditedTotpCode" class="w-full text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+                    @SharedLocalizer["Save"]
+                </button>
+            </div>
+        }
+    </div>
+</FormModal>
 
 @code {
     private IStringLocalizer Localizer => LocalizerFactory.Create("Components.Main.Components.TotpCodes.TotpCodes", "AliasVault.Client");
@@ -123,9 +171,26 @@
     [Parameter]
     public EventCallback OnRemove { get; set; }
 
+    /// <summary>
+    /// Gets or sets the item display name for QR code generation.
+    /// </summary>
+    [Parameter]
+    public string? ItemDisplayName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the item username or email for QR code generation.
+    /// </summary>
+    [Parameter]
+    public string? ItemUsername { get; set; }
+
     private bool IsAddFormVisible { get; set; } = false;
     private TotpCodeEdit NewTotpCode { get; set; } = new();
     private List<Guid> OriginalTotpCodeIds { get; set; } = [];
+    private bool IsEditModalOpen { get; set; } = false;
+    private TotpCode? EditingTotpCode { get; set; }
+    private string EditName { get; set; } = string.Empty;
+    private string EditSecret { get; set; } = string.Empty;
+    private bool ShowQrCode { get; set; } = false;
 
     /// <summary>
     /// Returns true if there are existing (non-deleted) TOTP codes.
@@ -242,5 +307,82 @@
     private async Task HandleRemove()
     {
         await OnRemove.InvokeAsync();
+    }
+
+    /// <summary>
+    /// Shows the edit modal for a TOTP code.
+    /// </summary>
+    /// <param name="totpCode">The TOTP code to edit.</param>
+    private void ShowEditModal(TotpCode totpCode)
+    {
+        EditingTotpCode = totpCode;
+        EditName = totpCode.Name;
+        EditSecret = totpCode.SecretKey;
+        ShowQrCode = false;
+        IsEditModalOpen = true;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Closes the edit modal.
+    /// </summary>
+    private void CloseEditModal()
+    {
+        IsEditModalOpen = false;
+        EditingTotpCode = null;
+        EditName = string.Empty;
+        EditSecret = string.Empty;
+        ShowQrCode = false;
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Saves the edited TOTP code.
+    /// </summary>
+    private async Task SaveEditedTotpCode()
+    {
+        if (EditingTotpCode == null) return;
+
+        var totpCodeToUpdate = TotpCodeList.FirstOrDefault(t => t.Id == EditingTotpCode.Id);
+        if (totpCodeToUpdate != null)
+        {
+            totpCodeToUpdate.Name = EditName;
+            totpCodeToUpdate.SecretKey = EditSecret;
+            totpCodeToUpdate.UpdatedAt = DateTime.UtcNow;
+        }
+
+        // Notify parent component
+        await TotpCodesChanged.InvokeAsync(TotpCodeList);
+
+        CloseEditModal();
+    }
+
+    /// <summary>
+    /// Toggles the QR code visibility in the edit modal.
+    /// </summary>
+    private async Task ToggleQrCode()
+    {
+        ShowQrCode = !ShowQrCode;
+        StateHasChanged();
+
+        if (ShowQrCode)
+        {
+            // Wait for the QR code container to render, then generate QR code
+            await Task.Delay(100);
+            await JSRuntime.InvokeVoidAsync("generateQrCode", "totp-qrcode-container");
+        }
+    }
+
+    /// <summary>
+    /// Generates the TOTP URI for QR code generation.
+    /// </summary>
+    /// <param name="totpCode">The TOTP code.</param>
+    /// <returns>The TOTP URI.</returns>
+    private string GetTotpUri(TotpCode totpCode)
+    {
+        var issuer = ItemDisplayName ?? "AliasVault";
+        var accountName = ItemUsername ?? totpCode.Name;
+        var label = $"{Uri.EscapeDataString(issuer)}:{Uri.EscapeDataString(accountName)}";
+        return $"otpauth://totp/{label}?secret={totpCode.SecretKey}&issuer={Uri.EscapeDataString(issuer)}";
     }
 }

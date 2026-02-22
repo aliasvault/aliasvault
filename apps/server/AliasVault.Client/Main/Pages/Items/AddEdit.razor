@@ -70,7 +70,7 @@ else
                 @if (Show2FA && HasLoginFields())
                 {
                     <div class="col-span-1 md:col-span-1 lg:col-span-1">
-                        <TotpCodes TotpCodeList="@Obj.TotpCodes" TotpCodesChanged="HandleTotpCodesChanged" CanRemove="@CanRemove2FASection()" OnRemove="Remove2FASection" />
+                        <TotpCodes TotpCodeList="@Obj.TotpCodes" TotpCodesChanged="HandleTotpCodesChanged" CanRemove="@CanRemove2FASection()" OnRemove="Remove2FASection" ItemDisplayName="@Obj.ServiceName" ItemUsername="@(Obj.GetField(FieldKey.LoginUsername)?.Value ?? Obj.GetField(FieldKey.LoginEmail)?.Value)" />
                     </div>
                 }
 
