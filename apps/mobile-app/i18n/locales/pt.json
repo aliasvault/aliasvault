@@ -467,7 +467,8 @@
       "itemDeleted": "Item excluído com sucesso",
       "usernameCopied": "Nome de usuário copiado para a área de transferência",
       "emailCopied": "E-mail copiado para a área de transferência",
-      "passwordCopied": "Senha copiada para a área de transferência"
+      "passwordCopied": "Senha copiada para a área de transferência",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Criar novo alias para",
     "contextMenu": {
@@ -477,6 +478,12 @@
       "copyUsername": "Copiar Nome de Usuário",
       "copyEmail": "Copiar E-mail",
       "copyPassword": "Copiar Senha"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "Ver histórico",
     "history": "Histórico",
