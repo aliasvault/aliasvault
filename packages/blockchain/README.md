@@ -35,6 +35,7 @@ npm install
 cd contract
 compact compile src/counter.compact src/managed/counter
 compact compile src/vault-registry.compact src/managed/vault-registry
+compact compile src/guardian-recovery.compact src/managed/guardian-recovery
 cd ..
 
 # 3. Build TypeScript (in WSL for rm/cp commands)
@@ -58,19 +59,24 @@ node --experimental-specifier-resolution=node --loader ts-node/esm src/tui_vault
 packages/blockchain/
 ├── contract/                  # Compact smart contracts + TypeScript bindings
 │   ├── src/
-│   │   ├── counter.compact         # Counter contract (starter example)
-│   │   ├── vault-registry.compact  # VaultRegistry contract (vault registration)
-│   │   ├── managed/                # Compiled contract artifacts (auto-generated)
-│   │   │   ├── counter/            # Counter compiled output
-│   │   │   └── vault-registry/     # VaultRegistry compiled output
-│   │   ├── witnesses.ts            # Witness functions
-│   │   └── index.ts                # Contract exports (Counter + VaultRegistry)
+│   │   ├── counter.compact                # Counter contract (starter example)
+│   │   ├── vault-registry.compact         # VaultRegistry contract (vault registration)
+│   │   ├── guardian-recovery.compact      # GuardianRecovery contract (guardian recovery)
+│   │   ├── managed/                       # Compiled contract artifacts (auto-generated)
+│   │   │   ├── counter/                   # Counter compiled output
+│   │   │   ├── vault-registry/            # VaultRegistry compiled output
+│   │   │   └── guardian-recovery/         # GuardianRecovery compiled output
+│   │   ├── witnesses.ts                   # VaultRegistry/Counter witness functions
+│   │   ├── guardian-recovery-witnesses.ts # GuardianRecovery witness functions
+│   │   └── index.ts                       # Contract exports (Counter + VaultRegistry + GuardianRecovery)
 │   └── package.json
 ├── cli/                       # CLI tools for contract deployment & interaction
 │   ├── src/
-│   │   ├── api.ts                    # Counter contract interaction API
-│   │   ├── vault-registry-api.ts     # VaultRegistry contract interaction API
-│   │   ├── vault-registry-types.ts   # VaultRegistry TypeScript types
+│   │   ├── api.ts                        # Counter contract interaction API
+│   │   ├── vault-registry-api.ts         # VaultRegistry contract interaction API
+│   │   ├── vault-registry-types.ts       # VaultRegistry TypeScript types
+│   │   ├── guardian-recovery-api.ts      # GuardianRecovery contract interaction API
+│   │   ├── guardian-recovery-types.ts    # GuardianRecovery TypeScript types
 │   │   ├── deploy-vault-registry.ts  # Headless VaultRegistry deployment script
 │   │   ├── deploy-utils.ts           # Deploy utilities (secret key, config update, arg parsing)
 │   │   ├── cli.ts                    # Interactive TUI menus (counter)
@@ -80,7 +86,8 @@ packages/blockchain/
 │   │   ├── standalone.ts            # Entry point that starts its own Docker containers
 │   │   └── test/
 │   │       ├── deploy-utils.test.ts  # Deploy utility unit tests
-│   │       └── vault-registry-api.test.ts
+│   │       ├── vault-registry-api.test.ts
+│   │       └── guardian-recovery-api.test.ts
 │   └── package.json
 └── package.json               # Workspace root
 ```
@@ -164,7 +171,45 @@ npm run deploy-preprod -- --seed=<hex-seed>
 3. Browser extension and mobile app import from `shared/config/contracts.ts` (ADR-004)
 4. Rebuild apps to pick up the new address
 
+### GuardianRecovery (Story 3.1)
+Per-vault guardian recovery contract with **72-hour time-lock** and **2-of-3 threshold**.
+
+- **Deployment model**: Each vault owner deploys their own instance
+- **Public ledger** (7 fields):
+  - `owner: Bytes<32>` — owner commitment (hiding, via `persistentCommit`)
+  - `guardians: Set<Bytes<32>>` — guardian commitment set (max 3)
+  - `guardianCount: Counter` — number of registered guardians
+  - `recoveryInitiatedAt: Uint<64>` — Unix epoch seconds when recovery initiated (0 = none)
+  - `approvedGuardians: Set<Bytes<32>>` — guardians that approved the current recovery
+  - `sharesCidHash: Bytes<32>` — hash of IPFS CID containing encrypted Shamir shares
+  - `recoveryComplete: Boolean` — true after successful claimRecovery
+- **Witnesses**: `local_secret_key()`, `local_guardian_key()`
+- **Circuits** (8 impure + 2 pure):
+  - `initialize(ownerCom)` — sets owner commitment on first deploy
+  - `addGuardian(guardianCom)` — owner-only, adds guardian (max 3)
+  - `removeGuardian(guardianCom)` — owner-only, removes guardian
+  - `storeSharesCidHash(cidHash)` — owner-only, stores hash of IPFS CID with encrypted shares
+  - `initiateRecovery(currentTime)` — owner-only, starts 72-hour recovery timer
+  - `approveRecovery()` — guardian-only, approves active recovery
+  - `claimRecovery()` — owner-only, completes recovery after time-lock + threshold
+  - `cancelRecovery()` — owner-only, cancels active recovery
+  - `ownerCommitment(sk)` — pure, derives owner hiding commitment (`"recovery:owner:"`)
+  - `guardianCommitment(gk)` — pure, derives guardian commitment (`"recovery:guardian:"`)
+- **Canonical spec**: `contract/src/GUARDIAN-RECOVERY-SPEC.md`
+
+**Build & test:**
+```bash
+# Compile (from packages/blockchain/contract/)
+compact compile src/guardian-recovery.compact src/managed/guardian-recovery
+
+# Run contract tests (from packages/blockchain/contract/)
+npx vitest run
+
+# Run CLI tests (from packages/blockchain/cli/)
+npx vitest run
+```
+
 ## Next Steps (AliasVault)
 
-Future contracts to implement:
-1. **`GuardianRecovery.compact`** — Guardian-based password recovery with time-lock
+Future stories to implement:
+1. **Story 3.2** — Shamir secret splitting (Pattern 6)
