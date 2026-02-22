@@ -2,9 +2,11 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, View, Text, StyleSheet, Linking, Platform } from 'react-native';
+import { ActivityIndicator, View, Text, StyleSheet, Linking, Platform, Share, TouchableOpacity } from 'react-native';
+import ContextMenu from 'react-native-context-menu-view';
 import Toast from 'react-native-toast-message';
 
+import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { Item } from '@/utils/dist/core/models/vault';
 import { FieldTypes, getFieldValue, FieldKey } from '@/utils/dist/core/models/vault';
 import emitter from '@/utils/EventEmitter';
@@ -27,6 +29,10 @@ import { ThemedView } from '@/components/themed/ThemedView';
 import { HeaderBackButton } from '@/components/ui/HeaderBackButton';
 import { RobustPressable } from '@/components/ui/RobustPressable';
 import { useDb } from '@/context/DbContext';
+import { LocalPreferencesService } from '@/services/LocalPreferencesService';
+
+import type { NativeSyntheticEvent } from 'react-native';
+import type { ContextMenuOnPressNativeEvent } from 'react-native-context-menu-view';
 
 /**
  * Item details screen.
@@ -135,6 +141,91 @@ export default function ItemDetailsScreen() : React.ReactNode {
   const email = getFieldValue(item, FieldKey.LoginEmail);
 
   /**
+   * Helper function to copy URL to clipboard with auto-clear
+   */
+  const copyUrlToClipboard = async (url: string): Promise<void> => {
+    try {
+      // Get clipboard clear timeout from settings
+      const timeoutSeconds = await LocalPreferencesService.getClipboardClearTimeout();
+
+      // Use centralized clipboard utility
+      await copyToClipboardWithExpiration(url, timeoutSeconds);
+
+      if (Platform.OS === 'ios') {
+        Toast.show({
+          type: 'success',
+          text1: t('items.toasts.urlCopied'),
+          position: 'bottom',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to copy URL to clipboard:', error);
+    }
+  };
+
+  /**
+   * Handles the context menu action for URLs
+   */
+  const handleUrlContextMenuAction = async (
+    event: NativeSyntheticEvent<ContextMenuOnPressNativeEvent>,
+    url: string
+  ): Promise<void> => {
+    const { name } = event.nativeEvent;
+
+    switch (name) {
+      case t('items.urlContextMenu.copyLink'):
+        await copyUrlToClipboard(url);
+        break;
+      case t('items.urlContextMenu.openLink'):
+        await Linking.openURL(url);
+        break;
+      case t('items.urlContextMenu.shareLink'):
+        try {
+          await Share.share({
+            message: url,
+            url: Platform.OS === 'ios' ? url : undefined,
+          });
+        } catch (error) {
+          console.error('Failed to share URL:', error);
+        }
+        break;
+    }
+  };
+
+  /**
+   * Get context menu actions for URL
+   */
+  const getUrlMenuActions = (): {
+    title: string;
+    systemIcon: string;
+  }[] => [
+    {
+      title: t('items.urlContextMenu.copyLink'),
+      systemIcon: Platform.select({
+        ios: 'doc.on.doc',
+        android: 'baseline_content_copy',
+        default: 'doc.on.doc',
+      }),
+    },
+    {
+      title: t('items.urlContextMenu.openLink'),
+      systemIcon: Platform.select({
+        ios: 'arrow.up.right.square',
+        android: 'baseline_open_in_new',
+        default: 'arrow.up.right.square',
+      }),
+    },
+    {
+      title: t('items.urlContextMenu.shareLink'),
+      systemIcon: Platform.select({
+        ios: 'square.and.arrow.up',
+        android: 'baseline_share',
+        default: 'square.and.arrow.up',
+      }),
+    },
+  ];
+
+  /**
    * Render all URL values from URL fields.
    */
   const renderUrls = (): React.ReactNode => {
@@ -153,14 +244,28 @@ export default function ItemDetailsScreen() : React.ReactNode {
             const key = `${urlField.FieldKey}-${idx}`;
 
             return isValidUrl ? (
-              <RobustPressable
+              <ContextMenu
                 key={key}
-                onPress={() => Linking.openURL(urlValue)}
+                title={t('items.urlContextMenu.title')}
+                actions={getUrlMenuActions()}
+                onPress={(event) => handleUrlContextMenuAction(event, urlValue)}
+                previewBackgroundColor={colors.accentBackground}
               >
-                <Text style={[styles.serviceUrl, { color: colors.primary }]}>
-                  {urlValue}
-                </Text>
-              </RobustPressable>
+                <View style={styles.urlContextWrapper}>
+                  <TouchableOpacity
+                    onPress={() => Linking.openURL(urlValue)}
+                    onLongPress={() => {
+                      // Ignore long press to prevent context menu long press from triggering the press.
+                    }}
+                    activeOpacity={0.7}
+                    hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                  >
+                    <Text style={[styles.serviceUrl, { color: colors.primary }]}>
+                      {urlValue}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              </ContextMenu>
             ) : (
               <Text key={key} style={[styles.serviceUrl, { color: colors.textMuted }]}>
                 {urlValue}
@@ -235,6 +340,11 @@ const styles = StyleSheet.create({
   },
   urlContainer: {
     gap: 2,
-    marginTop: 2,
+  },
+  urlContextWrapper: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginVertical: -6,
+    marginHorizontal: -12,
   },
 });
