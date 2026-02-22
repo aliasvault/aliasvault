@@ -1636,6 +1636,8 @@ export default function AddEditItemScreen(): React.ReactNode {
                   onTotpCodesChange={setTotpCodes}
                   originalTotpCodeIds={originalTotpCodeIds}
                   showAddFormRef={totpShowAddFormRef}
+                  itemDisplayName={item?.Name || undefined}
+                  itemUsername={(fieldValues['login.username'] as string) || (fieldValues['login.email'] as string) || undefined}
                 />
               </FormSection>
             )}
