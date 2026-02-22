@@ -10,6 +10,7 @@ import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { useDialog } from '@/context/DialogContext';
 import { useColors, useColorScheme } from '@/hooks/useColorScheme';
+import NativeVaultManager from '@/specs/NativeVaultManager';
 import type { TotpCode } from '@/utils/dist/core/models/vault';
 
 type TotpFormData = {
@@ -45,7 +46,8 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
   const { t } = useTranslation();
   const colors = useColors();
   const colorScheme = useColorScheme();
-  const { showConfirm } = useDialog();
+  const { showConfirm, showAlert } = useDialog();
+  const [isAddChoiceModalVisible, setIsAddChoiceModalVisible] = useState(false);
   const [isAddFormVisible, setIsAddFormVisible] = useState(false);
   const [formData, setFormData] = useState<TotpFormData>({ name: '', secretKey: '' });
   const [formError, setFormError] = useState<string | null>(null);
@@ -54,20 +56,94 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
   const [editName, setEditName] = useState('');
   const [editSecret, setEditSecret] = useState('');
   const [showQrCode, setShowQrCode] = useState(false);
+  const hasLaunchedScanner = React.useRef(false);
 
   /**
-   * Shows the add form
+   * Shows the add choice modal (scan QR code or enter manually)
    */
-  const showAddForm = (): void => {
+  const showAddChoiceModal = (): void => {
+    setIsAddChoiceModalVisible(true);
+  };
+
+  /**
+   * Hides the add choice modal
+   */
+  const hideAddChoiceModal = (): void => {
+    setIsAddChoiceModalVisible(false);
+  };
+
+  /**
+   * Shows the manual entry form
+   */
+  const showManualEntryForm = (): void => {
+    hideAddChoiceModal();
     setFormData({ name: '', secretKey: '' });
     setFormError(null);
     setIsAddFormVisible(true);
   };
 
-  // Expose showAddForm to parent via ref
+  /**
+   * Launches the QR code scanner for TOTP
+   */
+  const launchQRScanner = React.useCallback(async (): Promise<void> => {
+    // Prevent multiple scanner launches
+    if (hasLaunchedScanner.current) {
+      return;
+    }
+
+    hasLaunchedScanner.current = true;
+
+    // Hide modal and wait for animation to complete
+    hideAddChoiceModal();
+
+    // Wait for modal dismiss animation to complete
+    await new Promise(resolve => setTimeout(resolve, 350));
+
+    try {
+      // Scan QR code with otpauth:// prefix filter
+      const scannedData = await NativeVaultManager.scanQRCode(['otpauth://'], t('totp.scanQrCode'));
+
+      if (scannedData) {
+        // Parse the otpauth:// URL
+        try {
+          const uri = OTPAuth.URI.parse(scannedData);
+          if (uri instanceof OTPAuth.TOTP) {
+            const secretKey = uri.secret.base32;
+            const name = uri.label || 'Authenticator';
+
+            // Create new TOTP code immediately
+            const newTotpCode: TotpCode = {
+              Id: crypto.randomUUID().toUpperCase(),
+              Name: name,
+              SecretKey: secretKey,
+              ItemId: '' // Will be set when saving the item
+            };
+
+            // Add to the list
+            const updatedTotpCodes = [...totpCodes, newTotpCode];
+            onTotpCodesChange(updatedTotpCodes);
+          } else {
+            showAlert(t('common.error'), t('totp.errors.scanFailed'));
+          }
+        } catch (error) {
+          console.error('Error parsing TOTP QR code:', error);
+          showAlert(t('common.error'), t('totp.errors.scanFailed'));
+        }
+      }
+      // If scannedData is null, user cancelled - just close without error
+    } catch (error) {
+      console.error('QR scan error:', error);
+      showAlert(t('common.error'), t('totp.errors.scanFailed'));
+    } finally {
+      // Reset the ref to allow future scans
+      hasLaunchedScanner.current = false;
+    }
+  }, [totpCodes, onTotpCodesChange, t, showAlert]);
+
+  // Expose showAddChoiceModal to parent via ref
   React.useEffect(() => {
     if (showAddFormRef) {
-      showAddFormRef.current = showAddForm;
+      showAddFormRef.current = showAddChoiceModal;
     }
     return () => {
       if (showAddFormRef) {
@@ -406,6 +482,39 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       padding: 16,
       alignSelf: 'center',
     },
+    choiceButton: {
+      alignItems: 'center',
+      backgroundColor: colors.background,
+      borderColor: colors.accentBorder,
+      borderRadius: 8,
+      borderWidth: 1,
+      flexDirection: 'row',
+      gap: 12,
+      justifyContent: 'center',
+      marginTop: 12,
+      padding: 16,
+    },
+    choiceButtonText: {
+      color: colors.text,
+      fontSize: 16,
+      fontWeight: '600',
+    },
+    dividerContainer: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      marginTop: 20,
+      marginBottom: 8,
+    },
+    dividerLine: {
+      backgroundColor: colors.accentBorder,
+      flex: 1,
+      height: 1,
+    },
+    dividerText: {
+      color: colors.textMuted,
+      fontSize: 14,
+      marginHorizontal: 12,
+    },
   });
 
   return (
@@ -414,7 +523,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       {!showAddFormRef && !hasActiveTotpCodes && (
         <TouchableOpacity
           style={styles.addButton}
-          onPress={showAddForm}
+          onPress={showAddChoiceModal}
         >
           <Ionicons name="add" size={24} color={colors.background} />
         </TouchableOpacity>
@@ -423,7 +532,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       {!showAddFormRef && hasActiveTotpCodes && (
         <TouchableOpacity
           style={styles.addButtonCompact}
-          onPress={showAddForm}
+          onPress={showAddChoiceModal}
         >
           <Ionicons name="add" size={24} color={colors.background} />
         </TouchableOpacity>
@@ -459,6 +568,65 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
           ))}
         </View>
       )}
+
+      {/* Add Choice Modal (Scan or Enter Manually) */}
+      <Modal
+        visible={isAddChoiceModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={hideAddChoiceModal}
+      >
+        <TouchableOpacity
+          style={styles.modalContainer}
+          activeOpacity={1}
+          onPress={hideAddChoiceModal}
+        >
+          <View style={styles.modalContent}>
+            <TouchableOpacity activeOpacity={1}>
+              <View style={styles.modalHeader}>
+                <ThemedText style={styles.modalTitle}>
+                  {t('totp.addCode')}
+                </ThemedText>
+                <TouchableOpacity
+                  style={styles.modalCloseButton}
+                  onPress={hideAddChoiceModal}
+                >
+                  <MaterialIcons name="close" size={24} color={colors.textMuted} />
+                </TouchableOpacity>
+              </View>
+
+              {/* Scan QR Code Button */}
+              <TouchableOpacity
+                style={styles.choiceButton}
+                onPress={launchQRScanner}
+              >
+                <MaterialIcons name="qr-code-scanner" size={24} color={colors.primary} />
+                <ThemedText style={styles.choiceButtonText}>
+                  {t('totp.scanQrCode')}
+                </ThemedText>
+              </TouchableOpacity>
+
+              {/* Divider with "or" */}
+              <View style={styles.dividerContainer}>
+                <View style={styles.dividerLine} />
+                <ThemedText style={styles.dividerText}>{t('common.or')}</ThemedText>
+                <View style={styles.dividerLine} />
+              </View>
+
+              {/* Enter Manually Button */}
+              <TouchableOpacity
+                style={styles.choiceButton}
+                onPress={showManualEntryForm}
+              >
+                <MaterialIcons name="keyboard" size={24} color={colors.textMuted} />
+                <ThemedText style={styles.choiceButtonText}>
+                  {t('totp.enterManually')}
+                </ThemedText>
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Add TOTP Modal */}
       <Modal

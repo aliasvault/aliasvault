@@ -761,9 +761,18 @@ export default function AddEditItemScreen(): React.ReactNode {
         key: '2fa',
         isVisible: show2FA,
         /**
-         * Show the 2FA section
+         * Show the 2FA section and auto-open add modal if no codes exist
          */
-        onAdd: () => setShow2FA(true)
+        onAdd: () => {
+          setShow2FA(true);
+          // Auto-open the add modal if there are no TOTP codes yet
+          if (totpCodes.filter(tc => !tc.IsDeleted).length === 0) {
+            // Defer to next tick to ensure the section is rendered first
+            setTimeout(() => {
+              totpShowAddFormRef.current?.();
+            }, 100);
+          }
+        }
       });
     }
     // Attachments - always available
@@ -776,7 +785,7 @@ export default function AddEditItemScreen(): React.ReactNode {
       onAdd: () => setShowAttachments(true)
     });
     return sections;
-  }, [hasLoginFields, show2FA, showAttachments]);
+  }, [hasLoginFields, show2FA, showAttachments, totpCodes]);
 
   /**
    * Submit the form.
