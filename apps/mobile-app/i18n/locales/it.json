@@ -468,7 +468,7 @@
       "usernameCopied": "Nome utente copiato negli appunti",
       "emailCopied": "Email copiata negli appunti",
       "passwordCopied": "Password copiata negli appunti",
-      "urlCopied": "URL copied to clipboard"
+      "urlCopied": "URL copiato negli appunti"
     },
     "createNewAliasFor": "Crea un nuovo alias per",
     "contextMenu": {
@@ -480,10 +480,10 @@
       "copyPassword": "Copia Password"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "Opzioni URL",
+      "copyLink": "Copia collegamento",
+      "openLink": "Apri Collegamento",
+      "shareLink": "Condividi collegamento"
     },
     "viewHistory": "Visualizza cronologia",
     "history": "Cronologia",
