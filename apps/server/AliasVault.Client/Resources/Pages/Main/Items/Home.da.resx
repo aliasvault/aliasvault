@@ -164,7 +164,7 @@
     <comment>Filter option to show only items with attachments</comment>
   </data>
   <data name="FilterTotpOption" xml:space="preserve">
-    <value>2FA Codes</value>
+    <value>2FA Koder</value>
     <comment>Filter option to show only items with TOTP codes</comment>
   </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
