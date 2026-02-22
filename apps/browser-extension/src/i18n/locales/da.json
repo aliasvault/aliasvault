@@ -168,13 +168,13 @@
     "openAliasVaultToUpgrade": "Åbn AliasVault for at opgradere",
     "vaultUpgradeRequired": "Opgradering af boks påkrævet.",
     "dismissPopup": "Luk popup",
-    "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "noTotpItemsFound": "Ingen 2FA kode match fundet",
+    "close": "Luk",
     "savePrompt": {
       "title": "Gem i AliasVault?",
       "neverForThisSite": "Aldrig for dette websted",
-      "addUrlTitle": "Add URL to credential?",
-      "addUrl": "Add URL"
+      "addUrlTitle": "Tilføj URL til legitimationsoplysninger?",
+      "addUrl": "Tilføj URL"
     }
   },
   "items": {
@@ -212,7 +212,7 @@
     "filters": {
       "folders": "Mapper",
       "passkeys": "Passkeys",
-      "totp": "2FA Codes"
+      "totp": "2FA Koder"
     },
     "sort": {
       "title": "Sorter efter",
