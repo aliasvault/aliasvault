@@ -70,12 +70,6 @@ public class CredentialIdentityStore {
         return !state.supportsIncrementalUpdates
     }
 
-    private static func effectiveDomain(from host: String) -> String {
-        let parts = host.split(separator: ".")
-        guard parts.count >= 2 else { return host }
-        return parts.suffix(2).joined(separator: ".")
-    }
-
     /// Create password credential identities from credentials
     /// Creates one identity per URL for multi-URL support (iOS matches by domain itself)
     private func createPasswordIdentities(from credentials: [AutofillCredential]) -> [ASPasswordCredentialIdentity] {
@@ -96,20 +90,22 @@ public class CredentialIdentityStore {
             }
 
             // Create one identity per URL for multi-URL support
-            return credential.serviceUrls.compactMap { urlString -> ASPasswordCredentialIdentity? in
+            let identities = credential.serviceUrls.compactMap { urlString -> ASPasswordCredentialIdentity? in
                 guard let url = URL(string: urlString),
                       let host = url.host else {
                     return nil
                 }
 
-                let effectiveDomain = Self.effectiveDomain(from: host)
-
-                return ASPasswordCredentialIdentity(
-                    serviceIdentifier: ASCredentialServiceIdentifier(identifier: effectiveDomain, type: .domain),
+                let identity = ASPasswordCredentialIdentity(
+                    serviceIdentifier: ASCredentialServiceIdentifier(identifier: urlString, type: .URL),
                     user: identifier,
                     recordIdentifier: credential.id.uuidString
                 )
+
+                return identity
             }
+
+            return identities
         }
     }
 
