@@ -1,0 +1,203 @@
+pragma language_version >= 0.20;
+
+import CompactStandardLibrary;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GuardianRecovery Contract — Full Specification
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// PURPOSE: Per-vault guardian recovery management with 72-hour time-lock.
+//          Each vault owner deploys their own instance. Guardians approve
+//          recovery requests; after 2-of-3 threshold + time-lock, recovery
+//          completes. Encrypted Shamir shares stored on IPFS (hash on-chain).
+//
+// FUNCTIONS (by access control):
+//
+//   Owner-only (verified via ownerCommitment(local_secret_key())):
+//     - initialize(ownerCom)           Sets owner commitment on first deploy
+//     - addGuardian(guardianCom)       Adds guardian (max 3)
+//     - removeGuardian(guardianCom)    Removes guardian (blocked during active recovery)
+//     - storeSharesCidHash(cidHash)    Stores hash of IPFS CID with encrypted shares
+//     - initiateRecovery(currentTime)  Starts 72-hour recovery timer
+//     - claimRecovery()                Completes recovery after time-lock + threshold
+//     - cancelRecovery()               Cancels active recovery, clears approvals
+//
+//   Guardian-only (verified via guardianCommitment(local_guardian_key()) + guardians.member()):
+//     - approveRecovery()              Guardian approves active recovery
+//
+//   Pure circuits (off-circuit computation):
+//     - ownerCommitment(sk)            Derives owner identity commitment
+//     - guardianCommitment(gk)         Derives guardian identity commitment
+//
+// ACCESS CONTROL MATRIX:
+//   ┌─────────────────────────┬───────────────┬──────────────────────────────────────────────────┐
+//   │ Function                │ Caller        │ Verification Method                              │
+//   ├─────────────────────────┼───────────────┼──────────────────────────────────────────────────┤
+//   │ initialize              │ Any (1st time)│ owner == default<Bytes<32>>                      │
+//   │ addGuardian             │ Owner only    │ ownerCommitment(local_secret_key())               │
+//   │ removeGuardian          │ Owner only    │ ownerCommitment(local_secret_key())               │
+//   │ storeSharesCidHash      │ Owner only    │ ownerCommitment(local_secret_key())               │
+//   │ initiateRecovery        │ Owner only    │ ownerCommitment(local_secret_key())               │
+//   │ claimRecovery           │ Owner only    │ ownerCommitment(local_secret_key())               │
+//   │ cancelRecovery          │ Owner only    │ ownerCommitment(local_secret_key())               │
+//   │ approveRecovery         │ Guardian only │ guardianCommitment(local_guardian_key()) + member │
+//   │ ownerCommitment         │ Pure          │ N/A                                              │
+//   │ guardianCommitment      │ Pure          │ N/A                                              │
+//   └─────────────────────────┴───────────────┴──────────────────────────────────────────────────┘
+//
+// STATE VARIABLES:
+//     - owner: Bytes<32>                  — owner commitment (hiding, via persistentCommit)
+//     - guardians: Set<Bytes<32>>         — guardian commitment set (max 3)
+//     - guardianCount: Counter            — number of registered guardians
+//     - recoveryInitiatedAt: Uint<64>     — Unix epoch seconds when recovery initiated (0 = none)
+//     - approvedGuardians: Set<Bytes<32>> — guardians that approved the current recovery
+//     - sharesCidHash: Bytes<32>          — hash of IPFS CID containing encrypted Shamir shares
+//     - recoveryComplete: Boolean         — true after successful claimRecovery
+//
+// WITNESSES:
+//     - local_secret_key(): Bytes<32>     — owner's secret key from TypeScript private state
+//     - local_guardian_key(): Bytes<32>   — guardian's key from TypeScript private state
+//
+// COMPACT LANGUAGE CONSTRAINTS:
+//     - No `this.sender` — caller identity verified via witness + persistentCommit
+//     - No `private state {}` block — private state is TypeScript-only (GuardianRecoveryPrivateState)
+//     - No `currentTimestamp()` — use blockTimeGte/Gt/Lt/Lte(Uint<64>) for on-chain time
+//     - Uint<64> arithmetic requires cast: (((val as Field) + (n as Field)) as Uint<64>)
+//     - disclose() required on circuit params before ledger/conditional use
+//     - default<T> is expression not function: default<Bytes<32>> not default<Bytes<32>>()
+//     - Sets cannot be iterated in circuits, but Set.resetToDefault() clears them in-circuit
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Public ledger: owner commitment (hiding commitment derived from secret key)
+export ledger owner: Bytes<32>;
+
+// Public ledger: set of guardian commitments (max 3)
+export ledger guardians: Set<Bytes<32>>;
+
+// Public ledger: number of registered guardians
+export ledger guardianCount: Counter;
+
+// Public ledger: Unix epoch seconds when recovery was initiated (0 = none)
+export ledger recoveryInitiatedAt: Uint<64>;
+
+// Public ledger: set of guardian commitments that approved the current recovery
+export ledger approvedGuardians: Set<Bytes<32>>;
+
+// Public ledger: hash of IPFS CID containing encrypted Shamir shares
+export ledger sharesCidHash: Bytes<32>;
+
+// Public ledger: true after successful claimRecovery
+export ledger recoveryComplete: Boolean;
+
+// Witness: returns the owner's secret key from private state
+witness local_secret_key(): Bytes<32>;
+
+// Witness: returns the guardian's key from private state
+witness local_guardian_key(): Bytes<32>;
+
+// Derive an owner commitment from a secret key using persistentCommit (hiding commitment).
+// Uses domain separator "recovery:owner:" — different from VaultRegistry ("vault:owner:")
+// to prevent cross-contract commitment collisions.
+export circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<32>>(pad(32, "recovery:owner:"), sk);
+}
+
+// Derive a guardian commitment from a guardian key.
+// Uses domain separator "recovery:guardian:" — different from owner to prevent
+// cross-role commitment collisions (same key MUST produce different commitments).
+export circuit guardianCommitment(gk: Bytes<32>): Bytes<32> {
+  return persistentCommit<Bytes<32>>(pad(32, "recovery:guardian:"), gk);
+}
+
+// Initialize the contract by setting the owner commitment.
+// Can only be called once — rejects if owner is already set.
+export circuit initialize(ownerCom: Bytes<32>): [] {
+  const com = disclose(ownerCom);
+  assert(owner == default<Bytes<32>>, "Already initialized");
+  owner = com;
+}
+
+// Add a guardian to the authorized set. Only the owner can call this.
+// guardianCom is derived via guardianCommitment(guardianKey) off-circuit.
+// Maximum 3 guardians enforced via guardianCount.
+export circuit addGuardian(guardianCom: Bytes<32>): [] {
+  const com = disclose(guardianCom);
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  assert(guardianCount.lessThan(3), "Maximum 3 guardians reached");
+  assert(!guardians.member(com), "Guardian already registered");
+  guardians.insert(com);
+  guardianCount.increment(1);
+}
+
+// Remove a guardian from the authorized set. Only the owner can call this.
+// Blocked during active recovery to prevent removed guardian's approval from counting.
+export circuit removeGuardian(guardianCom: Bytes<32>): [] {
+  const com = disclose(guardianCom);
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  assert(recoveryInitiatedAt == (0 as Uint<64>), "Cannot remove guardian during active recovery");
+  assert(guardians.member(com), "Not a guardian");
+  guardians.remove(com);
+  guardianCount.decrement(1);
+}
+
+// Store the hash of an IPFS CID containing encrypted Shamir shares.
+// Only the owner can call this. The actual shares are on IPFS, not on-chain.
+export circuit storeSharesCidHash(cidHash: Bytes<32>): [] {
+  const hash = disclose(cidHash);
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  sharesCidHash = hash;
+}
+
+// Initiate a recovery process. Only the owner can call this.
+// Sets the recovery timer. Rejects zero (sentinel) and already-active recovery.
+// Validates provided time via blockTimeGte() to prevent future timestamps.
+export circuit initiateRecovery(currentTime: Uint<64>): [] {
+  const time = disclose(currentTime);
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  assert(time != (0 as Uint<64>), "Invalid timestamp");
+  assert(recoveryInitiatedAt == (0 as Uint<64>), "Recovery already in progress");
+  assert(blockTimeGte(time), "Provided time is in the future");
+  recoveryInitiatedAt = time;
+}
+
+// Approve an active recovery. Only registered guardians can call this.
+// Uses the guardian's private key via witness to derive their commitment.
+// Rejects if no recovery is active or guardian already approved.
+export circuit approveRecovery(): [] {
+  const gk = local_guardian_key();
+  const gCom = guardianCommitment(gk);
+  assert(guardians.member(gCom), "Not a guardian");
+  assert(recoveryInitiatedAt != (0 as Uint<64>), "No recovery in progress");
+  assert(!approvedGuardians.member(gCom), "Already approved");
+  approvedGuardians.insert(gCom);
+}
+
+// Claim recovery after 72-hour time-lock and 2-of-3 guardian threshold.
+// Only the owner can call this. Sets recoveryComplete = true on success.
+// 72 hours = 259200 seconds, enforced on-chain via blockTimeGte(unlockTime).
+export circuit claimRecovery(): [] {
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  assert(recoveryInitiatedAt != (0 as Uint<64>), "No recovery in progress");
+  assert(!recoveryComplete, "Recovery already completed");
+  // 72-hour time-lock enforcement
+  const unlockTime = (((recoveryInitiatedAt as Field) + (259200 as Field)) as Uint<64>);
+  assert(blockTimeGte(unlockTime), "72-hour time-lock has not elapsed");
+  // 2-of-3 guardian threshold
+  assert(approvedGuardians.size() >= (2 as Uint<64>), "Insufficient guardian approvals");
+  recoveryComplete = true;
+}
+
+// Cancel an active recovery. Only the owner can call this.
+// Resets the recovery timer and clears all guardian approvals.
+export circuit cancelRecovery(): [] {
+  const sk = local_secret_key();
+  assert(owner == ownerCommitment(sk), "Not the vault owner");
+  assert(recoveryInitiatedAt != (0 as Uint<64>), "No recovery in progress");
+  recoveryInitiatedAt = 0 as Uint<64>;
+  approvedGuardians.resetToDefault();
+}
