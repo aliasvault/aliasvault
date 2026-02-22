@@ -467,7 +467,8 @@
       "itemDeleted": "Item deleted successfully",
       "usernameCopied": "Ім'я користувача скопійовано до буфера обміну",
       "emailCopied": "Електронну адресу скопійовано до буфера обміну",
-      "passwordCopied": "Пароль скопійовано до буфера обміну"
+      "passwordCopied": "Пароль скопійовано до буфера обміну",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Створити новий псевдонім для",
     "contextMenu": {
@@ -477,6 +478,12 @@
       "copyUsername": "Копіювати ім'я користувача",
       "copyEmail": "Копіювати електронну адресу",
       "copyPassword": "Копіювати пароль"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "View history",
     "history": "History",
