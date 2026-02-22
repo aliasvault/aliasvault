@@ -468,7 +468,7 @@
       "usernameCopied": "Brugernavn kopieret til udklipsholder",
       "emailCopied": "E-mail kopieret til udklipsholder",
       "passwordCopied": "Adgangskode kopieret til udklipsholder",
-      "urlCopied": "URL copied to clipboard"
+      "urlCopied": "URL kopieret til udklipsholder"
     },
     "createNewAliasFor": "Opret nyt alias for",
     "contextMenu": {
@@ -480,10 +480,10 @@
       "copyPassword": "Kopier adgangskode"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "Url Indstillinger",
+      "copyLink": "Kopier link",
+      "openLink": "Åbn Link",
+      "shareLink": "Del Link"
     },
     "viewHistory": "Vis historik",
     "history": "Historik",
