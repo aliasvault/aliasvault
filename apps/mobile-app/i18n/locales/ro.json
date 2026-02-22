@@ -468,7 +468,7 @@
       "usernameCopied": "Utilizator copiat în clipboard",
       "emailCopied": "E-mail copiat în clipboard",
       "passwordCopied": "Parolă copiată în clipboard",
-      "urlCopied": "URL copied to clipboard"
+      "urlCopied": "URL copiat în clipboard"
     },
     "createNewAliasFor": "Creează un alias nou pentru",
     "contextMenu": {
@@ -480,10 +480,10 @@
       "copyPassword": "Copiază parola"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "Opțiuni URL",
+      "copyLink": "Copiază linkul",
+      "openLink": "Deschide linkul",
+      "shareLink": "Distribuie linkul"
     },
     "viewHistory": "Vezi istoricul",
     "history": "Istoric",
