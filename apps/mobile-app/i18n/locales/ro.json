@@ -467,7 +467,8 @@
       "itemDeleted": "Element șters cu succes",
       "usernameCopied": "Utilizator copiat în clipboard",
       "emailCopied": "E-mail copiat în clipboard",
-      "passwordCopied": "Parolă copiată în clipboard"
+      "passwordCopied": "Parolă copiată în clipboard",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Creează un alias nou pentru",
     "contextMenu": {
@@ -477,6 +478,12 @@
       "copyUsername": "Copiază utilizatorul",
       "copyEmail": "Copiază e-mailul",
       "copyPassword": "Copiază parola"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "Vezi istoricul",
     "history": "Istoric",
