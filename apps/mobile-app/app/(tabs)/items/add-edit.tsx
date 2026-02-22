@@ -52,11 +52,12 @@ const DEFAULT_ITEM_TYPE: ItemType = ItemTypes.Login;
  * Add or edit an item screen.
  */
 export default function AddEditItemScreen(): React.ReactNode {
-  const { id, itemUrl, itemName, itemType: itemTypeParam } = useLocalSearchParams<{
+  const { id, itemUrl, itemName, itemType: itemTypeParam, folderId: folderIdParam } = useLocalSearchParams<{
     id: string;
     itemUrl?: string;
     itemName?: string;
     itemType?: string;
+    folderId?: string;
   }>();
   const router = useRouter();
   const colors = useColors();
@@ -570,7 +571,7 @@ export default function AddEditItemScreen(): React.ReactNode {
           Id: crypto.randomUUID().toUpperCase(),
           Name: serviceName,
           ItemType: effectiveType,
-          FolderId: null,
+          FolderId: folderIdParam || null,
           Fields: [],
           CreatedAt: new Date().toISOString(),
           UpdatedAt: new Date().toISOString()
@@ -594,7 +595,7 @@ export default function AddEditItemScreen(): React.ReactNode {
     };
 
     initializeComponent();
-  }, [id, isEditMode, itemUrl, itemName, itemTypeParam, loadExistingItem, router, t, dbContext.sqliteClient]);
+  }, [id, isEditMode, itemUrl, itemName, itemTypeParam, folderIdParam, loadExistingItem, router, t, dbContext.sqliteClient]);
 
   /**
    * Auto-generate alias when alias fields are shown by default in create mode.
