@@ -98,4 +98,17 @@ describe('FormDetector English tests', () => {
     testField(FormField.Username, 'spi_tmp', htmlFile);
   });
 
+  describe('English passwordless signup form 1 detection', () => {
+    const htmlFile = 'en-signup-passwordless-1.html';
+
+    testField(FormField.FullName, 'form-group--1', htmlFile);
+    testField(FormField.Email, 'form-group--3', htmlFile);
+  });
+
+  describe('English passwordless login form 1 detection', () => {
+    const htmlFile = 'en-login-passwordless-1.html';
+
+    testField(FormField.Email, 'form-group--1', htmlFile);
+  });
+
 });

@@ -14,8 +14,36 @@ export class FormDetector {
    */
   public constructor(document: Document, clickedElement?: HTMLElement) {
     this.document = document;
-    this.clickedElement = clickedElement ?? null;
     this.visibilityCache = new Map();
+
+    /*
+     * Only trust clickedElement if it and its ancestors are visible.
+     */
+    if (clickedElement) {
+      // Check parents strictly (including opacity)
+      let parent = clickedElement.parentElement;
+      let parentVisible = true;
+
+      while (parent && parent !== this.document.body) {
+        if (!this.isElementVisible(parent, true)) {
+          parentVisible = false;
+          break;
+        }
+        parent = parent.parentElement;
+      }
+
+      // Check element itself without opacity check (allow opacity:0 for transitions)
+      const style = document.defaultView?.getComputedStyle(clickedElement);
+      const elementStrictlyHidden = style?.display === 'none' || style?.visibility === 'hidden';
+
+      if (parentVisible && !elementStrictlyHidden) {
+        this.clickedElement = clickedElement;
+      } else {
+        this.clickedElement = null;
+      }
+    } else {
+      this.clickedElement = null;
+    }
   }
 
   /**
@@ -23,6 +51,7 @@ export class FormDetector {
    */
   public containsLoginForm(): boolean {
     let formWrapper = this.getFormWrapper();
+
     if (formWrapper?.getAttribute('role') === 'dialog') {
       // If we hit a dialog, search for form only within the dialog
       formWrapper = formWrapper.querySelector('form') as HTMLElement | null ?? formWrapper;
@@ -38,12 +67,17 @@ export class FormDetector {
      * This is a simple way to prevent processing large forms that are not login forms and making the browser page unresponsive.
      */
     const inputCount = formWrapper.querySelectorAll('input').length;
+
     if (inputCount > 200) {
       return false;
     }
 
     // Check if the wrapper contains a password, likely username field, or TOTP field before processing.
-    if (this.containsPasswordField(formWrapper) || this.containsLikelyUsernameOrEmailField(formWrapper) || this.containsTotpField(formWrapper)) {
+    const hasPasswordField = this.containsPasswordField(formWrapper);
+    const hasUsernameOrEmailField = this.containsLikelyUsernameOrEmailField(formWrapper);
+    const hasTotpField = this.containsTotpField(formWrapper);
+
+    if (hasPasswordField || hasUsernameOrEmailField || hasTotpField) {
       return true;
     }
 
@@ -166,7 +200,8 @@ export class FormDetector {
    * Get the form wrapper element.
    */
   private getFormWrapper(): HTMLElement | null {
-    return this.clickedElement?.closest('form, [role="dialog"]') as HTMLElement | null;
+    const wrapper = this.clickedElement?.closest('form, [role="dialog"]') as HTMLElement | null;
+    return wrapper;
   }
 
   /**
@@ -202,16 +237,23 @@ export class FormDetector {
 
   /**
    * Check if an element and all its parents are visible.
-   * This checks for display:none, visibility:hidden, and opacity:0
+   * This checks for display:none, visibility:hidden, and optionally opacity:0
    * Uses a cache to avoid redundant checks of the same elements.
+   *
+   * @param element - The element to check
+   * @param checkOpacity - Whether to check opacity (default: true). Set to false to allow
+   *                       fields with opacity:0 that are used in transition animations.
    */
-  private isElementVisible(element: HTMLElement | null): boolean {
+  private isElementVisible(element: HTMLElement | null, checkOpacity: boolean = true): boolean {
     if (!element) {
       return false;
     }
 
-    // Check cache first
-    if (this.visibilityCache.has(element)) {
+    /*
+     * Note: We don't cache when checkOpacity is false to avoid returning incorrect results.
+     * The cache is only used for the default strict visibility checks.
+     */
+    if (checkOpacity && this.visibilityCache.has(element)) {
       return this.visibilityCache.get(element)!;
     }
 
@@ -223,18 +265,27 @@ export class FormDetector {
           // Cache and return true for this element and all its parents
           let parent: HTMLElement | null = current;
           while (parent) {
-            this.visibilityCache.set(parent, true);
+            if (checkOpacity) {
+              this.visibilityCache.set(parent, true);
+            }
             parent = parent.parentElement;
           }
           return true;
         }
+
+        /*
+         * Always check display:none and visibility:hidden for security.
+         * Only opacity:0 is optionally skipped for transition animations.
+         */
 
         // Check for display:none
         if (style.display === 'none') {
           // Cache and return false for this element and all its parents
           let parent: HTMLElement | null = current;
           while (parent) {
-            this.visibilityCache.set(parent, false);
+            if (checkOpacity) {
+              this.visibilityCache.set(parent, false);
+            }
             parent = parent.parentElement;
           }
           return false;
@@ -245,14 +296,16 @@ export class FormDetector {
           // Cache and return false for this element and all its parents
           let parent: HTMLElement | null = current;
           while (parent) {
-            this.visibilityCache.set(parent, false);
+            if (checkOpacity) {
+              this.visibilityCache.set(parent, false);
+            }
             parent = parent.parentElement;
           }
           return false;
         }
 
-        // Check for opacity:0
-        if (parseFloat(style.opacity) === 0) {
+        // Check opacity:0 only when checkOpacity is true (allows transition animations otherwise)
+        if (checkOpacity && parseFloat(style.opacity) === 0) {
           // Cache and return false for this element and all its parents
           let parent: HTMLElement | null = current;
           while (parent) {
@@ -265,7 +318,9 @@ export class FormDetector {
         // If we can't get computed style, cache and return true for this element and all its parents
         let parent: HTMLElement | null = current;
         while (parent) {
-          this.visibilityCache.set(parent, true);
+          if (checkOpacity) {
+            this.visibilityCache.set(parent, true);
+          }
           parent = parent.parentElement;
         }
         return true;
@@ -275,7 +330,9 @@ export class FormDetector {
     }
 
     // Cache and return true for the original element
-    this.visibilityCache.set(element, true);
+    if (checkOpacity) {
+      this.visibilityCache.set(element, true);
+    }
     return true;
   }
 
@@ -286,7 +343,8 @@ export class FormDetector {
     form: HTMLFormElement | null,
     patterns: string[],
     types: string[],
-    excludeElements: HTMLInputElement[] = []
+    excludeElements: HTMLInputElement[] = [],
+    checkVisibility: boolean = true
   ): HTMLInputElement[] {
     // Query for standard input elements, select elements, and elements with type attributes
     const standardCandidates = form
@@ -322,8 +380,17 @@ export class FormDetector {
         continue;
       }
 
-      if (!this.isElementVisible(input)) {
-        continue;
+      // When user clicks a field, skip opacity checks to support transition animations
+      if (checkVisibility) {
+        const isVisible = this.isElementVisible(input, true);
+        if (!isVisible) {
+          continue;
+        }
+      } else {
+        const isVisible = this.isElementVisible(input, false);
+        if (!isVisible) {
+          continue;
+        }
       }
 
       // Get type from either the element's type property or its type attribute
@@ -537,9 +604,10 @@ export class FormDetector {
     form: HTMLFormElement | null,
     patterns: string[],
     types: string[],
-    excludeElements: HTMLInputElement[] = []
+    excludeElements: HTMLInputElement[] = [],
+    checkVisibility: boolean = true
   ): HTMLInputElement | null {
-    const all = this.findAllInputFields(form, patterns, types, excludeElements);
+    const all = this.findAllInputFields(form, patterns, types, excludeElements, checkVisibility);
 
     // Filter out parent-child duplicates and fields overlapping with excludeElements
     const filtered = this.filterOutNestedDuplicates(all, excludeElements);
@@ -557,15 +625,18 @@ export class FormDetector {
   /**
    * Find the email field in the form.
    */
-  private findEmailField(form: HTMLFormElement | null): {
+  private findEmailField(form: HTMLFormElement | null, checkVisibility: boolean = true): {
     primary: HTMLInputElement | null,
     confirm: HTMLInputElement | null
   } {
+
     // Find all email fields first
     const emailFields = this.findAllInputFields(
       form,
       CombinedFieldPatterns.email,
-      ['text', 'email']
+      ['text', 'email'],
+      [],
+      checkVisibility
     );
 
     /*
@@ -637,7 +708,8 @@ export class FormDetector {
         form,
         CombinedFieldPatterns.emailConfirm,
         ['text', 'email'],
-        [primaryEmail]
+        [primaryEmail],
+        checkVisibility
       )
       : [];
 
@@ -900,11 +972,11 @@ export class FormDetector {
   /**
    * Find the password field in a form.
    */
-  private findPasswordField(form: HTMLFormElement | null): {
+  private findPasswordField(form: HTMLFormElement | null, checkVisibility: boolean = true): {
     primary: HTMLInputElement | null,
     confirm: HTMLInputElement | null
   } {
-    const passwordFields = this.findAllInputFields(form, CombinedFieldPatterns.password, ['password']);
+    const passwordFields = this.findAllInputFields(form, CombinedFieldPatterns.password, ['password'], [], checkVisibility);
 
     // Filter out parent-child relationships to avoid detecting the same field twice
     const filteredFields = this.filterOutNestedDuplicates(passwordFields);
@@ -995,29 +1067,54 @@ export class FormDetector {
 
   /**
    * Check if a form contains a likely username or email field.
+   * Skips visibility checks when user clicked a field to support transition animations.
    */
   private containsLikelyUsernameOrEmailField(wrapper: HTMLElement): boolean {
-    // Check if the form contains an email field.
-    const emailFields = this.findEmailField(wrapper as HTMLFormElement | null);
-    if (emailFields.primary && this.isElementVisible(emailFields.primary)) {
+    const skipVisibilityCheck = this.clickedElement !== null;
+
+    // Check if the form contains an email field
+    const emailFields = this.findEmailField(wrapper as HTMLFormElement | null, !skipVisibilityCheck);
+
+    if (emailFields.primary) {
       return true;
     }
 
-    // Check if the form contains a username field.
-    const usernameField = this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text'], []);
-    if (usernameField && this.isElementVisible(usernameField)) {
+    // Check if the form contains a username field
+    const usernameField = this.findInputField(
+      wrapper as HTMLFormElement | null,
+      CombinedFieldPatterns.username,
+      ['text'],
+      [],
+      !skipVisibilityCheck
+    );
+
+    if (usernameField) {
       return true;
     }
 
-    // Check if the form contains a first name field.
-    const firstNameField = this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.firstName, ['text'], []);
-    if (firstNameField && this.isElementVisible(firstNameField)) {
+    // Check if the form contains a first name field
+    const firstNameField = this.findInputField(
+      wrapper as HTMLFormElement | null,
+      CombinedFieldPatterns.firstName,
+      ['text'],
+      [],
+      !skipVisibilityCheck
+    );
+
+    if (firstNameField) {
       return true;
     }
 
-    // Check if the form contains a last name field.
-    const lastNameField = this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.lastName, ['text'], []);
-    if (lastNameField && this.isElementVisible(lastNameField)) {
+    // Check if the form contains a last name field
+    const lastNameField = this.findInputField(
+      wrapper as HTMLFormElement | null,
+      CombinedFieldPatterns.lastName,
+      ['text'],
+      [],
+      !skipVisibilityCheck
+    );
+
+    if (lastNameField) {
       return true;
     }
 
@@ -1067,8 +1164,14 @@ export class FormDetector {
       el && arr.indexOf(el) === index // Remove duplicates
     );
 
+    /*
+     * When detecting field type from a clicked element, skip visibility checks
+     * since the user clearly can see and interact with the field
+     */
+    const checkVisibility = false;
+
     // Check if any of the elements is a username field
-    const usernameFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text']);
+    const usernameFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text'], [], checkVisibility);
     if (usernameFields.some(input => elementsToCheck.includes(input))) {
       return DetectedFieldType.Username;
     }
@@ -1081,7 +1184,7 @@ export class FormDetector {
     }
 
     // Check if any of the elements is an email field
-    const emailFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.email, ['text', 'email']);
+    const emailFields = this.findAllInputFields(formWrapper as HTMLFormElement | null, CombinedFieldPatterns.email, ['text', 'email'], [], checkVisibility);
     if (emailFields.some(input => elementsToCheck.includes(input))) {
       return DetectedFieldType.Email;
     }
@@ -1102,8 +1205,15 @@ export class FormDetector {
     // Keep track of detected fields to prevent overlap
     const detectedFields: HTMLInputElement[] = [];
 
+    /*
+     * If the user clicked on a field, skip visibility checks for all fields in the form.
+     * This handles forms with transition animations where fields start with opacity:0
+     * but become visible on interaction.
+     */
+    const checkVisibility = this.clickedElement === null;
+
     // Find fields in priority order (most specific to least specific).
-    const emailFields = this.findEmailField(wrapper as HTMLFormElement | null);
+    const emailFields = this.findEmailField(wrapper as HTMLFormElement | null, checkVisibility);
     if (emailFields.primary) {
       detectedFields.push(emailFields.primary);
     }
@@ -1111,7 +1221,7 @@ export class FormDetector {
       detectedFields.push(emailFields.confirm);
     }
 
-    const passwordFields = this.findPasswordField(wrapper as HTMLFormElement | null);
+    const passwordFields = this.findPasswordField(wrapper as HTMLFormElement | null, checkVisibility);
     if (passwordFields.primary) {
       detectedFields.push(passwordFields.primary);
     }
@@ -1119,17 +1229,17 @@ export class FormDetector {
       detectedFields.push(passwordFields.confirm);
     }
 
-    const usernameField = this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text'], detectedFields);
+    const usernameField = this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.username, ['text'], detectedFields, checkVisibility);
     if (usernameField) {
       detectedFields.push(usernameField);
     }
 
-    const fullNameField = this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.fullName, ['text'], detectedFields);
+    const fullNameField = this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.fullName, ['text'], detectedFields, checkVisibility);
     if (fullNameField) {
       detectedFields.push(fullNameField);
     }
 
-    const lastNameField = this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.lastName, ['text'], detectedFields);
+    const lastNameField = this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.lastName, ['text'], detectedFields, checkVisibility);
     if (lastNameField) {
       detectedFields.push(lastNameField);
     }
@@ -1144,7 +1254,7 @@ export class FormDetector {
                                !emailFields.confirm && !passwordFields.confirm;
 
     const firstNameField = !isLikelyLoginForm ?
-      this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.firstName, ['text'], detectedFields) : null;
+      this.findInputField(wrapper as HTMLFormElement | null, CombinedFieldPatterns.firstName, ['text'], detectedFields, checkVisibility) : null;
     if (firstNameField) {
       detectedFields.push(firstNameField);
     }
