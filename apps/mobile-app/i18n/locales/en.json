@@ -25,6 +25,7 @@
     "add": "Add",
     "generate": "Generate",
     "attachments": "Attachments",
+    "or": "or",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
@@ -115,8 +116,11 @@
     "secretKey": "Secret Key",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "Save to view code",
+    "scanQrCode": "Scan QR Code",
+    "enterManually": "Enter a setup key",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Invalid secret key format.",
+      "scanFailed": "Failed to scan QR code. Please try again."
     }
   },
   "settings": {
