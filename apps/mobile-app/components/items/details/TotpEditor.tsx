@@ -4,6 +4,7 @@ import * as OTPAuth from 'otpauth';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, StyleSheet, TextInput, Modal, TouchableOpacity, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import QRCode from 'react-native-qrcode-svg';
 
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
@@ -24,6 +25,10 @@ type TotpEditorProps = {
   onAddPress?: () => void;
   /** Ref callback to expose the showAddForm function to parent */
   showAddFormRef?: React.MutableRefObject<(() => void) | null>;
+  /** Item display name for QR code generation (issuer) */
+  itemDisplayName?: string;
+  /** Item username/email for QR code generation (account name) */
+  itemUsername?: string;
 }
 
 /**
@@ -33,7 +38,9 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
   totpCodes,
   onTotpCodesChange,
   originalTotpCodeIds,
-  showAddFormRef
+  showAddFormRef,
+  itemDisplayName,
+  itemUsername
 }) => {
   const { t } = useTranslation();
   const colors = useColors();
@@ -42,6 +49,11 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
   const [isAddFormVisible, setIsAddFormVisible] = useState(false);
   const [formData, setFormData] = useState<TotpFormData>({ name: '', secretKey: '' });
   const [formError, setFormError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTotpCode, setEditingTotpCode] = useState<TotpCode | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editSecret, setEditSecret] = useState('');
+  const [showQrCode, setShowQrCode] = useState(false);
 
   /**
    * Shows the add form
@@ -182,6 +194,53 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
     onTotpCodesChange(updatedTotpCodes);
   };
 
+  /**
+   * Shows the edit modal for a TOTP code
+   */
+  const showEditModal = (totpCode: TotpCode): void => {
+    setEditingTotpCode(totpCode);
+    setEditName(totpCode.Name);
+    setEditSecret(totpCode.SecretKey);
+    setShowQrCode(false);
+    setIsEditModalOpen(true);
+  };
+
+  /**
+   * Closes the edit modal
+   */
+  const closeEditModal = (): void => {
+    setIsEditModalOpen(false);
+    setEditingTotpCode(null);
+    setEditName('');
+    setEditSecret('');
+    setShowQrCode(false);
+  };
+
+  /**
+   * Saves the edited TOTP code
+   */
+  const saveEditedTotpCode = (): void => {
+    if (!editingTotpCode) {
+      return;
+    }
+
+    const updatedTotpCodes = totpCodes.map(tc =>
+      tc.Id === editingTotpCode.Id
+        ? { ...tc, Name: editName, SecretKey: editSecret }
+        : tc
+    );
+
+    onTotpCodesChange(updatedTotpCodes);
+    closeEditModal();
+  };
+
+  /**
+   * Toggles the QR code visibility in the edit modal
+   */
+  const toggleQrCode = (): void => {
+    setShowQrCode(!showQrCode);
+  };
+
   // Filter out deleted TOTP codes for display
   const activeTotpCodes = totpCodes.filter(tc => !tc.IsDeleted);
   const hasActiveTotpCodes = activeTotpCodes.length > 0;
@@ -223,7 +282,15 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       fontSize: 14,
       fontWeight: '600',
     },
+    actionButtons: {
+      alignItems: 'center',
+      flexDirection: 'row',
+      gap: 8,
+    },
     deleteButton: {
+      padding: 4,
+    },
+    editButton: {
       padding: 4,
     },
     errorText: {
@@ -330,6 +397,15 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       fontSize: 16,
       fontWeight: '600',
     },
+    qrCodeContainer: {
+      alignItems: 'center',
+      backgroundColor: 'white',
+      borderRadius: 8,
+      marginTop: 16,
+      marginBottom: 16,
+      padding: 16,
+      alignSelf: 'center',
+    },
   });
 
   return (
@@ -365,12 +441,20 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
                   {t('totp.saveToViewCode')}
                 </ThemedText>
               </View>
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => initiateTotpDelete(totpCode)}
-              >
-                <Ionicons name="trash" size={20} color={colors.errorText} />
-              </TouchableOpacity>
+              <View style={styles.actionButtons}>
+                <TouchableOpacity
+                  style={styles.editButton}
+                  onPress={() => showEditModal(totpCode)}
+                >
+                  <Ionicons name="pencil-outline" size={20} color={colors.textMuted} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.deleteButton}
+                  onPress={() => initiateTotpDelete(totpCode)}
+                >
+                  <Ionicons name="trash" size={20} color={colors.errorText} />
+                </TouchableOpacity>
+              </View>
             </View>
           ))}
         </View>
@@ -465,6 +549,109 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
                 </View>
               </ScrollView>
             </View>
+        </KeyboardAvoidingView>
+      </Modal>
+
+      {/* Edit TOTP Modal */}
+      <Modal
+        visible={isEditModalOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={closeEditModal}
+      >
+        <KeyboardAvoidingView
+          style={styles.modalContainer}
+          behavior="padding"
+          keyboardVerticalOffset={Platform.OS === 'android' ? 20 : 0}
+        >
+          <TouchableOpacity
+            style={styles.modalBackdrop}
+            activeOpacity={1}
+            onPress={closeEditModal}
+          />
+          <View style={styles.modalContent}>
+            <ScrollView
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              <View style={styles.modalHeader}>
+                <ThemedText style={styles.modalTitle}>
+                  {t('common.edit')}
+                </ThemedText>
+                <TouchableOpacity
+                  style={styles.modalCloseButton}
+                  onPress={closeEditModal}
+                >
+                  <MaterialIcons name="close" size={24} color={colors.textMuted} />
+                </TouchableOpacity>
+              </View>
+
+              {editingTotpCode && (
+                <View>
+                  <ThemedText style={styles.label}>
+                    {t('totp.nameOptional')}
+                  </ThemedText>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={t('totp.nameOptional')}
+                    placeholderTextColor={colors.textMuted}
+                    value={editName}
+                    onChangeText={setEditName}
+                    autoCapitalize="words"
+                  />
+
+                  <View style={styles.label}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <ThemedText style={styles.label}>
+                        {t('totp.secretKey')}
+                      </ThemedText>
+                      <TouchableOpacity
+                        onPress={toggleQrCode}
+                        style={{ padding: 4 }}
+                      >
+                        <Ionicons name="qr-code-outline" size={20} color={colors.textMuted} />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                  <TextInput
+                    style={[styles.input, { fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace' }]}
+                    placeholder={t('totp.secretKey')}
+                    placeholderTextColor={colors.textMuted}
+                    value={editSecret}
+                    onChangeText={setEditSecret}
+                    autoCapitalize="characters"
+                    autoCorrect={false}
+                    multiline
+                  />
+
+                  {showQrCode && (
+                    <View style={styles.qrCodeContainer}>
+                      <QRCode
+                        value={(() => {
+                          const issuer = itemDisplayName || 'AliasVault';
+                          const accountName = itemUsername || editingTotpCode.Name;
+                          const label = `${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}`;
+                          return `otpauth://totp/${label}?secret=${editingTotpCode.SecretKey}&issuer=${encodeURIComponent(issuer)}`;
+                        })()}
+                        size={200}
+                        backgroundColor="white"
+                        color="black"
+                      />
+                    </View>
+                  )}
+
+                  <TouchableOpacity
+                    style={[styles.modalSaveButton, { marginTop: 16 }]}
+                    onPress={saveEditedTotpCode}
+                  >
+                    <ThemedText style={styles.modalSaveButtonText}>
+                      {t('common.save')}
+                    </ThemedText>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </ScrollView>
+          </View>
         </KeyboardAvoidingView>
       </Modal>
     </View>
