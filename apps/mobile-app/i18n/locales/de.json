@@ -467,7 +467,8 @@
       "itemDeleted": "Element erfolgreich gelöscht",
       "usernameCopied": "Nutzername in die Zwischenablage kopiert",
       "emailCopied": "E-Mail in die Zwischenablage kopiert",
-      "passwordCopied": "Passwort in die Zwischenablage kopiert"
+      "passwordCopied": "Passwort in die Zwischenablage kopiert",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Neuen Alias für",
     "contextMenu": {
@@ -477,6 +478,12 @@
       "copyUsername": "Benutzername kopieren",
       "copyEmail": "E-Mail-Adresse kopieren",
       "copyPassword": "Passwort kopieren"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "Historie ansehen",
     "history": "Historie",
