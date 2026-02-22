@@ -442,7 +442,7 @@
       "showFolders": "Foldery",
       "passkeys": "Klucze dostępu",
       "attachments": "Załączniki",
-      "totp": "2FA Codes"
+      "totp": "Kody 2FA"
     },
     "sort": {
       "title": "Sortuj według",
