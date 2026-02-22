@@ -467,7 +467,8 @@
       "itemDeleted": "Item deleted successfully",
       "usernameCopied": "Username copied to clipboard",
       "emailCopied": "Email copied to clipboard",
-      "passwordCopied": "Password copied to clipboard"
+      "passwordCopied": "Password copied to clipboard",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Create new alias for",
     "contextMenu": {
@@ -477,6 +478,12 @@
       "copyUsername": "Kullanıcı Adını Kopyala",
       "copyEmail": "E-postayı Kopyala",
       "copyPassword": "Parolayı Kopyala"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "View history",
     "history": "History",
