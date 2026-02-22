@@ -24,7 +24,7 @@
     "unlockSuccessDescription": "Możesz teraz używać automatycznego uzupełniania w formularzach logowania w przeglądarce.",
     "closePopup": "Zamknij to okno.",
     "browseVault": "Przeglądaj zawartość sejfu",
-    "autoCloseUnlockPopup": "Auto-close on future sign ins",
+    "autoCloseUnlockPopup": "Automatyczne zamykanie przyszłych logowań",
     "closingIn": "Zamknięcie w {{seconds}}s...",
     "connectingTo": "Łączenie z",
     "switchAccounts": "Przełącz konto",
@@ -42,7 +42,7 @@
     "error": "Błąd",
     "cancel": "Anuluj",
     "confirm": "Potwierdź",
-    "remove": "Remove",
+    "remove": "Usuń",
     "back": "Powrót",
     "next": "Dalej",
     "use": "Użyj",
@@ -54,7 +54,7 @@
     "create": "Utwórz",
     "or": "lub",
     "close": "Zamknąć",
-    "dismiss": "Dismiss",
+    "dismiss": "Odrzuć",
     "logout": "Wyloguj się",
     "copied": "Skopiowano",
     "openInNewWindow": "Otwórz w nowym oknie.",
@@ -169,12 +169,12 @@
     "vaultUpgradeRequired": "Wymagana aktualizacja sejfu.",
     "dismissPopup": "Zamknij wyskakujące okienko",
     "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "close": "Zamknij",
     "savePrompt": {
-      "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site",
-      "addUrlTitle": "Add URL to credential?",
-      "addUrl": "Add URL"
+      "title": "Zapisać w AliasVault?",
+      "neverForThisSite": "Nigdy dla tej strony",
+      "addUrlTitle": "Dodaj nowe dane logowania?",
+      "addUrl": "Dodaj adres URL"
     }
   },
   "items": {
@@ -212,7 +212,7 @@
     "filters": {
       "folders": "Foldery",
       "passkeys": "Klucze dostępu",
-      "totp": "2FA Codes"
+      "totp": "Kody 2FA"
     },
     "sort": {
       "title": "Sortuj według",
@@ -359,11 +359,11 @@
     "disabledForThisSite": "Wyłączone dla tej witryny",
     "temporarilyDisabledUntil": "Tymczasowo nieaktywne do ",
     "resetAllSiteSettings": "Zresetuj wszystkie ustawienia witryny",
-    "autofillPopupDescription": "Show the autofill popup when login fields are detected.",
-    "disabledSites": "Disabled sites",
-    "disabledSitesDescription": "Sites where the autofill popup will not appear.",
-    "clearAllDisabledSites": "Clear all disabled sites",
-    "temporaryUntil": "until",
+    "autofillPopupDescription": "Pokaż wyskakujące okienko autouzupełniania po wykryciu pól logowania.",
+    "disabledSites": "Wyłączone witryny",
+    "disabledSitesDescription": "Witryny, w których okienko autouzupełniania nie będzie wyświetlane.",
+    "clearAllDisabledSites": "Usuń wszystkie wyłączone witryny",
+    "temporaryUntil": "do",
     "appearance": "Wygląd",
     "theme": "Motyw",
     "useDefault": "Użyj domyślnego",
@@ -434,10 +434,10 @@
     },
     "loginSave": {
       "title": "Save Login Prompt",
-      "description": "Show a prompt to save login credentials when you submit a login form on a website.",
-      "blockedSites": "Blocked sites",
-      "blockedSitesDescription": "Sites where the save prompt will never appear.",
-      "clearAllBlockedSites": "Clear all blocked sites"
+      "description": "Pokaż monit o zapisanie danych logowania podczas przesyłania formularza logowania na stronie internetowej.",
+      "blockedSites": "Zablokowane witryny",
+      "blockedSitesDescription": "Witryny, w których nie pojawi się monit zapisu.",
+      "clearAllBlockedSites": "Wyczyść wszystkie zablokowane strony"
     },
     "unlockMethod": {
       "title": "Metoda odblokowania skarbca",
