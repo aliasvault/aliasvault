@@ -468,7 +468,7 @@
       "usernameCopied": "Nazwa użytkownika skopiowana do schowka",
       "emailCopied": "Wiadomość e-mail skopiowana do schowka",
       "passwordCopied": "Hasło skopiowane do schowka",
-      "urlCopied": "URL copied to clipboard"
+      "urlCopied": "Adres URL skopiowany do schowka"
     },
     "createNewAliasFor": "Utwórz nowy alias dla",
     "contextMenu": {
@@ -480,10 +480,10 @@
       "copyPassword": "Skopiuj hasło"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "Opcje adresu URL",
+      "copyLink": "Kopiuj link",
+      "openLink": "Otwórz link",
+      "shareLink": "Udostępnij link"
     },
     "viewHistory": "Pokaż historię",
     "history": "Historia",
