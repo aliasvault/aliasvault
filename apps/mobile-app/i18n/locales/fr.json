@@ -468,7 +468,7 @@
       "usernameCopied": "Nom d'utilisateur copié dans le presse-papiers",
       "emailCopied": "E-mail copié dans le presse-papiers",
       "passwordCopied": "Mot de passe copié dans le presse-papiers",
-      "urlCopied": "URL copied to clipboard"
+      "urlCopied": "URL copiée dans le presse-papier"
     },
     "createNewAliasFor": "Créer un nouvel alias pour",
     "contextMenu": {
@@ -480,10 +480,10 @@
       "copyPassword": "Copier le mot de passe"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "Options de l'URL",
+      "copyLink": "Copier le lien",
+      "openLink": "Ouvrir le lien",
+      "shareLink": "Partager le lien"
     },
     "viewHistory": "Voir l'historique",
     "history": "Historique",
