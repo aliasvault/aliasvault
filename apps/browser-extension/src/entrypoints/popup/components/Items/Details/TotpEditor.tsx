@@ -1,6 +1,10 @@
 import  * as OTPAuth from 'otpauth';
+import QRCode from 'qrcode';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import ConfirmDeleteModal from '@/entrypoints/popup/components/Dialogs/ConfirmDeleteModal';
+import ModalWrapper from '@/entrypoints/popup/components/Dialogs/ModalWrapper';
 
 import type { TotpCode } from '@/utils/dist/core/models/vault';
 
@@ -21,6 +25,8 @@ type TotpEditorProps = {
   isAddFormVisible: boolean;
   formData: TotpFormData;
   onStateChange: (state: TotpEditorState) => void;
+  itemDisplayName?: string;
+  itemUsername?: string;
 }
 
 /**
@@ -32,10 +38,20 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
   originalTotpCodeIds,
   isAddFormVisible,
   formData,
-  onStateChange
+  onStateChange,
+  itemDisplayName,
+  itemUsername
 }) => {
   const { t } = useTranslation();
   const [formError, setFormError] = useState<string | null>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTotpCode, setEditingTotpCode] = useState<TotpCode | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editSecret, setEditSecret] = useState('');
+  const [showQrCode, setShowQrCode] = useState(false);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [totpToDelete, setTotpToDelete] = useState<TotpCode | null>(null);
 
   /**
    * Sanitizes the secret key by extracting it from a TOTP URI if needed
@@ -146,7 +162,19 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
   /**
    * Initiates the delete process for a TOTP code
    */
-  const deleteTotpCode = (totpToDelete: TotpCode): void => {
+  const initiateTotpDelete = (totp: TotpCode): void => {
+    setTotpToDelete(totp);
+    setIsDeleteModalOpen(true);
+  };
+
+  /**
+   * Confirms deletion of a TOTP code
+   */
+  const confirmDeleteTotpCode = (): void => {
+    if (!totpToDelete) {
+      return;
+    }
+
     // Check if this TOTP code was part of the original set
     const wasOriginal = originalTotpCodeIds.includes(totpToDelete.Id);
 
@@ -164,6 +192,85 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
     }
 
     onTotpCodesChange(updatedTotpCodes);
+    setIsDeleteModalOpen(false);
+    setTotpToDelete(null);
+  };
+
+  /**
+   * Cancels the delete operation
+   */
+  const cancelDeleteTotpCode = (): void => {
+    setIsDeleteModalOpen(false);
+    setTotpToDelete(null);
+  };
+
+  /**
+   * Shows the edit modal for a TOTP code
+   */
+  const showEditModal = (totpCode: TotpCode): void => {
+    setEditingTotpCode(totpCode);
+    setEditName(totpCode.Name);
+    setEditSecret(totpCode.SecretKey);
+    setIsEditModalOpen(true);
+    setShowQrCode(false);
+  };
+
+  /**
+   * Closes the edit modal
+   */
+  const closeEditModal = (): void => {
+    setIsEditModalOpen(false);
+    setEditingTotpCode(null);
+    setEditName('');
+    setEditSecret('');
+    setShowQrCode(false);
+    setQrCodeDataUrl(null);
+  };
+
+  /**
+   * Saves the edited TOTP code
+   */
+  const saveEditedTotpCode = (): void => {
+    if (!editingTotpCode) {
+      return;
+    }
+
+    const updatedTotpCodes = totpCodes.map(tc =>
+      tc.Id === editingTotpCode.Id
+        ? { ...tc, Name: editName, SecretKey: editSecret }
+        : tc
+    );
+
+    onTotpCodesChange(updatedTotpCodes);
+    closeEditModal();
+  };
+
+  /**
+   * Toggles QR code visibility and generates it if needed
+   */
+  const toggleQrCode = (): void => {
+    if (!showQrCode && editingTotpCode) {
+      /**
+       * Generate QR code for the SAVED version (not edited)
+       * Format: otpauth://totp/Issuer:AccountName?secret=SECRET&issuer=Issuer
+       */
+      const issuer = itemDisplayName || 'AliasVault';
+      const accountName = itemUsername || editingTotpCode.Name;
+      const label = `${encodeURIComponent(issuer)}:${encodeURIComponent(accountName)}`;
+      const totpUri = `otpauth://totp/${label}?secret=${editingTotpCode.SecretKey}&issuer=${encodeURIComponent(issuer)}`;
+
+      QRCode.toDataURL(totpUri, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      })
+        .then(url => setQrCodeDataUrl(url))
+        .catch(err => console.error('Failed to generate QR code:', err));
+    }
+    setShowQrCode(!showQrCode);
   };
 
   // Filter out deleted TOTP codes for display
@@ -300,8 +407,19 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
                   </div>
                   <button
                     type="button"
-                    onClick={() => deleteTotpCode(totpCode)}
+                    onClick={() => showEditModal(totpCode)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                    title={t('common.edit')}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => initiateTotpDelete(totpCode)}
                     className="text-red-600 hover:text-red-800 dark:text-red-500 dark:hover:text-red-400"
+                    title={t('common.delete')}
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd"></path>
@@ -313,6 +431,83 @@ const TotpEditor: React.FC<TotpEditorProps> = ({
           ))}
         </div>
       )}
+
+      {/* Edit TOTP Modal */}
+      <ModalWrapper
+        isOpen={isEditModalOpen}
+        onClose={closeEditModal}
+        title={t('common.edit')}
+        maxWidth="max-w-lg"
+      >
+        <div className="space-y-4">
+          {editingTotpCode && (
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-gray-900 dark:text-white mb-2">
+                  {t('totp.nameOptional')}
+                </label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                  placeholder={t('totp.nameOptional')}
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-gray-900 dark:text-white">
+                    {t('totp.secretKey')}
+                  </label>
+                  <button
+                    type="button"
+                    onClick={toggleQrCode}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 p-1"
+                    title={showQrCode ? t('common.hide') + ' QR Code' : t('common.show') + ' QR Code'}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                    </svg>
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  value={editSecret}
+                  onChange={(e) => setEditSecret(e.target.value)}
+                  className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white font-mono"
+                  placeholder={t('totp.secretKey')}
+                />
+                {showQrCode && qrCodeDataUrl && (
+                  <div className="flex justify-center mt-3">
+                    <div className="bg-white border-2 border-white rounded-lg">
+                      <img src={qrCodeDataUrl} alt="TOTP QR Code" className="w-64 h-64" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <button
+                type="button"
+                onClick={saveEditedTotpCode}
+                className="w-full text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800"
+              >
+                {t('common.save')}
+              </button>
+            </div>
+          )}
+        </div>
+      </ModalWrapper>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmDeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={cancelDeleteTotpCode}
+        onConfirm={confirmDeleteTotpCode}
+        title={t('totp.deleteTotpCodeTitle')}
+        message={t('totp.deleteTotpCodeConfirmation', { name: totpToDelete?.Name })}
+        confirmText={t('common.delete')}
+      />
     </div>
   );
 };
