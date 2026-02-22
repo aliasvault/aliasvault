@@ -467,7 +467,8 @@
       "itemDeleted": "Objektet har tagits bort",
       "usernameCopied": "Användarnamn har kopierats till urklipp",
       "emailCopied": "E-post har kopierats till urklipp",
-      "passwordCopied": "Lösenord har kopierats till urklipp"
+      "passwordCopied": "Lösenord har kopierats till urklipp",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Skapa nytt alias för",
     "contextMenu": {
@@ -477,6 +478,12 @@
       "copyUsername": "Kopiera användarnamn",
       "copyEmail": "Kopiera e-postadress",
       "copyPassword": "Kopiera lösenord"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "Visa historik",
     "history": "Historik",
