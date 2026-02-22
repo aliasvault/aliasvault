@@ -467,7 +467,8 @@
       "itemDeleted": "Item deleted successfully",
       "usernameCopied": "Käyttäjänimi kopioitu leikepöydälle",
       "emailCopied": "Sähköpostiosoite kopioitu leikepöydälle",
-      "passwordCopied": "Salasana kopioitu leikepöydälle"
+      "passwordCopied": "Salasana kopioitu leikepöydälle",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Luo uusi alias kohteelle",
     "contextMenu": {
@@ -477,6 +478,12 @@
       "copyUsername": "Kopioi käyttäjänimi",
       "copyEmail": "Kopioi sähköposti",
       "copyPassword": "Kopioi salasana"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "View history",
     "history": "History",
