@@ -14,7 +14,7 @@
 |----------|-----------|------|---------------|
 | `registerVault` | `(walletAddressHash: Bytes<32>): []` | 1.4 | Sets `owner`, increments `totalVaults`, inserts to `registrations`, initializes `vaultCidHash` |
 | `updateVault` | `(newCidHash: Bytes<32>): []` | 2.1 | Updates `vaultCidHash` |
-| `transferOwnership` | `(newOwnerCommitment: Bytes<32>): []` | 2.6 | Updates `owner`, resets `recoveryKeyHash`, `transferInitiatedAt`, `transferInitiator` |
+| `transferOwnership` | `(newOwnerCommitment: Bytes<32>): []` | 2.6 | Updates `owner`, resets `recoveryKeyHash`, `transferInitiatedAt`, `transferInitiator`, clears `backupWallets` |
 | `storeRecoveryKeyHash` | `(keyHash: Bytes<32>): []` | 2.6 | Updates `recoveryKeyHash` |
 | `addBackupWallet` | `(walletCommitment: Bytes<32>): []` | 2.6 | Inserts to `backupWallets` |
 | `removeBackupWallet` | `(walletCommitment: Bytes<32>): []` | 2.6 | Removes from `backupWallets` |
@@ -25,7 +25,7 @@
 | Function | Signature | Epic | State Effects |
 |----------|-----------|------|---------------|
 | `initiateBackupTransfer` | `(currentTime: Uint<64>): []` | 2.6 | Sets `transferInitiatedAt`, `transferInitiator`. Rejects `currentTime == 0` (sentinel collision). |
-| `executeBackupTransfer` | `(newOwnerCommitment: Bytes<32>): []` | 2.6 | Updates `owner`, resets transfer state |
+| `executeBackupTransfer` | `(newOwnerCommitment: Bytes<32>): []` | 2.6 | Updates `owner`, resets transfer state, clears `backupWallets` |
 
 ### Public (no access control)
 
@@ -110,8 +110,7 @@
 | `Uint<64>` no direct `+` | Cast: `(((val as Field) + (n as Field)) as Uint<64>)` |
 | `disclose()` required | Circuit params must be disclosed before ledger/conditional use |
 | `default<T>` is expression | `default<Bytes<32>>` not `default<Bytes<32>>()` |
-| No array iteration | Backup wallets added one at a time (singular `addBackupWallet`) |
-| No `Set.clear()` | Cannot bulk-clear sets in-circuit; see Known Limitations |
+| No array iteration in circuits | Backup wallets added one at a time (singular `addBackupWallet`); use `Set.resetToDefault()` to clear the entire set |
 
 ---
 
@@ -126,14 +125,6 @@
 ---
 
 ## Known Limitations
-
-### backupWallets not cleared on ownership transfer
-
-`transferOwnership` and `executeBackupTransfer` reset `recoveryKeyHash`, `transferInitiatedAt`, and `transferInitiator`, but do **not** clear the `backupWallets` set. This is because Compact's `Set` type has no `clear()` method and circuits cannot iterate over set members.
-
-**Security risk:** After ownership transfer, stale backup wallets can still call `initiateBackupTransfer` + `executeBackupTransfer` against the new owner.
-
-**Required mitigation:** The application layer (TypeScript API / TUI) **must** enforce that the owner calls `removeBackupWallet()` for each backup wallet **before** calling `transferOwnership()`. This will be addressed architecturally in Epic 3 (Stories 3.5/3.6).
 
 ### Simulator cannot test positive executeBackupTransfer flow
 

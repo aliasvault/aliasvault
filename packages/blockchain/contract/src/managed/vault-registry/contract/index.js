@@ -80,14 +80,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('registerVault',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 130 char 1',
+                                     'vault-registry.compact line 131 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(walletAddressHash_0.buffer instanceof ArrayBuffer && walletAddressHash_0.BYTES_PER_ELEMENT === 1 && walletAddressHash_0.length === 32)) {
           __compactRuntime.typeError('registerVault',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 130 char 1',
+                                     'vault-registry.compact line 131 char 1',
                                      'Bytes<32>',
                                      walletAddressHash_0)
         }
@@ -116,14 +116,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('updateVault',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 144 char 1',
+                                     'vault-registry.compact line 145 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(newCidHash_0.buffer instanceof ArrayBuffer && newCidHash_0.BYTES_PER_ELEMENT === 1 && newCidHash_0.length === 32)) {
           __compactRuntime.typeError('updateVault',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 144 char 1',
+                                     'vault-registry.compact line 145 char 1',
                                      'Bytes<32>',
                                      newCidHash_0)
         }
@@ -152,14 +152,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('transferOwnership',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 159 char 1',
+                                     'vault-registry.compact line 156 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(newOwnerCommitment_0.buffer instanceof ArrayBuffer && newOwnerCommitment_0.BYTES_PER_ELEMENT === 1 && newOwnerCommitment_0.length === 32)) {
           __compactRuntime.typeError('transferOwnership',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 159 char 1',
+                                     'vault-registry.compact line 156 char 1',
                                      'Bytes<32>',
                                      newOwnerCommitment_0)
         }
@@ -188,14 +188,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('storeRecoveryKeyHash',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 173 char 1',
+                                     'vault-registry.compact line 172 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(keyHash_0.buffer instanceof ArrayBuffer && keyHash_0.BYTES_PER_ELEMENT === 1 && keyHash_0.length === 32)) {
           __compactRuntime.typeError('storeRecoveryKeyHash',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 173 char 1',
+                                     'vault-registry.compact line 172 char 1',
                                      'Bytes<32>',
                                      keyHash_0)
         }
@@ -224,14 +224,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('addBackupWallet',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 182 char 1',
+                                     'vault-registry.compact line 181 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(walletCommitment_0.buffer instanceof ArrayBuffer && walletCommitment_0.BYTES_PER_ELEMENT === 1 && walletCommitment_0.length === 32)) {
           __compactRuntime.typeError('addBackupWallet',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 182 char 1',
+                                     'vault-registry.compact line 181 char 1',
                                      'Bytes<32>',
                                      walletCommitment_0)
         }
@@ -260,14 +260,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('removeBackupWallet',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 190 char 1',
+                                     'vault-registry.compact line 189 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(walletCommitment_0.buffer instanceof ArrayBuffer && walletCommitment_0.BYTES_PER_ELEMENT === 1 && walletCommitment_0.length === 32)) {
           __compactRuntime.typeError('removeBackupWallet',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 190 char 1',
+                                     'vault-registry.compact line 189 char 1',
                                      'Bytes<32>',
                                      walletCommitment_0)
         }
@@ -296,14 +296,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('initiateBackupTransfer',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 200 char 1',
+                                     'vault-registry.compact line 199 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(typeof(currentTime_0) === 'bigint' && currentTime_0 >= 0n && currentTime_0 <= 18446744073709551615n)) {
           __compactRuntime.typeError('initiateBackupTransfer',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 200 char 1',
+                                     'vault-registry.compact line 199 char 1',
                                      'Uint<0..18446744073709551616>',
                                      currentTime_0)
         }
@@ -332,14 +332,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('executeBackupTransfer',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 215 char 1',
+                                     'vault-registry.compact line 214 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(newOwnerCommitment_0.buffer instanceof ArrayBuffer && newOwnerCommitment_0.BYTES_PER_ELEMENT === 1 && newOwnerCommitment_0.length === 32)) {
           __compactRuntime.typeError('executeBackupTransfer',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 215 char 1',
+                                     'vault-registry.compact line 214 char 1',
                                      'Bytes<32>',
                                      newOwnerCommitment_0)
         }
@@ -367,7 +367,7 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('cancelBackupTransfer',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 230 char 1',
+                                     'vault-registry.compact line 231 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
@@ -391,14 +391,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('isRegistered',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 238 char 1',
+                                     'vault-registry.compact line 239 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(walletAddressHash_0.buffer instanceof ArrayBuffer && walletAddressHash_0.BYTES_PER_ELEMENT === 1 && walletAddressHash_0.length === 32)) {
           __compactRuntime.typeError('isRegistered',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 238 char 1',
+                                     'vault-registry.compact line 239 char 1',
                                      'Bytes<32>',
                                      walletAddressHash_0)
         }
@@ -600,7 +600,7 @@ export class Contract {
     if (!(result_0.buffer instanceof ArrayBuffer && result_0.BYTES_PER_ELEMENT === 1 && result_0.length === 32)) {
       __compactRuntime.typeError('local_secret_key',
                                  'return value',
-                                 'vault-registry.compact line 108 char 1',
+                                 'vault-registry.compact line 109 char 1',
                                  'Bytes<32>',
                                  result_0)
     }
@@ -617,7 +617,7 @@ export class Contract {
     if (!(result_0.buffer instanceof ArrayBuffer && result_0.BYTES_PER_ELEMENT === 1 && result_0.length === 32)) {
       __compactRuntime.typeError('local_backup_key',
                                  'return value',
-                                 'vault-registry.compact line 111 char 1',
+                                 'vault-registry.compact line 112 char 1',
                                  'Bytes<32>',
                                  result_0)
     }
@@ -799,6 +799,17 @@ export class Contract {
                                        { push: { storage: true,
                                                  value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(tmp_2),
                                                                                               alignment: _descriptor_0.alignment() }).encode() } },
+                                       { ins: { cached: false, n: 1 } }]);
+    __compactRuntime.queryLedgerState(context,
+                                      partialProofData,
+                                      [
+                                       { push: { storage: false,
+                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(5n),
+                                                                                              alignment: _descriptor_7.alignment() }).encode() } },
+                                       { push: { storage: true,
+                                                 value: __compactRuntime.StateValue.newMap(
+                                                          new __compactRuntime.StateMap()
+                                                        ).encode() } },
                                        { ins: { cached: false, n: 1 } }]);
     return [];
   }
@@ -1001,7 +1012,7 @@ export class Contract {
                             'No transfer initiated');
     const unlockTime_0 = ((t1) => {
                            if (t1 > 18446744073709551615n) {
-                             throw new __compactRuntime.CompactError('vault-registry.compact line 222 char 23: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 18446744073709551615');
+                             throw new __compactRuntime.CompactError('vault-registry.compact line 221 char 23: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 18446744073709551615');
                            }
                            return t1;
                          })(__compactRuntime.addField(_descriptor_2.fromValue(__compactRuntime.queryLedgerState(context,
@@ -1052,6 +1063,17 @@ export class Contract {
                                        { push: { storage: true,
                                                  value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(tmp_2),
                                                                                               alignment: _descriptor_0.alignment() }).encode() } },
+                                       { ins: { cached: false, n: 1 } }]);
+    __compactRuntime.queryLedgerState(context,
+                                      partialProofData,
+                                      [
+                                       { push: { storage: false,
+                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(5n),
+                                                                                              alignment: _descriptor_7.alignment() }).encode() } },
+                                       { push: { storage: true,
+                                                 value: __compactRuntime.StateValue.newMap(
+                                                          new __compactRuntime.StateMap()
+                                                        ).encode() } },
                                        { ins: { cached: false, n: 1 } }]);
     return [];
   }
@@ -1213,7 +1235,7 @@ export function ledger(stateOrChargedState) {
         if (!(elem_0.buffer instanceof ArrayBuffer && elem_0.BYTES_PER_ELEMENT === 1 && elem_0.length === 32)) {
           __compactRuntime.typeError('member',
                                      'argument 1',
-                                     'vault-registry.compact line 84 char 1',
+                                     'vault-registry.compact line 85 char 1',
                                      'Bytes<32>',
                                      elem_0)
         }
@@ -1347,7 +1369,7 @@ export function ledger(stateOrChargedState) {
         if (!(elem_0.buffer instanceof ArrayBuffer && elem_0.BYTES_PER_ELEMENT === 1 && elem_0.length === 32)) {
           __compactRuntime.typeError('member',
                                      'argument 1',
-                                     'vault-registry.compact line 99 char 1',
+                                     'vault-registry.compact line 100 char 1',
                                      'Bytes<32>',
                                      elem_0)
         }
@@ -1422,7 +1444,7 @@ export const pureCircuits = {
     if (!(sk_0.buffer instanceof ArrayBuffer && sk_0.BYTES_PER_ELEMENT === 1 && sk_0.length === 32)) {
       __compactRuntime.typeError('ownerCommitment',
                                  'argument 1',
-                                 'vault-registry.compact line 116 char 1',
+                                 'vault-registry.compact line 117 char 1',
                                  'Bytes<32>',
                                  sk_0)
     }
@@ -1436,7 +1458,7 @@ export const pureCircuits = {
     if (!(bk_0.buffer instanceof ArrayBuffer && bk_0.BYTES_PER_ELEMENT === 1 && bk_0.length === 32)) {
       __compactRuntime.typeError('backupCommitment',
                                  'argument 1',
-                                 'vault-registry.compact line 123 char 1',
+                                 'vault-registry.compact line 124 char 1',
                                  'Bytes<32>',
                                  bk_0)
     }

@@ -78,6 +78,7 @@ import CompactStandardLibrary;
 //     - disclose() required on circuit params before ledger/conditional use
 //     - default<T> is expression not function: default<Bytes<32>> not default<Bytes<32>>()
 //     - Arrays cannot be iterated in circuits — backup wallets added one at a time
+//     - Sets cannot be iterated in circuits, but Set.resetToDefault() clears them in-circuit
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // Public ledger: set of registered vault owner address hashes
@@ -150,12 +151,8 @@ export circuit updateVault(newCidHash: Bytes<32>): [] {
 }
 
 // Transfer ownership to a new owner. Only the current owner can call this.
-// Resets recovery-related state to prevent stale recovery from affecting new owner.
-// KNOWN LIMITATION: backupWallets Set cannot be cleared in-circuit (Compact Set has no
-// clear() and circuits cannot iterate). Owner MUST call removeBackupWallet() for each
-// backup wallet BEFORE calling transferOwnership(). Application layer should enforce
-// this sequence to prevent stale backup wallets from initiating transfers against the
-// new owner. This will be addressed in Epic 3 (Story 3.5/3.6).
+// Resets recovery-related state and clears all backup wallets so the new owner
+// starts with a clean slate.
 export circuit transferOwnership(newOwnerCommitment: Bytes<32>): [] {
   const newOwner = disclose(newOwnerCommitment);
   const sk = local_secret_key();
@@ -165,6 +162,8 @@ export circuit transferOwnership(newOwnerCommitment: Bytes<32>): [] {
   recoveryKeyHash = default<Bytes<32>>;
   transferInitiatedAt = 0 as Uint<64>;
   transferInitiator = default<Bytes<32>>;
+  // Clear all backup wallets — new owner starts with a clean slate
+  backupWallets.resetToDefault();
 }
 
 // Store the hash of a recovery key. Only the owner can call this.
@@ -211,7 +210,7 @@ export circuit initiateBackupTransfer(currentTime: Uint<64>): [] {
 
 // Execute a backup transfer after 72-hour time-lock. Only the initiating backup wallet can call.
 // 72 hours = 259200 seconds, enforced on-chain via blockTimeGte(unlockTime).
-// KNOWN LIMITATION: backupWallets not cleared here (same Compact Set constraint as transferOwnership).
+// Clears all backup wallets on ownership transfer.
 export circuit executeBackupTransfer(newOwnerCommitment: Bytes<32>): [] {
   const newOwner = disclose(newOwnerCommitment);
   const bk = local_backup_key();
@@ -224,6 +223,8 @@ export circuit executeBackupTransfer(newOwnerCommitment: Bytes<32>): [] {
   owner = newOwner;
   transferInitiatedAt = 0 as Uint<64>;
   transferInitiator = default<Bytes<32>>;
+  // Clear all backup wallets — new owner starts with a clean slate
+  backupWallets.resetToDefault();
 }
 
 // Cancel a pending backup transfer. Only the owner can call this.

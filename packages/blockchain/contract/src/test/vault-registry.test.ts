@@ -154,6 +154,19 @@ describe("VaultRegistry smart contract", () => {
       expect(ledgerAfter.transferInitiatedAt).toEqual(0n);
       expect(Buffer.from(ledgerAfter.transferInitiator)).toEqual(Buffer.from(ZERO_BYTES_32));
     });
+
+    it("clears backupWallets via resetToDefault() on transfer", () => {
+      const backupKey = makeSecretKey();
+      const { sim } = createRegisteredOwner(undefined, backupKey);
+      const commitment = VaultRegistrySimulator.backupCommitment(backupKey);
+      sim.addBackupWallet(commitment);
+      expect(sim.getLedger().backupWallets.member(commitment)).toBe(true);
+
+      const newOwnerCommitment = VaultRegistrySimulator.ownerCommitment(makeSecretKey());
+      const ledgerAfter = sim.transferOwnership(newOwnerCommitment);
+
+      expect(ledgerAfter.backupWallets.isEmpty()).toBe(true);
+    });
   });
 
   describe("storeRecoveryKeyHash", () => {

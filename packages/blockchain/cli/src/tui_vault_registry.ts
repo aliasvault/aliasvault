@@ -172,20 +172,8 @@ try {
     console.log('  ❌ backupWallets should not be empty!\n');
   }
 
-  // Step 14: Remove backup wallet (H1 mitigation — must remove before transferOwnership)
-  console.log('Step 14: Removing backup wallet (pre-transfer mitigation)...');
-  await api.withStatus('Removing backup wallet', () =>
-    vrApi.removeBackupWallet(contract, backupWalletCommitment),
-  );
-  const stateAfterRemove = await vrApi.getVaultRegistryLedgerState(providers, contractAddress);
-  if (stateAfterRemove?.backupWalletsEmpty === true) {
-    console.log('  ✅ backupWallets is now empty!\n');
-  } else {
-    console.log('  ❌ backupWallets should be empty after removal!\n');
-  }
-
-  // Step 15: Transfer ownership
-  console.log('Step 15: Testing transfer ownership...');
+  // Step 14: Transfer ownership
+  console.log('Step 14: Testing transfer ownership...');
   const newSecretKey = crypto.randomBytes(32);
   const newOwnerCommitment = pureCircuits.ownerCommitment(newSecretKey);
   await api.withStatus('Transferring ownership', () =>
@@ -193,8 +181,8 @@ try {
   );
   console.log('  Ownership transferred successfully!\n');
 
-  // Step 16: Verify new owner in ledger and recovery state reset
-  console.log('Step 16: Verifying ownership transfer...');
+  // Step 15: Verify new owner, recovery state reset, and backup wallets cleared
+  console.log('Step 15: Verifying ownership transfer...');
   const stateAfterTransfer = await vrApi.getVaultRegistryLedgerState(providers, contractAddress);
   const newOwnerHex = Buffer.from(stateAfterTransfer?.owner ?? []).toString('hex');
   const expectedOwnerHex = Buffer.from(newOwnerCommitment).toString('hex');
@@ -205,13 +193,18 @@ try {
   }
   const recoveryReset = Buffer.from(stateAfterTransfer?.recoveryKeyHash ?? []).toString('hex') === '0'.repeat(64);
   if (recoveryReset) {
-    console.log('  ✅ Recovery state was reset on transfer!\n');
+    console.log('  ✅ Recovery state was reset on transfer!');
   } else {
-    console.log('  ❌ Recovery state NOT reset!\n');
+    console.log('  ❌ Recovery state NOT reset!');
+  }
+  if (stateAfterTransfer?.backupWalletsEmpty === true) {
+    console.log('  ✅ Backup wallets cleared by resetToDefault() on transfer!\n');
+  } else {
+    console.log('  ❌ Backup wallets NOT cleared on transfer!\n');
   }
 
-  // Step 17: CIDv1 validation test
-  console.log('Step 17: Testing CIDv1 validation...');
+  // Step 16: CIDv1 validation test
+  console.log('Step 16: Testing CIDv1 validation...');
   try {
     vrApi.assertCIDv1('QmYwAPJzv5CZsnA625s3Xf2nemtYgPpHdWEz79ojWnPbdG');
     console.log('  ERROR: CIDv0 should have been rejected!\n');
