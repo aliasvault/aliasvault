@@ -168,7 +168,7 @@
     "openAliasVaultToUpgrade": "Otwórz AliasVault, aby dokonać aktualizacji",
     "vaultUpgradeRequired": "Wymagana aktualizacja sejfu.",
     "dismissPopup": "Zamknij wyskakujące okienko",
-    "noTotpItemsFound": "No 2FA code matches found",
+    "noTotpItemsFound": "Nie znaleziono kodu 2FA",
     "close": "Zamknij",
     "savePrompt": {
       "title": "Zapisać w AliasVault?",
