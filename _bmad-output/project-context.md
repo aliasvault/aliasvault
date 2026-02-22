@@ -431,22 +431,31 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find package 'rxjs' imported from ...
 
 **Discovery:** Story 2.5 — `api.ts` imports `rxjs`, but `rxjs` was only listed as a transitive dependency of `@midnight-ntwrk/wallet-sdk-*` packages. Added `rxjs: ^7.8.2` to fix runtime resolution.
 
-### 14. Compact Set Limitations & Sentinel Values (Story 2.6)
+### 14. Compact ADT Operations, Sentinel Values & Domain Separators (updated 2026-02-20)
 
-**Rule:** Compact's `Set` type has no `clear()` method and circuits cannot iterate over set members. Use sentinel values (e.g., `0` for "no value") for optional `Uint<64>` fields, but guard against sentinel collision in circuits.
+**Rule:** Compact `Set`, `Map`, and `Counter` all have a `resetToDefault()` method that bulk-clears the structure in-circuit. Circuits cannot iterate over members, but bulk-clearing is fully supported. Compact also supports `Map<K,V>` ledger state and `struct` user-defined types.
 
-**Why this matters:**
-- `backupWallets: Set<Bytes<32>>` cannot be bulk-cleared on ownership transfer — application layer must enforce sequential `removeBackupWallet()` calls before `transferOwnership()`
-- `transferInitiatedAt: Uint<64>` uses `0` as sentinel for "no transfer initiated" — the `initiateBackupTransfer` circuit must reject `currentTime == 0` to prevent collision
-- Multi-role commitments (owner vs backup) MUST use different domain separators (`"vault:owner:"` vs `"vault:backup:"`) to prevent cross-role commitment collisions even when using the same key
+**ADT operations available IN circuits:**
+- `Set<T>`: `.insert()`, `.remove()`, `.member()`, `.isEmpty()`, `.size()`, `.resetToDefault()`
+- `Map<K,V>`: `.insert(k,v)`, `.lookup(k)`, `.member(k)`, `.remove(k)`, `.isEmpty()`, `.size()`, `.resetToDefault()`
+- `Counter`: `.increment(n)`, `.decrement(n)`, `.read()`, `.lessThan(n)`, `.resetToDefault()`
+- Iteration (`[Symbol.iterator]`) is TypeScript-only — not available in circuits
 
-**Sentinel guard pattern:**
+**`struct` syntax:**
+```compact
+export struct RecoveryState {
+  initiatedAt: Uint<64>,
+  complete: Boolean,
+}
+```
+
+**Sentinel values:** Use `0` as sentinel for "no value" on optional `Uint<64>` fields. Guard against sentinel collision:
 ```compact
 // Reject zero timestamp — 0 is the sentinel for "no transfer initiated"
 assert(time != (0 as Uint<64>), "Invalid timestamp");
 ```
 
-**Multi-role commitment pattern:**
+**Multi-role commitment pattern (prevent cross-role collisions):**
 ```compact
 pure circuit ownerCommitment(sk: Bytes<32>): Bytes<32> {
   persistentCommit<Bytes<32>>(pad(32, "vault:owner:"), sk)
@@ -456,7 +465,34 @@ pure circuit backupCommitment(bk: Bytes<32>): Bytes<32> {
 }
 ```
 
-**Known limitation:** When `transferOwnership()` or `executeBackupTransfer()` is called, stale backup wallets remain in the set. This is documented in `VAULT-REGISTRY-SPEC.md` Known Limitations and will be addressed architecturally in Epic 3 (Stories 3.5/3.6).
+Multi-role commitments MUST use different domain separators (`"vault:owner:"` vs `"vault:backup:"`) to prevent cross-role commitment collisions even when using the same underlying key.
+
+### 15. GuardianRecovery Contract Patterns (Story 3.1)
+
+**Rule:** GuardianRecovery is a separate per-vault contract. Each vault owner deploys their own instance. The application layer coordinates between GuardianRecovery and VaultRegistry — there are no cross-contract calls.
+
+**Domain separators (MUST differ from VaultRegistry):**
+```compact
+// GuardianRecovery — unique domain separators
+ownerCommitment(sk):    persistentCommit<Bytes<32>>(pad(32, "recovery:owner:"), sk)
+guardianCommitment(gk): persistentCommit<Bytes<32>>(pad(32, "recovery:guardian:"), gk)
+
+// VaultRegistry — different domain (DO NOT mix)
+ownerCommitment(sk):    persistentCommit<Bytes<32>>(pad(32, "vault:owner:"), sk)
+backupCommitment(bk):   persistentCommit<Bytes<32>>(pad(32, "vault:backup:"), bk)
+```
+
+**State mutation guards during active processes:**
+- `removeGuardian()` is blocked while `recoveryInitiatedAt != 0` — prevents a removed guardian's stale approval from counting toward the 2-of-3 threshold
+- Pattern: when a state-changing circuit can invalidate assumptions of an in-progress process, block it during that process rather than trying to clean up inconsistencies
+
+**Post-recovery terminal state:**
+- After `claimRecovery()` succeeds, `recoveryComplete = true` is permanent. No reset circuit exists. Owner deploys a new GuardianRecovery instance for the next recovery cycle.
+- `claimRecovery()` has an idempotency guard: `assert(!recoveryComplete, "Recovery already completed")` — prevents wasted gas on re-claims.
+
+**Test counts (post-review):**
+- Contract: 72 total (69 passed, 3 skipped — blockTimeGte simulator limitation)
+- CLI API: 12 passed (8 circuit wrappers + 2 deploy/join + 2 ledger state query)
 
 ---
 
@@ -567,10 +603,11 @@ Before merging any PR that touches cryptography or guardian recovery:
 
 ---
 
-**Last Updated:** 2026-02-08
+**Last Updated:** 2026-02-21
 **Source:** Generated from [architecture.md](_bmad-output/architecture.md)
 **Maintenance:** Update when implementing new patterns or discovering critical rules
 **Change Log:**
+- 2026-02-21: Added Rule 15 (GuardianRecovery contract patterns) from Story 3.1. Per-vault deployment model, guardian-specific domain separators, state mutation guards during active recovery, post-recovery terminal state, and idempotency guard on claimRecovery.
 - 2026-02-08: Added Rule 14 (Compact Set limitations, sentinel values, multi-role domain separators) from Story 2.6. Updated Rule 11 simulator pattern with backupKey param, multi-role testing, and block-time limitation note.
 - 2026-02-08: Updated Rule 10 with `blockTimeGte/Gt/Lt/Lte(Uint<64>)` discovery (Compact 0.17+) and `Uint<64>` arithmetic cast pattern. Fixed Security Checklist recovery key storage (ADR-006). From Story 2.6 validation.
 - 2026-02-08: Added Rule 13 (pnpm strict hoisting & transitive dependencies) from Story 2.5. pnpm doesn't hoist transitive deps — packages must declare explicit dependencies for modules they import directly.

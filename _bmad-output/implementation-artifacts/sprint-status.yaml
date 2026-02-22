@@ -1,4 +1,4 @@
-# generated: 2026-02-08
+# generated: 2026-02-21
 # project: aliasvault
 # project_key: aliasvault
 # tracking_system: file-system
@@ -33,7 +33,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-02-08
+generated: 2026-02-21
 project: aliasvault
 project_key: aliasvault
 tracking_system: file-system
@@ -61,8 +61,8 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: Recovery & Breach Defense
-  epic-3: backlog
-  3-1-guardian-smart-contract: backlog
+  epic-3: in-progress
+  3-1-guardian-smart-contract: done
   3-2-shamir-secret-splitting-pattern-6: backlog
   3-3-guardian-portal: backlog
   3-4-recovery-claim-flow-pattern-6: backlog
