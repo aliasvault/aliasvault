@@ -120,7 +120,6 @@ if [ -z "$EXISTING_RELEASE" ]; then
         if [ $? -eq 0 ]; then
             echo ""
             echo -e "${GREEN}✓ Draft release created successfully!${RESET}"
-            echo -e "${CYAN}View it at: https://github.com/aliasvault/aliasvault/releases/edit/$NEW_TAG${RESET}"
             if [ "$RELEASE_TARGET" = "main" ]; then
                 echo ""
                 echo -e "${YELLOW}Note: Release was created from main branch. You can change the target branch later in the GitHub UI.${RESET}"

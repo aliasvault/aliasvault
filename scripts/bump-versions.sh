@@ -3,7 +3,7 @@
 # Check if running with bash
 if [ -z "$BASH_VERSION" ]; then
     echo "Error: This script must be run with bash"
-    echo "Usage: bash $0 [--build-only]"
+    echo "Usage: bash $0 [--build-only] [--version X.Y.Z]"
     exit 1
 fi
 
@@ -15,9 +15,35 @@ RED='\033[0;31m'
 CYAN='\033[0;36m'
 RESET='\033[0m'
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the repository root (parent of scripts directory)
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+
 # Initialize variables
 BUILD_ONLY=false
 MARKETING_UPDATE=false
+PROVIDED_VERSION=""
+
+# Parse command-line arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --build-only)
+            BUILD_ONLY=true
+            shift
+            ;;
+        --version)
+            PROVIDED_VERSION="$2"
+            MARKETING_UPDATE=true
+            shift 2
+            ;;
+        *)
+            echo -e "${RED}Unknown option: $1${RESET}"
+            echo "Usage: bash $0 [--build-only] [--version X.Y.Z]"
+            exit 1
+            ;;
+    esac
+done
 
 # Function to generate semantic build number
 # Format: MMmmppSXX where MM=major, mm=minor, pp=patch, S=stage, XX=build
@@ -120,9 +146,9 @@ extract_build_increment() {
 # Function to read and validate semantic version
 read_semver() {
     # Get current version from server
-    local current_major=$(grep "public const int VersionMajor = " ../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local current_minor=$(grep "public const int VersionMinor = " ../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local current_stage=$(grep "public const string VersionStage = " ../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs | cut -d'"' -f2)
+    local current_major=$(grep "public const int VersionMajor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local current_minor=$(grep "public const int VersionMinor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local current_stage=$(grep "public const string VersionStage = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | cut -d'"' -f2)
     local suggested_version="${current_major}.$((current_minor + 1)).0"
 
     while true; do
@@ -219,40 +245,40 @@ update_version() {
 
 # Function to extract version from server AppInfo.cs
 get_server_version() {
-    local major=$(grep "public const int VersionMajor = " ../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local minor=$(grep "public const int VersionMinor = " ../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local patch=$(grep "public const int VersionPatch = " ../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
-    local stage=$(grep "public const string VersionStage = " ../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs | cut -d'"' -f2)
+    local major=$(grep "public const int VersionMajor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local minor=$(grep "public const int VersionMinor = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local patch=$(grep "public const int VersionPatch = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | tr -d ';' | tr -d ' ' | cut -d'=' -f2)
+    local stage=$(grep "public const string VersionStage = " "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" | cut -d'"' -f2)
     echo "$major.$minor.$patch$stage"
 }
 
 # Function to extract version from browser extension config
 get_browser_extension_version() {
-    grep "version: " ../apps/browser-extension/wxt.config.ts | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
+    grep "version: " "$REPO_ROOT/apps/browser-extension/wxt.config.ts" | head -n1 | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
 # Function to extract version from browser extension package.json
 get_browser_extension_package_json_version() {
-    grep "\"version\": " ../apps/browser-extension/package.json | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
+    grep "\"version\": " "$REPO_ROOT/apps/browser-extension/package.json" | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
 # Function to extract version from browser extension AppInfo.ts
 get_browser_extension_ts_version() {
-    grep "public static readonly VERSION = " ../apps/browser-extension/src/utils/AppInfo.ts | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "public static readonly VERSION = " "$REPO_ROOT/apps/browser-extension/src/utils/AppInfo.ts" | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract version from mobile app
 get_mobile_app_version() {
-    grep "\"version\": " ../apps/mobile-app/app.json | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
+    grep "\"version\": " "$REPO_ROOT/apps/mobile-app/app.json" | tr -d '"' | tr -d ',' | tr -d ' ' | cut -d':' -f2
 }
 
 get_mobile_app_ts_version() {
-    grep "public static readonly VERSION = " ../apps/mobile-app/utils/AppInfo.ts | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "public static readonly VERSION = " "$REPO_ROOT/apps/mobile-app/utils/AppInfo.ts" | tr -d "'" | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract version from iOS app (main target only, identified by net.aliasvault.app bundle ID)
 get_ios_version() {
-    local pbxproj="../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj"
+    local pbxproj="$REPO_ROOT/apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj"
     # Find the line number of the main app's bundle identifier
     local line_num=$(grep -n "PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app;" "$pbxproj" | head -n1 | cut -d: -f1)
     # Look back within the same build settings block (typically within 30 lines) for MARKETING_VERSION
@@ -262,17 +288,17 @@ get_ios_version() {
 
 # Function to extract version from Android app
 get_android_version() {
-    grep "versionName " ../apps/mobile-app/android/app/build.gradle | head -n1 | tr -d '"' | tr -d ' ' | cut -d'=' -f2 | sed 's/versionName//'
+    grep "versionName " "$REPO_ROOT/apps/mobile-app/android/app/build.gradle" | head -n1 | tr -d '"' | tr -d ' ' | cut -d'=' -f2 | sed 's/versionName//'
 }
 
 # Function to extract version from Safari extension
 get_safari_version() {
-    grep "MARKETING_VERSION = " ../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
+    grep "MARKETING_VERSION = " "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | head -n1 | tr -d '"' | tr -d ';' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Function to extract version from Rust core Cargo.toml
 get_rust_core_version() {
-    grep "^version = " ../core/rust/Cargo.toml | head -n1 | tr -d '"' | tr -d ' ' | cut -d'=' -f2
+    grep "^version = " "$REPO_ROOT/core/rust/Cargo.toml" | head -n1 | tr -d '"' | tr -d ' ' | cut -d'=' -f2
 }
 
 # Check current versions
@@ -322,8 +348,8 @@ normalize_version() {
 # Check if all versions are equal (comparing base versions without stage suffixes)
 # Use .version/version.txt as the canonical reference if it exists, otherwise fall back to server version
 all_equal=true
-if [ -f "../apps/.version/version.txt" ]; then
-    first_version=$(cat "../apps/.version/version.txt")
+if [ -f "$REPO_ROOT/apps/.version/version.txt" ]; then
+    first_version=$(cat "$REPO_ROOT/apps/.version/version.txt")
 else
     first_version="$server_version"
 fi
@@ -341,32 +367,47 @@ done
 # Marketing versions are used for new feature releases and bug fixes.
 # Build numbers are used for internal testing, translations, and misc updates.
 
-# Ask user what they want to do
-echo ""
-echo "--------------------------------"
-echo "AliasVault version bump tool"
-echo "* This tool updates version numbers across the AliasVault codebase"
-echo "--------------------------------"
-echo ""
-echo "What would you like to do?"
-echo ""
-echo "1) [Public release] Prepare new public release (marketing version + app store build numbers)"
-echo "2) [Internal release] New internal app store build (app store build numbers only, e.g. for testing translations)"
-echo ""
-read -p "Enter your choice: " choice
+# Only ask user what they want to do if not already determined by command-line args
+if [[ "$MARKETING_UPDATE" == false && "$BUILD_ONLY" == false ]]; then
+    # Ask user what they want to do
+    echo ""
+    echo "--------------------------------"
+    echo "AliasVault version bump tool"
+    echo "* This tool updates version numbers across the AliasVault codebase"
+    echo "--------------------------------"
+    echo ""
+    echo "What would you like to do?"
+    echo ""
+    echo "1) [Public release] Prepare new public release (marketing version + app store build numbers)"
+    echo "2) [Internal release] New internal app store build (app store build numbers only, e.g. for testing translations)"
+    echo ""
+    read -p "Enter your choice: " choice
 
-case $choice in
-    1)
-        MARKETING_UPDATE=true
-        ;;
-    2)
-        BUILD_ONLY=true
-        ;;
-    *)
-        echo "Invalid choice. Exiting."
-        exit 1
-        ;;
-esac
+    case $choice in
+        1)
+            MARKETING_UPDATE=true
+            ;;
+        2)
+            BUILD_ONLY=true
+            ;;
+        *)
+            echo "Invalid choice. Exiting."
+            exit 1
+            ;;
+    esac
+elif [[ "$MARKETING_UPDATE" == true ]]; then
+    echo ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+    echo -e "${CYAN}AliasVault version bump tool - Marketing Update${RESET}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+    echo ""
+elif [[ "$BUILD_ONLY" == true ]]; then
+    echo ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+    echo -e "${CYAN}AliasVault version bump tool - Build-Only Update${RESET}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+    echo ""
+fi
 
 # If versions are not equal, ask for confirmation
 if [[ "$all_equal" == false ]]; then
@@ -412,12 +453,27 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         echo "${display_names[$project]}: ${versions[$project]}"
     done
 
-    # Read new version
+    # Read new version or use provided version
     echo ""
     echo "--------------------------------"
     echo "Update marketing versions"
     echo "--------------------------------"
-    read_semver
+
+    if [[ -n "$PROVIDED_VERSION" ]]; then
+        echo -e "${BLUE}Using provided version: $PROVIDED_VERSION${RESET}"
+        version_input="$PROVIDED_VERSION"
+        # Extract base version and suffix
+        if [[ $version_input =~ ^([0-9]+\.[0-9]+\.[0-9]+)((-[a-zA-Z]+)(\.[0-9]+)?)?$ ]]; then
+            version=${BASH_REMATCH[1]}
+            version_suffix=${BASH_REMATCH[2]}
+        else
+            echo -e "${RED}Invalid version format: $PROVIDED_VERSION${RESET}"
+            echo -e "${RED}Please use format X.Y.Z or X.Y.Z-suffix (e.g. 1.2.3 or 1.2.3-alpha.1)${RESET}"
+            exit 1
+        fi
+    else
+        read_semver
+    fi
 
     # Extract major, minor, patch from version
     major=$(echo $version | cut -d. -f1)
@@ -428,7 +484,7 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
     display_version="${version}${version_suffix}"
 
     # Read current build numbers (needed for changelog creation)
-    ios_pbxproj="../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj"
+    ios_pbxproj="$REPO_ROOT/apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj"
     ios_main_line=$(grep -n "PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app;" "$ios_pbxproj" | head -n1 | cut -d: -f1)
     ios_start_line=$((ios_main_line - 30))
     current_ios_build=$(sed -n "${ios_start_line},${ios_main_line}p" "$ios_pbxproj" | grep "CURRENT_PROJECT_VERSION" | head -n1 | sed 's/.*= //' | tr -d ';' | grep -E '^[0-9]+$')
@@ -437,13 +493,13 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         exit 1
     fi
 
-    current_android_build=$(grep "versionCode" ../apps/mobile-app/android/app/build.gradle | grep -E "versionCode [0-9]+" | head -n1 | awk '{print $2}' | grep -E '^[0-9]+$')
+    current_android_build=$(grep "versionCode" "$REPO_ROOT/apps/mobile-app/android/app/build.gradle" | grep -E "versionCode [0-9]+" | head -n1 | awk '{print $2}' | grep -E '^[0-9]+$')
     if [ -z "$current_android_build" ]; then
         echo -e "${RED}Error: Could not read Android build number or invalid format${RESET}"
         exit 1
     fi
 
-    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" ../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
+    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
     if [ -z "$current_safari_build" ]; then
         echo -e "${RED}Error: Could not read Safari build number or invalid format${RESET}"
         exit 1
@@ -464,8 +520,8 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         echo -e "${BLUE}Creating empty changelog files for GA version $version...${RESET}"
 
         # Create iOS changelog files
-        if [ -d "../fastlane/metadata/ios" ]; then
-            for lang_dir in ../fastlane/metadata/ios/*/; do
+        if [ -d "$REPO_ROOT/fastlane/metadata/ios" ]; then
+            for lang_dir in "$REPO_ROOT/fastlane/metadata/ios"/*/; do
                 if [ -d "$lang_dir" ]; then
                     lang=$(basename "$lang_dir")
                     changelog_dir="$lang_dir/changelogs"
@@ -477,8 +533,8 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         fi
 
         # Create Android changelog files
-        if [ -d "../fastlane/metadata/android" ]; then
-            for lang_dir in ../fastlane/metadata/android/*/; do
+        if [ -d "$REPO_ROOT/fastlane/metadata/android" ]; then
+            for lang_dir in "$REPO_ROOT/fastlane/metadata/android"/*/; do
                 if [ -d "$lang_dir" ]; then
                     lang=$(basename "$lang_dir")
                     changelog_dir="$lang_dir/changelogs"
@@ -490,8 +546,8 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         fi
 
         # Create Browser Extension changelog files
-        if [ -d "../fastlane/metadata/browser-extension" ]; then
-            for lang_dir in ../fastlane/metadata/browser-extension/*/; do
+        if [ -d "$REPO_ROOT/fastlane/metadata/browser-extension" ]; then
+            for lang_dir in "$REPO_ROOT/fastlane/metadata/browser-extension"/*/; do
                 if [ -d "$lang_dir" ]; then
                     lang=$(basename "$lang_dir")
                     changelog_dir="$lang_dir/changelogs"
@@ -523,73 +579,73 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
 
     # Update server version
     echo -e "${BLUE}Updating server version...${RESET}"
-    update_version "../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
+    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
         "public const int VersionMajor = [0-9][0-9]*;" \
         "public const int VersionMajor = $major;"
-    update_version "../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
+    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
         "public const int VersionMinor = [0-9][0-9]*;" \
         "public const int VersionMinor = $minor;"
-    update_version "../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
+    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
         "public const int VersionPatch = [0-9][0-9]*;" \
         "public const int VersionPatch = $patch;"
-    update_version "../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
+    update_version "$REPO_ROOT/apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
         "public const string VersionStage = \"[^\"]*\";" \
         "public const string VersionStage = \"$version_suffix\";"
 
     # Update browser extension version (without suffix - browser stores don't support semver suffixes)
     echo -e "${BLUE}Updating browser extension wxt.config.ts version...${RESET}"
-    update_version "../apps/browser-extension/wxt.config.ts" \
+    update_version "$REPO_ROOT/apps/browser-extension/wxt.config.ts" \
         "version: \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
         "version: \"$version\","
 
     # Update package.json version (without suffix - for consistency with browser stores)
     echo -e "${BLUE}Updating browser extension package.json version...${RESET}"
-    update_version "../apps/browser-extension/package.json" \
+    update_version "$REPO_ROOT/apps/browser-extension/package.json" \
         "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
         "\"version\": \"$version\","
 
     # Update browser extension AppInfo.ts version
     echo -e "${BLUE}Updating browser extension AppInfo.ts version...${RESET}"
-    update_version "../apps/browser-extension/src/utils/AppInfo.ts" \
+    update_version "$REPO_ROOT/apps/browser-extension/src/utils/AppInfo.ts" \
         "public static readonly VERSION = '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^']*';" \
         "public static readonly VERSION = '$display_version';"
 
     # Update generic mobile app version
     echo -e "${BLUE}Updating mobile app version...${RESET}"
-    update_version "../apps/mobile-app/utils/AppInfo.ts" \
+    update_version "$REPO_ROOT/apps/mobile-app/utils/AppInfo.ts" \
         "public static readonly VERSION = '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^']*';" \
         "public static readonly VERSION = '$display_version';"
-    update_version "../apps/mobile-app/app.json" \
+    update_version "$REPO_ROOT/apps/mobile-app/app.json" \
         "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
         "\"version\": \"$display_version\","
 
     # Update iOS app version (Apple doesn't accept stage suffixes in MARKETING_VERSION)
     echo -e "${BLUE}Updating iOS app version...${RESET}"
-    update_version "../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj" \
+    update_version "$REPO_ROOT/apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj" \
         "MARKETING_VERSION = [0-9]\+\.[0-9]\+\.[0-9]\+[^;]*;" \
         "MARKETING_VERSION = $version;"
 
     # Update Android app version
     echo -e "${BLUE}Updating Android app version...${RESET}"
-    update_version "../apps/mobile-app/android/app/build.gradle" \
+    update_version "$REPO_ROOT/apps/mobile-app/android/app/build.gradle" \
         "versionName \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"" \
         "versionName \"$display_version\""
 
     # Update Safari extension version (Apple doesn't accept stage suffixes in MARKETING_VERSION)
     echo -e "${BLUE}Updating Safari extension version...${RESET}"
-    update_version "../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
+    update_version "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
         "MARKETING_VERSION = [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^;]*;" \
         "MARKETING_VERSION = $version;"
 
     # Update Rust core version (Cargo.toml uses base version without suffix)
     echo -e "${BLUE}Updating Rust core version...${RESET}"
-    update_version "../core/rust/Cargo.toml" \
+    update_version "$REPO_ROOT/core/rust/Cargo.toml" \
         "^version = \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"" \
         "version = \"$version\""
 
     # Update Rust core Cargo.lock (aliasvault-core package version)
     echo -e "${BLUE}Updating Rust core Cargo.lock version...${RESET}"
-    sed -i '' '/^name = "aliasvault-core"$/{n;s/version = "[^"]*"/version = "'"$version"'"/;}' "../core/rust/Cargo.lock"
+    sed -i '' '/^name = "aliasvault-core"$/{n;s/version = "[^"]*"/version = "'"$version"'"/;}' "$REPO_ROOT/core/rust/Cargo.lock"
 
     echo ""
     echo -e "${GREEN}✓ Version numbers updated successfully${RESET}"
@@ -620,7 +676,7 @@ echo ""
 # Read current build numbers (if not already read for marketing update)
 if [[ "$MARKETING_UPDATE" != true ]]; then
     # For iOS, read from main app target (identified by net.aliasvault.app bundle ID)
-    ios_pbxproj="../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj"
+    ios_pbxproj="$REPO_ROOT/apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj"
     ios_main_line=$(grep -n "PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app;" "$ios_pbxproj" | head -n1 | cut -d: -f1)
     ios_start_line=$((ios_main_line - 30))
     current_ios_build=$(sed -n "${ios_start_line},${ios_main_line}p" "$ios_pbxproj" | grep "CURRENT_PROJECT_VERSION" | head -n1 | sed 's/.*= //' | tr -d ';' | grep -E '^[0-9]+$')
@@ -629,13 +685,13 @@ if [[ "$MARKETING_UPDATE" != true ]]; then
         exit 1
     fi
 
-    current_android_build=$(grep "versionCode" ../apps/mobile-app/android/app/build.gradle | grep -E "versionCode [0-9]+" | head -n1 | awk '{print $2}' | grep -E '^[0-9]+$')
+    current_android_build=$(grep "versionCode" "$REPO_ROOT/apps/mobile-app/android/app/build.gradle" | grep -E "versionCode [0-9]+" | head -n1 | awk '{print $2}' | grep -E '^[0-9]+$')
     if [ -z "$current_android_build" ]; then
         echo -e "${RED}Error: Could not read Android build number or invalid format${RESET}"
         exit 1
     fi
 
-    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" ../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
+    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
     if [ -z "$current_safari_build" ]; then
         echo -e "${RED}Error: Could not read Safari build number or invalid format${RESET}"
         exit 1
@@ -651,17 +707,17 @@ if [[ "$MARKETING_UPDATE" != true ]]; then
 fi
 
 # Update build numbers
-update_version "../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj" \
+update_version "$REPO_ROOT/apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj" \
     "CURRENT_PROJECT_VERSION = [0-9]\+;" \
     "CURRENT_PROJECT_VERSION = $new_ios_build;" \
     "iOS Mobile App"
 
-update_version "../apps/mobile-app/android/app/build.gradle" \
+update_version "$REPO_ROOT/apps/mobile-app/android/app/build.gradle" \
     "versionCode [0-9]\+" \
     "versionCode $new_android_build" \
     "Android App"
 
-update_version "../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
+update_version "$REPO_ROOT/apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
     "CURRENT_PROJECT_VERSION = [0-9]\+;" \
     "CURRENT_PROJECT_VERSION = $new_safari_build;" \
     "Safari Extension"
@@ -698,7 +754,7 @@ if [[ "$MARKETING_UPDATE" == true ]]; then
     echo ""
 
     # Create version directory if it doesn't exist
-    version_dir="../apps/.version"
+    version_dir="$REPO_ROOT/apps/.version"
     mkdir -p "$version_dir"
 
     # Write full version (with suffix if present)
