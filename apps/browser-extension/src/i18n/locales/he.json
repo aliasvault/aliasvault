@@ -51,6 +51,7 @@
     "undo": "הסגה",
     "save": "שמירה",
     "saving": "Saving...",
+    "edit": "Edit",
     "create": "יצירה",
     "or": "או",
     "close": "סגירה",
@@ -62,6 +63,8 @@
     "disabled": "כבוי",
     "showPassword": "הצגת סיסמה",
     "hidePassword": "הסתרת סיסמה",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "הצגת פרטים",
     "hideDetails": "הסתרת פרטים",
     "copyToClipboard": "העתקה ללוח הגזירים",
@@ -299,6 +302,8 @@
     "secretKey": "מפתח סודי",
     "saveToViewCode": "יש לשמור כדי לצפות בקוד",
     "defaultName": "Authenticator",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Invalid secret key format."
     }
