@@ -4,6 +4,7 @@
     "close": "Sulje",
     "delete": "Poista",
     "save": "Tallenna",
+    "edit": "Edit",
     "yes": "Kyllä",
     "no": "Ei",
     "ok": "Hyvä on",
@@ -24,6 +25,7 @@
     "add": "Lisää",
     "generate": "Generate",
     "attachments": "Liitteet",
+    "or": "or",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Salainen avain",
     "instructions": "Syötä salainen avain, joka näkyy sivustossa, jossa haluat lisätä kaksivaiheisen tunnistautumisen",
     "saveToViewCode": "Tallenna nähdäksesi koodin",
+    "scanQrCode": "Scan QR Code",
+    "enterManually": "Enter a setup key",
     "errors": {
-      "invalidSecretKey": "Virheellinen salatun avaimen muoto."
+      "invalidSecretKey": "Virheellinen salatun avaimen muoto.",
+      "scanFailed": "Failed to scan QR code. Please try again."
     }
   },
   "settings": {
