@@ -51,6 +51,7 @@
     "undo": "Rückgängig machen",
     "save": "Speichern",
     "saving": "Wird gespeichert ...",
+    "edit": "Edit",
     "create": "Erstellen",
     "or": "Oder",
     "close": "Schließen",
@@ -62,6 +63,8 @@
     "disabled": "Deaktiviert",
     "showPassword": "Passwort anzeigen",
     "hidePassword": "Passwort verbergen",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "Details anzeigen",
     "hideDetails": "Details ausblenden",
     "copyToClipboard": "In die Zwischenablage kopieren",
@@ -299,6 +302,8 @@
     "secretKey": "Secret-Key",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
     "defaultName": "Authenticator",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Ungültiges Format des Secret-Key"
     }
