@@ -4,6 +4,7 @@
     "close": "关闭",
     "delete": "删除",
     "save": "保存",
+    "edit": "Edit",
     "yes": "是",
     "no": "否",
     "ok": "确定",
@@ -24,6 +25,7 @@
     "add": "添加",
     "generate": "生成",
     "attachments": "附件",
+    "or": "or",
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "密钥",
     "instructions": "输入要添加两步验证的网站显示的密钥。",
     "saveToViewCode": "保存以查看验证码",
+    "scanQrCode": "Scan QR Code",
+    "enterManually": "Enter a setup key",
     "errors": {
-      "invalidSecretKey": "密钥格式无效。"
+      "invalidSecretKey": "密钥格式无效。",
+      "scanFailed": "Failed to scan QR code. Please try again."
     }
   },
   "settings": {
