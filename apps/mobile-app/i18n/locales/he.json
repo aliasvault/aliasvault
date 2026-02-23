@@ -4,6 +4,7 @@
     "close": "סגירה",
     "delete": "מחיקה",
     "save": "שמירה",
+    "edit": "Edit",
     "yes": "כן",
     "no": "לא",
     "ok": "אישור",
@@ -24,6 +25,7 @@
     "add": "Add",
     "generate": "Generate",
     "attachments": "צרופות",
+    "or": "or",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "מפתח סודי",
     "instructions": "Enter the secret key shown by the website where you want to add two-factor authentication.",
     "saveToViewCode": "יש לשמור כדי לצפות בקוד",
+    "scanQrCode": "Scan QR Code",
+    "enterManually": "Enter a setup key",
     "errors": {
-      "invalidSecretKey": "Invalid secret key format."
+      "invalidSecretKey": "Invalid secret key format.",
+      "scanFailed": "Failed to scan QR code. Please try again."
     }
   },
   "settings": {
