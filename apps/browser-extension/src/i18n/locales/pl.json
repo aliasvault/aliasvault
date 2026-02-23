@@ -51,6 +51,7 @@
     "undo": "Cofnij",
     "save": "Zapisz",
     "saving": "Zapisywanie...",
+    "edit": "Edit",
     "create": "Utwórz",
     "or": "lub",
     "close": "Zamknąć",
@@ -62,6 +63,8 @@
     "disabled": "Nie aktywne",
     "showPassword": "Pokaż hasło",
     "hidePassword": "Ukryj hasło",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "Pokaż szczegóły",
     "hideDetails": "Ukryj szczegóły",
     "copyToClipboard": "Skopiuj do schowka",
@@ -299,6 +302,8 @@
     "secretKey": "Tajny klucz",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
     "defaultName": "Uwierzytelnianie",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Nieprawidłowy format tajnego klucza."
     }
