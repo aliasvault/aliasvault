@@ -51,6 +51,7 @@
     "undo": "Скасувати",
     "save": "Зберегти",
     "saving": "Saving...",
+    "edit": "Edit",
     "create": "Створити",
     "or": "Або",
     "close": "Закрити",
@@ -62,6 +63,8 @@
     "disabled": "Вимкнено",
     "showPassword": "Показати пароль",
     "hidePassword": "Приховати пароль",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "Показати подробиці",
     "hideDetails": "Приховати подробиці",
     "copyToClipboard": "Копіювати до буфера обміну",
@@ -299,6 +302,8 @@
     "secretKey": "Секретний ключ",
     "saveToViewCode": "Зберегти для перегляду коду",
     "defaultName": "Authenticator",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Invalid secret key format."
     }
