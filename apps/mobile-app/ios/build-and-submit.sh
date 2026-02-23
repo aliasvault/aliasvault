@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 
+# Get the absolute path to the script's directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 BUNDLE_ID="net.aliasvault.app"
 
 SCHEME="AliasVault"
-WORKSPACE="AliasVault.xcworkspace"
+WORKSPACE="$SCRIPT_DIR/AliasVault.xcworkspace"
 CONFIG="Release"
-ARCHIVE_PATH="$PWD/build/${SCHEME}.xcarchive"
-EXPORT_DIR="$PWD/build/export"
-EXPORT_PLIST="$PWD/exportOptions.plist"
+ARCHIVE_PATH="$SCRIPT_DIR/build/${SCHEME}.xcarchive"
+EXPORT_DIR="$SCRIPT_DIR/build/export"
+EXPORT_PLIST="$SCRIPT_DIR/exportOptions.plist"
 
 # Put the fastlane API key in the home directory
 API_KEY_PATH="$HOME/APPSTORE_CONNECT_FASTLANE.json"
@@ -16,8 +19,8 @@ API_KEY_PATH="$HOME/APPSTORE_CONNECT_FASTLANE.json"
 # Build core libraries if needed
 # ------------------------------------------
 
-CORE_DIR="../../../core"
-MOBILE_CORE_DIST="../utils/dist/core"
+CORE_DIR="$SCRIPT_DIR/../../../core"
+MOBILE_CORE_DIST="$SCRIPT_DIR/../utils/dist/core"
 
 if [ ! -d "$MOBILE_CORE_DIST/models" ] || [ ! -d "$MOBILE_CORE_DIST/vault" ]; then
   echo "Building core libraries..."

@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 
+# Get the absolute path to the script's directory
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 BUNDLE_ID="net.aliasvault.safari.extension"
 
 # Build settings
 SCHEME="AliasVault"
-PROJECT="AliasVault.xcodeproj"
+PROJECT="$SCRIPT_DIR/AliasVault.xcodeproj"
 CONFIG="Release"
-ARCHIVE_PATH="$PWD/build/${SCHEME}.xcarchive"
-EXPORT_DIR="$PWD/build/export"
-EXPORT_PLIST="$PWD/exportOptions.plist"
+ARCHIVE_PATH="$SCRIPT_DIR/build/${SCHEME}.xcarchive"
+EXPORT_DIR="$SCRIPT_DIR/build/export"
+EXPORT_PLIST="$SCRIPT_DIR/exportOptions.plist"
 
 # Put the fastlane API key in the home directory
 API_KEY_PATH="$HOME/APPSTORE_CONNECT_FASTLANE.json"
@@ -89,9 +92,9 @@ echo ""
 
 if [[ $CHOICE == "1" || $CHOICE == "2" ]]; then
   echo "Building browser extension..."
-  cd ..
+  pushd "$SCRIPT_DIR/.." > /dev/null
   npm run build:safari
-  cd safari-xcode
+  popd > /dev/null
 
   echo "Building PKG..."
 
