@@ -51,6 +51,7 @@
     "undo": "Ångra",
     "save": "Spara",
     "saving": "Sparar...",
+    "edit": "Edit",
     "create": "Skapa",
     "or": "Eller",
     "close": "Stäng",
@@ -62,6 +63,8 @@
     "disabled": "Inaktiverad",
     "showPassword": "Visa lösenord",
     "hidePassword": "Dölj lösenord",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "Visa detaljer",
     "hideDetails": "Dölj detaljer",
     "copyToClipboard": "Kopiera till urklipp",
@@ -299,6 +302,8 @@
     "secretKey": "Hemlig nyckel",
     "saveToViewCode": "Spara för att visa kod",
     "defaultName": "Autentiserare",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Ogiltigt format för hemlig nyckel."
     }
