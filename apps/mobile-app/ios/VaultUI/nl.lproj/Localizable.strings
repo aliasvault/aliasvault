@@ -32,6 +32,7 @@
 "username_copied" = "Gebruikersnaam gekopieerd";
 "password_copied" = "Wachtwoord gekopieerd";
 "email_copied" = "E-mail gekopieerd";
+"totp_code" = "TOTP Code";
 
 /* Search bar */
 "search_items" = "Zoek items...";
