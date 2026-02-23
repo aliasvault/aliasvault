@@ -269,7 +269,21 @@ public class CredentialProviderViewModel: ObservableObject {
     }
 
     func filterCredentials() {
-        filteredCredentials = RustItemMatcher.filterCredentials(credentials, searchText: searchText)
+        // Use RustItemMatcher when iOS provides a URL (autofill context)
+        // Use ItemSearchMatcher when user manually types (free-text search)
+        if let serviceUrl = serviceUrl, searchText == serviceUrl {
+            // iOS provided URL - use Rust matcher for domain-aware matching
+            filteredCredentials = RustItemMatcher.filterCredentials(
+                credentials,
+                currentUrl: searchText
+            )
+        } else {
+            // User-typed search - use substring matching across all fields
+            filteredCredentials = ItemSearchMatcher.filterCredentials(
+                credentials,
+                searchText: searchText
+            )
+        }
     }
 
     func handleSelection(username: String, password: String) {
