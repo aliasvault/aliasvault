@@ -51,7 +51,7 @@
     "undo": "Fortryd",
     "save": "Gem",
     "saving": "Gemmer...",
-    "edit": "Edit",
+    "edit": "Rediger",
     "create": "Opret",
     "or": "Eller",
     "close": "Luk",
@@ -63,8 +63,8 @@
     "disabled": "Deaktiveret",
     "showPassword": "Vis adgangskode",
     "hidePassword": "Skjul adgangskode",
-    "show": "Show",
-    "hide": "Hide",
+    "show": "Vis",
+    "hide": "Skjul",
     "showDetails": "Vis detaljer",
     "hideDetails": "Skjul detaljer",
     "copyToClipboard": "Kopier til udklipsholder",
@@ -302,8 +302,8 @@
     "secretKey": "Hemmelig nøgle",
     "saveToViewCode": "Gem for at se kode",
     "defaultName": "Godkender",
-    "deleteTotpCodeTitle": "Delete 2FA Code",
-    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
+    "deleteTotpCodeTitle": "Slet 2FA Kode",
+    "deleteTotpCodeConfirmation": "Er du sikker på, at du vil slette 2FA koden \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Ugyldigt format for hemmelig nøgle."
     }
