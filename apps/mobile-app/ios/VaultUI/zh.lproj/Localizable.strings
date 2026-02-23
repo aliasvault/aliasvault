@@ -32,6 +32,7 @@
 "username_copied" = "用户名已复制";
 "password_copied" = "密码已复制";
 "email_copied" = "邮箱已复制";
+"totp_code" = "TOTP Code";
 
 /* Search bar */
 "search_items" = "搜索项目…";
