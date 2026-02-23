@@ -51,6 +51,7 @@
     "undo": "Undo",
     "save": "محفوظ کریں",
     "saving": "Saving...",
+    "edit": "Edit",
     "create": "Create",
     "or": "Or",
     "close": "بند کریں",
@@ -62,6 +63,8 @@
     "disabled": "Disabled",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "Show details",
     "hideDetails": "Hide details",
     "copyToClipboard": "Copy to clipboard",
@@ -299,6 +302,8 @@
     "secretKey": "Secret Key",
     "saveToViewCode": "Save to view code",
     "defaultName": "Authenticator",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Invalid secret key format."
     }
