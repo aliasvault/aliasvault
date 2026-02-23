@@ -51,6 +51,7 @@
     "undo": "Отменить",
     "save": "Сохранить",
     "saving": "Сохраняем...",
+    "edit": "Edit",
     "create": "Создать",
     "or": "Или",
     "close": "Закрыть",
@@ -62,6 +63,8 @@
     "disabled": "Отключено",
     "showPassword": "Показать пароль",
     "hidePassword": "Скрыть пароль",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "Показать подробности",
     "hideDetails": "Скрыть подробности",
     "copyToClipboard": "Скопировать в буфер обмена",
@@ -299,6 +302,8 @@
     "secretKey": "Секретный ключ",
     "saveToViewCode": "Сохранить для просмотра кода",
     "defaultName": "Аутентификатор",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Неверный формат секретного ключа."
     }
