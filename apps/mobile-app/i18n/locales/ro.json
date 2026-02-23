@@ -4,7 +4,7 @@
     "close": "Închide",
     "delete": "Șterge",
     "save": "Salvează",
-    "edit": "Edit",
+    "edit": "Editează",
     "yes": "Da",
     "no": "Nu",
     "ok": "OK",
@@ -25,7 +25,7 @@
     "add": "Adaugă",
     "generate": "Generează",
     "attachments": "Atașamente",
-    "or": "or",
+    "or": "sau",
     "deleteItemConfirmTitle": "Șterge elementul",
     "deleteItemConfirmDescription": "Sigur dorești să ștergi acest element?",
     "errors": {
@@ -116,11 +116,11 @@
     "secretKey": "Cheie secretă",
     "instructions": "Introdu cheia secretă furnizată de site-ul unde dorești să adaugi autentificarea cu doi factori.",
     "saveToViewCode": "Salvează pentru a vedea codul",
-    "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "scanQrCode": "Scanează codul QR",
+    "enterManually": "Introdu o cheie de configurare",
     "errors": {
       "invalidSecretKey": "Formatul cheii secrete este invalid.",
-      "scanFailed": "Failed to scan QR code. Please try again."
+      "scanFailed": "Scanarea codului QR a eșuat. Încearcă din nou."
     }
   },
   "settings": {
