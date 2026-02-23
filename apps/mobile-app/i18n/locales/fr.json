@@ -4,7 +4,7 @@
     "close": "Fermer",
     "delete": "Supprimer",
     "save": "Sauvegarder",
-    "edit": "Edit",
+    "edit": "Editer",
     "yes": "Oui",
     "no": "Non",
     "ok": "OK",
@@ -25,7 +25,7 @@
     "add": "Ajouter",
     "generate": "Générer",
     "attachments": "Pièces jointes",
-    "or": "or",
+    "or": "ou",
     "deleteItemConfirmTitle": "Supprimer l'élement",
     "deleteItemConfirmDescription": "Êtes-vous certain de vouloir supprimer cet élément?",
     "errors": {
@@ -116,11 +116,11 @@
     "secretKey": "Clé secrète",
     "instructions": "Entrez la clé secrète affichée par le site Web où vous souhaitez ajouter l'authentification à deux facteurs.",
     "saveToViewCode": "Enregistrer pour afficher le code",
-    "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "scanQrCode": "Scanner le QR code",
+    "enterManually": "Entrer une clé de configuration",
     "errors": {
       "invalidSecretKey": "Format de clé secrète invalide.",
-      "scanFailed": "Failed to scan QR code. Please try again."
+      "scanFailed": "Échec du scan du QR code. Veuillez réessayer."
     }
   },
   "settings": {
