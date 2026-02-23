@@ -51,7 +51,7 @@
     "undo": "Cofnij",
     "save": "Zapisz",
     "saving": "Zapisywanie...",
-    "edit": "Edit",
+    "edit": "Edytuj",
     "create": "Utwórz",
     "or": "lub",
     "close": "Zamknąć",
@@ -63,8 +63,8 @@
     "disabled": "Nie aktywne",
     "showPassword": "Pokaż hasło",
     "hidePassword": "Ukryj hasło",
-    "show": "Show",
-    "hide": "Hide",
+    "show": "Pokaż",
+    "hide": "Ukryj",
     "showDetails": "Pokaż szczegóły",
     "hideDetails": "Ukryj szczegóły",
     "copyToClipboard": "Skopiuj do schowka",
@@ -302,8 +302,8 @@
     "secretKey": "Tajny klucz",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
     "defaultName": "Uwierzytelnianie",
-    "deleteTotpCodeTitle": "Delete 2FA Code",
-    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
+    "deleteTotpCodeTitle": "Usuń kod 2FA",
+    "deleteTotpCodeConfirmation": "Czy na pewno chcesz usunąć ten kod TOTP \"{{name}}?",
     "errors": {
       "invalidSecretKey": "Nieprawidłowy format tajnego klucza."
     }
@@ -438,7 +438,7 @@
       }
     },
     "loginSave": {
-      "title": "Save Login Prompt",
+      "title": "Zapisz monit logowania",
       "description": "Pokaż monit o zapisanie danych logowania podczas przesyłania formularza logowania na stronie internetowej.",
       "blockedSites": "Zablokowane witryny",
       "blockedSitesDescription": "Witryny, w których nie pojawi się monit zapisu.",
