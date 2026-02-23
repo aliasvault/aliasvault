@@ -468,7 +468,7 @@
       "usernameCopied": "用户名已复制到剪贴板",
       "emailCopied": "邮箱已复制到剪贴板",
       "passwordCopied": "密码已复制到剪贴板",
-      "urlCopied": "URL copied to clipboard"
+      "urlCopied": "URL 已复制到剪贴板"
     },
     "createNewAliasFor": "创建新别名用于",
     "contextMenu": {
@@ -480,10 +480,10 @@
       "copyPassword": "复制密码"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "URL 选项",
+      "copyLink": "复制链接",
+      "openLink": "打开链接",
+      "shareLink": "分享链接"
     },
     "viewHistory": "查看历史记录",
     "history": "历史记录",
