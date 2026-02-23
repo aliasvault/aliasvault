@@ -305,7 +305,11 @@ extension VaultStore {
         let passkeys = try? getPasskeys(forItemId: item.id)
         let passkey = passkeys?.first
 
-        return AutofillCredential(from: item, passkey: passkey)
+        // Load TOTP secret for this item (gets first non-deleted TOTP code)
+        let totpCode = try? getFirstTotpCode(forItemId: item.id)
+        let totpSecret = totpCode?.secretKey
+
+        return AutofillCredential(from: item, passkey: passkey, totpSecret: totpSecret)
     }
 
     /// Get all items that have passkeys for passkey autofill.
@@ -318,5 +322,15 @@ extension VaultStore {
         }
 
         return credentials
+    }
+
+    // MARK: - TOTP Operations
+
+    /// Get the first TOTP code for a specific item.
+    /// - Parameter itemId: The UUID of the item
+    /// - Returns: Optional TotpCode if one exists
+    /// - Throws: Database errors
+    public func getFirstTotpCode(forItemId itemId: UUID) throws -> TotpCode? {
+        return try totpRepository.getFirstTotpCodeForItem(itemId)
     }
 }

@@ -15,6 +15,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
     public let password: String?
     public let notes: String?
     public let passkey: Passkey?
+    public let totpSecret: String?
     public let createdAt: Date
     public let updatedAt: Date
 
@@ -29,6 +30,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
         password: String?,
         notes: String?,
         passkey: Passkey?,
+        totpSecret: String? = nil,
         createdAt: Date,
         updatedAt: Date
     ) {
@@ -42,6 +44,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
         self.password = password
         self.notes = notes
         self.passkey = passkey
+        self.totpSecret = totpSecret
         self.createdAt = createdAt
         self.updatedAt = updatedAt
     }
@@ -50,7 +53,8 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
     /// - Parameters:
     ///   - item: The Item to convert from
     ///   - passkey: Optional passkey associated with this item
-    public init(from item: Item, passkey: Passkey? = nil) {
+    ///   - totpSecret: Optional TOTP secret key for this item
+    public init(from item: Item, passkey: Passkey? = nil, totpSecret: String? = nil) {
         self.id = item.id
         self.serviceName = item.name
         self.serviceUrl = item.url
@@ -61,6 +65,7 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
         self.password = item.password
         self.notes = item.getFieldValue(FieldKey.notesContent)
         self.passkey = passkey
+        self.totpSecret = totpSecret
         self.createdAt = item.createdAt
         self.updatedAt = item.updatedAt
     }
@@ -96,5 +101,11 @@ public struct AutofillCredential: Codable, Hashable, Equatable {
     /// Returns true if this credential has a passkey.
     public var hasPasskey: Bool {
         return passkey != nil
+    }
+
+    /// Returns true if this credential has a TOTP secret.
+    public var hasTotp: Bool {
+        guard let secret = totpSecret else { return false }
+        return !secret.isEmpty
     }
 }

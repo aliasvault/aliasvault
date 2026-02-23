@@ -1,6 +1,7 @@
 import SwiftUI
 import AuthenticationServices
 import VaultModels
+import VaultUtils
 
 private let locBundle = Bundle.vaultUI
 
@@ -163,11 +164,16 @@ private struct AutofillCredentialCardWithSelection: View {
     let onCopy: () -> Void
 
     @State private var showSelectionSheet = false
+    @State private var totpCode: String?
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         AutofillCredentialCard(credential: credential, action: {
             if isChoosingTextToInsert {
+                // Generate TOTP code if available
+                if let secret = credential.totpSecret {
+                    totpCode = TotpGenerator.generateCode(secret: secret)
+                }
                 showSelectionSheet = true
             } else {
                 // For normal autofill, use the credential's identifier property
@@ -196,6 +202,12 @@ private struct AutofillCredentialCardWithSelection: View {
 
             Button(String(localized: "password", bundle: locBundle)) {
                 onSelect(credential.password ?? "", "")
+            }
+
+            if let code = totpCode, !code.isEmpty {
+                Button(String(localized: "totp_code", bundle: locBundle) + ": " + code) {
+                    onSelect(code, "")
+                }
             }
 
             Button(String(localized: "cancel", bundle: locBundle), role: .cancel) {}

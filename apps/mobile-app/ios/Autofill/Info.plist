@@ -33,6 +33,8 @@
 				<true/>
 				<key>ProvidesPasswords</key>
 				<true/>
+				<key>ProvidesOneTimeCodes</key>
+				<true/>
 			</dict>
 		</dict>
 		<key>NSExtensionPointIdentifier</key>
