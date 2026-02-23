@@ -51,6 +51,7 @@
     "undo": "Kumoa",
     "save": "Tallenna",
     "saving": "Saving...",
+    "edit": "Edit",
     "create": "Luo",
     "or": "Tai",
     "close": "Sulje",
@@ -62,6 +63,8 @@
     "disabled": "Pois käytöstä",
     "showPassword": "Näytä salasana",
     "hidePassword": "Piilota salasana",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "Näytä tiedot",
     "hideDetails": "Piilota tiedot",
     "copyToClipboard": "Kopioi leikepöydälle",
@@ -299,6 +302,8 @@
     "secretKey": "Salainen avain",
     "saveToViewCode": "Tallenna nähdäksesi koodin",
     "defaultName": "Authenticator",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Virheellinen salatun avaimen muoto."
     }
