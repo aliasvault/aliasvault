@@ -31,9 +31,25 @@ public struct AutofillCredentialCard: View {
                     .frame(width: 32, height: 32)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(truncateText(credential.serviceName ?? "Unknown", limit: 26))
-                        .font(.headline)
-                        .foregroundColor(colors.text)
+                    HStack(spacing: 4) {
+                        Text(truncateText(credential.serviceName ?? "Unknown", limit: 26))
+                            .font(.headline)
+                            .foregroundColor(colors.text)
+
+                        // Passkey indicator
+                        if credential.hasPasskey {
+                            Image(systemName: "person.badge.key")
+                                .font(.system(size: 12))
+                                .foregroundColor(colors.textMuted)
+                        }
+
+                        // TOTP indicator
+                        if credential.hasTotp {
+                            Image(systemName: "textformat.123")
+                                .font(.system(size: 12))
+                                .foregroundColor(colors.textMuted)
+                        }
+                    }
 
                     Text(truncateText(credential.identifier, limit: 26))
                         .font(.subheadline)
