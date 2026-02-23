@@ -7,6 +7,14 @@ if [ -z "$BASH_VERSION" ]; then
     exit 1
 fi
 
+# Color codes
+BLUE='\033[0;34m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+RED='\033[0;31m'
+CYAN='\033[0;36m'
+RESET='\033[0m'
+
 # Initialize variables
 BUILD_ONLY=false
 MARKETING_UPDATE=false
@@ -416,8 +424,105 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
     minor=$(echo $version | cut -d. -f2)
     patch=$(echo $version | cut -d. -f3)
 
+    # Build display version with suffix if present
+    display_version="${version}${version_suffix}"
+
+    # Read current build numbers (needed for changelog creation)
+    ios_pbxproj="../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj"
+    ios_main_line=$(grep -n "PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app;" "$ios_pbxproj" | head -n1 | cut -d: -f1)
+    ios_start_line=$((ios_main_line - 30))
+    current_ios_build=$(sed -n "${ios_start_line},${ios_main_line}p" "$ios_pbxproj" | grep "CURRENT_PROJECT_VERSION" | head -n1 | sed 's/.*= //' | tr -d ';' | grep -E '^[0-9]+$')
+    if [ -z "$current_ios_build" ]; then
+        echo -e "${RED}Error: Could not read iOS build number or invalid format${RESET}"
+        exit 1
+    fi
+
+    current_android_build=$(grep "versionCode" ../apps/mobile-app/android/app/build.gradle | grep -E "versionCode [0-9]+" | head -n1 | awk '{print $2}' | grep -E '^[0-9]+$')
+    if [ -z "$current_android_build" ]; then
+        echo -e "${RED}Error: Could not read Android build number or invalid format${RESET}"
+        exit 1
+    fi
+
+    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" ../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
+    if [ -z "$current_safari_build" ]; then
+        echo -e "${RED}Error: Could not read Safari build number or invalid format${RESET}"
+        exit 1
+    fi
+
+    # Calculate new build numbers
+    new_ios_build=$(handle_semantic_build_number "$current_ios_build" "iOS Mobile App" "$major" "$minor" "$patch" "$MARKETING_UPDATE")
+    new_android_build=$(handle_semantic_build_number "$current_android_build" "Android App" "$major" "$minor" "$patch" "$MARKETING_UPDATE")
+    new_safari_build=$(handle_semantic_build_number "$current_safari_build" "Safari Extension" "$major" "$minor" "$patch" "$MARKETING_UPDATE")
+
+    # Only create changelog files for GA releases (not alpha, beta, or rc)
+    if [[ -z "$version_suffix" ]]; then
+        echo ""
+        echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+        echo -e "${CYAN}STEP 1: Creating Release Notes Files${RESET}"
+        echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+        echo ""
+        echo -e "${BLUE}Creating empty changelog files for GA version $version...${RESET}"
+
+        # Create iOS changelog files
+        if [ -d "../fastlane/metadata/ios" ]; then
+            for lang_dir in ../fastlane/metadata/ios/*/; do
+                if [ -d "$lang_dir" ]; then
+                    lang=$(basename "$lang_dir")
+                    changelog_dir="$lang_dir/changelogs"
+                    mkdir -p "$changelog_dir"
+                    touch "$changelog_dir/$new_ios_build.txt"
+                fi
+            done
+            echo -e "${GREEN}✓ Created iOS changelog files${RESET}"
+        fi
+
+        # Create Android changelog files
+        if [ -d "../fastlane/metadata/android" ]; then
+            for lang_dir in ../fastlane/metadata/android/*/; do
+                if [ -d "$lang_dir" ]; then
+                    lang=$(basename "$lang_dir")
+                    changelog_dir="$lang_dir/changelogs"
+                    mkdir -p "$changelog_dir"
+                    touch "$changelog_dir/$new_android_build.txt"
+                fi
+            done
+            echo -e "${GREEN}✓ Created Android changelog files${RESET}"
+        fi
+
+        # Create Browser Extension changelog files
+        if [ -d "../fastlane/metadata/browser-extension" ]; then
+            for lang_dir in ../fastlane/metadata/browser-extension/*/; do
+                if [ -d "$lang_dir" ]; then
+                    lang=$(basename "$lang_dir")
+                    changelog_dir="$lang_dir/changelogs"
+                    mkdir -p "$changelog_dir"
+                    touch "$changelog_dir/$version.txt"
+                fi
+            done
+            echo -e "${GREEN}✓ Created Browser Extension changelog files${RESET}"
+        fi
+
+        echo ""
+        echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+        echo -e "${YELLOW}Step 1/2: New release notes files created.${RESET}"
+        echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+        echo -en "${CYAN}Press Enter when you are ready to continue with version bumps...${RESET}"
+        read
+        echo ""
+    else
+        echo ""
+        echo -e "${YELLOW}Skipping changelog creation for pre-release version $display_version (only GA releases get published to app stores)${RESET}"
+        echo ""
+    fi
+
+    echo ""
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+    echo -e "${CYAN}STEP 2: Updating Version Numbers${RESET}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+    echo ""
+
     # Update server version
-    echo -e "\nUpdating server version..."
+    echo -e "${BLUE}Updating server version...${RESET}"
     update_version "../apps/server/Shared/AliasVault.Shared.Core/AppInfo.cs" \
         "public const int VersionMajor = [0-9][0-9]*;" \
         "public const int VersionMajor = $major;"
@@ -431,29 +536,26 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         "public const string VersionStage = \"[^\"]*\";" \
         "public const string VersionStage = \"$version_suffix\";"
 
-    # Build display version with suffix if present
-    display_version="${version}${version_suffix}"
-
     # Update browser extension version (without suffix - browser stores don't support semver suffixes)
-    echo "Updating browser extension wxt.config.ts version..."
+    echo -e "${BLUE}Updating browser extension wxt.config.ts version...${RESET}"
     update_version "../apps/browser-extension/wxt.config.ts" \
         "version: \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
         "version: \"$version\","
 
     # Update package.json version (without suffix - for consistency with browser stores)
-    echo "Updating browser extension package.json version..."
+    echo -e "${BLUE}Updating browser extension package.json version...${RESET}"
     update_version "../apps/browser-extension/package.json" \
         "\"version\": \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"," \
         "\"version\": \"$version\","
 
     # Update browser extension AppInfo.ts version
-    echo "Updating browser extension AppInfo.ts version..."
+    echo -e "${BLUE}Updating browser extension AppInfo.ts version...${RESET}"
     update_version "../apps/browser-extension/src/utils/AppInfo.ts" \
         "public static readonly VERSION = '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^']*';" \
         "public static readonly VERSION = '$display_version';"
 
     # Update generic mobile app version
-    echo "Updating mobile app version..."
+    echo -e "${BLUE}Updating mobile app version...${RESET}"
     update_version "../apps/mobile-app/utils/AppInfo.ts" \
         "public static readonly VERSION = '[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^']*';" \
         "public static readonly VERSION = '$display_version';"
@@ -462,39 +564,42 @@ elif [[ "$MARKETING_UPDATE" == true ]]; then
         "\"version\": \"$display_version\","
 
     # Update iOS app version (Apple doesn't accept stage suffixes in MARKETING_VERSION)
-    echo "Updating iOS app version..."
+    echo -e "${BLUE}Updating iOS app version...${RESET}"
     update_version "../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj" \
         "MARKETING_VERSION = [0-9]\+\.[0-9]\+\.[0-9]\+[^;]*;" \
         "MARKETING_VERSION = $version;"
 
     # Update Android app version
-    echo "Updating Android app version..."
+    echo -e "${BLUE}Updating Android app version...${RESET}"
     update_version "../apps/mobile-app/android/app/build.gradle" \
         "versionName \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"" \
         "versionName \"$display_version\""
 
     # Update Safari extension version (Apple doesn't accept stage suffixes in MARKETING_VERSION)
-    echo "Updating Safari extension version..."
+    echo -e "${BLUE}Updating Safari extension version...${RESET}"
     update_version "../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
         "MARKETING_VERSION = [0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^;]*;" \
         "MARKETING_VERSION = $version;"
 
     # Update Rust core version (Cargo.toml uses base version without suffix)
-    echo "Updating Rust core version..."
+    echo -e "${BLUE}Updating Rust core version...${RESET}"
     update_version "../core/rust/Cargo.toml" \
         "^version = \"[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*[^\"]*\"" \
         "version = \"$version\""
 
     # Update Rust core Cargo.lock (aliasvault-core package version)
-    echo "Updating Rust core Cargo.lock version..."
+    echo -e "${BLUE}Updating Rust core Cargo.lock version...${RESET}"
     sed -i '' '/^name = "aliasvault-core"$/{n;s/version = "[^"]*"/version = "'"$version"'"/;}' "../core/rust/Cargo.lock"
+
+    echo ""
+    echo -e "${GREEN}✓ Version numbers updated successfully${RESET}"
 fi
 
 # Handle build numbers with semantic versioning
 echo ""
-echo "--------------------------------"
-echo "Update semantic build numbers (for App Store releases)"
-echo "--------------------------------"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+echo -e "${CYAN}Update semantic build numbers (for App Store releases)${RESET}"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 echo "Format: MMmmppSXX (9 digits) where S=stage (1=alpha, 3=beta, 7=rc, 9=ga)"
 if [[ -n "$version_suffix" ]]; then
     echo "Detected suffix: $version_suffix"
@@ -512,120 +617,85 @@ fi
 echo " (leading zeros removed)"
 echo ""
 
-# Read current build numbers
-# For iOS, read from main app target (identified by net.aliasvault.app bundle ID)
-ios_pbxproj="../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj"
-ios_main_line=$(grep -n "PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app;" "$ios_pbxproj" | head -n1 | cut -d: -f1)
-ios_start_line=$((ios_main_line - 30))
-current_ios_build=$(sed -n "${ios_start_line},${ios_main_line}p" "$ios_pbxproj" | grep "CURRENT_PROJECT_VERSION" | head -n1 | sed 's/.*= //' | tr -d ';' | grep -E '^[0-9]+$')
-if [ -z "$current_ios_build" ]; then
-    echo "Error: Could not read iOS build number or invalid format"
-    exit 1
-fi
+# Read current build numbers (if not already read for marketing update)
+if [[ "$MARKETING_UPDATE" != true ]]; then
+    # For iOS, read from main app target (identified by net.aliasvault.app bundle ID)
+    ios_pbxproj="../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj"
+    ios_main_line=$(grep -n "PRODUCT_BUNDLE_IDENTIFIER = net.aliasvault.app;" "$ios_pbxproj" | head -n1 | cut -d: -f1)
+    ios_start_line=$((ios_main_line - 30))
+    current_ios_build=$(sed -n "${ios_start_line},${ios_main_line}p" "$ios_pbxproj" | grep "CURRENT_PROJECT_VERSION" | head -n1 | sed 's/.*= //' | tr -d ';' | grep -E '^[0-9]+$')
+    if [ -z "$current_ios_build" ]; then
+        echo -e "${RED}Error: Could not read iOS build number or invalid format${RESET}"
+        exit 1
+    fi
 
-current_android_build=$(grep "versionCode" ../apps/mobile-app/android/app/build.gradle | grep -E "versionCode [0-9]+" | head -n1 | awk '{print $2}' | grep -E '^[0-9]+$')
-if [ -z "$current_android_build" ]; then
-    echo "Error: Could not read Android build number or invalid format"
-    exit 1
-fi
+    current_android_build=$(grep "versionCode" ../apps/mobile-app/android/app/build.gradle | grep -E "versionCode [0-9]+" | head -n1 | awk '{print $2}' | grep -E '^[0-9]+$')
+    if [ -z "$current_android_build" ]; then
+        echo -e "${RED}Error: Could not read Android build number or invalid format${RESET}"
+        exit 1
+    fi
 
-current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" ../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
-if [ -z "$current_safari_build" ]; then
-    echo "Error: Could not read Safari build number or invalid format"
-    exit 1
+    current_safari_build=$(grep -A1 "CURRENT_PROJECT_VERSION" ../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj | grep "CURRENT_PROJECT_VERSION = [0-9]\+;" | head -n1 | tr -d ';' | tr -d ' ' | cut -d'=' -f2 | grep -E '^[0-9]+$')
+    if [ -z "$current_safari_build" ]; then
+        echo -e "${RED}Error: Could not read Safari build number or invalid format${RESET}"
+        exit 1
+    fi
 fi
 
 # Handle iOS build number with semantic versioning
-# Handle iOS build number
-new_ios_build=$(handle_semantic_build_number "$current_ios_build" "iOS Mobile App" "$major" "$minor" "$patch" "$MARKETING_UPDATE")
+# Calculate new build numbers if not already done
+if [[ "$MARKETING_UPDATE" != true ]]; then
+    new_ios_build=$(handle_semantic_build_number "$current_ios_build" "iOS Mobile App" "$major" "$minor" "$patch" "$MARKETING_UPDATE")
+    new_android_build=$(handle_semantic_build_number "$current_android_build" "Android App" "$major" "$minor" "$patch" "$MARKETING_UPDATE")
+    new_safari_build=$(handle_semantic_build_number "$current_safari_build" "Safari Extension" "$major" "$minor" "$patch" "$MARKETING_UPDATE")
+fi
+
+# Update build numbers
 update_version "../apps/mobile-app/ios/AliasVault.xcodeproj/project.pbxproj" \
     "CURRENT_PROJECT_VERSION = [0-9]\+;" \
     "CURRENT_PROJECT_VERSION = $new_ios_build;" \
     "iOS Mobile App"
 
-# Handle Android build number
-new_android_build=$(handle_semantic_build_number "$current_android_build" "Android App" "$major" "$minor" "$patch" "$MARKETING_UPDATE")
 update_version "../apps/mobile-app/android/app/build.gradle" \
     "versionCode [0-9]\+" \
     "versionCode $new_android_build" \
     "Android App"
 
-# Handle Safari build number
-new_safari_build=$(handle_semantic_build_number "$current_safari_build" "Safari Extension" "$major" "$minor" "$patch" "$MARKETING_UPDATE")
 update_version "../apps/browser-extension/safari-xcode/AliasVault.xcodeproj/project.pbxproj" \
     "CURRENT_PROJECT_VERSION = [0-9]\+;" \
     "CURRENT_PROJECT_VERSION = $new_safari_build;" \
     "Safari Extension"
 
+echo ""
+echo -e "${GREEN}✓ Build numbers updated successfully${RESET}"
+
 # Show reminders
-echo "--------------------------------"
-echo "Reminders (!):"
-echo "--------------------------------"
+echo ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+echo -e "${CYAN}Reminders${RESET}"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 
 if [[ "$MARKETING_UPDATE" == true ]]; then
     # Install.sh reminder (only for version changes)
-    echo "• If you've made changes to install.sh since the last release, remember to increment its @version number in the header."
+    echo -e "${YELLOW}• If you've made changes to install.sh since the last release, remember to increment its @version number in the header.${RESET}"
 
-    # Only create changelog files for GA releases (not alpha, beta, or rc)
     if [[ -z "$version_suffix" ]]; then
-        # Create empty changelog files and remind about them
-        echo "• Creating empty changelog files for GA version $version in the /fastlane directory..."
-
-        # Create iOS changelog files
-        if [ -d "../fastlane/metadata/ios" ]; then
-            for lang_dir in ../fastlane/metadata/ios/*/; do
-                if [ -d "$lang_dir" ]; then
-                    lang=$(basename "$lang_dir")
-                    changelog_dir="$lang_dir/changelogs"
-                    mkdir -p "$changelog_dir"
-                    touch "$changelog_dir/$new_ios_build.txt"
-                fi
-            done
-        fi
-
-        # Create Android changelog files
-        if [ -d "../fastlane/metadata/android" ]; then
-            for lang_dir in ../fastlane/metadata/android/*/; do
-                if [ -d "$lang_dir" ]; then
-                    lang=$(basename "$lang_dir")
-                    changelog_dir="$lang_dir/changelogs"
-                    mkdir -p "$changelog_dir"
-                    touch "$changelog_dir/$new_android_build.txt"
-                fi
-            done
-        fi
-
-        # Create Browser Extension changelog files
-        if [ -d "../fastlane/metadata/browser-extension" ]; then
-            for lang_dir in ../fastlane/metadata/browser-extension/*/; do
-                if [ -d "$lang_dir" ]; then
-                    lang=$(basename "$lang_dir")
-                    changelog_dir="$lang_dir/changelogs"
-                    mkdir -p "$changelog_dir"
-                    touch "$changelog_dir/$version.txt"
-                fi
-            done
-        fi
-
-        echo ""
-        echo "• Please fill in the changelog content in the created files:"
-        echo "  - iOS: fastlane/metadata/ios/[lang]/changelogs/$new_ios_build.txt"
-        echo "  - Android: fastlane/metadata/android/[lang]/changelogs/$new_android_build.txt"
-        echo "  - Browser Extension: fastlane/metadata/browser-extension/[lang]/changelogs/$version.txt"
+        echo -e "${YELLOW}• Changelog files have been created and should be committed separately (as instructed earlier)${RESET}"
     else
-        echo "• Skipping changelog creation for pre-release version $display_version (only GA releases get published to app stores)"
+        echo -e "${YELLOW}• Skipped changelog creation for pre-release version $display_version (only GA releases get published to app stores)${RESET}"
     fi
 elif [[ "$BUILD_ONLY" == true ]]; then
-    echo "  Marketing version remained at: $version"
-    echo "  Only build numbers were incremented"
+    echo -e "${YELLOW}• Marketing version remained at: $version${RESET}"
+    echo -e "${YELLOW}• Only build numbers were incremented${RESET}"
 fi
 
 # Write version information to text files for build processes (only for marketing updates)
 if [[ "$MARKETING_UPDATE" == true ]]; then
     echo ""
-    echo "--------------------------------"
-    echo "Writing version files for build processes..."
-    echo "--------------------------------"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+    echo -e "${CYAN}Writing version files for build processes${RESET}"
+    echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+    echo ""
 
     # Create version directory if it doesn't exist
     version_dir="../apps/.version"
@@ -634,20 +704,23 @@ if [[ "$MARKETING_UPDATE" == true ]]; then
     # Write full version (with suffix if present)
     full_version="${version}${version_suffix}"
     echo "$full_version" > "$version_dir/version.txt"
-    echo "• Wrote full version to .version/version.txt: $full_version"
+    echo -e "${GREEN}✓ Wrote full version to .version/version.txt: $full_version${RESET}"
 
     # Write individual version components
     echo "$major" > "$version_dir/major.txt"
     echo "$minor" > "$version_dir/minor.txt"
     echo "$patch" > "$version_dir/patch.txt"
     echo "$version_suffix" > "$version_dir/suffix.txt"
-    echo "• Wrote version components to .version/{major,minor,patch,suffix}.txt"
+    echo -e "${GREEN}✓ Wrote version components to .version/{major,minor,patch,suffix}.txt${RESET}"
 fi
 
+echo ""
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
 if [[ "$BUILD_ONLY" == true ]]; then
-    echo -e "\n✅ Build-only update completed!"
+    echo -e "${GREEN}✅ Build-only update completed!${RESET}"
 elif [[ "$MARKETING_UPDATE" == true ]]; then
-    echo -e "\n✅ Marketing version and build update completed!"
+    echo -e "${GREEN}✅ Marketing version and build update completed!${RESET}"
 else
-    echo -e "\n✅ Update completed!"
+    echo -e "${GREEN}✅ Update completed!${RESET}"
 fi
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
