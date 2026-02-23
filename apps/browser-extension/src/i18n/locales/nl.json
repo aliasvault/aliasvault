@@ -63,8 +63,8 @@
     "disabled": "Uitgeschakeld",
     "showPassword": "Wachtwoord tonen",
     "hidePassword": "Wachtwoord verbergen",
-    "show": "Show",
-    "hide": "Hide",
+    "show": "Toon",
+    "hide": "Verberg",
     "showDetails": "Toon details",
     "hideDetails": "Verberg details",
     "copyToClipboard": "Naar klembord kopiëren",
@@ -302,8 +302,8 @@
     "secretKey": "Secret key",
     "saveToViewCode": "Opslaan om code te bekijken",
     "defaultName": "Authenticator",
-    "deleteTotpCodeTitle": "Delete 2FA Code",
-    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
+    "deleteTotpCodeTitle": "2FA code verwijderen",
+    "deleteTotpCodeConfirmation": "Weet je zeker dat je deze credential wilt verwijderen \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Ongeldig formaat."
     }
