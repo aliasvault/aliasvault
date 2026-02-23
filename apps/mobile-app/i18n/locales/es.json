@@ -4,6 +4,7 @@
     "close": "Cerrar",
     "delete": "Eliminar",
     "save": "Guardar",
+    "edit": "Edit",
     "yes": "Si",
     "no": "No",
     "ok": "OK",
@@ -24,6 +25,7 @@
     "add": "Añadir",
     "generate": "Generar",
     "attachments": "Archivos adjuntos",
+    "or": "or",
     "deleteItemConfirmTitle": "Eliminar elemento",
     "deleteItemConfirmDescription": "¿Está seguro de querer borrar este ítem?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Clave secreta",
     "instructions": "Introduzca la clave secreta mostrada por el sitio web donde desea añadir autenticación de dos factores.",
     "saveToViewCode": "Guardar para ver el código",
+    "scanQrCode": "Scan QR Code",
+    "enterManually": "Enter a setup key",
     "errors": {
-      "invalidSecretKey": "Formato de clave secreta inválida."
+      "invalidSecretKey": "Formato de clave secreta inválida.",
+      "scanFailed": "Failed to scan QR code. Please try again."
     }
   },
   "settings": {
