@@ -25,7 +25,7 @@
     "add": "Toevoegen",
     "generate": "Genereren",
     "attachments": "Bijlagen",
-    "or": "or",
+    "or": "of",
     "deleteItemConfirmTitle": "Verwijder item",
     "deleteItemConfirmDescription": "Weet je zeker dat je dit item wilt verwijderen?",
     "errors": {
@@ -116,11 +116,11 @@
     "secretKey": "Secret key",
     "instructions": "Voer de secret key in die door de website wordt weergegeven waar je tweestapsverificatie wilt toevoegen.",
     "saveToViewCode": "Opslaan om code te bekijken",
-    "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "scanQrCode": "Scan QR code",
+    "enterManually": "Voer een setup-sleutel in",
     "errors": {
       "invalidSecretKey": "Ongeldig formaat.",
-      "scanFailed": "Failed to scan QR code. Please try again."
+      "scanFailed": "Kon QR-code niet scannen. Probeer het opnieuw."
     }
   },
   "settings": {
