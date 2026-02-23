@@ -4,6 +4,7 @@
     "close": "Schließen",
     "delete": "Löschen",
     "save": "Speichern",
+    "edit": "Edit",
     "yes": "Ja",
     "no": "Nein",
     "ok": "OK",
@@ -24,6 +25,7 @@
     "add": "Hinzufügen",
     "generate": "Generieren",
     "attachments": "Anhänge",
+    "or": "or",
     "deleteItemConfirmTitle": "Eintrag löschen",
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Secret-Key",
     "instructions": "Gib den Secret-Key ein, der von der Website angezeigt wird, bei der Du die Zwei-Faktor-Authentifizierung hinzufügen möchtest.",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
+    "scanQrCode": "Scan QR Code",
+    "enterManually": "Enter a setup key",
     "errors": {
-      "invalidSecretKey": "Ungültiges Format des Secret-Key"
+      "invalidSecretKey": "Ungültiges Format des Secret-Key",
+      "scanFailed": "Failed to scan QR code. Please try again."
     }
   },
   "settings": {
