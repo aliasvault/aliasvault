@@ -4,7 +4,7 @@
     "close": "Zamknij",
     "delete": "Usuń",
     "save": "Zapisz",
-    "edit": "Edit",
+    "edit": "Edytuj",
     "yes": "Tak",
     "no": "Nie",
     "ok": "Ok",
@@ -25,7 +25,7 @@
     "add": "Dodaj",
     "generate": "Wygeneruj",
     "attachments": "Załączniki",
-    "or": "or",
+    "or": "lub",
     "deleteItemConfirmTitle": "Usuń element",
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
     "errors": {
@@ -116,11 +116,11 @@
     "secretKey": "Tajny klucz",
     "instructions": "Wprowadź tajny klucz wyświetlony na stronie internetowej, na której chcesz dodać uwierzytelnianie dwuskładnikowe.",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
-    "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "scanQrCode": "Skanuj kod QR",
+    "enterManually": "Wprowadź klucz konfiguracyjny",
     "errors": {
       "invalidSecretKey": "Nieprawidłowy format tajnego klucza.",
-      "scanFailed": "Failed to scan QR code. Please try again."
+      "scanFailed": "Nie udało się zeskanować kodu QR. Spróbuj ponownie."
     }
   },
   "settings": {
