@@ -51,6 +51,7 @@
     "undo": "Annulla",
     "save": "Salva",
     "saving": "Salvataggio...",
+    "edit": "Edit",
     "create": "Creare",
     "or": "O",
     "close": "Chiudi",
@@ -62,6 +63,8 @@
     "disabled": "Disabilitato",
     "showPassword": "Mostra password",
     "hidePassword": "Nascondi password",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "Mostra dettagli",
     "hideDetails": "Nascondi dettagli",
     "copyToClipboard": "Copia negli appunti",
@@ -299,6 +302,8 @@
     "secretKey": "Chiave segreta",
     "saveToViewCode": "Salva per visualizzare il codice",
     "defaultName": "Autenticazione",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Formato chiave segreta non valido."
     }
