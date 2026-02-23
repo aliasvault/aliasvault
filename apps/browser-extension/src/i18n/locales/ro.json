@@ -51,7 +51,7 @@
     "undo": "Revocă",
     "save": "Salvează",
     "saving": "Se salvează...",
-    "edit": "Edit",
+    "edit": "Editează",
     "create": "Creează",
     "or": "Sau",
     "close": "Închide",
@@ -63,8 +63,8 @@
     "disabled": "Dezactivat",
     "showPassword": "Afișează parola",
     "hidePassword": "Ascunde parola",
-    "show": "Show",
-    "hide": "Hide",
+    "show": "Afișează",
+    "hide": "Ascunde",
     "showDetails": "Afișează detalii",
     "hideDetails": "Ascunde detalii",
     "copyToClipboard": "Copiază în clipboard",
@@ -302,8 +302,8 @@
     "secretKey": "Cheie Secretă",
     "saveToViewCode": "Salvează pentru a vedea codul",
     "defaultName": "Authenticator",
-    "deleteTotpCodeTitle": "Delete 2FA Code",
-    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
+    "deleteTotpCodeTitle": "Șterge codul 2FA",
+    "deleteTotpCodeConfirmation": "Sigur dorești să ștergi codul 2FA „{{name}}”?",
     "errors": {
       "invalidSecretKey": "Format cheie secretă invalid."
     }
