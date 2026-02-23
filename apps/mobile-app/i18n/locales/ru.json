@@ -4,6 +4,7 @@
     "close": "Закрыть",
     "delete": "Удалить",
     "save": "Сохранить",
+    "edit": "Edit",
     "yes": "Да",
     "no": "Нет",
     "ok": "ОК",
@@ -24,6 +25,7 @@
     "add": "Добавить",
     "generate": "Сгенерировать",
     "attachments": "Вложения",
+    "or": "or",
     "deleteItemConfirmTitle": "Удалить запись",
     "deleteItemConfirmDescription": "Вы уверены, что хотите удалить эту запись?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Секретный ключ",
     "instructions": "Введите секретный ключ, указанный на веб-сайте, где вы хотите добавить двухфакторную аутентификацию.",
     "saveToViewCode": "Сохранить для просмотра кода",
+    "scanQrCode": "Scan QR Code",
+    "enterManually": "Enter a setup key",
     "errors": {
-      "invalidSecretKey": "Неверный формат секретного ключа."
+      "invalidSecretKey": "Неверный формат секретного ключа.",
+      "scanFailed": "Failed to scan QR code. Please try again."
     }
   },
   "settings": {
