@@ -4,7 +4,7 @@
     "close": "Luk",
     "delete": "Slet",
     "save": "Gem",
-    "edit": "Edit",
+    "edit": "Rediger",
     "yes": "Ja",
     "no": "Nej",
     "ok": "OK",
@@ -25,7 +25,7 @@
     "add": "Tilføj",
     "generate": "Generer",
     "attachments": "Vedhæftede filer",
-    "or": "or",
+    "or": "eller",
     "deleteItemConfirmTitle": "Slet element",
     "deleteItemConfirmDescription": "Er du sikker på, at du vil slette dette element?",
     "errors": {
@@ -116,11 +116,11 @@
     "secretKey": "Hemmelig nøgle (Secret Key)",
     "instructions": "Indtast den hemmelige nøgle, der vises på hjemmesiden, hvor du vil tilføje to-faktor-autentificering.",
     "saveToViewCode": "Gem for at se kode",
-    "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "scanQrCode": "Scan QR Kode",
+    "enterManually": "Indtast en oprettelsesnøgle",
     "errors": {
       "invalidSecretKey": "Ugyldigt format for hemmelig nøgle.",
-      "scanFailed": "Failed to scan QR code. Please try again."
+      "scanFailed": "Kunne ikke scanne QR-kode. Prøv igen."
     }
   },
   "settings": {
