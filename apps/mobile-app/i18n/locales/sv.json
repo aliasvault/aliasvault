@@ -4,6 +4,7 @@
     "close": "Stäng",
     "delete": "Radera",
     "save": "Spara",
+    "edit": "Edit",
     "yes": "Ja",
     "no": "Nej",
     "ok": "OK",
@@ -24,6 +25,7 @@
     "add": "Lägg till",
     "generate": "Generera",
     "attachments": "Bifogade filer",
+    "or": "or",
     "deleteItemConfirmTitle": "Radera objekt",
     "deleteItemConfirmDescription": "Är du säker på att du vill radera det här objektet?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Hemlig nyckel",
     "instructions": "Ange den hemliga nyckeln som visas av webbplatsen där du vill lägga till tvåfaktorsautentisering.",
     "saveToViewCode": "Spara för att visa kod",
+    "scanQrCode": "Scan QR Code",
+    "enterManually": "Enter a setup key",
     "errors": {
-      "invalidSecretKey": "Ogiltigt format för hemlig nyckel."
+      "invalidSecretKey": "Ogiltigt format för hemlig nyckel.",
+      "scanFailed": "Failed to scan QR code. Please try again."
     }
   },
   "settings": {
