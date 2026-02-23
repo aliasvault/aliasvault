@@ -32,6 +32,7 @@
 "username_copied" = "Käyttäjänimi kopioitu";
 "password_copied" = "Salasana kopioitu";
 "email_copied" = "Sähköposti kopioitu";
+"totp_code" = "TOTP Code";
 
 /* Search bar */
 "search_items" = "Search items...";
