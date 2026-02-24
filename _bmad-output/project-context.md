@@ -47,7 +47,7 @@ _This file contains critical rules and patterns that AI agents must follow when 
 - secrets.js-34r7h (Shamir Secret Sharing)
 
 **Package Management:**
-- pnpm 8+ (monorepo workspace — `packages/*`, `packages/blockchain/*`, `shared/*`)
+- pnpm 8+ (monorepo workspace — `packages/*`, `packages/blockchain/*`, `shared/*`, `services/*`)
 - TurboRepo (build orchestration with caching)
 - Shared packages built with `tsup` (CJS + ESM + DTS), distributed via `build.sh` scripts
 
@@ -541,7 +541,7 @@ return isOdd ? hex.slice(1) : hex;
 - Browser extension and guardian portal implement the interface differently
 - **v2 change (ADR-007):** `persistRecoveryKey()` removed from interface — recovery key is ephemeral, derived from Shamir shares during recovery. No local storage of recovery key needed.
 
-**Test counts:** 28 new tests across 3 files (15 crypto, 7 setup, 6 persist). Full roundtrip test validates: setup → decrypt 2-of-3 shares → Shamir combine → AES-GCM decrypt → original password.
+**Test counts:** 31 tests across 3 files (18 crypto, 7 setup, 6 persist). Full roundtrip test validates: setup → decrypt 2-of-3 shares → Shamir combine → verify hash → derive key → decrypt password.
 
 ---
 
@@ -652,10 +652,11 @@ Before merging any PR that touches cryptography or guardian recovery:
 
 ---
 
-**Last Updated:** 2026-02-22
+**Last Updated:** 2026-02-24
 **Source:** Generated from [architecture.md](_bmad-output/architecture.md)
 **Maintenance:** Update when implementing new patterns or discovering critical rules
 **Change Log:**
+- 2026-02-24: Added `services/*` to pnpm workspace list (Story 3.3 Guardian Portal). Updated test counts for Story 3.2v2 (31 tests across 3 files). Updated date.
 - 2026-02-22: **ADR-007 — Pattern 6 v2 (Inverted Shamir).** Rewrote Rule 1 to reflect ephemeral recovery key architecture. Updated Rule 16 and Security Checklist. Recovery key is no longer stored anywhere — derived from Shamir shares during recovery. Eliminates circular dependency (vault blob encrypted with lost master password) and ADR-006 private state device-local limitation. Sources: [Web3Auth/MetaMask SSS](https://docs.metamask.io/embedded-wallets/infrastructure/sss-architecture/), [ANARKey](https://eprint.iacr.org/2025/551), [Argent recovery](https://support.argent.xyz/hc/en-us/articles/360022631412-About-wallet-recovery).
 - 2026-02-22: Added Rule 16 (Shamir & RSA-OAEP implementation patterns) from Story 3.2. secrets.js-34r7h v2.0.2 specifics, odd-length hex handling with 1-byte flag prefix for binary RSA payloads, RSA-OAEP 190-byte limit workaround, TS5+ BufferSource cast requirement, RecoveryPersistProvider abstraction pattern.
 - 2026-02-21: Added Rule 15 (GuardianRecovery contract patterns) from Story 3.1. Per-vault deployment model, guardian-specific domain separators, state mutation guards during active recovery, post-recovery terminal state, and idempotency guard on claimRecovery.
