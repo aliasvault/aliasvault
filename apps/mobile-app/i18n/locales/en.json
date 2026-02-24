@@ -48,6 +48,7 @@
     "verifyingAuthCode": "Verifying authentication code",
     "verify": "Verify",
     "unlockVault": "Unlock Vault",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Unlock with PIN",
     "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Enter your password to unlock your vault",

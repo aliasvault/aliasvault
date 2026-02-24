@@ -153,16 +153,6 @@ export default function UnlockScreen() : React.ReactNode {
   }, [isBiometricsEnabled, getKeyDerivationParams, getBiometricDisplayName, dbContext, isLoggedIn, username, t, logoutForced]);
 
   /**
-   * Handle the unlock.
-   */
-  /**
-   * Show an alert dialog.
-   */
-  const showAlert = useCallback((title: string, message: string): void => {
-    setAlertConfig({ title, message });
-  }, []);
-
-  /**
    * Hide the alert dialog.
    */
   const hideAlert = useCallback((): void => {
@@ -172,7 +162,7 @@ export default function UnlockScreen() : React.ReactNode {
   /**
    * Handle password unlock using native password screen.
    */
-  const handlePasswordUnlock = async () : Promise<void> => {
+  const handlePasswordUnlock = useCallback(async () : Promise<void> => {
     setError(null);
     setIsLoading(true);
     try {
@@ -230,13 +220,13 @@ export default function UnlockScreen() : React.ReactNode {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoggedIn, username, dbContext, t, logoutForced]);
 
   /**
    * Internal PIN unlock handler - performs PIN unlock and navigates on success.
    * Returns true if unlock succeeded, false otherwise.
    */
-  const performPinUnlock = async () : Promise<boolean> => {
+  const performPinUnlock = useCallback(async () : Promise<boolean> => {
     try {
       await NativeVaultManager.showPinUnlock();
 
@@ -256,13 +246,13 @@ export default function UnlockScreen() : React.ReactNode {
     } catch {
       return false;
     }
-  };
+  }, [dbContext]);
 
   /**
    * Handle the biometrics retry - directly triggers biometric unlock.
    * If biometric fails and PIN is available, automatically falls back to PIN.
    */
-  const handleBiometricRetry = async () : Promise<void> => {
+  const handleBiometricRetry = useCallback(async () : Promise<void> => {
     setIsLoading(true);
     setError(null);
     try {
@@ -302,17 +292,59 @@ export default function UnlockScreen() : React.ReactNode {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dbContext, pinAvailable, performPinUnlock, t]);
 
   /**
    * Handle the PIN retry button - directly triggers PIN unlock flow.
    */
-  const handlePinRetry = async () : Promise<void> => {
+  const handlePinRetry = useCallback(async () : Promise<void> => {
     setIsLoading(true);
     setError(null);
     await performPinUnlock();
     setIsLoading(false);
-  };
+  }, [performPinUnlock]);
+
+  /**
+   * Get ordered unlock methods based on availability and preference.
+   * Returns array of unlock methods in priority order: biometrics > PIN > password
+   */
+  const unlockMethods = ((): Array<{
+    type: 'biometrics' | 'pin' | 'password';
+    label: string;
+    handler: () => Promise<void>;
+  }> => {
+    const methods: Array<{
+      type: 'biometrics' | 'pin' | 'password';
+      label: string;
+      handler: () => Promise<void>;
+    }> = [];
+
+    // Add methods in priority order
+    if (isBiometricsAvailable) {
+      methods.push({
+        type: 'biometrics',
+        label: t('auth.unlockWithBiometric', { biometric: biometricDisplayName }),
+        handler: handleBiometricRetry,
+      });
+    }
+
+    if (pinAvailable) {
+      methods.push({
+        type: 'pin',
+        label: t('auth.unlockWithPin'),
+        handler: handlePinRetry,
+      });
+    }
+
+    // Password is always available
+    methods.push({
+      type: 'password',
+      label: t('auth.unlockWithPassword'),
+      handler: handlePasswordUnlock,
+    });
+
+    return methods;
+  })();
 
   const styles = StyleSheet.create({
     appName: {
@@ -485,40 +517,24 @@ export default function UnlockScreen() : React.ReactNode {
                 <Avatar />
                 <ThemedText style={styles.username}>{username}</ThemedText>
               </View>
-              <ThemedText style={styles.subtitle}>{t('auth.enterPassword')}</ThemedText>
 
               {/* Error Message */}
               {error && <ThemedText style={styles.errorText}>{error}</ThemedText>}
 
-              <RobustPressable
-                style={styles.button}
-                onPress={handlePasswordUnlock}
-                disabled={isLoading}
-                testID="unlock-button"
-              >
-                <ThemedText style={styles.buttonText}>
-                  {isLoading ? t('auth.unlocking') : t('auth.unlockWithPassword')}
-                </ThemedText>
-              </RobustPressable>
-
-              {isBiometricsAvailable && (
+              {/* Unlock buttons in priority order */}
+              {unlockMethods.map((method, index) => (
                 <RobustPressable
-                  style={styles.faceIdButton}
-                  onPress={handleBiometricRetry}
+                  key={method.type}
+                  style={index === 0 ? styles.button : styles.faceIdButton}
+                  onPress={method.handler}
+                  disabled={isLoading && index === 0}
+                  testID={index === 0 ? 'unlock-button' : undefined}
                 >
-                  <ThemedText style={styles.faceIdButtonText}>{t('auth.tryBiometricAgain', { biometric: biometricDisplayName })}</ThemedText>
+                  <ThemedText style={index === 0 ? styles.buttonText : styles.faceIdButtonText}>
+                    {index === 0 && isLoading ? t('auth.unlocking') : method.label}
+                  </ThemedText>
                 </RobustPressable>
-              )}
-
-              {/* Use PIN Button */}
-              {pinAvailable && (
-                <RobustPressable
-                  style={styles.faceIdButton}
-                  onPress={handlePinRetry}
-                >
-                  <ThemedText style={styles.faceIdButtonText}>{t('auth.tryPinAgain')}</ThemedText>
-                </RobustPressable>
-              )}
+              ))}
             </View>
 
             <RobustPressable
