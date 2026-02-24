@@ -51,7 +51,7 @@
     "undo": "Ångra",
     "save": "Spara",
     "saving": "Sparar...",
-    "edit": "Edit",
+    "edit": "Redigera",
     "create": "Skapa",
     "or": "Eller",
     "close": "Stäng",
@@ -63,8 +63,8 @@
     "disabled": "Inaktiverad",
     "showPassword": "Visa lösenord",
     "hidePassword": "Dölj lösenord",
-    "show": "Show",
-    "hide": "Hide",
+    "show": "Visa",
+    "hide": "Dölj",
     "showDetails": "Visa detaljer",
     "hideDetails": "Dölj detaljer",
     "copyToClipboard": "Kopiera till urklipp",
@@ -176,8 +176,8 @@
     "savePrompt": {
       "title": "Spara till AliasVault?",
       "neverForThisSite": "Aldrig för denna webbplats",
-      "addUrlTitle": "Add URL to credential?",
-      "addUrl": "Add URL"
+      "addUrlTitle": "Lägg till URL till posten?",
+      "addUrl": "Lägg till URL"
     }
   },
   "items": {
@@ -302,8 +302,8 @@
     "secretKey": "Hemlig nyckel",
     "saveToViewCode": "Spara för att visa kod",
     "defaultName": "Autentiserare",
-    "deleteTotpCodeTitle": "Delete 2FA Code",
-    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
+    "deleteTotpCodeTitle": "Ta bort 2FA-kod",
+    "deleteTotpCodeConfirmation": "Är du säker på att du vill radera 2FA-koden\"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Ogiltigt format för hemlig nyckel."
     }
