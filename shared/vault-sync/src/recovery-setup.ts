@@ -1,16 +1,25 @@
 import {
   generateRecoveryKey,
+  deriveEncryptionKey,
   encryptWithRecoveryKey,
   splitIntoShares,
   encryptShareForGuardian,
 } from './recovery-crypto.js';
 import { sha256, bytesToHex, uint8ArrayToBase64 } from './utils.js';
 
-export interface GuardianSharePackage {
+export interface RecoveryMetadata {
   version: 1;
+  contractAddress: string;
+  networkId: string;
+  vaultOwnerCommitment: string;
+}
+
+export interface GuardianSharePackage {
+  version: 2;
   vaultOwnerCommitment: string;
   threshold: number;
   totalShares: number;
+  encryptedPassword: string; // base64 of AES-256-GCM encrypted master password
   shares: Array<{
     index: number;
     encryptedShare: string; // base64 of RSA-encrypted share
@@ -24,19 +33,20 @@ export interface SetupGuardianRecoveryParams {
 }
 
 export interface SetupResult {
-  recoveryKey: Uint8Array;
-  recoveryKeyHash: Uint8Array; // SHA-256 hash for on-chain storage
+  recoveryKeyHash: Uint8Array; // SHA-256 hash of shamirSecret hex for on-chain verification
   sharePackage: GuardianSharePackage;
 }
 
 /**
- * Orchestrate the full guardian recovery setup:
- * 1. Generate recovery key
- * 2. Hash recovery key for on-chain storage
- * 3. Encrypt master password with recovery key
- * 4. Split encrypted password into Shamir shares
+ * Orchestrate the full guardian recovery setup (v2 — ADR-007 Inverted Shamir):
+ * 1. Generate ephemeral Shamir secret (32 random bytes — NEVER stored)
+ * 2. Derive encryption key via domain-separated hash
+ * 3. Encrypt master password with derived key (AES-256-GCM)
+ * 4. Split the Shamir SECRET (not encrypted password) into 2-of-3 shares
  * 5. Encrypt each share with respective guardian's RSA public key
- * 6. Package into GuardianSharePackage
+ * 6. Hash Shamir secret for on-chain verification
+ * 7. Package encrypted password + encrypted shares into GuardianSharePackage v2
+ * 8. Return { recoveryKeyHash, sharePackage } — shamirSecret + encryptionKey DISCARDED
  */
 export async function setupGuardianRecovery(
   params: SetupGuardianRecoveryParams,
@@ -59,22 +69,19 @@ export async function setupGuardianRecovery(
     throw new Error('ownerCommitment is required');
   }
 
-  // 1. Generate recovery key (32 bytes)
-  const recoveryKey = await generateRecoveryKey();
+  // 1. Generate ephemeral Shamir secret (32 random bytes)
+  const shamirSecret = await generateRecoveryKey();
 
-  // 2. SHA-256 hash of hex-encoded recovery key for on-chain storage
-  const recoveryKeyHash = await sha256(bytesToHex(recoveryKey));
+  // 2. Derive encryption key via domain-separated SHA-256
+  const encryptionKey = await deriveEncryptionKey(shamirSecret);
 
-  // 3. Encrypt master password with recovery key (AES-256-GCM)
-  const encryptedPassword = await encryptWithRecoveryKey(masterPassword, recoveryKey);
+  // 3. Encrypt master password with derived key (AES-256-GCM)
+  const encryptedPassword = await encryptWithRecoveryKey(masterPassword, encryptionKey);
 
-  // 4. Convert encrypted password to hex for Shamir splitting
-  const encryptedHex = bytesToHex(encryptedPassword);
+  // 4. Split the Shamir SECRET (hex-encoded) into 2-of-3 shares
+  const shares = splitIntoShares(bytesToHex(shamirSecret), 3, 2);
 
-  // 5. Split into 3 shares with threshold 2
-  const shares = splitIntoShares(encryptedHex, 3, 2);
-
-  // 6. Encrypt each share with respective guardian's RSA public key
+  // 5. Encrypt each share with respective guardian's RSA public key
   const encryptedShares: Array<{ index: number; encryptedShare: string }> = [];
   for (let i = 0; i < shares.length; i++) {
     const encrypted = await encryptShareForGuardian(shares[i], guardianPublicKeys[i]);
@@ -84,14 +91,22 @@ export async function setupGuardianRecovery(
     });
   }
 
-  // 7. Package into GuardianSharePackage
+  // 6. SHA-256 hash of shamirSecret hex for on-chain verification
+  const recoveryKeyHash = await sha256(bytesToHex(shamirSecret));
+
+  // 7. Package into GuardianSharePackage v2
   const sharePackage: GuardianSharePackage = {
-    version: 1,
+    version: 2,
     vaultOwnerCommitment: ownerCommitment,
     threshold: 2,
     totalShares: 3,
+    encryptedPassword: uint8ArrayToBase64(encryptedPassword),
     shares: encryptedShares,
   };
 
-  return { recoveryKey, recoveryKeyHash, sharePackage };
+  // Zero ephemeral secrets before discard
+  shamirSecret.fill(0);
+  encryptionKey.fill(0);
+
+  return { recoveryKeyHash, sharePackage };
 }

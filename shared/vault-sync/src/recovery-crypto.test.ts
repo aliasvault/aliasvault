@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import {
+  deriveEncryptionKey,
   generateRecoveryKey,
   encryptWithRecoveryKey,
   decryptWithRecoveryKey,
@@ -9,7 +10,30 @@ import {
   decryptShareFromGuardian,
   generateGuardianKeyPair,
 } from './recovery-crypto.js';
-import { bytesToHex } from './utils.js';
+import { bytesToHex, sha256 } from './utils.js';
+
+describe('deriveEncryptionKey', () => {
+  it('returns a 32-byte Uint8Array', async () => {
+    const secret = crypto.getRandomValues(new Uint8Array(32));
+    const key = await deriveEncryptionKey(secret);
+    expect(key).toBeInstanceOf(Uint8Array);
+    expect(key.length).toBe(32);
+  });
+
+  it('is deterministic — same input produces same output', async () => {
+    const secret = crypto.getRandomValues(new Uint8Array(32));
+    const key1 = await deriveEncryptionKey(secret);
+    const key2 = await deriveEncryptionKey(secret);
+    expect(bytesToHex(key1)).toBe(bytesToHex(key2));
+  });
+
+  it('is domain-separated — different from plain sha256(hex(secret))', async () => {
+    const secret = crypto.getRandomValues(new Uint8Array(32));
+    const derivedKey = await deriveEncryptionKey(secret);
+    const plainHash = await sha256(bytesToHex(secret));
+    expect(bytesToHex(derivedKey)).not.toBe(bytesToHex(plainHash));
+  });
+});
 
 describe('generateRecoveryKey', () => {
   it('returns a 32-byte Uint8Array', async () => {
@@ -118,8 +142,9 @@ describe('encryptShareForGuardian / decryptShareFromGuardian', () => {
   });
 
   it('handles long share hex (128-char password equivalent)', async () => {
-    // 128-char password → AES-GCM → ~156 bytes → hex ~312 chars → Shamir share ~314 chars
-    // Binary encoding: ~157 bytes — well within RSA-OAEP 190-byte limit
+    // Tests RSA-OAEP primitive capacity with a large payload.
+    // v2 data path splits 64-char shamirSecret hex (well under limit);
+    // this stress-tests the ~190-byte RSA-OAEP ceiling with a bigger input.
     const key = await generateRecoveryKey();
     const longPassword = 'A'.repeat(128);
     const encrypted = await encryptWithRecoveryKey(longPassword, key);

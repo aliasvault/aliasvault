@@ -1,5 +1,14 @@
 import * as secrets from 'secrets.js-34r7h';
-import { hexToUint8Array, bytesToHex } from './utils.js';
+import { hexToUint8Array, bytesToHex, sha256 } from './utils.js';
+
+/**
+ * Derive an encryption key from a Shamir secret using domain-separated SHA-256.
+ * Key = SHA-256("aliasvault:rk:" + hex(shamirSecret))
+ * Used in Pattern 6 v2 (ADR-007) to encrypt master password with ephemeral key.
+ */
+export async function deriveEncryptionKey(shamirSecret: Uint8Array): Promise<Uint8Array> {
+  return sha256('aliasvault:rk:' + bytesToHex(shamirSecret));
+}
 
 /**
  * Generate a 32-byte recovery key using Web Crypto API.

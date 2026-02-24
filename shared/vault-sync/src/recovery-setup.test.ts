@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { setupGuardianRecovery } from './recovery-setup.js';
 import {
+  deriveEncryptionKey,
   decryptShareFromGuardian,
   combineShares,
   decryptWithRecoveryKey,
@@ -16,7 +17,7 @@ async function createTestGuardianKeys() {
 }
 
 describe('setupGuardianRecovery', () => {
-  it('returns valid structure: recoveryKey(32), recoveryKeyHash(32), sharePackage with 3 shares', async () => {
+  it('returns valid structure: no recoveryKey, has recoveryKeyHash(32) and sharePackage with 3 shares', async () => {
     const { keys } = await createTestGuardianKeys();
     const result = await setupGuardianRecovery({
       masterPassword: 'test-password',
@@ -24,14 +25,14 @@ describe('setupGuardianRecovery', () => {
       ownerCommitment: 'aabbccdd',
     });
 
-    expect(result.recoveryKey).toBeInstanceOf(Uint8Array);
-    expect(result.recoveryKey.length).toBe(32);
+    // v2: NO recoveryKey in result
+    expect((result as Record<string, unknown>).recoveryKey).toBeUndefined();
     expect(result.recoveryKeyHash).toBeInstanceOf(Uint8Array);
     expect(result.recoveryKeyHash.length).toBe(32);
     expect(result.sharePackage.shares).toHaveLength(3);
   });
 
-  it('sharePackage has correct metadata: version=1, threshold=2, totalShares=3', async () => {
+  it('sharePackage has correct metadata: version=2, threshold=2, totalShares=3, encryptedPassword present', async () => {
     const { keys } = await createTestGuardianKeys();
     const result = await setupGuardianRecovery({
       masterPassword: 'test-password',
@@ -39,25 +40,15 @@ describe('setupGuardianRecovery', () => {
       ownerCommitment: 'aabbccdd',
     });
 
-    expect(result.sharePackage.version).toBe(1);
+    expect(result.sharePackage.version).toBe(2);
     expect(result.sharePackage.threshold).toBe(2);
     expect(result.sharePackage.totalShares).toBe(3);
     expect(result.sharePackage.vaultOwnerCommitment).toBe('aabbccdd');
+    expect(result.sharePackage.encryptedPassword).toBeTruthy();
+    expect(typeof result.sharePackage.encryptedPassword).toBe('string');
   });
 
-  it('recoveryKeyHash matches sha256(bytesToHex(recoveryKey))', async () => {
-    const { keys } = await createTestGuardianKeys();
-    const result = await setupGuardianRecovery({
-      masterPassword: 'test-password',
-      guardianPublicKeys: [keys[0].publicKey, keys[1].publicKey, keys[2].publicKey],
-      ownerCommitment: 'aabbccdd',
-    });
-
-    const expectedHash = await sha256(bytesToHex(result.recoveryKey));
-    expect(bytesToHex(result.recoveryKeyHash)).toBe(bytesToHex(expectedHash));
-  });
-
-  it('full roundtrip: setup → decrypt 2 shares → combine → decrypt with recovery key → original password', async () => {
+  it('full roundtrip v2: setup → decrypt 2 shares → combine → verify hash → derive key → decrypt password', async () => {
     const masterPassword = 'my-super-secret-password-123!';
     const { keys } = await createTestGuardianKeys();
     const result = await setupGuardianRecovery({
@@ -66,7 +57,7 @@ describe('setupGuardianRecovery', () => {
       ownerCommitment: 'aabbccdd',
     });
 
-    // Decrypt shares 0 and 1 with their respective guardian private keys
+    // 1. Decrypt 2 shares with guardian private keys
     const share0 = await decryptShareFromGuardian(
       base64ToUint8Array(result.sharePackage.shares[0].encryptedShare),
       keys[0].privateKey,
@@ -76,13 +67,43 @@ describe('setupGuardianRecovery', () => {
       keys[1].privateKey,
     );
 
-    // Combine any 2 shares → encrypted password hex
-    const encryptedHex = combineShares([share0, share1]);
+    // 2. Combine any 2 shares → shamirSecret hex
+    const shamirSecretHex = combineShares([share0, share1]);
 
-    // Convert hex back to Uint8Array and decrypt with recovery key
-    const encryptedBytes = hexToUint8Array(encryptedHex);
-    const recovered = await decryptWithRecoveryKey(encryptedBytes, result.recoveryKey);
+    // 3. Verify on-chain hash: SHA-256(shamirSecretHex) matches recoveryKeyHash
+    const hashCheck = await sha256(shamirSecretHex);
+    expect(bytesToHex(hashCheck)).toBe(bytesToHex(result.recoveryKeyHash));
+
+    // 4. Derive encryption key from Shamir secret
+    const encryptionKey = await deriveEncryptionKey(hexToUint8Array(shamirSecretHex));
+
+    // 5. Decrypt encrypted password from IPFS package
+    const encryptedPassword = base64ToUint8Array(result.sharePackage.encryptedPassword);
+    const recovered = await decryptWithRecoveryKey(encryptedPassword, encryptionKey);
     expect(recovered).toBe(masterPassword);
+  });
+
+  it('recoveryKeyHash is verified via roundtrip (hash of shamirSecret hex)', async () => {
+    const { keys } = await createTestGuardianKeys();
+    const result = await setupGuardianRecovery({
+      masterPassword: 'test-password',
+      guardianPublicKeys: [keys[0].publicKey, keys[1].publicKey, keys[2].publicKey],
+      ownerCommitment: 'aabbccdd',
+    });
+
+    // Decrypt all 3 shares and combine with different pairs to verify consistency
+    const share0 = await decryptShareFromGuardian(
+      base64ToUint8Array(result.sharePackage.shares[0].encryptedShare),
+      keys[0].privateKey,
+    );
+    const share2 = await decryptShareFromGuardian(
+      base64ToUint8Array(result.sharePackage.shares[2].encryptedShare),
+      keys[2].privateKey,
+    );
+
+    const shamirSecretHex = combineShares([share0, share2]);
+    const expectedHash = await sha256(shamirSecretHex);
+    expect(bytesToHex(result.recoveryKeyHash)).toBe(bytesToHex(expectedHash));
   });
 
   it('throws on empty masterPassword', async () => {

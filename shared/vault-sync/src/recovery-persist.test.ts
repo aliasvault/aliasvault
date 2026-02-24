@@ -8,16 +8,16 @@ function createMockProvider(cid = 'bafkreihdwdcefgh4dqkjv67uzcmw7ojee6xedzdetoju
     uploadToIpfs: vi.fn().mockResolvedValue(cid),
     storeSharesCidHash: vi.fn().mockResolvedValue(undefined),
     storeRecoveryKeyHash: vi.fn().mockResolvedValue(undefined),
-    persistRecoveryKey: vi.fn().mockResolvedValue(undefined),
   };
 }
 
 function createMockSetupResult(): SetupResult {
   const sharePackage: GuardianSharePackage = {
-    version: 1,
+    version: 2,
     vaultOwnerCommitment: 'aabbccdd',
     threshold: 2,
     totalShares: 3,
+    encryptedPassword: 'ZW5jcnlwdGVkUGFzc3dvcmQ=',
     shares: [
       { index: 0, encryptedShare: 'c2hhcmUw' },
       { index: 1, encryptedShare: 'c2hhcmUx' },
@@ -25,14 +25,13 @@ function createMockSetupResult(): SetupResult {
     ],
   };
   return {
-    recoveryKey: new Uint8Array(32).fill(0xab),
     recoveryKeyHash: new Uint8Array(32).fill(0xcd),
     sharePackage,
   };
 }
 
 describe('persistGuardianRecovery', () => {
-  it('calls all 4 provider methods in correct order', async () => {
+  it('calls all 3 provider methods in correct order', async () => {
     const provider = createMockProvider();
     const setupResult = createMockSetupResult();
     const callOrder: string[] = [];
@@ -47,9 +46,6 @@ describe('persistGuardianRecovery', () => {
     (provider.storeRecoveryKeyHash as ReturnType<typeof vi.fn>).mockImplementation(async () => {
       callOrder.push('storeRecoveryKeyHash');
     });
-    (provider.persistRecoveryKey as ReturnType<typeof vi.fn>).mockImplementation(async () => {
-      callOrder.push('persistRecoveryKey');
-    });
 
     await persistGuardianRecovery(setupResult, provider);
 
@@ -57,11 +53,10 @@ describe('persistGuardianRecovery', () => {
       'uploadToIpfs',
       'storeSharesCidHash',
       'storeRecoveryKeyHash',
-      'persistRecoveryKey',
     ]);
   });
 
-  it('uploads valid JSON with expected structure to IPFS', async () => {
+  it('uploads valid JSON with v2 structure including encryptedPassword to IPFS', async () => {
     const provider = createMockProvider();
     const setupResult = createMockSetupResult();
 
@@ -71,11 +66,12 @@ describe('persistGuardianRecovery', () => {
     const uploadedBytes = uploadCall[0] as Uint8Array;
     const json = JSON.parse(new TextDecoder().decode(uploadedBytes));
 
-    expect(json.version).toBe(1);
+    expect(json.version).toBe(2);
     expect(json.threshold).toBe(2);
     expect(json.totalShares).toBe(3);
     expect(json.shares).toHaveLength(3);
     expect(json.vaultOwnerCommitment).toBe('aabbccdd');
+    expect(json.encryptedPassword).toBe('ZW5jcnlwdGVkUGFzc3dvcmQ=');
   });
 
   it('throws on CIDv0 (assertCIDv1 validation)', async () => {
