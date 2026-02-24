@@ -97,6 +97,11 @@ export interface Spec extends TurboModule {
   showPinUnlock(): Promise<void>;
   showPinSetup(): Promise<void>;
 
+  // Password unlock method. Shows native password unlock screen.
+  // Returns true if successful, null if cancelled.
+  // If title/subtitle are null/empty, defaults to "Unlock Vault" context.
+  showPasswordUnlock(title: string | null, subtitle: string | null): Promise<boolean | null>;
+
   // Mobile login methods
   encryptDecryptionKeyForMobileLogin(publicKeyJWK: string): Promise<string>;
 
