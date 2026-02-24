@@ -49,7 +49,9 @@
     "verify": "Verify",
     "unlockVault": "Unlock Vault",
     "unlockWithPin": "Unlock with PIN",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Enter your password to unlock your vault",
+    "enterPasswordToUnlock": "Enter your password to unlock your vault",
     "enterPasswordPlaceholder": "Password",
     "enterAuthCode": "Enter 6-digit code",
     "usernamePlaceholder": "name / name@company.com",
@@ -321,7 +323,8 @@
         "confirmSubtitle": "Re-authenticate to approve login on another device.",
         "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
         "successDescription": "The remote device has been successfully logged in.",
-        "requestExpired": "This login request has expired. Please generate a new QR code."
+        "requestExpired": "This login request has expired. Please generate a new QR code.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },

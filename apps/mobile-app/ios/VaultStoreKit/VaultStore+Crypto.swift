@@ -103,6 +103,42 @@ extension VaultStore {
         return self.keyDerivationParams
     }
 
+    /// Verify password and return encryption key if correct
+    /// Returns nil if password is incorrect
+    public func verifyPassword(_ password: String) -> String? {
+        do {
+            // Get encryption key derivation parameters
+            guard let paramsString = getEncryptionKeyDerivationParams(),
+                  let paramsData = paramsString.data(using: .utf8),
+                  let params = try? JSONSerialization.jsonObject(with: paramsData) as? [String: Any],
+                  let salt = params["salt"] as? String,
+                  let encryptionType = params["encryptionType"] as? String,
+                  let encryptionSettings = params["encryptionSettings"] as? String else {
+                return nil
+            }
+
+            // Derive key from password
+            let derivedKey = try deriveKeyFromPassword(password, salt: salt, encryptionType: encryptionType, encryptionSettings: encryptionSettings)
+
+            // Try to decrypt the vault to verify the password is correct
+            guard let encryptedDbBase64 = getEncryptedDatabase(),
+                  let encryptedDbData = Data(base64Encoded: encryptedDbBase64) else {
+                return nil
+            }
+
+            // Test decryption
+            let key = SymmetricKey(data: derivedKey)
+            let sealedBox = try AES.GCM.SealedBox(combined: encryptedDbData)
+            _ = try AES.GCM.open(sealedBox, using: key)
+
+            // If decryption succeeded, return the key as base64
+            return derivedKey.base64EncodedString()
+        } catch {
+            // Password incorrect or decryption failed
+            return nil
+        }
+    }
+
     /// Encrypt the data using the encryption key
     internal func encrypt(data: Data) throws -> Data {
         let encryptionKey = try getEncryptionKey()

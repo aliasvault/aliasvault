@@ -29,7 +29,7 @@ type DbContextType = {
   hasPendingMigrations: () => Promise<boolean>;
   clearDatabase: () => void;
   getVaultMetadata: () => Promise<VaultMetadata | null>;
-  testDatabaseConnection: (derivedKey: string) => Promise<boolean>;
+  testDatabaseConnection: (derivedKey: string, persistToKeychain?: boolean) => Promise<boolean>;
   verifyEncryptionKey: (derivedKey: string) => Promise<boolean>;
   unlockVault: () => Promise<boolean>;
   checkStoredVault: () => Promise<void>;
@@ -244,15 +244,23 @@ export const DbProvider: React.FC<{ children: React.ReactNode }> = ({ children }
    * @returns true if the database is working
    * @throws Error with error code if unlock fails - caller should handle the error
    */
-  const testDatabaseConnection = useCallback(async (derivedKey: string): Promise<boolean> => {
+  const testDatabaseConnection = useCallback(async (derivedKey: string, persistToKeychain = true): Promise<boolean> => {
     await sqliteClient.storeEncryptionKeyInMemory(derivedKey);
 
     await unlockVault();
 
     const version = await sqliteClient.getDatabaseVersion();
     if (version && version.version && version.version.length > 0) {
-      // Key is valid: store in keychain (possibly overwriting a previous entry)
-      await sqliteClient.storeEncryptionKey(derivedKey);
+      /*
+       * Key is valid: optionally store in keychain.
+       * When persistToKeychain=false, only store in memory. This is used during password unlock
+       * when biometric authentication is unavailable (user cancelled or failed biometric prompt).
+       * Storing in keychain requires biometric auth, which the user can't provide at that moment.
+       * The old key in keychain is preserved for future biometric unlocks.
+       */
+      if (persistToKeychain) {
+        await sqliteClient.storeEncryptionKey(derivedKey);
+      }
       return true;
     }
 
