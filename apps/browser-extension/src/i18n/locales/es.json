@@ -63,8 +63,8 @@
     "disabled": "Desactivado",
     "showPassword": "Mostrar contraseña",
     "hidePassword": "Ocultar contraseña",
-    "show": "Show",
-    "hide": "Hide",
+    "show": "Mostrar",
+    "hide": "Esconder",
     "showDetails": "Mostrar detalles",
     "hideDetails": "Ocultar detalles",
     "copyToClipboard": "Copiar al portapapeles",
@@ -302,8 +302,8 @@
     "secretKey": "Clave secreta",
     "saveToViewCode": "Guardar para ver el código",
     "defaultName": "Autentificador",
-    "deleteTotpCodeTitle": "Delete 2FA Code",
-    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
+    "deleteTotpCodeTitle": "Eliminar código 2FA",
+    "deleteTotpCodeConfirmation": "¿Está seguro que desea eliminar el código 2FA \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Formato de clave secreta inválida."
     }
