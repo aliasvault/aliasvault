@@ -254,10 +254,36 @@ class MainActivity : ReactActivity() {
                 val encryptionKeyBase64 = data?.getStringExtra(
                     net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_ENCRYPTION_KEY,
                 )
-                // For showPasswordUnlock(), resolve with encryption key
-                passwordPromise?.resolve(encryptionKeyBase64)
-                // For authenticateUser(), resolve with boolean success
-                authPromise?.resolve(true)
+
+                if (encryptionKeyBase64 == null) {
+                    passwordPromise?.resolve(null)
+                    authPromise?.resolve(false)
+                    return
+                }
+
+                val vaultStore = net.aliasvault.app.vaultstore.VaultStore.getInstance(
+                    net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider(this) { null },
+                    net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider(this),
+                )
+
+                // Run on IO thread to avoid blocking main thread
+                kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.IO).launch {
+                    try {
+                        // Store encryption key in memory only
+                        vaultStore.storeEncryptionKeyInMemory(encryptionKeyBase64)
+
+                        // Unlock the vault with the key now in memory
+                        vaultStore.unlockVault()
+
+                        // For both showPasswordUnlock() and authenticateUser(), resolve with success (true)
+                        passwordPromise?.resolve(true)
+                        authPromise?.resolve(true)
+                    } catch (e: Exception) {
+                        android.util.Log.e("MainActivity", "Failed to unlock vault with password", e)
+                        passwordPromise?.resolve(null)
+                        authPromise?.resolve(false)
+                    }
+                }
             }
             net.aliasvault.app.passwordunlock.PasswordUnlockActivity.RESULT_CANCELLED -> {
                 // For showPasswordUnlock(), resolve with null

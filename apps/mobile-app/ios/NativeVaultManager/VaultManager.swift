@@ -841,15 +841,21 @@ public class VaultManager: NSObject {
                         throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Incorrect password"])
                     }
 
+                    // Store encryption key in memory only
+                    try self.vaultStore.storeEncryptionKeyInMemory(base64Key: encryptionKeyBase64)
+
+                    // Unlock the vault
+                    try self.vaultStore.unlockVault()
+
                     await MainActor.run {
                         rootVC.dismiss(animated: true) {
-                            resolve(encryptionKeyBase64)
+                            resolve(true)
                         }
                     }
                 },
                 cancelHandler: {
                     rootVC.dismiss(animated: true) {
-                        resolve(NSNull())
+                        resolve(nil)
                     }
                 }
             )
@@ -1102,9 +1108,11 @@ public class VaultManager: NSObject {
                     }
 
                     // Verify password and get encryption key
-                    guard let _ = try self.vaultStore.verifyPassword(password) else {
+                    guard let encryptionKey = try self.vaultStore.verifyPassword(password) else {
                         throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Incorrect password"])
                     }
+
+                    try self.vaultStore.storeEncryptionKeyInMemory(base64Key: encryptionKey)
 
                     // Success - dismiss and resolve
                     await MainActor.run {

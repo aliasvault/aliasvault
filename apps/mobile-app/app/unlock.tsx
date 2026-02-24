@@ -105,24 +105,16 @@ export default function UnlockScreen() : React.ReactNode {
             return;
           }
 
-          const encryptionKeyBase64 = await NativeVaultManager.showPasswordUnlock(
+          const unlocked = await NativeVaultManager.showPasswordUnlock(
             t('auth.unlockVault'),
             t('auth.enterPassword')
           );
 
-          if (!encryptionKeyBase64) {
+          if (!unlocked) {
             // User cancelled - show the unlock screen
             setIsLoading(false);
             return;
           }
-
-          /*
-           * Store key in memory only, don't persist to keychain.
-           * User is doing password unlock because biometric failed/cancelled,
-           * so they can't authenticate biometrically to store in keychain.
-           * The old key in keychain is preserved for future biometric unlocks.
-           */
-          await dbContext.testDatabaseConnection(encryptionKeyBase64, false);
 
           if (await dbContext.hasPendingMigrations()) {
             router.replace('/upgrade');
@@ -191,25 +183,16 @@ export default function UnlockScreen() : React.ReactNode {
       }
 
       // Show native password unlock screen
-      const encryptionKeyBase64 = await NativeVaultManager.showPasswordUnlock(
+      const unlocked = await NativeVaultManager.showPasswordUnlock(
         t('auth.unlockVault'),
         t('auth.enterPassword')
       );
 
       // User cancelled
-      if (!encryptionKeyBase64) {
+      if (!unlocked) {
         setIsLoading(false);
         return;
       }
-
-      /*
-       * Test the database connection with the encryption key.
-       * Store in memory only - don't persist to keychain.
-       * User chose password unlock because biometric/PIN failed or was cancelled,
-       * so they can't authenticate biometrically to update keychain.
-       * This preserves the existing keychain entry for future biometric unlocks.
-       */
-      await dbContext.testDatabaseConnection(encryptionKeyBase64, false);
 
       // Check if the vault is up to date, if not, redirect to the upgrade page.
       if (await dbContext.hasPendingMigrations()) {
@@ -228,8 +211,6 @@ export default function UnlockScreen() : React.ReactNode {
         await logoutForced();
         return;
       }
-
-      console.error('Unlock error:', err);
 
       // Try to extract error code from the error
       const errorCode = getAppErrorCode(err);
@@ -272,13 +253,7 @@ export default function UnlockScreen() : React.ReactNode {
       }
       // Not unlocked means user cancelled - return false but don't show error
       return false;
-    } catch (err) {
-      // User cancelled or PIN unlock failed
-      const errorMessage = err instanceof Error ? err.message : '';
-      if (!errorMessage.includes('cancelled') && !errorMessage.includes('canceled')) {
-        console.error('PIN unlock error:', err);
-        setError(t('auth.errors.pinFailed'));
-      }
+    } catch {
       return false;
     }
   };

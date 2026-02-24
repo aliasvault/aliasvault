@@ -51,7 +51,6 @@
     "unlockWithPin": "Unlock with PIN",
     "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Enter your password to unlock your vault",
-    "enterPasswordToUnlock": "Enter your password to unlock your vault",
     "enterPasswordPlaceholder": "Password",
     "enterAuthCode": "Enter 6-digit code",
     "usernamePlaceholder": "name / name@company.com",
