@@ -58,6 +58,14 @@
         android:theme="@style/PasskeyRegistrationTheme"
         android:screenOrientation="portrait" />
 
+    <!-- Password Unlock Activity -->
+    <activity
+        android:name=".passwordunlock.PasswordUnlockActivity"
+        android:exported="false"
+        android:theme="@style/PasskeyRegistrationTheme"
+        android:screenOrientation="portrait"
+        android:windowSoftInputMode="adjustPan" />
+
     <!-- QR Scanner Activity -->
     <activity
         android:name=".qrscanner.QRScannerActivity"

@@ -69,6 +69,11 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         const val QR_SCANNER_REQUEST_CODE = 1003
 
         /**
+         * Request code for password unlock activity.
+         */
+        const val PASSWORD_UNLOCK_REQUEST_CODE = 1004
+
+        /**
          * Static holder for the pending promise from showPinUnlock.
          * This allows MainActivity to resolve/reject the promise directly without
          * depending on React context availability.
@@ -83,6 +88,14 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
          */
         @Volatile
         var pinSetupPromise: Promise? = null
+
+        /**
+         * Static holder for the pending promise from showPasswordUnlock.
+         * This allows MainActivity to resolve/reject the promise directly without
+         * depending on React context availability.
+         */
+        @Volatile
+        var passwordUnlockPromise: Promise? = null
     }
 
     private val vaultStore = VaultStore.getInstance(
@@ -1410,14 +1423,35 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Authenticate the user using biometric or PIN unlock.
-     * This method automatically detects which authentication method is enabled and uses it.
-     * Returns true if authentication succeeded, false otherwise.
+     * Show native password unlock screen.
+     * Returns encryption key (base64) if successful, null if cancelled.
      *
-     * @param title The title for authentication. If null or empty, uses default.
-     * @param subtitle The subtitle for authentication. If null or empty, uses default.
-     * @param promise The promise to resolve with authentication result.
+     * @param title Custom title for the password unlock screen. If null or empty, uses default.
+     * @param subtitle Custom subtitle for the password unlock screen. If null or empty, uses default.
+     * @param promise The promise to resolve with encryption key or null.
      */
+    @ReactMethod
+    override fun showPasswordUnlock(title: String?, subtitle: String?, promise: Promise) {
+        val activity = currentActivity
+        if (activity == null) {
+            promise.reject("NO_ACTIVITY", "No activity available", null)
+            return
+        }
+
+        // Store promise in static companion object so MainActivity can resolve it directly
+        passwordUnlockPromise = promise
+
+        // Launch password unlock activity
+        val intent = Intent(activity, net.aliasvault.app.passwordunlock.PasswordUnlockActivity::class.java)
+        if (!title.isNullOrEmpty()) {
+            intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_TITLE, title)
+        }
+        if (!subtitle.isNullOrEmpty()) {
+            intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_SUBTITLE, subtitle)
+        }
+        activity.startActivityForResult(intent, PASSWORD_UNLOCK_REQUEST_CODE)
+    }
+
     @ReactMethod
     override fun scanQRCode(prefixes: ReadableArray?, statusText: String?, promise: Promise) {
         CoroutineScope(Dispatchers.Main).launch {
@@ -1491,10 +1525,23 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                     // Use biometric authentication
                     try {
                         val authenticated = vaultStore.issueBiometricAuthentication(title)
-                        promise.resolve(authenticated)
+                        if (!authenticated) {
+                            // Biometric failed - reject with error instead of resolving false
+                            promise.reject(
+                                "AUTH_ERROR",
+                                "No authentication method available. Please enable PIN or biometric unlock in settings.",
+                                null,
+                            )
+                        } else {
+                            promise.resolve(authenticated)
+                        }
                     } catch (e: Exception) {
                         Log.e(TAG, "Biometric authentication failed", e)
-                        promise.resolve(false)
+                        promise.reject(
+                            "AUTH_ERROR",
+                            "Biometric authentication failed: ${e.message}",
+                            e,
+                        )
                     }
                 }
             } catch (e: Exception) {

@@ -224,6 +224,42 @@ class VaultStore(
         return crypto.encryptDecryptionKeyForMobileLogin(publicKeyJWK, auth.getAuthMethods())
     }
 
+    /**
+     * Verify password and return encryption key if correct.
+     * Returns null if password is incorrect.
+     *
+     * @param password The password to verify
+     * @return The base64-encoded encryption key if password is correct, null otherwise
+     */
+    @Suppress("SwallowedException")
+    fun verifyPassword(password: String): String? {
+        return try {
+            // Get encryption key derivation parameters
+            val params = crypto.getEncryptionKeyDerivationParams()
+            val paramsJson = org.json.JSONObject(params)
+            val salt = paramsJson.getString("salt")
+            val encryptionType = paramsJson.getString("encryptionType")
+            val encryptionSettings = paramsJson.getString("encryptionSettings")
+
+            // Derive key from password
+            val derivedKey = crypto.deriveKeyFromPassword(password, salt, encryptionType, encryptionSettings)
+
+            // Try to decrypt the vault to verify the password is correct
+            val encryptedDb = databaseComponent.getEncryptedDatabase()
+            val encryptedDbBytes = android.util.Base64.decode(encryptedDb, android.util.Base64.NO_WRAP)
+
+            // Attempt decryption to verify password is correct
+            VaultCrypto.decrypt(encryptedDbBytes, derivedKey)
+
+            // If decryption succeeded, return the key as base64
+            android.util.Base64.encodeToString(derivedKey, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) {
+            // Password incorrect or decryption failed - intentionally return null
+            // We don't log the error as this is expected when password is incorrect
+            null
+        }
+    }
+
     // endregion
 
     // region Database Methods

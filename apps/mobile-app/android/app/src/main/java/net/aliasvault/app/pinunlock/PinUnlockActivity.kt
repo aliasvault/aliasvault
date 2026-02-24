@@ -9,6 +9,7 @@ import android.os.Vibrator
 import android.view.View
 import android.view.WindowManager
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -133,15 +134,14 @@ class PinUnlockActivity : AppCompatActivity() {
 
     private fun applyWindowInsets() {
         findViewById<View>(android.R.id.content).setOnApplyWindowInsetsListener { _, insets ->
-            val cancelButton = findViewById<Button>(R.id.cancelButton)
+            val cancelButton = findViewById<ImageButton>(R.id.cancelButton)
             val systemBarsInsets = insets.systemWindowInsets
 
-            cancelButton.setPadding(
-                cancelButton.paddingLeft,
-                systemBarsInsets.top + cancelButton.paddingTop,
-                cancelButton.paddingRight,
-                cancelButton.paddingBottom,
-            )
+            // Apply top inset to cancel button's parent FrameLayout margin
+            val cancelButtonParent = cancelButton.parent as View
+            val layoutParams = cancelButtonParent.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+            layoutParams.topMargin = systemBarsInsets.top + 8 // 8dp base margin
+            cancelButtonParent.layoutParams = layoutParams
 
             insets
         }
@@ -158,7 +158,7 @@ class PinUnlockActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
 
         // Cancel button
-        findViewById<Button>(R.id.cancelButton).setOnClickListener {
+        findViewById<ImageButton>(R.id.cancelButton).setOnClickListener {
             setResult(RESULT_CANCELLED)
             finish()
         }

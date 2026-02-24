@@ -7,65 +7,61 @@
     android:background="?android:attr/colorBackground"
     tools:context=".pinunlock.PinUnlockActivity">
 
-    <!-- Header with Cancel Button -->
-    <Button
-        android:id="@+id/cancelButton"
-        android:layout_width="wrap_content"
+    <!-- Header Section with Gradient Background -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/headerSection"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/common_cancel"
-        android:textColor="@color/primary"
-        style="?android:attr/borderlessButtonStyle"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="12dp"
-        android:paddingBottom="12dp"
-        android:minWidth="64dp"
+        android:background="@drawable/password_unlock_gradient"
+        android:paddingBottom="24dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-    <!-- Logo -->
-    <ImageView
-        android:id="@+id/logoImageView"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:src="@mipmap/ic_launcher"
-        android:contentDescription="@string/aliasvault_icon"
-        app:layout_constraintTop_toBottomOf="@id/cancelButton"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <!-- Title -->
-    <TextView
-        android:id="@+id/titleTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/pin_unlock_vault"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="?android:attr/textColorPrimary"
-        app:layout_constraintTop_toBottomOf="@id/logoImageView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="12dp" />
+        <!-- Logo -->
+        <ImageView
+            android:id="@+id/logoImageView"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@mipmap/ic_launcher"
+            android:contentDescription="@string/aliasvault_icon"
+            android:elevation="4dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="80dp" />
 
-    <!-- Subtitle -->
-    <TextView
-        android:id="@+id/subtitleTextView"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:text="@string/pin_enter_to_unlock"
-        android:textSize="15sp"
-        android:textColor="?android:attr/textColorSecondary"
-        android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/titleTextView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="6dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp" />
+        <!-- Title -->
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pin_unlock_vault"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="?android:attr/textColorPrimary"
+            app:layout_constraintTop_toBottomOf="@id/logoImageView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="12dp" />
+
+        <!-- Subtitle -->
+        <TextView
+            android:id="@+id/subtitleTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/pin_enter_to_unlock"
+            android:textSize="15sp"
+            android:textColor="?android:attr/textColorSecondary"
+            android:gravity="center"
+            app:layout_constraintTop_toBottomOf="@id/titleTextView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="6dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginEnd="32dp"
+            android:paddingBottom="24dp" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- PIN Dots Container (for fixed-length PINs) -->
     <LinearLayout
@@ -74,10 +70,10 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/subtitleTextView"
+        app:layout_constraintTop_toBottomOf="@id/headerSection"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="32dp"
         android:visibility="visible" />
 
     <!-- PIN Text View (for variable-length PINs) -->
@@ -91,10 +87,10 @@
         android:textColor="?android:attr/textColorPrimary"
         android:letterSpacing="0.2"
         android:gravity="center"
-        app:layout_constraintTop_toBottomOf="@id/subtitleTextView"
+        app:layout_constraintTop_toBottomOf="@id/headerSection"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="32dp"
         android:visibility="gone" />
 
     <!-- Error Message -->
@@ -265,5 +261,26 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Back Button - Floating over content -->
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <ImageButton
+            android:id="@+id/cancelButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="@string/common_cancel"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:tint="?android:attr/textColorPrimary"
+            android:padding="12dp"
+            android:elevation="8dp" />
+    </FrameLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

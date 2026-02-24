@@ -106,16 +106,17 @@ class MainActivity : ReactActivity() {
     }
 
     /**
-     * Handle activity results - specifically for PIN unlock and PIN setup.
+     * Handle activity results.
      */
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        // Handle PIN unlock results directly
         if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.PIN_UNLOCK_REQUEST_CODE) {
             handlePinUnlockResult(resultCode, data)
         } else if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.PIN_SETUP_REQUEST_CODE) {
             handlePinSetupResult(resultCode, data)
+        } else if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.PASSWORD_UNLOCK_REQUEST_CODE) {
+            handlePasswordUnlockResult(resultCode, data)
         } else if (requestCode == net.aliasvault.app.nativevaultmanager.NativeVaultManager.QR_SCANNER_REQUEST_CODE) {
             handleQRScannerResult(resultCode, data)
         }
@@ -184,7 +185,7 @@ class MainActivity : ReactActivity() {
     /**
      * Handle PIN setup result.
      * @param resultCode The result code from the PIN setup activity.
-     * @param data The intent data (not used for setup, setup happens internally).
+     * @param data The intent data
      */
     @Suppress("UNUSED_PARAMETER")
     private fun handlePinSetupResult(resultCode: Int, data: Intent?) {
@@ -206,6 +207,35 @@ class MainActivity : ReactActivity() {
             }
             else -> {
                 promise.reject("SETUP_ERROR", "PIN setup failed", null)
+            }
+        }
+    }
+
+    /**
+     * Handle password unlock result.
+     * @param resultCode The result code from the password unlock activity.
+     * @param data The intent data containing the encryption key.
+     */
+    private fun handlePasswordUnlockResult(resultCode: Int, data: Intent?) {
+        val promise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.passwordUnlockPromise
+        net.aliasvault.app.nativevaultmanager.NativeVaultManager.passwordUnlockPromise = null
+
+        if (promise == null) {
+            return
+        }
+
+        when (resultCode) {
+            net.aliasvault.app.passwordunlock.PasswordUnlockActivity.RESULT_SUCCESS -> {
+                val encryptionKeyBase64 = data?.getStringExtra(
+                    net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_ENCRYPTION_KEY,
+                )
+                promise.resolve(encryptionKeyBase64)
+            }
+            net.aliasvault.app.passwordunlock.PasswordUnlockActivity.RESULT_CANCELLED -> {
+                promise.resolve(null)
+            }
+            else -> {
+                promise.resolve(null)
             }
         }
     }
