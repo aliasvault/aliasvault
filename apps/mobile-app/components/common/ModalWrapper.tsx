@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
+  StatusBar,
 } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -183,7 +184,15 @@ export const ModalWrapper: React.FC<IModalWrapperProps> = ({
       transparent
       animationType={animationType}
       onRequestClose={handleClose}
+      statusBarTranslucent
     >
+      {isOpen && Platform.OS === 'android' && (
+        <StatusBar
+          backgroundColor="transparent"
+          translucent
+          barStyle="light-content"
+        />
+      )}
       {renderBackdrop()}
     </Modal>
   );
