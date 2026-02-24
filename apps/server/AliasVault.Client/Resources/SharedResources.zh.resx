@@ -139,11 +139,11 @@
     <comment>Button text for editing an item</comment>
   </data>
   <data name="Show" xml:space="preserve">
-    <value>Show</value>
+    <value>显示</value>
     <comment>Button text for showing content</comment>
   </data>
   <data name="Hide" xml:space="preserve">
-    <value>Hide</value>
+    <value>隐藏</value>
     <comment>Button text for hiding content</comment>
   </data>
   <data name="Close" xml:space="preserve">
