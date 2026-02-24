@@ -158,7 +158,9 @@ export default function MobileUnlockConfirmScreen() : React.ReactNode {
     setIsProcessing(true);
 
     try {
-      // Authenticate user with either biometric or PIN (automatically detected)
+      /*
+       * Mobile unlock is a security-sensitive operation that requires re-authentication.
+       */
       const authenticated = await VaultUnlockHelper.authenticateForAction(
         t('settings.qrScanner.mobileLogin.confirmTitle'),
         t('settings.qrScanner.mobileLogin.confirmSubtitle')

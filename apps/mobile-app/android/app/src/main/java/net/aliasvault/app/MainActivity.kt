@@ -133,6 +133,8 @@ class MainActivity : ReactActivity() {
         net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise = null
 
         if (promise == null) {
+            // Clear auth context even if promise is null
+            net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingAuthContext = null
             return
         }
 
@@ -143,6 +145,8 @@ class MainActivity : ReactActivity() {
 
         when (resultCode) {
             net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_SUCCESS -> {
+                // Clear auth context on success
+                net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingAuthContext = null
                 val encryptionKeyBase64 = data?.getStringExtra(
                     net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_ENCRYPTION_KEY,
                 )
@@ -171,12 +175,32 @@ class MainActivity : ReactActivity() {
                 }
             }
             net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_CANCELLED -> {
-                promise.reject("USER_CANCELLED", "User cancelled PIN unlock", null)
+                // Check if password fallback is available (from authenticateUser flow)
+                val authContext = net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingAuthContext
+                if (authContext != null) {
+                    // Password fallback is available - launch password unlock
+                    net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingAuthContext = null
+                    net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise = promise
+
+                    val intent = Intent(this, net.aliasvault.app.passwordunlock.PasswordUnlockActivity::class.java)
+                    if (!authContext.first.isNullOrEmpty()) {
+                        intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_TITLE, authContext.first)
+                    }
+                    if (!authContext.second.isNullOrEmpty()) {
+                        intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_SUBTITLE, authContext.second)
+                    }
+                    startActivityForResult(intent, net.aliasvault.app.nativevaultmanager.NativeVaultManager.PASSWORD_UNLOCK_REQUEST_CODE)
+                } else {
+                    // No fallback - reject promise
+                    promise.reject("USER_CANCELLED", "User cancelled PIN unlock", null)
+                }
             }
             net.aliasvault.app.pinunlock.PinUnlockActivity.RESULT_PIN_DISABLED -> {
+                net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingAuthContext = null
                 promise.reject("PIN_DISABLED", "PIN was disabled", null)
             }
             else -> {
+                net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingAuthContext = null
                 promise.reject("UNKNOWN_ERROR", "Unknown error in PIN unlock", null)
             }
         }
@@ -217,25 +241,35 @@ class MainActivity : ReactActivity() {
      * @param data The intent data containing the encryption key.
      */
     private fun handlePasswordUnlockResult(resultCode: Int, data: Intent?) {
-        val promise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.passwordUnlockPromise
-        net.aliasvault.app.nativevaultmanager.NativeVaultManager.passwordUnlockPromise = null
+        // Check both promise types - one for showPasswordUnlock() and one for authenticateUser()
+        val passwordPromise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.passwordUnlockPromise
+        val authPromise = net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise
 
-        if (promise == null) {
-            return
-        }
+        net.aliasvault.app.nativevaultmanager.NativeVaultManager.passwordUnlockPromise = null
+        net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingActivityResultPromise = null
+        net.aliasvault.app.nativevaultmanager.NativeVaultManager.pendingAuthContext = null
 
         when (resultCode) {
             net.aliasvault.app.passwordunlock.PasswordUnlockActivity.RESULT_SUCCESS -> {
                 val encryptionKeyBase64 = data?.getStringExtra(
                     net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_ENCRYPTION_KEY,
                 )
-                promise.resolve(encryptionKeyBase64)
+                // For showPasswordUnlock(), resolve with encryption key
+                passwordPromise?.resolve(encryptionKeyBase64)
+                // For authenticateUser(), resolve with boolean success
+                authPromise?.resolve(true)
             }
             net.aliasvault.app.passwordunlock.PasswordUnlockActivity.RESULT_CANCELLED -> {
-                promise.resolve(null)
+                // For showPasswordUnlock(), resolve with null
+                passwordPromise?.resolve(null)
+                // For authenticateUser(), resolve with false
+                authPromise?.resolve(false)
             }
             else -> {
-                promise.resolve(null)
+                // For showPasswordUnlock(), resolve with null
+                passwordPromise?.resolve(null)
+                // For authenticateUser(), resolve with false
+                authPromise?.resolve(false)
             }
         }
     }
