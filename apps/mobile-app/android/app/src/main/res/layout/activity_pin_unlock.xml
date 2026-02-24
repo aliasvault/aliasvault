@@ -21,8 +21,8 @@
         <!-- Logo -->
         <ImageView
             android:id="@+id/logoImageView"
-            android:layout_width="70dp"
-            android:layout_height="70dp"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
             android:src="@mipmap/ic_launcher"
             android:contentDescription="@string/aliasvault_icon"
             android:elevation="4dp"
@@ -37,13 +37,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/pin_unlock_vault"
-            android:textSize="22sp"
+            android:textSize="28sp"
             android:textStyle="bold"
             android:textColor="?android:attr/textColorPrimary"
             app:layout_constraintTop_toBottomOf="@id/logoImageView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="12dp" />
+            android:layout_marginTop="16dp" />
 
         <!-- Subtitle -->
         <TextView
@@ -51,13 +51,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/pin_enter_to_unlock"
-            android:textSize="15sp"
+            android:textSize="16sp"
             android:textColor="?android:attr/textColorSecondary"
             android:gravity="center"
             app:layout_constraintTop_toBottomOf="@id/titleTextView"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="8dp"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
             android:paddingBottom="24dp" />
