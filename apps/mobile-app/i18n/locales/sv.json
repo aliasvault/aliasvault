@@ -4,7 +4,7 @@
     "close": "Stäng",
     "delete": "Radera",
     "save": "Spara",
-    "edit": "Edit",
+    "edit": "Redigera",
     "yes": "Ja",
     "no": "Nej",
     "ok": "OK",
@@ -25,7 +25,7 @@
     "add": "Lägg till",
     "generate": "Generera",
     "attachments": "Bifogade filer",
-    "or": "or",
+    "or": "eller",
     "deleteItemConfirmTitle": "Radera objekt",
     "deleteItemConfirmDescription": "Är du säker på att du vill radera det här objektet?",
     "errors": {
@@ -116,11 +116,11 @@
     "secretKey": "Hemlig nyckel",
     "instructions": "Ange den hemliga nyckeln som visas av webbplatsen där du vill lägga till tvåfaktorsautentisering.",
     "saveToViewCode": "Spara för att visa kod",
-    "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "scanQrCode": "Skanna QR-kod",
+    "enterManually": "Ange en konfigurationsnyckel",
     "errors": {
       "invalidSecretKey": "Ogiltigt format för hemlig nyckel.",
-      "scanFailed": "Failed to scan QR code. Please try again."
+      "scanFailed": "Kunde inte skanna QR-kod. Försök igen."
     }
   },
   "settings": {
@@ -473,7 +473,7 @@
       "usernameCopied": "Användarnamn har kopierats till urklipp",
       "emailCopied": "E-post har kopierats till urklipp",
       "passwordCopied": "Lösenord har kopierats till urklipp",
-      "urlCopied": "URL copied to clipboard"
+      "urlCopied": "URL kopierad till urklipp"
     },
     "createNewAliasFor": "Skapa nytt alias för",
     "contextMenu": {
@@ -485,10 +485,10 @@
       "copyPassword": "Kopiera lösenord"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "URL-alternativ",
+      "copyLink": "Kopiera länk",
+      "openLink": "Öppna länk",
+      "shareLink": "Dela länk"
     },
     "viewHistory": "Visa historik",
     "history": "Historik",
