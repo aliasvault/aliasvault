@@ -51,7 +51,7 @@
     "undo": "撤销",
     "save": "保存",
     "saving": "保存中…",
-    "edit": "Edit",
+    "edit": "编辑",
     "create": "创建",
     "or": "或",
     "close": "关闭",
@@ -63,8 +63,8 @@
     "disabled": "禁用",
     "showPassword": "显示密码",
     "hidePassword": "隐藏密码",
-    "show": "Show",
-    "hide": "Hide",
+    "show": "显示",
+    "hide": "隐藏",
     "showDetails": "显示详情",
     "hideDetails": "隐藏详情",
     "copyToClipboard": "复制到剪贴板",
@@ -302,8 +302,8 @@
     "secretKey": "密钥",
     "saveToViewCode": "保存以查看验证码",
     "defaultName": "身份验证器",
-    "deleteTotpCodeTitle": "Delete 2FA Code",
-    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
+    "deleteTotpCodeTitle": "删除两步验证码",
+    "deleteTotpCodeConfirmation": "您确定要删除两步验证码“{{name}}”吗？",
     "errors": {
       "invalidSecretKey": "密钥格式无效。"
     }
