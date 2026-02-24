@@ -4,7 +4,7 @@
     "close": "Fechar",
     "delete": "Excluir",
     "save": "Salvar",
-    "edit": "Edit",
+    "edit": "Editar",
     "yes": "Sim",
     "no": "Não",
     "ok": "Ok",
@@ -25,7 +25,7 @@
     "add": "Adicionar",
     "generate": "Gerar",
     "attachments": "Anexos",
-    "or": "or",
+    "or": "ou",
     "deleteItemConfirmTitle": "Excluir Item",
     "deleteItemConfirmDescription": "Tem certeza que deseja excluir este item?",
     "errors": {
@@ -116,11 +116,11 @@
     "secretKey": "Chave Secreta",
     "instructions": "Digite a chave secreta exibida pelo website que você quer adicionar a autenticação de dois fatores.",
     "saveToViewCode": "Salvar para ver código",
-    "scanQrCode": "Scan QR Code",
-    "enterManually": "Enter a setup key",
+    "scanQrCode": "Escanear Código QR",
+    "enterManually": "Digite a chave de configuração",
     "errors": {
       "invalidSecretKey": "Formato de chave secreta inválido.",
-      "scanFailed": "Failed to scan QR code. Please try again."
+      "scanFailed": "Falha ao escanear código QR. Por favor, tente novamente."
     }
   },
   "settings": {
@@ -473,7 +473,7 @@
       "usernameCopied": "Nome de usuário copiado para a área de transferência",
       "emailCopied": "E-mail copiado para a área de transferência",
       "passwordCopied": "Senha copiada para a área de transferência",
-      "urlCopied": "URL copied to clipboard"
+      "urlCopied": "URL copiado para a área de transferência"
     },
     "createNewAliasFor": "Criar novo alias para",
     "contextMenu": {
@@ -485,10 +485,10 @@
       "copyPassword": "Copiar Senha"
     },
     "urlContextMenu": {
-      "title": "URL Options",
-      "copyLink": "Copy Link",
-      "openLink": "Open Link",
-      "shareLink": "Share Link"
+      "title": "Opções de URL",
+      "copyLink": "Copiar Link",
+      "openLink": "Abrir Link",
+      "shareLink": "Compartilhar Link"
     },
     "viewHistory": "Ver histórico",
     "history": "Histórico",
