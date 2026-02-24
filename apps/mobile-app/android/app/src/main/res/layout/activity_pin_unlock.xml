@@ -60,7 +60,7 @@
             android:layout_marginTop="8dp"
             android:layout_marginStart="32dp"
             android:layout_marginEnd="32dp"
-            android:paddingBottom="24dp" />
+            android:paddingBottom="16dp" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <!-- PIN Dots Container (for fixed-length PINs) -->
@@ -73,7 +73,7 @@
         app:layout_constraintTop_toBottomOf="@id/headerSection"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="20dp"
         android:visibility="visible" />
 
     <!-- PIN Text View (for variable-length PINs) -->
@@ -90,7 +90,7 @@
         app:layout_constraintTop_toBottomOf="@id/headerSection"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="20dp"
         android:visibility="gone" />
 
     <!-- Error Message -->
