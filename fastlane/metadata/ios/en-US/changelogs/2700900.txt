@@ -1,0 +1,8 @@
+- Add 2FA TOTP codes by scanning QR code with built-in scanner
+- Add support to edit 2FA TOTP tokens after creation
+- Add support to autofill 2FA TOTP tokens via manual "Autofill" > "Passwords" option when focusing an input field
+- Allow to long-press item URL to copy or share
+- When creating new item when inside folder, it will now preselect that folder
+- Make mobile unlock work via password unlock
+- Improve search
+- Fix various bugs
