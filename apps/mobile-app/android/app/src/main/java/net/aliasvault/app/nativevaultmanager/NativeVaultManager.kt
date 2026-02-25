@@ -8,7 +8,6 @@ import android.util.Log
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactMethod
@@ -40,7 +39,7 @@ import org.json.JSONObject
 @Suppress("TooManyFunctions") // Required by React Native TurboModule interface
 @ReactModule(name = NativeVaultManager.NAME)
 class NativeVaultManager(reactContext: ReactApplicationContext) :
-    NativeVaultManagerSpec(reactContext), TurboModule, LifecycleEventListener {
+    NativeVaultManagerSpec(reactContext), TurboModule {
 
     companion object {
         /**
@@ -111,34 +110,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     )
 
     private val webApiService = WebApiService(reactContext)
-
-    init {
-        // Register for lifecycle callbacks
-        reactContext.addLifecycleEventListener(this)
-    }
-
-    /**
-     * Called when the app enters the background.
-     */
-    override fun onHostPause() {
-        Log.d(TAG, "App entered background")
-        vaultStore.onAppBackgrounded()
-    }
-
-    /**
-     * Called when the app enters the foreground.
-     */
-    override fun onHostResume() {
-        Log.d(TAG, "App entered foreground")
-        vaultStore.onAppForegrounded()
-    }
-
-    /**
-     * Called when the app is destroyed.
-     */
-    override fun onHostDestroy() {
-        // Not needed
-    }
 
     /**
      * Get the name of the module.

@@ -195,6 +195,7 @@ dependencies {
     // Add Fragment and ViewModel dependencies for fragment-based UI
     implementation("androidx.fragment:fragment-ktx:1.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
+    implementation("androidx.lifecycle:lifecycle-process:2.6.2")
 
     // Add vector drawable support for SVG
     implementation("com.caverock:androidsvg-aar:1.4")

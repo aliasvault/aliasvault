@@ -1,7 +1,5 @@
 package net.aliasvault.app.vaultstore
 
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import io.requery.android.database.sqlite.SQLiteDatabase
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -113,43 +111,16 @@ class VaultStore(
         get() = databaseComponent.dbConnection
 
     /**
-     * Internal accessor for database connection (legacy name).
+     * Internal accessor for database connection.
      */
     internal val dbConnection: SQLiteDatabase?
         get() = databaseComponent.dbConnection
 
     /**
-     * Internal accessor for auto-lock handler.
+     * Internal accessor for VaultAuth.
      */
-    internal var autoLockHandler: Handler? = null
-
-    /**
-     * Internal accessor for auto-lock runnable.
-     */
-    internal var autoLockRunnable: Runnable? = null
-
-    // endregion
-
-    init {
-        autoLockHandler = Handler(Looper.getMainLooper())
-        auth.setAutoLockHandler(autoLockHandler!!)
-    }
-
-    // region Lifecycle Methods
-
-    /**
-     * Called when the app enters the background.
-     */
-    fun onAppBackgrounded() {
-        auth.onAppBackgrounded()
-    }
-
-    /**
-     * Called when the app enters the foreground.
-     */
-    fun onAppForegrounded() {
-        auth.onAppForegrounded()
-    }
+    internal val vaultAuth: VaultAuth
+        get() = auth
 
     // endregion
 
