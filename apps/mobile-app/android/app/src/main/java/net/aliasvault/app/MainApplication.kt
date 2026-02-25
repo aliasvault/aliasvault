@@ -18,8 +18,6 @@ import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
 import net.aliasvault.app.nativevaultmanager.NativeVaultManagerPackage
 import net.aliasvault.app.vaultstore.VaultStore
-import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
-import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 
 /**
  * The main application class.
@@ -67,17 +65,22 @@ class MainApplication : Application(), ReactApplication {
 
     /**
      * Setup process-level lifecycle observer to track when the app backgrounds/foregrounds.
+     *
+     * If the instance doesn't exist yet (e.g., app backgrounded before React Native initialized),
+     * we skip the lifecycle callbacks. This is safe because there's no vault to lock yet.
      */
     private fun setupProcessLifecycleObserver() {
         ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onStop(owner: LifecycleOwner) {
                 // Called when app goes to background (all activities stopped)
                 try {
-                    val vaultStore = VaultStore.getInstance(
-                        AndroidKeystoreProvider(this@MainApplication) { null },
-                        AndroidStorageProvider(this@MainApplication),
-                    )
-                    vaultStore.vaultAuth.onAppBackgrounded()
+                    // Only notify existing instance
+                    val vaultStore = VaultStore.getExistingInstance()
+                    if (vaultStore != null) {
+                        vaultStore.vaultAuth.onAppBackgrounded()
+                    } else {
+                        android.util.Log.d("MainApplication", "VaultStore not initialized yet, skipping background callback")
+                    }
                 } catch (e: Exception) {
                     android.util.Log.e("MainApplication", "Error handling app background", e)
                 }
@@ -86,11 +89,13 @@ class MainApplication : Application(), ReactApplication {
             override fun onStart(owner: LifecycleOwner) {
                 // Called when app comes to foreground (at least one activity visible)
                 try {
-                    val vaultStore = VaultStore.getInstance(
-                        AndroidKeystoreProvider(this@MainApplication) { null },
-                        AndroidStorageProvider(this@MainApplication),
-                    )
-                    vaultStore.vaultAuth.onAppForegrounded()
+                    // Only notify existing instance
+                    val vaultStore = VaultStore.getExistingInstance()
+                    if (vaultStore != null) {
+                        vaultStore.vaultAuth.onAppForegrounded()
+                    } else {
+                        android.util.Log.d("MainApplication", "VaultStore not initialized yet, skipping foreground callback")
+                    }
                 } catch (e: Exception) {
                     android.util.Log.e("MainApplication", "Error handling app foreground", e)
                 }

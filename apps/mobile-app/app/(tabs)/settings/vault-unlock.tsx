@@ -133,6 +133,18 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
       return;
     }
 
+    // Check if keystore is available when enabling biometrics (iOS requires device passcode)
+    if (value && Platform.OS === 'ios') {
+      const keystoreAvailable = await NativeVaultManager.isKeystoreAvailable();
+      if (!keystoreAvailable) {
+        showAlert(
+          t('settings.vaultUnlockSettings.biometricNotAvailable', { biometric: biometricDisplayName }),
+          t('settings.vaultUnlockSettings.featureRequiresPasscode')
+        );
+        return;
+      }
+    }
+
     /*
      * Biometrics and PIN can now both be enabled simultaneously.
      * Biometrics takes priority during unlock, PIN serves as fallback.
@@ -149,13 +161,25 @@ export default function VaultUnlockSettingsScreen() : React.ReactNode {
         visibilityTime: 1200,
       });
     }
-  }, [hasBiometrics, setAuthMethods, biometricDisplayName, showDialog, t]);
+  }, [hasBiometrics, setAuthMethods, biometricDisplayName, showDialog, showAlert, t]);
 
   /**
    * Handle enable PIN - launches native PIN setup UI.
    */
   const handleEnablePin = useCallback(async () : Promise<void> => {
     try {
+      // Check if keystore is available (requires device passcode on iOS)
+      const keystoreAvailable = await NativeVaultManager.isKeystoreAvailable();
+
+      if (!keystoreAvailable) {
+        // On iOS, keystore requires device passcode to be set
+        showAlert(
+          t('common.error'),
+          t('settings.vaultUnlockSettings.featureRequiresPasscode')
+        );
+        return;
+      }
+
       // Launch native PIN setup UI
       await NativeVaultManager.showPinSetup();
 

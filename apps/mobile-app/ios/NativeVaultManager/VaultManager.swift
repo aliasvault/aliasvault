@@ -727,6 +727,12 @@ public class VaultManager: NSObject {
     }
 
     @objc
+    func isKeystoreAvailable(_ resolve: @escaping RCTPromiseResolveBlock,
+                            rejecter reject: @escaping RCTPromiseRejectBlock) {
+        resolve(vaultStore.isKeystoreAvailable())
+    }
+
+    @objc
     func getPinFailedAttempts(_ resolve: @escaping RCTPromiseResolveBlock,
                              rejecter reject: @escaping RCTPromiseRejectBlock) {
         resolve(vaultStore.getPinFailedAttempts())

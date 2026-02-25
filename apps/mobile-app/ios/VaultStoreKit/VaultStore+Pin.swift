@@ -41,8 +41,14 @@ extension VaultStore {
     ///
     /// - Parameters:
     ///   - pin: The PIN to set (4+ digits)
-    /// - Throws: Error if PIN is invalid, vault not unlocked, or encryption fails
+    /// - Throws: Error if PIN is invalid, vault not unlocked, encryption fails, or keystore unavailable
     public func setupPin(_ pin: String) throws {
+        // Check if keystore is available (device passcode must be set)
+        guard isKeystoreAvailable() else {
+            print("Cannot setup PIN: device passcode not set")
+            throw AppError.biometricNotAvailable
+        }
+
         // Get vault encryption key from memory (vault must be unlocked)
         let vaultEncryptionKey = try getEncryptionKey()
 

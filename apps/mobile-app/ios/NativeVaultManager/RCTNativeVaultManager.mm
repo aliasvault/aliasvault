@@ -269,6 +269,10 @@
     [vaultManager isPinEnabled:resolve rejecter:reject];
 }
 
+- (void)isKeystoreAvailable:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager isKeystoreAvailable:resolve rejecter:reject];
+}
+
 - (void)removeAndDisablePin:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
     [vaultManager removeAndDisablePin:resolve rejecter:reject];
 }

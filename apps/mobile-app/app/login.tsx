@@ -169,8 +169,13 @@ export default function LoginScreen() : React.ReactNode {
     // Get biometric display name from auth context
     const biometricDisplayName = await authContext.getBiometricDisplayName();
     const isBiometricsEnabledOnDevice = await authContext.isBiometricsEnabledOnDevice();
+    const isKeystoreAvailable = await NativeVaultManager.isKeystoreAvailable();
 
-    if (isBiometricsEnabledOnDevice) {
+    /*
+     * Only prompt for biometric setup if both biometrics are available AND keystore is available
+     * (keystore requires device passcode to be set)
+     */
+    if (isBiometricsEnabledOnDevice && isKeystoreAvailable) {
       // Show biometric prompt if biometrics are available (faceid or fingerprint enrolled) on device.
       showDialog(
         t('auth.enableBiometric', { biometric: biometricDisplayName }),
@@ -211,7 +216,10 @@ export default function LoginScreen() : React.ReactNode {
         ]
       );
     } else {
-      // If biometrics are not available on device, only allow password authentication.
+      /*
+       * If biometrics are not available on device OR keystore is not available (no device passcode),
+       * only allow password authentication.
+       */
       await authContext.setAuthMethods(['password']);
       await continueProcessVaultResponse(
         token,

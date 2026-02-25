@@ -118,33 +118,48 @@ class VaultCrypto(
     // region Encryption Key Management
 
     /**
-     * Store the encryption key.
+     * Store the encryption key in memory and optionally persist to keystore if biometrics are enabled.
+     *
+     * During login, if biometrics are enabled, this will attempt to persist the key to keystore.
+     * However, if Activity context is not available (common during login before UI is fully ready),
+     * the key will only be stored in memory. It will be persisted to keystore on next unlock
+     * when Activity context is available.
      */
     fun storeEncryptionKey(base64EncryptionKey: String, authMethods: String) {
         this.encryptionKey = Base64.decode(base64EncryptionKey, Base64.NO_WRAP)
 
         if (authMethods.contains(BIOMETRICS_AUTH_METHOD) && keystoreProvider.isBiometricAvailable()) {
-            val latch = java.util.concurrent.CountDownLatch(1)
-            var error: Exception? = null
+            try {
+                val latch = java.util.concurrent.CountDownLatch(1)
+                var error: Exception? = null
 
-            keystoreProvider.storeKey(
-                key = base64EncryptionKey,
-                object : KeystoreOperationCallback {
-                    override fun onSuccess(result: String) {
-                        Log.d(TAG, "Encryption key stored successfully with biometric protection")
-                        latch.countDown()
-                    }
+                keystoreProvider.storeKey(
+                    key = base64EncryptionKey,
+                    object : KeystoreOperationCallback {
+                        override fun onSuccess(result: String) {
+                            Log.d(TAG, "Encryption key stored successfully with biometric protection")
+                            latch.countDown()
+                        }
 
-                    override fun onError(e: Exception) {
-                        Log.e(TAG, "Error storing encryption key with biometric protection", e)
-                        error = e
-                        latch.countDown()
-                    }
-                },
-            )
+                        override fun onError(e: Exception) {
+                            Log.d(TAG, "Could not persist encryption key to keystore (likely no Activity context), will persist on next unlock: ${e.message}")
+                            error = e
+                            latch.countDown()
+                        }
+                    },
+                )
 
-            latch.await()
-            error?.let { throw it }
+                latch.await()
+
+                if (error != null) {
+                    Log.d(TAG, "Encryption key stored in memory only, biometric keystore persistence deferred")
+                }
+            } catch (e: Exception) {
+                // Catch any unexpected errors during keystore operations
+                Log.d(TAG, "Could not persist encryption key to keystore, stored in memory only: ${e.message}")
+            }
+        } else {
+            Log.d(TAG, "Stored encryption key in memory only (biometrics not enabled or not available)")
         }
     }
 
