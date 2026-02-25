@@ -48,9 +48,9 @@
     "verifyingAuthCode": "Se verifică codul de autentificare",
     "verify": "Verifică",
     "unlockVault": "Deblochează seiful",
-    "unlockWithBiometric": "Unlock with {{biometric}}",
+    "unlockWithBiometric": "Deblochează cu {{biometric}}",
     "unlockWithPin": "Deblochează cu PIN",
-    "unlockWithPassword": "Unlock with Password",
+    "unlockWithPassword": "Deblochează cu parolă",
     "enterPassword": "Introdu parola pentru a debloca seiful",
     "enterPasswordPlaceholder": "Parolă",
     "enterAuthCode": "Introdu codul din 6 cifre",
@@ -322,7 +322,7 @@
         "confirmMessage": "Ești pe cale să te autentifici pe un dispozitiv la distanță. Acest dispozitiv va avea acces complet la seiful tău. Continuă doar dacă ai încredere în acel dispozitiv.",
         "successDescription": "Dispozitivul de la distanță a fost autentificat cu succes.",
         "requestExpired": "Cererea de autentificare a expirat. Generează un cod QR nou.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "noPinOrBiometricError": "Deblocarea pe mobil necesită PIN sau autentificare biometrică. Activează PIN-ul sau Face ID/Touch ID în setările de deblocare ale seifului pentru a folosi această funcție."
       }
     }
   },
