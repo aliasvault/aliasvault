@@ -4,7 +4,7 @@
     "close": "Закрыть",
     "delete": "Удалить",
     "save": "Сохранить",
-    "edit": "Edit",
+    "edit": "Редактировать",
     "yes": "Да",
     "no": "Нет",
     "ok": "ОК",
@@ -25,7 +25,7 @@
     "add": "Добавить",
     "generate": "Сгенерировать",
     "attachments": "Вложения",
-    "or": "or",
+    "or": "или",
     "deleteItemConfirmTitle": "Удалить запись",
     "deleteItemConfirmDescription": "Вы уверены, что хотите удалить эту запись?",
     "errors": {
