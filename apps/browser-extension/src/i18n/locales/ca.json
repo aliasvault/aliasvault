@@ -51,7 +51,7 @@
     "undo": "Undo",
     "save": "Desa",
     "saving": "Saving...",
-    "edit": "Edit",
+    "edit": "Edita",
     "create": "Create",
     "or": "Or",
     "close": "Tanca",
@@ -172,7 +172,7 @@
     "vaultUpgradeRequired": "Vault upgrade required.",
     "dismissPopup": "Dismiss popup",
     "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "close": "Tanca",
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site",
