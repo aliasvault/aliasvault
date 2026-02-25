@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Authenticatiecode verifiëren",
     "verify": "Verifiëren",
     "unlockVault": "Vault ontgrendelen",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Ontgrendelen met PIN",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Voer je wachtwoord in om je vault te ontgrendelen",
     "enterPasswordPlaceholder": "Wachtwoord",
     "enterAuthCode": "Voer 6-cijferige code in",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Voer je wachtwoord in",
     "enableBiometric": "{{biometric}} inschakelen?",
     "biometricPrompt": "Wil je {{biometric}} gebruiken om je vault te ontgrendelen?",
-    "tryBiometricAgain": "Probeer {{biometric}} Opnieuw",
-    "tryPinAgain": "Probeer PIN opnieuw",
     "authCodeNote": "Opmerking: als je geen toegang hebt tot je authenticator, kunt je je 2FA resetten door met een herstelcode in te loggen via de website.",
     "errors": {
       "credentialsRequired": "Gebruikersnaam en wachtwoord zijn vereist",
@@ -321,7 +321,8 @@
         "confirmSubtitle": "Verifieer om login goed te keuren op een ander apparaat.",
         "confirmMessage": "Je staat op het punt om in te loggen op een ander apparaat met je account. Dit andere apparaat krijgt volledige toegang tot je vault. Ga alleen verder als je dit apparaat vertrouwd.",
         "successDescription": "Succesvol ingelogd op het andere apparaat.",
-        "requestExpired": "Dit loginverzoek is verlopen. Genereer een nieuwe QR-code."
+        "requestExpired": "Dit loginverzoek is verlopen. Genereer een nieuwe QR-code.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },
