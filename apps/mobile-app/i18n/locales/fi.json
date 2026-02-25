@@ -4,7 +4,7 @@
     "close": "Sulje",
     "delete": "Poista",
     "save": "Tallenna",
-    "edit": "Edit",
+    "edit": "Muokkaa",
     "yes": "Kyllä",
     "no": "Ei",
     "ok": "Hyvä on",
@@ -25,7 +25,7 @@
     "add": "Lisää",
     "generate": "Generate",
     "attachments": "Liitteet",
-    "or": "or",
+    "or": "tai",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
