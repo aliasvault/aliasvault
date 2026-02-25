@@ -7,7 +7,7 @@
   <string name="common_close">Fermer</string>
   <string name="common_next">Suivant</string>
   <string name="common_cancel">Annuler</string>
-  <string name="common_back">Back</string>
+  <string name="common_back">Retour</string>
   <string name="unknown_error">Une erreur inconnue s\'est produite</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Échec de la récupération, ouvrez l\'application</string>
@@ -83,10 +83,10 @@
   <string name="pin_confirm_description">Entrez à nouveau votre code PIN pour confirmer</string>
   <string name="pin_mismatch">Les codes PIN ne correspondent pas. Veuillez réessayer.</string>
   <!-- Password unlock -->
-  <string name="password_unlock_title">Unlock Vault</string>
-  <string name="password_unlock_subtitle">Enter your master password</string>
-  <string name="password_unlock_password_hint">Password</string>
-  <string name="password_unlock_button">Unlock</string>
-  <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
-  <string name="password_unlock_error">Failed to verify password</string>
+  <string name="password_unlock_title">Déverrouiller le coffre</string>
+  <string name="password_unlock_subtitle">Entrez votre mot de passe maître</string>
+  <string name="password_unlock_password_hint">Mot de passe</string>
+  <string name="password_unlock_button">Déverrouiller</string>
+  <string name="password_unlock_incorrect">Mot de passe incorrect. Veuillez réessayer.</string>
+  <string name="password_unlock_error">Échec de la vérification du mot de passe</string>
 </resources>
