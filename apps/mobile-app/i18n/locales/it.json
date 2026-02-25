@@ -48,9 +48,9 @@
     "verifyingAuthCode": "Verifica codice di autenticazione",
     "verify": "Verifica",
     "unlockVault": "Sblocca Cassaforte",
-    "unlockWithBiometric": "Unlock with {{biometric}}",
+    "unlockWithBiometric": "Sblocca con {{biometric}}",
     "unlockWithPin": "Sblocca con PIN",
-    "unlockWithPassword": "Unlock with Password",
+    "unlockWithPassword": "Sblocca con Password",
     "enterPassword": "Inserisci la tua password per sbloccare la cassaforte",
     "enterPasswordPlaceholder": "Password",
     "enterAuthCode": "Inserire codice a 6 cifre",
@@ -216,7 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} è disabilitato per AliasVault. Per usarlo, abilitalo prima nelle impostazioni del dispositivo.",
       "biometricHelp": "Usa la biometria per sbloccare la tua cassaforte, protetta dall' {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} non è disponibile. Tocca per aprire le impostazioni o vai alle impostazioni del dispositivo per abilitarlo e configurarlo.",
-      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
+      "featureRequiresPasscode": "Questa funzione richiede che un codice di accesso sia abilitato sul tuo dispositivo.",
       "pin": "Codice PIN",
       "pinDescription": "Usa un codice PIN personalizzato per sbloccare la cassaforte più rapidamente.",
       "pinEnabled": "Sblocco PIN abilitato correttamente",
@@ -323,7 +323,7 @@
         "confirmMessage": "Stai per accedere a un dispositivo remoto con il tuo account. Questo altro dispositivo avrà pieno accesso alla tua cassaforte. Procedi solo se ti fidi di questo dispositivo.",
         "successDescription": "Il dispositivo remoto è stato loggato con successo.",
         "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "noPinOrBiometricError": "Sblocco mobile richiede PIN o autenticazione biometrica. Si prega di abilitare il PIN o Face ID/Touch ID nelle impostazioni di sblocco cassaforte per utilizzare questa funzionalità."
       }
     }
   },
