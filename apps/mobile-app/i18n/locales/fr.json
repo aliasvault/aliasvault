@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} est désactivé pour AliasVault. Pour l'utiliser, veuillez d'abord l'activer dans les paramètres de votre appareil.",
       "biometricHelp": "Utilisez la biométrie pour déverrouiller votre coffre, qui est sécurisé par l’ {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} n'est pas disponible. Appuyez pour ouvrir les paramètres et/ou allez dans les paramètres de votre appareil pour l'activer et le configurer.",
+      "featureRequiresPasscode": "Cette fonctionnalité nécessite un code d'accès pour être activée sur votre appareil.",
       "pin": "Code PIN",
       "pinDescription": "Utilisez un code PIN personnalisé pour déverrouiller votre coffre plus rapidement.",
       "pinEnabled": "Déverrouillage par code PIN activé avec succès",
