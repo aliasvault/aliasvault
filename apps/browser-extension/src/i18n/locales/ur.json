@@ -51,7 +51,7 @@
     "undo": "Undo",
     "save": "محفوظ کریں",
     "saving": "Saving...",
-    "edit": "Edit",
+    "edit": "ترمیم کریں",
     "create": "Create",
     "or": "Or",
     "close": "بند کریں",
@@ -172,7 +172,7 @@
     "vaultUpgradeRequired": "Vault upgrade required.",
     "dismissPopup": "Dismiss popup",
     "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "close": "بند کریں",
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site",
