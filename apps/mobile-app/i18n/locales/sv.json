@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Verifierar autentiseringskod",
     "verify": "Bekräfta",
     "unlockVault": "Lås upp valv",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Lås upp med PIN-kod",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Ange PIN-koden för att låsa upp ditt valv",
     "enterPasswordPlaceholder": "Lösenord",
     "enterAuthCode": "Ange 6-siffrig kod",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Ange ditt lösenord",
     "enableBiometric": "Aktivera {{biometric}}?",
     "biometricPrompt": "Vill du använda {{biometric}} för att låsa upp ditt valv?",
-    "tryBiometricAgain": "Försök med {{biometric}} igen",
-    "tryPinAgain": "Prova PIN-koden igen",
     "authCodeNote": "Obs! Om du inte har tillgång till din autentiseringsenhet kan du återställa din 2FA med en återställningskod genom att logga in via webbplatsen.",
     "errors": {
       "credentialsRequired": "Användarnamn och lösenord krävs",
@@ -321,7 +321,8 @@
         "confirmSubtitle": "Återautentisera för att godkänna inloggning på en annan enhet.",
         "confirmMessage": "Du är på väg att logga in på en fjärrenhet med ditt konto. Den här andra enheten kommer att ha full tillgång till ditt valv. Fortsätt endast om du litar på den här enheten.",
         "successDescription": "Fjärrenheten har loggats in.",
-        "requestExpired": "Denna inloggningsbegäran har löpt ut. Vänligen generera en ny QR-kod."
+        "requestExpired": "Denna inloggningsbegäran har löpt ut. Vänligen generera en ny QR-kod.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },
