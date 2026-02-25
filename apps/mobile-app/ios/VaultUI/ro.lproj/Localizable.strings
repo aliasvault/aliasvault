@@ -69,9 +69,9 @@
 "pin_incorrect_attempts_remaining" = "PIN incorect. Mai ai %d încercări";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
-"unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"enter_password_to_unlock" = "Introdu parola principală";
+"unlock" = "Deblochează";
+"incorrect_password" = "Parolă incorectă. Încearcă din nou.";
 
 /* PIN Setup */
 "pin_setup_title" = "Configurare PIN";
