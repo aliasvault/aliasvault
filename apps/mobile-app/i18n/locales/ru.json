@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Проверка кода аутентификации",
     "verify": "Проверить",
     "unlockVault": "Разблокировать хранилище",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Разблокировать ПИН-кодом﻿",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Введите ваш пароль для разблокировки вашего хранилища",
     "enterPasswordPlaceholder": "Пароль",
     "enterAuthCode": "Введите 6-значный код",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Введите ваш пароль",
     "enableBiometric": "Включить {{biometric}}?",
     "biometricPrompt": "Вы хотите использовать {{biometric}} для разблокировки вашего хранилища?",
-    "tryBiometricAgain": "Попробуйте {{biometric}} ещё раз",
-    "tryPinAgain": "Повторите ввод PIN-кода",
     "authCodeNote": "Примечание: если у вас нет доступа к устройству аутентификации, вы можете сбросить ваш 2FA с помощью кода восстановления, войдя в систему через сайт.",
     "errors": {
       "credentialsRequired": "Требуется имя пользователя и пароль",
@@ -321,7 +321,8 @@
         "confirmSubtitle": "Авторизуйтесь повторно, чтобы подтвердить вход на другом устройстве.",
         "confirmMessage": "Внимание! Вы входите в аккаунт на другом устройстве. Оно получит полный доступ к вашему хранилищу. Продолжайте только если полностью доверяете этому устройству.",
         "successDescription": "Вход на удаленном устройстве выполнен успешно.",
-        "requestExpired": "Срок действия запроса на вход истек. Пожалуйста, сгенерируйте новый QR-код."
+        "requestExpired": "Срок действия запроса на вход истек. Пожалуйста, сгенерируйте новый QR-код.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },
