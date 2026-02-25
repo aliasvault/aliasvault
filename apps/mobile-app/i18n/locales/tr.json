@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Doğrulama kodu kontrol ediliyor",
     "verify": "Doğrula",
     "unlockVault": "Kasa Kilidini Aç",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Unlock with PIN",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Kasayı açmak için parolanızı girin",
     "enterPasswordPlaceholder": "Parola",
     "enterAuthCode": "6 rakamlı kodu yazın",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Parolanızı girin",
     "enableBiometric": "{{biometric}}’i etkinleştirmek istiyor musunuz?",
     "biometricPrompt": "Kasayı açmak için {{biometric}} kullanmak ister misiniz?",
-    "tryBiometricAgain": "{{biometric}}’i tekrar deneyin",
-    "tryPinAgain": "Try PIN Again",
     "authCodeNote": "Not: Kimlik doğrulayıcı cihazınıza erişiminiz yoksa, web sitesinden giriş yaparak kurtarma kodu ile iki adımlı doğrulamayı sıfırlayabilirsiniz.",
     "errors": {
       "credentialsRequired": "Kullanıcı adı ve parola gerekiyor",
@@ -321,7 +321,8 @@
         "confirmSubtitle": "Re-authenticate to approve login on another device.",
         "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
         "successDescription": "The remote device has been successfully logged in.",
-        "requestExpired": "This login request has expired. Please generate a new QR code."
+        "requestExpired": "This login request has expired. Please generate a new QR code.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },
