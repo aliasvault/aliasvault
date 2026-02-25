@@ -51,7 +51,7 @@
     "undo": "הסגה",
     "save": "שמירה",
     "saving": "Saving...",
-    "edit": "Edit",
+    "edit": "עריכה",
     "create": "יצירה",
     "or": "או",
     "close": "סגירה",
@@ -172,7 +172,7 @@
     "vaultUpgradeRequired": "יש לשדרג את הכספת.",
     "dismissPopup": "התעלמות מחלונית",
     "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "close": "סגירה",
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site",
