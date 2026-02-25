@@ -32,7 +32,7 @@
 "username_copied" = "Käyttäjänimi kopioitu";
 "password_copied" = "Salasana kopioitu";
 "email_copied" = "Sähköposti kopioitu";
-"totp_code" = "TOTP Code";
+"totp_code" = "TOTP-koodi";
 
 /* Search bar */
 "search_items" = "Search items...";
@@ -69,9 +69,9 @@
 "pin_incorrect_attempts_remaining" = "Virheellinen PIN, %d yritystä jäljellä";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
-"unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"enter_password_to_unlock" = "Syötä pääsalasanasi";
+"unlock" = "Avaa lukitus";
+"incorrect_password" = "Virheellinen salasana. Yritä uudelleen. ";
 
 /* PIN Setup */
 "pin_setup_title" = "Aseta PIN-koodi";
