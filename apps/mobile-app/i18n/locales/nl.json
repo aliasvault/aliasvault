@@ -323,7 +323,7 @@
         "confirmMessage": "Je staat op het punt om in te loggen op een ander apparaat met je account. Dit andere apparaat krijgt volledige toegang tot je vault. Ga alleen verder als je dit apparaat vertrouwd.",
         "successDescription": "Succesvol ingelogd op het andere apparaat.",
         "requestExpired": "Dit loginverzoek is verlopen. Genereer een nieuwe QR-code.",
-        "noPinOrBiometricError": "Ontgrendelen met Mobiel vereist PIN of biometrische verificatie. Schakel pincode of Face ID/Touch ID in in de kluis instellingen om deze functie te gebruiken."
+        "noPinOrBiometricError": "Ontgrendelen met mobiel vereist PIN of biometrische verificatie. Schakel PIN of Face ID/Touch ID in om deze functie te gebruiken."
       }
     }
   },
