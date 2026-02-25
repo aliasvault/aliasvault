@@ -86,7 +86,7 @@
   <string name="password_unlock_title">Unlock Vault</string>
   <string name="password_unlock_subtitle">Enter your master password</string>
   <string name="password_unlock_password_hint">Password</string>
-  <string name="password_unlock_button">Unlock</string>
+  <string name="password_unlock_button">Отключи</string>
   <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
   <string name="password_unlock_error">Failed to verify password</string>
 </resources>
