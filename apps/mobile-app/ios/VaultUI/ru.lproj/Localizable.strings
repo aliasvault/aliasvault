@@ -32,7 +32,7 @@
 "username_copied" = "Имя пользователя скопировано";
 "password_copied" = "Пароль скопирован";
 "email_copied" = "Email скопирован";
-"totp_code" = "TOTP Code";
+"totp_code" = "TOTP код";
 
 /* Search bar */
 "search_items" = "Поиск записей...";
@@ -69,9 +69,9 @@
 "pin_incorrect_attempts_remaining" = "Неверный PIN-код. Осталось попыток: %d";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
-"unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"enter_password_to_unlock" = "Введите свой мастер-пароль";
+"unlock" = "Разблокировать";
+"incorrect_password" = "Неверный пароль. Повторите попытку.";
 
 /* PIN Setup */
 "pin_setup_title" = "Настройка PIN-кода";
