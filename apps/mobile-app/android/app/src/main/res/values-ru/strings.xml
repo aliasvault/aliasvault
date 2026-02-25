@@ -7,6 +7,7 @@
   <string name="common_close">Закрыть</string>
   <string name="common_next">Далее</string>
   <string name="common_cancel">Отмена</string>
+  <string name="common_back">Back</string>
   <string name="unknown_error">Произошла неизвестная ошибка</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Не удалось извлечь, открыть приложение</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">Подтвердите ПИН-код﻿</string>
   <string name="pin_confirm_description">Введите PIN-код еще раз для подтверждения</string>
   <string name="pin_mismatch">PIN-коды не совпадают. Повторите попытку.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">Unlock Vault</string>
+  <string name="password_unlock_subtitle">Enter your master password</string>
+  <string name="password_unlock_password_hint">Password</string>
+  <string name="password_unlock_button">Unlock</string>
+  <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
+  <string name="password_unlock_error">Failed to verify password</string>
 </resources>
