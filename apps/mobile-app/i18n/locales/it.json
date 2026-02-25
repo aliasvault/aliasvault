@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} è disabilitato per AliasVault. Per usarlo, abilitalo prima nelle impostazioni del dispositivo.",
       "biometricHelp": "Usa la biometria per sbloccare la tua cassaforte, protetta dall' {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} non è disponibile. Tocca per aprire le impostazioni o vai alle impostazioni del dispositivo per abilitarlo e configurarlo.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "Codice PIN",
       "pinDescription": "Usa un codice PIN personalizzato per sbloccare la cassaforte più rapidamente.",
       "pinEnabled": "Sblocco PIN abilitato correttamente",
