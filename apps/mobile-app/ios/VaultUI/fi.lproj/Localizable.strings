@@ -68,6 +68,11 @@
 "pin_locked_max_attempts" = "PIN-koodi lukittu liian monen epäonnistuneen yrityksen jälkeen";
 "pin_incorrect_attempts_remaining" = "Virheellinen PIN, %d yritystä jäljellä";
 
+/* Password Unlock */
+"enter_password_to_unlock" = "Enter your master password";
+"unlock" = "Unlock";
+"incorrect_password" = "Incorrect password. Please try again.";
+
 /* PIN Setup */
 "pin_setup_title" = "Aseta PIN-koodi";
 "pin_setup_subtitle" = "Syötä PIN-koodi avataksesi holvisi";
