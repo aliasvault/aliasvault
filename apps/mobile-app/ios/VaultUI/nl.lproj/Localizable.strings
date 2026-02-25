@@ -69,9 +69,9 @@
 "pin_incorrect_attempts_remaining" = "Onjuiste pincode, %d pogingen resterend";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
-"unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"enter_password_to_unlock" = "Voer je hoofdwachtwoord in";
+"unlock" = "Ontgrendelen";
+"incorrect_password" = "Onjuist wachtwoord. Probeer het opnieuw.";
 
 /* PIN Setup */
 "pin_setup_title" = "Pincode instellen";
