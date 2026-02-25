@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} está deshabilitado para AliasVault. Para usarlo, por favor habilítelo en la configuración de tu dispositivo.",
       "biometricHelp": "Usa los datos biométricos para desbloquear tu bóveda que está asegurada por la {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} no está disponible. Toca para abrir ajustes y/o ve a la configuración de tu dispositivo para activarlo y configurarlo.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "Código PIN",
       "pinDescription": "Usa un código PIN personalizado para desbloquear tu bóveda más rápidamente.",
       "pinEnabled": "Desbloqueo de PIN activado correctamente",
