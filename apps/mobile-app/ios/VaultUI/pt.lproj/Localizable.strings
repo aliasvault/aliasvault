@@ -68,6 +68,11 @@
 "pin_locked_max_attempts" = "PIN bloqueado após muitas tentativas incorretas";
 "pin_incorrect_attempts_remaining" = "PIN incorreto. %d tentativas restantes";
 
+/* Password Unlock */
+"enter_password_to_unlock" = "Enter your master password";
+"unlock" = "Unlock";
+"incorrect_password" = "Incorrect password. Please try again.";
+
 /* PIN Setup */
 "pin_setup_title" = "Configurar PIN";
 "pin_setup_subtitle" = "Escolha um PIN para desbloquear seu cofre";
