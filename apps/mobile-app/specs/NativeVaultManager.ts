@@ -93,6 +93,7 @@ export interface Spec extends TurboModule {
 
   // PIN unlock methods
   isPinEnabled(): Promise<boolean>;
+  isKeystoreAvailable(): Promise<boolean>;
   removeAndDisablePin(): Promise<void>;
   showPinUnlock(): Promise<void>;
   showPinSetup(): Promise<void>;

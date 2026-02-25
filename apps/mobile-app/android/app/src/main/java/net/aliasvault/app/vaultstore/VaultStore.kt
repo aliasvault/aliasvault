@@ -35,6 +35,8 @@ class VaultStore(
     private val keystoreProvider: KeystoreProvider,
 ) {
     companion object {
+        private const val TAG = "VaultStore"
+
         @Volatile
         private var instance: VaultStore? = null
 
@@ -476,12 +478,15 @@ class VaultStore(
 
         auth.setAuthMethods(authMethods)
 
-        // If biometrics were just enabled and we have an encryption key in memory, persist it
         if (!wasBiometricEnabled && isBiometricEnabled && crypto.encryptionKey != null && keystoreProvider.isBiometricAvailable()) {
-            crypto.storeEncryptionKey(
-                android.util.Base64.encodeToString(crypto.encryptionKey, android.util.Base64.NO_WRAP),
-                authMethods,
-            )
+            try {
+                crypto.storeEncryptionKey(
+                    android.util.Base64.encodeToString(crypto.encryptionKey, android.util.Base64.NO_WRAP),
+                    authMethods,
+                )
+            } catch (e: Exception) {
+                android.util.Log.d("VaultStore", "Could not persist encryption key immediately (likely no Activity context), will persist on next unlock: ${e.message}")
+            }
         }
 
         // If biometrics were disabled, clear the biometric key

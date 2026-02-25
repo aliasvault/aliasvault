@@ -78,10 +78,14 @@ extension VaultStore {
         // First store in memory
         try storeEncryptionKeyInMemory(base64Key: base64Key)
 
-        // Then persist to keychain if Face ID is enabled
+        // Then persist to keychain if Face ID is enabled AND keystore is available
         if self.enabledAuthMethods.contains(.faceID), let keyData = self.encryptionKey {
-            try storeKeyInKeychain(keyData)
-            print("Stored key in memory and persisted to keychain")
+            if isKeystoreAvailable() {
+                try storeKeyInKeychain(keyData)
+                print("Stored key in memory and persisted to keychain")
+            } else {
+                print("Stored key in memory (keystore unavailable - device passcode not set, skipping keychain)")
+            }
         } else {
             print("Stored key in memory (Face ID not enabled, skipping keychain)")
         }
@@ -157,11 +161,24 @@ extension VaultStore {
         do {
             let decryptedData = try AES.GCM.open(sealedBox, using: key)
 
-            // If the decryption succeeds, we persist the used encryption key in the keychain
-            // This makes sure that on future password unlock attempts, only succesful decryptions
-            // will be remembered and used so failed re-authentication attempts won't overwrite
-            // a previous successful decryption key stored in the keychain.
-            try storeKeyInKeychain(encryptionKey)
+            /*
+             * If the decryption succeeds, try to persist the used encryption key in the keychain.
+             * This makes sure that on future password unlock attempts, only successful decryptions
+             * will be remembered and used so failed re-authentication attempts won't overwrite
+             * a previous successful decryption key stored in the keychain.
+             *
+             * We only attempt this if Face ID is enabled AND keystore is available.
+             * If keystore is not available (no device passcode), we silently skip this step.
+             */
+            if self.enabledAuthMethods.contains(.faceID) && isKeystoreAvailable() {
+                do {
+                    try storeKeyInKeychain(encryptionKey)
+                } catch {
+                    // Don't fail the decryption if we can't store to keychain
+                    // This can happen if device passcode is removed after Face ID was enabled
+                    print("Warning: Could not persist encryption key to keychain: \(error)")
+                }
+            }
 
             return decryptedData
         } catch {
@@ -199,11 +216,15 @@ extension VaultStore {
     /// This method is meant to only be used internally by the VaultStore class and not
     /// be exposed to the public API or React Native for security reasons.
     internal func getEncryptionKey() throws -> Data {
+        // If key is already in memory, return it immediately
+        // This is the common case during normal operation
         if let key = self.encryptionKey {
             return key
         }
 
-        if self.enabledAuthMethods.contains(.faceID) {
+        // Key not in memory - check if we should try keychain retrieval
+        // Only attempt keychain retrieval if Face ID is enabled AND keystore is available
+        if self.enabledAuthMethods.contains(.faceID) && isKeystoreAvailable() {
             let context = LAContext()
             var error: NSError?
 
@@ -229,7 +250,7 @@ extension VaultStore {
                 }
             #endif
 
-            print("Attempting to get encryption key from keychain as Face ID is enabled as an option")
+            print("Attempting to get encryption key from keychain as Face ID is enabled and keystore is available")
             do {
                 let keyData = try retrieveKeyFromKeychain(context: context)
                 self.encryptionKey = keyData
@@ -241,11 +262,59 @@ extension VaultStore {
             }
         }
 
+        // Key not in memory and cannot retrieve from keychain
+        // This happens when:
+        // 1. Password-only auth (Face ID not enabled)
+        // 2. Face ID enabled but keystore unavailable (no device passcode)
+        // 3. Face ID enabled but key was never stored (e.g., during initial login)
         throw AppError.keystoreKeyNotFound
+    }
+
+    /// Check if keystore is available (requires device passcode to be set)
+    public func isKeystoreAvailable() -> Bool {
+        // Try to create access control with passcode requirement
+        // If this fails, it means no passcode is set
+        guard let accessControl = SecAccessControlCreateWithFlags(
+            nil,
+            kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly,
+            [],
+            nil
+        ) else {
+            return false
+        }
+
+        // Try a test keychain operation
+        let testKey = "test_keystore_availability"
+        let testData = Data([0x00])
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: VaultConstants.keychainService,
+            kSecAttrAccount as String: testKey,
+            kSecAttrAccessGroup as String: VaultConstants.keychainAccessGroup,
+            kSecValueData as String: testData,
+            kSecAttrAccessControl as String: accessControl
+        ]
+
+        // Clean up any existing test item
+        SecItemDelete(query as CFDictionary)
+
+        // Try to add - if it succeeds, keystore is available
+        let status = SecItemAdd(query as CFDictionary, nil)
+
+        // Clean up test item
+        SecItemDelete(query as CFDictionary)
+
+        return status == errSecSuccess
     }
 
     /// Store the encryption key in the keychain
     internal func storeKeyInKeychain(_ keyData: Data) throws {
+        // Check if keystore is available (device passcode must be set)
+        guard isKeystoreAvailable() else {
+            print("Cannot store key in keychain: device passcode not set")
+            throw AppError.biometricNotAvailable
+        }
+
         // Use .biometryCurrentSet to require biometric authentication only (no passcode fallback)
         // This also invalidates the key when biometrics are added/removed.
         guard let accessControl = SecAccessControlCreateWithFlags(

@@ -1,5 +1,7 @@
 package net.aliasvault.app.nativevaultmanager
 
+import android.app.KeyguardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.PowerManager
@@ -1317,6 +1319,30 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         } catch (e: Exception) {
             Log.e(TAG, "Error checking if PIN is enabled", e)
             promise.reject("ERR_IS_PIN_ENABLED", "Failed to check if PIN is enabled: ${e.message}", e)
+        }
+    }
+
+    /**
+     * Check if keystore is available for PIN/biometric unlock.
+     *
+     * For security and consistency with iOS, we require a device lock screen
+     * (PIN, pattern, or password) to be set before allowing PIN or biometric unlock.
+     * This provides defense-in-depth:
+     * - Physical security when device is locked
+     * - Hardware-backed key protection
+     * - Prevents offline brute-force attacks on stolen unlocked devices
+     *
+     * @param promise The promise to resolve.
+     */
+    @ReactMethod
+    override fun isKeystoreAvailable(promise: Promise) {
+        try {
+            val keyguardManager = reactApplicationContext.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
+            val isSecure = keyguardManager.isDeviceSecure
+            promise.resolve(isSecure)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking keystore availability", e)
+            promise.reject("ERR_KEYSTORE_CHECK", "Failed to check keystore availability: ${e.message}", e)
         }
     }
 
