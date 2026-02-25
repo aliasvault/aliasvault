@@ -57,26 +57,28 @@ public struct PasswordUnlockView: View {
                 Spacer()
 
                 // Content
-                VStack(spacing: 28) {
+                VStack(spacing: 20) {
                     // AliasVault Logo with animation
                     Image("Logo", bundle: .vaultUI)
                         .resizable()
                         .aspectRatio(contentMode: .fit)
-                        .frame(width: 80, height: 80)
+                        .frame(width: 70, height: 70)
                         .shadow(color: colors.primary.opacity(0.2), radius: 10, x: 0, y: 5)
                         .transition(.scale.combined(with: .opacity))
 
                     // Title
                     Text(viewModel.customTitle ?? String(localized: "unlock_vault", bundle: locBundle))
-                        .font(.system(size: 28, weight: .bold))
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundColor(colors.text)
                         .transition(.opacity)
 
                     // Subtitle
                     Text(viewModel.customSubtitle ?? String(localized: "enter_password_to_unlock", bundle: locBundle))
-                        .font(.system(size: 16))
+                        .font(.system(size: 15))
                         .foregroundColor(colors.text.opacity(0.7))
                         .multilineTextAlignment(.center)
+                        .lineLimit(2...3)
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 32)
                         .transition(.opacity)
 
@@ -150,6 +152,8 @@ public struct PasswordUnlockView: View {
                                 HStack(spacing: 8) {
                                     Text(viewModel.customButtonText ?? String(localized: "unlock", bundle: locBundle))
                                         .font(.system(size: 17, weight: .semibold))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.8)
                                     Image(systemName: "arrow.right")
                                         .font(.system(size: 14, weight: .semibold))
                                 }
@@ -196,3 +200,68 @@ public struct PasswordUnlockView: View {
         }
     }
 }
+
+// MARK: - Previews
+
+#if DEBUG
+@available(iOS 17.0, *)
+#Preview("Default") {
+    PasswordUnlockView(
+        viewModel: PasswordUnlockViewModel(
+            customTitle: nil,
+            customSubtitle: nil,
+            customButtonText: nil,
+            unlockHandler: { _ in
+                try await Task.sleep(nanoseconds: 1_000_000_000)
+            },
+            cancelHandler: { }
+        )
+    )
+}
+
+@available(iOS 17.0, *)
+#Preview("With Error") {
+    let viewModel = PasswordUnlockViewModel(
+        customTitle: nil,
+        customSubtitle: nil,
+        customButtonText: nil,
+        unlockHandler: { _ in
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+        },
+        cancelHandler: { }
+    )
+    viewModel.error = "Incorrect password"
+    return PasswordUnlockView(viewModel: viewModel)
+}
+
+@available(iOS 17.0, *)
+#Preview("Long Subtitle + Error") {
+    let viewModel = PasswordUnlockViewModel(
+        customTitle: "Verify Your Identity",
+        customSubtitle: "Enter your master password to confirm deletion of this item",
+        customButtonText: "Confirm Deletion",
+        unlockHandler: { _ in
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+        },
+        cancelHandler: { }
+    )
+    viewModel.error = "Incorrect password"
+    return PasswordUnlockView(viewModel: viewModel)
+}
+
+@available(iOS 17.0, *)
+#Preview("Dark Mode") {
+    let viewModel = PasswordUnlockViewModel(
+        customTitle: nil,
+        customSubtitle: nil,
+        customButtonText: nil,
+        unlockHandler: { _ in
+            try await Task.sleep(nanoseconds: 1_000_000_000)
+        },
+        cancelHandler: { }
+    )
+    viewModel.error = "Incorrect password"
+    return PasswordUnlockView(viewModel: viewModel)
+        .preferredColorScheme(.dark)
+}
+#endif
