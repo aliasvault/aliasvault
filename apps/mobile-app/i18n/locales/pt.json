@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} está desabitado para o AliasVault. Para utilizar, por favor primeiro habilite nas configurações do seu dispositivo.",
       "biometricHelp": "Utilize biometria para desbloquear seu cofre, que está protegido por {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} não está disponível. Clique para abrir as configurações e/ou vá às configurações do seu dispositivo para habilitar e configurar.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "Código PIN",
       "pinDescription": "Utilize um código PIN para desbloquear seu cofre mais rapidamente.",
       "pinEnabled": "Desbloqueio por PIN habilitado com sucesso",
