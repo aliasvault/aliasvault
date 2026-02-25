@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Vérification du code d'authentification",
     "verify": "Vérifier",
     "unlockVault": "Déverrouiller le coffre",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Déverrouiller avec un code PIN",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Entrez votre mot de passe principal pour déverrouiller votre coffre-fort",
     "enterPasswordPlaceholder": "Mot de passe",
     "enterAuthCode": "Saisissez le code à 6 chiffres",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Saisissez votre mot de passe",
     "enableBiometric": "Activer {{biometric}}?",
     "biometricPrompt": "Voulez-vous utiliser {{biometric}} pour déverrouiller votre coffre ?",
-    "tryBiometricAgain": "Réessayez {{biometric}}",
-    "tryPinAgain": "Réessayez le PIN",
     "authCodeNote": "Remarque : si vous n'avez pas accès à votre appareil d'authentification, vous pouvez réinitialiser votre authentification 2FA avec un code de récupération en vous connectant via le site web.",
     "errors": {
       "credentialsRequired": "Le nom d'utilisateur et le mot de passe sont requis",
@@ -321,7 +321,8 @@
         "confirmSubtitle": "Se ré-authentifier pour approuver la connexion sur un autre appareil.",
         "confirmMessage": "Vous êtes sur le point de vous connecter sur un appareil distant avec votre compte. Cet autre appareil aura un accès complet à votre coffre. Ne procédez que si vous faites confiance à cet appareil.",
         "successDescription": "L'appareil distant a été connecté avec succès.",
-        "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR."
+        "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },
