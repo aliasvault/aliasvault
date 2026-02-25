@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "AliasVault的{{biometric}}已禁用。如需使用，请先在设备设置中启用它。",
       "biometricHelp": "使用生物识别解锁您的密码库，经由 {{keystore}} 加密。",
       "biometricUnavailableHelp": "{{biometric}}不可用。点击打开设置和/或前往设备设置启用并配置它。",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "PIN 码",
       "pinDescription": "使用自定义 PIN 码快速解锁密码库。",
       "pinEnabled": "PIN 解锁已成功启用",
