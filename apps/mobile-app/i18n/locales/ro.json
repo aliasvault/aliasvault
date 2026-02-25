@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} dezactivată pentru AliasVault. Pentru a o utiliza, activează-o mai întâi din setările dispozitivului.",
       "biometricHelp": "Folosește biometria pentru a debloca seiful, securizat prin {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} indisponibilă. Apasă pentru a deschide setările.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "Cod PIN",
       "pinDescription": "Folosește un cod PIN personalizat pentru a debloca seiful mai rapid.",
       "pinEnabled": "Deblocarea prin PIN a fost activată cu succes",
