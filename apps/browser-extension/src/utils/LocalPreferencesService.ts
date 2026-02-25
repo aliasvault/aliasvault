@@ -362,11 +362,11 @@ export const LocalPreferencesService = {
 
   /**
    * Get whether the login save feature is enabled.
-   * @returns Whether login save is enabled. Defaults to false (disabled by default).
+   * @returns Whether login save is enabled. Defaults to true (enabled by default).
    */
   async getLoginSaveEnabled(): Promise<boolean> {
     const value = await storage.getItem(KEYS.LOGIN_SAVE_ENABLED) as boolean | null;
-    return value === true;
+    return value !== false;
   },
 
   /**
