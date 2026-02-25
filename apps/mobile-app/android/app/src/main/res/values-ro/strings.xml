@@ -7,6 +7,7 @@
   <string name="common_close">Închide</string>
   <string name="common_next">Înainte</string>
   <string name="common_cancel">Anulează</string>
+  <string name="common_back">Back</string>
   <string name="unknown_error">A apărut o eroare necunoscută</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Preluare eșuată, deschide aplicația</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">Confirmă PIN</string>
   <string name="pin_confirm_description">Introdu PIN-ul din nou pentru confirmare</string>
   <string name="pin_mismatch">Codurile PIN nu se potrivesc. Încearcă din nou.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">Unlock Vault</string>
+  <string name="password_unlock_subtitle">Enter your master password</string>
+  <string name="password_unlock_password_hint">Password</string>
+  <string name="password_unlock_button">Unlock</string>
+  <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
+  <string name="password_unlock_error">Failed to verify password</string>
 </resources>
