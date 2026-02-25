@@ -7,6 +7,7 @@
   <string name="common_close">Luk</string>
   <string name="common_next">Næste</string>
   <string name="common_cancel">Annuller</string>
+  <string name="common_back">Back</string>
   <string name="unknown_error">En ukendt fejl opstod</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Kunne ikke hente, åben app</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">Bekræft PIN-kode</string>
   <string name="pin_confirm_description">Indtast din PIN-kode igen for at bekræfte</string>
   <string name="pin_mismatch">Pinkoden stemmer ikke overens. Prøv venligst igen.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">Unlock Vault</string>
+  <string name="password_unlock_subtitle">Enter your master password</string>
+  <string name="password_unlock_password_hint">Password</string>
+  <string name="password_unlock_button">Unlock</string>
+  <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
+  <string name="password_unlock_error">Failed to verify password</string>
 </resources>
