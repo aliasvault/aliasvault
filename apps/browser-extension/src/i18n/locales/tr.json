@@ -51,7 +51,7 @@
     "undo": "Undo",
     "save": "Kaydet",
     "saving": "Saving...",
-    "edit": "Edit",
+    "edit": "Düzenle",
     "create": "Create",
     "or": "Or",
     "close": "Kapat",
@@ -172,7 +172,7 @@
     "vaultUpgradeRequired": "Vault upgrade required.",
     "dismissPopup": "Dismiss popup",
     "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "close": "Kapat",
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site",
