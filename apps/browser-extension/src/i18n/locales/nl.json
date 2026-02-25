@@ -51,6 +51,7 @@
     "undo": "Ongedaan maken",
     "save": "Opslaan",
     "saving": "Opslaan...",
+    "edit": "Bewerken",
     "create": "Aanmaken",
     "or": "Of",
     "close": "Sluiten",
@@ -62,6 +63,8 @@
     "disabled": "Uitgeschakeld",
     "showPassword": "Wachtwoord tonen",
     "hidePassword": "Wachtwoord verbergen",
+    "show": "Toon",
+    "hide": "Verberg",
     "showDetails": "Toon details",
     "hideDetails": "Verberg details",
     "copyToClipboard": "Naar klembord kopiëren",
@@ -168,9 +171,13 @@
     "openAliasVaultToUpgrade": "Open AliasVault om te upgraden",
     "vaultUpgradeRequired": "Update is vereist.",
     "dismissPopup": "Pop-up sluiten",
+    "noTotpItemsFound": "Geen 2FA code overeenkomsten gevonden",
+    "close": "Sluiten",
     "savePrompt": {
       "title": "Opslaan in AliasVault?",
-      "neverForThisSite": "Nooit voor deze site"
+      "neverForThisSite": "Nooit voor deze site",
+      "addUrlTitle": "URL naar inloggegevens toevoegen?",
+      "addUrl": "Url toevoegen"
     }
   },
   "items": {
@@ -193,9 +200,7 @@
     "welcomeTitle": "Welkom bij AliasVault!",
     "welcomeDescription": "Om de AliasVault browser extensie te gebruiken: navigeer naar een website en gebruik de AliasVault autofill popup om nieuwe credentials aan te maken.",
     "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
-    "noAttachmentsFound": "Geen items gevonden met bijlagen",
-    "noItemsOfTypeFound": "Geen {{type}} items gevonden",
-    "noMatchingItems": "Geen items gevonden",
+    "noMatchingItems": "Geen items gevonden die overeenkomen met het geselecteerde filter.",
     "noMatchingItemsSearch": "Geen items die overeenkomen met \"{{search}}\"",
     "noMatchingItemsWithFilter": "Geen {{filter}} items die overeenkomen met \"{{search}}\"",
     "clearSearch": "Wis zoekopdracht",
@@ -209,7 +214,8 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) zullen worden verplaatst naar recent verwijderd.",
     "filters": {
       "folders": "Mappen",
-      "passkeys": "Passkeys"
+      "passkeys": "Passkeys",
+      "totp": "2FA codes"
     },
     "sort": {
       "title": "Sorteren op",
@@ -296,6 +302,8 @@
     "secretKey": "Secret key",
     "saveToViewCode": "Opslaan om code te bekijken",
     "defaultName": "Authenticator",
+    "deleteTotpCodeTitle": "2FA code verwijderen",
+    "deleteTotpCodeConfirmation": "Weet je zeker dat je deze credential wilt verwijderen \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Ongeldig formaat."
     }

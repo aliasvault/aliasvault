@@ -163,19 +163,15 @@
     <value>Atașamente</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
+  <data name="FilterTotpOption" xml:space="preserve">
+    <value>Coduri 2FA</value>
+    <comment>Filter option to show only items with TOTP codes</comment>
+  </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
     <value>Șterse recent</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
-  <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Nu a fost creat încă niciun passkey. Passkey-urile sunt adăugate prin extensia de browser sau aplicațiile mobile atunci când vizitați un site web care acceptă și oferă autentificare prin passkey.</value>
-    <comment>Empty state message when no passkeys are found</comment>
-  </data>
-  <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>Nu au fost găsite elemente cu atașamente.</value>
-    <comment>Empty state message when no items with attachments are found</comment>
-  </data>
   <data name="NoItemsFound" xml:space="preserve">
     <value>Niciun element nu corespunde filtrului selectat.</value>
     <comment>Empty state message when no items match the filter</comment>

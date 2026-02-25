@@ -32,6 +32,7 @@
 "username_copied" = "שם המשתמש הועתק";
 "password_copied" = "הסיסמה הועתקה";
 "email_copied" = "כתובת הדוא״ל הועתקה";
+"totp_code" = "TOTP Code";
 
 /* Search bar */
 "search_items" = "Search items...";

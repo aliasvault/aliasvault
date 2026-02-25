@@ -51,6 +51,7 @@
     "undo": "הסגה",
     "save": "שמירה",
     "saving": "Saving...",
+    "edit": "Edit",
     "create": "יצירה",
     "or": "או",
     "close": "סגירה",
@@ -62,6 +63,8 @@
     "disabled": "כבוי",
     "showPassword": "הצגת סיסמה",
     "hidePassword": "הסתרת סיסמה",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "הצגת פרטים",
     "hideDetails": "הסתרת פרטים",
     "copyToClipboard": "העתקה ללוח הגזירים",
@@ -168,9 +171,13 @@
     "openAliasVaultToUpgrade": "יש לפתוח את AliasVault כדי לשדרג",
     "vaultUpgradeRequired": "יש לשדרג את הכספת.",
     "dismissPopup": "התעלמות מחלונית",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "neverForThisSite": "Never for this site",
+      "addUrlTitle": "Add URL to credential?",
+      "addUrl": "Add URL"
     }
   },
   "items": {
@@ -193,9 +200,7 @@
     "welcomeTitle": "ברוך בואך ל־AliasVault!",
     "welcomeDescription": "כדי להשתמש בהרחבת הדפדפן של AliasVault: יש לנווט לאתר ולהשתמש בחלונית ההשלמה האוטומטית של AliasVault כדי ליצור פרטי גישה חדשים.",
     "noPasskeysFound": "No passkeys have been created yet. Passkeys are created by visiting a website that offers passkeys as an authentication method.",
-    "noAttachmentsFound": "No items with attachments found",
-    "noItemsOfTypeFound": "No {{type}} items found",
-    "noMatchingItems": "No matching items found",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "clearSearch": "Clear search",
@@ -209,7 +214,8 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) will be moved to Recently Deleted.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Passkeys"
+      "passkeys": "Passkeys",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sort by",
@@ -296,6 +302,8 @@
     "secretKey": "מפתח סודי",
     "saveToViewCode": "יש לשמור כדי לצפות בקוד",
     "defaultName": "Authenticator",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Invalid secret key format."
     }

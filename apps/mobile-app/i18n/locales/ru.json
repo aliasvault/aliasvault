@@ -4,6 +4,7 @@
     "close": "Закрыть",
     "delete": "Удалить",
     "save": "Сохранить",
+    "edit": "Edit",
     "yes": "Да",
     "no": "Нет",
     "ok": "ОК",
@@ -24,6 +25,7 @@
     "add": "Добавить",
     "generate": "Сгенерировать",
     "attachments": "Вложения",
+    "or": "or",
     "deleteItemConfirmTitle": "Удалить запись",
     "deleteItemConfirmDescription": "Вы уверены, что хотите удалить эту запись?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Секретный ключ",
     "instructions": "Введите секретный ключ, указанный на веб-сайте, где вы хотите добавить двухфакторную аутентификацию.",
     "saveToViewCode": "Сохранить для просмотра кода",
+    "scanQrCode": "Scan QR Code",
+    "enterManually": "Enter a setup key",
     "errors": {
-      "invalidSecretKey": "Неверный формат секретного ключа."
+      "invalidSecretKey": "Неверный формат секретного ключа.",
+      "scanFailed": "Failed to scan QR code. Please try again."
     }
   },
   "settings": {
@@ -305,8 +310,7 @@
         "verifyingWithServer": "Проверка с помощью сервера",
         "deletingAccount": "Удаление аккаунта",
         "accountDeleted": "Аккаунт успешно удален",
-        "failedToDelete": "Не удалось удалить аккаунт. Пожалуйста, попробуйте снова.",
-        "usernameNotFound": "Имя пользователя не найдено. Пожалуйста, войдите в систему еще раз."
+        "failedToDelete": "Не удалось удалить аккаунт. Пожалуйста, попробуйте снова."
       }
     },
     "qrScanner": {
@@ -410,14 +414,12 @@
     "publicEmailTitle": "Общедоступные временные поставщики электронной почты",
     "publicEmailDescription": "Анонимность, но ограниченная конфиденциальность. Содержимое письма может прочитать любой, кому известен адрес.",
     "searchPlaceholder": "Поиск хранилища...",
-    "noMatchingItems": "Совпадений не найдено",
+    "noMatchingItems": "Нет записей, соответствующих выбранному фильтру.",
     "noMatchingItemsSearch": "Ничего не найдено по запросу \"{{search}}\"",
     "noMatchingItemsWithFilter": "В {{filter}} не найдено \"{{search}}\"",
     "noItemsFound": "Ничего не найдено. Создайте запись, чтобы начать работу. Совет: вы также можете войти в веб-приложение AliasVault, чтобы импортировать учетные данные из других менеджеров паролей.",
     "allItemsInFolders": "Все ваши элементы организованы по папкам. Выберите папку выше, чтобы просмотреть учетные данные, или воспользуйтесь поиском для поиска конкретных элементов.",
     "noPasskeysFound": "Ключи доступа еще не созданы. Ключи доступа создаются при посещении веб-сайта, который предлагает их в качестве метода аутентификации.",
-    "noAttachmentsFound": "Записи с вложениями не найдены",
-    "noItemsOfTypeFound": "Записи типа \"{{type}}\" не найдены",
     "clearSearch": "Очистить поиск",
     "clearFilter": "Сбросить фильтр",
     "recentEmails": "Последние письма",
@@ -444,7 +446,8 @@
       "all": "Записи",
       "showFolders": "Папки",
       "passkeys": "Ключи доступа",
-      "attachments": "Вложения"
+      "attachments": "Вложения",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Сортировка",
@@ -469,7 +472,8 @@
       "itemDeleted": "Запись успешно удалена",
       "usernameCopied": "Имя пользователя скопировано в буфер обмена",
       "emailCopied": "Email скопирован в буфер обмена",
-      "passwordCopied": "Пароль скопирован в буфер обмена"
+      "passwordCopied": "Пароль скопирован в буфер обмена",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Создайте новый псевдоним для",
     "contextMenu": {
@@ -479,6 +483,12 @@
       "copyUsername": "Скопировать имя пользователя",
       "copyEmail": "Скопировать Email",
       "copyPassword": "Скопировать пароль"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "Посмотреть историю",
     "history": "История",

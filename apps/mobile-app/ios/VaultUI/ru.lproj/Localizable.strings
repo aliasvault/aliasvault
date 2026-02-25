@@ -32,6 +32,7 @@
 "username_copied" = "Имя пользователя скопировано";
 "password_copied" = "Пароль скопирован";
 "email_copied" = "Email скопирован";
+"totp_code" = "TOTP Code";
 
 /* Search bar */
 "search_items" = "Поиск записей...";

@@ -138,6 +138,14 @@
     <value>Redigera</value>
     <comment>Button text for editing an item</comment>
   </data>
+  <data name="Show" xml:space="preserve">
+    <value>Visa</value>
+    <comment>Button text for showing content</comment>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Dölj</value>
+    <comment>Button text for hiding content</comment>
+  </data>
   <data name="Close" xml:space="preserve">
     <value>Stäng</value>
     <comment>Button text for closing a dialog or modal</comment>

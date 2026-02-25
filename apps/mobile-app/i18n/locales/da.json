@@ -4,6 +4,7 @@
     "close": "Luk",
     "delete": "Slet",
     "save": "Gem",
+    "edit": "Rediger",
     "yes": "Ja",
     "no": "Nej",
     "ok": "OK",
@@ -24,6 +25,7 @@
     "add": "Tilføj",
     "generate": "Generer",
     "attachments": "Vedhæftede filer",
+    "or": "eller",
     "deleteItemConfirmTitle": "Slet element",
     "deleteItemConfirmDescription": "Er du sikker på, at du vil slette dette element?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Hemmelig nøgle (Secret Key)",
     "instructions": "Indtast den hemmelige nøgle, der vises på hjemmesiden, hvor du vil tilføje to-faktor-autentificering.",
     "saveToViewCode": "Gem for at se kode",
+    "scanQrCode": "Scan QR Kode",
+    "enterManually": "Indtast en oprettelsesnøgle",
     "errors": {
-      "invalidSecretKey": "Ugyldigt format for hemmelig nøgle."
+      "invalidSecretKey": "Ugyldigt format for hemmelig nøgle.",
+      "scanFailed": "Kunne ikke scanne QR-kode. Prøv igen."
     }
   },
   "settings": {
@@ -305,8 +310,7 @@
         "verifyingWithServer": "Verificerer med server",
         "deletingAccount": "Sletter konto",
         "accountDeleted": "Konto slettet korrekt",
-        "failedToDelete": "Kunne ikke slette konto. Prøv venligst igen.",
-        "usernameNotFound": "Brugernavn ikke fundet. Log venligst ind igen."
+        "failedToDelete": "Kunne ikke slette konto. Prøv venligst igen."
       }
     },
     "qrScanner": {
@@ -410,14 +414,12 @@
     "publicEmailTitle": "Offentlige midlertidige e-mail-udbydere",
     "publicEmailDescription": "Anonym men begrænset privatliv. E-mail-indhold kan læses af alle, der kender adressen.",
     "searchPlaceholder": "Søg i boks...",
-    "noMatchingItems": "Ingen matchende elementer fundet",
+    "noMatchingItems": "Ingen elementer matcher det valgte filter.",
     "noMatchingItemsSearch": "Ingen elementer matcher \"{{search}}\"",
     "noMatchingItemsWithFilter": "Ingen {{filter}}-elementer matcher \"{{search}}\"",
     "noItemsFound": "Ingen elementer fundet. Opret et for at komme i gang. Tip: Du kan også logge ind på AliasVault-webappen for at importere oplysninger fra andre adgangskodeadministratorer.",
     "allItemsInFolders": "Alle dine elementer er organiseret i mapper. Tryk på en mappe ovenfor for at se dine oplysninger, eller brug søgningen til at finde specifikke elementer.",
     "noPasskeysFound": "Der er ikke oprettet nogen passkeys endnu. Passkeys oprettes ved at besøge en hjemmeside, der tilbyder passkeys som autentificeringsmetode.",
-    "noAttachmentsFound": "Ingen elementer med vedhæftede filer fundet",
-    "noItemsOfTypeFound": "Ingen elementer af typen {{type}} fundet",
     "clearSearch": "Ryd søgning",
     "clearFilter": "Ryd filter",
     "recentEmails": "Seneste e-mails",
@@ -444,7 +446,8 @@
       "all": "Elementer",
       "showFolders": "Mapper",
       "passkeys": "Passkeys",
-      "attachments": "Vedhæftede filer"
+      "attachments": "Vedhæftede filer",
+      "totp": "2FA Koder"
     },
     "sort": {
       "title": "Sorter efter",
@@ -469,7 +472,8 @@
       "itemDeleted": "Element slettet korrekt",
       "usernameCopied": "Brugernavn kopieret til udklipsholder",
       "emailCopied": "E-mail kopieret til udklipsholder",
-      "passwordCopied": "Adgangskode kopieret til udklipsholder"
+      "passwordCopied": "Adgangskode kopieret til udklipsholder",
+      "urlCopied": "URL kopieret til udklipsholder"
     },
     "createNewAliasFor": "Opret nyt alias for",
     "contextMenu": {
@@ -479,6 +483,12 @@
       "copyUsername": "Kopier brugernavn",
       "copyEmail": "Kopier e-mail",
       "copyPassword": "Kopier adgangskode"
+    },
+    "urlContextMenu": {
+      "title": "Url Indstillinger",
+      "copyLink": "Kopier link",
+      "openLink": "Åbn Link",
+      "shareLink": "Del Link"
     },
     "viewHistory": "Vis historik",
     "history": "Historik",

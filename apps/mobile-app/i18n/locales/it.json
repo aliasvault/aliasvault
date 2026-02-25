@@ -4,6 +4,7 @@
     "close": "Chiudi",
     "delete": "Elimina",
     "save": "Salva",
+    "edit": "Modifica",
     "yes": "Sì",
     "no": "No",
     "ok": "OK",
@@ -24,6 +25,7 @@
     "add": "Aggiungi",
     "generate": "Genera",
     "attachments": "Allegati",
+    "or": "o",
     "deleteItemConfirmTitle": "Elimina elemento",
     "deleteItemConfirmDescription": "Sei sicuro di voler rimuovere questo elemento?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Chiave segreta",
     "instructions": "Inserisci la chiave segreta mostrata dal sito in cui vuoi aggiungere un'autenticazione a due fattori.",
     "saveToViewCode": "Salva per visualizzare il codice",
+    "scanQrCode": "Scansiona il Codice QR",
+    "enterManually": "Inserisci una chiave di configurazione",
     "errors": {
-      "invalidSecretKey": "Formato chiave segreta non valido."
+      "invalidSecretKey": "Formato chiave segreta non valido.",
+      "scanFailed": "Scansione del codice QR non riuscita. Riprova."
     }
   },
   "settings": {
@@ -180,9 +185,9 @@
     "exportConfirmTitle": "Esporta cassaforte",
     "exportWarning": "Attenzione: Esportare la cassaforte in un file non cifrato esporrà tutte le password e le informazioni sensibili in testo semplice. Fallo solo su computer affidabili e assicurarti di:\n\n• Conservare il file esportato in una posizione sicura\n• Eliminare il file quando non ne hai più bisogno\n• Non condividere mai il file esportato con altri\n\nSei sicuro di voler continuare con l'esportazione?",
     "passwordConfirm": {
-      "title": "Confirm Password",
-      "defaultDescription": "Please enter your master password to continue.",
-      "exportDescription": "For security reasons, please enter your master password to confirm this export."
+      "title": "Conferma Password",
+      "defaultDescription": "Inserisci la tua password principale per continuare.",
+      "exportDescription": "Per motivi di sicurezza, inserisci la tua password principale per confermare questa esportazione."
     },
     "security": "Sicurezza",
     "appVersion": "Versione app {{version}} ({{url}})",
@@ -305,8 +310,7 @@
         "verifyingWithServer": "Verifica con il server",
         "deletingAccount": "Eliminazione account in corso",
         "accountDeleted": "Account eliminato con successo",
-        "failedToDelete": "Eliminazione account fallita. Riprova.",
-        "usernameNotFound": "Nome utente non trovato. Effettua nuovamente il login."
+        "failedToDelete": "Eliminazione account fallita. Riprova."
       }
     },
     "qrScanner": {
@@ -410,14 +414,12 @@
     "publicEmailTitle": "Fornitori Pubblici di Email Temporanee",
     "publicEmailDescription": "Anonimi ma con privacy ridotta. Accessibile a chiunque conosca l'indirizzo.",
     "searchPlaceholder": "Ricerca cassaforte ...",
-    "noMatchingItems": "Nessun elemento corrispondente trovato",
+    "noMatchingItems": "Nessun elemento corrisponde ai filtri selezionati",
     "noMatchingItemsSearch": "Nessun elemento corrispondente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nessun elemento {{filter}} corrispondente \"{{search}}\"",
     "noItemsFound": "Nessuna credenziale trovata. Creane una per iniziare. Consiglio: puoi anche accedere al sito AliasVault per importare credenziali da altri gestori password.",
     "allItemsInFolders": "Tutti i tuoi oggetti sono organizzati in cartelle. Tocca una cartella qui sopra per visualizzare le tue credenziali o usa la ricerca per trovare elementi specifici.",
     "noPasskeysFound": "Non sono state ancora create passkey. Le passkey vengono create visitando un sito web che offre le passkey come metodo di autenticazione.",
-    "noAttachmentsFound": "Nessun elemento con allegati trovato",
-    "noItemsOfTypeFound": "Nessun elemento {{type}} trovato",
     "clearSearch": "Cancella ricerca",
     "clearFilter": "Cancella filtro",
     "recentEmails": "Email recenti",
@@ -444,7 +446,8 @@
       "all": "Elementi",
       "showFolders": "Cartelle",
       "passkeys": "Passkey",
-      "attachments": "Allegati"
+      "attachments": "Allegati",
+      "totp": "Codici 2FA"
     },
     "sort": {
       "title": "Ordina per",
@@ -469,7 +472,8 @@
       "itemDeleted": "Elemento eliminato correttamente",
       "usernameCopied": "Nome utente copiato negli appunti",
       "emailCopied": "Email copiata negli appunti",
-      "passwordCopied": "Password copiata negli appunti"
+      "passwordCopied": "Password copiata negli appunti",
+      "urlCopied": "URL copiato negli appunti"
     },
     "createNewAliasFor": "Crea un nuovo alias per",
     "contextMenu": {
@@ -479,6 +483,12 @@
       "copyUsername": "Copia Nome Utente",
       "copyEmail": "Copia E-mail",
       "copyPassword": "Copia Password"
+    },
+    "urlContextMenu": {
+      "title": "Opzioni URL",
+      "copyLink": "Copia collegamento",
+      "openLink": "Apri Collegamento",
+      "shareLink": "Condividi collegamento"
     },
     "viewHistory": "Visualizza cronologia",
     "history": "Cronologia",

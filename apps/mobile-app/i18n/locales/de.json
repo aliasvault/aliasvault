@@ -4,6 +4,7 @@
     "close": "Schließen",
     "delete": "Löschen",
     "save": "Speichern",
+    "edit": "Edit",
     "yes": "Ja",
     "no": "Nein",
     "ok": "OK",
@@ -24,6 +25,7 @@
     "add": "Hinzufügen",
     "generate": "Generieren",
     "attachments": "Anhänge",
+    "or": "or",
     "deleteItemConfirmTitle": "Eintrag löschen",
     "deleteItemConfirmDescription": "Bist Du sicher, dass Du diesen Eintrag löschen möchtest?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Secret-Key",
     "instructions": "Gib den Secret-Key ein, der von der Website angezeigt wird, bei der Du die Zwei-Faktor-Authentifizierung hinzufügen möchtest.",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
+    "scanQrCode": "Scan QR Code",
+    "enterManually": "Enter a setup key",
     "errors": {
-      "invalidSecretKey": "Ungültiges Format des Secret-Key"
+      "invalidSecretKey": "Ungültiges Format des Secret-Key",
+      "scanFailed": "Failed to scan QR code. Please try again."
     }
   },
   "settings": {
@@ -305,8 +310,7 @@
         "verifyingWithServer": "Server-Verifizierung läuft",
         "deletingAccount": "Konto wird gelöscht",
         "accountDeleted": "Konto wurde erfolgreich gelöscht.",
-        "failedToDelete": "Kontolöschung fehlgeschlagen. Bitte versuche es erneut.",
-        "usernameNotFound": "Benutzername konnte nicht gefunden werden. Bitte melde Dich erneut an."
+        "failedToDelete": "Kontolöschung fehlgeschlagen. Bitte versuche es erneut."
       }
     },
     "qrScanner": {
@@ -410,14 +414,12 @@
     "publicEmailTitle": "Öffentliche Temp-E-Mail-Anbieter",
     "publicEmailDescription": "Anonyme, aber beschränkte Privatsphäre. E-Mail-Inhalt ist für jeden lesbar, der die Adresse kennt.",
     "searchPlaceholder": "Tresor durchsuchen...",
-    "noMatchingItems": "Kein passendes Element gefunden",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "Keine passenden Elemente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Keine {{filter}} Elemente passend zu \"{{search}}\"",
     "noItemsFound": "Keine Einträge gefunden. Erstellen Sie einen, um zu beginnen. Tipp: Sie können sich auch in der AliasVault-Webapp anmelden, um Anmeldedaten aus anderen Passwort-Managern zu importieren.",
     "allItemsInFolders": "Alle Ihre Einträge sind in Ordnern organisiert. Tippen Sie auf einen Ordner oben, um Ihre Anmeldedaten anzuzeigen, oder verwenden Sie die Suche, um bestimmte Einträge zu finden.",
     "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
-    "noAttachmentsFound": "Keine Elemente mit Anhängen gefunden",
-    "noItemsOfTypeFound": "Keine {{type}} Einträge gefunden",
     "clearSearch": "Suche löschen",
     "clearFilter": "Filter löschen",
     "recentEmails": "Neueste E-Mails",
@@ -444,7 +446,8 @@
       "all": "Titel",
       "showFolders": "Folders",
       "passkeys": "Passkeys",
-      "attachments": "Anhänge"
+      "attachments": "Anhänge",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sortieren nach",
@@ -469,7 +472,8 @@
       "itemDeleted": "Element erfolgreich gelöscht",
       "usernameCopied": "Nutzername in die Zwischenablage kopiert",
       "emailCopied": "E-Mail in die Zwischenablage kopiert",
-      "passwordCopied": "Passwort in die Zwischenablage kopiert"
+      "passwordCopied": "Passwort in die Zwischenablage kopiert",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Neuen Alias für",
     "contextMenu": {
@@ -479,6 +483,12 @@
       "copyUsername": "Benutzername kopieren",
       "copyEmail": "E-Mail-Adresse kopieren",
       "copyPassword": "Passwort kopieren"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "Historie ansehen",
     "history": "Historie",

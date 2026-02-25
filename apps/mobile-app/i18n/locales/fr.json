@@ -4,6 +4,7 @@
     "close": "Fermer",
     "delete": "Supprimer",
     "save": "Sauvegarder",
+    "edit": "Editer",
     "yes": "Oui",
     "no": "Non",
     "ok": "OK",
@@ -24,6 +25,7 @@
     "add": "Ajouter",
     "generate": "Générer",
     "attachments": "Pièces jointes",
+    "or": "ou",
     "deleteItemConfirmTitle": "Supprimer l'élement",
     "deleteItemConfirmDescription": "Êtes-vous certain de vouloir supprimer cet élément?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Clé secrète",
     "instructions": "Entrez la clé secrète affichée par le site Web où vous souhaitez ajouter l'authentification à deux facteurs.",
     "saveToViewCode": "Enregistrer pour afficher le code",
+    "scanQrCode": "Scanner le QR code",
+    "enterManually": "Entrer une clé de configuration",
     "errors": {
-      "invalidSecretKey": "Format de clé secrète invalide."
+      "invalidSecretKey": "Format de clé secrète invalide.",
+      "scanFailed": "Échec du scan du QR code. Veuillez réessayer."
     }
   },
   "settings": {
@@ -305,8 +310,7 @@
         "verifyingWithServer": "Vérification par le serveur",
         "deletingAccount": "Suppression du compte",
         "accountDeleted": "Votre compte a été supprimé avec succès",
-        "failedToDelete": "Échec de la suppression du compte. Veuillez réessayer.",
-        "usernameNotFound": "Nom d'utilisateur introuvable. Veuillez vous reconnecter."
+        "failedToDelete": "Échec de la suppression du compte. Veuillez réessayer."
       }
     },
     "qrScanner": {
@@ -410,14 +414,12 @@
     "publicEmailTitle": "Fournisseurs d'email public temporaires",
     "publicEmailDescription": "Anonyme mais confidentiel limitée. Le contenu des e-mails est lisible par toute personne qui connaît l'adresse.",
     "searchPlaceholder": "Rechercher dans le coffre...",
-    "noMatchingItems": "Aucun élément correspondant trouvé",
+    "noMatchingItems": "Aucun élément ne correspond au filtre sélectionné.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
     "noItemsFound": "Aucun élément trouvé. Créez en un pour commencer. Astuce : vous pouvez également vous connecter à l'application Web AliasVault pour importer les identifiants depuis d'autres gestionnaires de mots de passe.",
     "allItemsInFolders": "Tous vos éléments sont organisés dans des dossiers. Appuyez sur un dossier ci-dessus pour voir vos identifiants, ou utilisez la recherche pour trouver des éléments spécifiques.",
     "noPasskeysFound": "Aucune clé d'accès n'a encore été créée. Les clés d'accès sont créés en visitant un site Web qui propose des clés d'accès comme méthode d'authentification.",
-    "noAttachmentsFound": "Aucun élément avec pièces jointes trouvé",
-    "noItemsOfTypeFound": "Aucun élément {{type}} trouvé",
     "clearSearch": "Effacer la recherche",
     "clearFilter": "Effacer le filtre",
     "recentEmails": "E-mails récents",
@@ -444,7 +446,8 @@
       "all": "Éléments",
       "showFolders": "Dossiers",
       "passkeys": "Clés d'accès",
-      "attachments": "Pièces jointes"
+      "attachments": "Pièces jointes",
+      "totp": "Codes 2FA"
     },
     "sort": {
       "title": "Trier par",
@@ -469,7 +472,8 @@
       "itemDeleted": "Élément supprimé avec succès",
       "usernameCopied": "Nom d'utilisateur copié dans le presse-papiers",
       "emailCopied": "E-mail copié dans le presse-papiers",
-      "passwordCopied": "Mot de passe copié dans le presse-papiers"
+      "passwordCopied": "Mot de passe copié dans le presse-papiers",
+      "urlCopied": "URL copiée dans le presse-papier"
     },
     "createNewAliasFor": "Créer un nouvel alias pour",
     "contextMenu": {
@@ -479,6 +483,12 @@
       "copyUsername": "Copier le nom d'utilisateur",
       "copyEmail": "Copier l'e-mail",
       "copyPassword": "Copier le mot de passe"
+    },
+    "urlContextMenu": {
+      "title": "Options de l'URL",
+      "copyLink": "Copier le lien",
+      "openLink": "Ouvrir le lien",
+      "shareLink": "Partager le lien"
     },
     "viewHistory": "Voir l'historique",
     "history": "Historique",

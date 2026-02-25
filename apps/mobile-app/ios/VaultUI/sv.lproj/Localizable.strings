@@ -32,6 +32,7 @@
 "username_copied" = "Användarnamn kopierat";
 "password_copied" = "Lösenord kopierat";
 "email_copied" = "E-postadress kopierad";
+"totp_code" = "TOTP-kod";
 
 /* Search bar */
 "search_items" = "Sök objekt...";

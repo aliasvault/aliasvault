@@ -163,19 +163,15 @@
     <value>Vedhæftninger</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
+  <data name="FilterTotpOption" xml:space="preserve">
+    <value>2FA Koder</value>
+    <comment>Filter option to show only items with TOTP codes</comment>
+  </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
     <value>Nyligt slettet</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
-  <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Der er endnu ikke oprettet nogen passkeys. Passkeys tilføjes via browserudvidelsen eller mobilapps, når du besøger et websted, der understøtter passkeys og tilbyder passkey-autentificering.</value>
-    <comment>Empty state message when no passkeys are found</comment>
-  </data>
-  <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>Ingen elementer med vedhæftninger fundet.</value>
-    <comment>Empty state message when no items with attachments are found</comment>
-  </data>
   <data name="NoItemsFound" xml:space="preserve">
     <value>Ingen elementer matcher det valgte filter.</value>
     <comment>Empty state message when no items match the filter</comment>

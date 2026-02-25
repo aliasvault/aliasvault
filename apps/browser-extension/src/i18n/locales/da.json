@@ -51,6 +51,7 @@
     "undo": "Fortryd",
     "save": "Gem",
     "saving": "Gemmer...",
+    "edit": "Rediger",
     "create": "Opret",
     "or": "Eller",
     "close": "Luk",
@@ -62,6 +63,8 @@
     "disabled": "Deaktiveret",
     "showPassword": "Vis adgangskode",
     "hidePassword": "Skjul adgangskode",
+    "show": "Vis",
+    "hide": "Skjul",
     "showDetails": "Vis detaljer",
     "hideDetails": "Skjul detaljer",
     "copyToClipboard": "Kopier til udklipsholder",
@@ -168,9 +171,13 @@
     "openAliasVaultToUpgrade": "Åbn AliasVault for at opgradere",
     "vaultUpgradeRequired": "Opgradering af boks påkrævet.",
     "dismissPopup": "Luk popup",
+    "noTotpItemsFound": "Ingen 2FA kode match fundet",
+    "close": "Luk",
     "savePrompt": {
       "title": "Gem i AliasVault?",
-      "neverForThisSite": "Aldrig for dette websted"
+      "neverForThisSite": "Aldrig for dette websted",
+      "addUrlTitle": "Tilføj URL til legitimationsoplysninger?",
+      "addUrl": "Tilføj URL"
     }
   },
   "items": {
@@ -193,9 +200,7 @@
     "welcomeTitle": "Velkommen til AliasVault!",
     "welcomeDescription": "For at bruge AliasVault-browserudvidelsen: Gå til et websted og brug AliasVault-autofyld-popup'en til at oprette en ny logonoplysning.",
     "noPasskeysFound": "Der er endnu ikke oprettet nogen passkeys. Passkeys oprettes ved at besøge et websted, der tilbyder passkeys som autentificeringsmetode.",
-    "noAttachmentsFound": "Ingen elementer med vedhæftede filer fundet",
-    "noItemsOfTypeFound": "Ingen {{type}}-elementer fundet",
-    "noMatchingItems": "Ingen matchende elementer fundet",
+    "noMatchingItems": "Ingen elementer matcher det valgte filter.",
     "noMatchingItemsSearch": "Ingen elementer matcher \"{{search}}\"",
     "noMatchingItemsWithFilter": "Ingen {{filter}}-elementer matcher \"{{search}}\"",
     "clearSearch": "Ryd søgning",
@@ -209,7 +214,8 @@
     "deleteFolderAndItemsDescription": "{{count}} element(er) vil blive flyttet til Senest Slettede.",
     "filters": {
       "folders": "Mapper",
-      "passkeys": "Passkeys"
+      "passkeys": "Passkeys",
+      "totp": "2FA Koder"
     },
     "sort": {
       "title": "Sorter efter",
@@ -296,6 +302,8 @@
     "secretKey": "Hemmelig nøgle",
     "saveToViewCode": "Gem for at se kode",
     "defaultName": "Godkender",
+    "deleteTotpCodeTitle": "Slet 2FA Kode",
+    "deleteTotpCodeConfirmation": "Er du sikker på, at du vil slette 2FA koden \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Ugyldigt format for hemmelig nøgle."
     }

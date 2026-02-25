@@ -4,6 +4,7 @@
     "close": "Închide",
     "delete": "Șterge",
     "save": "Salvează",
+    "edit": "Editează",
     "yes": "Da",
     "no": "Nu",
     "ok": "OK",
@@ -24,6 +25,7 @@
     "add": "Adaugă",
     "generate": "Generează",
     "attachments": "Atașamente",
+    "or": "sau",
     "deleteItemConfirmTitle": "Șterge elementul",
     "deleteItemConfirmDescription": "Sigur dorești să ștergi acest element?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Cheie secretă",
     "instructions": "Introdu cheia secretă furnizată de site-ul unde dorești să adaugi autentificarea cu doi factori.",
     "saveToViewCode": "Salvează pentru a vedea codul",
+    "scanQrCode": "Scanează codul QR",
+    "enterManually": "Introdu o cheie de configurare",
     "errors": {
-      "invalidSecretKey": "Formatul cheii secrete este invalid."
+      "invalidSecretKey": "Formatul cheii secrete este invalid.",
+      "scanFailed": "Scanarea codului QR a eșuat. Încearcă din nou."
     }
   },
   "settings": {
@@ -305,8 +310,7 @@
         "verifyingWithServer": "Se verifică cu serverul",
         "deletingAccount": "Se șterge contul",
         "accountDeleted": "Cont șters cu succes",
-        "failedToDelete": "Ștergerea contului a eșuat. Încearcă din nou.",
-        "usernameNotFound": "Utilizatorul nu a fost găsit. Autentifică-te din nou."
+        "failedToDelete": "Ștergerea contului a eșuat. Încearcă din nou."
       }
     },
     "qrScanner": {
@@ -410,14 +414,12 @@
     "publicEmailTitle": "Furnizori de e-mail temporar public",
     "publicEmailDescription": "Anonim, dar cu confidențialitate limitată. Conținutul e-mailului poate fi citit de oricine cunoaște adresa.",
     "searchPlaceholder": "Caută în seif...",
-    "noMatchingItems": "Nu s-au găsit elemente potrivite",
+    "noMatchingItems": "Niciun element nu corespunde filtrului selectat.",
     "noMatchingItemsSearch": "Nu s-au găsit elemente pentru „{{search}}”",
     "noMatchingItemsWithFilter": "Niciun element {{filter}} nu se potrivește cu „{{search}}”",
     "noItemsFound": "Nu s-a găsit niciun element. Creează unul pentru a începe. Sfat: te poți autentifica în aplicația web AliasVault pentru a importa date de autentificare din alte managere de parole.",
     "allItemsInFolders": "Toate elementele tale sunt organizate în dosare. Apasă pe un dosar de mai sus pentru a vizualiza datele de autentificare sau folosește căutarea pentru a găsi elemente specifice.",
     "noPasskeysFound": "Nu a fost creat niciun passkey încă. Passkey-urile se creează vizitând un site care oferă passkey ca metodă de autentificare.",
-    "noAttachmentsFound": "Nu s-au găsit elemente cu atașamente",
-    "noItemsOfTypeFound": "Nu s-au găsit elemente de tipul {{type}}",
     "clearSearch": "Șterge căutarea",
     "clearFilter": "Șterge filtrul",
     "recentEmails": "E-mailuri recente",
@@ -444,7 +446,8 @@
       "all": "Elemente",
       "showFolders": "Dosare",
       "passkeys": "Passkeys",
-      "attachments": "Atașamente"
+      "attachments": "Atașamente",
+      "totp": "Coduri 2FA"
     },
     "sort": {
       "title": "Filtrează după",
@@ -469,7 +472,8 @@
       "itemDeleted": "Element șters cu succes",
       "usernameCopied": "Utilizator copiat în clipboard",
       "emailCopied": "E-mail copiat în clipboard",
-      "passwordCopied": "Parolă copiată în clipboard"
+      "passwordCopied": "Parolă copiată în clipboard",
+      "urlCopied": "URL copiat în clipboard"
     },
     "createNewAliasFor": "Creează un alias nou pentru",
     "contextMenu": {
@@ -479,6 +483,12 @@
       "copyUsername": "Copiază utilizatorul",
       "copyEmail": "Copiază e-mailul",
       "copyPassword": "Copiază parola"
+    },
+    "urlContextMenu": {
+      "title": "Opțiuni URL",
+      "copyLink": "Copiază linkul",
+      "openLink": "Deschide linkul",
+      "shareLink": "Distribuie linkul"
     },
     "viewHistory": "Vezi istoricul",
     "history": "Istoric",

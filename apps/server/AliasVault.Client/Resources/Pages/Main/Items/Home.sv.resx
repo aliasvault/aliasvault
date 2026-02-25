@@ -163,19 +163,15 @@
     <value>Bifogade filer</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
+  <data name="FilterTotpOption" xml:space="preserve">
+    <value>2FA-Koder</value>
+    <comment>Filter option to show only items with TOTP codes</comment>
+  </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
     <value>Nyligen borttagna</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
-  <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Inga passkeys har skapats än. Passkeys läggs till genom webbläsartillägget eller mobilappar när du besöker en webbplats som stöder passkeys och erbjuder passkey-autentisering.</value>
-    <comment>Empty state message when no passkeys are found</comment>
-  </data>
-  <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>Inga objekt med bifogade filer hittades.</value>
-    <comment>Empty state message when no items with attachments are found</comment>
-  </data>
   <data name="NoItemsFound" xml:space="preserve">
     <value>Inga objekt matchar de valda filtren</value>
     <comment>Empty state message when no items match the filter</comment>

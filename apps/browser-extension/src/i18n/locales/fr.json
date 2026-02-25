@@ -51,6 +51,7 @@
     "undo": "Annuler",
     "save": "Sauvegarder",
     "saving": "Sauvegarde...",
+    "edit": "Editer",
     "create": "Créer",
     "or": "Ou",
     "close": "Fermer",
@@ -62,6 +63,8 @@
     "disabled": "Désactivé",
     "showPassword": "Afficher le mot de passe",
     "hidePassword": "Cacher le mot de passe",
+    "show": "Afficher",
+    "hide": "Masquer",
     "showDetails": "Afficher les détails",
     "hideDetails": "Masquer les détails",
     "copyToClipboard": "Copier dans le presse-papiers",
@@ -168,9 +171,13 @@
     "openAliasVaultToUpgrade": "Ouvrez AliasVault pour améliorer",
     "vaultUpgradeRequired": "Mise à niveau du coffre requise.",
     "dismissPopup": "Fermer",
+    "noTotpItemsFound": "Aucun code 2FA correspondant",
+    "close": "Fermer",
     "savePrompt": {
       "title": "Enregistrer dans AliasVault?",
-      "neverForThisSite": "Jamais pour ce site"
+      "neverForThisSite": "Jamais pour ce site",
+      "addUrlTitle": "Ajouter l'URL à l'identifiant?",
+      "addUrl": "Ajouter l’URL"
     }
   },
   "items": {
@@ -193,9 +200,7 @@
     "welcomeTitle": "Bienvenue dans AliasVault !",
     "welcomeDescription": "Pour utiliser l'extension de navigateur AliasVault : accédez à un site web et utilisez la fenêtre de saisie automatique AliasVault pour créer un nouvel identifiant.",
     "noPasskeysFound": "Aucune clé d'accès n'a encore été créée. Les clés d'accès sont créés en visitant un site Web qui propose des clés d'accès comme méthode d'authentification.",
-    "noAttachmentsFound": "Aucun élément avec pièces jointes trouvé",
-    "noItemsOfTypeFound": "Aucun élément {{type}} trouvé",
-    "noMatchingItems": "Aucun élément correspondant trouvé",
+    "noMatchingItems": "Aucun élément ne correspond au filtre sélectionné.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
     "clearSearch": "Effacer la recherche",
@@ -209,7 +214,8 @@
     "deleteFolderAndItemsDescription": "{{count}} élément(s) vont être déplacés vers Récemment supprimés.",
     "filters": {
       "folders": "Dossiers",
-      "passkeys": "Clés d'accès"
+      "passkeys": "Clés d'accès",
+      "totp": "Codes 2FA"
     },
     "sort": {
       "title": "Trier par",
@@ -296,6 +302,8 @@
     "secretKey": "Clé secrète",
     "saveToViewCode": "Enregistrer pour afficher le code",
     "defaultName": "Authentificateur",
+    "deleteTotpCodeTitle": "Supprimer le code 2FA",
+    "deleteTotpCodeConfirmation": "Êtes-vous sûr de vouloir supprimer le code 2FA \"{{name}} \" ?",
     "errors": {
       "invalidSecretKey": "Format de clé secrète invalide."
     }

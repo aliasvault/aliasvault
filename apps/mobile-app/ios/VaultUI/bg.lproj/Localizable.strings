@@ -32,6 +32,7 @@
 "username_copied" = "Username copied";
 "password_copied" = "Password copied";
 "email_copied" = "Email copied";
+"totp_code" = "TOTP Code";
 
 /* Search bar */
 "search_items" = "Search items...";

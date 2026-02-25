@@ -51,6 +51,7 @@
     "undo": "Revocă",
     "save": "Salvează",
     "saving": "Se salvează...",
+    "edit": "Editează",
     "create": "Creează",
     "or": "Sau",
     "close": "Închide",
@@ -62,6 +63,8 @@
     "disabled": "Dezactivat",
     "showPassword": "Afișează parola",
     "hidePassword": "Ascunde parola",
+    "show": "Afișează",
+    "hide": "Ascunde",
     "showDetails": "Afișează detalii",
     "hideDetails": "Ascunde detalii",
     "copyToClipboard": "Copiază în clipboard",
@@ -168,9 +171,13 @@
     "openAliasVaultToUpgrade": "Deschide AliasVault pentru actualizare",
     "vaultUpgradeRequired": "Este necesară actualizarea seifului.",
     "dismissPopup": "Închide fereastra",
+    "noTotpItemsFound": "Nu s-a găsit niciun cod 2FA corespunzător",
+    "close": "Închide",
     "savePrompt": {
       "title": "Salvează în AliasVault?",
-      "neverForThisSite": "Niciodată pentru acest site"
+      "neverForThisSite": "Niciodată pentru acest site",
+      "addUrlTitle": "Adaugă URL la datele de autentificare?",
+      "addUrl": "Adaugă URL"
     }
   },
   "items": {
@@ -193,9 +200,7 @@
     "welcomeTitle": "Bun venit în AliasVault!",
     "welcomeDescription": "Pentru a utiliza extensia de browser AliasVault: accesează un site web și folosește fereastra pop-up de completare automată AliasVault pentru a crea noi date de autentificare.",
     "noPasskeysFound": "Nu a fost creat niciun passkey încă. Passkey-urile sunt create vizitând site-uri care oferă această metodă de autentificare.",
-    "noAttachmentsFound": "Nu s-au găsit elemente cu atașamente",
-    "noItemsOfTypeFound": "Nu s-au găsit elemente de tip {{type}}",
-    "noMatchingItems": "Nu s-au găsit elemente care să se potrivească",
+    "noMatchingItems": "Niciun element nu corespunde filtrului selectat.",
     "noMatchingItemsSearch": "Nu s-au găsit elemente pentru „{{search}}”",
     "noMatchingItemsWithFilter": "Niciun element {{filter}} nu se potrivește cu „{{search}}”",
     "clearSearch": "Șterge căutarea",
@@ -209,7 +214,8 @@
     "deleteFolderAndItemsDescription": "{{count}} element(e) vor fi mutate la Șterse Recent.",
     "filters": {
       "folders": "Dosare",
-      "passkeys": "Passkeys"
+      "passkeys": "Passkeys",
+      "totp": "Coduri 2FA"
     },
     "sort": {
       "title": "Filtrează după",
@@ -296,6 +302,8 @@
     "secretKey": "Cheie Secretă",
     "saveToViewCode": "Salvează pentru a vedea codul",
     "defaultName": "Authenticator",
+    "deleteTotpCodeTitle": "Șterge codul 2FA",
+    "deleteTotpCodeConfirmation": "Sigur dorești să ștergi codul 2FA „{{name}}”?",
     "errors": {
       "invalidSecretKey": "Format cheie secretă invalid."
     }

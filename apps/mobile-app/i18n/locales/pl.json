@@ -4,6 +4,7 @@
     "close": "Zamknij",
     "delete": "Usuń",
     "save": "Zapisz",
+    "edit": "Edytuj",
     "yes": "Tak",
     "no": "Nie",
     "ok": "Ok",
@@ -24,6 +25,7 @@
     "add": "Dodaj",
     "generate": "Wygeneruj",
     "attachments": "Załączniki",
+    "or": "lub",
     "deleteItemConfirmTitle": "Usuń element",
     "deleteItemConfirmDescription": "Czy na pewno chcesz usunąć ten element?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Tajny klucz",
     "instructions": "Wprowadź tajny klucz wyświetlony na stronie internetowej, na której chcesz dodać uwierzytelnianie dwuskładnikowe.",
     "saveToViewCode": "Zapisz, aby wyświetlić kod",
+    "scanQrCode": "Skanuj kod QR",
+    "enterManually": "Wprowadź klucz konfiguracyjny",
     "errors": {
-      "invalidSecretKey": "Nieprawidłowy format tajnego klucza."
+      "invalidSecretKey": "Nieprawidłowy format tajnego klucza.",
+      "scanFailed": "Nie udało się zeskanować kodu QR. Spróbuj ponownie."
     }
   },
   "settings": {
@@ -305,8 +310,7 @@
         "verifyingWithServer": "Weryfikacja z serwerem",
         "deletingAccount": "Usuwanie konta",
         "accountDeleted": "Konto zostało pomyślnie usunięte",
-        "failedToDelete": "Nie udało się usunąć konta. Spróbuj ponownie.",
-        "usernameNotFound": "Nie znaleziono nazwy użytkownika. Zaloguj się ponownie."
+        "failedToDelete": "Nie udało się usunąć konta. Spróbuj ponownie."
       }
     },
     "qrScanner": {
@@ -410,14 +414,12 @@
     "publicEmailTitle": "Publiczni dostawcy tymczasowych adresów e-mail",
     "publicEmailDescription": "Anonimowe, ale ograniczają prywatność. Treść wiadomości e-mail jest dostępna dla każdego, kto zna adres.",
     "searchPlaceholder": "Wyszukaj w sejfie...",
-    "noMatchingItems": "Nie znaleziono pasujących elementów",
+    "noMatchingItems": "Żaden element nie pasuje do wybranego filtra.",
     "noMatchingItemsSearch": "Nie znaleziono żadnych elementów pasujących do „{{search}}”",
     "noMatchingItemsWithFilter": "Brak elementów {{filter}} pasujących do „{{search}}”",
     "noItemsFound": "Nie znaleziono żadnych elementów. Utwórz jeden, aby rozpocząć. Wskazówka: możesz również zalogować się do aplikacji internetowej AliasVault, aby zaimportować dane uwierzytelniające z innych menedżerów haseł.",
     "allItemsInFolders": "Wszystkie Twoje elementy są uporządkowane w folderach. Dotknij folderu powyżej, aby wyświetlić swoje poświadczenia, lub skorzystaj z wyszukiwania, aby znaleźć konkretne elementy.",
     "noPasskeysFound": "Nie utworzono jeszcze żadnych kluczy dostępu. Klucze dostępu tworzy się, odwiedzając stronę internetową, która oferuje klucze dostępu jako metodę uwierzytelniania.",
-    "noAttachmentsFound": "Nie znaleziono żadnych elementów z załącznikami.",
-    "noItemsOfTypeFound": "Nie znaleziono elementów {{type}}",
     "clearSearch": "Wyczyść wyszukiwanie",
     "clearFilter": "Wyczyść filtr",
     "recentEmails": "Ostatnie wiadomości e-mail",
@@ -444,7 +446,8 @@
       "all": "Elementy",
       "showFolders": "Foldery",
       "passkeys": "Klucze dostępu",
-      "attachments": "Załączniki"
+      "attachments": "Załączniki",
+      "totp": "Kody 2FA"
     },
     "sort": {
       "title": "Sortuj według",
@@ -469,7 +472,8 @@
       "itemDeleted": "Element został pomyślnie usunięty",
       "usernameCopied": "Nazwa użytkownika skopiowana do schowka",
       "emailCopied": "Wiadomość e-mail skopiowana do schowka",
-      "passwordCopied": "Hasło skopiowane do schowka"
+      "passwordCopied": "Hasło skopiowane do schowka",
+      "urlCopied": "Adres URL skopiowany do schowka"
     },
     "createNewAliasFor": "Utwórz nowy alias dla",
     "contextMenu": {
@@ -479,6 +483,12 @@
       "copyUsername": "Skopiuj nazwę użytkownika",
       "copyEmail": "Skopiuj adres e-mail",
       "copyPassword": "Skopiuj hasło"
+    },
+    "urlContextMenu": {
+      "title": "Opcje adresu URL",
+      "copyLink": "Kopiuj link",
+      "openLink": "Otwórz link",
+      "shareLink": "Udostępnij link"
     },
     "viewHistory": "Pokaż historię",
     "history": "Historia",

@@ -51,6 +51,7 @@
     "undo": "Desfazer",
     "save": "Salvar",
     "saving": "Salvando...",
+    "edit": "Editar",
     "create": "Criar",
     "or": "Ou",
     "close": "Fechar",
@@ -62,6 +63,8 @@
     "disabled": "Desabilitado",
     "showPassword": "Mostrar senha",
     "hidePassword": "Ocultar senha",
+    "show": "Mostrar",
+    "hide": "Esconder",
     "showDetails": "Exibir detalhes",
     "hideDetails": "Esconder detalhes",
     "copyToClipboard": "Copiar para a área de transferência",
@@ -168,9 +171,13 @@
     "openAliasVaultToUpgrade": "Abra o AliasVault para atualizar",
     "vaultUpgradeRequired": "Atualização de cofre necessária.",
     "dismissPopup": "Ignorar pop-up",
+    "noTotpItemsFound": "Nenhum código 2FA encontrado",
+    "close": "Fechar",
     "savePrompt": {
       "title": "Salvar no AliasVault?",
-      "neverForThisSite": "Nunca para este site"
+      "neverForThisSite": "Nunca para este site",
+      "addUrlTitle": "Adicionar URL na credencial?",
+      "addUrl": "Adicionar URL"
     }
   },
   "items": {
@@ -193,9 +200,7 @@
     "welcomeTitle": "Boas-vindas ao AliasVault!",
     "welcomeDescription": "Para utilizar a extensão de navegador do AliasVault: navegue para um site e utilize o pop-up de preenchimento automático do AliasVault para criar uma nova credencial.",
     "noPasskeysFound": "Nenhuma passkey foi criada ainda. Passkeys são veiadas visitando um website que ofereça passkey como método de autenticação.",
-    "noAttachmentsFound": "Nenhum item com anexos foi encontrado",
-    "noItemsOfTypeFound": "Nenhum item do tipo {{type}} foi encontrado",
-    "noMatchingItems": "Nenhum ítem correspondente encontrado",
+    "noMatchingItems": "Nenhum item corresponde ao filtro selecionado.",
     "noMatchingItemsSearch": "Nenhum item corresponde à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Nenhum item com o filtro {{filter}} corresponde à \"{{search}}\"",
     "clearSearch": "Limpar pesquisa",
@@ -209,7 +214,8 @@
     "deleteFolderAndItemsDescription": "{{count}} item(s) será(ão) movido(s) para Recentemente Excluídos.",
     "filters": {
       "folders": "Pastas",
-      "passkeys": "Passkeys"
+      "passkeys": "Passkeys",
+      "totp": "Códigos de 2FA"
     },
     "sort": {
       "title": "Ordenar por",
@@ -296,6 +302,8 @@
     "secretKey": "Chave Secreta",
     "saveToViewCode": "Salvar para ver código",
     "defaultName": "Autenticador",
+    "deleteTotpCodeTitle": "Excluir Código 2FA",
+    "deleteTotpCodeConfirmation": "Tem certeza que deseja excluir o código 2FA \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Formato de chave secreta inválido."
     }

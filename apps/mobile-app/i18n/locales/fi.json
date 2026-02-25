@@ -4,6 +4,7 @@
     "close": "Sulje",
     "delete": "Poista",
     "save": "Tallenna",
+    "edit": "Edit",
     "yes": "Kyllä",
     "no": "Ei",
     "ok": "Hyvä on",
@@ -24,6 +25,7 @@
     "add": "Lisää",
     "generate": "Generate",
     "attachments": "Liitteet",
+    "or": "or",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Salainen avain",
     "instructions": "Syötä salainen avain, joka näkyy sivustossa, jossa haluat lisätä kaksivaiheisen tunnistautumisen",
     "saveToViewCode": "Tallenna nähdäksesi koodin",
+    "scanQrCode": "Scan QR Code",
+    "enterManually": "Enter a setup key",
     "errors": {
-      "invalidSecretKey": "Virheellinen salatun avaimen muoto."
+      "invalidSecretKey": "Virheellinen salatun avaimen muoto.",
+      "scanFailed": "Failed to scan QR code. Please try again."
     }
   },
   "settings": {
@@ -305,8 +310,7 @@
         "verifyingWithServer": "Varmistetaan palvelimella",
         "deletingAccount": "Poistetaan tiliä",
         "accountDeleted": "Tili poistettu onnistuneesti.",
-        "failedToDelete": "Tilin poistaminen ei onnistunut. Yritä uudelleen.",
-        "usernameNotFound": "Käyttäjänimeä ei löydy. Yritä kirjautua uudelleen."
+        "failedToDelete": "Tilin poistaminen ei onnistunut. Yritä uudelleen."
       }
     },
     "qrScanner": {
@@ -410,14 +414,12 @@
     "publicEmailTitle": "Julkiset väliaikaisten sähköpostiosoitteiden tarjoajat (PTEP)",
     "publicEmailDescription": "Anonyymi, mutta rajoitettu yksityisyys. Sähköpostin sisällön voi lukea kuka tahansa, joka tietää osoitteen.",
     "searchPlaceholder": "Etsitään holvia...",
-    "noMatchingItems": "Vastaavia tietoja ei löytynyt",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "No items matching \"{{search}}\"",
     "noMatchingItemsWithFilter": "No {{filter}} items matching \"{{search}}\"",
     "noItemsFound": "Tietoja ei löytynyt. Luo sellainen aloittaaksesi. Vinkki: voit myös kirjautua AliasVaultin web-sovellukseen tuodaksesi käyttäjätietoja muista salasananhallintalaitteista.",
     "allItemsInFolders": "All your items are organized in folders. Tap a folder above to view your credentials, or use the search to find specific items.",
     "noPasskeysFound": "Todennusavaimia ei ole vielä luotu. Todennusavaimet on luotu vierailemalla verkkosivustolla, joka tarjoaa todennusavaimia todennusmenetelmänä.",
-    "noAttachmentsFound": "Liitteitä sisältäviä tietoja ei löytynyt",
-    "noItemsOfTypeFound": "No {{type}} tietoja ei löydy",
     "clearSearch": "Clear search",
     "clearFilter": "Clear filter",
     "recentEmails": "Viimeaikaiset sähköpostit",
@@ -444,7 +446,8 @@
       "all": "Tiedot",
       "showFolders": "Folders",
       "passkeys": "Sala-avaimet",
-      "attachments": "Liitteet"
+      "attachments": "Liitteet",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sort by",
@@ -469,7 +472,8 @@
       "itemDeleted": "Item deleted successfully",
       "usernameCopied": "Käyttäjänimi kopioitu leikepöydälle",
       "emailCopied": "Sähköpostiosoite kopioitu leikepöydälle",
-      "passwordCopied": "Salasana kopioitu leikepöydälle"
+      "passwordCopied": "Salasana kopioitu leikepöydälle",
+      "urlCopied": "URL copied to clipboard"
     },
     "createNewAliasFor": "Luo uusi alias kohteelle",
     "contextMenu": {
@@ -479,6 +483,12 @@
       "copyUsername": "Kopioi käyttäjänimi",
       "copyEmail": "Kopioi sähköposti",
       "copyPassword": "Kopioi salasana"
+    },
+    "urlContextMenu": {
+      "title": "URL Options",
+      "copyLink": "Copy Link",
+      "openLink": "Open Link",
+      "shareLink": "Share Link"
     },
     "viewHistory": "View history",
     "history": "History",

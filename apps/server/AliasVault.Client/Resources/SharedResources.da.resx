@@ -138,6 +138,14 @@
     <value>Rediger</value>
     <comment>Button text for editing an item</comment>
   </data>
+  <data name="Show" xml:space="preserve">
+    <value>Vis</value>
+    <comment>Button text for showing content</comment>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Skjul</value>
+    <comment>Button text for hiding content</comment>
+  </data>
   <data name="Close" xml:space="preserve">
     <value>Luk</value>
     <comment>Button text for closing a dialog or modal</comment>

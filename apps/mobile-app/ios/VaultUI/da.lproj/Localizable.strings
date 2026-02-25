@@ -32,6 +32,7 @@
 "username_copied" = "Brugernavn kopieret";
 "password_copied" = "Adgangskode kopieret";
 "email_copied" = "E-mail kopieret";
+"totp_code" = "TOTP Kode";
 
 /* Search bar */
 "search_items" = "Søg i elementer...";

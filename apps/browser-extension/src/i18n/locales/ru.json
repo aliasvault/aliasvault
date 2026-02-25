@@ -51,6 +51,7 @@
     "undo": "Отменить",
     "save": "Сохранить",
     "saving": "Сохраняем...",
+    "edit": "Edit",
     "create": "Создать",
     "or": "Или",
     "close": "Закрыть",
@@ -62,6 +63,8 @@
     "disabled": "Отключено",
     "showPassword": "Показать пароль",
     "hidePassword": "Скрыть пароль",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "Показать подробности",
     "hideDetails": "Скрыть подробности",
     "copyToClipboard": "Скопировать в буфер обмена",
@@ -168,9 +171,13 @@
     "openAliasVaultToUpgrade": "Откройте AliasVault для обновления",
     "vaultUpgradeRequired": "Требуется обновление хранилища.",
     "dismissPopup": "Закрыть окно",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Сохранить в AliasVault?",
-      "neverForThisSite": "Никогда для этого сайта"
+      "neverForThisSite": "Никогда для этого сайта",
+      "addUrlTitle": "Add URL to credential?",
+      "addUrl": "Add URL"
     }
   },
   "items": {
@@ -193,9 +200,7 @@
     "welcomeTitle": "Добро пожаловать в AliasVault!",
     "welcomeDescription": "Чтобы использовать браузерное расширение AliasVault: перейдите на сайт и используйте всплывающее окно автозаполнения AliasVault для создания новых учетных данных.",
     "noPasskeysFound": "Ключи доступа еще не созданы. Ключи доступа создаются при посещении веб-сайта, который предлагает их в качестве метода аутентификации.",
-    "noAttachmentsFound": "Элементы с вложениями не найдены",
-    "noItemsOfTypeFound": "Элементы типа «{{type}}» не найдены",
-    "noMatchingItems": "Совпадений не найдено",
+    "noMatchingItems": "Нет записей, соответствующих выбранному фильтру.",
     "noMatchingItemsSearch": "По запросу \"{{search}}\" ничего не найдено",
     "noMatchingItemsWithFilter": "Ничего не найдено в \"{{filter}}\" по запросу \"{{search}}\"",
     "clearSearch": "Очистить поиск",
@@ -209,7 +214,8 @@
     "deleteFolderAndItemsDescription": "{{count}} объект(ов) будет перемещено в раздел «Недавно удалённые».",
     "filters": {
       "folders": "Папки",
-      "passkeys": "Ключи доступа"
+      "passkeys": "Ключи доступа",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Сортировка",
@@ -296,6 +302,8 @@
     "secretKey": "Секретный ключ",
     "saveToViewCode": "Сохранить для просмотра кода",
     "defaultName": "Аутентификатор",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Неверный формат секретного ключа."
     }

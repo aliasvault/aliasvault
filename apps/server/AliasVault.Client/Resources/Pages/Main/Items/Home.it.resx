@@ -163,19 +163,15 @@
     <value>Allegati</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
+  <data name="FilterTotpOption" xml:space="preserve">
+    <value>Codici 2FA</value>
+    <comment>Filter option to show only items with TOTP codes</comment>
+  </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
     <value>Eliminato di Recente</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
-  <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Nessuna paskey è stata ancora creata. Le passkey vengono aggiunte attraverso l'estensione del browser o le applicazioni per dispositivi mobili quando si visita un sito web che supporta le chiavi di accesso e offre l'autenticazione con passkey.</value>
-    <comment>Empty state message when no passkeys are found</comment>
-  </data>
-  <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>Nessun elemento con allegati trovato.</value>
-    <comment>Empty state message when no items with attachments are found</comment>
-  </data>
   <data name="NoItemsFound" xml:space="preserve">
     <value>Nessun elemento corrisponde ai filtri selezionati</value>
     <comment>Empty state message when no items match the filter</comment>

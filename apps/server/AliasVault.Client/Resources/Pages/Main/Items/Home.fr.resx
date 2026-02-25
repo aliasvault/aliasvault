@@ -163,19 +163,15 @@
     <value>Pièces jointes</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
+  <data name="FilterTotpOption" xml:space="preserve">
+    <value>Codes 2FA</value>
+    <comment>Filter option to show only items with TOTP codes</comment>
+  </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
     <value>Supprimé récemment</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
-  <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Aucune clé d'accès n'a encore été créée. Elles sont ajoutées via l'extension du navigateur ou les applications mobiles lors de la visite d'un site Web qui prend en charge les clés d'accès et offre l'authentification par clé d'accès.</value>
-    <comment>Empty state message when no passkeys are found</comment>
-  </data>
-  <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>Aucun élément avec pièces jointes trouvé.</value>
-    <comment>Empty state message when no items with attachments are found</comment>
-  </data>
   <data name="NoItemsFound" xml:space="preserve">
     <value>Aucun identifiant ne correspond au filtre sélectionné.</value>
     <comment>Empty state message when no items match the filter</comment>

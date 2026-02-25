@@ -51,6 +51,7 @@
     "undo": "Rückgängig machen",
     "save": "Speichern",
     "saving": "Wird gespeichert ...",
+    "edit": "Edit",
     "create": "Erstellen",
     "or": "Oder",
     "close": "Schließen",
@@ -62,6 +63,8 @@
     "disabled": "Deaktiviert",
     "showPassword": "Passwort anzeigen",
     "hidePassword": "Passwort verbergen",
+    "show": "Show",
+    "hide": "Hide",
     "showDetails": "Details anzeigen",
     "hideDetails": "Details ausblenden",
     "copyToClipboard": "In die Zwischenablage kopieren",
@@ -168,9 +171,13 @@
     "openAliasVaultToUpgrade": "Zum Aktualisieren AliasVault öffnen ",
     "vaultUpgradeRequired": "Aktualisierung des Tresors erforderlich.",
     "dismissPopup": "Popup schliessen",
+    "noTotpItemsFound": "No 2FA code matches found",
+    "close": "Close",
     "savePrompt": {
       "title": "Save to AliasVault?",
-      "neverForThisSite": "Never for this site"
+      "neverForThisSite": "Never for this site",
+      "addUrlTitle": "Add URL to credential?",
+      "addUrl": "Add URL"
     }
   },
   "items": {
@@ -193,9 +200,7 @@
     "welcomeTitle": "Welcome to AliasVault!",
     "welcomeDescription": "Du möchtest die AliasVault-Browser-Erweiterung verwenden? Navigiere zu einer Website und verwende das AliasVault-Popup-Fenster um einen neuen Zugang zu erstellen.",
     "noPasskeysFound": "Es wurden noch kein Passkey erstellt. Ein Passkey wird durch den Besuch einer Website erzeugt, die Passkeys als Authentifizierungsmethode anbietet.",
-    "noAttachmentsFound": "Keine Elemente mit Anhängen gefunden",
-    "noItemsOfTypeFound": "Keine {{type}} Elemente gefunden",
-    "noMatchingItems": "Kein passendes Element gefunden",
+    "noMatchingItems": "No items match the selected filter.",
     "noMatchingItemsSearch": "Keine passenden Elemente \"{{search}}\"",
     "noMatchingItemsWithFilter": "Keine {{filter}} Elemente passend zu \"{{search}}\"",
     "clearSearch": "Suche löschen",
@@ -209,7 +214,8 @@
     "deleteFolderAndItemsDescription": "{{count}} Elemente(n) werden nach kürzlich gelöschtem Element verschoben.",
     "filters": {
       "folders": "Folders",
-      "passkeys": "Passkeys"
+      "passkeys": "Passkeys",
+      "totp": "2FA Codes"
     },
     "sort": {
       "title": "Sortieren nach",
@@ -296,6 +302,8 @@
     "secretKey": "Secret-Key",
     "saveToViewCode": "Speichern, um den Code anzuzeigen",
     "defaultName": "Authenticator",
+    "deleteTotpCodeTitle": "Delete 2FA Code",
+    "deleteTotpCodeConfirmation": "Are you sure you want to delete the 2FA code \"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Ungültiges Format des Secret-Key"
     }

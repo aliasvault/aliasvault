@@ -4,6 +4,7 @@
     "close": "Sluiten",
     "delete": "Verwijderen",
     "save": "Opslaan",
+    "edit": "Bewerken",
     "yes": "Ja",
     "no": "Nee",
     "ok": "OK",
@@ -24,6 +25,7 @@
     "add": "Toevoegen",
     "generate": "Genereren",
     "attachments": "Bijlagen",
+    "or": "of",
     "deleteItemConfirmTitle": "Verwijder item",
     "deleteItemConfirmDescription": "Weet je zeker dat je dit item wilt verwijderen?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Secret key",
     "instructions": "Voer de secret key in die door de website wordt weergegeven waar je tweestapsverificatie wilt toevoegen.",
     "saveToViewCode": "Opslaan om code te bekijken",
+    "scanQrCode": "Scan QR code",
+    "enterManually": "Voer een setup-sleutel in",
     "errors": {
-      "invalidSecretKey": "Ongeldig formaat."
+      "invalidSecretKey": "Ongeldig formaat.",
+      "scanFailed": "Kon QR-code niet scannen. Probeer het opnieuw."
     }
   },
   "settings": {
@@ -305,8 +310,7 @@
         "verifyingWithServer": "Verifiëren met server",
         "deletingAccount": "Account verwijderen",
         "accountDeleted": "Account succesvol verwijderd",
-        "failedToDelete": "Account verwijderen mislukt. Probeer het opnieuw.",
-        "usernameNotFound": "Gebruikersnaam niet gevonden. Log opnieuw in."
+        "failedToDelete": "Account verwijderen mislukt. Probeer het opnieuw."
       }
     },
     "qrScanner": {
@@ -410,14 +414,12 @@
     "publicEmailTitle": "Publieke tijdelijke e-mailproviders",
     "publicEmailDescription": "Anoniem maar beperkte privacy. E-mail inhoud is leesbaar door iedereen die het adres kent.",
     "searchPlaceholder": "Vault doorzoeken...",
-    "noMatchingItems": "Geen items gevonden",
+    "noMatchingItems": "Geen items gevonden die overeenkomen met het geselecteerde filter.",
     "noMatchingItemsSearch": "Geen items die overeenkomen met \"{{search}}\"",
     "noMatchingItemsWithFilter": "Geen {{filter}} items die overeenkomen met \"{{search}}\"",
     "noItemsFound": "Geen items gevonden. Maak er een aan om te beginnen. Tip: je kunt ook inloggen op de AliasVault webapp om items te importeren uit andere wachtwoord-managers.",
     "allItemsInFolders": "Al je items zijn georganiseerd in mappen. Tik op een map hierboven om je gegevens te bekijken, of gebruik de zoekopdracht om specifieke items te vinden.",
     "noPasskeysFound": "Er zijn nog geen passkeys aangemaakt. Passkeys worden gemaakt door een website te bezoeken die passkeys als een authenticatiemethode biedt.",
-    "noAttachmentsFound": "Geen items gevonden met bijlagen",
-    "noItemsOfTypeFound": "Geen {{type}} items gevonden",
     "clearSearch": "Wis zoekopdracht",
     "clearFilter": "Wis filter",
     "recentEmails": "Recente e-mails",
@@ -444,7 +446,8 @@
       "all": "Items",
       "showFolders": "Mappen",
       "passkeys": "Passkeys",
-      "attachments": "Bijlagen"
+      "attachments": "Bijlagen",
+      "totp": "2FA codes"
     },
     "sort": {
       "title": "Sorteren op",
@@ -469,7 +472,8 @@
       "itemDeleted": "Item succesvol verwijderd",
       "usernameCopied": "Gebruikersnaam gekopieerd naar klembord",
       "emailCopied": "E-mail gekopieerd naar klembord",
-      "passwordCopied": "Wachtwoord gekopieerd naar klembord"
+      "passwordCopied": "Wachtwoord gekopieerd naar klembord",
+      "urlCopied": "URL gekopieerd naar klembord"
     },
     "createNewAliasFor": "Nieuwe alias maken voor",
     "contextMenu": {
@@ -479,6 +483,12 @@
       "copyUsername": "Kopieer gebruikersnaam",
       "copyEmail": "Kopieer e-mail",
       "copyPassword": "Kopieer wachtwoord"
+    },
+    "urlContextMenu": {
+      "title": "URL opties",
+      "copyLink": "Kopieer link",
+      "openLink": "Open link",
+      "shareLink": "Link delen"
     },
     "viewHistory": "Toon geschiedenis",
     "history": "Geschiedenis",

@@ -163,19 +163,15 @@
     <value>Anhänge</value>
     <comment>Filter option to show only items with attachments</comment>
   </data>
+  <data name="FilterTotpOption" xml:space="preserve">
+    <value>2FA Codes</value>
+    <comment>Filter option to show only items with TOTP codes</comment>
+  </data>
   <data name="FilterRecentlyDeletedOption" xml:space="preserve">
     <value>Zuletzt gelöscht</value>
     <comment>Filter option to show recently deleted items</comment>
   </data>
   <!-- Filtered Empty States -->
-  <data name="NoPasskeysFound" xml:space="preserve">
-    <value>Es sind noch keine Passkeys vorhanden. Passkeys können über die Browser‑Extension oder die mobilen Apps hinzugefügt werden, während Du eine Webseite aufrufst, die Passkeys unterstützt und die Authentifizierung mit Passkeys unterstützt.</value>
-    <comment>Empty state message when no passkeys are found</comment>
-  </data>
-  <data name="NoAttachmentsFound" xml:space="preserve">
-    <value>Keine Elemente mit Anhängen gefunden.</value>
-    <comment>Empty state message when no items with attachments are found</comment>
-  </data>
   <data name="NoItemsFound" xml:space="preserve">
     <value>No items match the selected filter.</value>
     <comment>Empty state message when no items match the filter</comment>

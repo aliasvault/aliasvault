@@ -51,6 +51,7 @@
     "undo": "撤销",
     "save": "保存",
     "saving": "保存中…",
+    "edit": "编辑",
     "create": "创建",
     "or": "或",
     "close": "关闭",
@@ -62,6 +63,8 @@
     "disabled": "禁用",
     "showPassword": "显示密码",
     "hidePassword": "隐藏密码",
+    "show": "显示",
+    "hide": "隐藏",
     "showDetails": "显示详情",
     "hideDetails": "隐藏详情",
     "copyToClipboard": "复制到剪贴板",
@@ -168,9 +171,13 @@
     "openAliasVaultToUpgrade": "打开AliasVault进行升级",
     "vaultUpgradeRequired": "需要升级密码库。",
     "dismissPopup": "关闭弹窗",
+    "noTotpItemsFound": "未找到匹配的两步验证码",
+    "close": "关闭",
     "savePrompt": {
       "title": "保存到 AliasVault？",
-      "neverForThisSite": "此网站不再显示"
+      "neverForThisSite": "此网站不再显示",
+      "addUrlTitle": "将 URL 添加到凭据？",
+      "addUrl": "添加 URL"
     }
   },
   "items": {
@@ -193,9 +200,7 @@
     "welcomeTitle": "欢迎使用 AliasVault!",
     "welcomeDescription": "要使用AliasVault浏览器扩展：导航到某个网站，使用AliasVault自动填充弹窗创建新凭据。",
     "noPasskeysFound": "尚未创建通行密钥。访问以通行密钥为认证方式的网站才能创建通行密钥。",
-    "noAttachmentsFound": "未找到带附件的项目",
-    "noItemsOfTypeFound": "未找到 {{type}} 项目",
-    "noMatchingItems": "未找到匹配的项目",
+    "noMatchingItems": "没有项目符合所选筛选器。",
     "noMatchingItemsSearch": "未找到匹配“{{search}}”的项目",
     "noMatchingItemsWithFilter": "未找到匹配“{{search}}”的 {{filter}} 项目",
     "clearSearch": "清除搜索",
@@ -209,7 +214,8 @@
     "deleteFolderAndItemsDescription": "{{count}} 个项目将被移至“近期删除”。",
     "filters": {
       "folders": "文件夹",
-      "passkeys": "通行密钥"
+      "passkeys": "通行密钥",
+      "totp": "两步验证码"
     },
     "sort": {
       "title": "排序方式",
@@ -296,6 +302,8 @@
     "secretKey": "密钥",
     "saveToViewCode": "保存以查看验证码",
     "defaultName": "身份验证器",
+    "deleteTotpCodeTitle": "删除两步验证码",
+    "deleteTotpCodeConfirmation": "您确定要删除两步验证码“{{name}}”吗？",
     "errors": {
       "invalidSecretKey": "密钥格式无效。"
     }

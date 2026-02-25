@@ -4,6 +4,7 @@
     "close": "Stäng",
     "delete": "Radera",
     "save": "Spara",
+    "edit": "Redigera",
     "yes": "Ja",
     "no": "Nej",
     "ok": "OK",
@@ -24,6 +25,7 @@
     "add": "Lägg till",
     "generate": "Generera",
     "attachments": "Bifogade filer",
+    "or": "eller",
     "deleteItemConfirmTitle": "Radera objekt",
     "deleteItemConfirmDescription": "Är du säker på att du vill radera det här objektet?",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "Hemlig nyckel",
     "instructions": "Ange den hemliga nyckeln som visas av webbplatsen där du vill lägga till tvåfaktorsautentisering.",
     "saveToViewCode": "Spara för att visa kod",
+    "scanQrCode": "Skanna QR-kod",
+    "enterManually": "Ange en konfigurationsnyckel",
     "errors": {
-      "invalidSecretKey": "Ogiltigt format för hemlig nyckel."
+      "invalidSecretKey": "Ogiltigt format för hemlig nyckel.",
+      "scanFailed": "Kunde inte skanna QR-kod. Försök igen."
     }
   },
   "settings": {
@@ -305,8 +310,7 @@
         "verifyingWithServer": "Verifierar med servern",
         "deletingAccount": "Raderar konto",
         "accountDeleted": "Kontot har raderats",
-        "failedToDelete": "Det gick inte att ta bort kontot. Försök igen.",
-        "usernameNotFound": "Användarnamnet hittades inte. Logga in igen."
+        "failedToDelete": "Det gick inte att ta bort kontot. Försök igen."
       }
     },
     "qrScanner": {
@@ -410,14 +414,12 @@
     "publicEmailTitle": "Offentliga Temp e-postleverantörer",
     "publicEmailDescription": "Anonym men begränsad integritet. E-postinnehåll kan läsas av alla som känner till adressen.",
     "searchPlaceholder": "Sök i valvet...",
-    "noMatchingItems": "Hittade inga matchande resultat",
+    "noMatchingItems": "Inga objekt matchar de valda filtren",
     "noMatchingItemsSearch": "Inga objekt matchar \"{{search}}\"",
     "noMatchingItemsWithFilter": "Inga {{filter}} objekt som matchar \"{{search}}\"",
     "noItemsFound": "Inga objekt hittades. Skapa ett för att komma igång. Tips: du kan även logga in på AliasVault webbapp för att importera inloggningsuppgifter från andra lösenordshanterare.",
     "allItemsInFolders": "Alla dina objekt är organiserade i mappar. Klicka på en mapp ovan för att visa dina inloggningsuppgifter, eller använd sökningen för att hitta specifika objekt.",
     "noPasskeysFound": "Inga passkeys har skapats än. Du kan skapa passkeys på webbplatser som erbjuder detta som autentiseringsmetod.",
-    "noAttachmentsFound": "Inga objekt med bifogade filer hittades",
-    "noItemsOfTypeFound": "Inga {{type}} objekt hittades",
     "clearSearch": "Rensa sökning",
     "clearFilter": "Rensa filter",
     "recentEmails": "Senaste e-postmeddelanden",
@@ -444,7 +446,8 @@
       "all": "Objekt",
       "showFolders": "Mappar",
       "passkeys": "Passkeys",
-      "attachments": "Bifogade filer"
+      "attachments": "Bifogade filer",
+      "totp": "2FA-Koder"
     },
     "sort": {
       "title": "Sortera efter",
@@ -469,7 +472,8 @@
       "itemDeleted": "Objektet har tagits bort",
       "usernameCopied": "Användarnamn har kopierats till urklipp",
       "emailCopied": "E-post har kopierats till urklipp",
-      "passwordCopied": "Lösenord har kopierats till urklipp"
+      "passwordCopied": "Lösenord har kopierats till urklipp",
+      "urlCopied": "URL kopierad till urklipp"
     },
     "createNewAliasFor": "Skapa nytt alias för",
     "contextMenu": {
@@ -479,6 +483,12 @@
       "copyUsername": "Kopiera användarnamn",
       "copyEmail": "Kopiera e-postadress",
       "copyPassword": "Kopiera lösenord"
+    },
+    "urlContextMenu": {
+      "title": "URL-alternativ",
+      "copyLink": "Kopiera länk",
+      "openLink": "Öppna länk",
+      "shareLink": "Dela länk"
     },
     "viewHistory": "Visa historik",
     "history": "Historik",

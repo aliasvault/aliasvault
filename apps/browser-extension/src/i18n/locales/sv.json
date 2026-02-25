@@ -51,6 +51,7 @@
     "undo": "Ångra",
     "save": "Spara",
     "saving": "Sparar...",
+    "edit": "Redigera",
     "create": "Skapa",
     "or": "Eller",
     "close": "Stäng",
@@ -62,6 +63,8 @@
     "disabled": "Inaktiverad",
     "showPassword": "Visa lösenord",
     "hidePassword": "Dölj lösenord",
+    "show": "Visa",
+    "hide": "Dölj",
     "showDetails": "Visa detaljer",
     "hideDetails": "Dölj detaljer",
     "copyToClipboard": "Kopiera till urklipp",
@@ -168,9 +171,13 @@
     "openAliasVaultToUpgrade": "Öppna AliasVault för att uppgradera",
     "vaultUpgradeRequired": "Uppgradering av valv krävs.",
     "dismissPopup": "Avvisa popup",
+    "noTotpItemsFound": "Inga matchande 2FA-koder funna",
+    "close": "Stäng",
     "savePrompt": {
       "title": "Spara till AliasVault?",
-      "neverForThisSite": "Aldrig för denna webbplats"
+      "neverForThisSite": "Aldrig för denna webbplats",
+      "addUrlTitle": "Lägg till URL till posten?",
+      "addUrl": "Lägg till URL"
     }
   },
   "items": {
@@ -191,11 +198,9 @@
     "folderNameRequired": "Mappnamn krävs",
     "folder": "Mapp",
     "welcomeTitle": "Välkommen till AliasVault!",
-    "welcomeDescription": "För att använda webbläsartillägget AliasVault: navigera till en webbplats och använd AliasVault-popup-fönstret för att skapa en ny inloggningsuppgift.",
+    "welcomeDescription": "För att använda webbläsartillägget AliasVault: navigera till en webbplats och använd AliasVault-autofyllrutan för att skapa en ny inloggningsuppgift.",
     "noPasskeysFound": "Inga passkeys har skapats än. Passkeys skapas genom att besöka en webbplats som erbjuder passkeys som en autentiseringsmetod.",
-    "noAttachmentsFound": "Inga objekt med bifogade filer hittades",
-    "noItemsOfTypeFound": "Inga {{type}} objekt hittades",
-    "noMatchingItems": "Inga matchande objekt hittades",
+    "noMatchingItems": "Inga objekt matchar de valda filtren",
     "noMatchingItemsSearch": "Inga objekt matchar \"{{search}}\"",
     "noMatchingItemsWithFilter": "Inga {{filter}} objekt som matchar \"{{search}}\"",
     "clearSearch": "Rensa sökning",
@@ -209,7 +214,8 @@
     "deleteFolderAndItemsDescription": "{{count}} objekt kommer att flyttas till Nyligen borttagen.",
     "filters": {
       "folders": "Mappar",
-      "passkeys": "Passkeys"
+      "passkeys": "Passkeys",
+      "totp": "2FA-Koder"
     },
     "sort": {
       "title": "Sortera efter",
@@ -296,6 +302,8 @@
     "secretKey": "Hemlig nyckel",
     "saveToViewCode": "Spara för att visa kod",
     "defaultName": "Autentiserare",
+    "deleteTotpCodeTitle": "Ta bort 2FA-kod",
+    "deleteTotpCodeConfirmation": "Är du säker på att du vill radera 2FA-koden\"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Ogiltigt format för hemlig nyckel."
     }
@@ -340,25 +348,25 @@
     "openWebApp": "Öppna webbapp",
     "lock": "Lås",
     "globalSettings": "Globala inställningar",
-    "autofillPopup": "Autofyll popup",
+    "autofillPopup": "Autofyllrutan",
     "activeOnAllSites": "Aktiv på alla webbplatser (om inte inaktiverat nedan)",
     "disabledOnAllSites": "Inaktiverad på alla webbplatser",
     "rightClickContextMenu": "Högerklicksmeny",
     "autofillMatching": "Autofyllsmatchning",
     "autofillMatchingMode": "Autofyll matchningsläge",
-    "autofillMatchingModeDescription": "Avgör vilka uppgifter som anses vara en matchning och visas som förslag i autofill popup för en viss webbplats.",
+    "autofillMatchingModeDescription": "Avgör vilka uppgifter som anses vara en matchning och visas som förslag i autofyllrutan för en viss webbplats.",
     "autofillMatchingDefault": "URL + subdomän + namn wildcard",
     "autofillMatchingUrlSubdomain": "URL + subdomän",
     "autofillMatchingUrlExact": "Endast exakt URL domän",
     "siteSpecificSettings": "Webbplatsspecifika inställningar",
-    "autofillPopupOn": "Autofyll popup-fönster på: ",
+    "autofillPopupOn": "Autofyllruta på: ",
     "enabledForThisSite": "Aktiverad för denna webbplats",
     "disabledForThisSite": "Inaktiverad för denna webbplats",
     "temporarilyDisabledUntil": "Tillfälligt inaktiverad tills",
     "resetAllSiteSettings": "Återställ alla webbplatsspecifika inställningar",
-    "autofillPopupDescription": "Visa autofyll när inloggningsfält upptäcks.",
+    "autofillPopupDescription": "Visa autofyllrutan när inloggningsfält upptäcks.",
     "disabledSites": "Inaktiverade webbplatser",
-    "disabledSitesDescription": "Webbplatser där autofyll inte kommer att visas.",
+    "disabledSitesDescription": "Webbplatser där autofyllrutan inte kommer att visas.",
     "clearAllDisabledSites": "Rensa alla inaktiverade sajter",
     "temporaryUntil": "fram till",
     "appearance": "Utseende",
@@ -377,7 +385,7 @@
     "clipboardClear15Seconds": "Rensa efter 15 sekunder",
     "autoLockTimeout": "Timeout för automatisk låsning",
     "autoLockTimeoutDescription": "Lås valvet automatiskt efter en period av inaktivitet",
-    "autoLockTimeoutHelp": "Valvet kommer endast att låsas efter den angivna perioden av inaktivitet (ingen användning av autofyll eller öppnande av tilläggspopup). Valvet kommer alltid att låsa när webbläsaren stängs, oavsett inställning.",
+    "autoLockTimeoutHelp": "Valvet kommer endast att låsas efter den angivna perioden av inaktivitet (ingen användning av autofyll eller öppnande av tilläggsruta). Valvet kommer alltid att låsa när webbläsaren stängs, oavsett inställning.",
     "autoLockNever": "Aldrig",
     "autoLock15Seconds": "15 sekunder",
     "autoLock1Minute": "1 minut",
@@ -404,7 +412,7 @@
     "customClientUrl": "Klientens URL",
     "apiUrlHint": "API slutpunkts-URL (vanligtvis klientens URL + /api)",
     "clientUrlHint": "Webbgränssnittets URL för din egenhostade instans",
-    "autofillSettingsDescription": "Aktivera eller inaktivera popup för autofyll på webbsidor",
+    "autofillSettingsDescription": "Aktivera eller inaktivera autofyllruta på webbsidor",
     "autofillEnabledDescription": "Autofyll förslag visas på inloggningsformulär",
     "autofillDisabledDescription": "Autofyll förslag är inaktiverade globalt",
     "languageSettings": "Språk",
@@ -414,17 +422,17 @@
       "clientUrlRequired": "Klientens URL krävs",
       "clientUrlInvalid": "Ange en giltig klient-URL"
     },
-    "identityGenerator": "Identitets Generator",
+    "identityGenerator": "Identitetsgenerator",
     "identityGeneratorSettings": {
-      "description": "Konfigurera standardspråk och könspreferens för att generera nya identiteter.",
+      "description": "Konfigurera standardspråk och könspreferens för generering av nya identiteter.",
       "languageSection": "Språk",
       "languageDescription": "Ange det språk som ska användas för att generera nya identiteter.",
       "genderSection": "Kön",
-      "genderDescription": "Ställ in könspreferensen för att generera nya identiteter.",
+      "genderDescription": "Ange könspreferens för generering av nya identiteter.",
       "ageRangeSection": "Åldersintervall",
-      "ageRangeDescription": "Ange åldersintervallet för att generera nya identiteter.",
+      "ageRangeDescription": "Ange åldersintervall för generering av nya identiteter.",
       "genderOptions": {
-        "random": "Slumpad",
+        "random": "Slumpmässigt",
         "male": "Man",
         "female": "Kvinna"
       }
@@ -452,7 +460,7 @@
       "incorrectPinSingular": "Felaktig PIN-kod. 1 försök återstår.",
       "enableSuccess": "PIN-upplåsning har aktiverats!",
       "pinLocked": "PIN-upplåsning har inaktiverats. Använd ditt huvudlösenord för att låsa upp ditt valv.",
-      "pinSecurityWarning": "PIN-upplåsning i webbläsartillägget kan vara mindre säkert än ditt huvudlösenord, eftersom PIN-koder vanligtvis har lägre entropi och kan bli \"brute-forcead\" om din enhet äventyras. Använd den endast på enheter som du litar på."
+      "pinSecurityWarning": "PIN-upplåsning i webbläsartillägget kan vara mindre säkert än ditt huvudlösenord, eftersom PIN-koder vanligtvis har lägre entropi och kan bli buret-force-attackerad"
     }
   },
   "passkeys": {

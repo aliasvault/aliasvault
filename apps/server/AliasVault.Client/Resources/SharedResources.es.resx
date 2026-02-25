@@ -138,6 +138,14 @@
     <value>Editar</value>
     <comment>Button text for editing an item</comment>
   </data>
+  <data name="Show" xml:space="preserve">
+    <value>Mostrar</value>
+    <comment>Button text for showing content</comment>
+  </data>
+  <data name="Hide" xml:space="preserve">
+    <value>Esconder</value>
+    <comment>Button text for hiding content</comment>
+  </data>
   <data name="Close" xml:space="preserve">
     <value>Cerrar</value>
     <comment>Button text for closing a dialog or modal</comment>

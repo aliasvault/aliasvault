@@ -4,6 +4,7 @@
     "close": "关闭",
     "delete": "删除",
     "save": "保存",
+    "edit": "编辑",
     "yes": "是",
     "no": "否",
     "ok": "确定",
@@ -24,6 +25,7 @@
     "add": "添加",
     "generate": "生成",
     "attachments": "附件",
+    "or": "或",
     "deleteItemConfirmTitle": "删除项目",
     "deleteItemConfirmDescription": "您确定要删除此项目吗？",
     "errors": {
@@ -114,8 +116,11 @@
     "secretKey": "密钥",
     "instructions": "输入要添加两步验证的网站显示的密钥。",
     "saveToViewCode": "保存以查看验证码",
+    "scanQrCode": "扫描二维码",
+    "enterManually": "输入设置密钥",
     "errors": {
-      "invalidSecretKey": "密钥格式无效。"
+      "invalidSecretKey": "密钥格式无效。",
+      "scanFailed": "扫描二维码失败，请重试。"
     }
   },
   "settings": {
@@ -305,8 +310,7 @@
         "verifyingWithServer": "与服务器验证中",
         "deletingAccount": "删除账户中",
         "accountDeleted": "账户已成功删除",
-        "failedToDelete": "删除账户失败。请重试。",
-        "usernameNotFound": "用户名不存在。请重新登录。"
+        "failedToDelete": "删除账户失败。请重试。"
       }
     },
     "qrScanner": {
@@ -410,14 +414,12 @@
     "publicEmailTitle": "公共临时邮箱提供商",
     "publicEmailDescription": "匿名但隐私性有限，任何知晓其地址的人均可读取邮件内容。",
     "searchPlaceholder": "搜索密码库…",
-    "noMatchingItems": "未找到匹配的项目",
+    "noMatchingItems": "没有项目符合所选筛选器。",
     "noMatchingItemsSearch": "未找到匹配“{{search}}”的项目",
     "noMatchingItemsWithFilter": "未找到匹配“{{search}}”的 {{filter}} 项目",
     "noItemsFound": "未找到项目。请创建一个以开始使用。提示：您也可以登录 AliasVault 网页应用，从其他密码管理器导入凭据。",
     "allItemsInFolders": "您的所有项目都已整理到文件夹中。点击上方文件夹即可查看您的凭据，或使用搜索查找特定的项目。",
     "noPasskeysFound": "尚未创建通行密钥。访问以通行密钥为认证方式的网站才能创建通行密钥。",
-    "noAttachmentsFound": "未找到带附件的项目",
-    "noItemsOfTypeFound": "未找到 {{type}} 项目",
     "clearSearch": "清除搜索",
     "clearFilter": "清除筛选器",
     "recentEmails": "近期邮件",
@@ -444,7 +446,8 @@
       "all": "项目",
       "showFolders": "文件夹",
       "passkeys": "通行密钥",
-      "attachments": "附件"
+      "attachments": "附件",
+      "totp": "两步验证码"
     },
     "sort": {
       "title": "排序方式",
@@ -469,7 +472,8 @@
       "itemDeleted": "项目删除成功",
       "usernameCopied": "用户名已复制到剪贴板",
       "emailCopied": "邮箱已复制到剪贴板",
-      "passwordCopied": "密码已复制到剪贴板"
+      "passwordCopied": "密码已复制到剪贴板",
+      "urlCopied": "URL 已复制到剪贴板"
     },
     "createNewAliasFor": "创建新别名用于",
     "contextMenu": {
@@ -479,6 +483,12 @@
       "copyUsername": "复制用户名",
       "copyEmail": "复制邮箱",
       "copyPassword": "复制密码"
+    },
+    "urlContextMenu": {
+      "title": "URL 选项",
+      "copyLink": "复制链接",
+      "openLink": "打开链接",
+      "shareLink": "分享链接"
     },
     "viewHistory": "查看历史记录",
     "history": "历史记录",
