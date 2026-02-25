@@ -20,6 +20,15 @@ import type { SavePromptPersistedState, LastAutofilledCredential } from "@/utils
 
 import { defineBackground, browser } from '#imports';
 
+/*
+ * Register alarm listener at top-level scope.
+ * [..] Move the event listener registration to the top level of your script.
+ * This ensures that Chrome will be able to immediately find and invoke your action's click handler,
+ * even if your extension hasn't finished executing its startup logic. [..]
+ * See: https://developer.chrome.com/docs/extensions/develop/migrate/to-service-workers
+ */
+browser.alarms.onAlarm.addListener(handleAutoLockAlarm);
+
 export default defineBackground({
   /**
    * This is the main entry point for the background script.
@@ -129,11 +138,9 @@ export default defineBackground({
     /*
      * Initialize auto-lock alarm system.
      * This ensures the alarm is restored if the service worker was terminated.
+     * Note: The alarm listener is registered at top-level scope (see above).
      */
     await initializeAutoLockAlarm();
-
-    // Register alarm listener for auto-lock
-    browser.alarms.onAlarm.addListener(handleAutoLockAlarm);
 
     // Listen for custom commands
     try {
