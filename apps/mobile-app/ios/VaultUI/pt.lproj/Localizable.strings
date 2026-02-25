@@ -69,9 +69,9 @@
 "pin_incorrect_attempts_remaining" = "PIN incorreto. %d tentativas restantes";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
-"unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"enter_password_to_unlock" = "Digite sua senha mestre";
+"unlock" = "Desbloquear";
+"incorrect_password" = "Senha incorreta. Por favor tente novamente.";
 
 /* PIN Setup */
 "pin_setup_title" = "Configurar PIN";
