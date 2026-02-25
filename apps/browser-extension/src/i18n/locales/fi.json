@@ -51,7 +51,7 @@
     "undo": "Kumoa",
     "save": "Tallenna",
     "saving": "Saving...",
-    "edit": "Edit",
+    "edit": "Muokkaa",
     "create": "Luo",
     "or": "Tai",
     "close": "Sulje",
@@ -172,7 +172,7 @@
     "vaultUpgradeRequired": "Holvin päivitys vaaditaan.",
     "dismissPopup": "Hylkää ponnahdusikkuna",
     "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "close": "Sulje",
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site",
