@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} отключен для AliasVault. Чтобы использовать его, пожалуйста, сначала включите его в настройках вашего устройства.",
       "biometricHelp": "Разблокируйте хранилище с помощью биометрии. Оно защищено {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} недоступен. Нажмите, чтобы открыть настройки, и/или перейдите в настройки своего устройства, чтобы включить и настроить его.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "ПИН-код",
       "pinDescription": "Используйте PIN-код для быстрой разблокировки хранилища.",
       "pinEnabled": "Вход по PIN-коду успешно включен",
