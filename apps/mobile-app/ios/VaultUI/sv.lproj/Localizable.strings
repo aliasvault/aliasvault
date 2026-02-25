@@ -69,9 +69,9 @@
 "pin_incorrect_attempts_remaining" = "Felaktig PIN-kod. %d försök återstår";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
-"unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"enter_password_to_unlock" = "Ange ditt huvudlösenord";
+"unlock" = "Lås upp";
+"incorrect_password" = "Felaktigt lösenord. Försök igen.";
 
 /* PIN Setup */
 "pin_setup_title" = "Ställ in PIN-kod";
