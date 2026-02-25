@@ -32,7 +32,7 @@
 "username_copied" = "Username copied";
 "password_copied" = "Password copied";
 "email_copied" = "Email copied";
-"totp_code" = "TOTP Code";
+"totp_code" = "TOTP Kodu";
 
 /* Search bar */
 "search_items" = "Search items...";
@@ -70,8 +70,8 @@
 
 /* Password Unlock */
 "enter_password_to_unlock" = "Enter your master password";
-"unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"unlock" = "Kilidi aç";
+"incorrect_password" = "Parola yanlış. Lütfen yeniden deneyin.";
 
 /* PIN Setup */
 "pin_setup_title" = "Setup PIN";
