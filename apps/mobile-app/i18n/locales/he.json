@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} מושבת עבור AliasVault. כדי להשתמש בו, נא להפעיל אותו בהגדרות ההתקן תחילה.",
       "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} לא זמין. נא לגעת כדי לפתוח את ההגדרות ו/או לגשת להגדרות המכשיר שלך כדי להפעיל ולהגדיר אותו.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "קוד גישה אישי",
       "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
       "pinEnabled": "שחרור קוד אישי הופעל בהצלחה",
