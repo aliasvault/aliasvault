@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "Funkcja {{biometric}} jest wyłączona dla AliasVault. Aby z niej skorzystać, należy najpierw włączyć ją w ustawieniach urządzenia.",
       "biometricHelp": "Użyj danych biometrycznych, aby odblokować sejf zabezpieczony przez {{keystore}}.",
       "biometricUnavailableHelp": "Funkcja {{biometric}} jest niedostępna. Dotknij, aby otworzyć ustawienia i/lub przejdź do ustawień urządzenia, aby ją włączyć.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "Kod PIN",
       "pinDescription": "Użyj niestandardowego kodu PIN, aby szybciej odblokować sejf.",
       "pinEnabled": "Odblokowanie za pomocą kodu PIN zakończone sukcesem",
