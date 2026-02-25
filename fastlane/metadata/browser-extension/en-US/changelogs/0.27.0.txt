@@ -1,0 +1,8 @@
+- Automatically save new credentials while browsing
+- Autofill 2FA TOTP tokens
+- Add support to edit 2FA TOTP tokens after creation
+- Search query is now remembered when you open an item and press back
+- When opening browser extension, it will automatically show the stored credentials for the current website
+- Improve autofill field detection
+- Improve search
+- Fix various bugs

@@ -1,0 +1,7 @@
+- Je kunt nu 2FA TOTP codes toevoegen door de QR code te scannen
+- 2FA TOTP tokens inzien en wijzigen na aanmaken
+- Credential URL kan nu worden gekopieerd of worden gedeeld via long-press
+- Selecteer automatisch de map waar je in zit bij aanmaken van credential
+- Mobile unlock werkt nu ook met wachtwoord ontgrendeling
+- Zoeken verbeterd
+- Verschillende bugs opgelost
