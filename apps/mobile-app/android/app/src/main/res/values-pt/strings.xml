@@ -7,7 +7,7 @@
   <string name="common_close">Fechar</string>
   <string name="common_next">Próximo</string>
   <string name="common_cancel">Cancelar</string>
-  <string name="common_back">Back</string>
+  <string name="common_back">Voltar</string>
   <string name="unknown_error">Ocorreu um erro desconhecido</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Falha ao recuperar, abra o aplicativo</string>
@@ -83,10 +83,10 @@
   <string name="pin_confirm_description">Digite seu PIN novamente para confirmar</string>
   <string name="pin_mismatch">PINs não correspondem. Por favor, tente novamente.</string>
   <!-- Password unlock -->
-  <string name="password_unlock_title">Unlock Vault</string>
-  <string name="password_unlock_subtitle">Enter your master password</string>
-  <string name="password_unlock_password_hint">Password</string>
-  <string name="password_unlock_button">Unlock</string>
-  <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
+  <string name="password_unlock_title">Desbloquear Cofre</string>
+  <string name="password_unlock_subtitle">Digite sua senha mestre</string>
+  <string name="password_unlock_password_hint">Senha</string>
+  <string name="password_unlock_button">Desbloquear</string>
+  <string name="password_unlock_incorrect">Senha incorreta. Por favor tente novamente.</string>
   <string name="password_unlock_error">Failed to verify password</string>
 </resources>
