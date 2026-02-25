@@ -68,6 +68,11 @@
 "pin_locked_max_attempts" = "Deine PIN wurde nach zu vielen Fehlversuchen gesperrt";
 "pin_incorrect_attempts_remaining" = "Ungültige PIN, %d verbleibende Versuche";
 
+/* Password Unlock */
+"enter_password_to_unlock" = "Enter your master password";
+"unlock" = "Unlock";
+"incorrect_password" = "Incorrect password. Please try again.";
+
 /* PIN Setup */
 "pin_setup_title" = "PIN einrichten";
 "pin_setup_subtitle" = "Wähle eine PIN zum Entsperren des Tresors";
