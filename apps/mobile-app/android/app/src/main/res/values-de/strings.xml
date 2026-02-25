@@ -7,7 +7,7 @@
   <string name="common_close">Schließen</string>
   <string name="common_next">Weiter</string>
   <string name="common_cancel">Abbrechen</string>
-  <string name="common_back">Back</string>
+  <string name="common_back">Zurück</string>
   <string name="unknown_error">Ein unbekannter Fehler ist aufgetreten</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Abruf der Daten fehlgeschlagen. Öffne die App</string>
@@ -83,10 +83,10 @@
   <string name="pin_confirm_description">Zur Bestätigung PIN erneut eingeben</string>
   <string name="pin_mismatch">PINs stimmen nicht überein. Bitte versuche es erneut.</string>
   <!-- Password unlock -->
-  <string name="password_unlock_title">Unlock Vault</string>
-  <string name="password_unlock_subtitle">Enter your master password</string>
-  <string name="password_unlock_password_hint">Password</string>
-  <string name="password_unlock_button">Unlock</string>
-  <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
+  <string name="password_unlock_title">Tresor entsperren</string>
+  <string name="password_unlock_subtitle">Gib Dein Master-Passwort ein</string>
+  <string name="password_unlock_password_hint">Passwort</string>
+  <string name="password_unlock_button">Entsperren</string>
+  <string name="password_unlock_incorrect">Falsches Passwort. Bitte versuche es erneut.</string>
   <string name="password_unlock_error">Failed to verify password</string>
 </resources>
