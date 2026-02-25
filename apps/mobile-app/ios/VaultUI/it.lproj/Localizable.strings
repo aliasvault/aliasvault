@@ -68,6 +68,11 @@
 "pin_locked_max_attempts" = "PIN bloccato dopo troppi tentativi falliti";
 "pin_incorrect_attempts_remaining" = "PIN errato, %d tentativi rimasti";
 
+/* Password Unlock */
+"enter_password_to_unlock" = "Enter your master password";
+"unlock" = "Unlock";
+"incorrect_password" = "Incorrect password. Please try again.";
+
 /* PIN Setup */
 "pin_setup_title" = "Configurare PIN";
 "pin_setup_subtitle" = "Scegli un PIN per sbloccare la cassaforte";
