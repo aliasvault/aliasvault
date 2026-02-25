@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Verificerer autentificeringskode",
     "verify": "Verificer",
     "unlockVault": "Lås boks op",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Lås op med PIN",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Indtast din adgangskode for at låse din boks op",
     "enterPasswordPlaceholder": "Adgangskode",
     "enterAuthCode": "Indtast 6-cifret kode",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Indtast din adgangskode",
     "enableBiometric": "Aktiver {{biometric}}?",
     "biometricPrompt": "Vil du bruge {{biometric}} til at låse din boks op?",
-    "tryBiometricAgain": "Prøv {{biometric}} igen",
-    "tryPinAgain": "Prøv PIN igen",
     "authCodeNote": "Bemærk: Hvis du ikke har adgang til din autentificeringsenhed, kan du nulstille din 2FA med en gendannelseskode ved at logge ind via hjemmesiden.",
     "errors": {
       "credentialsRequired": "Brugernavn og adgangskode er påkrævet",
@@ -321,7 +321,8 @@
         "confirmSubtitle": "Autentificer igen for at godkende login på en anden enhed.",
         "confirmMessage": "Du er ved at logge ind på en ekstern enhed med din konto. Denne enhed vil have fuld adgang til din boks. Fortsæt kun, hvis du har tillid til denne enhed.",
         "successDescription": "Den eksterne enhed er blevet logget ind korrekt.",
-        "requestExpired": "Denne loginanmodning er udløbet. Generer venligst en ny QR-kode."
+        "requestExpired": "Denne loginanmodning er udløbet. Generer venligst en ny QR-kode.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },
