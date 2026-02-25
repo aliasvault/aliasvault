@@ -446,7 +446,7 @@ class VaultStore(
      */
     fun tryGetAllItems(callback: ItemOperationCallback): Boolean {
         if (crypto.encryptionKey == null) {
-            android.util.Log.d("VaultStore", "Encryption key not in memory, authentication required")
+            android.util.Log.d(TAG, "Encryption key not in memory, authentication required")
             return false
         }
 
@@ -458,7 +458,7 @@ class VaultStore(
             callback.onSuccess(itemRepository.getAll())
             return true
         } catch (e: Exception) {
-            android.util.Log.e("VaultStore", "Error retrieving items", e)
+            android.util.Log.e(TAG, "Error retrieving items", e)
             callback.onError(e)
             return false
         }
@@ -485,7 +485,10 @@ class VaultStore(
                     authMethods,
                 )
             } catch (e: Exception) {
-                android.util.Log.d("VaultStore", "Could not persist encryption key immediately (likely no Activity context), will persist on next unlock: ${e.message}")
+                android.util.Log.d(
+                    TAG,
+                    "Could not persist encryption key immediately (likely no Activity context), will persist on next unlock: ${e.message}",
+                )
             }
         }
 
@@ -938,13 +941,13 @@ class VaultStore(
         val isBiometricEnabled = authMethods.contains("faceid")
 
         if (!isBiometricEnabled) {
-            Log.e("VaultStore", "No authentication method enabled")
+            Log.e(TAG, "No authentication method enabled")
             return false
         }
 
         // Check if biometric is available
         if (!keystoreProvider.isBiometricAvailable()) {
-            Log.e("VaultStore", "Biometric authentication not available")
+            Log.e(TAG, "Biometric authentication not available")
             return false
         }
 
