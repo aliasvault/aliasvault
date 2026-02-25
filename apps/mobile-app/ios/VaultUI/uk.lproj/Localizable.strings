@@ -68,6 +68,11 @@
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
 
+/* Password Unlock */
+"enter_password_to_unlock" = "Enter your master password";
+"unlock" = "Unlock";
+"incorrect_password" = "Incorrect password. Please try again.";
+
 /* PIN Setup */
 "pin_setup_title" = "Налаштування PIN-коду";
 "pin_setup_subtitle" = "Виберіть PIN-код, щоб розблокувати сховище";
