@@ -1,5 +1,8 @@
 package net.aliasvault.app.pinunlock
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ObjectAnimator
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
@@ -8,7 +11,9 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import android.view.View
 import android.view.WindowManager
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
@@ -133,15 +138,14 @@ class PinUnlockActivity : AppCompatActivity() {
 
     private fun applyWindowInsets() {
         findViewById<View>(android.R.id.content).setOnApplyWindowInsetsListener { _, insets ->
-            val cancelButton = findViewById<Button>(R.id.cancelButton)
+            val cancelButton = findViewById<ImageButton>(R.id.cancelButton)
             val systemBarsInsets = insets.systemWindowInsets
 
-            cancelButton.setPadding(
-                cancelButton.paddingLeft,
-                systemBarsInsets.top + cancelButton.paddingTop,
-                cancelButton.paddingRight,
-                cancelButton.paddingBottom,
-            )
+            // Apply top inset to cancel button's parent FrameLayout margin
+            val cancelButtonParent = cancelButton.parent as View
+            val layoutParams = cancelButtonParent.layoutParams as androidx.constraintlayout.widget.ConstraintLayout.LayoutParams
+            layoutParams.topMargin = systemBarsInsets.top + 8 // 8dp base margin
+            cancelButtonParent.layoutParams = layoutParams
 
             insets
         }
@@ -158,7 +162,7 @@ class PinUnlockActivity : AppCompatActivity() {
         progressBar = findViewById(R.id.progressBar)
 
         // Cancel button
-        findViewById<Button>(R.id.cancelButton).setOnClickListener {
+        findViewById<ImageButton>(R.id.cancelButton).setOnClickListener {
             setResult(RESULT_CANCELLED)
             finish()
         }
@@ -167,6 +171,72 @@ class PinUnlockActivity : AppCompatActivity() {
         continueButton.setOnClickListener {
             submitPin()
         }
+
+        // Animate views in on appear
+        animateViewsIn()
+    }
+
+    private fun animateViewsIn() {
+        // Fade in and translate title
+        titleTextView.alpha = 0f
+        titleTextView.translationY = -20f
+        titleTextView.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(400)
+            .setStartDelay(100)
+            .setInterpolator(AccelerateDecelerateInterpolator())
+            .start()
+
+        // Fade in subtitle
+        subtitleTextView.alpha = 0f
+        subtitleTextView.animate()
+            .alpha(1f)
+            .setDuration(400)
+            .setStartDelay(200)
+            .start()
+
+        // Fade in and scale PIN display (dots or text)
+        pinDotsContainer.alpha = 0f
+        pinDotsContainer.scaleX = 0.95f
+        pinDotsContainer.scaleY = 0.95f
+        pinDotsContainer.animate()
+            .alpha(1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(400)
+            .setStartDelay(300)
+            .setInterpolator(AccelerateDecelerateInterpolator())
+            .start()
+
+        pinTextView.alpha = 0f
+        pinTextView.scaleX = 0.95f
+        pinTextView.scaleY = 0.95f
+        pinTextView.animate()
+            .alpha(1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(400)
+            .setStartDelay(300)
+            .setInterpolator(AccelerateDecelerateInterpolator())
+            .start()
+
+        // Fade in numpad buttons with staggered delay
+        val numpadContainer = findViewById<View>(R.id.numpadContainer)
+        numpadContainer.alpha = 0f
+        numpadContainer.animate()
+            .alpha(1f)
+            .setDuration(400)
+            .setStartDelay(400)
+            .start()
+
+        // Fade in continue button (if visible)
+        continueButton.alpha = 0f
+        continueButton.animate()
+            .alpha(1f)
+            .setDuration(400)
+            .setStartDelay(500)
+            .start()
     }
 
     private fun setupNumpad() {
@@ -262,8 +332,19 @@ class PinUnlockActivity : AppCompatActivity() {
         val config = configuration ?: return
         if (continueButton.visibility == View.VISIBLE) {
             // Enable button only if PIN is at least 4 digits
-            continueButton.isEnabled = currentPin.length >= 4
-            continueButton.alpha = if (currentPin.length >= 4) 1.0f else 0.5f
+            val isEnabled = currentPin.length >= 4
+            continueButton.isEnabled = isEnabled
+
+            // Animate button scale and alpha based on enabled state
+            val scale = if (isEnabled) 1.0f else 0.98f
+            val alpha = if (isEnabled) 1.0f else 0.5f
+            continueButton.animate()
+                .scaleX(scale)
+                .scaleY(scale)
+                .alpha(alpha)
+                .setDuration(200)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .start()
         }
     }
 
@@ -272,8 +353,8 @@ class PinUnlockActivity : AppCompatActivity() {
 
         val config = configuration ?: return
 
-        // Clear error when user starts typing
-        errorTextView.visibility = View.GONE
+        // Clear error when user starts typing with animation
+        hideError()
 
         // Check if we've reached max length
         val maxLength = config.pinLength ?: 8 // Max 8 digits in setup mode
@@ -307,8 +388,8 @@ class PinUnlockActivity : AppCompatActivity() {
         // Remove last digit
         currentPin = currentPin.dropLast(1)
 
-        // Clear error
-        errorTextView.visibility = View.GONE
+        // Clear error with animation
+        hideError()
 
         // Update UI
         val config = configuration ?: return
@@ -414,7 +495,7 @@ class PinUnlockActivity : AppCompatActivity() {
                 delay(1000)
                 configuration = viewModel.initializeConfiguration(PinMode.SETUP)
                 currentPin = ""
-                errorTextView.visibility = View.GONE
+                hideError()
                 updateUI()
             }
         }
@@ -422,7 +503,33 @@ class PinUnlockActivity : AppCompatActivity() {
 
     private fun showError(message: String) {
         errorTextView.text = message
+
+        // Animate error in with slide from top and fade
         errorTextView.visibility = View.VISIBLE
+        errorTextView.alpha = 0f
+        errorTextView.translationY = -20f
+        errorTextView.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(300)
+            .setInterpolator(AccelerateDecelerateInterpolator())
+            .start()
+    }
+
+    private fun hideError() {
+        if (errorTextView.visibility == View.VISIBLE) {
+            errorTextView.animate()
+                .alpha(0f)
+                .translationY(-20f)
+                .setDuration(200)
+                .setInterpolator(AccelerateDecelerateInterpolator())
+                .setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        errorTextView.visibility = View.GONE
+                    }
+                })
+                .start()
+        }
     }
 
     private fun triggerErrorFeedback() {
@@ -437,11 +544,17 @@ class PinUnlockActivity : AppCompatActivity() {
     }
 
     private fun shakeAndClear() {
+        // Shake the PIN display to indicate error (similar to password field shake)
+        val config = configuration ?: return
+        val targetView = if (config.pinLength != null) pinDotsContainer else pinTextView
+        val shake = ObjectAnimator.ofFloat(targetView, "translationX", 0f, 25f, -25f, 25f, -25f, 15f, -15f, 6f, -6f, 0f)
+        shake.duration = 600
+        shake.start()
+
         CoroutineScope(Dispatchers.Main).launch {
             // Clear the PIN after a short delay to show error
             delay(500)
             currentPin = ""
-            val config = configuration ?: return@launch
             if (config.pinLength != null) {
                 updatePinDots()
             } else {

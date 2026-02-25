@@ -281,6 +281,10 @@
     [vaultManager showPinSetup:resolve rejecter:reject];
 }
 
+- (void)showPasswordUnlock:(NSString *)title subtitle:(NSString *)subtitle buttonText:(NSString *)buttonText resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager showPasswordUnlock:title subtitle:subtitle buttonText:buttonText resolver:resolve rejecter:reject];
+}
+
 // MARK: - Mobile Login
 
 - (void)encryptDecryptionKeyForMobileLogin:(NSString *)publicKeyJWK resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
@@ -289,8 +293,8 @@
 
 // MARK: - Re-authentication
 
-- (void)authenticateUser:(NSString *)title subtitle:(NSString *)subtitle resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
-    [vaultManager authenticateUser:title subtitle:subtitle resolver:resolve rejecter:reject];
+- (void)authenticateUser:(NSString *)title subtitle:(NSString *)subtitle allowedMethods:(NSArray<NSString *> *)allowedMethods buttonText:(NSString *)buttonText resolve:(RCTPromiseResolveBlock)resolve reject:(RCTPromiseRejectBlock)reject {
+    [vaultManager authenticateUser:title subtitle:subtitle allowedMethods:allowedMethods buttonText:buttonText resolver:resolve rejecter:reject];
 }
 
 // MARK: - QR Code Scanner

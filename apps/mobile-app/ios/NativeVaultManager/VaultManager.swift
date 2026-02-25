@@ -809,6 +809,70 @@ public class VaultManager: NSObject {
     }
 
     @objc
+    func showPasswordUnlock(_ title: String?,
+                           subtitle: String?,
+                           buttonText: String?,
+                           resolver resolve: @escaping RCTPromiseResolveBlock,
+                           rejecter reject: @escaping RCTPromiseRejectBlock) {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else {
+                reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
+                return
+            }
+
+            // Get the root view controller from React Native
+            guard let rootVC = RCTPresentedViewController() else {
+                reject("NO_VIEW_CONTROLLER", "No view controller available", nil)
+                return
+            }
+
+            // Create password unlock view with ViewModel
+            let customTitle = (title?.isEmpty == false) ? title : nil
+            let customSubtitle = (subtitle?.isEmpty == false) ? subtitle : nil
+            let customButtonText = (buttonText?.isEmpty == false) ? buttonText : nil
+            let viewModel = PasswordUnlockViewModel(
+                customTitle: customTitle,
+                customSubtitle: customSubtitle,
+                customButtonText: customButtonText,
+                unlockHandler: { [weak self] password in
+                    guard let self = self else {
+                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
+                    }
+
+                    // Verify password and get encryption key
+                    guard let encryptionKeyBase64 = self.vaultStore.verifyPassword(password) else {
+                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Incorrect password"])
+                    }
+
+                    // Store encryption key in memory only
+                    try self.vaultStore.storeEncryptionKeyInMemory(base64Key: encryptionKeyBase64)
+
+                    // Unlock the vault
+                    try self.vaultStore.unlockVault()
+
+                    await MainActor.run {
+                        rootVC.dismiss(animated: true) {
+                            resolve(true)
+                        }
+                    }
+                },
+                cancelHandler: {
+                    rootVC.dismiss(animated: true) {
+                        resolve(nil)
+                    }
+                }
+            )
+
+            let passwordView = PasswordUnlockView(viewModel: viewModel)
+            let hostingController = UIHostingController(rootView: passwordView)
+
+            // Present modally as full screen
+            hostingController.modalPresentationStyle = .fullScreen
+            rootVC.present(hostingController, animated: true)
+        }
+    }
+
+    @objc
     func showPinSetup(_ resolve: @escaping RCTPromiseResolveBlock,
                            rejecter reject: @escaping RCTPromiseRejectBlock) {
         DispatchQueue.main.async { [weak self] in
@@ -912,22 +976,49 @@ public class VaultManager: NSObject {
     @objc
     func authenticateUser(_ title: String?,
                          subtitle: String?,
+                         allowedMethods: [String]?,
+                         buttonText: String?,
                          resolver resolve: @escaping RCTPromiseResolveBlock,
                          rejecter reject: @escaping RCTPromiseRejectBlock) {
-        // Check if PIN is enabled first
+        // Get enabled authentication methods
+        let authMethods = vaultStore.getAuthMethods()
         let pinEnabled = vaultStore.isPinEnabled()
 
-        if pinEnabled {
-            // PIN is enabled, show PIN unlock UI
+        // Filter by allowed methods if specified
+        let allowedMethodsSet: Set<String>? = allowedMethods.map { Set($0) }
+        let isBiometricEnabled = authMethods.contains(.faceID) && (allowedMethodsSet == nil || allowedMethodsSet!.contains("biometric"))
+        let isPinAllowed = pinEnabled && (allowedMethodsSet == nil || allowedMethodsSet!.contains("pin"))
+        let isPasswordAllowed = authMethods.contains(.password) && (allowedMethodsSet == nil || allowedMethodsSet!.contains("password"))
+
+        // If PIN is enabled and allowed, prefer PIN (with biometric first if available)
+        if isPinAllowed {
+            // Try biometric authentication first if enabled
+            if isBiometricEnabled {
+                let authenticated = vaultStore.issueBiometricAuthentication(title: title)
+                if authenticated {
+                    resolve(true)
+                    return
+                }
+                // Biometric failed or cancelled - fall through to PIN fallback
+            }
+
+            // Show PIN unlock (either as primary or fallback)
+            // Create a semaphore to handle the async PIN unlock result
+            let semaphore = DispatchSemaphore(value: 0)
+            var pinUnlockSucceeded = false
+            var pinWasCancelled = false
+
             DispatchQueue.main.async { [weak self] in
                 guard let self = self else {
                     reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
+                    semaphore.signal()
                     return
                 }
 
                 // Get the root view controller from React Native
                 guard let rootVC = RCTPresentedViewController() else {
                     reject("NO_VIEW_CONTROLLER", "No view controller available", nil)
+                    semaphore.signal()
                     return
                 }
 
@@ -950,14 +1041,17 @@ public class VaultManager: NSObject {
                         // Success - dismiss and resolve
                         await MainActor.run {
                             rootVC.dismiss(animated: true) {
+                                pinUnlockSucceeded = true
+                                semaphore.signal()
                                 resolve(true)
                             }
                         }
                     },
                     cancelHandler: {
-                        // User cancelled - dismiss and resolve with false
+                        // User cancelled PIN - check if password fallback is available
                         rootVC.dismiss(animated: true) {
-                            resolve(false)
+                            pinWasCancelled = true
+                            semaphore.signal()
                         }
                     }
                 )
@@ -969,10 +1063,97 @@ public class VaultManager: NSObject {
                 hostingController.modalPresentationStyle = .fullScreen
                 rootVC.present(hostingController, animated: true)
             }
-        } else {
-            // Use biometric authentication
+
+            // Wait for PIN unlock to complete or be cancelled
+            semaphore.wait()
+
+            // If PIN succeeded, we're done (already resolved above)
+            if pinUnlockSucceeded {
+                return
+            }
+
+            // If PIN was cancelled and password auth is available and allowed, fall back to password
+            if pinWasCancelled && isPasswordAllowed {
+                // Fall through to password unlock below
+            } else {
+                // No password fallback available, resolve with false
+                resolve(false)
+                return
+            }
+        }
+
+        // No PIN enabled or allowed - check for biometric + password
+        if isBiometricEnabled {
             let authenticated = vaultStore.issueBiometricAuthentication(title: title)
-            resolve(authenticated)
+            if authenticated {
+                resolve(true)
+                return
+            }
+            // Biometric failed or cancelled - fall through to password fallback if available
+        }
+
+        // Show password unlock if allowed (either as primary or fallback from biometric)
+        if !isPasswordAllowed {
+            // Password not allowed and we've exhausted other options
+            resolve(false)
+            return
+        }
+
+        // Show password unlock
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else {
+                reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
+                return
+            }
+
+            // Get the root view controller from React Native
+            guard let rootVC = RCTPresentedViewController() else {
+                reject("NO_VIEW_CONTROLLER", "No view controller available", nil)
+                return
+            }
+
+            // Create password unlock view with ViewModel
+            // Use custom title/subtitle/buttonText if provided, otherwise use defaults
+            let customTitle = (title?.isEmpty == false) ? title : nil
+            let customSubtitle = (subtitle?.isEmpty == false) ? subtitle : nil
+            let customButtonText = (buttonText?.isEmpty == false) ? buttonText : nil
+            let viewModel = PasswordUnlockViewModel(
+                customTitle: customTitle,
+                customSubtitle: customSubtitle,
+                customButtonText: customButtonText,
+                unlockHandler: { [weak self] password in
+                    guard let self = self else {
+                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
+                    }
+
+                    // Verify password and get encryption key
+                    guard let encryptionKey = try self.vaultStore.verifyPassword(password) else {
+                        throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Incorrect password"])
+                    }
+
+                    try self.vaultStore.storeEncryptionKeyInMemory(base64Key: encryptionKey)
+
+                    // Success - dismiss and resolve
+                    await MainActor.run {
+                        rootVC.dismiss(animated: true) {
+                            resolve(true)
+                        }
+                    }
+                },
+                cancelHandler: {
+                    // User cancelled - dismiss and resolve with false
+                    rootVC.dismiss(animated: true) {
+                        resolve(false)
+                    }
+                }
+            )
+
+            let passwordView = PasswordUnlockView(viewModel: viewModel)
+            let hostingController = UIHostingController(rootView: passwordView)
+
+            // Present modally as full screen
+            hostingController.modalPresentationStyle = .fullScreen
+            rootVC.present(hostingController, animated: true)
         }
     }
 

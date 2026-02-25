@@ -8,7 +8,6 @@ import android.util.Log
 import androidx.core.net.toUri
 import androidx.fragment.app.FragmentActivity
 import com.facebook.react.bridge.Arguments
-import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactMethod
@@ -40,7 +39,7 @@ import org.json.JSONObject
 @Suppress("TooManyFunctions") // Required by React Native TurboModule interface
 @ReactModule(name = NativeVaultManager.NAME)
 class NativeVaultManager(reactContext: ReactApplicationContext) :
-    NativeVaultManagerSpec(reactContext), TurboModule, LifecycleEventListener {
+    NativeVaultManagerSpec(reactContext), TurboModule {
 
     companion object {
         /**
@@ -69,6 +68,11 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         const val QR_SCANNER_REQUEST_CODE = 1003
 
         /**
+         * Request code for password unlock activity.
+         */
+        const val PASSWORD_UNLOCK_REQUEST_CODE = 1004
+
+        /**
          * Static holder for the pending promise from showPinUnlock.
          * This allows MainActivity to resolve/reject the promise directly without
          * depending on React context availability.
@@ -83,6 +87,21 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
          */
         @Volatile
         var pinSetupPromise: Promise? = null
+
+        /**
+         * Static holder for the pending promise from showPasswordUnlock.
+         * This allows MainActivity to resolve/reject the promise directly without
+         * depending on React context availability.
+         */
+        @Volatile
+        var passwordUnlockPromise: Promise? = null
+
+        /**
+         * Static holder for authentication context (title, subtitle) to support password fallback
+         * when PIN is cancelled in authenticateUser flow.
+         */
+        @Volatile
+        var pendingAuthContext: Pair<String?, String?>? = null
     }
 
     private val vaultStore = VaultStore.getInstance(
@@ -91,34 +110,6 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     )
 
     private val webApiService = WebApiService(reactContext)
-
-    init {
-        // Register for lifecycle callbacks
-        reactContext.addLifecycleEventListener(this)
-    }
-
-    /**
-     * Called when the app enters the background.
-     */
-    override fun onHostPause() {
-        Log.d(TAG, "App entered background")
-        vaultStore.onAppBackgrounded()
-    }
-
-    /**
-     * Called when the app enters the foreground.
-     */
-    override fun onHostResume() {
-        Log.d(TAG, "App entered foreground")
-        vaultStore.onAppForegrounded()
-    }
-
-    /**
-     * Called when the app is destroyed.
-     */
-    override fun onHostDestroy() {
-        // Not needed
-    }
 
     /**
      * Get the name of the module.
@@ -1410,14 +1401,38 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     /**
-     * Authenticate the user using biometric or PIN unlock.
-     * This method automatically detects which authentication method is enabled and uses it.
-     * Returns true if authentication succeeded, false otherwise.
+     * Show native password unlock screen.
+     * Returns encryption key (base64) if successful, null if cancelled.
      *
-     * @param title The title for authentication. If null or empty, uses default.
-     * @param subtitle The subtitle for authentication. If null or empty, uses default.
-     * @param promise The promise to resolve with authentication result.
+     * @param title Custom title for the password unlock screen. If null or empty, uses default.
+     * @param subtitle Custom subtitle for the password unlock screen. If null or empty, uses default.
+     * @param promise The promise to resolve with encryption key or null.
      */
+    @ReactMethod
+    override fun showPasswordUnlock(title: String?, subtitle: String?, buttonText: String?, promise: Promise) {
+        val activity = currentActivity
+        if (activity == null) {
+            promise.reject("NO_ACTIVITY", "No activity available", null)
+            return
+        }
+
+        // Store promise in static companion object so MainActivity can resolve it directly
+        passwordUnlockPromise = promise
+
+        // Launch password unlock activity
+        val intent = Intent(activity, net.aliasvault.app.passwordunlock.PasswordUnlockActivity::class.java)
+        if (!title.isNullOrEmpty()) {
+            intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_TITLE, title)
+        }
+        if (!subtitle.isNullOrEmpty()) {
+            intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_SUBTITLE, subtitle)
+        }
+        if (!buttonText.isNullOrEmpty()) {
+            intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_BUTTON_TEXT, buttonText)
+        }
+        activity.startActivityForResult(intent, PASSWORD_UNLOCK_REQUEST_CODE)
+    }
+
     @ReactMethod
     override fun scanQRCode(prefixes: ReadableArray?, statusText: String?, promise: Promise) {
         CoroutineScope(Dispatchers.Main).launch {
@@ -1455,22 +1470,58 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    override fun authenticateUser(title: String?, subtitle: String?, promise: Promise) {
+    override fun authenticateUser(title: String?, subtitle: String?, allowedMethods: ReadableArray?, buttonText: String?, promise: Promise) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
-                // Check if PIN is enabled first
-                val pinEnabled = vaultStore.isPinEnabled()
+                // Get enabled authentication methods
+                val authMethods = vaultStore.getAuthMethods()
 
-                if (pinEnabled) {
-                    // PIN is enabled, show PIN unlock UI
+                // Convert ReadableArray to Set<String> for filtering
+                val allowedMethodsSet: Set<String>? = allowedMethods?.let { array ->
+                    val set = mutableSetOf<String>()
+                    for (i in 0 until array.size()) {
+                        array.getString(i)?.let { set.add(it) }
+                    }
+                    set.takeIf { it.isNotEmpty() }
+                }
+
+                // Filter by allowed methods if specified
+                val isBiometricEnabled = authMethods.contains("faceid") && (allowedMethodsSet == null || allowedMethodsSet.contains("biometric"))
+                val isPinAllowed = vaultStore.isPinEnabled() && (allowedMethodsSet == null || allowedMethodsSet.contains("pin"))
+                val isPasswordAllowed = authMethods.contains("password") && (allowedMethodsSet == null || allowedMethodsSet.contains("password"))
+
+                // If PIN is enabled and allowed, prefer PIN (with biometric first if available)
+                if (isPinAllowed) {
+                    // Try biometric authentication first if enabled
+                    if (isBiometricEnabled) {
+                        try {
+                            val authenticated = vaultStore.issueBiometricAuthentication(title)
+                            if (authenticated) {
+                                promise.resolve(true)
+                                return@launch
+                            }
+                            // Biometric failed or cancelled - fall through to PIN fallback
+                        } catch (e: Exception) {
+                            Log.d(TAG, "Biometric authentication failed or cancelled, trying PIN fallback", e)
+                            // Fall through to PIN fallback
+                        }
+                    }
+
+                    // Show PIN unlock (either as primary or fallback)
                     try {
                         // Store promise for later resolution by MainActivity
                         pendingActivityResultPromise = promise
+
+                        // Store auth context in case PIN is cancelled and we need to fall back to password
+                        if (isPasswordAllowed) {
+                            pendingAuthContext = Pair(title, subtitle)
+                        }
 
                         // Launch PIN unlock activity
                         val activity = currentActivity
                         if (activity == null) {
                             promise.reject("NO_ACTIVITY", "No activity available", null)
+                            pendingAuthContext = null
                             return@launch
                         }
 
@@ -1483,19 +1534,64 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                             intent.putExtra(net.aliasvault.app.pinunlock.PinUnlockActivity.EXTRA_CUSTOM_SUBTITLE, subtitle)
                         }
                         activity.startActivityForResult(intent, PIN_UNLOCK_REQUEST_CODE)
+                        return@launch
                     } catch (e: Exception) {
                         Log.e(TAG, "PIN authentication failed", e)
                         promise.reject("AUTH_ERROR", "PIN authentication failed: ${e.message}", e)
+                        pendingAuthContext = null
+                        return@launch
                     }
-                } else {
-                    // Use biometric authentication
+                }
+
+                // No PIN enabled - check for biometric + password
+                if (isBiometricEnabled) {
                     try {
                         val authenticated = vaultStore.issueBiometricAuthentication(title)
-                        promise.resolve(authenticated)
+                        if (authenticated) {
+                            promise.resolve(true)
+                            return@launch
+                        }
+                        // Biometric failed or cancelled - fall through to password fallback if available
                     } catch (e: Exception) {
-                        Log.e(TAG, "Biometric authentication failed", e)
-                        promise.resolve(false)
+                        Log.d(TAG, "Biometric authentication failed or cancelled, trying password fallback", e)
+                        // Fall through to password fallback
                     }
+                }
+
+                // Show password unlock if allowed (either as primary or fallback from biometric)
+                if (!isPasswordAllowed) {
+                    // Password not allowed and we've exhausted other options
+                    promise.resolve(false)
+                    return@launch
+                }
+
+                try {
+                    // Store promise for later resolution by MainActivity
+                    // Use pendingActivityResultPromise to match PIN unlock behavior (returns boolean)
+                    pendingActivityResultPromise = promise
+
+                    // Launch password unlock activity
+                    val activity = currentActivity
+                    if (activity == null) {
+                        promise.reject("NO_ACTIVITY", "No activity available", null)
+                        return@launch
+                    }
+
+                    val intent = Intent(activity, net.aliasvault.app.passwordunlock.PasswordUnlockActivity::class.java)
+                    // Add custom title/subtitle/buttonText if provided
+                    if (!title.isNullOrEmpty()) {
+                        intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_TITLE, title)
+                    }
+                    if (!subtitle.isNullOrEmpty()) {
+                        intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_SUBTITLE, subtitle)
+                    }
+                    if (!buttonText.isNullOrEmpty()) {
+                        intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_BUTTON_TEXT, buttonText)
+                    }
+                    activity.startActivityForResult(intent, PASSWORD_UNLOCK_REQUEST_CODE)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Password authentication failed", e)
+                    promise.reject("AUTH_ERROR", "Password authentication failed: ${e.message}", e)
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Authentication failed", e)

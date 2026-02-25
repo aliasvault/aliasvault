@@ -1,7 +1,5 @@
 package net.aliasvault.app.vaultstore
 
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import io.requery.android.database.sqlite.SQLiteDatabase
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -76,14 +74,14 @@ class VaultStore(
     // region Composed Components
 
     private val crypto = VaultCrypto(keystoreProvider, storageProvider)
-    private val databaseComponent = VaultDatabase(storageProvider, crypto)
-    private val itemRepository = net.aliasvault.app.vaultstore.repositories.ItemRepository(databaseComponent)
+    internal val database = VaultDatabase(storageProvider, crypto)
+    private val itemRepository = net.aliasvault.app.vaultstore.repositories.ItemRepository(database)
     internal val metadata = VaultMetadataManager(storageProvider)
     private val auth = VaultAuth(storageProvider) { cache.clearCache() }
-    private val sync = VaultSync(databaseComponent, metadata, crypto, storageProvider, itemRepository)
-    private val mutate = VaultMutate(databaseComponent, itemRepository, metadata)
-    private val cache = VaultCache(crypto, databaseComponent, keystoreProvider, storageProvider)
-    private val passkey = VaultPasskey(databaseComponent)
+    private val sync = VaultSync(database, metadata, crypto, storageProvider, itemRepository)
+    private val mutate = VaultMutate(database, itemRepository, metadata)
+    private val cache = VaultCache(crypto, database, keystoreProvider, storageProvider)
+    private val passkey = VaultPasskey(database)
     private val pin by lazy {
         val androidProvider = storageProvider as net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
         // Use reflection to access private context field
@@ -107,49 +105,10 @@ class VaultStore(
         }
 
     /**
-     * Internal accessor for database connection.
+     * Internal accessor for VaultAuth.
      */
-    internal val database: SQLiteDatabase?
-        get() = databaseComponent.dbConnection
-
-    /**
-     * Internal accessor for database connection (legacy name).
-     */
-    internal val dbConnection: SQLiteDatabase?
-        get() = databaseComponent.dbConnection
-
-    /**
-     * Internal accessor for auto-lock handler.
-     */
-    internal var autoLockHandler: Handler? = null
-
-    /**
-     * Internal accessor for auto-lock runnable.
-     */
-    internal var autoLockRunnable: Runnable? = null
-
-    // endregion
-
-    init {
-        autoLockHandler = Handler(Looper.getMainLooper())
-        auth.setAutoLockHandler(autoLockHandler!!)
-    }
-
-    // region Lifecycle Methods
-
-    /**
-     * Called when the app enters the background.
-     */
-    fun onAppBackgrounded() {
-        auth.onAppBackgrounded()
-    }
-
-    /**
-     * Called when the app enters the foreground.
-     */
-    fun onAppForegrounded() {
-        auth.onAppForegrounded()
-    }
+    internal val vaultAuth: VaultAuth
+        get() = auth
 
     // endregion
 
@@ -224,6 +183,42 @@ class VaultStore(
         return crypto.encryptDecryptionKeyForMobileLogin(publicKeyJWK, auth.getAuthMethods())
     }
 
+    /**
+     * Verify password and return encryption key if correct.
+     * Returns null if password is incorrect.
+     *
+     * @param password The password to verify
+     * @return The base64-encoded encryption key if password is correct, null otherwise
+     */
+    @Suppress("SwallowedException")
+    fun verifyPassword(password: String): String? {
+        return try {
+            // Get encryption key derivation parameters
+            val params = crypto.getEncryptionKeyDerivationParams()
+            val paramsJson = org.json.JSONObject(params)
+            val salt = paramsJson.getString("salt")
+            val encryptionType = paramsJson.getString("encryptionType")
+            val encryptionSettings = paramsJson.getString("encryptionSettings")
+
+            // Derive key from password
+            val derivedKey = crypto.deriveKeyFromPassword(password, salt, encryptionType, encryptionSettings)
+
+            // Try to decrypt the vault to verify the password is correct
+            val encryptedDb = database.getEncryptedDatabase()
+            val encryptedDbBytes = android.util.Base64.decode(encryptedDb, android.util.Base64.NO_WRAP)
+
+            // Attempt decryption to verify password is correct
+            VaultCrypto.decrypt(encryptedDbBytes, derivedKey)
+
+            // If decryption succeeded, return the key as base64
+            android.util.Base64.encodeToString(derivedKey, android.util.Base64.NO_WRAP)
+        } catch (e: Exception) {
+            // Password incorrect or decryption failed - intentionally return null
+            // We don't log the error as this is expected when password is incorrect
+            null
+        }
+    }
+
     // endregion
 
     // region Database Methods
@@ -232,35 +227,35 @@ class VaultStore(
      * Store the encrypted database.
      */
     fun storeEncryptedDatabase(encryptedData: String) {
-        databaseComponent.storeEncryptedDatabase(encryptedData)
+        database.storeEncryptedDatabase(encryptedData)
     }
 
     /**
      * Get the encrypted database.
      */
     fun getEncryptedDatabase(): String {
-        return databaseComponent.getEncryptedDatabase()
+        return database.getEncryptedDatabase()
     }
 
     /**
      * Check if the encrypted database exists.
      */
     fun hasEncryptedDatabase(): Boolean {
-        return databaseComponent.hasEncryptedDatabase()
+        return database.hasEncryptedDatabase()
     }
 
     /**
      * Unlock the vault.
      */
     fun unlockVault() {
-        databaseComponent.unlockVault(auth.getAuthMethods())
+        database.unlockVault(auth.getAuthMethods())
     }
 
     /**
      * Check if the vault is unlocked.
      */
     fun isVaultUnlocked(): Boolean {
-        return databaseComponent.isVaultUnlocked()
+        return database.isVaultUnlocked()
     }
 
     // endregion
@@ -271,7 +266,7 @@ class VaultStore(
      * Execute a read-only SQL query (SELECT) on the vault.
      */
     fun executeQuery(queryString: String, params: Array<Any?>): List<Map<String, Any?>> {
-        val db = databaseComponent.dbConnection ?: error("Database not initialized")
+        val db = database.dbConnection ?: error("Database not initialized")
 
         // Process params - convert base64-prefixed strings to ByteArray for blob binding
         val convertedParams = params.map { param ->
@@ -315,7 +310,7 @@ class VaultStore(
      * Execute an SQL update on the vault that mutates it.
      */
     fun executeUpdate(queryString: String, params: Array<Any?>): Int {
-        val db = databaseComponent.dbConnection ?: error("Database not initialized")
+        val db = database.dbConnection ?: error("Database not initialized")
 
         // Process params - convert base64-prefixed strings to ByteArray for blob binding
         val processedParams = params.map { param ->
@@ -363,7 +358,7 @@ class VaultStore(
      * which is why we execute them using rawQuery instead of compileStatement.
      */
     fun executeRaw(queryString: String) {
-        val db = databaseComponent.dbConnection ?: error("Database not initialized")
+        val db = database.dbConnection ?: error("Database not initialized")
 
         // Strip BOM (U+FEFF) that may be present at the start of SQL strings.
         val cleanedQuery = queryString.trimStart('\uFEFF')
@@ -399,7 +394,7 @@ class VaultStore(
      * Begin a SQL transaction on the vault.
      */
     fun beginTransaction() {
-        databaseComponent.beginTransaction()
+        database.beginTransaction()
     }
 
     /**
@@ -408,7 +403,7 @@ class VaultStore(
      * for proper sync tracking.
      */
     fun commitTransaction() {
-        databaseComponent.commitTransaction()
+        database.commitTransaction()
 
         // Atomically mark vault as dirty and increment mutation sequence
         // This ensures sync can properly detect local changes
@@ -420,7 +415,7 @@ class VaultStore(
      * Rollback a SQL transaction on the vault.
      */
     fun rollbackTransaction() {
-        databaseComponent.rollbackTransaction()
+        database.rollbackTransaction()
     }
 
     /**
@@ -429,7 +424,7 @@ class VaultStore(
      * This does NOT commit any SQL transaction - it just persists the current state of the database.
      */
     fun persistAndMarkDirty() {
-        databaseComponent.persistDatabaseToEncryptedStorage()
+        database.persistDatabaseToEncryptedStorage()
 
         // Atomically mark vault as dirty and increment mutation sequence
         // This ensures sync can properly detect local changes
@@ -454,7 +449,7 @@ class VaultStore(
         }
 
         try {
-            if (!databaseComponent.isVaultUnlocked()) {
+            if (!database.isVaultUnlocked()) {
                 unlockVault()
             }
 
@@ -651,7 +646,7 @@ class VaultStore(
         }
 
         // Store vault
-        databaseComponent.storeEncryptedDatabase(encryptedVault)
+        database.storeEncryptedDatabase(encryptedVault)
 
         if (markDirty) {
             metadata.setMutationSequence(mutationSequence)

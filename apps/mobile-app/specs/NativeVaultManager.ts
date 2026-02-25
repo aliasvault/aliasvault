@@ -97,12 +97,20 @@ export interface Spec extends TurboModule {
   showPinUnlock(): Promise<void>;
   showPinSetup(): Promise<void>;
 
+  // Password unlock method. Shows native password unlock screen.
+  // Returns true if successful, null if cancelled.
+  // If title/subtitle are null/empty, defaults to "Unlock Vault" context.
+  // If buttonText is null/empty, defaults to "Unlock".
+  showPasswordUnlock(title: string | null, subtitle: string | null, buttonText: string | null): Promise<boolean | null>;
+
   // Mobile login methods
   encryptDecryptionKeyForMobileLogin(publicKeyJWK: string): Promise<string>;
 
   // Re-authentication methods
   // Authenticate user with biometric or PIN. If title/subtitle are null/empty, defaults to "Unlock Vault" context.
-  authenticateUser(title: string | null, subtitle: string | null): Promise<boolean>;
+  // allowedMethods: Optional array of allowed methods ('biometric', 'pin', 'password'). If null/empty, all enabled methods are allowed.
+  // buttonText: Optional custom text for the unlock/confirm button. If null/empty, defaults to "Unlock".
+  authenticateUser(title: string | null, subtitle: string | null, allowedMethods: string[] | null, buttonText: string | null): Promise<boolean>;
 
   // QR code scanner
   // Scan a QR code and return the scanned data. Returns null if cancelled or failed.

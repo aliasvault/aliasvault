@@ -70,6 +70,8 @@ export default function ReinitializeScreen() : React.ReactNode {
           if (hasEncryptedDatabase) {
             // Attempt automatic unlock using centralized helper
             updateStatus(t('app.status.unlockingVault'));
+            // Small delay to ensure loading screen is fully rendered before showing native unlock dialog
+            await new Promise(resolve => setTimeout(resolve, 150));
             const unlockResult = await VaultUnlockHelper.attemptAutomaticUnlock({ enabledAuthMethods, unlockVault: dbContext.unlockVault });
 
             if (!unlockResult.success) {
@@ -80,9 +82,9 @@ export default function ReinitializeScreen() : React.ReactNode {
             }
 
             // Add small delay for UX
-            await new Promise(resolve => setTimeout(resolve, 300));
+            await new Promise(resolve => setTimeout(resolve, 150));
             updateStatus(t('app.status.decryptingVault'));
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise(resolve => setTimeout(resolve, 300));
 
             // Check if the vault needs migration before syncing
             if (await dbContext.hasPendingMigrations()) {

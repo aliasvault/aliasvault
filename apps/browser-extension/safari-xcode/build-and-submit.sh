@@ -192,4 +192,14 @@ fi
 
 echo "✅ Proceeding with upload..."
 
-fastlane deliver --pkg "$PKG_PATH" --skip_screenshots --skip_metadata --api_key_path "$API_KEY_PATH" --run_precheck_before_submit false
+# Calculate path to repository root and metadata
+REPO_ROOT="$SCRIPT_DIR/../../.."
+METADATA_PATH="$REPO_ROOT/fastlane/metadata/browser-extension"
+
+fastlane deliver \
+  --pkg "$PKG_PATH" \
+  --skip_screenshots \
+  --skip_metadata \
+  --metadata_path "$METADATA_PATH" \
+  --api_key_path "$API_KEY_PATH" \
+  --run_precheck_before_submit false

@@ -275,7 +275,7 @@ public class CredentialProviderViewModel: ObservableObject {
             // iOS provided URL - use Rust matcher for domain-aware matching
             filteredCredentials = RustItemMatcher.filterCredentials(
                 credentials,
-                currentUrl: searchText
+                searchText: searchText
             )
         } else {
             // User-typed search - use substring matching across all fields

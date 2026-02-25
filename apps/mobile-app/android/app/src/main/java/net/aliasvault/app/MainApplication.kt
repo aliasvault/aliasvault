@@ -2,6 +2,9 @@ package net.aliasvault.app
 
 import android.app.Application
 import android.content.res.Configuration
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.ProcessLifecycleOwner
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
 import com.facebook.react.ReactHost
@@ -14,6 +17,9 @@ import com.facebook.soloader.SoLoader
 import expo.modules.ApplicationLifecycleDispatcher
 import expo.modules.ReactNativeHostWrapper
 import net.aliasvault.app.nativevaultmanager.NativeVaultManagerPackage
+import net.aliasvault.app.vaultstore.VaultStore
+import net.aliasvault.app.vaultstore.keystoreprovider.AndroidKeystoreProvider
+import net.aliasvault.app.vaultstore.storageprovider.AndroidStorageProvider
 
 /**
  * The main application class.
@@ -54,6 +60,42 @@ class MainApplication : Application(), ReactApplication {
             load()
         }
         ApplicationLifecycleDispatcher.onApplicationCreate(this)
+
+        // Setup process lifecycle observer for auto-lock functionality
+        setupProcessLifecycleObserver()
+    }
+
+    /**
+     * Setup process-level lifecycle observer to track when the app backgrounds/foregrounds.
+     */
+    private fun setupProcessLifecycleObserver() {
+        ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
+            override fun onStop(owner: LifecycleOwner) {
+                // Called when app goes to background (all activities stopped)
+                try {
+                    val vaultStore = VaultStore.getInstance(
+                        AndroidKeystoreProvider(this@MainApplication) { null },
+                        AndroidStorageProvider(this@MainApplication),
+                    )
+                    vaultStore.vaultAuth.onAppBackgrounded()
+                } catch (e: Exception) {
+                    android.util.Log.e("MainApplication", "Error handling app background", e)
+                }
+            }
+
+            override fun onStart(owner: LifecycleOwner) {
+                // Called when app comes to foreground (at least one activity visible)
+                try {
+                    val vaultStore = VaultStore.getInstance(
+                        AndroidKeystoreProvider(this@MainApplication) { null },
+                        AndroidStorageProvider(this@MainApplication),
+                    )
+                    vaultStore.vaultAuth.onAppForegrounded()
+                } catch (e: Exception) {
+                    android.util.Log.e("MainApplication", "Error handling app foreground", e)
+                }
+            }
+        })
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
