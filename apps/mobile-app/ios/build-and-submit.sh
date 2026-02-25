@@ -186,9 +186,14 @@ fi
 
 echo "✅ No duplicate found. Proceeding with deliver..."
 
+# Calculate path to repository root and metadata
+REPO_ROOT="$SCRIPT_DIR/../../.."
+METADATA_PATH="$REPO_ROOT/fastlane/metadata/ios"
+
 fastlane deliver \
   --ipa "$IPA_PATH" \
   --skip_screenshots \
   --skip_metadata \
+  --metadata_path "$METADATA_PATH" \
   --api_key_path "$API_KEY_PATH" \
   --run_precheck_before_submit=false
