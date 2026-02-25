@@ -7,7 +7,7 @@
   <string name="common_close">Sulje</string>
   <string name="common_next">Seuraava</string>
   <string name="common_cancel">Peruuta</string>
-  <string name="common_back">Back</string>
+  <string name="common_back">Takaisin</string>
   <string name="unknown_error">Tapahtui tuntematon virhe</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Nouto epäonnistui, avaa sovellus</string>
@@ -83,10 +83,10 @@
   <string name="pin_confirm_description">Syötä PIN-koodi uudelleen vahvistaaksesi</string>
   <string name="pin_mismatch">PIN-koodit eivät täsmää. Yritä uudelleen.</string>
   <!-- Password unlock -->
-  <string name="password_unlock_title">Unlock Vault</string>
-  <string name="password_unlock_subtitle">Enter your master password</string>
-  <string name="password_unlock_password_hint">Password</string>
-  <string name="password_unlock_button">Unlock</string>
-  <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
+  <string name="password_unlock_title">Avaa holvin lukitus</string>
+  <string name="password_unlock_subtitle">Syötä pääsalasanasi</string>
+  <string name="password_unlock_password_hint">Salasana:</string>
+  <string name="password_unlock_button">Avaa lukitus</string>
+  <string name="password_unlock_incorrect">Virheellinen salasana. Yritä uudelleen. </string>
   <string name="password_unlock_error">Failed to verify password</string>
 </resources>
