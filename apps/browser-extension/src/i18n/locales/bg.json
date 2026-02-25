@@ -172,7 +172,7 @@
     "vaultUpgradeRequired": "Vault upgrade required.",
     "dismissPopup": "Dismiss popup",
     "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "close": "Затвори",
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site",
