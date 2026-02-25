@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Перевірка коду автентифікації",
     "verify": "Перевірка",
     "unlockVault": "Розблокувати Vault",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Розблокувати за допомогою PIN-коду",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Введіть свій пароль, щоб розблокувати сховище",
     "enterPasswordPlaceholder": "Пароль",
     "enterAuthCode": "Введіть 6-значний код",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Введіть Ваш пароль",
     "enableBiometric": "Увімкнути {{biometric}}?",
     "biometricPrompt": "Ви хочете використати {{biometric}} для розблокування вашого сховища?",
-    "tryBiometricAgain": "Спробуйте {{biometric}} ще раз",
-    "tryPinAgain": "Введіть PIN-код ще раз",
     "authCodeNote": "Примітка: якщо у вас немає доступу до вашого пристрою автентифікатора, ви можете скинути налаштування 2FA за допомогою коду відновлення, увійшовши через вебсайт.",
     "errors": {
       "credentialsRequired": "Ім'я користувача та пароль обов'язкові",
@@ -321,7 +321,8 @@
         "confirmSubtitle": "Повторно пройдіть автентифікацію, щоб підтвердити вхід на іншому пристрої.",
         "confirmMessage": "Ви збираєтеся ввійти на віддаленому пристрої за допомогою свого облікового запису. Цей інший пристрій матиме повний доступ до вашого сховища. Продовжуйте, лише якщо ви довіряєте цьому пристрою.",
         "successDescription": "Віддалений пристрій успішно ввійшов у систему.",
-        "requestExpired": "Термін дії цього запиту на вхід минув. Будь ласка, згенеруйте новий QR-код."
+        "requestExpired": "Термін дії цього запиту на вхід минув. Будь ласка, згенеруйте новий QR-код.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },
