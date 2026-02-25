@@ -32,7 +32,7 @@
 "username_copied" = "שם המשתמש הועתק";
 "password_copied" = "הסיסמה הועתקה";
 "email_copied" = "כתובת הדוא״ל הועתקה";
-"totp_code" = "TOTP Code";
+"totp_code" = "קוד חד־פעמי זמני";
 
 /* Search bar */
 "search_items" = "Search items...";
@@ -69,9 +69,9 @@
 "pin_incorrect_attempts_remaining" = "קוד אישי שגוי, נותרו %d ניסיונות";
 
 /* Password Unlock */
-"enter_password_to_unlock" = "Enter your master password";
-"unlock" = "Unlock";
-"incorrect_password" = "Incorrect password. Please try again.";
+"enter_password_to_unlock" = "נא למלא את סיסמת העל שלך";
+"unlock" = "שחרור נעילה";
+"incorrect_password" = "סיסמה שגויה. נא לנסות שוב.";
 
 /* PIN Setup */
 "pin_setup_title" = "הגדרת קוד אישי";
