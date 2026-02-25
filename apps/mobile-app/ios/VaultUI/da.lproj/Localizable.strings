@@ -68,6 +68,11 @@
 "pin_locked_max_attempts" = "PIN-kode låst efter for mange mislykkede forsøg";
 "pin_incorrect_attempts_remaining" = "Forkert PIN-kode. %d forsøg tilbage";
 
+/* Password Unlock */
+"enter_password_to_unlock" = "Enter your master password";
+"unlock" = "Unlock";
+"incorrect_password" = "Incorrect password. Please try again.";
+
 /* PIN Setup */
 "pin_setup_title" = "Konfigurer PIN-kode";
 "pin_setup_subtitle" = "Vælg en PIN-kode til at låse din boks op";
