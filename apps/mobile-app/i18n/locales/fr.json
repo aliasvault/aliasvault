@@ -48,9 +48,9 @@
     "verifyingAuthCode": "Vérification du code d'authentification",
     "verify": "Vérifier",
     "unlockVault": "Déverrouiller le coffre",
-    "unlockWithBiometric": "Unlock with {{biometric}}",
+    "unlockWithBiometric": "Déverrouiller avec {{biometric}}",
     "unlockWithPin": "Déverrouiller avec un code PIN",
-    "unlockWithPassword": "Unlock with Password",
+    "unlockWithPassword": "Déverrouiller avec le mot de passe",
     "enterPassword": "Entrez votre mot de passe principal pour déverrouiller votre coffre-fort",
     "enterPasswordPlaceholder": "Mot de passe",
     "enterAuthCode": "Saisissez le code à 6 chiffres",
@@ -322,7 +322,7 @@
         "confirmMessage": "Vous êtes sur le point de vous connecter sur un appareil distant avec votre compte. Cet autre appareil aura un accès complet à votre coffre. Ne procédez que si vous faites confiance à cet appareil.",
         "successDescription": "L'appareil distant a été connecté avec succès.",
         "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "noPinOrBiometricError": "Le déverrouillage par mobile nécessite une authentification par code PIN ou biométrique. Veuillez activer le code PIN ou Face ID/Touch ID dans les paramètres de déverrouillage du coffre pour utiliser cette fonctionnalité."
       }
     }
   },
