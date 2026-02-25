@@ -68,6 +68,11 @@
 "pin_locked_max_attempts" = "PIN 因多次尝试失败而被锁定";
 "pin_incorrect_attempts_remaining" = "PIN 错误，剩余 %d 次尝试";
 
+/* Password Unlock */
+"enter_password_to_unlock" = "Enter your master password";
+"unlock" = "Unlock";
+"incorrect_password" = "Incorrect password. Please try again.";
+
 /* PIN Setup */
 "pin_setup_title" = "设置 PIN";
 "pin_setup_subtitle" = "选择一个 PIN 以解锁保险库";
