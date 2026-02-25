@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} ist für AliasVault deaktiviert. Bitte aktiviere es zuerst in den Geräteeinstellungen, um es zu verwenden.",
       "biometricHelp": "Benutze Biometrie, um Deinen Tresor zu entsperren. Dieser ist durch den {{keystore}} gesichert ist.",
       "biometricUnavailableHelp": "{{biometric}} ist nicht verfügbar. Tippe, um die Einstellungen zu öffnen und/oder gehe zu den Geräteeinstellungen, um es zu aktivieren und zu konfigurieren.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "PIN-Code",
       "pinDescription": "Benutze einen eigenen PIN-Code, um Deinen Tresor schneller zu entsperren.",
       "pinEnabled": "PIN-Sperre erfolgreich aktiviert",
