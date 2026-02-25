@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Sicherheits-Code wird überprüft",
     "verify": "Bestätige",
     "unlockVault": "Tresor entsperren",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Mit PIN entsperren",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Bitte gib Dein Passwort zum Entsperren des Tresors ein",
     "enterPasswordPlaceholder": "Passwort",
     "enterAuthCode": "Gib den 6-stelligen Sicherheits-Code ein.",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Gib Dein Passwort ein",
     "enableBiometric": "{{biometric}} aktivieren?",
     "biometricPrompt": "Möchtest Du Deinen Tresor mit {{biometric}} entsperren?",
-    "tryBiometricAgain": "{{biometric}} erneut versuchen",
-    "tryPinAgain": "PIN erneut versuchen",
     "authCodeNote": "Hinweis: Wenn Du keinen Zugriff auf Dein Authentifizierungsgerät hast, kannst Du Deine Zwei-Faktor-Authentifizierung (2FA) mit einem Wiederherstellungscode zurücksetzen, indem Du Dich über die Website anmeldest.",
     "errors": {
       "credentialsRequired": "Benutzername und Passwort sind erforderlich",
@@ -321,7 +321,8 @@
         "confirmSubtitle": "Authentifizieren Dich erneut, um die Anmeldung auf einem anderen Gerät zu genehmigen.",
         "confirmMessage": "Du bist dabei, Dich mit Deinem Konto auf einem anderen Gerät anzumelden. Dieses Gerät wird vollen Zugriff auf Deinen Tresor haben. Fahre nur fort, wenn Du diesem Gerät vertraust.",
         "successDescription": "Das andere Gerät wurde erfolgreich angemeldet.",
-        "requestExpired": "Diese Anmeldeanfrage ist abgelaufen. Bitte generiere einen neuen QR-Code."
+        "requestExpired": "Diese Anmeldeanfrage ist abgelaufen. Bitte generiere einen neuen QR-Code.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },
