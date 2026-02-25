@@ -68,6 +68,11 @@
 "pin_locked_max_attempts" = "PIN blocat după prea multe încercări eșuate";
 "pin_incorrect_attempts_remaining" = "PIN incorect. Mai ai %d încercări";
 
+/* Password Unlock */
+"enter_password_to_unlock" = "Enter your master password";
+"unlock" = "Unlock";
+"incorrect_password" = "Incorrect password. Please try again.";
+
 /* PIN Setup */
 "pin_setup_title" = "Configurare PIN";
 "pin_setup_subtitle" = "Alege un PIN pentru a-ți debloca seiful";
