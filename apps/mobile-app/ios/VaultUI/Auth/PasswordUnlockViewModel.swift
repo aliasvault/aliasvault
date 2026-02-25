@@ -12,6 +12,7 @@ public class PasswordUnlockViewModel: ObservableObject {
 
     public let customTitle: String?
     public let customSubtitle: String?
+    public let customButtonText: String?
 
     private let unlockHandler: (String) async throws -> Void
     private let cancelHandler: () -> Void
@@ -19,11 +20,13 @@ public class PasswordUnlockViewModel: ObservableObject {
     public init(
         customTitle: String?,
         customSubtitle: String?,
+        customButtonText: String?,
         unlockHandler: @escaping (String) async throws -> Void,
         cancelHandler: @escaping () -> Void
     ) {
         self.customTitle = customTitle
         self.customSubtitle = customSubtitle
+        self.customButtonText = customButtonText
         self.unlockHandler = unlockHandler
         self.cancelHandler = cancelHandler
     }

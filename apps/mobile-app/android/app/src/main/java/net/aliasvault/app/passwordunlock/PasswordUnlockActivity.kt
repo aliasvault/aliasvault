@@ -53,6 +53,9 @@ class PasswordUnlockActivity : AppCompatActivity() {
 
         /** Intent extra key for custom subtitle (optional). */
         const val EXTRA_CUSTOM_SUBTITLE = "custom_subtitle"
+
+        /** Intent extra key for custom button text (optional). */
+        const val EXTRA_CUSTOM_BUTTON_TEXT = "custom_button_text"
     }
 
     private lateinit var vaultStore: VaultStore
@@ -91,15 +94,16 @@ class PasswordUnlockActivity : AppCompatActivity() {
             AndroidStorageProvider(this),
         )
 
-        // Get custom title/subtitle from intent
+        // Get custom title/subtitle/buttonText from intent
         val customTitle = intent.getStringExtra(EXTRA_CUSTOM_TITLE)
         val customSubtitle = intent.getStringExtra(EXTRA_CUSTOM_SUBTITLE)
+        val customButtonText = intent.getStringExtra(EXTRA_CUSTOM_BUTTON_TEXT)
 
         // Initialize views
-        initializeViews(customTitle, customSubtitle)
+        initializeViews(customTitle, customSubtitle, customButtonText)
     }
 
-    private fun initializeViews(customTitle: String?, customSubtitle: String?) {
+    private fun initializeViews(customTitle: String?, customSubtitle: String?, customButtonText: String?) {
         titleTextView = findViewById(R.id.titleTextView)
         subtitleTextView = findViewById(R.id.subtitleTextView)
         passwordEditText = findViewById(R.id.passwordEditText)
@@ -110,7 +114,7 @@ class PasswordUnlockActivity : AppCompatActivity() {
         loadingOverlay = findViewById(R.id.loadingOverlay)
         progressBar = findViewById(R.id.progressBar)
 
-        // Set custom title/subtitle if provided
+        // Set custom title/subtitle/buttonText if provided
         if (!customTitle.isNullOrEmpty()) {
             titleTextView.text = customTitle
         } else {
@@ -121,6 +125,12 @@ class PasswordUnlockActivity : AppCompatActivity() {
             subtitleTextView.text = customSubtitle
         } else {
             subtitleTextView.text = getString(R.string.password_unlock_subtitle)
+        }
+
+        if (!customButtonText.isNullOrEmpty()) {
+            unlockButton.text = customButtonText
+        } else {
+            unlockButton.text = getString(R.string.password_unlock_button)
         }
 
         // Setup button states

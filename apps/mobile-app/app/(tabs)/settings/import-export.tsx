@@ -8,7 +8,6 @@ import type { Item } from '@/utils/dist/core/models/vault';
 import { getFieldValue, itemToCredential } from '@/utils/dist/core/models/vault';
 
 import { useColors } from '@/hooks/useColorScheme';
-import { usePasswordConfirm } from '@/hooks/usePasswordConfirm';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import LoadingOverlay from '@/components/LoadingOverlay';
@@ -17,6 +16,7 @@ import { ThemedScrollView } from '@/components/themed/ThemedScrollView';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { useDb } from '@/context/DbContext';
 import { useDialog } from '@/context/DialogContext';
+import NativeVaultManager from '@/specs/NativeVaultManager';
 
 /**
  * CSV record for Credential objects (matching server format).
@@ -48,7 +48,6 @@ export default function ImportExportScreen(): React.ReactNode {
   const { t } = useTranslation();
   const dbContext = useDb();
   const { showAlert, showConfirm } = useDialog();
-  const { requestPasswordConfirm } = usePasswordConfirm();
   const [isExporting, setIsExporting] = useState(false);
 
   /**
@@ -196,18 +195,29 @@ export default function ImportExportScreen(): React.ReactNode {
       t('settings.exportWarning'),
       t('common.confirm'),
       async () => {
-        // Request password confirmation via modal page
-        const passwordHash = await requestPasswordConfirm({
-          description: t('settings.passwordConfirm.exportDescription'),
-        });
+        try {
+          /*
+           * Request password authentication using native unlock screen
+           * Only allow password method (no biometric or PIN) for sensitive export operation
+           */
+          const authenticated = await NativeVaultManager.authenticateUser(
+            t('settings.exportConfirmTitle'),
+            t('settings.passwordConfirm.exportDescription'),
+            ['password'], // Only allow password authentication
+            t('common.confirm')
+          );
 
-        if (!passwordHash) {
-          // User cancelled
-          return;
+          if (!authenticated) {
+            // User cancelled or authentication failed
+            return;
+          }
+
+          // Password verified, proceed with export
+          await handleExport();
+        } catch (error) {
+          console.error('Authentication error during CSV export:', error);
+          showAlert(t('common.error'), t('common.errors.unknownError'));
         }
-
-        // Password verified, proceed with export
-        await handleExport();
       },
       { confirmStyle: 'destructive' }
     );

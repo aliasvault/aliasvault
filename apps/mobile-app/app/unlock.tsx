@@ -107,7 +107,8 @@ export default function UnlockScreen() : React.ReactNode {
 
           const unlocked = await NativeVaultManager.showPasswordUnlock(
             t('auth.unlockVault'),
-            t('auth.enterPassword')
+            t('auth.enterPassword'),
+            null
           );
 
           if (!unlocked) {
@@ -175,7 +176,8 @@ export default function UnlockScreen() : React.ReactNode {
       // Show native password unlock screen
       const unlocked = await NativeVaultManager.showPasswordUnlock(
         t('auth.unlockVault'),
-        t('auth.enterPassword')
+        t('auth.enterPassword'),
+        null
       );
 
       // User cancelled

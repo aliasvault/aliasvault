@@ -148,7 +148,7 @@ public struct PasswordUnlockView: View {
                                     .frame(height: 54)
                             } else {
                                 HStack(spacing: 8) {
-                                    Text(String(localized: "unlock", bundle: locBundle))
+                                    Text(viewModel.customButtonText ?? String(localized: "unlock", bundle: locBundle))
                                         .font(.system(size: 17, weight: .semibold))
                                     Image(systemName: "arrow.right")
                                         .font(.system(size: 14, weight: .semibold))

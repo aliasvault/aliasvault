@@ -811,6 +811,7 @@ public class VaultManager: NSObject {
     @objc
     func showPasswordUnlock(_ title: String?,
                            subtitle: String?,
+                           buttonText: String?,
                            resolver resolve: @escaping RCTPromiseResolveBlock,
                            rejecter reject: @escaping RCTPromiseRejectBlock) {
         DispatchQueue.main.async { [weak self] in
@@ -828,9 +829,11 @@ public class VaultManager: NSObject {
             // Create password unlock view with ViewModel
             let customTitle = (title?.isEmpty == false) ? title : nil
             let customSubtitle = (subtitle?.isEmpty == false) ? subtitle : nil
+            let customButtonText = (buttonText?.isEmpty == false) ? buttonText : nil
             let viewModel = PasswordUnlockViewModel(
                 customTitle: customTitle,
                 customSubtitle: customSubtitle,
+                customButtonText: customButtonText,
                 unlockHandler: { [weak self] password in
                     guard let self = self else {
                         throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])
@@ -973,15 +976,22 @@ public class VaultManager: NSObject {
     @objc
     func authenticateUser(_ title: String?,
                          subtitle: String?,
+                         allowedMethods: [String]?,
+                         buttonText: String?,
                          resolver resolve: @escaping RCTPromiseResolveBlock,
                          rejecter reject: @escaping RCTPromiseRejectBlock) {
         // Get enabled authentication methods
         let authMethods = vaultStore.getAuthMethods()
-        let isBiometricEnabled = authMethods.contains(.faceID)
         let pinEnabled = vaultStore.isPinEnabled()
 
-        // If PIN is enabled, prefer PIN (with biometric first if available)
-        if pinEnabled {
+        // Filter by allowed methods if specified
+        let allowedMethodsSet: Set<String>? = allowedMethods.map { Set($0) }
+        let isBiometricEnabled = authMethods.contains(.faceID) && (allowedMethodsSet == nil || allowedMethodsSet!.contains("biometric"))
+        let isPinAllowed = pinEnabled && (allowedMethodsSet == nil || allowedMethodsSet!.contains("pin"))
+        let isPasswordAllowed = authMethods.contains(.password) && (allowedMethodsSet == nil || allowedMethodsSet!.contains("password"))
+
+        // If PIN is enabled and allowed, prefer PIN (with biometric first if available)
+        if isPinAllowed {
             // Try biometric authentication first if enabled
             if isBiometricEnabled {
                 let authenticated = vaultStore.issueBiometricAuthentication(title: title)
@@ -1062,8 +1072,8 @@ public class VaultManager: NSObject {
                 return
             }
 
-            // If PIN was cancelled and password auth is available, fall back to password
-            if pinWasCancelled && authMethods.contains(.password) {
+            // If PIN was cancelled and password auth is available and allowed, fall back to password
+            if pinWasCancelled && isPasswordAllowed {
                 // Fall through to password unlock below
             } else {
                 // No password fallback available, resolve with false
@@ -1072,7 +1082,7 @@ public class VaultManager: NSObject {
             }
         }
 
-        // No PIN enabled - check for biometric + password
+        // No PIN enabled or allowed - check for biometric + password
         if isBiometricEnabled {
             let authenticated = vaultStore.issueBiometricAuthentication(title: title)
             if authenticated {
@@ -1082,7 +1092,14 @@ public class VaultManager: NSObject {
             // Biometric failed or cancelled - fall through to password fallback if available
         }
 
-        // Show password unlock (either as primary or fallback from biometric)
+        // Show password unlock if allowed (either as primary or fallback from biometric)
+        if !isPasswordAllowed {
+            // Password not allowed and we've exhausted other options
+            resolve(false)
+            return
+        }
+
+        // Show password unlock
         DispatchQueue.main.async { [weak self] in
             guard let self = self else {
                 reject("INTERNAL_ERROR", "VaultManager instance deallocated", nil)
@@ -1096,12 +1113,14 @@ public class VaultManager: NSObject {
             }
 
             // Create password unlock view with ViewModel
-            // Use custom title/subtitle if provided, otherwise use defaults
+            // Use custom title/subtitle/buttonText if provided, otherwise use defaults
             let customTitle = (title?.isEmpty == false) ? title : nil
             let customSubtitle = (subtitle?.isEmpty == false) ? subtitle : nil
+            let customButtonText = (buttonText?.isEmpty == false) ? buttonText : nil
             let viewModel = PasswordUnlockViewModel(
                 customTitle: customTitle,
                 customSubtitle: customSubtitle,
+                customButtonText: customButtonText,
                 unlockHandler: { [weak self] password in
                     guard let self = self else {
                         throw NSError(domain: "VaultManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "VaultManager instance deallocated"])

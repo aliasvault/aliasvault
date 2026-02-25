@@ -1438,7 +1438,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
      * @param promise The promise to resolve with encryption key or null.
      */
     @ReactMethod
-    override fun showPasswordUnlock(title: String?, subtitle: String?, promise: Promise) {
+    override fun showPasswordUnlock(title: String?, subtitle: String?, buttonText: String?, promise: Promise) {
         val activity = currentActivity
         if (activity == null) {
             promise.reject("NO_ACTIVITY", "No activity available", null)
@@ -1455,6 +1455,9 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
         }
         if (!subtitle.isNullOrEmpty()) {
             intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_SUBTITLE, subtitle)
+        }
+        if (!buttonText.isNullOrEmpty()) {
+            intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_BUTTON_TEXT, buttonText)
         }
         activity.startActivityForResult(intent, PASSWORD_UNLOCK_REQUEST_CODE)
     }
@@ -1496,19 +1499,28 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
     }
 
     @ReactMethod
-    override fun authenticateUser(title: String?, subtitle: String?, promise: Promise) {
+    override fun authenticateUser(title: String?, subtitle: String?, allowedMethods: ReadableArray?, buttonText: String?, promise: Promise) {
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 // Get enabled authentication methods
                 val authMethods = vaultStore.getAuthMethods()
-                val isBiometricEnabled = authMethods.contains("faceid")
-                val pinEnabled = vaultStore.isPinEnabled()
 
-                // Check if password auth is available as fallback
-                val hasPasswordFallback = authMethods.contains("password")
+                // Convert ReadableArray to Set<String> for filtering
+                val allowedMethodsSet: Set<String>? = allowedMethods?.let { array ->
+                    val set = mutableSetOf<String>()
+                    for (i in 0 until array.size()) {
+                        array.getString(i)?.let { set.add(it) }
+                    }
+                    set.takeIf { it.isNotEmpty() }
+                }
 
-                // If PIN is enabled, prefer PIN (with biometric first if available)
-                if (pinEnabled) {
+                // Filter by allowed methods if specified
+                val isBiometricEnabled = authMethods.contains("faceid") && (allowedMethodsSet == null || allowedMethodsSet.contains("biometric"))
+                val isPinAllowed = vaultStore.isPinEnabled() && (allowedMethodsSet == null || allowedMethodsSet.contains("pin"))
+                val isPasswordAllowed = authMethods.contains("password") && (allowedMethodsSet == null || allowedMethodsSet.contains("password"))
+
+                // If PIN is enabled and allowed, prefer PIN (with biometric first if available)
+                if (isPinAllowed) {
                     // Try biometric authentication first if enabled
                     if (isBiometricEnabled) {
                         try {
@@ -1530,7 +1542,7 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                         pendingActivityResultPromise = promise
 
                         // Store auth context in case PIN is cancelled and we need to fall back to password
-                        if (hasPasswordFallback) {
+                        if (isPasswordAllowed) {
                             pendingAuthContext = Pair(title, subtitle)
                         }
 
@@ -1575,7 +1587,13 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                     }
                 }
 
-                // Show password unlock (either as primary or fallback from biometric)
+                // Show password unlock if allowed (either as primary or fallback from biometric)
+                if (!isPasswordAllowed) {
+                    // Password not allowed and we've exhausted other options
+                    promise.resolve(false)
+                    return@launch
+                }
+
                 try {
                     // Store promise for later resolution by MainActivity
                     // Use pendingActivityResultPromise to match PIN unlock behavior (returns boolean)
@@ -1589,12 +1607,15 @@ class NativeVaultManager(reactContext: ReactApplicationContext) :
                     }
 
                     val intent = Intent(activity, net.aliasvault.app.passwordunlock.PasswordUnlockActivity::class.java)
-                    // Add custom title/subtitle if provided
+                    // Add custom title/subtitle/buttonText if provided
                     if (!title.isNullOrEmpty()) {
                         intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_TITLE, title)
                     }
                     if (!subtitle.isNullOrEmpty()) {
                         intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_SUBTITLE, subtitle)
+                    }
+                    if (!buttonText.isNullOrEmpty()) {
+                        intent.putExtra(net.aliasvault.app.passwordunlock.PasswordUnlockActivity.EXTRA_CUSTOM_BUTTON_TEXT, buttonText)
                     }
                     activity.startActivityForResult(intent, PASSWORD_UNLOCK_REQUEST_CODE)
                 } catch (e: Exception) {
