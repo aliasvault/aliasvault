@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Verifica codice di autenticazione",
     "verify": "Verifica",
     "unlockVault": "Sblocca Cassaforte",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Sblocca con PIN",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Inserisci la tua password per sbloccare la cassaforte",
     "enterPasswordPlaceholder": "Password",
     "enterAuthCode": "Inserire codice a 6 cifre",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Inserisci la tua password",
     "enableBiometric": "Abilitare {{biometric}}?",
     "biometricPrompt": "Vuoi usare {{biometric}} per sbloccare la tua cassaforte?",
-    "tryBiometricAgain": "Riprova {{biometric}}",
-    "tryPinAgain": "Prova di nuovo il PIN",
     "authCodeNote": "Nota: se non hai accesso al tuo dispositivo di autenticazione, puoi reimpostare il 2FA con un codice di recupero accedendo via sito web.",
     "errors": {
       "credentialsRequired": "Nome utente e password sono richiesti",
@@ -321,7 +321,8 @@
         "confirmSubtitle": "Ri-autenticazione per approvare il login su un altro dispositivo.",
         "confirmMessage": "Stai per accedere a un dispositivo remoto con il tuo account. Questo altro dispositivo avrà pieno accesso alla tua cassaforte. Procedi solo se ti fidi di questo dispositivo.",
         "successDescription": "Il dispositivo remoto è stato loggato con successo.",
-        "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR."
+        "requestExpired": "Questa richiesta di accesso è scaduta. Si prega di generare un nuovo codice QR.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },
