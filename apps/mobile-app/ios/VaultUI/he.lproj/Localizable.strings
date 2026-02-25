@@ -68,6 +68,11 @@
 "pin_locked_max_attempts" = "הקוד האישי ננעל אחרי יותר מדי ניסיונות כושלים";
 "pin_incorrect_attempts_remaining" = "קוד אישי שגוי, נותרו %d ניסיונות";
 
+/* Password Unlock */
+"enter_password_to_unlock" = "Enter your master password";
+"unlock" = "Unlock";
+"incorrect_password" = "Incorrect password. Please try again.";
+
 /* PIN Setup */
 "pin_setup_title" = "הגדרת קוד אישי";
 "pin_setup_subtitle" = "נא לבחור קוד אישי לשחרור נעילת הכספת שלך";
