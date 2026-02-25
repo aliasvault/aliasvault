@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} er deaktiveret for AliasVault. For at bruge det skal du først aktivere det i din enheds indstillinger.",
       "biometricHelp": "Brug biometri til at låse din boks op, som er sikret af {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} er ikke tilgængelig. Tryk for at åbne indstillinger og/eller gå til din enheds indstillinger for at aktivere og konfigurere det.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "PIN-kode",
       "pinDescription": "Brug en brugerdefineret PIN-kode til at låse din boks hurtigere op.",
       "pinEnabled": "PIN-oplåsning aktiveret",
