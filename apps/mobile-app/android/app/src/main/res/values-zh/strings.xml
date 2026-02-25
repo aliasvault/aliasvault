@@ -7,7 +7,7 @@
   <string name="common_close">关闭</string>
   <string name="common_next">下一步</string>
   <string name="common_cancel">取消</string>
-  <string name="common_back">Back</string>
+  <string name="common_back">返回</string>
   <string name="unknown_error">发生未知错误</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">检索失败，请打开应用</string>
@@ -83,10 +83,10 @@
   <string name="pin_confirm_description">重新输入您的 PIN 以确认</string>
   <string name="pin_mismatch">PIN 不匹配，请重试。</string>
   <!-- Password unlock -->
-  <string name="password_unlock_title">Unlock Vault</string>
-  <string name="password_unlock_subtitle">Enter your master password</string>
-  <string name="password_unlock_password_hint">Password</string>
-  <string name="password_unlock_button">Unlock</string>
-  <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
+  <string name="password_unlock_title">解锁密码库</string>
+  <string name="password_unlock_subtitle">输入您的主密码</string>
+  <string name="password_unlock_password_hint">密码</string>
+  <string name="password_unlock_button">解锁</string>
+  <string name="password_unlock_incorrect">密码不正确。请重试。</string>
   <string name="password_unlock_error">Failed to verify password</string>
 </resources>
