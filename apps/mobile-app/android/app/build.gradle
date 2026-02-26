@@ -93,7 +93,7 @@ android {
         applicationId 'net.aliasvault.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2700900
+        versionCode 2700901
         versionName "0.27.0"
 
         // Instrumented test configuration
