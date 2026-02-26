@@ -87,6 +87,6 @@
   <string name="password_unlock_subtitle">输入您的主密码</string>
   <string name="password_unlock_password_hint">密码</string>
   <string name="password_unlock_button">解锁</string>
-  <string name="password_unlock_incorrect">密码不正确。请重试。</string>
-  <string name="password_unlock_error">Failed to verify password</string>
+  <string name="password_unlock_incorrect">密码错误，请重试。</string>
+  <string name="password_unlock_error">密码验证失败</string>
 </resources>
