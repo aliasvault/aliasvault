@@ -88,5 +88,5 @@
   <string name="password_unlock_password_hint">Adgangskode</string>
   <string name="password_unlock_button">Lås op</string>
   <string name="password_unlock_incorrect">Forkert adgangskode. Prøv venligst igen.</string>
-  <string name="password_unlock_error">Failed to verify password</string>
+  <string name="password_unlock_error">Kunne ikke bekræfte adgangskode</string>
 </resources>
