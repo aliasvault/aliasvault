@@ -141,7 +141,7 @@
   },
   "content": {
     "or": "ou",
-    "new": "Nouveautés",
+    "new": "Nouveau",
     "vaultLocked": "AliasVault est verrouillé.",
     "creatingNewAlias": "Création de nouveaux alias...",
     "noMatchesFound": "Aucun résultat trouvé",
@@ -266,7 +266,7 @@
       "textArea": "Zone de texte"
     },
     "login": {
-      "title": "Se connecter"
+      "title": "Identifiant"
     },
     "alias": {
       "title": "Alias"
