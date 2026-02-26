@@ -9,7 +9,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { ThemedText } from '@/components/themed/ThemedText';
 import { ThemedView } from '@/components/themed/ThemedView';
 import { useDialog } from '@/context/DialogContext';
-import { useColors, useColorScheme } from '@/hooks/useColorScheme';
+import { useColors } from '@/hooks/useColorScheme';
 import NativeVaultManager from '@/specs/NativeVaultManager';
 import type { TotpCode } from '@/utils/dist/core/models/vault';
 
@@ -45,7 +45,6 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
 }) => {
   const { t } = useTranslation();
   const colors = useColors();
-  const colorScheme = useColorScheme();
   const { showConfirm, showAlert } = useDialog();
   const [isAddChoiceModalVisible, setIsAddChoiceModalVisible] = useState(false);
   const [isAddFormVisible, setIsAddFormVisible] = useState(false);
@@ -428,7 +427,7 @@ export const TotpEditor: React.FC<TotpEditorProps> = ({
       flex: 1,
     },
     modalContainer: {
-      backgroundColor: colorScheme === 'dark' ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.5)',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
       flex: 1,
       justifyContent: 'flex-end',
     },
