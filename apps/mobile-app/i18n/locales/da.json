@@ -48,9 +48,9 @@
     "verifyingAuthCode": "Verificerer autentificeringskode",
     "verify": "Verificer",
     "unlockVault": "Lås boks op",
-    "unlockWithBiometric": "Unlock with {{biometric}}",
+    "unlockWithBiometric": "Lås op med {{biometric}}",
     "unlockWithPin": "Lås op med PIN",
-    "unlockWithPassword": "Unlock with Password",
+    "unlockWithPassword": "Lås op med adgangskode",
     "enterPassword": "Indtast din adgangskode for at låse din boks op",
     "enterPasswordPlaceholder": "Adgangskode",
     "enterAuthCode": "Indtast 6-cifret kode",
@@ -216,7 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} er deaktiveret for AliasVault. For at bruge det skal du først aktivere det i din enheds indstillinger.",
       "biometricHelp": "Brug biometri til at låse din boks op, som er sikret af {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} er ikke tilgængelig. Tryk for at åbne indstillinger og/eller gå til din enheds indstillinger for at aktivere og konfigurere det.",
-      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
+      "featureRequiresPasscode": "Denne funktion kræver, at en adgangskode er aktiveret på din enhed.",
       "pin": "PIN-kode",
       "pinDescription": "Brug en brugerdefineret PIN-kode til at låse din boks hurtigere op.",
       "pinEnabled": "PIN-oplåsning aktiveret",
@@ -323,7 +323,7 @@
         "confirmMessage": "Du er ved at logge ind på en ekstern enhed med din konto. Denne enhed vil have fuld adgang til din boks. Fortsæt kun, hvis du har tillid til denne enhed.",
         "successDescription": "Den eksterne enhed er blevet logget ind korrekt.",
         "requestExpired": "Denne loginanmodning er udløbet. Generer venligst en ny QR-kode.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "noPinOrBiometricError": "Mobiloplåsning kræver PIN-kode eller biometrisk godkendelse. Aktivér PIN-kode eller Face ID/Touch ID i indstillinger for oplåsning af boksen for at bruge denne funktion."
       }
     }
   },
