@@ -10,6 +10,7 @@ namespace AliasVault.Api.Controllers.Email;
 using AliasServerDb;
 using AliasVault.Api.Controllers.Abstracts;
 using AliasVault.Shared.Models.Spamok;
+using AliasVault.Shared.Models.WebApi.Email;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,13 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
+        var user = await GetCurrentUserAsync();
+        if (user is null)
+        {
+            return Unauthorized("Not authenticated.");
+        }
+
+        var (email, errorResult) = await RetrieveEmailAsync(id, user, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -83,7 +90,13 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
+        var user = await GetCurrentUserAsync();
+        if (user is null)
+        {
+            return Unauthorized("Not authenticated.");
+        }
+
+        var (email, errorResult) = await RetrieveEmailAsync(id, user, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -116,7 +129,13 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
     {
         await using var context = await dbContextFactory.CreateDbContextAsync();
 
-        var (email, errorResult) = await AuthenticateAndRetrieveEmailAsync(id, context);
+        var user = await GetCurrentUserAsync();
+        if (user is null)
+        {
+            return Unauthorized("Not authenticated.");
+        }
+
+        var (email, errorResult) = await RetrieveEmailAsync(id, user, context);
         if (errorResult != null)
         {
             return errorResult;
@@ -136,19 +155,67 @@ public class EmailController(ILogger<VaultController> logger, IAliasServerDbCont
     }
 
     /// <summary>
-    /// Authenticates the user and retrieves the requested email.
+    /// Delete multiple emails.
     /// </summary>
-    /// <param name="id">The email ID to retrieve.</param>
-    /// <param name="context">The database context.</param>
-    /// <returns>A tuple containing the authenticated user, the email, and an IActionResult if there's an error.</returns>
-    private async Task<(Email? Email, IActionResult? ErrorResult)> AuthenticateAndRetrieveEmailAsync(int id, AliasServerDbContext context)
+    /// <param name="model">Request model.</param>
+    /// <returns>A EmailBulkResponse instance representing the result of the asynchronous operation.</returns>
+    [HttpDelete(template: "bulk", Name = "BulkDelete")]
+    public async Task<IActionResult> BulkDelete([FromBody] EmailBulkRequest model)
     {
+        await using var context = await dbContextFactory.CreateDbContextAsync();
+
         var user = await GetCurrentUserAsync();
         if (user is null)
         {
-            return (null, Unauthorized("Not authenticated."));
+            return Unauthorized("Not authenticated.");
         }
 
+        // Sanitize input
+        model.Ids = [.. model.Ids.Distinct().ToList().FindAll(id => id > 0)];
+
+        if (model.Ids.Count == 0)
+        {
+            // Nothing to delete
+            return StatusCode(304);
+        }
+
+        // For each email ID, validate if user has access and if email exists
+        foreach (int emailId in model.Ids)
+        {
+            var (email, errorResult) = await RetrieveEmailAsync(emailId, user, context);
+            if (errorResult != null)
+            {
+                return errorResult;
+            }
+        }
+
+        List<int> deletedEmails = [];
+        try
+        {
+            await context.Emails.Where(e => model.Ids.Contains(e.Id)).ExecuteDeleteAsync();
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while deleting the emails.");
+            return StatusCode(500);
+        }
+
+        EmailBulkResponse returnValue = new()
+        {
+            SuccessfulEmailIds = model.Ids,
+        };
+        return Ok(returnValue);
+    }
+
+    /// <summary>
+    /// Retrieves the requested email.
+    /// </summary>
+    /// <param name="id">The email ID to retrieve.</param>
+    /// <param name="user">The authenticated Alis Vault user.</param>
+    /// <param name="context">The database context.</param>
+    /// <returns>A tuple containing the email, and an IActionResult if there's an error.</returns>
+    private async Task<(Email? Email, IActionResult? ErrorResult)> RetrieveEmailAsync(int id, AliasVaultUser user, AliasServerDbContext context)
+    {
         // Retrieve email from database.
         var email = await context.Emails
             .Include(x => x.Attachments)

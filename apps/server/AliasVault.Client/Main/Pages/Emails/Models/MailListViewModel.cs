@@ -61,4 +61,9 @@ public class MailListViewModel
     /// Gets or sets a value indicating whether the email has attachments.
     /// </summary>
     public bool HasAttachments { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the email is checked on list view.
+    /// </summary>
+    public bool IsChecked { get; set; } = false;
 }

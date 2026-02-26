@@ -74,6 +74,26 @@
     <value>Refresh</value>
     <comment>Refresh button text</comment>
   </data>
+    <data name="DeleteSelectedEmails" xml:space="preserve">
+    <value>Delete {0} selected email(s)</value>
+    <comment>Delete selected emails button text</comment>
+  </data>
+  <data name="BulkDeleteEmailTitle" xml:space="preserve">
+    <value>Delete email(s)</value>
+    <comment>Delete multiple emails confirmation dialog title</comment>
+  </data>
+  <data name="BulkDeleteEmailConfirmation" xml:space="preserve">
+    <value>Are you sure you want to delete {0} email(s)? This action cannot be undone.</value>
+    <comment>Delete multiple emails confirmation message. {0} is placeholder for total number of to be deleted emails</comment>
+  </data>
+  <data name="BulkDeleteEmailSuccess" xml:space="preserve">
+    <value>All {0} email(s) deleted successfully</value>
+    <comment>Success message when multiple emails are deleted. {0} is placeholder for total number of deleted emails</comment>
+  </data>
+  <data name="BulkDeleteEmailFailedMessage" xml:space="preserve">
+    <value>Failed to delete multiple emails. Requested: {0}, deleted successfully: {1}.</value>
+    <comment>Error message when multiple emails are deleted.  {0} is placeholder for total requested and {1} for the number of deleted emails</comment>
+  </data>
   <data name="NoEmailClaimsMessage" xml:space="preserve">
     <value>You are not using any private email addresses (yet). Create a new alias and use a private email address supported by AliasVault. All emails received by these private email addresses will show up here.</value>
     <comment>Message when no email addresses are configured</comment>
