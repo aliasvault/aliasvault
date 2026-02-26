@@ -281,6 +281,9 @@ export async function handleClearSession(): Promise<messageBoolResponse> {
   await storage.removeItems([
     'session:encryptionKey',
     'session:persistedFormValues',
+    'session:lastVisitedPage',
+    'session:lastVisitedTime',
+    'session:navigationHistory',
   ]);
 
   // Clear cached client since session ended
@@ -1691,14 +1694,13 @@ export async function handleGetLoginSaveSettings(): Promise<{
   error?: string;
 }> {
   try {
-    // Default to disabled (feature flag - can enable once tested)
-    const enabled = await storage.getItem('local:loginSaveEnabled') ?? false;
-    const autoDismissSeconds = await storage.getItem('local:loginSaveAutoDismissSeconds') ?? 15;
+    const enabled = await LocalPreferencesService.getLoginSaveEnabled();
+    const autoDismissSeconds = await LocalPreferencesService.getLoginSaveAutoDismissSeconds();
 
     return {
       success: true,
-      enabled: enabled as boolean,
-      autoDismissSeconds: autoDismissSeconds as number
+      enabled,
+      autoDismissSeconds
     };
   } catch (error) {
     console.error('Error getting login save settings:', error);
@@ -1715,7 +1717,7 @@ export async function handleSetLoginSaveEnabled(
   enabled: boolean
 ): Promise<messageBoolResponse> {
   try {
-    await storage.setItem('local:loginSaveEnabled', enabled);
+    await LocalPreferencesService.setLoginSaveEnabled(enabled);
     return { success: true };
   } catch (error) {
     console.error('Error setting login save enabled:', error);
