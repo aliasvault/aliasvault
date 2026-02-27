@@ -48,9 +48,9 @@
     "verifyingAuthCode": "Verifierar autentiseringskod",
     "verify": "Bekräfta",
     "unlockVault": "Lås upp valv",
-    "unlockWithBiometric": "Unlock with {{biometric}}",
+    "unlockWithBiometric": "Lås upp med {{biometric}}",
     "unlockWithPin": "Lås upp med PIN-kod",
-    "unlockWithPassword": "Unlock with Password",
+    "unlockWithPassword": "Lås upp med lösenord",
     "enterPassword": "Ange PIN-koden för att låsa upp ditt valv",
     "enterPasswordPlaceholder": "Lösenord",
     "enterAuthCode": "Ange 6-siffrig kod",
@@ -216,7 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} är inaktiverat för AliasVault. För att använda funktionen, aktivera den först i enhetens inställningar.",
       "biometricHelp": "Använd biometri för att låsa upp ditt valv, vilket är säkrat via {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} är inte tillgänglig. Tryck för att öppna inställningar och/eller gå till dina enhetsinställningar för att aktivera och konfigurera den.",
-      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
+      "featureRequiresPasscode": "Denna funktion kräver att en lösenkod aktiveras på din enhet.",
       "pin": "PIN-Kod",
       "pinDescription": "Använd en anpassad PIN-kod för att låsa upp ditt valv snabbare.",
       "pinEnabled": "PIN-upplåsning aktiverat",
@@ -323,7 +323,7 @@
         "confirmMessage": "Du är på väg att logga in på en fjärrenhet med ditt konto. Den här andra enheten kommer att ha full tillgång till ditt valv. Fortsätt endast om du litar på den här enheten.",
         "successDescription": "Fjärrenheten har loggats in.",
         "requestExpired": "Denna inloggningsbegäran har löpt ut. Vänligen generera en ny QR-kod.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "noPinOrBiometricError": "Mobil upplåsning kräver PIN-kod eller biometrisk autentisering. Aktivera PIN-kod eller Face ID/Touch ID i valvupplåsningsinställningar för att använda den här funktionen."
       }
     }
   },
