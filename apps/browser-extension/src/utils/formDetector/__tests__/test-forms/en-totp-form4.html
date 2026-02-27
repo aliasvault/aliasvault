@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>2FA - Organizr</title>
+</head>
+<body>
+  <div id="tfa-div" class="form-group">
+    <div class="col-xs-12">
+      <div class="panel panel-warning animated tada">
+        <div class="panel-heading">
+          2FA
+          <div class="pull-right"><a href="#" data-perform="panel-collapse"><i class="ti-minus"></i></a> <a href="#" data-perform="panel-dismiss"><i class="ti-close"></i></a>
+          </div>
+        </div>
+        <div class="panel-wrapper collapse in" aria-expanded="true">
+          <div class="panel-body">
+            <div class="input-group" style="width: 100%;">
+              <div class="input-group-addon hidden-xs"><i class="ti-lock"></i></div>
+              <input type="text" class="form-control tfa-input" id="tfaCode" name="tfaCode" placeholder="Code" data-lpignore="true" autocomplete="off" autocorrect="off" autocapitalize="off" maxlength="6" spellcheck="false" autofocus="" data-av-autocomplete="off">
+            </div>
+            <button class="btn btn-warning btn-lg btn-block text-uppercase waves-effect waves-light login-button m-t-10" type="submit" lang="en">Login</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
