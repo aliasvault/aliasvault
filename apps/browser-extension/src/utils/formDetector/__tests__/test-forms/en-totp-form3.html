@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Google Authenticator (TFA)</title>
+</head>
+<body>
+  <div class="login-container-box" id="signin-section">
+    <div class="login-box">
+      <h3 class="ph-title"><span>Google Authenticator (TFA)</span></h3>
+      <div style="padding-left: 0">
+        <p>Exécutez l'application Google Authenticator sur votre appareil mobile et entrez le code de vérification dans le champ ci-dessous.</p>
+      </div>
+      <form action="/validate_google_token" method="post">
+        <input type="hidden" name="authenticity_token" value="asdasdasdasd+vyR/2jVQ==" />
+        <div class="col-12 form-group">
+          <input id="google_code" name="google_code" type="text" value="" class="form-control" required autocomplete="off" placeholder="Saisir le Code" />
+        </div>
+        <input type="submit" id="loginbutt" class="ph-default-button orange-button" value="Se connecter"/>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

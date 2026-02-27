@@ -50,7 +50,7 @@ export const EnglishFieldPatterns: FieldPatterns = {
   birthDateDay: ['-day', 'birthdate_d', 'birthdayday', '_day', 'day'],
   birthDateMonth: ['-month', 'birthdate_m', 'birthdaymonth', '_month', 'month'],
   birthDateYear: ['-year', 'birthdate_y', 'birthdayyear', '_year', 'year'],
-  totp: ['totp', 'otp', 'one-time', 'onetime', 'token', 'authenticator', '2fa', 'twofa', 'two-factor', 'mfa', 'security-code', 'auth-code', 'passcode', 'pin-code', 'pincode']
+  totp: ['totp', 'otp', 'one-time', 'onetime', 'token', 'authenticator', '2fa', 'twofa', 'two-factor', 'mfa', 'security-code', 'auth-code', 'passcode', 'pin-code', 'pincode', 'google_code', 'verification-code', 'verificationcode']
 };
 
 /**
