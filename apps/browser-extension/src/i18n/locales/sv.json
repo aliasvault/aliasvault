@@ -302,7 +302,7 @@
     "secretKey": "Hemlig nyckel",
     "saveToViewCode": "Spara för att visa kod",
     "defaultName": "Autentiserare",
-    "deleteTotpCodeTitle": "Ta bort 2FA-kod",
+    "deleteTotpCodeTitle": "Radera 2FA-kod",
     "deleteTotpCodeConfirmation": "Är du säker på att du vill radera 2FA-koden\"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Ogiltigt format för hemlig nyckel."
