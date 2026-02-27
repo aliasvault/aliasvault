@@ -38,7 +38,7 @@
     <comment>Title for browser extensions section</comment>
   </data>
   <data name="BrowserExtensionsDescription">
-    <value>Med webbläsartillägget AliasVault kan du automatiskt fylla i befintliga uppgifter på alla webbplatser. Det gör också att du kan generera nya alias under registrering, komma åt mottagna e-postmeddelanden på alla dina alias och visa dina alias och identiteter.</value>
+    <value>Med webbläsartillägget AliasVault kan du automatiskt fylla i befintliga uppgifter på alla webbplatser. Det gör också att du kan generera nya alias under registrering, komma åt mottagna e-postmeddelanden på alla dina alias samt visa dina alias och identiteter.</value>
     <comment>Description for browser extensions</comment>
   </data>
   <data name="InstallButton">
