@@ -263,7 +263,7 @@
   </data>
   <!-- Edge -->
   <data name="EdgeDescription" xml:space="preserve">
-    <value>Importera lösenord från Microsoft Edge</value>
+    <value>Importera lösenord från Microsoft Edge Password Manager</value>
     <comment>Description for Edge import service</comment>
   </data>
   <data name="EdgeInstructionsPart1" xml:space="preserve">
