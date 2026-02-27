@@ -88,5 +88,5 @@
   <string name="password_unlock_password_hint">Lösenord</string>
   <string name="password_unlock_button">Lås upp</string>
   <string name="password_unlock_incorrect">Felaktigt lösenord. Försök igen.</string>
-  <string name="password_unlock_error">Failed to verify password</string>
+  <string name="password_unlock_error">Kunde inte verifiera lösenord</string>
 </resources>
