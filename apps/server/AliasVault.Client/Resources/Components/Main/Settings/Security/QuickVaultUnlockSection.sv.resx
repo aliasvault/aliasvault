@@ -71,8 +71,8 @@
     <comment>Button to disable passkey unlock</comment>
   </data>
   <data name="DisabledDescription" xml:space="preserve">
-    <value>Omladdning av AliasVault-sidan eller fliken kräver som standard att du anger ditt huvudlösenord igen. Med en passkey kan du låsa upp ditt valv omedelbart. När detta är aktiverat krypteras ditt huvudlösenord lokalt med passkeyns PRF-tillägg.
-OBS: Passkeyn fungerar endast för den enhet och webbläsare där du aktiverar den.</value>
+    <value>Som standard måste du ange ditt huvudlösenord igen när du laddar om AliasVault-sidan eller fliken. Med en passkey kan du låsa upp valvet direkt. När funktionen är aktiverad krypteras ditt huvudlösenord lokalt med passkeyns PRF-tillägg.
+Obs: Passkeyn fungerar endast på den enhet och i den webbläsare där du aktiverade den.</value>
     <comment>Description when passkey unlock is disabled</comment>
   </data>
   <data name="ExperimentalWarning" xml:space="preserve">
@@ -88,7 +88,7 @@ OBS: Passkeyn fungerar endast för den enhet och webbläsare där du aktiverar d
     <comment>Success message when passkey unlock is enabled</comment>
   </data>
   <data name="SuccessDisabledMessage" xml:space="preserve">
-    <value>Passkeyupplåsning har inaktiverats</value>
+    <value>Passkeyupplåsning har inaktiverats.</value>
     <comment>Success message when passkey unlock is disabled</comment>
   </data>
   <data name="WebAuthnNotSupportedError" xml:space="preserve">
