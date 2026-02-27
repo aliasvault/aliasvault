@@ -1057,7 +1057,12 @@ export class FormDetector {
 
       // Check for numeric pattern attribute with length constraint
       const pattern = input.getAttribute('pattern');
-      if (pattern && /^\[0-9\]/.test(pattern) && maxLength === 6) {
+      if (pattern && (/^\[0-9\]/.test(pattern) || /^\\d/.test(pattern)) && (maxLength === 6 || maxLength === 1)) {
+        return input;
+      }
+
+      // Check for maxLength=1 with inputmode="numeric" (split TOTP inputs)
+      if (maxLength === 1 && inputMode === 'numeric') {
         return input;
       }
     }

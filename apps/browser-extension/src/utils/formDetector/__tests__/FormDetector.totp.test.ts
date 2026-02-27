@@ -30,4 +30,28 @@ describe('FormDetector TOTP tests', () => {
 
     testField(FormField.Totp, 'google_code', htmlFile);
   });
+
+  describe('English TOTP form 4 detection (Organizr style)', () => {
+    const htmlFile = 'en-totp-form4.html';
+
+    testField(FormField.Totp, 'tfaCode', htmlFile);
+  });
+
+  describe('English TOTP form 5 detection (Zenarmor OTP input)', () => {
+    const htmlFile = 'en-totp-form5.html';
+
+    testField(FormField.Totp, 'otp-input-0', htmlFile);
+  });
+
+  describe('English TOTP form 6 detection (Bitwarden Community)', () => {
+    const htmlFile = 'en-totp-form6.html';
+
+    testField(FormField.Totp, 'login-second-factor', htmlFile);
+  });
+
+  describe('English TOTP form 7 detection (Riot Games)', () => {
+    const htmlFile = 'en-totp-form7.html';
+
+    testField(FormField.Totp, 'riot-mfa-0', htmlFile);
+  });
 });
