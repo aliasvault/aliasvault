@@ -1,5 +1,9 @@
+import { JSDOM } from 'jsdom';
 import { describe, expect, it } from 'vitest';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
+import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormField, testField } from './TestUtils';
 
 describe('FormDetector TOTP tests', () => {
@@ -53,5 +57,56 @@ describe('FormDetector TOTP tests', () => {
     const htmlFile = 'en-totp-form7.html';
 
     testField(FormField.Totp, 'riot-mfa-0', htmlFile);
+  });
+
+  describe('Email verification form should NOT be detected as TOTP', () => {
+    it('should NOT detect English email verification form as TOTP', () => {
+      const htmlFile = 'en-email-verification-form1.html';
+      const html = readFileSync(join(__dirname, 'test-forms', htmlFile), 'utf-8');
+      const dom = new JSDOM(html, {
+        url: 'http://localhost',
+        runScripts: 'dangerously',
+        resources: 'usable'
+      });
+      const document = dom.window.document;
+
+      // Set focus on the first input
+      const focusedElement = document.getElementById('email-verify-0');
+      if (!focusedElement) {
+        throw new Error('Focus element not found in test HTML');
+      }
+
+      // Create a new form detector with the focused element
+      const formDetector = new FormDetector(document, focusedElement);
+      const result = formDetector.getForm();
+
+      // The form should NOT be detected at all (null) or at least totpField should be null
+      // because this is an email verification form, not a TOTP/2FA form
+      expect(result?.totpField).toBeNull();
+    });
+
+    it('should NOT detect Dutch email verification form as TOTP', () => {
+      const htmlFile = 'nl-email-verification-form1.html';
+      const html = readFileSync(join(__dirname, 'test-forms', htmlFile), 'utf-8');
+      const dom = new JSDOM(html, {
+        url: 'http://localhost',
+        runScripts: 'dangerously',
+        resources: 'usable'
+      });
+      const document = dom.window.document;
+
+      // Set focus on the first input
+      const focusedElement = document.getElementById('nl-verify-0');
+      if (!focusedElement) {
+        throw new Error('Focus element not found in test HTML');
+      }
+
+      // Create a new form detector with the focused element
+      const formDetector = new FormDetector(document, focusedElement);
+      const result = formDetector.getForm();
+
+      // The form should NOT be detected as TOTP because it's a Dutch email verification form
+      expect(result?.totpField).toBeNull();
+    });
   });
 });
