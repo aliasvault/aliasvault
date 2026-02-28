@@ -543,6 +543,47 @@ return isOdd ? hex.slice(1) : hex;
 
 **Test counts:** 31 tests across 3 files (18 crypto, 7 setup, 6 persist). Full roundtrip test validates: setup → decrypt 2-of-3 shares → Shamir combine → verify hash → derive key → decrypt password.
 
+### 17. Midnight Contract State Reading Patterns (Story 3.3/3.4)
+
+**Rule:** There are TWO patterns for reading contract ledger state. Use the correct one depending on context.
+
+**Pattern A — Initial snapshot via `deployTxData.public`:**
+When you call `findDeployedContract()`, the returned `FoundContract` handle has `deployTxData.public` which contains `initialContractState: ContractState` — a snapshot of the contract's public ledger at deploy/join time.
+
+```typescript
+// After findDeployedContract() — reading INITIAL state
+const contract = await findDeployedContract(providers, { ... });
+const address = contract.deployTxData.public.contractAddress; // ✅ always available
+```
+
+**Pattern B — Fresh reads via `publicDataProvider.queryContractState()` + generated `ledger()` function:**
+For CURRENT state (which may have changed since joining), use the public data provider and the contract's generated `ledger()` decoder function.
+
+```typescript
+// Reading CURRENT (live) ledger state — the recommended pattern
+const contractState = await providers.publicDataProvider.queryContractState(contractAddress);
+if (contractState == null) return null;
+const ledgerState = GuardianRecovery.ledger(contractState.data); // ← generated decoder
+// ledgerState.owner, ledgerState.guardians, ledgerState.recoveryComplete, etc.
+```
+
+**Why the cast is needed (SDK type limitation):**
+- `deployTxData.public` is typed as `UnsubmittedDeployTxPublicData & FinalizedTxData`
+- The `initialContractState` field is typed as opaque `ContractState`, not the contract-specific `Ledger` type
+- At runtime, the ledger fields ARE present, but TypeScript generics don't propagate the contract-specific ledger type
+- Either use the generated `ledger()` function to decode `ContractState`, or cast `as unknown as GuardianRecovery.Ledger`
+
+**When to use which:**
+- **Deploy tx metadata** (contractAddress, blockHeight, txId): always use `deployTxData.public` directly
+- **Initial ledger snapshot**: cast `deployTxData.public as unknown as Ledger` is acceptable for one-time reads (e.g., guardian portal reading state at join time)
+- **Live state during ongoing operations**: use `publicDataProvider.queryContractState()` + `ledger()` (recommended for any flow where state may have changed)
+
+**References:**
+- [UnsubmittedDeployTxPublicData](https://docs.midnight.network/develop/reference/midnight-api/midnight-js/@midnight-ntwrk/midnight-js-contracts/type-aliases/UnsubmittedDeployTxPublicData) — contains `contractAddress` and `initialContractState: ContractState`
+- [PublicDataProvider](https://docs.midnight.network/develop/reference/midnight-api/midnight-js/@midnight-ntwrk/midnight-js-types/interfaces/PublicDataProvider) — `queryContractState()` for fresh reads
+- [Viewing Contract State tutorial](https://docs.midnight.network/develop/tutorial/building/dapp-details#viewing-contract-state) — CLI uses `publicDataProvider` + generated `ledger()` function
+- [Top-level exports](https://docs.midnight.network/develop/reference/compact/lang-ref#top-level-exports) — exported ledger fields are visible via the generated TypeScript `ledger()` function
+
 ---
 
 ## Development Workflow Rules
@@ -652,10 +693,11 @@ Before merging any PR that touches cryptography or guardian recovery:
 
 ---
 
-**Last Updated:** 2026-02-24
+**Last Updated:** 2026-02-28
 **Source:** Generated from [architecture.md](_bmad-output/architecture.md)
 **Maintenance:** Update when implementing new patterns or discovering critical rules
 **Change Log:**
+- 2026-02-28: Added Rule 17 (Midnight contract state reading patterns). Two patterns: `deployTxData.public` for initial snapshot vs `publicDataProvider.queryContractState()` + generated `ledger()` for fresh reads. Documented SDK type limitation where `ContractState` is opaque and requires cast or `ledger()` decoder. Added `typescript` as direct devDependency to contract + cli packages (bare `tsc` in build scripts requires it). Aligned guardian-portal `compact-js` version 0.14.0 → 2.4.0 to match CLI.
 - 2026-02-24: Added `services/*` to pnpm workspace list (Story 3.3 Guardian Portal). Updated test counts for Story 3.2v2 (31 tests across 3 files). Updated date.
 - 2026-02-22: **ADR-007 — Pattern 6 v2 (Inverted Shamir).** Rewrote Rule 1 to reflect ephemeral recovery key architecture. Updated Rule 16 and Security Checklist. Recovery key is no longer stored anywhere — derived from Shamir shares during recovery. Eliminates circular dependency (vault blob encrypted with lost master password) and ADR-006 private state device-local limitation. Sources: [Web3Auth/MetaMask SSS](https://docs.metamask.io/embedded-wallets/infrastructure/sss-architecture/), [ANARKey](https://eprint.iacr.org/2025/551), [Argent recovery](https://support.argent.xyz/hc/en-us/articles/360022631412-About-wallet-recovery).
 - 2026-02-22: Added Rule 16 (Shamir & RSA-OAEP implementation patterns) from Story 3.2. secrets.js-34r7h v2.0.2 specifics, odd-length hex handling with 1-byte flag prefix for binary RSA payloads, RSA-OAEP 190-byte limit workaround, TS5+ BufferSource cast requirement, RecoveryPersistProvider abstraction pattern.

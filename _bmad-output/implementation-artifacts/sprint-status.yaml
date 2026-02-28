@@ -65,8 +65,8 @@ development_status:
   3-1-guardian-smart-contract: done
   3-2-shamir-secret-splitting-pattern-6: done
   3-2v2-pattern6-inverted-shamir-refactor: done
-  3-3-guardian-portal: review
-  3-4-recovery-claim-flow-pattern-6: backlog
+  3-3-guardian-portal: done
+  3-4-recovery-claim-flow-pattern-6: in-progress
   3-5-ownership-transfer: backlog
   3-6-backup-wallet-configuration: backlog
   epic-3-retrospective: optional
