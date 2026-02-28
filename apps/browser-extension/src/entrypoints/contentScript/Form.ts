@@ -189,6 +189,21 @@ export function injectIcon(input: HTMLInputElement, container: HTMLElement): voi
   // Find the actual input element to use for positioning
   const actualInput = findActualInput(input);
 
+  /*
+   * Skip icon for split TOTP inputs (single-digit fields)
+   * These are too narrow to show the icon nicely
+   */
+  const inputMode = actualInput.getAttribute('inputmode');
+  const pattern = actualInput.getAttribute('pattern');
+  const isNumericSingleDigit = actualInput.maxLength === 1 &&
+                                (inputMode === 'numeric' ||
+                                 pattern === '[0-9]*' ||
+                                 pattern === '\\d*');
+
+  if (isNumericSingleDigit) {
+    return;
+  }
+
   const ICON_HTML = `
 <div class="av-input-icon">
   <img src="data:image/svg+xml;base64,${btoa(LOGO_MARK_SVG)}" style="width: 100%; height: 100%;" />

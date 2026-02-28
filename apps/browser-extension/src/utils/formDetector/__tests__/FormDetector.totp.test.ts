@@ -1,9 +1,11 @@
-import { JSDOM } from 'jsdom';
-import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
+import { JSDOM } from 'jsdom';
+import { describe, expect, it } from 'vitest';
+
 import { FormDetector } from '@/utils/formDetector/FormDetector';
+
 import { FormField, testField } from './TestUtils';
 
 describe('FormDetector TOTP tests', () => {
@@ -80,8 +82,10 @@ describe('FormDetector TOTP tests', () => {
       const formDetector = new FormDetector(document, focusedElement);
       const result = formDetector.getForm();
 
-      // The form should NOT be detected at all (null) or at least totpField should be null
-      // because this is an email verification form, not a TOTP/2FA form
+      /*
+       * The form should NOT be detected at all (null) or at least totpField should be null
+       * because this is an email verification form, not a TOTP/2FA form
+       */
       expect(result?.totpField).toBeNull();
     });
 
@@ -106,6 +110,34 @@ describe('FormDetector TOTP tests', () => {
       const result = formDetector.getForm();
 
       // The form should NOT be detected as TOTP because it's a Dutch email verification form
+      expect(result?.totpField).toBeNull();
+    });
+
+    it('should NOT detect Riot Games email code form as TOTP', () => {
+      const htmlFile = 'en-email-verification-form2.html';
+      const html = readFileSync(join(__dirname, 'test-forms', htmlFile), 'utf-8');
+      const dom = new JSDOM(html, {
+        url: 'http://localhost',
+        runScripts: 'dangerously',
+        resources: 'usable'
+      });
+      const document = dom.window.document;
+
+      // Set focus on the first input
+      const focusedElement = document.getElementById('email-code-0');
+      if (!focusedElement) {
+        throw new Error('Focus element not found in test HTML');
+      }
+
+      // Create a new form detector with the focused element
+      const formDetector = new FormDetector(document, focusedElement);
+      const result = formDetector.getForm();
+
+      /*
+       * The form should NOT be detected as TOTP because it's an email code verification form
+       * Even though it says "Verification Required", the text "code we've emailed to" and
+       * "Resend code" link indicate it's email verification, not authenticator TOTP
+       */
       expect(result?.totpField).toBeNull();
     });
   });
