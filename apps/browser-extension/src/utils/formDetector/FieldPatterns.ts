@@ -37,14 +37,11 @@ export type DateOptionPatterns = {
 /**
  * Type for email verification context patterns. These patterns are used to detect if a form
  * is for email verification (not TOTP/2FA). Each pattern should detect common phrases
- * found in email verification flows.
+ * found in email verification flows (specifically in links/buttons).
  */
 export type EmailVerificationPatterns = {
-    verifyEmail: RegExp[];
-    emailVerification: RegExp[];
-    sentCodeToEmail: RegExp[];
-    checkEmail: RegExp[];
-    confirmEmail: RegExp[];
+    resendCode: RegExp[];
+    changeEmail: RegExp[];
 }
 
 /**
@@ -86,34 +83,20 @@ export const EnglishDateOptionPatterns: DateOptionPatterns = {
 
 /**
  * English email verification patterns. These are used to detect email verification forms
- * (not TOTP/2FA forms) by analyzing page content.
+ * (not TOTP/2FA forms) by analyzing link/button text in the form context.
  */
 export const EnglishEmailVerificationPatterns: EmailVerificationPatterns = {
-  verifyEmail: [
-    /verify\s+your\s+email/i,
-    /verify\s+email\s+address/i,
-    /email\s+needs\s+verification/i
+  resendCode: [
+    /resend/i,
+    /re-send/i,
+    /send\s+again/i,
+    /send\s+code\s+again/i
   ],
-  emailVerification: [
-    /email\s+verification/i,
-    /verification\s+email/i
-  ],
-  sentCodeToEmail: [
-    /we\s+sent\s+(a\s+)?code\s+to.*@/i,
-    /sent\s+(a\s+)?(verification\s+)?code\s+to.*@/i,
-    /enter\s+the\s+code\s+we\s+sent\s+to.*@/i,
-    /code\s+has\s+been\s+sent\s+to.*@/i,
-    /we've\s+sent\s+(a\s+)?code\s+to.*@/i
-  ],
-  checkEmail: [
-    /check\s+your\s+email/i,
-    /check\s+your\s+inbox/i,
-    /please\s+check\s+your\s+email/i
-  ],
-  confirmEmail: [
-    /confirm\s+your\s+email/i,
-    /email\s+confirmation/i,
-    /confirm\s+email\s+address/i
+  changeEmail: [
+    /different\s+email/i,
+    /change\s+email/i,
+    /update\s+email/i,
+    /use\s+another\s+email/i
   ]
 };
 
@@ -195,33 +178,20 @@ export const DutchDateOptionPatterns: DateOptionPatterns = {
 
 /**
  * Dutch email verification patterns. These are used to detect email verification forms
- * (not TOTP/2FA forms) by analyzing page content.
+ * (not TOTP/2FA forms) by analyzing link/button text in the form context.
  */
 export const DutchEmailVerificationPatterns: EmailVerificationPatterns = {
-  verifyEmail: [
-    /verifieer\s+je\s+e-?mail/i,
-    /e-?mail\s+verifi[eë]ren/i,
-    /controleer\s+je\s+e-?mail/i
+  resendCode: [
+    /opnieuw\s+verzenden/i,
+    /verstuur\s+opnieuw/i,
+    /code\s+opnieuw/i,
+    /opnieuw\s+versturen/i
   ],
-  emailVerification: [
-    /e-?mail\s+verificatie/i,
-    /verificatie\s+e-?mail/i
-  ],
-  sentCodeToEmail: [
-    /we\s+hebben\s+(een\s+)?code\s+gestuurd\s+naar.*@/i,
-    /(een\s+)?code\s+verzonden\s+naar.*@/i,
-    /voer\s+de\s+code\s+in\s+die\s+we\s+naar.*@\s+hebben\s+gestuurd/i,
-    /code\s+is\s+verzonden\s+naar.*@/i
-  ],
-  checkEmail: [
-    /controleer\s+je\s+e-?mail/i,
-    /bekijk\s+je\s+inbox/i,
-    /controleer\s+je\s+inbox/i
-  ],
-  confirmEmail: [
-    /bevestig\s+je\s+e-?mail/i,
-    /e-?mail\s+bevestiging/i,
-    /bevestig\s+e-?mailadres/i
+  changeEmail: [
+    /ander\s+e-?mail/i,
+    /wijzig\s+e-?mail/i,
+    /e-?mail\s+wijzigen/i,
+    /ander\s+e-?mailadres/i
   ]
 };
 
@@ -321,27 +291,15 @@ export const CombinedStopWords = new Set([
 
 /**
  * Combined email verification patterns from all supported languages. These are used to detect
- * email verification forms (not TOTP/2FA forms) by analyzing page content.
+ * email verification forms (not TOTP/2FA forms) by analyzing link/button text in the form context.
  */
 export const CombinedEmailVerificationPatterns: EmailVerificationPatterns = {
-  verifyEmail: [
-    ...EnglishEmailVerificationPatterns.verifyEmail,
-    ...DutchEmailVerificationPatterns.verifyEmail
+  resendCode: [
+    ...EnglishEmailVerificationPatterns.resendCode,
+    ...DutchEmailVerificationPatterns.resendCode
   ],
-  emailVerification: [
-    ...EnglishEmailVerificationPatterns.emailVerification,
-    ...DutchEmailVerificationPatterns.emailVerification
-  ],
-  sentCodeToEmail: [
-    ...EnglishEmailVerificationPatterns.sentCodeToEmail,
-    ...DutchEmailVerificationPatterns.sentCodeToEmail
-  ],
-  checkEmail: [
-    ...EnglishEmailVerificationPatterns.checkEmail,
-    ...DutchEmailVerificationPatterns.checkEmail
-  ],
-  confirmEmail: [
-    ...EnglishEmailVerificationPatterns.confirmEmail,
-    ...DutchEmailVerificationPatterns.confirmEmail
+  changeEmail: [
+    ...EnglishEmailVerificationPatterns.changeEmail,
+    ...DutchEmailVerificationPatterns.changeEmail
   ]
 };

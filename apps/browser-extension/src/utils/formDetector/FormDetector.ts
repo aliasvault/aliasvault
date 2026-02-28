@@ -1008,32 +1008,65 @@ export class FormDetector {
   }
 
   /**
-   * Check if the page content indicates this is an email verification form.
+   * Check if the form context indicates this is an email verification form.
    * Email verification forms should not be treated as TOTP/2FA forms.
-   * Uses language-aware patterns to support multiple languages.
+   *
+   * This method uses localized heuristics to avoid false positives from unrelated page content.
+   * It looks for specific patterns that distinguish email verification from TOTP/2FA authentication.
    */
   private isEmailVerificationForm(): boolean {
-    // Get page text content for context analysis
-    const bodyText = this.document.body?.textContent || '';
-    const pageTitle = this.document.title || '';
+    if (!this.clickedElement) {
+      return false;
+    }
 
-    // Combine all language-aware email verification patterns
-    const allPatterns = [
-      ...CombinedEmailVerificationPatterns.verifyEmail,
-      ...CombinedEmailVerificationPatterns.emailVerification,
-      ...CombinedEmailVerificationPatterns.sentCodeToEmail,
-      ...CombinedEmailVerificationPatterns.checkEmail,
-      ...CombinedEmailVerificationPatterns.confirmEmail
-    ];
+    /*
+     * Search upward from the clicked element to find visible text and links
+     * This gives us a localized context without needing to scan the entire page
+     */
+    let searchRoot: HTMLElement = this.clickedElement;
+    let depth = 0;
 
-    // Check if any email verification pattern matches
-    for (const pattern of allPatterns) {
-      if (pattern.test(bodyText) || pattern.test(pageTitle)) {
-        return true;
+    // Go up to find a reasonable container (max 15 levels)
+    while (searchRoot.parentElement && depth < 15) {
+      searchRoot = searchRoot.parentElement;
+      depth++;
+
+      // Stop if we found a form, dialog, or main container
+      if (searchRoot.tagName === 'FORM' ||
+          searchRoot.getAttribute('role') === 'dialog' ||
+          searchRoot.tagName === 'MAIN' ||
+          searchRoot.id ||
+          searchRoot.className.includes('container')) {
+        break;
       }
     }
 
-    return false;
+    // Get text content and links from this localized area
+    const contextText = searchRoot.textContent || '';
+    const links = Array.from(searchRoot.querySelectorAll('a, button'));
+    const linkTexts = links.map(link => link.textContent?.toLowerCase() || '');
+    const allLinkText = linkTexts.join(' ');
+
+    /*
+     * Check for email address pattern (including masked like "user@***.com")
+     * Email verification forms typically display the email address
+     * Pattern: something @ something . something (allows masked emails with asterisks)
+     */
+    const hasEmailPattern = /[a-z0-9*.\-_]+@[a-z0-9*.-]+\.[a-z*]{2,}/i.test(contextText);
+
+    if (!hasEmailPattern) {
+      // No email shown = not email verification
+      return false;
+    }
+
+    // Check for "resend code" links using language-aware patterns (common in email verification, rare in TOTP)
+    const hasResend = CombinedEmailVerificationPatterns.resendCode.some(pattern => pattern.test(allLinkText));
+
+    // Check for "change/update email" options using language-aware patterns
+    const hasChangeEmail = CombinedEmailVerificationPatterns.changeEmail.some(pattern => pattern.test(allLinkText));
+
+    // Email verification = shows email AND has resend OR change email option
+    return hasEmailPattern && (hasResend || hasChangeEmail);
   }
 
   /**
