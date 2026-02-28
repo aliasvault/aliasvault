@@ -12,6 +12,7 @@ import { FieldTypes, getFieldValue, FieldKey } from '@/utils/dist/core/models/va
 import emitter from '@/utils/EventEmitter';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 
 import { AliasDetails } from '@/components/items/details/AliasDetails';
 import { AttachmentSection } from '@/components/items/details/AttachmentSection';
@@ -45,14 +46,15 @@ export default function ItemDetailsScreen() : React.ReactNode {
   const navigation = useNavigation();
   const colors = useColors();
   const router = useRouter();
+  const navigate = useNavigationDebounce();
   const { t } = useTranslation();
 
   /**
    * Handle the edit button press.
    */
   const handleEdit = useCallback(() : void => {
-    router.push(`/(tabs)/items/add-edit?id=${id}`);
-  }, [id, router]);
+    navigate(() => router.push(`/(tabs)/items/add-edit?id=${id}`));
+  }, [id, router, navigate]);
 
   // Set header buttons
   useEffect(() => {

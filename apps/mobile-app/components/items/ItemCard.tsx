@@ -12,6 +12,7 @@ import { ItemIcon } from '@/components/items/ItemIcon';
 import { useDialog } from '@/context/DialogContext';
 import { LocalPreferencesService } from '@/services/LocalPreferencesService';
 import { useColors } from '@/hooks/useColorScheme';
+import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { copyToClipboardWithExpiration } from '@/utils/ClipboardUtility';
 import type { Item } from '@/utils/dist/core/models/vault';
 import { getFieldValue, FieldKey } from '@/utils/dist/core/models/vault';
@@ -29,6 +30,7 @@ export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCar
   const colors = useColors();
   const { t } = useTranslation();
   const { showConfirm } = useDialog();
+  const navigate = useNavigationDebounce();
 
   /**
    * Get the display text for an item, showing username by default,
@@ -86,10 +88,12 @@ export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCar
 
     switch (name) {
       case t('items.contextMenu.edit'):
-        Keyboard.dismiss();
-        router.push({
-          pathname: '/(tabs)/items/add-edit',
-          params: { id: item.Id }
+        navigate(() => {
+          Keyboard.dismiss();
+          router.push({
+            pathname: '/(tabs)/items/add-edit',
+            params: { id: item.Id }
+          });
         });
         break;
       case t('items.contextMenu.delete'):
@@ -276,8 +280,10 @@ export function ItemCard({ item, onItemDelete, showFolderPath = false }: ItemCar
         <TouchableOpacity
           style={styles.credentialCard}
           onPress={() => {
-            Keyboard.dismiss();
-            router.push(`/(tabs)/items/${item.Id}`);
+            navigate(() => {
+              Keyboard.dismiss();
+              router.push(`/(tabs)/items/${item.Id}`);
+            });
           }}
           onLongPress={() => {
             // Ignore long press to prevent context menu long press from triggering the item card press.

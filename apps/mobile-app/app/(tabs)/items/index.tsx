@@ -17,6 +17,7 @@ import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticati
 
 import { useColors } from '@/hooks/useColorScheme';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
+import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
@@ -75,6 +76,7 @@ export default function ItemsScreen(): React.ReactNode {
   const { syncVault } = useVaultSync();
   const { t } = useTranslation();
   const colors = useColors();
+  const navigate = useNavigationDebounce();
   const scrollY = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
@@ -517,8 +519,8 @@ export default function ItemsScreen(): React.ReactNode {
    * Navigate to a folder.
    */
   const handleFolderClick = useCallback((folderId: string) => {
-    router.push(`/(tabs)/items/folder/${folderId}`);
-  }, [router]);
+    navigate(() => router.push(`/(tabs)/items/folder/${folderId}`));
+  }, [router, navigate]);
 
   /**
    * Create a new folder.
@@ -535,19 +537,21 @@ export default function ItemsScreen(): React.ReactNode {
    * If there's a search query, pass it as itemUrl (if URL) or itemName (if not).
    */
   const handleAddItem = useCallback(() => {
-    const trimmedQuery = searchQuery.trim();
-    if (trimmedQuery) {
-      const isUrl = /^https?:\/\//i.test(trimmedQuery);
-      if (isUrl) {
-        router.push(`/(tabs)/items/add-edit?itemUrl=${encodeURIComponent(trimmedQuery)}`);
+    navigate(() => {
+      const trimmedQuery = searchQuery.trim();
+      if (trimmedQuery) {
+        const isUrl = /^https?:\/\//i.test(trimmedQuery);
+        if (isUrl) {
+          router.push(`/(tabs)/items/add-edit?itemUrl=${encodeURIComponent(trimmedQuery)}`);
+        } else {
+          router.push(`/(tabs)/items/add-edit?itemName=${encodeURIComponent(trimmedQuery)}`);
+        }
       } else {
-        router.push(`/(tabs)/items/add-edit?itemName=${encodeURIComponent(trimmedQuery)}`);
+        router.push('/(tabs)/items/add-edit');
       }
-    } else {
-      router.push('/(tabs)/items/add-edit');
-    }
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, [router, searchQuery]);
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    });
+  }, [router, searchQuery, navigate]);
 
   const styles = StyleSheet.create({
     container: {
