@@ -1,32 +1,32 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { detectLaceWallet, connectWallet, disconnectWallet } from '../walletService';
 
 describe('walletService', () => {
   afterEach(() => {
     // Clean up window.midnight
-    delete (window as Record<string, unknown>).midnight;
+    delete (window as unknown as Record<string, unknown>).midnight;
   });
 
   describe('detectLaceWallet', () => {
     it('returns false when window.midnight is undefined', () => {
-      delete (window as Record<string, unknown>).midnight;
+      delete (window as unknown as Record<string, unknown>).midnight;
       expect(detectLaceWallet()).toBe(false);
     });
 
     it('returns false when window.midnight exists but mnLace is missing', () => {
-      (window as Record<string, unknown>).midnight = {};
+      (window as unknown as Record<string, unknown>).midnight = {};
       expect(detectLaceWallet()).toBe(false);
     });
 
     it('returns true when window.midnight.mnLace exists', () => {
-      (window as Record<string, unknown>).midnight = { mnLace: {} };
+      (window as unknown as Record<string, unknown>).midnight = { mnLace: {} };
       expect(detectLaceWallet()).toBe(true);
     });
   });
 
   describe('connectWallet', () => {
     it('throws when Lace wallet is not detected', async () => {
-      delete (window as Record<string, unknown>).midnight;
+      delete (window as unknown as Record<string, unknown>).midnight;
       await expect(connectWallet('undeployed')).rejects.toThrow('Lace wallet not detected');
     });
 
@@ -38,7 +38,7 @@ describe('walletService', () => {
       const mockLace = {
         connect: vi.fn().mockResolvedValue(mockWallet),
       };
-      (window as Record<string, unknown>).midnight = { mnLace: mockLace };
+      (window as unknown as Record<string, unknown>).midnight = { mnLace: mockLace };
 
       const result = await connectWallet('undeployed');
 
@@ -54,7 +54,7 @@ describe('walletService', () => {
       const mockLace = {
         connect: vi.fn().mockResolvedValue(mockWallet),
       };
-      (window as Record<string, unknown>).midnight = { mnLace: mockLace };
+      (window as unknown as Record<string, unknown>).midnight = { mnLace: mockLace };
 
       await expect(connectWallet('undeployed')).rejects.toThrow('No shielded address available');
     });
@@ -63,7 +63,7 @@ describe('walletService', () => {
       const mockLace = {
         connect: vi.fn().mockRejectedValue(new Error('User rejected connection')),
       };
-      (window as Record<string, unknown>).midnight = { mnLace: mockLace };
+      (window as unknown as Record<string, unknown>).midnight = { mnLace: mockLace };
 
       await expect(connectWallet('undeployed')).rejects.toThrow('User rejected connection');
     });

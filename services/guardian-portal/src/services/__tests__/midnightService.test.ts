@@ -31,7 +31,7 @@ import {
 
 // Helper to build a mock handle with a given ledger
 function mockHandle(ledger: Record<string, unknown>) {
-  return { deployTxData: { public: ledger } } as Parameters<typeof getContractState>[0];
+  return { deployTxData: { public: ledger } } as unknown as Parameters<typeof getContractState>[0];
 }
 
 describe('midnightService', () => {

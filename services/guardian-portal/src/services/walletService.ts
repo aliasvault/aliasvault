@@ -8,8 +8,8 @@ export interface WalletConnection {
  * Guardian portal is a regular web page — direct window access, NOT Chrome scripting API.
  */
 export function detectLaceWallet(): boolean {
-  return !!(window as Record<string, unknown>).midnight &&
-    !!((window as Record<string, unknown>).midnight as Record<string, unknown>)?.mnLace;
+  return !!(window as unknown as Record<string, unknown>).midnight &&
+    !!((window as unknown as Record<string, unknown>).midnight as Record<string, unknown>)?.mnLace;
 }
 
 /**
@@ -17,7 +17,7 @@ export function detectLaceWallet(): boolean {
  * Lace v4+ API: lace.connect(networkId) + wallet.getShieldedAddresses()
  */
 export async function connectWallet(networkId: string): Promise<WalletConnection> {
-  const midnight = (window as Record<string, unknown>).midnight as Record<string, unknown> | undefined;
+  const midnight = (window as unknown as Record<string, unknown>).midnight as Record<string, unknown> | undefined;
   const lace = midnight?.mnLace as { connect(networkId: string): Promise<{ getShieldedAddresses(): Promise<string[]> }> } | undefined;
 
   if (!lace) {
