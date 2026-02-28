@@ -48,9 +48,9 @@
     "verifyingAuthCode": "Verificando código de autenticación",
     "verify": "Verificar",
     "unlockVault": "Desbloquear bóveda",
-    "unlockWithBiometric": "Unlock with {{biometric}}",
+    "unlockWithBiometric": "Desbloquear con {{biometric}}",
     "unlockWithPin": "Desbloquear con PIN",
-    "unlockWithPassword": "Unlock with Password",
+    "unlockWithPassword": "Desbloquear con contraseña",
     "enterPassword": "Introduzca su contraseña para desbloquear su bóveda",
     "enterPasswordPlaceholder": "Contraseña",
     "enterAuthCode": "Introduzca código de 6 dígitos",
@@ -216,7 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} está deshabilitado para AliasVault. Para usarlo, por favor habilítelo en la configuración de tu dispositivo.",
       "biometricHelp": "Usa los datos biométricos para desbloquear tu bóveda que está asegurada por la {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} no está disponible. Toca para abrir ajustes y/o ve a la configuración de tu dispositivo para activarlo y configurarlo.",
-      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
+      "featureRequiresPasscode": "Esta característica requiere que se habilite un código de acceso en su dispositivo.",
       "pin": "Código PIN",
       "pinDescription": "Usa un código PIN personalizado para desbloquear tu bóveda más rápidamente.",
       "pinEnabled": "Desbloqueo de PIN activado correctamente",
@@ -323,7 +323,7 @@
         "confirmMessage": "Estás a punto de iniciar sesión en un dispositivo remoto con tu cuenta. Este otro dispositivo tendrá acceso completo a su bóveda. Sólo proceda si confía en este dispositivo.",
         "successDescription": "El dispositivo remoto se ha conectado correctamente.",
         "requestExpired": "Esta solicitud de inicio de sesión ha caducado. Por favor, genere un nuevo código QR.",
-        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
+        "noPinOrBiometricError": "El desbloqueo móvil requiere PIN o autenticación biométrica. Por favor, habilite PIN o Face ID/Touch ID en la configuración de desbloqueo de bóveda para utilizar esta función."
       }
     }
   },
