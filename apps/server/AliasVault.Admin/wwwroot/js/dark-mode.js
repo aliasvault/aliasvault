@@ -18,9 +18,9 @@ function initDarkModeSwitcher() {
 
     if (localStorage.getItem('color-theme') === 'dark' ||
         (!localStorage.getItem('color-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        themeToggleDarkIcon?.classList.remove('hidden');
-    } else {
         themeToggleLightIcon?.classList.remove('hidden');
+    } else {
+        themeToggleDarkIcon?.classList.remove('hidden');
     }
 
     let event = new Event('dark-mode');
