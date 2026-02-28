@@ -23,5 +23,8 @@
     "@aliasvault/contract": "*",
     "protobufjs": "^7.5.4",
     "long": "^5.3.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
   }
 }

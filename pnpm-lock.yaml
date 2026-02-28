@@ -132,8 +132,16 @@ importers:
       protobufjs:
         specifier: ^7.5.4
         version: 7.5.4
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
-  packages/blockchain/contract: {}
+  packages/blockchain/contract:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   services/guardian-portal:
     dependencies:
@@ -143,6 +151,9 @@ importers:
       '@aliasvault/vault-sync':
         specifier: workspace:*
         version: link:../../shared/vault-sync
+      '@midnight-ntwrk/compact-js':
+        specifier: 2.4.0
+        version: 2.4.0
       '@midnight-ntwrk/compact-runtime':
         specifier: 0.14.0
         version: 0.14.0
