@@ -415,7 +415,7 @@
     "privateEmailDescription": "E2E chiffré, entièrement privé.",
     "publicEmailTitle": "Fournisseurs d'email public temporaires",
     "publicEmailDescription": "Anonyme mais confidentiel limitée. Le contenu des e-mails est lisible par toute personne qui connaît l'adresse.",
-    "searchPlaceholder": "Rechercher dans le coffre...",
+    "searchPlaceholder": "Rechercher élément...",
     "noMatchingItems": "Aucun élément ne correspond au filtre sélectionné.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",
