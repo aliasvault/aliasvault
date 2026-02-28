@@ -9,6 +9,7 @@ import { FormDetector } from '@/utils/formDetector/FormDetector';
 import { FormFiller } from '@/utils/formDetector/FormFiller';
 import type { LastAutofilledCredential } from '@/utils/loginDetector';
 import { ClickValidator } from '@/utils/security/ClickValidator';
+import { SqliteClient } from '@/utils/SqliteClient';
 
 /**
  * Global timestamp to track popup debounce time.
@@ -122,12 +123,16 @@ export async function fillItem(item: Item, input: HTMLInputElement): Promise<voi
   const usernameValue = usernameField?.Value ?? emailField?.Value;
   const username = typeof usernameValue === 'string' ? usernameValue : '';
 
+  // Convert logo to data URL for display in prompts
+  const faviconUrl = item.Logo ? SqliteClient.imgSrcFromBytes(item.Logo) : undefined;
+
   const lastAutofilled: LastAutofilledCredential = {
     itemId: item.Id,
     itemName: item.Name || '',
     username,
     domain: window.location.hostname,
     timestamp: Date.now(),
+    faviconUrl: faviconUrl ?? undefined,
   };
 
   sendMessage('STORE_LAST_AUTOFILLED', lastAutofilled, 'background').catch(() => {

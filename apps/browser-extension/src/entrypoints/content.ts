@@ -7,7 +7,7 @@ import { onMessage, sendMessage } from "webext-bridge/content-script";
 
 import { injectIcon, popupDebounceTimeHasPassed, validateInputField } from '@/entrypoints/contentScript/Form';
 import { isAutoShowPopupEnabled, openAutofillPopup, openTotpPopup, removeExistingPopup, createUpgradeRequiredPopup } from '@/entrypoints/contentScript/Popup';
-import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState } from '@/entrypoints/contentScript/SavePrompt';
+import { showSavePrompt, showAddUrlPrompt, isSavePromptVisible, updateSavePromptLogin, getPersistedSavePromptState, restoreSavePromptFromState, restoreAddUrlPromptFromState } from '@/entrypoints/contentScript/SavePrompt';
 import { initializeWebAuthnInterceptor } from '@/entrypoints/contentScript/WebAuthnInterceptor';
 
 import { FormDetector } from '@/utils/formDetector/FormDetector';
@@ -208,14 +208,24 @@ async function checkAndRestoreSavePromptEarly(ctx: Parameters<typeof createShado
        * Mount handler for early save prompt restore.
        */
       onMount(container) {
-        // Restore the save prompt with the remaining time
-        void restoreSavePromptFromState(
-          container,
-          persistedState,
-          handleSaveLogin,
-          handleNeverSaveForDomain,
-          handleSavePromptDismiss
-        );
+        // Restore the appropriate prompt type based on persisted state
+        if (persistedState.promptType === 'add-url') {
+          void restoreAddUrlPromptFromState(
+            container,
+            persistedState,
+            handleAddUrlToCredential,
+            handleSavePromptDismiss
+          );
+        } else {
+          // Default to 'save' prompt
+          void restoreSavePromptFromState(
+            container,
+            persistedState,
+            handleSaveLogin,
+            handleNeverSaveForDomain,
+            handleSavePromptDismiss
+          );
+        }
         earlyRestoreCompleted = true;
       },
     });
@@ -266,14 +276,24 @@ async function checkAndRestorePersistedSavePrompt(container: HTMLElement): Promi
       return;
     }
 
-    // Restore the save prompt with the remaining time
-    await restoreSavePromptFromState(
-      container,
-      persistedState,
-      handleSaveLogin,
-      handleNeverSaveForDomain,
-      handleSavePromptDismiss
-    );
+    // Restore the appropriate prompt type based on persisted state
+    if (persistedState.promptType === 'add-url') {
+      await restoreAddUrlPromptFromState(
+        container,
+        persistedState,
+        handleAddUrlToCredential,
+        handleSavePromptDismiss
+      );
+    } else {
+      // Default to 'save' prompt
+      await restoreSavePromptFromState(
+        container,
+        persistedState,
+        handleSaveLogin,
+        handleNeverSaveForDomain,
+        handleSavePromptDismiss
+      );
+    }
   } catch (error) {
     console.error('[AliasVault] Error restoring persisted save prompt:', error);
   }
