@@ -979,18 +979,22 @@ final class AliasVaultUITests: XCTestCase {
         itemNameInput.tapNoIdle()
         itemNameInput.typeTextNoIdle(params.name)
 
-        // Fill service URL
-        let serviceUrlInput = app.findAndScrollToTextField(testID: "service-url-input")
+        // Fill service URL (multi-value field, first input has index 0)
+        let serviceUrlInput = app.findAndScrollToTextField(testID: "service-url-input-0")
         serviceUrlInput.tapNoIdle()
         serviceUrlInput.typeTextNoIdle(params.serviceUrl)
 
-        // Add email
+        // Add email - click button and wait for field to appear
         let addEmailButton = app.findElement(testID: "add-email-button")
         app.scrollToElement(addEmailButton)
         addEmailButton.tapNoIdle()
 
+        // Wait for email field to appear after animation
         let loginEmailInput = app.findAndScrollToTextField(testID: "login-email-input")
+        _ = loginEmailInput.waitForExistenceNoIdle(timeout: 3)
+        app.scrollToElement(loginEmailInput)
         loginEmailInput.tapNoIdle()
+        Thread.sleep(forTimeInterval: 0.2) // Wait for focus
         loginEmailInput.typeTextNoIdle(params.email)
 
         // Optionally add username
@@ -998,7 +1002,10 @@ final class AliasVaultUITests: XCTestCase {
             let loginUsernameInput = app.findAndScrollToTextField(testID: "login-username-input")
             if loginUsernameInput.exists {
                 app.scrollToElement(loginUsernameInput)
+                // Ensure field is focused before typing
+                _ = loginUsernameInput.waitForExistenceNoIdle(timeout: 2)
                 loginUsernameInput.tapNoIdle()
+                Thread.sleep(forTimeInterval: 0.3) // Wait for focus to switch
                 loginUsernameInput.typeTextNoIdle(username)
             }
         }
@@ -1007,6 +1014,7 @@ final class AliasVaultUITests: XCTestCase {
 
         // Save item
         let saveButton = app.findElement(testID: "save-button")
+        _ = saveButton.waitForExistenceNoIdle(timeout: 5)
         saveButton.tapNoIdle()
 
         guard assertTextAppears(

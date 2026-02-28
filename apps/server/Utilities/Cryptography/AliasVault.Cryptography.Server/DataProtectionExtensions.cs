@@ -72,13 +72,17 @@ public static class DataProtectionExtensions
         // Not in container, get certificate password using SecretReader
         var certPassword = SecretReader.GetDataProtectionCertPassword();
 
-        var certPath = $"../../certificates/app/{applicationName}.DataProtection.pfx";
+        // For development mode, skip certificate-based protection entirely
+        // This avoids macOS keychain access issues in CI environments
         if (certPassword == "Development")
         {
-            certPath = Path.Combine(AppContext.BaseDirectory, $"{applicationName}.DataProtection.Development.pfx");
+            ConfigureContainerDataProtection(dataProtectionBuilder);
+            return;
         }
 
-        // Use certificate-based protection for development
+        var certPath = $"../../certificates/app/{applicationName}.DataProtection.pfx";
+
+        // Use certificate-based protection for non-development environments
         var certificateFlags = X509KeyStorageFlags.MachineKeySet | X509KeyStorageFlags.PersistKeySet | X509KeyStorageFlags.Exportable;
 
         X509Certificate2 cert;
