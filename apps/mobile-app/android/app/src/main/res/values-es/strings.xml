@@ -88,5 +88,5 @@
   <string name="password_unlock_password_hint">Contraseña</string>
   <string name="password_unlock_button">Desbloquear</string>
   <string name="password_unlock_incorrect">Contraseña incorrecta. Por favor, inténtelo de nuevo.</string>
-  <string name="password_unlock_error">Failed to verify password</string>
+  <string name="password_unlock_error">Error al verificar la contraseña</string>
 </resources>
