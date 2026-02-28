@@ -7,6 +7,7 @@
   <string name="common_close">Cerrar</string>
   <string name="common_next">Siguiente</string>
   <string name="common_cancel">Cancelar</string>
+  <string name="common_back">Atrás</string>
   <string name="unknown_error">Se produjo un error desconocido</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Fallo al recuperar, abrir aplicación</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">Confirmar PIN</string>
   <string name="pin_confirm_description">Vuelva a introducir su PIN para confirmar</string>
   <string name="pin_mismatch">Los PIN no coinciden. Por favor, inténtalo de nuevo.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">Desbloquear bóveda</string>
+  <string name="password_unlock_subtitle">Ingrese su contraseña maestra</string>
+  <string name="password_unlock_password_hint">Contraseña</string>
+  <string name="password_unlock_button">Desbloquear</string>
+  <string name="password_unlock_incorrect">Contraseña incorrecta. Por favor, inténtelo de nuevo.</string>
+  <string name="password_unlock_error">Error al verificar la contraseña</string>
 </resources>

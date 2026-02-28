@@ -6,7 +6,7 @@
     "refreshButtonText": "Uppdatera sida"
   },
   "errors": {
-    "unhandledError": "Ett ohanterat fel har inträffat. Försök att ladda om sidan. Om problemet kvarstår, vänligen kontakta support.",
+    "unhandledError": "Ett oväntat fel har inträffat. Försök att ladda om sidan. Om problemet kvarstår, kontakta supporten.",
     "webAssemblyError": "AliasVault kräver WebAssembly, vilket denna webbläsare inte stöder. Prova att använda en modernare webbläsare som stöder WebAssembly.",
     "reloadPageText": "Ladda om sida"
   },

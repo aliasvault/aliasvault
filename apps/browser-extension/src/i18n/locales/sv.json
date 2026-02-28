@@ -302,7 +302,7 @@
     "secretKey": "Hemlig nyckel",
     "saveToViewCode": "Spara för att visa kod",
     "defaultName": "Autentiserare",
-    "deleteTotpCodeTitle": "Ta bort 2FA-kod",
+    "deleteTotpCodeTitle": "Radera 2FA-kod",
     "deleteTotpCodeConfirmation": "Är du säker på att du vill radera 2FA-koden\"{{name}}\"?",
     "errors": {
       "invalidSecretKey": "Ogiltigt format för hemlig nyckel."
@@ -469,7 +469,7 @@
     "helpText": "Passkeys skapas på webbplatsen när du blir tillfrågad. De kan inte redigeras manuellt. För att radera denna passkey, kan du ta bort det från denna posten. För att byta ut denna passkey eller skapa en ny, besök webbplatsen och följ dess anvisningar.",
     "passkeyMarkedForDeletion": "Passkey markerad för borttagning",
     "passkeyWillBeDeleted": "Denna passkey kommer att tas bort när du sparar dessa uppgifter.",
-    "useBrowserPasskey": "Använd Webbläsar Passkey",
+    "useBrowserPasskey": "Använd webbläsarens Passkey",
     "bypass": {
       "description": "Hur länge vill du använda webbläsarens passkey-leverantör till {{origin}}?",
       "thisTimeOnly": "Endast denna gång",

@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Vérification du code d'authentification",
     "verify": "Vérifier",
     "unlockVault": "Déverrouiller le coffre",
+    "unlockWithBiometric": "Déverrouiller avec {{biometric}}",
     "unlockWithPin": "Déverrouiller avec un code PIN",
+    "unlockWithPassword": "Déverrouiller avec le mot de passe",
     "enterPassword": "Entrez votre mot de passe principal pour déverrouiller votre coffre-fort",
     "enterPasswordPlaceholder": "Mot de passe",
     "enterAuthCode": "Saisissez le code à 6 chiffres",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Saisissez votre mot de passe",
     "enableBiometric": "Activer {{biometric}}?",
     "biometricPrompt": "Voulez-vous utiliser {{biometric}} pour déverrouiller votre coffre ?",
-    "tryBiometricAgain": "Réessayez {{biometric}}",
-    "tryPinAgain": "Réessayez le PIN",
     "authCodeNote": "Remarque : si vous n'avez pas accès à votre appareil d'authentification, vous pouvez réinitialiser votre authentification 2FA avec un code de récupération en vous connectant via le site web.",
     "errors": {
       "credentialsRequired": "Le nom d'utilisateur et le mot de passe sont requis",
@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} est désactivé pour AliasVault. Pour l'utiliser, veuillez d'abord l'activer dans les paramètres de votre appareil.",
       "biometricHelp": "Utilisez la biométrie pour déverrouiller votre coffre, qui est sécurisé par l’ {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} n'est pas disponible. Appuyez pour ouvrir les paramètres et/ou allez dans les paramètres de votre appareil pour l'activer et le configurer.",
+      "featureRequiresPasscode": "Cette fonctionnalité nécessite un code d'accès pour être activée sur votre appareil.",
       "pin": "Code PIN",
       "pinDescription": "Utilisez un code PIN personnalisé pour déverrouiller votre coffre plus rapidement.",
       "pinEnabled": "Déverrouillage par code PIN activé avec succès",
@@ -321,7 +322,8 @@
         "confirmSubtitle": "Se ré-authentifier pour approuver la connexion sur un autre appareil.",
         "confirmMessage": "Vous êtes sur le point de vous connecter sur un appareil distant avec votre compte. Cet autre appareil aura un accès complet à votre coffre. Ne procédez que si vous faites confiance à cet appareil.",
         "successDescription": "L'appareil distant a été connecté avec succès.",
-        "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR."
+        "requestExpired": "Cette demande de connexion a expiré. Veuillez générer un nouveau code QR.",
+        "noPinOrBiometricError": "Le déverrouillage par mobile nécessite une authentification par code PIN ou biométrique. Veuillez activer le code PIN ou Face ID/Touch ID dans les paramètres de déverrouillage du coffre pour utiliser cette fonctionnalité."
       }
     }
   },
@@ -334,7 +336,7 @@
     "creating": "Création",
     "editing": "Édition",
     "login": {
-      "title": "Se connecter"
+      "title": "Identifiant"
     },
     "alias": {
       "title": "Alias"
@@ -413,7 +415,7 @@
     "privateEmailDescription": "E2E chiffré, entièrement privé.",
     "publicEmailTitle": "Fournisseurs d'email public temporaires",
     "publicEmailDescription": "Anonyme mais confidentiel limitée. Le contenu des e-mails est lisible par toute personne qui connaît l'adresse.",
-    "searchPlaceholder": "Rechercher dans le coffre...",
+    "searchPlaceholder": "Rechercher élément...",
     "noMatchingItems": "Aucun élément ne correspond au filtre sélectionné.",
     "noMatchingItemsSearch": "Aucun élément correspondant à \"{{search}}\"",
     "noMatchingItemsWithFilter": "Aucun élément {{filter}} correspondant à \"{{search}}\"",

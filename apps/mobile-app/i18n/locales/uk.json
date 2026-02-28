@@ -25,7 +25,7 @@
     "add": "Add",
     "generate": "Generate",
     "attachments": "Вкладення",
-    "or": "or",
+    "or": "або",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Перевірка коду автентифікації",
     "verify": "Перевірка",
     "unlockVault": "Розблокувати Vault",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Розблокувати за допомогою PIN-коду",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Введіть свій пароль, щоб розблокувати сховище",
     "enterPasswordPlaceholder": "Пароль",
     "enterAuthCode": "Введіть 6-значний код",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Введіть Ваш пароль",
     "enableBiometric": "Увімкнути {{biometric}}?",
     "biometricPrompt": "Ви хочете використати {{biometric}} для розблокування вашого сховища?",
-    "tryBiometricAgain": "Спробуйте {{biometric}} ще раз",
-    "tryPinAgain": "Введіть PIN-код ще раз",
     "authCodeNote": "Примітка: якщо у вас немає доступу до вашого пристрою автентифікатора, ви можете скинути налаштування 2FA за допомогою коду відновлення, увійшовши через вебсайт.",
     "errors": {
       "credentialsRequired": "Ім'я користувача та пароль обов'язкові",
@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} вимкнено для AliasVault. Щоб використовувати його, спочатку ввімкніть в налаштуваннях вашого пристрою.",
       "biometricHelp": "Використовуйте біометричні дані, щоб розблокувати сховище, захищене {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} недоступний. Натисніть, щоб відкрити налаштування, та/або перейдіть до налаштувань пристрою, щоб увімкнути та налаштувати його.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "ПІН-код",
       "pinDescription": "Використовуйте власний PIN-код, щоб швидше розблокувати сховище.",
       "pinEnabled": "Розблокування PIN-кодом успішно ввімкнено",
@@ -321,7 +322,8 @@
         "confirmSubtitle": "Повторно пройдіть автентифікацію, щоб підтвердити вхід на іншому пристрої.",
         "confirmMessage": "Ви збираєтеся ввійти на віддаленому пристрої за допомогою свого облікового запису. Цей інший пристрій матиме повний доступ до вашого сховища. Продовжуйте, лише якщо ви довіряєте цьому пристрою.",
         "successDescription": "Віддалений пристрій успішно ввійшов у систему.",
-        "requestExpired": "Термін дії цього запиту на вхід минув. Будь ласка, згенеруйте новий QR-код."
+        "requestExpired": "Термін дії цього запиту на вхід минув. Будь ласка, згенеруйте новий QR-код.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },

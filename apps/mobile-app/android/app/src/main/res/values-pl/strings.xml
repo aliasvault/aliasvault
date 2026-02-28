@@ -7,6 +7,7 @@
   <string name="common_close">Zamknij</string>
   <string name="common_next">Dalej</string>
   <string name="common_cancel">Anuluj</string>
+  <string name="common_back">Wstecz</string>
   <string name="unknown_error">Wystąpił nieznany błąd</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Nie udało się pobrać, otwórz aplikację</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">Potwierdź kod PIN</string>
   <string name="pin_confirm_description">Wprowadź ponownie swój kod PIN, aby potwierdzić</string>
   <string name="pin_mismatch">Kody PIN nie pasują. Spróbuj jeszcze raz.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">Odblokuj sejf</string>
+  <string name="password_unlock_subtitle">Wprowadź swoje hasło główne</string>
+  <string name="password_unlock_password_hint">Hasło</string>
+  <string name="password_unlock_button">Odblokuj</string>
+  <string name="password_unlock_incorrect">Nieprawidłowe hasło. Spróbuj ponownie.</string>
+  <string name="password_unlock_error">Failed to verify password</string>
 </resources>

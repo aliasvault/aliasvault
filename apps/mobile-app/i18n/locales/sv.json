@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Verifierar autentiseringskod",
     "verify": "Bekräfta",
     "unlockVault": "Lås upp valv",
+    "unlockWithBiometric": "Lås upp med {{biometric}}",
     "unlockWithPin": "Lås upp med PIN-kod",
+    "unlockWithPassword": "Lås upp med lösenord",
     "enterPassword": "Ange PIN-koden för att låsa upp ditt valv",
     "enterPasswordPlaceholder": "Lösenord",
     "enterAuthCode": "Ange 6-siffrig kod",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Ange ditt lösenord",
     "enableBiometric": "Aktivera {{biometric}}?",
     "biometricPrompt": "Vill du använda {{biometric}} för att låsa upp ditt valv?",
-    "tryBiometricAgain": "Försök med {{biometric}} igen",
-    "tryPinAgain": "Prova PIN-koden igen",
     "authCodeNote": "Obs! Om du inte har tillgång till din autentiseringsenhet kan du återställa din 2FA med en återställningskod genom att logga in via webbplatsen.",
     "errors": {
       "credentialsRequired": "Användarnamn och lösenord krävs",
@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} är inaktiverat för AliasVault. För att använda funktionen, aktivera den först i enhetens inställningar.",
       "biometricHelp": "Använd biometri för att låsa upp ditt valv, vilket är säkrat via {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} är inte tillgänglig. Tryck för att öppna inställningar och/eller gå till dina enhetsinställningar för att aktivera och konfigurera den.",
+      "featureRequiresPasscode": "Denna funktion kräver att en lösenkod aktiveras på din enhet.",
       "pin": "PIN-Kod",
       "pinDescription": "Använd en anpassad PIN-kod för att låsa upp ditt valv snabbare.",
       "pinEnabled": "PIN-upplåsning aktiverat",
@@ -321,7 +322,8 @@
         "confirmSubtitle": "Återautentisera för att godkänna inloggning på en annan enhet.",
         "confirmMessage": "Du är på väg att logga in på en fjärrenhet med ditt konto. Den här andra enheten kommer att ha full tillgång till ditt valv. Fortsätt endast om du litar på den här enheten.",
         "successDescription": "Fjärrenheten har loggats in.",
-        "requestExpired": "Denna inloggningsbegäran har löpt ut. Vänligen generera en ny QR-kod."
+        "requestExpired": "Denna inloggningsbegäran har löpt ut. Vänligen generera en ny QR-kod.",
+        "noPinOrBiometricError": "Mobil upplåsning kräver PIN-kod eller biometrisk autentisering. Aktivera PIN-kod eller Face ID/Touch ID i valvupplåsningsinställningar för att använda den här funktionen."
       }
     }
   },

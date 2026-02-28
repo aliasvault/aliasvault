@@ -172,7 +172,7 @@
     "vaultUpgradeRequired": "Потрібне оновлення сховища.",
     "dismissPopup": "Закрити спливаюче вікно",
     "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "close": "Закрити",
     "savePrompt": {
       "title": "Save to AliasVault?",
       "neverForThisSite": "Never for this site",

@@ -67,7 +67,7 @@
     <comment>Status message when 2FA is enabled</comment>
   </data>
   <data name="DisabledMessage" xml:space="preserve">
-    <value>Tvåfaktorsautentisering är för närvarande inaktiverad. För att förbättra din kontosäkerhet rekommenderar vi att du aktiverar den.</value>
+    <value>Tvåfaktorsautentisering är för närvarande inaktiverad. För att förbättra din kontosäkerhet rekommenderar vi att du aktiverar funktionen.</value>
     <comment>Status message when 2FA is disabled</comment>
   </data>
   <data name="EnableButton" xml:space="preserve">

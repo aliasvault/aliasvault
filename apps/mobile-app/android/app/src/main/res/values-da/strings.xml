@@ -7,6 +7,7 @@
   <string name="common_close">Luk</string>
   <string name="common_next">Næste</string>
   <string name="common_cancel">Annuller</string>
+  <string name="common_back">Tilbage</string>
   <string name="unknown_error">En ukendt fejl opstod</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Kunne ikke hente, åben app</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">Bekræft PIN-kode</string>
   <string name="pin_confirm_description">Indtast din PIN-kode igen for at bekræfte</string>
   <string name="pin_mismatch">Pinkoden stemmer ikke overens. Prøv venligst igen.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">Lås boks op</string>
+  <string name="password_unlock_subtitle">Indtast din hovedadgangskode</string>
+  <string name="password_unlock_password_hint">Adgangskode</string>
+  <string name="password_unlock_button">Lås op</string>
+  <string name="password_unlock_incorrect">Forkert adgangskode. Prøv venligst igen.</string>
+  <string name="password_unlock_error">Kunne ikke bekræfte adgangskode</string>
 </resources>

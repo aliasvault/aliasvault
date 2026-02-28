@@ -48,7 +48,9 @@
     "verifyingAuthCode": "正在验证身份验证码",
     "verify": "验证",
     "unlockVault": "解锁密码库",
+    "unlockWithBiometric": "使用 {{biometric}} 解锁",
     "unlockWithPin": "使用 PIN 解锁",
+    "unlockWithPassword": "使用密码解锁",
     "enterPassword": "输入您的密码以解锁密码库",
     "enterPasswordPlaceholder": "密码",
     "enterAuthCode": "输入 6 位数代码",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "输入您的密码",
     "enableBiometric": "启用 {{biometric}}？",
     "biometricPrompt": "您想使用 {{biometric}} 来解锁密码库吗？",
-    "tryBiometricAgain": "重试 {{biometric}}",
-    "tryPinAgain": "重试 PIN",
     "authCodeNote": "注：如果您无法访问您的身份验证器设备，您可以通过网站登录并使用恢复码重置您的两步验证。",
     "errors": {
       "credentialsRequired": "用户名和密码是必填项",
@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "AliasVault的{{biometric}}已禁用。如需使用，请先在设备设置中启用它。",
       "biometricHelp": "使用生物识别解锁您的密码库，经由 {{keystore}} 加密。",
       "biometricUnavailableHelp": "{{biometric}}不可用。点击打开设置和/或前往设备设置启用并配置它。",
+      "featureRequiresPasscode": "此功能需要在您的设备上启用密码。",
       "pin": "PIN 码",
       "pinDescription": "使用自定义 PIN 码快速解锁密码库。",
       "pinEnabled": "PIN 解锁已成功启用",
@@ -321,7 +322,8 @@
         "confirmSubtitle": "重新认证以批准在另一台设备上登录。",
         "confirmMessage": "您即将使用您的账户在远程设备上登录。该设备将拥有对您密码库的完全访问权限。请仅在您信任该设备的情况下继续。",
         "successDescription": "远程设备已成功登录。",
-        "requestExpired": "此登录请求已过期，请生成新的二维码。"
+        "requestExpired": "此登录请求已过期，请生成新的二维码。",
+        "noPinOrBiometricError": "移动设备解锁需要 PIN 或生物识别认证。请在密码库解锁设置中启用 PIN 或面容 ID/触控 ID 以使用此功能。"
       }
     }
   },

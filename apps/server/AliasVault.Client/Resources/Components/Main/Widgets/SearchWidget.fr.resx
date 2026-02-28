@@ -20,7 +20,7 @@
     </xsd:element>
   </xsd:schema>
   <data name="SearchVaultPlaceholder">
-    <value>Rechercher dans le coffre...</value>
+    <value>Rechercher élément...</value>
     <comment>Placeholder text for search input field</comment>
   </data>
   <data name="SearchHelpText">

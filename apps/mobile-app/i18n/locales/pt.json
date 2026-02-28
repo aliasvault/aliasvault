@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Verificando código de autenticação",
     "verify": "Verificar",
     "unlockVault": "Desbloquear cofre",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Desbloquear com PIN",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Digite sua senha para desbloquear o cofre",
     "enterPasswordPlaceholder": "Senha",
     "enterAuthCode": "Digite o código de 6 dígitos",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Digite sua senha",
     "enableBiometric": "Habilitar {{biometric}}?",
     "biometricPrompt": "Gostaria de utilizar {{biometric}} para desbloquear seu cofre?",
-    "tryBiometricAgain": "Tente novamente com {{biometric}}",
-    "tryPinAgain": "Tente o PIN Novamente",
     "authCodeNote": "Nota: se você não tem acesso ao seu aparelho de verificação, você pode resetar seu 2FA com um código de recuperação fazendo login no site.",
     "errors": {
       "credentialsRequired": "Usuário e senha são obrigatórios",
@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} está desabitado para o AliasVault. Para utilizar, por favor primeiro habilite nas configurações do seu dispositivo.",
       "biometricHelp": "Utilize biometria para desbloquear seu cofre, que está protegido por {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} não está disponível. Clique para abrir as configurações e/ou vá às configurações do seu dispositivo para habilitar e configurar.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "Código PIN",
       "pinDescription": "Utilize um código PIN para desbloquear seu cofre mais rapidamente.",
       "pinEnabled": "Desbloqueio por PIN habilitado com sucesso",
@@ -321,7 +322,8 @@
         "confirmSubtitle": "Autentique novamente para aprovar login em outros dispositivos.",
         "confirmMessage": "Você está prestes a fazer login em um dispositivo remoto com sua conta. Este outro dispositivo terá acesso total ao seu cofre. Proceda apenas se você confia neste dispositivo.",
         "successDescription": "O login no dispositivo remoto foi feito com sucesso.",
-        "requestExpired": "Esta requisição de login expirou. Por favor, gere um novo código QR."
+        "requestExpired": "Esta requisição de login expirou. Por favor, gere um novo código QR.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },

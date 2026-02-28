@@ -68,6 +68,11 @@
 "pin_locked_max_attempts" = "PIN zablokowany po zbyt wielu nieudanych próbach";
 "pin_incorrect_attempts_remaining" = "Nieprawidłowy kod PIN. Pozostało %d prób.";
 
+/* Password Unlock */
+"enter_password_to_unlock" = "Wprowadź swoje hasło główne";
+"unlock" = "Odblokuj";
+"incorrect_password" = "Nieprawidłowe hasło. Spróbuj ponownie.";
+
 /* PIN Setup */
 "pin_setup_title" = "Ustaw kod PIN";
 "pin_setup_subtitle" = "Wybierz kod PIN, aby odblokować sejf";

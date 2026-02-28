@@ -51,7 +51,7 @@
     "undo": "Отменить",
     "save": "Сохранить",
     "saving": "Сохраняем...",
-    "edit": "Edit",
+    "edit": "Редактировать",
     "create": "Создать",
     "or": "Или",
     "close": "Закрыть",
@@ -172,7 +172,7 @@
     "vaultUpgradeRequired": "Требуется обновление хранилища.",
     "dismissPopup": "Закрыть окно",
     "noTotpItemsFound": "No 2FA code matches found",
-    "close": "Close",
+    "close": "Закрыть",
     "savePrompt": {
       "title": "Сохранить в AliasVault?",
       "neverForThisSite": "Никогда для этого сайта",

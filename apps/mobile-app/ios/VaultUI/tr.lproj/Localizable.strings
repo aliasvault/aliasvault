@@ -32,7 +32,7 @@
 "username_copied" = "Username copied";
 "password_copied" = "Password copied";
 "email_copied" = "Email copied";
-"totp_code" = "TOTP Code";
+"totp_code" = "TOTP Kodu";
 
 /* Search bar */
 "search_items" = "Search items...";
@@ -67,6 +67,11 @@
 "enter_pin_to_unlock_vault" = "Enter your PIN to unlock your vault";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+
+/* Password Unlock */
+"enter_password_to_unlock" = "Enter your master password";
+"unlock" = "Kilidi aç";
+"incorrect_password" = "Parola yanlış. Lütfen yeniden deneyin.";
 
 /* PIN Setup */
 "pin_setup_title" = "Setup PIN";

@@ -32,7 +32,7 @@
 "username_copied" = "Ім'я користувача скопійовано";
 "password_copied" = "Пароль скопійовано";
 "email_copied" = "Адреса ел. пошти скопійована";
-"totp_code" = "TOTP Code";
+"totp_code" = "Код TOTP";
 
 /* Search bar */
 "search_items" = "Search items...";
@@ -67,6 +67,11 @@
 "enter_pin_to_unlock_vault" = "Введіть свій ПІН-код, щоб розблокувати сховище";
 "pin_locked_max_attempts" = "PIN locked after too many failed attempts";
 "pin_incorrect_attempts_remaining" = "Incorrect PIN. %d attempts remaining";
+
+/* Password Unlock */
+"enter_password_to_unlock" = "Введіть ваш головний пароль";
+"unlock" = "Розблокувати";
+"incorrect_password" = "Невірний пароль. Будь ласка, спробуйте ще раз.";
 
 /* PIN Setup */
 "pin_setup_title" = "Налаштування PIN-коду";

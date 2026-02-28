@@ -141,11 +141,11 @@
   },
   "content": {
     "or": "ou",
-    "new": "Nouveautés",
+    "new": "Nouveau",
     "vaultLocked": "AliasVault est verrouillé.",
     "creatingNewAlias": "Création de nouveaux alias...",
     "noMatchesFound": "Aucun résultat trouvé",
-    "searchVault": "Rechercher dans le coffre...",
+    "searchVault": "Rechercher élément...",
     "enterServiceName": "Entrez le nom du service",
     "enterEmailAddress": "Entrer l'adresse email",
     "enterUsername": "Entrez le nom d'utilisateur",
@@ -266,7 +266,7 @@
       "textArea": "Zone de texte"
     },
     "login": {
-      "title": "Se connecter"
+      "title": "Identifiant"
     },
     "alias": {
       "title": "Alias"

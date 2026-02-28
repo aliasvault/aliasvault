@@ -7,6 +7,7 @@
   <string name="common_close">סגירה</string>
   <string name="common_next">הבא</string>
   <string name="common_cancel">ביטול</string>
+  <string name="common_back">חזרה</string>
   <string name="unknown_error">אירעה שגיאה לא ידועה</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">המשיכה נכשלה, נא לפתוח את היישום</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">אישור קוד אישי</string>
   <string name="pin_confirm_description">נא למלא את הקוד האישי שלך מחדש לאישור</string>
   <string name="pin_mismatch">הקודים האישיים לא תואמים. נא לנסות שוב.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">שחרור נעילת כספת</string>
+  <string name="password_unlock_subtitle">נא למלא את סיסמת העל שלך</string>
+  <string name="password_unlock_password_hint">סיסמה</string>
+  <string name="password_unlock_button">שחרור נעילה</string>
+  <string name="password_unlock_incorrect">סיסמה שגויה. נא לנסות שוב.</string>
+  <string name="password_unlock_error">Failed to verify password</string>
 </resources>

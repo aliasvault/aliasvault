@@ -32,7 +32,7 @@
 "username_copied" = "Nome Utente Copiato";
 "password_copied" = "Password copiata";
 "email_copied" = "Email copiata";
-"totp_code" = "TOTP Code";
+"totp_code" = "Codice TOTP";
 
 /* Search bar */
 "search_items" = "Ricerca elementi...";
@@ -67,6 +67,11 @@
 "enter_pin_to_unlock_vault" = "Inserisci il PIN per sbloccare la cassaforte";
 "pin_locked_max_attempts" = "PIN bloccato dopo troppi tentativi falliti";
 "pin_incorrect_attempts_remaining" = "PIN errato, %d tentativi rimasti";
+
+/* Password Unlock */
+"enter_password_to_unlock" = "Inserisci la tua password principale";
+"unlock" = "Sblocca";
+"incorrect_password" = "Password errata. Riprovare.";
 
 /* PIN Setup */
 "pin_setup_title" = "Configurare PIN";

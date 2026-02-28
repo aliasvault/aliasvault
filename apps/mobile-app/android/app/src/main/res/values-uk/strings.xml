@@ -7,6 +7,7 @@
   <string name="common_close">Закрити</string>
   <string name="common_next">Далі</string>
   <string name="common_cancel">Скасувати</string>
+  <string name="common_back">Назад</string>
   <string name="unknown_error">Сталася невідома помилка</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Не вдалося отримати, відкрийте додаток</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">Підтвердити ПІН-код</string>
   <string name="pin_confirm_description">Введіть PIN-код ще раз для підтвердження</string>
   <string name="pin_mismatch">PIN-коди не збігаються. Спробуйте ще раз.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">Розблокувати Vault</string>
+  <string name="password_unlock_subtitle">Введіть ваш головний пароль</string>
+  <string name="password_unlock_password_hint">Пароль</string>
+  <string name="password_unlock_button">Розблокувати</string>
+  <string name="password_unlock_incorrect">Невірний пароль. Будь ласка, спробуйте ще раз.</string>
+  <string name="password_unlock_error">Failed to verify password</string>
 </resources>

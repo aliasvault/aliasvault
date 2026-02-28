@@ -68,6 +68,11 @@
 "pin_locked_max_attempts" = "Le code PIN est verrouillé après trop de tentatives échouées";
 "pin_incorrect_attempts_remaining" = "Code PIN incorrect, %d tentatives restantes";
 
+/* Password Unlock */
+"enter_password_to_unlock" = "Entrez votre mot de passe maître";
+"unlock" = "Déverrouiller";
+"incorrect_password" = "Mot de passe incorrect. Veuillez réessayer.";
+
 /* PIN Setup */
 "pin_setup_title" = "Configurer le code PIN";
 "pin_setup_subtitle" = "Choisissez un code PIN pour déverrouiller votre coffre";

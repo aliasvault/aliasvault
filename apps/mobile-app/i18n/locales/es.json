@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Verificando código de autenticación",
     "verify": "Verificar",
     "unlockVault": "Desbloquear bóveda",
+    "unlockWithBiometric": "Desbloquear con {{biometric}}",
     "unlockWithPin": "Desbloquear con PIN",
+    "unlockWithPassword": "Desbloquear con contraseña",
     "enterPassword": "Introduzca su contraseña para desbloquear su bóveda",
     "enterPasswordPlaceholder": "Contraseña",
     "enterAuthCode": "Introduzca código de 6 dígitos",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Introduzca su contraseña",
     "enableBiometric": "¿Activar {{biometric}}?",
     "biometricPrompt": "¿Quieres usar {{biometric}} para desbloquear tu bóveda?",
-    "tryBiometricAgain": "Prueba {{biometric}} de nuevo",
-    "tryPinAgain": "Intentar PIN de nuevo",
     "authCodeNote": "Nota: si no tiene acceso a su dispositivo de autenticación, puede restablecer su 2FA con un código de recuperación iniciando sesión a través del sitio web.",
     "errors": {
       "credentialsRequired": "Se requiere nombre de usuario y contraseña",
@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} está deshabilitado para AliasVault. Para usarlo, por favor habilítelo en la configuración de tu dispositivo.",
       "biometricHelp": "Usa los datos biométricos para desbloquear tu bóveda que está asegurada por la {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} no está disponible. Toca para abrir ajustes y/o ve a la configuración de tu dispositivo para activarlo y configurarlo.",
+      "featureRequiresPasscode": "Esta característica requiere que se habilite un código de acceso en su dispositivo.",
       "pin": "Código PIN",
       "pinDescription": "Usa un código PIN personalizado para desbloquear tu bóveda más rápidamente.",
       "pinEnabled": "Desbloqueo de PIN activado correctamente",
@@ -321,7 +322,8 @@
         "confirmSubtitle": "Volver a autenticar para aprobar el inicio de sesión en otro dispositivo.",
         "confirmMessage": "Estás a punto de iniciar sesión en un dispositivo remoto con tu cuenta. Este otro dispositivo tendrá acceso completo a su bóveda. Sólo proceda si confía en este dispositivo.",
         "successDescription": "El dispositivo remoto se ha conectado correctamente.",
-        "requestExpired": "Esta solicitud de inicio de sesión ha caducado. Por favor, genere un nuevo código QR."
+        "requestExpired": "Esta solicitud de inicio de sesión ha caducado. Por favor, genere un nuevo código QR.",
+        "noPinOrBiometricError": "El desbloqueo móvil requiere PIN o autenticación biométrica. Por favor, habilite PIN o Face ID/Touch ID en la configuración de desbloqueo de bóveda para utilizar esta función."
       }
     }
   },

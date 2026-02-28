@@ -32,7 +32,7 @@
 "username_copied" = "Käyttäjänimi kopioitu";
 "password_copied" = "Salasana kopioitu";
 "email_copied" = "Sähköposti kopioitu";
-"totp_code" = "TOTP Code";
+"totp_code" = "TOTP-koodi";
 
 /* Search bar */
 "search_items" = "Search items...";
@@ -67,6 +67,11 @@
 "enter_pin_to_unlock_vault" = "Syötä PIN-koodi avataksesi holvisi";
 "pin_locked_max_attempts" = "PIN-koodi lukittu liian monen epäonnistuneen yrityksen jälkeen";
 "pin_incorrect_attempts_remaining" = "Virheellinen PIN, %d yritystä jäljellä";
+
+/* Password Unlock */
+"enter_password_to_unlock" = "Syötä pääsalasanasi";
+"unlock" = "Avaa lukitus";
+"incorrect_password" = "Virheellinen salasana. Yritä uudelleen. ";
 
 /* PIN Setup */
 "pin_setup_title" = "Aseta PIN-koodi";

@@ -32,7 +32,7 @@
 "username_copied" = "Benutzername kopiert";
 "password_copied" = "Passwort kopiert";
 "email_copied" = "E-Mail-Adresse kopiert";
-"totp_code" = "TOTP Code";
+"totp_code" = "TOTP-Code";
 
 /* Search bar */
 "search_items" = "Einträge durchsuchen...";
@@ -67,6 +67,11 @@
 "enter_pin_to_unlock_vault" = "Bitte gib Deine PIN zum Entsperren des Tresors ein";
 "pin_locked_max_attempts" = "Deine PIN wurde nach zu vielen Fehlversuchen gesperrt";
 "pin_incorrect_attempts_remaining" = "Ungültige PIN, %d verbleibende Versuche";
+
+/* Password Unlock */
+"enter_password_to_unlock" = "Gib Dein Master-Passwort ein";
+"unlock" = "Entsperren";
+"incorrect_password" = "Falsches Passwort. Bitte versuche es erneut.";
 
 /* PIN Setup */
 "pin_setup_title" = "PIN einrichten";

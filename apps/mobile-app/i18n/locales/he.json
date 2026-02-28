@@ -4,7 +4,7 @@
     "close": "סגירה",
     "delete": "מחיקה",
     "save": "שמירה",
-    "edit": "Edit",
+    "edit": "עריכה",
     "yes": "כן",
     "no": "לא",
     "ok": "אישור",
@@ -25,7 +25,7 @@
     "add": "Add",
     "generate": "Generate",
     "attachments": "צרופות",
-    "or": "or",
+    "or": "או",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
@@ -48,7 +48,9 @@
     "verifyingAuthCode": "קוד האימות נבדק",
     "verify": "אימות",
     "unlockVault": "שחרור נעילת כספת",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "שחרור נעילה עם קוד אישי",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "נא למלא את הסיסמה שלך כדי לשחרר את הכספת שלך",
     "enterPasswordPlaceholder": "סיסמה",
     "enterAuthCode": "נא למלא קוד באורך 6 ספרות",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "נא למלא את הסיסמה שלך",
     "enableBiometric": "להפעיל את {{biometric}}?",
     "biometricPrompt": "להשתמש ב־{{biometric}} כדי לשחרר את נעילת הכספת שלך?",
-    "tryBiometricAgain": "לנסות {{biometric}} שוב",
-    "tryPinAgain": "Try PIN Again",
     "authCodeNote": "לתשומת ליבך: אם אין לך גישה להתקן המאמת (authenticator) שלך, אפשר לאפס אימות דו־שלבי עם קוד שחזור על ידי כניסה דרך האתר.",
     "errors": {
       "credentialsRequired": "שם המשתמש והסיסמה הם חובה",
@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} מושבת עבור AliasVault. כדי להשתמש בו, נא להפעיל אותו בהגדרות ההתקן תחילה.",
       "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} לא זמין. נא לגעת כדי לפתוח את ההגדרות ו/או לגשת להגדרות המכשיר שלך כדי להפעיל ולהגדיר אותו.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "קוד גישה אישי",
       "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
       "pinEnabled": "שחרור קוד אישי הופעל בהצלחה",
@@ -321,7 +322,8 @@
         "confirmSubtitle": "Re-authenticate to approve login on another device.",
         "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
         "successDescription": "The remote device has been successfully logged in.",
-        "requestExpired": "This login request has expired. Please generate a new QR code."
+        "requestExpired": "This login request has expired. Please generate a new QR code.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },

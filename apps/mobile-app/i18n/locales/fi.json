@@ -4,7 +4,7 @@
     "close": "Sulje",
     "delete": "Poista",
     "save": "Tallenna",
-    "edit": "Edit",
+    "edit": "Muokkaa",
     "yes": "Kyllä",
     "no": "Ei",
     "ok": "Hyvä on",
@@ -25,7 +25,7 @@
     "add": "Lisää",
     "generate": "Generate",
     "attachments": "Liitteet",
-    "or": "or",
+    "or": "tai",
     "deleteItemConfirmTitle": "Poista kohde",
     "deleteItemConfirmDescription": "Haluatko varmasti poistaa tämän kohteen?",
     "errors": {
@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Todennuskoodia tarkistetaan",
     "verify": "Tarkista",
     "unlockVault": "Avaa holvin lukitus",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Avaa PIN-koodilla",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Syötä salasanasi avataksesi holvisi lukituksen",
     "enterPasswordPlaceholder": "Salasana",
     "enterAuthCode": "Syötä 6-numeroinen koodi",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Syötä salasanasi",
     "enableBiometric": "Otetaanko {{biometric}} käyttöön?",
     "biometricPrompt": "Haluatko käyttää {{biometric}} avataksesi holvisi lukituksen?",
-    "tryBiometricAgain": "Yritä {{biometric}} uudelleen",
-    "tryPinAgain": "Kokeile PIN-koodia uudelleen",
     "authCodeNote": "Huomautus: Jos sinulla ei ole pääsyä varmennuslaitteeseesi, voit palauttaa kaksivaiheisen varmennuksen (2FA) kirjautumalla palautuskoodilla sisään verkkosivuston kautta.",
     "errors": {
       "credentialsRequired": "Käyttäjänimi ja salasana vaaditaan",
@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} on poistettu käytöstä AliasVaultin osalta. Ota se ensin käyttöön laitteen asetuksissa.",
       "biometricHelp": "Käytä biometriikkaa avataksesi holvisi, joka on suojattu {{keystore}} -tunnuksella.",
       "biometricUnavailableHelp": "{{biometric}} ei ole käytettävissä. Avaa asetukset napauttamalla ja/tai siirry laitteen asetuksiin ottaaksesi sen käyttöön ja määrittääksesi sen.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "PIN-koodi",
       "pinDescription": "Käytä mukautettua PIN-koodia avataksesi holvisi nopeammin.",
       "pinEnabled": "PIN-lukituksen avaus käytössä onnistuneesti",
@@ -321,7 +322,8 @@
         "confirmSubtitle": "Tunnistaudu uudelleen hyväksyäksesi kirjautuminen toisella laitteella.",
         "confirmMessage": "Olet kirjautumamassa sisään etälaitteeseen, jossa on oma tilisi. Tällä toisella laitteella on täysi pääsy holviisi. Jatka vain, jos luotat tähän laitteeseen.",
         "successDescription": "Etälaite on onnistuneesti kirjautunut sisään.",
-        "requestExpired": "Tämä kirjautumispyyntö on vanhentunut. Luo uusi QR-koodi."
+        "requestExpired": "Tämä kirjautumispyyntö on vanhentunut. Luo uusi QR-koodi.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },

@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Weryfikacja kodu uwierzytelniającego",
     "verify": "Weryfikacja",
     "unlockVault": "Odblokuj sejf",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Odblokuj za pomocą kodu PIN",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Wprowadź hasło, aby odblokować sejf",
     "enterPasswordPlaceholder": "Hasło",
     "enterAuthCode": "Wprowadź 6-cyfrowy kod",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Wprowadź swoje hasło",
     "enableBiometric": "Włączyć {{biometric}}?",
     "biometricPrompt": "Czy chcesz użyć {{biometric}} do odblokowania sejfu?",
-    "tryBiometricAgain": "Spróbuj ponownie {{biometric}}",
-    "tryPinAgain": "Spróbuj ponownie wprowadzić kod PIN",
     "authCodeNote": "Uwaga: jeśli nie masz dostępu do urządzenia uwierzytelniającego, możesz zresetować kod 2FA za pomocą kodu odzyskiwania, logując się przez stronę internetową.",
     "errors": {
       "credentialsRequired": "Wymagana jest nazwa użytkownika i hasło",
@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "Funkcja {{biometric}} jest wyłączona dla AliasVault. Aby z niej skorzystać, należy najpierw włączyć ją w ustawieniach urządzenia.",
       "biometricHelp": "Użyj danych biometrycznych, aby odblokować sejf zabezpieczony przez {{keystore}}.",
       "biometricUnavailableHelp": "Funkcja {{biometric}} jest niedostępna. Dotknij, aby otworzyć ustawienia i/lub przejdź do ustawień urządzenia, aby ją włączyć.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "Kod PIN",
       "pinDescription": "Użyj niestandardowego kodu PIN, aby szybciej odblokować sejf.",
       "pinEnabled": "Odblokowanie za pomocą kodu PIN zakończone sukcesem",
@@ -321,7 +322,8 @@
         "confirmSubtitle": "Ponownie uwierzytelnij się, aby zatwierdzić logowanie na innym urządzeniu.",
         "confirmMessage": "Zamierzasz zalogować się na zdalnym urządzeniu przy użyciu swojego konta. To urządzenie będzie miało pełny dostęp do Twojego sejfu. Kontynuuj tylko wtedy, gdy ufasz temu urządzeniu.",
         "successDescription": "Udało się zalogować do urządzenia zdalnego.",
-        "requestExpired": "To żądanie logowania wygasło. Wygeneruj nowy kod QR."
+        "requestExpired": "To żądanie logowania wygasło. Wygeneruj nowy kod QR.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },

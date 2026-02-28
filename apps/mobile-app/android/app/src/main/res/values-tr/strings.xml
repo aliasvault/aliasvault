@@ -7,6 +7,7 @@
   <string name="common_close">Kapat</string>
   <string name="common_next">İleri</string>
   <string name="common_cancel">İptal</string>
+  <string name="common_back">Geri</string>
   <string name="unknown_error">An unknown error occurred</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">Confirm PIN</string>
   <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
   <string name="pin_mismatch">PINs do not match. Please try again.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">Kasa Kilidini Aç</string>
+  <string name="password_unlock_subtitle">Enter your master password</string>
+  <string name="password_unlock_password_hint">Parola</string>
+  <string name="password_unlock_button">Kilidi aç</string>
+  <string name="password_unlock_incorrect">Parola yanlış. Lütfen yeniden deneyin.</string>
+  <string name="password_unlock_error">Failed to verify password</string>
 </resources>

@@ -4,7 +4,7 @@
     "close": "بند کریں",
     "delete": "ڈیلیٹ کریں",
     "save": "محفوظ کریں",
-    "edit": "Edit",
+    "edit": "ترمیم کریں",
     "yes": "ہاں",
     "no": "نہیں",
     "ok": "ٹھیک ہے",
@@ -25,7 +25,7 @@
     "add": "Add",
     "generate": "جنریٹ کریں",
     "attachments": "Attachments",
-    "or": "or",
+    "or": "یا",
     "deleteItemConfirmTitle": "Delete Item",
     "deleteItemConfirmDescription": "Are you sure you want to delete this item?",
     "errors": {
@@ -48,7 +48,9 @@
     "verifyingAuthCode": "Verifying authentication code",
     "verify": "Verify",
     "unlockVault": "Unlock Vault",
+    "unlockWithBiometric": "Unlock with {{biometric}}",
     "unlockWithPin": "Unlock with PIN",
+    "unlockWithPassword": "Unlock with Password",
     "enterPassword": "Enter your password to unlock your vault",
     "enterPasswordPlaceholder": "پاس ورڈ",
     "enterAuthCode": "Enter 6-digit code",
@@ -56,8 +58,6 @@
     "passwordPlaceholder": "Enter your password",
     "enableBiometric": "Enable {{biometric}}?",
     "biometricPrompt": "Would you like to use {{biometric}} to unlock your vault?",
-    "tryBiometricAgain": "Try {{biometric}} Again",
-    "tryPinAgain": "Try PIN Again",
     "authCodeNote": "Note: if you don't have access to your authenticator device, you can reset your 2FA with a recovery code by logging in via the website.",
     "errors": {
       "credentialsRequired": "Username and password are required",
@@ -216,6 +216,7 @@
       "biometricDisabledMessage": "{{biometric}} is disabled for AliasVault. In order to use it, please enable it in your device settings first.",
       "biometricHelp": "Use biometrics to unlock your vault, which is secured by the {{keystore}}.",
       "biometricUnavailableHelp": "{{biometric}} is not available. Tap to open settings and/or go to your device settings to enable and configure it.",
+      "featureRequiresPasscode": "This feature requires a passcode to be enabled on your device.",
       "pin": "PIN Code",
       "pinDescription": "Use a custom PIN code to unlock your vault more quickly.",
       "pinEnabled": "PIN unlock enabled successfully",
@@ -321,7 +322,8 @@
         "confirmSubtitle": "Re-authenticate to approve login on another device.",
         "confirmMessage": "You are about to log in on a remote device with your account. This other device will have full access to your vault. Only proceed if you trust this device.",
         "successDescription": "The remote device has been successfully logged in.",
-        "requestExpired": "This login request has expired. Please generate a new QR code."
+        "requestExpired": "This login request has expired. Please generate a new QR code.",
+        "noPinOrBiometricError": "Mobile unlock requires PIN or biometric authentication. Please enable PIN or Face ID/Touch ID in vault unlock settings to use this feature."
       }
     }
   },

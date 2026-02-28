@@ -7,6 +7,7 @@
   <string name="common_close">Chiudi</string>
   <string name="common_next">Avanti</string>
   <string name="common_cancel">Annulla</string>
+  <string name="common_back">Indietro</string>
   <string name="unknown_error">Si è verificato un errore sconosciuto</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Impossibile recuperare, aprire l\'app</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">Conferma PIN</string>
   <string name="pin_confirm_description">Reinserisci il tuo PIN per confermare.</string>
   <string name="pin_mismatch">I PIN non corrispondono. Riprova.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">Sblocca Cassaforte</string>
+  <string name="password_unlock_subtitle">Inserisci la password principale</string>
+  <string name="password_unlock_password_hint">Password</string>
+  <string name="password_unlock_button">Sblocca</string>
+  <string name="password_unlock_incorrect">Password errata. Riprovare.</string>
+  <string name="password_unlock_error">Verifica della password non riuscita</string>
 </resources>

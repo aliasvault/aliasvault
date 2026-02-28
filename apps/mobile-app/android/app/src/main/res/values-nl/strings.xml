@@ -7,6 +7,7 @@
   <string name="common_close">Sluiten</string>
   <string name="common_next">Volgende</string>
   <string name="common_cancel">Annuleren</string>
+  <string name="common_back">Terug</string>
   <string name="unknown_error">Er is een onbekende fout opgetreden</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Ophalen mislukt, open app</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">Bevestig pincode</string>
   <string name="pin_confirm_description">Voer je pincode opnieuw in om te bevestigen</string>
   <string name="pin_mismatch">Pincodes komen niet overeen. Probeer het opnieuw.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">Ontgrendel je vault</string>
+  <string name="password_unlock_subtitle">Voer je hoofdwachtwoord in</string>
+  <string name="password_unlock_password_hint">Wachtwoord</string>
+  <string name="password_unlock_button">Ontgrendelen</string>
+  <string name="password_unlock_incorrect">Onjuist wachtwoord. Probeer het opnieuw.</string>
+  <string name="password_unlock_error">Verifiëren wachtwoord mislukt</string>
 </resources>

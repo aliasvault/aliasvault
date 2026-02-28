@@ -7,6 +7,7 @@
   <string name="common_close">بند کریں</string>
   <string name="common_next">آگے جائیں</string>
   <string name="common_cancel">منسوخ کریں</string>
+  <string name="common_back">واپس جائیں</string>
   <string name="unknown_error">An unknown error occurred</string>
   <!-- AutofillService strings -->
   <string name="autofill_failed_to_retrieve">Failed to retrieve, open app</string>
@@ -81,4 +82,11 @@
   <string name="pin_confirm_title">Confirm PIN</string>
   <string name="pin_confirm_description">Re-enter your PIN to confirm</string>
   <string name="pin_mismatch">PINs do not match. Please try again.</string>
+  <!-- Password unlock -->
+  <string name="password_unlock_title">Unlock Vault</string>
+  <string name="password_unlock_subtitle">Enter your master password</string>
+  <string name="password_unlock_password_hint">پاس ورڈ</string>
+  <string name="password_unlock_button">Unlock</string>
+  <string name="password_unlock_incorrect">Incorrect password. Please try again.</string>
+  <string name="password_unlock_error">Failed to verify password</string>
 </resources>
