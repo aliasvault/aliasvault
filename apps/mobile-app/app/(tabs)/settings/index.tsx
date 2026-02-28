@@ -10,6 +10,7 @@ import { AppInfo } from '@/utils/AppInfo';
 import { useColors } from '@/hooks/useColorScheme';
 import { useLogout } from '@/hooks/useLogout';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
+import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import { ThemedContainer } from '@/components/themed/ThemedContainer';
@@ -34,6 +35,7 @@ export default function SettingsScreen() : React.ReactNode {
   const { getAutoLockTimeout } = useApp();
   const { logoutUserInitiated } = useLogout();
   const { loadApiUrl, getDisplayUrl } = useApiUrl();
+  const navigate = useNavigationDebounce();
   const scrollY = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef<ScrollView>(null);
   const [autoLockDisplay, setAutoLockDisplay] = useState<string>('');
@@ -115,49 +117,49 @@ export default function SettingsScreen() : React.ReactNode {
    * Handle the vault unlock press.
    */
   const handleVaultUnlockPress = () : void => {
-    router.push('/(tabs)/settings/vault-unlock');
+    navigate(() => router.push('/(tabs)/settings/vault-unlock'));
   };
 
   /**
    * Handle the auto-lock press.
    */
   const handleAutoLockPress = () : void => {
-    router.push('/(tabs)/settings/auto-lock');
+    navigate(() => router.push('/(tabs)/settings/auto-lock'));
   };
 
   /**
    * Handle the iOS autofill press.
    */
   const handleIosAutofillPress = () : void => {
-    router.push('/(tabs)/settings/ios-autofill');
+    navigate(() => router.push('/(tabs)/settings/ios-autofill'));
   };
 
   /**
    * Handle the Android autofill press.
    */
   const handleAndroidAutofillPress = () : void => {
-    router.push('/(tabs)/settings/android-autofill');
+    navigate(() => router.push('/(tabs)/settings/android-autofill'));
   };
 
   /**
    * Handle the identity generator settings press.
    */
   const handleIdentityGeneratorPress = () : void => {
-    router.push('/(tabs)/settings/identity-generator');
+    navigate(() => router.push('/(tabs)/settings/identity-generator'));
   };
 
   /**
    * Handle the password generator settings press.
    */
   const handlePasswordGeneratorPress = () : void => {
-    router.push('/(tabs)/settings/password-generator');
+    navigate(() => router.push('/(tabs)/settings/password-generator'));
   };
 
   /**
    * Handle the clipboard clear settings press.
    */
   const handleClipboardClearPress = () : void => {
-    router.push('/(tabs)/settings/clipboard-clear');
+    navigate(() => router.push('/(tabs)/settings/clipboard-clear'));
   };
 
   /**

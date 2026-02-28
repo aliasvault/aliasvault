@@ -6,6 +6,7 @@ import type { Item } from '@/utils/dist/core/models/vault';
 import type { MailboxEmail } from '@/utils/dist/core/models/webapi';
 
 import { useColors } from '@/hooks/useColorScheme';
+import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { useTranslation } from '@/hooks/useTranslation';
 
 import { ThemedText } from '@/components/themed/ThemedText';
@@ -24,6 +25,7 @@ type EmailCardProps = {
 export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
   const colors = useColors();
   const { t } = useTranslation();
+  const navigate = useNavigationDebounce();
   const dbContext = useDb();
   const [associatedItem, setAssociatedItem] = useState<Item | null>(null);
 
@@ -136,7 +138,7 @@ export function EmailCard({ email }: EmailCardProps) : React.ReactNode {
   return (
     <RobustPressable
       style={styles.emailCard}
-      onPress={() => router.push(`/(tabs)/emails/${email.id}`)}
+      onPress={() => navigate(() => router.push(`/(tabs)/emails/${email.id}`))}
     >
       <View style={styles.emailHeader}>
         <ThemedText style={styles.emailSubject} numberOfLines={1}>

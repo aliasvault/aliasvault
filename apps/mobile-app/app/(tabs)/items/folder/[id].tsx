@@ -18,6 +18,7 @@ import { VaultAuthenticationError } from '@/utils/types/errors/VaultAuthenticati
 import { useColors } from '@/hooks/useColorScheme';
 import { useItemSort, useSortedItems } from '@/hooks/useItemSort';
 import { useMinDurationLoading } from '@/hooks/useMinDurationLoading';
+import { useNavigationDebounce } from '@/hooks/useNavigationDebounce';
 import { useVaultMutate } from '@/hooks/useVaultMutate';
 import { useVaultSync } from '@/hooks/useVaultSync';
 
@@ -76,6 +77,7 @@ export default function FolderViewScreen(): React.ReactNode {
   const { t } = useTranslation();
   const navigation = useNavigation();
   const router = useRouter();
+  const navigate = useNavigationDebounce();
   const insets = useSafeAreaInsets();
   const flatListRef = useRef<FlatList<Item | null>>(null);
 
@@ -400,9 +402,11 @@ export default function FolderViewScreen(): React.ReactNode {
    * Handle FAB press - navigate to add item screen with folder pre-selected.
    */
   const handleAddItem = useCallback(() => {
-    router.push(`/(tabs)/items/add-edit?folderId=${folderId}` as '/(tabs)/items/add-edit');
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-  }, [folderId, router]);
+    navigate(() => {
+      router.push(`/(tabs)/items/add-edit?folderId=${folderId}` as '/(tabs)/items/add-edit');
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    });
+  }, [folderId, router, navigate]);
 
   // Header styles (stable, not dependent on colors) - prefixed with _ as styles are inlined in useEffect
   const _headerStyles = StyleSheet.create({
