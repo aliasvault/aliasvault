@@ -6,7 +6,7 @@
 import { sendMessage } from 'webext-bridge/content-script';
 
 import { getLogoMarkSvg } from '@/utils/constants/logo';
-import type { CapturedLogin, SavePromptOptions, SavePromptPersistedState, AddUrlPromptOptions } from '@/utils/loginDetector';
+import type { CapturedLogin, SavePromptOptions, SavePromptPersistedState, AddUrlPromptOptions, LastAutofilledCredential } from '@/utils/loginDetector';
 
 import { t } from '@/i18n/StandaloneI18n';
 
@@ -43,6 +43,12 @@ let currentLogin: CapturedLogin | null = null;
 /** Current callbacks - stored so we can use them with updated login */
 let currentOnSave: ((login: CapturedLogin, serviceName: string) => void) | null = null;
 
+/** Current prompt type */
+let currentPromptType: 'save' | 'add-url' = 'save';
+
+/** Current existing credential (for add-url prompts) */
+let currentExistingCredential: LastAutofilledCredential | null = null;
+
 /**
  * Create and show the save prompt banner.
  * @param container - The shadow DOM container to append the prompt to.
@@ -57,6 +63,8 @@ export async function showSavePrompt(container: HTMLElement, options: SavePrompt
   // Store current login and callback so they can be updated
   currentLogin = login;
   currentOnSave = onSave;
+  currentPromptType = 'save';
+  currentExistingCredential = null;
 
   // Create prompt element
   const prompt = document.createElement('div');
@@ -102,6 +110,13 @@ export async function showSavePrompt(container: HTMLElement, options: SavePrompt
    * Persist state immediately so it survives navigation.
    */
   await persistSavePromptState();
+
+  /*
+   * Set up beforeunload listener to update state before navigation.
+   * This ensures the prompt reappears after POST redirects with correct remaining time.
+   */
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('pagehide', handleBeforeUnload);
 }
 
 /**
@@ -241,11 +256,17 @@ export function removeSavePrompt(clearPersisted: boolean = true): void {
   // Reset login state
   currentLogin = null;
   currentOnSave = null;
+  currentPromptType = 'save';
+  currentExistingCredential = null;
 
   // Clear persisted state if user took an action
   if (clearPersisted) {
     void clearPersistedSavePromptState();
   }
+
+  // Remove navigation listeners
+  window.removeEventListener('beforeunload', handleBeforeUnload);
+  window.removeEventListener('pagehide', handleBeforeUnload);
 
   // Stop countdown bar animation
   if (countdownBar) {
@@ -297,6 +318,8 @@ export async function restoreSavePromptFromState(
   // Store current login and callback so they can be updated
   currentLogin = login;
   currentOnSave = onSave;
+  currentPromptType = 'save';
+  currentExistingCredential = null;
 
   // Create prompt element
   const prompt = document.createElement('div');
@@ -358,6 +381,114 @@ export async function restoreSavePromptFromState(
 
   // Set up event listeners
   setupEventListeners(prompt, login, onSave, onNeverSave, onDismiss);
+
+  /*
+   * Set up beforeunload listener to update state before navigation.
+   * This ensures the prompt reappears after subsequent POST redirects with correct remaining time.
+   */
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('pagehide', handleBeforeUnload);
+}
+
+/**
+ * Restore an "Add URL" prompt from persisted state.
+ * Used to continue showing the prompt after a page navigation.
+ * @param container - The shadow DOM container to append the prompt to.
+ * @param state - The persisted state to restore from.
+ * @param onAddUrl - Callback when user clicks "Add URL".
+ * @param onDismiss - Callback when prompt is dismissed.
+ */
+export async function restoreAddUrlPromptFromState(
+  container: HTMLElement,
+  state: SavePromptPersistedState,
+  onAddUrl: (itemId: string, url: string) => void,
+  onDismiss: () => void
+): Promise<void> {
+  // Clear the persisted state now that we're restoring
+  await clearPersistedSavePromptState();
+
+  // Remove any existing prompt first (without clearing persisted state again)
+  removeSavePrompt(false);
+
+  const { login, remainingTimeMs: restoredRemainingTime, initialAutoDismissMs: restoredInitialMs, existingCredential } = state;
+
+  if (!existingCredential) {
+    console.error('[AliasVault] Cannot restore Add URL prompt without existing credential');
+    return;
+  }
+
+  // Store current login and prompt info
+  currentLogin = login;
+  currentPromptType = 'add-url';
+  currentExistingCredential = existingCredential;
+
+  // Create prompt element
+  const prompt = document.createElement('div');
+  prompt.className = 'av-save-prompt';
+  prompt.innerHTML = await createAddUrlPromptHTML(login, existingCredential);
+
+  // Add to container
+  container.appendChild(prompt);
+  currentPrompt = prompt;
+
+  // Trigger slide-in animation
+  requestAnimationFrame(() => {
+    prompt.classList.add('av-save-prompt--visible');
+  });
+
+  // Set up auto-dismiss with the remaining time from persisted state
+  if (restoredRemainingTime > 0) {
+    // Initialize countdown state with remaining time
+    initialAutoDismissMs = restoredInitialMs;
+    currentAutoDismissMs = restoredRemainingTime;
+    remainingTimeMs = restoredRemainingTime;
+    countdownStartTime = Date.now();
+    isAutoDismissPaused = false;
+    onAutoDismissCallback = onDismiss;
+
+    // Create countdown bar and start with adjusted width
+    countdownBar = prompt.querySelector('.av-save-prompt__countdown-bar') as HTMLElement;
+
+    // Calculate what percentage of time is remaining
+    const percentRemaining = (restoredRemainingTime / restoredInitialMs) * 100;
+
+    if (countdownBar) {
+      // Set initial width to reflect remaining time (no transition yet)
+      countdownBar.style.transition = 'none';
+      countdownBar.style.width = `${percentRemaining}%`;
+
+      /*
+       * Use double requestAnimationFrame to ensure the initial width is rendered
+       * before starting the transition. Single rAF can batch with the width set.
+       */
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (countdownBar) {
+            countdownBar.style.transition = `width ${restoredRemainingTime}ms linear`;
+            countdownBar.style.width = '0%';
+          }
+        });
+      });
+    }
+
+    autoDismissTimer = window.setTimeout(() => {
+      removeSavePrompt();
+      onDismiss();
+    }, restoredRemainingTime);
+
+    // Set up hover/focus listeners to pause countdown
+    setupPauseListeners(prompt);
+  }
+
+  // Set up event listeners for add URL prompt
+  setupAddUrlEventListeners(prompt, login, existingCredential, onAddUrl, onDismiss);
+
+  /*
+   * Set up beforeunload listener to update state before navigation.
+   * This ensures the prompt reappears after subsequent POST redirects with correct remaining time.
+   */
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('pagehide', handleBeforeUnload);
 }
 
 /**
@@ -599,6 +730,8 @@ async function persistSavePromptState(): Promise<void> {
     initialAutoDismissMs,
     savedAt: Date.now(),
     domain: currentLogin.domain,
+    promptType: currentPromptType,
+    existingCredential: currentExistingCredential ?? undefined,
   };
 
   try {
@@ -606,6 +739,15 @@ async function persistSavePromptState(): Promise<void> {
   } catch (error) {
     console.error('[AliasVault] Error persisting save prompt state:', error);
   }
+}
+
+/**
+ * Update persisted state before page navigation.
+ * This ensures the prompt can be restored with the correct remaining time after POST redirects.
+ */
+function handleBeforeUnload(): void {
+  // Re-persist with updated remaining time
+  void persistSavePromptState();
 }
 
 /**
@@ -690,8 +832,10 @@ export async function showAddUrlPrompt(container: HTMLElement, options: AddUrlPr
 
   const { login, existingCredential, onAddUrl, onDismiss, autoDismissMs = 10000 } = options;
 
-  // Store current login
+  // Store current login and prompt info
   currentLogin = login;
+  currentPromptType = 'add-url';
+  currentExistingCredential = existingCredential;
 
   // Create prompt element
   const prompt = document.createElement('div');
@@ -732,21 +876,33 @@ export async function showAddUrlPrompt(container: HTMLElement, options: AddUrlPr
 
   // Set up event listeners for add URL prompt
   setupAddUrlEventListeners(prompt, login, existingCredential, onAddUrl, onDismiss);
+
+  /*
+   * Persist state immediately so it survives navigation.
+   */
+  await persistSavePromptState();
+
+  /*
+   * Set up beforeunload listener to update state before navigation.
+   * This ensures the prompt reappears after POST redirects with correct remaining time.
+   */
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('pagehide', handleBeforeUnload);
 }
 
 /**
  * Create the HTML for the "Add URL" prompt.
  */
-async function createAddUrlPromptHTML(login: CapturedLogin, existingCredential: { itemName: string }): Promise<string> {
+async function createAddUrlPromptHTML(login: CapturedLogin, existingCredential: { itemName: string; faviconUrl?: string }): Promise<string> {
   const escapedCredentialName = escapeHtml(existingCredential.itemName);
 
   // Show origin (protocol + hostname) for clarity
   const urlObj = new URL(login.url);
   const escapedUrl = escapeHtml(urlObj.origin);
 
-  // Use favicon from login if available
-  const faviconHtml = login.faviconUrl
-    ? `<img class="av-save-prompt__credential-favicon" src="${escapeHtml(login.faviconUrl)}" alt="" width="14" height="14" />`
+  // Use credential's favicon if available
+  const faviconHtml = existingCredential.faviconUrl
+    ? `<img class="av-save-prompt__credential-favicon" src="${escapeHtml(existingCredential.faviconUrl)}" alt="" width="14" height="14" />`
     : '';
 
   const addUrlTitleText = await t('content.savePrompt.addUrlTitle');

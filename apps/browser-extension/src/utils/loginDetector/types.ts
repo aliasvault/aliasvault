@@ -125,6 +125,10 @@ export type SavePromptPersistedState = {
   savedAt: number;
   /** The domain where the prompt was shown (to validate on restore) */
   domain: string;
+  /** Type of prompt that was shown */
+  promptType: 'save' | 'add-url';
+  /** If promptType is 'add-url', the existing credential info */
+  existingCredential?: LastAutofilledCredential;
 };
 
 /**
@@ -143,4 +147,6 @@ export type LastAutofilledCredential = {
   domain: string;
   /** Timestamp when the autofill happened */
   timestamp: number;
+  /** Favicon URL of the credential (optional) */
+  faviconUrl?: string;
 };
