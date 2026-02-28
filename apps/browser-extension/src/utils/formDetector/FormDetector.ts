@@ -1,4 +1,4 @@
-import { CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords } from "./FieldPatterns";
+import { CombinedEmailVerificationPatterns, CombinedFieldPatterns, CombinedGenderOptionPatterns, CombinedStopWords } from "./FieldPatterns";
 import { DetectedFieldType, FormFields } from "./types/FormFields";
 
 /**
@@ -1008,10 +1008,44 @@ export class FormDetector {
   }
 
   /**
+   * Check if the page content indicates this is an email verification form.
+   * Email verification forms should not be treated as TOTP/2FA forms.
+   * Uses language-aware patterns to support multiple languages.
+   */
+  private isEmailVerificationForm(): boolean {
+    // Get page text content for context analysis
+    const bodyText = this.document.body?.textContent || '';
+    const pageTitle = this.document.title || '';
+
+    // Combine all language-aware email verification patterns
+    const allPatterns = [
+      ...CombinedEmailVerificationPatterns.verifyEmail,
+      ...CombinedEmailVerificationPatterns.emailVerification,
+      ...CombinedEmailVerificationPatterns.sentCodeToEmail,
+      ...CombinedEmailVerificationPatterns.checkEmail,
+      ...CombinedEmailVerificationPatterns.confirmEmail
+    ];
+
+    // Check if any email verification pattern matches
+    for (const pattern of allPatterns) {
+      if (pattern.test(bodyText) || pattern.test(pageTitle)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Find a TOTP/2FA input field in the form.
    * Uses pattern matching and heuristics specific to TOTP fields.
    */
   private findTotpField(form: HTMLFormElement | null): HTMLInputElement | null {
+    // Check if this is an email verification form (not TOTP/2FA)
+    if (this.isEmailVerificationForm()) {
+      return null;
+    }
+
     // First try pattern-based detection
     const candidates = this.findAllInputFields(
       form,
