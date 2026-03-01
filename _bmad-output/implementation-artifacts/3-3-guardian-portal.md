@@ -507,7 +507,8 @@ cd packages/blockchain/cli && npx vitest run
 |-------|-------------|
 | 3.1 (Guardian Contract) | **Done.** Contract deployed per-vault. Portal joins existing instance. All circuits available. |
 | 3.2v2 (Inverted Shamir) | **Done.** `generateGuardianKeyPair()` used for RSA key generation. Share encryption/decryption functions ready. |
-| 3.4 (Recovery Claim) | **Next.** Owner claims shares after 2+ guardians approve + 72h timer. Portal's approval enables this. |
+| 3.4 (Recovery Claim) | **Done.** Owner claims shares after 2+ guardians approve + 72h timer. Portal's approval enables this. |
+| 3.7 (Production Build) | **Next.** Vite production build + full provider wiring to replace the 4 stubbed providers in `midnightService.ts`. |
 | 1.2 (Wallet Connection) | **Done.** Reference for Lace API patterns. Portal uses simpler direct access (not extension injection). |
 
 ### Deployment (Future — Not This Story)
@@ -539,6 +540,7 @@ Architecture specifies IPFS hosting with Pinata pinning and DNS TXT records. Thi
 
 - **"Cancelled" status not shown (AC #7 partial):** The on-chain contract resets `recoveryInitiatedAt` to 0 on cancellation, making it indistinguishable from "never started." A dedicated `recoveryCancelled` ledger field would be needed. Deferred to a future story. See `guardian-recovery.compact cancelRecovery()` circuit.
 - **React Router v6 deprecation warnings:** v7 future flag warnings (`v7_startTransition`, `v7_relativeSplatPath`) appear in test output. Non-functional; deferred.
+- **midnightService.ts provider stubs (4 of 6):** `zkConfigProvider`, `privateStateProvider`, `walletProvider`, and `midnightProvider` are stubbed with `notImplemented()` errors. Read-only operations (`getContractState`, `isGuardian`, `hasApproved`) work because they only require `publicDataProvider`. Write operations (`approveRecovery()`) will throw at runtime until stubs are replaced. **Deferred to Story 3.7** which handles both the Vite production build and full browser-compatible provider wiring. See `midnightService.ts:configureGuardianProviders()`.
 
 ## Change Log
 

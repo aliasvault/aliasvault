@@ -37,16 +37,16 @@ export type ContractHandle = Awaited<ReturnType<typeof joinContract>>;
  *
  * Story 3.3 wires publicDataProvider + proofProvider (read-only + proof server).
  * The remaining 4 providers (privateStateProvider, zkConfigProvider, walletProvider,
- * midnightProvider) are stubbed — Story 3.4 will supply browser-compatible
+ * midnightProvider) are stubbed — Story 3.7 will supply browser-compatible
  * implementations (FetchZkConfigProvider, Lace walletProvider, etc.).
  */
 function configureGuardianProviders(config: NetworkConfig) {
-  // TODO(Story 3.4): Replace stubs with browser-compatible implementations.
+  // TODO(Story 3.7): Replace stubs with browser-compatible implementations.
   // - zkConfigProvider → FetchZkConfigProvider pointing at hosted ZK circuit assets
-  // - walletProvider / midnightProvider → Lace wallet connector
-  // - privateStateProvider → levelPrivateStateProvider or in-memory
+  // - walletProvider / midnightProvider → Lace wallet connector (ConnectedAPI from v4+ DApp connector)
+  // - privateStateProvider → inMemoryPrivateStateProvider (ephemeral, sufficient for guardian approval)
   const notImplemented = (name: string) => () => {
-    throw new Error(`${name} not yet implemented — requires Story 3.4 provider wiring`);
+    throw new Error(`${name} not yet implemented — requires Story 3.7 provider wiring`);
   };
 
   const zkConfigStub = { get: notImplemented('zkConfigProvider.get') };
