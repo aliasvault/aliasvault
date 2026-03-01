@@ -69,7 +69,7 @@ development_status:
   3-4-recovery-claim-flow-pattern-6: done
   3-5-ownership-transfer: descoped  # UI descoped — backup transfer (3.6) provides fast path; circuit stays in contract
   3-6-backup-wallet-configuration-and-transfer: done  # Contract Set→Map + maturity-based transfer + UI (settings + transfer page)
-  3-7-guardian-portal-production-build: ready-for-dev
+  3-7-guardian-portal-production-build: review
   epic-3-retrospective: optional
 
   # Epic 4: Credential Management

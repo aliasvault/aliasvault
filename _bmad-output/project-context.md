@@ -708,6 +708,30 @@ async function getSecretKeyBytes(): Promise<Uint8Array> {
 }
 ```
 
+### 22. Guardian Portal Production Build Verification (Story 3.7)
+
+**Rule:** Any story touching `services/guardian-portal/` must verify the production build passes alongside TypeScript checks and tests.
+
+**Verification triple:**
+```bash
+cd services/guardian-portal
+npx tsc -b --noEmit          # TypeScript type check
+pnpm run test                 # 117 Vitest tests
+pnpm run build                # Vite 7 production build → dist/
+```
+
+**Why this matters:**
+- The portal bundles two large WASM modules (`ledger-v7` 10.4 MB, `onchain-runtime-v2` 1.4 MB) that require `vite-plugin-wasm` + `vite-plugin-top-level-await`
+- Rollup's module resolution differs from TypeScript — a file that passes `tsc` can fail Vite build (e.g., CJS named exports, transitive dep resolution under pnpm strict hoisting)
+- ZK circuit keys (`keys/`, `zkir/`) are copied from the compiled contract into `public/` during build — missing keys would cause silent runtime failures in `FetchZkConfigProvider`
+
+**Build output expectations:**
+- `dist/index.html` + 2 JS bundles + 2 `.wasm` files + 32 ZK key files
+- Total ~34 MB (WASM + ZK prover keys dominate)
+- `fs`/`path` externalization warnings from `midnight-js-contracts` are expected (dead code from CJS→ESM transpilation)
+
+**Discovery:** Story 3.7 — `tsc --noEmit` passed but `vite build` failed due to WASM ESM integration, CJS named export resolution, and pnpm-specific transitive dependency issues. All three checks are needed.
+
 ---
 
 ## Development Workflow Rules
@@ -821,6 +845,7 @@ Before merging any PR that touches cryptography or guardian recovery:
 **Source:** Generated from [architecture.md](_bmad-output/architecture.md)
 **Maintenance:** Update when implementing new patterns or discovering critical rules
 **Change Log:**
+- 2026-03-01: Added Rule 22 (Guardian Portal Production Build Verification) from Story 3.7. Vite build must pass alongside tsc and vitest for any changes to services/guardian-portal/. Documents WASM plugin requirements, ZK key copying, and build output expectations.
 - 2026-03-01: Added Rules 19-21 from Story 3.6 (Backup Wallet Configuration & Transfer). Rule 19: Browser extension Vite transform-time resolution — TSX components cannot import `@aliasvault/contract` directly, must use service wrappers with dynamic imports. Rule 20: Hex validation — `parseInt("gg", 16)` returns NaN, Uint8Array coerces to 0, causing silent data corruption. Canonical `utils/hex.ts` with regex validation. Rule 21: VaultCidStore secret key access from popup pages — two architecture patterns (background messages vs direct service calls). Updated Rule 11: confirmed `blockTimeGte()` always returns true in simulator (not just suspected).
 - 2026-02-28: Added Rule 17 (Midnight contract state reading patterns). Two patterns: `deployTxData.public` for initial snapshot vs `publicDataProvider.queryContractState()` + generated `ledger()` for fresh reads. Documented SDK type limitation where `ContractState` is opaque and requires cast or `ledger()` decoder. Added `typescript` as direct devDependency to contract + cli packages (bare `tsc` in build scripts requires it). Aligned guardian-portal `compact-js` version 0.14.0 → 2.4.0 to match CLI.
 - 2026-02-24: Added `services/*` to pnpm workspace list (Story 3.3 Guardian Portal). Updated test counts for Story 3.2v2 (31 tests across 3 files). Updated date.
