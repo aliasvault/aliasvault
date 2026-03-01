@@ -914,6 +914,11 @@ export default function AddEditItemScreen(): React.ReactNode {
       setIsSaving(false);
       setIsSaveDisabled(false);
 
+      // Haptic feedback for successful save
+      if (Platform.OS === 'ios' || Platform.OS === 'android') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+
       // Navigate immediately - sync continues in background
       if (itemUrl && !isEditMode) {
         router.replace('/items/autofill-item-created');
@@ -975,6 +980,11 @@ export default function AddEditItemScreen(): React.ReactNode {
     });
 
     emitter.emit('credentialChanged', id);
+
+    // Haptic feedback for delete action (warning type for destructive action)
+    if (Platform.OS === 'ios' || Platform.OS === 'android') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    }
 
     setTimeout(() => {
       Toast.show({

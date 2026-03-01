@@ -282,6 +282,11 @@ public class PinUnlockViewModel: ObservableObject {
             // Call the injected unlock handler with the PIN
             // This will perform Argon2 key derivation which may take 500ms-1s
             try await unlockHandler(pin)
+
+            // Success - trigger success haptic feedback
+            let generator = UINotificationFeedbackGenerator()
+            generator.notificationOccurred(.success)
+
             // Success - the handler will navigate away or complete the flow
             // Keep loading state active since we're navigating
         } catch let pinError as PinUnlockError {

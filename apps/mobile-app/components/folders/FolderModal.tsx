@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -7,6 +8,7 @@ import {
   TouchableOpacity,
   View,
   ActivityIndicator,
+  Platform,
 } from 'react-native';
 
 import { useColors } from '@/hooks/useColorScheme';
@@ -58,6 +60,12 @@ export const FolderModal: React.FC<IFolderModalProps> = ({
 
     try {
       await onSave(trimmedName);
+
+      // Haptic feedback for successful folder creation/edit
+      if (Platform.OS === 'ios' || Platform.OS === 'android') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+
       onClose();
     } catch (err) {
       setError(t('common.errors.unknownErrorTryAgain'));

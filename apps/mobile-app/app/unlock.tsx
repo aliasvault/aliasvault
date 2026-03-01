@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { useState, useEffect, useCallback } from 'react';
@@ -122,6 +123,11 @@ export default function UnlockScreen() : React.ReactNode {
             return;
           }
 
+          // Haptic feedback for successful unlock
+          if (Platform.OS === 'ios' || Platform.OS === 'android') {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          }
+
           router.replace('/reinitialize');
         } catch (err) {
           if (err instanceof VaultVersionIncompatibleError) {
@@ -131,6 +137,11 @@ export default function UnlockScreen() : React.ReactNode {
 
           console.error('Unlock error:', err);
           const errorCode = getAppErrorCode(err);
+
+          // Haptic feedback for authentication error
+          if (Platform.OS === 'ios' || Platform.OS === 'android') {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          }
 
           if (!errorCode || errorCode === AppErrorCode.VAULT_DECRYPT_FAILED) {
             setError(t('auth.errors.incorrectPassword'));
@@ -192,6 +203,11 @@ export default function UnlockScreen() : React.ReactNode {
         return;
       }
 
+      // Haptic feedback for successful unlock
+      if (Platform.OS === 'ios' || Platform.OS === 'android') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+
       /*
        * Navigate to reinitialize which will sync vault with server
        * and then navigate to the appropriate destination.
@@ -206,6 +222,11 @@ export default function UnlockScreen() : React.ReactNode {
 
       // Try to extract error code from the error
       const errorCode = getAppErrorCode(err);
+
+      // Haptic feedback for authentication error
+      if (Platform.OS === 'ios' || Platform.OS === 'android') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      }
 
       /*
        * During unlock, VAULT_DECRYPT_FAILED indicates wrong password.
@@ -240,6 +261,12 @@ export default function UnlockScreen() : React.ReactNode {
           router.replace('/upgrade');
           return true;
         }
+
+        // Haptic feedback for successful unlock
+        if (Platform.OS === 'ios' || Platform.OS === 'android') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        }
+
         router.replace('/reinitialize');
         return true;
       }
@@ -272,6 +299,12 @@ export default function UnlockScreen() : React.ReactNode {
         router.replace('/upgrade');
         return;
       }
+
+      // Haptic feedback for successful unlock
+      if (Platform.OS === 'ios' || Platform.OS === 'android') {
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }
+
       router.replace('/reinitialize');
     } catch (err) {
       console.error('Biometric retry error:', err);
@@ -287,6 +320,11 @@ export default function UnlockScreen() : React.ReactNode {
       if (pinAvailable) {
         await performPinUnlock();
       } else if (errorCode) {
+        // Haptic feedback for authentication error
+        if (Platform.OS === 'ios' || Platform.OS === 'android') {
+          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+        }
+
         // Show the error with code if no PIN fallback
         const translationKey = getErrorTranslationKey(errorCode);
         setError(formatErrorWithCode(t(translationKey), errorCode));

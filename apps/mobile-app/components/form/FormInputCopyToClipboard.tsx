@@ -1,4 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
+import * as Haptics from 'expo-haptics';
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { View, Text, TouchableOpacity, StyleSheet, Platform, Animated, Easing } from 'react-native';
@@ -104,6 +105,11 @@ const FormInputCopyToClipboard: React.FC<FormInputCopyToClipboardProps> = ({
 
         // Use centralized clipboard utility
         await copyToClipboardWithExpiration(value, timeoutSeconds);
+
+        // Haptic feedback for successful copy
+        if (Platform.OS === 'ios' || Platform.OS === 'android') {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        }
 
         // Handle animation state
         if (timeoutSeconds > 0) {

@@ -446,6 +446,9 @@ class PinUnlockActivity : AppCompatActivity() {
     private suspend fun handlePinResult(result: PinResult) {
         when (result) {
             is PinResult.Success -> {
+                // Trigger success haptic feedback
+                triggerSuccessFeedback()
+
                 // Success - return result
                 val resultIntent = Intent()
                 result.encryptionKey?.let {
@@ -529,6 +532,18 @@ class PinUnlockActivity : AppCompatActivity() {
                     }
                 })
                 .start()
+        }
+    }
+
+    private fun triggerSuccessFeedback() {
+        // Trigger haptic feedback for success
+        val vibrator = getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            // Use a lighter, shorter vibration for success (50ms)
+            vibrator?.vibrate(VibrationEffect.createOneShot(50, VibrationEffect.DEFAULT_AMPLITUDE))
+        } else {
+            @Suppress("DEPRECATION")
+            vibrator?.vibrate(50)
         }
     }
 
