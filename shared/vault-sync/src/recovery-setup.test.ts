@@ -26,7 +26,7 @@ describe('setupGuardianRecovery', () => {
     });
 
     // v2: NO recoveryKey in result
-    expect((result as Record<string, unknown>).recoveryKey).toBeUndefined();
+    expect((result as unknown as Record<string, unknown>).recoveryKey).toBeUndefined();
     expect(result.recoveryKeyHash).toBeInstanceOf(Uint8Array);
     expect(result.recoveryKeyHash.length).toBe(32);
     expect(result.sharePackage.shares).toHaveLength(3);

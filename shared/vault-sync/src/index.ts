@@ -23,3 +23,12 @@ export { setupGuardianRecovery } from './recovery-setup.js';
 export type { RecoveryMetadata, GuardianSharePackage, SetupGuardianRecoveryParams, SetupResult } from './recovery-setup.js';
 export { persistGuardianRecovery } from './recovery-persist.js';
 export type { RecoveryPersistProvider, PersistResult } from './recovery-persist.js';
+export {
+  claimRecovery,
+  validateSharePackage,
+  parseSharePackageFromBytes,
+  validateShareFile,
+  RecoveryClaimError,
+  RecoveryClaimErrorCodes,
+} from './recovery-claim.js';
+export type { RecoveryShareFile, RecoveryClaimParams, RecoveryClaimResult } from './recovery-claim.js';

@@ -12,6 +12,7 @@ export interface RecoveryMetadata {
   contractAddress: string;
   networkId: string;
   vaultOwnerCommitment: string;
+  sharesCid?: string;
 }
 
 export interface GuardianSharePackage {
