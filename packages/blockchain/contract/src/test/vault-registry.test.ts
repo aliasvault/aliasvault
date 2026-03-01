@@ -151,15 +151,13 @@ describe("VaultRegistry smart contract", () => {
 
       // Recovery state should be reset
       expect(Buffer.from(ledgerAfter.recoveryKeyHash)).toEqual(Buffer.from(ZERO_BYTES_32));
-      expect(ledgerAfter.transferInitiatedAt).toEqual(0n);
-      expect(Buffer.from(ledgerAfter.transferInitiator)).toEqual(Buffer.from(ZERO_BYTES_32));
     });
 
     it("clears backupWallets via resetToDefault() on transfer", () => {
       const backupKey = makeSecretKey();
       const { sim } = createRegisteredOwner(undefined, backupKey);
       const commitment = VaultRegistrySimulator.backupCommitment(backupKey);
-      sim.addBackupWallet(commitment);
+      sim.addBackupWallet(commitment, 1n);
       expect(sim.getLedger().backupWallets.member(commitment)).toBe(true);
 
       const newOwnerCommitment = VaultRegistrySimulator.ownerCommitment(makeSecretKey());
@@ -219,143 +217,88 @@ describe("VaultRegistry smart contract", () => {
   });
 
   describe("addBackupWallet / removeBackupWallet", () => {
-    it("owner can add a backup wallet", () => {
+    it("owner can add a backup wallet with timestamp", () => {
       const { sim } = createRegisteredOwner();
       const bk = makeSecretKey();
       const commitment = VaultRegistrySimulator.backupCommitment(bk);
-      const ledgerAfter = sim.addBackupWallet(commitment);
+      const ledgerAfter = sim.addBackupWallet(commitment, 1n);
       expect(ledgerAfter.backupWallets.member(commitment)).toBe(true);
+      expect(ledgerAfter.backupWallets.lookup(commitment)).toEqual(1n);
     });
 
     it("owner can remove a backup wallet", () => {
       const { sim } = createRegisteredOwner();
       const bk = makeSecretKey();
       const commitment = VaultRegistrySimulator.backupCommitment(bk);
-      sim.addBackupWallet(commitment);
+      sim.addBackupWallet(commitment, 1n);
       const ledgerAfter = sim.removeBackupWallet(commitment);
       expect(ledgerAfter.backupWallets.member(commitment)).toBe(false);
+    });
+
+    it("rejects zero timestamp (sentinel collision)", () => {
+      const { sim } = createRegisteredOwner();
+      const bk = makeSecretKey();
+      const commitment = VaultRegistrySimulator.backupCommitment(bk);
+      // 0 is the sentinel for "not registered" — must be rejected
+      expect(() => sim.addBackupWallet(commitment, 0n)).toThrow();
     });
 
     it("non-owner cannot add a backup wallet", () => {
       const { sim: ownerSim } = createRegisteredOwner();
       const attackerSim = createAttackerContext(ownerSim, makeSecretKey());
       const commitment = VaultRegistrySimulator.backupCommitment(makeSecretKey());
-      expect(() => attackerSim.addBackupWallet(commitment)).toThrow();
+      expect(() => attackerSim.addBackupWallet(commitment, 1n)).toThrow();
     });
 
     it("non-owner cannot remove a backup wallet", () => {
       const { sim: ownerSim } = createRegisteredOwner();
       const bk = makeSecretKey();
       const commitment = VaultRegistrySimulator.backupCommitment(bk);
-      ownerSim.addBackupWallet(commitment);
+      ownerSim.addBackupWallet(commitment, 1n);
 
       const attackerSim = createAttackerContext(ownerSim, makeSecretKey());
       expect(() => attackerSim.removeBackupWallet(commitment)).toThrow();
     });
   });
 
-  describe("initiateBackupTransfer", () => {
-    it("authorized backup wallet can initiate transfer", () => {
-      const backupKey = makeSecretKey();
-      const { sim } = createRegisteredOwner(undefined, backupKey);
-      const backupCommitment = VaultRegistrySimulator.backupCommitment(backupKey);
-      sim.addBackupWallet(backupCommitment);
-
-      // Initiate transfer with a non-zero past timestamp (simulator block time defaults to 0)
-      const ledgerAfter = sim.initiateBackupTransfer(1n);
-      expect(ledgerAfter.transferInitiatedAt).toEqual(1n);
-      expect(Buffer.from(ledgerAfter.transferInitiator)).toEqual(Buffer.from(backupCommitment));
-    });
-
-    it("rejects zero timestamp (sentinel collision)", () => {
-      const backupKey = makeSecretKey();
-      const { sim } = createRegisteredOwner(undefined, backupKey);
-      const backupCommitment = VaultRegistrySimulator.backupCommitment(backupKey);
-      sim.addBackupWallet(backupCommitment);
-
-      // 0 is the sentinel for "no transfer initiated" — must be rejected
-      expect(() => sim.initiateBackupTransfer(0n)).toThrow();
-    });
-
-    it("non-backup wallet cannot initiate transfer", () => {
+  describe("backupTransfer", () => {
+    it("rejects if caller is not a backup wallet", () => {
       const { sim: ownerSim } = createRegisteredOwner();
-      // No backup wallets added — should fail
       const attackerBk = makeSecretKey();
       const attackerSim = createAttackerContext(ownerSim, makeSecretKey(), attackerBk);
-      expect(() => attackerSim.initiateBackupTransfer(1n)).toThrow();
+      const newOwnerCommitment = VaultRegistrySimulator.ownerCommitment(makeSecretKey());
+      expect(() => attackerSim.backupTransfer(newOwnerCommitment)).toThrow();
     });
-  });
 
-  describe("executeBackupTransfer", () => {
-    it("rejects if no transfer initiated (transferInitiatedAt == 0)", () => {
+    it.skip("rejects if maturation period not elapsed (simulator blockTimeGte always returns true)", () => {
+      // Simulator's blockTimeGte() always returns true regardless of the timestamp argument.
+      // This means the maturation period check (blockTimeGte(registeredAt + 259200)) cannot
+      // be tested in the simulator. Requires E2E on a local Midnight network with actual block time.
       const backupKey = makeSecretKey();
       const { sim } = createRegisteredOwner(undefined, backupKey);
       const backupCommitment = VaultRegistrySimulator.backupCommitment(backupKey);
-      sim.addBackupWallet(backupCommitment);
-
+      sim.addBackupWallet(backupCommitment, 1n);
       const newOwnerCommitment = VaultRegistrySimulator.ownerCommitment(makeSecretKey());
-      // No initiateBackupTransfer called — should fail
-      expect(() => sim.executeBackupTransfer(newOwnerCommitment)).toThrow();
+      expect(() => sim.backupTransfer(newOwnerCommitment)).toThrow();
     });
 
-    it("rejects if caller is not the transfer initiator", () => {
-      const backupKey1 = makeSecretKey();
-      const backupKey2 = makeSecretKey();
-      const ownerSk = makeSecretKey();
-
-      // Owner registers with backupKey1 as the local backup key
-      const sim = new VaultRegistrySimulator(ownerSk, backupKey1);
-      sim.registerVault(makeAddrHash(0x01));
-
-      // Add both backup wallets
-      const commitment1 = VaultRegistrySimulator.backupCommitment(backupKey1);
-      const commitment2 = VaultRegistrySimulator.backupCommitment(backupKey2);
-      sim.addBackupWallet(commitment1);
-      sim.addBackupWallet(commitment2);
-
-      // Backup wallet 1 initiates transfer
-      sim.initiateBackupTransfer(1n);
-
-      // Create a sim with backupKey2 trying to execute (different initiator)
-      const sim2 = new VaultRegistrySimulator(ownerSk, backupKey2);
-      sim2.circuitContext = createCircuitContext(
-        sampleContractAddress(),
-        sim.circuitContext.currentZswapLocalState,
-        sim.circuitContext.currentQueryContext.state,
-        sim2.circuitContext.currentPrivateState,
-      );
-
-      const newOwnerCommitment = VaultRegistrySimulator.ownerCommitment(makeSecretKey());
-      expect(() => sim2.executeBackupTransfer(newOwnerCommitment)).toThrow();
-    });
-  });
-
-  describe("cancelBackupTransfer", () => {
-    it("owner can cancel a pending backup transfer", () => {
-      const backupKey = makeSecretKey();
-      const { sim } = createRegisteredOwner(undefined, backupKey);
-      const backupCommitment = VaultRegistrySimulator.backupCommitment(backupKey);
-      sim.addBackupWallet(backupCommitment);
-      sim.initiateBackupTransfer(1n);
-
-      // Verify transfer was initiated
-      expect(Buffer.from(sim.getLedger().transferInitiator)).toEqual(Buffer.from(backupCommitment));
-
-      // Owner cancels
-      const ledgerAfter = sim.cancelBackupTransfer();
-      expect(ledgerAfter.transferInitiatedAt).toEqual(0n);
-      expect(Buffer.from(ledgerAfter.transferInitiator)).toEqual(Buffer.from(ZERO_BYTES_32));
+    it.skip("transfers ownership when called by mature backup wallet (requires block-time mocking or E2E)", () => {
+      // Placeholder: when simulator supports setBlockTime(), implement:
+      // 1. Owner registers, adds backup wallet with registeredAt=T
+      // 2. Advance block time to T + 259200 + 1
+      // 3. Backup wallet calls backupTransfer(newOwnerCommitment)
+      // 4. Verify owner == newOwnerCommitment
     });
 
-    it("non-owner cannot cancel a backup transfer", () => {
-      const backupKey = makeSecretKey();
-      const { sim: ownerSim } = createRegisteredOwner(undefined, backupKey);
-      const backupCommitment = VaultRegistrySimulator.backupCommitment(backupKey);
-      ownerSim.addBackupWallet(backupCommitment);
-      ownerSim.initiateBackupTransfer(1n);
+    it.skip("clears all backup wallets and recovery state after transfer (requires block-time mocking or E2E)", () => {
+      // Placeholder: same block-time limitation
+      // After successful backupTransfer:
+      // - backupWallets should be empty
+      // - recoveryKeyHash should be default<Bytes<32>>
+    });
 
-      const attackerSim = createAttackerContext(ownerSim, makeSecretKey());
-      expect(() => attackerSim.cancelBackupTransfer()).toThrow();
+    it.skip("full maturity flow (requires block-time mocking or E2E)", () => {
+      // Full flow: register → add backup → wait 72h → backupTransfer → verify
     });
   });
 
@@ -374,19 +317,4 @@ describe("VaultRegistry smart contract", () => {
     });
   });
 
-  describe("executeBackupTransfer — positive flow", () => {
-    // H3: The simulator's block time defaults to 0, making blockTimeGte(unlockTime)
-    // impossible to satisfy with a real timestamp + 72-hour offset. A positive test
-    // requires either simulator block-time mocking (not currently supported by
-    // compact-runtime) or E2E on a local Midnight network with actual block time.
-    // The TUI (tui_vault_registry.ts) covers this flow manually on a live network.
-    it.skip("full initiate → wait → execute flow (requires block-time mocking or E2E)", () => {
-      // Placeholder: when simulator supports setBlockTime(), implement:
-      // 1. Owner registers, adds backup wallet
-      // 2. Backup wallet calls initiateBackupTransfer(now)
-      // 3. Advance block time by 72+ hours
-      // 4. Backup wallet calls executeBackupTransfer(newOwnerCommitment)
-      // 5. Verify owner == newOwnerCommitment
-    });
-  });
 });

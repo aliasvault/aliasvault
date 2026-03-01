@@ -80,14 +80,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('registerVault',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 131 char 1',
+                                     'vault-registry.compact line 119 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(walletAddressHash_0.buffer instanceof ArrayBuffer && walletAddressHash_0.BYTES_PER_ELEMENT === 1 && walletAddressHash_0.length === 32)) {
           __compactRuntime.typeError('registerVault',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 131 char 1',
+                                     'vault-registry.compact line 119 char 1',
                                      'Bytes<32>',
                                      walletAddressHash_0)
         }
@@ -116,14 +116,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('updateVault',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 145 char 1',
+                                     'vault-registry.compact line 133 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(newCidHash_0.buffer instanceof ArrayBuffer && newCidHash_0.BYTES_PER_ELEMENT === 1 && newCidHash_0.length === 32)) {
           __compactRuntime.typeError('updateVault',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 145 char 1',
+                                     'vault-registry.compact line 133 char 1',
                                      'Bytes<32>',
                                      newCidHash_0)
         }
@@ -152,14 +152,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('transferOwnership',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 156 char 1',
+                                     'vault-registry.compact line 144 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(newOwnerCommitment_0.buffer instanceof ArrayBuffer && newOwnerCommitment_0.BYTES_PER_ELEMENT === 1 && newOwnerCommitment_0.length === 32)) {
           __compactRuntime.typeError('transferOwnership',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 156 char 1',
+                                     'vault-registry.compact line 144 char 1',
                                      'Bytes<32>',
                                      newOwnerCommitment_0)
         }
@@ -188,14 +188,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('storeRecoveryKeyHash',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 172 char 1',
+                                     'vault-registry.compact line 158 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(keyHash_0.buffer instanceof ArrayBuffer && keyHash_0.BYTES_PER_ELEMENT === 1 && keyHash_0.length === 32)) {
           __compactRuntime.typeError('storeRecoveryKeyHash',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 172 char 1',
+                                     'vault-registry.compact line 158 char 1',
                                      'Bytes<32>',
                                      keyHash_0)
         }
@@ -216,30 +216,38 @@ export class Contract {
         return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
       },
       addBackupWallet: (...args_1) => {
-        if (args_1.length !== 2) {
-          throw new __compactRuntime.CompactError(`addBackupWallet: expected 2 arguments (as invoked from Typescript), received ${args_1.length}`);
+        if (args_1.length !== 3) {
+          throw new __compactRuntime.CompactError(`addBackupWallet: expected 3 arguments (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
         const walletCommitment_0 = args_1[1];
+        const currentTime_0 = args_1[2];
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('addBackupWallet',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 181 char 1',
+                                     'vault-registry.compact line 169 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(walletCommitment_0.buffer instanceof ArrayBuffer && walletCommitment_0.BYTES_PER_ELEMENT === 1 && walletCommitment_0.length === 32)) {
           __compactRuntime.typeError('addBackupWallet',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 181 char 1',
+                                     'vault-registry.compact line 169 char 1',
                                      'Bytes<32>',
                                      walletCommitment_0)
+        }
+        if (!(typeof(currentTime_0) === 'bigint' && currentTime_0 >= 0n && currentTime_0 <= 18446744073709551615n)) {
+          __compactRuntime.typeError('addBackupWallet',
+                                     'argument 2 (argument 3 as invoked from Typescript)',
+                                     'vault-registry.compact line 169 char 1',
+                                     'Uint<0..18446744073709551616>',
+                                     currentTime_0)
         }
         const context = { ...contextOrig_0, gasCost: __compactRuntime.emptyRunningCost() };
         const partialProofData = {
           input: {
-            value: _descriptor_0.toValue(walletCommitment_0),
-            alignment: _descriptor_0.alignment()
+            value: _descriptor_0.toValue(walletCommitment_0).concat(_descriptor_2.toValue(currentTime_0)),
+            alignment: _descriptor_0.alignment().concat(_descriptor_2.alignment())
           },
           output: undefined,
           publicTranscript: [],
@@ -247,7 +255,8 @@ export class Contract {
         };
         const result_0 = this._addBackupWallet_0(context,
                                                  partialProofData,
-                                                 walletCommitment_0);
+                                                 walletCommitment_0,
+                                                 currentTime_0);
         partialProofData.output = { value: [], alignment: [] };
         return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
       },
@@ -260,14 +269,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('removeBackupWallet',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 189 char 1',
+                                     'vault-registry.compact line 182 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(walletCommitment_0.buffer instanceof ArrayBuffer && walletCommitment_0.BYTES_PER_ELEMENT === 1 && walletCommitment_0.length === 32)) {
           __compactRuntime.typeError('removeBackupWallet',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 189 char 1',
+                                     'vault-registry.compact line 182 char 1',
                                      'Bytes<32>',
                                      walletCommitment_0)
         }
@@ -287,59 +296,23 @@ export class Contract {
         partialProofData.output = { value: [], alignment: [] };
         return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
       },
-      initiateBackupTransfer: (...args_1) => {
+      backupTransfer: (...args_1) => {
         if (args_1.length !== 2) {
-          throw new __compactRuntime.CompactError(`initiateBackupTransfer: expected 2 arguments (as invoked from Typescript), received ${args_1.length}`);
-        }
-        const contextOrig_0 = args_1[0];
-        const currentTime_0 = args_1[1];
-        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
-          __compactRuntime.typeError('initiateBackupTransfer',
-                                     'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 199 char 1',
-                                     'CircuitContext',
-                                     contextOrig_0)
-        }
-        if (!(typeof(currentTime_0) === 'bigint' && currentTime_0 >= 0n && currentTime_0 <= 18446744073709551615n)) {
-          __compactRuntime.typeError('initiateBackupTransfer',
-                                     'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 199 char 1',
-                                     'Uint<0..18446744073709551616>',
-                                     currentTime_0)
-        }
-        const context = { ...contextOrig_0, gasCost: __compactRuntime.emptyRunningCost() };
-        const partialProofData = {
-          input: {
-            value: _descriptor_2.toValue(currentTime_0),
-            alignment: _descriptor_2.alignment()
-          },
-          output: undefined,
-          publicTranscript: [],
-          privateTranscriptOutputs: []
-        };
-        const result_0 = this._initiateBackupTransfer_0(context,
-                                                        partialProofData,
-                                                        currentTime_0);
-        partialProofData.output = { value: [], alignment: [] };
-        return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
-      },
-      executeBackupTransfer: (...args_1) => {
-        if (args_1.length !== 2) {
-          throw new __compactRuntime.CompactError(`executeBackupTransfer: expected 2 arguments (as invoked from Typescript), received ${args_1.length}`);
+          throw new __compactRuntime.CompactError(`backupTransfer: expected 2 arguments (as invoked from Typescript), received ${args_1.length}`);
         }
         const contextOrig_0 = args_1[0];
         const newOwnerCommitment_0 = args_1[1];
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
-          __compactRuntime.typeError('executeBackupTransfer',
+          __compactRuntime.typeError('backupTransfer',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 214 char 1',
+                                     'vault-registry.compact line 192 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(newOwnerCommitment_0.buffer instanceof ArrayBuffer && newOwnerCommitment_0.BYTES_PER_ELEMENT === 1 && newOwnerCommitment_0.length === 32)) {
-          __compactRuntime.typeError('executeBackupTransfer',
+          __compactRuntime.typeError('backupTransfer',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 214 char 1',
+                                     'vault-registry.compact line 192 char 1',
                                      'Bytes<32>',
                                      newOwnerCommitment_0)
         }
@@ -353,32 +326,9 @@ export class Contract {
           publicTranscript: [],
           privateTranscriptOutputs: []
         };
-        const result_0 = this._executeBackupTransfer_0(context,
-                                                       partialProofData,
-                                                       newOwnerCommitment_0);
-        partialProofData.output = { value: [], alignment: [] };
-        return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
-      },
-      cancelBackupTransfer: (...args_1) => {
-        if (args_1.length !== 1) {
-          throw new __compactRuntime.CompactError(`cancelBackupTransfer: expected 1 argument (as invoked from Typescript), received ${args_1.length}`);
-        }
-        const contextOrig_0 = args_1[0];
-        if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
-          __compactRuntime.typeError('cancelBackupTransfer',
-                                     'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 231 char 1',
-                                     'CircuitContext',
-                                     contextOrig_0)
-        }
-        const context = { ...contextOrig_0, gasCost: __compactRuntime.emptyRunningCost() };
-        const partialProofData = {
-          input: { value: [], alignment: [] },
-          output: undefined,
-          publicTranscript: [],
-          privateTranscriptOutputs: []
-        };
-        const result_0 = this._cancelBackupTransfer_0(context, partialProofData);
+        const result_0 = this._backupTransfer_0(context,
+                                                partialProofData,
+                                                newOwnerCommitment_0);
         partialProofData.output = { value: [], alignment: [] };
         return { result: result_0, context: context, proofData: partialProofData, gasCost: context.gasCost };
       },
@@ -391,14 +341,14 @@ export class Contract {
         if (!(typeof(contextOrig_0) === 'object' && contextOrig_0.currentQueryContext != undefined)) {
           __compactRuntime.typeError('isRegistered',
                                      'argument 1 (as invoked from Typescript)',
-                                     'vault-registry.compact line 239 char 1',
+                                     'vault-registry.compact line 211 char 1',
                                      'CircuitContext',
                                      contextOrig_0)
         }
         if (!(walletAddressHash_0.buffer instanceof ArrayBuffer && walletAddressHash_0.BYTES_PER_ELEMENT === 1 && walletAddressHash_0.length === 32)) {
           __compactRuntime.typeError('isRegistered',
                                      'argument 1 (argument 2 as invoked from Typescript)',
-                                     'vault-registry.compact line 239 char 1',
+                                     'vault-registry.compact line 211 char 1',
                                      'Bytes<32>',
                                      walletAddressHash_0)
         }
@@ -426,9 +376,7 @@ export class Contract {
       storeRecoveryKeyHash: this.circuits.storeRecoveryKeyHash,
       addBackupWallet: this.circuits.addBackupWallet,
       removeBackupWallet: this.circuits.removeBackupWallet,
-      initiateBackupTransfer: this.circuits.initiateBackupTransfer,
-      executeBackupTransfer: this.circuits.executeBackupTransfer,
-      cancelBackupTransfer: this.circuits.cancelBackupTransfer,
+      backupTransfer: this.circuits.backupTransfer,
       isRegistered: this.circuits.isRegistered
     };
   }
@@ -457,8 +405,6 @@ export class Contract {
     stateValue_0 = stateValue_0.arrayPush(__compactRuntime.StateValue.newNull());
     stateValue_0 = stateValue_0.arrayPush(__compactRuntime.StateValue.newNull());
     stateValue_0 = stateValue_0.arrayPush(__compactRuntime.StateValue.newNull());
-    stateValue_0 = stateValue_0.arrayPush(__compactRuntime.StateValue.newNull());
-    stateValue_0 = stateValue_0.arrayPush(__compactRuntime.StateValue.newNull());
     state_0.data = new __compactRuntime.ChargedState(stateValue_0);
     state_0.setOperation('registerVault', new __compactRuntime.ContractOperation());
     state_0.setOperation('updateVault', new __compactRuntime.ContractOperation());
@@ -466,9 +412,7 @@ export class Contract {
     state_0.setOperation('storeRecoveryKeyHash', new __compactRuntime.ContractOperation());
     state_0.setOperation('addBackupWallet', new __compactRuntime.ContractOperation());
     state_0.setOperation('removeBackupWallet', new __compactRuntime.ContractOperation());
-    state_0.setOperation('initiateBackupTransfer', new __compactRuntime.ContractOperation());
-    state_0.setOperation('executeBackupTransfer', new __compactRuntime.ContractOperation());
-    state_0.setOperation('cancelBackupTransfer', new __compactRuntime.ContractOperation());
+    state_0.setOperation('backupTransfer', new __compactRuntime.ContractOperation());
     state_0.setOperation('isRegistered', new __compactRuntime.ContractOperation());
     const context = __compactRuntime.createCircuitContext(__compactRuntime.dummyContractAddress(), constructorContext_0.initialZswapLocalState.coinPublicKey, state_0.data, constructorContext_0.initialPrivateState);
     const partialProofData = {
@@ -539,26 +483,6 @@ export class Contract {
                                                           new __compactRuntime.StateMap()
                                                         ).encode() } },
                                        { ins: { cached: false, n: 1 } }]);
-    __compactRuntime.queryLedgerState(context,
-                                      partialProofData,
-                                      [
-                                       { push: { storage: false,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(6n),
-                                                                                              alignment: _descriptor_7.alignment() }).encode() } },
-                                       { push: { storage: true,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_2.toValue(0n),
-                                                                                              alignment: _descriptor_2.alignment() }).encode() } },
-                                       { ins: { cached: false, n: 1 } }]);
-    __compactRuntime.queryLedgerState(context,
-                                      partialProofData,
-                                      [
-                                       { push: { storage: false,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(7n),
-                                                                                              alignment: _descriptor_7.alignment() }).encode() } },
-                                       { push: { storage: true,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(new Uint8Array(32)),
-                                                                                              alignment: _descriptor_0.alignment() }).encode() } },
-                                       { ins: { cached: false, n: 1 } }]);
     state_0.data = new __compactRuntime.ChargedState(context.currentQueryContext.state.state);
     return {
       currentContractState: state_0,
@@ -600,7 +524,7 @@ export class Contract {
     if (!(result_0.buffer instanceof ArrayBuffer && result_0.BYTES_PER_ELEMENT === 1 && result_0.length === 32)) {
       __compactRuntime.typeError('local_secret_key',
                                  'return value',
-                                 'vault-registry.compact line 109 char 1',
+                                 'vault-registry.compact line 97 char 1',
                                  'Bytes<32>',
                                  result_0)
     }
@@ -617,7 +541,7 @@ export class Contract {
     if (!(result_0.buffer instanceof ArrayBuffer && result_0.BYTES_PER_ELEMENT === 1 && result_0.length === 32)) {
       __compactRuntime.typeError('local_backup_key',
                                  'return value',
-                                 'vault-registry.compact line 112 char 1',
+                                 'vault-registry.compact line 100 char 1',
                                  'Bytes<32>',
                                  result_0)
     }
@@ -778,28 +702,6 @@ export class Contract {
                                                  value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(tmp_0),
                                                                                               alignment: _descriptor_0.alignment() }).encode() } },
                                        { ins: { cached: false, n: 1 } }]);
-    const tmp_1 = 0n;
-    __compactRuntime.queryLedgerState(context,
-                                      partialProofData,
-                                      [
-                                       { push: { storage: false,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(6n),
-                                                                                              alignment: _descriptor_7.alignment() }).encode() } },
-                                       { push: { storage: true,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_2.toValue(tmp_1),
-                                                                                              alignment: _descriptor_2.alignment() }).encode() } },
-                                       { ins: { cached: false, n: 1 } }]);
-    const tmp_2 = new Uint8Array(32);
-    __compactRuntime.queryLedgerState(context,
-                                      partialProofData,
-                                      [
-                                       { push: { storage: false,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(7n),
-                                                                                              alignment: _descriptor_7.alignment() }).encode() } },
-                                       { push: { storage: true,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(tmp_2),
-                                                                                              alignment: _descriptor_0.alignment() }).encode() } },
-                                       { ins: { cached: false, n: 1 } }]);
     __compactRuntime.queryLedgerState(context,
                                       partialProofData,
                                       [
@@ -842,8 +744,13 @@ export class Contract {
                                        { ins: { cached: false, n: 1 } }]);
     return [];
   }
-  _addBackupWallet_0(context, partialProofData, walletCommitment_0) {
+  _addBackupWallet_0(context,
+                     partialProofData,
+                     walletCommitment_0,
+                     currentTime_0)
+  {
     const commitment_0 = walletCommitment_0;
+    const time_0 = currentTime_0;
     const sk_0 = this._local_secret_key_0(context, partialProofData);
     __compactRuntime.assert(this._equal_3(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                                     partialProofData,
@@ -859,6 +766,11 @@ export class Contract {
                                                                                                                 result: undefined } }]).value),
                                           this._ownerCommitment_0(sk_0)),
                             'Not the vault owner');
+    __compactRuntime.assert(!this._equal_4(time_0, 0n), 'Invalid timestamp');
+    __compactRuntime.assert(this._blockTimeGte_0(context,
+                                                 partialProofData,
+                                                 time_0),
+                            'Provided time is in the future');
     __compactRuntime.queryLedgerState(context,
                                       partialProofData,
                                       [
@@ -872,7 +784,8 @@ export class Contract {
                                                  value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(commitment_0),
                                                                                               alignment: _descriptor_0.alignment() }).encode() } },
                                        { push: { storage: true,
-                                                 value: __compactRuntime.StateValue.newNull().encode() } },
+                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_2.toValue(time_0),
+                                                                                              alignment: _descriptor_2.alignment() }).encode() } },
                                        { ins: { cached: false, n: 1 } },
                                        { ins: { cached: true, n: 1 } }]);
     return [];
@@ -880,7 +793,7 @@ export class Contract {
   _removeBackupWallet_0(context, partialProofData, walletCommitment_0) {
     const commitment_0 = walletCommitment_0;
     const sk_0 = this._local_secret_key_0(context, partialProofData);
-    __compactRuntime.assert(this._equal_4(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
+    __compactRuntime.assert(this._equal_5(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
                                                                                                     partialProofData,
                                                                                                     [
                                                                                                      { dup: { n: 0 } },
@@ -910,128 +823,57 @@ export class Contract {
                                        { ins: { cached: true, n: 1 } }]);
     return [];
   }
-  _initiateBackupTransfer_0(context, partialProofData, currentTime_0) {
-    const time_0 = currentTime_0;
-    const bk_0 = this._local_backup_key_0(context, partialProofData);
-    let tmp_0;
-    __compactRuntime.assert((tmp_0 = this._backupCommitment_0(bk_0),
-                             _descriptor_1.fromValue(__compactRuntime.queryLedgerState(context,
-                                                                                       partialProofData,
-                                                                                       [
-                                                                                        { dup: { n: 0 } },
-                                                                                        { idx: { cached: false,
-                                                                                                 pushPath: false,
-                                                                                                 path: [
-                                                                                                        { tag: 'value',
-                                                                                                          value: { value: _descriptor_7.toValue(5n),
-                                                                                                                   alignment: _descriptor_7.alignment() } }] } },
-                                                                                        { push: { storage: false,
-                                                                                                  value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(tmp_0),
-                                                                                                                                               alignment: _descriptor_0.alignment() }).encode() } },
-                                                                                        'member',
-                                                                                        { popeq: { cached: true,
-                                                                                                   result: undefined } }]).value)),
-                            'Not a backup wallet');
-    __compactRuntime.assert(!this._equal_5(time_0, 0n), 'Invalid timestamp');
-    __compactRuntime.assert(this._blockTimeGte_0(context,
-                                                 partialProofData,
-                                                 time_0),
-                            'Provided time is in the future');
-    __compactRuntime.queryLedgerState(context,
-                                      partialProofData,
-                                      [
-                                       { push: { storage: false,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(6n),
-                                                                                              alignment: _descriptor_7.alignment() }).encode() } },
-                                       { push: { storage: true,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_2.toValue(time_0),
-                                                                                              alignment: _descriptor_2.alignment() }).encode() } },
-                                       { ins: { cached: false, n: 1 } }]);
-    const tmp_1 = this._backupCommitment_0(bk_0);
-    __compactRuntime.queryLedgerState(context,
-                                      partialProofData,
-                                      [
-                                       { push: { storage: false,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(7n),
-                                                                                              alignment: _descriptor_7.alignment() }).encode() } },
-                                       { push: { storage: true,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(tmp_1),
-                                                                                              alignment: _descriptor_0.alignment() }).encode() } },
-                                       { ins: { cached: false, n: 1 } }]);
-    return [];
-  }
-  _executeBackupTransfer_0(context, partialProofData, newOwnerCommitment_0) {
+  _backupTransfer_0(context, partialProofData, newOwnerCommitment_0) {
     const newOwner_0 = newOwnerCommitment_0;
     const bk_0 = this._local_backup_key_0(context, partialProofData);
-    let tmp_0;
-    __compactRuntime.assert((tmp_0 = this._backupCommitment_0(bk_0),
-                             _descriptor_1.fromValue(__compactRuntime.queryLedgerState(context,
-                                                                                       partialProofData,
-                                                                                       [
-                                                                                        { dup: { n: 0 } },
-                                                                                        { idx: { cached: false,
-                                                                                                 pushPath: false,
-                                                                                                 path: [
-                                                                                                        { tag: 'value',
-                                                                                                          value: { value: _descriptor_7.toValue(5n),
-                                                                                                                   alignment: _descriptor_7.alignment() } }] } },
-                                                                                        { push: { storage: false,
-                                                                                                  value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(tmp_0),
-                                                                                                                                               alignment: _descriptor_0.alignment() }).encode() } },
-                                                                                        'member',
-                                                                                        { popeq: { cached: true,
-                                                                                                   result: undefined } }]).value)),
+    const callerCommitment_0 = this._backupCommitment_0(bk_0);
+    __compactRuntime.assert(_descriptor_1.fromValue(__compactRuntime.queryLedgerState(context,
+                                                                                      partialProofData,
+                                                                                      [
+                                                                                       { dup: { n: 0 } },
+                                                                                       { idx: { cached: false,
+                                                                                                pushPath: false,
+                                                                                                path: [
+                                                                                                       { tag: 'value',
+                                                                                                         value: { value: _descriptor_7.toValue(5n),
+                                                                                                                  alignment: _descriptor_7.alignment() } }] } },
+                                                                                       { push: { storage: false,
+                                                                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(callerCommitment_0),
+                                                                                                                                              alignment: _descriptor_0.alignment() }).encode() } },
+                                                                                       'member',
+                                                                                       { popeq: { cached: true,
+                                                                                                  result: undefined } }]).value),
                             'Not a backup wallet');
-    __compactRuntime.assert(this._equal_6(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
-                                                                                                    partialProofData,
-                                                                                                    [
-                                                                                                     { dup: { n: 0 } },
-                                                                                                     { idx: { cached: false,
-                                                                                                              pushPath: false,
-                                                                                                              path: [
-                                                                                                                     { tag: 'value',
-                                                                                                                       value: { value: _descriptor_7.toValue(7n),
-                                                                                                                                alignment: _descriptor_7.alignment() } }] } },
-                                                                                                     { popeq: { cached: false,
-                                                                                                                result: undefined } }]).value),
-                                          this._backupCommitment_0(bk_0)),
-                            'Not the transfer initiator');
-    __compactRuntime.assert(!this._equal_7(_descriptor_2.fromValue(__compactRuntime.queryLedgerState(context,
-                                                                                                     partialProofData,
-                                                                                                     [
-                                                                                                      { dup: { n: 0 } },
-                                                                                                      { idx: { cached: false,
-                                                                                                               pushPath: false,
-                                                                                                               path: [
-                                                                                                                      { tag: 'value',
-                                                                                                                        value: { value: _descriptor_7.toValue(6n),
-                                                                                                                                 alignment: _descriptor_7.alignment() } }] } },
-                                                                                                      { popeq: { cached: false,
-                                                                                                                 result: undefined } }]).value),
-                                           0n),
-                            'No transfer initiated');
+    const registeredAt_0 = _descriptor_2.fromValue(__compactRuntime.queryLedgerState(context,
+                                                                                     partialProofData,
+                                                                                     [
+                                                                                      { dup: { n: 0 } },
+                                                                                      { idx: { cached: false,
+                                                                                               pushPath: false,
+                                                                                               path: [
+                                                                                                      { tag: 'value',
+                                                                                                        value: { value: _descriptor_7.toValue(5n),
+                                                                                                                 alignment: _descriptor_7.alignment() } }] } },
+                                                                                      { idx: { cached: false,
+                                                                                               pushPath: false,
+                                                                                               path: [
+                                                                                                      { tag: 'value',
+                                                                                                        value: { value: _descriptor_0.toValue(callerCommitment_0),
+                                                                                                                 alignment: _descriptor_0.alignment() } }] } },
+                                                                                      { popeq: { cached: false,
+                                                                                                 result: undefined } }]).value);
+    __compactRuntime.assert(!this._equal_6(registeredAt_0, 0n),
+                            'Backup wallet not registered');
     const unlockTime_0 = ((t1) => {
                            if (t1 > 18446744073709551615n) {
-                             throw new __compactRuntime.CompactError('vault-registry.compact line 221 char 23: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 18446744073709551615');
+                             throw new __compactRuntime.CompactError('vault-registry.compact line 200 char 23: cast from Field or Uint value to smaller Uint value failed: ' + t1 + ' is greater than 18446744073709551615');
                            }
                            return t1;
-                         })(__compactRuntime.addField(_descriptor_2.fromValue(__compactRuntime.queryLedgerState(context,
-                                                                                                                partialProofData,
-                                                                                                                [
-                                                                                                                 { dup: { n: 0 } },
-                                                                                                                 { idx: { cached: false,
-                                                                                                                          pushPath: false,
-                                                                                                                          path: [
-                                                                                                                                 { tag: 'value',
-                                                                                                                                   value: { value: _descriptor_7.toValue(6n),
-                                                                                                                                            alignment: _descriptor_7.alignment() } }] } },
-                                                                                                                 { popeq: { cached: false,
-                                                                                                                            result: undefined } }]).value),
-                                                      259200n));
+                         })(__compactRuntime.addField(registeredAt_0, 259200n));
     __compactRuntime.assert(this._blockTimeGte_0(context,
                                                  partialProofData,
                                                  unlockTime_0),
-                            '72-hour time-lock has not elapsed');
+                            '72-hour maturation period has not elapsed');
     __compactRuntime.queryLedgerState(context,
                                       partialProofData,
                                       [
@@ -1042,26 +884,15 @@ export class Contract {
                                                  value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(newOwner_0),
                                                                                               alignment: _descriptor_0.alignment() }).encode() } },
                                        { ins: { cached: false, n: 1 } }]);
-    const tmp_1 = 0n;
+    const tmp_0 = new Uint8Array(32);
     __compactRuntime.queryLedgerState(context,
                                       partialProofData,
                                       [
                                        { push: { storage: false,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(6n),
+                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(4n),
                                                                                               alignment: _descriptor_7.alignment() }).encode() } },
                                        { push: { storage: true,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_2.toValue(tmp_1),
-                                                                                              alignment: _descriptor_2.alignment() }).encode() } },
-                                       { ins: { cached: false, n: 1 } }]);
-    const tmp_2 = new Uint8Array(32);
-    __compactRuntime.queryLedgerState(context,
-                                      partialProofData,
-                                      [
-                                       { push: { storage: false,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(7n),
-                                                                                              alignment: _descriptor_7.alignment() }).encode() } },
-                                       { push: { storage: true,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(tmp_2),
+                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(tmp_0),
                                                                                               alignment: _descriptor_0.alignment() }).encode() } },
                                        { ins: { cached: false, n: 1 } }]);
     __compactRuntime.queryLedgerState(context,
@@ -1074,46 +905,6 @@ export class Contract {
                                                  value: __compactRuntime.StateValue.newMap(
                                                           new __compactRuntime.StateMap()
                                                         ).encode() } },
-                                       { ins: { cached: false, n: 1 } }]);
-    return [];
-  }
-  _cancelBackupTransfer_0(context, partialProofData) {
-    const sk_0 = this._local_secret_key_0(context, partialProofData);
-    __compactRuntime.assert(this._equal_8(_descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
-                                                                                                    partialProofData,
-                                                                                                    [
-                                                                                                     { dup: { n: 0 } },
-                                                                                                     { idx: { cached: false,
-                                                                                                              pushPath: false,
-                                                                                                              path: [
-                                                                                                                     { tag: 'value',
-                                                                                                                       value: { value: _descriptor_7.toValue(2n),
-                                                                                                                                alignment: _descriptor_7.alignment() } }] } },
-                                                                                                     { popeq: { cached: false,
-                                                                                                                result: undefined } }]).value),
-                                          this._ownerCommitment_0(sk_0)),
-                            'Not the vault owner');
-    const tmp_0 = 0n;
-    __compactRuntime.queryLedgerState(context,
-                                      partialProofData,
-                                      [
-                                       { push: { storage: false,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(6n),
-                                                                                              alignment: _descriptor_7.alignment() }).encode() } },
-                                       { push: { storage: true,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_2.toValue(tmp_0),
-                                                                                              alignment: _descriptor_2.alignment() }).encode() } },
-                                       { ins: { cached: false, n: 1 } }]);
-    const tmp_1 = new Uint8Array(32);
-    __compactRuntime.queryLedgerState(context,
-                                      partialProofData,
-                                      [
-                                       { push: { storage: false,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_7.toValue(7n),
-                                                                                              alignment: _descriptor_7.alignment() }).encode() } },
-                                       { push: { storage: true,
-                                                 value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(tmp_1),
-                                                                                              alignment: _descriptor_0.alignment() }).encode() } },
                                        { ins: { cached: false, n: 1 } }]);
     return [];
   }
@@ -1152,23 +943,15 @@ export class Contract {
     return true;
   }
   _equal_4(x0, y0) {
-    if (!x0.every((x, i) => y0[i] === x)) { return false; }
+    if (x0 !== y0) { return false; }
     return true;
   }
   _equal_5(x0, y0) {
-    if (x0 !== y0) { return false; }
+    if (!x0.every((x, i) => y0[i] === x)) { return false; }
     return true;
   }
   _equal_6(x0, y0) {
-    if (!x0.every((x, i) => y0[i] === x)) { return false; }
-    return true;
-  }
-  _equal_7(x0, y0) {
     if (x0 !== y0) { return false; }
-    return true;
-  }
-  _equal_8(x0, y0) {
-    if (!x0.every((x, i) => y0[i] === x)) { return false; }
     return true;
   }
 }
@@ -1235,7 +1018,7 @@ export function ledger(stateOrChargedState) {
         if (!(elem_0.buffer instanceof ArrayBuffer && elem_0.BYTES_PER_ELEMENT === 1 && elem_0.length === 32)) {
           __compactRuntime.typeError('member',
                                      'argument 1',
-                                     'vault-registry.compact line 85 char 1',
+                                     'vault-registry.compact line 79 char 1',
                                      'Bytes<32>',
                                      elem_0)
         }
@@ -1365,13 +1148,13 @@ export function ledger(stateOrChargedState) {
         if (args_0.length !== 1) {
           throw new __compactRuntime.CompactError(`member: expected 1 argument, received ${args_0.length}`);
         }
-        const elem_0 = args_0[0];
-        if (!(elem_0.buffer instanceof ArrayBuffer && elem_0.BYTES_PER_ELEMENT === 1 && elem_0.length === 32)) {
+        const key_0 = args_0[0];
+        if (!(key_0.buffer instanceof ArrayBuffer && key_0.BYTES_PER_ELEMENT === 1 && key_0.length === 32)) {
           __compactRuntime.typeError('member',
                                      'argument 1',
-                                     'vault-registry.compact line 100 char 1',
+                                     'vault-registry.compact line 94 char 1',
                                      'Bytes<32>',
-                                     elem_0)
+                                     key_0)
         }
         return _descriptor_1.fromValue(__compactRuntime.queryLedgerState(context,
                                                                          partialProofData,
@@ -1384,10 +1167,41 @@ export function ledger(stateOrChargedState) {
                                                                                             value: { value: _descriptor_7.toValue(5n),
                                                                                                      alignment: _descriptor_7.alignment() } }] } },
                                                                           { push: { storage: false,
-                                                                                    value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(elem_0),
+                                                                                    value: __compactRuntime.StateValue.newCell({ value: _descriptor_0.toValue(key_0),
                                                                                                                                  alignment: _descriptor_0.alignment() }).encode() } },
                                                                           'member',
                                                                           { popeq: { cached: true,
+                                                                                     result: undefined } }]).value);
+      },
+      lookup(...args_0) {
+        if (args_0.length !== 1) {
+          throw new __compactRuntime.CompactError(`lookup: expected 1 argument, received ${args_0.length}`);
+        }
+        const key_0 = args_0[0];
+        if (!(key_0.buffer instanceof ArrayBuffer && key_0.BYTES_PER_ELEMENT === 1 && key_0.length === 32)) {
+          __compactRuntime.typeError('lookup',
+                                     'argument 1',
+                                     'vault-registry.compact line 94 char 1',
+                                     'Bytes<32>',
+                                     key_0)
+        }
+        return _descriptor_2.fromValue(__compactRuntime.queryLedgerState(context,
+                                                                         partialProofData,
+                                                                         [
+                                                                          { dup: { n: 0 } },
+                                                                          { idx: { cached: false,
+                                                                                   pushPath: false,
+                                                                                   path: [
+                                                                                          { tag: 'value',
+                                                                                            value: { value: _descriptor_7.toValue(5n),
+                                                                                                     alignment: _descriptor_7.alignment() } }] } },
+                                                                          { idx: { cached: false,
+                                                                                   pushPath: false,
+                                                                                   path: [
+                                                                                          { tag: 'value',
+                                                                                            value: { value: _descriptor_0.toValue(key_0),
+                                                                                                     alignment: _descriptor_0.alignment() } }] } },
+                                                                          { popeq: { cached: false,
                                                                                      result: undefined } }]).value);
       },
       [Symbol.iterator](...args_0) {
@@ -1395,36 +1209,8 @@ export function ledger(stateOrChargedState) {
           throw new __compactRuntime.CompactError(`iter: expected 0 arguments, received ${args_0.length}`);
         }
         const self_0 = state.asArray()[5];
-        return self_0.asMap().keys().map((elem) => _descriptor_0.fromValue(elem.value))[Symbol.iterator]();
+        return self_0.asMap().keys().map(  (key) => {    const value = self_0.asMap().get(key).asCell();    return [      _descriptor_0.fromValue(key.value),      _descriptor_2.fromValue(value.value)    ];  })[Symbol.iterator]();
       }
-    },
-    get transferInitiatedAt() {
-      return _descriptor_2.fromValue(__compactRuntime.queryLedgerState(context,
-                                                                       partialProofData,
-                                                                       [
-                                                                        { dup: { n: 0 } },
-                                                                        { idx: { cached: false,
-                                                                                 pushPath: false,
-                                                                                 path: [
-                                                                                        { tag: 'value',
-                                                                                          value: { value: _descriptor_7.toValue(6n),
-                                                                                                   alignment: _descriptor_7.alignment() } }] } },
-                                                                        { popeq: { cached: false,
-                                                                                   result: undefined } }]).value);
-    },
-    get transferInitiator() {
-      return _descriptor_0.fromValue(__compactRuntime.queryLedgerState(context,
-                                                                       partialProofData,
-                                                                       [
-                                                                        { dup: { n: 0 } },
-                                                                        { idx: { cached: false,
-                                                                                 pushPath: false,
-                                                                                 path: [
-                                                                                        { tag: 'value',
-                                                                                          value: { value: _descriptor_7.toValue(7n),
-                                                                                                   alignment: _descriptor_7.alignment() } }] } },
-                                                                        { popeq: { cached: false,
-                                                                                   result: undefined } }]).value);
     }
   };
 }
@@ -1444,7 +1230,7 @@ export const pureCircuits = {
     if (!(sk_0.buffer instanceof ArrayBuffer && sk_0.BYTES_PER_ELEMENT === 1 && sk_0.length === 32)) {
       __compactRuntime.typeError('ownerCommitment',
                                  'argument 1',
-                                 'vault-registry.compact line 117 char 1',
+                                 'vault-registry.compact line 105 char 1',
                                  'Bytes<32>',
                                  sk_0)
     }
@@ -1458,7 +1244,7 @@ export const pureCircuits = {
     if (!(bk_0.buffer instanceof ArrayBuffer && bk_0.BYTES_PER_ELEMENT === 1 && bk_0.length === 32)) {
       __compactRuntime.typeError('backupCommitment',
                                  'argument 1',
-                                 'vault-registry.compact line 124 char 1',
+                                 'vault-registry.compact line 112 char 1',
                                  'Bytes<32>',
                                  bk_0)
     }

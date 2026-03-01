@@ -83,10 +83,11 @@ export class VaultRegistrySimulator {
     return ledger(this.circuitContext.currentQueryContext.state);
   }
 
-  public addBackupWallet(walletCommitment: Uint8Array): Ledger {
+  public addBackupWallet(walletCommitment: Uint8Array, currentTime: bigint): Ledger {
     this.circuitContext = this.contract.impureCircuits.addBackupWallet(
       this.circuitContext,
-      walletCommitment
+      walletCommitment,
+      currentTime
     ).context;
     return ledger(this.circuitContext.currentQueryContext.state);
   }
@@ -99,25 +100,10 @@ export class VaultRegistrySimulator {
     return ledger(this.circuitContext.currentQueryContext.state);
   }
 
-  public initiateBackupTransfer(currentTime: bigint): Ledger {
-    this.circuitContext = this.contract.impureCircuits.initiateBackupTransfer(
-      this.circuitContext,
-      currentTime
-    ).context;
-    return ledger(this.circuitContext.currentQueryContext.state);
-  }
-
-  public executeBackupTransfer(newOwnerCommitment: Uint8Array): Ledger {
-    this.circuitContext = this.contract.impureCircuits.executeBackupTransfer(
+  public backupTransfer(newOwnerCommitment: Uint8Array): Ledger {
+    this.circuitContext = this.contract.impureCircuits.backupTransfer(
       this.circuitContext,
       newOwnerCommitment
-    ).context;
-    return ledger(this.circuitContext.currentQueryContext.state);
-  }
-
-  public cancelBackupTransfer(): Ledger {
-    this.circuitContext = this.contract.impureCircuits.cancelBackupTransfer(
-      this.circuitContext
     ).context;
     return ledger(this.circuitContext.currentQueryContext.state);
   }

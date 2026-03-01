@@ -116,6 +116,13 @@
             "type-name": "Bytes",
             "length": 32
           }
+        },
+        {
+          "name": "currentTime",
+          "type": {
+            "type-name": "Uint",
+            "maxval": 18446744073709551615
+          }
         }
       ],
       "result-type": {
@@ -143,25 +150,7 @@
       }
     },
     {
-      "name": "initiateBackupTransfer",
-      "pure": false,
-      "arguments": [
-        {
-          "name": "currentTime",
-          "type": {
-            "type-name": "Uint",
-            "maxval": 18446744073709551615
-          }
-        }
-      ],
-      "result-type": {
-        "type-name": "Tuple",
-        "types": [
-        ]
-      }
-    },
-    {
-      "name": "executeBackupTransfer",
+      "name": "backupTransfer",
       "pure": false,
       "arguments": [
         {
@@ -171,17 +160,6 @@
             "length": 32
           }
         }
-      ],
-      "result-type": {
-        "type-name": "Tuple",
-        "types": [
-        ]
-      }
-    },
-    {
-      "name": "cancelBackupTransfer",
-      "pure": false,
-      "arguments": [
       ],
       "result-type": {
         "type-name": "Tuple",

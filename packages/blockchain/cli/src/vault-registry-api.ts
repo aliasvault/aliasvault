@@ -140,9 +140,10 @@ export const storeRecoveryKeyHash = async (
 export const addBackupWallet = async (
   contract: DeployedVaultRegistryContract,
   walletCommitment: Uint8Array,
+  currentTime: bigint,
 ): Promise<void> => {
-  logger.info('Adding backup wallet...');
-  const result = await contract.callTx.addBackupWallet(walletCommitment);
+  logger.info(`Adding backup wallet (registeredAt=${currentTime})...`);
+  const result = await contract.callTx.addBackupWallet(walletCommitment, currentTime);
   logger.info(`addBackupWallet tx ${result.public.txId} in block ${result.public.blockHeight}`);
 };
 
@@ -155,30 +156,13 @@ export const removeBackupWallet = async (
   logger.info(`removeBackupWallet tx ${result.public.txId} in block ${result.public.blockHeight}`);
 };
 
-export const initiateBackupTransfer = async (
-  contract: DeployedVaultRegistryContract,
-  currentTime: bigint,
-): Promise<void> => {
-  logger.info(`Initiating backup transfer (time=${currentTime})...`);
-  const result = await contract.callTx.initiateBackupTransfer(currentTime);
-  logger.info(`initiateBackupTransfer tx ${result.public.txId} in block ${result.public.blockHeight}`);
-};
-
-export const executeBackupTransfer = async (
+export const backupTransfer = async (
   contract: DeployedVaultRegistryContract,
   newOwnerCommitment: Uint8Array,
 ): Promise<void> => {
   logger.info('Executing backup transfer...');
-  const result = await contract.callTx.executeBackupTransfer(newOwnerCommitment);
-  logger.info(`executeBackupTransfer tx ${result.public.txId} in block ${result.public.blockHeight}`);
-};
-
-export const cancelBackupTransfer = async (
-  contract: DeployedVaultRegistryContract,
-): Promise<void> => {
-  logger.info('Cancelling backup transfer...');
-  const result = await contract.callTx.cancelBackupTransfer();
-  logger.info(`cancelBackupTransfer tx ${result.public.txId} in block ${result.public.blockHeight}`);
+  const result = await contract.callTx.backupTransfer(newOwnerCommitment);
+  logger.info(`backupTransfer tx ${result.public.txId} in block ${result.public.blockHeight}`);
 };
 
 export const checkIsBackupWallet = async (
@@ -202,9 +186,8 @@ export const getVaultRegistryLedgerState = async (
   owner: Uint8Array;
   vaultCidHash: Uint8Array;
   recoveryKeyHash: Uint8Array;
-  transferInitiatedAt: bigint;
-  transferInitiator: Uint8Array;
   backupWalletsEmpty: boolean;
+  backupWalletsSize: bigint;
 } | null> => {
   assertIsContractAddress(contractAddress);
   logger.info('Checking VaultRegistry ledger state...');
@@ -218,9 +201,8 @@ export const getVaultRegistryLedgerState = async (
         owner: ledgerState.owner,
         vaultCidHash: ledgerState.vaultCidHash,
         recoveryKeyHash: ledgerState.recoveryKeyHash,
-        transferInitiatedAt: ledgerState.transferInitiatedAt,
-        transferInitiator: ledgerState.transferInitiator,
         backupWalletsEmpty: ledgerState.backupWallets.isEmpty(),
+        backupWalletsSize: ledgerState.backupWallets.size(),
       };
     });
   logger.info(`VaultRegistry state: totalVaults=${state?.totalVaults ?? 'N/A'}`);

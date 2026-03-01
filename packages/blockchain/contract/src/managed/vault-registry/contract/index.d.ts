@@ -15,14 +15,12 @@ export type ImpureCircuits<PS> = {
   storeRecoveryKeyHash(context: __compactRuntime.CircuitContext<PS>,
                        keyHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   addBackupWallet(context: __compactRuntime.CircuitContext<PS>,
-                  walletCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                  walletCommitment_0: Uint8Array,
+                  currentTime_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   removeBackupWallet(context: __compactRuntime.CircuitContext<PS>,
                      walletCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
-  initiateBackupTransfer(context: __compactRuntime.CircuitContext<PS>,
-                         currentTime_0: bigint): __compactRuntime.CircuitResults<PS, []>;
-  executeBackupTransfer(context: __compactRuntime.CircuitContext<PS>,
-                        newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
-  cancelBackupTransfer(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
+  backupTransfer(context: __compactRuntime.CircuitContext<PS>,
+                 newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   isRegistered(context: __compactRuntime.CircuitContext<PS>,
                walletAddressHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, boolean>;
 }
@@ -45,14 +43,12 @@ export type Circuits<PS> = {
   storeRecoveryKeyHash(context: __compactRuntime.CircuitContext<PS>,
                        keyHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   addBackupWallet(context: __compactRuntime.CircuitContext<PS>,
-                  walletCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
+                  walletCommitment_0: Uint8Array,
+                  currentTime_0: bigint): __compactRuntime.CircuitResults<PS, []>;
   removeBackupWallet(context: __compactRuntime.CircuitContext<PS>,
                      walletCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
-  initiateBackupTransfer(context: __compactRuntime.CircuitContext<PS>,
-                         currentTime_0: bigint): __compactRuntime.CircuitResults<PS, []>;
-  executeBackupTransfer(context: __compactRuntime.CircuitContext<PS>,
-                        newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
-  cancelBackupTransfer(context: __compactRuntime.CircuitContext<PS>): __compactRuntime.CircuitResults<PS, []>;
+  backupTransfer(context: __compactRuntime.CircuitContext<PS>,
+                 newOwnerCommitment_0: Uint8Array): __compactRuntime.CircuitResults<PS, []>;
   isRegistered(context: __compactRuntime.CircuitContext<PS>,
                walletAddressHash_0: Uint8Array): __compactRuntime.CircuitResults<PS, boolean>;
 }
@@ -71,11 +67,10 @@ export type Ledger = {
   backupWallets: {
     isEmpty(): boolean;
     size(): bigint;
-    member(elem_0: Uint8Array): boolean;
-    [Symbol.iterator](): Iterator<Uint8Array>
+    member(key_0: Uint8Array): boolean;
+    lookup(key_0: Uint8Array): bigint;
+    [Symbol.iterator](): Iterator<[Uint8Array, bigint]>
   };
-  readonly transferInitiatedAt: bigint;
-  readonly transferInitiator: Uint8Array;
 }
 
 export type ContractReferenceLocations = any;

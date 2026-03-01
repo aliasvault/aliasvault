@@ -43,9 +43,7 @@ import {
   storeRecoveryKeyHash,
   addBackupWallet,
   removeBackupWallet,
-  initiateBackupTransfer,
-  executeBackupTransfer,
-  cancelBackupTransfer,
+  backupTransfer,
 } from '../vault-registry-api';
 
 // Minimal mock logger — prevents undefined access in API functions
@@ -61,9 +59,7 @@ const createMockContract = (address?: string) => ({
     storeRecoveryKeyHash: vi.fn().mockResolvedValue(mockTxResult),
     addBackupWallet: vi.fn().mockResolvedValue(mockTxResult),
     removeBackupWallet: vi.fn().mockResolvedValue(mockTxResult),
-    initiateBackupTransfer: vi.fn().mockResolvedValue(mockTxResult),
-    executeBackupTransfer: vi.fn().mockResolvedValue(mockTxResult),
-    cancelBackupTransfer: vi.fn().mockResolvedValue(mockTxResult),
+    backupTransfer: vi.fn().mockResolvedValue(mockTxResult),
   },
   deployTxData: {
     public: { contractAddress: address ?? `mock-address-${++addressCounter}` },
@@ -146,11 +142,11 @@ describe('VaultRegistry API — new circuits', () => {
     expect(contract.callTx.storeRecoveryKeyHash).toHaveBeenCalledWith(keyHash);
   });
 
-  it('addBackupWallet calls callTx.addBackupWallet', async () => {
+  it('addBackupWallet calls callTx.addBackupWallet with commitment and timestamp', async () => {
     const contract = createMockContract();
     const commitment = new Uint8Array(32).fill(0xcc);
-    await addBackupWallet(contract, commitment);
-    expect(contract.callTx.addBackupWallet).toHaveBeenCalledWith(commitment);
+    await addBackupWallet(contract, commitment, 1700000000n);
+    expect(contract.callTx.addBackupWallet).toHaveBeenCalledWith(commitment, 1700000000n);
   });
 
   it('removeBackupWallet calls callTx.removeBackupWallet', async () => {
@@ -160,22 +156,10 @@ describe('VaultRegistry API — new circuits', () => {
     expect(contract.callTx.removeBackupWallet).toHaveBeenCalledWith(commitment);
   });
 
-  it('initiateBackupTransfer calls callTx.initiateBackupTransfer with bigint', async () => {
-    const contract = createMockContract();
-    await initiateBackupTransfer(contract, 1700000000n);
-    expect(contract.callTx.initiateBackupTransfer).toHaveBeenCalledWith(1700000000n);
-  });
-
-  it('executeBackupTransfer calls callTx.executeBackupTransfer', async () => {
+  it('backupTransfer calls callTx.backupTransfer', async () => {
     const contract = createMockContract();
     const commitment = new Uint8Array(32).fill(0xee);
-    await executeBackupTransfer(contract, commitment);
-    expect(contract.callTx.executeBackupTransfer).toHaveBeenCalledWith(commitment);
-  });
-
-  it('cancelBackupTransfer calls callTx.cancelBackupTransfer', async () => {
-    const contract = createMockContract();
-    await cancelBackupTransfer(contract);
-    expect(contract.callTx.cancelBackupTransfer).toHaveBeenCalled();
+    await backupTransfer(contract, commitment);
+    expect(contract.callTx.backupTransfer).toHaveBeenCalledWith(commitment);
   });
 });
