@@ -15,7 +15,7 @@ import {
   GUARDIAN_THRESHOLD,
   type ContractHandle,
 } from '../services/midnightService';
-import { getNetworkConfig } from '../config/networkConfig';
+// networkConfig no longer needed — service URIs come from Lace ConnectedAPI.getConfiguration()
 import { bytesToHex, hexToUint8Array } from '@aliasvault/vault-sync';
 import type { RecoveryMetadata, GuardianKeys } from '../types/recovery';
 
@@ -30,7 +30,7 @@ type PageState =
 
 function ApprovalContent() {
   const { cid } = useParams<{ cid: string }>();
-  const { isConnected } = useWallet();
+  const { isConnected, connectedAPI, shieldedAddresses, serviceConfig } = useWallet();
   const [state, setState] = useState<PageState>({ step: 'loading' });
 
   // Fetch metadata on mount
@@ -61,9 +61,8 @@ function ApprovalContent() {
     setState({ step: 'joining', metadata });
 
     try {
-      const config = getNetworkConfig(metadata.networkId);
       const guardianKeyBytes = getGuardianKeyBytes(keys);
-      const handle = await joinContract(metadata.contractAddress, guardianKeyBytes, config);
+      const handle = await joinContract(metadata.contractAddress, guardianKeyBytes, connectedAPI, shieldedAddresses, serviceConfig);
 
       const commitment = hexToUint8Array(keys.commitment);
       if (!isGuardian(handle, commitment)) {
@@ -91,7 +90,7 @@ function ApprovalContent() {
         message: err instanceof Error ? err.message : 'Failed to join contract',
       });
     }
-  }, []);
+  }, [connectedAPI, shieldedAddresses, serviceConfig]);
 
   const metadataForJoin = state.step === 'metadata-loaded' ? state.metadata : null;
 
@@ -159,21 +158,28 @@ function ApprovalContent() {
   else if (!isRecoveryActive) disabledReason = recoveryComplete ? 'Recovery already completed' : 'No active recovery request';
 
   async function handleApprove() {
-    await approveRecovery(handle);
-    const freshState = getContractState(handle);
-    const commitment = hexToUint8Array(keys.commitment);
-    const freshApproved = hasApproved(handle, commitment);
-    setState((prev) => {
-      if (prev.step !== 'ready') return prev;
-      return {
-        ...prev,
-        approvalCount: freshState.approvalCount,
-        isApproved: freshApproved,
-        owner: freshState.owner,
-        recoveryInitiatedAt: freshState.recoveryInitiatedAt,
-        recoveryComplete: freshState.recoveryComplete,
-      };
-    });
+    try {
+      await approveRecovery(handle);
+      const freshState = getContractState(handle);
+      const commitment = hexToUint8Array(keys.commitment);
+      const freshApproved = hasApproved(handle, commitment);
+      setState((prev) => {
+        if (prev.step !== 'ready') return prev;
+        return {
+          ...prev,
+          approvalCount: freshState.approvalCount,
+          isApproved: freshApproved,
+          owner: freshState.owner,
+          recoveryInitiatedAt: freshState.recoveryInitiatedAt,
+          recoveryComplete: freshState.recoveryComplete,
+        };
+      });
+    } catch (err) {
+      setState({
+        step: 'error',
+        message: err instanceof Error ? err.message : 'Approval failed',
+      });
+    }
   }
 
   return (

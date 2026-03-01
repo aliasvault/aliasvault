@@ -18,7 +18,7 @@ import {
   decryptGuardianShare,
   canReleaseShare,
 } from '../services/shareReleaseService';
-import { getNetworkConfig } from '../config/networkConfig';
+// networkConfig no longer needed — service URIs come from Lace ConnectedAPI.getConfiguration()
 import { bytesToHex, hexToUint8Array } from '@aliasvault/vault-sync';
 import type { RecoveryMetadata, GuardianKeys } from '../types/recovery';
 import type { RecoveryShareFile } from '@aliasvault/vault-sync';
@@ -45,7 +45,7 @@ type PageState =
 
 function ReleaseShareContent() {
   const { cid } = useParams<{ cid: string }>();
-  const { isConnected } = useWallet();
+  const { isConnected, connectedAPI, shieldedAddresses, serviceConfig } = useWallet();
   const [state, setState] = useState<PageState>({ step: 'loading' });
 
   // Fetch metadata on mount
@@ -76,9 +76,8 @@ function ReleaseShareContent() {
     setState({ step: 'joining', metadata });
 
     try {
-      const config = getNetworkConfig(metadata.networkId);
       const guardianKeyBytes = getGuardianKeyBytes(keys);
-      const handle = await joinContract(metadata.contractAddress, guardianKeyBytes, config);
+      const handle = await joinContract(metadata.contractAddress, guardianKeyBytes, connectedAPI, shieldedAddresses, serviceConfig);
 
       const commitment = hexToUint8Array(keys.commitment);
       if (!isGuardian(handle, commitment)) {
@@ -104,7 +103,7 @@ function ReleaseShareContent() {
         message: err instanceof Error ? err.message : 'Failed to join contract',
       });
     }
-  }, []);
+  }, [connectedAPI, shieldedAddresses, serviceConfig]);
 
   const metadataForJoin = state.step === 'metadata-loaded' ? state.metadata : null;
 

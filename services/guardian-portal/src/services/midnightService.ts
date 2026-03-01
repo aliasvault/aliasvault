@@ -2,12 +2,21 @@ import { findDeployedContract } from '@midnight-ntwrk/midnight-js-contracts';
 import { httpClientProofProvider } from '@midnight-ntwrk/midnight-js-http-client-proof-provider';
 import { indexerPublicDataProvider } from '@midnight-ntwrk/midnight-js-indexer-public-data-provider';
 import { CompiledContract } from '@midnight-ntwrk/compact-js';
+import { FetchZkConfigProvider } from '@midnight-ntwrk/midnight-js-fetch-zk-config-provider';
+import { toHex, fromHex } from '@midnight-ntwrk/compact-runtime';
+import {
+  Transaction,
+  type FinalizedTransaction,
+  type TransactionId,
+} from '@midnight-ntwrk/ledger-v7';
+import type { UnboundTransaction } from '@midnight-ntwrk/midnight-js-types';
 import {
   GuardianRecovery,
   createGuardianRecoveryPrivateState,
   guardianRecoveryWitnesses,
 } from '@aliasvault/contract';
-import type { NetworkConfig } from '../config/networkConfig';
+import type { ConnectedAPI, ShieldedAddresses, ServiceConfiguration } from './walletService';
+import { inMemoryPrivateStateProvider } from './inMemoryPrivateStateProvider';
 
 /** Threshold is hardcoded to 2 in the Compact contract (claimRecovery circuit). */
 export const GUARDIAN_THRESHOLD = 2;
@@ -24,7 +33,7 @@ export interface GuardianRecoveryState {
 /**
  * Build the compiled contract descriptor for browser context.
  * Unlike CLI (which adds withCompiledFileAssets for filesystem ZK configs),
- * the browser relies on the proof server for proving — no file assets needed.
+ * the browser relies on FetchZkConfigProvider for ZK keys — no file assets needed.
  */
 const guardianRecoveryCompiledContract = CompiledContract.make('guardian-recovery', GuardianRecovery.Contract).pipe(
   CompiledContract.withWitnesses(guardianRecoveryWitnesses),
@@ -35,29 +44,91 @@ export type ContractHandle = Awaited<ReturnType<typeof joinContract>>;
 /**
  * Build the full MidnightProviders required by findDeployedContract.
  *
- * Story 3.3 wires publicDataProvider + proofProvider (read-only + proof server).
- * The remaining 4 providers (privateStateProvider, zkConfigProvider, walletProvider,
- * midnightProvider) are stubbed — Story 3.7 will supply browser-compatible
- * implementations (FetchZkConfigProvider, Lace walletProvider, etc.).
+ * All 6 providers are wired following the bboard pattern:
+ * - publicDataProvider: indexerPublicDataProvider (from Lace serviceConfig)
+ * - proofProvider: httpClientProofProvider (from Lace proverServerUri)
+ * - zkConfigProvider: FetchZkConfigProvider (static keys from window.location.origin)
+ * - privateStateProvider: inMemoryPrivateStateProvider (ephemeral, Map-backed)
+ * - walletProvider: constructed from ConnectedAPI (balanceUnsealedTransaction)
+ * - midnightProvider: constructed from ConnectedAPI (submitTransaction)
+ *
+ * Cross-referenced against: bboard, midnight-bank, MeshJS template, midnight-game-2
+ *
+ * Before wallet connection, walletProvider and midnightProvider reject with 'readonly'
+ * to allow state reading without a connected wallet (Pattern from midnight-bank).
  */
-function configureGuardianProviders(config: NetworkConfig) {
-  // TODO(Story 3.7): Replace stubs with browser-compatible implementations.
-  // - zkConfigProvider → FetchZkConfigProvider pointing at hosted ZK circuit assets
-  // - walletProvider / midnightProvider → Lace wallet connector (ConnectedAPI from v4+ DApp connector)
-  // - privateStateProvider → inMemoryPrivateStateProvider (ephemeral, sufficient for guardian approval)
-  const notImplemented = (name: string) => () => {
-    throw new Error(`${name} not yet implemented — requires Story 3.7 provider wiring`);
+export function configureGuardianProviders(
+  connectedAPI: ConnectedAPI | null,
+  shieldedAddresses: ShieldedAddresses | null,
+  serviceConfig: ServiceConfiguration | null,
+) {
+  // zkConfigProvider: FetchZkConfigProvider fetches keys/zkir from static assets
+  // Pattern: bboard, MeshJS, midnight-bank, midnight-game-2 (all 4 use this)
+  const zkConfigProvider = new FetchZkConfigProvider(window.location.origin, fetch.bind(window));
+
+  // privateStateProvider: in-memory, ephemeral — sufficient for guardian approval
+  // Pattern: bboard, MeshJS, naval-battle-game use in-memory
+  const privateStateProvider = inMemoryPrivateStateProvider();
+
+  // proofProvider: uses proverServerUri from Lace getConfiguration()
+  // Falls back to empty string when wallet not yet connected (will fail at call time, which is expected)
+  const proofProvider = httpClientProofProvider(
+    serviceConfig?.proverServerUri ?? '',
+    zkConfigProvider,
+  );
+
+  // publicDataProvider: uses indexerUri/indexerWsUri from Lace getConfiguration()
+  // Falls back to empty strings when wallet not yet connected
+  const publicDataProvider = indexerPublicDataProvider(
+    serviceConfig?.indexerUri ?? '',
+    serviceConfig?.indexerWsUri ?? '',
+  );
+
+  // walletProvider: constructed from ConnectedAPI when connected
+  // Before wallet connection, rejects with 'readonly' error
+  // Pattern: midnight-bank BankWallet.tsx — readonly stub until wallet connects
+  const walletProvider = {
+    getCoinPublicKey(): string {
+      if (!shieldedAddresses) throw new Error('readonly');
+      return shieldedAddresses.shieldedCoinPublicKey;
+    },
+    getEncryptionPublicKey(): string {
+      if (!shieldedAddresses) throw new Error('readonly');
+      return shieldedAddresses.shieldedEncryptionPublicKey;
+    },
+    async balanceTx(tx: UnboundTransaction, _ttl?: Date): Promise<FinalizedTransaction> {
+      if (!connectedAPI) throw new Error('readonly');
+      // Exact pattern from bboard BrowserDeployedBoardManager.ts lines 241-254
+      // Cross-confirmed: MeshJS counter-providers.tsx lines 260-290
+      const serializedTx = toHex(tx.serialize());
+      const received = await connectedAPI.balanceUnsealedTransaction(serializedTx);
+      return Transaction.deserialize(
+        'signature',
+        'proof',
+        'binding',
+        fromHex(received.tx),
+      ) as FinalizedTransaction;
+    },
   };
 
-  const zkConfigStub = { get: notImplemented('zkConfigProvider.get') };
+  // midnightProvider: constructed from ConnectedAPI when connected
+  // Pattern: identical across bboard, MeshJS, midnight-game-2, midnight-bank
+  const midnightProvider = {
+    async submitTx(tx: FinalizedTransaction): Promise<TransactionId> {
+      if (!connectedAPI) throw new Error('readonly');
+      await connectedAPI.submitTransaction(toHex(tx.serialize()));
+      const txIdentifiers = tx.identifiers();
+      return txIdentifiers[0] as TransactionId;
+    },
+  };
 
   return {
-    publicDataProvider: indexerPublicDataProvider(config.indexerUrl, config.wsIndexerUrl),
-    proofProvider: httpClientProofProvider(config.proofServerUrl, zkConfigStub as any),
-    zkConfigProvider: zkConfigStub as any,
-    privateStateProvider: { get: notImplemented('privateStateProvider.get') } as any,
-    walletProvider: { getCoinPublicKey: notImplemented('walletProvider') } as any,
-    midnightProvider: { submitTx: notImplemented('midnightProvider') } as any,
+    publicDataProvider,
+    proofProvider,
+    zkConfigProvider,
+    privateStateProvider,
+    walletProvider,
+    midnightProvider,
   };
 }
 
@@ -68,9 +139,11 @@ function configureGuardianProviders(config: NetworkConfig) {
 export async function joinContract(
   contractAddress: string,
   guardianKey: Uint8Array,
-  config: NetworkConfig,
+  connectedAPI: ConnectedAPI | null,
+  shieldedAddresses: ShieldedAddresses | null,
+  serviceConfig: ServiceConfiguration | null,
 ) {
-  const providers = configureGuardianProviders(config);
+  const providers = configureGuardianProviders(connectedAPI, shieldedAddresses, serviceConfig);
 
   const contract = await findDeployedContract(providers as any, {
     contractAddress,
