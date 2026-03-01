@@ -380,9 +380,10 @@ This document provides the complete epic and story breakdown for aliasvault, dec
 - `getVaultCID()` witness - Epic 2.1
 - `storeRecoveryKeyHash(keyHash)` - Epic 3.2 _(ADR-007: stores SHA-256(shamirSecret) for verification; actual key is ephemeral)_
 - ~~`getRecoveryKey()` witness~~ _(ADR-007: removed — recovery key derived from Shamir shares during recovery)_
-- `transferOwnership(newWallet)` - Epic 3.5
-- `addBackupWallets(wallets[])` - Epic 3.6
-- `initiateBackupTransfer()` - Epic 3.6
+- `transferOwnership(newOwnerCommitment)` - Epic 2.6 _(contract done; UI descoped from MVP — Story 3.5 descoped)_
+- `addBackupWallet(walletCommitment, currentTime)` - Epic 3.6 _(modified: Map-based with registration timestamp)_
+- `backupTransfer(newOwnerCommitment)` - Epic 3.6 _(replaces initiateBackupTransfer + executeBackupTransfer; maturity-based fast path)_
+- `removeBackupWallet(walletCommitment)` - Epic 3.6
 - `getPublicKey(wallet)` witness - Epic 5.5
 - `notifyNewMail(owner, emailCID)` - Epic 5.6
 
@@ -423,22 +424,22 @@ This document provides the complete epic and story breakdown for aliasvault, dec
 | `EncryptionUtility.decryptWithPrivateKey()` | Line 209-239 | ✅ Decrypt guardian's share |
 | `EncryptionUtility.symmetricEncrypt()` | Line 49-87 | ✅ AES-GCM for recovery key encryption |
 
-#### Part B: Ownership Transfer (Lost/Compromised Wallet)
+#### Part B: Backup Wallet Transfer (Lost/Compromised Wallet)
 
 ##### What's NEW (must build)
 
 | Item | Evidence | Scope |
 |------|----------|-------|
-| **`transferOwnership()` in VaultRegistry** | FR18 | Transfer vault to new wallet address |
-| **Recovery invalidation** | FR19 | Previous recovery requests become invalid on transfer |
-| **Backup wallet registration** | AR14-AR16 | UI to configure up to 3 backup wallets |
-| **Backup transfer time-lock** | AR14 | 72-hour delay when backup initiates transfer |
+| **Maturity-based backup transfer** | FR18, AR14 | Backup wallets registered 72h+ can transfer immediately |
+| **Backup wallet registration UI** | AR14-AR16 | UI to configure backup wallet commitments |
+| **Contract modification** | AR14 | `backupWallets` Set→Map (add registration timestamps), new `backupTransfer` circuit |
 
 ##### What EXISTS (reuse)
 
 | Item | Evidence | Status |
 |------|----------|--------|
-| VaultRegistry contract | Epic 2 | ✅ Extend with transfer functions |
+| VaultRegistry backup circuits | Epic 2.6 | ✅ Modify: Set→Map, add maturity check, remove initiate/cancel flow |
+| `transferOwnership` circuit | Epic 2.6 | ✅ Stays in contract (no UI — Story 3.5 descoped) |
 
 **FRs Covered:** FR10, FR11, FR12, FR13, FR14, FR15, FR18, FR19
 **ARs Covered:** AR6, AR14, AR15, AR16, AR17, AR18
@@ -512,32 +513,68 @@ This document provides the complete epic and story breakdown for aliasvault, dec
 
 ---
 
-#### Story 3.5: Ownership Transfer
+#### ~~Story 3.5: Ownership Transfer~~ — DESCOPED
 
-**As a** user with a compromised wallet  
-**I want** to transfer my vault to a backup wallet  
-**So that** the attacker loses access
-
-**Acceptance Criteria:**
-- [ ] `VaultRegistry.transferOwnership(newWallet)` function
-- [ ] Updates `owner` state to new wallet
-- [ ] Invalidates any active recovery requests
-- [ ] UI in Security Settings to initiate transfer
-- [ ] Requires signature from CURRENT wallet
+> **Descoped:** Direct ownership transfer (`transferOwnership`) remains in the contract (Story 2.6) but
+> no UI will be built. Story 3.6's maturity-based backup transfer provides a fast path that
+> eliminates the need for a separate direct-transfer UI. CLI access remains available if needed.
 
 ---
 
-#### Story 3.6: Backup Wallet Configuration
+#### Story 3.6: Backup Wallet Configuration & Transfer
 
-**As a** user  
-**I want** to pre-register backup wallets  
-**So that** I can recover if I lose my primary wallet
+**As a** user
+**I want** to pre-register backup wallets that can transfer ownership after a maturation period
+**So that** I can recover my vault if I lose my primary wallet — instantly if the backup was set up in advance
+
+**Contract changes required:** Story 2.6 implemented the original initiate-wait-execute flow. This story
+modifies the contract to use a simpler maturity-based model (see below).
+
+**Design — maturity-based time-lock:**
+- `backupWallets` changes from `Set<Bytes<32>>` to `Map<Bytes<32>, Uint<64>>` (commitment → registration timestamp)
+- `addBackupWallet(walletCommitment, currentTime)` records when each backup wallet was registered
+- A backup wallet registered for **72h+** can call `backupTransfer(newOwnerCommitment)` **immediately** — no initiation step
+- A backup wallet registered for **< 72h** cannot transfer (must wait for maturation)
+- Owner can `removeBackupWallet(commitment)` at any time to revoke a backup wallet before it matures
+- `initiateBackupTransfer`, `cancelBackupTransfer`, `transferInitiatedAt`, `transferInitiator` are **removed** — the maturation period replaces the initiation flow
+
+**Security rationale:** The 72h maturation window gives the owner time to notice and remove any
+rogue backup wallet added by an attacker. Once a wallet has been registered for 72h+ without the
+owner revoking it, it is considered trusted and can transfer immediately.
 
 **Acceptance Criteria:**
-- [ ] UI to add backup wallet addresses (up to 3)
-- [ ] Store backup addresses in `VaultRegistry` private state
-- [ ] Backup wallet can call `initiateBackupTransfer()` (starts 72h timer)
-- [ ] Owner alerted immediately on backup transfer attempt
+- [x] Contract: `backupWallets` changed from `Set<Bytes<32>>` to `Map<Bytes<32>, Uint<64>>`
+- [x] Contract: `addBackupWallet(walletCommitment, currentTime)` records registration time (validated via `blockTimeGte`)
+- [x] Contract: `backupTransfer(newOwnerCommitment)` checks `registeredAt + 72h <= blockTime`, transfers ownership, clears backup wallets
+- [x] Contract: Remove `initiateBackupTransfer`, `cancelBackupTransfer`, `transferInitiatedAt`, `transferInitiator`
+- [x] Contract: Update `transferOwnership` to remove references to deleted state variables
+- [x] Tests: Update all backup wallet tests for new Map-based design + maturity check
+- [x] UI: Browser extension page to add/remove backup wallet commitments
+- [x] UI: Display backup wallet list with maturation status (time remaining or "ready")
+- [x] UI: Backup wallet holder can execute transfer if wallet is mature
+
+---
+
+#### Story 3.7: Guardian Portal Production Build & Provider Wiring
+
+**As a** developer deploying the guardian portal
+**I want** `vite build` to produce a working production bundle with full Midnight provider wiring
+**So that** the portal can be pinned to IPFS and guardians can execute `approveRecovery()` end-to-end
+
+**Acceptance Criteria:**
+- [ ] `vite build` succeeds — handles `ledger-v7` + `onchain-runtime-v2` ESM WASM imports via `vite-plugin-wasm`
+- [ ] Production bundle loads correctly in browser (smoke test)
+- [ ] `fs`/`path` externalization from `midnight-js-contracts` resolved or documented
+- [ ] Verification checklist updated to include `vite build` for services
+- [ ] `walletService.ts` enhanced to retain full Lace `ConnectedAPI` (not just address)
+- [ ] All 4 stubbed providers in `midnightService.ts` replaced: `zkConfigProvider` (FetchZkConfigProvider), `privateStateProvider` (inMemory), `walletProvider` (Lace balanceUnsealedTransaction), `midnightProvider` (Lace submitTransaction)
+- [ ] ZK circuit keys copied to public/ for FetchZkConfigProvider
+- [ ] `approveRecovery()` circuit callable end-to-end through browser
+
+**Technical Notes:**
+- See full story file: `_bmad-output/implementation-artifacts/3-7-guardian-portal-production-build.md`
+- Provider patterns researched across 8+ reference projects (Rule 18)
+- Recommended order: last in Epic 3 (after 3.5, 3.6)
 
 ---
 

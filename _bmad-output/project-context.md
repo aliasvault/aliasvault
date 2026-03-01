@@ -337,7 +337,7 @@ export const vaultRegistryWitnesses = {
 | Pragma required | (missing) | `pragma language_version >= 0.20;` |
 | Return empty tuple, not Void | `): Void {` | `): [] {` |
 | No `currentTimestamp()` | `currentTimestamp()` or `block.timestamp` | `blockTimeGte(time)` where `time: Uint<64>` (Unix epoch seconds). Also: `blockTimeGt`, `blockTimeLt`, `blockTimeLte`. Available since Compact 0.17. |
-| `Uint<64>` arithmetic needs cast through Field | `transferInitiatedAt + 259200` | `(((transferInitiatedAt as Field) + (259200 as Field)) as Uint<64>)` |
+| `Uint<64>` arithmetic needs cast through Field | `registeredAt + 259200` | `(((registeredAt as Field) + (259200 as Field)) as Uint<64>)` |
 
 **Reference:** Always call `midnight-get-latest-syntax` MCP tool before writing Compact code.
 
@@ -370,7 +370,7 @@ export class VaultRegistrySimulator {
 }
 ```
 
-**Limitation:** Simulator block time defaults to 0 and cannot be advanced. `blockTimeGte(unlockTime)` is impossible to satisfy with real timestamps + offsets. Use E2E on local Midnight network for time-lock testing.
+**Limitation:** Simulator `blockTimeGte()` always returns `true` regardless of argument (confirmed in Story 3.6 — `blockTimeGte(259201)` passes when block time is 0). This means time-lock tests cannot be validated in the simulator. Use E2E on local Midnight network for time-lock testing. Tests that depend on `blockTimeGte` returning `false` must be `.skip`ped with E2E justification.
 
 ### 12. Midnight Private State is Device-Local (ADR-006)
 
@@ -584,6 +584,130 @@ const ledgerState = GuardianRecovery.ledger(contractState.data); // ← generate
 - [Viewing Contract State tutorial](https://docs.midnight.network/develop/tutorial/building/dapp-details#viewing-contract-state) — CLI uses `publicDataProvider` + generated `ledger()` function
 - [Top-level exports](https://docs.midnight.network/develop/reference/compact/lang-ref#top-level-exports) — exported ledger fields are visible via the generated TypeScript `ledger()` function
 
+### 18. Midnight SDK Research — Multiple Reference Projects (CRITICAL)
+
+**Rule:** When writing stories or implementing features that involve Midnight SDK integration (provider wiring, contract interaction, WASM bundling, Lace wallet connection, Vite configuration), research a **minimum of 8 reference projects** (both official and community). Never rely solely on the bboard example.
+
+**Why this matters:**
+- The bboard example is the only official Midnight Foundation browser DApp, but it reflects ONE pattern for ONE use case
+- Community projects (midnight-bank, midnight-game-2, MeshJS template, naval-battle-game, zkBadge, midnames) often demonstrate patterns closer to our specific needs (e.g., read-only mode, progressive wallet connection, join-existing-contract flows)
+- Different projects use different Lace connector API versions (v1.x vs v4.x), private state strategies (in-memory vs persistent), and proof server URI sources
+- Relying on a single example leads to incorrect assumptions — e.g., assuming all browser DApps use `levelPrivateStateProvider` when half use `inMemoryPrivateStateProvider`
+
+**Research protocol:**
+1. **Start with official examples:** bboard (browser), counter (CLI), midnight-js testkit
+2. **Check community projects:** midnight-bank, midnight-game-2, MeshJS/midnight-starter-template, naval-battle-game, midnames, zkBadge
+3. **Cross-reference patterns:** Build a comparison table showing how each project handles the specific concern (provider wiring, wallet connection, private state, etc.)
+4. **Identify consensus vs divergence:** When 6+ projects agree on a pattern, it's reliable. When projects diverge, document both approaches with rationale for our choice.
+5. **Use MCP tools:** `midnight-search-typescript`, `midnight-search-compact`, `midnight-get-file` can pull code from indexed repositories
+
+**Anti-pattern:**
+```
+// ❌ WRONG: "Based on the bboard example, we should use levelPrivateStateProvider"
+//    (Only checked 1 project — 3 of 6 browser DApps actually use inMemoryPrivateStateProvider)
+
+// ❌ WRONG: "The proof server URI comes from config"
+//    (bboard and MeshJS get it from Lace wallet's getConfiguration() — config is fallback only)
+```
+
+**Correct pattern:**
+```
+// ✅ CORRECT: "Cross-referencing 8 projects (bboard, midnight-bank, MeshJS, midnight-game-2,
+//    naval-battle, midnames, midnight-js testkit, midnight-game-2-batcher):
+//    - inMemoryPrivateStateProvider: bboard, MeshJS, naval-battle (ephemeral state)
+//    - levelPrivateStateProvider: midnight-bank, midnight-game-2 (persistent state)
+//    - Decision: inMemoryPrivateStateProvider — guardian portal's private state is ephemeral"
+```
+
+**Discovery:** Story 3.7 — initial story only referenced bboard for provider wiring. Research across 8 projects revealed critical patterns (read-only stubs, progressive wallet connection, in-memory vs persistent private state, v1 vs v4 Lace API) that were invisible from a single example.
+
+### 19. Browser Extension Import Constraints — Vite Transform-Time Resolution (Story 3.6)
+
+**Rule:** Browser extension TSX components CANNOT import `@aliasvault/contract` directly. Vite's `import-analysis` plugin resolves imports at transform time (before `vi.mock` intercepts), causing build failures. Use **service wrapper functions with dynamic imports** instead.
+
+**Why this matters:**
+- `@aliasvault/contract` is a workspace package not listed in the browser extension's `package.json` — Vite cannot resolve it
+- Even if the import is inside a `vi.mock` block in tests, Vite processes the source file's imports first
+- Dynamic `import()` inside service functions defers resolution to runtime, bypassing Vite's static analysis
+
+**Anti-pattern:**
+```typescript
+// ❌ WRONG: Direct import in TSX component
+import { VaultRegistry } from '@aliasvault/contract';
+
+const commitment = VaultRegistry.pureCircuits.backupCommitment(key);
+```
+
+**Correct pattern:**
+```typescript
+// ✅ CORRECT: Service wrapper with dynamic import
+// BackupWalletService.ts
+export async function computeBackupCommitment(backupKey: Uint8Array): Promise<Uint8Array> {
+  const { VaultRegistry } = await import('@aliasvault/contract');
+  return VaultRegistry.pureCircuits.backupCommitment(backupKey);
+}
+
+// BackupTransfer.tsx — import from service, not contract
+import { computeBackupCommitment } from '@/services/BackupWalletService';
+```
+
+**In tests:** Mock the service function, not the contract package:
+```typescript
+vi.mock('@/services/BackupWalletService', () => ({
+  computeBackupCommitment: vi.fn().mockResolvedValue(new Uint8Array(32)),
+}));
+```
+
+### 20. Hex Validation — Silent Data Corruption Risk (Story 3.6)
+
+**Rule:** Always validate hex strings with a regex (`/^[0-9a-fA-F]*$/`) BEFORE calling `parseInt(hex, 16)`. Without validation, `parseInt("gg", 16)` returns `NaN`, and `Uint8Array` silently coerces `NaN` to `0` — producing incorrect bytes that could permanently lock a vault via an unreachable commitment.
+
+**Canonical implementation** in `apps/browser-extension/src/utils/hex.ts`:
+```typescript
+const HEX_REGEX = /^[0-9a-fA-F]*$/;
+
+export function isValidHex(hex: string, expectedLength?: number): boolean {
+  if (expectedLength !== undefined && hex.length !== expectedLength) return false;
+  return hex.length % 2 === 0 && HEX_REGEX.test(hex);
+}
+
+export function hexToBytes(hex: string): Uint8Array {
+  if (!isValidHex(hex)) throw new Error('Invalid hex string');
+  // ... safe parseInt after validation
+}
+```
+
+**Why this matters:**
+- User enters backup key `"gg".repeat(32)` (non-hex chars) → `hexToBytes` produces all-zeros commitment
+- Contract stores the all-zeros commitment → no real key maps to it → wallet permanently unrecoverable
+- This is a **silent** failure — no error thrown, no warning shown
+
+**Pattern:** Validate at system boundaries (user input, external data). Internal hex strings (from `bytesToHex`) are trusted.
+
+### 21. VaultCidStore Secret Key Access from Popup Pages (Story 3.6)
+
+**Rule:** Browser extension popup pages can access the vault owner's secret key via `VaultCidStore.getSecretKey()`. This returns the hex-encoded secret key from `chrome.storage.local`, which was cached there during vault unlock by `DbContext.extractAndCacheSecretKey()`.
+
+**Two architecture patterns for contract interaction in the extension:**
+1. **Background messages** — For heavy/cached operations (vault save/load). Popup sends message → background script handles contract call.
+2. **Direct service calls** — For one-off operations (backup wallet add/remove, recovery claim). Popup page calls service directly, service reads secret key from `VaultCidStore`.
+
+**When to use which:**
+- Background messages: When you need the full `DbContext` (SQLite DB handle, cached state)
+- Direct service calls: When you only need the secret key for owner authentication + a contract call
+
+**Example (direct service call pattern):**
+```typescript
+import { VaultCidStore } from '@/services/VaultCidStore';
+import { hexToBytes } from '@/utils/hex';
+
+async function getSecretKeyBytes(): Promise<Uint8Array> {
+  const secretKeyHex = await VaultCidStore.getSecretKey();
+  if (!secretKeyHex) throw new Error('Vault not unlocked — secret key unavailable');
+  return hexToBytes(secretKeyHex);
+}
+```
+
 ---
 
 ## Development Workflow Rules
@@ -693,10 +817,11 @@ Before merging any PR that touches cryptography or guardian recovery:
 
 ---
 
-**Last Updated:** 2026-02-28
+**Last Updated:** 2026-03-01
 **Source:** Generated from [architecture.md](_bmad-output/architecture.md)
 **Maintenance:** Update when implementing new patterns or discovering critical rules
 **Change Log:**
+- 2026-03-01: Added Rules 19-21 from Story 3.6 (Backup Wallet Configuration & Transfer). Rule 19: Browser extension Vite transform-time resolution — TSX components cannot import `@aliasvault/contract` directly, must use service wrappers with dynamic imports. Rule 20: Hex validation — `parseInt("gg", 16)` returns NaN, Uint8Array coerces to 0, causing silent data corruption. Canonical `utils/hex.ts` with regex validation. Rule 21: VaultCidStore secret key access from popup pages — two architecture patterns (background messages vs direct service calls). Updated Rule 11: confirmed `blockTimeGte()` always returns true in simulator (not just suspected).
 - 2026-02-28: Added Rule 17 (Midnight contract state reading patterns). Two patterns: `deployTxData.public` for initial snapshot vs `publicDataProvider.queryContractState()` + generated `ledger()` for fresh reads. Documented SDK type limitation where `ContractState` is opaque and requires cast or `ledger()` decoder. Added `typescript` as direct devDependency to contract + cli packages (bare `tsc` in build scripts requires it). Aligned guardian-portal `compact-js` version 0.14.0 → 2.4.0 to match CLI.
 - 2026-02-24: Added `services/*` to pnpm workspace list (Story 3.3 Guardian Portal). Updated test counts for Story 3.2v2 (31 tests across 3 files). Updated date.
 - 2026-02-22: **ADR-007 — Pattern 6 v2 (Inverted Shamir).** Rewrote Rule 1 to reflect ephemeral recovery key architecture. Updated Rule 16 and Security Checklist. Recovery key is no longer stored anywhere — derived from Shamir shares during recovery. Eliminates circular dependency (vault blob encrypted with lost master password) and ADR-006 private state device-local limitation. Sources: [Web3Auth/MetaMask SSS](https://docs.metamask.io/embedded-wallets/infrastructure/sss-architecture/), [ANARKey](https://eprint.iacr.org/2025/551), [Argent recovery](https://support.argent.xyz/hc/en-us/articles/360022631412-About-wallet-recovery).

@@ -126,6 +126,12 @@ You will systematically re-do the entire story creation process, but with a crit
   - Breaking changes or security updates
   - Performance improvements or deprecations
   - Best practices for current versions
+- **Multiple reference implementations (CRITICAL for SDK/framework integration):**
+  - When the story involves integrating with an SDK, framework, or complex library (e.g., Midnight SDK, wallet connectors, WASM bundling), research a **minimum of 8 reference projects** — both official examples AND community implementations
+  - Never rely on a single example project — different projects reveal different patterns, edge cases, and design decisions
+  - Build a comparison table showing how each reference handles the specific concern (e.g., provider wiring, wallet connection, state management)
+  - Identify consensus patterns (6+ projects agree) vs divergent approaches (document trade-offs)
+  - Use available MCP tools (search, file retrieval) to pull actual code from reference repositories
 
 ### **Step 3: Disaster Prevention Gap Analysis**
 
