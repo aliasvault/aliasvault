@@ -1,0 +1,9 @@
+# Build output
+dist/
+
+# ZK circuit keys copied at build time (copy-zk-assets script)
+public/keys/
+public/zkir/
+
+# Vite cache
+.vite/
